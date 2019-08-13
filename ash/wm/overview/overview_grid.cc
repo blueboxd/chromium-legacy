@@ -11,6 +11,7 @@
 #include "ash/metrics/histogram_macros.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/fps_counter.h"
+#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
@@ -90,6 +91,13 @@ constexpr char kOverviewExitTabletHistogram[] =
     "Ash.Overview.AnimationSmoothness.Exit.TabletMode";
 constexpr char kOverviewExitSplitViewHistogram[] =
     "Ash.Overview.AnimationSmoothness.Exit.SplitView";
+
+// The UMA histogram that records presentation time for grid scrolling in the
+// new overview layout.
+constexpr char kOverviewScrollHistogram[] =
+    "Ash.Overview.Scroll.PresentationTime.TabletMode";
+constexpr char kOverviewScrollMaxLatencyHistogram[] =
+    "Ash.Overview.Scroll.PresentationTime.MaxLatency.TabletMode";
 
 template <const char* clamshell_single_name,
           const char* clamshell_multi_name,
@@ -1268,7 +1276,7 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniView(
   return false;
 }
 
-void OverviewGrid::PrepareScrollLimitMin() {
+void OverviewGrid::StartScroll() {
   // Users are not allowed to scroll past the leftmost or rightmost bounds of
   // the items on screen in the grid. |scroll_offset_min_| is the amount needed
   // to fit the rightmost window into |total_bounds|. The max is zero which is
@@ -1284,12 +1292,23 @@ void OverviewGrid::PrepareScrollLimitMin() {
   // |scroll_offset_| is added to adjust for that.
   rightmost_window_right -= scroll_offset_;
   scroll_offset_min_ = total_bounds.right() - rightmost_window_right;
+
+  presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
+      const_cast<ui::Compositor*>(root_window()->layer()->GetCompositor()),
+      kOverviewScrollHistogram, kOverviewScrollMaxLatencyHistogram);
 }
 
 void OverviewGrid::UpdateScrollOffset(float delta) {
   scroll_offset_ += delta;
   scroll_offset_ = base::ClampToRange(scroll_offset_, scroll_offset_min_, 0.0f);
   PositionWindows(false);
+
+  DCHECK(presentation_time_recorder_);
+  presentation_time_recorder_->RequestNext();
+}
+
+void OverviewGrid::EndScroll() {
+  presentation_time_recorder_.reset();
 }
 
 void OverviewGrid::MaybeInitDesksWidget() {
@@ -1421,7 +1440,6 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRectsForTabletModeLayout(
   // Windows occupy vertically centered area with additional vertical insets.
   total_bounds.Inset(GetGridInsets(total_bounds));
 
-  // TODO(sammiequon): Check why scrolling during split view stacks windows.
   // When the dragged item becomes an |ignored_item|, move the other windows
   // accordingly. |window_position| matches the positions of the windows'
   // indexes from |window_list_|. However, if a window turns out to be an
@@ -1441,9 +1459,14 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRectsForTabletModeLayout(
       ++i;
       continue;
     }
-    const float ratio = float{height} / window->GetWindow()->bounds().height();
-    const int width = window->GetWindow()->bounds().width() * ratio;
 
+    // Maintains the aspect ratio from the original window. The window's
+    // original height will be shrunk to fit into |height|, minus the margin and
+    // overview header.
+    const float ratio = float{height - kHeaderHeightDp - kOverviewMargin} /
+                        window->GetWindow()->bounds().height();
+    const int width =
+        window->GetWindow()->bounds().width() * ratio + kOverviewMargin;
     const int y =
         height * (window_position % kTabletLayoutRow) + total_bounds.y();
 

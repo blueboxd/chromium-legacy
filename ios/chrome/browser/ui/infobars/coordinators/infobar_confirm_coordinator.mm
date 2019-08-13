@@ -98,6 +98,11 @@
   self.confirmInfobarDelegate->Accept();
 }
 
+- (void)infobarBannerWillBeDismissed:(BOOL)userInitiated {
+  if (userInitiated && self.confirmInfobarDelegate)
+    self.confirmInfobarDelegate->InfoBarDismissed();
+}
+
 - (void)infobarWasDismissed {
   // Release these strong ViewControllers at the time of infobar dismissal.
   self.bannerViewController = nil;

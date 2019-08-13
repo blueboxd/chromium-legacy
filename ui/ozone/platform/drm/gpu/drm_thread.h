@@ -19,6 +19,7 @@
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/platform/drm/common/display_types.h"
+#include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/public/mojom/device_cursor.mojom.h"
 #include "ui/ozone/public/mojom/drm_device.mojom.h"
 #include "ui/ozone/public/swap_completion_callback.h"
@@ -61,7 +62,14 @@ class DrmThread : public base::Thread,
   DrmThread();
   ~DrmThread() override;
 
-  void Start(base::OnceClosure binding_completer);
+  void Start(base::OnceClosure binding_completer,
+             std::unique_ptr<DrmDeviceGenerator> device_generator);
+
+  // Runs |task| once a DrmDevice is registered and |window| was created via
+  // CreateWindow(). |done| will be signaled if it's not null.
+  void RunTaskAfterWindowReady(gfx::AcceleratedWidget window,
+                               base::OnceClosure task,
+                               base::WaitableEvent* done);
 
   // Must be called on the DRM thread. All methods for use from the GPU thread.
   // DrmThreadProxy (on GPU)thread) is the client for these methods.
@@ -151,10 +159,23 @@ class DrmThread : public base::Thread,
   void Init() override;
 
  private:
+  struct TaskInfo {
+    base::OnceClosure task;
+    base::WaitableEvent* done;
+
+    TaskInfo(base::OnceClosure task, base::WaitableEvent* done);
+    TaskInfo(TaskInfo&& other);
+    ~TaskInfo();
+  };
+
   void OnPlanesReadyForPageFlip(gfx::AcceleratedWidget widget,
                                 SwapCompletionOnceCallback submission_callback,
                                 PresentationOnceCallback presentation_callback,
                                 std::vector<DrmOverlayPlane> planes);
+
+  // Called when a DrmDevice or DrmWindow is created. Runs tasks that are now
+  // unblocked.
+  void ProcessPendingTasks();
 
   std::unique_ptr<DrmDeviceManager> device_manager_;
   std::unique_ptr<ScreenManager> screen_manager_;
@@ -170,6 +191,17 @@ class DrmThread : public base::Thread,
   // checker in InterfaceEndpointClient to fail during teardown.
   // TODO(samans): Figure out why.
   mojo::BindingSet<ozone::mojom::DrmDevice> drm_bindings_;
+
+  // The AcceleratedWidget from the last call to CreateWindow.
+  gfx::AcceleratedWidget last_created_window_ = gfx::kNullAcceleratedWidget;
+
+  // The tasks that are blocked on a DrmDevice and a certain AcceleratedWidget
+  // becoming available.
+  base::flat_map<gfx::AcceleratedWidget, std::vector<TaskInfo>> pending_tasks_;
+
+  // Holds the DrmDeviceGenerator that DrmDeviceManager will use. Will be passed
+  // on to DrmDeviceManager after the thread starts.
+  std::unique_ptr<DrmDeviceGenerator> device_generator_;
 
   base::WeakPtrFactory<DrmThread> weak_ptr_factory_;
 

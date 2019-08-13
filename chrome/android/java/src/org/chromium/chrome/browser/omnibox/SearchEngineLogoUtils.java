@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.omnibox;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
@@ -42,6 +43,14 @@ public class SearchEngineLogoUtils {
      */
     public static boolean isSearchEngineGoogle() {
         return TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle();
+    }
+
+    /**
+     * @return True if the given url is the same domain as the DSE.
+     */
+    public static boolean doesUrlMatchDefaultSearchEngine(String url) {
+        if (TextUtils.isEmpty(url)) return false;
+        return UrlUtilities.sameDomainOrHost(url, getSearchLogoUrl(), false);
     }
 
     /**

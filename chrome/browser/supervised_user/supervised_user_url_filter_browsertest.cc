@@ -164,8 +164,6 @@ class TabClosingObserver : public TabStripModelObserver {
     tab_strip_->AddObserver(this);
   }
 
-  ~TabClosingObserver() override { tab_strip_->RemoveObserver(this); }
-
   void WaitForContentsClosing() {
     if (!contents_)
       return;

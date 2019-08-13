@@ -30,8 +30,8 @@ using media_session::test::TestMediaController;
 namespace {
 
 const int kAppIconSize = 20;
-constexpr int kArtworkViewWidth = 270;
-constexpr int kArtworkViewHeight = 200;
+constexpr int kArtworkViewWidth = 80;
+constexpr int kArtworkViewHeight = 80;
 
 const base::string16 kTestAppName = base::ASCIIToUTF16("Test app");
 
@@ -202,12 +202,12 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     return media_controls_view_->session_artwork_;
   }
 
-  views::ImageButton* close_button() const {
-    return media_controls_view_->close_button_;
-  }
-
   media_message_center::MediaControlsProgressView* progress_view() const {
     return media_controls_view_->progress_;
+  }
+
+  views::ImageButton* close_button() const {
+    return header_row()->close_button_for_testing();
   }
 
   const views::ImageView* icon_view() const {
@@ -590,7 +590,7 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateArtwork) {
 
   // Create artwork that must be scaled down to fit the view.
   SkBitmap artwork;
-  artwork.allocN32Pixels(540, 300);
+  artwork.allocN32Pixels(200, 100);
 
   media_controls_view_->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kArtwork, artwork);
@@ -599,10 +599,10 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateArtwork) {
 
   // Verify that the provided artwork is correctly scaled down.
   EXPECT_EQ(kArtworkViewWidth, artwork_bounds.width());
-  EXPECT_EQ(150, artwork_bounds.height());
+  EXPECT_EQ(40, artwork_bounds.height());
 
   // Create artwork that must be scaled up to fit the view.
-  artwork.allocN32Pixels(200, 190);
+  artwork.allocN32Pixels(40, 70);
 
   media_controls_view_->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kArtwork, artwork);
@@ -610,11 +610,11 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateArtwork) {
   artwork_bounds = artwork_view()->GetImageBounds();
 
   // Verify that the provided artwork is correctly scaled up.
-  EXPECT_EQ(210, artwork_bounds.width());
+  EXPECT_EQ(45, artwork_bounds.width());
   EXPECT_EQ(kArtworkViewHeight, artwork_bounds.height());
 
   // Create artwork that already fits the view size.
-  artwork.allocN32Pixels(250, kArtworkViewHeight);
+  artwork.allocN32Pixels(70, kArtworkViewHeight);
 
   media_controls_view_->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kArtwork, artwork);
@@ -622,7 +622,7 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateArtwork) {
   artwork_bounds = artwork_view()->GetImageBounds();
 
   // Verify that the provided artwork size doesn't change.
-  EXPECT_EQ(250, artwork_bounds.width());
+  EXPECT_EQ(70, artwork_bounds.width());
   EXPECT_EQ(kArtworkViewHeight, artwork_bounds.height());
 }
 

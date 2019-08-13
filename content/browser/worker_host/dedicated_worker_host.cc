@@ -41,9 +41,8 @@ DedicatedWorkerHost::DedicatedWorkerHost(int worker_process_id,
   RegisterMojoInterfaces();
 }
 
-DedicatedWorkerHost::~DedicatedWorkerHost() {}
+DedicatedWorkerHost::~DedicatedWorkerHost() = default;
 
-// service_manager::mojom::InterfaceProvider:
 void DedicatedWorkerHost::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
@@ -68,7 +67,6 @@ void DedicatedWorkerHost::BindBrowserInterfaceBrokerReceiver(
   broker_receiver_.Bind(std::move(receiver));
 }
 
-  // PlzDedicatedWorker:
 void DedicatedWorkerHost::StartScriptLoad(
     const GURL& script_url,
     const url::Origin& request_initiator_origin,
@@ -93,26 +91,40 @@ void DedicatedWorkerHost::StartScriptLoad(
   auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
       worker_process_host->GetStoragePartition());
 
-  // Compute network isolation key.
-  RenderFrameHostImpl* ancestor_render_frame_host =
+  // Get nearest ancestor render frame host in order to determine the
+  // top-frame origin to use for the network isolation key.
+  RenderFrameHostImpl* nearest_ancestor_render_frame_host =
       GetAncestorRenderFrameHost();
-  if (!ancestor_render_frame_host) {
+  if (!nearest_ancestor_render_frame_host) {
     client_->OnScriptLoadStartFailed();
     return;
   }
-  // Get the origin of the frame tree's root to use as top-frame origin.
-  // TODO(crbug.com/986167): Resolve issue of potential race condition.
-  url::Origin top_frame_origin(ancestor_render_frame_host->frame_tree_node()
-                                   ->frame_tree()
-                                   ->root()
-                                   ->current_origin());
+
+  // Walk up the RenderFrameHostImpl::GetParent() chain to get to the top
+  // RenderFrameHostImpl, instead of using the frame tree node.
+  // If the root has already navigated to a different render frame host by
+  // the time that we get here, the old root render frame host should still
+  // be around in pending deletion state (i.e. running its unload handler)
+  // and reachable via this walk even though it's no longer the same as
+  // root()->current_frame_host(). The old root render frame host will still
+  // have its old origin in GetLastCommittedOrigin(). See crbug.com/986167
+  RenderFrameHostImpl* top_frame = nullptr;
+  for (RenderFrameHostImpl* frame = nearest_ancestor_render_frame_host; frame;
+       frame = frame->GetParent()) {
+    top_frame = frame;
+  }
+
+  // Compute the network isolation key using the old root's last committed
+  // origin as top-frame origin.
+  url::Origin top_frame_origin(top_frame->GetLastCommittedOrigin());
   url::Origin current_frame_origin(
-      ancestor_render_frame_host->GetLastCommittedOrigin());
+      nearest_ancestor_render_frame_host->GetLastCommittedOrigin());
   network_isolation_key_ =
       net::NetworkIsolationKey(top_frame_origin, current_frame_origin);
 
   // Get a storage domain.
-  SiteInstance* site_instance = ancestor_render_frame_host->GetSiteInstance();
+  SiteInstance* site_instance =
+      nearest_ancestor_render_frame_host->GetSiteInstance();
   if (!site_instance) {
     client_->OnScriptLoadStartFailed();
     return;
@@ -169,21 +181,6 @@ void DedicatedWorkerHost::RegisterMojoInterfaces() {
       &DedicatedWorkerHost::CreateIdleManager, base::Unretained(this)));
 }
 
-  // Called from WorkerScriptFetchInitiator. Continues starting the dedicated
-  // worker in the renderer process.
-  //
-  // |main_script_load_params| is sent to the renderer process and to be used to
-  // load the dedicated worker main script pre-requested by the browser process.
-  //
-  // |subresource_loader_factories| is sent to the renderer process and is to be
-  // used to request subresources where applicable. For example, this allows the
-  // dedicated worker to load chrome-extension:// URLs which the renderer's
-  // default loader factory can't load.
-  //
-  // NetworkService (PlzWorker):
-  // |controller| contains information about the service worker controller. Once
-  // a ServiceWorker object about the controller is prepared, it is registered
-  // to |controller_service_worker_object_host|.
 void DedicatedWorkerHost::DidStartScriptLoad(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
@@ -319,7 +316,6 @@ void DedicatedWorkerHost::CreateIdleManager(
       ->CreateService(std::move(request));
 }
 
-// May return a nullptr.
 RenderFrameHostImpl* DedicatedWorkerHost::GetAncestorRenderFrameHost() {
   // Use |worker_process_id_| as the ancestor render frame's process ID as the
   // frame surely lives in the same process for dedicated workers.

@@ -20,6 +20,7 @@ class SimpleFactoryKey;
 namespace content {
 
 class BackgroundSyncController;
+class ContentIndexProvider;
 class DownloadManagerDelegate;
 class PermissionControllerDelegate;
 class ShellDownloadManagerDelegate;
@@ -58,6 +59,7 @@ class ShellBrowserContext : public BrowserContext {
   BackgroundFetchDelegate* GetBackgroundFetchDelegate() override;
   BackgroundSyncController* GetBackgroundSyncController() override;
   BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate() override;
+  ContentIndexProvider* GetContentIndexProvider() override;
 
  protected:
   // Contains URLRequestContextGetter required for resource loading.
@@ -76,6 +78,7 @@ class ShellBrowserContext : public BrowserContext {
   std::unique_ptr<ShellDownloadManagerDelegate> download_manager_delegate_;
   std::unique_ptr<PermissionControllerDelegate> permission_manager_;
   std::unique_ptr<BackgroundSyncController> background_sync_controller_;
+  std::unique_ptr<ContentIndexProvider> content_index_provider_;
 
  private:
   // Performs initialization of the ShellBrowserContext while IO is still

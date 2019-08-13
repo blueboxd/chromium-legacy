@@ -75,7 +75,7 @@ void OnDeviceInfoRefreshed(
   }
 
   RecordWebUsbChooserClosure(
-      device_info->serial_number->empty()
+      !device_info->serial_number || device_info->serial_number->empty()
           ? WEBUSB_CHOOSER_CLOSED_EPHEMERAL_PERMISSION_GRANTED
           : WEBUSB_CHOOSER_CLOSED_PERMISSION_GRANTED);
 

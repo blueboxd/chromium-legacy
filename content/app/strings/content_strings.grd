@@ -256,6 +256,10 @@ below:
       <message name="IDS_AX_ROLE_BANNER" desc="Accessibility role description for banner">
         banner
       </message>
+      <!-- https://w3c.github.io/html-aam/#el-input-color -->
+      <message name="IDS_AX_ROLE_COLOR_WELL" desc="Accessibility role description for a color picker">
+        color picker
+      </message>
       <message name="IDS_AX_ROLE_COMPLEMENTARY" desc="Accessibility role description for complementary">
         complementary
       </message>
@@ -462,6 +466,10 @@ below:
       <message name="IDS_AX_ROLE_NAVIGATIONAL_LINK" desc="Accessibility role description for group of navigational links.">
         navigation
       </message>
+      <!-- https://w3c.github.io/html-aam/#el-output -->
+      <message name="IDS_AX_ROLE_OUTPUT" desc="Accessibility role description for output">
+        output
+      </message>
       <message name="IDS_AX_ROLE_REGION" desc="Accessibility role description for region">
         region
       </message>
@@ -508,9 +516,6 @@ below:
         </message>
         <message name="IDS_AX_ROLE_BUTTON" desc="Accessibility role description for a button">
           button
-        </message>
-        <message name="IDS_AX_ROLE_COLOR_WELL" desc="Accessibility role description for a color picker">
-          color picker
         </message>
         <message name="IDS_AX_ROLE_COLUMN_HEADER" desc="Accessibility role description for a column header">
           column header

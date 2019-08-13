@@ -26,7 +26,8 @@ class CreditCardCVCAuthenticator
     virtual void OnCVCAuthenticationComplete(
         bool did_succeed,
         const CreditCard* card = nullptr,
-        const base::string16& cvc = base::string16()) = 0;
+        const base::string16& cvc = base::string16(),
+        base::Value creation_options = base::Value()) = 0;
   };
   explicit CreditCardCVCAuthenticator(AutofillClient* client);
   ~CreditCardCVCAuthenticator() override;
@@ -39,7 +40,7 @@ class CreditCardCVCAuthenticator
 
   // payments::FullCardRequest::ResultDelegate
   void OnFullCardRequestSucceeded(
-      const payments::FullCardRequest& /*full_card_request*/,
+      const payments::FullCardRequest& full_card_request,
       const CreditCard& card,
       const base::string16& cvc) override;
   void OnFullCardRequestFailed() override;

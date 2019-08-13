@@ -206,13 +206,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void set_clock_for_testing(const base::TickClock* clock) { clock_ = clock; }
 
-  // Returns the viz::FrameSinkId that this object uses to put things on screen.
-  // This value is constant throughout the lifetime of this object. Note that
-  // until a RenderWidgetHostView is created, initialized, and assigned to this
-  // object, viz may not be aware of this FrameSinkId.
-  const viz::FrameSinkId& GetFrameSinkId() const;
 
   // RenderWidgetHost implementation.
+  const viz::FrameSinkId& GetFrameSinkId() override;
   void UpdateTextDirection(blink::WebTextDirection direction) override;
   void NotifyTextDirection() override;
   void Focus() override;

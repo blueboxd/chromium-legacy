@@ -9,13 +9,13 @@
 
 namespace service_manager {
 
-InterfaceProvider::InterfaceProvider() : weak_factory_(this) {
+InterfaceProvider::InterfaceProvider() {
   pending_request_ = MakeRequest(&interface_provider_);
 }
 
 InterfaceProvider::InterfaceProvider(
     mojom::InterfaceProviderPtr interface_provider)
-    : interface_provider_(std::move(interface_provider)), weak_factory_(this) {}
+    : interface_provider_(std::move(interface_provider)) {}
 
 InterfaceProvider::~InterfaceProvider() {}
 

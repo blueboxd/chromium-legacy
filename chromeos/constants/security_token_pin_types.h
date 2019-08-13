@@ -11,18 +11,22 @@ namespace chromeos {
 
 // Type of the information asked from the user during a security token PIN
 // request.
+// Must be kept in sync with
+// chrome/browser/resources/chromeos/login/oobe_types.js.
 enum class SecurityTokenPinCodeType {
-  kPin,
-  kPuk,
+  kPin = 0,
+  kPuk = 1,
 };
 
 // Error to be displayed in the security token PIN request.
+// Must be kept in sync with
+// chrome/browser/resources/chromeos/login/oobe_types.js.
 enum class SecurityTokenPinErrorLabel {
-  kNone,
-  kUnknown,
-  kInvalidPin,
-  kInvalidPuk,
-  kMaxAttemptsExceeded,
+  kNone = 0,
+  kUnknown = 1,
+  kInvalidPin = 2,
+  kInvalidPuk = 3,
+  kMaxAttemptsExceeded = 4,
 };
 
 }  // namespace chromeos

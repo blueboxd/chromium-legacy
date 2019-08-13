@@ -8,6 +8,8 @@ static_library("optimization_guide") {
   sources = [
     "bloom_filter.cc",
     "bloom_filter.h",
+    "command_line_top_host_provider.cc",
+    "command_line_top_host_provider.h",
     "hint_cache.cc",
     "hint_cache.h",
     "hint_cache_store.cc",
@@ -78,6 +80,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "bloom_filter_unittest.cc",
+    "command_line_top_host_provider_unittest.cc",
     "hint_cache_store_unittest.cc",
     "hint_cache_unittest.cc",
     "hint_update_data_unittest.cc",

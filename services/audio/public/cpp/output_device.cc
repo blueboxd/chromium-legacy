@@ -23,9 +23,7 @@ OutputDevice::OutputDevice(
     const media::AudioParameters& params,
     media::AudioRendererSink::RenderCallback* render_callback,
     const std::string& device_id)
-    : audio_parameters_(params),
-      render_callback_(render_callback),
-      weak_factory_(this) {
+    : audio_parameters_(params), render_callback_(render_callback) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(params.IsValid());
   connector->Connect(audio::mojom::kServiceName,

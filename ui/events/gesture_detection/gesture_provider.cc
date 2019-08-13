@@ -166,11 +166,12 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
   void Send(GestureEventData gesture) {
     DCHECK(!gesture.time.is_null());
     // The only valid events that should be sent without an active touch
-    // sequence are SHOW_PRESS and TAP, potentially triggered by the double-tap
-    // delay timing out.
+    // sequence are SHOW_PRESS, TAP and TAP_CANCEL, potentially triggered by
+    // the double-tap delay timing out or being cancelled.
     DCHECK(!current_down_action_event_time_.is_null() ||
            gesture.type() == ET_GESTURE_TAP ||
            gesture.type() == ET_GESTURE_SHOW_PRESS ||
+           gesture.type() == ET_GESTURE_TAP_CANCEL ||
            gesture.type() == ET_GESTURE_BEGIN ||
            gesture.type() == ET_GESTURE_END);
 
@@ -457,6 +458,10 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
                        GetBoundingBox(e2, two_finger_tap_details.type()),
                        e2.GetFlags()));
     return true;
+  }
+
+  void OnTapCancel(const MotionEvent& e) override {
+    Send(CreateGesture(ET_GESTURE_TAP_CANCEL, e));
   }
 
   void OnShowPress(const MotionEvent& e) override {

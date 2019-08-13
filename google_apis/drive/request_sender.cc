@@ -23,8 +23,7 @@ RequestSender::RequestSender(
       url_loader_factory_(url_loader_factory),
       blocking_task_runner_(blocking_task_runner),
       custom_user_agent_(custom_user_agent),
-      traffic_annotation_(traffic_annotation),
-      weak_ptr_factory_(this) {}
+      traffic_annotation_(traffic_annotation) {}
 
 RequestSender::~RequestSender() {
   DCHECK(thread_checker_.CalledOnValidThread());

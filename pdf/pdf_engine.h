@@ -39,6 +39,7 @@ typedef void (*PDFEnsureTypefaceCharactersAccessible)(const LOGFONT* font,
                                                       size_t text_length);
 #endif
 
+struct PP_PdfAccessibilityActionData;
 struct PP_PdfPrintSettings_Dev;
 
 namespace gfx {
@@ -322,6 +323,9 @@ class PDFEngine {
   virtual bool CanRedo() = 0;
   virtual void Undo() = 0;
   virtual void Redo() = 0;
+  // Handles actions invoked by Accessibility clients.
+  virtual void HandleAccessibilityAction(
+      const PP_PdfAccessibilityActionData& action_data) = 0;
   virtual std::string GetLinkAtPosition(const pp::Point& point) = 0;
   // Checks the permissions associated with this document.
   virtual bool HasPermission(DocumentPermission permission) const = 0;

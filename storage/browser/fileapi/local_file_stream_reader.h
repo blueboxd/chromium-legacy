@@ -77,7 +77,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) LocalFileStreamReader
   const int64_t initial_offset_;
   const base::Time expected_modification_time_;
   bool has_pending_open_;
-  base::WeakPtrFactory<LocalFileStreamReader> weak_factory_;
+  base::WeakPtrFactory<LocalFileStreamReader> weak_factory_{this};
 };
 
 }  // namespace storage

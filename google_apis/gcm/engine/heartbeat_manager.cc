@@ -49,8 +49,7 @@ HeartbeatManager::HeartbeatManager(
       server_interval_ms_(0),
       client_interval_ms_(0),
       io_task_runner_(std::move(io_task_runner)),
-      heartbeat_timer_(new base::RetainingOneShotTimer()),
-      weak_ptr_factory_(this) {
+      heartbeat_timer_(new base::RetainingOneShotTimer()) {
   DCHECK(io_task_runner_);
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   // Set the heartbeat timer task runner to |maybe_power_wrapped_io_task_runner|

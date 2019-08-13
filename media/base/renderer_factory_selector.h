@@ -21,12 +21,14 @@ class MEDIA_EXPORT RendererFactorySelector {
   using QueryIsRemotingActiveCB = base::Callback<bool()>;
   using QueryIsFlingingActiveCB = base::Callback<bool()>;
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum FactoryType {
-    DEFAULT,       // DefaultRendererFactory.
-    MOJO,          // MojoRendererFactory.
-    MEDIA_PLAYER,  // MediaPlayerRendererClientFactory.
-    COURIER,       // CourierRendererFactory.
-    FLINGING,      // FlingingRendererClientFactory
+    DEFAULT = 0,       // DefaultRendererFactory.
+    MOJO = 1,          // MojoRendererFactory.
+    MEDIA_PLAYER = 2,  // MediaPlayerRendererClientFactory.
+    COURIER = 3,       // CourierRendererFactory.
+    FLINGING = 4,      // FlingingRendererClientFactory
     FACTORY_TYPE_MAX = FLINGING,
   };
 
@@ -42,6 +44,10 @@ class MEDIA_EXPORT RendererFactorySelector {
   // identify the DefaultRendererFactory, not to indicate that a factory should
   // be used by default.
   void SetBaseFactoryType(FactoryType type);
+
+  // Returns the type of the factory that GetCurrentFactory() would return.
+  // NOTE: SetBaseFactoryType() must be called before calling this method.
+  FactoryType GetCurrentFactoryType();
 
   // Updates |current_factory_| if necessary, and returns its value.
   // NOTE: SetBaseFactoryType() must be called before calling this method.

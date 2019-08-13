@@ -96,8 +96,7 @@ LocalFileStreamWriter::LocalFileStreamWriter(base::TaskRunner* task_runner,
       open_or_create_(open_or_create),
       initial_offset_(initial_offset),
       task_runner_(task_runner),
-      has_pending_operation_(false),
-      weak_factory_(this) {}
+      has_pending_operation_(false) {}
 
 int LocalFileStreamWriter::InitiateOpen(base::OnceClosure main_operation) {
   DCHECK(has_pending_operation_);

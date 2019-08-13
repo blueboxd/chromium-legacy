@@ -11,6 +11,7 @@ namespace GaiaConstants {
 // Gaia uses this for accounting where login is coming from.
 const char kChromeOSSource[] = "chromeos";
 const char kChromeSource[] = "ChromiumBrowser";
+const char kUnexpectedServiceResponse[] = "UnexpectedServiceResponse";
 
 // Service name for Gaia.  Used to convert to cookie auth.
 const char kGaiaService[] = "gaia";

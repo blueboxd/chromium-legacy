@@ -39,8 +39,7 @@ BluetoothRemoteGattDescriptorBlueZ::BluetoothRemoteGattDescriptorBlueZ(
     BluetoothRemoteGattCharacteristicBlueZ* characteristic,
     const dbus::ObjectPath& object_path)
     : BluetoothGattDescriptorBlueZ(object_path),
-      characteristic_(characteristic),
-      weak_ptr_factory_(this) {
+      characteristic_(characteristic) {
   VLOG(1) << "Creating remote GATT descriptor with identifier: "
           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value();
 }

@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 121: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: line 124: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 Tests access of cached DOMWindow properties after the associated frame is removed from a web page and garbage collected. Test should not crash and properties should be set to sane defaults.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -87,6 +87,7 @@ PASS window.cached_performance_timing.secureConnectionStart is 0
 PASS window.cached_performance_timing.unloadEventEnd is 0
 PASS window.cached_performance_timing.unloadEventStart is 0
 PASS window.cached_personalbar.visible is false
+PASS window.cached_scheduler_currentTaskQueue.priority is 'default'
 PASS window.cached_screen.availHeight is 0
 PASS window.cached_screen.availLeft is 0
 PASS window.cached_screen.availTop is 0

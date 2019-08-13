@@ -235,6 +235,7 @@ void ThreadHeap::MarkNotFullyConstructedObjects(MarkingVisitor* visitor) {
       stats_collector(),
       ThreadHeapStatsCollector::kMarkNotFullyConstructedObjects);
 
+  DCHECK_EQ(WorklistTaskId::MainThread, visitor->task_id());
   NotFullyConstructedItem item;
   while (
       not_fully_constructed_worklist_->Pop(WorklistTaskId::MainThread, &item)) {
@@ -261,6 +262,8 @@ void ThreadHeap::InvokeEphemeronCallbacks(MarkingVisitor* visitor) {
   for (auto& tuple : ephemeron_callbacks_)
     tuple.value(visitor, tuple.key);
 
+  DCHECK_EQ(WorklistTaskId::MainThread, visitor->task_id());
+
   // Then we iterate over the new callbacks found by the marking visitor.
   while (!weak_table_worklist_->IsGlobalEmpty()) {
     // Read ephemeron callbacks from worklist to ephemeron_callbacks_ hashmap.
@@ -283,12 +286,13 @@ namespace {
 template <typename Worklist, typename Callback>
 bool DrainWorklistWithDeadline(base::TimeTicks deadline,
                                Worklist* worklist,
-                               Callback callback) {
+                               Callback callback,
+                               int task_id) {
   const size_t kDeadlineCheckInterval = 2500;
 
   size_t processed_callback_count = 0;
   typename Worklist::EntryType item;
-  while (worklist->Pop(WorklistTaskId::MainThread, &item)) {
+  while (worklist->Pop(task_id, &item)) {
     callback(item);
     processed_callback_count++;
     if (++processed_callback_count == kDeadlineCheckInterval) {
@@ -305,6 +309,8 @@ bool DrainWorklistWithDeadline(base::TimeTicks deadline,
 
 bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
                                 base::TimeTicks deadline) {
+  DCHECK_EQ(WorklistTaskId::MainThread, visitor->task_id());
+
   FlushV8References(visitor);
 
   bool finished;
@@ -322,7 +328,8 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
             DCHECK(!HeapObjectHeader::FromPayload(item.object)
                         ->IsInConstruction());
             item.callback(visitor, item.object);
-          });
+          },
+          WorklistTaskId::MainThread);
       if (!finished)
         return false;
 
@@ -333,7 +340,8 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
           deadline, previously_not_fully_constructed_worklist_.get(),
           [visitor](const NotFullyConstructedItem& item) {
             visitor->DynamicallyMarkAddress(reinterpret_cast<Address>(item));
-          });
+          },
+          WorklistTaskId::MainThread);
       if (!finished)
         return false;
     }
@@ -351,13 +359,15 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
   return true;
 }
 
-void ThreadHeap::WeakProcessing(Visitor* visitor) {
+void ThreadHeap::WeakProcessing(MarkingVisitor* visitor) {
   ThreadHeapStatsCollector::Scope stats_scope(
       stats_collector(), ThreadHeapStatsCollector::kMarkWeakProcessing);
 
   // Weak processing may access unmarked objects but are forbidden from
   // resurrecting them or allocating new ones.
   ThreadState::NoAllocationScope allocation_forbidden(ThreadState::Current());
+
+  DCHECK_EQ(WorklistTaskId::MainThread, visitor->task_id());
 
   // Call weak callbacks on objects that may now be pointing to dead objects.
   CustomCallbackItem item;
@@ -636,11 +646,13 @@ void ThreadHeap::FlushV8References(MarkingVisitor* visitor) {
   UnifiedHeapMarkingVisitor* unified_visitor =
       reinterpret_cast<UnifiedHeapMarkingVisitor*>(visitor);
 
-  DCHECK(unified_visitor->is_concurrent_marking_enabled() ||
+  DCHECK((unified_visitor->task_id() != WorklistTaskId::MainThread) ||
          v8_references_worklist_->IsGlobalEmpty());
 
   // TODO(omerkatz): In concurrent marking, this should flush all visitors
   unified_visitor->FlushV8References();
+
+  DCHECK_EQ(WorklistTaskId::MainThread, visitor->task_id());
 
   V8ReferencesWorklist::View v8_references(v8_references_worklist_.get(),
                                            WorklistTaskId::MainThread);

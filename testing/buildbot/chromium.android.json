@@ -471,7 +471,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "OPM1.171019.021",
+              "device_os": "OPM4.171019.021.P2",
               "device_os_flavor": "google",
               "device_os_type": "userdebug",
               "device_type": "walleye",
@@ -521,7 +521,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "OPM1.171019.021",
+              "device_os": "OPM4.171019.021.P2",
               "device_os_flavor": "google",
               "device_os_type": "userdebug",
               "device_type": "walleye",
@@ -567,7 +567,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "OPM1.171019.021",
+              "device_os": "OPM4.171019.021.P2",
               "device_os_flavor": "google",
               "device_os_type": "userdebug",
               "device_type": "walleye",
@@ -26187,7 +26187,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "OPM1.171019.021",
+              "device_os": "OPM4.171019.021.P2",
               "device_os_flavor": "google",
               "device_os_type": "userdebug",
               "device_type": "walleye",
@@ -26237,7 +26237,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "OPM1.171019.021",
+              "device_os": "OPM4.171019.021.P2",
               "device_os_flavor": "google",
               "device_os_type": "userdebug",
               "device_type": "walleye",
@@ -26283,7 +26283,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "OPM1.171019.021",
+              "device_os": "OPM4.171019.021.P2",
               "device_os_flavor": "google",
               "device_os_type": "userdebug",
               "device_type": "walleye",

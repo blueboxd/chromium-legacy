@@ -49,9 +49,7 @@ FidoRequestHandlerBase::FidoRequestHandlerBase(
     service_manager::Connector* connector,
     FidoDiscoveryFactory* fido_discovery_factory,
     const base::flat_set<FidoTransportProtocol>& available_transports)
-    : fido_discovery_factory_(fido_discovery_factory),
-      connector_(connector),
-      weak_factory_(this) {
+    : fido_discovery_factory_(fido_discovery_factory), connector_(connector) {
 #if defined(OS_WIN)
   InitDiscoveriesWin(available_transports);
 #else

@@ -87,7 +87,7 @@ class FakeRemoteGattDescriptor : public device::BluetoothRemoteGattDescriptor {
   // is called.
   base::Optional<uint16_t> next_write_response_;
 
-  base::WeakPtrFactory<FakeRemoteGattDescriptor> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeRemoteGattDescriptor> weak_ptr_factory_{this};
 };
 
 }  // namespace bluetooth

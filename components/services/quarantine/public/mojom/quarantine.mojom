@@ -7,9 +7,6 @@ module quarantine.mojom;
 import "mojo/public/mojom/base/file_path.mojom";
 import "url/mojom/url.mojom";
 
-const string kServiceName = "quarantine";
-const string kQuarantineFileCapability = "quarantine_file";
-
 enum QuarantineFileResult {
   OK,             // Success.
   ACCESS_DENIED,  // Access to the file was denied. The safety of the file

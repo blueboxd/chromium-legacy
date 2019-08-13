@@ -76,6 +76,21 @@ mock@chromium.org
 # COMPONENT:
 """.splitlines()
 
+INVALID_COMPONENT_PREFIX1 = """
+mock@chromium.org
+#COMPONENT:
+""".splitlines()
+
+INVALID_COMPONENT_PREFIX2 = """
+mock@chromium.org
+# COMPONENTS:
+""".splitlines()
+
+INVALID_COMPONENT_PREFIX3 = """
+mock@chromium.org
+# COMPONENT :
+""".splitlines()
+
 MULTIPLE_TEAM_TAGS = """
 mock@chromium.org
 
@@ -93,6 +108,21 @@ MISSING_TEAM = """
 mock@chromium.org
 
 # TEAM:
+""".splitlines()
+
+INVALID_TEAM_PREFIX1 = """
+mock@chromium.org
+#TEAM:
+""".splitlines()
+
+INVALID_TEAM_PREFIX2 = """
+mock@chromium.org
+# TEAMS:
+""".splitlines()
+
+INVALID_TEAM_PREFIX3 = """
+mock@chromium.org
+# TEAM :
 """.splitlines()
 
 BASIC = """
@@ -137,6 +167,27 @@ class CheckTeamTagsTest(unittest.TestCase):
 
   @mock.patch('urllib2.urlopen', mock_url_open())
   @mock.patch('sys.argv', ['checkteamtags', '--bare' ,'OWNERS'])
+  def testInvalidComponentPrefix1(self):
+    with mock.patch(open_name, create=True) as mock_open:
+      mock_open.return_value = mock_file(INVALID_COMPONENT_PREFIX1)
+      self.assertEqual(1, checkteamtags.main())
+
+  @mock.patch('urllib2.urlopen', mock_url_open())
+  @mock.patch('sys.argv', ['checkteamtags', '--bare' ,'OWNERS'])
+  def testInvalidComponentPrefix2(self):
+    with mock.patch(open_name, create=True) as mock_open:
+      mock_open.return_value = mock_file(INVALID_COMPONENT_PREFIX2)
+      self.assertEqual(1, checkteamtags.main())
+
+  @mock.patch('urllib2.urlopen', mock_url_open())
+  @mock.patch('sys.argv', ['checkteamtags', '--bare' ,'OWNERS'])
+  def testInvalidComponentPrefix3(self):
+    with mock.patch(open_name, create=True) as mock_open:
+      mock_open.return_value = mock_file(INVALID_COMPONENT_PREFIX3)
+      self.assertEqual(1, checkteamtags.main())
+
+  @mock.patch('urllib2.urlopen', mock_url_open())
+  @mock.patch('sys.argv', ['checkteamtags', '--bare' ,'OWNERS'])
   def testMultipleTeamTags(self):
     with mock.patch(open_name, create=True) as mock_open:
       mock_open.return_value = mock_file(MULTIPLE_TEAM_TAGS)
@@ -154,6 +205,27 @@ class CheckTeamTagsTest(unittest.TestCase):
   def testMissingTeam(self):
     with mock.patch(open_name, create=True) as mock_open:
       mock_open.return_value = mock_file(MISSING_TEAM)
+      self.assertEqual(1, checkteamtags.main())
+
+  @mock.patch('urllib2.urlopen', mock_url_open())
+  @mock.patch('sys.argv', ['checkteamtags', '--bare' ,'OWNERS'])
+  def testInvalidTeamPrefix1(self):
+    with mock.patch(open_name, create=True) as mock_open:
+      mock_open.return_value = mock_file(INVALID_TEAM_PREFIX1)
+      self.assertEqual(1, checkteamtags.main())
+
+  @mock.patch('urllib2.urlopen', mock_url_open())
+  @mock.patch('sys.argv', ['checkteamtags', '--bare' ,'OWNERS'])
+  def testInvalidTeamPrefix2(self):
+    with mock.patch(open_name, create=True) as mock_open:
+      mock_open.return_value = mock_file(INVALID_TEAM_PREFIX2)
+      self.assertEqual(1, checkteamtags.main())
+
+  @mock.patch('urllib2.urlopen', mock_url_open())
+  @mock.patch('sys.argv', ['checkteamtags', '--bare' ,'OWNERS'])
+  def testInvalidTeamPrefix3(self):
+    with mock.patch(open_name, create=True) as mock_open:
+      mock_open.return_value = mock_file(INVALID_TEAM_PREFIX3)
       self.assertEqual(1, checkteamtags.main())
 
   @mock.patch('urllib2.urlopen', mock_url_open())

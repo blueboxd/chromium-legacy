@@ -15,5 +15,5 @@
     Promise<sequence<SerialPort>> getPorts();
 
     [CallWith=ScriptState, MeasureAs=SerialRequestPort, Exposed=Window]
-    Promise<SerialPort> requestPort(SerialPortRequestOptions options);
+    Promise<SerialPort> requestPort(optional SerialPortRequestOptions options);
 };

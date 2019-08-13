@@ -38,16 +38,43 @@ void Scheduler::ContextDestroyed(ExecutionContext* context) {
 
 void Scheduler::Trace(Visitor* visitor) {
   visitor->Trace(global_task_queues_);
+  visitor->Trace(current_task_queue_);
   ScriptWrappable::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   Supplement<Document>::Trace(visitor);
 }
 
-TaskQueue* Scheduler::getTaskQueue(AtomicString priority) const {
+TaskQueue* Scheduler::currentTaskQueue() {
+  // The |current_task_queue_| will only be set if the task currently running
+  // was scheduled through window.scheduler. In other cases, e.g. setTimeout,
+  // |current_task_queue_| will be nullptr, in which case we return the default
+  // priority global task queue.
+  if (current_task_queue_)
+    return current_task_queue_;
+  return GetTaskQueue(WebSchedulingPriority::kDefaultPriority);
+}
+
+void Scheduler::OnTaskStarted(TaskQueue* task_queue, Task*) {
+  // This is not reentrant; tasks are not nested. This allows us to set
+  // |current_task_queue_| to nullptr when this task completes.
+  DCHECK_EQ(current_task_queue_, nullptr);
+  current_task_queue_ = task_queue;
+}
+
+void Scheduler::OnTaskCompleted(TaskQueue* task_queue, Task*) {
+  DCHECK(current_task_queue_);
+  DCHECK_EQ(current_task_queue_, task_queue);
+  current_task_queue_ = nullptr;
+}
+
+TaskQueue* Scheduler::getTaskQueue(AtomicString priority) {
+  return GetTaskQueue(TaskQueue::WebSchedulingPriorityFromString(priority));
+}
+
+TaskQueue* Scheduler::GetTaskQueue(WebSchedulingPriority priority) {
   if (global_task_queues_.IsEmpty())
     return nullptr;
-  return global_task_queues_[static_cast<int>(
-      TaskQueue::WebSchedulingPriorityFromString(priority))];
+  return global_task_queues_[static_cast<int>(priority)];
 }
 
 Task* Scheduler::postTask(V8Function* callback_function,
@@ -62,7 +89,7 @@ Task* Scheduler::postTask(V8Function* callback_function,
 void Scheduler::CreateGlobalTaskQueues(Document* document) {
   for (size_t i = 0; i < kWebSchedulingPriorityCount; i++) {
     global_task_queues_.push_back(MakeGarbageCollected<TaskQueue>(
-        document, static_cast<WebSchedulingPriority>(i)));
+        document, static_cast<WebSchedulingPriority>(i), this));
   }
 }
 

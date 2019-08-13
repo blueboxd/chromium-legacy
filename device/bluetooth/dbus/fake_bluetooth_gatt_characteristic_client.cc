@@ -81,8 +81,7 @@ FakeBluetoothGattCharacteristicClient::FakeBluetoothGattCharacteristicClient()
       authorized_(true),
       authenticated_(true),
       calories_burned_(0),
-      extra_requests_(0),
-      weak_ptr_factory_(this) {}
+      extra_requests_(0) {}
 
 FakeBluetoothGattCharacteristicClient::
     ~FakeBluetoothGattCharacteristicClient() {

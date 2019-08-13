@@ -432,7 +432,6 @@ source_set("chrome_content_browser_overlay_manifest") {
     "//components/rappor/public/mojom",
     "//components/safe_browsing/common:interfaces",
     "//components/services/heap_profiling/public/mojom",
-    "//components/services/quarantine/public/mojom",
     "//components/translate/content/common",
     "//extensions/buildflags",
     "//services/identity/public/cpp:manifest",
@@ -554,8 +553,6 @@ source_set("builtin_service_manifests") {
     "//base",
     "//chrome/common:buildflags",
     "//chrome/common:mojo_bindings",
-    "//components/services/quarantine",
-    "//components/services/quarantine/public/cpp:manifest",
     "//components/startup_metric_utils/common:interfaces",
     "//device/vr/buildflags",
     "//extensions/buildflags",
@@ -563,14 +560,9 @@ source_set("builtin_service_manifests") {
     "//services/service_manager/public/cpp",
   ]
 
-  if (enable_basic_printing) {
-    deps += [ "//components/services/pdf_compositor/public/cpp:manifest" ]
-  }
-
   if (is_chromeos) {
     deps += [
       "//ash/public/cpp:manifest",
-      "//chromeos/services/ime/public/cpp:manifest",
       "//chromeos/services/network_config/public/cpp:manifest",
       "//chromeos/services/secure_channel/public/cpp:manifest",
     ]

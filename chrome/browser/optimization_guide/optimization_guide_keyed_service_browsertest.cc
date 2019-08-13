@@ -6,6 +6,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/data_saver/data_saver_top_host_provider.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_hints_manager.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
@@ -13,9 +15,14 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/optimization_guide/command_line_top_host_provider.h"
 #include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/optimization_guide_prefs.h"
+#include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
+#include "components/prefs/pref_service.h"
+#include "components/previews/core/previews_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -150,6 +157,13 @@ class OptimizationGuideKeyedServiceBrowserTest
   DISALLOW_COPY_AND_ASSIGN(OptimizationGuideKeyedServiceBrowserTest);
 };
 
+IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
+                       TopHostProviderNotSetIfNotAllowed) {
+  ASSERT_FALSE(
+      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
+          ->GetTopHostProvider());
+}
+
 IN_PROC_BROWSER_TEST_F(
     OptimizationGuideKeyedServiceBrowserTest,
     NavigateToPageWithHintsButNoRegistrationDoesNotAttemptToLoadHint) {
@@ -213,4 +227,101 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   // attempt to load a hint but still fail.
   histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
                                       false, 1);
+}
+
+class OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest
+    : public OptimizationGuideKeyedServiceBrowserTest {
+ public:
+  OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest() = default;
+  ~OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest() override =
+      default;
+
+  void SetUpOnMainThread() override {
+    OptimizationGuideKeyedServiceBrowserTest::SetUpOnMainThread();
+
+    SeedSiteEngagementService();
+    // Set the blacklist state to initialized so the sites in the engagement
+    // service will be used and not blacklisted on the first GetTopHosts
+    // request.
+    InitializeDataSaverTopHostBlacklist();
+  }
+
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    cmd->AppendSwitch("enable-spdy-proxy-auth");
+    // Add switch to avoid having to see the infobar in the test.
+    cmd->AppendSwitch(previews::switches::kDoNotRequireLitePageRedirectInfoBar);
+  }
+
+ private:
+  // Seeds the Site Engagement Service with two HTTP and two HTTPS sites for the
+  // current profile.
+  void SeedSiteEngagementService() {
+    SiteEngagementService* service = SiteEngagementService::Get(
+        Profile::FromBrowserContext(browser()
+                                        ->tab_strip_model()
+                                        ->GetActiveWebContents()
+                                        ->GetBrowserContext()));
+    GURL https_url1("https://myfavoritesite.com/");
+    service->AddPointsForTesting(https_url1, 15);
+
+    GURL https_url2("https://myotherfavoritesite.com/");
+    service->AddPointsForTesting(https_url2, 3);
+  }
+
+  void InitializeDataSaverTopHostBlacklist() {
+    Profile::FromBrowserContext(browser()
+                                    ->tab_strip_model()
+                                    ->GetActiveWebContents()
+                                    ->GetBrowserContext())
+        ->GetPrefs()
+        ->SetInteger(optimization_guide::prefs::
+                         kHintsFetcherDataSaverTopHostBlacklistState,
+                     static_cast<int>(
+                         optimization_guide::prefs::
+                             HintsFetcherTopHostBlacklistState::kInitialized));
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(
+    OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest,
+    TopHostProviderIsSentDown) {
+  OptimizationGuideKeyedService* keyed_service =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
+
+  optimization_guide::TopHostProvider* top_host_provider =
+      keyed_service->GetTopHostProvider();
+  ASSERT_TRUE(top_host_provider);
+
+  std::vector<std::string> top_hosts = top_host_provider->GetTopHosts(1);
+  EXPECT_EQ(1ul, top_hosts.size());
+  EXPECT_EQ("myfavoritesite.com", top_hosts[0]);
+}
+
+class OptimizationGuideKeyedServiceCommandLineOverridesTest
+    : public OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest {
+ public:
+  OptimizationGuideKeyedServiceCommandLineOverridesTest() = default;
+  ~OptimizationGuideKeyedServiceCommandLineOverridesTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest::
+        SetUpCommandLine(cmd);
+
+    cmd->AppendSwitchASCII(optimization_guide::switches::kFetchHintsOverride,
+                           "whatever.com,awesome.com");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceCommandLineOverridesTest,
+                       TopHostProviderIsSentDown) {
+  OptimizationGuideKeyedService* keyed_service =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
+
+  optimization_guide::TopHostProvider* top_host_provider =
+      keyed_service->GetTopHostProvider();
+  ASSERT_TRUE(top_host_provider);
+
+  std::vector<std::string> top_hosts = top_host_provider->GetTopHosts(1);
+  EXPECT_EQ(1ul, top_hosts.size());
+  EXPECT_EQ("whatever.com", top_hosts[0]);
 }

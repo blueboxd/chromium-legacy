@@ -115,7 +115,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   SEQUENCE_CHECKER(sequence_checker_);
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<ProducerClient> weak_ptr_factory_;
+  base::WeakPtrFactory<ProducerClient> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ProducerClient);
 };
 

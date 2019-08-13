@@ -219,8 +219,7 @@ void BroadcastingReceiver::BufferContext::
 BroadcastingReceiver::BroadcastingReceiver()
     : status_(Status::kOnStartedHasNotYetBeenCalled),
       error_(media::VideoCaptureError::kNone),
-      next_client_id_(0),
-      weak_factory_(this) {}
+      next_client_id_(0) {}
 
 BroadcastingReceiver::~BroadcastingReceiver() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -63,7 +63,7 @@ class PerfettoTracingCoordinator : public Coordinator {
   std::unique_ptr<TracingSession> tracing_session_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<PerfettoTracingCoordinator> weak_factory_;
+  base::WeakPtrFactory<PerfettoTracingCoordinator> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PerfettoTracingCoordinator);
 };

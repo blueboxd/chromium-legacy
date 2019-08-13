@@ -49,7 +49,7 @@ class GrpcAsyncExecutor final : public GrpcExecutor {
   // destruction.
   PendingRequestList pending_requests_;
 
-  base::WeakPtrFactory<GrpcAsyncExecutor> weak_factory_;
+  base::WeakPtrFactory<GrpcAsyncExecutor> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(GrpcAsyncExecutor);
 };
 

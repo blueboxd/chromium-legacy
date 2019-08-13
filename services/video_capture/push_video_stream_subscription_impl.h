@@ -70,7 +70,7 @@ class PushVideoStreamSubscriptionImpl
   // kClosed via a call to Close().
   base::OnceCallback<void(base::OnceClosure done_cb)> on_closed_handler_;
 
-  base::WeakPtrFactory<PushVideoStreamSubscriptionImpl> weak_factory_;
+  base::WeakPtrFactory<PushVideoStreamSubscriptionImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PushVideoStreamSubscriptionImpl);
 };

@@ -68,8 +68,7 @@ ConnectionFactoryImpl::ConnectionFactoryImpl(
       io_task_runner_(std::move(io_task_runner)),
       recorder_(recorder),
       network_connection_tracker_(network_connection_tracker),
-      listener_(nullptr),
-      weak_ptr_factory_(this) {
+      listener_(nullptr) {
   DCHECK_GE(mcs_endpoints_.size(), 1U);
   DCHECK(io_task_runner_);
 }

@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "ui/gfx/geometry/vector2d.h"
 
 namespace android_webview {
@@ -22,7 +23,6 @@ namespace android_webview {
 class ChildFrame;
 class CompositorFrameProducer;
 class HardwareRenderer;
-struct CompositorID;
 
 // This class is used to pass data between UI thread and RenderThread.
 class RenderThreadManager : public CompositorFrameConsumer {
@@ -38,7 +38,7 @@ class RenderThreadManager : public CompositorFrameConsumer {
   std::unique_ptr<ChildFrame> SetFrameOnUI(
       std::unique_ptr<ChildFrame> frame) override;
   void TakeParentDrawDataOnUI(ParentCompositorDrawConstraints* constraints,
-                              CompositorID* compositor_id,
+                              viz::FrameSinkId* frame_sink_id,
                               viz::FrameTimingDetailsMap* timing_details,
                               uint32_t* frame_token) override;
   ChildFrameQueue PassUncommittedFrameOnUI() override;
@@ -50,12 +50,12 @@ class RenderThreadManager : public CompositorFrameConsumer {
   ChildFrameQueue PassFramesOnRT();
   void PostParentDrawDataToChildCompositorOnRT(
       const ParentCompositorDrawConstraints& parent_draw_constraints,
-      const CompositorID& compositor_id,
+      const viz::FrameSinkId& frame_sink_id,
       viz::FrameTimingDetailsMap timing_details,
       uint32_t frame_token);
   void InsertReturnedResourcesOnRT(
       const std::vector<viz::ReturnedResource>& resources,
-      const CompositorID& compositor_id,
+      const viz::FrameSinkId& frame_sink_id,
       uint32_t layer_tree_frame_sink_id);
 
   void CommitFrameOnRT();
@@ -114,7 +114,7 @@ class RenderThreadManager : public CompositorFrameConsumer {
   ChildFrameQueue child_frames_;
   bool mark_hardware_release_;
   ParentCompositorDrawConstraints parent_draw_constraints_;
-  CompositorID compositor_id_for_presentation_feedbacks_;
+  viz::FrameSinkId frame_sink_id_for_presentation_feedbacks_;
   viz::FrameTimingDetailsMap timing_details_;
   uint32_t presented_frame_token_ = 0u;
 

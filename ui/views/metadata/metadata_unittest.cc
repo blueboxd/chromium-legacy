@@ -182,3 +182,9 @@ TEST_F(MetadataTest, TestTypeCacheContainsTestClass) {
   CHECK(std::find(cache_meta.begin(), cache_meta.end(), test_class_meta) !=
         cache_meta.end());
 }
+
+TEST_F(MetadataTest, TestMetaDataFile) {
+  VM::ClassMetaData* metadata = MetadataTestBaseView::MetaData();
+
+  CHECK_EQ(metadata->file(), "ui/views/metadata/metadata_unittest.cc");
+}

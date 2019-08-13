@@ -45,6 +45,7 @@ class WindowElement : public aura::WindowObserver, public UIElement {
       const override;
 
   static aura::Window* From(const UIElement* element);
+  void InitSources() override;
 
  private:
   aura::Window* window_;

@@ -192,9 +192,8 @@ void NotifierStateTracker::FirePermissionLevelChangedEvent(
   // has changed.
   extensions::InfoMap* extension_info_map =
       extensions::ExtensionSystem::Get(profile_)->info_map();
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&extensions::InfoMap::SetNotificationsDisabled,
-                     extension_info_map, notifier_id.id, !enabled));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&extensions::InfoMap::SetNotificationsDisabled,
+                                extension_info_map, notifier_id.id, !enabled));
 }
 #endif

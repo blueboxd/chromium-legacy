@@ -40,7 +40,7 @@ class ReceiverMojoToMediaAdapter : public media::VideoFrameReceiver {
 
  private:
   mojom::ReceiverPtr receiver_;
-  base::WeakPtrFactory<ReceiverMojoToMediaAdapter> weak_factory_;
+  base::WeakPtrFactory<ReceiverMojoToMediaAdapter> weak_factory_{this};
 };
 
 }  // namespace video_capture

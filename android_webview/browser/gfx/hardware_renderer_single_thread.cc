@@ -60,14 +60,14 @@ void HardwareRendererSingleThread::DrawAndSwap(
   // kModeProcess. Instead, submit the frame in "kModeDraw" stage to avoid
   // unnecessary kModeProcess.
   if (child_frame_.get() && child_frame_->frame.get()) {
-    if (!compositor_id_.Equals(child_frame_->compositor_id) ||
+    if (child_frame_sink_id_ != child_frame_->frame_sink_id ||
         last_submitted_layer_tree_frame_sink_id_ !=
             child_frame_->layer_tree_frame_sink_id) {
       if (child_id_.is_valid())
         DestroySurface();
 
       CreateNewCompositorFrameSinkSupport();
-      compositor_id_ = child_frame_->compositor_id;
+      child_frame_sink_id_ = child_frame_->frame_sink_id;
       last_submitted_layer_tree_frame_sink_id_ =
           child_frame_->layer_tree_frame_sink_id;
     }
@@ -108,7 +108,8 @@ void HardwareRendererSingleThread::DrawAndSwap(
   // presentation feedback to return as well.
   if (need_to_update_draw_constraints && !submitted_new_frame) {
     render_thread_manager_->PostParentDrawDataToChildCompositorOnRT(
-        draw_constraints, compositor_id_, viz::FrameTimingDetailsMap(), 0u);
+        draw_constraints, child_frame_sink_id_, viz::FrameTimingDetailsMap(),
+        0u);
   }
 
   if (!child_id_.is_valid())
@@ -130,7 +131,7 @@ void HardwareRendererSingleThread::DrawAndSwap(
       support_->TakeFrameTimingDetailsMap();
   if (submitted_new_frame) {
     render_thread_manager_->PostParentDrawDataToChildCompositorOnRT(
-        draw_constraints, compositor_id_, std::move(timing_details),
+        draw_constraints, child_frame_sink_id_, std::move(timing_details),
         frame_token);
   }
 }
@@ -155,7 +156,7 @@ void HardwareRendererSingleThread::DestroySurface() {
 
 void HardwareRendererSingleThread::DidReceiveCompositorFrameAck(
     const std::vector<viz::ReturnedResource>& resources) {
-  ReturnResourcesToCompositor(resources, compositor_id_,
+  ReturnResourcesToCompositor(resources, child_frame_sink_id_,
                               last_submitted_layer_tree_frame_sink_id_);
 }
 
@@ -167,7 +168,7 @@ void HardwareRendererSingleThread::OnBeginFrame(
 
 void HardwareRendererSingleThread::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
-  ReturnResourcesToCompositor(resources, compositor_id_,
+  ReturnResourcesToCompositor(resources, child_frame_sink_id_,
                               last_submitted_layer_tree_frame_sink_id_);
 }
 

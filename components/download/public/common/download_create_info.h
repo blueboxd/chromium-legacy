@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -18,7 +19,6 @@
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
-#include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_save_info.h"
 #include "components/download/public/common/download_source.h"
 #include "components/download/public/common/download_url_parameters.h"
@@ -34,7 +34,6 @@ class HttpResponseHeaders;
 }
 
 namespace download {
-
 // Server support for range request inferred from the response headers.
 // |kSupport| value means the server supports range requests. |kNoSupport|
 // means no range request is accepted by server. and |kUnknown| is used if
@@ -123,10 +122,6 @@ struct COMPONENTS_DOWNLOAD_EXPORT DownloadCreateInfo {
 
   // The render frame id that initiates this download.
   int render_frame_id;
-
-  // The handle to the URLRequest sourcing this download.
-  // TODO(qinmin): remove this when network service is fully enabled.
-  std::unique_ptr<DownloadRequestHandleInterface> request_handle;
 
   // ---------------------------------------------------------------------------
   // The remaining fields are Entity-body properties. These are only set if

@@ -11,7 +11,7 @@ namespace video_capture {
 
 ReceiverMojoToMediaAdapter::ReceiverMojoToMediaAdapter(
     mojom::ReceiverPtr receiver)
-    : receiver_(std::move(receiver)), weak_factory_(this) {}
+    : receiver_(std::move(receiver)) {}
 
 ReceiverMojoToMediaAdapter::~ReceiverMojoToMediaAdapter() = default;
 

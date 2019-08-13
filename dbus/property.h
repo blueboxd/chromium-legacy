@@ -346,7 +346,7 @@ class CHROME_DBUS_EXPORT PropertySet {
 
   // Weak pointer factory as D-Bus callbacks may last longer than these
   // objects.
-  base::WeakPtrFactory<PropertySet> weak_ptr_factory_;
+  base::WeakPtrFactory<PropertySet> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PropertySet);
 };

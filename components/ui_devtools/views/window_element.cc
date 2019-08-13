@@ -155,4 +155,11 @@ int UIElement::FindUIElementIdForBackendElement<aura::Window>(
   return 0;
 }
 
+void WindowElement::InitSources() {
+  if (window_->layer()) {
+    AddSource("ui/compositor/layer.h", 0);
+  }
+  AddSource("ui/aura/window.h", 0);
+}
+
 }  // namespace ui_devtools

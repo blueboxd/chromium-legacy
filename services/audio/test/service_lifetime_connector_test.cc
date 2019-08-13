@@ -66,7 +66,7 @@ class AudioServiceLifetimeConnectorTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AudioServiceLifetimeConnectorTest);
 };
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // For platforms where the standalone audio service has been launched, the
 // service should terminate after a default timeout if no specific timeout has
 // been set.

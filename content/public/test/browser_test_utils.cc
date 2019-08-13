@@ -588,6 +588,12 @@ class CommitOriginInterceptor : public DidCommitNavigationInterceptor {
 }  // namespace
 
 bool NavigateToURL(WebContents* web_contents, const GURL& url) {
+  return NavigateToURL(web_contents, url, url);
+}
+
+bool NavigateToURL(WebContents* web_contents,
+                   const GURL& url,
+                   const GURL& expected_commit_url) {
   NavigateToURLBlockUntilNavigationsComplete(web_contents, url, 1);
   if (!IsLastCommittedEntryOfPageType(web_contents, PAGE_TYPE_NORMAL)) {
     // TODO(crbug.com/882545) remove the following debug information:
@@ -604,14 +610,12 @@ bool NavigateToURL(WebContents* web_contents, const GURL& url) {
     return false;
   }
 
-  // TODO(crbug.com/882545) revert this to the return statement below.
-  bool same_url = web_contents->GetLastCommittedURL() == url;
-  if (!same_url) {
-    DLOG(WARNING) << "Expected URL " << url << " but observed "
+  bool is_same_url = web_contents->GetLastCommittedURL() == expected_commit_url;
+  if (!is_same_url) {
+    DLOG(WARNING) << "Expected URL " << expected_commit_url << " but observed "
                   << web_contents->GetLastCommittedURL();
   }
-  return same_url;
-  // return web_contents->GetLastCommittedURL() == url;
+  return is_same_url;
 }
 
 bool NavigateIframeToURL(WebContents* web_contents,
@@ -1762,8 +1766,12 @@ std::string GetCookies(BrowserContext* browser_context, const GURL& url) {
   BrowserContext::GetDefaultStoragePartition(browser_context)
       ->GetNetworkContext()
       ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+  // Allow access to SameSite cookies in tests.
+  net::CookieOptions options;
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   cookie_manager->GetCookieList(
-      url, net::CookieOptions(),
+      url, options,
       base::BindOnce(
           [](std::string* cookies_out, base::RunLoop* run_loop,
              const std::vector<net::CanonicalCookie>& cookies,
@@ -1785,8 +1793,12 @@ std::vector<net::CanonicalCookie> GetCanonicalCookies(
   BrowserContext::GetDefaultStoragePartition(browser_context)
       ->GetNetworkContext()
       ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+  // Allow access to SameSite cookies in tests.
+  net::CookieOptions options;
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   cookie_manager->GetCookieList(
-      url, net::CookieOptions(),
+      url, options,
       base::BindOnce(
           [](base::RunLoop* run_loop,
              std::vector<net::CanonicalCookie>* cookies_out,
@@ -3143,6 +3155,8 @@ int LoadBasicRequest(network::mojom::NetworkContext* network_context,
   request->url = url;
   request->render_frame_id = render_frame_id;
   request->load_flags = load_flags;
+  // Allow access to SameSite cookies in tests.
+  request->site_for_cookies = url;
 
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =

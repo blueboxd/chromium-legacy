@@ -19,8 +19,7 @@ Recorder::Recorder(mojom::RecorderRequest request,
     : is_recording_(true),
       data_type_(data_type),
       on_data_change_callback_(on_data_change_callback),
-      binding_(this, std::move(request)),
-      weak_ptr_factory_(this) {
+      binding_(this, std::move(request)) {
   binding_.set_connection_error_handler(base::BindOnce(
       &Recorder::OnConnectionError, weak_ptr_factory_.GetWeakPtr()));
 }

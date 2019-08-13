@@ -99,7 +99,8 @@ class SynchronousCompositorControlHost
 
 // static
 std::unique_ptr<SynchronousCompositorHost> SynchronousCompositorHost::Create(
-    RenderWidgetHostViewAndroid* rwhva) {
+    RenderWidgetHostViewAndroid* rwhva,
+    const viz::FrameSinkId& frame_sink_id) {
   if (!rwhva->synchronous_compositor_client())
     return nullptr;  // Not using sync compositing.
 
@@ -107,16 +108,16 @@ std::unique_ptr<SynchronousCompositorHost> SynchronousCompositorHost::Create(
   bool use_in_proc_software_draw =
       command_line->HasSwitch(switches::kSingleProcess);
   return base::WrapUnique(new SynchronousCompositorHost(
-      rwhva, use_in_proc_software_draw));
+      rwhva, frame_sink_id, use_in_proc_software_draw));
 }
 
 SynchronousCompositorHost::SynchronousCompositorHost(
     RenderWidgetHostViewAndroid* rwhva,
+    const viz::FrameSinkId& frame_sink_id,
     bool use_in_proc_software_draw)
     : rwhva_(rwhva),
       client_(rwhva->synchronous_compositor_client()),
-      process_id_(rwhva_->GetRenderWidgetHost()->GetProcess()->GetID()),
-      routing_id_(rwhva_->GetRenderWidgetHost()->GetRoutingID()),
+      frame_sink_id_(frame_sink_id),
       use_in_process_zero_copy_software_draw_(use_in_proc_software_draw),
       bytes_limit_(0u),
       renderer_param_version_(0u),
@@ -124,12 +125,12 @@ SynchronousCompositorHost::SynchronousCompositorHost(
       need_invalidate_count_(0u),
       invalidate_needs_draw_(false),
       did_activate_pending_tree_count_(0u) {
-  client_->DidInitializeCompositor(this, process_id_, routing_id_);
+  client_->DidInitializeCompositor(this, frame_sink_id_);
   bridge_ = new SynchronousCompositorSyncCallBridge(this);
 }
 
 SynchronousCompositorHost::~SynchronousCompositorHost() {
-  client_->DidDestroyCompositor(this, process_id_, routing_id_);
+  client_->DidDestroyCompositor(this, frame_sink_id_);
   bridge_->HostDestroyedOnUIThread();
 }
 
@@ -137,7 +138,8 @@ void SynchronousCompositorHost::InitMojo() {
   mojo::PendingRemote<mojom::SynchronousCompositorControlHost> host_control;
 
   SynchronousCompositorControlHost::Create(
-      host_control.InitWithNewPipeAndPassReceiver(), bridge_, process_id_);
+      host_control.InitWithNewPipeAndPassReceiver(), bridge_,
+      rwhva_->GetRenderWidgetHost()->GetProcess()->GetID());
   rwhva_->host()->GetWidgetInputHandler()->AttachSynchronousCompositor(
       std::move(host_control), host_receiver_.BindNewEndpointAndPassRemote(),
       sync_compositor_.BindNewEndpointAndPassReceiver());

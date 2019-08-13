@@ -192,8 +192,7 @@ JingleSession::JingleSession(JingleSessionManager* session_manager)
       event_handler_(nullptr),
       state_(INITIALIZING),
       error_(OK),
-      message_queue_(new OrderedMessageQueue),
-      weak_factory_(this) {}
+      message_queue_(new OrderedMessageQueue) {}
 
 JingleSession::~JingleSession() {
   DCHECK(thread_checker_.CalledOnValidThread());

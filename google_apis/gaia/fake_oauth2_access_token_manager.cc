@@ -22,8 +22,7 @@ FakeOAuth2AccessTokenManager::PendingRequest::~PendingRequest() {}
 FakeOAuth2AccessTokenManager::FakeOAuth2AccessTokenManager(
     OAuth2AccessTokenManager::Delegate* delegate)
     : OAuth2AccessTokenManager(delegate),
-      auto_post_fetch_response_on_message_loop_(false),
-      weak_ptr_factory_(this) {}
+      auto_post_fetch_response_on_message_loop_(false) {}
 
 FakeOAuth2AccessTokenManager::~FakeOAuth2AccessTokenManager() {}
 

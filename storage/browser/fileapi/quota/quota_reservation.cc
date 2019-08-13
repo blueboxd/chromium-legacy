@@ -75,13 +75,11 @@ FileSystemType QuotaReservation::type() const {
   return reservation_buffer_->type();
 }
 
-QuotaReservation::QuotaReservation(
-    QuotaReservationBuffer* reservation_buffer)
+QuotaReservation::QuotaReservation(QuotaReservationBuffer* reservation_buffer)
     : client_crashed_(false),
       running_refresh_request_(false),
       remaining_quota_(0),
-      reservation_buffer_(reservation_buffer),
-      weak_ptr_factory_(this) {
+      reservation_buffer_(reservation_buffer) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 

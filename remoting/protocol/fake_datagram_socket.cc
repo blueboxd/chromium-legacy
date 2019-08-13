@@ -19,10 +19,7 @@ namespace remoting {
 namespace protocol {
 
 FakeDatagramSocket::FakeDatagramSocket()
-    : input_pos_(0),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_factory_(this) {
-}
+    : input_pos_(0), task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 FakeDatagramSocket::~FakeDatagramSocket() {
   EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
@@ -130,9 +127,7 @@ int FakeDatagramSocket::CopyReadData(const scoped_refptr<net::IOBuffer>& buf,
 FakeDatagramChannelFactory::FakeDatagramChannelFactory()
     : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       asynchronous_create_(false),
-      fail_create_(false),
-      weak_factory_(this) {
-}
+      fail_create_(false) {}
 
 FakeDatagramChannelFactory::~FakeDatagramChannelFactory() {
   for (auto it = channels_.begin(); it != channels_.end(); ++it) {

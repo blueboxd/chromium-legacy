@@ -58,33 +58,33 @@ if (!cast.__platform__._notImplemented) {
     }
   };
 
-
+  // TODO(b/139230885)
   if (!cast.__platform__.canDisplayType) {
     cast.__platform__.canDisplayType =
         cast.__platform__._notImplemented('canDisplayType', true);
   }
 
+  // TODO(b/139229713)
   if (!cast.__platform__.setAssistantMessageHandler) {
     cast.__platform__.setAssistantMessageHandler =
         cast.__platform__._notImplemented('setAssistantMessageHandler');
   }
-
   if (!cast.__platform__.sendAssistantRequest) {
     cast.__platform__.sendAssistantRequest =
         cast.__platform__._notImplemented('sendAssistantRequest');
   }
 
+  // TODO(b/139228475)
   if (!cast.__platform__.setWindowRequestHandler) {
     cast.__platform__.setWindowRequestHandler =
         cast.__platform__._notImplemented('setWindowRequestHandler');
   }
-
   if (!cast.__platform__.takeScreenshot) {
     cast.__platform__.takeScreenshot =
         cast.__platform__._notImplemented('takeScreenshot');
   }
 
-
+  // TODO(b/139232520)
   if (!cast.__platform__.crypto) {
     cast.__platform__.crypto = {};
 
@@ -124,8 +124,6 @@ if (!cast.__platform__._notImplemented) {
             undefined,
             cast.__platform__.ReturnType.PROMISE_REJECTED);
   }
-
-
   if (!cast.__platform__.cryptokeys) {
     cast.__platform__.cryptokeys = {};
 
@@ -136,7 +134,7 @@ if (!cast.__platform__._notImplemented) {
             cast.__platform__.ReturnType.PROMISE_REJECTED);
   }
 
-
+  // TODO(b/139232101)
   if (!cast.__platform__.display) {
     cast.__platform__.display = {};
 
@@ -153,7 +151,7 @@ if (!cast.__platform__._notImplemented) {
             cast.__platform__.ReturnType.PROMISE_RESOLVED);
   }
 
-
+  // TODO(b/139232160)
   if (!cast.__platform__.accessibility) {
     cast.__platform__.accessibility = {};
 
@@ -172,7 +170,7 @@ if (!cast.__platform__._notImplemented) {
             'accessibility.setMagnificationGesture');
   }
 
-
+  // TODO(b/139229752)
   if (!cast.__platform__.windowManager) {
     cast.__platform__.windowManager = {};
 

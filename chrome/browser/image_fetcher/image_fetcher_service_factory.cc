@@ -68,8 +68,8 @@ ImageFetcherServiceFactory::BuildServiceInstanceFor(
   ProfileKey* profile_key = ProfileKey::FromSimpleFactoryKey(key);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::TaskPriority::USER_VISIBLE});
   base::DefaultClock* clock = base::DefaultClock::GetInstance();
 
   auto metadata_store =

@@ -64,7 +64,8 @@ class SharedSamplerTest : public testing::Test {
 
  private:
   static scoped_refptr<base::SequencedTaskRunner> GetBlockingPoolRunner() {
-    return base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+    return base::CreateSequencedTaskRunner(
+        {base::ThreadPool(), base::MayBlock()});
   }
 
   void OnRefreshTypeFinished(int64_t finished_refresh_type) {

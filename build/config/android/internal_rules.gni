@@ -14,7 +14,7 @@ import("//build_overrides/build.gni")
 assert(is_android)
 
 # These identify targets that have .build_config files (except for android_apk,
-# java_binary, resource_rewriter, android_app_bundle since we never need to
+# java_binary, android_app_bundle since we never need to
 # depend on these).
 _java_target_whitelist = [
   "*:*_java",
@@ -108,8 +108,7 @@ template("write_build_config") {
 
   # Don't need to enforce naming scheme for these targets since we never
   # consider them in dependency chains.
-  if (_type != "android_apk" && _type != "java_binary" &&
-      _type != "resource_rewriter" && _type != "dist_jar" &&
+  if (_type != "android_apk" && _type != "java_binary" && _type != "dist_jar" &&
       _type != "java_annotation_processor" && _type != "dist_aar" &&
       _type != "android_app_bundle") {
     set_sources_assignment_filter(_java_target_whitelist)

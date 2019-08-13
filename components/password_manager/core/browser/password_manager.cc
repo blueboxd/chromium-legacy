@@ -49,7 +49,7 @@ using autofill::FormData;
 using autofill::PasswordForm;
 using autofill::mojom::PasswordFormFieldPredictionType;
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-using password_manager::metrics_util::SyncPasswordHashChange;
+using password_manager::metrics_util::GaiaPasswordHashChange;
 #endif  // SYNC_PASSWORD_REUSE_DETECTION_ENABLED
 
 namespace password_manager {
@@ -1307,12 +1307,12 @@ void PasswordManager::MaybeSavePasswordHash(
   }
 
   DCHECK(should_save_gaia_pw);
-  SyncPasswordHashChange event =
+  GaiaPasswordHashChange event =
       client_->GetStoreResultFilter()->IsSyncAccountEmail(username)
           ? (is_password_change
-                 ? SyncPasswordHashChange::CHANGED_IN_CONTENT_AREA
-                 : SyncPasswordHashChange::SAVED_IN_CONTENT_AREA)
-          : SyncPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE;
+                 ? GaiaPasswordHashChange::CHANGED_IN_CONTENT_AREA
+                 : GaiaPasswordHashChange::SAVED_IN_CONTENT_AREA)
+          : GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE;
   store->SaveGaiaPasswordHash(username, password, event);
 #endif
 }

@@ -11,6 +11,7 @@
 #include "ash/public/cpp/multi_user_window_manager_delegate.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/window_factory.h"
 #include "ash/wm/desks/close_desk_button.h"
@@ -43,6 +44,7 @@
 #include "ui/compositor_extra/shadow.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/background.h"
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/window_modality_controller.h"
 #include "ui/wm/core/window_util.h"
@@ -1323,6 +1325,51 @@ TEST_F(DesksTest, NoMiniViewsUpdateOnOverviewEnter) {
 
   desk_1->RemoveObserver(&desk_1_observer);
   desk_2->RemoveObserver(&desk_2_observer);
+}
+
+// Tests that the new desk button's state and color are as expected.
+TEST_F(DesksTest, NewDeskButtonStateAndColor) {
+  auto* controller = DesksController::Get();
+  ASSERT_EQ(1u, controller->desks().size());
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  const auto* overview_grid =
+      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
+  ASSERT_TRUE(desks_bar_view);
+  const auto* new_desk_button = desks_bar_view->new_desk_button();
+
+  // Tests that with one or two desks, the new desk button has an enabled state
+  // and color.
+  const SkColor background_color =
+      AshColorProvider::Get()->GetControlsLayerColor(
+          AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+          AshColorProvider::AshColorMode::kDark);
+  const SkColor disabled_background_color =
+      AshColorProvider::Get()->GetDisabledColor(background_color);
+  EXPECT_TRUE(new_desk_button->GetEnabled());
+  EXPECT_EQ(background_color, new_desk_button->background()->get_color());
+
+  const gfx::Point button_center =
+      new_desk_button->GetBoundsInScreen().CenterPoint();
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(button_center);
+  event_generator->ClickLeftButton();
+  EXPECT_TRUE(new_desk_button->GetEnabled());
+  EXPECT_EQ(background_color, new_desk_button->background()->get_color());
+
+  // Tests that adding desks until we reach the desks limit should change the
+  // state and color of the new desk button.
+  size_t prev_size = controller->desks().size();
+  while (controller->CanCreateDesks()) {
+    event_generator->ClickLeftButton();
+    EXPECT_EQ(prev_size + 1, controller->desks().size());
+    prev_size = controller->desks().size();
+  }
+  EXPECT_FALSE(new_desk_button->GetEnabled());
+  EXPECT_EQ(disabled_background_color,
+            new_desk_button->background()->get_color());
 }
 
 class TabletModeDesksTest : public DesksTest {

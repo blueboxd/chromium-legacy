@@ -153,7 +153,7 @@ class GCM_EXPORT UnregistrationRequest {
   GCMStatsRecorder* recorder_;
   std::string source_to_record_;
 
-  base::WeakPtrFactory<UnregistrationRequest> weak_ptr_factory_;
+  base::WeakPtrFactory<UnregistrationRequest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UnregistrationRequest);
 };

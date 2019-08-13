@@ -214,9 +214,13 @@ void InProgressDownloadManager::OnUrlDownloadStarted(
     std::unique_ptr<DownloadCreateInfo> download_create_info,
     std::unique_ptr<InputStream> input_stream,
     scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
+    UrlDownloadHandler* downloader,
     const DownloadUrlParameters::OnStartedCallback& callback) {
   StartDownload(std::move(download_create_info), std::move(input_stream),
-                std::move(url_loader_factory_getter), callback);
+                std::move(url_loader_factory_getter),
+                base::BindOnce(&InProgressDownloadManager::CancelUrlDownload,
+                               weak_factory_.GetWeakPtr(), downloader),
+                callback);
 }
 
 void InProgressDownloadManager::OnUrlDownloadStopped(
@@ -419,6 +423,7 @@ void InProgressDownloadManager::StartDownload(
     std::unique_ptr<DownloadCreateInfo> info,
     std::unique_ptr<InputStream> stream,
     scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
+    DownloadJob::CancelRequestCallback cancel_request_callback,
     const DownloadUrlParameters::OnStartedCallback& on_started) {
   DCHECK(info);
 
@@ -427,6 +432,8 @@ void InProgressDownloadManager::StartDownload(
        info->result ==
            DOWNLOAD_INTERRUPT_REASON_SERVER_CROSS_ORIGIN_REDIRECT)) {
     if (delegate_ && delegate_->InterceptDownload(*info)) {
+      if (cancel_request_callback)
+        std::move(cancel_request_callback).Run(false);
       GetDownloadTaskRunner()->DeleteSoon(FROM_HERE, stream.release());
       return;
     }
@@ -455,7 +462,8 @@ void InProgressDownloadManager::StartDownload(
         std::move(info), on_started,
         base::BindOnce(&InProgressDownloadManager::StartDownloadWithItem,
                        weak_factory_.GetWeakPtr(), std::move(stream),
-                       std::move(url_loader_factory_getter)));
+                       std::move(url_loader_factory_getter),
+                       std::move(cancel_request_callback)));
   } else {
     std::string guid = info->guid;
     if (info->is_new_download) {
@@ -466,7 +474,7 @@ void InProgressDownloadManager::StartDownload(
     }
     StartDownloadWithItem(
         std::move(stream), std::move(url_loader_factory_getter),
-        std::move(info),
+        std::move(cancel_request_callback), std::move(info),
         static_cast<DownloadItemImpl*>(GetDownloadByGuid(guid)), false);
   }
 }
@@ -474,6 +482,7 @@ void InProgressDownloadManager::StartDownload(
 void InProgressDownloadManager::StartDownloadWithItem(
     std::unique_ptr<InputStream> stream,
     scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
+    DownloadJob::CancelRequestCallback cancel_request_callback,
     std::unique_ptr<DownloadCreateInfo> info,
     DownloadItemImpl* download,
     bool should_persist_new_download) {
@@ -481,8 +490,8 @@ void InProgressDownloadManager::StartDownloadWithItem(
     // If the download is no longer known to the DownloadManager, then it was
     // removed after it was resumed. Ignore. If the download is cancelled
     // while resuming, then also ignore the request.
-    if (info->request_handle)
-      info->request_handle->CancelRequest(true);
+    if (cancel_request_callback)
+      std::move(cancel_request_callback).Run(false);
     // The ByteStreamReader lives and dies on the download sequence.
     if (info->result == DOWNLOAD_INTERRUPT_REASON_NONE)
       GetDownloadTaskRunner()->DeleteSoon(FROM_HERE, stream.release());
@@ -515,8 +524,8 @@ void InProgressDownloadManager::StartDownloadWithItem(
   // so that the DownloadItem can salvage what it can out of a failed
   // resumption attempt.
 
-  download->Start(std::move(download_file), std::move(info->request_handle),
-                  *info, std::move(url_loader_factory_getter), nullptr);
+  download->Start(std::move(download_file), std::move(cancel_request_callback),
+                  *info, std::move(url_loader_factory_getter));
 
   if (download_start_observer_)
     download_start_observer_->OnDownloadStarted(download);
@@ -636,6 +645,12 @@ void InProgressDownloadManager::NotifyDownloadsInitialized() {
 void InProgressDownloadManager::AddInProgressDownloadForTest(
     std::unique_ptr<download::DownloadItemImpl> download) {
   in_progress_downloads_.push_back(std::move(download));
+}
+
+void InProgressDownloadManager::CancelUrlDownload(
+    UrlDownloadHandler* downloader,
+    bool user_cancel) {
+  OnUrlDownloadStopped(downloader);
 }
 
 }  // namespace download

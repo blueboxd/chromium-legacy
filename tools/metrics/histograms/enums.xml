@@ -11586,6 +11586,24 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Connect to Linux Clicked"/>
 </enum>
 
+<enum name="CryptAuthApiCallResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Timeout"/>
+  <int value="2" label="Network Request Error: Offline"/>
+  <int value="3" label="Network Request Error: Endpoint Not Found"/>
+  <int value="4" label="Network Request Error: Authentication Error"/>
+  <int value="5" label="Network Request Error: Bad Request"/>
+  <int value="6" label="Network Request Error: Response Malformed"/>
+  <int value="7" label="Network Request Error: Internal Server Error"/>
+  <int value="8" label="Network Request Error: Unknown"/>
+</enum>
+
+<enum name="CryptAuthAsyncTaskResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Timeout"/>
+  <int value="2" label="Error"/>
+</enum>
+
 <enum name="CryptAuthSoftwareFeature">
   <int value="0" label="UNKNOWN_FEATURE"/>
   <int value="1" label="BETTER_TOGETHER_HOST"/>
@@ -20052,7 +20070,7 @@ Called by update_net_error_codes.py.-->
   <int value="1175" label="MEDIAPERCEPTIONPRIVATE_SETSTATE"/>
   <int value="1176" label="MEDIAPERCEPTIONPRIVATE_GETDIAGNOSTICS"/>
   <int value="1177" label="NETWORKINGPRIVATE_GETCERTIFICATELISTS"/>
-  <int value="1178" label="ACCESSIBILITY_PRIVATE_SETSWITCHACCESSKEYS"/>
+  <int value="1178" label="DELETED_ACCESSIBILITY_PRIVATE_SETSWITCHACCESSKEYS"/>
   <int value="1179" label="FEEDBACKPRIVATE_READLOGSOURCE"/>
   <int value="1180" label="LOCKSCREENDATA_CREATE"/>
   <int value="1181" label="LOCKSCREENDATA_GETALL"/>
@@ -25936,6 +25954,15 @@ Called by update_net_error_codes.py.-->
   <int value="0" label="Succeeded anonymously"/>
   <int value="1" label="Succeeded with credentials"/>
   <int value="2" label="Failed / credentials rejected"/>
+</enum>
+
+<enum name="GaiaPasswordHashChange">
+  <int value="0" label="Saved on Chrome sign-in (syncing)"/>
+  <int value="1" label="Saved in the content area"/>
+  <int value="2" label="Cleared on Chrome sign-out"/>
+  <int value="3" label="Changed in the content area"/>
+  <int value="4"
+      label="Password hash change event where the account is not syncing"/>
 </enum>
 
 <enum name="GaiaSessionRestoreOutcome">
@@ -31835,6 +31862,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Not started - No refresh token"/>
 </enum>
 
+<enum name="InvalidOriginReason">
+  <int value="0" label="Opaque Origin"/>
+  <int value="1" label="Empty URL"/>
+</enum>
+
 <enum name="IOSDeviceThermalState">
   <int value="0" label="Unknown"/>
   <int value="1" label="Nominal"/>
@@ -34390,6 +34422,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1768672408" label="ChromeDuplex:disabled"/>
   <int value="-1768308156" label="OmniboxDedupeGoogleDriveURLs:enabled"/>
   <int value="-1767470652" label="out-of-process-pdf"/>
+  <int value="-1766791501" label="WebUITabStrip:enabled"/>
   <int value="-1766648764" label="OmniboxShortBookmarkSuggestions:disabled"/>
   <int value="-1766129470" label="DataSaverLiteModeRebranding:disabled"/>
   <int value="-1758468685" label="DownloadHomeV2:disabled"/>
@@ -35717,6 +35750,7 @@ from previous Chrome versions.
   <int value="49113130" label="OmniboxOnDeviceHeadProvider:disabled"/>
   <int value="51793504" label="protect-sync-credential-on-reauth:disabled"/>
   <int value="52368742" label="enable-pixel-canvas-recording:disabled"/>
+  <int value="54258707" label="NewTabstripAnimation:enabled"/>
   <int value="54571864" label="EnableDisplayZoomSetting:enabled"/>
   <int value="56072855" label="VaapiWebPImageDecodeAcceleration:disabled"/>
   <int value="56723110" label="enable-webfonts-intervention"/>
@@ -36088,6 +36122,7 @@ from previous Chrome versions.
   <int value="605150752" label="WebUSB:disabled"/>
   <int value="606288133" label="enable-print-preview-register-promos"/>
   <int value="606512202" label="AutofillCreditCardPopupLayout:enabled"/>
+  <int value="606723570" label="SharingUseDeviceInfo:disabled"/>
   <int value="606834606" label="force-color-profile"/>
   <int value="606969417" label="DiscoverApp:enabled"/>
   <int value="609112512" label="touch-selection-strategy"/>
@@ -36219,6 +36254,7 @@ from previous Chrome versions.
   <int value="766898398" label="sampling-heap-profiler"/>
   <int value="767543730" label="DoubleTapToZoomInTabletMode:enabled"/>
   <int value="767970385" label="ResamplingScrollEvents:enabled"/>
+  <int value="770680432" label="DecodeLossyWebPImagesToYUV:enabled"/>
   <int value="772272625" label="simplify-https-indicator"/>
   <int value="772348426" label="AffiliationBasedMatching:enabled"/>
   <int value="772360813"
@@ -36318,6 +36354,7 @@ from previous Chrome versions.
   <int value="939603162" label="BackgroundLoadingForDownloads:disabled"/>
   <int value="941036016" label="ContentSuggestionsSettings:disabled"/>
   <int value="941883332" label="ProactiveTabFreezeAndDiscard:disabled"/>
+  <int value="942807728" label="NewTabstripAnimation:disabled"/>
   <int value="943319566" label="enable-intent-picker"/>
   <int value="944484780" label="EnableEmbeddedAssistantUI:enabled"/>
   <int value="946185008" label="EnableAppDataSearch:disabled"/>
@@ -36334,6 +36371,7 @@ from previous Chrome versions.
   <int value="975104092" label="show-taps"/>
   <int value="976079108" label="TouchpadOverscrollHistoryNavigation:disabled"/>
   <int value="976278412" label="google-password-manager:enabled"/>
+  <int value="977968353" label="WebUITabStrip:disabled"/>
   <int value="978659723" label="TemporaryUnexpireFlagsM77:disabled"/>
   <int value="979445973" label="OmniboxSpareRenderer:enabled"/>
   <int value="980396200" label="enable-new-korean-ime"/>
@@ -36518,6 +36556,7 @@ from previous Chrome versions.
   <int value="1220171692" label="SpeculativeLaunchServiceWorker:enabled"/>
   <int value="1220274247" label="AllowReaderForAccessibility:disabled"/>
   <int value="1220464509" label="enable-first-run-ui-transitions"/>
+  <int value="1221394044" label="SharingUseDeviceInfo:enabled"/>
   <int value="1221559505" label="enable-spelling-feedback-field-trial"/>
   <int value="1222017136" label="WebRtcUseEchoCanceller3:disabled"/>
   <int value="1222032915"
@@ -36547,6 +36586,7 @@ from previous Chrome versions.
   <int value="1258747457"
       label="SyncPseudoUSSHistoryDeleteDirectives:disabled"/>
   <int value="1260186484" label="spurious-power-button-screen-accel"/>
+  <int value="1261379424" label="DecodeLossyWebPImagesToYUV:disabled"/>
   <int value="1261713150" label="ChromeHomeOptOutSnackbar:disabled"/>
   <int value="1262469513" label="GesturePropertiesDBusService:disabled"/>
   <int value="1266156008" label="IdentityDisc:disabled"/>
@@ -38546,8 +38586,11 @@ Called by update_use_counter_css.py.-->
   <int value="638" label="overflow-inline"/>
   <int value="639" label="overflow-block"/>
   <int value="640" label="forced-color-adjust"/>
-  <int value="641" label="overscroll-behavior-inline"/>
-  <int value="642" label="overscroll-behavior-block"/>
+  <int value="641" label="inherits"/>
+  <int value="642" label="initial-value"/>
+  <int value="643" label="syntax"/>
+  <int value="644" label="overscroll-behavior-inline"/>
+  <int value="645" label="overscroll-behavior-block"/>
 </enum>
 
 <enum name="MappedEditingCommands">
@@ -48342,6 +48385,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="58" label="FINAL_STATUS_BROWSER_SWITCH"/>
   <int value="59" label="FINAL_STATUS_GWS_HOLDBACK"/>
   <int value="60" label="FINAL_STATUS_UNKNOWN"/>
+  <int value="61" label="FINAL_STATUS_NAVIGATION_PREDICTOR_HOLDBACK"/>
 </enum>
 
 <enum name="PrerenderHoverEvent">
@@ -57759,14 +57803,6 @@ would be helpful to identify which type is being sent.
   <int value="3" label="CUSTOM_PASSPHRASE"/>
 </enum>
 
-<enum name="SyncPasswordHashChange">
-  <int value="0" label="Saved on Chrome sign-in"/>
-  <int value="1" label="Saved in the content area"/>
-  <int value="2" label="Cleared on Chrome sign-out"/>
-  <int value="3" label="Changed in the content area"/>
-  <int value="4" label="Not sync password hash change event"/>
-</enum>
-
 <enum name="SyncPositioningScheme">
   <int value="0" label="UNIQUE_POSITION"/>
   <int value="1" label="POSITION_IN_PARENT"/>
@@ -61955,6 +61991,14 @@ Full version information for the fingerprint enum values:
   <int value="0" label="WEB_HISTORY_QUERY_FAILED">Failed</int>
   <int value="1" label="WEB_HISTORY_QUERY_SUCCEEDED">Succeeded</int>
   <int value="2" label="WEB_HISTORY_QUERY_TIMED_OUT">Timed out</int>
+</enum>
+
+<enum name="WebMediaPlayerWatchTimeType">
+  <int value="0" label="DefaultRendererFactory"/>
+  <int value="1" label="MojoRendererFactory"/>
+  <int value="2" label="MediaPlayerRendererClientFactory"/>
+  <int value="3" label="CourierRendererFactory"/>
+  <int value="4" label="FlingingRendererClientFactory"/>
 </enum>
 
 <enum name="WebpDecodedFormat">

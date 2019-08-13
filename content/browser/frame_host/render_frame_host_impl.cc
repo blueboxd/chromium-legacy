@@ -6297,7 +6297,7 @@ void RenderFrameHostImpl::RegisterAppCacheHost(
   auto* appcache_service_impl = static_cast<AppCacheServiceImpl*>(
       GetProcess()->GetStoragePartition()->GetAppCacheService());
 
-  appcache_service_impl->RegisterHostForFrame(
+  appcache_service_impl->RegisterHost(
       std::move(host_receiver), std::move(frontend_remote), host_id,
       routing_id_, GetProcess()->GetID(), mojo::GetBadMessageCallback());
 }

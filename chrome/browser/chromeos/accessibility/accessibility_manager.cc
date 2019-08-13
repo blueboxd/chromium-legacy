@@ -1676,4 +1676,15 @@ void AccessibilityManager::SetCaretBoundsObserverForTest(
   caret_bounds_observer_for_test_ = observer;
 }
 
+void AccessibilityManager::SetSwitchAccessKeysForTest(
+    const std::vector<int>& keys) {
+  // Sets all keys to "Select" command.
+  ListPrefUpdate update(profile_->GetPrefs(),
+                        ash::prefs::kAccessibilitySwitchAccessSelectKeyCodes);
+  for (int key : keys)
+    update->AppendInteger(key);
+
+  profile_->GetPrefs()->CommitPendingWrite();
+}
+
 }  // namespace chromeos

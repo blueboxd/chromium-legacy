@@ -82,9 +82,7 @@ struct WebrtcVideoStream::FrameStats {
 };
 
 WebrtcVideoStream::WebrtcVideoStream(const SessionOptions& session_options)
-    : video_stats_dispatcher_(kStreamLabel),
-      session_options_(session_options),
-      weak_factory_(this) {
+    : video_stats_dispatcher_(kStreamLabel), session_options_(session_options) {
   encoder_selector_.RegisterEncoder(
       base::Bind(&WebrtcVideoEncoderVpx::IsSupportedByVP8),
       base::Bind(&WebrtcVideoEncoderVpx::CreateForVP8));

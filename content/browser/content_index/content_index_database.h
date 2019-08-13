@@ -126,8 +126,8 @@ class CONTENT_EXPORT ContentIndexDatabase {
   base::flat_map<url::Origin, int> blocked_origins_;
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
-  base::WeakPtrFactory<ContentIndexDatabase> weak_ptr_factory_io_;
-  base::WeakPtrFactory<ContentIndexDatabase> weak_ptr_factory_ui_;
+  base::WeakPtrFactory<ContentIndexDatabase> weak_ptr_factory_io_{this};
+  base::WeakPtrFactory<ContentIndexDatabase> weak_ptr_factory_ui_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ContentIndexDatabase);
 };

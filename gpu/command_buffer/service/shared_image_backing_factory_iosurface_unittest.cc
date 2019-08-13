@@ -138,28 +138,33 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Basic) {
   EXPECT_TRUE(skia_representation);
   std::vector<GrBackendSemaphore> begin_semaphores;
   std::vector<GrBackendSemaphore> end_semaphores;
-  auto surface = skia_representation->BeginWriteAccess(
-      0, SkSurfaceProps(0, kUnknown_SkPixelGeometry), &begin_semaphores,
-      &end_semaphores);
+  base::Optional<SharedImageRepresentationSkia::ScopedWriteAccess>
+      scoped_write_access;
+
+  scoped_write_access.emplace(skia_representation.get(), &begin_semaphores,
+                              &end_semaphores);
+  auto* surface = scoped_write_access->surface();
   EXPECT_TRUE(surface);
   EXPECT_EQ(size.width(), surface->width());
   EXPECT_EQ(size.height(), surface->height());
   EXPECT_TRUE(begin_semaphores.empty());
   EXPECT_TRUE(end_semaphores.empty());
-  skia_representation->EndWriteAccess(std::move(surface));
-  auto promise_texture = skia_representation->BeginReadAccess(nullptr, nullptr);
+  scoped_write_access.reset();
+
+  base::Optional<SharedImageRepresentationSkia::ScopedReadAccess>
+      scoped_read_access;
+  scoped_read_access.emplace(skia_representation.get(), nullptr, nullptr);
+  auto* promise_texture = scoped_read_access->promise_image_texture();
   EXPECT_TRUE(promise_texture);
-  if (promise_texture) {
     GrBackendTexture backend_texture = promise_texture->backendTexture();
     EXPECT_TRUE(backend_texture.isValid());
     EXPECT_EQ(size.width(), backend_texture.width());
     EXPECT_EQ(size.height(), backend_texture.height());
-  }
-  skia_representation->EndReadAccess();
-  skia_representation.reset();
+    scoped_read_access.reset();
+    skia_representation.reset();
 
-  factory_ref.reset();
-  EXPECT_FALSE(mailbox_manager_.ConsumeTexture(mailbox));
+    factory_ref.reset();
+    EXPECT_FALSE(mailbox_manager_.ConsumeTexture(mailbox));
 }
 
 // Test to check interaction between Gl and skia GL representations.
@@ -208,14 +213,15 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, GL_SkiaGL) {
   auto skia_representation = shared_image_representation_factory_->ProduceSkia(
       mailbox, context_state_);
   EXPECT_TRUE(skia_representation);
-  auto promise_texture = skia_representation->BeginReadAccess(nullptr, nullptr);
+  base::Optional<SharedImageRepresentationSkia::ScopedReadAccess>
+      scoped_read_access;
+  scoped_read_access.emplace(skia_representation.get(), nullptr, nullptr);
+  auto* promise_texture = scoped_read_access->promise_image_texture();
   EXPECT_TRUE(promise_texture);
-  if (promise_texture) {
     GrBackendTexture backend_texture = promise_texture->backendTexture();
     EXPECT_TRUE(backend_texture.isValid());
     EXPECT_EQ(size.width(), backend_texture.width());
     EXPECT_EQ(size.height(), backend_texture.height());
-  }
 
   // Create an Sk Image from GrBackendTexture.
   auto sk_image = SkImage::MakeFromTexture(
@@ -232,7 +238,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, GL_SkiaGL) {
   // Read back pixels from Sk Image.
   EXPECT_TRUE(sk_image->readPixels(dst_info, dst_pixels.get(),
                                    dst_info.minRowBytes(), 0, 0));
-  skia_representation->EndReadAccess();
+  scoped_read_access.reset();
 
   // Compare the pixel values.
   EXPECT_EQ(dst_pixels[0], 0);
@@ -318,14 +324,15 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
   auto skia_representation = shared_image_representation_factory_->ProduceSkia(
       mailbox, context_state_);
   EXPECT_TRUE(skia_representation);
-  auto promise_texture = skia_representation->BeginReadAccess(nullptr, nullptr);
+  base::Optional<SharedImageRepresentationSkia::ScopedReadAccess>
+      scoped_read_access;
+  scoped_read_access.emplace(skia_representation.get(), nullptr, nullptr);
+  auto* promise_texture = scoped_read_access->promise_image_texture();
   EXPECT_TRUE(promise_texture);
-  if (promise_texture) {
     GrBackendTexture backend_texture = promise_texture->backendTexture();
     EXPECT_TRUE(backend_texture.isValid());
     EXPECT_EQ(size.width(), backend_texture.width());
     EXPECT_EQ(size.height(), backend_texture.height());
-  }
 
   // Create an Sk Image from GrBackendTexture.
   auto sk_image = SkImage::MakeFromTexture(
@@ -342,7 +349,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
   // Read back pixels from Sk Image.
   EXPECT_TRUE(sk_image->readPixels(dst_info, dst_pixels.get(),
                                    dst_info.minRowBytes(), 0, 0));
-  skia_representation->EndReadAccess();
+  scoped_read_access.reset();
 
   // Compare the pixel values.
   EXPECT_EQ(dst_pixels[0], 0);

@@ -47,7 +47,7 @@ class DeviceNotifier final : public base::SystemMonitor::DevicesChangedObserver,
   base::flat_map<int, mojo::Remote<mojom::DeviceListener>> listeners_;
   mojo::ReceiverSet<mojom::DeviceNotifier, TracedServiceRef> receivers_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  base::WeakPtrFactory<DeviceNotifier> weak_factory_;
+  base::WeakPtrFactory<DeviceNotifier> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceNotifier);
 };

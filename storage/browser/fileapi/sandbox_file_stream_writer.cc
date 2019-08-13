@@ -60,8 +60,7 @@ SandboxFileStreamWriter::SandboxFileStreamWriter(
       total_bytes_written_(0),
       allowed_bytes_to_write_(0),
       has_pending_operation_(false),
-      default_quota_(std::numeric_limits<int64_t>::max()),
-      weak_factory_(this) {
+      default_quota_(std::numeric_limits<int64_t>::max()) {
   DCHECK(url_.is_valid());
 }
 

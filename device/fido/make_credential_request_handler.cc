@@ -157,8 +157,7 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
           std::move(completion_callback)),
       request_(std::move(request)),
       authenticator_selection_criteria_(
-          std::move(authenticator_selection_criteria)),
-      weak_factory_(this) {
+          std::move(authenticator_selection_criteria)) {
   transport_availability_info().request_type =
       FidoRequestHandlerBase::RequestType::kMakeCredential;
 

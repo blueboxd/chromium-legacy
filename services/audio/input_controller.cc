@@ -402,8 +402,7 @@ InputController::InputController(
       type_(type),
       user_input_monitor_(user_input_monitor),
       stream_monitor_coordinator_(stream_monitor_coordinator),
-      processing_config_(std::move(processing_config)),
-      weak_ptr_factory_(this) {
+      processing_config_(std::move(processing_config)) {
   DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
   DCHECK(handler_);
   DCHECK(sync_writer_);

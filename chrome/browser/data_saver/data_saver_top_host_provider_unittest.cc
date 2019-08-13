@@ -7,13 +7,20 @@
 #include "base/values.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/previews/previews_https_notification_infobar_decider.h"
+#include "chrome/browser/previews/previews_lite_page_decider.h"
+#include "chrome/browser/previews/previews_service.h"
+#include "chrome/browser/previews/previews_service_factory.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/optimization_guide/hints_processing_util.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/mock_navigation_handle.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Class to test the TopHostProvider and the HintsFetcherTopHostBlacklist.
@@ -25,6 +32,21 @@ class DataSaverTopHostProviderTest : public ChromeRenderViewHostTestHarness {
     top_host_provider_ = std::make_unique<DataSaverTopHostProvider>(profile());
     service_ = SiteEngagementService::Get(profile());
     pref_service_ = profile()->GetPrefs();
+
+    drp_test_context_ =
+        data_reduction_proxy::DataReductionProxyTestContext::Builder()
+            .WithMockConfig()
+            .Build();
+    drp_test_context_->DisableWarmupURLFetch();
+  }
+
+  void TearDown() override {
+    drp_test_context_->DestroySettings();
+    ChromeRenderViewHostTestHarness::TearDown();
+  }
+
+  void SetDataSaverEnabled(bool enabled) {
+    drp_test_context_->SetDataReductionProxyEnabled(enabled);
   }
 
   void AddEngagedHosts(size_t num_hosts) {
@@ -123,17 +145,63 @@ class DataSaverTopHostProviderTest : public ChromeRenderViewHostTestHarness {
                 kHintsFetcherDataSaverTopHostBlacklistState));
   }
 
-  void TearDown() override { ChromeRenderViewHostTestHarness::TearDown(); }
-
   DataSaverTopHostProvider* top_host_provider() {
     return top_host_provider_.get();
   }
 
  private:
   std::unique_ptr<DataSaverTopHostProvider> top_host_provider_;
+  std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>
+      drp_test_context_;
   SiteEngagementService* service_;
   PrefService* pref_service_;
 };
+
+TEST_F(DataSaverTopHostProviderTest, CreateIfAllowedNonDataSaverUser) {
+  SetDataSaverEnabled(false);
+  ASSERT_FALSE(DataSaverTopHostProvider::CreateIfAllowed(profile()));
+}
+
+TEST_F(DataSaverTopHostProviderTest,
+       CreateIfAllowedDataSaverUserInfobarNotSeen) {
+  SetDataSaverEnabled(true);
+
+  // Make sure infobar not shown.
+  PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  PreviewsLitePageDecider* decider =
+      previews_service->previews_lite_page_decider();
+  // Initialize settings here so Lite Pages Decider checks for the Data Saver
+  // bit.
+  decider->OnSettingsInitialized();
+  EXPECT_TRUE(decider->NeedsToNotifyUser());
+
+  ASSERT_FALSE(DataSaverTopHostProvider::CreateIfAllowed(profile()));
+}
+
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_CreateIfAllowedDataSaverUserInfobarSeen \
+  DISABLED_CreateIfAllowedDataSaverUserInfobarSeen
+#else
+#define MAYBE_CreateIfAllowedDataSaverUserInfobarSeen \
+  CreateIfAllowedDataSaverUserInfobarSeen
+#endif
+TEST_F(DataSaverTopHostProviderTest,
+       MAYBE_CreateIfAllowedDataSaverUserInfobarSeen) {
+  SetDataSaverEnabled(true);
+
+  // Navigate so infobar is shown.
+  PreviewsUITabHelper::CreateForWebContents(web_contents());
+  PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  PreviewsHTTPSNotificationInfoBarDecider* decider =
+      previews_service->previews_https_notification_infobar_decider();
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("http://whatever.com"));
+  EXPECT_FALSE(decider->NeedsToNotifyUser());
+
+  ASSERT_TRUE(DataSaverTopHostProvider::CreateIfAllowed(profile()));
+}
 
 TEST_F(DataSaverTopHostProviderTest, GetTopHostsMaxSites) {
   SetTopHostBlacklistState(optimization_guide::prefs::

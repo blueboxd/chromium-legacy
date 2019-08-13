@@ -25,6 +25,7 @@
 #include "content/browser/indexed_db/indexed_db.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
+#include "content/browser/indexed_db/indexed_db_connection_coordinator.h"
 #include "content/browser/indexed_db/indexed_db_observer.h"
 #include "content/browser/indexed_db/indexed_db_origin_state_handle.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
@@ -85,7 +86,7 @@ class CONTENT_EXPORT IndexedDBDatabase {
   }
 
   const list_set<IndexedDBConnection*>& connections() const {
-    return connections_;
+    return connection_coordinator_.connections();
   }
 
   base::WeakPtr<IndexedDBDatabase> AsWeakPtr() {
@@ -227,14 +228,20 @@ class CONTENT_EXPORT IndexedDBDatabase {
              scoped_refptr<IndexedDBCallbacks> callbacks);
 
   // Number of connections that have progressed passed initial open call.
-  size_t ConnectionCount() const { return connections_.size(); }
+  size_t ConnectionCount() const {
+    return connection_coordinator_.ConnectionCount();
+  }
 
   // Number of active open/delete calls (running or blocked on other
   // connections).
-  size_t ActiveOpenDeleteCount() const { return active_request_ ? 1 : 0; }
+  size_t ActiveOpenDeleteCount() const {
+    return connection_coordinator_.ActiveOpenDeleteCount();
+  }
 
   // Number of open/delete calls that are waiting their turn.
-  size_t PendingOpenDeleteCount() const { return pending_requests_.size(); }
+  size_t PendingOpenDeleteCount() const {
+    return connection_coordinator_.PendingOpenDeleteCount();
+  }
 
   // The following methods are all of the ones actually scheduled asynchronously
   // within transctions:
@@ -308,6 +315,10 @@ class CONTENT_EXPORT IndexedDBDatabase {
 
  protected:
   friend class IndexedDBTransaction;
+  friend class IndexedDBConnectionCoordinator;
+  friend class IndexedDBConnectionCoordinator::ConnectionRequest;
+  friend class IndexedDBConnectionCoordinator::OpenRequest;
+  friend class IndexedDBConnectionCoordinator::DeleteRequest;
 
   IndexedDBDatabase(const base::string16& name,
                     IndexedDBBackingStore* backing_store,
@@ -335,15 +346,6 @@ class CONTENT_EXPORT IndexedDBDatabase {
   class DeleteRequest;
 
   leveldb::Status OpenInternal();
-
-  // Called internally when an open or delete request comes in. Processes
-  // the queue immediately if there are no other requests.
-  void AppendRequest(std::unique_ptr<ConnectionRequest> request);
-
-  // Called by requests when complete. The request will be freed, so the
-  // request must do no other work after calling this. If there are pending
-  // requests, the queue will be synchronously processed.
-  void RequestComplete(ConnectionRequest* request);
 
   // If there is no active request, grab a new one from the pending queue and
   // start it. Afterwards, possibly release the database by calling
@@ -403,28 +405,7 @@ class CONTENT_EXPORT IndexedDBDatabase {
   // Calling this closure will destroy this object.
   base::OnceClosure destroy_me_;
 
-  list_set<IndexedDBConnection*> connections_;
-
-  // During ForceClose(), the internal state can be inconsistent during cleanup,
-  // specifically for ConnectionClosed() and MaybeReleaseDatabase(). Keeping
-  // track of whether the code is currently in the ForceClose() method helps
-  // ensure that the state stays consistent.
-  bool force_closing_ = false;
-
-  // This holds the first open or delete request that is currently being
-  // processed. The request has already broadcast OnVersionChange if
-  // necessary.
-  std::unique_ptr<ConnectionRequest> active_request_;
-
-  // This holds open or delete requests that are waiting for the active
-  // request to be completed. The requests have not yet broadcast
-  // OnVersionChange (if necessary).
-  base::queue<std::unique_ptr<ConnectionRequest>> pending_requests_;
-
-  // The |processing_pending_requests_| flag is set while ProcessRequestQueue()
-  // is executing. It prevents rentrant calls if the active request completes
-  // synchronously.
-  bool processing_pending_requests_ = false;
+  IndexedDBConnectionCoordinator connection_coordinator_;
 
   // |weak_factory_| is used for all callback uses.
   base::WeakPtrFactory<IndexedDBDatabase> weak_factory_{this};

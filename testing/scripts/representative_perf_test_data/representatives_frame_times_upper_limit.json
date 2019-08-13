@@ -71,142 +71,142 @@
   },
   "mac": {
     "yuv_decoding": {
-      "avg": 92.46526,
-      "ci_095": 36.59964771
+      "avg": 92.465,
+      "ci_095": 36.599
     },
     "canvas_animation_no_clear": {
-      "avg": 82.66825,
-      "ci_095": 31.47239679
+      "avg": 18.323,
+      "ci_095": 1.239
     },
     "compositor_heavy_animation": {
-      "avg": 45.44503,
-      "ci_095": 7.873983832
+      "avg": 36.002,
+      "ci_095": 3.635
     },
     "web_animation_value_type_length_3d": {
-      "avg": 58.05317,
-      "ci_095": 10.82881398
+      "avg": 40.999,
+      "ci_095": 1.897
     },
     "stroke_shapes": {
-      "avg": 105.85164,
-      "ci_095": 25.0567076
+      "avg": 60.378,
+      "ci_095": 2.860
     },
     "wordpress_2018": {
-      "avg": 51.67935,
-      "ci_095": 14.68141661
+      "avg": 16.980,
+      "ci_095": 0.477
     },
     "web_animation_value_type_path": {
-      "avg": 41.64474,
-      "ci_095": 7.552948532
+      "avg": 33.060,
+      "ci_095": 2.225
     },
     "web_animations_many_keyframes": {
-      "avg": 57.72545,
-      "ci_095": 10.48590654
+      "avg": 20.543,
+      "ci_095": 1.602
     },
     "twitter_pinch_2018": {
-      "avg": 48.67861,
-      "ci_095": 19.28639067
+      "avg": 20.395,
+      "ci_095": 5.386
     },
     "web_animation_value_type_length_complex": {
-      "avg": 73.5468,
-      "ci_095": 16.22147971
+      "avg": 39.018,
+      "ci_095": 2.856
     },
     "smash_cat": {
-      "avg": 84.24052,
-      "ci_095": 34.49607228
+      "avg": 16.748,
+      "ci_095": 0.772
     },
     "cc_poster_circle": {
-      "avg": 75.5703894,
-      "ci_095": 15.79465651
+      "avg": 16.697,
+      "ci_095": 0.166
     },
     "infinite_scroll_root_fixed_n_layers_99": {
-      "avg": 53.85195,
-      "ci_095": 13.26379689
+      "avg": 16.760,
+      "ci_095": 1.100
     },
     "amazon_pinch_2018": {
-      "avg": 49.48324,
-      "ci_095": 18.7335
+      "avg": 21.250,
+      "ci_095": 7.103
     },
     "youtube_pinch_2018": {
-      "avg": 71.17898,
-      "ci_095": 38.2194225
+      "avg": 21.467,
+      "ci_095": 7.431
     },
     "earth": {
-      "avg": 128.93808,
-      "ci_095": 46.65654204
+      "avg": 16.687,
+      "ci_095": 0.284
     },
     "css_value_type_shadow": {
-      "avg": 81.94442,
-      "ci_095": 7.637740595
+      "avg": 76.775,
+      "ci_095": 16.809
     },
     "js_opacity_plus_n_layers_99": {
-      "avg": 103.80365,
-      "ci_095": 28.24108565
+      "avg": 16.725,
+      "ci_095": 0.200
     },
     "fill_shapes": {
-      "avg": 59.11515,
-      "ci_095": 13.24700621
+      "avg": 43.377,
+      "ci_095": 3.220
     },
     "raf": {
-      "avg": 67.09458,
-      "ci_095": 16.95612612
+      "avg": 16.692,
+      "ci_095": 0.218
     },
     "canvas_lines": {
-      "avg": 86.43255,
-      "ci_095": 23.91080237
+      "avg": 25.519,
+      "ci_095": 0.866
     },
     "megi_dish": {
-      "avg": 108.1556,
-      "ci_095": 37.21160235
+      "avg": 114.515,
+      "ci_095": 41.168
     }
   },
   "android": {
     "motionmark_html_css_bouncing_blend_circles_25": {
-      "avg": 100.0,
-      "ci_095": 7.0
+      "avg": 48.35483,
+      "ci_095": 3.21386
     },
     "yahoo_news_desktop_gpu_raster_2018": {
       "avg": 66.0,
       "ci_095": 7.0
     },
     "microsoft_performance": {
-      "avg": 77.0,
-      "ci_095": 10.0
+      "avg": 30.8767,
+      "ci_095": 3.40595
     },
     "geo_apis": {
       "avg": 17,
       "ci_095": 0.5
     },
     "kevs_3d": {
-      "avg": 560.0,
-      "ci_095": 60.0
+      "avg": 46.79165,
+      "ci_095": 40.90851
     },
     "ie_pirate_mark": {
-      "avg": 64.0,
-      "ci_095": 30.0
+      "avg": 27.96598,
+      "ci_095": 6.35233
     },
     "linkedin_mobile_pinch": {
-      "avg": 22.0,
-      "ci_095": 6.0
+      "avg": 23.64056,
+      "ci_095": 10.45832
     },
     "text_constant_full_page_raster_10000_pixels_per_second": {
-      "avg": 18.0,
-      "ci_095": 0.7
+      "avg": 16.68138,
+      "ci_095": 0.52503
     },
     "canvas_10000_pixels_per_second": {
-      "avg": 18.0,
-      "ci_095": 0.5
+      "avg": 16.76975,
+      "ci_095": 0.68845
     },
     "canvas_20000_pixels_per_second": {
-      "avg": 18.0,
-      "ci_095": 0.5
+      "avg": 16.77075,
+      "ci_095": 0.63189
     },
     "canvas_40000_pixels_per_second": {
-      "avg": 18.0,
-      "ci_095": 0.6
+      "avg": 16.86242,
+      "ci_095": 0.73009
     },
     "canvas_75000_pixels_per_second": {
-      "avg": 18.0,
-      "ci_095": 0.9
+      "avg": 16.98984,
+      "ci_095": 0.88247
     }
   }
 }

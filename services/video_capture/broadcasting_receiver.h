@@ -157,7 +157,7 @@ class BroadcastingReceiver : public mojom::Receiver {
   // for each client.
   int32_t next_client_id_;
 
-  base::WeakPtrFactory<BroadcastingReceiver> weak_factory_;
+  base::WeakPtrFactory<BroadcastingReceiver> weak_factory_{this};
 };
 
 }  // namespace video_capture

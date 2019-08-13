@@ -390,7 +390,7 @@ UpdateCheckDriver::UpdateCheckDriver(
     : task_runner_(
           g_update_driver_task_runner
               ? g_update_driver_task_runner
-              : base::CreateCOMSTATaskRunnerWithTraits(
+              : base::CreateCOMSTATaskRunner(
                     {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
       result_runner_(base::SequencedTaskRunnerHandle::Get()),
       locale_(locale),

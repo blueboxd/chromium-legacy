@@ -116,10 +116,7 @@ ChannelMojo::ChannelMojo(
     Listener* listener,
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& proxy_task_runner)
-    : task_runner_(ipc_task_runner),
-      pipe_(handle.get()),
-      listener_(listener),
-      weak_factory_(this) {
+    : task_runner_(ipc_task_runner), pipe_(handle.get()), listener_(listener) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
   bootstrap_ = MojoBootstrap::Create(std::move(handle), mode, ipc_task_runner,
                                      proxy_task_runner);

@@ -50,8 +50,7 @@ DialMediaSinkService::CreateImpl(
   // Note: The SequencedTaskRunner needs to be IO thread because DialRegistry
   // runs on IO thread.
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::IO});
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
   return std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter>(
       new DialMediaSinkServiceImpl(connector, sink_discovery_cb, task_runner),
       base::OnTaskRunnerDeleter(task_runner));

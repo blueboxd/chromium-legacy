@@ -9,6 +9,7 @@
 #include "pdf/pdfium/pdfium_test_base.h"
 #include "pdf/test/test_client.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "ppapi/c/private/ppp_pdf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
@@ -155,6 +156,43 @@ TEST_F(AccessibilityTest, GetUnderlyingTextRangeForRect) {
       pp::FloatRect(10.0f, 10.0f, 0.0f, 0.0f), &start_index, &char_count));
   EXPECT_EQ(start_index, 0);
   EXPECT_EQ(char_count, 5u);
+}
+
+// This class is required to just override the ScrollBy
+// functionality for testing in a specific way. It will
+// keep the TestClient class clean for extension by others.
+class ScrollEnabledTestClient : public TestClient {
+ public:
+  ScrollEnabledTestClient() = default;
+  ~ScrollEnabledTestClient() override = default;
+
+  void ScrollBy(const pp::Point& point) override { recieved_point_ = point; }
+
+  const pp::Point& GetScrollRequestPoints() { return recieved_point_; }
+
+ private:
+  pp::Point recieved_point_;
+};
+
+TEST_F(AccessibilityTest, TestScrollIntoViewActionHandling) {
+  // This test checks that accessibility scroll action is passed
+  // on to the ScrollEnabledTestClient implementation.
+  ScrollEnabledTestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("hello_world2.pdf"));
+  ASSERT_TRUE(engine);
+  PP_PdfAccessibilityActionData action_data;
+  action_data.action = PP_PdfAccessibilityAction::PP_PDF_SCROLL_TO_MAKE_VISIBLE;
+  action_data.target_rect = {{120, 0}, {10, 10}};
+  // As Pdfium::Client is mocked, we will receive the same points back.
+  engine->HandleAccessibilityAction(action_data);
+  EXPECT_EQ(action_data.target_rect.point, client.GetScrollRequestPoints());
+
+  // Simulate a zoom update in the PDFiumEngine.
+  engine->ZoomUpdated(1.5);
+  engine->HandleAccessibilityAction(action_data);
+  PP_Point expected_point = {180, 0};
+  EXPECT_EQ(expected_point, client.GetScrollRequestPoints());
 }
 
 }  // namespace chrome_pdf

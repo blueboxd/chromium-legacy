@@ -9,24 +9,90 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/discardable_memory.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_types.h"
+#include "content/public/utility/utility_thread.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/common/metafile_utils.h"
+#include "third_party/blink/public/platform/web_image_generator.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDocument.h"
+#include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkSerialProcs.h"
 #include "third_party/skia/src/utils/SkMultiPictureDocument.h"
+
+#if defined(OS_WIN)
+#include "content/public/child/dwrite_font_proxy_init_win.h"
+#elif defined(OS_MACOSX)
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/skia/include/core/SkFontMgr.h"
+#elif defined(OS_POSIX) && !defined(OS_ANDROID)
+#include "third_party/blink/public/platform/platform.h"
+#endif
 
 namespace printing {
 
 PdfCompositorImpl::PdfCompositorImpl(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : service_ref_(std::move(service_ref)) {}
+    mojo::PendingReceiver<mojom::PdfCompositor> receiver,
+    bool initialize_environment,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+    : io_task_runner_(std::move(io_task_runner)) {
+  if (receiver)
+    receiver_.Bind(std::move(receiver));
 
-PdfCompositorImpl::~PdfCompositorImpl() = default;
+#if defined(OS_WIN)
+  // Initialize direct write font proxy so skia can use it.
+  content::InitializeDWriteFontProxy();
+#endif
+
+  // Hook up blink's codecs so skia can call them.
+  SkGraphics::SetImageGeneratorFromEncodedDataFactory(
+      blink::WebImageGenerator::CreateAsSkImageGenerator);
+
+  if (!initialize_environment)
+    return;
+
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+  content::UtilityThread::Get()->EnsureBlinkInitializedWithSandboxSupport();
+  // Check that we have sandbox support on this platform.
+  DCHECK(blink::Platform::Current()->GetSandboxSupport());
+#else
+  content::UtilityThread::Get()->EnsureBlinkInitialized();
+#endif
+
+#if defined(OS_MACOSX)
+  // Check that font access is granted.
+  // This doesn't do comprehensive tests to make sure fonts can work properly.
+  // It is just a quick and simple check to catch things like improper sandbox
+  // policy setup.
+  DCHECK(SkFontMgr::RefDefault()->countFamilies());
+#endif
+}
+
+PdfCompositorImpl::~PdfCompositorImpl() {
+#if defined(OS_WIN)
+  content::UninitializeDWriteFontProxy();
+#endif
+}
+
+void PdfCompositorImpl::SetDiscardableSharedMemoryManager(
+    mojo::PendingRemote<
+        discardable_memory::mojom::DiscardableSharedMemoryManager> manager) {
+  // Set up discardable memory manager.
+  discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr(
+      std::move(manager));
+  discardable_shared_memory_manager_ = std::make_unique<
+      discardable_memory::ClientDiscardableSharedMemoryManager>(
+      std::move(manager_ptr), io_task_runner_);
+  base::DiscardableMemoryAllocator::SetInstance(
+      discardable_shared_memory_manager_.get());
+}
 
 void PdfCompositorImpl::NotifyUnavailableSubframe(uint64_t frame_guid) {
   // Add this frame into the map.

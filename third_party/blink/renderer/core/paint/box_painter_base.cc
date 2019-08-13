@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/style/border_edge.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
+#include "third_party/blink/renderer/core/style/style_fetched_image.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -563,7 +564,7 @@ inline bool PaintFastBottomLayer(Node* node,
     LocalDOMWindow* window = node->GetDocument().domWindow();
     DCHECK(window);
     ImageElementTiming::From(*window).NotifyBackgroundImagePainted(
-        node, info.image,
+        node, To<StyleFetchedImage>(info.image.Get()),
         context.GetPaintController().CurrentPaintChunkProperties());
   }
   return true;
@@ -695,7 +696,7 @@ void PaintFillLayerBackground(GraphicsContext& context,
       LocalDOMWindow* window = node->GetDocument().domWindow();
       DCHECK(window);
       ImageElementTiming::From(*window).NotifyBackgroundImagePainted(
-          node, info.image,
+          node, To<StyleFetchedImage>(info.image.Get()),
           context.GetPaintController().CurrentPaintChunkProperties());
     }
   }

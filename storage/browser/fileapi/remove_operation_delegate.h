@@ -37,7 +37,7 @@ class RemoveOperationDelegate : public RecursiveOperationDelegate {
 #endif
   FileSystemURL url_;
   StatusCallback callback_;
-  base::WeakPtrFactory<RemoveOperationDelegate> weak_factory_;
+  base::WeakPtrFactory<RemoveOperationDelegate> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(RemoveOperationDelegate);
 };
 

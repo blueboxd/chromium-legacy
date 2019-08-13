@@ -893,12 +893,12 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 // We run these tests with the audio service both in and out of the the browser
 // process to have waterfall coverage while the feature rolls out. It should be
 // removed after launch.
-#if defined(OS_LINUX) && !defined(CHROME_OS)
+#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Platforms launched on.
 INSTANTIATE_TEST_SUITE_P(,
                          WebRtcGetUserMediaBrowserTest,
                          ::testing::Values(true));
-#elif defined(OS_MACOSX) || defined(OS_WIN)
+#elif defined(OS_WIN)
 // Supported platforms but not launched on.
 INSTANTIATE_TEST_SUITE_P(, WebRtcGetUserMediaBrowserTest, ::testing::Bool());
 #else

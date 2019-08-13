@@ -350,6 +350,7 @@ class AccessibilityManager
       base::RepeatingCallback<void()> observer);
   void SetCaretBoundsObserverForTest(
       base::RepeatingCallback<void(const gfx::Rect&)> observer);
+  void SetSwitchAccessKeysForTest(const std::vector<int>& keys);
 
  protected:
   AccessibilityManager();

@@ -6,12 +6,18 @@
 
 #include <utility>
 
+#include "base/strings/string_util.h"
 #include "ui/views/metadata/type_conversion.h"
 
 namespace views {
 namespace metadata {
 
-ClassMetaData::ClassMetaData() = default;
+ClassMetaData::ClassMetaData() {}
+
+ClassMetaData::ClassMetaData(std::string file, int line) : line_(line) {
+  base::TrimString(file, "./\\", &file_);
+}
+
 ClassMetaData::~ClassMetaData() = default;
 
 void ClassMetaData::AddMemberData(

@@ -141,7 +141,7 @@ UserMediaClientImpl::UserMediaClientImpl(
           std::move(task_runner)) {}
 
 UserMediaClientImpl::~UserMediaClientImpl() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Force-close all outstanding user media requests and local sources here,
   // before the outstanding WeakPtrs are invalidated, to ensure a clean
   // shutdown.
@@ -150,7 +150,7 @@ UserMediaClientImpl::~UserMediaClientImpl() {
 
 void UserMediaClientImpl::RequestUserMedia(
     const blink::WebUserMediaRequest& web_request) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!web_request.IsNull());
   DCHECK(web_request.Audio() || web_request.Video());
   // ownerDocument may be null if we are in a test.
@@ -192,7 +192,7 @@ void UserMediaClientImpl::RequestUserMedia(
 
 void UserMediaClientImpl::ApplyConstraints(
     const blink::WebApplyConstraintsRequest& web_request) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   pending_request_infos_.push_back(Request(web_request));
   if (!is_processing_request_)
@@ -211,7 +211,7 @@ bool UserMediaClientImpl::IsCapturing() {
 }
 
 void UserMediaClientImpl::MaybeProcessNextRequestInfo() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (is_processing_request_ || pending_request_infos_.empty())
     return;
 
@@ -247,20 +247,19 @@ void UserMediaClientImpl::MaybeProcessNextRequestInfo() {
 }
 
 void UserMediaClientImpl::CurrentRequestCompleted() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   is_processing_request_ = false;
   if (!pending_request_infos_.empty()) {
     frame_->GetTaskRunner(blink::TaskType::kInternalMedia)
-        ->PostTask(
-            FROM_HERE,
-            base::BindOnce(&UserMediaClientImpl::MaybeProcessNextRequestInfo,
-                           weak_factory_.GetWeakPtr()));
+        ->PostTask(FROM_HERE,
+                   WTF::Bind(&UserMediaClientImpl::MaybeProcessNextRequestInfo,
+                             weak_factory_.GetWeakPtr()));
   }
 }
 
 void UserMediaClientImpl::CancelUserMediaRequest(
     const blink::WebUserMediaRequest& web_request) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   {
     // TODO(guidou): Remove this conditional logging. https://crbug.com/764293
     UserMediaRequestInfo* request = user_media_processor_->CurrentRequest();
@@ -295,14 +294,14 @@ void UserMediaClientImpl::CancelUserMediaRequest(
 }
 
 void UserMediaClientImpl::DeleteAllUserMediaRequests() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   user_media_processor_->StopAllProcessing();
   is_processing_request_ = false;
   pending_request_infos_.clear();
 }
 
 void UserMediaClientImpl::ContextDestroyed() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Cancel all outstanding UserMediaRequests.
   DeleteAllUserMediaRequests();
 }

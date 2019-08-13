@@ -5,11 +5,12 @@
 #ifndef BASE_FUCHSIA_SERVICE_DIRECTORY_TEST_BASE_H_
 #define BASE_FUCHSIA_SERVICE_DIRECTORY_TEST_BASE_H_
 
+#include <lib/sys/cpp/outgoing_directory.h>
+#include <lib/sys/cpp/service_directory.h>
 #include <zircon/types.h>
 #include <memory>
 
 #include "base/fuchsia/scoped_service_binding.h"
-#include "base/fuchsia/service_directory_client.h"
 #include "base/fuchsia/test_interface_impl.h"
 #include "base/fuchsia/testfidl/cpp/fidl.h"
 #include "base/run_loop.h"
@@ -34,16 +35,14 @@ class ServiceDirectoryTestBase : public testing::Test {
       base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
       base::test::ScopedTaskEnvironment::MainThreadType::IO};
 
-  std::unique_ptr<ServiceDirectory> service_directory_;
+  std::unique_ptr<sys::OutgoingDirectory> outgoing_directory_;
   TestInterfaceImpl test_service_;
   std::unique_ptr<ScopedServiceBinding<testfidl::TestInterface>>
       service_binding_;
 
-  std::unique_ptr<ServiceDirectoryClient> public_service_directory_client_;
-  std::unique_ptr<ServiceDirectoryClient> debug_service_directory_client_;
-  std::unique_ptr<ServiceDirectoryClient>
-      legacy_public_service_directory_client_;
-  std::unique_ptr<ServiceDirectoryClient> root_service_directory_client_;
+  std::unique_ptr<sys::ServiceDirectory> public_service_directory_;
+  std::unique_ptr<sys::ServiceDirectory> debug_service_directory_;
+  std::unique_ptr<sys::ServiceDirectory> root_service_directory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceDirectoryTestBase);
 };

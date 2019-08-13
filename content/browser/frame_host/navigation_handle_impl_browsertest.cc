@@ -599,9 +599,11 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifyRedirect) {
 
   {
     GURL url(embedded_test_server()->GetURL("/cross-site/baz.com/title1.html"));
+    GURL final_url(embedded_test_server()->GetURL("baz.com", "/title1.html"));
     NavigationHandleObserver observer(shell()->web_contents(), url);
 
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(
+        NavigateToURL(shell(), url, final_url /* expected_commit_url */));
 
     EXPECT_TRUE(observer.has_committed());
     EXPECT_FALSE(observer.is_error());
@@ -2171,18 +2173,19 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, StartToCommitMetrics) {
 
   // Main frame tests.
   IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/hello.html"));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/hello.html")));
   {
     base::HistogramTester histograms;
     GURL url(embedded_test_server()->GetURL("/title1.html"));
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     check_navigation(histograms, ProcessType::kSame, FrameType::kMain,
                      TransitionType::kNew);
   }
   {
     base::HistogramTester histograms;
     GURL url(embedded_test_server()->GetURL("b.com", "/title1.html"));
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     check_navigation(histograms, ProcessType::kCross, FrameType::kMain,
                      TransitionType::kNew);
   }
@@ -2210,7 +2213,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, StartToCommitMetrics) {
   }
   {
     base::HistogramTester histograms;
-    NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+    EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
     check_navigation(histograms, ProcessType::kSame, FrameType::kMain,
                      TransitionType::kNew);
   }
@@ -2339,7 +2342,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest, IsDownload) {
   GURL url(embedded_test_server()->GetURL("/download-test1.lib"));
   NavigationHandleObserver observer(shell()->web_contents(), url);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURLAndExpectNoCommit(shell(), url));
   EXPECT_FALSE(observer.has_committed());
   EXPECT_TRUE(observer.is_download());
 }
@@ -2348,7 +2351,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
                        DownloadFalseForHtmlResponse) {
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   NavigationHandleObserver observer(shell()->web_contents(), url);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   EXPECT_TRUE(observer.has_committed());
   EXPECT_FALSE(observer.is_download());
 }
@@ -2357,7 +2360,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
                        DownloadFalseFor404) {
   GURL url(embedded_test_server()->GetURL("/page404.html"));
   NavigationHandleObserver observer(shell()->web_contents(), url);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   EXPECT_TRUE(observer.has_committed());
   EXPECT_FALSE(observer.is_download());
 }
@@ -2371,7 +2374,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
       NavigationThrottle::PROCEED, NavigationThrottle::PROCEED,
       NavigationThrottle::PROCEED);
 
-  EXPECT_FALSE(NavigateToURL(shell(), url));
+  EXPECT_TRUE(NavigateToURLAndExpectNoCommit(shell(), url));
   EXPECT_FALSE(observer.has_committed());
   EXPECT_TRUE(observer.is_error());
   EXPECT_FALSE(observer.is_download());
@@ -2382,7 +2385,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
   GURL redirect_url(
       embedded_test_server()->GetURL("/cross-site/bar.com/download-test1.lib"));
   NavigationHandleObserver observer(shell()->web_contents(), redirect_url);
-  NavigateToURL(shell(), redirect_url);
+  EXPECT_TRUE(NavigateToURLAndExpectNoCommit(shell(), redirect_url));
   EXPECT_FALSE(observer.has_committed());
   EXPECT_TRUE(observer.was_redirected());
   EXPECT_TRUE(observer.is_download());

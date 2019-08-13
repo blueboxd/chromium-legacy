@@ -403,18 +403,6 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
                                ssl_info.key_exchange_group);
     }
 
-    if (ssl_info.handshake_type == SSLInfo::HANDSHAKE_RESUME) {
-      UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSL_Connection_Latency_Resume_Handshake",
-                                 connect_duration,
-                                 base::TimeDelta::FromMilliseconds(1),
-                                 base::TimeDelta::FromMinutes(1), 100);
-    } else if (ssl_info.handshake_type == SSLInfo::HANDSHAKE_FULL) {
-      UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSL_Connection_Latency_Full_Handshake",
-                                 connect_duration,
-                                 base::TimeDelta::FromMilliseconds(1),
-                                 base::TimeDelta::FromMinutes(1), 100);
-    }
-
     if (tls13_supported) {
       UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSL_Connection_Latency_TLS13Experiment",
                                  connect_duration,

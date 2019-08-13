@@ -52,7 +52,7 @@ var TEST_TARGETS = [
                       '&ACAOrigin=' + BASE_ORIGIN + '&ACACredentials=true') +
    '&mode=cors&credentials=include&method=GET',
    [fetchResolved, hasContentLength, noServerHeader, hasBody, typeCors],
-   [methodIsGET, authCheck2]],
+   [methodIsGET, onlyForCrossSiteCookieTest(authCheck2)]],
 
   [REDIRECT_URL +
    encodeURIComponent(OTHER_BASE_URL + '&ACAOrigin=' + BASE_ORIGIN + '') +

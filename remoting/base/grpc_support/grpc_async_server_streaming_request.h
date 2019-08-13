@@ -101,7 +101,7 @@ class GrpcAsyncServerStreamingRequestBase : public GrpcAsyncRequest {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<GrpcAsyncServerStreamingRequestBase> weak_factory_;
+  base::WeakPtrFactory<GrpcAsyncServerStreamingRequestBase> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(GrpcAsyncServerStreamingRequestBase);
 };
 

@@ -69,8 +69,6 @@ NewDeskButton::NewDeskButton(views::ButtonListener* listener)
 
 void NewDeskButton::UpdateButtonState() {
   const bool enabled = DesksController::Get()->CanCreateDesks();
-  if (GetEnabled() == enabled)
-    return;
 
   // Notify the overview highlight if we are about to be disabled.
   if (!enabled) {

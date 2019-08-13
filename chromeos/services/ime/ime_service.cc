@@ -34,22 +34,8 @@ enum SimpleDownloadError {
 
 }  // namespace
 
-ImeService::ImeService(
-    mojo::PendingReceiver<service_manager::mojom::Service> receiver)
-    : service_binding_(this, std::move(receiver)) {}
-
-ImeService::~ImeService() = default;
-
-void ImeService::OnStart() {
-  binders_.Add(base::BindRepeating(&ImeService::AddInputEngineManagerReceiver,
-                                   base::Unretained(this)));
-
-  binders_.Add(base::BindRepeating(
-      &ImeService::BindPlatformAccessClientReceiver, base::Unretained(this)));
-
-  manager_receivers_.set_disconnect_handler(base::BindRepeating(
-      &ImeService::OnConnectionLost, base::Unretained(this)));
-
+ImeService::ImeService(mojo::PendingReceiver<mojom::ImeService> receiver)
+    : receiver_(this, std::move(receiver)) {
 #if BUILDFLAG(ENABLE_CROS_IME_DECODER)
   input_engine_ = std::make_unique<DecoderEngine>(this);
 #else
@@ -57,11 +43,16 @@ void ImeService::OnStart() {
 #endif
 }
 
-void ImeService::OnBindInterface(
-    const service_manager::BindSourceInfo& source_info,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle receiver_pipe) {
-  binders_.TryBind(interface_name, &receiver_pipe);
+ImeService::~ImeService() = default;
+
+void ImeService::SetPlatformAccessProvider(
+    mojo::PendingRemote<mojom::PlatformAccessProvider> provider) {
+  platform_access_.Bind(std::move(provider));
+}
+
+void ImeService::BindInputEngineManager(
+    mojo::PendingReceiver<mojom::InputEngineManager> receiver) {
+  manager_receivers_.Add(this, std::move(receiver));
 }
 
 void ImeService::ConnectToImeEngine(
@@ -74,31 +65,6 @@ void ImeService::ConnectToImeEngine(
   bool bound = input_engine_->BindRequest(
       ime_spec, std::move(to_engine_request), std::move(from_engine), extra);
   std::move(callback).Run(bound);
-}
-
-void ImeService::AddInputEngineManagerReceiver(
-    mojo::PendingReceiver<mojom::InputEngineManager> receiver) {
-  manager_receivers_.Add(this, std::move(receiver));
-  // TODO(https://crbug.com/837156): Reset the cleanup timer.
-}
-
-void ImeService::BindPlatformAccessClientReceiver(
-    mojo::PendingReceiver<mojom::PlatformAccessClient> receiver) {
-  if (!access_receiver_.is_bound()) {
-    access_receiver_.Bind(std::move(receiver));
-  }
-}
-
-void ImeService::SetPlatformAccessProvider(
-    mojo::PendingRemote<mojom::PlatformAccessProvider> access) {
-  platform_access_.Bind(std::move(access));
-}
-
-void ImeService::OnConnectionLost() {
-  if (manager_receivers_.empty()) {
-    service_binding_.RequestClose();
-    // TODO(https://crbug.com/837156): Set a timer to start a cleanup.
-  }
 }
 
 void ImeService::SimpleDownloadFinished(SimpleDownloadCallback callback,

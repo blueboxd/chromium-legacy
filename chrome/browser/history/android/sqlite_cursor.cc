@@ -126,10 +126,9 @@ jboolean SQLiteCursor::IsNull(JNIEnv* env,
 jint SQLiteCursor::MoveTo(JNIEnv* env,
                           const JavaParamRef<jobject>& obj,
                           jint pos) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&SQLiteCursor::RunMoveStatementOnUIThread,
-                     base::Unretained(this), pos));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&SQLiteCursor::RunMoveStatementOnUIThread,
+                                base::Unretained(this), pos));
   if (test_observer_)
     test_observer_->OnPostMoveToTask();
 
@@ -150,10 +149,9 @@ void SQLiteCursor::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   // objects out there.
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DestroyOnUIThread();
-  } else if (!base::PostTaskWithTraits(
-                 FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&SQLiteCursor::DestroyOnUIThread,
-                                base::Unretained(this)))) {
+  } else if (!base::PostTask(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(&SQLiteCursor::DestroyOnUIThread,
+                                            base::Unretained(this)))) {
     delete this;
   }
 }
@@ -185,12 +183,11 @@ void SQLiteCursor::DestroyOnUIThread() {
 bool SQLiteCursor::GetFavicon(favicon_base::FaviconID id,
                               std::vector<unsigned char>* image_data) {
   if (id) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(
-            &SQLiteCursor::GetFaviconForIDInUIThread, base::Unretained(this),
-            id,
-            base::Bind(&SQLiteCursor::OnFaviconData, base::Unretained(this))));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&SQLiteCursor::GetFaviconForIDInUIThread,
+                                  base::Unretained(this), id,
+                                  base::Bind(&SQLiteCursor::OnFaviconData,
+                                             base::Unretained(this))));
 
     if (test_observer_)
       test_observer_->OnPostGetFaviconTask();

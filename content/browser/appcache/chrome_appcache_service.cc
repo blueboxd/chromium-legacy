@@ -42,16 +42,8 @@ void ChromeAppCacheService::Initialize(
 void ChromeAppCacheService::CreateBackend(
     int process_id,
     mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver) {
-  // The process_id is the id of the RenderProcessHost, which can be reused for
-  // a new renderer process if the previous renderer process was shutdown.
-  // It can take some time after shutdown for the pipe error to propagate
-  // and unregister the previous backend. Since the AppCacheService assumes
-  // that there is one backend per process_id, we need to ensure that the
-  // previous backend is unregistered by eagerly unbinding the pipe.
-  Unbind(process_id);
-
-  Bind(std::make_unique<AppCacheBackendImpl>(this, process_id),
-       std::move(receiver), process_id);
+  receivers_.Add(std::make_unique<AppCacheBackendImpl>(this, process_id),
+                 std::move(receiver));
 }
 
 void ChromeAppCacheService::CreateBackendForRequest(
@@ -59,30 +51,6 @@ void ChromeAppCacheService::CreateBackendForRequest(
     blink::mojom::AppCacheBackendRequest request) {
   // Implicit conversion to mojo::PendingReceiver<T>.
   CreateBackend(process_id, std::move(request));
-}
-
-void ChromeAppCacheService::Bind(
-    std::unique_ptr<blink::mojom::AppCacheBackend> backend,
-    mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver,
-    int process_id) {
-  DCHECK(process_receivers_.find(process_id) == process_receivers_.end());
-  process_receivers_[process_id] =
-      receivers_.Add(std::move(backend), std::move(receiver));
-}
-
-void ChromeAppCacheService::Unbind(int process_id) {
-  auto it = process_receivers_.find(process_id);
-  if (it != process_receivers_.end()) {
-    receivers_.Remove(it->second);
-    DCHECK(process_receivers_.find(process_id) == process_receivers_.end());
-  }
-}
-
-void ChromeAppCacheService::UnregisterBackend(
-    AppCacheBackendImpl* backend_impl) {
-  int process_id = backend_impl->process_id();
-  process_receivers_.erase(process_receivers_.find(process_id));
-  AppCacheServiceImpl::UnregisterBackend(backend_impl);
 }
 
 void ChromeAppCacheService::Shutdown() {

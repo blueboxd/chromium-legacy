@@ -177,6 +177,8 @@ void SharedImageInterfaceProxy::UpdateSharedImage(
     const Mailbox& mailbox) {
   std::vector<SyncToken> dependencies;
   if (sync_token.HasData()) {
+    DCHECK(!acquire_fence);
+
     dependencies.push_back(sync_token);
     SyncToken& new_token = dependencies.back();
     if (!new_token.verified_flush()) {
@@ -202,9 +204,10 @@ void SharedImageInterfaceProxy::UpdateSharedImage(
           route_id_, mailbox, ++next_release_id_, acquire_fence_handle));
       return;
     }
-    last_flush_id_ =
-        host_->EnqueueDeferredMessage(GpuChannelMsg_UpdateSharedImage(
-            route_id_, mailbox, ++next_release_id_, acquire_fence_handle));
+    last_flush_id_ = host_->EnqueueDeferredMessage(
+        GpuChannelMsg_UpdateSharedImage(route_id_, mailbox, ++next_release_id_,
+                                        acquire_fence_handle),
+        std::move(dependencies));
   }
 }
 

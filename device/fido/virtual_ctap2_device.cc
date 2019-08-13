@@ -525,17 +525,14 @@ VirtualCtap2Device::Config& VirtualCtap2Device::Config::operator=(
     const Config&) = default;
 VirtualCtap2Device::Config::~Config() = default;
 
-VirtualCtap2Device::VirtualCtap2Device()
-    : VirtualFidoDevice(), weak_factory_(this) {
+VirtualCtap2Device::VirtualCtap2Device() : VirtualFidoDevice() {
   device_info_ =
       AuthenticatorGetInfoResponse({ProtocolVersion::kCtap2}, kDeviceAaguid);
 }
 
 VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
                                        const Config& config)
-    : VirtualFidoDevice(std::move(state)),
-      config_(config),
-      weak_factory_(this) {
+    : VirtualFidoDevice(std::move(state)), config_(config) {
   std::vector<ProtocolVersion> versions = {ProtocolVersion::kCtap2};
   if (config.u2f_support) {
     versions.emplace_back(ProtocolVersion::kU2f);

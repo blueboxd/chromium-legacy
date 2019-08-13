@@ -160,9 +160,9 @@ void ArcProcessTask::OnConnectionReady() {
   // Instead of calling into StartIconLoading() directly, return to the main
   // loop first to make sure other ArcBridgeService observers are notified.
   // Otherwise, arc::ArcIntentHelperBridge::GetActivityIcon() may fail again.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(&ArcProcessTask::StartIconLoading,
-                                          weak_ptr_factory_.GetWeakPtr()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&ArcProcessTask::StartIconLoading,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ArcProcessTask::SetProcessState(arc::mojom::ProcessState process_state) {

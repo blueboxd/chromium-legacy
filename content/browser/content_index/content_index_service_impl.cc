@@ -57,6 +57,17 @@ ContentIndexServiceImpl::ContentIndexServiceImpl(
 
 ContentIndexServiceImpl::~ContentIndexServiceImpl() = default;
 
+void ContentIndexServiceImpl::GetIconSizes(
+    blink::mojom::ContentCategory category,
+    GetIconSizesCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&ContentIndexContextImpl::GetIconSizes,
+                     content_index_context_, category, std::move(callback)));
+}
+
 void ContentIndexServiceImpl::Add(
     int64_t service_worker_registration_id,
     blink::mojom::ContentDescriptionPtr description,

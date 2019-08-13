@@ -31,8 +31,9 @@ cr.define('settings_people_page_sync_controls', function() {
       assertTrue(syncAllDataTypesControl.checked);
 
       // Assert that all the individual datatype controls are disabled.
-      const datatypeControls =
-          syncControls.shadowRoot.querySelectorAll('.list-item cr-toggle');
+      const datatypeControls = syncControls.shadowRoot.querySelectorAll(
+          '.list-item:not([hidden]) > cr-toggle');
+
       for (const control of datatypeControls) {
         assertTrue(control.disabled);
         assertTrue(control.checked);

@@ -35,9 +35,6 @@ class OverviewGridPreEventHandler : public ui::EventHandler {
 
   void HandleClickOrTap(ui::Event* event);
 
-  void StartDrag(const gfx::Point& location);
-  void UpdateDrag(float scroll);
-
   // Cached value of the OverviewGrid that handles a series of gesture scroll
   // events. Guaranteed to be alive during the lifetime of |this|.
   OverviewGrid* grid_;

@@ -45,6 +45,8 @@ class BrowserViewLayout : public views::LayoutManager {
                     views::View* top_container,
                     views::View* tab_strip_region_view,
                     TabStrip* tab_strip,
+                    views::View* webui_tab_strip,
+                    views::View* webui_tab_strip_caption_buttons,
                     views::View* toolbar,
                     InfoBarContainerView* infobar_container,
                     views::View* contents_container,
@@ -97,6 +99,7 @@ class BrowserViewLayout : public views::LayoutManager {
   // Layout the following controls, starting at |top|, returns the coordinate
   // of the bottom of the control, for laying out the next control.
   int LayoutTabStripRegion(int top);
+  int LayoutWebUITabStrip(int top);
   int LayoutToolbar(int top);
   int LayoutBookmarkAndInfoBars(int top, int browser_view_y);
   int LayoutBookmarkBar(int top);
@@ -134,6 +137,8 @@ class BrowserViewLayout : public views::LayoutManager {
   // testing much easier.
   views::View* const top_container_;
   views::View* const tab_strip_region_view_;
+  views::View* const webui_tab_strip_;
+  views::View* const webui_tab_strip_caption_buttons_;
   views::View* const toolbar_;
   InfoBarContainerView* const infobar_container_;
   views::View* const contents_container_;

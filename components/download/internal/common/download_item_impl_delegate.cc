@@ -108,4 +108,9 @@ DownloadItemImplDelegate::GetServiceManagerConnector() {
   return nullptr;
 }
 
+QuarantineConnectionCallback
+DownloadItemImplDelegate::GetQuarantineConnectionCallback() {
+  return base::NullCallback();
+}
+
 }  // namespace download

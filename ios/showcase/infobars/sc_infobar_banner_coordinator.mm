@@ -96,13 +96,13 @@ NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
 }
 
 - (void)dealloc {
-  [self dismissInfobarBanner:nil animated:YES completion:nil];
+  [self dismissInfobarBanner:nil animated:YES completion:nil userInitiated:NO];
 }
 
 #pragma mark InfobarBannerDelegate
 
 - (void)bannerInfobarButtonWasPressed:(id)sender {
-  [self dismissInfobarBanner:nil animated:YES completion:nil];
+  [self dismissInfobarBanner:nil animated:YES completion:nil userInitiated:NO];
 }
 
 - (void)presentInfobarModalFromBanner {
@@ -125,7 +125,8 @@ NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
 
 - (void)dismissInfobarBanner:(id)sender
                     animated:(BOOL)animated
-                  completion:(ProceduralBlock)completion {
+                  completion:(ProceduralBlock)completion
+               userInitiated:(BOOL)userInitiated {
   [self.baseViewController dismissViewControllerAnimated:animated
                                               completion:nil];
 }

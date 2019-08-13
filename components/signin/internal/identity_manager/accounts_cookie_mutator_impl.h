@@ -15,7 +15,7 @@ class AccountTrackerService;
 class GaiaCookieManagerService;
 
 namespace gaia {
-enum class GaiaSource;
+class GaiaSource;
 }
 
 namespace signin {

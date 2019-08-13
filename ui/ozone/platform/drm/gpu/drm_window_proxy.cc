@@ -30,20 +30,25 @@ void DrmWindowProxy::SchedulePageFlip(
     std::vector<DrmOverlayPlane> planes,
     SwapCompletionOnceCallback submission_callback,
     PresentationOnceCallback presentation_callback) {
+  base::OnceClosure task = base::BindOnce(
+      &DrmThread::SchedulePageFlip, base::Unretained(drm_thread_), widget_,
+      std::move(planes), CreateSafeOnceCallback(std::move(submission_callback)),
+      CreateSafeOnceCallback(std::move(presentation_callback)));
   drm_thread_->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DrmThread::SchedulePageFlip,
-                     base::Unretained(drm_thread_), widget_, std::move(planes),
-                     CreateSafeOnceCallback(std::move(submission_callback)),
-                     CreateSafeOnceCallback(std::move(presentation_callback))));
+      FROM_HERE, base::BindOnce(&DrmThread::RunTaskAfterWindowReady,
+                                base::Unretained(drm_thread_), widget_,
+                                std::move(task), nullptr));
 }
 
 bool DrmWindowProxy::SupportsGpuFences() const {
   bool is_atomic = false;
+  base::OnceClosure task =
+      base::BindOnce(&DrmThread::IsDeviceAtomic, base::Unretained(drm_thread_),
+                     widget_, &is_atomic);
   PostSyncTask(
       drm_thread_->task_runner(),
-      base::BindOnce(&DrmThread::IsDeviceAtomic, base::Unretained(drm_thread_),
-                     widget_, &is_atomic));
+      base::BindOnce(&DrmThread::RunTaskAfterWindowReady,
+                     base::Unretained(drm_thread_), widget_, std::move(task)));
   return is_atomic && !base::CommandLine::ForCurrentProcess()->HasSwitch(
                           switches::kDisableExplicitDmaFences);
 }

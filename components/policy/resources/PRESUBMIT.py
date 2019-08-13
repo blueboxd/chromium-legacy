@@ -32,8 +32,11 @@ def _CheckPolicyTemplatesSyntax(input_api, output_api):
       sys.path = [ tools_path ] + sys.path
       # Optimization: only load this when it's needed.
       import syntax_check_policy_template_json
+      device_policy_proto_path = input_api.os_path.join(
+          local_path, '../proto/chrome_device_policy.proto')
+      args = ["--device_policy_proto_path=" + device_policy_proto_path]
       checker = syntax_check_policy_template_json.PolicyTemplateChecker()
-      if checker.Run([], filepath) > 0:
+      if checker.Run(args, filepath) > 0:
         return [output_api.PresubmitError('Syntax error(s) in file:',
                                           [filepath])]
     finally:

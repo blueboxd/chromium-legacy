@@ -205,7 +205,7 @@ void GCMDriverAndroid::UpdateAccountMapping(
   NOTIMPLEMENTED();
 }
 
-void GCMDriverAndroid::RemoveAccountMapping(const std::string& account_id) {
+void GCMDriverAndroid::RemoveAccountMapping(const CoreAccountId& account_id) {
   NOTIMPLEMENTED();
 }
 

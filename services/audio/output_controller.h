@@ -306,7 +306,7 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   // WeakPtrFactory+WeakPtr that is used to post tasks that are canceled when a
   // stream is closed.
   base::WeakPtr<OutputController> weak_this_for_stream_;
-  base::WeakPtrFactory<OutputController> weak_factory_for_stream_;
+  base::WeakPtrFactory<OutputController> weak_factory_for_stream_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OutputController);
 };

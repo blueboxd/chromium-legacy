@@ -172,9 +172,3 @@ void DefaultBrowserPromptDeclined(Profile* profile) {
 void ResetDefaultBrowserPrompt(Profile* profile) {
   profile->GetPrefs()->ClearPref(prefs::kDefaultBrowserLastDeclined);
 }
-
-#if !defined(OS_WIN)
-bool ShowFirstRunDefaultBrowserPrompt(Profile* profile) {
-  return false;
-}
-#endif

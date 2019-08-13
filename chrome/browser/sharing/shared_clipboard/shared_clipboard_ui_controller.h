@@ -10,8 +10,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sharing/sharing_dialog_controller.h"
 #include "chrome/browser/sharing/sharing_service.h"
+#include "chrome/browser/sharing/sharing_ui_controller.h"
 #include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
@@ -23,7 +23,7 @@ class WebContents;
 class SharingDeviceInfo;
 
 class SharedClipboardUiController
-    : public SharingDialogController,
+    : public SharingUiController,
       public content::WebContentsUserData<SharedClipboardUiController> {
  public:
   static SharedClipboardUiController* GetOrCreateFromWebContents(
@@ -34,7 +34,7 @@ class SharedClipboardUiController
 
   ~SharedClipboardUiController() override;
 
-  // Overridden from SharingDialogController:
+  // Overridden from SharingUiController:
   base::string16 GetTitle() override;
   std::vector<SharingDeviceInfo> GetSyncedDevices() override;
   std::vector<App> GetApps() override;

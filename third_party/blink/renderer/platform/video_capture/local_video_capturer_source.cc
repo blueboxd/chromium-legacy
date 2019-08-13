@@ -9,6 +9,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
@@ -80,7 +81,7 @@ void LocalVideoCapturerSource::OnFrameDropped(
 
 void LocalVideoCapturerSource::OnLog(const std::string& message) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  manager_->OnLog(session_id_, message);
+  manager_->OnLog(session_id_, WebString::FromUTF8(message));
 }
 
 void LocalVideoCapturerSource::OnStateUpdate(blink::VideoCaptureState state) {

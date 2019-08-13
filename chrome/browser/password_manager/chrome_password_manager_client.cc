@@ -504,6 +504,17 @@ void ChromePasswordManagerClient::AutofillHttpAuth(
                         form_manager->GetOrigin(), nullptr);
 }
 
+void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
+    const GURL& origin) {
+#if defined(OS_ANDROID)
+  // TODO(crbug.com/986317): Implement Android part of the feature.
+#else   // !defined(OS_ANDROID)
+  PasswordsClientUIDelegate* manage_passwords_ui_controller =
+      PasswordsClientUIDelegateFromWebContents(web_contents());
+  manage_passwords_ui_controller->OnCredentialLeak(origin);
+#endif  // defined(OS_ANDROID)
+}
+
 bool ChromePasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
   // TODO(crbug.com/862989): Move the following function (and the feature) to
   // the password component. Then remove IsIsolationForPasswordsSitesEnabled()

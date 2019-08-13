@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -31,6 +32,7 @@ class NodeBase;
 class PageNodeImpl;
 class ProcessNodeImpl;
 class SystemNodeImpl;
+class WorkerNodeImpl;
 
 // Represents a graph of the nodes representing a single browser. Maintains a
 // set of nodes that can be retrieved in different ways, some indexed. Keeps
@@ -53,17 +55,20 @@ class GraphImpl : public Graph {
   void AddPageNodeObserver(PageNodeObserver* observer) override;
   void AddProcessNodeObserver(ProcessNodeObserver* observer) override;
   void AddSystemNodeObserver(SystemNodeObserver* observer) override;
+  void AddWorkerNodeObserver(WorkerNodeObserver* observer) override;
   void RemoveGraphObserver(GraphObserver* observer) override;
   void RemoveFrameNodeObserver(FrameNodeObserver* observer) override;
   void RemovePageNodeObserver(PageNodeObserver* observer) override;
   void RemoveProcessNodeObserver(ProcessNodeObserver* observer) override;
   void RemoveSystemNodeObserver(SystemNodeObserver* observer) override;
+  void RemoveWorkerNodeObserver(WorkerNodeObserver* observer) override;
   void PassToGraph(std::unique_ptr<GraphOwned> graph_owned) override;
   std::unique_ptr<GraphOwned> TakeFromGraph(GraphOwned* graph_owned) override;
   const SystemNode* FindOrCreateSystemNode() override;
+  std::vector<const ProcessNode*> GetAllProcessNodes() const override;
   std::vector<const FrameNode*> GetAllFrameNodes() const override;
   std::vector<const PageNode*> GetAllPageNodes() const override;
-  std::vector<const ProcessNode*> GetAllProcessNodes() const override;
+  std::vector<const WorkerNode*> GetAllWorkerNodes() const override;
   ukm::UkmRecorder* GetUkmRecorder() const override;
   uintptr_t GetImplType() const override;
   const void* GetImpl() const override;
@@ -88,6 +93,7 @@ class GraphImpl : public Graph {
   std::vector<ProcessNodeImpl*> GetAllProcessNodeImpls() const;
   std::vector<FrameNodeImpl*> GetAllFrameNodeImpls() const;
   std::vector<PageNodeImpl*> GetAllPageNodeImpls() const;
+  std::vector<WorkerNodeImpl*> GetAllWorkerNodeImpls() const;
   const NodeSet& nodes() { return nodes_; }
 
   // Retrieves the process node with PID |pid|, if any.
@@ -159,6 +165,7 @@ class GraphImpl : public Graph {
   std::vector<PageNodeObserver*> page_node_observers_;
   std::vector<ProcessNodeObserver*> process_node_observers_;
   std::vector<SystemNodeObserver*> system_node_observers_;
+  std::vector<WorkerNodeObserver*> worker_node_observers_;
 
   // Graph-owned objects. For now we only expect O(10) clients, hence the
   // flat_map.

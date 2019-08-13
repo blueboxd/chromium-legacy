@@ -99,6 +99,8 @@ cr.define('extension_item_tests', function() {
       item.set('data', extensionData);
       item.set('delegate', mockDelegate);
       document.body.appendChild(item);
+      const toastManager = document.createElement('cr-toast-manager');
+      document.body.appendChild(toastManager);
     });
 
     test(assert(TestNames.ElementVisibilityNormalState), function() {

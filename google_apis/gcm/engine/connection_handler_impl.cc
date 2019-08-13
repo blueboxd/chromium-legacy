@@ -58,8 +58,7 @@ ConnectionHandlerImpl::ConnectionHandlerImpl(
       read_callback_(read_callback),
       write_callback_(write_callback),
       connection_callback_(connection_callback),
-      size_packet_so_far_(0),
-      weak_ptr_factory_(this) {
+      size_packet_so_far_(0) {
   DCHECK(io_task_runner_);
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 }

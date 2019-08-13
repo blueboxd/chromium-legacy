@@ -118,8 +118,7 @@ AuthService::AuthService(
     : identity_manager_(identity_manager),
       account_id_(account_id),
       url_loader_factory_(url_loader_factory),
-      scopes_(scopes),
-      weak_ptr_factory_(this) {
+      scopes_(scopes) {
   DCHECK(identity_manager_);
 
   identity_manager_->AddObserver(this);

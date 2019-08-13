@@ -46,8 +46,7 @@ BluezDBusManager::BluezDBusManager(dbus::Bus* bus,
     : bus_(bus),
       alternate_bus_(alternate_bus),
       object_manager_support_known_(false),
-      object_manager_supported_(false),
-      weak_ptr_factory_(this) {
+      object_manager_supported_(false) {
   // On Chrome OS, Bluez might not be ready by the time we initialize the
   // BluezDBusManager so we initialize the clients anyway.
   bool should_check_object_manager = true;

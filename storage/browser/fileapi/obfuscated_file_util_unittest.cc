@@ -175,8 +175,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
         type_(storage::kFileSystemTypeTemporary),
         sandbox_file_system_(origin_, type_),
         quota_status_(blink::mojom::QuotaStatusCode::kUnknown),
-        usage_(-1),
-        weak_factory_(this) {
+        usage_(-1) {
     if (GetParam() == TestMode::kRegular) {
       is_incognito_ = false;
       return;
@@ -848,7 +847,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
   int64_t usage_;
   storage::MockFileChangeObserver change_observer_;
   storage::ChangeObserverList change_observers_;
-  base::WeakPtrFactory<ObfuscatedFileUtilTest> weak_factory_;
+  base::WeakPtrFactory<ObfuscatedFileUtilTest> weak_factory_{this};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtilTest);

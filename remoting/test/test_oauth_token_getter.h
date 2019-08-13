@@ -76,7 +76,7 @@ class TestOAuthTokenGetter final : public OAuthTokenGetter {
   bool is_authenticating_ = false;
   base::queue<base::OnceClosure> on_authentication_done_;
 
-  base::WeakPtrFactory<TestOAuthTokenGetter> weak_factory_;
+  base::WeakPtrFactory<TestOAuthTokenGetter> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(TestOAuthTokenGetter);
 };
 

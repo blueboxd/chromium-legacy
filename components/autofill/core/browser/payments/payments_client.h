@@ -106,6 +106,7 @@ class PaymentsClient {
     }
 
     std::string real_pan;
+    base::Value fido_creation_options;
   };
 
   // Information required to either opt-in or opt-out a user for FIDO
@@ -192,8 +193,8 @@ class PaymentsClient {
   void Prepare();
 
   // The user has interacted with a credit card form and may attempt to unmask a
-  // card. This request returns what method of authentication is required, along
-  // with any information to facilitate the authentication.
+  // card. This request returns what method of authentication is suggested,
+  // along with any information to facilitate the authentication.
   virtual void GetUnmaskDetails(GetUnmaskDetailsCallback callback,
                                 const std::string& app_locale);
 

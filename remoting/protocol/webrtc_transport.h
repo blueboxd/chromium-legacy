@@ -184,7 +184,7 @@ class WebrtcTransport : public Transport {
 
   rtc::scoped_refptr<webrtc::RtpTransceiverInterface> video_transceiver_;
 
-  base::WeakPtrFactory<WebrtcTransport> weak_factory_;
+  base::WeakPtrFactory<WebrtcTransport> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcTransport);
 };

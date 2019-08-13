@@ -22,8 +22,7 @@ namespace remoting {
 SecurityKeyMessageReaderImpl::SecurityKeyMessageReaderImpl(
     base::File input_file)
     : read_stream_(std::move(input_file)),
-      reader_thread_("SecurityKeyMessageReaderImpl"),
-      weak_factory_(this) {
+      reader_thread_("SecurityKeyMessageReaderImpl") {
   base::Thread::Options options;
   options.message_pump_type = base::MessagePumpType::IO;
   reader_thread_.StartWithOptions(options);

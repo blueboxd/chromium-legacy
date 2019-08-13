@@ -43,10 +43,10 @@ void TabManager::ResourceCoordinatorSignalObserver::OnPageAlmostIdleChanged(
   if (!page_node->IsPageAlmostIdle())
     return;
   // Forward the notification over to the UI thread.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(&OnPageAlmostIdleOnUi, tab_manager_,
-                                          page_node->GetContentProxy(),
-                                          page_node->GetNavigationID()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&OnPageAlmostIdleOnUi, tab_manager_,
+                                page_node->GetContentProxy(),
+                                page_node->GetNavigationID()));
 }
 
 void TabManager::ResourceCoordinatorSignalObserver::
@@ -60,11 +60,10 @@ void TabManager::ResourceCoordinatorSignalObserver::
           process_node);
   for (auto* page_node : associated_page_nodes) {
     // Forward the notification over to the UI thread.
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&OnExpectedTaskQueueingDurationSampleOnUi, tab_manager_,
-                       page_node->GetContentProxy(),
-                       page_node->GetNavigationID(), duration));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&OnExpectedTaskQueueingDurationSampleOnUi,
+                                  tab_manager_, page_node->GetContentProxy(),
+                                  page_node->GetNavigationID(), duration));
   }
 }
 

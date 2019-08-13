@@ -30,8 +30,7 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
       : origin_thread_id_(base::PlatformThread::CurrentId()),
         bus_(bus),
         delegate_(delegate),
-        object_path_(object_path),
-        weak_ptr_factory_(this) {
+        object_path_(object_path) {
     VLOG(1) << "Creating Bluetooth Agent: " << object_path_.value();
 
     exported_object_ = bus_->GetExportedObject(object_path_);
@@ -425,7 +424,8 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
   // than we do.
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BluetoothAgentServiceProviderImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothAgentServiceProviderImpl> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothAgentServiceProviderImpl);
 };

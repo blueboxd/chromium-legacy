@@ -12,13 +12,13 @@ import android.text.TextWatcher;
 import android.util.AttributeSet;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.CompatibilityTextInputLayout;
+import org.chromium.chrome.browser.widget.ChromeTextInputLayout;
 
 /**
- * Wraps around {@link CompatibilityTextInputLayout} to implement a basic empty field error behavior
+ * Wraps around {@link ChromeTextInputLayout} to implement a basic empty field error behavior
  * for the Bookmark related TextInputLayouts.
  */
-public class BookmarkTextInputLayout extends CompatibilityTextInputLayout {
+public class BookmarkTextInputLayout extends ChromeTextInputLayout {
     private String mEmptyErrorMessage;
 
     public BookmarkTextInputLayout(Context context, AttributeSet attrs) {

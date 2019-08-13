@@ -238,6 +238,8 @@ jumbo_source_set("base") {
     "silent_sink_suspender.h",
     "simple_sync_token_client.cc",
     "simple_sync_token_client.h",
+    "simple_watch_timer.cc",
+    "simple_watch_timer.h",
     "sinc_resampler.cc",
     "sinc_resampler.h",
     "stream_parser.cc",

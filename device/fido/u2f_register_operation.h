@@ -58,7 +58,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRegisterOperation
   // thus the exclude list is being probed a second time with the alternative RP
   // ID.
   bool probing_alternative_rp_id_ = false;
-  base::WeakPtrFactory<U2fRegisterOperation> weak_factory_;
+  base::WeakPtrFactory<U2fRegisterOperation> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(U2fRegisterOperation);
 };

@@ -38,6 +38,11 @@
 
 namespace {
 
+// Holds back the actual preconenct, but records histograms and acts normally
+// otherwise.
+const base::Feature kNavigationPredictorPreconnectHoldback{
+    "NavigationPredictorPreconnectHoldback", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsMainFrame(content::RenderFrameHost* rfh) {
   // Don't use rfh->GetRenderViewHost()->GetMainFrame() here because
   // RenderViewHost is being deprecated and because in OOPIF,
@@ -406,9 +411,11 @@ void NavigationPredictor::MaybePreconnectNow(Action log_action) {
       Profile::FromBrowserContext(browser_context_));
   GURL preconnect_url_serialized(preconnect_origin->Serialize());
   DCHECK(preconnect_url_serialized.is_valid());
-  loading_predictor->PrepareForPageLoad(
-      preconnect_url_serialized, predictors::HintOrigin::NAVIGATION_PREDICTOR,
-      true);
+  if (!base::FeatureList::IsEnabled(kNavigationPredictorPreconnectHoldback)) {
+    loading_predictor->PrepareForPageLoad(
+        preconnect_url_serialized, predictors::HintOrigin::NAVIGATION_PREDICTOR,
+        true);
+  }
 
   if (current_visibility_ != content::Visibility::VISIBLE)
     return;

@@ -370,7 +370,6 @@ void FillGPUInfoFromSystemInfo(GPUInfo* gpu_info,
   gpu_info->gpu.device_id = active->deviceId;
   gpu_info->gpu.driver_vendor = std::move(active->driverVendor);
   gpu_info->gpu.driver_version = std::move(active->driverVersion);
-  gpu_info->gpu.driver_date = std::move(active->driverDate);
   gpu_info->gpu.active = true;
 
   for (size_t i = 0; i < system_info->gpus.size(); i++) {
@@ -383,7 +382,6 @@ void FillGPUInfoFromSystemInfo(GPUInfo* gpu_info,
     device.device_id = system_info->gpus[i].deviceId;
     device.driver_vendor = std::move(system_info->gpus[i].driverVendor);
     device.driver_version = std::move(system_info->gpus[i].driverVersion);
-    device.driver_date = std::move(system_info->gpus[i].driverDate);
 
     gpu_info->secondary_gpus.push_back(device);
   }

@@ -207,7 +207,6 @@ struct GPU_EXPORT GPUInfo {
 
     std::string driver_vendor;
     std::string driver_version;
-    std::string driver_date;
 
     // NVIDIA CUDA compute capability, major version. 0 if undetermined. Can be
     // used to determine the hardware generation that the GPU belongs to.

@@ -26,6 +26,9 @@ class MediaToolbarButtonView : public ToolbarButton,
 
   // MediaToolbarButtonControllerDelegate implementation.
   void Show() override;
+  void Hide() override;
+  void Enable() override;
+  void Disable() override;
 
   // views::ButtonListener implementation.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

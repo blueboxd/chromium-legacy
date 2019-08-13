@@ -585,7 +585,10 @@ class RasterDecoderImpl final : public RasterDecoder,
   // Raster helpers.
   scoped_refptr<ServiceFontManager> font_manager_;
   std::unique_ptr<SharedImageRepresentationSkia> shared_image_;
-  sk_sp<SkSurface> sk_surface_;
+  base::Optional<SharedImageRepresentationSkia::ScopedWriteAccess>
+      scoped_shared_image_write_;
+  SkSurface* sk_surface_ = nullptr;
+  sk_sp<SkSurface> sk_surface_for_testing_;
   std::vector<GrBackendSemaphore> end_semaphores_;
   std::unique_ptr<cc::ServicePaintCache> paint_cache_;
 
@@ -807,11 +810,12 @@ void RasterDecoderImpl::Destroy(bool have_context) {
           SkSurface::BackendSurfaceAccess::kPresent, flush_info);
       DCHECK(result == GrSemaphoresSubmitted::kYes || end_semaphores_.empty());
       end_semaphores_.clear();
+      sk_surface_ = nullptr;
       if (shared_image_) {
-        shared_image_->EndWriteAccess(std::move(sk_surface_));
+        scoped_shared_image_write_.reset();
         shared_image_.reset();
       } else {
-        sk_surface_.reset();
+        sk_surface_for_testing_.reset();
       }
     }
     if (gr_context()) {
@@ -1432,7 +1436,8 @@ void RasterDecoderImpl::SetUpForRasterCHROMIUMForTest() {
   // backed surface for OOP raster commands.
   auto info = SkImageInfo::MakeN32(10, 10, kPremul_SkAlphaType,
                                    SkColorSpace::MakeSRGB());
-  sk_surface_ = SkSurface::MakeRaster(info);
+  sk_surface_for_testing_ = SkSurface::MakeRaster(info);
+  sk_surface_ = sk_surface_for_testing_.get();
   raster_canvas_ = sk_surface_->getCanvas();
 }
 
@@ -2228,8 +2233,11 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
 
   std::vector<GrBackendSemaphore> begin_semaphores;
   DCHECK(end_semaphores_.empty());
-  sk_surface_ = shared_image_->BeginWriteAccess(
-      final_msaa_count, surface_props, &begin_semaphores, &end_semaphores_);
+  DCHECK(!scoped_shared_image_write_);
+  scoped_shared_image_write_.emplace(shared_image_.get(), final_msaa_count,
+                                     surface_props, &begin_semaphores,
+                                     &end_semaphores_);
+  sk_surface_ = scoped_shared_image_write_->surface();
 
   if (!begin_semaphores.empty()) {
     bool result =
@@ -2240,6 +2248,7 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
   if (!sk_surface_) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
                        "failed to create surface");
+    scoped_shared_image_write_.reset();
     shared_image_.reset();
     return;
   }
@@ -2394,11 +2403,12 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
     end_semaphores_.clear();
   }
 
+  sk_surface_ = nullptr;
   if (!shared_image_) {
     // Test only path for  SetUpForRasterCHROMIUMForTest.
-    sk_surface_.reset();
+    sk_surface_for_testing_.reset();
   } else {
-    shared_image_->EndWriteAccess(std::move(sk_surface_));
+    scoped_shared_image_write_.reset();
     shared_image_.reset();
   }
 

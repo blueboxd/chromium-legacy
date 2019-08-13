@@ -73,7 +73,7 @@ void RequestProxyResolvingSocketFactory(
     Profile* profile,
     base::WeakPtr<TiclInvalidationService> service,
     network::mojom::ProxyResolvingSocketFactoryRequest request) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread, profile,
                      std::move(service), std::move(request)));
@@ -165,8 +165,7 @@ DeprecatedProfileInvalidationProviderFactory::BuildServiceInstanceFor(
           GetUserAgent(), identity_provider.get(),
           gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
           base::BindRepeating(&RequestProxyResolvingSocketFactory, profile),
-          base::CreateSingleThreadTaskRunnerWithTraits(
-              {content::BrowserThread::IO}),
+          base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
           content::BrowserContext::GetDefaultStoragePartition(profile)
               ->GetURLLoaderFactoryForBrowserProcess(),
           content::GetNetworkConnectionTracker());

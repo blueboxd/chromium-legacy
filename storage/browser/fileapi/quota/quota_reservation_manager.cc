@@ -17,7 +17,7 @@ namespace storage {
 
 QuotaReservationManager::QuotaReservationManager(
     std::unique_ptr<QuotaBackend> backend)
-    : backend_(std::move(backend)), weak_ptr_factory_(this) {
+    : backend_(std::move(backend)) {
   sequence_checker_.DetachFromSequence();
 }
 

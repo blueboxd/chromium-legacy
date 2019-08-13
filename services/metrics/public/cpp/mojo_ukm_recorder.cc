@@ -13,7 +13,7 @@
 namespace ukm {
 
 MojoUkmRecorder::MojoUkmRecorder(mojom::UkmRecorderInterfacePtr interface)
-    : interface_(std::move(interface)), weak_factory_(this) {}
+    : interface_(std::move(interface)) {}
 MojoUkmRecorder::~MojoUkmRecorder() = default;
 
 // static

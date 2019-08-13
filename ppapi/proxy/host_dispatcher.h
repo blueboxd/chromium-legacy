@@ -152,7 +152,7 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
 
   std::vector<IPC::Listener*> filters_;
 
-  base::WeakPtrFactory<HostDispatcher> weak_ptr_factory_;
+  base::WeakPtrFactory<HostDispatcher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HostDispatcher);
 };

@@ -96,7 +96,7 @@ void It2MeCliHost::PrintHelp() {
               .c_str());
 }
 
-It2MeCliHost::It2MeCliHost() : weak_factory_(this) {}
+It2MeCliHost::It2MeCliHost() {}
 It2MeCliHost::~It2MeCliHost() = default;
 
 void It2MeCliHost::Start() {

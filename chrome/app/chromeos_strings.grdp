@@ -3374,12 +3374,6 @@
   <message name="IDS_PRINT_JOB_NOTIFICATION_CANCEL_BUTTON" desc="Text on the button for the user to cancel the current print job.">
     Cancel printing
   </message>
-  <message name="IDS_PRINT_JOB_NOTIFICATION_PAUSE_BUTTON" desc="Text on the button for the user to pause the current print job.">
-    Pause printing
-  </message>
-  <message name="IDS_PRINT_JOB_NOTIFICATION_RESUME_BUTTON" desc="Text on the button for the user to resume the current print job.">
-    Resume printing
-  </message>
   <message name="IDS_PRINT_JOB_NOTIFICATION_GET_HELP_BUTTON" desc="Text on the button for the user to get help about the current print job.">
     Get help
   </message>
@@ -4127,10 +4121,10 @@
     Add Supervision
   </message>
   <message name="IDS_ADD_SUPERVISION_NETWORK_DOWN_HEADING" desc="Heading string shown in the Add Supervision page when the network is not available.">
-    Network not available
+    Can’t connect to the internet
   </message>
   <message name="IDS_ADD_SUPERVISION_NETWORK_DOWN_DESCRIPTION" desc="Description shown in the Add Supervision page when the network is not available.">
-    Please check your network connection and retry.
+    Check your internet connection
   </message>
   <message name="IDS_ADD_SUPERVISION_NETWORK_DOWN_BUTTON_LABEL" desc="Label of the button shown on the Add Supervision page when the network is not available.">
     Close
@@ -4138,13 +4132,15 @@
   <message name="IDS_ADD_SUPERVISION_EXIT_DIALOG_TITLE" desc="Title for the dialog shown when attempting to exit the Add Supervision screen.">
     Are you sure you want to exit?
   </message>
-  <!-- TODO(danan):  Add final string and remove untranslateable -->
-  <message translateable="false" name="IDS_ADD_SUPERVISION_EXIT_DIALOG_BODY" desc="Body for the dialog shown when attempting to exit the Add Supervision screen.">
-    Supervision is already set up for <ph name="USER_FIRST_NAME">$1<ex>John</ex></ph>'s Google Account.
-You can always stop supervision from the Famly Link app. We've sent instructions to you in an email that explains how to install Family Link.
+  <message name="IDS_ADD_SUPERVISION_EXIT_DIALOG_BODY" desc="Body for the dialog shown when attempting to exit the Add Supervision screen.">
+Supervision is set up for this Google Account. To set up more parental controls, select Continue.
+
+Otherwise, sign out now so that the changes to this account will be reflected on this device.
+
+You can manage this account’s settings by installing the Family Link app on your device.  We sent you instructions in an email.
   </message>
-  <message name="IDS_ADD_SUPERVISION_EXIT_DIALOG_CANCEL_BUTTON_LABEL" desc="Label for the cancel button on the dialog shown when attempting to exit the Add Supervision screen.">
-    Cancel
+  <message name="IDS_ADD_SUPERVISION_EXIT_DIALOG_CANCEL_BUTTON_LABEL" desc="Label for the cancel button on the dialog shown when attempting to exit the Add Supervision screen. 'Continue' means to continue setting up supervision, rather than exiting the dialog">
+    Continue
   </message>
   <message name="IDS_ADD_SUPERVISION_EXIT_DIALOG_SIGNOUT_BUTTON_LABEL" desc="Label for the signout button on the dialog shown when attempting to exit the Add Supervision screen.">
     Sign out

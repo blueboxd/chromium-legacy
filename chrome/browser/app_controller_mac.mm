@@ -75,6 +75,7 @@
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/profiles/profile_menu_controller.h"
 #import "chrome/browser/ui/cocoa/share_menu_controller.h"
+#import "chrome/browser/ui/cocoa/tab_menu_bridge.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
@@ -596,8 +597,19 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
 - (void)windowDidBecomeMain:(NSNotification*)notify {
   Browser* browser = chrome::FindBrowserWithWindow([notify object]);
-  if (browser)
-    [self windowChangedToProfile:browser->profile()->GetOriginalProfile()];
+  if (!browser)
+    return;
+
+  if (browser->is_type_tabbed()) {
+    tabMenuBridge_ = std::make_unique<TabMenuBridge>(
+        browser->tab_strip_model(),
+        [[NSApp mainMenu] itemWithTag:IDC_TAB_MENU]);
+    tabMenuBridge_->BuildMenu();
+  } else {
+    tabMenuBridge_.reset();
+  }
+
+  [self windowChangedToProfile:browser->profile()->GetOriginalProfile()];
 }
 
 - (void)windowDidResignMain:(NSNotification*)notify {
@@ -1532,6 +1544,10 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
 - (HistoryMenuBridge*)historyMenuBridge {
   return historyMenuBridge_.get();
+}
+
+- (TabMenuBridge*)tabMenuBridge {
+  return tabMenuBridge_.get();
 }
 
 - (void)initAppShimMenuController {

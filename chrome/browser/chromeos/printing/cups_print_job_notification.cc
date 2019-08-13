@@ -108,16 +108,6 @@ void CupsPrintJobNotification::Click(
           NotificationHandler::Type::TRANSIENT, notification_id_);
       notification_manager_->OnPrintJobNotificationRemoved(this);
       break;
-    case ButtonCommand::PAUSE_PRINTING:
-      DCHECK(print_job_);
-
-      print_job_manager->SuspendPrintJob(print_job_.get());
-      break;
-    case ButtonCommand::RESUME_PRINTING:
-      DCHECK(print_job_);
-
-      print_job_manager->ResumePrintJob(print_job_.get());
-      break;
     case ButtonCommand::GET_HELP:
       // Show CUPS printing help page.
       NavigateParams params(profile_, GURL(chrome::kCupsPrintLearnMoreURL),
@@ -286,7 +276,6 @@ CupsPrintJobNotification::GetButtonCommands() const {
     case CupsPrintJob::State::STATE_PAGE_DONE:
     case CupsPrintJob::State::STATE_RESUMED:
     case CupsPrintJob::State::STATE_SUSPENDED:
-      // TODO(crbug.com/679927): Add PAUSE and RESUME buttons.
       commands.push_back(ButtonCommand::CANCEL_PRINTING);
       break;
     case CupsPrintJob::State::STATE_FAILED:
@@ -305,11 +294,6 @@ base::string16 CupsPrintJobNotification::GetButtonLabel(
     case ButtonCommand::CANCEL_PRINTING:
       return l10n_util::GetStringUTF16(
           IDS_PRINT_JOB_NOTIFICATION_CANCEL_BUTTON);
-    case ButtonCommand::PAUSE_PRINTING:
-      return l10n_util::GetStringUTF16(IDS_PRINT_JOB_NOTIFICATION_PAUSE_BUTTON);
-    case ButtonCommand::RESUME_PRINTING:
-      return l10n_util::GetStringUTF16(
-          IDS_PRINT_JOB_NOTIFICATION_RESUME_BUTTON);
     case ButtonCommand::GET_HELP:
       return l10n_util::GetStringUTF16(
           IDS_PRINT_JOB_NOTIFICATION_GET_HELP_BUTTON);
@@ -323,12 +307,6 @@ gfx::Image CupsPrintJobNotification::GetButtonIcon(ButtonCommand button) const {
   switch (button) {
     case ButtonCommand::CANCEL_PRINTING:
       icon = bundle.GetImageNamed(IDR_PRINT_NOTIFICATION_CANCEL);
-      break;
-    case ButtonCommand::PAUSE_PRINTING:
-      icon = bundle.GetImageNamed(IDR_PRINT_NOTIFICATION_PAUSE);
-      break;
-    case ButtonCommand::RESUME_PRINTING:
-      icon = bundle.GetImageNamed(IDR_PRINT_NOTIFICATION_PLAY);
       break;
     case ButtonCommand::GET_HELP:
       icon = bundle.GetImageNamed(IDR_PRINT_NOTIFICATION_HELP);

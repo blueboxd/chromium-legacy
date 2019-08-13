@@ -47,8 +47,7 @@ class LoggingRecursiveOperation : public storage::RecursiveOperationDelegate {
                             StatusCallback callback)
       : storage::RecursiveOperationDelegate(file_system_context),
         root_(root),
-        callback_(std::move(callback)),
-        weak_factory_(this) {}
+        callback_(std::move(callback)) {}
   ~LoggingRecursiveOperation() override = default;
 
   const std::vector<LogEntry>& log_entries() const { return log_entries_; }
@@ -122,7 +121,7 @@ class LoggingRecursiveOperation : public storage::RecursiveOperationDelegate {
   std::vector<LogEntry> log_entries_;
   FileSystemURL error_url_;
 
-  base::WeakPtrFactory<LoggingRecursiveOperation> weak_factory_;
+  base::WeakPtrFactory<LoggingRecursiveOperation> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(LoggingRecursiveOperation);
 };
 

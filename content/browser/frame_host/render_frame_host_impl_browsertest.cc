@@ -1049,7 +1049,7 @@ class ExecuteScriptBeforeRenderFrameDeletedHelper
 // code and may run nested message loops and send sync IPC messages.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        FrameDetached_WindowOpenIPCFails) {
-  NavigateToURL(shell(), GetTestUrl("", "title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl("", "title1.html")));
   EXPECT_EQ(1u, Shell::windows().size());
   GURL test_url = GetTestUrl("render_frame_host", "window_open.html");
   std::string open_script =
@@ -1106,13 +1106,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, POSTNavigation) {
 
   // Navigate to a page with a form.
   TestNavigationObserver observer(shell()->web_contents());
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   EXPECT_EQ(url, observer.last_navigation_url());
   EXPECT_TRUE(observer.last_navigation_succeeded());
 
   // Submit the form.
   GURL submit_url("javascript:submitForm('isubmit')");
-  NavigateToURL(shell(), submit_url);
+  EXPECT_TRUE(
+      NavigateToURL(shell(), submit_url, post_url /* expected_commit_url */));
 
   // Check that a proper POST navigation was done.
   EXPECT_EQ("text=&select=a",
@@ -1179,7 +1180,7 @@ class NavigationHandleGrabber : public WebContentsObserver {
 // cancelled.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, FastNavigationAbort) {
   GURL url(embedded_test_server()->GetURL("/title1.html"));
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   // Now make a navigation.
   NavigationHandleGrabber observer(shell()->web_contents());
@@ -2362,7 +2363,7 @@ void FileChooserCallback(base::RunLoop* run_loop,
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        FileChooserAfterRfhDeath) {
-  NavigateToURL(shell(), GURL("about:balnk"));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
   auto* rfh = static_cast<RenderFrameHostImpl*>(
       shell()->web_contents()->GetMainFrame());
   blink::mojom::FileChooserPtr chooser = rfh->BindFileChooserForTesting();
@@ -2427,7 +2428,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // To make sure we hit these conditions and that we don't exit the test too
   // soon, let's wait until the document.readyState finalizes. We don't really
   // care if that succeeds since, in the failing case, the renderer is crashing.
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   ignore_result(
       WaitForRenderFrameReady(shell()->web_contents()->GetMainFrame()));
 

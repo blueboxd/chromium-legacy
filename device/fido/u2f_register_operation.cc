@@ -26,8 +26,7 @@ U2fRegisterOperation::U2fRegisterOperation(
     FidoDevice* device,
     const CtapMakeCredentialRequest& request,
     DeviceResponseCallback callback)
-    : DeviceOperation(device, request, std::move(callback)),
-      weak_factory_(this) {}
+    : DeviceOperation(device, request, std::move(callback)) {}
 
 U2fRegisterOperation::~U2fRegisterOperation() = default;
 

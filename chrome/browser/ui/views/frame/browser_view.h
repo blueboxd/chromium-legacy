@@ -369,7 +369,7 @@ class BrowserView : public BrowserWindow,
   bool IsToolbarShowing() const override;
   SharingDialog* ShowClickToCallDialog(
       content::WebContents* contents,
-      ClickToCallSharingDialogController* controller) override;
+      ClickToCallUiController* controller) override;
   void ShowUpdateChromeDialog() override;
   void ShowIntentPickerBubble(
       std::vector<IntentPickerBubbleView::AppInfo> app_info,

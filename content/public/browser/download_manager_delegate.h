@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/quarantine_connection.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/save_page_type.h"
 #include "content/public/browser/web_contents.h"
@@ -193,6 +194,11 @@ class CONTENT_EXPORT DownloadManagerDelegate {
       const std::string& request_method,
       base::Optional<url::Origin> request_initiator,
       CheckDownloadAllowedCallback check_download_allowed_cb);
+
+  // Gets a callback which can connect the download manager to a Quarantine
+  // Service instance if available.
+  virtual download::QuarantineConnectionCallback
+  GetQuarantineConnectionCallback();
 
  protected:
   virtual ~DownloadManagerDelegate();

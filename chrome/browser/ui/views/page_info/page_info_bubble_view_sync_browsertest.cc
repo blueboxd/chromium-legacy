@@ -97,27 +97,45 @@ class PageInfoBubbleViewSyncBrowserTest : public SyncTest {
     // In browser tests, the profile may already by authenticated with stub
     // account |user_manager::kStubUserEmail|.
     CoreAccountInfo info =
-        IdentityManagerFactory::GetForProfile(profile)->GetPrimaryAccountInfo();
+        IdentityManagerFactory::GetForProfile(browser()->profile())
+            ->GetPrimaryAccountInfo();
     username = info.email;
 #endif
     if (username.empty()) {
-      browser()->profile()->GetPrefs()->SetString(
-          prefs::kGoogleServicesUsername, "user@domain.com");
-      username = "user@domain.com";
+      username = "user@example.com";
     }
 
     std::unique_ptr<ProfileSyncServiceHarness> harness =
         ProfileSyncServiceHarness::Create(
-            profile, username, "password",
+            browser()->profile(), username, "password",
             ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN);
-    EXPECT_TRUE(harness->SetupSync());
+
+#if !defined(OS_CHROMEOS)
+    // Sign the profile in.
+    ASSERT_TRUE(harness->SignInPrimaryAccount());
+#endif
+
+    CoreAccountInfo current_info =
+        IdentityManagerFactory::GetForProfile(browser()->profile())
+            ->GetPrimaryAccountInfo();
+    // Need to update hosted domain since it is not populated.
+    AccountInfo account_info;
+    account_info.account_id = current_info.account_id;
+    account_info.gaia = current_info.gaia;
+    account_info.email = current_info.email;
+    account_info.hosted_domain = "domain.com";
+    signin::UpdateAccountInfoForAccount(
+        IdentityManagerFactory::GetForProfile(browser()->profile()),
+        account_info);
+
+    ASSERT_TRUE(harness->SetupSync());
   }
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewSyncBrowserTest);
 };
 
 // Test opening page info bubble that matches
-// SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE threat type.
+// SB_THREAT_TYPE_GAIA_PASSWORD_REUSE threat type.
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewSyncBrowserTest,
                        VerifySignInPasswordReusePageInfoBubble) {
   Profile* profile = browser()->profile();
@@ -128,13 +146,16 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewSyncBrowserTest,
   histograms.ExpectTotalCount(safe_browsing::kSyncPasswordPageInfoHistogram, 0);
   ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL("/"));
   // Update security state of the current page to match
-  // SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE.
+  // SB_THREAT_TYPE_GAIA_PASSWORD_REUSE.
   safe_browsing::ChromePasswordProtectionService* service = safe_browsing::
       ChromePasswordProtectionService::GetPasswordProtectionService(profile);
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  service->ShowModalWarning(contents, "token",
-                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
+  safe_browsing::ReusedPasswordAccountType account_type;
+  account_type.set_account_type(
+      safe_browsing::ReusedPasswordAccountType::GSUITE);
+  account_type.set_is_account_syncing(true);
+  service->ShowModalWarning(contents, "token", account_type);
 
   OpenPageInfoBubble(browser());
   views::View* change_password_button = GetView(
@@ -147,8 +168,9 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewSyncBrowserTest,
       SecurityStateTabHelper::FromWebContents(contents);
   std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
       helper->GetVisibleSecurityState();
-  ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE,
-            visible_security_state->malicious_content_status);
+  ASSERT_EQ(
+      security_state::MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE,
+      visible_security_state->malicious_content_status);
 
   // Verify these two buttons are showing.
   EXPECT_TRUE(change_password_button->GetVisible());

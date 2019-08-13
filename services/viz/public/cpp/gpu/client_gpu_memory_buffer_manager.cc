@@ -35,8 +35,7 @@ ClientGpuMemoryBufferManager::ClientGpuMemoryBufferManager(
     mojom::GpuMemoryBufferFactoryPtr gpu)
     : thread_("GpuMemoryThread"),
       gpu_memory_buffer_support_(
-          std::make_unique<gpu::GpuMemoryBufferSupport>()),
-      weak_ptr_factory_(this) {
+          std::make_unique<gpu::GpuMemoryBufferSupport>()) {
   CHECK(thread_.Start());
   // The thread is owned by this object. Which means the task will not run if
   // the object has been destroyed. So Unretained() is safe.

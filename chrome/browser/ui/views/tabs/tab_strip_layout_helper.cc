@@ -148,12 +148,19 @@ void TabStripLayoutHelper::InsertTabAt(
                   TabAnimationState::TabOpenness::kOpen));
 }
 
-void TabStripLayoutHelper::CloseTabAt(int model_index) {
-  // TODO(958173): Animate closed.
+void TabStripLayoutHelper::RemoveTabNoAnimation(int model_index) {
   TabAnimation* animation =
       slots_[GetSlotIndexForTabModelIndex(model_index)].animation.get();
   animation->AnimateTo(animation->target_state().WithOpenness(
       TabAnimationState::TabOpenness::kClosed));
+  animation->CompleteAnimation();
+}
+
+void TabStripLayoutHelper::RemoveTab(int model_index) {
+  int slot_index = GetSlotIndexForTabModelIndex(model_index);
+  AnimateSlot(slot_index,
+              slots_[slot_index].animation->target_state().WithOpenness(
+                  TabAnimationState::TabOpenness::kClosed));
 }
 
 void TabStripLayoutHelper::OnTabDestroyed(Tab* tab) {
@@ -161,8 +168,10 @@ void TabStripLayoutHelper::OnTabDestroyed(Tab* tab) {
       std::find_if(slots_.begin(), slots_.end(), [tab](const TabSlot& slot) {
         return slot.type == ViewType::kTab && slot.view == tab;
       });
-  DCHECK(it != slots_.end());
-  slots_.erase(it);
+  // Remove the tab from |slots_| if it is still there. It will have already
+  // been removed if the tab was destroyed by |RemoveClosedTabs|.
+  if (it != slots_.end())
+    slots_.erase(it);
 }
 
 void TabStripLayoutHelper::MoveTab(
@@ -450,8 +459,11 @@ void TabStripLayoutHelper::TickAnimations() {
 void TabStripLayoutHelper::RemoveClosedTabs() {
   for (auto it = slots_.begin(); it != slots_.end();) {
     if (it->animation->IsClosed()) {
-      it->animation->NotifyCloseCompleted();
+      // Remove the closed tab from |slots_| before invoking the callback so
+      // that this is in a consistent state and can be reentered.
+      TabSlot removed_slot = std::move(*it);
       it = slots_.erase(it);
+      removed_slot.animation->NotifyCloseCompleted();
     } else {
       it++;
     }

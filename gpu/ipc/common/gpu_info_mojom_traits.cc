@@ -21,8 +21,7 @@ bool StructTraits<gpu::mojom::GpuDeviceDataView, gpu::GPUInfo::GPUDevice>::Read(
   return data.ReadVendorString(&out->vendor_string) &&
          data.ReadDeviceString(&out->device_string) &&
          data.ReadDriverVendor(&out->driver_vendor) &&
-         data.ReadDriverVersion(&out->driver_version) &&
-         data.ReadDriverDate(&out->driver_date);
+         data.ReadDriverVersion(&out->driver_version);
 }
 
 // static

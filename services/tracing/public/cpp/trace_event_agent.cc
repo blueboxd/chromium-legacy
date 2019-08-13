@@ -42,8 +42,7 @@ TraceEventAgent::TraceEventAgent()
     : BaseAgent(kTraceEventLabel,
                 mojom::TraceDataType::ARRAY,
                 base::trace_event::TraceLog::GetInstance()->process_id()),
-      enabled_tracing_modes_(0),
-      weak_ptr_factory_(this) {
+      enabled_tracing_modes_(0) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // These filters are used by TraceLog in the legacy tracing system and JSON

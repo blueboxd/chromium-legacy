@@ -33,30 +33,65 @@ namespace WTF {
 //     Bind(&Func1, 42, str);
 //     Bind(&Func1, 42, str.IsolatedCopy());
 
+namespace internal {
+
+// Deduction of the signature to avoid complicated calls to MakeUnboundRunType.
+
+template <typename Signature>
+auto MakeCrossThreadFunction(base::RepeatingCallback<Signature> callback) {
+  return CrossThreadFunction<Signature>(std::move(callback));
+}
+
+template <typename Signature>
+auto MakeCrossThreadOnceFunction(base::OnceCallback<Signature> callback) {
+  return CrossThreadOnceFunction<Signature>(std::move(callback));
+}
+
+// Insertion of coercion for specific types; transparent forwarding otherwise.
+
+template <typename T>
+decltype(auto) CoerceFunctorForCrossThreadBind(T&& functor) {
+  return std::forward<T>(functor);
+}
+
+template <typename Signature>
+base::RepeatingCallback<Signature> CoerceFunctorForCrossThreadBind(
+    CrossThreadFunction<Signature>&& functor) {
+  return ConvertToBaseCallback(std::move(functor));
+}
+
+template <typename Signature>
+base::OnceCallback<Signature> CoerceFunctorForCrossThreadBind(
+    CrossThreadOnceFunction<Signature>&& functor) {
+  return ConvertToBaseOnceCallback(std::move(functor));
+}
+
+}  // namespace internal
+
 template <typename FunctionType, typename... Ps>
-CrossThreadFunction<base::MakeUnboundRunType<FunctionType, Ps...>>
-CrossThreadBindRepeating(FunctionType&& function, Ps&&... parameters) {
+auto CrossThreadBindRepeating(FunctionType&& function, Ps&&... parameters) {
   static_assert(
       internal::CheckGCedTypeRestrictions<std::index_sequence_for<Ps...>,
                                           std::decay_t<Ps>...>::ok,
       "A bound argument uses a bad pattern.");
-  using UnboundRunType = base::MakeUnboundRunType<FunctionType, Ps...>;
-  return CrossThreadFunction<UnboundRunType>(
-      base::Bind(function, CrossThreadCopier<std::decay_t<Ps>>::Copy(
-                               std::forward<Ps>(parameters))...));
+  return internal::MakeCrossThreadFunction(
+      base::Bind(internal::CoerceFunctorForCrossThreadBind(
+                     std::forward<FunctionType>(function)),
+                 CrossThreadCopier<std::decay_t<Ps>>::Copy(
+                     std::forward<Ps>(parameters))...));
 }
 
 template <typename FunctionType, typename... Ps>
-CrossThreadOnceFunction<base::MakeUnboundRunType<FunctionType, Ps...>>
-CrossThreadBindOnce(FunctionType&& function, Ps&&... parameters) {
+auto CrossThreadBindOnce(FunctionType&& function, Ps&&... parameters) {
   static_assert(
       internal::CheckGCedTypeRestrictions<std::index_sequence_for<Ps...>,
                                           std::decay_t<Ps>...>::ok,
       "A bound argument uses a bad pattern.");
-  using UnboundRunType = base::MakeUnboundRunType<FunctionType, Ps...>;
-  return CrossThreadOnceFunction<UnboundRunType>(base::BindOnce(
-      std::move(function), CrossThreadCopier<std::decay_t<Ps>>::Copy(
-                               std::forward<Ps>(parameters))...));
+  return internal::MakeCrossThreadOnceFunction(
+      base::BindOnce(internal::CoerceFunctorForCrossThreadBind(
+                         std::forward<FunctionType>(function)),
+                     CrossThreadCopier<std::decay_t<Ps>>::Copy(
+                         std::forward<Ps>(parameters))...));
 }
 
 }  // namespace WTF

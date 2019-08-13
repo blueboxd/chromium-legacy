@@ -30,8 +30,7 @@ CredentialManagementHandler::CredentialManagementHandler(
                              supported_transports),
       ready_callback_(std::move(ready_callback)),
       get_pin_callback_(std::move(get_pin_callback)),
-      finished_callback_(std::move(finished_callback)),
-      weak_factory_(this) {
+      finished_callback_(std::move(finished_callback)) {
   Start();
 }
 

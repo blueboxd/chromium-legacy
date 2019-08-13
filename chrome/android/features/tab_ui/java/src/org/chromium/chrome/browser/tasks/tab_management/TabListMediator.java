@@ -721,8 +721,8 @@ class TabListMediator {
             if (mModel.get(i).get(TabProperties.IS_SELECTED)) count++;
             mModel.get(i).set(TabProperties.IS_SELECTED, false);
         }
-        assert (count == 1)
-            : "There should be exactly one selected tab when calling "
+        assert (count == 1 || mModel.size() == 0)
+            : "There should be exactly one selected tab or no tabs at all when calling "
               + "TabListMediator.prepareOverview()";
     }
 

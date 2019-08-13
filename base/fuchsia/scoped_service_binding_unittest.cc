@@ -15,10 +15,8 @@ class ScopedServiceBindingTest : public ServiceDirectoryTestBase {};
 
 // Verifies that ScopedServiceBinding allows connection more than once.
 TEST_F(ScopedServiceBindingTest, ConnectTwice) {
-  auto stub = public_service_directory_client_
-                  ->ConnectToService<testfidl::TestInterface>();
-  auto stub2 = public_service_directory_client_
-                   ->ConnectToService<testfidl::TestInterface>();
+  auto stub = public_service_directory_->Connect<testfidl::TestInterface>();
+  auto stub2 = public_service_directory_->Connect<testfidl::TestInterface>();
   VerifyTestInterface(&stub, ZX_OK);
   VerifyTestInterface(&stub2, ZX_OK);
 }
@@ -30,17 +28,17 @@ TEST_F(ScopedServiceBindingTest, SingleClientPreferNew) {
   service_binding_ = nullptr;
   ScopedSingleClientServiceBinding<testfidl::TestInterface,
                                    ScopedServiceBindingPolicy::kPreferNew>
-      binding(service_directory_.get(), &test_service_);
+      binding(outgoing_directory_.get(), &test_service_);
 
   // Connect the first client, and verify that it is functional.
-  auto existing_client = public_service_directory_client_
-                             ->ConnectToService<testfidl::TestInterface>();
+  auto existing_client =
+      public_service_directory_->Connect<testfidl::TestInterface>();
   VerifyTestInterface(&existing_client, ZX_OK);
 
   // Connect the second client, so the existing one should be disconnected and
   // the new should be functional.
-  auto new_client = public_service_directory_client_
-                        ->ConnectToService<testfidl::TestInterface>();
+  auto new_client =
+      public_service_directory_->Connect<testfidl::TestInterface>();
   RunLoop().RunUntilIdle();
   EXPECT_FALSE(existing_client);
   VerifyTestInterface(&new_client, ZX_OK);
@@ -53,17 +51,17 @@ TEST_F(ScopedServiceBindingTest, SingleClientPreferExisting) {
   service_binding_ = nullptr;
   ScopedSingleClientServiceBinding<testfidl::TestInterface,
                                    ScopedServiceBindingPolicy::kPreferExisting>
-      binding(service_directory_.get(), &test_service_);
+      binding(outgoing_directory_.get(), &test_service_);
 
   // Connect the first client, and verify that it is functional.
-  auto existing_client = public_service_directory_client_
-                             ->ConnectToService<testfidl::TestInterface>();
+  auto existing_client =
+      public_service_directory_->Connect<testfidl::TestInterface>();
   VerifyTestInterface(&existing_client, ZX_OK);
 
   // Connect the second client, then verify that the it gets closed and the
   // existing one remains functional.
-  auto new_client = public_service_directory_client_
-                        ->ConnectToService<testfidl::TestInterface>();
+  auto new_client =
+      public_service_directory_->Connect<testfidl::TestInterface>();
   RunLoop().RunUntilIdle();
   EXPECT_FALSE(new_client);
   VerifyTestInterface(&existing_client, ZX_OK);
@@ -74,20 +72,38 @@ TEST_F(ScopedServiceBindingTest, SingleClientDefaultIsPreferNew) {
   // Teardown the default multi-client binding and create a prefer-new one.
   service_binding_ = nullptr;
   ScopedSingleClientServiceBinding<testfidl::TestInterface> binding(
-      service_directory_.get(), &test_service_);
+      outgoing_directory_.get(), &test_service_);
 
   // Connect the first client, and verify that it is functional.
-  auto existing_client = public_service_directory_client_
-                             ->ConnectToService<testfidl::TestInterface>();
+  auto existing_client =
+      public_service_directory_->Connect<testfidl::TestInterface>();
   VerifyTestInterface(&existing_client, ZX_OK);
 
   // Connect the second client, so the existing one should be disconnected and
   // the new should be functional.
-  auto new_client = public_service_directory_client_
-                        ->ConnectToService<testfidl::TestInterface>();
+  auto new_client =
+      public_service_directory_->Connect<testfidl::TestInterface>();
   RunLoop().RunUntilIdle();
   EXPECT_FALSE(existing_client);
   VerifyTestInterface(&new_client, ZX_OK);
+}
+
+// Verify that we can publish a debug service.
+TEST_F(ScopedServiceBindingTest, ConnectDebugService) {
+  // Remove the public service binding.
+  service_binding_.reset();
+
+  // Publish the test service to the "debug" directory.
+  ScopedServiceBinding<testfidl::TestInterface> debug_service_binding(
+      outgoing_directory_->debug_dir(), &test_service_);
+
+  auto debug_stub =
+      debug_service_directory_->Connect<testfidl::TestInterface>();
+  VerifyTestInterface(&debug_stub, ZX_OK);
+
+  auto release_stub =
+      public_service_directory_->Connect<testfidl::TestInterface>();
+  VerifyTestInterface(&release_stub, ZX_ERR_PEER_CLOSED);
 }
 
 }  // namespace fuchsia

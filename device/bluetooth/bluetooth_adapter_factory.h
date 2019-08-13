@@ -109,7 +109,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactory {
    private:
     bool le_supported_ = false;
 
-    base::WeakPtrFactory<GlobalValuesForTesting> weak_ptr_factory_;
+    base::WeakPtrFactory<GlobalValuesForTesting> weak_ptr_factory_{this};
     DISALLOW_COPY_AND_ASSIGN(GlobalValuesForTesting);
   };
 

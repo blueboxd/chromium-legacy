@@ -698,6 +698,7 @@
 
     'tryserver.chrome': {
       'chromeos-betty-chrome': 'official_cros_chrome_sdk_headless_ozone',
+      'chromeos-kevin-chrome': 'official_cros_chrome_sdk_headless_ozone',
       'linux-chrome': 'official_goma',
       'linux-chromeos-chrome': 'official_goma_chromeos_minimal_symbols',
       'win_chrome_official': 'official_goma_x86',

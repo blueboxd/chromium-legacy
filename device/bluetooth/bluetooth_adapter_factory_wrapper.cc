@@ -89,8 +89,7 @@ void BluetoothAdapterFactoryWrapper::SetBluetoothAdapterForTesting(
   set_adapter(std::move(mock_adapter));
 }
 
-BluetoothAdapterFactoryWrapper::BluetoothAdapterFactoryWrapper()
-    : weak_ptr_factory_(this) {
+BluetoothAdapterFactoryWrapper::BluetoothAdapterFactoryWrapper() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 

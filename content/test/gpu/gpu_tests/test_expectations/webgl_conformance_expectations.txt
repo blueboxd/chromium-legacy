@@ -328,17 +328,6 @@ crbug.com/928926 [ mac ] conformance/ogles/GL/abs/abs_001_to_006.html [ RetryOnF
 crbug.com/905007 [ mac amd ] conformance/glsl/bugs/bool-type-cast-bug-int-float.html [ Failure ]
 crbug.com/642822 [ mac amd ] conformance/rendering/clipping-wide-points.html [ Failure ]
 crbug.com/929009 [ mac amd ] conformance/glsl/misc/shader-with-non-reserved-words.html [ RetryOnFailure ]
-crbug.com/992657 [ mac amd ] conformance/textures/image_data/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
-crbug.com/992657 [ mac amd ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
-crbug.com/992657 [ mac amd ] conformance/uniforms/no-over-optimization-on-uniform-array-08.html [ Failure ]
-crbug.com/992657 [ mac amd ] conformance/textures/misc/texture-size-cube-maps.html [ Failure ]
-crbug.com/992657 [ mac amd ] conformance/programs/program-infolog.html [ Failure ]
-crbug.com/992657 [ mac amd ] conformance/textures/image_bitmap_from_image/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
-crbug.com/992657 [ mac amd ] conformance/uniforms/no-over-optimization-on-uniform-array-02.html [ Failure ]
-crbug.com/992657 [ mac amd ] conformance/textures/misc/texture-complete.html [ Failure ]
-
-# See also crbug.com/angleproject/3766 and crbug.com/635081 for this one
-crbug.com/992657 [ mac ] conformance/textures/misc/tex-input-validation.html [ Failure ]
 
 # TODO(kbr): uncomment the following exepectation after test has
 # been made more robust.
@@ -355,6 +344,7 @@ crbug.com/635081 [ mac nvidia-0xfe9 ] conformance/programs/gl-bind-attrib-locati
 crbug.com/635081 [ mac nvidia-0xfe9 ] conformance/programs/gl-bind-attrib-location-test.html [ Failure ]
 crbug.com/992313 [ mac nvidia-0xfe9 ] conformance/rendering/rendering-stencil-large-viewport.html [ RetryOnFailure ]
 crbug.com/635081 [ mac nvidia-0xfe9 no-passthrough ] conformance/renderbuffers/framebuffer-object-attachment.html [ Failure ]
+crbug.com/635081 [ mac nvidia-0xfe9 no-passthrough ] conformance/textures/misc/tex-input-validation.html [ Failure ]
 crbug.com/784817 [ mac nvidia-0xfe9 ] conformance/glsl/bugs/init-array-with-loop.html [ Failure ]
 crbug.com/871352 [ mac debug nvidia-0xfe9 ] conformance/uniforms/uniform-samplers-test.html [ Failure ]
 crbug.com/948218 [ mac debug nvidia-0xfe9 ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Failure ]
@@ -387,6 +377,7 @@ crbug.com/angleproject/3766 [ mac passthrough ] conformance/textures/misc/copy-t
 crbug.com/angleproject/3774 [ mac passthrough ] conformance/textures/misc/gl-pixelstorei.html [ Failure ]
 crbug.com/angleproject/3766 [ mac passthrough ] conformance/textures/misc/gl-teximage.html [ Failure ]
 crbug.com/angleproject/3766 [ mac passthrough ] conformance/textures/misc/tex-image-webgl.html [ Failure ]
+crbug.com/angleproject/3766 [ mac passthrough ] conformance/textures/misc/tex-input-validation.html [ Failure ]
 crbug.com/989194 [ mac passthrough ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Failure ]
 crbug.com/989194 [ mac passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
 crbug.com/989194 [ mac passthrough ] conformance/textures/misc/texture-npot-video.html [ Failure ]

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_WEBUI_GRAPH_DUMP_IMPL_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_WEBUI_GRAPH_DUMP_IMPL_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -69,6 +71,20 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump,
   // System node functions.
   // Ignored.
   void OnProcessCPUUsageReady(SystemNodeImpl* system_node) override {}
+
+  // Worker node functions.
+  // Ignored. TODO(siggi): Add workers to the WebUI graph.
+  void OnWorkerNodeAdded(WorkerNodeImpl* worker_node) override {}
+  void OnBeforeWorkerNodeRemoved(WorkerNodeImpl* worker_node) override {}
+  void OnClientFrameAdded(WorkerNodeImpl* worker_node,
+                          FrameNodeImpl* client_frame_node) override {}
+  void OnBeforeClientFrameRemoved(WorkerNodeImpl* worker_node,
+                                  FrameNodeImpl* client_frame_node) override {}
+  void OnClientWorkerAdded(WorkerNodeImpl* worker_node,
+                           WorkerNodeImpl* client_worker_node) override {}
+  void OnBeforeClientWorkerRemoved(
+      WorkerNodeImpl* worker_node,
+      WorkerNodeImpl* client_worker_node) override {}
 
  private:
   // The favicon requests happen on the UI thread. This helper class

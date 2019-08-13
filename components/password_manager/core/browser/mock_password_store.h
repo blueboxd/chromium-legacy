@@ -75,7 +75,7 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD3(SaveGaiaPasswordHash,
                void(const std::string&,
                     const base::string16&,
-                    metrics_util::SyncPasswordHashChange));
+                    metrics_util::GaiaPasswordHashChange));
   MOCK_METHOD2(SaveEnterprisePasswordHash,
                void(const std::string&, const base::string16&));
   MOCK_METHOD1(ClearGaiaPasswordHash, void(const std::string&));

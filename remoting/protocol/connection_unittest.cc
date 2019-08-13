@@ -183,7 +183,7 @@ class TestAudioSource : public AudioSource {
 
 class FakeAudioPlayer : public AudioStub {
  public:
-  FakeAudioPlayer() : weak_factory_(this) {}
+  FakeAudioPlayer() {}
   ~FakeAudioPlayer() override = default;
 
   // AudioStub interface.
@@ -253,7 +253,7 @@ class FakeAudioPlayer : public AudioStub {
   base::RunLoop* run_loop_ = nullptr;
   size_t samples_expected_ = 0;
 
-  base::WeakPtrFactory<FakeAudioPlayer> weak_factory_;
+  base::WeakPtrFactory<FakeAudioPlayer> weak_factory_{this};
 };
 
 }  // namespace

@@ -25,7 +25,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_item_impl.h"
-#include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "components/download/public/common/download_ukm_helper.h"
@@ -124,25 +123,11 @@ bool CanSaveAsComplete(const std::string& contents_mime_type) {
          contents_mime_type == "application/xhtml+xml";
 }
 
-// Request handle for SavePackage downloads. Currently doesn't support
-// pause/resume, but returns a WebContents.
-class SavePackageRequestHandle
-    : public download::DownloadRequestHandleInterface {
- public:
-  explicit SavePackageRequestHandle(base::WeakPtr<SavePackage> save_package)
-      : save_package_(save_package) {}
-
-  // DownloadRequestHandleInterface
-  void PauseRequest() override {}
-  void ResumeRequest() override {}
-  void CancelRequest(bool user_cancel) override {
-    if (save_package_.get() && !save_package_->canceled())
-      save_package_->Cancel(user_cancel, false);
-  }
-
- private:
-  base::WeakPtr<SavePackage> const save_package_;
-};
+void CancelSavePackage(base::WeakPtr<SavePackage> save_package,
+                       bool user_cancel) {
+  if (save_package.get() && !save_package->canceled())
+    save_package->Cancel(user_cancel, false);
+}
 
 }  // namespace
 
@@ -286,16 +271,13 @@ bool SavePackage::Init(
     return false;
   }
 
-  std::unique_ptr<download::DownloadRequestHandleInterface> request_handle(
-      new SavePackageRequestHandle(AsWeakPtr()));
-
   RenderFrameHost* frame_host = web_contents()->GetMainFrame();
   download_manager_->CreateSavePackageDownloadItem(
       saved_main_file_path_, page_url_,
       ((save_type_ == SAVE_PAGE_TYPE_AS_MHTML) ? "multipart/related"
                                                : "text/html"),
       frame_host->GetProcess()->GetID(), frame_host->GetRoutingID(),
-      std::move(request_handle),
+      base::BindOnce(&CancelSavePackage, AsWeakPtr()),
       base::Bind(&SavePackage::InitWithDownloadItem, AsWeakPtr(),
                  download_created_callback));
   return true;

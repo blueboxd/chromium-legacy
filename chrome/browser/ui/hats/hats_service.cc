@@ -40,6 +40,8 @@ constexpr char kHatsSurveyTriggerSatisfaction[] = "satisfaction";
 constexpr base::TimeDelta kMinimumTimeBetweenSurveyStarts =
     base::TimeDelta::FromDays(60);
 
+constexpr base::TimeDelta kMinimumProfileAge = base::TimeDelta::FromDays(30);
+
 // Preferences Data Model
 // The kHatsSurveyMetadata pref points to a dictionary.
 // The valid keys and value types for this dictionary are as follows:
@@ -147,6 +149,9 @@ bool HatsService::ShouldShowSurvey(const std::string& trigger) const {
   }
 
   base::Time now = base::Time::Now();
+
+  if ((now - profile_->GetCreationTime()) < kMinimumProfileAge)
+    return false;
 
   base::Optional<base::Time> last_survey_started_time =
       util::ValueToTime(pref_data->FindPath(GetLastSurveyStartedTime(trigger)));

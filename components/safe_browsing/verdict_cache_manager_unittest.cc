@@ -37,7 +37,7 @@ class VerdictCacheManagerTest : public ::testing::Test {
   void CachePhishGuardVerdict(
       const GURL& url,
       LoginReputationClientRequest::TriggerType trigger,
-      PasswordType password_type,
+      ReusedPasswordAccountType password_type,
       LoginReputationClientResponse::VerdictType verdict,
       int cache_duration_sec,
       const std::string& cache_expression,
@@ -62,67 +62,73 @@ class VerdictCacheManagerTest : public ::testing::Test {
 
 TEST_F(VerdictCacheManagerTest, TestCanRetrieveCachedVerdict) {
   GURL url("https://www.google.com/");
-
+  ReusedPasswordAccountType password_type;
+  password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
+  password_type.set_is_account_syncing(true);
   LoginReputationClientResponse cached_verdict;
   cached_verdict.set_cache_expression("www.google.com/");
   EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
             cache_manager_->GetCachedPhishGuardVerdict(
                 url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordType::PRIMARY_ACCOUNT_PASSWORD, &cached_verdict));
+                password_type, &cached_verdict));
 
   CachePhishGuardVerdict(url,
                          LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                         PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-                         LoginReputationClientResponse::SAFE, 60,
+                         password_type, LoginReputationClientResponse::SAFE, 60,
                          "www.google.com/", base::Time::Now());
 
   EXPECT_EQ(LoginReputationClientResponse::SAFE,
             cache_manager_->GetCachedPhishGuardVerdict(
                 url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordType::PRIMARY_ACCOUNT_PASSWORD, &cached_verdict));
+                password_type, &cached_verdict));
 }
 
 TEST_F(VerdictCacheManagerTest, TestCacheSplitByTriggerType) {
   GURL url("https://www.google.com/");
-
+  ReusedPasswordAccountType password_type;
+  password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
+  password_type.set_is_account_syncing(true);
   LoginReputationClientResponse cached_verdict;
   cached_verdict.set_cache_expression("www.google.com/");
   EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
             cache_manager_->GetCachedPhishGuardVerdict(
                 url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordType::PRIMARY_ACCOUNT_PASSWORD, &cached_verdict));
+                password_type, &cached_verdict));
 
   CachePhishGuardVerdict(url,
                          LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-                         PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-                         LoginReputationClientResponse::SAFE, 60,
+                         password_type, LoginReputationClientResponse::SAFE, 60,
                          "www.google.com/", base::Time::Now());
 
   EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
             cache_manager_->GetCachedPhishGuardVerdict(
                 url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordType::PRIMARY_ACCOUNT_PASSWORD, &cached_verdict));
+                password_type, &cached_verdict));
 }
 
 TEST_F(VerdictCacheManagerTest, TestCacheSplitByPasswordType) {
   GURL url("https://www.google.com/");
-
+  ReusedPasswordAccountType password_type;
+  password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
+  password_type.set_is_account_syncing(true);
   LoginReputationClientResponse cached_verdict;
   cached_verdict.set_cache_expression("www.google.com/");
   EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
             cache_manager_->GetCachedPhishGuardVerdict(
                 url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordType::PRIMARY_ACCOUNT_PASSWORD, &cached_verdict));
+                password_type, &cached_verdict));
 
-  CachePhishGuardVerdict(
-      url, LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-      PasswordType::ENTERPRISE_PASSWORD, LoginReputationClientResponse::SAFE,
-      60, "www.google.com/", base::Time::Now());
-
+  password_type.set_account_type(
+      ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
+  CachePhishGuardVerdict(url,
+                         LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
+                         password_type, LoginReputationClientResponse::SAFE, 60,
+                         "www.google.com/", base::Time::Now());
+  password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
   EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
             cache_manager_->GetCachedPhishGuardVerdict(
                 url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordType::PRIMARY_ACCOUNT_PASSWORD, &cached_verdict));
+                password_type, &cached_verdict));
 }
 
 TEST_F(VerdictCacheManagerTest, TestGetStoredPhishGuardVerdictCount) {
@@ -132,27 +138,30 @@ TEST_F(VerdictCacheManagerTest, TestGetStoredPhishGuardVerdictCount) {
   cached_verdict.set_cache_expression("www.google.com/");
   EXPECT_EQ(0u, cache_manager_->GetStoredPhishGuardVerdictCount(
                     LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
-
-  CachePhishGuardVerdict(
-      url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::ENTERPRISE_PASSWORD, LoginReputationClientResponse::SAFE,
-      60, "www.google.com/", base::Time::Now());
-
-  EXPECT_EQ(1u, cache_manager_->GetStoredPhishGuardVerdictCount(
-                    LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
-
-  CachePhishGuardVerdict(
-      url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::ENTERPRISE_PASSWORD, LoginReputationClientResponse::SAFE,
-      60, "www.google.com/", base::Time::Now());
+  ReusedPasswordAccountType password_type;
+  password_type.set_account_type(
+      ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
+  password_type.set_is_account_syncing(true);
+  CachePhishGuardVerdict(url,
+                         LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+                         password_type, LoginReputationClientResponse::SAFE, 60,
+                         "www.google.com/", base::Time::Now());
 
   EXPECT_EQ(1u, cache_manager_->GetStoredPhishGuardVerdictCount(
                     LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
 
-  CachePhishGuardVerdict(
-      url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::ENTERPRISE_PASSWORD, LoginReputationClientResponse::SAFE,
-      60, "www.google.com/path", base::Time::Now());
+  CachePhishGuardVerdict(url,
+                         LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+                         password_type, LoginReputationClientResponse::SAFE, 60,
+                         "www.google.com/", base::Time::Now());
+
+  EXPECT_EQ(1u, cache_manager_->GetStoredPhishGuardVerdictCount(
+                    LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
+
+  CachePhishGuardVerdict(url,
+                         LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+                         password_type, LoginReputationClientResponse::SAFE, 60,
+                         "www.google.com/path", base::Time::Now());
 
   EXPECT_EQ(2u, cache_manager_->GetStoredPhishGuardVerdictCount(
                     LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
@@ -182,12 +191,16 @@ TEST_F(VerdictCacheManagerTest, TestParseInvalidVerdictEntry) {
       CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
       std::move(cache_dictionary));
 
+  ReusedPasswordAccountType password_type;
+  password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
+  password_type.set_is_account_syncing(true);
+
   LoginReputationClientResponse cached_verdict;
   EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
             cache_manager_->GetCachedPhishGuardVerdict(
                 GURL("https://www.google.com/"),
                 LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordType::PRIMARY_ACCOUNT_PASSWORD, &cached_verdict));
+                password_type, &cached_verdict));
 }
 
 TEST_F(VerdictCacheManagerTest, TestRemoveCachedVerdictOnURLsDeleted) {
@@ -198,34 +211,35 @@ TEST_F(VerdictCacheManagerTest, TestRemoveCachedVerdictOnURLsDeleted) {
   // Prepare 5 verdicts. Three are for origin "http://foo.com", and the others
   // are for "http://bar.com".
   base::Time now = base::Time::Now();
-  CachePhishGuardVerdict(GURL("http://foo.com/abc/index.jsp"),
-                         LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                         PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-                         LoginReputationClientResponse::LOW_REPUTATION, 600,
-                         "foo.com/abc/", now);
-  CachePhishGuardVerdict(GURL("http://foo.com/abc/index.jsp"),
-                         LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                         PasswordType::ENTERPRISE_PASSWORD,
-                         LoginReputationClientResponse::LOW_REPUTATION, 600,
-                         "foo.com/abc/", now);
+  ReusedPasswordAccountType password_type;
+  password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
+  CachePhishGuardVerdict(
+      GURL("http://foo.com/abc/index.jsp"),
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, password_type,
+      LoginReputationClientResponse::LOW_REPUTATION, 600, "foo.com/abc/", now);
+  password_type.set_account_type(
+      ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
+  CachePhishGuardVerdict(
+      GURL("http://foo.com/abc/index.jsp"),
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, password_type,
+      LoginReputationClientResponse::LOW_REPUTATION, 600, "foo.com/abc/", now);
+  password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
   CachePhishGuardVerdict(GURL("http://bar.com/index.jsp"),
                          LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                         PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-                         LoginReputationClientResponse::PHISHING, 600,
-                         "bar.com", now);
+                         password_type, LoginReputationClientResponse::PHISHING,
+                         600, "bar.com", now);
   ASSERT_EQ(3u, cache_manager_->GetStoredPhishGuardVerdictCount(
                     LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
 
-  CachePhishGuardVerdict(GURL("http://foo.com/abc/index.jsp"),
-                         LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-                         PasswordType::PASSWORD_TYPE_UNKNOWN,
-                         LoginReputationClientResponse::LOW_REPUTATION, 600,
-                         "foo.com/abc/", now);
+  password_type.set_account_type(ReusedPasswordAccountType::UNKNOWN);
+  CachePhishGuardVerdict(
+      GURL("http://foo.com/abc/index.jsp"),
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, password_type,
+      LoginReputationClientResponse::LOW_REPUTATION, 600, "foo.com/abc/", now);
   CachePhishGuardVerdict(GURL("http://bar.com/index.jsp"),
                          LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-                         PasswordType::PASSWORD_TYPE_UNKNOWN,
-                         LoginReputationClientResponse::PHISHING, 600,
-                         "bar.com", now);
+                         password_type, LoginReputationClientResponse::PHISHING,
+                         600, "bar.com", now);
   ASSERT_EQ(2u, cache_manager_->GetStoredPhishGuardVerdictCount(
                     LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
 
@@ -246,16 +260,18 @@ TEST_F(VerdictCacheManagerTest, TestRemoveCachedVerdictOnURLsDeleted) {
                     LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
 
   LoginReputationClientResponse actual_verdict;
+  password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
   EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
             cache_manager_->GetCachedPhishGuardVerdict(
                 GURL("http://bar.com"),
                 LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordType::PRIMARY_ACCOUNT_PASSWORD, &actual_verdict));
+                password_type, &actual_verdict));
+  password_type.set_account_type(ReusedPasswordAccountType::UNKNOWN);
   EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
             cache_manager_->GetCachedPhishGuardVerdict(
                 GURL("http://bar.com"),
                 LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-                PasswordType::PASSWORD_TYPE_UNKNOWN, &actual_verdict));
+                password_type, &actual_verdict));
 
   // If delete all history. All password protection content settings should be
   // gone.
@@ -274,42 +290,39 @@ TEST_F(VerdictCacheManagerTest, TestCleanUpExpiredVerdict) {
   // (3) "bar.com/abc/" expired
   // (4) "bar.com/def/" expired
   base::Time now = base::Time::Now();
-  CachePhishGuardVerdict(GURL("https://foo.com/abc/index.jsp"),
-                         LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                         PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-                         LoginReputationClientResponse::LOW_REPUTATION, 600,
-                         "foo.com/abc/", now);
-  CachePhishGuardVerdict(GURL("https://foo.com/def/index.jsp"),
-                         LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                         PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-                         LoginReputationClientResponse::LOW_REPUTATION, 0,
-                         "foo.com/def/", now);
+  ReusedPasswordAccountType password_type;
+  password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
+  CachePhishGuardVerdict(
+      GURL("https://foo.com/abc/index.jsp"),
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, password_type,
+      LoginReputationClientResponse::LOW_REPUTATION, 600, "foo.com/abc/", now);
+  CachePhishGuardVerdict(
+      GURL("https://foo.com/def/index.jsp"),
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, password_type,
+      LoginReputationClientResponse::LOW_REPUTATION, 0, "foo.com/def/", now);
   CachePhishGuardVerdict(GURL("https://bar.com/abc/index.jsp"),
                          LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                         PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-                         LoginReputationClientResponse::PHISHING, 0,
-                         "bar.com/abc/", now);
+                         password_type, LoginReputationClientResponse::PHISHING,
+                         0, "bar.com/abc/", now);
   CachePhishGuardVerdict(GURL("https://bar.com/def/index.jsp"),
                          LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                         PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-                         LoginReputationClientResponse::PHISHING, 0,
-                         "bar.com/def/", now);
+                         password_type, LoginReputationClientResponse::PHISHING,
+                         0, "bar.com/def/", now);
   ASSERT_EQ(4u, cache_manager_->GetStoredPhishGuardVerdictCount(
                     LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
 
   // Prepare 2 verdicts for UNFAMILIAR_LOGIN_PAGE:
   // (1) "bar.com/def/" valid
   // (2) "bar.com/xyz/" expired
+  password_type.set_account_type(ReusedPasswordAccountType::UNKNOWN);
   CachePhishGuardVerdict(GURL("https://bar.com/def/index.jsp"),
                          LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-                         PasswordType::PASSWORD_TYPE_UNKNOWN,
-                         LoginReputationClientResponse::SAFE, 600,
-                         "bar.com/def/", now);
+                         password_type, LoginReputationClientResponse::SAFE,
+                         600, "bar.com/def/", now);
   CachePhishGuardVerdict(GURL("https://bar.com/xyz/index.jsp"),
                          LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-                         PasswordType::PASSWORD_TYPE_UNKNOWN,
-                         LoginReputationClientResponse::PHISHING, 0,
-                         "bar.com/xyz/", now);
+                         password_type, LoginReputationClientResponse::PHISHING,
+                         0, "bar.com/xyz/", now);
   ASSERT_EQ(2u, cache_manager_->GetStoredPhishGuardVerdictCount(
                     LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
 
@@ -320,44 +333,46 @@ TEST_F(VerdictCacheManagerTest, TestCleanUpExpiredVerdict) {
   ASSERT_EQ(1u, cache_manager_->GetStoredPhishGuardVerdictCount(
                     LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
   LoginReputationClientResponse actual_verdict;
+  password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
   // Has cached PASSWORD_REUSE_EVENT verdict for foo.com/abc/.
   EXPECT_EQ(LoginReputationClientResponse::LOW_REPUTATION,
             cache_manager_->GetCachedPhishGuardVerdict(
                 GURL("https://foo.com/abc/test.jsp"),
                 LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordType::PRIMARY_ACCOUNT_PASSWORD, &actual_verdict));
+                password_type, &actual_verdict));
   // No cached PASSWORD_REUSE_EVENT verdict for foo.com/def.
   EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
             cache_manager_->GetCachedPhishGuardVerdict(
                 GURL("https://foo.com/def/index.jsp"),
                 LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordType::PRIMARY_ACCOUNT_PASSWORD, &actual_verdict));
+                password_type, &actual_verdict));
   // No cached PASSWORD_REUSE_EVENT verdict for bar.com/abc.
   EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
             cache_manager_->GetCachedPhishGuardVerdict(
                 GURL("https://bar.com/abc/index.jsp"),
                 LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordType::PRIMARY_ACCOUNT_PASSWORD, &actual_verdict));
+                password_type, &actual_verdict));
   // No cached PASSWORD_REUSE_EVENT verdict for bar.com/def.
   EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
             cache_manager_->GetCachedPhishGuardVerdict(
                 GURL("https://bar.com/def/index.jsp"),
                 LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordType::PRIMARY_ACCOUNT_PASSWORD, &actual_verdict));
+                password_type, &actual_verdict));
 
   // Has cached UNFAMILIAR_LOGIN_PAGE verdict for bar.com/def.
+  password_type.set_account_type(ReusedPasswordAccountType::UNKNOWN);
   EXPECT_EQ(LoginReputationClientResponse::SAFE,
             cache_manager_->GetCachedPhishGuardVerdict(
                 GURL("https://bar.com/def/index.jsp"),
                 LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-                PasswordType::PASSWORD_TYPE_UNKNOWN, &actual_verdict));
+                password_type, &actual_verdict));
 
   // No cached UNFAMILIAR_LOGIN_PAGE verdict for bar.com/xyz.
   EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
             cache_manager_->GetCachedPhishGuardVerdict(
                 GURL("https://bar.com/xyz/index.jsp"),
                 LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-                PasswordType::PASSWORD_TYPE_UNKNOWN, &actual_verdict));
+                password_type, &actual_verdict));
 }
 
 TEST_F(VerdictCacheManagerTest, TestCleanUpExpiredVerdictWithInvalidEntry) {
@@ -384,11 +399,12 @@ TEST_F(VerdictCacheManagerTest, TestCleanUpExpiredVerdictWithInvalidEntry) {
       CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
       std::move(cache_dictionary));
 
+  ReusedPasswordAccountType password_type;
+  password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
   // Save one valid entry
   CachePhishGuardVerdict(GURL("https://www.google.com"),
                          LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                         PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-                         LoginReputationClientResponse::SAFE, 60,
+                         password_type, LoginReputationClientResponse::SAFE, 60,
                          "www.google.com/", base::Time::Now());
 
   // Verify we saved two entries under PasswordType PRIMARY_ACCOUNT_PASSWORD

@@ -47,8 +47,7 @@ MakeCredentialTask::MakeCredentialTask(FidoDevice* device,
                                        MakeCredentialTaskCallback callback)
     : FidoTask(device),
       request_(std::move(request)),
-      callback_(std::move(callback)),
-      weak_factory_(this) {
+      callback_(std::move(callback)) {
   // The UV parameter should have been made binary by this point because CTAP2
   // only takes a binary value.
   DCHECK_NE(request_.user_verification,

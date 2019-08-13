@@ -50,8 +50,7 @@ class BluetoothGattDescriptorClientImpl
     : public BluetoothGattDescriptorClient,
       public dbus::ObjectManager::Interface {
  public:
-  BluetoothGattDescriptorClientImpl()
-      : object_manager_(NULL), weak_ptr_factory_(this) {}
+  BluetoothGattDescriptorClientImpl() : object_manager_(nullptr) {}
 
   ~BluetoothGattDescriptorClientImpl() override {
     object_manager_->UnregisterInterface(
@@ -250,7 +249,8 @@ class BluetoothGattDescriptorClientImpl
   // than we do.
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BluetoothGattDescriptorClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothGattDescriptorClientImpl> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothGattDescriptorClientImpl);
 };

@@ -24,8 +24,7 @@ PushVideoStreamSubscriptionImpl::PushVideoStreamSubscriptionImpl(
       broadcaster_(broadcaster),
       device_(device),
       status_(Status::kCreationCallbackNotYetRun),
-      broadcaster_client_id_(0),
-      weak_factory_(this) {
+      broadcaster_client_id_(0) {
   DCHECK(broadcaster_);
   DCHECK(device_);
 }

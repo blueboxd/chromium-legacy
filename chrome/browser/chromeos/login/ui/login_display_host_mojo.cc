@@ -9,7 +9,11 @@
 #include "ash/public/cpp/login_screen.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/chromeos/certificate_provider/pin_dialog_manager.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/mojo_system_info_dispatcher.h"
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
@@ -17,6 +21,8 @@
 #include "chrome/browser/chromeos/login/ui/login_display_mojo.h"
 #include "chrome/browser/chromeos/login/user_board_view_mojo.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
@@ -34,6 +40,14 @@ namespace {
 constexpr char kLoginDisplay[] = "login";
 constexpr char kAccelSendFeedback[] = "send_feedback";
 constexpr char kAccelReset[] = "reset";
+
+PinDialogManager* GetLoginScreenPinDialogManager() {
+  DCHECK(ProfileHelper::IsSigninProfileInitialized());
+  CertificateProviderService* certificate_provider_service =
+      CertificateProviderServiceFactory::GetForBrowserContext(
+          ProfileHelper::GetSigninProfile());
+  return certificate_provider_service->pin_dialog_manager();
+}
 
 }  // namespace
 
@@ -55,9 +69,14 @@ LoginDisplayHostMojo::LoginDisplayHostMojo()
 
   // Preload webui-based OOBE for add user, kiosk apps, etc.
   LoadOobeDialog();
+
+  GetLoginScreenPinDialogManager()->AddPinDialogHost(
+      &security_token_pin_dialog_host_ash_impl_);
 }
 
 LoginDisplayHostMojo::~LoginDisplayHostMojo() {
+  GetLoginScreenPinDialogManager()->RemovePinDialogHost(
+      &security_token_pin_dialog_host_ash_impl_);
   LoginScreenClient::Get()->SetDelegate(nullptr);
   if (dialog_) {
     dialog_->GetOobeUI()->signin_screen_handler()->SetDelegate(nullptr);

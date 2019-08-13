@@ -92,7 +92,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaBackendImpl
 
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 
-  base::WeakPtrFactory<QuotaBackendImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<QuotaBackendImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(QuotaBackendImpl);
 };

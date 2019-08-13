@@ -4119,9 +4119,10 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetProviderOptions) {
 
   ProviderOptions provider_options = static_cast<ProviderOptions>(0);
   EXPECT_HRESULT_SUCCEEDED(root_node->get_ProviderOptions(&provider_options));
-  EXPECT_EQ(
-      ProviderOptions_ServerSideProvider | ProviderOptions_UseComThreading,
-      provider_options);
+  EXPECT_EQ(ProviderOptions_ServerSideProvider |
+                ProviderOptions_UseComThreading |
+                ProviderOptions_RefuseNonClientSupport,
+            provider_options);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestUIAGetHostRawElementProvider) {

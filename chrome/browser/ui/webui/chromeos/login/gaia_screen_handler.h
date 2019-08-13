@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
+#include "chrome/browser/chromeos/certificate_provider/security_token_pin_dialog_host.h"
 #include "chrome/browser/chromeos/login/login_client_cert_usage_observer.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
@@ -75,7 +76,8 @@ class GaiaView {
 // A class that handles WebUI hooks in Gaia screen.
 class GaiaScreenHandler : public BaseScreenHandler,
                           public GaiaView,
-                          public NetworkPortalDetector::Observer {
+                          public NetworkPortalDetector::Observer,
+                          public SecurityTokenPinDialogHost {
  public:
   using TView = GaiaView;
 
@@ -116,6 +118,18 @@ class GaiaScreenHandler : public BaseScreenHandler,
   void ShowSigninScreenForTest(const std::string& username,
                                const std::string& password,
                                const std::string& services) override;
+
+  // SecurityTokenPinDialogHost:
+  void ShowSecurityTokenPinDialog(
+      const std::string& caller_extension_name,
+      SecurityTokenPinCodeType code_type,
+      bool enable_user_input,
+      SecurityTokenPinErrorLabel error_label,
+      int attempts_left,
+      const base::Optional<AccountId>& authenticating_user_account_id,
+      SecurityTokenPinEnteredCallback pin_entered_callback,
+      SecurityTokenPinDialogClosedCallback pin_dialog_closed_callback) override;
+  void CloseSecurityTokenPinDialog() override;
 
   // Returns true if offline login mode was either required, or reported by the
   // WebUI (i.e. WebUI mignt not have completed transition to the new mode).
@@ -174,7 +188,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
       const NetworkPortalDetector::CaptivePortalState& state) override;
 
   // WebUI message handlers.
-  void HandleWebviewLoadAborted(const std::string& error_reason_str);
+  void HandleWebviewLoadAborted(int error_code);
   void HandleCompleteAuthentication(
       const std::string& gaia_id,
       const std::string& email,
@@ -221,6 +235,12 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Allows WebUI to control the login shelf's guest button visibility during
   // OOBE.
   void HandleShowGuestInOobe(bool show);
+
+  // Called to notify whether the SAML sign-in is currently happening.
+  void HandleSamlStateChanged(bool is_saml);
+  // Called to deliver the result of the security token PIN request. Called with
+  // an empty string when the request is canceled.
+  void HandleSecurityTokenPinEntered(const std::string& user_input);
 
   void OnShowAddUser();
 
@@ -396,6 +416,22 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   std::unique_ptr<LoginClientCertUsageObserver>
       extension_provided_client_cert_usage_observer_;
+
+  // State of the security token PIN dialogs:
+
+  // Whether this instance is currently registered as a host for showing the
+  // security token PIN dialogs. (See PinDialogManager for the default host.)
+  bool is_security_token_pin_enabled_ = false;
+  // The callback to run when the user submits a non-empty input to the security
+  // token PIN dialog.
+  // Is non-empty iff the dialog is active and the input wasn't sent yet.
+  SecurityTokenPinEnteredCallback security_token_pin_entered_callback_;
+  // The callback to run when the security token PIN dialog gets closed - either
+  // due to the user canceling the dialog or the whole sign-in attempt being
+  // aborted.
+  // Is non-empty iff the dialog is active.
+  SecurityTokenPinDialogClosedCallback
+      security_token_pin_dialog_closed_callback_;
 
   base::WeakPtrFactory<GaiaScreenHandler> weak_factory_;
 

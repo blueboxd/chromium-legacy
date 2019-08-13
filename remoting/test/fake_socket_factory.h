@@ -137,7 +137,7 @@ class FakePacketSocketFactory : public rtc::PacketSocketFactory,
   base::TimeDelta total_buffer_delay_;
   base::TimeDelta max_buffer_delay_;
 
-  base::WeakPtrFactory<FakePacketSocketFactory> weak_factory_;
+  base::WeakPtrFactory<FakePacketSocketFactory> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakePacketSocketFactory);
 };

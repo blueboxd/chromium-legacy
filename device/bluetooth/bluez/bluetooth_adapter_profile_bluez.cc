@@ -40,7 +40,7 @@ void BluetoothAdapterProfileBlueZ::Register(
 
 BluetoothAdapterProfileBlueZ::BluetoothAdapterProfileBlueZ(
     const device::BluetoothUUID& uuid)
-    : uuid_(uuid), weak_ptr_factory_(this) {
+    : uuid_(uuid) {
   std::string uuid_path;
   base::ReplaceChars(uuid.canonical_value(), ":-", "_", &uuid_path);
   object_path_ =

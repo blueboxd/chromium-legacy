@@ -123,7 +123,7 @@ class SecurityKeyAuthHandlerPosix : public SecurityKeyAuthHandler {
   // Timeout used for a request.
   base::TimeDelta request_timeout_;
 
-  base::WeakPtrFactory<SecurityKeyAuthHandlerPosix> weak_factory_;
+  base::WeakPtrFactory<SecurityKeyAuthHandlerPosix> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SecurityKeyAuthHandlerPosix);
 };
@@ -147,8 +147,7 @@ SecurityKeyAuthHandlerPosix::SecurityKeyAuthHandlerPosix(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
     : file_task_runner_(file_task_runner),
       request_timeout_(
-          base::TimeDelta::FromSeconds(kDefaultRequestTimeoutSeconds)),
-      weak_factory_(this) {}
+          base::TimeDelta::FromSeconds(kDefaultRequestTimeoutSeconds)) {}
 
 SecurityKeyAuthHandlerPosix::~SecurityKeyAuthHandlerPosix() {
   DCHECK(thread_checker_.CalledOnValidThread());

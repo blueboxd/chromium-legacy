@@ -13,8 +13,8 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"
-#include "components/services/quarantine/quarantine_service.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
+#include "components/services/quarantine/quarantine_impl.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,11 +26,7 @@ const char kInternetReferrerURL[] = "http://example.com/some-other-url";
 
 class QuarantineServiceTest : public testing::Test {
  public:
-  QuarantineServiceTest()
-      : connector_(test_connector_factory_.CreateConnector()),
-        service_(
-            test_connector_factory_.RegisterInstance(mojom::kServiceName)) {}
-
+  QuarantineServiceTest() = default;
   ~QuarantineServiceTest() override = default;
 
   void OnFileQuarantined(const base::FilePath& test_file,
@@ -42,23 +38,13 @@ class QuarantineServiceTest : public testing::Test {
   }
 
  protected:
-  service_manager::Connector* connector() { return connector_.get(); }
-  void SetUp() override {
-    ASSERT_FALSE(quarantine_);
-    connector()->BindInterface(mojom::kServiceName, &quarantine_);
-    ASSERT_TRUE(quarantine_);
-  }
-
-  void TearDown() override { quarantine_.reset(); }
-
   base::test::ScopedTaskEnvironment task_environment_;
-  mojom::QuarantinePtr quarantine_;
+  mojo::Remote<mojom::Quarantine> quarantine_;
   mojom::QuarantineFileResult result_;
 
  private:
-  service_manager::TestConnectorFactory test_connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
-  QuarantineService service_;
+  QuarantineImpl service_{quarantine_.BindNewPipeAndPassReceiver()};
+
   DISALLOW_COPY_AND_ASSIGN(QuarantineServiceTest);
 };
 
@@ -71,7 +57,6 @@ TEST_F(QuarantineServiceTest, QuarantineFile) {
             base::WriteFile(test_file, kTestData, base::size(kTestData)));
 
   base::RunLoop run_loop;
-
   quarantine_->QuarantineFile(
       test_file, GURL(kInternetURL), GURL(kInternetReferrerURL), std::string(),
       base::BindOnce(&QuarantineServiceTest::OnFileQuarantined,

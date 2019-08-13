@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright (c) 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -153,11 +153,12 @@ const GpuControlList::More kMoreForEntry5_572251052Exception0 = {
     0,                          // test_group
 };
 
-const int kFeatureListForGpuManagerTestingEntry6[12] = {
+const int kFeatureListForGpuManagerTestingEntry6[13] = {
     GPU_FEATURE_TYPE_FLASH_STAGE3D,
     GPU_FEATURE_TYPE_GPU_COMPOSITING,
     GPU_FEATURE_TYPE_GPU_RASTERIZATION,
     GPU_FEATURE_TYPE_FLASH3D,
+    GPU_FEATURE_TYPE_METAL,
     GPU_FEATURE_TYPE_ACCELERATED_WEBGL2,
     GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS,
     GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE,

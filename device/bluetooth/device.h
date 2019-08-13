@@ -128,7 +128,7 @@ class Device : public mojom::Device, public device::BluetoothAdapter::Observer {
   // services to be discovered for this device.
   std::vector<base::Closure> pending_services_requests_;
 
-  base::WeakPtrFactory<Device> weak_ptr_factory_;
+  base::WeakPtrFactory<Device> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Device);
 };

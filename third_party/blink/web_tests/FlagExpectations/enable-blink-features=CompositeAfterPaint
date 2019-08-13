@@ -551,3 +551,6 @@ crbug.com/981749 virtual/threaded/fast/scrolling/scroll-chaining-from-position-f
 
 
 crbug.com/989673 svg/foreignObject/mask.html [ Failure ]
+
+# These tests are failing due to subpixel differences but can't be rebaselined.
+Bug(none) virtual/controls-refresh/fast/forms/controls-new-ui/select/select-multiple-appearance-basic.html [ Failure ]

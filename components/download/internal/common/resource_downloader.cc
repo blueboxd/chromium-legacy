@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "components/download/public/common/download_url_loader_factory_getter.h"
 #include "components/download/public/common/stream_handle_input_stream.h"
-#include "components/download/public/common/url_download_request_handle.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -225,8 +224,6 @@ void ResourceDownloader::InterceptResponse(
 void ResourceDownloader::OnResponseStarted(
     std::unique_ptr<DownloadCreateInfo> download_create_info,
     mojom::DownloadStreamHandlePtr stream_handle) {
-  download_create_info->request_handle.reset(new UrlDownloadRequestHandle(
-      weak_ptr_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get()));
   download_create_info->is_new_download = is_new_download_;
   download_create_info->guid = guid_;
   download_create_info->site_url = site_url_;
@@ -242,7 +239,7 @@ void ResourceDownloader::OnResponseStarted(
           &UrlDownloadHandler::Delegate::OnUrlDownloadStarted, delegate_,
           std::move(download_create_info),
           std::make_unique<StreamHandleInputStream>(std::move(stream_handle)),
-          std::move(url_loader_factory_getter_), callback_));
+          std::move(url_loader_factory_getter_), this, callback_));
 }
 
 void ResourceDownloader::OnReceiveRedirect() {

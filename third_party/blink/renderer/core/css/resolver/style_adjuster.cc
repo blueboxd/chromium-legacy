@@ -229,7 +229,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     return;
   }
 
-  if (IsA<HTMLFrameElement>(element) || IsHTMLFrameSetElement(element)) {
+  if (IsA<HTMLFrameElement>(element) || IsA<HTMLFrameSetElement>(element)) {
     // Frames and framesets never honor position:relative or position:absolute.
     // This is necessary to fix a crash where a site tries to position these
     // objects. They also never honor display nor floating.

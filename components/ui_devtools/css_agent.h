@@ -31,6 +31,8 @@ class UI_DEVTOOLS_EXPORT CSSAgent
       int node_id,
       protocol::Maybe<protocol::Array<protocol::CSS::RuleMatch>>*
           matched_css_rules) override;
+  protocol::Response getStyleSheetText(const protocol::String& style_sheet_id,
+                                       protocol::String* text) override;
   protocol::Response setStyleTexts(
       std::unique_ptr<protocol::Array<protocol::CSS::StyleDeclarationEdit>>
           edits,
@@ -52,6 +54,9 @@ class UI_DEVTOOLS_EXPORT CSSAgent
                                  bool visible);
   std::unique_ptr<protocol::Array<protocol::CSS::RuleMatch>> BuildMatchedStyles(
       UIElement* ui_element);
+
+  // Sends header to frontend for each section in properties panel.
+  void InitStylesheetHeaders(UIElement* ui_element);
 
   DOMAgent* const dom_agent_;
 

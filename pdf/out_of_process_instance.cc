@@ -331,6 +331,16 @@ void Redo(PP_Instance instance) {
   }
 }
 
+void HandleAccessibilityAction(
+    PP_Instance instance,
+    const PP_PdfAccessibilityActionData& action_data) {
+  void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
+  if (object) {
+    auto* obj_instance = static_cast<OutOfProcessInstance*>(object);
+    obj_instance->HandleAccessibilityAction(action_data);
+  }
+}
+
 int32_t PdfPrintBegin(PP_Instance instance,
                       const PP_PrintSettings_Dev* print_settings,
                       const PP_PdfPrintSettings_Dev* pdf_print_settings) {
@@ -357,6 +367,7 @@ const PPP_Pdf ppp_private = {
     &CanRedo,
     &Undo,
     &Redo,
+    &HandleAccessibilityAction,
     &PdfPrintBegin,
 };
 
@@ -1063,6 +1074,11 @@ void OutOfProcessInstance::Undo() {
 
 void OutOfProcessInstance::Redo() {
   engine_->Redo();
+}
+
+void OutOfProcessInstance::HandleAccessibilityAction(
+    const PP_PdfAccessibilityActionData& action_data) {
+  engine_->HandleAccessibilityAction(action_data);
 }
 
 int32_t OutOfProcessInstance::PdfPrintBegin(

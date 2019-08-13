@@ -1109,8 +1109,7 @@ SingleBatchableDelegateRequest::SingleBatchableDelegateRequest(
               // class and cannot outlive this instance.
               base::Unretained(this)),
           ProgressCallback()),
-      delegate_(std::move(delegate)),
-      weak_ptr_factory_(this) {}
+      delegate_(std::move(delegate)) {}
 
 SingleBatchableDelegateRequest::~SingleBatchableDelegateRequest() {
 }
@@ -1181,8 +1180,7 @@ BatchUploadRequest::BatchUploadRequest(
       sender_(sender),
       url_generator_(url_generator),
       committed_(false),
-      last_progress_value_(0),
-      weak_ptr_factory_(this) {}
+      last_progress_value_(0) {}
 
 BatchUploadRequest::~BatchUploadRequest() {
 }

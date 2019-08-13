@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
 
@@ -15,24 +16,22 @@ namespace blink {
 
 UnifiedHeapMarkingVisitorBase::UnifiedHeapMarkingVisitorBase(
     ThreadState* thread_state,
-    MarkingMode mode,
-    v8::Isolate* isolate)
-    : MarkingVisitor(thread_state, mode),
-      isolate_(isolate),
+    v8::Isolate* isolate,
+    int task_id)
+    : isolate_(isolate),
       controller_(thread_state->unified_heap_controller()),
-      is_concurrent_marking_enabled_(base::FeatureList::IsEnabled(
-          blink::features::kBlinkHeapConcurrentMarking)),
-      v8_references_worklist_(Heap().GetV8ReferencesWorklist(),
-                              WorklistTaskId::MainThread) {
+      task_id_(task_id),
+      v8_references_worklist_(thread_state->Heap().GetV8ReferencesWorklist(),
+                              task_id) {
   DCHECK(controller_);
 }
 
-void UnifiedHeapMarkingVisitorBase::Visit(
+void UnifiedHeapMarkingVisitorBase::VisitImpl(
     const TraceWrapperV8Reference<v8::Value>& v8_reference) {
   if (v8_reference.Get().IsEmpty())
     return;
   DCHECK(isolate_);
-  if (is_concurrent_marking_enabled_) {
+  if (task_id_ != WorklistTaskId::MainThread) {
     // This is a temporary solution. Pushing directly from concurrent threads
     // to V8 marking worklist will currently result in data races. This
     // solution guarantees correctness until we implement a long-term solution
@@ -45,13 +44,17 @@ void UnifiedHeapMarkingVisitorBase::Visit(
 }
 
 void UnifiedHeapMarkingVisitorBase::FlushV8References() {
-  v8_references_worklist_.FlushToGlobal();
+  if (task_id_ != WorklistTaskId::MainThread)
+    v8_references_worklist_.FlushToGlobal();
 }
 
 UnifiedHeapMarkingVisitor::UnifiedHeapMarkingVisitor(ThreadState* thread_state,
                                                      MarkingMode mode,
                                                      v8::Isolate* isolate)
-    : UnifiedHeapMarkingVisitorBase(thread_state, mode, isolate) {}
+    : MarkingVisitor(thread_state, mode),
+      UnifiedHeapMarkingVisitorBase(thread_state,
+                                    isolate,
+                                    WorklistTaskId::MainThread) {}
 
 void UnifiedHeapMarkingVisitor::WriteBarrier(
     const TraceWrapperV8Reference<v8::Value>& object) {
@@ -80,5 +83,13 @@ void UnifiedHeapMarkingVisitor::WriteBarrier(
 
   wrapper_type_info->Trace(thread_state->CurrentVisitor(), object);
 }
+
+ConcurrentUnifiedHeapMarkingVisitor::ConcurrentUnifiedHeapMarkingVisitor(
+    ThreadState* thread_state,
+    MarkingMode mode,
+    v8::Isolate* isolate,
+    int task_id)
+    : ConcurrentMarkingVisitor(thread_state, mode, task_id),
+      UnifiedHeapMarkingVisitorBase(thread_state, isolate, task_id) {}
 
 }  // namespace blink

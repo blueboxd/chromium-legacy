@@ -358,12 +358,12 @@ void GpuArcVideoDecodeAccelerator::Decode(
   }
   DVLOGF(4) << "fd=" << handle_fd.get();
 
-  base::SharedMemoryHandle shm_handle;
+  base::subtle::PlatformSharedMemoryRegion shm_region;
   if (secure_mode_) {
     // Use protected shared memory associated with the given file descriptor.
-    shm_handle = protected_buffer_manager_->GetProtectedSharedMemoryHandleFor(
+    shm_region = protected_buffer_manager_->GetProtectedSharedMemoryRegionFor(
         std::move(handle_fd));
-    if (!shm_handle.IsValid()) {
+    if (!shm_region.IsValid()) {
       VLOGF(1) << "No protected shared memory found for handle";
       client_->NotifyError(
           mojom::VideoDecodeAccelerator::Result::INVALID_ARGUMENT);
@@ -376,9 +376,16 @@ void GpuArcVideoDecodeAccelerator::Decode(
           mojom::VideoDecodeAccelerator::Result::INVALID_ARGUMENT);
       return;
     }
-    shm_handle = base::SharedMemoryHandle(
-        base::FileDescriptor(handle_fd.release(), true), handle_size,
+    shm_region = base::subtle::PlatformSharedMemoryRegion::Take(
+        std::move(handle_fd),
+        base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe, handle_size,
         base::UnguessableToken::Create());
+    if (!shm_region.IsValid()) {
+      VLOGF(1) << "Cannot take file descriptor based shared memory";
+      client_->NotifyError(
+          mojom::VideoDecodeAccelerator::Result::INVALID_ARGUMENT);
+      return;
+    }
   }
 
   // Use Unretained(this) is safe, this callback will be executed in
@@ -387,19 +394,12 @@ void GpuArcVideoDecodeAccelerator::Decode(
   // All the callbacks thus should be called or deleted before |this| is
   // invalidated.
   ExecuteRequest(
-      {base::BindOnce(&GpuArcVideoDecodeAccelerator::DecodeRequest,
-                      base::Unretained(this),
-                      media::BitstreamBuffer(bitstream_buffer->bitstream_id,
-                                             shm_handle, false /* read_only */,
-                                             bitstream_buffer->bytes_used,
-                                             bitstream_buffer->offset)),
+      {base::BindOnce(
+           &GpuArcVideoDecodeAccelerator::DecodeRequest, base::Unretained(this),
+           media::BitstreamBuffer(
+               bitstream_buffer->bitstream_id, std::move(shm_region),
+               bitstream_buffer->bytes_used, bitstream_buffer->offset)),
        PendingCallback()});
-
-  // Close |shm_handle| because it is actually duplicated on the ctor of
-  // media::BitstreamBuffer and it will not close itself on the dtor.
-  if (shm_handle.IsValid()) {
-    shm_handle.Close();
-  }
 }
 
 void GpuArcVideoDecodeAccelerator::AssignPictureBuffers(uint32_t count) {

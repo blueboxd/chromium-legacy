@@ -513,12 +513,7 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
       browser->tab_strip_model()->ActivateTabAt(0);
   }
 
-  // The default behavior is to show the window, as expressed by the default
-  // value of StartupBrowserCreated::show_main_browser_window_. If this was set
-  // to true ahead of this place, it means another task must have been spawned
-  // to take care of that.
-  if (!browser_creator_ || browser_creator_->show_main_browser_window())
-    browser->window()->Show();
+  browser->window()->Show();
 
   return browser;
 }
@@ -864,14 +859,9 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
 
 #if !defined(OS_CHROMEOS)
     if (!command_line_.HasSwitch(switches::kNoDefaultBrowserCheck)) {
-      // Generally, the default browser prompt should not be shown on first
-      // run. However, when the set-as-default dialog has been suppressed, we
-      // need to allow it.
-      if (!is_first_run_ ||
-          (browser_creator_ &&
-           browser_creator_->is_default_browser_dialog_suppressed())) {
+      // The default browser prompt should only be shown after the first run.
+      if (!is_first_run_)
         ShowDefaultBrowserPrompt(profile_);
-      }
     }
 #endif
 

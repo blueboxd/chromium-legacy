@@ -146,12 +146,12 @@ std::string ParseGServiceSettingKey(const std::string& key) {
   return key.substr(base::size(kGServiceSettingKeyStart) - 1);
 }
 
-std::string MakeAccountKey(const std::string& account_id) {
-  return kAccountKeyStart + account_id;
+std::string MakeAccountKey(const CoreAccountId& account_id) {
+  return kAccountKeyStart + account_id.id;
 }
 
-std::string ParseAccountKey(const std::string& key) {
-  return key.substr(base::size(kAccountKeyStart) - 1);
+CoreAccountId ParseAccountKey(const std::string& key) {
+  return CoreAccountId(key.substr(base::size(kAccountKeyStart) - 1));
 }
 
 std::string MakeHeartbeatKey(const std::string& scope) {
@@ -223,7 +223,7 @@ class GCMStoreImpl::Backend
       const UpdateCallback& callback);
   void AddAccountMapping(const AccountMapping& account_mapping,
                          const UpdateCallback& callback);
-  void RemoveAccountMapping(const std::string& account_id,
+  void RemoveAccountMapping(const CoreAccountId& account_id,
                             const UpdateCallback& callback);
   void SetLastTokenFetchTime(const base::Time& time,
                              const UpdateCallback& callback);
@@ -745,7 +745,7 @@ void GCMStoreImpl::Backend::AddAccountMapping(
 }
 
 void GCMStoreImpl::Backend::RemoveAccountMapping(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const UpdateCallback& callback) {
   if (!db_.get()) {
     LOG(ERROR) << "GCMStore db doesn't exist.";
@@ -1181,8 +1181,7 @@ GCMStoreImpl::GCMStoreImpl(
     : backend_(new Backend(path,
                            base::ThreadTaskRunnerHandle::Get(),
                            std::move(encryptor))),
-      blocking_task_runner_(blocking_task_runner),
-      weak_ptr_factory_(this) {}
+      blocking_task_runner_(blocking_task_runner) {}
 
 GCMStoreImpl::~GCMStoreImpl() {}
 
@@ -1342,7 +1341,7 @@ void GCMStoreImpl::AddAccountMapping(const AccountMapping& account_mapping,
                                 backend_, account_mapping, callback));
 }
 
-void GCMStoreImpl::RemoveAccountMapping(const std::string& account_id,
+void GCMStoreImpl::RemoveAccountMapping(const CoreAccountId& account_id,
                                         const UpdateCallback& callback) {
   blocking_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&GCMStoreImpl::Backend::RemoveAccountMapping,

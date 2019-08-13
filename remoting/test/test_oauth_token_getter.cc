@@ -64,8 +64,7 @@ bool TestOAuthTokenGetter::IsServiceAccount(const std::string& email) {
   return email.find("@chromoting.gserviceaccount.com") != std::string::npos;
 }
 
-TestOAuthTokenGetter::TestOAuthTokenGetter(TestTokenStorage* token_storage)
-    : weak_factory_(this) {
+TestOAuthTokenGetter::TestOAuthTokenGetter(TestTokenStorage* token_storage) {
   DCHECK(token_storage);
   token_storage_ = token_storage;
   auto url_request_context_getter =

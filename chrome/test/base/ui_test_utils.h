@@ -281,7 +281,7 @@ class UrlLoadObserver : public content::WindowedNotificationObserver {
 class TabAddedWaiter : public TabStripModelObserver {
  public:
   explicit TabAddedWaiter(Browser* browser);
-  ~TabAddedWaiter() override;
+  ~TabAddedWaiter() override = default;
 
   void Wait();
 
@@ -293,7 +293,6 @@ class TabAddedWaiter : public TabStripModelObserver {
 
  private:
   base::RunLoop run_loop_;
-  ScopedObserver<TabStripModel, TabStripModelObserver> scoped_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TabAddedWaiter);
 };
@@ -318,8 +317,6 @@ class AllBrowserTabAddedWaiter : public TabStripModelObserver,
   void OnBrowserAdded(Browser* browser) override;
 
  private:
-  ScopedObserver<TabStripModel, TabStripModelObserver> tab_strip_observer_{
-      this};
   base::RunLoop run_loop_;
 
   // The last tab that was added.

@@ -64,6 +64,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/public/browser/android/child_process_importance.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -234,16 +235,13 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
                              std::make_unique<AwContentsUserData>(this));
   browser_view_renderer_.RegisterWithWebContents(web_contents_.get());
 
-  CompositorID compositor_id;
-  if (web_contents_->GetRenderViewHost() &&
-      web_contents_->GetRenderViewHost()->GetProcess()) {
-    compositor_id.process_id =
-        web_contents_->GetRenderViewHost()->GetProcess()->GetID();
-    compositor_id.routing_id =
-        web_contents_->GetRenderViewHost()->GetWidget()->GetRoutingID();
+  viz::FrameSinkId frame_sink_id;
+  if (web_contents_->GetRenderViewHost()) {
+    frame_sink_id =
+        web_contents_->GetRenderViewHost()->GetWidget()->GetFrameSinkId();
   }
 
-  browser_view_renderer_.SetActiveCompositorID(compositor_id);
+  browser_view_renderer_.SetActiveFrameSinkId(frame_sink_id);
   render_view_host_ext_.reset(
       new AwRenderViewHostExt(this, web_contents_.get()));
 
@@ -1399,15 +1397,12 @@ void AwContents::RenderViewHostChanged(content::RenderViewHost* old_host,
                                        content::RenderViewHost* new_host) {
   DCHECK(new_host);
 
-  int process_id = new_host->GetProcess()->GetID();
-  int routing_id = new_host->GetWidget()->GetRoutingID();
-
   // At this point, the current RVH may or may not contain a compositor. So
   // compositor_ may be nullptr, in which case
   // BrowserViewRenderer::DidInitializeCompositor() callback is time when the
   // new compositor is constructed.
-  browser_view_renderer_.SetActiveCompositorID(
-      CompositorID(process_id, routing_id));
+  browser_view_renderer_.SetActiveFrameSinkId(
+      new_host->GetWidget()->GetFrameSinkId());
 }
 
 void AwContents::DidFinishNavigation(
@@ -1435,28 +1430,16 @@ void AwContents::DidFinishNavigation(
 }
 
 void AwContents::DidAttachInterstitialPage() {
-  CompositorID compositor_id;
   RenderFrameHost* rfh = web_contents_->GetInterstitialPage()->GetMainFrame();
-  compositor_id.process_id = rfh->GetProcess()->GetID();
-  compositor_id.routing_id =
-      rfh->GetRenderViewHost()->GetWidget()->GetRoutingID();
-  browser_view_renderer_.SetActiveCompositorID(compositor_id);
+  browser_view_renderer_.SetActiveFrameSinkId(
+      rfh->GetRenderViewHost()->GetWidget()->GetFrameSinkId());
 }
 
 void AwContents::DidDetachInterstitialPage() {
-  CompositorID compositor_id;
   if (!web_contents_)
     return;
-  if (web_contents_->GetRenderViewHost() &&
-      web_contents_->GetRenderViewHost()->GetProcess()) {
-    compositor_id.process_id =
-        web_contents_->GetRenderViewHost()->GetProcess()->GetID();
-    compositor_id.routing_id =
-        web_contents_->GetRenderViewHost()->GetWidget()->GetRoutingID();
-  } else {
-    LOG(WARNING) << "failed setting the compositor on detaching interstitital";
-  }
-  browser_view_renderer_.SetActiveCompositorID(compositor_id);
+  browser_view_renderer_.SetActiveFrameSinkId(
+      web_contents_->GetRenderViewHost()->GetWidget()->GetFrameSinkId());
 }
 
 bool AwContents::CanShowInterstitial() {

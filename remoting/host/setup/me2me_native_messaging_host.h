@@ -150,7 +150,7 @@ class Me2MeNativeMessagingHost : public extensions::NativeMessageHost {
   std::unique_ptr<OAuthClient> oauth_client_;
 
   base::WeakPtr<Me2MeNativeMessagingHost> weak_ptr_;
-  base::WeakPtrFactory<Me2MeNativeMessagingHost> weak_factory_;
+  base::WeakPtrFactory<Me2MeNativeMessagingHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Me2MeNativeMessagingHost);
 };

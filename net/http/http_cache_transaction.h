@@ -598,6 +598,10 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
                                              // lock.
   bool fail_conditionalization_for_test_;  // Fail ConditionalizeRequest.
   scoped_refptr<IOBuffer> read_buf_;
+
+  // Length of the buffer passed in Read().
+  int read_buf_len_;
+
   int io_buf_len_;
   int read_offset_;
   int effective_load_flags_;

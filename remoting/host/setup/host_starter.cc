@@ -31,8 +31,7 @@ HostStarter::HostStarter(
       service_client_(std::move(service_client)),
       daemon_controller_(daemon_controller),
       consent_to_data_collection_(false),
-      unregistering_host_(false),
-      weak_ptr_factory_(this) {
+      unregistering_host_(false) {
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
   main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }

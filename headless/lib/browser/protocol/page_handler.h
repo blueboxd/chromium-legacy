@@ -60,7 +60,7 @@ class PageHandler : public DomainHandler, public Page::Backend {
 #endif
   scoped_refptr<content::DevToolsAgentHost> agent_host_;
   content::WebContents* web_contents_;
-  base::WeakPtrFactory<PageHandler> weak_factory_;
+  base::WeakPtrFactory<PageHandler> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(PageHandler);
 };
 

@@ -61,14 +61,19 @@
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/services/quarantine/public/mojom/quarantine.mojom.h"
+#include "components/services/quarantine/quarantine_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/service_process_host.h"
 #include "content/public/common/origin_util.h"
 #include "extensions/buildflags/buildflags.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -104,6 +109,10 @@
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
+#endif
+
+#if defined(OS_WIN)
+#include "components/services/quarantine/public/cpp/quarantine_features_win.h"
 #endif
 
 using content::BrowserThread;
@@ -291,6 +300,23 @@ void OnDownloadLocationDetermined(
   }
 }
 #endif  // defined(OS_ANDROID)
+
+void ConnectToQuarantineService(
+    mojo::PendingReceiver<quarantine::mojom::Quarantine> receiver) {
+#if defined(OS_WIN)
+  if (base::FeatureList::IsEnabled(quarantine::kOutOfProcessQuarantine)) {
+    content::ServiceProcessHost::Launch(
+        std::move(receiver),
+        content::ServiceProcessHost::Options()
+            .WithDisplayName("Quarantine Service")
+            .WithSandboxType(service_manager::SANDBOX_TYPE_NO_SANDBOX)
+            .Pass());
+  }
+#endif
+
+  mojo::MakeSelfOwnedReceiver(std::make_unique<quarantine::QuarantineImpl>(),
+                              std::move(receiver));
+}
 
 }  // namespace
 
@@ -1400,6 +1426,11 @@ void ChromeDownloadManagerDelegate::CheckDownloadAllowed(
   CheckCanDownload(web_contents_getter, url, request_method,
                    std::move(request_initiator), std::move(cb));
 #endif
+}
+
+download::QuarantineConnectionCallback
+ChromeDownloadManagerDelegate::GetQuarantineConnectionCallback() {
+  return base::BindRepeating(&ConnectToQuarantineService);
 }
 
 void ChromeDownloadManagerDelegate::OnCheckDownloadAllowedComplete(

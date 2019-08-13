@@ -350,6 +350,16 @@ class TabStrip : public views::AccessiblePaneView,
                                TabAnimationState::TabActiveness activeness,
                                TabAnimationState::TabPinnedness pinnedness);
 
+  // Animates the removal of the tab at |model_index|. Defers to the old
+  // animation style when appropriate.
+  void StartRemoveTabAnimation(int model_index, bool was_active);
+
+  // Animates the removal of the tab at |model_index| using the old animation
+  // style.
+  // TODO(958173): Delete this once all animations have been migrated to the
+  // new animation style.
+  void StartFallbackRemoveTabAnimation(int model_index, bool was_active);
+
   // Invoked from |MoveTab| after |tab_data_| has been updated to animate the
   // move.
   void StartMoveTabAnimation();

@@ -23,8 +23,6 @@ namespace master_preferences {
   const char kLogFile[] = "log_file";
   const char kMakeChromeDefault[] = "make_chrome_default";
   const char kMakeChromeDefaultForUser[] = "make_chrome_default_for_user";
-  const char kSuppressFirstRunDefaultBrowserPrompt[] =
-      "suppress_first_run_default_browser_prompt";
   const char kMsi[] = "msi";
   const char kMsiProductId[] = "msi_product_id";
   const char kRequireEula[] = "require_eula";

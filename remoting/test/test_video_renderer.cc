@@ -272,8 +272,7 @@ bool TestVideoRenderer::Core::ExpectedAverageColorIsMatched(
 
 TestVideoRenderer::TestVideoRenderer()
     : video_decode_thread_(
-        new base::Thread("TestVideoRendererVideoDecodingThread")),
-      weak_factory_(this) {
+          new base::Thread("TestVideoRendererVideoDecodingThread")) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   core_.reset(new Core());

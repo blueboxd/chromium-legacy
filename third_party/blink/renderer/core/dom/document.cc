@@ -3448,7 +3448,7 @@ DocumentParser* Document::CreateParser() {
 bool Document::IsFrameSet() const {
   if (!IsHTMLDocument())
     return false;
-  return IsHTMLFrameSetElement(body());
+  return IsA<HTMLFrameSetElement>(body());
 }
 
 ScriptableDocumentParser* Document::GetScriptableDocumentParser() const {
@@ -3692,7 +3692,7 @@ HTMLElement* Document::body() const {
   for (HTMLElement* child =
            Traversal<HTMLElement>::FirstChild(*documentElement());
        child; child = Traversal<HTMLElement>::NextSibling(*child)) {
-    if (IsHTMLFrameSetElement(*child) || IsA<HTMLBodyElement>(*child))
+    if (IsA<HTMLFrameSetElement>(*child) || IsA<HTMLBodyElement>(*child))
       return child;
   }
 
@@ -3729,7 +3729,8 @@ void Document::setBody(HTMLElement* prp_new_body,
     return;
   }
 
-  if (!IsA<HTMLBodyElement>(*new_body) && !IsHTMLFrameSetElement(*new_body)) {
+  if (!IsA<HTMLBodyElement>(*new_body) &&
+      !IsA<HTMLFrameSetElement>(*new_body)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kHierarchyRequestError,
         "The new body element is of type '" + new_body->tagName() +

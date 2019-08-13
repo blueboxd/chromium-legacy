@@ -482,7 +482,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<QuotaManager> weak_factory_;
+  base::WeakPtrFactory<QuotaManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(QuotaManager);
 };

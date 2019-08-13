@@ -22,8 +22,7 @@ BioEnrollmentHandler::BioEnrollmentHandler(
     : FidoRequestHandlerBase(connector, factory, supported_transports),
       ready_callback_(std::move(ready_callback)),
       error_callback_(std::move(error_callback)),
-      get_pin_callback_(std::move(get_pin_callback)),
-      weak_factory_(this) {
+      get_pin_callback_(std::move(get_pin_callback)) {
   Start();
 }
 

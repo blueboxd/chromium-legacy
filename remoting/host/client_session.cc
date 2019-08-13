@@ -75,8 +75,7 @@ ClientSession::ClientSession(
       // Note that |lossless_video_color_| defaults to true, but actually only
       // controls VP9 video stream color quality.
       lossless_video_color_(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kDisableI444SwitchName)),
-      weak_factory_(this) {
+          kDisableI444SwitchName)) {
   connection_->session()->AddPlugin(&host_experiment_session_plugin_);
   connection_->SetEventHandler(this);
 

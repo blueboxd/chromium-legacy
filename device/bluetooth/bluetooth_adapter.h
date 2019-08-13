@@ -797,7 +797,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BluetoothAdapter> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothAdapter> weak_ptr_factory_{this};
 };
 
 }  // namespace device

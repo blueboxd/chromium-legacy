@@ -26,28 +26,61 @@ const char kEnterprisePasswordInterstitialHistogram[] =
 const char kEnterprisePasswordWarningDialogHistogram[] =
     "PasswordProtection.ModalWarningDialogAction."
     "NonGaiaEnterprisePasswordEntry";
+const char kGmailSyncPasswordEntryRequestOutcomeHistogram[] =
+    "PasswordProtection.RequestOutcome.GmailSyncPasswordEntry";
+const char kGmailNonSyncPasswordEntryRequestOutcomeHistogram[] =
+    "PasswordProtection.RequestOutcome.GmailNonSyncPasswordEntry";
 const char kGSuiteSyncPasswordEntryRequestOutcomeHistogram[] =
     "PasswordProtection.RequestOutcome.GSuiteSyncPasswordEntry";
+const char kGSuiteNonSyncPasswordEntryRequestOutcomeHistogram[] =
+    "PasswordProtection.RequestOutcome.GSuiteNonSyncPasswordEntry";
 const char kGSuiteSyncPasswordEntryVerdictHistogram[] =
     "PasswordProtection.Verdict.GSuiteSyncPasswordEntry";
+const char kGSuiteNonSyncPasswordEntryVerdictHistogram[] =
+    "PasswordProtection.Verdict.GSuiteNonSyncPasswordEntry";
+const char kGmailSyncPasswordEntryVerdictHistogram[] =
+    "PasswordProtection.Verdict.GmailSyncPasswordEntry";
+const char kGmailNonSyncPasswordEntryVerdictHistogram[] =
+    "PasswordProtection.Verdict.GmailNonSyncPasswordEntry";
+const char kGmailNonSyncPasswordInterstitialHistogram[] =
+    "PasswordProtection.InterstitialAction.GmailNonSyncPasswordEntry";
+const char kGmailSyncPasswordPageInfoHistogram[] =
+    "PasswordProtection.PageInfoAction.GmailSyncPasswordEntry";
+const char kGmailNonSyncPasswordPageInfoHistogram[] =
+    "PasswordProtection.PageInfoAction.GmailNonSyncPasswordEntry";
+const char kGmailSyncPasswordWarningDialogHistogram[] =
+    "PasswordProtection.ModalWarningDialogAction.GmailSyncPasswordEntry";
+const char kGmailNonSyncPasswordWarningDialogHistogram[] =
+    "PasswordProtection.ModalWarningDialogAction.GmailNonSyncPasswordEntry";
+const char kNonSyncPasswordInterstitialHistogram[] =
+    "PasswordProtection.InterstitialAction.NonSyncPasswordEntry";
+const char kNonSyncPasswordPageInfoHistogram[] =
+    "PasswordProtection.PageInfoAction.NonSyncPasswordEntry";
+
 const char kGSuiteSyncPasswordInterstitialHistogram[] =
     "PasswordProtection.InterstitialAction.GSuiteSyncPasswordEntry";
+const char kGSuiteNonSyncPasswordInterstitialHistogram[] =
+    "PasswordProtection.InterstitialAction.GSuiteNonSyncPasswordEntry";
 const char kGSuiteSyncPasswordPageInfoHistogram[] =
     "PasswordProtection.PageInfoAction.GSuiteSyncPasswordEntry";
+const char kGSuiteNonSyncPasswordPageInfoHistogram[] =
+    "PasswordProtection.PageInfoAction.GSuiteNonSyncPasswordEntry";
 const char kGSuiteSyncPasswordWarningDialogHistogram[] =
     "PasswordProtection.ModalWarningDialogAction.GSuiteSyncPasswordEntry";
+const char kGSuiteNonSyncPasswordWarningDialogHistogram[] =
+    "PasswordProtection.ModalWarningDialogAction.GSuiteNonSyncPasswordEntry";
 const char kPasswordOnFocusRequestOutcomeHistogram[] =
     "PasswordProtection.RequestOutcome.PasswordFieldOnFocus";
 const char kPasswordOnFocusVerdictHistogram[] =
     "PasswordProtection.Verdict.PasswordFieldOnFocus";
-const char kProtectedPasswordEntryRequestOutcomeHistogram[] =
-    "PasswordProtection.RequestOutcome.ProtectedPasswordEntry";
-const char kProtectedPasswordEntryVerdictHistogram[] =
-    "PasswordProtection.Verdict.ProtectedPasswordEntry";
+const char kNonSyncPasswordEntryRequestOutcomeHistogram[] =
+    "PasswordProtection.RequestOutcome.NonSyncPasswordEntry";
 const char kSyncPasswordEntryRequestOutcomeHistogram[] =
     "PasswordProtection.RequestOutcome.SyncPasswordEntry";
 const char kSyncPasswordEntryVerdictHistogram[] =
     "PasswordProtection.Verdict.SyncPasswordEntry";
+const char kNonSyncPasswordEntryVerdictHistogram[] =
+    "PasswordProtection.Verdict.NonSyncPasswordEntry";
 const char kSyncPasswordChromeSettingsHistogram[] =
     "PasswordProtection.ChromeSettingsAction.SyncPasswordEntry";
 const char kSyncPasswordInterstitialHistogram[] =
@@ -56,6 +89,13 @@ const char kSyncPasswordPageInfoHistogram[] =
     "PasswordProtection.PageInfoAction.SyncPasswordEntry";
 const char kSyncPasswordWarningDialogHistogram[] =
     "PasswordProtection.ModalWarningDialogAction.SyncPasswordEntry";
+const char kEnterprisePasswordAlertHistogram[] =
+    "PasswordProtection.PasswordAlertModeOutcome."
+    "NonGaiaEnterprisePasswordEntry";
+const char kGsuiteSyncPasswordAlertHistogram[] =
+    "PasswordProtection.PasswordAlertModeOutcome.GSuiteSyncPasswordEntry";
+const char kGsuiteNonSyncPasswordAlertHistogram[] =
+    "PasswordProtection.PasswordAlertModeOutcome.GSuiteNonSyncPasswordEntry";
 
 void LogPasswordEntryRequestOutcome(
     RequestOutcome outcome,
@@ -65,11 +105,12 @@ void LogPasswordEntryRequestOutcome(
   bool is_gsuite_user =
       password_account_type.account_type() == ReusedPasswordAccountType::GSUITE;
   bool is_primary_account_password = password_account_type.is_account_syncing();
-  // TODO(crbug/914410): Differentiate between primary and syncing accounts for
-  // UMA.
   if (is_primary_account_password) {
     if (is_gsuite_user) {
       UMA_HISTOGRAM_ENUMERATION(kGSuiteSyncPasswordEntryRequestOutcomeHistogram,
+                                outcome);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(kGmailSyncPasswordEntryRequestOutcomeHistogram,
                                 outcome);
     }
     UMA_HISTOGRAM_ENUMERATION(kSyncPasswordEntryRequestOutcomeHistogram,
@@ -79,7 +120,14 @@ void LogPasswordEntryRequestOutcome(
     UMA_HISTOGRAM_ENUMERATION(kEnterprisePasswordEntryRequestOutcomeHistogram,
                               outcome);
   } else {
-    UMA_HISTOGRAM_ENUMERATION(kProtectedPasswordEntryRequestOutcomeHistogram,
+    if (is_gsuite_user) {
+      UMA_HISTOGRAM_ENUMERATION(
+          kGSuiteNonSyncPasswordEntryRequestOutcomeHistogram, outcome);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(
+          kGmailNonSyncPasswordEntryRequestOutcomeHistogram, outcome);
+    }
+    UMA_HISTOGRAM_ENUMERATION(kNonSyncPasswordEntryRequestOutcomeHistogram,
                               outcome);
   }
 }
@@ -91,16 +139,17 @@ void LogPasswordOnFocusRequestOutcome(RequestOutcome outcome) {
 void LogPasswordAlertModeOutcome(
     RequestOutcome outcome,
     ReusedPasswordAccountType password_account_type) {
+  DCHECK_NE(ReusedPasswordAccountType::GMAIL,
+            password_account_type.account_type());
   if (password_account_type.account_type() ==
       ReusedPasswordAccountType::NON_GAIA_ENTERPRISE) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "PasswordProtection.PasswordAlertModeOutcome."
-        "NonGaiaEnterprisePasswordEntry",
-        outcome);
+    UMA_HISTOGRAM_ENUMERATION(kEnterprisePasswordAlertHistogram, outcome);
   } else {
-    UMA_HISTOGRAM_ENUMERATION(
-        "PasswordProtection.PasswordAlertModeOutcome.GSuiteSyncPasswordEntry",
-        outcome);
+    if (password_account_type.is_account_syncing()) {
+      UMA_HISTOGRAM_ENUMERATION(kGsuiteSyncPasswordAlertHistogram, outcome);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(kGsuiteNonSyncPasswordAlertHistogram, outcome);
+    }
   }
 }
 
@@ -121,38 +170,63 @@ void LogPasswordProtectionVerdict(
     LoginReputationClientRequest::TriggerType trigger_type,
     ReusedPasswordAccountType password_account_type,
     VerdictType verdict_type) {
-  // TODO(crbug/914410): Account for non sync users.
   bool is_gsuite_user =
       password_account_type.account_type() == ReusedPasswordAccountType::GSUITE;
-  bool is_primary_account_password = password_account_type.is_account_syncing();
+  bool is_gmail_user =
+      password_account_type.account_type() == ReusedPasswordAccountType::GMAIL;
+  bool is_account_syncing = password_account_type.is_account_syncing();
+
   switch (trigger_type) {
     case LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE:
       UMA_HISTOGRAM_ENUMERATION(
           kPasswordOnFocusVerdictHistogram, verdict_type,
-          LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
+          (LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1));
       break;
     case LoginReputationClientRequest::PASSWORD_REUSE_EVENT:
       UMA_HISTOGRAM_ENUMERATION(
           kAnyPasswordEntryVerdictHistogram, verdict_type,
-          LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
-      if (is_primary_account_password) {
-        if (is_gsuite_user) {
+          (LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1));
+      if (is_gsuite_user) {
+        if (is_account_syncing) {
           UMA_HISTOGRAM_ENUMERATION(
               kGSuiteSyncPasswordEntryVerdictHistogram, verdict_type,
-              LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
+              (LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1));
+          UMA_HISTOGRAM_ENUMERATION(
+              kSyncPasswordEntryVerdictHistogram, verdict_type,
+              (LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1));
+        } else {
+          UMA_HISTOGRAM_ENUMERATION(
+              kGSuiteNonSyncPasswordEntryVerdictHistogram, verdict_type,
+              (LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1));
+          UMA_HISTOGRAM_ENUMERATION(
+              kNonSyncPasswordEntryVerdictHistogram, verdict_type,
+              (LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1));
         }
-        UMA_HISTOGRAM_ENUMERATION(
-            kSyncPasswordEntryVerdictHistogram, verdict_type,
-            LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
+      } else if (is_gmail_user) {
+        if (is_account_syncing) {
+          UMA_HISTOGRAM_ENUMERATION(
+              kGmailSyncPasswordEntryVerdictHistogram, verdict_type,
+              (LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1));
+          UMA_HISTOGRAM_ENUMERATION(
+              kSyncPasswordEntryVerdictHistogram, verdict_type,
+              (LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1));
+        } else {
+          UMA_HISTOGRAM_ENUMERATION(
+              kGmailNonSyncPasswordEntryVerdictHistogram, verdict_type,
+              (LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1));
+          UMA_HISTOGRAM_ENUMERATION(
+              kNonSyncPasswordEntryVerdictHistogram, verdict_type,
+              (LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1));
+        }
       } else if (password_account_type.account_type() ==
                  ReusedPasswordAccountType::NON_GAIA_ENTERPRISE) {
         UMA_HISTOGRAM_ENUMERATION(
             kEnterprisePasswordEntryVerdictHistogram, verdict_type,
-            LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
+            (LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1));
       } else {
         UMA_HISTOGRAM_ENUMERATION(
-            kProtectedPasswordEntryVerdictHistogram, verdict_type,
-            LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
+            kNonSyncPasswordEntryVerdictHistogram, verdict_type,
+            (LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1));
       }
       break;
     default:
@@ -190,7 +264,6 @@ void LogWarningAction(WarningUIType ui_type,
     return;
   }
 
-  // TODO(crbug/914410): Account for non sync users.
   bool is_gsuite_user =
       password_account_type.account_type() == ReusedPasswordAccountType::GSUITE;
   bool is_primary_account_password = password_account_type.is_account_syncing();
@@ -201,9 +274,22 @@ void LogWarningAction(WarningUIType ui_type,
         if (is_gsuite_user) {
           UMA_HISTOGRAM_ENUMERATION(kGSuiteSyncPasswordPageInfoHistogram,
                                     action);
+        } else {
+          UMA_HISTOGRAM_ENUMERATION(kGmailSyncPasswordPageInfoHistogram,
+                                    action);
         }
-      } else {
+      } else if (password_account_type.account_type() ==
+                 ReusedPasswordAccountType::NON_GAIA_ENTERPRISE) {
         UMA_HISTOGRAM_ENUMERATION(kEnterprisePasswordPageInfoHistogram, action);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION(kNonSyncPasswordPageInfoHistogram, action);
+        if (is_gsuite_user) {
+          UMA_HISTOGRAM_ENUMERATION(kGSuiteNonSyncPasswordPageInfoHistogram,
+                                    action);
+        } else {
+          UMA_HISTOGRAM_ENUMERATION(kGmailNonSyncPasswordPageInfoHistogram,
+                                    action);
+        }
       }
       break;
     case WarningUIType::MODAL_DIALOG:
@@ -212,10 +298,23 @@ void LogWarningAction(WarningUIType ui_type,
         if (is_gsuite_user) {
           UMA_HISTOGRAM_ENUMERATION(kGSuiteSyncPasswordWarningDialogHistogram,
                                     action);
+        } else {
+          UMA_HISTOGRAM_ENUMERATION(kGmailSyncPasswordWarningDialogHistogram,
+                                    action);
         }
-      } else {
+      } else if (password_account_type.account_type() ==
+                 ReusedPasswordAccountType::NON_GAIA_ENTERPRISE) {
         UMA_HISTOGRAM_ENUMERATION(kEnterprisePasswordWarningDialogHistogram,
                                   action);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION(kNonSyncPasswordPageInfoHistogram, action);
+        if (is_gsuite_user) {
+          UMA_HISTOGRAM_ENUMERATION(
+              kGSuiteNonSyncPasswordWarningDialogHistogram, action);
+        } else {
+          UMA_HISTOGRAM_ENUMERATION(kGmailNonSyncPasswordWarningDialogHistogram,
+                                    action);
+        }
       }
       break;
     case WarningUIType::CHROME_SETTINGS:
@@ -229,9 +328,20 @@ void LogWarningAction(WarningUIType ui_type,
           UMA_HISTOGRAM_ENUMERATION(kGSuiteSyncPasswordInterstitialHistogram,
                                     action);
         }
-      } else {
+      } else if (password_account_type.account_type() ==
+                 ReusedPasswordAccountType::NON_GAIA_ENTERPRISE) {
         UMA_HISTOGRAM_ENUMERATION(kEnterprisePasswordInterstitialHistogram,
                                   action);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION(kNonSyncPasswordInterstitialHistogram,
+                                  action);
+        if (is_gsuite_user) {
+          UMA_HISTOGRAM_ENUMERATION(kGSuiteNonSyncPasswordInterstitialHistogram,
+                                    action);
+        } else {
+          UMA_HISTOGRAM_ENUMERATION(kGmailNonSyncPasswordInterstitialHistogram,
+                                    action);
+        }
       }
       break;
     case WarningUIType::NOT_USED:

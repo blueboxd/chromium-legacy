@@ -105,7 +105,7 @@ class WebrtcVideoStream : public VideoStream,
 
   const SessionOptions session_options_;
 
-  base::WeakPtrFactory<WebrtcVideoStream> weak_factory_;
+  base::WeakPtrFactory<WebrtcVideoStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcVideoStream);
 };

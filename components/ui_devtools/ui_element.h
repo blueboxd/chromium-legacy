@@ -40,6 +40,13 @@ class UI_DEVTOOLS_EXPORT UIElement {
     std::vector<UIProperty> properties_;
   };
 
+  struct UI_DEVTOOLS_EXPORT Source {
+    Source(std::string path, int line);
+
+    std::string path_;
+    int line_;
+  };
+
   using UIElements = std::vector<UIElement*>;
 
   // resets node ids to 0 so that they are reusable
@@ -58,6 +65,11 @@ class UI_DEVTOOLS_EXPORT UIElement {
   void set_owns_children(bool owns_children) { owns_children_ = owns_children; }
   int GetBaseStylesheetId() const { return base_stylesheet_id_; }
   void SetBaseStylesheetId(int id) { base_stylesheet_id_ = id; }
+
+  // Gets/sets whether the element has sent its stylesheet header to the
+  // frontend.
+  bool header_sent() const { return header_sent_; }
+  void set_header_sent() { header_sent_ = true; }
 
   using ElementCompare = bool (*)(const UIElement*, const UIElement*);
 
@@ -118,10 +130,17 @@ class UI_DEVTOOLS_EXPORT UIElement {
   // Called from PageAgent to repaint Views for Debug Bounds Rectangles
   virtual void PaintRect() const {}
 
+  // Called in the constructor to initialize the element's sources.
+  virtual void InitSources() {}
+
+  // Get the sources for the element.
+  std::vector<Source> GetSources();
+
  protected:
   UIElement(const UIElementType type,
             UIElementDelegate* delegate,
             UIElement* parent);
+  void AddSource(std::string path, int line);
 
  private:
   const int node_id_;
@@ -132,6 +151,8 @@ class UI_DEVTOOLS_EXPORT UIElement {
   bool is_updating_ = false;
   bool owns_children_ = true;
   int base_stylesheet_id_;
+  bool header_sent_ = false;
+  std::vector<Source> sources_;
 
   DISALLOW_COPY_AND_ASSIGN(UIElement);
 };

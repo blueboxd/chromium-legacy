@@ -30,11 +30,13 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
+#include "third_party/blink/renderer/core/paint/image_element_timing.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/graphics/placeholder_image.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -138,6 +140,12 @@ void StyleFetchedImage::ImageNotifyFinished(ImageResourceContent*) {
       ToSVGImage(image).UpdateUseCounters(*document_);
 
     image_->UpdateImageAnimationPolicy();
+  }
+
+  if (document_ && RuntimeEnabledFeatures::ElementTimingEnabled(document_)) {
+    if (LocalDOMWindow* window = document_->domWindow()) {
+      ImageElementTiming::From(*window).NotifyBackgroundImageFinished(this);
+    }
   }
 
   // Oilpan: do not prolong the Document's lifetime.

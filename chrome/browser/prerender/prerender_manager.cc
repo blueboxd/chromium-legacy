@@ -880,15 +880,26 @@ PrerenderManager::AddPrerenderWithPreconnectFallback(
     return nullptr;
   }
 
-  // If this is GWS, and we are in the holdback, fall back to preconnect
-  // instead of prefetch. Record the status as holdback, so we can analyze via
-  // UKM.
+  // If this is GWS and we are in the holdback, skip the prefetch. Record the
+  // status as holdback, so we can analyze via UKM.
   if (origin == ORIGIN_GWS_PRERENDER &&
       base::FeatureList::IsEnabled(kGWSPrefetchHoldback)) {
     // Set the holdback status on the prefetch entry.
     SetPrefetchFinalStatusForUrl(url, FINAL_STATUS_GWS_HOLDBACK);
     SkipPrerenderContentsAndMaybePreconnect(url, origin,
                                             FINAL_STATUS_GWS_HOLDBACK);
+    return nullptr;
+  }
+
+  // If this is Navigation predictor and we are in the holdback, skip the
+  // prefetch. Record the status as holdback, so we can analyze via UKM.
+  if (origin == ORIGIN_NAVIGATION_PREDICTOR &&
+      base::FeatureList::IsEnabled(kNavigationPredictorPrefetchHoldback)) {
+    // Set the holdback status on the prefetch entry.
+    SetPrefetchFinalStatusForUrl(url,
+                                 FINAL_STATUS_NAVIGATION_PREDICTOR_HOLDBACK);
+    SkipPrerenderContentsAndMaybePreconnect(
+        url, origin, FINAL_STATUS_NAVIGATION_PREDICTOR_HOLDBACK);
     return nullptr;
   }
 
@@ -1216,13 +1227,12 @@ void PrerenderManager::SkipPrerenderContentsAndMaybePreconnect(
   if (final_status == FINAL_STATUS_LOW_END_DEVICE ||
       final_status == FINAL_STATUS_CELLULAR_NETWORK ||
       final_status == FINAL_STATUS_DUPLICATE ||
-      final_status == FINAL_STATUS_TOO_MANY_PROCESSES ||
-      final_status == FINAL_STATUS_GWS_HOLDBACK) {
+      final_status == FINAL_STATUS_TOO_MANY_PROCESSES) {
     MaybePreconnect(origin, url);
   }
 
   static_assert(
-      FINAL_STATUS_MAX == FINAL_STATUS_UNKNOWN + 1,
+      FINAL_STATUS_MAX == FINAL_STATUS_NAVIGATION_PREDICTOR_HOLDBACK + 1,
       "Consider whether a failed prerender should fallback to preconnect");
 }
 

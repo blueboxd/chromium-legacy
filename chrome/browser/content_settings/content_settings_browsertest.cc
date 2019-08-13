@@ -150,6 +150,8 @@ class CookieSettingsTest
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
     // Get access to CookieStore API.
+    // Also enables SameSiteByDefaultCookies and
+    // CookiesWithoutSameSiteMustBeSecure.
     cmd->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
     ContentSettingsTest::SetUpCommandLine(cmd);
   }

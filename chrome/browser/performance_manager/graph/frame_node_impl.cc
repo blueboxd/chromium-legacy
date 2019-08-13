@@ -4,9 +4,12 @@
 
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 
+#include <utility>
+
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
+#include "chrome/browser/performance_manager/graph/worker_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
 
 namespace performance_manager {
@@ -35,6 +38,7 @@ FrameNodeImpl::FrameNodeImpl(GraphImpl* graph,
 
 FrameNodeImpl::~FrameNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(child_worker_nodes_.empty());
 }
 
 void FrameNodeImpl::Bind(
@@ -198,6 +202,12 @@ bool FrameNodeImpl::is_ad_frame() const {
   return is_ad_frame_;
 }
 
+const base::flat_set<WorkerNodeImpl*>& FrameNodeImpl::child_worker_nodes()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return child_worker_nodes_;
+}
+
 void FrameNodeImpl::SetIsCurrent(bool is_current) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   is_current_.SetAndMaybeNotify(this, is_current);
@@ -258,6 +268,18 @@ void FrameNodeImpl::OnNavigationCommitted(const GURL& url, bool same_document) {
 
   // Reset properties.
   document_.Reset(this, url);
+}
+
+void FrameNodeImpl::AddChildWorker(WorkerNodeImpl* worker_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  bool inserted = child_worker_nodes_.insert(worker_node).second;
+  DCHECK(inserted);
+}
+
+void FrameNodeImpl::RemoveChildWorker(WorkerNodeImpl* worker_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  size_t removed = child_worker_nodes_.erase(worker_node);
+  DCHECK_EQ(1u, removed);
 }
 
 void FrameNodeImpl::SetAllInterventionPoliciesForTesting(
@@ -344,6 +366,16 @@ bool FrameNodeImpl::GetNetworkAlmostIdle() const {
 bool FrameNodeImpl::IsAdFrame() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return is_ad_frame();
+}
+
+const base::flat_set<const WorkerNode*> FrameNodeImpl::GetChildWorkerNodes()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::flat_set<const WorkerNode*> children;
+  for (auto* child : child_worker_nodes())
+    children.insert(static_cast<const WorkerNode*>(child));
+  DCHECK_EQ(children.size(), child_worker_nodes().size());
+  return children;
 }
 
 void FrameNodeImpl::AddChildFrame(FrameNodeImpl* child_frame_node) {

@@ -56,7 +56,7 @@ class HeadlessJsBindingsTest
   using EvaluateResult = headless::runtime::EvaluateResult;
   using RemoteObject = headless::runtime::RemoteObject;
 
-  HeadlessJsBindingsTest() : weak_factory_(this) {}
+  HeadlessJsBindingsTest() {}
 
   void SetUpOnMainThread() override {
     base::ThreadRestrictions::SetIOAllowed(true);
@@ -217,7 +217,7 @@ class HeadlessJsBindingsTest
 
  protected:
   bool connection_established_ = false;
-  base::WeakPtrFactory<HeadlessJsBindingsTest> weak_factory_;
+  base::WeakPtrFactory<HeadlessJsBindingsTest> weak_factory_{this};
 };
 
 class SimpleCommandJsBindingsTest : public HeadlessJsBindingsTest {

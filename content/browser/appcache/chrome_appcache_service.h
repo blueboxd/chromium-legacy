@@ -75,9 +75,6 @@ class CONTENT_EXPORT ChromeAppCacheService
   bool CanCreateAppCache(const GURL& manifest_url,
                          const GURL& first_party) override;
 
-  // AppCacheServiceImpl override
-  void UnregisterBackend(AppCacheBackendImpl* backend_impl) override;
-
  protected:
   ~ChromeAppCacheService() override;
 
@@ -87,24 +84,11 @@ class CONTENT_EXPORT ChromeAppCacheService
                                           ChromeAppCacheServiceDeleter>;
   friend struct ChromeAppCacheServiceDeleter;
 
-  void Bind(std::unique_ptr<blink::mojom::AppCacheBackend> backend,
-            mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver,
-            int process_id);
-  // Unbinds the pipe corresponding to the given process_id. Unbinding
-  // unregisters and destroys the existing backend for that process_id.
-  // The function must be called before a new backend is created for the given
-  // process_id to ensure that there is at most one backend per process_id.
-  // The function does nothing if no pipe was bound.
-  void Unbind(int process_id);
-
   void DeleteOnCorrectThread() const;
 
   BrowserContext* browser_context_ = nullptr;
   base::FilePath cache_path_;
   mojo::UniqueReceiverSet<blink::mojom::AppCacheBackend> receivers_;
-
-  // A map from a process_id to a receiver_id.
-  std::map<int, mojo::ReceiverId> process_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppCacheService);
 };

@@ -212,8 +212,7 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
         type_(type),
         is_unlimited_(is_unlimited),
         is_session_only_(is_session_only),
-        is_incognito_(is_incognito),
-        weak_factory_(this) {}
+        is_incognito_(is_incognito) {}
 
  protected:
   void Run() override {
@@ -361,7 +360,7 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Weak pointers are used to support cancelling work.
-  base::WeakPtrFactory<UsageAndQuotaInfoGatherer> weak_factory_;
+  base::WeakPtrFactory<UsageAndQuotaInfoGatherer> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(UsageAndQuotaInfoGatherer);
 };
 
@@ -369,9 +368,7 @@ class QuotaManager::EvictionRoundInfoHelper : public QuotaTask {
  public:
   EvictionRoundInfoHelper(QuotaManager* manager,
                           EvictionRoundInfoCallback callback)
-      : QuotaTask(manager),
-        callback_(std::move(callback)),
-        weak_factory_(this) {}
+      : QuotaTask(manager), callback_(std::move(callback)) {}
 
  protected:
   void Run() override {
@@ -457,16 +454,14 @@ class QuotaManager::EvictionRoundInfoHelper : public QuotaTask {
   int64_t total_space_ = 0;
   int64_t global_usage_ = 0;
   bool global_usage_is_complete_ = false;
-  base::WeakPtrFactory<EvictionRoundInfoHelper> weak_factory_;
+  base::WeakPtrFactory<EvictionRoundInfoHelper> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(EvictionRoundInfoHelper);
 };
 
 class QuotaManager::GetUsageInfoTask : public QuotaTask {
  public:
   GetUsageInfoTask(QuotaManager* manager, GetUsageInfoCallback callback)
-      : QuotaTask(manager),
-        callback_(std::move(callback)),
-        weak_factory_(this) {}
+      : QuotaTask(manager), callback_(std::move(callback)) {}
 
  protected:
   void Run() override {
@@ -523,7 +518,7 @@ class QuotaManager::GetUsageInfoTask : public QuotaTask {
   GetUsageInfoCallback callback_;
   UsageInfoEntries entries_;
   int remaining_trackers_;
-  base::WeakPtrFactory<GetUsageInfoTask> weak_factory_;
+  base::WeakPtrFactory<GetUsageInfoTask> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GetUsageInfoTask);
 };
@@ -544,8 +539,7 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
         remaining_clients_(0),
         skipped_clients_(0),
         is_eviction_(is_eviction),
-        callback_(std::move(callback)),
-        weak_factory_(this) {}
+        callback_(std::move(callback)) {}
 
  protected:
   void Run() override {
@@ -614,7 +608,7 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
   bool is_eviction_;
   StatusCallback callback_;
 
-  base::WeakPtrFactory<OriginDataDeleter> weak_factory_;
+  base::WeakPtrFactory<OriginDataDeleter> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(OriginDataDeleter);
 };
 
@@ -632,8 +626,7 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
         error_count_(0),
         remaining_clients_(0),
         remaining_deleters_(0),
-        callback_(std::move(callback)),
-        weak_factory_(this) {}
+        callback_(std::move(callback)) {}
 
  protected:
   void Run() override {
@@ -711,7 +704,7 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
   size_t remaining_deleters_;
   StatusCallback callback_;
 
-  base::WeakPtrFactory<HostDataDeleter> weak_factory_;
+  base::WeakPtrFactory<HostDataDeleter> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(HostDataDeleter);
 };
 
@@ -724,8 +717,7 @@ class QuotaManager::StorageCleanupHelper : public QuotaTask {
       : QuotaTask(manager),
         type_(type),
         quota_client_mask_(quota_client_mask),
-        callback_(std::move(callback)),
-        weak_factory_(this) {}
+        callback_(std::move(callback)) {}
 
  protected:
   void Run() override {
@@ -765,7 +757,7 @@ class QuotaManager::StorageCleanupHelper : public QuotaTask {
   StorageType type_;
   int quota_client_mask_;
   base::OnceClosure callback_;
-  base::WeakPtrFactory<StorageCleanupHelper> weak_factory_;
+  base::WeakPtrFactory<StorageCleanupHelper> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(StorageCleanupHelper);
 };
 
@@ -897,8 +889,7 @@ QuotaManager::QuotaManager(
       get_settings_function_(get_settings_function),
       is_getting_eviction_origin_(false),
       special_storage_policy_(std::move(special_storage_policy)),
-      get_volume_info_fn_(&QuotaManager::GetVolumeInfo),
-      weak_factory_(this) {
+      get_volume_info_fn_(&QuotaManager::GetVolumeInfo) {
   DCHECK_EQ(settings_.refresh_interval, base::TimeDelta::Max());
   if (!get_settings_function.is_null()) {
     // Reset the interval to ensure we use the get_settings_function

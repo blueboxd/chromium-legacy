@@ -13,7 +13,7 @@
 
 namespace device {
 
-FidoTask::FidoTask(FidoDevice* device) : device_(device), weak_factory_(this) {
+FidoTask::FidoTask(FidoDevice* device) : device_(device) {
   DCHECK(device_);
   DCHECK(device_->SupportedProtocolIsInitialized());
   base::SequencedTaskRunnerHandle::Get()->PostTask(

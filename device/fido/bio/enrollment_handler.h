@@ -113,7 +113,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
   ErrorCallback error_callback_;
   GetPINCallback get_pin_callback_;
   base::Optional<pin::TokenResponse> pin_token_response_;
-  base::WeakPtrFactory<BioEnrollmentHandler> weak_factory_;
+  base::WeakPtrFactory<BioEnrollmentHandler> weak_factory_{this};
 
   BioEnrollmentHandler(const BioEnrollmentHandler&) = delete;
   BioEnrollmentHandler(BioEnrollmentHandler&&) = delete;

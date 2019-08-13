@@ -17,6 +17,7 @@
 #include "chromeos/services/device_sync/cryptauth_key_creator_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_proof_computer_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_registry.h"
+#include "chromeos/services/device_sync/cryptauth_task_metrics_logger.h"
 #include "chromeos/services/device_sync/proto/cryptauth_client_app_metadata.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "chromeos/services/device_sync/public/cpp/gcm_constants.h"
@@ -315,19 +316,28 @@ ProcessNewUserKeyPairInstructions(
   return base::nullopt;
 }
 
-void RecordSyncKeysMetrics(const base::TimeDelta& execution_time) {
+void RecordSyncKeysMetrics(const base::TimeDelta& execution_time,
+                           CryptAuthApiCallResult result) {
   LogAsyncExecutionTimeMetric("CryptAuth.EnrollmentV2.ExecutionTime.SyncKeys",
                               execution_time);
+  LogCryptAuthApiCallSuccessMetric(
+      "CryptAuth.EnrollmentV2.ApiCallResult.SyncKeys", result);
 }
 
-void RecordKeyCreationMetrics(const base::TimeDelta& execution_time) {
+void RecordKeyCreationMetrics(const base::TimeDelta& execution_time,
+                              CryptAuthAsyncTaskResult result) {
   LogAsyncExecutionTimeMetric(
       "CryptAuth.EnrollmentV2.ExecutionTime.KeyCreation", execution_time);
+  LogCryptAuthAsyncTaskSuccessMetric(
+      "CryptAuth.EnrollmentV2.AsyncTaskResult.KeyCreation", result);
 }
 
-void RecordEnrollKeysMetrics(const base::TimeDelta& execution_time) {
+void RecordEnrollKeysMetrics(const base::TimeDelta& execution_time,
+                             CryptAuthApiCallResult result) {
   LogAsyncExecutionTimeMetric("CryptAuth.EnrollmentV2.ExecutionTime.EnrollKeys",
                               execution_time);
+  LogCryptAuthApiCallSuccessMetric(
+      "CryptAuth.EnrollmentV2.ApiCallResult.EnrollKeys", result);
 }
 
 }  // namespace
@@ -455,13 +465,14 @@ void CryptAuthV2EnrollerImpl::OnTimeout() {
       base::DefaultClock::GetInstance()->Now() - last_state_change_timestamp_;
   switch (state_) {
     case State::kWaitingForSyncKeysResponse:
-      RecordSyncKeysMetrics(execution_time);
+      RecordSyncKeysMetrics(execution_time, CryptAuthApiCallResult::kTimeout);
       break;
     case State::kWaitingForKeyCreation:
-      RecordKeyCreationMetrics(execution_time);
+      RecordKeyCreationMetrics(execution_time,
+                               CryptAuthAsyncTaskResult::kTimeout);
       break;
     case State::kWaitingForEnrollKeysResponse:
-      RecordEnrollKeysMetrics(execution_time);
+      RecordEnrollKeysMetrics(execution_time, CryptAuthApiCallResult::kTimeout);
       break;
     default:
       NOTREACHED();
@@ -541,8 +552,9 @@ void CryptAuthV2EnrollerImpl::OnSyncKeysSuccess(
     const SyncKeysResponse& response) {
   DCHECK(state_ == State::kWaitingForSyncKeysResponse);
 
-  RecordSyncKeysMetrics(base::DefaultClock::GetInstance()->Now() -
-                        last_state_change_timestamp_);
+  RecordSyncKeysMetrics(
+      base::DefaultClock::GetInstance()->Now() - last_state_change_timestamp_,
+      CryptAuthApiCallResult::kSuccess);
 
   if (response.server_status() == SyncKeysResponse::SERVER_OVERLOADED) {
     FinishAttempt(
@@ -719,8 +731,9 @@ CryptAuthV2EnrollerImpl::ProcessKeyCreationInstructions(
 }
 
 void CryptAuthV2EnrollerImpl::OnSyncKeysFailure(NetworkRequestError error) {
-  RecordSyncKeysMetrics(base::DefaultClock::GetInstance()->Now() -
-                        last_state_change_timestamp_);
+  RecordSyncKeysMetrics(
+      base::DefaultClock::GetInstance()->Now() - last_state_change_timestamp_,
+      CryptAuthApiCallResultFromNetworkRequestError(error));
 
   FinishAttempt(SyncKeysNetworkRequestErrorToResultCode(error));
 }
@@ -733,8 +746,9 @@ void CryptAuthV2EnrollerImpl::OnKeysCreated(
     const base::Optional<CryptAuthKey>& client_ephemeral_dh) {
   DCHECK(state_ == State::kWaitingForKeyCreation);
 
-  RecordKeyCreationMetrics(base::DefaultClock::GetInstance()->Now() -
-                           last_state_change_timestamp_);
+  RecordKeyCreationMetrics(
+      base::DefaultClock::GetInstance()->Now() - last_state_change_timestamp_,
+      CryptAuthAsyncTaskResult::kSuccess);
 
   EnrollKeysRequest request;
   request.set_random_session_id(session_id);
@@ -791,8 +805,9 @@ void CryptAuthV2EnrollerImpl::OnEnrollKeysSuccess(
     const EnrollKeysResponse& response) {
   DCHECK(state_ == State::kWaitingForEnrollKeysResponse);
 
-  RecordEnrollKeysMetrics(base::DefaultClock::GetInstance()->Now() -
-                          last_state_change_timestamp_);
+  RecordEnrollKeysMetrics(
+      base::DefaultClock::GetInstance()->Now() - last_state_change_timestamp_,
+      CryptAuthApiCallResult::kSuccess);
 
   for (const std::pair<CryptAuthKeyBundle::Name, CryptAuthKey>& new_key :
        new_keys) {
@@ -809,8 +824,9 @@ void CryptAuthV2EnrollerImpl::OnEnrollKeysSuccess(
 }
 
 void CryptAuthV2EnrollerImpl::OnEnrollKeysFailure(NetworkRequestError error) {
-  RecordEnrollKeysMetrics(base::DefaultClock::GetInstance()->Now() -
-                          last_state_change_timestamp_);
+  RecordEnrollKeysMetrics(
+      base::DefaultClock::GetInstance()->Now() - last_state_change_timestamp_,
+      CryptAuthApiCallResultFromNetworkRequestError(error));
 
   FinishAttempt(EnrollKeysNetworkRequestErrorToResultCode(error));
 }

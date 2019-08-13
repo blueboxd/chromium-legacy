@@ -101,8 +101,7 @@ LocalFileStreamReader::LocalFileStreamReader(
       file_path_(file_path),
       initial_offset_(initial_offset),
       expected_modification_time_(expected_modification_time),
-      has_pending_open_(false),
-      weak_factory_(this) {}
+      has_pending_open_(false) {}
 
 void LocalFileStreamReader::Open(net::CompletionOnceCallback callback) {
   DCHECK(!has_pending_open_);

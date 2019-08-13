@@ -93,7 +93,7 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
   void SetAccountTokens(
       const std::vector<GCMClient::AccountTokenInfo>& account_tokens);
   void UpdateAccountMapping(const AccountMapping& account_mapping);
-  void RemoveAccountMapping(const std::string& account_id);
+  void RemoveAccountMapping(const CoreAccountId& account_id);
   void SetLastTokenFetchTime(const base::Time& time);
   void WakeFromSuspendForHeartbeat(bool wake);
   void AddHeartbeatInterval(const std::string& scope, int interval_ms);
@@ -396,7 +396,7 @@ void GCMDriverDesktop::IOWorker::UpdateAccountMapping(
 }
 
 void GCMDriverDesktop::IOWorker::RemoveAccountMapping(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
   if (gcm_client_)
@@ -831,7 +831,7 @@ void GCMDriverDesktop::UpdateAccountMapping(
                      base::Unretained(io_worker_.get()), account_mapping));
 }
 
-void GCMDriverDesktop::RemoveAccountMapping(const std::string& account_id) {
+void GCMDriverDesktop::RemoveAccountMapping(const CoreAccountId& account_id) {
   DCHECK(ui_thread_->RunsTasksInCurrentSequence());
 
   io_thread_->PostTask(

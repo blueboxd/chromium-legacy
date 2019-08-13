@@ -1497,7 +1497,8 @@ void LockContentsView::SwapActiveAuthBetweenPrimaryAndSecondary(
   }
 }
 
-void LockContentsView::OnAuthenticate(bool auth_success) {
+void LockContentsView::OnAuthenticate(bool auth_success,
+                                      bool display_error_messages) {
   if (auth_success) {
     if (auth_error_bubble_->GetVisible())
       auth_error_bubble_->Hide();
@@ -1517,7 +1518,8 @@ void LockContentsView::OnAuthenticate(bool auth_success) {
     }
   } else {
     ++unlock_attempt_;
-    ShowAuthErrorMessage();
+    if (display_error_messages)
+      ShowAuthErrorMessage();
   }
 }
 

@@ -45,6 +45,9 @@ void PasswordManagerClient::AutofillHttpAuth(
     const autofill::PasswordForm& preferred_match,
     const PasswordFormManagerForUI* form_manager) {}
 
+void PasswordManagerClient::NotifyUserCredentialsWereLeaked(
+    const GURL& origin) {}
+
 SyncState PasswordManagerClient::GetPasswordSyncState() const {
   return NOT_SYNCING;
 }

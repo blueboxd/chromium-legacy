@@ -19,10 +19,7 @@ namespace {
 int kReadBufferSize = 4096;
 }  // namespace
 
-SocketReader::SocketReader()
-    : socket_(NULL),
-      weak_factory_(this) {
-}
+SocketReader::SocketReader() : socket_(nullptr) {}
 
 SocketReader::~SocketReader() = default;
 

@@ -181,6 +181,7 @@ source_set("gbm_unittests") {
     "common/drm_overlay_manager_unittest.cc",
     "common/drm_util_unittest.cc",
     "gpu/drm_overlay_validator_unittest.cc",
+    "gpu/drm_thread_unittest.cc",
     "gpu/drm_window_unittest.cc",
     "gpu/hardware_display_controller_unittest.cc",
     "gpu/hardware_display_plane_manager_unittest.cc",

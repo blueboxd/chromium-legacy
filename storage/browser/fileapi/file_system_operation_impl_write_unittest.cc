@@ -57,8 +57,7 @@ class FileSystemOperationImplWriteTest : public testing::Test {
         status_(base::File::FILE_OK),
         cancel_status_(base::File::FILE_ERROR_FAILED),
         bytes_written_(0),
-        complete_(false),
-        weak_factory_(this) {
+        complete_(false) {
     change_observers_ =
         storage::MockFileChangeObserver::CreateList(&change_observer_);
   }
@@ -166,7 +165,7 @@ class FileSystemOperationImplWriteTest : public testing::Test {
   storage::MockFileChangeObserver change_observer_;
   storage::ChangeObserverList change_observers_;
 
-  base::WeakPtrFactory<FileSystemOperationImplWriteTest> weak_factory_;
+  base::WeakPtrFactory<FileSystemOperationImplWriteTest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationImplWriteTest);
 };

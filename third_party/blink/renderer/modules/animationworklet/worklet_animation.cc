@@ -540,16 +540,7 @@ void WorkletAnimation::StartOnMain() {
   SetCurrentTime(current_time);
 }
 
-bool WorkletAnimation::StartOnCompositor() {
-  DCHECK(IsMainThread());
-  // There is no need to proceed if an animation has already started on main
-  // thread.
-  // TODO(majidvp): If keyframes have changed then it may be possible to now
-  // run the animation on compositor. The current logic does not allow this
-  // switch from main to compositor to happen. https://crbug.com/972691.
-  if (running_on_main_thread_)
-    return false;
-
+bool WorkletAnimation::CanStartOnCompositor() {
   if (effects_.size() > 1) {
     // Compositor doesn't support multiple effects but they can be run via main.
     return false;
@@ -571,14 +562,29 @@ bool WorkletAnimation::StartOnCompositor() {
   GetEffect()->Model()->SnapshotAllCompositorKeyframesIfNecessary(
       target, target.ComputedStyleRef(), target.ParentComputedStyle());
 
-  double playback_rate = 1;
   CompositorAnimations::FailureReasons failure_reasons =
-      GetEffect()->CheckCanStartAnimationOnCompositor(nullptr, playback_rate);
+      GetEffect()->CheckCanStartAnimationOnCompositor(nullptr, playback_rate_);
 
   if (failure_reasons != CompositorAnimations::kNoFailure)
     return false;
 
   if (!CheckElementComposited(target))
+    return false;
+
+  return true;
+}
+
+bool WorkletAnimation::StartOnCompositor() {
+  DCHECK(IsMainThread());
+  // There is no need to proceed if an animation has already started on main
+  // thread.
+  // TODO(majidvp): If keyframes have changed then it may be possible to now
+  // run the animation on compositor. The current logic does not allow this
+  // switch from main to compositor to happen. https://crbug.com/972691.
+  if (running_on_main_thread_)
+    return false;
+
+  if (!CanStartOnCompositor())
     return false;
 
   if (!compositor_animation_) {
@@ -599,7 +605,7 @@ bool WorkletAnimation::StartOnCompositor() {
           document_->Timeline().CompositorTimeline())
     compositor_timeline->AnimationAttached(*this);
 
-  CompositorAnimations::AttachCompositedLayers(target,
+  CompositorAnimations::AttachCompositedLayers(*GetEffect()->target(),
                                                compositor_animation_.get());
 
   // TODO(smcgruer): We need to start all of the effects, not just the first.
@@ -613,13 +619,21 @@ bool WorkletAnimation::UpdateOnCompositor() {
   if (effect_needs_restart_) {
     // We want to update the keyframe effect on compositor animation without
     // destroying the compositor animation instance. This is achieved by
-    // canceling, and start the blink keyframe effect on compositor.
+    // canceling, and starting the blink keyframe effect on compositor.
     effect_needs_restart_ = false;
     GetEffect()->CancelAnimationOnCompositor(compositor_animation_.get());
-    if (!GetEffect()->target()) {
+    if (!CanStartOnCompositor()) {
+      // Destroy the compositor animation if the animation is no longer
+      // compositable.
+      //
+      // TODO(821910): At the moment destroying the compositor animation
+      // instance also deletes the animator instance which is problematic for
+      // stateful animators. A more seamless hand-off is needed here and for
+      // pause.
       DestroyCompositorAnimation();
       return false;
     }
+
     StartEffectOnCompositor(compositor_animation_.get(), GetEffect());
   }
 

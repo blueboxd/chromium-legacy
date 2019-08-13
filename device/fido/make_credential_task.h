@@ -79,7 +79,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialTask : public FidoTask {
   bool probing_alternative_rp_id_ = false;
   bool canceled_ = false;
 
-  base::WeakPtrFactory<MakeCredentialTask> weak_factory_;
+  base::WeakPtrFactory<MakeCredentialTask> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MakeCredentialTask);
 };

@@ -120,7 +120,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaReservationManager {
   ReservationBufferByOriginAndType reservation_buffers_;
 
   base::SequenceChecker sequence_checker_;
-  base::WeakPtrFactory<QuotaReservationManager> weak_ptr_factory_;
+  base::WeakPtrFactory<QuotaReservationManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(QuotaReservationManager);
 };

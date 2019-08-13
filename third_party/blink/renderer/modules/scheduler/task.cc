@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/modules/scheduler/scheduler.h"
 #include "third_party/blink/renderer/modules/scheduler/task_queue.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -17,14 +18,22 @@
 namespace blink {
 
 Task::Task(TaskQueue* task_queue,
+           ExecutionContext* context,
            V8Function* callback,
-           const Vector<ScriptValue>& args)
-    : status_(Status::kPending),
+           const Vector<ScriptValue>& args,
+           base::TimeDelta delay)
+    : ContextLifecycleObserver(context),
+      status_(Status::kPending),
       task_queue_(task_queue),
       callback_(callback),
-      arguments_(args) {
+      arguments_(args),
+      delay_(delay),
+      queue_time_(delay.is_zero() ? base::TimeTicks()
+                                  : base::TimeTicks::Now()) {
   DCHECK(task_queue_);
   DCHECK(callback_);
+
+  Schedule(delay_);
 }
 
 void Task::Trace(Visitor* visitor) {
@@ -34,6 +43,13 @@ void Task::Trace(Visitor* visitor) {
   visitor->Trace(result_promise_);
   visitor->Trace(exception_);
   ScriptWrappable::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
+}
+
+void Task::ContextDestroyed(ExecutionContext* context) {
+  if (status_ != Status::kPending)
+    return;
+  CancelPendingTask();
 }
 
 AtomicString Task::priority() const {
@@ -46,7 +62,7 @@ AtomicString Task::status() const {
 }
 
 void Task::cancel(ScriptState* script_state) {
-  if (!IsPending())
+  if (status_ != Status::kPending)
     return;
   CancelPendingTask();
   SetTaskStatus(Status::kCanceled);
@@ -63,24 +79,47 @@ ScriptPromise Task::result(ScriptState* script_state) {
   return result_promise_->Promise(script_state->World());
 }
 
-void Task::SetTaskHandle(TaskHandle&& task_handle) {
-  task_handle_ = std::move(task_handle);
+void Task::MoveTo(TaskQueue* task_queue) {
+  if (status_ != Status::kPending || task_queue == task_queue_)
+    return;
+
+  CancelPendingTask();
+  task_queue_ = task_queue;
+
+  base::TimeDelta delay = base::TimeDelta();
+  if (!delay_.is_zero()) {
+    DCHECK(!queue_time_.is_null());
+    base::TimeTicks now = base::TimeTicks::Now();
+    if (queue_time_ + delay_ > now) {
+      delay = now - queue_time_;
+    }
+  }
+
+  Schedule(delay);
 }
 
-bool Task::IsPending() const {
-  return status_ == Status::kPending;
+void Task::Schedule(base::TimeDelta delay) {
+  DCHECK_EQ(status_, Status::kPending);
+  DCHECK(!task_handle_.IsActive());
+  DCHECK_GE(delay, base::TimeDelta());
+
+  task_handle_ = PostDelayedCancellableTask(
+      *task_queue_->GetTaskRunner(), FROM_HERE,
+      WTF::Bind(&Task::Invoke, WrapPersistent(this)), delay_);
 }
 
 void Task::CancelPendingTask() {
-  DCHECK(IsPending());
+  DCHECK_EQ(status_, Status::kPending);
   DCHECK(task_handle_.IsActive());
 
   task_handle_.Cancel();
 }
 
 void Task::Invoke() {
-  DCHECK(IsPending());
+  DCHECK_EQ(status_, Status::kPending);
   DCHECK(callback_);
+  DCHECK(GetExecutionContext());
+  DCHECK(!GetExecutionContext()->IsContextDestroyed());
 
   ScriptState* script_state =
       callback_->CallbackRelevantScriptStateOrReportError("Task", "Invoke");
@@ -88,9 +127,10 @@ void Task::Invoke() {
     return;
 
   SetTaskStatus(Status::kRunning);
+  task_queue_->GetScheduler()->OnTaskStarted(task_queue_, this);
   InvokeInternal(script_state);
   SetTaskStatus(Status::kCompleted);
-
+  task_queue_->GetScheduler()->OnTaskCompleted(task_queue_, this);
   ResolveOrRejectPromiseIfNeeded(script_state);
   callback_.Release();
 }

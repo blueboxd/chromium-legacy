@@ -2,12 +2,13 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-'''python %prog [options] platform chromium_os_flag template
+'''python %prog [options]
 
-platform specifies which platform source is being generated for
-  and can be one of (win, mac, linux, fuchsia)
-chromium_os_flag should be 1 if this is a Chromium OS build
-template is the path to a .json policy template file.'''
+Pass at least:
+--chrome-version-file <path to src/chrome/VERSION>
+--target-platform <which platform the target code will be generated for and can
+  be one of (win, mac, linux, chromeos, fuchsia)>
+--policy_templates <path to the policy_templates.json input file>.'''
 
 from __future__ import with_statement
 from collections import namedtuple
@@ -55,8 +56,7 @@ class PolicyDetails:
       self.caption = PolicyDetails._RemovePlaceholders(item['caption'])
       self.value = item['value']
 
-  def __init__(self, policy, chrome_major_version, os, is_chromium_os,
-               valid_tags):
+  def __init__(self, policy, chrome_major_version, target_platform, valid_tags):
     self.id = policy['id']
     self.name = policy['name']
     self.tags = policy.get('tags', None)
@@ -75,7 +75,6 @@ class PolicyDetails:
     if self.has_enterprise_default:
       self.enterprise_default = policy['default_for_enterprise_users']
 
-    expected_platform = 'chrome_os' if is_chromium_os else os.lower()
     self.platforms = []
     for platform, version_range in [
         p.split(':') for p in policy['supported_on']
@@ -121,7 +120,7 @@ class PolicyDetails:
         self.platforms.append(platform)
 
     self.platforms.sort()
-    self.is_supported = expected_platform in self.platforms
+    self.is_supported = target_platform in self.platforms
 
     if not PolicyDetails.TYPE_MAP.has_key(policy['type']):
       raise NotImplementedError(
@@ -272,24 +271,47 @@ def main():
       help='generate source file of policy constants for use in '
       'Chrome OS',
       metavar='FILE')
+  parser.add_option(
+      '--chrome-version-file',
+      dest='chrome_version_file',
+      help='path to src/chrome/VERSION',
+      metavar='FILE')
+  parser.add_option(
+      '--target-platform',
+      dest='target_platform',
+      help='the platform the generated code should run on - can be one of'
+      '(win, mac, linux, chromeos, fuchsia)',
+      metavar='PLATFORM')
+  parser.add_option(
+      '--policy-templates-file',
+      dest='policy_templates_file',
+      help='path to the policy_templates.json input file',
+      metavar='FILE')
   (opts, args) = parser.parse_args()
 
-  if len(args) != 4:
-    print('Please specify path to src/chrome/VERSION, platform, '
-          'chromium_os flag and input file as positional parameters.')
+  if (not opts.chrome_version_file or not opts.target_platform or
+      not opts.policy_templates_file):
+    print('Please specify at least:\n'
+          '--chrome-version-file=<path to src/chrome/VERSION>\n'
+          '--target-platform=<platform>\n'
+          '--policy-templates-file=<path to policy_templates.json')
     parser.print_help()
     return 2
 
-  version_path = args[0]
-  os = args[1]
-  is_chromium_os = args[2] == '1'
-  template_file_name = args[3]
+  version_path = opts.chrome_version_file
+  target_platform = opts.target_platform
+  template_file_name = opts.policy_templates_file
+
+  # --target-platform accepts "chromeos" as its input because that's what is
+  # used within GN. Within policy templates, "chrome_os" is used instead.
+  if target_platform == 'chromeos':
+    target_platform = 'chrome_os'
 
   major_version = ParseVersionFile(version_path)
   template_file_contents = _LoadJSONFile(template_file_name)
   risk_tags = RiskTags(template_file_contents)
   policy_details = [
-      PolicyDetails(policy, major_version, os, is_chromium_os,
+      PolicyDetails(policy, major_version, target_platform,
                     risk_tags.GetValidTags())
       for policy in template_file_contents['policy_definitions']
       if policy['type'] != 'group'
@@ -313,7 +335,7 @@ def main():
         _OutputGeneratedWarningHeader(f, template_file_name, xml)
         writer(sorted and sorted_policy_details or policy_details,
                sorted and sorted_policy_atomic_groups or policy_atomic_groups,
-               os, f, risk_tags)
+               target_platform, f, risk_tags)
 
   if opts.header_path:
     GenerateFile(opts.header_path, _WritePolicyConstantHeader, sorted=True)
@@ -332,7 +354,7 @@ def main():
     GenerateFile(opts.chrome_settings_full_runtime_proto_path,
                  _WriteChromeSettingsFullRuntimeProtobuf)
 
-  if os == 'android' and opts.app_restrictions_path:
+  if target_platform == 'android' and opts.app_restrictions_path:
     GenerateFile(opts.app_restrictions_path, _WriteAppRestrictions, xml=True)
 
   # Generated code for Chrome OS (unused in Chromium).
@@ -397,8 +419,8 @@ def _LoadJSONFile(json_file):
 #------------------ policy constants header ------------------------#
 
 
-def _WritePolicyConstantHeader(policies, policy_atomic_groups, os, f,
-                               risk_tags):
+def _WritePolicyConstantHeader(policies, policy_atomic_groups, target_platform,
+                               f, risk_tags):
   f.write('#ifndef CHROME_COMMON_POLICY_CONSTANTS_H_\n'
           '#define CHROME_COMMON_POLICY_CONSTANTS_H_\n'
           '\n'
@@ -416,7 +438,7 @@ def _WritePolicyConstantHeader(policies, policy_atomic_groups, os, f,
           'struct SchemaData;\n'
           '}\n\n')
 
-  if os == 'win':
+  if target_platform == 'win':
     f.write('// The windows registry path where Chrome policy '
             'configuration resides.\n'
             'extern const wchar_t kRegistryChromePolicyKey[];\n')
@@ -953,8 +975,8 @@ def _GenerateDefaultValue(value):
   return [], None
 
 
-def _WritePolicyConstantSource(policies, policy_atomic_groups, os, f,
-                               risk_tags):
+def _WritePolicyConstantSource(policies, policy_atomic_groups, target_platform,
+                               f, risk_tags):
   f.write('#include "components/policy/policy_constants.h"\n'
           '\n'
           '#include <algorithm>\n'
@@ -1033,7 +1055,7 @@ def _WritePolicyConstantSource(policies, policy_atomic_groups, os, f,
 
   f.write('}  // namespace\n\n')
 
-  if os == 'win':
+  if target_platform == 'win':
     f.write('#if defined(GOOGLE_CHROME_BUILD)\n'
             'const wchar_t kRegistryChromePolicyKey[] = '
             'L"' + CHROME_POLICY_KEY + '";\n'
@@ -1241,7 +1263,8 @@ class RiskTags(object):
           "-", "_").upper()
 
 
-def _WritePolicyRiskTagHeader(policies, policy_atomic_groups, os, f, risk_tags):
+def _WritePolicyRiskTagHeader(policies, policy_atomic_groups, target_platform,
+                              f, risk_tags):
   f.write('#ifndef CHROME_COMMON_POLICY_RISK_TAG_H_\n'
           '#define CHROME_COMMON_POLICY_RISK_TAG_H_\n'
           '\n'
@@ -1355,8 +1378,8 @@ def _WritePolicyProto(f, policy, fields):
   ]
 
 
-def _WriteChromeSettingsProtobuf(policies, policy_atomic_groups, os, f,
-                                 risk_tags):
+def _WriteChromeSettingsProtobuf(policies, policy_atomic_groups,
+                                 target_platform, f, risk_tags):
   f.write(CHROME_SETTINGS_PROTO_HEAD)
   fields = []
   f.write('// PBs for individual settings.\n\n')
@@ -1373,8 +1396,8 @@ def _WriteChromeSettingsProtobuf(policies, policy_atomic_groups, os, f,
   f.write('}\n\n')
 
 
-def _WriteChromeSettingsFullRuntimeProtobuf(policies, policy_atomic_groups, os,
-                                            f, risk_tags):
+def _WriteChromeSettingsFullRuntimeProtobuf(policies, policy_atomic_groups,
+                                            target_platform, f, risk_tags):
   # For full runtime, disable LITE_RUNTIME switch and import full runtime
   # version of cloud_policy.proto.
   f.write(
@@ -1398,7 +1421,8 @@ def _WriteChromeSettingsFullRuntimeProtobuf(policies, policy_atomic_groups, os,
   f.write('}\n\n')
 
 
-def _WriteCloudPolicyProtobuf(policies, policy_atomic_groups, os, f, risk_tags):
+def _WriteCloudPolicyProtobuf(policies, policy_atomic_groups, target_platform,
+                              f, risk_tags):
   f.write(CLOUD_POLICY_PROTO_HEAD)
   f.write('message CloudPolicySettings {\n')
   for policy in policies:
@@ -1409,8 +1433,8 @@ def _WriteCloudPolicyProtobuf(policies, policy_atomic_groups, os, f, risk_tags):
   f.write('}\n\n')
 
 
-def _WriteCloudPolicyFullRuntimeProtobuf(policies, policy_atomic_groups, os, f,
-                                         risk_tags):
+def _WriteCloudPolicyFullRuntimeProtobuf(policies, policy_atomic_groups,
+                                         target_platform, f, risk_tags):
   # For full runtime, disable LITE_RUNTIME switch
   f.write(
       CLOUD_POLICY_PROTO_HEAD.replace("option optimize_for = LITE_RUNTIME;",
@@ -1476,8 +1500,8 @@ def _WriteChromeOSPolicyAccessHeader(f, protobuf_type):
 
 
 # Writes policy_constants.h for use in Chrome OS.
-def _WriteChromeOSPolicyConstantsHeader(policies, policy_atomic_groups, os, f,
-                                        risk_tags):
+def _WriteChromeOSPolicyConstantsHeader(policies, policy_atomic_groups,
+                                        target_platform, f, risk_tags):
   f.write('#ifndef __BINDINGS_POLICY_CONSTANTS_H_\n'
           '#define __BINDINGS_POLICY_CONSTANTS_H_\n\n')
 
@@ -1529,8 +1553,8 @@ def _WriteChromeOSPolicyAccessSource(policies, f, protobuf_type):
 
 
 # Writes policy_constants.cc for use in Chrome OS.
-def _WriteChromeOSPolicyConstantsSource(policies, policy_atomic_groups, os, f,
-                                        risk_tags):
+def _WriteChromeOSPolicyConstantsSource(policies, policy_atomic_groups,
+                                        target_platform, f, risk_tags):
   f.write('#include "bindings/cloud_policy.pb.h"\n'
           '#include "bindings/policy_constants.h"\n\n'
           'namespace em = enterprise_management;\n\n'
@@ -1562,7 +1586,8 @@ def _WriteChromeOSPolicyConstantsSource(policies, policy_atomic_groups, os, f,
 #------------------ app restrictions -------------------------------#
 
 
-def _WriteAppRestrictions(policies, policy_atomic_groups, os, f, risk_tags):
+def _WriteAppRestrictions(policies, policy_atomic_groups, target_platform, f,
+                          risk_tags):
 
   def WriteRestrictionCommon(key):
     f.write('    <restriction\n' '        android:key="%s"\n' % key)

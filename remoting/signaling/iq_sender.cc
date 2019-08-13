@@ -132,10 +132,7 @@ bool IqSender::OnSignalStrategyIncomingStanza(const jingle_xmpp::XmlElement* sta
 IqRequest::IqRequest(IqSender* sender,
                      const IqSender::ReplyCallback& callback,
                      const std::string& addressee)
-    : sender_(sender),
-      callback_(callback),
-      addressee_(addressee),
-      weak_factory_(this) {}
+    : sender_(sender), callback_(callback), addressee_(addressee) {}
 
 IqRequest::~IqRequest() {
   sender_->RemoveRequest(this);

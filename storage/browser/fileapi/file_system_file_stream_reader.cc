@@ -46,8 +46,7 @@ FileSystemFileStreamReader::FileSystemFileStreamReader(
       url_(url),
       initial_offset_(initial_offset),
       expected_modification_time_(expected_modification_time),
-      has_pending_create_snapshot_(false),
-      weak_factory_(this) {}
+      has_pending_create_snapshot_(false) {}
 
 FileSystemFileStreamReader::~FileSystemFileStreamReader() = default;
 

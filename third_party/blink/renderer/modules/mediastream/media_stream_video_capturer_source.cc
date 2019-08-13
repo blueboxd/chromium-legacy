@@ -6,12 +6,9 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "media/capture/video_capturer_source.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
-#include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -47,7 +44,7 @@ MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
 }
 
 MediaStreamVideoCapturerSource::~MediaStreamVideoCapturerSource() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void MediaStreamVideoCapturerSource::SetDeviceCapturerFactoryCallbackForTesting(
@@ -56,23 +53,23 @@ void MediaStreamVideoCapturerSource::SetDeviceCapturerFactoryCallbackForTesting(
 }
 
 void MediaStreamVideoCapturerSource::RequestRefreshFrame() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   source_->RequestRefreshFrame();
 }
 
 void MediaStreamVideoCapturerSource::OnFrameDropped(
     media::VideoCaptureFrameDropReason reason) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   source_->OnFrameDropped(reason);
 }
 
 void MediaStreamVideoCapturerSource::OnLog(const std::string& message) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   source_->OnLog(message);
 }
 
 void MediaStreamVideoCapturerSource::OnHasConsumers(bool has_consumers) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (has_consumers)
     source_->Resume();
   else
@@ -80,7 +77,7 @@ void MediaStreamVideoCapturerSource::OnHasConsumers(bool has_consumers) {
 }
 
 void MediaStreamVideoCapturerSource::OnCapturingLinkSecured(bool is_secure) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!frame_)
     return;
   GetMediaStreamDispatcherHost()->SetCapturingLinkSecured(
@@ -90,7 +87,7 @@ void MediaStreamVideoCapturerSource::OnCapturingLinkSecured(bool is_secure) {
 
 void MediaStreamVideoCapturerSource::StartSourceImpl(
     const VideoCaptureDeliverFrameCB& frame_callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   state_ = STARTING;
   frame_callback_ = frame_callback;
   source_->StartCapture(
@@ -100,12 +97,12 @@ void MediaStreamVideoCapturerSource::StartSourceImpl(
 }
 
 void MediaStreamVideoCapturerSource::StopSourceImpl() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   source_->StopCapture();
 }
 
 void MediaStreamVideoCapturerSource::StopSourceForRestartImpl() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (state_ != STARTED) {
     OnStopForRestartDone(false);
     return;
@@ -133,19 +130,19 @@ void MediaStreamVideoCapturerSource::RestartSourceImpl(
 
 base::Optional<media::VideoCaptureFormat>
 MediaStreamVideoCapturerSource::GetCurrentFormat() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return capture_params_.requested_format;
 }
 
 base::Optional<media::VideoCaptureParams>
 MediaStreamVideoCapturerSource::GetCurrentCaptureParams() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return capture_params_;
 }
 
 void MediaStreamVideoCapturerSource::ChangeSourceImpl(
     const MediaStreamDevice& new_device) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(device_capturer_factory_callback_);
 
   if (state_ != STARTED) {
@@ -165,7 +162,7 @@ void MediaStreamVideoCapturerSource::ChangeSourceImpl(
 void MediaStreamVideoCapturerSource::OnRunStateChanged(
     const media::VideoCaptureParams& new_capture_params,
     bool is_running) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   switch (state_) {
     case STARTING:
       source_->OnLog("MediaStreamVideoCapturerSource sending OnStartDone");

@@ -164,8 +164,11 @@ void LocalSiteCharacteristicsDataStore::OnURLsDeleted(
   } else {
     std::vector<url::Origin> origins_to_remove;
 
-    DCHECK_EQ(deletion_info.deleted_urls_origin_map().size(),
-              CountOriginsInURLRows(deletion_info.deleted_rows()));
+    // CHECK_EQ instead of DCHECK_EQ to determine whether
+    // https://crbug.com/966059 still happens in production.
+    // TODO(fdoray): Remove once https://crbug.com/966059 is fixed.
+    CHECK_EQ(deletion_info.deleted_urls_origin_map().size(),
+             CountOriginsInURLRows(deletion_info.deleted_rows()));
     for (const auto& it : deletion_info.deleted_urls_origin_map()) {
       const url::Origin origin = url::Origin::Create(it.first);
       const int remaining_visits_in_history = it.second.first;

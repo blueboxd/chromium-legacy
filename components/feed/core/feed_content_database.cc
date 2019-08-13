@@ -24,8 +24,12 @@ namespace {
 
 const char kContentDatabaseFolder[] = "content";
 
-const size_t kDatabaseWriteBufferSizeBytes = 64 * 1024;                 // 64KB
-const size_t kDatabaseWriteBufferSizeBytesForLowEndDevice = 32 * 1024;  // 32KB
+// Content writes vary a lot in size, loading full page will will have a couple
+// dozen writes totaling a couple dozen KB, but there's a lot of variability.
+// This should result in some batching while also keeping the memory impact very
+// small.
+const size_t kDatabaseWriteBufferSizeBytes = 8 * 1024;                 // 8KB
+const size_t kDatabaseWriteBufferSizeBytesForLowEndDevice = 4 * 1024;  // 4KB
 
 leveldb::ReadOptions CreateReadOptions() {
   leveldb::ReadOptions opts;

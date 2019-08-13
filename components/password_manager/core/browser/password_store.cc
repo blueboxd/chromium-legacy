@@ -403,7 +403,7 @@ void PasswordStore::PreparePasswordHashData(const std::string& sync_username) {
 void PasswordStore::SaveGaiaPasswordHash(
     const std::string& username,
     const base::string16& password,
-    metrics_util::SyncPasswordHashChange event) {
+    metrics_util::GaiaPasswordHashChange event) {
   SaveProtectedPasswordHash(username, password, /*is_gaia_password=*/true,
                             event);
 }
@@ -412,20 +412,25 @@ void PasswordStore::SaveEnterprisePasswordHash(const std::string& username,
                                                const base::string16& password) {
   SaveProtectedPasswordHash(
       username, password, /*is_gaia_password=*/false,
-      metrics_util::SyncPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
+      metrics_util::GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
 }
 
 void PasswordStore::SaveProtectedPasswordHash(
     const std::string& username,
     const base::string16& password,
     bool is_gaia_password,
-    metrics_util::SyncPasswordHashChange event) {
+    metrics_util::GaiaPasswordHashChange event) {
   if (hash_password_manager_.SavePasswordHash(username, password,
                                               is_gaia_password)) {
-    if (is_gaia_password &&
-        event !=
-            metrics_util::SyncPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE) {
-      metrics_util::LogSyncPasswordHashChange(event);
+    if (is_gaia_password) {
+      if (event ==
+          metrics_util::GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE) {
+        metrics_util::LogGaiaPasswordHashChange(event,
+                                                /*is_sync_password=*/false);
+      } else {
+        metrics_util::LogGaiaPasswordHashChange(event,
+                                                /*is_sync_password=*/true);
+      }
     }
     SchedulePasswordHashUpdate(/*should_log_metrics=*/false);
   }
@@ -433,9 +438,10 @@ void PasswordStore::SaveProtectedPasswordHash(
 
 void PasswordStore::SaveSyncPasswordHash(
     const PasswordHashData& sync_password_data,
-    metrics_util::SyncPasswordHashChange event) {
+    metrics_util::GaiaPasswordHashChange event) {
   if (hash_password_manager_.SavePasswordHash(sync_password_data)) {
-    metrics_util::LogSyncPasswordHashChange(event);
+    metrics_util::LogGaiaPasswordHashChange(event,
+                                            /*is_sync_password=*/true);
     SchedulePasswordHashUpdate(/*should_log_metrics=*/false);
   }
 }

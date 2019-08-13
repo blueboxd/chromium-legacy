@@ -28,6 +28,16 @@ export class TabsApiProxy {
       });
     });
   }
+
+  /**
+   * @param {number} tabId
+   * @return {!Promise}
+   */
+  closeTab(tabId) {
+    return new Promise(resolve => {
+      chrome.tabs.remove(tabId, resolve);
+    });
+  }
 }
 
 addSingletonGetter(TabsApiProxy);

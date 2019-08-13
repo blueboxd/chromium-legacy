@@ -125,8 +125,6 @@ void PasswordReuseDetectionManager::OnReuseFound(
                                  matching_domains.size(),
                                  password_field_detected, reused_password_type);
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-  // TODO(crbug/1673863): Log password reuse event for signed in non sync
-  // account.
   if (reused_password_type ==
       metrics_util::PasswordType::PRIMARY_ACCOUNT_PASSWORD)
     client_->LogPasswordReuseDetectedEvent();

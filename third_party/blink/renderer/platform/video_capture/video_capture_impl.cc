@@ -274,8 +274,8 @@ void VideoCaptureImpl::OnFrameDropped(
   GetVideoCaptureHost()->OnFrameDropped(device_id_, reason);
 }
 
-void VideoCaptureImpl::OnLog(const std::string& message) {
-  GetVideoCaptureHost()->OnLog(device_id_, WTF::String(message.data()));
+void VideoCaptureImpl::OnLog(const String& message) {
+  GetVideoCaptureHost()->OnLog(device_id_, message);
 }
 
 void VideoCaptureImpl::OnStateChanged(media::mojom::VideoCaptureState state) {

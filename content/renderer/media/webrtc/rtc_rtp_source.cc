@@ -28,8 +28,9 @@ blink::WebRTCRtpSource::Type RTCRtpSource::SourceType() const {
   }
 }
 
-double RTCRtpSource::TimestampMs() const {
-  return source_.timestamp_ms();
+base::TimeTicks RTCRtpSource::Timestamp() const {
+  return base::TimeTicks() +
+         base::TimeDelta::FromMilliseconds(source_.timestamp_ms());
 }
 
 uint32_t RTCRtpSource::Source() const {

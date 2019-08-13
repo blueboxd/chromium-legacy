@@ -601,12 +601,10 @@ or OS update. To do this:
     waterfall](#How-to-add-a-new-tester-bot-to-the-chromium_gpu_fyi-waterfall)
     to deploy one.
 1.  Have this experimental bot target the new version of the driver or the OS
-    in [waterfalls.pyl] and [mixins.pyl].
+    in [waterfalls.pyl] and [mixins.pyl]. [Sample CL][sample driver cl].
 1.  Hopefully, the new machine will pass the pixel tests. If it doesn't, then
-    unfortunately, it'll be necessary to follow the instructions on
-    [updating the pixel tests] to temporarily suppress the failures on this
-    particular configuration. Keep the time window for these test suppressions
-    as narrow as possible.
+    it'll be necessary to follow the instructions on
+    [updating Gold baselines (step #4)][updating gold baselines].
 1.  Watch the new machine for a day or two to make sure it's stable.
 1.  When it is, update [bot_config.py] (Google internal) to *add* a mapping
     between the new driver version and the "stable" version. For example:
@@ -637,6 +635,7 @@ or OS update. To do this:
 
     The new driver or OS version should match the one just added for the
     experimental bot. Get this CL reviewed and landed.
+    [Sample CL (Google internal)][sample targeted version cl].
 1.  After it lands, ask the Chrome Infrastructure Labs team to roll out the
     driver update across all of the similarly configured bots in the swarming
     pool.
@@ -649,7 +648,9 @@ Note that we leave the experimental bot in place. We could reclaim it, but it
 seems worthwhile to continuously test the "next" version of graphics drivers as
 well as the current stable ones.
 
-[updating the pixel tests]: https://www.chromium.org/developers/testing/gpu-testing/#TOC-Updating-and-Adding-New-Pixel-Tests-to-the-GPU-Bots
+[sample driver cl]: https://chromium-review.googlesource.com/c/chromium/src/+/1726875
+[sample targeted version cl]: https://chrome-internal-review.googlesource.com/c/infradata/config/+/1602377
+[updating gold baselines]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/gpu/pixel_wrangling.md#how-to-keep-the-bots-green
 
 ## Credentials for various servers
 

@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/sharing/click_to_call/click_to_call_sharing_dialog_controller.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
 #include "chrome/browser/ui/views/sharing/click_to_call/click_to_call_dialog_view.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -17,13 +17,12 @@
 #include "ui/views/animation/ink_drop.h"
 
 namespace {
-ClickToCallSharingDialogController* GetControllerFromWebContents(
+ClickToCallUiController* GetControllerFromWebContents(
     content::WebContents* web_contents) {
   if (!web_contents)
     return nullptr;
 
-  return ClickToCallSharingDialogController::GetOrCreateFromWebContents(
-      web_contents);
+  return ClickToCallUiController::GetOrCreateFromWebContents(web_contents);
 }
 }  // namespace
 

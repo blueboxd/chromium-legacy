@@ -784,7 +784,7 @@ void HTMLSelectElement::RecalcListItems() const {
     if (IsHTMLOptionElement(*current_html_element))
       list_items_.push_back(current_html_element);
 
-    if (IsHTMLHRElement(*current_html_element))
+    if (IsA<HTMLHRElement>(*current_html_element))
       list_items_.push_back(current_html_element);
 
     // In conforming HTML code, only <optgroup> and <option> will be found

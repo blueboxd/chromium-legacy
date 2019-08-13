@@ -51,11 +51,10 @@ bool VirtualU2fDevice::IsTransportSupported(FidoTransportProtocol transport) {
                         transport);
 }
 
-VirtualU2fDevice::VirtualU2fDevice()
-    : VirtualFidoDevice(), weak_factory_(this) {}
+VirtualU2fDevice::VirtualU2fDevice() : VirtualFidoDevice() {}
 
 VirtualU2fDevice::VirtualU2fDevice(scoped_refptr<State> state)
-    : VirtualFidoDevice(std::move(state)), weak_factory_(this) {
+    : VirtualFidoDevice(std::move(state)) {
   DCHECK(IsTransportSupported(mutable_state()->transport));
 }
 

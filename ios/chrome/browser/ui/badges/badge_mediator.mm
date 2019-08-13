@@ -72,6 +72,15 @@
 #pragma mark - WebStateListObserver
 
 - (void)webStateList:(WebStateList*)webStateList
+    didReplaceWebState:(web::WebState*)oldWebState
+          withWebState:(web::WebState*)newWebState
+               atIndex:(int)atIndex {
+  if (newWebState && newWebState == webStateList->GetActiveWebState()) {
+    [self updateNewWebState:newWebState withWebStateList:webStateList];
+  }
+}
+
+- (void)webStateList:(WebStateList*)webStateList
     didChangeActiveWebState:(web::WebState*)newWebState
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
@@ -79,21 +88,27 @@
   // Only attempt to retrieve badges if there is a new current web state, since
   // |newWebState| can be null.
   if (newWebState) {
-    DCHECK_EQ(_webStateList, webStateList);
-    web::WebState* webState = webStateList->GetActiveWebState();
-    InfobarBadgeTabHelper* infobarBadgeTabHelper =
-        InfobarBadgeTabHelper::FromWebState(webState);
-    DCHECK(infobarBadgeTabHelper);
-    infobarBadgeTabHelper->SetDelegate(self);
-    // Whenever the WebState changes ask the corresponding
-    // InfobarBadgeTabHelper for all the badges for that WebState.
-    std::vector<id<BadgeItem>> infobar_badges =
-        infobarBadgeTabHelper->GetInfobarBadgeItems();
-    NSArray* infobar_badges_array =
-        [NSArray arrayWithObjects:&infobar_badges[0]
-                            count:infobar_badges.size()];
-    [self.consumer setupWithBadges:infobar_badges_array];
+    [self updateNewWebState:newWebState withWebStateList:webStateList];
   }
+}
+
+#pragma mark - Private
+
+- (void)updateNewWebState:(web::WebState*)newWebState
+         withWebStateList:(WebStateList*)webStateList {
+  DCHECK_EQ(_webStateList, webStateList);
+  web::WebState* webState = webStateList->GetActiveWebState();
+  InfobarBadgeTabHelper* infobarBadgeTabHelper =
+      InfobarBadgeTabHelper::FromWebState(webState);
+  DCHECK(infobarBadgeTabHelper);
+  infobarBadgeTabHelper->SetDelegate(self);
+  // Whenever the WebState changes ask the corresponding
+  // InfobarBadgeTabHelper for all the badges for that WebState.
+  std::vector<id<BadgeItem>> infobar_badges =
+      infobarBadgeTabHelper->GetInfobarBadgeItems();
+  NSArray* infobar_badges_array =
+      [NSArray arrayWithObjects:&infobar_badges[0] count:infobar_badges.size()];
+  [self.consumer setupWithBadges:infobar_badges_array];
 }
 
 @end

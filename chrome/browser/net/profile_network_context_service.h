@@ -49,9 +49,7 @@ class ProfileNetworkContextService
       const base::FilePath& relative_partition_path);
 
 #if defined(OS_CHROMEOS)
-  void UpdateAdditionalCertificates(
-      const net::CertificateList& all_additional_certificates,
-      const net::CertificateList& trust_anchors);
+  void UpdateAdditionalCertificates();
 
   bool using_builtin_cert_verifier() { return using_builtin_cert_verifier_; }
 #endif

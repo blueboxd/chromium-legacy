@@ -33,10 +33,12 @@ void CreditCardCVCAuthenticator::Authenticate(
 }
 
 void CreditCardCVCAuthenticator::OnFullCardRequestSucceeded(
-    const payments::FullCardRequest& /*full_card_request*/,
+    const payments::FullCardRequest& full_card_request,
     const CreditCard& card,
     const base::string16& cvc) {
-  requester_->OnCVCAuthenticationComplete(/*did_succeed=*/true, &card, cvc);
+  requester_->OnCVCAuthenticationComplete(
+      /*did_succeed=*/true, &card, cvc,
+      full_card_request.GetFIDOCreationOptions());
 }
 
 void CreditCardCVCAuthenticator::OnFullCardRequestFailed() {

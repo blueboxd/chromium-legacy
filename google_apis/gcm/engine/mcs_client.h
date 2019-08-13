@@ -309,7 +309,7 @@ class GCM_EXPORT MCSClient {
   // Recorder that records GCM activities for debugging purpose. Not owned.
   GCMStatsRecorder* recorder_;
 
-  base::WeakPtrFactory<MCSClient> weak_ptr_factory_;
+  base::WeakPtrFactory<MCSClient> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MCSClient);
 };

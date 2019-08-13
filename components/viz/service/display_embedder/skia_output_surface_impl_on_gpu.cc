@@ -532,14 +532,13 @@ SkSurface* SkiaOutputSurfaceImplOnGpu::OffscreenSurface::surface() const {
   return surface_.get();
 }
 
-sk_sp<SkPromiseImageTexture>
-SkiaOutputSurfaceImplOnGpu::OffscreenSurface::fulfill() {
+SkPromiseImageTexture* SkiaOutputSurfaceImplOnGpu::OffscreenSurface::fulfill() {
   DCHECK(surface_);
   if (!promise_texture_) {
     promise_texture_ = SkPromiseImageTexture::Make(
         surface_->getBackendTexture(SkSurface::kFlushRead_BackendHandleAccess));
   }
-  return promise_texture_;
+  return promise_texture_.get();
 }
 
 void SkiaOutputSurfaceImplOnGpu::OffscreenSurface::set_surface(
@@ -1099,17 +1098,17 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
       // be nullptr.
       auto it = offscreen_surfaces_.find(context->render_pass_id());
       DCHECK(it != offscreen_surfaces_.end());
-      context->set_promise_image_texture(it->second.fulfill());
+      context->set_promise_image_texture(sk_ref_sp(it->second.fulfill()));
       if (!context->promise_image_texture()) {
         DLOG(ERROR) << "Failed to fulfill the promise texture created from "
                        "RenderPassId:"
                     << context->render_pass_id();
       }
     } else {
-      context->BeginAccess(context_state_.get(),
-                           shared_image_representation_factory_.get(),
-                           dependency_->GetMailboxManager(), gl_version_info_,
-                           begin_semaphores, end_semaphores);
+      context->BeginAccessIfNecessary(
+          context_state_.get(), shared_image_representation_factory_.get(),
+          dependency_->GetMailboxManager(), gl_version_info_, begin_semaphores,
+          end_semaphores);
     }
   }
 }
@@ -1119,7 +1118,7 @@ void SkiaOutputSurfaceImplOnGpu::EndAccessImages(
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::EndAccessImages");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (auto* context : image_contexts)
-    context->EndAccess();
+    context->EndAccessIfNecessary();
 }
 
 sk_sp<GrContextThreadSafeProxy>

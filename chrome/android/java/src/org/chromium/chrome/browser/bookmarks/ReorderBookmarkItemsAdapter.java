@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkManager.ItemsAdapter;
 import org.chromium.chrome.browser.bookmarks.BookmarkRow.Location;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.dragreorder.DragReorderableListAdapter;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -66,6 +67,9 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
     private BookmarkId mCurrentFolder;
     private ProfileSyncService mProfileSyncService;
 
+    // Keep track of the currently highlighted bookmark - used for "show in folder" action.
+    private BookmarkId mHighlightedBookmark;
+
     // For metrics
     private int mDragReorderCount;
     private int mMoveButtonCount;
@@ -74,6 +78,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
         @Override
         public void bookmarkNodeChanged(BookmarkItem node) {
             assert mDelegate != null;
+            clearHighlight();
             int position = getPositionForBookmark(node.getId());
             if (position >= 0) notifyItemChanged(position);
         }
@@ -82,6 +87,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
         public void bookmarkNodeRemoved(BookmarkItem parent, int oldIndex, BookmarkItem node,
                 boolean isDoingExtensiveChanges) {
             assert mDelegate != null;
+            clearHighlight();
 
             if (mDelegate.getCurrentState() == BookmarkUIState.STATE_SEARCHING
                     && TextUtils.equals(mSearchText, EMPTY_QUERY)) {
@@ -101,6 +107,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
         @Override
         public void bookmarkModelChanged() {
             assert mDelegate != null;
+            clearHighlight();
             mDelegate.notifyStateChange(ReorderBookmarkItemsAdapter.this);
 
             if (mDelegate.getCurrentState() == BookmarkUIState.STATE_SEARCHING
@@ -132,6 +139,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
     }
 
     private void setBookmarks(List<BookmarkId> bookmarks) {
+        clearHighlight();
         mElements.clear();
         // Restore the header, if it exists, then update it.
         if (hasPromoHeader()) mElements.add(null);
@@ -199,7 +207,8 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
             mPromoHeaderManager.setupPersonalizedSigninPromo(view);
         } else if (!(holder.getItemViewType() == ViewType.SYNC_PROMO)) {
             BookmarkRow row = ((BookmarkRow) holder.itemView);
-            row.setBookmarkId(getIdByPosition(position), getLocationFromPosition(position));
+            BookmarkId id = getIdByPosition(position);
+            row.setBookmarkId(id, getLocationFromPosition(position));
             row.setDragHandleOnTouchListener((v, event) -> {
                 if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                     mItemTouchHelper.startDrag(holder);
@@ -207,6 +216,12 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
                 // this callback consumed the click action (don't activate menu)
                 return true;
             });
+            // Turn on the highlight for the currently highlighted bookmark.
+            if (id.equals(mHighlightedBookmark)) {
+                ViewHighlighter.turnOnHighlight(holder.itemView, false);
+            } else {
+                ViewHighlighter.turnOffHighlight(holder.itemView);
+            }
         }
     }
 
@@ -231,6 +246,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
         mDelegate = delegate;
         mDelegate.addUIObserver(this);
         mDelegate.getModel().addObserver(mBookmarkModelObserver);
+        mDelegate.getSelectionDelegate().addObserver(this);
 
         Runnable promoHeaderChangeAction = () -> {
             // If top level folders are not showing, update the header and notify.
@@ -263,6 +279,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
     @Override
     public void onFolderStateSet(BookmarkId folder) {
         assert mDelegate != null;
+        clearHighlight();
 
         mSearchText = EMPTY_QUERY;
         mCurrentFolder = folder;
@@ -283,6 +300,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
     @Override
     public void onSearchStateSet() {
         recordSessionReorderInfo(); // For metrics
+        clearHighlight();
         disableDrag();
         // Headers should not appear in Search mode
         // Don't need to notify because we need to redraw everything in the next step
@@ -291,7 +309,9 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
     }
 
     @Override
-    public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {}
+    public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
+        clearHighlight();
+    }
 
     /**
      * Refresh the list of bookmarks within the currently visible folder.
@@ -528,5 +548,25 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
     void simulateSignInForTests() {
         syncStateChanged();
         onFolderStateSet(mCurrentFolder);
+    }
+
+    /**
+     * Scroll the bookmarks list such that bookmarkId is shown in the view, and highlight it.
+     *
+     * @param bookmarkId The BookmarkId of the bookmark of interest
+     */
+    @Override
+    public void highlightBookmark(BookmarkId bookmarkId) {
+        assert mHighlightedBookmark == null : "There should not already be a highlighted bookmark!";
+
+        mRecyclerView.scrollToPosition(getPositionForBookmark(bookmarkId));
+        mHighlightedBookmark = bookmarkId;
+    }
+
+    /**
+     * Clears the highlighted bookmark, if there is one.
+     */
+    private void clearHighlight() {
+        mHighlightedBookmark = null;
     }
 }

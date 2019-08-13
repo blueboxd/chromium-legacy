@@ -132,6 +132,8 @@ BrowserViewLayout::BrowserViewLayout(
     views::View* top_container,
     views::View* tab_strip_region_view,
     TabStrip* tab_strip,
+    views::View* webui_tab_strip,
+    views::View* webui_tab_strip_caption_buttons,
     views::View* toolbar,
     InfoBarContainerView* infobar_container,
     views::View* contents_container,
@@ -141,6 +143,8 @@ BrowserViewLayout::BrowserViewLayout(
       browser_view_(browser_view),
       top_container_(top_container),
       tab_strip_region_view_(tab_strip_region_view),
+      webui_tab_strip_(webui_tab_strip),
+      webui_tab_strip_caption_buttons_(webui_tab_strip_caption_buttons),
       toolbar_(toolbar),
       infobar_container_(infobar_container),
       contents_container_(contents_container),
@@ -330,6 +334,7 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
                                     browser_view_->GetMirroredX() +
                                     delegate_->GetThemeBackgroundXInset());
   }
+  top = LayoutWebUITabStrip(top);
   top = LayoutToolbar(top);
 
   top = LayoutBookmarkAndInfoBars(top, browser_view->y());
@@ -400,11 +405,28 @@ int BrowserViewLayout::LayoutTabStripRegion(int top) {
          GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
 }
 
+int BrowserViewLayout::LayoutWebUITabStrip(int top) {
+  if (!webui_tab_strip_ || !webui_tab_strip_->GetVisible())
+    return top;
+  webui_tab_strip_->SetBounds(vertical_layout_rect_.x(), top,
+                              vertical_layout_rect_.width(), 240);
+  return webui_tab_strip_->bounds().bottom();
+}
+
 int BrowserViewLayout::LayoutToolbar(int top) {
   int browser_view_width = vertical_layout_rect_.width();
   bool toolbar_visible = delegate_->IsToolbarVisible();
   int height = toolbar_visible ? toolbar_->GetPreferredSize().height() : 0;
   toolbar_->SetVisible(toolbar_visible);
+  if (webui_tab_strip_caption_buttons_) {
+    webui_tab_strip_caption_buttons_->SetVisible(toolbar_visible);
+    const int preferred_webui_tab_strip_caption_buttons_width =
+        webui_tab_strip_caption_buttons_->GetPreferredSize().width();
+    browser_view_width -= preferred_webui_tab_strip_caption_buttons_width;
+    webui_tab_strip_caption_buttons_->SetBounds(
+        vertical_layout_rect_.x() + browser_view_width, top,
+        preferred_webui_tab_strip_caption_buttons_width, height);
+  }
   toolbar_->SetBounds(vertical_layout_rect_.x(), top, browser_view_width,
                       height);
   return toolbar_->bounds().bottom();

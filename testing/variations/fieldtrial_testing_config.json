@@ -606,11 +606,10 @@
             ]
         }
     ],
-    "AudioService": [
+    "AudioProcess": [
         {
             "platforms": [
-                "windows",
-                "mac"
+                "windows"
             ],
             "experiments": [
                 {
@@ -629,7 +628,23 @@
             ]
         }
     ],
-    "AudioServiceSandboxApmLinux": [
+    "AudioProcessSandboxMac": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "AudioProcess_APM",
+                    "enable_features": [
+                        "AudioServiceSandbox",
+                        "WebRtcApmInAudioService"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AudioServiceSandboxLinux": [
         {
             "platforms": [
                 "linux"
@@ -1409,7 +1424,7 @@
                 {
                     "name": "Enabled16_v1",
                     "params": {
-                        "max_shares_ops": "16"
+                        "max_shared_ops": "16"
                     },
                     "enable_features": [
                         "CacheStorageParallelOps"
@@ -3098,7 +3113,7 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledTaskPolicy",
+                    "name": "Enabled",
                     "enable_features": [
                         "MacAllowBackgroundingProcesses"
                     ]
@@ -4034,6 +4049,28 @@
             ]
         }
     ],
+    "PauseBrowserInitiatedHeavyTrafficForP2P": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20190712",
+                    "params": {
+                        "throttled_traffic_annotation_tags": "6019475,82509217,727528"
+                    },
+                    "enable_features": [
+                        "PauseBrowserInitiatedHeavyTrafficForP2P"
+                    ]
+                }
+            ]
+        }
+    ],
     "PaymentRequestAlwaysAllowJustInTimePaymentApp": [
         {
             "platforms": [
@@ -4404,6 +4441,30 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ProactivelySwapBrowsingInstance"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ProactivelyThrottleLowPriorityRequests": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20190722",
+                    "params": {
+                        "http_rtt_multiplier_for_proactive_throttling_2G": "1.0",
+                        "http_rtt_multiplier_for_proactive_throttling_3G": "1.0",
+                        "http_rtt_multiplier_for_proactive_throttling_Slow-2G": "1.0"
+                    },
+                    "enable_features": [
+                        "ProactivelyThrottleLowPriorityRequests"
                     ]
                 }
             ]

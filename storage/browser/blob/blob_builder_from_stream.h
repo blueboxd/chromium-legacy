@@ -155,7 +155,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobBuilderFromStream {
   std::vector<scoped_refptr<ShareableBlobDataItem>> items_;
   uint64_t current_total_size_ = 0;
   base::WeakPtr<BlobMemoryController::QuotaAllocationTask> pending_quota_task_;
-  base::WeakPtrFactory<BlobBuilderFromStream> weak_factory_;
+  base::WeakPtrFactory<BlobBuilderFromStream> weak_factory_{this};
 };
 
 }  // namespace storage

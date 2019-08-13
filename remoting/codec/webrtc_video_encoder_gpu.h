@@ -106,7 +106,7 @@ class WebrtcVideoEncoderGpu : public WebrtcVideoEncoder,
 
   EncoderBitrateFilter bitrate_filter_;
 
-  base::WeakPtrFactory<WebrtcVideoEncoderGpu> weak_factory_;
+  base::WeakPtrFactory<WebrtcVideoEncoderGpu> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcVideoEncoderGpu);
 };

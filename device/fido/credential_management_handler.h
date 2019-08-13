@@ -134,7 +134,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialManagementHandler
   GetCredentialsCallback get_credentials_callback_;
   FinishedCallback finished_callback_;
 
-  base::WeakPtrFactory<CredentialManagementHandler> weak_factory_;
+  base::WeakPtrFactory<CredentialManagementHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagementHandler);
 };

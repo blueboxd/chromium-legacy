@@ -25,7 +25,8 @@ void RendererFactorySelector::SetBaseFactoryType(FactoryType type) {
   base_factory_type_ = type;
 }
 
-RendererFactory* RendererFactorySelector::GetCurrentFactory() {
+RendererFactorySelector::FactoryType
+RendererFactorySelector::GetCurrentFactoryType() {
   DCHECK(base_factory_type_);
   FactoryType next_factory_type = base_factory_type_.value();
 
@@ -38,10 +39,14 @@ RendererFactory* RendererFactorySelector::GetCurrentFactory() {
   if (query_is_flinging_active_cb_ && query_is_flinging_active_cb_.Run())
     next_factory_type = FactoryType::FLINGING;
 
+  return next_factory_type;
+}
+
+RendererFactory* RendererFactorySelector::GetCurrentFactory() {
+  FactoryType next_factory_type = GetCurrentFactoryType();
+
   DVLOG(1) << __func__ << " Selecting factory type: " << next_factory_type;
-
   RendererFactory* current_factory = factories_[next_factory_type].get();
-
   DCHECK(current_factory);
 
   return current_factory;

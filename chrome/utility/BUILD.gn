@@ -174,7 +174,7 @@ static_library("utility") {
 
   if (enable_basic_printing) {
     deps += [
-      "//components/services/pdf_compositor/public/cpp:factory",
+      "//components/services/pdf_compositor",
       "//components/services/pdf_compositor/public/mojom",
     ]
 

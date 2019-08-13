@@ -10,4 +10,8 @@
 // Feature to allow device registration for sharing features.
 extern const base::Feature kSharingDeviceRegistration;
 
+// Feature flag to allow sharing infrastructure to register devices in
+// DeviceInfo.
+extern const base::Feature kSharingUseDeviceInfo;
+
 #endif  // CHROME_BROWSER_SHARING_FEATURES_H_

@@ -23,7 +23,6 @@ OfflinePageURLLoaderRequestInterceptor::
 void OfflinePageURLLoaderRequestInterceptor::MaybeCreateLoader(
     const network::ResourceRequest& tentative_resource_request,
     content::BrowserContext* browser_context,
-    content::ResourceContext* resource_context,
     content::URLLoaderRequestInterceptor::LoaderCallback callback) {
   url_loader_ = OfflinePageURLLoader::Create(
       navigation_ui_data_, frame_tree_node_id_, tentative_resource_request,

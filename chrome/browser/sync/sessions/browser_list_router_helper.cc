@@ -26,13 +26,6 @@ BrowserListRouterHelper::BrowserListRouterHelper(
 }
 
 BrowserListRouterHelper::~BrowserListRouterHelper() {
-  BrowserList* browser_list = BrowserList::GetInstance();
-  for (Browser* browser : *browser_list) {
-    if (browser->profile() == profile_) {
-      browser->tab_strip_model()->RemoveObserver(this);
-    }
-  }
-
   BrowserList::GetInstance()->RemoveObserver(this);
 }
 

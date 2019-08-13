@@ -71,9 +71,11 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   bool ShouldPaint(const ScopedPaintState&) const;
 
   void PaintBoxDecorationBackground(const PaintInfo&,
-                                    const PhysicalOffset& paint_offset);
+                                    const PhysicalOffset& paint_offset,
+                                    bool suppress_box_decoration_background);
   void PaintBoxDecorationBackgroundWithRect(const PaintInfo&,
-                                            const PhysicalRect&);
+                                            const PhysicalRect&,
+                                            const DisplayItemClient&);
   bool BackgroundIsKnownToBeOpaque(const PaintInfo&);
 
   void PaintInternal(const PaintInfo&);
@@ -102,9 +104,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                        const Color& background_color,
                        BackgroundBleedAvoidance = kBackgroundBleedNone);
   void PaintCarets(const PaintInfo&, const PhysicalOffset& paint_offset);
-
-  void RecordHitTestData(const PaintInfo& paint_info,
-                         const PhysicalOffset& paint_offset);
 
   void RecordHitTestDataForLine(const PaintInfo& paint_info,
                                 const PhysicalOffset& paint_offset,

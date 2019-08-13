@@ -86,8 +86,6 @@ authoritative source of the expiry set for a given milestone.
 * enable-app-list-search-autocomplete
 * enable-arc-cups-api
 * enable-arc-unified-audio-focus
-* enable-assistant-dsp
-* enable-assistant-stereo-input
 * enable-autofill-credit-card-upload-editable-cardholder-name
 * enable-autofill-credit-card-upload-editable-expiration-date
 * enable-autofill-do-not-upload-save-unsupported-cards

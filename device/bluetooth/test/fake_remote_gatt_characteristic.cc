@@ -23,8 +23,7 @@ FakeRemoteGattCharacteristic::FakeRemoteGattCharacteristic(
     device::BluetoothRemoteGattService* service)
     : characteristic_id_(characteristic_id),
       characteristic_uuid_(characteristic_uuid),
-      service_(service),
-      weak_ptr_factory_(this) {
+      service_(service) {
   properties_ = PROPERTY_NONE;
   if (properties->broadcast)
     properties_ |= PROPERTY_BROADCAST;

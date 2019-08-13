@@ -179,7 +179,7 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
 class FakeFidoTask : public FidoTask {
  public:
   FakeFidoTask(FidoDevice* device, FakeTaskCallback callback)
-      : FidoTask(device), callback_(std::move(callback)), weak_factory_(this) {}
+      : FidoTask(device), callback_(std::move(callback)) {}
   ~FakeFidoTask() override = default;
 
   void Cancel() override {
@@ -225,7 +225,7 @@ class FakeFidoTask : public FidoTask {
  private:
   base::Optional<FidoDevice::CancelToken> token_;
   FakeTaskCallback callback_;
-  base::WeakPtrFactory<FakeFidoTask> weak_factory_;
+  base::WeakPtrFactory<FakeFidoTask> weak_factory_{this};
 };
 
 class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
@@ -237,8 +237,7 @@ class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
       : FidoRequestHandler(connector,
                            fake_discovery_factory,
                            protocols,
-                           std::move(callback)),
-        weak_factory_(this) {
+                           std::move(callback)) {
     Start();
   }
   FakeFidoRequestHandler(test::FakeFidoDiscoveryFactory* fake_discovery_factory,
@@ -288,7 +287,7 @@ class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
     OnAuthenticatorResponse(authenticator, *maybe_result, std::move(response));
   }
 
-  base::WeakPtrFactory<FakeFidoRequestHandler> weak_factory_;
+  base::WeakPtrFactory<FakeFidoRequestHandler> weak_factory_{this};
 };
 
 std::vector<uint8_t> CreateFakeSuccessDeviceResponse() {

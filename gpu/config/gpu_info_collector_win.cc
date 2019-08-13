@@ -137,26 +137,6 @@ std::string GetDeviceStringProperty(DEVINST dev_inst,
   return base::UTF16ToASCII(property_value.data());
 }
 
-std::string GetDeviceFileTimeProperty(DEVINST dev_inst,
-                                      const DEVPROPKEY* property_key) {
-  FILETIME file_time;
-  DEVPROPTYPE prop_type;
-  ULONG file_time_size = sizeof(file_time);
-  const CONFIGRET config_ret = CM_Get_DevNode_PropertyW(
-      dev_inst, property_key, &prop_type, reinterpret_cast<PBYTE>(&file_time),
-      &file_time_size, 0);
-  if (config_ret != CR_SUCCESS)
-    return std::string();
-  DCHECK(prop_type == DEVPROP_TYPE_FILETIME);
-  DCHECK(file_time_size == sizeof(file_time));
-  const base::Time time = base::Time::FromFileTime(file_time);
-  base::Time::Exploded time_exploded;
-  time.UTCExplode(&time_exploded);
-  // Software fallback list expects dates to be in month-day-year format.
-  return base::StringPrintf("%d-%d-%d", time_exploded.month,
-                            time_exploded.day_of_month, time_exploded.year);
-}
-
 }  // namespace
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OFFICIAL_BUILD)
@@ -229,8 +209,6 @@ bool CollectDriverInfoD3D(const std::wstring& device_id, GPUInfo* gpu_info) {
         device_info_data.DevInst, &DEVPKEY_Device_DriverVersion);
     device.driver_vendor = GetDeviceStringProperty(
         device_info_data.DevInst, &DEVPKEY_Device_DriverProvider);
-    device.driver_date = GetDeviceFileTimeProperty(device_info_data.DevInst,
-                                                   &DEVPKEY_Device_DriverDate);
 
     wchar_t new_device_id[MAX_DEVICE_ID_LEN];
     const CONFIGRET status = CM_Get_Device_ID(

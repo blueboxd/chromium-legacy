@@ -46,7 +46,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDiscovery
   device::mojom::HidManagerPtr hid_manager_;
   mojo::AssociatedBinding<device::mojom::HidManagerClient> binding_;
   HidDeviceFilter filter_;
-  base::WeakPtrFactory<FidoHidDiscovery> weak_factory_;
+  base::WeakPtrFactory<FidoHidDiscovery> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FidoHidDiscovery);
 };

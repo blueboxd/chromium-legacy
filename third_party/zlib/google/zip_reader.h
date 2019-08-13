@@ -224,7 +224,7 @@ class ZipReader {
   bool reached_end_;
   std::unique_ptr<EntryInfo> current_entry_info_;
 
-  base::WeakPtrFactory<ZipReader> weak_ptr_factory_;
+  base::WeakPtrFactory<ZipReader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ZipReader);
 };

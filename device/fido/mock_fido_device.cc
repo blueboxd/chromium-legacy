@@ -90,7 +90,7 @@ MATCHER_P(IsCtap2Command, expected_command, "") {
   return !arg.empty() && arg[0] == base::strict_cast<uint8_t>(expected_command);
 }
 
-MockFidoDevice::MockFidoDevice() : weak_factory_(this) {}
+MockFidoDevice::MockFidoDevice() {}
 MockFidoDevice::MockFidoDevice(
     ProtocolVersion protocol_version,
     base::Optional<AuthenticatorGetInfoResponse> device_info)

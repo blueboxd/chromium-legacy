@@ -110,8 +110,7 @@ CheckinRequest::CheckinRequest(
       checkin_url_(checkin_url),
       request_info_(request_info),
       io_task_runner_(std::move(io_task_runner)),
-      recorder_(recorder),
-      weak_ptr_factory_(this) {
+      recorder_(recorder) {
   DCHECK(io_task_runner_);
 }
 

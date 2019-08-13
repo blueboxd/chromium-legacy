@@ -8,6 +8,10 @@
 #include "base/optional.h"
 #include "third_party/blink/public/platform/web_common.h"
 
+namespace base {
+class TimeTicks;
+}
+
 namespace blink {
 
 // Represents both SSRCs and CSRCs.
@@ -23,7 +27,7 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpSource {
   virtual ~WebRTCRtpSource();
 
   virtual Type SourceType() const = 0;
-  virtual double TimestampMs() const = 0;
+  virtual base::TimeTicks Timestamp() const = 0;
   virtual uint32_t Source() const = 0;
   virtual base::Optional<double> AudioLevel() const = 0;
   virtual uint32_t RtpTimestamp() const = 0;

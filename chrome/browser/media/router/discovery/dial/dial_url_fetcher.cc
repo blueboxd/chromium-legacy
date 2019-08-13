@@ -168,10 +168,9 @@ void DialURLFetcher::StartDownload() {
   // this conditional.
   auto mojo_request = mojo::MakeRequest(&loader_factory);
   if (content::BrowserThread::IsThreadInitialized(content::BrowserThread::UI)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&BindURLLoaderFactoryRequestOnUIThread,
-                       std::move(mojo_request)));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&BindURLLoaderFactoryRequestOnUIThread,
+                                  std::move(mojo_request)));
   }
 
   loader_->DownloadToString(

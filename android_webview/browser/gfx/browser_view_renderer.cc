@@ -212,8 +212,8 @@ gfx::Rect BrowserViewRenderer::ComputeTileRectAndUpdateMemoryPolicy() {
 }
 
 content::SynchronousCompositor* BrowserViewRenderer::FindCompositor(
-    const CompositorID& compositor_id) const {
-  const auto& compositor_iterator = compositor_map_.find(compositor_id);
+    const viz::FrameSinkId& frame_sink_id) const {
+  const auto& compositor_iterator = compositor_map_.find(frame_sink_id);
   if (compositor_iterator == compositor_map_.end())
     return nullptr;
 
@@ -292,7 +292,7 @@ bool BrowserViewRenderer::OnDrawHardware() {
       copy_request_ptr->set_result_task_runner(ui_task_runner_);
   }
   std::unique_ptr<ChildFrame> child_frame = std::make_unique<ChildFrame>(
-      std::move(future), compositor_id_, viewport_size_for_tile_priority,
+      std::move(future), frame_sink_id_, viewport_size_for_tile_priority,
       external_draw_constraints_.transform, offscreen_pre_raster_,
       std::move(requests));
 
@@ -315,7 +315,7 @@ void BrowserViewRenderer::OnParentDrawDataUpdated(
 bool BrowserViewRenderer::DoUpdateParentDrawData() {
   ParentCompositorDrawConstraints new_constraints;
   viz::FrameTimingDetailsMap new_timing_details;
-  CompositorID id;
+  viz::FrameSinkId id;
   uint32_t frame_token = 0u;
   current_compositor_frame_consumer_->TakeParentDrawDataOnUI(
       &new_constraints, &id, &new_timing_details, &frame_token);
@@ -359,7 +359,7 @@ void BrowserViewRenderer::ReturnUnusedResource(
       viz::TransferableResource::ReturnResources(
           child_frame->frame->resource_list);
   content::SynchronousCompositor* compositor =
-      FindCompositor(child_frame->compositor_id);
+      FindCompositor(child_frame->frame_sink_id);
   if (compositor && !resources.empty())
     compositor->ReturnResources(child_frame->layer_tree_frame_sink_id,
                                 std::move(resources));
@@ -367,9 +367,9 @@ void BrowserViewRenderer::ReturnUnusedResource(
 
 void BrowserViewRenderer::ReturnUsedResources(
     const std::vector<viz::ReturnedResource>& resources,
-    const CompositorID& compositor_id,
+    const viz::FrameSinkId& frame_sink_id,
     uint32_t layer_tree_frame_sink_id) {
-  content::SynchronousCompositor* compositor = FindCompositor(compositor_id);
+  content::SynchronousCompositor* compositor = FindCompositor(frame_sink_id);
   if (compositor && !resources.empty())
     compositor->ReturnResources(layer_tree_frame_sink_id, resources);
   has_rendered_frame_ = true;
@@ -541,46 +541,42 @@ gfx::Rect BrowserViewRenderer::GetScreenRect() const {
 
 void BrowserViewRenderer::DidInitializeCompositor(
     content::SynchronousCompositor* compositor,
-    int process_id,
-    int routing_id) {
+    const viz::FrameSinkId& frame_sink_id) {
   TRACE_EVENT_INSTANT0("android_webview",
                        "BrowserViewRenderer::DidInitializeCompositor",
                        TRACE_EVENT_SCOPE_THREAD);
   DCHECK(compositor);
-  CompositorID compositor_id(process_id, routing_id);
   // This assumes that a RenderViewHost has at most 1 synchronous compositor
   // througout its lifetime.
-  DCHECK(compositor_map_.count(compositor_id) == 0);
-  compositor_map_[compositor_id] = compositor;
+  DCHECK(compositor_map_.count(frame_sink_id) == 0);
+  compositor_map_[frame_sink_id] = compositor;
 
   // At this point, the RVHChanged event for the new RVH that contains the
   // |compositor| might have been fired already, in which case just set the
   // current compositor with the new compositor.
-  if (compositor_id.Equals(compositor_id_))
+  if (frame_sink_id == frame_sink_id_)
     SetActiveCompositor(compositor);
 }
 
 void BrowserViewRenderer::DidDestroyCompositor(
     content::SynchronousCompositor* compositor,
-    int process_id,
-    int routing_id) {
+    const viz::FrameSinkId& frame_sink_id) {
   TRACE_EVENT_INSTANT0("android_webview",
                        "BrowserViewRenderer::DidDestroyCompositor",
                        TRACE_EVENT_SCOPE_THREAD);
-  CompositorID compositor_id(process_id, routing_id);
-  DCHECK(compositor_map_.count(compositor_id));
+  DCHECK(compositor_map_.count(frame_sink_id));
   if (compositor_ == compositor) {
     compositor_ = nullptr;
     copy_requests_.clear();
   }
 
-  compositor_map_.erase(compositor_id);
+  compositor_map_.erase(frame_sink_id);
 }
 
-void BrowserViewRenderer::SetActiveCompositorID(
-    const CompositorID& compositor_id) {
-  compositor_id_ = compositor_id;
-  SetActiveCompositor(FindCompositor(compositor_id));
+void BrowserViewRenderer::SetActiveFrameSinkId(
+    const viz::FrameSinkId& frame_sink_id) {
+  frame_sink_id_ = frame_sink_id;
+  SetActiveCompositor(FindCompositor(frame_sink_id));
 }
 
 void BrowserViewRenderer::SetActiveCompositor(

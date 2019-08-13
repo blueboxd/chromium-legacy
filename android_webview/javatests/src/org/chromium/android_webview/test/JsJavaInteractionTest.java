@@ -65,16 +65,14 @@ public class JsJavaInteractionTest {
         private LinkedBlockingQueue<Data> mQueue = new LinkedBlockingQueue<>();
 
         public static class Data {
-            public AwContents mAwContents;
             public String mMessage;
             public Uri mSourceOrigin;
             public boolean mIsMainFrame;
             public MessagePort mReplyPort;
             public MessagePort[] mPorts;
 
-            public Data(AwContents awContents, String message, Uri sourceOrigin,
-                    boolean isMainFrame, MessagePort replyPort, MessagePort[] ports) {
-                mAwContents = awContents;
+            public Data(String message, Uri sourceOrigin, boolean isMainFrame,
+                    MessagePort replyPort, MessagePort[] ports) {
                 mMessage = message;
                 mSourceOrigin = sourceOrigin;
                 mIsMainFrame = isMainFrame;
@@ -84,9 +82,9 @@ public class JsJavaInteractionTest {
         }
 
         @Override
-        public void onPostMessage(AwContents awContents, String message, Uri sourceOrigin,
-                boolean isMainFrame, MessagePort replyPort, MessagePort[] ports) {
-            mQueue.add(new Data(awContents, message, sourceOrigin, isMainFrame, replyPort, ports));
+        public void onPostMessage(String message, Uri sourceOrigin, boolean isMainFrame,
+                MessagePort replyPort, MessagePort[] ports) {
+            mQueue.add(new Data(message, sourceOrigin, isMainFrame, replyPort, ports));
         }
 
         public Data waitForOnPostMessage() throws Exception {

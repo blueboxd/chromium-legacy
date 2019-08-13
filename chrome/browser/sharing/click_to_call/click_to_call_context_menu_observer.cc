@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
-#include "chrome/browser/sharing/click_to_call/click_to_call_sharing_dialog_controller.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
@@ -143,8 +143,8 @@ void ClickToCallContextMenuObserver::SendClickToCallMessage(
   LogClickToCallSelectedDeviceIndex(kSharingClickToCallUiContextMenu,
                                     chosen_device_index);
 
-  ClickToCallSharingDialogController::DeviceSelected(
-      proxy_->GetWebContents(), url_, devices_[chosen_device_index]);
+  ClickToCallUiController::DeviceSelected(proxy_->GetWebContents(), url_,
+                                          devices_[chosen_device_index]);
 }
 
 gfx::ImageSkia ClickToCallContextMenuObserver::GetContextMenuIcon() const {

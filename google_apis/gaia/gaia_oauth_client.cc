@@ -43,8 +43,7 @@ class GaiaOAuthClient::Core
         max_retries_(0),
         url_loader_factory_(url_loader_factory),
         delegate_(nullptr),
-        request_type_(NO_PENDING_REQUEST),
-        weak_ptr_factory_(this) {
+        request_type_(NO_PENDING_REQUEST) {
     backoff_policy_.num_errors_to_ignore =
         net::URLRequestThrottlerEntry::kDefaultNumErrorsToIgnore;
     backoff_policy_.initial_delay_ms =
@@ -142,7 +141,7 @@ class GaiaOAuthClient::Core
   std::unique_ptr<network::SimpleURLLoader> request_;
   RequestType request_type_;
 
-  base::WeakPtrFactory<Core> weak_ptr_factory_;
+  base::WeakPtrFactory<Core> weak_ptr_factory_{this};
 };
 
 void GaiaOAuthClient::Core::GetTokensFromAuthCode(

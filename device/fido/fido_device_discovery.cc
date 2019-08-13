@@ -17,7 +17,7 @@ namespace device {
 FidoDeviceDiscovery::Observer::~Observer() = default;
 
 FidoDeviceDiscovery::FidoDeviceDiscovery(FidoTransportProtocol transport)
-    : FidoDiscoveryBase(transport), weak_factory_(this) {}
+    : FidoDiscoveryBase(transport) {}
 
 FidoDeviceDiscovery::~FidoDeviceDiscovery() = default;
 

@@ -63,7 +63,6 @@ class NetworkConfigurationUpdater : public chromeos::PolicyCertificateProvider,
   NetworkConfigurationUpdater(
       onc::ONCSource onc_source,
       std::string policy_key,
-      bool allow_trusted_certs_from_policy,
       PolicyService* policy_service,
       chromeos::ManagedNetworkConfigurationHandler* network_config_handler);
 
@@ -141,9 +140,6 @@ class NetworkConfigurationUpdater : public chromeos::PolicyCertificateProvider,
   void NotifyPolicyProvidedCertsChanged();
 
   std::string policy_key_;
-
-  // Whether Web trust is allowed or not.
-  bool allow_trusted_certificates_from_policy_;
 
   // Used to register for notifications from the |policy_service_|.
   PolicyChangeRegistrar policy_change_registrar_;

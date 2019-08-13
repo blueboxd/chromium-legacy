@@ -16,8 +16,7 @@ RemoveOperationDelegate::RemoveOperationDelegate(
     StatusCallback callback)
     : RecursiveOperationDelegate(file_system_context),
       url_(url),
-      callback_(std::move(callback)),
-      weak_factory_(this) {}
+      callback_(std::move(callback)) {}
 
 RemoveOperationDelegate::~RemoveOperationDelegate() = default;
 

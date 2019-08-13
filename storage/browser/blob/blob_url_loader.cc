@@ -98,8 +98,7 @@ BlobURLLoader::BlobURLLoader(
     std::unique_ptr<BlobDataHandle> blob_handle)
     : binding_(this, std::move(url_loader_request)),
       client_(std::move(client)),
-      blob_handle_(std::move(blob_handle)),
-      weak_factory_(this) {
+      blob_handle_(std::move(blob_handle)) {
   // PostTask since it might destruct.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&BlobURLLoader::Start,

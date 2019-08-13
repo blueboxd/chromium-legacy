@@ -41,7 +41,7 @@ class GrpcAuthenticatedExecutor final : public GrpcExecutor {
   OAuthTokenGetter* token_getter_;
   std::unique_ptr<GrpcExecutor> executor_;
 
-  base::WeakPtrFactory<GrpcAuthenticatedExecutor> weak_factory_;
+  base::WeakPtrFactory<GrpcAuthenticatedExecutor> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(GrpcAuthenticatedExecutor);
 };
 

@@ -36,10 +36,10 @@ int64_t ToDatabaseTime(base::Time time) {
 // The folder where the data will be stored on disk.
 const char kImageDatabaseFolder[] = "cached_image_fetcher_images";
 
-// The amount of data to build up in memory before converting to a sorted on-
-// disk file.
-const size_t kDatabaseWriteBufferSizeBytes = 64 * 1024;                 // 64KB
-const size_t kDatabaseWriteBufferSizeBytesForLowEndDevice = 32 * 1024;  // 32KB
+// Most writes are very small, <100 bytes. This should buffer a handful of them
+// together, but not much more. This should allow a handful of them to be
+// buffered together without causing a significant impact to memory.
+const size_t kDatabaseWriteBufferSizeBytes = 1 * 1024;  // 1KB
 
 bool KeyMatcherFilter(std::string key, const std::string& other_key) {
   return key.compare(other_key) == 0;
@@ -80,11 +80,7 @@ ImageMetadataStoreLevelDB::~ImageMetadataStoreLevelDB() = default;
 
 void ImageMetadataStoreLevelDB::Initialize(base::OnceClosure callback) {
   leveldb_env::Options options = leveldb_proto::CreateSimpleOptions();
-  if (base::SysInfo::IsLowEndDevice()) {
-    options.write_buffer_size = kDatabaseWriteBufferSizeBytesForLowEndDevice;
-  } else {
-    options.write_buffer_size = kDatabaseWriteBufferSizeBytes;
-  }
+  options.write_buffer_size = kDatabaseWriteBufferSizeBytes;
 
   database_->Init(
       options,

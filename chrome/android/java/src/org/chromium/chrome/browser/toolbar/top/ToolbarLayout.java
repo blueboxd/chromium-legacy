@@ -314,11 +314,6 @@ public abstract class ToolbarLayout
             public @ColorRes int getSecurityIconColorStateList() {
                 return 0;
             }
-
-            @Override
-            public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
-                    boolean isSearchEngineGoogle, String searchEngineUrl) {}
-
         };
 
         // Set menu button background in case it was previously called before inflation

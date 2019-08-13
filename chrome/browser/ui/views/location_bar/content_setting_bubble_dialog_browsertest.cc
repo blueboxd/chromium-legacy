@@ -79,7 +79,7 @@ void ContentSettingBubbleDialogTest::ApplyContentSettingsForType(
               web_contents, true);
       tab_download_state->set_download_seen();
       tab_download_state->SetDownloadStatusAndNotify(
-          web_contents->GetVisibleURL().GetOrigin(),
+          url::Origin::Create(web_contents->GetVisibleURL()),
           DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
       break;
     }

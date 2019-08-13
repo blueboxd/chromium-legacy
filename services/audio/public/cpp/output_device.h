@@ -51,7 +51,7 @@ class OutputDevice {
   mojo::Remote<media::mojom::AudioOutputStream> stream_;
   mojo::Remote<audio::mojom::StreamFactory> stream_factory_;
 
-  base::WeakPtrFactory<OutputDevice> weak_factory_;
+  base::WeakPtrFactory<OutputDevice> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OutputDevice);
 };

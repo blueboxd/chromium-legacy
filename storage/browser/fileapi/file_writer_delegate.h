@@ -101,7 +101,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileWriterDelegate {
   mojo::ScopedDataPipeConsumerHandle data_pipe_;
   mojo::SimpleWatcher data_pipe_watcher_;
 
-  base::WeakPtrFactory<FileWriterDelegate> weak_factory_;
+  base::WeakPtrFactory<FileWriterDelegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileWriterDelegate);
 };

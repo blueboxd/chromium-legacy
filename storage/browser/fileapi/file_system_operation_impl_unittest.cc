@@ -59,8 +59,7 @@ class FileSystemOperationImplTest
  public:
   FileSystemOperationImplTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
-        weak_factory_(this) {}
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
 
  protected:
   void SetUp() override {
@@ -483,7 +482,7 @@ class FileSystemOperationImplTest
   storage::MockFileUpdateObserver update_observer_;
   storage::UpdateObserverList update_observers_;
 
-  base::WeakPtrFactory<FileSystemOperationImplTest> weak_factory_;
+  base::WeakPtrFactory<FileSystemOperationImplTest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationImplTest);
 };

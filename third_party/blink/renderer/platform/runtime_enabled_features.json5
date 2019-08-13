@@ -304,8 +304,16 @@
       status: "experimental",
     },
     {
+      name: "CookieDeprecationMessages",
+      status: "experimental",
+    },
+    {
       name: "CookieStore",
       origin_trial_feature_name: "CookieStore",
+      status: "experimental",
+    },
+    {
+      name: "CookiesWithoutSameSiteMustBeSecure",
       status: "experimental",
     },
     {
@@ -1403,6 +1411,10 @@
     // RTCPeerConnection construction (unless otherwise specified).
     {
       name: "RTCUnifiedPlanByDefault",
+    },
+    {
+      name: "SameSiteByDefaultCookies",
+      status: "experimental",
     },
     // WebSpeech API with both speech recognition and synthesis functionality
     // is not fully enabled on all platforms.

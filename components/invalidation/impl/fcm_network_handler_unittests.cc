@@ -138,7 +138,7 @@ class MockGCMDriver : public gcm::GCMDriver {
                         account_tokens));
   MOCK_METHOD1(UpdateAccountMapping,
                void(const gcm::AccountMapping& account_mapping));
-  MOCK_METHOD1(RemoveAccountMapping, void(const std::string& account_id));
+  MOCK_METHOD1(RemoveAccountMapping, void(const CoreAccountId& account_id));
   MOCK_METHOD0(GetLastTokenFetchTime, base::Time());
   MOCK_METHOD1(SetLastTokenFetchTime, void(const base::Time& time));
   MOCK_METHOD1(WakeFromSuspendForHeartbeat, void(bool wake));

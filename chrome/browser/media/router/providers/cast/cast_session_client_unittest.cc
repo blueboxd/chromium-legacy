@@ -92,8 +92,7 @@ class CastSessionClientImplTest : public testing::Test {
   data_decoder::TestingJsonParser::ScopedFactoryOverride parser_override_;
   service_manager::TestConnectorFactory connector_factory_;
   cast_channel::MockCastSocketService socket_service_{
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::UI})};
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})};
   cast_channel::MockCastMessageHandler message_handler_{&socket_service_};
   DataDecoder decoder_{connector_factory_.GetDefaultConnector()};
   url::Origin origin_;

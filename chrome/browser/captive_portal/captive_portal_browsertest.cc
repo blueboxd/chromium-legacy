@@ -515,8 +515,8 @@ void SSLInterstitialTimerObserver::OnTimerStarted(
 class TabActivationWaiter : public TabStripModelObserver {
  public:
   explicit TabActivationWaiter(TabStripModel* tab_strip_model)
-      : number_of_unconsumed_active_tab_changes_(0), scoped_observer_(this) {
-    scoped_observer_.Add(tab_strip_model);
+      : number_of_unconsumed_active_tab_changes_(0) {
+    tab_strip_model->AddObserver(this);
   }
 
   void WaitForActiveTabChange() {
@@ -548,7 +548,6 @@ class TabActivationWaiter : public TabStripModelObserver {
  private:
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   int number_of_unconsumed_active_tab_changes_;
-  ScopedObserver<TabStripModel, TabActivationWaiter> scoped_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TabActivationWaiter);
 };

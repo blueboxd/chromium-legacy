@@ -378,8 +378,6 @@ used when committed.
 *   [TPM Quick Reference](tpm_quick_ref.md) - Trusted Platform Module notes.
 *   [System Hardening Features](system_hardening_features.md) - A list of
     current and planned Chrome OS security features.
-*   [Browser View Resizer](browser_view_resizer.md) - Design doc for making
-    browser window resizing easier on Windows.
 *   [WebView Policies](webview_policies.md)
 *   [Linux Profiling](linux_profiling.md) - How to profile Chromium on Linux
 *   [Linux Graphics Pipeline](linux_graphics_pipeline.md)

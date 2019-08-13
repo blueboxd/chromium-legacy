@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/profiles/profile_manager.h"
+
 #include <stddef.h>
 
 #include <string>
@@ -24,12 +26,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -1018,20 +1020,20 @@ TEST_F(ProfileManagerTest, LastOpenedProfilesAtShutdown) {
   EXPECT_EQ(profile2, last_opened_profiles[1]);
 
   // Simulate a shutdown.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
+  browser_shutdown::SetTryingToQuit(true);
 
   // Even if the browsers are destructed during shutdown, the profiles stay
   // open.
   browser1.reset();
-  browser2.reset();
 
   last_opened_profiles = profile_manager->GetLastOpenedProfiles();
   ASSERT_EQ(2U, last_opened_profiles.size());
   EXPECT_EQ(profile1, last_opened_profiles[0]);
   EXPECT_EQ(profile2, last_opened_profiles[1]);
+
+  // Removing the last browser window without resetting this flag will trigger
+  // chrome::OnAppExiting(), which breaks in unit_tests.
+  browser_shutdown::SetTryingToQuit(false);
 }
 
 TEST_F(ProfileManagerTest, LastOpenedProfilesDoesNotContainIncognito) {
@@ -1122,71 +1124,6 @@ TEST_F(ProfileManagerTest, EphemeralProfilesDontEndUpAsLastProfile) {
   browser.reset();
   last_used_profile = profile_manager->GetLastUsedProfile();
   EXPECT_NE(profile, last_used_profile);
-}
-
-TEST_F(ProfileManagerTest, EphemeralProfilesDontEndUpAsLastOpenedAtShutdown) {
-  base::FilePath dest_path1 = temp_dir_.GetPath();
-  dest_path1 = dest_path1.Append(FILE_PATH_LITERAL("Normal Profile"));
-
-  base::FilePath dest_path2 = temp_dir_.GetPath();
-  dest_path2 = dest_path2.Append(FILE_PATH_LITERAL("Ephemeral Profile 1"));
-
-  base::FilePath dest_path3 = temp_dir_.GetPath();
-  dest_path3 = dest_path3.Append(FILE_PATH_LITERAL("Ephemeral Profile 2"));
-
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-
-  // Successfully create the profiles.
-  TestingProfile* normal_profile =
-      static_cast<TestingProfile*>(profile_manager->GetProfile(dest_path1));
-  ASSERT_TRUE(normal_profile);
-
-  // Add one ephemeral profile which should not end up in this list.
-  TestingProfile* ephemeral_profile1 =
-      static_cast<TestingProfile*>(profile_manager->GetProfile(dest_path2));
-  ASSERT_TRUE(ephemeral_profile1);
-  SetProfileEphemeral(ephemeral_profile1);
-
-  // Add second ephemeral profile but don't mark it as such yet.
-  TestingProfile* ephemeral_profile2 =
-      static_cast<TestingProfile*>(profile_manager->GetProfile(dest_path3));
-  ASSERT_TRUE(ephemeral_profile2);
-
-  // Create a browser for profile1.
-  Browser::CreateParams profile1_params(normal_profile, true);
-  std::unique_ptr<Browser> browser1(
-      CreateBrowserWithTestWindowForParams(&profile1_params));
-
-  // Create browsers for the ephemeral profile.
-  Browser::CreateParams profile2_params(ephemeral_profile1, true);
-  std::unique_ptr<Browser> browser2(
-      CreateBrowserWithTestWindowForParams(&profile2_params));
-
-  Browser::CreateParams profile3_params(ephemeral_profile2, true);
-  std::unique_ptr<Browser> browser3(
-      CreateBrowserWithTestWindowForParams(&profile3_params));
-
-  std::vector<Profile*> last_opened_profiles =
-      profile_manager->GetLastOpenedProfiles();
-  ASSERT_EQ(2U, last_opened_profiles.size());
-  EXPECT_EQ(normal_profile, last_opened_profiles[0]);
-  EXPECT_EQ(ephemeral_profile2, last_opened_profiles[1]);
-
-  // Mark the second profile ephemeral.
-  SetProfileEphemeral(ephemeral_profile2);
-
-  // Simulate a shutdown.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
-  browser1.reset();
-  browser2.reset();
-  browser3.reset();
-
-  last_opened_profiles = profile_manager->GetLastOpenedProfiles();
-  ASSERT_EQ(1U, last_opened_profiles.size());
-  EXPECT_EQ(normal_profile, last_opened_profiles[0]);
 }
 
 TEST_F(ProfileManagerTest, CleanUpEphemeralProfiles) {

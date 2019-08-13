@@ -138,6 +138,7 @@ class FlexItem {
 
   // When set by the caller, this should be the size pre-stretching.
   LayoutUnit cross_axis_size;
+  // The algorithm stores the main axis offset in X and cross axis offset in Y.
   LayoutPoint desired_location;
 
   bool frozen;

@@ -51,10 +51,6 @@ struct StructTraits<gpu::mojom::GpuDeviceDataView, gpu::GPUInfo::GPUDevice> {
     return input.driver_version;
   }
 
-  static const std::string& driver_date(const gpu::GPUInfo::GPUDevice& input) {
-    return input.driver_date;
-  }
-
   static int cuda_compute_capability_major(
       const gpu::GPUInfo::GPUDevice& input) {
     return input.cuda_compute_capability_major;

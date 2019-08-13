@@ -403,7 +403,7 @@ device::mojom::WakeLock* CastTransportHostFilter::GetWakeLock() {
 
   service_manager::mojom::ConnectorRequest connector_request;
   auto connector = service_manager::Connector::Create(&connector_request);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&CastBindConnectorRequest, std::move(connector_request)));
 

@@ -66,7 +66,6 @@ following required keys:
     * [android_app_bundle](#target_android_app_bundle)
     * [dist_jar](#target_dist_jar)
     * [dist_aar](#target_dist_aar)
-    * [resource_rewriter](#target_resource_rewriter)
     * [group](#target_group)
 
     See later sections for more details of some of these.
@@ -503,15 +502,6 @@ This always has the following entries:
 
 
 
-## <a name="target_resource_rewriter">Target type `resource_rewriter`</a>:
-
-The ResourceRewriter Java class is in charge of rewriting resource IDs at
-runtime, for the benefit of the System WebView feature. This is a special
-target type for it.
-
-Its `.build_config` only keeps a list of dependencies in its
-`deps_info['deps_configs']` key.
-
 ## <a name="dict_javac">The `deps_info['javac']` dictionary</a>:
 
 This dictionary appears in Java-related targets (e.g. `java_library`,
@@ -561,7 +551,7 @@ from util import build_utils
 
 # Types that should never be used as a dependency of another build config.
 _ROOT_TYPES = ('android_apk', 'java_binary', 'java_annotation_processor',
-               'junit_binary', 'resource_rewriter', 'android_app_bundle')
+               'junit_binary', 'android_app_bundle')
 # Types that should not allow code deps to pass through.
 _RESOURCE_TYPES = ('android_assets', 'android_resources', 'system_java_library')
 
@@ -1014,7 +1004,6 @@ def main(argv):
       'java_binary': ['build_config'],
       'java_library': ['build_config'] + jar_path_options,
       'junit_binary': ['build_config'],
-      'resource_rewriter': ['build_config'],
       'system_java_library': ['build_config'],
       'android_app_bundle': ['build_config', 'module_build_configs'],
   }
@@ -1288,9 +1277,8 @@ def main(argv):
       config['javac']['resource_packages'] = [
           c['package_name'] for c in all_resources_deps if 'package_name' in c]
 
-  if options.type in (
-      'android_resources', 'android_apk', 'junit_binary', 'resource_rewriter',
-      'dist_aar', 'android_app_bundle_module'):
+  if options.type in ('android_resources', 'android_apk', 'junit_binary',
+                      'dist_aar', 'android_app_bundle_module'):
 
     dependency_zips = [
         c['resources_zip'] for c in all_resources_deps if c['resources_zip']

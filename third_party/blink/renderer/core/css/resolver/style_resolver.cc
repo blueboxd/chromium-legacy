@@ -1699,12 +1699,17 @@ void StyleResolver::ApplyForcedColors(StyleResolverState& state,
     ApplyProperty(GetCSSPropertyBorderRightColor(), state, *unset, apply_mask);
     ApplyProperty(GetCSSPropertyBorderTopColor(), state, *unset, apply_mask);
     ApplyProperty(GetCSSPropertyBoxShadow(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyOutlineColor(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyTextShadow(), state, *unset, apply_mask);
     ApplyProperty(GetCSSPropertyColumnRuleColor(), state, *unset, apply_mask);
+    ApplyProperty(GetCSSPropertyFill(), state, *unset, apply_mask);
+    ApplyProperty(GetCSSPropertyOutlineColor(), state, *unset, apply_mask);
+    ApplyProperty(GetCSSPropertyStroke(), state, *unset, apply_mask);
+    ApplyProperty(GetCSSPropertyTextDecorationColor(), state, *unset,
+                  apply_mask);
+    ApplyProperty(GetCSSPropertyTextShadow(), state, *unset, apply_mask);
     ApplyProperty(GetCSSPropertyWebkitTapHighlightColor(), state, *unset,
                   apply_mask);
-    ApplyProperty(GetCSSPropertyOutlineColor(), state, *unset, apply_mask);
+    ApplyProperty(GetCSSPropertyWebkitTextEmphasisColor(), state, *unset,
+                  apply_mask);
   }
 
   auto force_colors = ForcedColorFilter::kEnabled;

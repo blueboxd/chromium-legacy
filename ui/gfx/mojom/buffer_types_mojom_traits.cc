@@ -62,13 +62,17 @@ bool StructTraits<
     gfx::mojom::NativePixmapHandleDataView,
     gfx::NativePixmapHandle>::Read(gfx::mojom::NativePixmapHandleDataView data,
                                    gfx::NativePixmapHandle* out) {
+#if defined(OS_LINUX)
+  out->modifier = data.modifier();
+#endif
+
 #if defined(OS_FUCHSIA)
   if (!data.ReadBufferCollectionId(&out->buffer_collection_id))
     return false;
   out->buffer_index = data.buffer_index();
+  out->ram_coherency = data.ram_coherency();
 #endif
 
-  out->modifier = data.modifier();
   return data.ReadPlanes(&out->planes);
 }
 #endif  // defined(OS_LINUX) || defined(USE_OZONE)

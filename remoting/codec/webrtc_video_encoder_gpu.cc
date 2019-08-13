@@ -60,8 +60,7 @@ WebrtcVideoEncoderGpu::WebrtcVideoEncoderGpu(
     media::VideoCodecProfile codec_profile)
     : state_(UNINITIALIZED),
       codec_profile_(codec_profile),
-      bitrate_filter_(kH264MinimumTargetBitrateKbpsPerMegapixel),
-      weak_factory_(this) {}
+      bitrate_filter_(kH264MinimumTargetBitrateKbpsPerMegapixel) {}
 
 WebrtcVideoEncoderGpu::~WebrtcVideoEncoderGpu() = default;
 

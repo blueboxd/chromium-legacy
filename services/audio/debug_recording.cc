@@ -19,8 +19,7 @@ DebugRecording::DebugRecording(
     TracedServiceRef service_ref)
     : audio_manager_(audio_manager),
       receiver_(this, std::move(receiver)),
-      service_ref_(std::move(service_ref)),
-      weak_factory_(this) {
+      service_ref_(std::move(service_ref)) {
   DCHECK(audio_manager_ != nullptr);
   DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
 

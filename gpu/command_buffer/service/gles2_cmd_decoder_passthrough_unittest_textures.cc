@@ -189,44 +189,58 @@ TEST_F(GLES2DecoderPassthroughTest,
 
 TEST_F(GLES2DecoderPassthroughTest, BeginEndSharedImageAccessCRHOMIUM) {
   MemoryTypeTracker memory_tracker(nullptr);
-  Mailbox mailbox = Mailbox::GenerateForSharedImage();
-  std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
-      GetSharedImageManager()->Register(
-          std::make_unique<TestSharedImageBackingPassthrough>(
-              mailbox, viz::ResourceFormat::RGBA_8888, gfx::Size(10, 10),
-              gfx::ColorSpace(), 0, kNewServiceId),
-          &memory_tracker);
+  std::vector<std::unique_ptr<SharedImageRepresentationFactoryRef>>
+      shared_images;
+  for (int i = 0; i < 40; i++) {
+    Mailbox mailbox = Mailbox::GenerateForSharedImage();
+    std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
+        GetSharedImageManager()->Register(
+            std::make_unique<TestSharedImageBackingPassthrough>(
+                mailbox, viz::ResourceFormat::RGBA_8888, gfx::Size(10, 10),
+                gfx::ColorSpace(), 0, kNewServiceId),
+            &memory_tracker);
+    shared_images.emplace_back(std::move(shared_image));
 
-  CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
-      *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
-  cmd.Init(kNewClientId, GL_NONE, mailbox.name);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
+        *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
+    auto client_id = kNewClientId + i;
+    cmd.Init(client_id, GL_NONE, mailbox.name);
+    EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
-  // Begin/end read access for the created image.
-  BeginSharedImageAccessDirectCHROMIUM read_access_cmd;
-  read_access_cmd.Init(kNewClientId, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(read_access_cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EndSharedImageAccessDirectCHROMIUM read_end_cmd;
-  read_end_cmd.Init(kNewClientId);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(read_end_cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    // Begin/end read access for the created image.
+    BeginSharedImageAccessDirectCHROMIUM read_access_cmd;
+    read_access_cmd.Init(client_id, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(read_access_cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    EndSharedImageAccessDirectCHROMIUM read_end_cmd;
+    read_end_cmd.Init(client_id);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(read_end_cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
-  // Begin/end read/write access for the created image.
-  BeginSharedImageAccessDirectCHROMIUM readwrite_access_cmd;
-  readwrite_access_cmd.Init(kNewClientId,
-                            GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(readwrite_access_cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EndSharedImageAccessDirectCHROMIUM readwrite_end_cmd;
-  readwrite_end_cmd.Init(kNewClientId);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(readwrite_end_cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    // Begin/end read/write access for the created image.
+    BeginSharedImageAccessDirectCHROMIUM readwrite_access_cmd;
+    readwrite_access_cmd.Init(client_id,
+                              GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(readwrite_access_cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    EndSharedImageAccessDirectCHROMIUM readwrite_end_cmd;
+    readwrite_end_cmd.Init(client_id);
+    // EXPECT_EQ(error::kNoError, ExecuteCmd(readwrite_end_cmd));
+    // EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  }
+
+  for (int i = 20; i > 10; --i) {
+    EndSharedImageAccessDirectCHROMIUM readwrite_end_cmd;
+    readwrite_end_cmd.Init(kNewClientId + i);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(readwrite_end_cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    DoDeleteTexture(kNewClientId + i);
+    fprintf(stderr, "EEEE DoDeleteTexture() i=%d\n", i);
+  }
 
   // Cleanup
-  DoDeleteTexture(kNewClientId);
-  shared_image.reset();
+  shared_images.clear();
 }
 
 TEST_F(GLES2DecoderPassthroughTest,
@@ -274,7 +288,7 @@ TEST_F(GLES2DecoderPassthroughTest,
               GetPassthroughResources()->texture_shared_image_map.end());
   static_cast<TestSharedImageBackingPassthrough::
                   TestSharedImageRepresentationPassthrough*>(
-      found->second.get())
+      found->second.representation())
       ->set_can_access(false);
   BeginSharedImageAccessDirectCHROMIUM read_access_cmd;
   read_access_cmd.Init(kNewClientId, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);

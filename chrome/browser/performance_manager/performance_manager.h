@@ -15,7 +15,7 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/public/graph/worker_node.h"
 #include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "chrome/browser/performance_manager/webui_graph_dump_impl.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
@@ -105,6 +105,10 @@ class PerformanceManager {
       bool is_visible,
       bool is_audible);
   std::unique_ptr<ProcessNodeImpl> CreateProcessNode();
+  std::unique_ptr<WorkerNodeImpl> CreateWorkerNode(
+      WorkerNode::WorkerType worker_type,
+      ProcessNodeImpl* process_node,
+      const base::UnguessableToken& dev_tools_token);
 
   // Destroys a node returned from the creation functions above.
   // May be called from any sequence.

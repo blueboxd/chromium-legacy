@@ -55,7 +55,9 @@ NSString* const kTestFieldValue = @"FieldValue";
 
 class CWVAutofillControllerTest : public TestWithLocaleAndResources {
  protected:
-  CWVAutofillControllerTest() : browser_state_(/*off_the_record=*/false) {
+  CWVAutofillControllerTest()
+      : web_thread_bundle_(web::TestWebThreadBundle::IO_MAINLOOP),
+        browser_state_(/*off_the_record=*/false) {
     web::SetWebClient(&web_client_);
 
     test_web_state_.SetBrowserState(&browser_state_);
@@ -104,8 +106,7 @@ class CWVAutofillControllerTest : public TestWithLocaleAndResources {
 };
 
 // Tests CWVAutofillController fetch suggestions.
-// TODO(crbug.com/990938): Flaky test
-TEST_F(CWVAutofillControllerTest, DISABLED_FetchSuggestions) {
+TEST_F(CWVAutofillControllerTest, FetchSuggestions) {
   FormSuggestion* suggestion =
       [FormSuggestion suggestionWithValue:kTestFieldValue
                        displayDescription:nil

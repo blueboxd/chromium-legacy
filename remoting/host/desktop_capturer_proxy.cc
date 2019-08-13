@@ -130,8 +130,7 @@ DesktopCapturerProxy::DesktopCapturerProxy(
     base::WeakPtr<ClientSessionControl> client_session_control)
     : capture_task_runner_(capture_task_runner),
       client_session_control_(client_session_control),
-      desktop_display_info_(new DesktopDisplayInfo()),
-      weak_factory_(this) {
+      desktop_display_info_(new DesktopDisplayInfo()) {
   core_.reset(new Core(weak_factory_.GetWeakPtr()));
 }
 

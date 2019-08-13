@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
@@ -37,11 +36,9 @@ class TestTitleObserver : public TabStripModelObserver {
   // Create a new TitleObserver for the browser of |contents|, waiting for
   // |target_title|.
   TestTitleObserver(content::WebContents* contents, base::string16 target_title)
-      : contents_(contents),
-        target_title_(target_title),
-        tab_strip_model_observer_(this) {
+      : contents_(contents), target_title_(target_title) {
     browser_ = chrome::FindBrowserWithWebContents(contents_);
-    tab_strip_model_observer_.Add(browser_->tab_strip_model());
+    browser_->tab_strip_model()->AddObserver(this);
   }
 
   // Run a loop, blocking until a tab has the title |target_title|.
@@ -74,7 +71,6 @@ class TestTitleObserver : public TabStripModelObserver {
   Browser* browser_;
   base::string16 target_title_;
   base::RunLoop awaiter_;
-  ScopedObserver<TabStripModel, TestTitleObserver> tab_strip_model_observer_;
 };
 
 // Opens a new popup window from |web_contents| on |target_url| and returns

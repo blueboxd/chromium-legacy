@@ -19,6 +19,7 @@
 #include "ui/base/mpris/mpris_service.h"
 
 namespace base {
+class DictionaryValue;
 class Value;
 }  // namespace base
 
@@ -112,6 +113,12 @@ class COMPONENT_EXPORT(MPRIS) MprisServiceImpl : public MprisService {
   // Writes all properties onto writer.
   void AddPropertiesToWriter(dbus::MessageWriter* writer,
                              const PropertyMap& properties);
+
+  // Writes the metadata property onto writer. Metadata is handled differently
+  // than other properties since it has sub-properties that need to be handled
+  // as non-variants.
+  void AddMetadataToWriter(dbus::MessageWriter* writer,
+                           const base::DictionaryValue* metadata);
 
   // Map of org.mpris.MediaPlayer2 interface properties.
   PropertyMap media_player2_properties_;

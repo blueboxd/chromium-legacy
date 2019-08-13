@@ -20,6 +20,7 @@ namespace performance_manager {
 class FrameNodeImpl;
 class PageNodeImpl;
 class ProcessNodeImpl;
+class WorkerNodeImpl;
 
 // Frame nodes form a tree structure, each FrameNode at most has one parent that
 // is a FrameNode. Conceptually, a frame corresponds to a
@@ -100,12 +101,17 @@ class FrameNodeImpl
   bool is_current() const;
   bool network_almost_idle() const;
   bool is_ad_frame() const;
+  const base::flat_set<WorkerNodeImpl*>& child_worker_nodes() const;
 
   // Setters are not thread safe.
   void SetIsCurrent(bool is_current);
 
   // Invoked when a navigation is committed in the frame.
   void OnNavigationCommitted(const GURL& url, bool same_document);
+
+  // Invoked by |worker_node| when it starts/stops being a child of this frame.
+  void AddChildWorker(WorkerNodeImpl* worker_node);
+  void RemoveChildWorker(WorkerNodeImpl* worker_node);
 
   // Sets the same policy for all intervention types in this frame. Causes
   // Page::OnFrameInterventionPolicyChanged to be invoked.
@@ -132,6 +138,7 @@ class FrameNodeImpl
   bool IsCurrent() const override;
   bool GetNetworkAlmostIdle() const override;
   bool IsAdFrame() const override;
+  const base::flat_set<const WorkerNode*> GetChildWorkerNodes() const override;
 
   // Properties associated with a Document, which are reset when a
   // different-document navigation is committed in the frame.
@@ -224,6 +231,9 @@ class FrameNodeImpl
   // TODO(fdoray): Cleanup this once there is a 1:1 mapping between
   // RenderFrameHost and Document https://crbug.com/936696.
   DocumentProperties document_;
+
+  // The child workers of this frame.
+  base::flat_set<WorkerNodeImpl*> child_worker_nodes_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameNodeImpl);
 };

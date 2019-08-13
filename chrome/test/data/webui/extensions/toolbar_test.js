@@ -92,11 +92,12 @@ cr.define('extension_toolbar_tests', function() {
             return mockDelegate.whenCalled('loadUnpacked');
           })
           .then(function() {
-            assertFalse(toolbar.$$('cr-toast').open);
+            const toastManager = cr.toastManager.getInstance();
+            assertFalse(toastManager.isToastOpen);
             toolbar.$.updateNow.click();
             // Simulate user rapidly clicking update button multiple times.
             toolbar.$.updateNow.click();
-            assertTrue(toolbar.$$('cr-toast').open);
+            assertTrue(toastManager.isToastOpen);
             return mockDelegate.whenCalled('updateAllExtensions');
           })
           .then(function() {

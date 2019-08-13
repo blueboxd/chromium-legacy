@@ -214,7 +214,7 @@ public class DecoderServiceHost
             ImagesDecodedCallback callback) {
         DecoderServiceParams params = new DecoderServiceParams(uri, size, fileType, callback);
         mHighPriorityRequests.put(uri.getPath(), params);
-        if (mHighPriorityRequests.size() == 1) dispatchNextDecodeRequest();
+        if (mProcessingRequests.size() == 0) dispatchNextDecodeRequest();
     }
 
     /**

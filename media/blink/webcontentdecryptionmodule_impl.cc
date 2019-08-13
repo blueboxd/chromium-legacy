@@ -27,6 +27,9 @@ namespace media {
 
 namespace {
 
+const char kSetServerCertificateUMAName[] = "SetServerCertificate";
+const char kGetStatusForPolicyUMAName[] = "GetStatusForPolicy";
+
 bool ConvertHdcpVersion(const blink::WebString& hdcp_version_string,
                         HdcpVersion* hdcp_version) {
   if (!hdcp_version_string.ContainsOnlyASCII())
@@ -132,8 +135,9 @@ void WebContentDecryptionModuleImpl::SetServerCertificate(
   adapter_->SetServerCertificate(
       std::vector<uint8_t>(server_certificate,
                            server_certificate + server_certificate_length),
-      std::unique_ptr<SimpleCdmPromise>(
-          new CdmResultPromise<>(result, std::string())));
+      std::make_unique<CdmResultPromise<>>(result,
+                                           adapter_->GetKeySystemUMAPrefix(),
+                                           kSetServerCertificateUMAName));
 }
 
 void WebContentDecryptionModuleImpl::GetStatusForPolicy(
@@ -147,11 +151,11 @@ void WebContentDecryptionModuleImpl::GetStatusForPolicy(
     return;
   }
 
-  // TODO(xhwang): Enable UMA reporting for GetStatusForPolicy().
   adapter_->GetStatusForPolicy(
-      min_hdcp_version, std::unique_ptr<KeyStatusCdmPromise>(
-                            new CdmResultPromise<CdmKeyInformation::KeyStatus>(
-                                result, std::string())));
+      min_hdcp_version,
+      std::make_unique<CdmResultPromise<CdmKeyInformation::KeyStatus>>(
+          result, adapter_->GetKeySystemUMAPrefix(),
+          kGetStatusForPolicyUMAName));
 }
 
 std::unique_ptr<CdmContextRef>

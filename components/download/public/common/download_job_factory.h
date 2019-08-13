@@ -10,10 +10,7 @@
 #include "base/macros.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_export.h"
-
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
+#include "components/download/public/common/download_job.h"
 
 namespace service_manager {
 class Connector;
@@ -22,8 +19,6 @@ class Connector;
 namespace download {
 
 class DownloadItem;
-class DownloadJob;
-class DownloadRequestHandleInterface;
 class DownloadURLLoaderFactoryGetter;
 
 // Factory class to create different kinds of DownloadJob.
@@ -31,12 +26,11 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadJobFactory {
  public:
   static std::unique_ptr<DownloadJob> CreateJob(
       DownloadItem* download_item,
-      std::unique_ptr<DownloadRequestHandleInterface> req_handle,
+      DownloadJob::CancelRequestCallback cancel_request_callback,
       const DownloadCreateInfo& create_info,
       bool is_save_package_download,
       scoped_refptr<download::DownloadURLLoaderFactoryGetter>
           url_loader_factory_getter,
-      net::URLRequestContextGetter* url_request_context_getter,
       service_manager::Connector* connector);
 
  private:

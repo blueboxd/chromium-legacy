@@ -37,6 +37,7 @@
 #include "pdf/pdfium/pdfium_permissions.h"
 #include "pdf/pdfium/pdfium_unsupported_features.h"
 #include "pdf/url_loader_wrapper_impl.h"
+#include "ppapi/c/private/ppp_pdf.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/private/pdf.h"
 #include "ppapi/cpp/var_dictionary.h"
@@ -1972,6 +1973,20 @@ void PDFiumEngine::Undo() {
 void PDFiumEngine::Redo() {
   if (last_page_mouse_down_ != -1)
     FORM_Redo(form(), pages_[last_page_mouse_down_]->GetPage());
+}
+
+void PDFiumEngine::HandleAccessibilityAction(
+    const PP_PdfAccessibilityActionData& action_data) {
+  switch (action_data.action) {
+    case PP_PdfAccessibilityAction::PP_PDF_SCROLL_TO_MAKE_VISIBLE: {
+      pp::Rect target_rect =
+          pp::Rect(action_data.target_rect.point, action_data.target_rect.size);
+      pp::Rect target_point_screen = GetScreenRect(target_rect);
+      client_->ScrollBy(target_point_screen.point());
+    } break;
+    default:
+      break;
+  }
 }
 
 std::string PDFiumEngine::GetLinkAtPosition(const pp::Point& point) {

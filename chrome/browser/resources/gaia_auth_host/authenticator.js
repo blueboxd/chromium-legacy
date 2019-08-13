@@ -1102,7 +1102,7 @@ cr.define('cr.login', function() {
      */
     onLoadAbort_(e) {
       this.dispatchEvent(new CustomEvent(
-          'loadAbort', {detail: {error: e.reason, src: e.url}}));
+          'loadAbort', {detail: {error_code: e.code, src: e.url}}));
     }
 
     /**

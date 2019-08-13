@@ -4917,9 +4917,10 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   content::RunAllTasksUntilIdle();
   EXPECT_TRUE(callback.result_);
 
-  cookie_store->GetAllCookiesForURLAsync(
-      ext_url, base::BindOnce(&ExtensionCookieCallback::GetAllCookiesCallback,
-                              base::Unretained(&callback)));
+  cookie_store->GetCookieListWithOptionsAsync(
+      ext_url, net::CookieOptions::MakeAllInclusive(),
+      base::BindOnce(&ExtensionCookieCallback::GetAllCookiesCallback,
+                     base::Unretained(&callback)));
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(1U, callback.list_.size());
 
@@ -4963,9 +4964,10 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   content::RunAllTasksUntilIdle();
 
   // Check that the cookie is gone.
-  cookie_store->GetAllCookiesForURLAsync(
-      ext_url, base::BindOnce(&ExtensionCookieCallback::GetAllCookiesCallback,
-                              base::Unretained(&callback)));
+  cookie_store->GetCookieListWithOptionsAsync(
+      ext_url, net::CookieOptions::MakeAllInclusive(),
+      base::BindOnce(&ExtensionCookieCallback::GetAllCookiesCallback,
+                     base::Unretained(&callback)));
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(0U, callback.list_.size());
 

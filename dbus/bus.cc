@@ -103,8 +103,7 @@ class Watch {
 // calls.
 class Timeout {
  public:
-  explicit Timeout(DBusTimeout* timeout)
-      : raw_timeout_(timeout), weak_ptr_factory_(this) {
+  explicit Timeout(DBusTimeout* timeout) : raw_timeout_(timeout) {
     // Associated |this| with the underlying DBusTimeout.
     dbus_timeout_set_data(raw_timeout_, this, nullptr);
   }
@@ -141,7 +140,7 @@ class Timeout {
 
   DBusTimeout* raw_timeout_;
 
-  base::WeakPtrFactory<Timeout> weak_ptr_factory_;
+  base::WeakPtrFactory<Timeout> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Timeout);
 };

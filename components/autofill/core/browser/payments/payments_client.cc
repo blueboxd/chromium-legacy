@@ -409,6 +409,11 @@ class UnmaskCardRequest : public PaymentsRequest {
   void ParseResponse(const base::Value& response) override {
     const auto* pan = response.FindStringKey("pan");
     response_details_.real_pan = pan ? *pan : std::string();
+
+    const auto* creation_options = response.FindKeyOfType(
+        "fido_creation_options", base::Value::Type::DICTIONARY);
+    if (creation_options)
+      response_details_.fido_creation_options = creation_options->Clone();
   }
 
   bool IsResponseComplete() override {
@@ -947,7 +952,10 @@ PaymentsClient::UnmaskRequestDetails::~UnmaskRequestDetails() {}
 
 PaymentsClient::UnmaskResponseDetails::UnmaskResponseDetails() {}
 PaymentsClient::UnmaskResponseDetails::UnmaskResponseDetails(
-    const UnmaskResponseDetails& other) = default;
+    const UnmaskResponseDetails& other) {
+  real_pan = other.real_pan;
+  fido_creation_options = other.fido_creation_options.Clone();
+}
 PaymentsClient::UnmaskResponseDetails::~UnmaskResponseDetails() {}
 
 PaymentsClient::OptChangeRequestDetails::OptChangeRequestDetails() {}

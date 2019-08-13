@@ -11,6 +11,7 @@
 #include <wrl.h>
 
 #include "base/macros.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace ui {
 
@@ -21,6 +22,7 @@ class WindowEventTarget;
 namespace content {
 
 class DirectManipulationHelper;
+class DirectManipulationBrowserTest;
 class DirectManipulationUnitTest;
 
 // DirectManipulationEventHandler receives status update and gesture events from
@@ -33,17 +35,19 @@ class DirectManipulationEventHandler
               Microsoft::WRL::RuntimeClassFlags<
                   Microsoft::WRL::RuntimeClassType::ClassicCom>,
               Microsoft::WRL::FtmBase,
-              IDirectManipulationViewportEventHandler>> {
+              IDirectManipulationViewportEventHandler,
+              IDirectManipulationInteractionEventHandler>> {
  public:
-  explicit DirectManipulationEventHandler(DirectManipulationHelper* helper);
+  DirectManipulationEventHandler(DirectManipulationHelper* helper,
+                                 ui::WindowEventTarget* event_target);
 
-  // WindowEventTarget updates for every DM_POINTERHITTEST in case window
-  // hierarchy changed.
-  void SetWindowEventTarget(ui::WindowEventTarget* event_target);
+  // Return true if viewport_size_in_pixels_ changed.
+  bool SetViewportSizeInPixels(const gfx::Size& viewport_size_in_pixels);
 
   void SetDeviceScaleFactor(float device_scale_factor);
 
  private:
+  friend class DirectManipulationBrowserTest;
   friend DirectManipulationUnitTest;
 
   // DirectManipulationEventHandler();
@@ -65,17 +69,22 @@ class DirectManipulationEventHandler
   OnContentUpdated(_In_ IDirectManipulationViewport* viewport,
                    _In_ IDirectManipulationContent* content) override;
 
+  HRESULT STDMETHODCALLTYPE
+  OnInteraction(_In_ IDirectManipulationViewport2* viewport,
+                _In_ DIRECTMANIPULATION_INTERACTION_TYPE interaction) override;
+
   DirectManipulationHelper* helper_ = nullptr;
   ui::WindowEventTarget* event_target_ = nullptr;
   float device_scale_factor_ = 1.0f;
   float last_scale_ = 1.0f;
   int last_x_offset_ = 0;
   int last_y_offset_ = 0;
-  bool first_ready_ = false;
   bool should_send_scroll_begin_ = false;
 
   // Current recognized gesture from Direct Manipulation.
   GestureState gesture_state_ = GestureState::kNone;
+
+  gfx::Size viewport_size_in_pixels_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectManipulationEventHandler);
 };

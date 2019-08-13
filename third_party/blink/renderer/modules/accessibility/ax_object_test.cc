@@ -383,5 +383,18 @@ TEST_F(AccessibilityTest, AxObjectPreservedWhitespaceIsLineBreakingObjects) {
   EXPECT_TRUE(preserved_text->Children()[6]->IsLineBreakingObject());
 }
 
+TEST_F(AccessibilityTest, CheckNoDuplicateChildren) {
+  GetPage().GetSettings().SetInlineTextBoxAccessibilityEnabled(false);
+  SetBodyInnerHTML(R"HTML(
+     <select id="sel"><option>1</option></select>
+    )HTML");
+
+  AXObject* ax_select = GetAXObjectByElementId("sel");
+  ax_select->SetNeedsToUpdateChildren();
+  ax_select->UpdateChildrenIfNecessary();
+
+  ASSERT_EQ(ax_select->FirstChild()->ChildCount(), 1);
+}
+
 }  // namespace test
 }  // namespace blink

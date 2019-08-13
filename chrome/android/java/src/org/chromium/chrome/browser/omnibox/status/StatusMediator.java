@@ -14,6 +14,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -38,6 +39,7 @@ class StatusMediator {
     private boolean mIsSecurityButtonShown;
     private boolean mShouldShowSearchEngineLogo;
     private boolean mIsSearchEngineGoogle;
+    private boolean mShouldCancelCustomFavicon;
 
     private int mUrlMinWidth;
     private int mSeparatorMinWidth;
@@ -51,12 +53,20 @@ class StatusMediator {
     private @DrawableRes int mNavigationIconTintRes;
 
     private Resources mResources;
+    private ToolbarCommonPropertiesModel mToolbarCommonPropertiesModel;
 
     StatusMediator(PropertyModel model, Resources resources) {
         mModel = model;
         updateColorTheme();
 
         mResources = resources;
+    }
+
+    /**
+     * Set the ToolbarDataProvider for this class.
+     */
+    void setToolbarDataProvider(ToolbarCommonPropertiesModel toolbarCommonPropertiesModel) {
+        mToolbarCommonPropertiesModel = toolbarCommonPropertiesModel;
     }
 
     /**
@@ -311,40 +321,55 @@ class StatusMediator {
      *     - not shown if URL is focused.
      */
     private void updateLocationBarIcon() {
+        // When the search engine logo should be shown, but the engine isn't Google. In this case,
+        // we download the icon on the fly.
+        boolean showFocused = mUrlHasFocus && mShowStatusIconWhenUrlFocused;
+        // Show the logo unfocused if "Query in the omnibox" is active or we're on the NTP. Current
+        // "Query in the omnibox" behavior makes it active for non-dse searches if you've just
+        // changed your default search engine.The included workaround below
+        // (doesUrlMatchDefaultSearchEngine) can be removed once this is fixed.
+        // TODO(crbug.com/991017): Remove doesUrlMatchDefaultSearchEngine when "Query in the
+        //                         omnibox" properly reacts to dse changes.
+        boolean showUnfocusedNewTabPage = !mUrlHasFocus && mToolbarCommonPropertiesModel != null
+                && mToolbarCommonPropertiesModel.getNewTabPageForCurrentTab() != null;
+        boolean showUnfocusedSearchResultsPage = !mUrlHasFocus
+                && mToolbarCommonPropertiesModel != null
+                && mToolbarCommonPropertiesModel.getDisplaySearchTerms() != null
+                && SearchEngineLogoUtils.doesUrlMatchDefaultSearchEngine(
+                        mToolbarCommonPropertiesModel.getCurrentUrl());
+        if (mShouldShowSearchEngineLogo
+                && (showFocused || showUnfocusedNewTabPage || showUnfocusedSearchResultsPage)) {
+            mShouldCancelCustomFavicon = false;
+            mModel.set(StatusProperties.STATUS_ICON_TINT_RES, /* no tint */ 0);
+            if (mIsSearchEngineGoogle) {
+                mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_logo_googleg_24dp);
+            } else {
+                mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_search);
+                // TODO(crbug.com/985565): Cache this favicon in Java.
+                SearchEngineLogoUtils.getSearchEngineLogoFavicon(
+                        Profile.getLastUsedProfile().getOriginalProfile(), mResources,
+                        (favicon) -> {
+                            if (favicon == null || mShouldCancelCustomFavicon) return;
+                            mModel.set(StatusProperties.STATUS_ICON, favicon);
+                        });
+            }
+            return;
+        } else {
+            mShouldCancelCustomFavicon = true;
+        }
+
         int icon = 0;
         int tint = 0;
         int description = 0;
         int toast = 0;
 
         mIsSecurityButtonShown = false;
-
-        // When the search engine logo should be shown, but the engine isn't Google. In this case,
-        // we download the icon on the fly.
-        if (!mIsSearchEngineGoogle && mShowStatusIconWhenUrlFocused
-                && mShouldShowSearchEngineLogo) {
-            mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_search);
-            mModel.set(StatusProperties.STATUS_ICON_TINT_RES, /* no tint */ 0);
-
-            // TODO(crbug.com/985565): Cache this favicon in Java.
-            SearchEngineLogoUtils.getSearchEngineLogoFavicon(
-                    Profile.getLastUsedProfile().getOriginalProfile(), mResources, (favicon) -> {
-                        if (favicon == null) return;
-                        mModel.set(StatusProperties.STATUS_ICON, favicon);
-                    });
-
-            return;
-        }
-
         if (mUrlHasFocus) {
             if (mShowStatusIconWhenUrlFocused) {
-                if (mShouldShowSearchEngineLogo && mIsSearchEngineGoogle) {
-                    icon = R.drawable.ic_logo_googleg_24dp;
-                } else {
-                    icon = mFirstSuggestionIsSearchQuery ? R.drawable.omnibox_search
-                                                         : R.drawable.ic_omnibox_page;
-                    tint = mNavigationIconTintRes;
-                    description = R.string.accessibility_toolbar_btn_site_info;
-                }
+                icon = mFirstSuggestionIsSearchQuery ? R.drawable.omnibox_search
+                                                     : R.drawable.ic_omnibox_page;
+                tint = mNavigationIconTintRes;
+                description = R.string.accessibility_toolbar_btn_site_info;
             }
         } else if (mSecurityIconRes != 0) {
             mIsSecurityButtonShown = true;

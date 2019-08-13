@@ -219,18 +219,24 @@ struct StructTraits<gfx::mojom::NativePixmapHandleDataView,
     return pixmap_handle.planes;
   }
 
+#if defined(OS_LINUX)
   static uint64_t modifier(const gfx::NativePixmapHandle& pixmap_handle) {
     return pixmap_handle.modifier;
   }
+#endif
 
 #if defined(OS_FUCHSIA)
-  static base::Optional<base::UnguessableToken> buffer_collection_id(
+  static const base::Optional<base::UnguessableToken>& buffer_collection_id(
       const gfx::NativePixmapHandle& pixmap_handle) {
     return pixmap_handle.buffer_collection_id;
   }
 
-  static uint32_t& buffer_index(gfx::NativePixmapHandle& pixmap_handle) {
+  static uint32_t buffer_index(gfx::NativePixmapHandle& pixmap_handle) {
     return pixmap_handle.buffer_index;
+  }
+
+  static bool ram_coherency(gfx::NativePixmapHandle& pixmap_handle) {
+    return pixmap_handle.ram_coherency;
   }
 #endif  // defined(OS_FUCHSIA)
 

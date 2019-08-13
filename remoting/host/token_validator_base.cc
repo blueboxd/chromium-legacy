@@ -116,8 +116,7 @@ TokenValidatorBase::TokenValidatorBase(
     : third_party_auth_config_(third_party_auth_config),
       token_scope_(token_scope),
       request_context_getter_(request_context_getter),
-      buffer_(base::MakeRefCounted<net::IOBuffer>(kBufferSize)),
-      weak_factory_(this) {
+      buffer_(base::MakeRefCounted<net::IOBuffer>(kBufferSize)) {
   DCHECK(third_party_auth_config_.token_url.is_valid());
   DCHECK(third_party_auth_config_.token_validation_url.is_valid());
 }

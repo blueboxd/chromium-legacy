@@ -28,6 +28,8 @@ class ProcessNode;
 class ProcessNodeObserver;
 class SystemNode;
 class SystemNodeObserver;
+class WorkerNode;
+class WorkerNodeObserver;
 
 // Represents a graph of the nodes representing a single browser. Maintains a
 // set of nodes that can be retrieved in different ways, some indexed. Keeps
@@ -46,6 +48,7 @@ class Graph {
   virtual void AddPageNodeObserver(PageNodeObserver* observer) = 0;
   virtual void AddProcessNodeObserver(ProcessNodeObserver* observer) = 0;
   virtual void AddSystemNodeObserver(SystemNodeObserver* observer) = 0;
+  virtual void AddWorkerNodeObserver(WorkerNodeObserver* observer) = 0;
 
   // Removes an |observer| from the graph.
   virtual void RemoveGraphObserver(GraphObserver* observer) = 0;
@@ -53,6 +56,7 @@ class Graph {
   virtual void RemovePageNodeObserver(PageNodeObserver* observer) = 0;
   virtual void RemoveProcessNodeObserver(ProcessNodeObserver* observer) = 0;
   virtual void RemoveSystemNodeObserver(SystemNodeObserver* observer) = 0;
+  virtual void RemoveWorkerNodeObserver(WorkerNodeObserver* observer) = 0;
 
   // For convenience, allows you to pass ownership of an object to the graph.
   // Useful for attaching observers that will live with the graph until it dies.
@@ -71,9 +75,10 @@ class Graph {
 
   // Returns a collection of all known nodes of the given type.
   virtual const SystemNode* FindOrCreateSystemNode() = 0;
+  virtual std::vector<const ProcessNode*> GetAllProcessNodes() const = 0;
   virtual std::vector<const FrameNode*> GetAllFrameNodes() const = 0;
   virtual std::vector<const PageNode*> GetAllPageNodes() const = 0;
-  virtual std::vector<const ProcessNode*> GetAllProcessNodes() const = 0;
+  virtual std::vector<const WorkerNode*> GetAllWorkerNodes() const = 0;
 
   // Returns the associated UKM recorder if it is defined.
   virtual ukm::UkmRecorder* GetUkmRecorder() const = 0;

@@ -36,6 +36,7 @@ class HintCache;
 class HintUpdateData;
 class OptimizationFilter;
 class OptimizationGuideService;
+class TopHostProvider;
 }  // namespace optimization_guide
 
 class PrefService;
@@ -47,7 +48,8 @@ class OptimizationGuideHintsManager
       optimization_guide::OptimizationGuideService* optimization_guide_service,
       const base::FilePath& profile_path,
       PrefService* pref_service,
-      leveldb_proto::ProtoDatabaseProvider* database_provider);
+      leveldb_proto::ProtoDatabaseProvider* database_provider,
+      optimization_guide::TopHostProvider* top_host_provider);
 
   ~OptimizationGuideHintsManager() override;
 
@@ -121,6 +123,9 @@ class OptimizationGuideHintsManager
   void OnComponentHintsUpdated(base::OnceClosure update_closure,
                                bool hints_updated) const;
 
+  // Method to request new hints for user's sites.
+  void MaybeScheduleHintsFetch();
+
   // Called when the request to load a hint has completed.
   void OnHintLoaded(base::OnceClosure callback,
                     const optimization_guide::proto::Hint* loaded_hint) const;
@@ -163,6 +168,9 @@ class OptimizationGuideHintsManager
   // The hint cache that holds both hints received from the component and
   // fetched from the remote Optimization Guide Service.
   std::unique_ptr<optimization_guide::HintCache> hint_cache_;
+
+  // The top host provider that can be queried. Not owned.
+  optimization_guide::TopHostProvider* top_host_provider_ = nullptr;
 
   // Used in testing to subscribe to an update event in this class.
   base::OnceClosure next_update_closure_;

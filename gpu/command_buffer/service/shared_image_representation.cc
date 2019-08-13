@@ -39,7 +39,10 @@ SharedImageRepresentationSkia::ScopedWriteAccess::ScopedWriteAccess(
       surface_(representation_->BeginWriteAccess(final_msaa_count,
                                                  surface_props,
                                                  begin_semaphores,
-                                                 end_semaphores)) {}
+                                                 end_semaphores)) {
+  if (success())
+    representation->backing()->OnWriteSucceeded();
+}
 
 SharedImageRepresentationSkia::ScopedWriteAccess::ScopedWriteAccess(
     SharedImageRepresentationSkia* representation,
@@ -62,7 +65,10 @@ SharedImageRepresentationSkia::ScopedReadAccess::ScopedReadAccess(
     std::vector<GrBackendSemaphore>* end_semaphores)
     : representation_(representation),
       promise_image_texture_(
-          representation_->BeginReadAccess(begin_semaphores, end_semaphores)) {}
+          representation_->BeginReadAccess(begin_semaphores, end_semaphores)) {
+  if (success())
+    representation->backing()->OnReadSucceeded();
+}
 
 SharedImageRepresentationSkia::ScopedReadAccess::~ScopedReadAccess() {
   if (success())

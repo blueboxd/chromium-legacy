@@ -236,7 +236,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobStorageContext
 
   BlobStorageRegistry registry_;
   BlobMemoryController memory_controller_;
-  base::WeakPtrFactory<BlobStorageContext> ptr_factory_;
+  base::WeakPtrFactory<BlobStorageContext> ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BlobStorageContext);
 };

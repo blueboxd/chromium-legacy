@@ -56,15 +56,6 @@ class AccessibilityPrivateDarkenScreenFunction : public ExtensionFunction {
                              ACCESSIBILITY_PRIVATE_DARKENSCREEN)
 };
 
-// API function that sets the keys to be captured by Switch Access.
-class AccessibilityPrivateSetSwitchAccessKeysFunction
-    : public ExtensionFunction {
-  ~AccessibilityPrivateSetSwitchAccessKeysFunction() override {}
-  ResponseAction Run() override;
-  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.setSwitchAccessKeys",
-                             ACCESSIBILITY_PRIVATE_SETSWITCHACCESSKEYS)
-};
-
 // API function that sets native ChromeVox ARC support.
 class AccessibilityPrivateSetNativeChromeVoxArcSupportForCurrentAppFunction
     : public ExtensionFunction {

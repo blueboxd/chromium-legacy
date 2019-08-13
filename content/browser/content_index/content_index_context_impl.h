@@ -15,6 +15,7 @@
 namespace content {
 
 class BrowserContext;
+class ContentIndexProvider;
 class ServiceWorkerContextWrapper;
 
 // Owned by the Storage Partition. Components that want to query or modify the
@@ -29,6 +30,12 @@ class CONTENT_EXPORT ContentIndexContextImpl
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
 
   void Shutdown();
+
+  // Queries the provider for the icon sizes needed to display the info.
+  // Must be called on the UI thread.
+  void GetIconSizes(
+      blink::mojom::ContentCategory category,
+      blink::mojom::ContentIndexService::GetIconSizesCallback callback);
 
   ContentIndexDatabase& database();
 
@@ -71,6 +78,9 @@ class CONTENT_EXPORT ContentIndexContextImpl
 
   void DidDispatchEvent(const url::Origin& origin,
                         blink::ServiceWorkerStatusCode service_worker_status);
+
+  // Lives on the UI thread.
+  ContentIndexProvider* provider_;
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   ContentIndexDatabase content_index_database_;

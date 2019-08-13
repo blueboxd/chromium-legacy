@@ -236,21 +236,25 @@ void LogGenerationDialogChoice(GenerationDialogChoice choice,
 }  // namespace metrics_util
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-void LogSyncPasswordHashChange(SyncPasswordHashChange event) {
-  base::UmaHistogramEnumeration(
-      "PasswordManager.SyncPasswordHashChange", event,
-      SyncPasswordHashChange::SAVED_SYNC_PASSWORD_CHANGE_COUNT);
+void LogGaiaPasswordHashChange(GaiaPasswordHashChange event,
+                               bool is_sync_password) {
+  if (is_sync_password) {
+    base::UmaHistogramEnumeration("PasswordManager.SyncPasswordHashChange",
+                                  event);
+  } else {
+    base::UmaHistogramEnumeration("PasswordManager.NonSyncPasswordHashChange",
+                                  event);
+  }
 }
 
 void LogIsSyncPasswordHashSaved(IsSyncPasswordHashSaved state,
                                 bool is_under_advanced_protection) {
-  base::UmaHistogramEnumeration(
-      "PasswordManager.IsSyncPasswordHashSaved", state,
-      IsSyncPasswordHashSaved::IS_SYNC_PASSWORD_HASH_SAVED_COUNT);
+  base::UmaHistogramEnumeration("PasswordManager.IsSyncPasswordHashSaved",
+                                state);
   if (is_under_advanced_protection) {
     base::UmaHistogramEnumeration(
         "PasswordManager.IsSyncPasswordHashSavedForAdvancedProtectionUser",
-        state, IsSyncPasswordHashSaved::IS_SYNC_PASSWORD_HASH_SAVED_COUNT);
+        state);
   }
 }
 

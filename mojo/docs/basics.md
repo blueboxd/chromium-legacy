@@ -32,7 +32,7 @@ mojom("mojom") {
 This will generate C++ (and optionally, Java and JavaScript) interfaces. Writing
 code to handle IPCs is a simple matter of implementing the generated interface:
 
-```
+```c++
 class MathImpl : public math::mojom::Math {
  public:
   explicit MathImpl(mojo::PendingReceiver<math::mojom::Math> receiver)
@@ -68,7 +68,7 @@ message pipe has two bidirectional endpoints. The Mojo bindings enforce
 additional conventions on top of message pipes, where one endpoint is the
 sender/caller, represented as:
 
-```
+```c++
 // Wraps a message pipe endpoint for making remote calls. May only be used on
 // the sequence where the mojo::Remote was bound.
 mojo::Remote<math::mojom::Math> remote_math = ...;
@@ -76,7 +76,7 @@ mojo::Remote<math::mojom::Math> remote_math = ...;
 
 And the other endpoint is the receiving/callee, represented as:
 
-```
+```c++
 // Usually a class member. Wraps a message pipe endpoint that receives incoming
 // messages. Routes and dispatches IPCs to the handler—typically |this|—on the
 // sequence where the mojo::Receiver was bound.
@@ -97,7 +97,7 @@ itself to send IPCs, and the other endpoint is returned as an unbound
 `mojo::PendingReceiver<T>` for the receiver/callee to bind to a
 `mojo::Receiver<T>`.
 
-```
+```c++
 mojo::Remote<math::mojom::Math> remote_math;
 
 // BindNewPipeAndPassReceiver() returns a
@@ -118,7 +118,8 @@ Alternatively, the receiver/callee can create the endpoints. One endpoint is
 retained for itself to receive IPCs, and the other endpoint is returned as an
 unbound `mojo::PendingRemote<T>` for the sender/callee to bind to a
 `mojo::Remote<T>`.
-```
+
+```c++
 class MathImpl : public math::mojom::MathImpl {
   // ...addition to the previous MathImpl definition...
 
@@ -143,7 +144,7 @@ Both `mojo::Remote<T>` and `mojo::Receiver<T>` have a corresponding unbound
 version: this allows either endpoint to be passed between sequences in the same
 process or even between processes over IPC.
 
-```
+```c++
 mojo::Remote<math::mojom::MathImpl> remote = ...;
 // |pending_remote| is movable and may be passed around. While unbound, the
 // endpoint cannot be used to send IPCs. The pending remote may be passed to
@@ -152,7 +153,7 @@ mojo::Remote<math::mojom::MathImpl> remote = ...;
 mojo::PendingRemote<math::mojom::MathImpl> pending_remote = remote.Unbind();
 ```
 
-```
+```c++
 mojo::Receiver<math::mojom::MathImpl> receiver = ...;
 // |pending_receiver| is movable and may be passed around. While unbound,
 // received IPCs are buffered and not processed. The pending receiver may be

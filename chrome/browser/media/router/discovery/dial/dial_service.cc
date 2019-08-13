@@ -62,9 +62,9 @@ void PostSendNetworkList(
     base::WeakPtr<DialServiceImpl> impl,
     const base::Optional<net::NetworkInterfaceList>& networks) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(&DialServiceImpl::SendNetworkList,
-                                          std::move(impl), networks));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&DialServiceImpl::SendNetworkList,
+                                std::move(impl), networks));
 }
 #endif  // !defined(OS_CHROMEOS)
 
@@ -461,8 +461,7 @@ void DialServiceImpl::StartDiscovery() {
     return;
   }
 
-  auto task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
+  auto task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::UI});
 
 #if defined(OS_CHROMEOS)
   task_tracker_.PostTaskAndReplyWithResult(

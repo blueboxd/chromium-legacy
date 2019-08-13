@@ -235,6 +235,11 @@ class AccountReconcilorTest : public ::testing::Test {
   signin::IdentityTestEnvironment* identity_test_env() {
     return &identity_test_env_;
   }
+
+  base::test::ScopedTaskEnvironment* task_environment() {
+    return &task_environment_;
+  }
+
   TestSigninClient* test_signin_client() { return &test_signin_client_; }
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
@@ -336,7 +341,9 @@ INSTANTIATE_TEST_SUITE_P(Dice_Mirror,
                              signin::AccountConsistencyMethod::kMirror));
 
 AccountReconcilorTest::AccountReconcilorTest()
-    : account_consistency_(signin::AccountConsistencyMethod::kDisabled),
+    : task_environment_(
+          base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      account_consistency_(signin::AccountConsistencyMethod::kDisabled),
       test_signin_client_(&pref_service_, &test_url_loader_factory_),
       identity_test_env_(/*test_url_loader_factory=*/nullptr,
                          &pref_service_,
@@ -2247,7 +2254,8 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, GetAccountsFromCookieSuccess) {
 
 TEST_P(AccountReconcilorMirrorEndpointParamTest, GetAccountsFromCookieFailure) {
   ConnectProfileToAccount("user@gmail.com");
-  signin::SetListAccountsResponseWebLoginRequired(&test_url_loader_factory_);
+  signin::SetListAccountsResponseWithUnexpectedServiceResponse(
+      &test_url_loader_factory_);
 
   AccountReconcilor* reconcilor = GetMockReconcilor();
   ASSERT_TRUE(reconcilor);
@@ -2263,6 +2271,9 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, GetAccountsFromCookieFailure) {
   ASSERT_FALSE(accounts_in_cookie_jar_info.accounts_are_fresh);
   ASSERT_EQ(0u, accounts_in_cookie_jar_info.signed_in_accounts.size());
   ASSERT_EQ(0u, accounts_in_cookie_jar_info.signed_out_accounts.size());
+  // List accounts retries once on |UNEXPECTED_SERVICE_RESPONSE| errors with
+  // backoff protection.
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(2));
   ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_ERROR, reconcilor->GetState());
 }
 

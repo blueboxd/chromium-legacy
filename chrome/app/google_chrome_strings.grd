@@ -1176,18 +1176,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
         </message>
       </if>
 
-      <!-- Windows 8 Metro mode. -->
-      <if expr="is_win">
-        <message name="IDS_METRO_FLOW_TAB_TITLE"
-                 desc="The dialog window title.">
-          Welcome to Chrome
-        </message>
-        <message name="IDS_METRO_FLOW_TITLE_SHORT"
-                 desc="The title at the top of the window guiding user through making Chrome default in Metro.">
-          Chrome is almost ready.
-        </message>
-      </if>
-
       <!-- Welcome page (chrome://welcome) strings -->
       <if expr="not chromeos">
         <message name="IDS_WELCOME_HEADER" desc="A message which will appear as the header on the Welcome UI if the user has never run Chrome before.">

@@ -47,7 +47,8 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
                                 const gfx::Rect& rect,
                                 Part direction,
                                 State state,
-                                ColorScheme color_scheme) const;
+                                ColorScheme color_scheme,
+                                const ScrollbarArrowExtraParams& arrow) const;
   // Paint the scrollbar track. Done before the thumb so that it can contain
   // alpha.
   virtual void PaintScrollbarTrack(

@@ -191,4 +191,18 @@ void ViewElement::PaintRect() const {
   view()->SchedulePaint();
 }
 
+void ViewElement::InitSources() {
+  if (view_->layer()) {
+    AddSource("ui/compositor/layer.h", 0);
+  }
+
+  for (views::metadata::ClassMetaData* metadata = view_->GetClassMetaData();
+       metadata != nullptr; metadata = metadata->parent_class_meta_data()) {
+    // If class has Metadata properties, add their sources.
+    if (!metadata->members().empty()) {
+      AddSource(metadata->file(), metadata->line());
+    }
+  }
+}
+
 }  // namespace ui_devtools

@@ -422,6 +422,12 @@ const FeatureEntry::FeatureParam kForceDark_SimpleCielab[] = {
     {"text_lightness_threshold", "256"},
     {"background_lightness_threshold", "0"}};
 
+const FeatureEntry::FeatureParam kForceDark_SimpleRgb[] = {
+    {"inversion_method", "rgb_based"},
+    {"image_behavior", "none"},
+    {"text_lightness_threshold", "256"},
+    {"background_lightness_threshold", "0"}};
+
 const FeatureEntry::FeatureParam kForceDark_SelectiveImageInversion[] = {
     {"inversion_method", "cielab_based"},
     {"image_behavior", "selective"},
@@ -445,6 +451,8 @@ const FeatureEntry::FeatureVariation kForceDarkVariations[] = {
      base::size(kForceDark_SimpleHsl), nullptr},
     {"with simple CIELAB-based inversion", kForceDark_SimpleCielab,
      base::size(kForceDark_SimpleCielab), nullptr},
+    {"with simple RGB-based inversion", kForceDark_SimpleRgb,
+     base::size(kForceDark_SimpleRgb), nullptr},
     {"with selective image inversion", kForceDark_SelectiveImageInversion,
      base::size(kForceDark_SelectiveImageInversion), nullptr},
     {"with selective inversion of non-image elements",
@@ -1479,6 +1487,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"top-chrome-touch-ui", flag_descriptions::kTopChromeTouchUiName,
      flag_descriptions::kTopChromeTouchUiDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kTopChromeTouchUiChoices)},
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+    {"webui-tab-strip", flag_descriptions::kWebUITabStripName,
+     flag_descriptions::kWebUITabStripDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kWebUITabStrip)},
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 #if !defined(OS_ANDROID)
     {"new-tab-loading-animation", flag_descriptions::kNewTabLoadingAnimation,
      flag_descriptions::kNewTabLoadingAnimationDescription, kOsDesktop,
@@ -2873,6 +2886,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabGroupsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabGroups)},
 
+    {"new-tabstrip-animation", flag_descriptions::kNewTabstripAnimationName,
+     flag_descriptions::kNewTabstripAnimationDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kNewTabstripAnimation)},
+
     {"scrollable-tabstrip", flag_descriptions::kScrollableTabStripName,
      flag_descriptions::kScrollableTabStripDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kScrollableTabStrip)},
@@ -3598,8 +3615,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kAssistantFeature)},
 
     {"enable-assistant-dsp", flag_descriptions::kEnableGoogleAssistantDspName,
-     flag_descriptions::kEnableGoogleAssistantDspDescription,
-     kOsCrOS | kExpireM77,
+     flag_descriptions::kEnableGoogleAssistantDspDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kEnableDspHotword)},
 
     {"enable-assistant-app-support",
@@ -3685,6 +3701,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSharingDeviceRegistrationDescription, kOsAll,
      FEATURE_VALUE_TYPE(kSharingDeviceRegistration)},
 
+    {"sharing-use-device-info", flag_descriptions::kSharingUseDeviceInfoName,
+     flag_descriptions::kSharingUseDeviceInfoDescription, kOsAll,
+     FEATURE_VALUE_TYPE(kSharingUseDeviceInfo)},
+
 #if defined(OS_CHROMEOS)
     {"discover-app", flag_descriptions::kEnableDiscoverAppName,
      flag_descriptions::kEnableDiscoverAppDescription, kOsCrOS,
@@ -3729,8 +3749,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_CHROMEOS)
     {"enable-assistant-stereo-input",
      flag_descriptions::kEnableGoogleAssistantStereoInputName,
-     flag_descriptions::kEnableGoogleAssistantStereoInputDescription,
-     kOsCrOS | kExpireM77,
+     flag_descriptions::kEnableGoogleAssistantStereoInputDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(
          chromeos::assistant::features::kEnableStereoAudioInput)},
 #endif  // defined(OS_CHROMEOS)
@@ -4312,6 +4331,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpdatedCardUnmaskPromptUi)},
 
+    {"decode-webp-images-to-yuv",
+     flag_descriptions::kDecodeLossyWebPImagesToYUVName,
+     flag_descriptions::kDecodeLossyWebPImagesToYUVDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kDecodeLossyWebPImagesToYUV)},
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

@@ -79,7 +79,6 @@ void MaybeCreateLoaderOnIO(
     blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request,
     blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info,
     const network::ResourceRequest& tentative_resource_request,
-    BrowserContext* browser_context,
     NavigationLoaderInterceptor::LoaderCallback loader_callback,
     NavigationLoaderInterceptor::FallbackCallback fallback_callback,
     bool initialize_provider_only) {
@@ -149,7 +148,7 @@ void MaybeCreateLoaderOnIO(
   // It's safe to bind the raw |handle_core| to the callback because it owns the
   // interceptor, which invokes the callback.
   handle_core->interceptor()->MaybeCreateLoader(
-      tentative_resource_request, browser_context, resource_context,
+      tentative_resource_request, resource_context,
       base::BindOnce(&LoaderCallbackWrapperOnIO, handle_core, interceptor_on_ui,
                      std::move(loader_callback)),
       base::BindOnce(&FallbackCallbackWrapperOnIO, interceptor_on_ui,
@@ -176,11 +175,9 @@ ServiceWorkerNavigationLoaderInterceptor::
 void ServiceWorkerNavigationLoaderInterceptor::MaybeCreateLoader(
     const network::ResourceRequest& tentative_resource_request,
     BrowserContext* browser_context,
-    ResourceContext* resource_context,
     LoaderCallback loader_callback,
     FallbackCallback fallback_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!resource_context);
   DCHECK(handle_);
 
   blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request;
@@ -217,8 +214,8 @@ void ServiceWorkerNavigationLoaderInterceptor::MaybeCreateLoader(
       base::BindOnce(&MaybeCreateLoaderOnIO, GetWeakPtr(), handle_->core(),
                      params_, std::move(host_request),
                      std::move(client_ptr_info), tentative_resource_request,
-                     browser_context, std::move(loader_callback),
-                     std::move(fallback_callback), initialize_provider_only));
+                     std::move(loader_callback), std::move(fallback_callback),
+                     initialize_provider_only));
 
   if (original_callback)
     std::move(original_callback).Run({});

@@ -61,6 +61,8 @@ inspector_protocol_generate("protocol_generated_sources") {
 component("ui_devtools") {
   sources = rebase_path(_protocol_generated, ".", target_gen_dir)
   sources += [
+    "agent_util.cc",
+    "agent_util.h",
     "css_agent.cc",
     "css_agent.h",
     "devtools_base_agent.h",
@@ -140,6 +142,10 @@ source_set("unit_tests") {
   sources = [
     "css_agent_unittest.cc",
     "devtools_server_unittest.cc",
+  ]
+
+  data = [
+    "//components/test/data/ui_devtools/test_file.cc",
   ]
 
   deps = [

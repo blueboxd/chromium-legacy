@@ -28,8 +28,7 @@ class SwitchAccessTest : public InProcessBrowserTest {
 
     AccessibilityManager* manager = AccessibilityManager::Get();
     manager->SetSwitchAccessEnabled(true);
-    ash::AccessibilityController::Get()->SetSwitchAccessKeysToCapture(
-        key_codes);
+    manager->SetSwitchAccessKeysForTest(key_codes);
 
     EXPECT_TRUE(manager->IsSwitchAccessEnabled());
   }

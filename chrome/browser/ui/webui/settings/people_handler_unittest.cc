@@ -109,6 +109,8 @@ std::string GetConfiguration(const base::DictionaryValue* extra_values,
                     types.Has(syncer::UserSelectableType::kExtensions));
   result.SetBoolean("passwordsSynced",
                     types.Has(syncer::UserSelectableType::kPasswords));
+  result.SetBoolean("wifiConfigurationsSynced",
+                    types.Has(syncer::UserSelectableType::kWifiConfigurations));
   result.SetBoolean("preferencesSynced",
                     types.Has(syncer::UserSelectableType::kPreferences));
   result.SetBoolean("tabsSynced", types.Has(syncer::UserSelectableType::kTabs));
@@ -164,6 +166,8 @@ void CheckConfigDataTypeArguments(const base::DictionaryValue* dictionary,
             types.Has(syncer::UserSelectableType::kExtensions));
   CheckBool(dictionary, "passwordsSynced",
             types.Has(syncer::UserSelectableType::kPasswords));
+  CheckBool(dictionary, "wifiConfigurationsSynced",
+            types.Has(syncer::UserSelectableType::kWifiConfigurations));
   CheckBool(dictionary, "preferencesSynced",
             types.Has(syncer::UserSelectableType::kPreferences));
   CheckBool(dictionary, "tabsSynced",
@@ -1104,6 +1108,7 @@ TEST_F(PeopleHandlerTest, ShowSetupSyncEverything) {
   CheckBool(dictionary, "bookmarksRegistered", true);
   CheckBool(dictionary, "extensionsRegistered", true);
   CheckBool(dictionary, "passwordsRegistered", true);
+  CheckBool(dictionary, "wifiConfigurationsRegistered", true);
   CheckBool(dictionary, "preferencesRegistered", true);
   CheckBool(dictionary, "tabsRegistered", true);
   CheckBool(dictionary, "themesRegistered", true);

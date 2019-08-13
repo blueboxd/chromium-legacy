@@ -58,12 +58,6 @@ class FullscreenWebStateListObserver : public WebStateListObserver {
                            int index,
                            bool user_action) override;
 
-  // Called when |web_state| is activated in |web_state_list_|.
-  void WebStateWasActivated(web::WebState* web_state);
-
-  // Called when |web_state| is removed from |web_state_list_|.
-  void WebStateWasRemoved(web::WebState* web_state);
-
   // Whether |web_state| has been activated during the lifetime of this object.
   bool HasWebStateBeenActivated(web::WebState* web_state);
 

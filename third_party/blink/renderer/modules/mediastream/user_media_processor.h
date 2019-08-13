@@ -14,11 +14,10 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequence_checker.h"
+#include "base/threading/thread_checker.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_dispatcher_eventhandler.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
@@ -60,8 +59,7 @@ struct UserMediaRequestInfo {
 // Only one MediaStream at a time can be in the process of being created.
 // UserMediaProcessor must be created, called and destroyed on the main
 // render thread. There should be only one UserMediaProcessor per frame.
-class MODULES_EXPORT UserMediaProcessor
-    : public blink::MediaStreamDispatcherEventHandler {
+class MODULES_EXPORT UserMediaProcessor {
  public:
   using MediaDevicesDispatcherCallback = base::RepeatingCallback<
       const blink::mojom::blink::MediaDevicesDispatcherHostPtr&()>;
@@ -71,7 +69,7 @@ class MODULES_EXPORT UserMediaProcessor
                          media_stream_device_observer,
                      MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
                      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  ~UserMediaProcessor() override;
+  virtual ~UserMediaProcessor();
 
   // It can be assumed that the output of CurrentRequest() remains the same
   // during the execution of a task on the main thread unless ProcessRequest or
@@ -105,10 +103,9 @@ class MODULES_EXPORT UserMediaProcessor
 
   bool HasActiveSources() const;
 
-  // blink::MediaStreamDispatcherEventHandler implementation.
-  void OnDeviceStopped(const blink::MediaStreamDevice& device) override;
+  void OnDeviceStopped(const blink::MediaStreamDevice& device);
   void OnDeviceChanged(const blink::MediaStreamDevice& old_device,
-                       const blink::MediaStreamDevice& new_device) override;
+                       const blink::MediaStreamDevice& new_device);
 
   void set_media_stream_dispatcher_host_for_testing(
       blink::mojom::blink::MediaStreamDispatcherHostPtr dispatcher_host) {
@@ -308,7 +305,7 @@ class MODULES_EXPORT UserMediaProcessor
   WeakPersistent<LocalFrame> frame_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  THREAD_CHECKER(thread_checker_);
 
   // Note: This member must be the last to ensure all outstanding weak pointers
   // are invalidated first.

@@ -42,7 +42,7 @@ import java.net.URISyntaxException;
 /**
  * Provides a way of accessing toolbar data and state.
  */
-public class LocationBarModel implements ToolbarDataProvider {
+public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPropertiesModel {
     private final Context mContext;
 
     private Tab mTab;
@@ -52,8 +52,6 @@ public class LocationBarModel implements ToolbarDataProvider {
     private boolean mIsIncognito;
     private boolean mIsUsingBrandColor;
     private boolean mShouldShowOmniboxInOverviewMode;
-    private boolean mShouldShowSearchEngineLogo;
-    private boolean mIsSearchEngineGoogle;
 
     private long mNativeLocationBarModelAndroid;
 
@@ -362,17 +360,7 @@ public class LocationBarModel implements ToolbarDataProvider {
         // If we're showing a query in the omnibox, and the security level is high enough to show
         // the search icon, return that instead of the security icon.
         if (getDisplaySearchTerms() != null) {
-            if (mShouldShowSearchEngineLogo && mIsSearchEngineGoogle) {
-                return R.drawable.ic_logo_googleg_24dp;
-            } else {
                 return R.drawable.omnibox_search;
-            }
-        } else if (getNewTabPageForCurrentTab() != null && mShouldShowSearchEngineLogo) {
-            if (mIsSearchEngineGoogle) {
-                return R.drawable.ic_logo_googleg_24dp;
-            } else {
-                return R.drawable.omnibox_search;
-            }
         }
 
         return getSecurityIconResource(getSecurityLevel(), !isTablet, isOfflinePage(), isPreview());
@@ -426,12 +414,6 @@ public class LocationBarModel implements ToolbarDataProvider {
 
     @Override
     public @ColorRes int getSecurityIconColorStateList() {
-        // Don't apply tint to the search logo, which is shown on the NTP and the SRP pages.
-        if ((getNewTabPageForCurrentTab() != null || getDisplaySearchTerms() != null)
-                && mShouldShowSearchEngineLogo) {
-            return 0;
-        }
-
         int securityLevel = getSecurityLevel();
         int color = getPrimaryColor();
         boolean needLightIcon = ColorUtils.shouldUseLightForegroundOnBackground(color);
@@ -480,13 +462,6 @@ public class LocationBarModel implements ToolbarDataProvider {
         if (mTab != null && !(mTab.getActivity() instanceof ChromeTabbedActivity)) return null;
         if (isPreview()) return null;
         return nativeGetDisplaySearchTerms(mNativeLocationBarModelAndroid);
-    }
-
-    @Override
-    public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
-            boolean isSearchEngineGoogle, String searchEngineUrl) {
-        mShouldShowSearchEngineLogo = shouldShowSearchEngineLogo;
-        mIsSearchEngineGoogle = isSearchEngineGoogle;
     }
 
     /** @return The formatted URL suitable for editing. */

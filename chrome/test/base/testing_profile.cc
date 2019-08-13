@@ -690,6 +690,10 @@ base::FilePath TestingProfile::GetPath() const {
   return profile_path_;
 }
 
+base::Time TestingProfile::GetCreationTime() const {
+  return start_time_;
+}
+
 #if !defined(OS_ANDROID)
 std::unique_ptr<content::ZoomLevelDelegate>
 TestingProfile::CreateZoomLevelDelegate(const base::FilePath& partition_path) {
@@ -991,6 +995,10 @@ void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
 
 GURL TestingProfile::GetHomePage() {
   return GURL(chrome::kChromeUINewTabURL);
+}
+
+void TestingProfile::SetCreationTimeForTesting(base::Time creation_time) {
+  start_time_ = creation_time;
 }
 
 PrefService* TestingProfile::GetOffTheRecordPrefs() {

@@ -104,7 +104,6 @@
 #include "chrome/browser/ui/javascript_dialogs/chrome_javascript_native_dialog_factory.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
-#include "chrome/browser/ui/startup/default_browser_prompt.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/uma_browsing_activity_observer.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
@@ -1575,13 +1574,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     // a SIGTERM, and call chrome::AttemptExit(). Exit cleanly in that case.
     if (browser_shutdown::IsTryingToQuit())
       return service_manager::RESULT_CODE_NORMAL_EXIT;
-
-    if (!master_prefs_->suppress_first_run_default_browser_prompt) {
-      browser_creator_->set_show_main_browser_window(
-          !ShowFirstRunDefaultBrowserPrompt(profile_));
-    } else {
-      browser_creator_->set_is_default_browser_dialog_suppressed(true);
-    }
   }
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 

@@ -144,8 +144,7 @@ void NativeMessagingReader::Core::NotifyEof() {
 }
 
 NativeMessagingReader::NativeMessagingReader(base::File file)
-    : reader_thread_("Reader"),
-      weak_factory_(this) {
+    : reader_thread_("Reader") {
   reader_thread_.StartWithOptions(
       base::Thread::Options(base::MessagePumpType::IO, /*size=*/0));
 

@@ -46,7 +46,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualU2fDevice
                                               uint8_t p2,
                                               base::span<const uint8_t> data);
 
-  base::WeakPtrFactory<FidoDevice> weak_factory_;
+  base::WeakPtrFactory<FidoDevice> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VirtualU2fDevice);
 };

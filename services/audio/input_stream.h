@@ -98,7 +98,7 @@ class InputStream final : public media::mojom::AudioInputStream,
 
   SEQUENCE_CHECKER(owning_sequence_);
 
-  base::WeakPtrFactory<InputStream> weak_factory_;
+  base::WeakPtrFactory<InputStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InputStream);
 };

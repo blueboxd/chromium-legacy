@@ -23,7 +23,7 @@ class BinderRegistryWithArgs {
   using Binder = base::Callback<
       void(const std::string&, mojo::ScopedMessagePipeHandle, BinderArgs...)>;
 
-  BinderRegistryWithArgs() : weak_factory_(this) {}
+  BinderRegistryWithArgs() {}
   ~BinderRegistryWithArgs() = default;
 
   // Adds an interface inferring the interface name via the templated
@@ -133,7 +133,7 @@ class BinderRegistryWithArgs {
 
   InterfaceNameToBinderMap binders_;
 
-  base::WeakPtrFactory<BinderRegistryWithArgs> weak_factory_;
+  base::WeakPtrFactory<BinderRegistryWithArgs> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BinderRegistryWithArgs);
 };

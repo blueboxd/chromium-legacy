@@ -36,6 +36,11 @@ class FakeCryptAuthScheduler : public CryptAuthScheduler {
     return handled_enrollment_results_;
   }
 
+  const std::vector<CryptAuthDeviceSyncResult>& handled_device_sync_results()
+      const {
+    return handled_device_sync_results_;
+  }
+
   void set_client_directive_policy_reference(
       const base::Optional<cryptauthv2::PolicyReference>&
           client_directive_policy_reference) {

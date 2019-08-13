@@ -35,7 +35,7 @@ void StripUsageWithBreakdownCallback(
 UsageTracker::UsageTracker(const std::vector<QuotaClient*>& clients,
                            blink::mojom::StorageType type,
                            SpecialStoragePolicy* special_storage_policy)
-    : type_(type), weak_factory_(this) {
+    : type_(type) {
   for (auto* client : clients) {
     if (client->DoesSupport(type)) {
       client_tracker_map_[client->id()] = std::make_unique<ClientUsageTracker>(

@@ -257,24 +257,6 @@
         ]
       },
       {
-        "name": "setSwitchAccessKeys",
-        "type": "function",
-        "description": "Change the keyboard keys captured by Switch Access.",
-        "parameters": [
-          {
-            "name": "key_codes",
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "minimum": 48, // '0' key
-              "maximum": 90  // 'z' key
-            },
-            "description": "The key codes for the keys that will be captured."
-          }
-        ],
-        "platforms": ["chromeos"]
-      },
-      {
             "name": "setSwitchAccessMenuState",
             "type": "function",
             "description": "Shows or hides the Switch Access menu. If shown, it is at the indicated location.",

@@ -82,14 +82,21 @@ struct GFX_EXPORT NativePixmapHandle {
 
   std::vector<NativePixmapPlane> planes;
 
+#if defined(OS_LINUX)
   // The modifier is retrieved from GBM library and passed to EGL driver.
   // Generally it's platform specific, and we don't need to modify it in
   // Chromium code. Also one per plane per entry.
   uint64_t modifier = kNoModifier;
+#endif
 
 #if defined(OS_FUCHSIA)
   base::Optional<SysmemBufferCollectionId> buffer_collection_id;
-  uint32_t buffer_index;
+  uint32_t buffer_index = 0;
+
+  // Set to true for sysmem buffers which are initialized with RAM coherency
+  // domain. This means that clients that write to the buffers must flush CPU
+  // cache.
+  bool ram_coherency = false;
 #endif
 };
 

@@ -163,7 +163,7 @@ TestNetworkInterceptor::Response::Response(Response&& r) = default;
 
 TestNetworkInterceptor::Response::~Response() {}
 
-TestNetworkInterceptor::TestNetworkInterceptor() : weak_factory_(this) {
+TestNetworkInterceptor::TestNetworkInterceptor() {
   impl_.reset(new Impl(weak_factory_.GetWeakPtr()));
   interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
       base::BindRepeating(&TestNetworkInterceptor::Impl::RequestHandler,

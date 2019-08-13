@@ -52,13 +52,8 @@ base::Optional<base::TimeDelta> GetQuitTimeout() {
   if (auto timeout = GetExperimentalQuitTimeout())
     return *timeout >= base::TimeDelta() ? timeout : base::nullopt;
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // On platforms where the audio service have launched, use default timeout
-  // instead of no lifetime management.
+  // Default timeout.
   return base::TimeDelta::FromMinutes(15);
-#else
-  return base::nullopt;
-#endif
 }
 
 }  // namespace

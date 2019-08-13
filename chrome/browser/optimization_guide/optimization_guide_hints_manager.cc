@@ -19,9 +19,11 @@
 #include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/hints_processing_util.h"
 #include "components/optimization_guide/optimization_filter.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
+#include "components/optimization_guide/top_host_provider.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -76,7 +78,8 @@ OptimizationGuideHintsManager::OptimizationGuideHintsManager(
     optimization_guide::OptimizationGuideService* optimization_guide_service,
     const base::FilePath& profile_path,
     PrefService* pref_service,
-    leveldb_proto::ProtoDatabaseProvider* database_provider)
+    leveldb_proto::ProtoDatabaseProvider* database_provider,
+    optimization_guide::TopHostProvider* top_host_provider)
     : optimization_guide_service_(optimization_guide_service),
       background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::ThreadPool(), base::MayBlock(),
@@ -87,7 +90,8 @@ OptimizationGuideHintsManager::OptimizationGuideHintsManager(
               database_provider,
               profile_path,
               pref_service_,
-              background_task_runner_))) {
+              background_task_runner_))),
+      top_host_provider_(top_host_provider) {
   DCHECK(optimization_guide_service_);
   hint_cache_->Initialize(
       optimization_guide::switches::ShouldPurgeHintCacheStoreOnStartup(),
@@ -259,6 +263,8 @@ void OptimizationGuideHintsManager::OnHintCacheInitialized() {
     UpdateComponentHints(base::DoNothing(), std::move(hint_update_data));
   }
 
+  MaybeScheduleHintsFetch();
+
   // Register as an observer regardless of hint proto override usage. This is
   // needed as a signal during testing.
   optimization_guide_service_->AddObserver(this);
@@ -304,6 +310,19 @@ void OptimizationGuideHintsManager::ListenForNextUpdateForTesting(
   DCHECK(!next_update_closure_)
       << "Only one update closure is supported at a time";
   next_update_closure_ = std::move(next_update_closure);
+}
+
+void OptimizationGuideHintsManager::MaybeScheduleHintsFetch() {
+  bool hints_fetching_allowed =
+      optimization_guide::features::IsHintsFetchingEnabled() &&
+      top_host_provider_;
+  // This local histogram is only used for testing and will be removed when the
+  // actual implementation to schedule hints fetches is in place.
+  LOCAL_HISTOGRAM_BOOLEAN("OptimizationGuide.HintsFetching.Allowed",
+                          hints_fetching_allowed);
+
+  // TODO(crbug/969558): Implement this to actually schedule a hints fetch and
+  // remove above local histogram.
 }
 
 void OptimizationGuideHintsManager::LoadHintForNavigation(

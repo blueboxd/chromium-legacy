@@ -61,10 +61,6 @@ class PinnedTabService : public content::NotificationObserver,
 
   ScopedObserver<BrowserList, BrowserListObserver> browser_list_observer_{this};
 
-  // |this| observes all tabbed browsers that match |profile_|.
-  ScopedObserver<TabStripModel, TabStripModelObserver> observed_tab_strips_{
-      this};
-
   DISALLOW_COPY_AND_ASSIGN(PinnedTabService);
 };
 

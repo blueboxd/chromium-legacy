@@ -43,9 +43,9 @@ void InterventionPolicyDatabase::InitializeDatabaseWithProtoFile(
     const base::Version& version,
     std::unique_ptr<base::DictionaryValue> manifest) {
   // TODO(sebmarchand): Validate the version and the manifest?
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
       base::BindOnce(
           &InterventionPolicyDatabase::ReadDatabaseFromProtoFileOnSequence,

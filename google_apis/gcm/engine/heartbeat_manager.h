@@ -137,7 +137,7 @@ class GCM_EXPORT HeartbeatManager : public base::PowerObserver {
   base::Closure send_heartbeat_callback_;
   ReconnectCallback trigger_reconnect_callback_;
 
-  base::WeakPtrFactory<HeartbeatManager> weak_ptr_factory_;
+  base::WeakPtrFactory<HeartbeatManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HeartbeatManager);
 };

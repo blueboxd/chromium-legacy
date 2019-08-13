@@ -77,8 +77,7 @@ ChromotingHost::ChromotingHost(
       video_encode_task_runner_(video_encode_task_runner),
       status_monitor_(new HostStatusMonitor()),
       login_backoff_(&kDefaultBackoffPolicy),
-      desktop_environment_options_(options),
-      weak_factory_(this) {
+      desktop_environment_options_(options) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 }
 

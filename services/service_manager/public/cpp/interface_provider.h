@@ -139,7 +139,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT InterfaceProvider {
   // InterfaceProvider pipe.
   ForwardCallback forward_callback_;
 
-  base::WeakPtrFactory<InterfaceProvider> weak_factory_;
+  base::WeakPtrFactory<InterfaceProvider> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InterfaceProvider);
 };

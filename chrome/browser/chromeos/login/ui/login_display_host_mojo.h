@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/login/challenge_response_auth_keys_loader.h"
+#include "chrome/browser/chromeos/login/security_token_pin_dialog_host_ash_impl.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_common.h"
 #include "chrome/browser/chromeos/login/ui/oobe_ui_dialog_delegate.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
@@ -177,6 +178,8 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   bool signin_screen_started_ = false;
 
   ChallengeResponseAuthKeysLoader challenge_response_auth_keys_loader_;
+
+  SecurityTokenPinDialogHostAshImpl security_token_pin_dialog_host_ash_impl_;
 
   base::WeakPtrFactory<LoginDisplayHostMojo> weak_factory_;
 

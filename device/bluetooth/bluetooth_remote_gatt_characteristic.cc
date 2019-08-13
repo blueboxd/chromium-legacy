@@ -15,8 +15,7 @@
 
 namespace device {
 
-BluetoothRemoteGattCharacteristic::BluetoothRemoteGattCharacteristic()
-    : weak_ptr_factory_(this) {}
+BluetoothRemoteGattCharacteristic::BluetoothRemoteGattCharacteristic() {}
 
 BluetoothRemoteGattCharacteristic::~BluetoothRemoteGattCharacteristic() {
   while (!pending_notify_commands_.empty()) {

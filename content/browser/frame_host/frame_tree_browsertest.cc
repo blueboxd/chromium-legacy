@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeShape) {
   // Load doc without iframes. Verify FrameTree just has root.
   // Frame tree:
   //   Site-A Root
-  NavigateToURL(shell(), base_url.Resolve("blank.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), base_url.Resolve("blank.html")));
   FrameTreeNode* root =
       static_cast<WebContentsImpl*>(shell()->web_contents())->
       GetFrameTree()->root();
@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeShape) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &shell()->web_contents()->GetController()));
-  NavigateToURL(shell(), base_url.Resolve("frames-X-X.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), base_url.Resolve("frames-X-X.html")));
   observer1.Wait();
   ASSERT_EQ(2U, root->child_count());
   EXPECT_EQ(0U, root->child_at(0)->child_count());
@@ -87,8 +87,8 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeShape) {
 // TODO(ajwong): Talk with nasko and merge this functionality with
 // FrameTreeShape.
 IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeShape2) {
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/frame_tree/top.html")));
 
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
   FrameTreeNode* root = wc->GetFrameTree()->root();
@@ -109,7 +109,8 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeShape2) {
 
   // Navigate to about:blank, which should leave only the root node of the frame
   // tree in the browser process.
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
 
   root = wc->GetFrameTree()->root();
   EXPECT_EQ(0UL, root->child_count());
@@ -119,8 +120,8 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeShape2) {
 // Test that we can navigate away if the previous renderer doesn't clean up its
 // child frames.
 IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeAfterCrash) {
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/frame_tree/top.html")));
 
   // Ensure the view and frame are live.
   RenderViewHost* rvh = shell()->web_contents()->GetRenderViewHost();
@@ -148,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeAfterCrash) {
 
   // Navigate to a new URL.
   GURL url(embedded_test_server()->GetURL("/title1.html"));
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   EXPECT_EQ(0UL, root->child_count());
   EXPECT_EQ(url, root->current_url());
 
@@ -169,8 +170,8 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeAfterCrash) {
 IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, MAYBE_NavigateWithLeftoverFrames) {
   GURL base_url = embedded_test_server()->GetURL("A.com", "/site_isolation/");
 
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/frame_tree/top.html")));
 
   // Hang the renderer so that it doesn't send any FrameDetached messages.
   // (This navigation will never complete, so don't wait for it.)
@@ -194,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, MAYBE_NavigateWithLeftoverFrames) {
 // Ensure that IsRenderFrameLive is true for main frames and same-site iframes.
 IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, IsRenderFrameLive) {
   GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
-  NavigateToURL(shell(), main_url);
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
@@ -803,7 +804,7 @@ class CrossProcessFrameTreeBrowserTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
                        CreateCrossProcessSubframeProxies) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
-  NavigateToURL(shell(), main_url);
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())

@@ -371,8 +371,7 @@ WebrtcTransport::WebrtcTransport(
     EventHandler* event_handler)
     : transport_context_(transport_context),
       event_handler_(event_handler),
-      handshake_hmac_(crypto::HMAC::SHA256),
-      weak_factory_(this) {
+      handshake_hmac_(crypto::HMAC::SHA256) {
   transport_context_->set_relay_mode(TransportContext::RelayMode::TURN);
 
   video_encoder_factory_ = new WebrtcDummyVideoEncoderFactory();

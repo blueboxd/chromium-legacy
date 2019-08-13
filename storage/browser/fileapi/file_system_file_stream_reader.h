@@ -77,7 +77,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemFileStreamReader
   std::unique_ptr<storage::FileStreamReader> file_reader_;
   scoped_refptr<storage::ShareableFileReference> snapshot_ref_;
   bool has_pending_create_snapshot_;
-  base::WeakPtrFactory<FileSystemFileStreamReader> weak_factory_;
+  base::WeakPtrFactory<FileSystemFileStreamReader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemFileStreamReader);
 };

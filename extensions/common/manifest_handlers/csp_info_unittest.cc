@@ -26,7 +26,7 @@ const char kDefaultSandboxedPageCSP[] =
     "sandbox allow-scripts allow-forms allow-popups allow-modals; "
     "script-src 'self' 'unsafe-inline' 'unsafe-eval'; child-src 'self';";
 const char kDefaultExtensionPagesCSP[] =
-    "script-src 'self' blob: filesystem: chrome-extension-resource:; "
+    "script-src 'self' blob: filesystem:; "
     "object-src 'self' blob: filesystem:;";
 const char kDefaultIsolatedWorldCSP_BypassMainWorld[] = "";
 const char kDefaultIsolatedWorldCSP_Secure[] =

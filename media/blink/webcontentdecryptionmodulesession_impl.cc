@@ -411,8 +411,8 @@ void WebContentDecryptionModuleSessionImpl::Update(
 
   adapter_->UpdateSession(
       session_id_, sanitized_response,
-      std::unique_ptr<SimpleCdmPromise>(new CdmResultPromise<>(
-          result, adapter_->GetKeySystemUMAPrefix() + kUpdateSessionUMAName)));
+      std::make_unique<CdmResultPromise<>>(
+          result, adapter_->GetKeySystemUMAPrefix(), kUpdateSessionUMAName));
 }
 
 void WebContentDecryptionModuleSessionImpl::Close(
@@ -433,8 +433,8 @@ void WebContentDecryptionModuleSessionImpl::Close(
   has_close_been_called_ = true;
   adapter_->CloseSession(
       session_id_,
-      std::unique_ptr<SimpleCdmPromise>(new CdmResultPromise<>(
-          result, adapter_->GetKeySystemUMAPrefix() + kCloseSessionUMAName)));
+      std::make_unique<CdmResultPromise<>>(
+          result, adapter_->GetKeySystemUMAPrefix(), kCloseSessionUMAName));
 }
 
 void WebContentDecryptionModuleSessionImpl::Remove(
@@ -444,8 +444,8 @@ void WebContentDecryptionModuleSessionImpl::Remove(
 
   adapter_->RemoveSession(
       session_id_,
-      std::unique_ptr<SimpleCdmPromise>(new CdmResultPromise<>(
-          result, adapter_->GetKeySystemUMAPrefix() + kRemoveSessionUMAName)));
+      std::make_unique<CdmResultPromise<>>(
+          result, adapter_->GetKeySystemUMAPrefix(), kRemoveSessionUMAName));
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionMessage(

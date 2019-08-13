@@ -56,7 +56,8 @@ declare_args() {
 }
 
 # Official builds may not use goma.
-assert(!(is_chrome_branded && is_official_build && target_cpu == "arm64"),
+assert(!(use_goma && is_chrome_branded && is_official_build &&
+             target_cpu == "arm64"),
        "goma use is forbidden for official iOS builds.")
 
 assert(custom_toolchain == "" || additional_target_cpus == [],

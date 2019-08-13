@@ -24,7 +24,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -145,11 +144,10 @@ void CardUnmaskPromptViews::GotVerificationResult(
       // Replace the throbber with a warning icon. Since this is a permanent
       // error we do not intend to return to a previous state.
       auto error_icon = std::make_unique<views::ImageView>();
-      // The icon doesn't look good with the dark mode warning text color,
-      // so use the same color in light mode and dark mode.
-      // See https://crbug.com/924507
-      error_icon->SetImage(
-          gfx::CreateVectorIcon(kBrowserToolsErrorIcon, gfx::kGoogleRed700));
+      error_icon->SetImage(gfx::CreateVectorIcon(
+          kBrowserToolsErrorIcon,
+          GetNativeTheme()->GetSystemColor(
+              ui::NativeTheme::kColorId_AlertSeverityHigh)));
 
       layout->StartRow(1.0, 0);
       layout->AddView(std::move(error_icon));

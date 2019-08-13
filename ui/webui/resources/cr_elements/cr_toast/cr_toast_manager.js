@@ -95,7 +95,7 @@ Polymer({
     this.showUndo_ = showUndo;
     Polymer.IronA11yAnnouncer.requestAvailability();
     this.fire('iron-announce', {
-      text: this.$.content,
+      text: this.$.content.textContent,
     });
     if (showUndo && this.undoDescription) {
       this.fire('iron-announce', {

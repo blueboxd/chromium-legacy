@@ -45,11 +45,14 @@ bool CryptAuthDeviceSyncResult::IsSuccess() const {
 
 bool CryptAuthDeviceSyncResult::operator==(
     const CryptAuthDeviceSyncResult& other) const {
-  return result_code_ == other.result_code_ &&
-         client_directive_.has_value() == other.client_directive_.has_value() &&
-         (!client_directive_ ||
-          client_directive_->SerializeAsString() ==
-              other.client_directive_->SerializeAsString());
+  bool client_directives_agree =
+      (!client_directive_.has_value() &&
+       !other.client_directive_.has_value()) ||
+      (client_directive_.has_value() && other.client_directive_.has_value() &&
+       client_directive_->SerializeAsString() ==
+           other.client_directive_->SerializeAsString());
+  return client_directives_agree && result_code_ == other.result_code_ &&
+         did_device_registry_change_ == other.did_device_registry_change_;
 }
 
 bool CryptAuthDeviceSyncResult::operator!=(

@@ -71,8 +71,7 @@ PortAllocatorSession::PortAllocatorSession(PortAllocator* allocator,
                                 component,
                                 ice_ufrag,
                                 ice_pwd),
-      transport_context_(allocator->transport_context()),
-      weak_factory_(this) {}
+      transport_context_(allocator->transport_context()) {}
 
 PortAllocatorSession::~PortAllocatorSession() = default;
 

@@ -15,6 +15,9 @@ extern const base::Feature kNoStatePrefetchFeature;
 // Preconnects instead of prefetching from GWS.
 extern const base::Feature kGWSPrefetchHoldback;
 
+// Preconnects instead of prefetching from NavigationPredictor.
+extern const base::Feature kNavigationPredictorPrefetchHoldback;
+
 // Configures global state using kNoStatePrefetchFeature.
 void ConfigureNoStatePrefetch();
 

@@ -299,7 +299,7 @@ class ClientSession : public protocol::HostStub,
 
   // Used to disable callbacks to |this| once DisconnectSession() has been
   // called.
-  base::WeakPtrFactory<ClientSessionControl> weak_factory_;
+  base::WeakPtrFactory<ClientSessionControl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ClientSession);
 };

@@ -22,6 +22,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/rrect_f.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme_features.h"
@@ -42,6 +43,8 @@ constexpr int kOverlayScrollbarBorderPatchWidth = 2;
 constexpr int kOverlayScrollbarCenterPatchSize = 1;
 
 const SkColor kTrackColor = SkColorSetRGB(0xF1, 0xF1, 0xF1);
+const SkScalar kScrollRadius =
+    1;  // select[multiple] radius+width are set in css
 
 const int kCheckboxBorderRadius = 2;
 const int kCheckboxAndRadioBorderWidth = 1;
@@ -188,11 +191,13 @@ void NativeThemeAura::PaintMenuItemBackground(
                                      color_scheme);
 }
 
-void NativeThemeAura::PaintArrowButton(cc::PaintCanvas* canvas,
-                                       const gfx::Rect& rect,
-                                       Part direction,
-                                       State state,
-                                       ColorScheme color_scheme) const {
+void NativeThemeAura::PaintArrowButton(
+    cc::PaintCanvas* canvas,
+    const gfx::Rect& rect,
+    Part direction,
+    State state,
+    ColorScheme color_scheme,
+    const ScrollbarArrowExtraParams& arrow) const {
   SkColor bg_color = kTrackColor;
   // Aura-win uses slightly different arrow colors.
   SkColor arrow_color = gfx::kPlaceholderColor;
@@ -217,7 +222,35 @@ void NativeThemeAura::PaintArrowButton(cc::PaintCanvas* canvas,
 
   cc::PaintFlags flags;
   flags.setColor(bg_color);
-  canvas->drawIRect(gfx::RectToSkIRect(rect), flags);
+
+  if (!features::IsFormControlsRefreshEnabled()) {
+    canvas->drawIRect(gfx::RectToSkIRect(rect), flags);
+
+    return PaintArrow(canvas, rect, direction, arrow_color);
+  }
+
+  SkScalar upper_left_radius = 0;
+  SkScalar lower_left_radius = 0;
+  SkScalar upper_right_radius = 0;
+  SkScalar lower_right_radius = 0;
+  float zoom = arrow.zoom ? arrow.zoom : 1.0;
+  if (direction == kScrollbarUpArrow) {
+    static_assert(kInputBorderRadius > 0, "no border radius present");
+    if (arrow.right_to_left) {
+      upper_left_radius = kScrollRadius * zoom;
+    } else {
+      upper_right_radius = kScrollRadius * zoom;
+    }
+  } else if (direction == kScrollbarDownArrow) {
+    static_assert(kInputBorderRadius > 0, "no border radius present");
+    if (arrow.right_to_left) {
+      lower_left_radius = kScrollRadius * zoom;
+    } else {
+      lower_right_radius = kScrollRadius * zoom;
+    }
+  }
+  DrawPartiallyRoundRect(canvas, rect, upper_left_radius, upper_right_radius,
+                         lower_right_radius, lower_left_radius, flags);
 
   PaintArrow(canvas, rect, direction, arrow_color);
 }
@@ -762,6 +795,21 @@ gfx::Size NativeThemeAura::GetPartSize(Part part,
   }
 
   return NativeThemeBase::GetPartSize(part, state, extra);
+}
+
+void NativeThemeAura::DrawPartiallyRoundRect(cc::PaintCanvas* canvas,
+                                             const gfx::Rect& rect,
+                                             const SkScalar upper_left_radius,
+                                             const SkScalar upper_right_radius,
+                                             const SkScalar lower_right_radius,
+                                             const SkScalar lower_left_radius,
+                                             const cc::PaintFlags& flags) {
+  gfx::RRectF rounded_rect(
+      gfx::RectF(rect), upper_left_radius, upper_left_radius,
+      upper_right_radius, upper_right_radius, lower_right_radius,
+      lower_right_radius, lower_left_radius, lower_left_radius);
+
+  canvas->drawRRect(static_cast<SkRRect>(rounded_rect), flags);
 }
 
 bool NativeThemeAura::SupportsNinePatch(Part part) const {

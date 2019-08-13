@@ -169,7 +169,7 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
   base::Closure policy_error_closure_for_testing_;
 
   base::WeakPtr<It2MeNativeMessagingHost> weak_ptr_;
-  base::WeakPtrFactory<It2MeNativeMessagingHost> weak_factory_;
+  base::WeakPtrFactory<It2MeNativeMessagingHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(It2MeNativeMessagingHost);
 };

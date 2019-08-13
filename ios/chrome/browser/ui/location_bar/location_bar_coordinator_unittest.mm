@@ -119,6 +119,12 @@ TEST_F(LocationBarCoordinatorTest, Stops) {
   EXPECT_TRUE(coordinator_.locationBarViewController == nil);
 }
 
+// Removes the existing WebState to ensure that nothing breaks when there is no
+// active WebState.
+TEST_F(LocationBarCoordinatorTest, RemoveLastWebState) {
+  web_state_list_.CloseWebStateAt(0, 0);
+}
+
 // Calls -loadGURLFromLocationBar:transition: with https://www.google.com/ URL.
 // Verifies that URLLoader receives correct load request, which also includes
 // variations header.

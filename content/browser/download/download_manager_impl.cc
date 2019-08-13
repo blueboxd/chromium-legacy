@@ -29,7 +29,6 @@
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item_factory.h"
 #include "components/download/public/common/download_item_impl.h"
-#include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "components/download/public/common/download_url_loader_factory_getter.h"
@@ -205,10 +204,11 @@ class DownloadItemFactoryImpl : public download::DownloadItemFactory {
       const base::FilePath& path,
       const GURL& url,
       const std::string& mime_type,
-      std::unique_ptr<download::DownloadRequestHandleInterface> request_handle)
+      download::DownloadJob::CancelRequestCallback cancel_request_callback)
       override {
     return new download::DownloadItemImpl(delegate, download_id, path, url,
-                                          mime_type, std::move(request_handle));
+                                          mime_type,
+                                          std::move(cancel_request_callback));
   }
 };
 
@@ -456,7 +456,6 @@ void DownloadManagerImpl::Shutdown() {
   }
   downloads_.clear();
   downloads_by_guid_.clear();
-  url_download_handlers_.clear();
 
   // We'll have nothing more to report to the observers after this point.
   observers_.Clear();
@@ -494,8 +493,6 @@ bool DownloadManagerImpl::InterceptDownload(
       params.initiator_origin = info.request_initiator;
       web_contents->GetController().LoadURLWithParams(params);
     }
-    if (info.request_handle)
-      info.request_handle->CancelRequest(false);
     return true;
   }
 
@@ -511,8 +508,6 @@ bool DownloadManagerImpl::InterceptDownload(
                        info.url(), user_agent, info.content_disposition,
                        info.mime_type, info.request_origin, info.total_bytes,
                        info.transient, web_contents)) {
-    if (info.request_handle)
-      info.request_handle->CancelRequest(false);
     return true;
   }
   content::devtools_instrumentation::WillBeginDownload(
@@ -618,6 +613,14 @@ service_manager::Connector* DownloadManagerImpl::GetServiceManagerConnector() {
   return GetSystemConnector();
 }
 
+download::QuarantineConnectionCallback
+DownloadManagerImpl::GetQuarantineConnectionCallback() {
+  if (!delegate_)
+    return base::NullCallback();
+
+  return delegate_->GetQuarantineConnectionCallback();
+}
+
 void DownloadManagerImpl::StartDownload(
     std::unique_ptr<download::DownloadCreateInfo> info,
     std::unique_ptr<download::InputStream> stream,
@@ -628,7 +631,7 @@ void DownloadManagerImpl::StartDownload(
   DCHECK(info);
   in_progress_manager_->StartDownload(std::move(info), std::move(stream),
                                       std::move(url_loader_factory_getter),
-                                      on_started);
+                                      base::DoNothing(), on_started);
 }
 
 void DownloadManagerImpl::CheckForHistoryFilesRemoval() {
@@ -685,14 +688,14 @@ void DownloadManagerImpl::CreateSavePackageDownloadItem(
     const std::string& mime_type,
     int render_process_id,
     int render_frame_id,
-    std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
+    download::DownloadJob::CancelRequestCallback cancel_request_callback,
     const DownloadItemImplCreated& item_created) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GetNextId(
       base::BindOnce(&DownloadManagerImpl::CreateSavePackageDownloadItemWithId,
                      weak_factory_.GetWeakPtr(), main_file_path, page_url,
                      mime_type, render_process_id, render_frame_id,
-                     std::move(request_handle), item_created));
+                     std::move(cancel_request_callback), item_created));
 }
 
 void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
@@ -701,14 +704,15 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
     const std::string& mime_type,
     int render_process_id,
     int render_frame_id,
-    std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
+    download::DownloadJob::CancelRequestCallback cancel_request_callback,
     const DownloadItemImplCreated& item_created,
     uint32_t id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(download::DownloadItem::kInvalidId, id);
   DCHECK(!base::Contains(downloads_, id));
   download::DownloadItemImpl* download_item = item_factory_->CreateSavePageItem(
-      this, id, main_file_path, page_url, mime_type, std::move(request_handle));
+      this, id, main_file_path, page_url, mime_type,
+      std::move(cancel_request_callback));
   DownloadItemUtils::AttachInfo(download_item, GetBrowserContext(),
                                 WebContentsImpl::FromRenderFrameHostID(
                                     render_process_id, render_frame_id));
@@ -772,13 +776,6 @@ bool DownloadManagerImpl::IsOffTheRecord() const {
 void DownloadManagerImpl::ReportBytesWasted(
     download::DownloadItemImpl* download) {
   in_progress_manager_->ReportBytesWasted(download);
-}
-
-void DownloadManagerImpl::OnUrlDownloadHandlerCreated(
-    download::UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (downloader)
-    url_download_handlers_.push_back(std::move(downloader));
 }
 
 void DownloadManagerImpl::InterceptNavigation(
@@ -859,7 +856,6 @@ void DownloadManagerImpl::DownloadUrl(
     DCHECK(params->prefer_cache());
     DCHECK_EQ("POST", params->method());
   }
-
   download::RecordDownloadCountWithSource(
       download::DownloadCountTypes::DOWNLOAD_TRIGGERED_COUNT,
       params->download_source());
@@ -1097,27 +1093,6 @@ download::DownloadItem* DownloadManagerImpl::GetDownloadByGuid(
                                                   : nullptr;
 }
 
-void DownloadManagerImpl::OnUrlDownloadStarted(
-    std::unique_ptr<download::DownloadCreateInfo> download_create_info,
-    std::unique_ptr<download::InputStream> stream,
-    scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-        url_loader_factory_getter,
-    const download::DownloadUrlParameters::OnStartedCallback& callback) {
-  StartDownload(std::move(download_create_info), std::move(stream),
-                std::move(url_loader_factory_getter), callback);
-}
-
-void DownloadManagerImpl::OnUrlDownloadStopped(
-    download::UrlDownloadHandler* downloader) {
-  for (auto ptr = url_download_handlers_.begin();
-       ptr != url_download_handlers_.end(); ++ptr) {
-    if (ptr->get() == downloader) {
-      url_download_handlers_.erase(ptr);
-      return;
-    }
-  }
-}
-
 void DownloadManagerImpl::GetAllDownloads(
     download::SimpleDownloadManager::DownloadVector* downloads) {
   for (const auto& it : downloads_)
@@ -1328,7 +1303,7 @@ void DownloadManagerImpl::BeginDownloadInternal(
         WebContents::FromFrameTreeNodeId, rfh->GetFrameTreeNodeId());
     const GURL& url = params->url();
     const std::string& method = params->method();
-
+    base::Optional<url::Origin> initiator = params->initiator();
     base::OnceCallback<void(bool /* download allowed */)>
         on_can_download_checks_done = base::BindOnce(
             &DownloadManagerImpl::BeginResourceDownloadOnChecksComplete,
@@ -1336,8 +1311,7 @@ void DownloadManagerImpl::BeginDownloadInternal(
             std::move(blob_url_loader_factory), is_new_download, site_url);
     if (delegate_) {
       delegate_->CheckDownloadAllowed(std::move(web_contents_getter), url,
-                                      method,
-                                      base::nullopt /*request_initiator*/,
+                                      method, std::move(initiator),
                                       std::move(on_can_download_checks_done));
       return;
     }

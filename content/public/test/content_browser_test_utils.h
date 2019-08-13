@@ -74,6 +74,15 @@ GURL GetTestUrl(const char* dir, const char* file);
 // navigations should do EXPECT_TRUE(NavigateToURL()).
 bool NavigateToURL(Shell* window, const GURL& url);
 
+// Same as above, but takes in an additional URL, |expected_commit_url|, to
+// which the navigation should eventually commit.  This is useful for cases
+// like redirects, where navigation starts on one URL but ends up committing a
+// different URL.  This function will return true if navigating to |url|
+// results in a successful commit to |expected_commit_url|.
+bool NavigateToURL(Shell* window,
+                   const GURL& url,
+                   const GURL& expected_commit_url);
+
 // Perform a renderer-initiated navigation of |window| to |url|, blocking
 // until the navigation finishes.  The navigation is done by assigning
 // location.href in the frame |adapter|. Returns true if the page was loaded

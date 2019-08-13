@@ -1567,6 +1567,14 @@ void PepperPluginInstanceImpl::Redo() {
   plugin_pdf_interface_->Redo(pp_instance());
 }
 
+void PepperPluginInstanceImpl::HandleAccessibilityAction(
+    const PP_PdfAccessibilityActionData& action_data) {
+  if (!LoadPdfInterface())
+    return;
+
+  plugin_pdf_interface_->HandleAccessibilityAction(pp_instance(), action_data);
+}
+
 void PepperPluginInstanceImpl::RequestSurroundingText(
     size_t desired_number_of_characters) {
   // Keep a reference on the stack. See NOTE above.

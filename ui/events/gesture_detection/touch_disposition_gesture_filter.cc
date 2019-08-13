@@ -281,6 +281,10 @@ void TouchDispositionGestureFilter::FilterAndSendPacket(
       CancelTapIfNecessary(packet);
       continue;
     }
+    if (gesture.type() == ET_GESTURE_TAP_CANCEL) {
+      CancelTapIfNecessary(packet);
+      continue;
+    }
     if (packet.gesture_source() == GestureEventDataPacket::TOUCH_TIMEOUT) {
       // Sending a timed gesture could delete |this|, so we need to return
       // directly after the |SendGesture| call.

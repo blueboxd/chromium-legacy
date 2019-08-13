@@ -87,7 +87,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) LocalFileStreamWriter
   net::CompletionOnceCallback write_callback_;
   net::CompletionOnceCallback cancel_callback_;
 
-  base::WeakPtrFactory<LocalFileStreamWriter> weak_factory_;
+  base::WeakPtrFactory<LocalFileStreamWriter> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(LocalFileStreamWriter);
 };
 

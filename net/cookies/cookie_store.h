@@ -69,20 +69,12 @@ class NET_EXPORT CookieStore {
   // Obtains a CookieList for the given |url| and |options|. The returned
   // cookies are passed into |callback|, ordered by longest path, then earliest
   // creation date.
+  // To get all the cookies for a URL, use this method with an all-inclusive
+  // |options|.
   virtual void GetCookieListWithOptionsAsync(
       const GURL& url,
       const CookieOptions& options,
       GetCookieListCallback callback) = 0;
-
-  // Returns all cookies associated with |url|, including http-only, and
-  // same-site cookies. The returned cookies are ordered by longest path, then
-  // by earliest creation date, and are not marked as having been accessed.
-  //
-  // TODO(mkwst): This method is deprecated, and should be removed, either by
-  // updating callsites to use 'GetCookieListWithOptionsAsync' with an explicit
-  // CookieOptions, or by changing CookieOptions' defaults.
-  void GetAllCookiesForURLAsync(const GURL& url,
-                                GetCookieListCallback callback);
 
   // Returns all the cookies, for use in management UI, etc. This does not mark
   // the cookies as having been accessed. The returned cookies are ordered by

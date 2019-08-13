@@ -22,7 +22,6 @@ class Connector;
 namespace views {
 class ImageView;
 class ToggleImageButton;
-class ImageButton;
 }  // namespace views
 
 namespace media_message_center {
@@ -203,7 +202,6 @@ class ASH_EXPORT LockScreenMediaControlsView
   views::ImageView* session_artwork_ = nullptr;
   NonAccessibleView* button_row_ = nullptr;
   views::ToggleImageButton* play_pause_button_ = nullptr;
-  views::ImageButton* close_button_ = nullptr;
   media_message_center::MediaControlsProgressView* progress_ = nullptr;
 
   // Callbacks.

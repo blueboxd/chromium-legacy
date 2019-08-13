@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
 import org.chromium.chrome.browser.preferences.MainPreferences;
-import org.chromium.chrome.browser.widget.CompatibilityTextInputLayout;
+import org.chromium.chrome.browser.widget.ChromeTextInputLayout;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -36,9 +36,9 @@ import java.util.Locale;
  * Local credit card settings.
  */
 public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
-    private CompatibilityTextInputLayout mNameLabel;
+    private ChromeTextInputLayout mNameLabel;
     private EditText mNameText;
-    private CompatibilityTextInputLayout mNumberLabel;
+    private ChromeTextInputLayout mNumberLabel;
     private EditText mNumberText;
     private Spinner mExpirationMonth;
     private Spinner mExpirationYear;
@@ -61,9 +61,9 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
 
         View v = super.onCreateView(inflater, container, savedInstanceState);
 
-        mNameLabel = (CompatibilityTextInputLayout) v.findViewById(R.id.credit_card_name_label);
+        mNameLabel = (ChromeTextInputLayout) v.findViewById(R.id.credit_card_name_label);
         mNameText = (EditText) v.findViewById(R.id.credit_card_name_edit);
-        mNumberLabel = (CompatibilityTextInputLayout) v.findViewById(R.id.credit_card_number_label);
+        mNumberLabel = (ChromeTextInputLayout) v.findViewById(R.id.credit_card_number_label);
         mNumberText = (EditText) v.findViewById(R.id.credit_card_number_edit);
 
         // Set text watcher to format credit card number

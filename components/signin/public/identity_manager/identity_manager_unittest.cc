@@ -1760,7 +1760,8 @@ TEST_F(IdentityManagerTest,
       run_loop.QuitClosure());
 
   // Configure list accounts to return a permanent Gaia auth error.
-  SetListAccountsResponseWebLoginRequired(test_url_loader_factory());
+  SetListAccountsResponseWithUnexpectedServiceResponse(
+      test_url_loader_factory());
   identity_manager()->GetGaiaCookieManagerService()->TriggerListAccounts();
   run_loop.Run();
 

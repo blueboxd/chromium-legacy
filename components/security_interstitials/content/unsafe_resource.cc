@@ -50,9 +50,12 @@ bool UnsafeResource::IsMainPageLoadBlocked() const {
     case safe_browsing::SB_THREAT_TYPE_BLOCKED_AD_REDIRECT:
     // Ad sampling happens in the background.
     case safe_browsing::SB_THREAT_TYPE_AD_SAMPLE:
-    // Sign-in password reuse warning happens after the page is finished
-    // loading.
-    case safe_browsing::SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE:
+    // Chrome GAIA signed in and syncing password reuse warning happens after
+    // the page is finished loading.
+    case safe_browsing::SB_THREAT_TYPE_SIGNED_IN_SYNC_PASSWORD_REUSE:
+    // Chrome GAIA signed in and non-syncing password reuse warning happens
+    // after the page is finished loading.
+    case safe_browsing::SB_THREAT_TYPE_SIGNED_IN_NON_SYNC_PASSWORD_REUSE:
     // Enterprise password reuse warning happens after the page is finished
     // loading.
     case safe_browsing::SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE:

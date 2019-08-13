@@ -27,7 +27,7 @@ const uint8_t kDummyAudioData = 0x8B;
 
 class FakeAudioConsumer : public AudioStub {
  public:
-  FakeAudioConsumer(): weak_factory_(this) {}
+  FakeAudioConsumer() {}
   ~FakeAudioConsumer() override = default;
 
   base::WeakPtr<FakeAudioConsumer> GetWeakPtr(){
@@ -42,7 +42,7 @@ class FakeAudioConsumer : public AudioStub {
   }
 
  private:
-  base::WeakPtrFactory<FakeAudioConsumer> weak_factory_;
+  base::WeakPtrFactory<FakeAudioConsumer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeAudioConsumer);
 };

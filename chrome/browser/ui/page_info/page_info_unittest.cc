@@ -475,12 +475,12 @@ TEST_F(PageInfoTest, UnwantedSoftware) {
 TEST_F(PageInfoTest, SignInPasswordReuse) {
   security_level_ = security_state::DANGEROUS;
   visible_security_state_.malicious_content_status =
-      security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE;
+      security_state::MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE;
   SetDefaultUIExpectations(mock_ui());
 
   EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED,
             page_info()->site_connection_status());
-  EXPECT_EQ(PageInfo::SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE,
+  EXPECT_EQ(PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE,
             page_info()->safe_browsing_status());
 }
 

@@ -160,6 +160,18 @@ class LanguagesManager {
     }
 
     /**
+     * Sets the preference order of the user's accepted languages to the provided order.
+     *
+     * @param codes The new order for the user's languages.
+     * @param reload True iff the language list should be reloaded.
+     */
+    public void setOrder(String[] codes, boolean reload) {
+        PrefServiceBridge.getInstance().setLanguageOrder(codes);
+        recordAction(LanguageSettingsActionType.LANGUAGE_LIST_REORDERED);
+        if (reload) notifyAcceptLanguageObserver();
+    }
+
+    /**
      * Get the static instance of ChromePreferenceManager if it exists else create it.
      * @return the LanguagesManager singleton.
      */

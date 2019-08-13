@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/page_action/page_action_icon_container.h"
+#include "chrome/browser/ui/passwords/credential_leak_dialog_controller_impl.h"
 #include "chrome/browser/ui/passwords/credential_manager_dialog_controller_impl.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
@@ -240,6 +241,13 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
     if (bubble_status_ != SHOWN_PENDING_ICON_UPDATE)
       UpdateBubbleAndIconVisibility();
   }
+}
+
+void ManagePasswordsUIController::OnCredentialLeak(const GURL& origin) {
+  auto* raw_controller = new CredentialLeakDialogControllerImpl();
+  dialog_controller_.reset(raw_controller);
+  raw_controller->ShowCredentialLeakPrompt(
+      CreateCredentialLeakPrompt(raw_controller));
 }
 
 void ManagePasswordsUIController::OnLoginsChanged(
@@ -519,6 +527,11 @@ AccountChooserPrompt* ManagePasswordsUIController::CreateAccountChooser(
 AutoSigninFirstRunPrompt* ManagePasswordsUIController::CreateAutoSigninPrompt(
     CredentialManagerDialogController* controller) {
   return CreateAutoSigninPromptView(controller, web_contents());
+}
+
+CredentialLeakPrompt* ManagePasswordsUIController::CreateCredentialLeakPrompt(
+    CredentialLeakDialogController* controller) {
+  return CreateCredentialLeakPromptView(controller, web_contents());
 }
 
 bool ManagePasswordsUIController::HasBrowserWindow() const {

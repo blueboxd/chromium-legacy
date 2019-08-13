@@ -267,7 +267,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileSystemBackendDelegate
 
   base::Time next_release_time_for_open_filesystem_stat_;
 
-  base::WeakPtrFactory<SandboxFileSystemBackendDelegate> weak_factory_;
+  base::WeakPtrFactory<SandboxFileSystemBackendDelegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SandboxFileSystemBackendDelegate);
 };

@@ -132,7 +132,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtilMemoryDelegate
   // The components of root path, kept for faster processing.
   std::vector<base::FilePath::StringType> root_path_components_;
 
-  base::WeakPtrFactory<ObfuscatedFileUtilMemoryDelegate> weak_factory_;
+  base::WeakPtrFactory<ObfuscatedFileUtilMemoryDelegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtilMemoryDelegate);
 };

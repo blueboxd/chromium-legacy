@@ -56,6 +56,7 @@ bool AXMenuList::OnNativeClickAction() {
 }
 
 void AXMenuList::ClearChildren() {
+  children_dirty_ = false;
   if (children_.IsEmpty())
     return;
 
@@ -64,7 +65,6 @@ void AXMenuList::ClearChildren() {
   // so call it on our popup.
   DCHECK(children_.size() == 1);
   children_[0]->ClearChildren();
-  children_dirty_ = false;
 }
 
 void AXMenuList::AddChildren() {

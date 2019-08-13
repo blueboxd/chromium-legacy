@@ -28,6 +28,15 @@ namespace storage {
 
 class UsageTracker;
 
+// These values are logged to UMA. Entries should not be renumbered and
+// numeric values should never be reused. Please keep in sync with
+// "InvalidOriginReason" in src/tools/metrics/histograms/enums.xml.
+enum class InvalidOriginReason {
+  kIsOpaque = 0,
+  kIsEmpty = 1,
+  kMaxValue = kIsEmpty
+};
+
 // Holds per-client usage tracking information and caches
 // per-host usage data.
 //
@@ -56,7 +65,6 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   void GetCachedOrigins(std::set<url::Origin>* origins) const;
   bool IsUsageCacheEnabledForOrigin(const url::Origin& origin) const;
   void SetUsageCacheEnabled(const url::Origin& origin, bool enabled);
-
  private:
   using UsageMap = std::map<url::Origin, int64_t>;
 

@@ -14,6 +14,9 @@
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_url_parameters.h"
+#include "components/download/public/common/quarantine_connection.h"
+#include "components/services/quarantine/public/mojom/quarantine.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace service_manager {
 class Connector;
@@ -119,6 +122,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImplDelegate {
 
   // Gets the ServiceManager connector that can be used on UI thread.
   virtual service_manager::Connector* GetServiceManagerConnector();
+
+  // Gets a callback that can connect to the Quarantine Service if available.
+  virtual QuarantineConnectionCallback GetQuarantineConnectionCallback();
 
  private:
   // For "Outlives attached DownloadItemImpl" invariant assertion.

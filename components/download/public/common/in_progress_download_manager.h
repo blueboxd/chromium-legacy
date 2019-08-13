@@ -14,10 +14,10 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "build/build_config.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_file_factory.h"
 #include "components/download/public/common/download_item_impl_delegate.h"
+#include "components/download/public/common/download_job.h"
 #include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/simple_download_manager.h"
 #include "components/download/public/common/url_download_handler.h"
@@ -119,6 +119,7 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       std::unique_ptr<DownloadCreateInfo> info,
       std::unique_ptr<InputStream> stream,
       scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
+      DownloadJob::CancelRequestCallback cancel_request_callback,
       const DownloadUrlParameters::OnStartedCallback& on_started);
 
   // Shutting down the manager and stop all downloads.
@@ -201,6 +202,7 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       std::unique_ptr<DownloadCreateInfo> download_create_info,
       std::unique_ptr<InputStream> input_stream,
       scoped_refptr<DownloadURLLoaderFactoryGetter> shared_url_loader_factory,
+      UrlDownloadHandler* downloader,
       const DownloadUrlParameters::OnStartedCallback& callback) override;
   void OnUrlDownloadStopped(UrlDownloadHandler* downloader) override;
   void OnUrlDownloadHandlerCreated(
@@ -219,6 +221,7 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   void StartDownloadWithItem(
       std::unique_ptr<InputStream> stream,
       scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
+      DownloadJob::CancelRequestCallback cancel_request_callback,
       std::unique_ptr<DownloadCreateInfo> info,
       DownloadItemImpl* download,
       bool should_persist_new_download);
@@ -228,6 +231,9 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
 
   // Called to notify |delegate_| that downloads are initialized.
   void NotifyDownloadsInitialized();
+
+  // Cancels the given UrlDownloadHandler.
+  void CancelUrlDownload(UrlDownloadHandler* downloader, bool user_cancel);
 
   // Active download handlers.
   std::vector<UrlDownloadHandler::UniqueUrlDownloadHandlerPtr>

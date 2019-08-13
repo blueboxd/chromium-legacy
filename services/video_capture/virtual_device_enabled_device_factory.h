@@ -68,7 +68,7 @@ class VirtualDeviceEnabledDeviceFactory : public DeviceFactory {
   const std::unique_ptr<DeviceFactory> device_factory_;
   std::vector<mojom::DevicesChangedObserverPtr> devices_changed_observers_;
 
-  base::WeakPtrFactory<VirtualDeviceEnabledDeviceFactory> weak_factory_;
+  base::WeakPtrFactory<VirtualDeviceEnabledDeviceFactory> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(VirtualDeviceEnabledDeviceFactory);
 };
 

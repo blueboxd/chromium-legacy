@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "android_webview/browser/gfx/compositor_frame_producer.h"
-#include "android_webview/browser/gfx/compositor_id.h"
 #include "android_webview/browser/gfx/gpu_service_web_view.h"
 #include "android_webview/browser/gfx/scoped_app_gl_state_restore.h"
 #include "android_webview/browser/gfx/task_queue_web_view.h"
@@ -16,6 +15,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -109,7 +109,7 @@ ChildFrameQueue RenderThreadManager::PassUncommittedFrameOnUI() {
 
 void RenderThreadManager::PostParentDrawDataToChildCompositorOnRT(
     const ParentCompositorDrawConstraints& parent_draw_constraints,
-    const CompositorID& compositor_id,
+    const viz::FrameSinkId& frame_sink_id,
     viz::FrameTimingDetailsMap timing_details,
     uint32_t frame_token) {
   {
@@ -120,7 +120,7 @@ void RenderThreadManager::PostParentDrawDataToChildCompositorOnRT(
     // from early returned frames from WaitAndPruneFrameQueue as well.
     timing_details_ = std::move(timing_details);
     presented_frame_token_ = frame_token;
-    compositor_id_for_presentation_feedbacks_ = compositor_id;
+    frame_sink_id_for_presentation_feedbacks_ = frame_sink_id;
   }
 
   // No need to hold the lock_ during the post task.
@@ -132,7 +132,7 @@ void RenderThreadManager::PostParentDrawDataToChildCompositorOnRT(
 
 void RenderThreadManager::TakeParentDrawDataOnUI(
     ParentCompositorDrawConstraints* constraints,
-    CompositorID* compositor_id,
+    viz::FrameSinkId* frame_sink_id,
     viz::FrameTimingDetailsMap* timing_details,
     uint32_t* frame_token) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
@@ -140,7 +140,7 @@ void RenderThreadManager::TakeParentDrawDataOnUI(
   CheckUiCallsAllowed();
   base::AutoLock lock(lock_);
   *constraints = parent_draw_constraints_;
-  *compositor_id = compositor_id_for_presentation_feedbacks_;
+  *frame_sink_id = frame_sink_id_for_presentation_feedbacks_;
   timing_details_.swap(*timing_details);
   *frame_token = presented_frame_token_;
 }
@@ -157,13 +157,13 @@ bool RenderThreadManager::IsInsideHardwareRelease() const {
 
 void RenderThreadManager::InsertReturnedResourcesOnRT(
     const std::vector<viz::ReturnedResource>& resources,
-    const CompositorID& compositor_id,
+    const viz::FrameSinkId& frame_sink_id,
     uint32_t layer_tree_frame_sink_id) {
   if (resources.empty())
     return;
   ui_loop_->PostTask(
       FROM_HERE, base::BindOnce(&CompositorFrameProducer::ReturnUsedResources,
-                                producer_weak_ptr_, resources, compositor_id,
+                                producer_weak_ptr_, resources, frame_sink_id,
                                 layer_tree_frame_sink_id));
 }
 
@@ -189,6 +189,9 @@ void RenderThreadManager::DrawOnRT(bool save_restore,
   GpuServiceWebView::GetInstance();
   ScopedAppGLStateRestore state_restore(ScopedAppGLStateRestore::MODE_DRAW,
                                         save_restore);
+  UMA_HISTOGRAM_BOOLEAN(
+      "Android.WebView.Gfx.FunctorStencilEnabled",
+      static_cast<bool>(state_restore.stencil_state().stencil_test_enabled));
   ScopedAllowGL allow_gl;
   if (!hardware_renderer_ && !IsInsideHardwareRelease() &&
       HasFrameForHardwareRendererOnRT()) {

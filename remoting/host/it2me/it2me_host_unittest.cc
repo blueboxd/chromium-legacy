@@ -199,12 +199,12 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
   scoped_refptr<AutoThreadTaskRunner> network_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner_;
 
-  base::WeakPtrFactory<It2MeHostTest> weak_factory_;
+  base::WeakPtrFactory<It2MeHostTest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(It2MeHostTest);
 };
 
-It2MeHostTest::It2MeHostTest() : weak_factory_(this) {}
+It2MeHostTest::It2MeHostTest() {}
 It2MeHostTest::~It2MeHostTest() = default;
 
 void It2MeHostTest::SetUp() {

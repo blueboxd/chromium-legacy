@@ -87,7 +87,7 @@ class VirtualDeviceEnabledDeviceFactory::VirtualDeviceEntry {
 
 VirtualDeviceEnabledDeviceFactory::VirtualDeviceEnabledDeviceFactory(
     std::unique_ptr<DeviceFactory> device_factory)
-    : device_factory_(std::move(device_factory)), weak_factory_(this) {}
+    : device_factory_(std::move(device_factory)) {}
 
 VirtualDeviceEnabledDeviceFactory::~VirtualDeviceEnabledDeviceFactory() =
     default;

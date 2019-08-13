@@ -213,6 +213,9 @@ class PasswordManagerClient {
   virtual void AutofillHttpAuth(const autofill::PasswordForm& preferred_match,
                                 const PasswordFormManagerForUI* form_manager);
 
+  // Informs the embedder that user credentials were leaked.
+  virtual void NotifyUserCredentialsWereLeaked(const GURL& origin);
+
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() const = 0;
 

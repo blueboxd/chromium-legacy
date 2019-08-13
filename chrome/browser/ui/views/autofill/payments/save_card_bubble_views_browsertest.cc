@@ -1296,6 +1296,21 @@ class SaveCardBubbleViewsSyncTransportFullFormBrowserTest
     SaveCardBubbleViewsFullFormBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
+  void SetUpForSyncTransportModeTest() {
+    // Signing in (without making the account Chrome's primary one or explicitly
+    // setting up Sync) causes the Sync machinery to start up in standalone
+    // transport mode.
+    secondary_account_helper::SignInSecondaryAccount(
+        browser()->profile(), test_url_loader_factory(), "user@gmail.com");
+    ASSERT_NE(syncer::SyncService::TransportState::DISABLED,
+              harness_->service()->GetTransportState());
+
+    ASSERT_TRUE(harness_->AwaitSyncTransportActive());
+    ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+              harness_->service()->GetTransportState());
+    ASSERT_FALSE(harness_->service()->IsSyncFeatureEnabled());
+  }
+
  private:
   secondary_account_helper::ScopedSigninClientFactory
       test_signin_client_factory_;
@@ -1308,19 +1323,7 @@ class SaveCardBubbleViewsSyncTransportFullFormBrowserTest
 // to Google Payments.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsSyncTransportFullFormBrowserTest,
                        Upload_TransportMode_ClickingSaveClosesBubble) {
-  // Signing in (without making the account Chrome's primary one or explicitly
-  // setting up Sync) causes the Sync machinery to start up in standalone
-  // transport mode.
-  secondary_account_helper::SignInSecondaryAccount(
-      browser()->profile(), test_url_loader_factory(), "user@gmail.com");
-  ASSERT_NE(syncer::SyncService::TransportState::DISABLED,
-            harness_->service()->GetTransportState());
-
-  ASSERT_TRUE(harness_->AwaitSyncTransportActive());
-  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
-            harness_->service()->GetTransportState());
-  ASSERT_FALSE(harness_->service()->IsSyncFeatureEnabled());
-
+  SetUpForSyncTransportModeTest();
   FillForm();
   SubmitFormAndWaitForCardUploadSaveBubble();
 
@@ -1333,6 +1336,42 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsSyncTransportFullFormBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
       AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
+}
+
+// Tests the implicit sync state. Ensures that the (i) info icon appears for
+// upload save offers.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsSyncTransportFullFormBrowserTest,
+                       Upload_TransportMode_InfoTextIconExists) {
+  SetUpForSyncTransportModeTest();
+  FillForm();
+  SubmitFormAndWaitForCardUploadSaveBubble();
+
+  // As this is an upload save for a Butter-enabled user, there should be a
+  // hoverable (i) icon in the extra view explaining the functionality.
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::UPLOAD_EXPLANATION_TOOLTIP));
+}
+
+// Tests the implicit sync state. Ensures that the (i) info icon does not appear
+// for local save offers.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsSyncTransportFullFormBrowserTest,
+                       Local_TransportMode_InfoTextIconDoesNotExist) {
+  SetUpForSyncTransportModeTest();
+  FillForm();
+
+  // Declining upload save will fall back to local save.
+  SetUploadDetailsRpcPaymentsDeclines();
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
+  SubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)
+                  ->GetVisible());
+
+  // Even though this is a Butter-enabled user, as this is a local save, there
+  // should NOT be a hoverable (i) icon in the extra view.
+  EXPECT_FALSE(FindViewInBubbleById(DialogViewId::UPLOAD_EXPLANATION_TOOLTIP));
 }
 
 // Sets up Chrome with Sync-the-transport mode enabled, with the Wallet datatype
@@ -1403,7 +1442,24 @@ IN_PROC_BROWSER_TEST_F(
             base::ASCIIToUTF16("John Smith"));
 }
 
-#endif
+#endif  // !OS_CHROMEOS
+
+// Tests the fully-syncing state. Ensures that the Butter (i) info icon does not
+// appear for fully-syncing users.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Upload_NotTransportMode_InfoTextIconDoesNotExist) {
+  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
+
+  // Start sync.
+  harness_->SetupSync();
+
+  FillForm();
+  SubmitFormAndWaitForCardUploadSaveBubble();
+
+  // Even though this is an upload save, as this is a fully-syncing user, there
+  // should NOT be a hoverable (i) icon in the extra view.
+  EXPECT_FALSE(FindViewInBubbleById(DialogViewId::UPLOAD_EXPLANATION_TOOLTIP));
+}
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))

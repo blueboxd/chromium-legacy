@@ -24,7 +24,7 @@ namespace {
 // Helper class to generate and record user gesture callbacks.
 class UserGestureListener {
  public:
-  UserGestureListener() : has_user_gesture_(false), weak_factory_(this) {}
+  UserGestureListener() : has_user_gesture_(false) {}
 
   base::Closure GetClosure() {
     return base::Bind(&UserGestureListener::GotUserGesture,
@@ -37,7 +37,7 @@ class UserGestureListener {
   void GotUserGesture() { has_user_gesture_ = true; }
 
   bool has_user_gesture_;
-  base::WeakPtrFactory<UserGestureListener> weak_factory_;
+  base::WeakPtrFactory<UserGestureListener> weak_factory_{this};
 };
 
 // Main test fixture

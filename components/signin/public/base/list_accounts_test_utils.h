@@ -26,8 +26,9 @@ struct CookieParams {
 void SetListAccountsResponseHttpNotFound(
     network::TestURLLoaderFactory* test_url_loader_factory);
 
-// Make ListAccounts call return Info=WebLoginRequired.
-void SetListAccountsResponseWebLoginRequired(
+// Make ListAccounts call return an unexpected service response that leads to
+// a one time retry request. It also sets the response for the retry request.
+void SetListAccountsResponseWithUnexpectedServiceResponse(
     network::TestURLLoaderFactory* test_url_loader_factory);
 
 // Make ListAccounts return a list of accounts based on the provided |params|.

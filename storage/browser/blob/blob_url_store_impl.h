@@ -44,7 +44,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLStoreImpl
 
   std::set<GURL> urls_;
 
-  base::WeakPtrFactory<BlobURLStoreImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<BlobURLStoreImpl> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(BlobURLStoreImpl);
 };
 

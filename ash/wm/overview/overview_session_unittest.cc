@@ -2975,6 +2975,37 @@ TEST_F(OverviewSessionNewLayoutTest, CheckOverviewItemScrollingBounds) {
   EXPECT_EQ(right_bounds, rightmost_window->target_bounds());
 }
 
+// Tests the windows are stacked correctly when entering or exiting splitview
+// while the new overivew layout is enabled.
+TEST_F(OverviewSessionNewLayoutTest, StackingOrderSplitviewWindow) {
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+
+  ToggleOverview();
+  ASSERT_TRUE(InOverviewSession());
+
+  // Snap |window1| to the left and exit overview. |window2| should have higher
+  // z-order now, since it is the MRU window.
+  auto* split_view_controller = Shell::Get()->split_view_controller();
+  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
+  ToggleOverview();
+  ASSERT_EQ(SplitViewState::kBothSnapped, split_view_controller->state());
+  ASSERT_GT(IndexOf(window2.get(), window2->parent()),
+            IndexOf(window1.get(), window1->parent()));
+
+  // Test that on entering overview, |window2| is of a lower z-order, so that
+  // when we scroll the grid, it will be seen under |window1|.
+  ToggleOverview();
+  EXPECT_LT(IndexOf(window2.get(), window2->parent()),
+            IndexOf(window1.get(), window1->parent()));
+
+  // Test that on exiting overview, |window2| becomes activated, so it returns
+  // to being higher on the z-order than |window1|.
+  ToggleOverview();
+  EXPECT_GT(IndexOf(window2.get(), window2->parent()),
+            IndexOf(window1.get(), window1->parent()));
+}
+
 // Test the split view and overview functionalities in tablet mode.
 class SplitViewOverviewSessionTest : public OverviewSessionTest {
  public:

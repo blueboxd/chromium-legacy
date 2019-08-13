@@ -254,8 +254,10 @@ void ChromeInternalLogSource::Fetch(SysLogsSourceCallback callback) {
           [](std::unique_ptr<SystemLogsResponse> response,
              SysLogsSourceCallback callback) {
             SystemLogsResponse* response_ptr = response.get();
-            base::PostTaskWithTraitsAndReply(
-                FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+            base::PostTaskAndReply(
+                FROM_HERE,
+                {base::ThreadPool(), base::MayBlock(),
+                 base::TaskPriority::BEST_EFFORT},
                 base::BindOnce(&PopulateEntriesAsync, response_ptr),
                 base::BindOnce(std::move(callback), std::move(response)));
           },

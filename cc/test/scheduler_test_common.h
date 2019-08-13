@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/time/time.h"
-#include "cc/scheduler/compositor_timing_history.h"
+#include "cc/metrics/compositor_timing_history.h"
 #include "cc/scheduler/scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

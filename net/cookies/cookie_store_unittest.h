@@ -140,11 +140,8 @@ class CookieStoreTest : public testing::Test {
   std::string GetCookiesWithOptions(CookieStore* cs,
                                     const GURL& url,
                                     const CookieOptions& options) {
-    DCHECK(cs);
-    GetCookieListCallback callback;
-    cs->GetCookieListWithOptionsAsync(url, options, callback.MakeCallback());
-    callback.WaitUntilDone();
-    return CanonicalCookie::BuildCookieLine(callback.cookies());
+    return CanonicalCookie::BuildCookieLine(
+        GetCookieListWithOptions(cs, url, options));
   }
 
   CookieList GetCookieListWithOptions(CookieStore* cs,
@@ -157,21 +154,16 @@ class CookieStoreTest : public testing::Test {
     return callback.cookies();
   }
 
+  // This does not update the access time on the cookies.
   CookieList GetAllCookiesForURL(CookieStore* cs, const GURL& url) {
-    DCHECK(cs);
-    GetCookieListCallback callback;
-    cs->GetAllCookiesForURLAsync(url, callback.MakeCallback());
-    callback.WaitUntilDone();
-    return callback.cookies();
+    return GetCookieListWithOptions(cs, url, CookieOptions::MakeAllInclusive());
   }
 
+  // This does not update the access time on the cookies.
   CookieStatusList GetExcludedCookiesForURL(CookieStore* cs, const GURL& url) {
     DCHECK(cs);
     GetCookieListCallback callback;
-    CookieOptions options;
-    options.set_include_httponly();
-    options.set_same_site_cookie_context(
-        CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+    CookieOptions options = CookieOptions::MakeAllInclusive();
     options.set_return_excluded_cookies();
     cs->GetCookieListWithOptionsAsync(url, options, callback.MakeCallback());
     callback.WaitUntilDone();
@@ -451,14 +443,7 @@ TYPED_TEST_P(CookieStoreTest, FilterTest) {
   // operation shouldn't update the access time, as the test checks that the
   // access time is set properly upon creation. Updating the access time would
   // make that difficult.
-  CookieOptions options;
-  options.set_include_httponly();
-  options.set_same_site_cookie_context(
-      CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
-  options.set_do_not_update_access_time();
-
-  CookieList cookies =
-      this->GetCookieListWithOptions(cs, this->www_foo_foo_.url(), options);
+  CookieList cookies = this->GetAllCookiesForURL(cs, this->www_foo_foo_.url());
   CookieList::iterator it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
@@ -489,8 +474,7 @@ TYPED_TEST_P(CookieStoreTest, FilterTest) {
   }
 
   // Get the cookie using the wide open |options|:
-  cookies =
-      this->GetCookieListWithOptions(cs, this->www_foo_bar_.url(), options);
+  cookies = this->GetAllCookiesForURL(cs, this->www_foo_bar_.url());
   it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
@@ -508,8 +492,7 @@ TYPED_TEST_P(CookieStoreTest, FilterTest) {
 
   EXPECT_TRUE(++it == cookies.end());
 
-  cookies =
-      this->GetCookieListWithOptions(cs, this->https_www_foo_.url(), options);
+  cookies = this->GetAllCookiesForURL(cs, this->https_www_foo_.url());
   it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
@@ -660,14 +643,7 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
   // operation shouldn't update the access time, as the test checks that the
   // access time is set properly upon creation. Updating the access time would
   // make that difficult.
-  CookieOptions options;
-  options.set_include_httponly();
-  options.set_same_site_cookie_context(
-      CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
-  options.set_do_not_update_access_time();
-
-  CookieList cookies =
-      this->GetCookieListWithOptions(cs, this->www_foo_foo_.url(), options);
+  CookieList cookies = this->GetAllCookiesForURL(cs, this->www_foo_foo_.url());
   CookieList::iterator it = cookies.begin();
 
   ASSERT_EQ(1u, cookies.size());
@@ -687,8 +663,7 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
   EXPECT_FALSE(it->IsHttpOnly());
 
   // Get the cookie using the wide open |options|:
-  cookies =
-      this->GetCookieListWithOptions(cs, this->www_foo_bar_.url(), options);
+  cookies = this->GetAllCookiesForURL(cs, this->www_foo_bar_.url());
   ASSERT_EQ(1u, cookies.size());
   it = cookies.begin();
 
@@ -704,8 +679,7 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
   EXPECT_FALSE(it->IsSecure());
   EXPECT_TRUE(it->IsHttpOnly());
 
-  cookies =
-      this->GetCookieListWithOptions(cs, this->https_www_foo_.url(), options);
+  cookies = this->GetAllCookiesForURL(cs, this->https_www_foo_.url());
   ASSERT_EQ(1u, cookies.size());
   it = cookies.begin();
 

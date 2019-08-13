@@ -90,8 +90,4 @@ void TestCreditCardFIDOAuthenticator::IsUserVerifiable(
   return std::move(callback).Run(is_user_verifiable_);
 }
 
-bool TestCreditCardFIDOAuthenticator::IsUserOptedIn() {
-  return is_user_opted_in_;
-}
-
 }  // namespace autofill

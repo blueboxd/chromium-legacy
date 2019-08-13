@@ -53,7 +53,7 @@ class METRICS_EXPORT MojoUkmRecorder : public UkmRecorder {
 
   mojom::UkmRecorderInterfacePtr interface_;
 
-  base::WeakPtrFactory<MojoUkmRecorder> weak_factory_;
+  base::WeakPtrFactory<MojoUkmRecorder> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MojoUkmRecorder);
 };

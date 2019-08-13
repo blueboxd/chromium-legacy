@@ -28,7 +28,7 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "url/url_util.h"
 
-using App = SharingDialogController::App;
+using App = SharingUiController::App;
 
 // static
 SharedClipboardUiController*
@@ -50,7 +50,7 @@ void SharedClipboardUiController::DeviceSelected(
 
 SharedClipboardUiController::SharedClipboardUiController(
     content::WebContents* web_contents)
-    : SharingDialogController(web_contents),
+    : SharingUiController(web_contents),
       sharing_service_(SharingServiceFactory::GetForBrowserContext(
           web_contents->GetBrowserContext())) {}
 

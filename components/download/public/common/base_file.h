@@ -27,12 +27,10 @@
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"
 #include "crypto/secure_hash.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
-
-namespace service_manager {
-class Connector;
-}
 
 namespace download {
 
@@ -169,8 +167,7 @@ class COMPONENTS_DOWNLOAD_EXPORT BaseFile {
   using OnAnnotationDoneCallback =
       base::OnceCallback<void(DownloadInterruptReason)>;
 
-  // Called when a quarantine service is used,
-  // connector is used to populate a quarantine::mojom::QuarantinePtr,
+  // Called when a quarantine service is used.
   // and the callback will be called from the service.
   // TODO (crbug.com/973497): Remove non-service version when
   // kPreventDownloadsWithSamePath feature is removed.
@@ -178,7 +175,7 @@ class COMPONENTS_DOWNLOAD_EXPORT BaseFile {
       const std::string& client_guid,
       const GURL& source_url,
       const GURL& referrer_url,
-      std::unique_ptr<service_manager::Connector> connector,
+      mojo::PendingRemote<quarantine::mojom::Quarantine> remote_quarantine,
       OnAnnotationDoneCallback on_annotation_done_callback);
 
 #if defined(OS_ANDROID)
@@ -304,8 +301,8 @@ class COMPONENTS_DOWNLOAD_EXPORT BaseFile {
   // ID of the download, used for trace events.
   uint32_t download_id_;
 
-  // Mojo pointer for quarantine service.
-  quarantine::mojom::QuarantinePtr quarantine_service_;
+  // Mojo remote for quarantine service.
+  mojo::Remote<quarantine::mojom::Quarantine> quarantine_service_;
 
   // Callback invoked after quarantine service finishes.
   OnAnnotationDoneCallback on_annotation_done_callback_;

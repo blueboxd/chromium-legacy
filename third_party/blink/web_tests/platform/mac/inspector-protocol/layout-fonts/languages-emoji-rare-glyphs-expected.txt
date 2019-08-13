@@ -36,4 +36,8 @@
 "Khmer MN" : 26,
 "Times" : 1
 
+⇦⇧⇨⇩
+#text_presentation_arrows:
+"Hiragino Mincho ProN" : 4
+
 

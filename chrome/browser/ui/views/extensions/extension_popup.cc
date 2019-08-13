@@ -191,7 +191,7 @@ ExtensionPopup::ExtensionPopup(
       this, extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
       content::Source<content::BrowserContext>(host_->browser_context()));
   content::DevToolsAgentHost::AddObserver(this);
-  observer_.Add(GetExtensionView()->GetBrowser()->tab_strip_model());
+  GetExtensionView()->GetBrowser()->tab_strip_model()->AddObserver(this);
 
   // If the host had somehow finished loading, then we'd miss the notification
   // and not show.  This seems to happen in single-process mode.

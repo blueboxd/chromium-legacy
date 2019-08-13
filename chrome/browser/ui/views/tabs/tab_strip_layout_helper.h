@@ -68,9 +68,14 @@ class TabStripLayoutHelper {
                    TabAnimationState::TabActiveness active,
                    TabAnimationState::TabPinnedness pinned);
 
-  // Marks the tab at |model_index| as closing. Invoked when the remove
-  // animation begins and the tab is removed from the model.
-  void CloseTabAt(int model_index);
+  // Marks the tab at |model_index| as closed without animating it. Use when
+  // the tab has been removed from the model but the old animation style owns
+  // animating it.
+  // TODO(958173): Remove this when the old animation style is removed.
+  void RemoveTabNoAnimation(int model_index);
+
+  // Marks the tab at |model_index| as closing and animates it closed.
+  void RemoveTab(int model_index);
 
   // Invoked when |tab| has been destroyed by TabStrip (i.e. the remove
   // animation has completed).

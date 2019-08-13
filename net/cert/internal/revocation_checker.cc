@@ -38,7 +38,8 @@ bool CheckCertRevocation(const ParsedCertificateList& certs,
                          base::StringPiece stapled_ocsp_response,
                          base::TimeDelta max_age,
                          CertNetFetcher* net_fetcher,
-                         CertErrors* cert_errors) {
+                         CertErrors* cert_errors,
+                         OCSPVerifyResult* stapled_ocsp_verify_result) {
   DCHECK_LT(target_cert_index, certs.size());
   const ParsedCertificate* cert = certs[target_cert_index].get();
   const ParsedCertificate* issuer_cert =
@@ -51,6 +52,10 @@ bool CheckCertRevocation(const ParsedCertificateList& certs,
     OCSPRevocationStatus ocsp_status =
         CheckOCSP(stapled_ocsp_response, cert, issuer_cert, base::Time::Now(),
                   max_age, &response_details);
+    if (stapled_ocsp_verify_result) {
+      stapled_ocsp_verify_result->response_status = response_details;
+      stapled_ocsp_verify_result->revocation_status = ocsp_status;
+    }
 
     // TODO(eroman): Save the stapled OCSP response to cache.
     switch (ocsp_status) {
@@ -256,11 +261,16 @@ RevocationPolicy::RevocationPolicy()
       allow_missing_info(false),
       allow_network_failure(false) {}
 
-void CheckValidatedChainRevocation(const ParsedCertificateList& certs,
-                                   const RevocationPolicy& policy,
-                                   base::StringPiece stapled_leaf_ocsp_response,
-                                   CertNetFetcher* net_fetcher,
-                                   CertPathErrors* errors) {
+void CheckValidatedChainRevocation(
+    const ParsedCertificateList& certs,
+    const RevocationPolicy& policy,
+    base::StringPiece stapled_leaf_ocsp_response,
+    CertNetFetcher* net_fetcher,
+    CertPathErrors* errors,
+    OCSPVerifyResult* stapled_ocsp_verify_result) {
+  if (stapled_ocsp_verify_result)
+    *stapled_ocsp_verify_result = OCSPVerifyResult();
+
   // Check each certificate for revocation using OCSP/CRL. Checks proceed
   // from the root certificate towards the leaf certificate. Revocation errors
   // are added to |errors|.
@@ -288,7 +298,8 @@ void CheckValidatedChainRevocation(const ParsedCertificateList& certs,
     // policy.
     bool cert_ok =
         CheckCertRevocation(certs, i, policy, stapled_ocsp, max_age,
-                            net_fetcher, errors->GetErrorsForCert(i));
+                            net_fetcher, errors->GetErrorsForCert(i),
+                            (i == 0) ? stapled_ocsp_verify_result : nullptr);
 
     if (!cert_ok) {
       // If any certificate in the chain fails revocation checks, the chain is

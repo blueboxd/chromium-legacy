@@ -255,8 +255,7 @@ UrlFetchRequestBase::UrlFetchRequestBase(
       sender_(sender),
       upload_progress_callback_(upload_progress_callback),
       download_progress_callback_(download_progress_callback),
-      response_content_length_(-1),
-      weak_ptr_factory_(this) {}
+      response_content_length_(-1) {}
 
 UrlFetchRequestBase::~UrlFetchRequestBase() {}
 
@@ -684,8 +683,7 @@ UploadRangeRequestBase::UploadRangeRequestBase(
     const GURL& upload_url,
     const ProgressCallback& progress_callback)
     : UrlFetchRequestBase(sender, progress_callback, ProgressCallback()),
-      upload_url_(upload_url),
-      weak_ptr_factory_(this) {}
+      upload_url_(upload_url) {}
 
 UploadRangeRequestBase::~UploadRangeRequestBase() {}
 
@@ -880,8 +878,7 @@ MultipartUploadRequestBase::MultipartUploadRequestBase(
       content_type_(content_type),
       local_path_(local_file_path),
       callback_(callback),
-      progress_callback_(progress_callback),
-      weak_ptr_factory_(this) {
+      progress_callback_(progress_callback) {
   DCHECK(!content_type.empty());
   DCHECK_GE(content_length, 0);
   DCHECK(!local_file_path.empty());

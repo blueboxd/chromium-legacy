@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/paint/element_timing_utils.h"
-#include "third_party/blink/renderer/core/style/style_image.h"
+#include "third_party/blink/renderer/core/style/style_fetched_image.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
@@ -71,8 +71,18 @@ void ImageElementTiming::NotifyImageFinished(
   if (!internal::IsExplicitlyRegisteredForTiming(&layout_object))
     return;
 
-  images_notified_.Set(std::make_pair(&layout_object, cached_image),
-                       ImageInfo(base::TimeTicks::Now()));
+  const auto& insertion_result = images_notified_.insert(
+      std::make_pair(&layout_object, cached_image), ImageInfo());
+  if (insertion_result.is_new_entry)
+    insertion_result.stored_value->value.load_time_ = base::TimeTicks::Now();
+}
+
+void ImageElementTiming::NotifyBackgroundImageFinished(
+    const StyleFetchedImage* style_image) {
+  const auto& insertion_result =
+      background_image_timestamps_.insert(style_image, base::TimeTicks());
+  if (insertion_result.is_new_entry)
+    insertion_result.stored_value->value = base::TimeTicks::Now();
 }
 
 void ImageElementTiming::NotifyImagePainted(
@@ -177,7 +187,7 @@ void ImageElementTiming::NotifyImagePaintedInternal(
 
 void ImageElementTiming::NotifyBackgroundImagePainted(
     Node* node,
-    const StyleImage* background_image,
+    const StyleFetchedImage* background_image,
     const PropertyTreeState& current_paint_chunk_properties) {
   DCHECK(node);
   DCHECK(background_image);
@@ -193,20 +203,18 @@ void ImageElementTiming::NotifyBackgroundImagePainted(
   if (!cached_image || !cached_image->IsLoaded())
     return;
 
-  std::pair<const LayoutObject*, const ImageResourceContent*> pair =
-      std::make_pair(layout_object, cached_image);
-  auto it = images_notified_.find(pair);
-  // TODO(crbug.com/986891): ideally |images_notified_| would always be able to
-  // find the pair here. However, for some background images that is currently
-  // not possible. Therefore, in those cases we create the entry here with
-  // loadTime of 0. Once the bug is fixed, we should replace that with a DCHECK.
-  if (it == images_notified_.end())
-    images_notified_.Set(pair, ImageInfo(base::TimeTicks()));
-  if (!it->value.is_painted_ && cached_image) {
-    it->value.is_painted_ = true;
+  auto it = background_image_timestamps_.find(background_image);
+  DCHECK(it != background_image_timestamps_.end());
+
+  ImageInfo& info =
+      images_notified_
+          .insert(std::make_pair(layout_object, cached_image), ImageInfo())
+          .stored_value->value;
+  if (!info.is_painted_) {
+    info.is_painted_ = true;
     NotifyImagePaintedInternal(layout_object->GetNode(), *layout_object,
                                *cached_image, current_paint_chunk_properties,
-                               it->value.load_time_);
+                               it->value);
   }
 }
 
@@ -233,6 +241,7 @@ void ImageElementTiming::NotifyImageRemoved(const LayoutObject* layout_object,
 
 void ImageElementTiming::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_timings_);
+  visitor->Trace(background_image_timestamps_);
   Supplement<LocalDOMWindow>::Trace(visitor);
 }
 

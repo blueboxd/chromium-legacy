@@ -308,6 +308,23 @@ const PageInfo::ChooserUIInfo kChooserUIInfo[] = {
 #endif
 };
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+PasswordType GetPasswordTypeFromSafeBrowsingStatus(
+    const PageInfo::SafeBrowsingStatus& safe_browsing_status) {
+  switch (safe_browsing_status) {
+    case PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE:
+      return PasswordType::PRIMARY_ACCOUNT_PASSWORD;
+    case PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE:
+      return PasswordType::OTHER_GAIA_PASSWORD;
+    case PageInfo::SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE:
+      return PasswordType::ENTERPRISE_PASSWORD;
+    default:
+      NOTREACHED();
+      return PasswordType::PASSWORD_TYPE_UNKNOWN;
+  }
+}
+#endif
+
 // Time open histogram prefixes.
 const char kPageInfoTimePrefix[] = "Security.PageInfo.TimeOpen";
 const char kPageInfoTimeActionPrefix[] = "Security.PageInfo.TimeOpen.Action";
@@ -565,14 +582,19 @@ void PageInfo::OnChangePasswordButtonPressed(
     content::WebContents* web_contents) {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   DCHECK(password_protection_service_);
-  DCHECK(safe_browsing_status_ == SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE ||
+  DCHECK(safe_browsing_status_ ==
+             SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE ||
+         safe_browsing_status_ ==
+             SAFE_BROWSING_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE ||
          safe_browsing_status_ ==
              SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE);
+
   password_protection_service_->OnUserAction(
       web_contents,
-      safe_browsing_status_ == SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE
-          ? PasswordType::PRIMARY_ACCOUNT_PASSWORD
-          : PasswordType::ENTERPRISE_PASSWORD,
+      password_protection_service_
+          ->GetPasswordProtectionReusedPasswordAccountType(
+              GetPasswordTypeFromSafeBrowsingStatus(safe_browsing_status_),
+              password_protection_service_->username()),
       safe_browsing::WarningUIType::PAGE_INFO,
       safe_browsing::WarningAction::CHANGE_PASSWORD);
 #endif
@@ -582,14 +604,19 @@ void PageInfo::OnWhitelistPasswordReuseButtonPressed(
     content::WebContents* web_contents) {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   DCHECK(password_protection_service_);
-  DCHECK(safe_browsing_status_ == SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE ||
+  DCHECK(safe_browsing_status_ ==
+             SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE ||
+         safe_browsing_status_ ==
+             SAFE_BROWSING_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE ||
          safe_browsing_status_ ==
              SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE);
+
   password_protection_service_->OnUserAction(
       web_contents,
-      safe_browsing_status_ == SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE
-          ? PasswordType::PRIMARY_ACCOUNT_PASSWORD
-          : PasswordType::ENTERPRISE_PASSWORD,
+      password_protection_service_
+          ->GetPasswordProtectionReusedPasswordAccountType(
+              GetPasswordTypeFromSafeBrowsingStatus(safe_browsing_status_),
+              password_protection_service_->username()),
       safe_browsing::WarningUIType::PAGE_INFO,
       safe_browsing::WarningAction::MARK_AS_LEGITIMATE);
 #endif
@@ -752,7 +779,11 @@ void PageInfo::ComputeUIInputs(
 #endif
     show_change_password_buttons_ =
         (visible_security_state.malicious_content_status ==
-             security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE ||
+             security_state::
+                 MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE ||
+         visible_security_state.malicious_content_status ==
+             security_state::
+                 MALICIOUS_CONTENT_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE ||
          visible_security_state.malicious_content_status ==
              security_state::
                  MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE);
@@ -1000,22 +1031,14 @@ void PageInfo::RecordPasswordReuseEvent() {
   if (!password_protection_service_) {
     return;
   }
-
-  if (safe_browsing_status_ == SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE) {
-    safe_browsing::LogWarningAction(
-        safe_browsing::WarningUIType::PAGE_INFO,
-        safe_browsing::WarningAction::SHOWN,
-        password_protection_service_
-            ->GetPasswordProtectionReusedPasswordAccountType(
-                PasswordType::PRIMARY_ACCOUNT_PASSWORD));
-  } else {
-    safe_browsing::LogWarningAction(
-        safe_browsing::WarningUIType::PAGE_INFO,
-        safe_browsing::WarningAction::SHOWN,
-        password_protection_service_
-            ->GetPasswordProtectionReusedPasswordAccountType(
-                PasswordType::ENTERPRISE_PASSWORD));
-  }
+  PasswordType password_type =
+      GetPasswordTypeFromSafeBrowsingStatus(safe_browsing_status_);
+  safe_browsing::LogWarningAction(
+      safe_browsing::WarningUIType::PAGE_INFO,
+      safe_browsing::WarningAction::SHOWN,
+      password_protection_service_
+          ->GetPasswordProtectionReusedPasswordAccountType(
+              password_type, password_protection_service_->username()));
 }
 #endif
 
@@ -1053,13 +1076,31 @@ void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
       *details =
           l10n_util::GetStringUTF16(IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
       break;
-    case security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE:
+    case security_state::MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE:
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-      *status = PageInfo::SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE;
+      *status = PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE;
       // |password_protection_service_| may be null in test.
       *details = password_protection_service_
                      ? password_protection_service_->GetWarningDetailText(
-                           PasswordType::PRIMARY_ACCOUNT_PASSWORD)
+                           password_protection_service_
+                               ->GetPasswordProtectionReusedPasswordAccountType(
+                                   PasswordType::PRIMARY_ACCOUNT_PASSWORD,
+                                   password_protection_service_->username()))
+                     : base::string16();
+#endif
+      break;
+    case security_state::
+        MALICIOUS_CONTENT_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE:
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+      *status =
+          PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE;
+      // |password_protection_service_| may be null in test.
+      *details = password_protection_service_
+                     ? password_protection_service_->GetWarningDetailText(
+                           password_protection_service_
+                               ->GetPasswordProtectionReusedPasswordAccountType(
+                                   PasswordType::OTHER_GAIA_PASSWORD,
+                                   password_protection_service_->username()))
                      : base::string16();
 #endif
       break;
@@ -1069,7 +1110,10 @@ void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
       // |password_protection_service_| maybe null in test.
       *details = password_protection_service_
                      ? password_protection_service_->GetWarningDetailText(
-                           PasswordType::ENTERPRISE_PASSWORD)
+                           password_protection_service_
+                               ->GetPasswordProtectionReusedPasswordAccountType(
+                                   PasswordType::ENTERPRISE_PASSWORD,
+                                   password_protection_service_->username()))
                      : base::string16();
 #endif
       break;

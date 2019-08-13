@@ -369,9 +369,10 @@ class SystemNetworkContextManagerMaxConnectionsPerProxyBrowsertest
   policy::MockConfigurationPolicyProvider provider_;
 };
 
+// Flaky on Linux Tests. https://crbug.com/993059
 IN_PROC_BROWSER_TEST_F(
     SystemNetworkContextManagerMaxConnectionsPerProxyBrowsertest,
-    MaxConnectionsPerProxy) {
+    DISABLED_MaxConnectionsPerProxy) {
   network::mojom::NetworkServiceTestPtr network_service_test;
   content::GetSystemConnector()->BindInterface(
       content::mojom::kNetworkServiceName, &network_service_test);

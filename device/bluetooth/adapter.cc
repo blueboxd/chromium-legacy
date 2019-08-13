@@ -17,7 +17,7 @@
 namespace bluetooth {
 
 Adapter::Adapter(scoped_refptr<device::BluetoothAdapter> adapter)
-    : adapter_(std::move(adapter)), client_(nullptr), weak_ptr_factory_(this) {
+    : adapter_(std::move(adapter)), client_(nullptr) {
   adapter_->AddObserver(this);
 }
 

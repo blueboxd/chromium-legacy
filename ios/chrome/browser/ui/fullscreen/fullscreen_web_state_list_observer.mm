@@ -40,7 +40,7 @@ void FullscreenWebStateListObserver::SetWebStateList(
   web_state_list_ = web_state_list;
   if (web_state_list_) {
     web_state_list_->AddObserver(this);
-    WebStateWasActivated(web_state_list_->GetActiveWebState());
+    web_state_observer_.SetWebState(web_state_list_->GetActiveWebState());
   } else {
     web_state_observer_.SetWebState(nullptr);
   }
@@ -73,11 +73,16 @@ void FullscreenWebStateListObserver::WebStateReplacedAt(
     web::WebState* old_web_state,
     web::WebState* new_web_state,
     int index) {
-  WebStateWasRemoved(old_web_state);
+  if (HasWebStateBeenActivated(old_web_state))
+    activated_web_states_.erase(old_web_state);
   if (new_web_state == web_state_list->GetActiveWebState()) {
     // Reset the model if the active WebState is replaced.
+    web_state_observer_.SetWebState(new_web_state);
     model_->ResetForNavigation();
-    WebStateWasActivated(new_web_state);
+    if (new_web_state) {
+      MoveContentBelowHeader(new_web_state->GetWebViewProxy(), model_);
+      activated_web_states_.insert(new_web_state);
+    }
   }
 }
 
@@ -87,14 +92,21 @@ void FullscreenWebStateListObserver::WebStateActivatedAt(
     web::WebState* new_web_state,
     int active_index,
     int reason) {
-  WebStateWasActivated(new_web_state);
+  web_state_observer_.SetWebState(new_web_state);
+  // If this is the first time the WebState was activated, move its content
+  // below the header.
+  if (new_web_state && !HasWebStateBeenActivated(new_web_state)) {
+    MoveContentBelowHeader(new_web_state->GetWebViewProxy(), model_);
+    activated_web_states_.insert(new_web_state);
+  }
 }
 
 void FullscreenWebStateListObserver::WebStateDetachedAt(
     WebStateList* web_state_list,
     web::WebState* web_state,
     int index) {
-  WebStateWasRemoved(web_state);
+  if (HasWebStateBeenActivated(web_state))
+    activated_web_states_.erase(web_state);
 }
 
 void FullscreenWebStateListObserver::WillCloseWebStateAt(
@@ -102,20 +114,6 @@ void FullscreenWebStateListObserver::WillCloseWebStateAt(
     web::WebState* web_state,
     int index,
     bool user_action) {
-  WebStateWasRemoved(web_state);
-}
-
-void FullscreenWebStateListObserver::WebStateWasActivated(
-    web::WebState* web_state) {
-  web_state_observer_.SetWebState(web_state);
-  if (web_state && !HasWebStateBeenActivated(web_state)) {
-    MoveContentBelowHeader(web_state->GetWebViewProxy(), model_);
-    activated_web_states_.insert(web_state);
-  }
-}
-
-void FullscreenWebStateListObserver::WebStateWasRemoved(
-    web::WebState* web_state) {
   if (HasWebStateBeenActivated(web_state))
     activated_web_states_.erase(web_state);
 }

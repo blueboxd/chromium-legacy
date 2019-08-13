@@ -68,6 +68,11 @@ void DownloadManagerDelegate::CheckDownloadAllowed(
       FROM_HERE, base::BindOnce(std::move(check_download_allowed_cb), true));
 }
 
+download::QuarantineConnectionCallback
+DownloadManagerDelegate::GetQuarantineConnectionCallback() {
+  return base::NullCallback();
+}
+
 DownloadManagerDelegate::~DownloadManagerDelegate() {}
 
 }  // namespace content

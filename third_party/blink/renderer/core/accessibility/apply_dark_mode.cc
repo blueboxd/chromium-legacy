@@ -40,6 +40,8 @@ DarkMode GetMode(const Settings& frame_settings) {
       return DarkMode::kInvertLightnessLAB;
     case ForceDarkInversionMethod::kHslBased:
       return DarkMode::kInvertLightness;
+    case ForceDarkInversionMethod::kRgbBased:
+      return DarkMode::kInvertBrightness;
   }
 }
 

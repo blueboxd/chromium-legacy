@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/shared_image_backing_factory_gl_texture.h"
 
 #include "base/bind_helpers.h"
+#include "base/optional.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
@@ -183,31 +184,35 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
   EXPECT_TRUE(skia_representation);
   std::vector<GrBackendSemaphore> begin_semaphores;
   std::vector<GrBackendSemaphore> end_semaphores;
-  auto surface = skia_representation->BeginWriteAccess(
-      0, SkSurfaceProps(0, kUnknown_SkPixelGeometry), &begin_semaphores,
-      &end_semaphores);
+  base::Optional<SharedImageRepresentationSkia::ScopedWriteAccess>
+      scoped_write_access;
+  scoped_write_access.emplace(skia_representation.get(), &begin_semaphores,
+                              &end_semaphores);
+  auto* surface = scoped_write_access->surface();
   EXPECT_TRUE(surface);
   EXPECT_EQ(size.width(), surface->width());
   EXPECT_EQ(size.height(), surface->height());
   EXPECT_TRUE(begin_semaphores.empty());
   EXPECT_TRUE(end_semaphores.empty());
-  skia_representation->EndWriteAccess(std::move(surface));
-  auto promise_texture =
-      skia_representation->BeginReadAccess(&begin_semaphores, &end_semaphores);
+  scoped_write_access.reset();
+
+  base::Optional<SharedImageRepresentationSkia::ScopedReadAccess>
+      scoped_read_access;
+  scoped_read_access.emplace(skia_representation.get(), &begin_semaphores,
+                             &end_semaphores);
+  auto* promise_texture = scoped_read_access->promise_image_texture();
   EXPECT_TRUE(promise_texture);
   EXPECT_TRUE(begin_semaphores.empty());
   EXPECT_TRUE(end_semaphores.empty());
-  if (promise_texture) {
     GrBackendTexture backend_texture = promise_texture->backendTexture();
     EXPECT_TRUE(backend_texture.isValid());
     EXPECT_EQ(size.width(), backend_texture.width());
     EXPECT_EQ(size.height(), backend_texture.height());
-  }
-  skia_representation->EndReadAccess();
-  skia_representation.reset();
+    scoped_read_access.reset();
+    skia_representation.reset();
 
-  shared_image.reset();
-  EXPECT_FALSE(mailbox_manager_.ConsumeTexture(mailbox));
+    shared_image.reset();
+    EXPECT_FALSE(mailbox_manager_.ConsumeTexture(mailbox));
 }
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
@@ -290,15 +295,21 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
   EXPECT_TRUE(skia_representation);
   std::vector<GrBackendSemaphore> begin_semaphores;
   std::vector<GrBackendSemaphore> end_semaphores;
-  auto surface = skia_representation->BeginWriteAccess(
-      0, SkSurfaceProps(0, kUnknown_SkPixelGeometry), &begin_semaphores,
-      &end_semaphores);
+  base::Optional<SharedImageRepresentationSkia::ScopedWriteAccess>
+      scoped_write_access;
+  scoped_write_access.emplace(skia_representation.get(), &begin_semaphores,
+                              &end_semaphores);
+  auto* surface = scoped_write_access->surface();
   EXPECT_TRUE(surface);
   EXPECT_EQ(size.width(), surface->width());
   EXPECT_EQ(size.height(), surface->height());
-  skia_representation->EndWriteAccess(std::move(surface));
-  auto promise_texture =
-      skia_representation->BeginReadAccess(&begin_semaphores, &end_semaphores);
+  scoped_write_access.reset();
+
+  base::Optional<SharedImageRepresentationSkia::ScopedReadAccess>
+      scoped_read_access;
+  scoped_read_access.emplace(skia_representation.get(), &begin_semaphores,
+                             &end_semaphores);
+  auto* promise_texture = scoped_read_access->promise_image_texture();
   EXPECT_TRUE(promise_texture);
   EXPECT_TRUE(begin_semaphores.empty());
   EXPECT_TRUE(end_semaphores.empty());
@@ -308,7 +319,7 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
     EXPECT_EQ(size.width(), backend_texture.width());
     EXPECT_EQ(size.height(), backend_texture.height());
   }
-  skia_representation->EndReadAccess();
+  scoped_read_access.reset();
   skia_representation.reset();
 
   shared_image.reset();

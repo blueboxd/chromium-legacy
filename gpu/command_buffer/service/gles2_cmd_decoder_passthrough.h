@@ -28,6 +28,7 @@
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/passthrough_abstract_texture_impl.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -91,13 +92,49 @@ struct PassthroughResources {
   ClientServiceMap<GLuint, scoped_refptr<TexturePassthrough>>
       texture_object_map;
 
+  class SharedImageData {
+   public:
+    SharedImageData();
+    explicit SharedImageData(
+        std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+            representation);
+    SharedImageData(SharedImageData&& other);
+    ~SharedImageData();
+    SharedImageData& operator=(SharedImageData&& other);
+
+    SharedImageRepresentationGLTexturePassthrough* representation() const {
+      return representation_.get();
+    }
+
+    bool BeginAccess(GLenum mode) {
+      DCHECK(!is_being_accessed());
+      scoped_access_.emplace(representation_.get(), mode);
+      if (!scoped_access_->success()) {
+        scoped_access_.reset();
+        return false;
+      }
+      return true;
+    }
+
+    void EndAccess() {
+      DCHECK(is_being_accessed());
+      scoped_access_.reset();
+    }
+
+    bool is_being_accessed() const { return !!scoped_access_; }
+
+   private:
+    std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+        representation_;
+    base::Optional<SharedImageRepresentationGLTexturePassthrough::ScopedAccess>
+        scoped_access_;
+    DISALLOW_COPY_AND_ASSIGN(SharedImageData);
+  };
   // Mapping of client texture IDs to
   // SharedImageRepresentationGLTexturePassthroughs.
   // TODO(ericrk): Remove this once TexturePassthrough holds a reference to
   // the SharedImageRepresentationGLTexturePassthrough itself.
-  base::flat_map<GLuint,
-                 std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>>
-      texture_shared_image_map;
+  base::flat_map<GLuint, SharedImageData> texture_shared_image_map;
 
   // A set of yet-to-be-deleted TexturePassthrough, which should be tossed
   // whenever a context switch happens or the resources is destroyed.

@@ -305,9 +305,7 @@ void Device::WriteValueForDescriptor(const std::string& service_id,
 
 Device::Device(scoped_refptr<device::BluetoothAdapter> adapter,
                std::unique_ptr<device::BluetoothGattConnection> connection)
-    : adapter_(std::move(adapter)),
-      connection_(std::move(connection)),
-      weak_ptr_factory_(this) {
+    : adapter_(std::move(adapter)), connection_(std::move(connection)) {
   adapter_->AddObserver(this);
 }
 

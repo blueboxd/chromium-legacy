@@ -14,7 +14,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/vector_icon_types.h"
 
-class ClickToCallSharingDialogController;
+class ClickToCallUiController;
 
 // The location bar icon to show the click to call bubble where the user can
 // choose to send a phone number to a target device or use an OS handler app.
@@ -33,7 +33,7 @@ class ClickToCallIconView : public SharingIconView {
   const gfx::VectorIcon& GetVectorIcon() const override;
 
  private:
-  ClickToCallSharingDialogController* last_controller_ = nullptr;
+  ClickToCallUiController* last_controller_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ClickToCallIconView);
 };

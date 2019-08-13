@@ -158,7 +158,7 @@ class GCM_EXPORT RegistrationRequest {
   GCMStatsRecorder* recorder_;
   std::string source_to_record_;
 
-  base::WeakPtrFactory<RegistrationRequest> weak_ptr_factory_;
+  base::WeakPtrFactory<RegistrationRequest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RegistrationRequest);
 };

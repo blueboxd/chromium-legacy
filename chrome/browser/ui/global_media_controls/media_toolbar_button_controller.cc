@@ -9,6 +9,13 @@
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
+namespace {
+
+constexpr base::TimeDelta kHideTimerDelay =
+    base::TimeDelta::FromMilliseconds(2500);
+
+}  // anonymous namespace
+
 MediaToolbarButtonController::MediaToolbarButtonController(
     service_manager::Connector* connector,
     MediaToolbarButtonControllerDelegate* delegate)
@@ -37,6 +44,19 @@ MediaToolbarButtonController::~MediaToolbarButtonController() = default;
 
 void MediaToolbarButtonController::MediaSessionInfoChanged(
     media_session::mojom::MediaSessionInfoPtr session_info) {
-  if (session_info && session_info->is_controllable)
+  if (session_info && session_info->is_controllable) {
+    hide_icon_timer_.Stop();
+    delegate_->Enable();
     delegate_->Show();
+  } else {
+    delegate_->Disable();
+    hide_icon_timer_.Start(
+        FROM_HERE, kHideTimerDelay,
+        base::BindOnce(&MediaToolbarButtonController::OnHideTimerFired,
+                       base::Unretained(this)));
+  }
+}
+
+void MediaToolbarButtonController::OnHideTimerFired() {
+  delegate_->Hide();
 }

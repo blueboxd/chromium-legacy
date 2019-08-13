@@ -361,8 +361,6 @@ class ToolbarActionsBar : public ExtensionsContainer,
   // no drag is in progress.
   base::Optional<size_t> index_of_dragged_item_;
 
-  ScopedObserver<TabStripModel, TabStripModelObserver> tab_strip_observer_;
-
   base::ObserverList<ToolbarActionsBarObserver>::Unchecked observers_;
 
   base::WeakPtrFactory<ToolbarActionsBar> weak_ptr_factory_{this};

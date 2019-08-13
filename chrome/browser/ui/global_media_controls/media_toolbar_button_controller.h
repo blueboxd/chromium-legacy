@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_GLOBAL_MEDIA_CONTROLS_MEDIA_TOOLBAR_BUTTON_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 
@@ -38,8 +39,14 @@ class MediaToolbarButtonController
       const base::Optional<media_session::MediaPosition>& position) override {}
 
  private:
+  void OnHideTimerFired();
+
   service_manager::Connector* const connector_;
   MediaToolbarButtonControllerDelegate* const delegate_;
+
+  // We hide the toolbar button when there's no active and controllable media
+  // session. We use this timer to avoid flashing when a media session changes.
+  base::OneShotTimer hide_icon_timer_;
 
   // Tracks current media session state/metadata.
   media_session::mojom::MediaControllerPtr media_controller_ptr_;

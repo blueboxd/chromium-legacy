@@ -8,8 +8,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
@@ -87,7 +87,7 @@ class MODULES_EXPORT ApplyConstraintsProcessor {
   base::OnceClosure request_completed_cb_;
 
   MediaDevicesDispatcherCallback media_devices_dispatcher_cb_;
-  SEQUENCE_CHECKER(sequence_checker_);
+  THREAD_CHECKER(thread_checker_);
 
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

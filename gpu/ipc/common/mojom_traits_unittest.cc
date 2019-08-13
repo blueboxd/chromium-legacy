@@ -178,7 +178,6 @@ TEST_F(StructTraitsTest, GpuInfo) {
   input.secondary_gpus = secondary_gpus;
   input.gpu.driver_vendor = driver_vendor;
   input.gpu.driver_version = driver_version;
-  input.gpu.driver_date = driver_date;
   input.pixel_shader_version = pixel_shader_version;
   input.vertex_shader_version = vertex_shader_version;
   input.max_msaa_samples = max_msaa_samples;
@@ -237,7 +236,6 @@ TEST_F(StructTraitsTest, GpuInfo) {
   }
   EXPECT_EQ(driver_vendor, output.gpu.driver_vendor);
   EXPECT_EQ(driver_version, output.gpu.driver_version);
-  EXPECT_EQ(driver_date, output.gpu.driver_date);
   EXPECT_EQ(pixel_shader_version, output.pixel_shader_version);
   EXPECT_EQ(vertex_shader_version, output.vertex_shader_version);
   EXPECT_EQ(max_msaa_samples, output.max_msaa_samples);

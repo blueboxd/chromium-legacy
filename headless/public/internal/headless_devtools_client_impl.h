@@ -221,7 +221,7 @@ class HEADLESS_EXPORT HeadlessDevToolsClientImpl
   target::ExperimentalDomain target_domain_;
   tracing::ExperimentalDomain tracing_domain_;
   scoped_refptr<base::SequencedTaskRunner> browser_main_thread_;
-  base::WeakPtrFactory<HeadlessDevToolsClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<HeadlessDevToolsClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessDevToolsClientImpl);
 };

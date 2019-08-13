@@ -9,6 +9,7 @@ mojom("mojom") {
     "pdf_compositor.mojom",
   ]
   public_deps = [
+    "//components/discardable_memory/public/mojom",
     "//mojo/public/mojom/base",
     "//url/mojom:url_mojom_gurl",
   ]

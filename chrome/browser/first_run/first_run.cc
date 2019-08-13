@@ -294,12 +294,6 @@ void SetupMasterPrefsFromInstallPrefs(
     out_prefs->make_chrome_default_for_user = true;
   }
 
-  if (install_prefs.GetBool(
-          installer::master_preferences::kSuppressFirstRunDefaultBrowserPrompt,
-          &value) && value) {
-    out_prefs->suppress_first_run_default_browser_prompt = true;
-  }
-
   install_prefs.GetString(
       installer::master_preferences::kDistroImportBookmarksFromFilePref,
       &out_prefs->import_bookmarks_path);

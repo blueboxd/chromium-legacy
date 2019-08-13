@@ -423,7 +423,7 @@ class MediaRouterViewsUI
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   // Therefore |weak_factory_| must be placed at the end.
-  base::WeakPtrFactory<MediaRouterViewsUI> weak_factory_;
+  base::WeakPtrFactory<MediaRouterViewsUI> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterViewsUI);
 };

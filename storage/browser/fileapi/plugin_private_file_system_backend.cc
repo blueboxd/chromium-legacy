@@ -103,8 +103,7 @@ PluginPrivateFileSystemBackend::PluginPrivateFileSystemBackend(
       file_system_options_(file_system_options),
       base_path_(profile_path.Append(kFileSystemDirectory)
                      .Append(kPluginPrivateDirectory)),
-      plugin_map_(new FileSystemIDToPluginMap(file_task_runner)),
-      weak_factory_(this) {
+      plugin_map_(new FileSystemIDToPluginMap(file_task_runner)) {
   file_util_ = std::make_unique<AsyncFileUtilAdapter>(new ObfuscatedFileUtil(
       special_storage_policy, base_path_, env_override,
       base::BindRepeating(&FileSystemIDToPluginMap::GetPluginIDForURL,

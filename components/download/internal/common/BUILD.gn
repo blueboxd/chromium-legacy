@@ -62,6 +62,8 @@ source_set("internal") {
   ]
 
   public_deps = [
+    "//components/services/quarantine/public/mojom",
+    "//mojo/public/cpp/bindings",
     "//services/network/public/mojom",
   ]
 

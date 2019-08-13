@@ -256,6 +256,11 @@ class PersistentBase {
   NO_SANITIZE_ADDRESS
   void Assign(T* ptr) {
     if (crossThreadnessConfiguration == kCrossThreadPersistentConfiguration) {
+      // In case CrossThreadPersistent gets reused across multiple threads we
+      // need to uninitialize before writing a new value.
+      if (persistent_node_.IsInitialized()) {
+        Uninitialize();
+      }
       MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
       raw_ = ptr;
     } else {
@@ -295,7 +300,9 @@ class PersistentBase {
     TraceCallback trace_callback =
         TraceMethodDelegate<PersistentBase,
                             &PersistentBase::TracePersistent>::Trampoline;
-    persistent_node_.Initialize(this, trace_callback);
+    persistent_node_.Initialize(
+        this, const_cast<typename std::remove_const<T>::type*>(raw_),
+        trace_callback);
   }
 
   void Uninitialize() { persistent_node_.Uninitialize(); }

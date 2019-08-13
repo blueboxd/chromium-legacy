@@ -73,6 +73,11 @@ const CGFloat kActivityIndicatorViewSize = 55;
 
   [self.view addSubview:containerView];
   AddSameCenterConstraints(self.view, containerView);
+
+  // To allow message text to be read by screen reader, and to make sure the
+  // speech will finish.
+  UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
+                                  self.messageText);
 }
 
 @end

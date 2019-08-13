@@ -25,8 +25,6 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
   void OverrideWebkitPrefs(content::RenderViewHost* render_view_host,
                            content::WebPreferences* prefs) override;
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
-  base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
-      base::StringPiece name) override;
   scoped_refptr<content::QuotaPermissionContext> CreateQuotaPermissionContext()
       override;
   void GetQuotaSettings(
@@ -69,10 +67,6 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
   std::string GetUserAgent() override;
 
  private:
-  std::unique_ptr<base::Value> GetBrowserServiceManifestOverlay();
-  std::unique_ptr<base::Value> GetRendererServiceManifestOverlay();
-  std::unique_ptr<base::Value> GetPackagedServicesServiceManifestOverlay();
-
   HeadlessBrowserImpl* browser_;  // Not owned.
 
   // We store the callback here because we may call it from the I/O thread.

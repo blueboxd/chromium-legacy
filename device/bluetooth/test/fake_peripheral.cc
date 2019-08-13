@@ -24,8 +24,7 @@ FakePeripheral::FakePeripheral(FakeCentral* fake_central,
       system_connected_(false),
       gatt_connected_(false),
       last_service_id_(0),
-      pending_gatt_discovery_(false),
-      weak_ptr_factory_(this) {}
+      pending_gatt_discovery_(false) {}
 
 FakePeripheral::~FakePeripheral() = default;
 

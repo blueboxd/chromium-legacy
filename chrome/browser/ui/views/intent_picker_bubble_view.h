@@ -69,6 +69,7 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   ~IntentPickerBubbleView() override;
 
   static views::Widget* ShowBubble(views::View* anchor_view,
+                                   views::Button* highlighted_button,
                                    content::WebContents* web_contents,
                                    std::vector<AppInfo> app_info,
                                    bool show_stay_in_chrome,

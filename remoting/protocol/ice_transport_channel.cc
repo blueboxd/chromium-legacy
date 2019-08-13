@@ -50,11 +50,9 @@ TransportRoute::RouteType CandidateTypeToTransportRouteType(
 IceTransportChannel::IceTransportChannel(
     scoped_refptr<TransportContext> transport_context)
     : transport_context_(transport_context),
-      ice_username_fragment_(
-          rtc::CreateRandomString(kIceUfragLength)),
+      ice_username_fragment_(rtc::CreateRandomString(kIceUfragLength)),
       connect_attempts_left_(
-          transport_context->network_settings().ice_reconnect_attempts),
-      weak_factory_(this) {
+          transport_context->network_settings().ice_reconnect_attempts) {
   DCHECK(!ice_username_fragment_.empty());
 }
 

@@ -41,8 +41,7 @@ class BlobRegistryImpl::BlobUnderConstruction {
       : blob_registry_(blob_registry),
         uuid_(uuid),
         builder_(std::make_unique<BlobDataBuilder>(uuid)),
-        bad_message_callback_(std::move(bad_message_callback)),
-        weak_ptr_factory_(this) {
+        bad_message_callback_(std::move(bad_message_callback)) {
     builder_->set_content_type(content_type);
     builder_->set_content_disposition(content_disposition);
     for (auto& element : elements)
@@ -206,7 +205,7 @@ class BlobRegistryImpl::BlobUnderConstruction {
   // Number of dependent blobs that have started constructing.
   size_t ready_dependent_blob_count_ = 0;
 
-  base::WeakPtrFactory<BlobUnderConstruction> weak_ptr_factory_;
+  base::WeakPtrFactory<BlobUnderConstruction> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(BlobUnderConstruction);
 };
 
@@ -476,8 +475,7 @@ BlobRegistryImpl::BlobRegistryImpl(
     base::WeakPtr<BlobStorageContext> context,
     scoped_refptr<FileSystemContext> file_system_context)
     : context_(std::move(context)),
-      file_system_context_(std::move(file_system_context)),
-      weak_ptr_factory_(this) {}
+      file_system_context_(std::move(file_system_context)) {}
 
 BlobRegistryImpl::~BlobRegistryImpl() {
   // BlobBuilderFromStream needs to be aborted before it can be destroyed, but

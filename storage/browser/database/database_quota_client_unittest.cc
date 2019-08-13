@@ -132,8 +132,7 @@ class DatabaseQuotaClientTest : public testing::Test {
         kOriginB(url::Origin::Create(GURL("http://host:8000"))),
         kOriginOther(url::Origin::Create(GURL("http://other"))),
         usage_(0),
-        mock_tracker_(new MockDatabaseTracker),
-        weak_factory_(this) {}
+        mock_tracker_(new MockDatabaseTracker) {}
 
   int64_t GetOriginUsage(storage::QuotaClient* client,
                          const url::Origin& origin,
@@ -204,7 +203,7 @@ class DatabaseQuotaClientTest : public testing::Test {
   std::set<url::Origin> origins_;
   blink::mojom::QuotaStatusCode delete_status_;
   scoped_refptr<MockDatabaseTracker> mock_tracker_;
-  base::WeakPtrFactory<DatabaseQuotaClientTest> weak_factory_;
+  base::WeakPtrFactory<DatabaseQuotaClientTest> weak_factory_{this};
 };
 
 TEST_F(DatabaseQuotaClientTest, GetOriginUsage) {

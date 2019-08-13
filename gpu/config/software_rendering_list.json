@@ -103,42 +103,6 @@
       ]
     },
     {
-      "id": 12,
-      "description": "Drivers older than 2010 on Windows are possibly unreliable",
-	"cr_bugs": [72979, 89802, 315205, 977432],
-      "os": {
-        "type": "win"
-      },
-      "driver_date": {
-        "op": "<",
-        "value": "2010"
-      },
-      "exceptions": [
-        {
-          "vendor_id": "0x8086",
-          "device_id": ["0x29a2"],
-          "driver_version": {
-            "op": ">=",
-            "value": "7.15.10.1624"
-          }
-        },
-        {
-          "vendor_id": "0x1414",
-          "device_id": ["0x02c1"]
-        },
-        {
-          "driver_vendor": "swiftshader"
-        },
-        {
-          "vendor_id": "0xffff",
-          "device_id": ["0xfffe"]
-        }
-      ],
-      "features": [
-        "all"
-      ]
-    },
-    {
       "id": 17,
       "description": "Older Intel mesa drivers are crash-prone",
       "cr_bugs": [76703, 164555, 225200, 340886],
@@ -1457,9 +1421,9 @@
         "type": "win"
       },
       "vendor_id": "0x1002",
-      "driver_date": {
+      "driver_version": {
         "op": "<",
-        "value": "2011.1"
+        "value": "8.830.0.0000"
       },
       "features": [
         "accelerated_webgl2"
@@ -1492,9 +1456,9 @@
           "value": "10"
         }
       },
-      "driver_date": {
+      "driver_version": {
         "op": "<",
-        "value": "2016.6"
+        "value": "20.19.0.32837"
       },
       "multi_gpu_style": "amd_switchable",
       "features": [
@@ -1747,6 +1711,44 @@
       },
       "features": [
         "metal"
+      ]
+    },
+    {
+      "id": 163,
+      "description": "Intel drivers older than 2010 on Windows are possibly unreliable",
+      "cr_bugs": [72979, 89802, 315205, 977432],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "<",
+        "value": "8.15.10.2279"
+      },
+      "features": [
+        "accelerated_webgl",
+        "flash3d",
+        "flash_stage3d",
+        "accelerated_2d_canvas"
+      ]
+    },
+    {
+      "id": 164,
+      "description": "NVidia drivers older than 2010 on Windows are possibly unreliable",
+      "cr_bugs": [72979, 89802, 315205, 977432],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x10de",
+      "driver_version": {
+        "op": "<",
+        "value": "196.21"
+      },
+      "features": [
+        "accelerated_webgl",
+        "flash3d",
+        "flash_stage3d",
+        "accelerated_2d_canvas"
       ]
     }
   ]

@@ -51,8 +51,7 @@ PipeMessagingChannel::PipeMessagingChannel(base::File input, base::File output)
     : native_messaging_reader_(DuplicatePlatformFile(std::move(input))),
       native_messaging_writer_(
           new NativeMessagingWriter(DuplicatePlatformFile(std::move(output)))),
-      event_handler_(nullptr),
-      weak_factory_(this) {
+      event_handler_(nullptr) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }
 

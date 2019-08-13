@@ -96,6 +96,9 @@ settings.StatusAction = {
  *   typedUrlsEnforced: boolean,
  *   typedUrlsRegistered: boolean,
  *   typedUrlsSynced: boolean,
+ *   wifiConfigurationsEnforced: boolean,
+ *   wifiConfigurationsRegistered: boolean,
+ *   wifiConfigurationsSynced: boolean,
  * }}
  */
 settings.SyncPrefs;

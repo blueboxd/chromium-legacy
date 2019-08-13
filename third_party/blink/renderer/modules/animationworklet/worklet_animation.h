@@ -147,6 +147,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   bool IsCurrentTimeInitialized() const;
   base::Optional<base::TimeDelta> InitialCurrentTime() const;
 
+  bool CanStartOnCompositor();
   // Attempts to start the animation on the compositor side, returning true if
   // it succeeds or false otherwise. If false is returned and the animation
   // cannot be started on main.

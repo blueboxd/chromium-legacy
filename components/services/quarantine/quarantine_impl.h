@@ -8,14 +8,15 @@
 #include <memory>
 
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace quarantine {
 
 class QuarantineImpl : public mojom::Quarantine {
  public:
-  explicit QuarantineImpl(
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+  QuarantineImpl();
+  explicit QuarantineImpl(mojo::PendingReceiver<mojom::Quarantine> receiver);
   ~QuarantineImpl() override;
 
   // mojom::Quarantine:
@@ -27,7 +28,9 @@ class QuarantineImpl : public mojom::Quarantine {
       mojom::Quarantine::QuarantineFileCallback callback) override;
 
  private:
-  const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
+  mojo::Receiver<mojom::Quarantine> receiver_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(QuarantineImpl);
 };
 
 }  // namespace quarantine

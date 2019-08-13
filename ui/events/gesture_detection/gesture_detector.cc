@@ -481,6 +481,10 @@ void GestureDetector::OnTapTimeout() {
 }
 
 void GestureDetector::Cancel() {
+  // Stop waiting for a second tap and send a GESTURE_TAP_CANCEL to keep the
+  // gesture stream valid.
+  if (timeout_handler_->HasTimeout(TAP))
+    listener_->OnTapCancel(*current_down_event_);
   CancelTaps();
   velocity_tracker_.Clear();
   all_pointers_within_slop_regions_ = false;

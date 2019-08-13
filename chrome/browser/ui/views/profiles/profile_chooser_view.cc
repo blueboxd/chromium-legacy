@@ -8,11 +8,9 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
@@ -55,6 +53,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/accessibility/view_accessibility.h"
 
 namespace {
@@ -491,8 +490,10 @@ void ProfileChooserView::AddPreDiceSyncErrorView(
     int content_string_id) {
   AddMenuGroup();
   auto sync_problem_icon = std::make_unique<views::ImageView>();
-  sync_problem_icon->SetImage(gfx::CreateVectorIcon(
-      kSyncProblemIcon, BadgedProfilePhoto::kImageSize, gfx::kGoogleRed700));
+  sync_problem_icon->SetImage(
+      gfx::CreateVectorIcon(kSyncProblemIcon, BadgedProfilePhoto::kImageSize,
+                            GetNativeTheme()->GetSystemColor(
+                                ui::NativeTheme::kColorId_AlertSeverityHigh)));
   views::Button* button = CreateAndAddTitleCard(
       std::move(sync_problem_icon),
       l10n_util::GetStringUTF16(IDS_SYNC_ERROR_USER_MENU_TITLE),

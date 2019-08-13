@@ -115,7 +115,7 @@ class FakeOAuth2AccessTokenManager : public OAuth2AccessTokenManager {
   // |IssueTokenForScope| in this case.
   bool auto_post_fetch_response_on_message_loop_;
 
-  base::WeakPtrFactory<FakeOAuth2AccessTokenManager> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeOAuth2AccessTokenManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeOAuth2AccessTokenManager);
 };

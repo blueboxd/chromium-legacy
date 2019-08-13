@@ -9,6 +9,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/core/animation/color_property_functions.h"
+#include "third_party/blink/renderer/core/animation/interpolable_value.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
@@ -293,6 +294,39 @@ const CSSValue* CSSColorInterpolationType::CreateCSSValue(
   const InterpolableList& color_pair = ToInterpolableList(interpolable_value);
   Color color = ResolveInterpolableColor(*color_pair.Get(kUnvisited), state);
   return CSSColorValue::Create(color.Rgb());
+}
+
+void CSSColorInterpolationType::Composite(
+    UnderlyingValueOwner& underlying_value_owner,
+    double underlying_fraction,
+    const InterpolationValue& value,
+    double interpolation_fraction) const {
+  DCHECK(!underlying_value_owner.Value().non_interpolable_value);
+  DCHECK(!value.non_interpolable_value);
+  InterpolableList& underlying_list = ToInterpolableList(
+      *underlying_value_owner.MutableValue().interpolable_value);
+  const InterpolableList& other_list =
+      ToInterpolableList(*value.interpolable_value);
+  // Both lists should have kUnvisited and kVisited.
+  DCHECK(underlying_list.length() == kInterpolableColorPairIndexCount);
+  DCHECK(other_list.length() == kInterpolableColorPairIndexCount);
+  for (wtf_size_t i = 0; i < underlying_list.length(); i++) {
+    InterpolableList& underlying =
+        ToInterpolableList(*underlying_list.GetMutable(i));
+    const InterpolableList& other = ToInterpolableList(*other_list.Get(i));
+    DCHECK(underlying.length() == kInterpolableColorIndexCount);
+    DCHECK(other.length() == kInterpolableColorIndexCount);
+    for (wtf_size_t j = 0; j < underlying.length(); j++) {
+      DCHECK(underlying.Get(j)->IsNumber());
+      DCHECK(other.Get(j)->IsNumber());
+      InterpolableNumber& underlying_number =
+          ToInterpolableNumber(*underlying.GetMutable(j));
+      const InterpolableNumber& other_number =
+          ToInterpolableNumber(*other.Get(j));
+      if (j != kAlpha || underlying_number.Value() != other_number.Value())
+        underlying_number.ScaleAndAdd(underlying_fraction, other_number);
+    }
+  }
 }
 
 }  // namespace blink

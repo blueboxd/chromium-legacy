@@ -147,9 +147,9 @@ bool LookalikeUrlService::EngagedSitesNeedUpdating() {
 
 void LookalikeUrlService::ForceUpdateEngagedSites(
     EngagedSitesCallback callback) {
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::TaskPriority::USER_BLOCKING,
+      {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
           &SiteEngagementService::GetAllDetailsInBackground, clock_->Now(),

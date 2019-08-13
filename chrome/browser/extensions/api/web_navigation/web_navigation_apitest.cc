@@ -76,7 +76,7 @@ class DelayLoadStartAndExecuteJavascript : public TabStripModelObserver,
         delay_url_(delay_url),
         until_url_suffix_(until_url_suffix),
         script_(script) {
-    tab_strip_observer_.Add(browser->tab_strip_model());
+    browser->tab_strip_model()->AddObserver(this);
   }
 
   ~DelayLoadStartAndExecuteJavascript() override {}
@@ -91,7 +91,7 @@ class DelayLoadStartAndExecuteJavascript : public TabStripModelObserver,
 
     content::WebContentsObserver::Observe(
         change.GetInsert()->contents[0].contents);
-    tab_strip_observer_.RemoveAll();
+    tab_strip_model->RemoveObserver(this);
   }
 
   // WebContentsObserver:
@@ -165,8 +165,6 @@ class DelayLoadStartAndExecuteJavascript : public TabStripModelObserver,
 
   base::WeakPtr<WillStartRequestObserverThrottle> throttle_;
 
-  ScopedObserver<TabStripModel, TabStripModelObserver> tab_strip_observer_{
-      this};
   GURL delay_url_;
   std::string until_url_suffix_;
   std::string script_;

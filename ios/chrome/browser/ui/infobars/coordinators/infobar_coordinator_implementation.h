@@ -30,6 +30,9 @@
 // Performs the main Infobar action. e.g. "Save Password", "Restore",etc.
 - (void)performInfobarAction;
 
+// Called right before the InfobarBanner will be dismissed.
+- (void)infobarBannerWillBeDismissed:(BOOL)userInitiated;
+
 // Called after the Infobar (either Modal or Banner) has been dismissed.
 // Transitioning from Banner to Modal won't call this method.
 - (void)infobarWasDismissed;

@@ -15,10 +15,6 @@
 <dom-module id="settings-parental-controls-page">
   <template>
     <style include="settings-shared">
-      #parental-controls-setup-section {
-        padding-inline-start: 20px;
-      }
-
       cr-link-row {
         --cr-section-padding: 0;
       }
@@ -28,16 +24,12 @@
         <cr-link-row on-click="handleFamilyLinkButtonClick_"
             label="$i18n{parentalControlsPageTitle}"
             sub-label="$i18n{parentalControlsPageViewSettingsLabel}"
-            start-icon="cr20:kite"
             external>
+          <iron-icon icon="cr20:kite" aria-hidden="true"></iron-icon>
         </cr-link-row>
       </template>
       <template is="dom-if" if="[[!isChild_]]">
-        <div>
-          <iron-icon icon="cr20:kite"></iron-icon>
-        </div>
-        <div id="parental-controls-setup-section"
-            class="start settings-box-text">
+        <div class="start settings-box-text">
           <div>
             $i18n{parentalControlsPageTitle}
           </div>

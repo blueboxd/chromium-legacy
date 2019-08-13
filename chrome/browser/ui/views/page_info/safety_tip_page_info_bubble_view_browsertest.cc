@@ -2,12 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_test_utils.h"
 #include "chrome/browser/lookalikes/safety_tips/reputation_web_contents_observer.h"
+#include "chrome/browser/lookalikes/safety_tips/safety_tips.pb.h"
+#include "chrome/browser/lookalikes/safety_tips/safety_tips_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -18,6 +25,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -29,6 +37,10 @@
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
+
+using chrome_browser_safety_tips::FlaggedPage;
+using chrome_browser_safety_tips::SafetyTipsConfig;
+using FlagType = FlaggedPage::FlagType;
 
 namespace {
 
@@ -88,13 +100,6 @@ void SetEngagementScore(Browser* browser, const GURL& url, double score) {
       ->ResetBaseScoreForURL(url, score);
 }
 
-// Go to |navigated_url| in such a way as to trigger a warning. This is just for
-// convenience, since how we trigger warnings will change.
-void TriggerWarning(Browser* browser, const GURL& navigated_url) {
-  SetEngagementScore(browser, navigated_url, kLowEngagement);
-  NavigateToURLSync(browser, navigated_url);
-}
-
 // Clicks the location icon to open the page info bubble.
 void OpenPageInfoBubble(Browser* browser) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
@@ -125,6 +130,36 @@ void CheckPageInfoDoesNotShowSafetyTipInfo(Browser* browser) {
   CHECK(page_info);
   EXPECT_NE(page_info->GetWindowTitle(),
             l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_SUMMARY));
+}
+
+void BlockPatterns(std::vector<std::pair<std::string, FlagType>> patterns) {
+  auto config_proto = std::make_unique<SafetyTipsConfig>();
+  config_proto->set_version_id(2);
+
+  std::sort(patterns.begin(), patterns.end());
+  for (auto pair : patterns) {
+    FlaggedPage* page = config_proto->add_flagged_page();
+    page->set_pattern(pair.first);
+    page->set_type(pair.second);
+  }
+
+  safety_tips::SetRemoteConfigProto(std::move(config_proto));
+}
+
+// Go to |url| in such a way as to trigger a warning. This is just for
+// convenience, since how we trigger warnings will change.
+//
+// This function blocks the entire host + path, ignoring query parameters.
+void TriggerWarning(Browser* browser, const GURL& url) {
+  std::string host;
+  std::string path;
+  std::string query;
+  safe_browsing::V4ProtocolManagerUtil::CanonicalizeUrl(url, &host, &path,
+                                                        &query);
+  // For simplicity, ignore query
+  BlockPatterns({{host + path, FlaggedPage::BAD_REP}});
+  SetEngagementScore(browser, url, kLowEngagement);
+  NavigateToURLSync(browser, url);
 }
 
 }  // namespace
@@ -167,11 +202,23 @@ class SafetyTipPageInfoBubbleViewBrowserTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
-// If the user has high engagement with a domain, it should not show a
-// warning.
+// Ensure normal sites with low engagement are not blocked.
+IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
+                       NoShowOnLowEngagement) {
+  auto kNavigatedUrl = GetURL("site1.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  NavigateToURLSync(browser(), kNavigatedUrl);
+  EXPECT_FALSE(IsUIShowing());
+
+  CheckPageInfoDoesNotShowSafetyTipInfo(browser());
+}
+
+// Ensure blocked sites with high engagement are not blocked.
 IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
                        NoShowOnHighEngagement) {
   auto kNavigatedUrl = GetURL("site1.com");
+  BlockPatterns({{"site1.com/", FlaggedPage::BAD_REP}});
+
   SetEngagementScore(browser(), kNavigatedUrl, kHighEngagement);
   NavigateToURLSync(browser(), kNavigatedUrl);
   EXPECT_FALSE(IsUIShowing());
@@ -179,11 +226,11 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   CheckPageInfoDoesNotShowSafetyTipInfo(browser());
 }
 
-// Until we have heuristics, trigger on all low engagement sites.
-IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
-                       ShowOnLowEngagement) {
+// Ensure blocked sites get blocked.
+IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest, ShowOnBlock) {
   auto kNavigatedUrl = GetURL("site1.com");
-  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  BlockPatterns({{"site1.com/", FlaggedPage::BAD_REP}});
+
   NavigateToURLSync(browser(), kNavigatedUrl);
   EXPECT_TRUE(IsUIShowing());
 
@@ -262,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   const GURL kFrameUrl =
       embedded_test_server()->GetURL("b.com", "/title1.html");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-  SetEngagementScore(browser(), kFrameUrl, kHighEngagement);
+  BlockPatterns({{"a.com/", FlaggedPage::BAD_REP}});
 
   NavigateToURLSync(browser(), kNavigatedUrl);
   EXPECT_TRUE(IsUIShowing());

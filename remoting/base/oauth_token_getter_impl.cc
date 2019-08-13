@@ -35,8 +35,7 @@ OAuthTokenGetterImpl::OAuthTokenGetterImpl(
     : intermediate_credentials_(std::move(intermediate_credentials)),
       gaia_oauth_client_(new gaia::GaiaOAuthClient(url_loader_factory)),
       credentials_updated_callback_(on_credentials_update),
-      token_exchanger_(url_loader_factory),
-      weak_factory_(this) {
+      token_exchanger_(url_loader_factory) {
   if (auto_refresh) {
     refresh_timer_.reset(new base::OneShotTimer());
   }
@@ -51,8 +50,7 @@ OAuthTokenGetterImpl::OAuthTokenGetterImpl(
     : authorization_credentials_(std::move(authorization_credentials)),
       gaia_oauth_client_(new gaia::GaiaOAuthClient(url_loader_factory)),
       refresh_token_updated_callback_(on_refresh_token_updated),
-      token_exchanger_(url_loader_factory),
-      weak_factory_(this) {
+      token_exchanger_(url_loader_factory) {
   if (auto_refresh) {
     refresh_timer_.reset(new base::OneShotTimer());
   }

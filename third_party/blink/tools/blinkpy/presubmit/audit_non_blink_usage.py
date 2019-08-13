@@ -670,7 +670,6 @@ _CONFIG = [
             'base::Lock',
             'base::StringPrintf',
             'base::TaskRunner',
-            'base::PostTask',
             # TODO(crbug.com/704136): Switch to using frame-based task runners.
             'base::ThreadTaskRunnerHandle',
             'base::subtle::Atomic32',

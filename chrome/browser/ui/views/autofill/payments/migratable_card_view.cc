@@ -15,8 +15,8 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
@@ -63,11 +63,9 @@ MigratableCardView::MigratableCardView(
       CONTEXT_BODY_TEXT_SMALL, ChromeTextStyle::STYLE_RED);
 
   checkbox_uncheck_text_container_->AddChildView(checkbox_uncheck_text_);
-  // TODO(estade): Check whether kColorId_BubbleFooterBackground can be used for
-  // the colors here.
-  checkbox_uncheck_text_container_->SetBackground(views::CreateSolidBackground(
-      GetNativeTheme()->ShouldUseDarkColors() ? gfx::kGoogleGrey800
-                                              : gfx::kGoogleGrey050));
+  checkbox_uncheck_text_container_->SetBackground(
+      views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_BubbleFooterBackground)));
   checkbox_uncheck_text_container_->SetVisible(false);
 
   AddChildView(checkbox_uncheck_text_container_);
@@ -125,8 +123,8 @@ MigratableCardView::GetMigratableCardDescriptionView(
       auto* migration_succeeded_image = new views::ImageView();
       migration_succeeded_image->SetImage(gfx::CreateVectorIcon(
           vector_icons::kCheckCircleIcon, kMigrationResultImageSize,
-          GetNativeTheme()->ShouldUseDarkColors() ? gfx::kGoogleGreen200
-                                                  : gfx::kGoogleGreen700));
+          GetNativeTheme()->GetSystemColor(
+              ui::NativeTheme::kColorId_AlertSeverityLow)));
       migratable_card_description_view->AddChildView(migration_succeeded_image);
       break;
     }
@@ -134,8 +132,8 @@ MigratableCardView::GetMigratableCardDescriptionView(
       auto* migration_failed_image = new views::ImageView();
       migration_failed_image->SetImage(gfx::CreateVectorIcon(
           vector_icons::kErrorIcon, kMigrationResultImageSize,
-          GetNativeTheme()->ShouldUseDarkColors() ? gfx::kGoogleRed300
-                                                  : gfx::kGoogleRed700));
+          GetNativeTheme()->GetSystemColor(
+              ui::NativeTheme::kColorId_AlertSeverityHigh)));
       migratable_card_description_view->AddChildView(migration_failed_image);
       break;
     }

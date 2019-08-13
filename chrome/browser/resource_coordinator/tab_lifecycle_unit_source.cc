@@ -88,7 +88,7 @@ class TabLifecycleStateObserver
   // performance_manager::PageNode::ObserverDefaultImpl::
   void OnPageLifecycleStateChanged(const PageNode* page_node) override {
     // Forward the notification over to the UI thread.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&TabLifecycleStateObserver::OnLifecycleStateChangedImpl,
                        page_node->GetContentProxy(),

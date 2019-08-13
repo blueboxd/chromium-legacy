@@ -87,14 +87,14 @@ class AllDownloadObserver
                           const std::string& guid);
 
   DownloadOfflineContentProvider* provider_;
-  base::WeakPtrFactory<AllDownloadObserver> weak_ptr_factory_;
+  base::WeakPtrFactory<AllDownloadObserver> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AllDownloadObserver);
 };
 
 AllDownloadObserver::AllDownloadObserver(
     DownloadOfflineContentProvider* provider)
-    : provider_(provider), weak_ptr_factory_(this) {}
+    : provider_(provider) {}
 
 AllDownloadObserver::~AllDownloadObserver() {}
 

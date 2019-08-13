@@ -296,9 +296,18 @@ CreditCardAccessManager::GetOrCreateFIDOAuthenticator() {
 void CreditCardAccessManager::OnCVCAuthenticationComplete(
     bool did_succeed,
     const CreditCard* card,
-    const base::string16& cvc) {
+    const base::string16& cvc,
+    base::Value creation_options) {
   is_authentication_in_progress_ = false;
   accessor_->OnCreditCardFetched(did_succeed, card, cvc);
+
+#if !defined(OS_IOS)
+  // Now that unmask flow is complete, if GetRealPan includes
+  // |creation_options|, completely hand over registration flow to
+  // CreditCardFIDOAuthenticator.
+  if (did_succeed && creation_options.is_dict())
+    GetOrCreateFIDOAuthenticator()->Register(std::move(creation_options));
+#endif
 }
 
 #if !defined(OS_IOS)

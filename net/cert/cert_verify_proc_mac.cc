@@ -881,7 +881,18 @@ int VerifyWithGivenFlags(X509Certificate* cert,
       // Short-circuit when a current, trusted chain is found.
       if (!untrusted && !weak_chain)
         break;
-      CFArrayRemoveValueAtIndex(cert_array, CFArrayGetCount(cert_array) - 1);
+      // Trim a cert off the end of chain, but if the chain is longer that 10
+      // certs, trim to at most 10 certs.
+      constexpr int kMaxTrimmedChainLength = 10;
+      if (CFArrayGetCount(cert_array) > kMaxTrimmedChainLength) {
+        CFArrayReplaceValues(
+            cert_array,
+            CFRangeMake(kMaxTrimmedChainLength,
+                        CFArrayGetCount(cert_array) - kMaxTrimmedChainLength),
+            /*newValues=*/nullptr, /*newCount=*/0);
+      } else {
+        CFArrayRemoveValueAtIndex(cert_array, CFArrayGetCount(cert_array) - 1);
+      }
     }
     // Short-circuit when a current, trusted chain is found.
     if (!candidate_untrusted && !candidate_weak)

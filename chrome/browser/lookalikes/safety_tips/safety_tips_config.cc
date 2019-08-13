@@ -15,6 +15,10 @@ class SafetyTipsConfigSingleton {
     proto_ = std::move(proto);
   }
 
+  chrome_browser_safety_tips::SafetyTipsConfig* GetProto() const {
+    return proto_.get();
+  }
+
   static SafetyTipsConfigSingleton& GetInstance() {
     static base::NoDestructor<SafetyTipsConfigSingleton> instance;
     return *instance;
@@ -29,9 +33,14 @@ class SafetyTipsConfigSingleton {
 namespace safety_tips {
 
 // static
-void SetProto(
+void SetRemoteConfigProto(
     std::unique_ptr<chrome_browser_safety_tips::SafetyTipsConfig> proto) {
   SafetyTipsConfigSingleton::GetInstance().SetProto(std::move(proto));
+}
+
+// static
+const chrome_browser_safety_tips::SafetyTipsConfig* GetRemoteConfigProto() {
+  return SafetyTipsConfigSingleton::GetInstance().GetProto();
 }
 
 }  // namespace safety_tips

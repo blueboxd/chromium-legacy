@@ -391,10 +391,11 @@ LevelDBSiteCharacteristicsDatabase::AsyncHelper::OpenOrCreateDatabaseImpl() {
 
 LevelDBSiteCharacteristicsDatabase::LevelDBSiteCharacteristicsDatabase(
     const base::FilePath& db_path)
-    : blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+    : blocking_task_runner_(base::CreateSequencedTaskRunner(
           // The |BLOCK_SHUTDOWN| trait is required to ensure that a clearing of
           // the database won't be skipped.
-          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       async_helper_(new AsyncHelper(db_path),
                     base::OnTaskRunnerDeleter(blocking_task_runner_)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

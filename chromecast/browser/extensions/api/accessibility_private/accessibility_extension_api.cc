@@ -117,12 +117,6 @@ AccessibilityPrivateDarkenScreenFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction
-AccessibilityPrivateSetSwitchAccessKeysFunction::Run() {
-  LOG(ERROR) << "AccessibilityPrivateSetSwitchAccessKeysFunction";
-  return RespondNow(Error(kErrorNotSupported));
-}
-
-ExtensionFunction::ResponseAction
 AccessibilityPrivateSetNativeChromeVoxArcSupportForCurrentAppFunction::Run() {
   LOG(ERROR) << "AccessibilityPrivateSetNativeChromeVoxArcSupportForCurrentAppF"
                 "unction";

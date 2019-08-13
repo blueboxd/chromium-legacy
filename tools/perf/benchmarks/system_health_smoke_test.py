@@ -165,7 +165,9 @@ _DISABLED_TESTS = frozenset({
   # crbug.com/934885
   'system_health.memory_desktop/load_accessibility:media:wikipedia:2018'
   # crbug.com/942952
-  'system_health.memory_desktop/browse:news:hackernews:2018'
+  'system_health.memory_desktop/browse:news:hackernews:2018',
+  # crbug.com/992436
+  'system_health.memory_desktop/browse:social:twitter:2018'
   # ]
 })
 

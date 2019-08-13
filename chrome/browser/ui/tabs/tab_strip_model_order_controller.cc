@@ -16,9 +16,7 @@ TabStripModelOrderController::TabStripModelOrderController(
   tabstrip_->AddObserver(this);
 }
 
-TabStripModelOrderController::~TabStripModelOrderController() {
-  tabstrip_->RemoveObserver(this);
-}
+TabStripModelOrderController::~TabStripModelOrderController() {}
 
 int TabStripModelOrderController::DetermineInsertionIndex(
     ui::PageTransition transition,

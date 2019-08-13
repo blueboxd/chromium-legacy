@@ -22,6 +22,7 @@
             <div id="emoji">🌱🌲🌳🌴🌵🌷🌸🌹🌺🌻🌼💐🌾🌿🍀🍁🍂🍃🍄🌰</div>
             <div id="egyptian_hieroglyphs">𓀀𓀁𓀂𓀃𓀄𓀅𓀆𓀇𓀈𓀉𓀊𓀋𓀌𓀍𓀎𓀏</div>
             <div lang="km" id="khmer">ខ្ញុំអាចញុំកញ្ចក់បាន ដោយគ្មានបញ្ហារ</div>
+            <div id="text_presentation_arrows">⇦⇧⇨⇩</div>
         </div>
     </body>
     </html>

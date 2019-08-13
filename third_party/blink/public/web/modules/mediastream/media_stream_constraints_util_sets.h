@@ -390,10 +390,20 @@ class BLINK_MODULES_EXPORT ResolutionSet {
   static ResolutionSet FromConstraintSet(
       const WebMediaTrackConstraintSet& constraint_set);
 
+ private:
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamConstraintsUtilSetsTest,
+                           ResolutionPointSetClosestPoint);
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamConstraintsUtilSetsTest,
+                           ResolutionLineSetClosestPoint);
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamConstraintsUtilSetsTest,
+                           ResolutionGeneralSetClosestPoint);
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamConstraintsUtilSetsTest,
+                           ResolutionIdealOutsideSinglePoint);
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamConstraintsUtilSetsTest,
+                           ResolutionVertices);
+
   // Returns the closest point in this set to |point|. If |point| is included in
   // this set, Point is returned. If this set is empty, behavior is undefined.
-  // TODO(crbug.com/704136): Make this method private once dependent tests are
-  // moved to Blink.
   Point ClosestPointTo(const Point& point) const;
 
   // Returns a list of the vertices defined by the constraints on a height-width
@@ -407,8 +417,6 @@ class BLINK_MODULES_EXPORT ResolutionSet {
   // consecutive vertices (modulo the size of the list) corresponds to a side of
   // the polygon, with the vertices given in counterclockwise order.
   // The list cannot contain more than six points.
-  // TODO(crbug.com/704136): Make this method private once dependent tests are
-  // moved to Blink.
   std::vector<Point> ComputeVertices() const;
 
  private:

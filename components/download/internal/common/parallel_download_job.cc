@@ -14,7 +14,6 @@
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_url_loader_factory_getter.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace download {
 namespace {
@@ -23,13 +22,12 @@ const int kDownloadJobVerboseLevel = 1;
 
 ParallelDownloadJob::ParallelDownloadJob(
     DownloadItem* download_item,
-    std::unique_ptr<DownloadRequestHandleInterface> request_handle,
+    CancelRequestCallback cancel_request_callback,
     const DownloadCreateInfo& create_info,
     scoped_refptr<download::DownloadURLLoaderFactoryGetter>
         url_loader_factory_getter,
-    net::URLRequestContextGetter* url_request_context_getter,
     service_manager::Connector* connector)
-    : DownloadJobImpl(download_item, std::move(request_handle), true),
+    : DownloadJobImpl(download_item, std::move(cancel_request_callback), true),
       initial_request_offset_(create_info.offset),
       initial_received_slices_(download_item->GetReceivedSlices()),
       content_length_(create_info.total_bytes),
@@ -37,7 +35,6 @@ ParallelDownloadJob::ParallelDownloadJob(
       is_canceled_(false),
       range_support_(create_info.accept_range),
       url_loader_factory_getter_(std::move(url_loader_factory_getter)),
-      url_request_context_getter_(url_request_context_getter),
       connector_(connector) {}
 
 ParallelDownloadJob::~ParallelDownloadJob() = default;
@@ -299,7 +296,7 @@ void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
 
   // Send the request.
   worker->SendRequest(std::move(download_params), url_loader_factory_getter_,
-                      url_request_context_getter_, connector_);
+                      connector_);
   DCHECK(workers_.find(offset) == workers_.end());
   workers_[offset] = std::move(worker);
 }

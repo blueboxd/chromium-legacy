@@ -61,7 +61,7 @@ class Recorder : public mojom::Recorder {
   base::RepeatingClosure on_data_change_callback_;
   mojo::Binding<mojom::Recorder> binding_;
 
-  base::WeakPtrFactory<Recorder> weak_ptr_factory_;
+  base::WeakPtrFactory<Recorder> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Recorder);
 };

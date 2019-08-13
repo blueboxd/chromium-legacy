@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "chrome/browser/sharing/click_to_call/click_to_call_sharing_dialog_controller.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
@@ -31,7 +31,7 @@ class ClickToCallDialogView : public SharingDialog,
   // Bubble will be anchored to |anchor_view|.
   ClickToCallDialogView(views::View* anchor_view,
                         content::WebContents* web_contents,
-                        ClickToCallSharingDialogController* controller);
+                        ClickToCallUiController* controller);
 
   ~ClickToCallDialogView() override;
 
@@ -74,12 +74,12 @@ class ClickToCallDialogView : public SharingDialog,
   // Populates the dialog view containing error help text.
   void InitErrorView();
 
-  ClickToCallSharingDialogController* controller_ = nullptr;
+  ClickToCallUiController* controller_ = nullptr;
   // Contains references to device and app buttons in
   // the order they appear.
   std::vector<HoverButton*> dialog_buttons_;
   std::vector<SharingDeviceInfo> devices_;
-  std::vector<ClickToCallSharingDialogController::App> apps_;
+  std::vector<ClickToCallUiController::App> apps_;
   Browser* browser_ = nullptr;
   bool send_failed_ = false;
 

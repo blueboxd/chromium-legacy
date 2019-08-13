@@ -63,7 +63,6 @@ struct MasterPrefs {
   // dumped into local_state. Also see related TODO in chrome_browser_main.cc.
 
   bool make_chrome_default_for_user = false;
-  bool suppress_first_run_default_browser_prompt = false;
   std::vector<GURL> new_tabs;
   std::vector<GURL> bookmarks;
   std::string import_bookmarks_path;

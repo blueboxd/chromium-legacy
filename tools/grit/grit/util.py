@@ -8,13 +8,14 @@
 from __future__ import print_function
 
 import codecs
-import htmlentitydefs
 import os
 import re
 import shutil
 import sys
 import tempfile
 from xml.sax import saxutils
+
+from six.moves import html_entities as entities
 
 from grit import lazy_re
 
@@ -258,8 +259,8 @@ def UnescapeHtml(text, replace_nbsp=True):
       if name == 'nbsp' and not replace_nbsp:
         return match.group()  # Don't replace &nbsp;
       assert name != None
-      if name in htmlentitydefs.name2codepoint.keys():
-        return unichr(htmlentitydefs.name2codepoint[name])
+      if name in entities.name2codepoint.keys():
+        return unichr(entities.name2codepoint[name])
       else:
         return match.group()  # Unknown HTML character entity - don't replace
 

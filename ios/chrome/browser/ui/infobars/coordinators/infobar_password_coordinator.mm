@@ -171,6 +171,11 @@
   self.passwordInfoBarDelegate->Accept();
 }
 
+- (void)infobarBannerWillBeDismissed:(BOOL)userInitiated {
+  if (userInitiated && self.passwordInfoBarDelegate)
+    self.passwordInfoBarDelegate->InfoBarDismissed();
+}
+
 - (void)infobarWasDismissed {
   // Release these strong ViewControllers at the time of infobar dismissal.
   self.bannerViewController = nil;

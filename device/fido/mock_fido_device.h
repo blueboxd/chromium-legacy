@@ -98,7 +98,7 @@ class MockFidoDevice : public ::testing::StrictMock<FidoDevice> {
  private:
   FidoTransportProtocol transport_protocol_ =
       FidoTransportProtocol::kUsbHumanInterfaceDevice;
-  base::WeakPtrFactory<FidoDevice> weak_factory_;
+  base::WeakPtrFactory<FidoDevice> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockFidoDevice);
 };

@@ -23,9 +23,7 @@ namespace remoting {
 namespace protocol {
 
 FakeChannelAuthenticator::FakeChannelAuthenticator(bool accept, bool async)
-    : result_(accept ? net::OK : net::ERR_FAILED),
-      async_(async),
-      weak_factory_(this) {}
+    : result_(accept ? net::OK : net::ERR_FAILED), async_(async) {}
 
 FakeChannelAuthenticator::~FakeChannelAuthenticator() = default;
 

@@ -23,13 +23,11 @@ using namespace testing;
 
 namespace {
 
-class ClickToCallSharingDialogControllerMock
-    : public ClickToCallSharingDialogController {
+class ClickToCallUiControllerMock : public ClickToCallUiController {
  public:
-  explicit ClickToCallSharingDialogControllerMock(
-      content::WebContents* web_contents)
-      : ClickToCallSharingDialogController(web_contents) {}
-  ~ClickToCallSharingDialogControllerMock() override = default;
+  explicit ClickToCallUiControllerMock(content::WebContents* web_contents)
+      : ClickToCallUiController(web_contents) {}
+  ~ClickToCallUiControllerMock() override = default;
 
   MOCK_METHOD1(OnDeviceChosen, void(const SharingDeviceInfo& device));
   MOCK_METHOD1(OnAppChosen, void(const App& app));
@@ -43,7 +41,7 @@ class ClickToCallDialogViewMock : public ClickToCallDialogView {
  public:
   ClickToCallDialogViewMock(views::View* anchor_view,
                             content::WebContents* web_contents,
-                            ClickToCallSharingDialogController* controller)
+                            ClickToCallUiController* controller)
       : ClickToCallDialogView(anchor_view, web_contents, controller) {}
   ~ClickToCallDialogViewMock() override = default;
 
@@ -79,8 +77,8 @@ class ClickToCallDialogViewTest : public ChromeViewsTestBase {
     anchor_widget_ = std::make_unique<views::Widget>();
     anchor_widget_->Init(std::move(params));
 
-    controller_ = std::make_unique<ClickToCallSharingDialogControllerMock>(
-        web_contents_.get());
+    controller_ =
+        std::make_unique<ClickToCallUiControllerMock>(web_contents_.get());
 
     devices_ = SetUpDevices();
     apps_ = SetUpApps();
@@ -102,8 +100,8 @@ class ClickToCallDialogViewTest : public ChromeViewsTestBase {
     return devices;
   }
 
-  std::vector<ClickToCallSharingDialogController::App> SetUpApps() {
-    std::vector<ClickToCallSharingDialogController::App> apps;
+  std::vector<ClickToCallUiController::App> SetUpApps() {
+    std::vector<ClickToCallUiController::App> apps;
     apps.emplace_back(vector_icons::kOpenInNewIcon, base::UTF8ToUTF16("app_1"),
                       std::string());
     apps.emplace_back(vector_icons::kOpenInNewIcon, base::UTF8ToUTF16("app_2"),
@@ -114,9 +112,9 @@ class ClickToCallDialogViewTest : public ChromeViewsTestBase {
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<views::Widget> anchor_widget_;
-  std::unique_ptr<ClickToCallSharingDialogControllerMock> controller_;
+  std::unique_ptr<ClickToCallUiControllerMock> controller_;
   std::vector<SharingDeviceInfo> devices_;
-  std::vector<ClickToCallSharingDialogController::App> apps_;
+  std::vector<ClickToCallUiController::App> apps_;
 };
 
 TEST_F(ClickToCallDialogViewTest, PopulateDialogView) {
@@ -157,8 +155,8 @@ TEST_F(ClickToCallDialogViewTest, DevicePressed) {
 }
 
 TEST_F(ClickToCallDialogViewTest, AppPressed) {
-  ClickToCallSharingDialogController::App app(
-      vector_icons::kOpenInNewIcon, base::UTF8ToUTF16("app_1"), std::string());
+  ClickToCallUiController::App app(vector_icons::kOpenInNewIcon,
+                                   base::UTF8ToUTF16("app_1"), std::string());
   EXPECT_CALL(*controller_.get(), GetSyncedDevices())
       .WillOnce(Return(ByMove(std::move(devices_))));
   EXPECT_CALL(*controller_.get(), GetApps())

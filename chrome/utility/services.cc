@@ -15,6 +15,7 @@
 #include "components/services/patch/public/mojom/file_patcher.mojom.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
 #include "components/services/unzip/unzipper_impl.h"
+#include "content/public/utility/utility_thread.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/service_factory.h"
@@ -23,6 +24,9 @@
 #if defined(OS_WIN)
 #include "chrome/services/util_win/public/mojom/util_win.mojom.h"
 #include "chrome/services/util_win/util_win_impl.h"
+#include "components/services/quarantine/public/cpp/quarantine_features_win.h"  // nogncheck
+#include "components/services/quarantine/public/mojom/quarantine.mojom.h"  // nogncheck
+#include "components/services/quarantine/quarantine_impl.h"  // nogncheck
 #endif  // defined(OS_WIN)
 
 #if !defined(OS_ANDROID)
@@ -62,6 +66,16 @@
 #include "chrome/services/printing/public/mojom/printing_service.mojom.h"
 #endif
 
+#if BUILDFLAG(ENABLE_PRINTING)
+#include "components/services/pdf_compositor/pdf_compositor_impl.h"
+#include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/services/ime/ime_service.h"
+#include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
+#endif
+
 namespace {
 
 auto RunFilePatcher(mojo::PendingReceiver<patch::mojom::FilePatcher> receiver) {
@@ -73,6 +87,12 @@ auto RunUnzipper(mojo::PendingReceiver<unzip::mojom::Unzipper> receiver) {
 }
 
 #if defined(OS_WIN)
+auto RunQuarantineService(
+    mojo::PendingReceiver<quarantine::mojom::Quarantine> receiver) {
+  DCHECK(base::FeatureList::IsEnabled(quarantine::kOutOfProcessQuarantine));
+  return std::make_unique<quarantine::QuarantineImpl>(std::move(receiver));
+}
+
 auto RunWindowsUtility(mojo::PendingReceiver<chrome::mojom::UtilWin> receiver) {
   return std::make_unique<UtilWinImpl>(std::move(receiver));
 }
@@ -135,6 +155,22 @@ auto RunPrintingService(
 }
 #endif
 
+#if BUILDFLAG(ENABLE_PRINTING)
+auto RunPdfCompositor(
+    mojo::PendingReceiver<printing::mojom::PdfCompositor> receiver) {
+  return std::make_unique<printing::PdfCompositorImpl>(
+      std::move(receiver), true /* initialize_environment */,
+      content::UtilityThread::Get()->GetIOTaskRunner());
+}
+#endif
+
+#if defined(OS_CHROMEOS)
+auto RunImeService(
+    mojo::PendingReceiver<chromeos::ime::mojom::ImeService> receiver) {
+  return std::make_unique<chromeos::ime::ImeService>(std::move(receiver));
+}
+#endif
+
 }  // namespace
 
 mojo::ServiceFactory* GetElevatedMainThreadServiceFactory() {
@@ -162,6 +198,7 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
 #endif
 
 #if defined(OS_WIN)
+    RunQuarantineService,
     RunWindowsUtility,
 #endif  // defined(OS_WIN)
 
@@ -189,6 +226,14 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
     (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
     RunPrintingService,
+#endif
+
+#if BUILDFLAG(ENABLE_PRINTING)
+    RunPdfCompositor,
+#endif
+
+#if defined(OS_CHROMEOS)
+    RunImeService,
 #endif
   };
   // clang-format on

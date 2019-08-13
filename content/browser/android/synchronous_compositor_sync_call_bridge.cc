@@ -17,9 +17,7 @@ namespace content {
 
 SynchronousCompositorSyncCallBridge::SynchronousCompositorSyncCallBridge(
     SynchronousCompositorHost* host)
-    : routing_id_(host->routing_id()),
-      host_(host),
-      begin_frame_condition_(&lock_) {
+    : host_(host), begin_frame_condition_(&lock_) {
   DCHECK(host);
 }
 

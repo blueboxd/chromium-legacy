@@ -290,8 +290,7 @@ HeadlessWebContentsImpl::HeadlessWebContentsImpl(
       agent_host_(
           content::DevToolsAgentHost::GetOrCreateFor(web_contents_.get())),
       browser_context_(browser_context),
-      render_process_host_(web_contents_->GetMainFrame()->GetProcess()),
-      weak_ptr_factory_(this) {
+      render_process_host_(web_contents_->GetMainFrame()->GetProcess()) {
 #if BUILDFLAG(ENABLE_PRINTING) && !defined(CHROME_MULTIPLE_DLL_CHILD)
   HeadlessPrintManager::CreateForWebContents(web_contents_.get());
 // TODO(weili): Add support for printing OOPIFs.

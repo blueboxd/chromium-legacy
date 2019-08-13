@@ -35,28 +35,14 @@
 #include "services/network/url_request_context_builder_mojo.h"
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_WIN)
-#include "components/services/quarantine/public/cpp/quarantine_features_win.h"  // nogncheck
-#include "components/services/quarantine/public/mojom/quarantine.mojom.h"  // nogncheck
-#include "components/services/quarantine/quarantine_service.h"  // nogncheck
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chromeos/assistant/buildflags.h"  // nogncheck
-#include "chromeos/services/ime/ime_service.h"
-#include "chromeos/services/ime/public/mojom/constants.mojom.h"
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #include "chromeos/services/assistant/audio_decoder/assistant_audio_decoder_service.h"  // nogncheck
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"  // nogncheck
 #endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif  // defined(OS_CHROMEOS)
-
-#if BUILDFLAG(ENABLE_PRINTING)
-#include "chrome/common/chrome_content_client.h"
-#include "components/services/pdf_compositor/public/cpp/pdf_compositor_service_factory.h"  // nogncheck
-#include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"  // nogncheck
-#endif
 
 #if BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN)
 #include "chrome/services/printing/pdf_to_emf_converter_factory.h"
@@ -149,18 +135,6 @@ std::unique_ptr<service_manager::Service>
 ChromeContentUtilityClient::MaybeCreateMainThreadService(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
-#if BUILDFLAG(ENABLE_PRINTING)
-  if (service_name == printing::mojom::kServiceName)
-    return printing::CreatePdfCompositorService(std::move(request));
-#endif
-
-#if defined(OS_WIN)
-  if (service_name == quarantine::mojom::kServiceName &&
-      base::FeatureList::IsEnabled(quarantine::kOutOfProcessQuarantine)) {
-    return std::make_unique<quarantine::QuarantineService>(std::move(request));
-  }
-#endif  // OS_WIN
-
 #if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(mirroring::features::kMirroringService) &&
       base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams) &&
@@ -171,17 +145,13 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
 #endif
 
 #if defined(OS_CHROMEOS)
-  if (service_name == chromeos::ime::mojom::kServiceName)
-    return std::make_unique<chromeos::ime::ImeService>(std::move(request));
-
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   if (service_name == chromeos::assistant::mojom::kAudioDecoderServiceName) {
     return std::make_unique<chromeos::assistant::AssistantAudioDecoderService>(
         std::move(request));
   }
 #endif
-
-#endif  // defined(OS_CHROMEOS)
+#endif
   return nullptr;
 }
 

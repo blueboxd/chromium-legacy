@@ -21,6 +21,7 @@
 #include "base/timer/timer.h"
 #include "media/base/android/media_player_listener.h"
 #include "media/base/media_export.h"
+#include "media/base/simple_watch_timer.h"
 #include "ui/gl/android/scoped_java_surface.h"
 #include "url/gurl.h"
 
@@ -189,10 +190,7 @@ class MEDIA_EXPORT MediaPlayerBridge {
   // Sets the underlying MediaPlayer's volume.
   void UpdateVolumeInternal();
 
-  // Watch time reporting.
-  void StartWatchTimeTimer();
-  void StopWatchTimeTimer();
-  void UpdateWatchTime();
+  void OnWatchTimerTick();
 
   base::WeakPtr<MediaPlayerBridge> WeakPtrForUIThread();
 
@@ -256,9 +254,7 @@ class MEDIA_EXPORT MediaPlayerBridge {
 
   // State for watch time reporting.
   bool is_hls_;
-  int unreported_watch_time_ms_;
-  base::TimeDelta last_current_time_;
-  base::RepeatingTimer watch_time_timer_;
+  SimpleWatchTimer watch_timer_;
 
   // A reference to the owner of |this|.
   Client* client_;

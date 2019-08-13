@@ -15,7 +15,7 @@
 namespace blink {
 
 class MediaStreamDeviceObserver;
-class MediaStreamDispatcherEventHandler;
+class UserMediaProcessor;
 class WebLocalFrame;
 
 class BLINK_MODULES_EXPORT WebMediaStreamDeviceObserver {
@@ -25,11 +25,10 @@ class BLINK_MODULES_EXPORT WebMediaStreamDeviceObserver {
 
   MediaStreamDevices GetNonScreenCaptureDevices();
 
-  void AddStream(
-      const WebString& label,
-      const MediaStreamDevices& audio_devices,
-      const MediaStreamDevices& video_devices,
-      const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler);
+  void AddStream(const WebString& label,
+                 const MediaStreamDevices& audio_devices,
+                 const MediaStreamDevices& video_devices,
+                 const base::WeakPtr<UserMediaProcessor>& event_handler);
   void AddStream(const WebString& label, const MediaStreamDevice& device);
   bool RemoveStream(const WebString& label);
   void RemoveStreamDevice(const MediaStreamDevice& device);

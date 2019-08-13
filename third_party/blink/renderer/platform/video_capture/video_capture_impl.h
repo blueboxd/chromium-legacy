@@ -6,9 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_VIDEO_CAPTURE_VIDEO_CAPTURE_IMPL_H_
 
 #include <stdint.h>
-#include <list>
 #include <map>
-#include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -65,7 +63,7 @@ class PLATFORM_EXPORT VideoCaptureImpl
   void GetDeviceFormatsInUse(VideoCaptureDeviceFormatsCallback callback);
 
   void OnFrameDropped(media::VideoCaptureFrameDropReason reason);
-  void OnLog(const std::string& message);
+  void OnLog(const String& message);
 
   const media::VideoCaptureSessionId& session_id() const { return session_id_; }
 
@@ -90,7 +88,7 @@ class PLATFORM_EXPORT VideoCaptureImpl
   struct BufferContext;
 
   // Contains information about a video capture client, including capture
-  //  parameters callbacks to the client.
+  // parameters callbacks to the client.
   struct ClientInfo;
   using ClientInfoMap = std::map<int, ClientInfo>;
 

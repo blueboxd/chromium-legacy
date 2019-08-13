@@ -261,13 +261,6 @@ std::string GetSecureDirectiveValues(
     } else if ((options & OPTIONS_ALLOW_UNSAFE_EVAL) &&
                source_lower == "'unsafe-eval'") {
       is_secure_csp_token = true;
-    } else if (base::StartsWith(source_lower, "chrome-extension-resource:",
-                                base::CompareCase::SENSITIVE)) {
-      // The "chrome-extension-resource" scheme has been removed from the
-      // codebase, but it may still appear in existing CSPs. We continue to
-      // allow it here for compatibility. Requests on this scheme will not
-      // return any kind of network response.
-      is_secure_csp_token = true;
     }
 
     if (is_secure_csp_token) {

@@ -508,7 +508,6 @@ jumbo_split_static_library("ui") {
     "//components/strings",
     "//components/subresource_filter/content/browser",
     "//components/subresource_filter/core/browser",
-    "//components/supervised_user_error_page",
     "//components/sync",
     "//components/sync_preferences",
     "//components/sync_sessions",
@@ -1009,6 +1008,9 @@ jumbo_split_static_library("ui") {
       "page_info/page_info_infobar_delegate.h",
       "page_info/permission_menu_model.cc",
       "page_info/permission_menu_model.h",
+      "passwords/credential_leak_dialog_controller.h",
+      "passwords/credential_leak_dialog_controller_impl.cc",
+      "passwords/credential_leak_dialog_controller_impl.h",
       "passwords/credential_manager_dialog_controller.h",
       "passwords/credential_manager_dialog_controller_impl.cc",
       "passwords/credential_manager_dialog_controller_impl.h",
@@ -1248,8 +1250,6 @@ jumbo_split_static_library("ui") {
       "webui/policy_indicator_localized_strings_provider.h",
       "webui/profile_info_watcher.cc",
       "webui/profile_info_watcher.h",
-      "webui/set_as_default_browser_ui_win.cc",
-      "webui/set_as_default_browser_ui_win.h",
       "webui/settings/about_handler.cc",
       "webui/settings/about_handler.h",
       "webui/settings/accessibility_main_handler.cc",
@@ -1403,6 +1403,7 @@ jumbo_split_static_library("ui") {
       "webui/supervised_user_internals_ui.cc",
       "webui/supervised_user_internals_ui.h",
     ]
+    deps += [ "//chrome/browser/supervised_user/supervised_user_error_page" ]
   }
 
   if (is_chromeos) {
@@ -2235,6 +2236,8 @@ jumbo_split_static_library("ui") {
       "cocoa/tab_contents/chrome_web_contents_view_delegate_mac.mm",
       "cocoa/tab_contents/web_drag_bookmark_handler_mac.h",
       "cocoa/tab_contents/web_drag_bookmark_handler_mac.mm",
+      "cocoa/tab_menu_bridge.h",
+      "cocoa/tab_menu_bridge.mm",
       "cocoa/task_manager_mac.h",
       "cocoa/task_manager_mac.mm",
       "cocoa/touchbar/browser_window_default_touch_bar.h",
@@ -2297,7 +2300,6 @@ jumbo_split_static_library("ui") {
       "startup/credential_provider_signin_dialog_win.h",
       "startup/credential_provider_signin_info_fetcher_win.cc",
       "startup/credential_provider_signin_info_fetcher_win.h",
-      "startup/default_browser_prompt_win.cc",
       "views/certificate_viewer_win.cc",
       "views/chrome_cleaner_dialog_win.cc",
       "views/chrome_cleaner_dialog_win.h",
@@ -2667,6 +2669,8 @@ jumbo_split_static_library("ui") {
       "views/extensions/extension_uninstall_dialog_view.cc",
       "views/extensions/extensions_menu_button.cc",
       "views/extensions/extensions_menu_button.h",
+      "views/extensions/extensions_menu_item_view.cc",
+      "views/extensions/extensions_menu_item_view.h",
       "views/extensions/extensions_menu_view.cc",
       "views/extensions/extensions_menu_view.h",
       "views/extensions/extensions_toolbar_button.cc",
@@ -2901,6 +2905,8 @@ jumbo_split_static_library("ui") {
       "views/passwords/account_chooser_dialog_view.h",
       "views/passwords/auto_signin_first_run_dialog_view.cc",
       "views/passwords/auto_signin_first_run_dialog_view.h",
+      "views/passwords/credential_leak_dialog_view.cc",
+      "views/passwords/credential_leak_dialog_view.h",
       "views/passwords/credentials_item_view.cc",
       "views/passwords/credentials_item_view.h",
       "views/passwords/manage_passwords_icon_views.cc",
@@ -3898,6 +3904,8 @@ jumbo_split_static_library("ui") {
     deps += [ "//chrome/browser/resources:tab_strip_resources" ]
 
     sources += [
+      "views/frame/webui_tab_strip_container_view.cc",
+      "views/frame/webui_tab_strip_container_view.h",
       "webui/tab_strip/tab_strip_ui.cc",
       "webui/tab_strip/tab_strip_ui.h",
     ]

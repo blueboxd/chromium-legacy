@@ -100,7 +100,8 @@
                                        animated:NO
                                      completion:^{
                                        self.bannerIsPresenting = NO;
-                                     }];
+                                     }
+                                  userInitiated:NO];
 }
 - (void)destroyInfobar {
   [self.infobarCoordinator detachView];

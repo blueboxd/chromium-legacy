@@ -563,6 +563,10 @@ const IDNTestCase kIdnCases[] = {
     // ӏԍԃ.com
     {"xn--s5a8h3a.com", L"\x04cf\x050d\x0503.com", false},
 
+    // 1շ34567890.com
+    {"xn--134567890-gnk.com",
+     L"1շ34567890.com",
+     false},
     // ꓲ2345б7890.com
     {"xn--23457890-e7g93622b.com",
      L"\xa4f2"
@@ -620,6 +624,10 @@ const IDNTestCase kIdnCases[] = {
      L"12\x10DE"
      L"4567890.com",
      false},
+    // 123ㄐ567890.com
+    {"xn--123567890-dr5h.com",
+     L"123ㄐ567890.com",
+     false},
     // 123Ꮞ567890.com
     {"xn--123567890-dm4b.com",
      L"123\x13ce"
@@ -629,6 +637,10 @@ const IDNTestCase kIdnCases[] = {
     {"xn--123457890-fzh.com",
      L"12345\x0431"
      L"7890.com",
+     false},
+    // 12345ճ7890.com
+    {"xn--123457890-fmk.com",
+     L"12345ճ7890.com",
      false},
     // 1234567ȣ90.com
     {"xn--123456790-6od.com",

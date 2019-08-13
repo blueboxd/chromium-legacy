@@ -203,12 +203,6 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
     // If we've paused for Page.waitForDebugger, handle it ourselves.
     if (QuitForPageWait())
       return;
-
-    // Otherwise, pass to the client (embedded workers do it differently).
-    WebDevToolsAgentImpl* agent =
-        WebLocalFrameImpl::FromFrame(frame)->DevToolsAgentImpl();
-    if (agent && agent->worker_client_)
-      agent->worker_client_->ResumeStartup();
   }
 
   bool running_for_debug_break_;
@@ -306,9 +300,6 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
       session, include_view_agents_, dom_agent, inspected_frames,
       web_local_frame_impl_->ViewImpl()->GetPage());
 
-  if (restore && worker_client_)
-    worker_client_->ResumeStartup();
-
   if (node_to_inspect_) {
     overlay_agent->Inspect(node_to_inspect_);
     node_to_inspect_ = nullptr;
@@ -322,23 +313,19 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
 // static
 WebDevToolsAgentImpl* WebDevToolsAgentImpl::CreateForFrame(
     WebLocalFrameImpl* frame) {
-  return MakeGarbageCollected<WebDevToolsAgentImpl>(frame, IsMainFrame(frame),
-                                                    nullptr);
+  return MakeGarbageCollected<WebDevToolsAgentImpl>(frame, IsMainFrame(frame));
 }
 
 // static
 WebDevToolsAgentImpl* WebDevToolsAgentImpl::CreateForWorker(
-    WebLocalFrameImpl* frame,
-    WorkerClient* worker_client) {
-  return MakeGarbageCollected<WebDevToolsAgentImpl>(frame, true, worker_client);
+    WebLocalFrameImpl* frame) {
+  return MakeGarbageCollected<WebDevToolsAgentImpl>(frame, true);
 }
 
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebLocalFrameImpl* web_local_frame_impl,
-    bool include_view_agents,
-    WorkerClient* worker_client)
-    : worker_client_(worker_client),
-      web_local_frame_impl_(web_local_frame_impl),
+    bool include_view_agents)
+    : web_local_frame_impl_(web_local_frame_impl),
       probe_sink_(web_local_frame_impl_->GetFrame()->GetProbeSink()),
       resource_content_loader_(
           MakeGarbageCollected<InspectorResourceContentLoader>(
@@ -355,9 +342,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
       Platform::Current()->GetIOTaskRunner());
 }
 
-WebDevToolsAgentImpl::~WebDevToolsAgentImpl() {
-  DCHECK(!worker_client_);
-}
+WebDevToolsAgentImpl::~WebDevToolsAgentImpl() {}
 
 void WebDevToolsAgentImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(agent_);
@@ -377,7 +362,6 @@ void WebDevToolsAgentImpl::WillBeDestroyed() {
   DCHECK(inspected_frames_->Root()->View());
   agent_->Dispose();
   resource_content_loader_->Dispose();
-  worker_client_ = nullptr;
 }
 
 void WebDevToolsAgentImpl::BindRequest(

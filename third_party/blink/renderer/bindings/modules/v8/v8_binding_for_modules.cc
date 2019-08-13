@@ -176,6 +176,12 @@ static const size_t kMaximumDepth = 2000;
 static const size_t kMaximumDepth = 1000;
 #endif
 
+// Convert a script value to an Indexed DB key. If the result cannot be
+// converted, nullptr is returned. Special case: if an array is being
+// converted, and a potential subkey cannot be converted, then the array is
+// returned but with an 'Invalid' entry; this is used for "multi-entry"
+// indexes where an array with invalid members is permitted will later be
+// sanitized.
 static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
@@ -188,7 +194,6 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
   if (value->IsDate() && !std::isnan(value.As<v8::Date>()->ValueOf()))
     return IDBKey::CreateDate(value.As<v8::Date>()->ValueOf());
 
-  // https://w3c.github.io/IndexedDB/#convert-a-key-to-a-value
   if (value->IsArrayBuffer()) {
     DOMArrayBuffer* buffer = V8ArrayBuffer::ToImpl(value.As<v8::Object>());
     if (buffer->IsDetached()) {
@@ -220,8 +225,9 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
       return nullptr;
     stack.push_back(array);
 
-    IDBKey::KeyArray subkeys;
     uint32_t length = array->Length();
+    IDBKey::KeyArray subkeys;
+    subkeys.ReserveInitialCapacity(length);
     v8::TryCatch block(isolate);
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
     for (uint32_t i = 0; i < length; ++i) {
@@ -240,9 +246,9 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
       std::unique_ptr<IDBKey> subkey =
           CreateIDBKeyFromValue(isolate, item, stack, exception_state);
       if (!subkey)
-        subkeys.push_back(IDBKey::CreateInvalid());
+        subkeys.emplace_back(IDBKey::CreateInvalid());
       else
-        subkeys.push_back(std::move(subkey));
+        subkeys.emplace_back(std::move(subkey));
     }
 
     stack.pop_back();
@@ -251,6 +257,14 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
   return nullptr;
 }
 
+// Convert a script value to an Indexed DB key. If the result cannot be
+// converted, an 'Invalid' key is returned. Special case: if an array is being
+// converted, and a potential subkey cannot be converted, then the array is
+// returned but with an 'Invalid' entry; this is used for "multi-entry"
+// indexes where an array with invalid members is permitted will later be
+// sanitized. This is used to implement both of the following spec algorithms:
+// https://w3c.github.io/IndexedDB/#convert-value-to-key
+// https://w3c.github.io/IndexedDB/#convert-a-value-to-a-multientry-key
 static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
@@ -290,6 +304,12 @@ static Vector<String> ParseKeyPath(const String& key_path) {
   return elements;
 }
 
+// Evaluate a key path string against a value and return a key. It must be
+// called repeatedly for array-type key paths. Failure in the evaluation steps
+// (per spec) is represented by returning nullptr. Failure to convert the result
+// to a key is representing by returning an 'Invalid' key. (An array with
+// invalid members will be returned if needed.)
+// https://w3c.github.io/IndexedDB/#evaluate-a-key-path-on-a-value
 static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
     v8::Isolate* isolate,
     v8::Local<v8::Value> v8_value,
@@ -371,6 +391,12 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
   return CreateIDBKeyFromValue(isolate, v8_value, exception_state);
 }
 
+// Evaluate a key path against a value and return a key. For string-type
+// paths, nullptr is returned if evaluation of the path fails, and an
+// 'Invalid' key if evaluation succeeds but conversion fails. For array-type
+// paths, nullptr is returned if evaluation of any sub-path fails, otherwise
+// an array key is returned (with potentially 'Invalid' members).
+// https://w3c.github.io/IndexedDB/#evaluate-a-key-path-on-a-value
 static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
@@ -379,14 +405,18 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
   DCHECK(!key_path.IsNull());
   v8::HandleScope handle_scope(isolate);
   if (key_path.GetType() == mojom::IDBKeyPathType::Array) {
-    IDBKey::KeyArray result;
     const Vector<String>& array = key_path.Array();
-    for (wtf_size_t i = 0; i < array.size(); ++i) {
-      result.emplace_back(CreateIDBKeyFromValueAndKeyPath(
-          isolate, value, array[i], exception_state));
-      if (!result.back())
+    IDBKey::KeyArray result;
+    result.ReserveInitialCapacity(array.size());
+    for (const String& path : array) {
+      auto key = CreateIDBKeyFromValueAndKeyPath(isolate, value, path,
+                                                 exception_state);
+      // Evaluation of path failed - overall failure.
+      if (!key)
         return nullptr;
+      result.emplace_back(std::move(key));
     }
+    // An array key is always returned, even if members may be invalid.
     return IDBKey::CreateArray(std::move(result));
   }
 

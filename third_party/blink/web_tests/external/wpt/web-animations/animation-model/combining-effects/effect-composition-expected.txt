@@ -9,5 +9,6 @@ PASS add onto an underlying animation value
 PASS Composite when mixing add and replace
 PASS add specified on a keyframe overrides the composite mode of the effect
 PASS unspecified composite mode on a keyframe is overriden by setting add of the effect
+PASS Composite replace fully replaces the underlying animation value
 Harness: the test ran to completion.
 

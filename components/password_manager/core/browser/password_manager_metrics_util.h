@@ -212,20 +212,36 @@ enum class DeleteCorruptedPasswordsResult {
 };
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-enum class SyncPasswordHashChange {
-  SAVED_ON_CHROME_SIGNIN,
-  SAVED_IN_CONTENT_AREA,
-  CLEARED_ON_CHROME_SIGNOUT,
-  CHANGED_IN_CONTENT_AREA,
-  NOT_SYNC_PASSWORD_CHANGE,
-  SAVED_SYNC_PASSWORD_CHANGE_COUNT
+enum class GaiaPasswordHashChange {
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+
+  // Password hash saved event where the account is used to sign in to Chrome
+  // (syncing).
+  SAVED_ON_CHROME_SIGNIN = 0,
+  // Syncing account password hash saved in content area (syncing).
+  SAVED_IN_CONTENT_AREA = 1,
+  // Clear syncing password hash when the account is signed out of Chrome
+  // (syncing).
+  CLEARED_ON_CHROME_SIGNOUT = 2,
+  // Password hash changed event where the account is used to sign in to Chrome
+  // (syncing).
+  CHANGED_IN_CONTENT_AREA = 3,
+  // Password hash change event where the account is not syncing.
+  NOT_SYNC_PASSWORD_CHANGE = 4,
+  SAVED_SYNC_PASSWORD_CHANGE_COUNT = 5,
+  kMaxValue = SAVED_SYNC_PASSWORD_CHANGE_COUNT,
 };
 
 enum class IsSyncPasswordHashSaved {
-  NOT_SAVED,
-  SAVED_VIA_STRING_PREF,
-  SAVED_VIA_LIST_PREF,
-  IS_SYNC_PASSWORD_HASH_SAVED_COUNT
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+
+  NOT_SAVED = 0,
+  SAVED_VIA_STRING_PREF = 1,
+  SAVED_VIA_LIST_PREF = 2,
+  IS_SYNC_PASSWORD_HASH_SAVED_COUNT = 3,
+  kMaxValue = IS_SYNC_PASSWORD_HASH_SAVED_COUNT,
 };
 #endif
 
@@ -462,8 +478,9 @@ void LogGenerationDialogChoice(
 void LogGenerationPresaveConflict(GenerationPresaveConflict value);
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-// Log a save sync password change event.
-void LogSyncPasswordHashChange(SyncPasswordHashChange event);
+// Log a save gaia password change event.
+void LogGaiaPasswordHashChange(GaiaPasswordHashChange event,
+                               bool is_sync_password);
 
 // Log whether a sync password hash saved.
 void LogIsSyncPasswordHashSaved(IsSyncPasswordHashSaved state,

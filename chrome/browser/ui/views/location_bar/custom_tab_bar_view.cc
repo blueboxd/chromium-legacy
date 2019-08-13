@@ -182,7 +182,6 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
                                    LocationBarView::Delegate* delegate)
     : TabStripModelObserver(),
       delegate_(delegate),
-      tab_strip_model_observer_(this),
       browser_(browser_view->browser()) {
   set_context_menu_controller(this);
   base::Optional<SkColor> optional_theme_color =
@@ -225,7 +224,7 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
       .SetInteriorMargin(GetLayoutInsets(LayoutInset::TOOLBAR_INTERIOR_MARGIN));
 
-  tab_strip_model_observer_.Add(browser_->tab_strip_model());
+  browser_->tab_strip_model()->AddObserver(this);
 }
 
 CustomTabBarView::~CustomTabBarView() {}

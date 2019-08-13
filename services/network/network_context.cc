@@ -1684,10 +1684,9 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
     cert_net_fetcher_ = base::MakeRefCounted<net::CertNetFetcherImpl>();
 #endif
 #if defined(OS_CHROMEOS)
+    scoped_refptr<net::CertVerifyProc> verify_proc;
     if (params_->username_hash.empty()) {
-      cert_verifier = std::make_unique<net::CachingCertVerifier>(
-          std::make_unique<net::MultiThreadedCertVerifier>(
-              CreateCertVerifyProcWithoutUserSlots(cert_net_fetcher_)));
+      verify_proc = CreateCertVerifyProcWithoutUserSlots(cert_net_fetcher_);
     } else {
       // Make sure NSS is initialized for the user.
       crypto::InitializeNSSForChromeOSUser(params_->username_hash,
@@ -1695,17 +1694,15 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
 
       crypto::ScopedPK11Slot public_slot =
           crypto::GetPublicSlotForChromeOSUser(params_->username_hash);
-      scoped_refptr<net::CertVerifyProc> verify_proc =
-          CreateCertVerifyProcForUser(cert_net_fetcher_,
-                                      std::move(public_slot));
-
-      cert_verifier_with_trust_anchors_ = new CertVerifierWithTrustAnchors(
-          base::Bind(&NetworkContext::TrustAnchorUsed, base::Unretained(this)));
-      UpdateAdditionalCertificates(
-          std::move(params_->initial_additional_certificates));
-      cert_verifier_with_trust_anchors_->InitializeOnIOThread(verify_proc);
-      cert_verifier = base::WrapUnique(cert_verifier_with_trust_anchors_);
+      verify_proc = CreateCertVerifyProcForUser(cert_net_fetcher_,
+                                                std::move(public_slot));
     }
+    cert_verifier_with_trust_anchors_ = new CertVerifierWithTrustAnchors(
+        base::Bind(&NetworkContext::TrustAnchorUsed, base::Unretained(this)));
+    UpdateAdditionalCertificates(
+        std::move(params_->initial_additional_certificates));
+    cert_verifier_with_trust_anchors_->InitializeOnIOThread(verify_proc);
+    cert_verifier = base::WrapUnique(cert_verifier_with_trust_anchors_);
 #elif BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
     if (params_->trial_comparison_cert_verifier_params) {
       cert_verifier = std::make_unique<net::CachingCertVerifier>(

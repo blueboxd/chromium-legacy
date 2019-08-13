@@ -62,9 +62,7 @@ class BlobURLTokenImpl : public blink::mojom::BlobURLToken {
 
 BlobURLStoreImpl::BlobURLStoreImpl(base::WeakPtr<BlobStorageContext> context,
                                    BlobRegistryImpl::Delegate* delegate)
-    : context_(std::move(context)),
-      delegate_(delegate),
-      weak_ptr_factory_(this) {}
+    : context_(std::move(context)), delegate_(delegate) {}
 
 BlobURLStoreImpl::~BlobURLStoreImpl() {
   if (context_) {

@@ -25,6 +25,8 @@ using ::testing::_;
 
 class MockContentIndexProvider : public ContentIndexProvider {
  public:
+  MOCK_METHOD1(GetIconSizes,
+               std::vector<gfx::Size>(blink::mojom::ContentCategory));
   MOCK_METHOD1(OnContentAdded, void(ContentIndexEntry entry));
   MOCK_METHOD3(OnContentDeleted,
                void(int64_t service_Worker_registration_id,

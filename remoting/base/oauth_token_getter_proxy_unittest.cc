@@ -48,11 +48,11 @@ class FakeOAuthTokenGetter : public OAuthTokenGetter {
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<FakeOAuthTokenGetter> weak_factory_;
+  base::WeakPtrFactory<FakeOAuthTokenGetter> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FakeOAuthTokenGetter);
 };
 
-FakeOAuthTokenGetter::FakeOAuthTokenGetter() : weak_factory_(this) {
+FakeOAuthTokenGetter::FakeOAuthTokenGetter() {
   DETACH_FROM_THREAD(thread_checker_);
 }
 

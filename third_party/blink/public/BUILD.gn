@@ -145,7 +145,6 @@ source_set("blink_headers") {
     "platform/modules/mediastream/media_stream_audio_processor_options.h",
     "platform/modules/mediastream/media_stream_audio_source.h",
     "platform/modules/mediastream/media_stream_audio_track.h",
-    "platform/modules/mediastream/media_stream_dispatcher_eventhandler.h",
     "platform/modules/mediastream/media_stream_types.h",
     "platform/modules/mediastream/secure_display_link_tracker.h",
     "platform/modules/mediastream/web_media_element_source_utils.h",

@@ -8,8 +8,11 @@
 #include <memory>
 #include <vector>
 
+#include "content/public/renderer/plugin_ax_tree_source.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "ppapi/c/private/ppp_pdf.h"
+#include "ppapi/shared_impl/pdf_accessibility_shared.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_source.h"
@@ -27,10 +30,7 @@ class Transform;
 
 namespace pdf {
 
-class PdfAccessibilityTree
-    : public ui::AXTreeSource<const ui::AXNode*,
-                              ui::AXNodeData,
-                              ui::AXTreeData> {
+class PdfAccessibilityTree : public content::PluginAXTreeSource {
  public:
   PdfAccessibilityTree(content::RendererPpapiHost* host,
                        PP_Instance instance);
@@ -44,8 +44,9 @@ class PdfAccessibilityTree
       const PP_PrivateAccessibilityPageInfo& page_info,
       const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars);
+  void HandleAction(const PP_PdfAccessibilityActionData& action_data);
 
-  // AXTreeSource implementation.
+  // PluginAXTreeSource implementation.
   bool GetTreeData(ui::AXTreeData* tree_data) const override;
   ui::AXNode* GetRoot() const override;
   ui::AXNode* GetFromId(int32_t id) const override;
@@ -59,6 +60,8 @@ class PdfAccessibilityTree
   const ui::AXNode* GetNull() const override;
   void SerializeNode(const ui::AXNode* node, ui::AXNodeData* out_data)
       const override;
+  std::unique_ptr<ui::AXActionTarget> CreateActionTarget(
+      const ui::AXNode& target_node) override;
 
  private:
   // Update the AXTreeData when the selected range changed.

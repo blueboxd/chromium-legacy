@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/history/core/browser/history_service_observer.h"
-#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "url/gurl.h"
 
@@ -25,7 +24,8 @@ class HostContentSettingsMap;
 
 namespace safe_browsing {
 
-using password_manager::metrics_util::PasswordType;
+using ReusedPasswordAccountType =
+    LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordAccountType;
 
 class VerdictCacheManager : public history::HistoryServiceObserver {
  public:
@@ -48,7 +48,7 @@ class VerdictCacheManager : public history::HistoryServiceObserver {
   void CachePhishGuardVerdict(
       const GURL& url,
       LoginReputationClientRequest::TriggerType trigger_type,
-      PasswordType password_type,
+      ReusedPasswordAccountType password_type,
       const LoginReputationClientResponse& verdict,
       const base::Time& receive_time);
 
@@ -58,7 +58,7 @@ class VerdictCacheManager : public history::HistoryServiceObserver {
   LoginReputationClientResponse::VerdictType GetCachedPhishGuardVerdict(
       const GURL& url,
       LoginReputationClientRequest::TriggerType trigger_type,
-      PasswordType password_type,
+      ReusedPasswordAccountType password_type,
       LoginReputationClientResponse* out_response);
 
   // Gets the total number of verdicts of the specified |trigger_type| we cached

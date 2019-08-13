@@ -3,31 +3,43 @@
 // found in the LICENSE file.
 
 import 'chrome://tab-strip/tab.js';
+import {TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
+import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
 
 suite('Tab', function() {
+  let testTabsApiProxy;
   let tabElement;
+
+  const tab = {
+    id: 1001,
+    title: 'My title',
+  };
 
   setup(() => {
     document.body.innerHTML = '';
 
+    testTabsApiProxy = new TestTabsApiProxy();
+    TabsApiProxy.instance_ = testTabsApiProxy;
+
     tabElement = document.createElement('tabstrip-tab');
+    tabElement.tab = tab;
     document.body.appendChild(tabElement);
   });
 
-  test('sets the tabindex', () => {
-    assertEquals(tabElement.getAttribute('tabindex'), '0');
-  });
-
   test('sets the title', () => {
-    const expectedTitle = 'My title';
-    tabElement.tab = {title: expectedTitle};
     assertEquals(
-        expectedTitle,
-        tabElement.shadowRoot.querySelector('#titleText').innerText);
+        tab.title, tabElement.shadowRoot.querySelector('#titleText').innerText);
   });
 
   test('exposes the tab ID to an attribute', () => {
     tabElement.tab = {id: 1001};
     assertEquals('1001', tabElement.getAttribute('data-tab-id'));
+  });
+
+  test('closes the tab', () => {
+    tabElement.shadowRoot.querySelector('#close').click();
+    return testTabsApiProxy.whenCalled('closeTab').then(tabId => {
+      assertEquals(tabId, tab.id);
+    });
   });
 });

@@ -16,10 +16,12 @@
 #include "base/macros.h"
 #include "content/browser/renderer_host/direct_manipulation_event_handler_win.h"
 #include "content/common/content_export.h"
+#include "ui/compositor/compositor_animation_observer.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace ui {
 
+class Compositor;
 class WindowEventTarget;
 
 }  // namespace ui
@@ -44,13 +46,15 @@ bool LoggingEnabled();
 //    when DM_POINTERHITTEST.
 // 3. OnViewportStatusChanged will be called when the gesture phase change.
 //    OnContentUpdated will be called when the gesture update.
-class CONTENT_EXPORT DirectManipulationHelper {
+class CONTENT_EXPORT DirectManipulationHelper
+    : public ui::CompositorAnimationObserver {
  public:
   // Creates and initializes an instance of this class if Direct Manipulation is
   // enabled on the platform. Returns nullptr if it disabled or failed on
   // initialization.
   static std::unique_ptr<DirectManipulationHelper> CreateInstance(
       HWND window,
+      ui::Compositor* compositor,
       ui::WindowEventTarget* event_target);
 
   // Creates and initializes an instance for testing.
@@ -58,49 +62,48 @@ class CONTENT_EXPORT DirectManipulationHelper {
       ui::WindowEventTarget* event_target,
       Microsoft::WRL::ComPtr<IDirectManipulationViewport> viewport);
 
-  ~DirectManipulationHelper();
+  ~DirectManipulationHelper() override;
 
-  // Actives Direct Manipulation, call when window show.
-  void Activate();
-
-  // Deactivates Direct Manipulation, call when window show.
-  void Deactivate();
+  // CompositorAnimationObserver implements.
+  // DirectManipulation needs to poll for new events every frame while finger
+  // gesturing on touchpad.
+  void OnAnimationStep(base::TimeTicks timestamp) override;
+  void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
   // Updates viewport size. Call it when window bounds updated.
   void SetSizeInPixels(const gfx::Size& size_in_pixels);
 
-  // Reset for gesture end.
-  HRESULT Reset(bool need_animtation);
+  // Pass the pointer hit test to Direct Manipulation.
+  void OnPointerHitTest(WPARAM w_param);
 
-  // Pass the pointer hit test to Direct Manipulation. Return true indicated we
-  // need poll for new events every frame from here.
-  bool OnPointerHitTest(WPARAM w_param, ui::WindowEventTarget* event_target);
+  // Register this as an AnimationObserver of ui::Compositor.
+  void AddAnimationObserver();
 
-  // On each frame poll new Direct Manipulation events. Return true if we still
-  // need poll for new events on next frame, otherwise stop request need begin
-  // frame.
-  bool PollForNextEvent();
+  // Unregister this as an AnimationObserver of ui::Compositor.
+  void RemoveAnimationObserver();
 
  private:
   friend class content::DirectManipulationBrowserTest;
   friend class DirectManipulationUnitTest;
 
-  DirectManipulationHelper();
+  DirectManipulationHelper(HWND window, ui::Compositor* compositor);
 
   // This function instantiates Direct Manipulation and creates a viewport for
-  // the passed in |window|. Return false if initialize failed.
+  // |window_|. Return false if initialize failed.
   bool Initialize(ui::WindowEventTarget* event_target);
 
   void SetDeviceScaleFactorForTesting(float factor);
+
+  void Destroy();
 
   Microsoft::WRL::ComPtr<IDirectManipulationManager> manager_;
   Microsoft::WRL::ComPtr<IDirectManipulationUpdateManager> update_manager_;
   Microsoft::WRL::ComPtr<IDirectManipulationViewport> viewport_;
   Microsoft::WRL::ComPtr<DirectManipulationEventHandler> event_handler_;
   HWND window_;
+  ui::Compositor* compositor_ = nullptr;
   DWORD view_port_handler_cookie_;
-  bool need_poll_events_ = false;
-  gfx::Size viewport_size_in_pixels_;
+  bool has_animation_observer_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DirectManipulationHelper);
 };

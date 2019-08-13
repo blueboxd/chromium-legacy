@@ -10,7 +10,7 @@ namespace remoting {
 
 ScopedGrpcServerStream::ScopedGrpcServerStream(
     base::WeakPtr<GrpcAsyncServerStreamingRequestBase> request)
-    : request_(request), weak_factory_(this) {}
+    : request_(request) {}
 
 ScopedGrpcServerStream::~ScopedGrpcServerStream() {
   if (request_) {

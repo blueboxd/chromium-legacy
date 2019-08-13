@@ -86,8 +86,7 @@ FidoCableHandshakeHandler::FidoCableHandshakeHandler(
       handshake_key_(GenerateKey(
           fido_parsing_utils::ConvertToStringPiece(session_pre_key_),
           fido_parsing_utils::ConvertToStringPiece(nonce_),
-          kCableHandshakeKeyInfo)),
-      weak_factory_(this) {
+          kCableHandshakeKeyInfo)) {
   crypto::RandBytes(client_session_random_.data(),
                     client_session_random_.size());
 }

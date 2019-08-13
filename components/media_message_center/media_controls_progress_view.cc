@@ -19,10 +19,13 @@ namespace media_message_center {
 
 namespace {
 
-constexpr int kProgressTimeFontSize = 12;
+constexpr int kProgressBarAndTimeSpacing = 3;
+constexpr int kProgressTimeFontSize = 11;
+constexpr int kProgressBarHeight = 4;
+constexpr int kMinClickHeight = 14;
+constexpr int kMaxClickHeight = 24;
 constexpr gfx::Size kTimeSpacingSize = gfx::Size(150, 10);
-constexpr gfx::Insets kProgressViewInsets = gfx::Insets(15, 25, 0, 25);
-constexpr gfx::Insets kProgressBarInsets = gfx::Insets(5, 0, 5, 0);
+constexpr gfx::Insets kProgressViewInsets = gfx::Insets(15, 0, 0, 0);
 
 }  // namespace
 
@@ -30,10 +33,11 @@ MediaControlsProgressView::MediaControlsProgressView(
     base::RepeatingCallback<void(double)> seek_callback)
     : seek_callback_(std::move(seek_callback)) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, kProgressViewInsets));
+      views::BoxLayout::Orientation::kVertical, kProgressViewInsets,
+      kProgressBarAndTimeSpacing));
 
-  progress_bar_ = AddChildView(std::make_unique<views::ProgressBar>(5, false));
-  progress_bar_->SetBorder(views::CreateEmptyBorder(kProgressBarInsets));
+  progress_bar_ = AddChildView(
+      std::make_unique<views::ProgressBar>(kProgressBarHeight, false));
 
   // Font list for text views.
   gfx::Font default_font;
@@ -127,28 +131,22 @@ void MediaControlsProgressView::UpdateProgress(
 }
 
 bool MediaControlsProgressView::OnMousePressed(const ui::MouseEvent& event) {
-  gfx::Point location_in_bar(event.location());
-  ConvertPointToTarget(this, this->progress_bar_, &location_in_bar);
-
-  if (!event.IsOnlyLeftMouseButton() ||
-      !progress_bar_->GetLocalBounds().Contains(location_in_bar)) {
+  if (!event.IsOnlyLeftMouseButton() || event.y() < kMinClickHeight ||
+      event.y() > kMaxClickHeight) {
     return false;
   }
 
-  HandleSeeking(location_in_bar);
+  HandleSeeking(event.location());
   return true;
 }
 
 void MediaControlsProgressView::OnGestureEvent(ui::GestureEvent* event) {
-  gfx::Point location_in_bar(event->location());
-  ConvertPointToTarget(this, this->progress_bar_, &location_in_bar);
-
-  if (event->type() != ui::ET_GESTURE_TAP ||
-      !progress_bar_->GetLocalBounds().Contains(location_in_bar)) {
+  if (event->type() != ui::ET_GESTURE_TAP || event->y() < kMinClickHeight ||
+      event->y() > kMaxClickHeight) {
     return;
   }
 
-  HandleSeeking(location_in_bar);
+  HandleSeeking(event->location());
   event->SetHandled();
 }
 
@@ -178,8 +176,10 @@ void MediaControlsProgressView::SetDuration(const base::string16& duration) {
   duration_->SetText(duration);
 }
 
-void MediaControlsProgressView::HandleSeeking(
-    const gfx::Point& location_in_bar) {
+void MediaControlsProgressView::HandleSeeking(const gfx::Point& location) {
+  gfx::Point location_in_bar(location);
+  ConvertPointToTarget(this, progress_bar_, &location_in_bar);
+
   double seek_to_progress =
       static_cast<double>(location_in_bar.x()) / progress_bar_->width();
   seek_callback_.Run(seek_to_progress);

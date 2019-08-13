@@ -87,7 +87,7 @@ class CopyOrMoveOperationDelegate
     base::Time last_progress_callback_invocation_time_;
     base::TimeDelta min_progress_callback_invocation_span_;
     bool cancel_requested_;
-    base::WeakPtrFactory<StreamCopyHelper> weak_factory_;
+    base::WeakPtrFactory<StreamCopyHelper> weak_factory_{this};
     DISALLOW_COPY_AND_ASSIGN(StreamCopyHelper);
   };
 
@@ -153,7 +153,7 @@ class CopyOrMoveOperationDelegate
   StatusCallback callback_;
 
   std::map<CopyOrMoveImpl*, std::unique_ptr<CopyOrMoveImpl>> running_copy_set_;
-  base::WeakPtrFactory<CopyOrMoveOperationDelegate> weak_factory_;
+  base::WeakPtrFactory<CopyOrMoveOperationDelegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CopyOrMoveOperationDelegate);
 };

@@ -620,10 +620,8 @@ void WaitForBrowserToClose(Browser* browser) {
 }
 
 TabAddedWaiter::TabAddedWaiter(Browser* browser) {
-  scoped_observer_.Add(browser->tab_strip_model());
+  browser->tab_strip_model()->AddObserver(this);
 }
-
-TabAddedWaiter::~TabAddedWaiter() = default;
 
 void TabAddedWaiter::Wait() {
   run_loop_.Run();
@@ -640,7 +638,7 @@ void TabAddedWaiter::OnTabStripModelChanged(
 AllBrowserTabAddedWaiter::AllBrowserTabAddedWaiter() {
   BrowserList::AddObserver(this);
   for (const Browser* browser : *BrowserList::GetInstance())
-    tab_strip_observer_.Add(browser->tab_strip_model());
+    browser->tab_strip_model()->AddObserver(this);
 }
 
 AllBrowserTabAddedWaiter::~AllBrowserTabAddedWaiter() {
@@ -664,7 +662,7 @@ void AllBrowserTabAddedWaiter::OnTabStripModelChanged(
 }
 
 void AllBrowserTabAddedWaiter::OnBrowserAdded(Browser* browser) {
-  tab_strip_observer_.Add(browser->tab_strip_model());
+  browser->tab_strip_model()->AddObserver(this);
 }
 
 }  // namespace ui_test_utils

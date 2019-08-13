@@ -98,7 +98,7 @@ class GCM_EXPORT CheckinRequest {
   // Recorder that records GCM activities for debugging purpose. Not owned.
   GCMStatsRecorder* recorder_;
 
-  base::WeakPtrFactory<CheckinRequest> weak_ptr_factory_;
+  base::WeakPtrFactory<CheckinRequest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CheckinRequest);
 };

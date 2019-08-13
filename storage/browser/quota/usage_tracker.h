@@ -107,7 +107,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) UsageTracker
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<UsageTracker> weak_factory_;
+  base::WeakPtrFactory<UsageTracker> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(UsageTracker);
 };
 

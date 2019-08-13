@@ -12,6 +12,9 @@ namespace GaiaConstants {
 // Gaia sources for accounting
 extern const char kChromeOSSource[];
 extern const char kChromeSource[];
+// Used as Gaia source suffix to detect retry requests because of
+// |GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE|.
+extern const char kUnexpectedServiceResponse[];
 
 // Gaia services for requesting
 extern const char kGaiaService[];  // uber token

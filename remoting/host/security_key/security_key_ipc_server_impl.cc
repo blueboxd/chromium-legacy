@@ -54,8 +54,7 @@ SecurityKeyIpcServerImpl::SecurityKeyIpcServerImpl(
       initial_connect_timeout_(initial_connect_timeout),
       connect_callback_(connect_callback),
       done_callback_(done_callback),
-      message_callback_(message_callback),
-      weak_factory_(this) {
+      message_callback_(message_callback) {
   DCHECK_GT(connection_id_, 0);
   DCHECK(!done_callback_.is_null());
   DCHECK(!message_callback_.is_null());

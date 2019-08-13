@@ -45,6 +45,7 @@ class WidgetElement : public views::WidgetRemovalsObserver,
       const override;
 
   static views::Widget* From(const UIElement* element);
+  void InitSources() override;
 
  private:
   views::Widget* widget_;

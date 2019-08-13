@@ -55,8 +55,7 @@ FakeBluetoothGattDescriptorClient::DescriptorData::DescriptorData() = default;
 
 FakeBluetoothGattDescriptorClient::DescriptorData::~DescriptorData() = default;
 
-FakeBluetoothGattDescriptorClient::FakeBluetoothGattDescriptorClient()
-    : weak_ptr_factory_(this) {}
+FakeBluetoothGattDescriptorClient::FakeBluetoothGattDescriptorClient() {}
 
 FakeBluetoothGattDescriptorClient::~FakeBluetoothGattDescriptorClient() {
   for (auto iter = properties_.begin(); iter != properties_.end(); iter++)

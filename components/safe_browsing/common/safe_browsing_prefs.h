@@ -46,11 +46,11 @@ extern const char kSafeBrowsingScoutReportingEnabled[];
 // lists of doubles.
 extern const char kSafeBrowsingTriggerEventTimestamps[];
 
-// Dictionary that records the origin and navigation ID pairs of unhandled sync
+// Dictionary that records the origin and navigation ID pairs of unhandled gaia
 // password reuses. The keys are origin strings and the ID values are 8-byte
-// ints. Only set/update if a Chrome Sync user reuses their Gaia password on
+// ints. Only set/update if a Chrome user reuses their Gaia password on a
 // phishing site.
-extern const char kSafeBrowsingUnhandledSyncPasswordReuses[];
+extern const char kSafeBrowsingUnhandledGaiaPasswordReuses[];
 
 // Integer timestamp of next time the PasswordCaptured event should be logged.
 extern const char kSafeBrowsingNextPasswordCaptureEventLogTime[];

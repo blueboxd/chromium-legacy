@@ -19,7 +19,6 @@
 #include "content/browser/download/download_manager_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -63,12 +62,13 @@ class DownloadFileWithError : public download::DownloadFileImpl {
 
   void RenameAndUniquify(const base::FilePath& full_path,
                          const RenameCompletionCallback& callback) override;
-  void RenameAndAnnotate(const base::FilePath& full_path,
-                         const std::string& client_guid,
-                         const GURL& source_url,
-                         const GURL& referrer_url,
-                         std::unique_ptr<service_manager::Connector> connector,
-                         const RenameCompletionCallback& callback) override;
+  void RenameAndAnnotate(
+      const base::FilePath& full_path,
+      const std::string& client_guid,
+      const GURL& source_url,
+      const GURL& referrer_url,
+      mojo::PendingRemote<quarantine::mojom::Quarantine> remote_quarantine,
+      const RenameCompletionCallback& callback) override;
 
  private:
   // Error generating helper.
@@ -238,7 +238,7 @@ void DownloadFileWithError::RenameAndAnnotate(
     const std::string& client_guid,
     const GURL& source_url,
     const GURL& referrer_url,
-    std::unique_ptr<service_manager::Connector> connector,
+    mojo::PendingRemote<quarantine::mojom::Quarantine> remote_quarantine,
     const RenameCompletionCallback& callback) {
   download::DownloadInterruptReason error_to_return =
       download::DOWNLOAD_INTERRUPT_REASON_NONE;
@@ -263,7 +263,7 @@ void DownloadFileWithError::RenameAndAnnotate(
   }
 
   download::DownloadFileImpl::RenameAndAnnotate(
-      full_path, client_guid, source_url, referrer_url, nullptr,
+      full_path, client_guid, source_url, referrer_url, mojo::NullRemote(),
       std::move(callback_to_use));
 }
 

@@ -18,8 +18,7 @@ VideoSourceImpl::VideoSourceImpl(
       device_id_(device_id),
       on_last_binding_closed_cb_(std::move(on_last_binding_closed_cb)),
       device_status_(DeviceStatus::kNotStarted),
-      restart_device_once_when_stop_complete_(false),
-      weak_factory_(this) {
+      restart_device_once_when_stop_complete_(false) {
   // Unretained(this) is safe because |this| owns |bindings_|.
   bindings_.set_connection_error_handler(base::BindRepeating(
       &VideoSourceImpl::OnClientDisconnected, base::Unretained(this)));

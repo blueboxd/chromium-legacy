@@ -13,6 +13,7 @@ source_set("cdm") {
   ]
 
   deps = [
+    "//fuchsia/base",
     "//media",
     "//media/fuchsia/mojom",
     "//services/service_manager/public/cpp",

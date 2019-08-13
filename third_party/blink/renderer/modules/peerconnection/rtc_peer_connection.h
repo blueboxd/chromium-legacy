@@ -358,8 +358,8 @@ class MODULES_EXPORT RTCPeerConnection final
 
   void Trace(blink::Visitor*) override;
 
-  base::TimeTicks WebRtcMsToBlinkTimeTicks(
-      double webrtc_monotonic_time_ms) const;
+  base::TimeTicks WebRtcTimestampToBlinkTimestamp(
+      base::TimeTicks webrtc_monotonic_time) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RTCPeerConnectionTest, GetAudioTrack);

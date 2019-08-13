@@ -115,10 +115,9 @@ bool IOSChromeUpdatePasswordInfoBarDelegate::Accept() {
   return true;
 }
 
-bool IOSChromeUpdatePasswordInfoBarDelegate::Cancel() {
+void IOSChromeUpdatePasswordInfoBarDelegate::InfoBarDismissed() {
   DCHECK(form_to_save());
   set_infobar_response(password_manager::metrics_util::CLICKED_CANCEL);
-  return true;
 }
 
 base::string16 IOSChromeUpdatePasswordInfoBarDelegate::GetLinkText() const {

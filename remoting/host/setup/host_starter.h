@@ -115,7 +115,7 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
   PendingGetTokensRequest pending_get_tokens_ = GET_TOKENS_NONE;
 
   base::WeakPtr<HostStarter> weak_ptr_;
-  base::WeakPtrFactory<HostStarter> weak_ptr_factory_;
+  base::WeakPtrFactory<HostStarter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HostStarter);
 };

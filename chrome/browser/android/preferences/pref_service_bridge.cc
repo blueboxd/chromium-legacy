@@ -1229,6 +1229,21 @@ static void JNI_PrefServiceBridge_GetUserAcceptLanguages(
       env, list, ToJavaArrayOfStrings(env, languages));
 }
 
+static void JNI_PrefServiceBridge_SetLanguageOrder(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobjectArray>& j_order) {
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
+      ChromeTranslateClient::CreateTranslatePrefs(GetPrefService());
+  std::vector<std::string> order;
+  const int num_langs = (*env).GetArrayLength(j_order);
+  for (int i = 0; i < num_langs; i++) {
+    jstring string = (jstring)(*env).GetObjectArrayElement(j_order, i);
+    order.push_back((*env).GetStringUTFChars(string, nullptr));
+  }
+  translate_prefs->SetLanguageOrder(order);
+}
+
 static void JNI_PrefServiceBridge_UpdateUserAcceptLanguages(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

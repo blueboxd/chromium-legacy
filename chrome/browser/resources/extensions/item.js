@@ -117,6 +117,9 @@ cr.define('extensions', function() {
       },
     },
 
+    /** Prevents reloading the same item while it's already being reloaded. */
+    isReloading_: false,
+
     observers: [
       'observeIdVisibility_(inDevMode, showingDetails_, data.id)',
     ],
@@ -213,9 +216,30 @@ cr.define('extensions', function() {
 
     /** @private */
     onReloadTap_: function() {
-      this.delegate.reloadItem(this.data.id).catch(loadError => {
-        this.fire('load-error', loadError);
-      });
+      // Don't reload if in the middle of an update.
+      if (this.isReloading_) {
+        return;
+      }
+
+      this.isReloading_ = true;
+
+      const toastManager = cr.toastManager.getInstance();
+      // Keep the toast open indefinitely.
+      toastManager.duration = 0;
+      toastManager.show(this.i18n('itemReloading'), false);
+      this.delegate.reloadItem(this.data.id)
+          .then(
+              () => {
+                toastManager.hide();
+                toastManager.duration = 3000;
+                toastManager.show(this.i18n('itemReloaded'), false);
+                this.isReloading_ = false;
+              },
+              loadError => {
+                this.fire('load-error', loadError);
+                toastManager.hide();
+                this.isReloading_ = false;
+              });
     },
 
     /** @private */

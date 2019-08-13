@@ -36,7 +36,9 @@ class PasswordFormManagerForUI;
 class AccountChooserPrompt;
 struct AccountInfo;
 class AutoSigninFirstRunPrompt;
+class CredentialLeakPrompt;
 class ManagePasswordsIconView;
+class CredentialLeakDialogController;
 class CredentialManagerDialogController;
 class PasswordBaseDialogController;
 
@@ -85,6 +87,7 @@ class ManagePasswordsUIController
       const GURL& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches)
       override;
+  void OnCredentialLeak(const GURL& origin) override;
 
   // PasswordStore::Observer:
   void OnLoginsChanged(
@@ -164,6 +167,10 @@ class ManagePasswordsUIController
   // Called to create the account chooser dialog. Mocked in tests.
   virtual AutoSigninFirstRunPrompt* CreateAutoSigninPrompt(
       CredentialManagerDialogController* controller);
+
+  // Called to create the credentials leaked dialog.
+  virtual CredentialLeakPrompt* CreateCredentialLeakPrompt(
+      CredentialLeakDialogController* controller);
 
   // Check if |web_contents()| is attached to some Browser. Mocked in tests.
   virtual bool HasBrowserWindow() const;

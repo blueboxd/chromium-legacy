@@ -144,14 +144,14 @@ public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCa
         Assert.assertTrue(mLastDecodedPath.contains(fileName1));
         Assert.assertEquals(true, mLastIsVideo);
         Assert.assertEquals("00:00", mLastVideoDuration);
-        Assert.assertEquals(20, mLastFrameCount);
+        Assert.assertEquals(10, mLastFrameCount);
 
         // Remaining frames of video 2.
         waitForThumbnailDecode();
         Assert.assertTrue(mLastDecodedPath.contains(fileName2));
         Assert.assertEquals(true, mLastIsVideo);
         Assert.assertEquals("00:00", mLastVideoDuration);
-        Assert.assertEquals(20, mLastFrameCount);
+        Assert.assertEquals(10, mLastFrameCount);
 
         host.unbind(mContext);
     }

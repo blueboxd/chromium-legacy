@@ -21,7 +21,8 @@ TestAuthenticationRequester::GetWeakPtr() {
 void TestAuthenticationRequester::OnCVCAuthenticationComplete(
     bool did_succeed,
     const CreditCard* card,
-    const base::string16& cvc) {
+    const base::string16& cvc,
+    base::Value creation_options) {
   did_succeed_ = did_succeed;
   if (did_succeed_) {
     DCHECK(card);

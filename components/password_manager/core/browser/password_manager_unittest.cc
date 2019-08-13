@@ -1341,7 +1341,7 @@ TEST_F(PasswordManagerTest, SyncCredentialsNotSaved) {
   EXPECT_CALL(*store_,
               SaveGaiaPasswordHash(
                   "googleuser", form.password_value,
-                  metrics_util::SyncPasswordHashChange::SAVED_IN_CONTENT_AREA));
+                  metrics_util::GaiaPasswordHashChange::SAVED_IN_CONTENT_AREA));
 #endif
   EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.origin))
       .WillRepeatedly(Return(true));
@@ -1396,7 +1396,7 @@ TEST_F(PasswordManagerTest, HashSavedOnGaiaFormWithSkipSavePassword) {
           *store_,
           SaveGaiaPasswordHash(
               "googleuser", form.password_value,
-              metrics_util::SyncPasswordHashChange::SAVED_IN_CONTENT_AREA));
+              metrics_util::GaiaPasswordHashChange::SAVED_IN_CONTENT_AREA));
 
       OnPasswordFormSubmitted(form);
       observed.clear();
@@ -1439,7 +1439,7 @@ TEST_F(PasswordManagerTest,
         *store_,
         SaveGaiaPasswordHash(
             "googleuser", form.password_value,
-            metrics_util::SyncPasswordHashChange::SAVED_IN_CONTENT_AREA));
+            metrics_util::GaiaPasswordHashChange::SAVED_IN_CONTENT_AREA));
 
     EXPECT_CALL(client_, IsNewTabPage()).WillRepeatedly(Return(true));
     OnPasswordFormSubmitted(form);
@@ -1519,7 +1519,7 @@ TEST_F(PasswordManagerTest, SyncCredentialsNotDroppedIfUpToDate) {
   EXPECT_CALL(*store_,
               SaveGaiaPasswordHash(
                   "googleuser", form.password_value,
-                  metrics_util::SyncPasswordHashChange::SAVED_IN_CONTENT_AREA));
+                  metrics_util::GaiaPasswordHashChange::SAVED_IN_CONTENT_AREA));
 #endif
   manager()->OnPasswordFormSubmitted(&driver_, form);
 
@@ -2938,7 +2938,7 @@ TEST_F(PasswordManagerTest, SaveSyncPasswordHashOnChangePasswordPage) {
       *store_,
       SaveGaiaPasswordHash(
           "googleuser", form.new_password_value,
-          metrics_util::SyncPasswordHashChange::CHANGED_IN_CONTENT_AREA));
+          metrics_util::GaiaPasswordHashChange::CHANGED_IN_CONTENT_AREA));
 #endif
   client_.FilterAllResultsForSaving();
   OnPasswordFormSubmitted(form);
@@ -2970,7 +2970,7 @@ TEST_F(PasswordManagerTest, SaveOtherGaiaPasswordHash) {
       *store_,
       SaveGaiaPasswordHash(
           "googleuser", form.password_value,
-          metrics_util::SyncPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE));
+          metrics_util::GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE));
 
   client_.FilterAllResultsForSaving();
   OnPasswordFormSubmitted(form);

@@ -525,9 +525,13 @@ int CertVerifyProc::Verify(X509Certificate* cert,
     rv = MapCertStatusToNetError(verify_result->cert_status);
   }
 
-  BestEffortCheckOCSP(ocsp_response, *verify_result->verified_cert,
-                      &verify_result->ocsp_result);
-
+  if (verify_result->ocsp_result.response_status ==
+      OCSPVerifyResult::NOT_CHECKED) {
+    // If VerifyInternal did not record the result of checking stapled OCSP,
+    // do it now.
+    BestEffortCheckOCSP(ocsp_response, *verify_result->verified_cert,
+                        &verify_result->ocsp_result);
+  }
   std::vector<std::string> dns_names, ip_addrs;
   cert->GetSubjectAltName(&dns_names, &ip_addrs);
   if (HasNameConstraintsViolation(verify_result->public_key_hashes,

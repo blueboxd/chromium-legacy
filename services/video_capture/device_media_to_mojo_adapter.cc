@@ -46,12 +46,11 @@ DeviceMediaToMojoAdapter::DeviceMediaToMojoAdapter(
     : device_(std::move(device)),
       jpeg_decoder_factory_callback_(std::move(jpeg_decoder_factory_callback)),
       jpeg_decoder_task_runner_(std::move(jpeg_decoder_task_runner)),
-      device_started_(false),
-      weak_factory_(this) {}
+      device_started_(false) {}
 #else
 DeviceMediaToMojoAdapter::DeviceMediaToMojoAdapter(
     std::unique_ptr<media::VideoCaptureDevice> device)
-    : device_(std::move(device)), device_started_(false), weak_factory_(this) {}
+    : device_(std::move(device)), device_started_(false) {}
 #endif  // defined(OS_CHROMEOS)
 
 DeviceMediaToMojoAdapter::~DeviceMediaToMojoAdapter() {

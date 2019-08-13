@@ -90,10 +90,12 @@ class OffTheRecordProfileImpl : public Profile {
 #endif  // defined(OS_CHROMEOS)
 
   GURL GetHomePage() override;
+  void SetCreationTimeForTesting(base::Time creation_time) override;
 
   // content::BrowserContext implementation:
   base::FilePath GetPath() override;
   base::FilePath GetPath() const override;
+  base::Time GetCreationTime() const override;
 #if !defined(OS_ANDROID)
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;

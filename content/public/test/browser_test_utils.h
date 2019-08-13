@@ -109,6 +109,15 @@ class WebContents;
 WARN_UNUSED_RESULT bool NavigateToURL(WebContents* web_contents,
                                       const GURL& url);
 
+// Same as above, but takes in an additional URL, |expected_commit_url|, to
+// which the navigation should eventually commit.  This is useful for cases
+// like redirects, where navigation starts on one URL but ends up committing a
+// different URL.  This function will return true if navigating to |url|
+// results in a successful commit to |expected_commit_url|.
+WARN_UNUSED_RESULT bool NavigateToURL(WebContents* web_contents,
+                                      const GURL& url,
+                                      const GURL& expected_commit_url);
+
 // Navigates |web_contents| to |url|, blocking until the given number of
 // navigations finishes.
 void NavigateToURLBlockUntilNavigationsComplete(WebContents* web_contents,

@@ -30,7 +30,6 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
-#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_enums.h"
 #include "ui/gl/gl_implementation.h"
@@ -2105,6 +2104,19 @@ TextureRef::~TextureRef() {
   manager_ = nullptr;
   if (!have_context && shared_image_)
     shared_image_->OnContextLost();
+}
+
+bool TextureRef::BeginAccessSharedImage(GLenum mode) {
+  shared_image_scoped_access_.emplace(shared_image_.get(), mode);
+  if (!shared_image_scoped_access_->success()) {
+    shared_image_scoped_access_.reset();
+    return false;
+  }
+  return true;
+}
+
+void TextureRef::EndAccessSharedImage() {
+  shared_image_scoped_access_.reset();
 }
 
 void TextureRef::ForceContextLost() {

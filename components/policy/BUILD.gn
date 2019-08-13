@@ -91,12 +91,6 @@ action("cloud_policy_code_generate") {
   chrome_version_abspath = "//chrome/VERSION"
   chrome_version_path = rebase_path(chrome_version_abspath, root_build_dir)
 
-  if (is_chromeos) {
-    chromeos_flag = "1"
-  } else {
-    chromeos_flag = "0"
-  }
-
   inputs = [
     chrome_version_abspath,
     "resources/policy_templates.json",
@@ -115,6 +109,13 @@ action("cloud_policy_code_generate") {
   }
 
   args = [
+    # Input information
+    "--chrome-version-file=" + chrome_version_path,
+    "--target-platform=" + target_os,
+    "--policy-templates-file=" +
+        rebase_path("resources/policy_templates.json", root_build_dir),
+
+    # Output files to be generated
     "--policy-constants-header=" +
         rebase_path(constants_header_path, root_build_dir),
     "--policy-constants-source=" +
@@ -126,10 +127,6 @@ action("cloud_policy_code_generate") {
     "--app-restrictions-definition=" +
         rebase_path(app_restrictions_path, root_build_dir),
     "--risk-tag-header=" + rebase_path(risk_tag_header_path, root_build_dir),
-    chrome_version_path,
-    target_os,
-    chromeos_flag,
-    rebase_path("resources/policy_templates.json", root_build_dir),
   ]
 }
 
@@ -137,12 +134,6 @@ action("full_runtime_code_generate") {
   script = "tools/generate_policy_source.py"
   chrome_version_abspath = "//chrome/VERSION"
   chrome_version_path = rebase_path(chrome_version_abspath, root_build_dir)
-
-  if (is_chromeos) {
-    chromeos_flag = "1"
-  } else {
-    chromeos_flag = "0"
-  }
 
   inputs = [
     chrome_version_abspath,
@@ -154,14 +145,17 @@ action("full_runtime_code_generate") {
   ]
 
   args = [
+    # Input information
+    "--chrome-version-file=" + chrome_version_path,
+    "--target-platform=" + target_os,
+    "--policy-templates-file=" +
+        rebase_path("resources/policy_templates.json", root_build_dir),
+
+    # Output files to be generated
     "--cloud-policy-full-runtime-protobuf=" +
         rebase_path(cloud_policy_full_runtime_proto_path, root_build_dir),
     "--chrome-settings-full-runtime-protobuf=" +
         rebase_path(chrome_settings_full_runtime_proto_path, root_build_dir),
-    chrome_version_path,
-    target_os,
-    chromeos_flag,
-    rebase_path("resources/policy_templates.json", root_build_dir),
   ]
 }
 

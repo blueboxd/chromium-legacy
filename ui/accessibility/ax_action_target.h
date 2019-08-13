@@ -18,7 +18,7 @@ class AXActionTarget {
  public:
   virtual ~AXActionTarget() = default;
 
-  enum class Type { kNull, kBlink };
+  enum class Type { kNull, kBlink, kPdf };
   virtual Type GetType() const = 0;
 
   virtual bool ClearAccessibilityFocus() const = 0;

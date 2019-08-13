@@ -682,6 +682,25 @@ TEST_F(GestureProviderTest, GestureCancelledOnDetectionReset) {
   EXPECT_FALSE(gesture_provider_->OnTouchEvent(event));
 }
 
+TEST_F(GestureProviderTest, TapPendingConfirmationCancelledOnCancelEvent) {
+  const base::TimeTicks event_time = TimeTicks::Now();
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::Action::DOWN);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
+
+  event =
+      ObtainMotionEvent(event_time + kOneMicrosecond, MotionEvent::Action::UP);
+  gesture_provider_->OnTouchEvent(event);
+  EXPECT_EQ(ET_GESTURE_TAP_UNCONFIRMED, GetMostRecentGestureEventType());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
+
+  event = ObtainMotionEvent(event_time + kOneMicrosecond * 2,
+                            MotionEvent::Action::CANCEL);
+  gesture_provider_->OnTouchEvent(event);
+  EXPECT_EQ(ET_GESTURE_TAP_CANCEL, GetMostRecentGestureEventType());
+}
+
 TEST_F(GestureProviderTest, NoTapAfterScrollBegins) {
   base::TimeTicks event_time = base::TimeTicks::Now();
 

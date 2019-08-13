@@ -68,6 +68,7 @@ source_set("unit_tests") {
   sources = [
     "dom_agent_unittest.cc",
     "overlay_agent_unittest.cc",
+    "page_agent_views_unittest.cc",
     "view_element_unittest.cc",
     "widget_element_unittest.cc",
   ]

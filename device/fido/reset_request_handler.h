@@ -67,7 +67,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) ResetRequestHandler
   bool processed_touch_ = false;
   std::unique_ptr<FidoDiscoveryFactory> fido_discovery_factory_;
   SEQUENCE_CHECKER(my_sequence_checker_);
-  base::WeakPtrFactory<ResetRequestHandler> weak_factory_;
+  base::WeakPtrFactory<ResetRequestHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResetRequestHandler);
 };

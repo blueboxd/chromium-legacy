@@ -709,17 +709,19 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "<audio controls></audio>"
       "<details></details>"
       "<input>"
+      "<input type='color'>"
       "<input type='email'>"
       "<input type='tel'>"
       "<input type='url'>"
-      "<meter></meter>");
+      "<meter></meter>"
+      "<output></output>");
 
   NavigateToURL(shell(), url);
   waiter.WaitForNotification();
 
   BrowserAccessibility* root = GetManager()->GetRoot();
   ASSERT_NE(nullptr, root);
-  ASSERT_EQ(7u, root->PlatformChildCount());
+  ASSERT_EQ(9u, root->PlatformChildCount());
 
   auto TestLocalizedRoleDescription =
       [root](int child_index,
@@ -735,10 +737,12 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   TestLocalizedRoleDescription(0, base::ASCIIToUTF16("audio"));
   TestLocalizedRoleDescription(1, base::ASCIIToUTF16("details"));
   TestLocalizedRoleDescription(2, base::ASCIIToUTF16(""));
-  TestLocalizedRoleDescription(3, base::ASCIIToUTF16("email"));
-  TestLocalizedRoleDescription(4, base::ASCIIToUTF16("telephone"));
-  TestLocalizedRoleDescription(5, base::ASCIIToUTF16("url"));
-  TestLocalizedRoleDescription(6, base::ASCIIToUTF16("meter"));
+  TestLocalizedRoleDescription(3, base::ASCIIToUTF16("color picker"));
+  TestLocalizedRoleDescription(4, base::ASCIIToUTF16("email"));
+  TestLocalizedRoleDescription(5, base::ASCIIToUTF16("telephone"));
+  TestLocalizedRoleDescription(6, base::ASCIIToUTF16("url"));
+  TestLocalizedRoleDescription(7, base::ASCIIToUTF16("meter"));
+  TestLocalizedRoleDescription(8, base::ASCIIToUTF16("output"));
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,

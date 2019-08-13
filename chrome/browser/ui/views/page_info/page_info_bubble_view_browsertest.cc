@@ -146,7 +146,8 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     constexpr char kMalware[] = "Malware";
     constexpr char kDeceptive[] = "Deceptive";
     constexpr char kUnwantedSoftware[] = "UnwantedSoftware";
-    constexpr char kSignInPasswordReuse[] = "SignInPasswordReuse";
+    constexpr char kSignInSyncPasswordReuse[] = "SignInSyncPasswordReuse";
+    constexpr char kSignInNonSyncPasswordReuse[] = "SignInNonSyncPasswordReuse";
     constexpr char kEnterprisePasswordReuse[] = "EnterprisePasswordReuse";
     constexpr char kMalwareAndBadCert[] = "MalwareAndBadCert";
     constexpr char kMixedContentForm[] = "MixedContentForm";
@@ -216,9 +217,12 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     } else if (name == kUnwantedSoftware) {
       identity.safe_browsing_status =
           PageInfo::SAFE_BROWSING_STATUS_UNWANTED_SOFTWARE;
-    } else if (name == kSignInPasswordReuse) {
+    } else if (name == kSignInSyncPasswordReuse) {
       identity.safe_browsing_status =
-          PageInfo::SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE;
+          PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE;
+    } else if (name == kSignInNonSyncPasswordReuse) {
+      identity.safe_browsing_status =
+          PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE;
     } else if (name == kEnterprisePasswordReuse) {
       identity.safe_browsing_status =
           PageInfo::SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE;
@@ -461,8 +465,10 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
           GetPasswordProtectionService(browser()->profile());
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  service->ShowModalWarning(contents, "token",
-                            PasswordType::ENTERPRISE_PASSWORD);
+  safe_browsing::ReusedPasswordAccountType reused_password_account_type;
+  reused_password_account_type.set_account_type(
+      safe_browsing::ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
+  service->ShowModalWarning(contents, "token", reused_password_account_type);
 
   OpenPageInfoBubble(browser());
   views::View* change_password_button = GetView(

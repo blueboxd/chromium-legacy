@@ -154,7 +154,7 @@ class FakeRemoteGattCharacteristic
 
   size_t last_descriptor_id_;
 
-  base::WeakPtrFactory<FakeRemoteGattCharacteristic> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeRemoteGattCharacteristic> weak_ptr_factory_{this};
 };
 
 }  // namespace bluetooth

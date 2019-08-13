@@ -17,9 +17,7 @@ namespace device {
 
 FidoBleTransaction::FidoBleTransaction(FidoBleConnection* connection,
                                        uint16_t control_point_length)
-    : connection_(connection),
-      control_point_length_(control_point_length),
-      weak_factory_(this) {
+    : connection_(connection), control_point_length_(control_point_length) {
   buffer_.reserve(control_point_length_);
 }
 

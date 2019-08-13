@@ -67,7 +67,7 @@ class PortAllocatorSession : public cricket::BasicPortAllocatorSession {
 
   IceConfig ice_config_;
 
-  base::WeakPtrFactory<PortAllocatorSession> weak_factory_;
+  base::WeakPtrFactory<PortAllocatorSession> weak_factory_{this};
 };
 
 }  // namespace protocol

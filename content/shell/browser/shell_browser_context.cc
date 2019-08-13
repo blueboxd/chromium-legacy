@@ -26,6 +26,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/shell/browser/shell_permission_manager.h"
+#include "content/shell/browser/web_test/web_test_content_index_provider.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/test/mock_background_sync_controller.h"
 
@@ -208,6 +209,12 @@ BackgroundSyncController* ShellBrowserContext::GetBackgroundSyncController() {
 BrowsingDataRemoverDelegate*
 ShellBrowserContext::GetBrowsingDataRemoverDelegate() {
   return nullptr;
+}
+
+ContentIndexProvider* ShellBrowserContext::GetContentIndexProvider() {
+  if (!content_index_provider_)
+    content_index_provider_ = std::make_unique<WebTestContentIndexProvider>();
+  return content_index_provider_.get();
 }
 
 }  // namespace content

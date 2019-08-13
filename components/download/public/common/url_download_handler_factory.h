@@ -9,10 +9,6 @@
 #include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/url_download_handler.h"
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
-
 namespace service_manager {
 class Connector;
 }  // namespace service_manager
@@ -26,10 +22,6 @@ class DownloadUrlParameters;
 // TODO(qinmin): remove this factory once network service is fully enabled.
 class COMPONENTS_DOWNLOAD_EXPORT UrlDownloadHandlerFactory {
  public:
-  // Installs a new factory for creating the URLDownloadHandler. Can be called
-  // on any thread.
-  static void Install(UrlDownloadHandlerFactory* factory);
-
   // Creates a URLDownloadHandler. By default the handler is used for network
   // service. Must be called on the IO thread.
   static UrlDownloadHandler::UniqueUrlDownloadHandlerPtr Create(
@@ -38,27 +30,8 @@ class COMPONENTS_DOWNLOAD_EXPORT UrlDownloadHandlerFactory {
       scoped_refptr<download::DownloadURLLoaderFactoryGetter>
           url_loader_factory_getter,
       const URLSecurityPolicy& url_security_policy,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
       std::unique_ptr<service_manager::Connector> connector,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
-
-  virtual ~UrlDownloadHandlerFactory();
-
- protected:
-  UrlDownloadHandlerFactory();
-
-  // To be implemented by child classes to provide their own URLDownloadHandler
-  // instances.
-  virtual UrlDownloadHandler::UniqueUrlDownloadHandlerPtr
-  CreateUrlDownloadHandler(
-      std::unique_ptr<download::DownloadUrlParameters> params,
-      base::WeakPtr<download::UrlDownloadHandler::Delegate> delegate,
-      scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-          url_loader_factory_getter,
-      const URLSecurityPolicy& url_security_policy,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
-      std::unique_ptr<service_manager::Connector> connector,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) = 0;
 };
 
 }  // namespace download

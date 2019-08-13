@@ -553,11 +553,11 @@ RenderWidgetTargeter::GetHitTestResultsMatchBucket(
   bool target_was_active = true;
   const auto& display_hit_test_query_map =
       GetHostFrameSinkManager()->display_hit_test_query();
-  const auto iter =
-      display_hit_test_query_map.find(request->GetRootView()->GetFrameSinkId());
+  const auto iter = display_hit_test_query_map.find(
+      request->GetRootView()->GetRootFrameSinkId());
+  // When a root frame sink id is invalidated, e.g. when the window is closed,
+  // the corresponding entry will be removed from the map.
   if (iter != display_hit_test_query_map.end()) {
-    // This happens when the root frame sink id is invalidated. e.g. when
-    // the window is closed.
     const auto* hit_test_query = iter->second.get();
     target_was_active =
         hit_test_query->ContainsActiveFrameSinkId(target->GetFrameSinkId());

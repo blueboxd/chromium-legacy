@@ -166,11 +166,7 @@ class CookieRetrieverNetworkService
                        std::unique_ptr<GetCookiesCallback> callback) {
     scoped_refptr<CookieRetrieverNetworkService> self =
         new CookieRetrieverNetworkService(std::move(callback));
-    net::CookieOptions cookie_options;
-    cookie_options.set_include_httponly();
-    cookie_options.set_same_site_cookie_context(
-        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
-    cookie_options.set_do_not_update_access_time();
+    net::CookieOptions cookie_options = net::CookieOptions::MakeAllInclusive();
     for (const auto& url : urls) {
       cookie_manager->GetCookieList(
           url, cookie_options,

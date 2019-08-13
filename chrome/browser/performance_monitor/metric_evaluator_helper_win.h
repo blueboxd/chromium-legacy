@@ -24,6 +24,7 @@ class MetricEvaluatorsHelperWin : public MetricEvaluatorsHelper {
   // MetricEvaluatorsHelper:
   base::Optional<int> GetFreePhysicalMemoryMb() override;
   base::Optional<float> GetDiskIdleTimePercent() override;
+  base::Optional<int> GetChromeTotalResidentSetEstimateMb() override;
 
   bool wmi_refresher_initialized_for_testing() {
     return wmi_refresher_initialized_;

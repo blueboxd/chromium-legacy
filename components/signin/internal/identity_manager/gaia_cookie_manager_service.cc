@@ -164,6 +164,11 @@ GaiaCookieManagerService::GaiaCookieRequest::GetAccountID() {
   return account_id_;
 }
 
+void GaiaCookieManagerService::GaiaCookieRequest::SetSourceSuffix(
+    std::string suffix) {
+  source_.SetGaiaSourceSuffix(suffix);
+}
+
 void GaiaCookieManagerService::GaiaCookieRequest::
     RunSetAccountsInCookieCompletedCallback(
         signin::SetAccountsInCookieResult result) {
@@ -438,6 +443,7 @@ GaiaCookieManagerService::GaiaCookieManagerService(
       external_cc_result_fetcher_(this),
       fetcher_backoff_(&kBackoffPolicy),
       fetcher_retries_(0),
+      listAccountsUnexpectedServerResponseRetried_(false),
       cookie_listener_binding_(this),
       external_cc_result_fetched_(false),
       list_accounts_stale_(true) {
@@ -581,6 +587,7 @@ bool GaiaCookieManagerService::ListAccounts(
 void GaiaCookieManagerService::TriggerListAccounts() {
   if (requests_.empty()) {
     fetcher_retries_ = 0;
+    listAccountsUnexpectedServerResponseRetried_ = false;
     requests_.push_back(GaiaCookieRequest::CreateListAccountsRequest());
     signin_client_->DelayNetworkCall(
         base::BindOnce(&GaiaCookieManagerService::StartFetchingListAccounts,
@@ -699,6 +706,7 @@ void GaiaCookieManagerService::OnCookieChange(
   if (requests_.empty()) {
     requests_.push_back(GaiaCookieRequest::CreateListAccountsRequest());
     fetcher_retries_ = 0;
+    listAccountsUnexpectedServerResponseRetried_ = false;
     signin_client_->DelayNetworkCall(
         base::BindOnce(&GaiaCookieManagerService::StartFetchingListAccounts,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -837,7 +845,6 @@ void GaiaCookieManagerService::OnListAccountsSuccess(const std::string& data) {
         prefs::kGaiaCookieLastListAccountsData);
     GoogleServiceAuthError error(
         GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE);
-    RecordListAccountsFailure(error.state());
     OnListAccountsFailure(error);
     return;
   }
@@ -874,7 +881,16 @@ void GaiaCookieManagerService::OnListAccountsFailure(
          GaiaCookieRequestType::LIST_ACCOUNTS);
   RecordListAccountsRetryResult(error, fetcher_retries_);
 
-  if (++fetcher_retries_ < kMaxFetcherRetries && error.IsTransientError()) {
+  bool should_retry =
+      (++fetcher_retries_ < kMaxFetcherRetries && error.IsTransientError()) ||
+      (!listAccountsUnexpectedServerResponseRetried_ &&
+       error.state() == GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE);
+  if (should_retry) {
+    if (error.state() == GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE) {
+      listAccountsUnexpectedServerResponseRetried_ = true;
+      requests_.front().SetSourceSuffix(
+          GaiaConstants::kUnexpectedServiceResponse);
+    }
     fetcher_backoff_.InformOfRequest(false);
     UMA_HISTOGRAM_ENUMERATION("Signin.ListAccountsRetry", error.state(),
                               GoogleServiceAuthError::NUM_STATES);
@@ -1043,6 +1059,7 @@ void GaiaCookieManagerService::HandleNextRequest() {
                            weak_ptr_factory_.GetWeakPtr()));
         break;
       case GaiaCookieRequestType::LIST_ACCOUNTS:
+        listAccountsUnexpectedServerResponseRetried_ = false;
         DCHECK(requests_.front().accounts().empty());
         uber_token_fetcher_.reset();
         signin_client_->DelayNetworkCall(

@@ -51,6 +51,7 @@ enum DialogViewId : int {
 
   // The following are views::TooltipIcon objects.
   CARDHOLDER_NAME_TOOLTIP,  // Appears during cardholder name entry/confirmation
+  UPLOAD_EXPLANATION_TOOLTIP,  // Appears for implicitly-syncing upload saves
 
   // The following are views::Combobox objects.
   EXPIRATION_DATE_DROPBOX_MONTH,

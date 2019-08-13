@@ -451,7 +451,7 @@ class NewTabNavigationOrSwapObserver : public TabStripModelObserver,
   NewTabNavigationOrSwapObserver() {
     BrowserList::AddObserver(this);
     for (const Browser* browser : *BrowserList::GetInstance())
-      tab_strip_observer_.Add(browser->tab_strip_model());
+      browser->tab_strip_model()->AddObserver(this);
   }
 
   ~NewTabNavigationOrSwapObserver() override {
@@ -481,12 +481,10 @@ class NewTabNavigationOrSwapObserver : public TabStripModelObserver,
 
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override {
-    tab_strip_observer_.Add(browser->tab_strip_model());
+    browser->tab_strip_model()->AddObserver(this);
   }
 
  private:
-  ScopedObserver<TabStripModel, TabStripModelObserver> tab_strip_observer_{
-      this};
   base::RunLoop new_tab_run_loop_;
   std::unique_ptr<NavigationOrSwapObserver> swap_observer_;
 

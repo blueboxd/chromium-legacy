@@ -540,6 +540,75 @@ TEST_F(PrerenderTest, GWSPrefetchHoldbackOffGWSReferrer) {
   EXPECT_TRUE(AddSimpleGWSPrerender(url));
 }
 
+TEST_F(PrerenderTest, PredictorPrefetchHoldbackNonPredictorReferrer) {
+  GURL url("http://www.notgoogle.com/");
+  test_utils::RestorePrerenderMode restore_prerender_mode;
+
+  prerender_manager()->SetMode(
+      PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      kNavigationPredictorPrefetchHoldback);
+  prerender_manager()->CreateNextPrerenderContents(
+      url, url::Origin::Create(GURL("www.notgoogle.com")),
+      ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, FINAL_STATUS_MANAGER_SHUTDOWN);
+
+  EXPECT_TRUE(AddSimplePrerender(url));
+}
+
+TEST_F(PrerenderTest, PredictorPrefetchHoldbackPredictorReferrer) {
+  GURL url("http://www.notgoogle.com/");
+  test_utils::RestorePrerenderMode restore_prerender_mode;
+
+  prerender_manager()->SetMode(
+      PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      kNavigationPredictorPrefetchHoldback);
+  prerender_manager()->CreateNextPrerenderContents(
+      url, base::nullopt, ORIGIN_NAVIGATION_PREDICTOR,
+      FINAL_STATUS_MANAGER_SHUTDOWN);
+  EXPECT_EQ(nullptr, prerender_manager()->AddPrerenderFromNavigationPredictor(
+                         url, nullptr, gfx::Size()));
+}
+
+TEST_F(PrerenderTest, PredictorPrefetchHoldbackOffNonPredictorReferrer) {
+  GURL url("http://www.notgoogle.com/");
+  test_utils::RestorePrerenderMode restore_prerender_mode;
+
+  prerender_manager()->SetMode(
+      PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      kNavigationPredictorPrefetchHoldback);
+  prerender_manager()->CreateNextPrerenderContents(
+      url, url::Origin::Create(GURL("www.notgoogle.com")),
+      ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, FINAL_STATUS_MANAGER_SHUTDOWN);
+
+  EXPECT_TRUE(AddSimplePrerender(url));
+}
+
+TEST_F(PrerenderTest, PredictorPrefetchHoldbackOffPredictorReferrer) {
+  GURL url("http://www.notgoogle.com/");
+  test_utils::RestorePrerenderMode restore_prerender_mode;
+
+  prerender_manager()->SetMode(
+      PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      kNavigationPredictorPrefetchHoldback);
+  prerender_manager()->CreateNextPrerenderContents(
+      url, base::nullopt, ORIGIN_NAVIGATION_PREDICTOR,
+      FINAL_STATUS_MANAGER_SHUTDOWN);
+
+  EXPECT_NE(nullptr, prerender_manager()->AddPrerenderFromNavigationPredictor(
+                         url, nullptr, gfx::Size()));
+}
+
 TEST_F(PrerenderTest, PrerenderDisabledOnLowEndDevice) {
   GURL url("http://www.google.com/");
   ASSERT_TRUE(IsNoStatePrefetchEnabled());

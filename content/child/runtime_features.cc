@@ -18,6 +18,7 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/base/media_switches.h"
+#include "net/base/features.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
@@ -548,6 +549,17 @@ void SetIndividualRuntimeFeatures(
 
   WebRuntimeFeatures::EnableBackForwardCache(
       base::FeatureList::IsEnabled(features::kBackForwardCache));
+
+  if (base::FeatureList::IsEnabled(features::kCookieDeprecationMessages))
+    WebRuntimeFeatures::EnableCookieDeprecationMessages(true);
+
+  if (base::FeatureList::IsEnabled(net::features::kSameSiteByDefaultCookies))
+    WebRuntimeFeatures::EnableSameSiteByDefaultCookies(true);
+
+  if (base::FeatureList::IsEnabled(
+          net::features::kCookiesWithoutSameSiteMustBeSecure)) {
+    WebRuntimeFeatures::EnableCookiesWithoutSameSiteMustBeSecure(true);
+  }
 }
 
 }  // namespace

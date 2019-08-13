@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequence_checker.h"
+#include "base/threading/thread_checker.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/public/web/web_apply_constraints_request.h"
@@ -131,7 +131,7 @@ class MODULES_EXPORT UserMediaClientImpl : public blink::WebUserMediaClient {
 
   Deque<Request> pending_request_infos_;
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  THREAD_CHECKER(thread_checker_);
 
   // Note: This member must be the last to ensure all outstanding weak pointers
   // are invalidated first.

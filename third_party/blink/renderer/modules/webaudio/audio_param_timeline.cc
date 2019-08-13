@@ -1036,16 +1036,10 @@ float AudioParamTimeline::ValuesForFrameRangeImpl(size_t start_frame,
         case ParamEvent::kExponentialRampToValue: {
           current_frame = fill_to_end_frame;
 
-          // If we're here, we've reached the end of the ramp.  If we can
-          // (because the start and end values have the same sign, and neither
-          // is 0), use the actual end value.  If not, we have to propagate
-          // whatever we have.
-          if (i >= 1 && ((events_[i - 1]->Value() * event->Value()) > 0))
-            value = event->Value();
-
-          // Simply stay at a constant value from the last time.  We don't want
-          // to use the value of the event in case value1 * value2 < 0.  In this
-          // case we should propagate the previous value, which is in |value|.
+          // If we're here, we've reached the end of the ramp.  For
+          // the values after the end of the ramp, we just want to
+          // continue with the ramp end value.
+          value = event->Value();
           write_index =
               FillWithDefault(values, value, fill_to_frame, write_index);
 

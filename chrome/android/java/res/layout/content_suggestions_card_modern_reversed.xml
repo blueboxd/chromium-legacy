@@ -108,8 +108,7 @@
             android:layout_alignParentEnd="true"
             android:scaleType="centerCrop"
             tools:ignore="ContentDescription"
-            android:src="@null"
-            tools:src="@drawable/ic_snippet_thumbnail_placeholder" />
+            android:src="@null" />
     </RelativeLayout>
 
     <!-- It would have been nice to use RoundedBitmapDrawable on the thumbnail, but with that you

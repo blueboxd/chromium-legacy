@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/permissions/permission_request.h"
+#include "url/origin.h"
 
 // A permission request that presents the user with a choice to allow or deny
 // multiple downloads from the same site. This confirmation step protects
@@ -18,7 +19,7 @@ class DownloadPermissionRequest : public PermissionRequest {
  public:
   DownloadPermissionRequest(
       base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host,
-      const GURL& request_origin);
+      const url::Origin& request_origin);
   ~DownloadPermissionRequest() override;
 
  private:
@@ -37,7 +38,7 @@ class DownloadPermissionRequest : public PermissionRequest {
   PermissionRequestType GetPermissionRequestType() const override;
 
   base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host_;
-  GURL request_origin_;
+  url::Origin request_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadPermissionRequest);
 };

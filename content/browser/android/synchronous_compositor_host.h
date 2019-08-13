@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/common/input/synchronous_compositor.mojom.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/common/input_event_ack_state.h"
@@ -41,7 +42,8 @@ class SynchronousCompositorHost : public SynchronousCompositor,
                                   public mojom::SynchronousCompositorHost {
  public:
   static std::unique_ptr<SynchronousCompositorHost> Create(
-      RenderWidgetHostViewAndroid* rwhva);
+      RenderWidgetHostViewAndroid* rwhva,
+      const viz::FrameSinkId& frame_sink_id);
 
   ~SynchronousCompositorHost() override;
 
@@ -71,7 +73,6 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   void SetBeginFramePaused(bool paused);
 
   // Called by SynchronousCompositorSyncCallBridge.
-  int routing_id() const { return routing_id_; }
   void UpdateFrameMetaData(uint32_t version,
                            viz::CompositorFrameMetadata frame_metadata);
 
@@ -96,6 +97,7 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   friend class SynchronousCompositorBase;
 
   SynchronousCompositorHost(RenderWidgetHostViewAndroid* rwhva,
+                            const viz::FrameSinkId& frame_sink_id,
                             bool use_in_proc_software_draw);
   SynchronousCompositor::Frame DemandDrawHw(
       const gfx::Size& viewport_size,
@@ -113,8 +115,7 @@ class SynchronousCompositorHost : public SynchronousCompositor,
 
   RenderWidgetHostViewAndroid* const rwhva_;
   SynchronousCompositorClient* const client_;
-  const int process_id_;
-  const int routing_id_;
+  const viz::FrameSinkId frame_sink_id_;
   const bool use_in_process_zero_copy_software_draw_;
   mojo::AssociatedRemote<mojom::SynchronousCompositor> sync_compositor_;
   mojo::AssociatedReceiver<mojom::SynchronousCompositorHost> host_receiver_{

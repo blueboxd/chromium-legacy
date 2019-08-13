@@ -1598,9 +1598,14 @@ PhysicalOffset LayoutInline::OffsetForInFlowPositionedInline(
   // but LayoutNG has fixed the issue. This function seems to always return
   // zero in LayoutNG. We should probably remove this function for LayoutNG.
 
-  DCHECK(IsInFlowPositioned() || StyleRef().HasFilter());
-  if (!IsInFlowPositioned() && !StyleRef().HasFilter())
+  DCHECK(IsInFlowPositioned() || StyleRef().HasFilter() ||
+         StyleRef().HasBackdropFilter());
+  if (!IsInFlowPositioned() && !StyleRef().HasFilter() &&
+      !StyleRef().HasBackdropFilter()) {
+    DCHECK(CreatesGroup())
+        << "Inlines with filters or backdrop-filters should create a group";
     return PhysicalOffset();
+  }
 
   // When we have an enclosing relpositioned inline, we need to add in the
   // offset of the first line box from the rest of the content, but only in the

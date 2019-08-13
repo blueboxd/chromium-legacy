@@ -37,12 +37,13 @@ static_library("browser") {
   deps = [
     "//base",
     "//components/crash/core/common",
+    "//components/discardable_memory/service",
     "//components/printing/common",
+    "//components/services/pdf_compositor/public/cpp",
     "//components/services/pdf_compositor/public/mojom",
     "//components/strings:components_strings_grit",
     "//printing",
     "//printing/common:common",
-    "//services/service_manager/public/cpp",
     "//ui/base",
     "//ui/gfx/geometry",
   ]

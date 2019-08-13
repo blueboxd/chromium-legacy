@@ -634,7 +634,8 @@ void CookieStoreIOS::UpdateCachesFromCookieMonster() {
     std::pair<GURL, std::string> key = hook_map_entry.first;
     GetCookieListCallback callback = base::BindOnce(
         &CookieStoreIOS::GotCookieListFor, weak_factory_.GetWeakPtr(), key);
-    cookie_monster_->GetAllCookiesForURLAsync(key.first, std::move(callback));
+    cookie_monster_->GetCookieListWithOptionsAsync(
+        key.first, net::CookieOptions::MakeAllInclusive(), std::move(callback));
   }
 }
 

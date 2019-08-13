@@ -324,8 +324,15 @@ void DeprecateSameSiteCookies(int process_id,
   bool samesite_treated_as_lax_cookies = false;
   bool samesite_none_insecure_cookies = false;
 
+  bool messages_disabled_by_cmdline =
+      base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
+          features::kCookieDeprecationMessages.name,
+          base::FeatureList::OVERRIDE_DISABLE_FEATURE);
   bool emit_messages =
-      base::FeatureList::IsEnabled(features::kCookieDeprecationMessages);
+      !messages_disabled_by_cmdline &&
+      (net::cookie_util::IsSameSiteByDefaultCookiesEnabled() ||
+       net::cookie_util::IsCookiesWithoutSameSiteMustBeSecureEnabled() ||
+       base::FeatureList::IsEnabled(features::kCookieDeprecationMessages));
 
   for (const net::CookieWithStatus& excluded_cookie : cookie_list) {
     std::string cookie_url =

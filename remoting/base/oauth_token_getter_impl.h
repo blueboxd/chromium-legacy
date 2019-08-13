@@ -97,7 +97,7 @@ class OAuthTokenGetterImpl : public OAuthTokenGetter,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<OAuthTokenGetterImpl> weak_factory_;
+  base::WeakPtrFactory<OAuthTokenGetterImpl> weak_factory_{this};
 };
 
 }  // namespace remoting

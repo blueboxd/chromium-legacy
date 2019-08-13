@@ -12,6 +12,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -51,9 +52,10 @@ public class AddLanguageFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(LanguageRowViewHolder holder, int position) {
+        public void onBindViewHolder(ViewHolder holder, int position) {
             super.onBindViewHolder(holder, position);
-            holder.setItemClickListener(getItemByPosition(position), mItemClickListener);
+            ((LanguageRowViewHolder) holder)
+                    .setItemClickListener(getItemByPosition(position), mItemClickListener);
         }
 
         /**
@@ -62,7 +64,7 @@ public class AddLanguageFragment extends Fragment {
          */
         private void search(String query) {
             if (TextUtils.isEmpty(query)) {
-                reload(mFullLanguageList);
+                setDisplayedLanguages(mFullLanguageList);
                 return;
             }
 
@@ -76,7 +78,7 @@ public class AddLanguageFragment extends Fragment {
                     results.add(item);
                 }
             }
-            reload(results);
+            setDisplayedLanguages(results);
         }
     }
 
@@ -124,7 +126,7 @@ public class AddLanguageFragment extends Fragment {
         mAdapter = new LanguageSearchListAdapter(activity);
 
         mRecyclerView.setAdapter(mAdapter);
-        mAdapter.reload(mFullLanguageList);
+        mAdapter.setDisplayedLanguages(mFullLanguageList);
         mRecyclerView.getViewTreeObserver().addOnScrollChangedListener(
                 PreferenceUtils.getShowShadowOnScrollListener(
                         mRecyclerView, view.findViewById(R.id.shadow)));
@@ -141,7 +143,7 @@ public class AddLanguageFragment extends Fragment {
 
         mSearchView.setOnCloseListener(() -> {
             mSearch = "";
-            mAdapter.reload(mFullLanguageList);
+            mAdapter.setDisplayedLanguages(mFullLanguageList);
             return false;
         });
 

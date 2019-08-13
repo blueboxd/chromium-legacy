@@ -9,6 +9,8 @@ jumbo_static_library("renderer") {
   sources = [
     "pdf_accessibility_tree.cc",
     "pdf_accessibility_tree.h",
+    "pdf_ax_action_target.cc",
+    "pdf_ax_action_target.h",
     "pepper_pdf_host.cc",
     "pepper_pdf_host.h",
   ]

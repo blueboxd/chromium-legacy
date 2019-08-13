@@ -23,8 +23,7 @@ namespace device {
 U2fSignOperation::U2fSignOperation(FidoDevice* device,
                                    const CtapGetAssertionRequest& request,
                                    DeviceResponseCallback callback)
-    : DeviceOperation(device, request, std::move(callback)),
-      weak_factory_(this) {}
+    : DeviceOperation(device, request, std::move(callback)) {}
 
 U2fSignOperation::~U2fSignOperation() = default;
 

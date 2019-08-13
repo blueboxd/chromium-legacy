@@ -160,30 +160,28 @@ bool IsParallelizableDownload(const DownloadCreateInfo& create_info,
 // static
 std::unique_ptr<DownloadJob> DownloadJobFactory::CreateJob(
     DownloadItem* download_item,
-    std::unique_ptr<DownloadRequestHandleInterface> req_handle,
+    DownloadJob::CancelRequestCallback cancel_request_callback,
     const DownloadCreateInfo& create_info,
     bool is_save_package_download,
     scoped_refptr<download::DownloadURLLoaderFactoryGetter>
         url_loader_factory_getter,
-    net::URLRequestContextGetter* url_request_context_getter,
     service_manager::Connector* connector) {
   if (is_save_package_download) {
-    return std::make_unique<SavePackageDownloadJob>(download_item,
-                                                    std::move(req_handle));
+    return std::make_unique<SavePackageDownloadJob>(
+        download_item, std::move(cancel_request_callback));
   }
 
   bool is_parallelizable = IsParallelizableDownload(create_info, download_item);
   // Build parallel download job.
   if (IsParallelDownloadEnabled() && is_parallelizable) {
     return std::make_unique<ParallelDownloadJob>(
-        download_item, std::move(req_handle), create_info,
-        std::move(url_loader_factory_getter), url_request_context_getter,
-        connector);
+        download_item, std::move(cancel_request_callback), create_info,
+        std::move(url_loader_factory_getter), connector);
   }
 
   // An ordinary download job.
-  return std::make_unique<DownloadJobImpl>(download_item, std::move(req_handle),
-                                           is_parallelizable);
+  return std::make_unique<DownloadJobImpl>(
+      download_item, std::move(cancel_request_callback), is_parallelizable);
 }
 
 }  // namespace download

@@ -70,7 +70,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDevice : public FidoBleDevice {
                            TestCableDeviceErrorOnMaxCounter);
 
   base::Optional<EncryptionData> encryption_data_;
-  base::WeakPtrFactory<FidoCableDevice> weak_factory_;
+  base::WeakPtrFactory<FidoCableDevice> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FidoCableDevice);
 };

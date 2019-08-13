@@ -8,7 +8,7 @@
 
 namespace remoting {
 
-GrpcAsyncRequest::GrpcAsyncRequest() : grpc_async_request_weak_factory_(this) {}
+GrpcAsyncRequest::GrpcAsyncRequest() = default;
 
 GrpcAsyncRequest::~GrpcAsyncRequest() = default;
 

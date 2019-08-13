@@ -101,6 +101,13 @@ MetricRefreshFrequencies::Builder::SetSystemMetricsSamplingFrequency(
   return *this;
 }
 
+MetricRefreshFrequencies::Builder& MetricRefreshFrequencies::Builder::
+    SetChromeTotalResidentSetEstimateMbSamplingFrequency(
+        SamplingFrequency freq) {
+  metrics_and_frequencies_.chrome_total_resident_set_sampling_frequency = freq;
+  return *this;
+}
+
 MetricRefreshFrequencies MetricRefreshFrequencies::Builder::Build() {
   return metrics_and_frequencies_;
 }
@@ -124,6 +131,11 @@ void SystemMonitor::SystemObserver::OnDiskIdleTimePercent(
 
 void SystemMonitor::SystemObserver::OnSystemMetricsStruct(
     const base::SystemMetrics& system_metrics) {
+  NOTREACHED();
+}
+
+void SystemMonitor::SystemObserver::OnChromeTotalResidentSetEstimateMb(
+    int chrome_total_resident_set_estimate) {
   NOTREACHED();
 }
 
@@ -195,6 +207,10 @@ SystemMonitor::MetricMetadataArray SystemMonitor::CreateMetricMetadataArray() {
       CREATE_METRIC_METADATA(kSystemMetricsStruct, base::SystemMetrics,
                              GetSystemMetricsStruct, OnSystemMetricsStruct,
                              system_metrics_sampling_frequency),
+      CREATE_METRIC_METADATA(kChromeTotalResidentSetEstimateMb, int,
+                             GetChromeTotalResidentSetEstimateMb,
+                             OnChromeTotalResidentSetEstimateMb,
+                             chrome_total_resident_set_sampling_frequency),
   };
 
 #undef CREATE_METRIC_METADATA

@@ -99,8 +99,8 @@ class PopupPageLoadMetricsWaiterInitializer : public TabStripModelObserver {
   PopupPageLoadMetricsWaiterInitializer(
       TabStripModel* tab_strip_model,
       std::unique_ptr<page_load_metrics::PageLoadMetricsTestWaiter>* waiter)
-      : waiter_(waiter), scoped_observer_(this) {
-    scoped_observer_.Add(tab_strip_model);
+      : waiter_(waiter) {
+    tab_strip_model->AddObserver(this);
   }
 
   void OnTabStripModelChanged(
@@ -117,8 +117,6 @@ class PopupPageLoadMetricsWaiterInitializer : public TabStripModelObserver {
 
  private:
   std::unique_ptr<page_load_metrics::PageLoadMetricsTestWaiter>* waiter_;
-  ScopedObserver<TabStripModel, PopupPageLoadMetricsWaiterInitializer>
-      scoped_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupPageLoadMetricsWaiterInitializer);
 };

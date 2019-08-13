@@ -18,6 +18,7 @@
 #include "base/compiler_specific.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -266,12 +267,21 @@ std::string APIKeyForChannel() {
   return google_apis::GetNonStableAPIKey();
 }
 
+// Gets the creation time for |path|, returning base::Time::Now() on failure.
+base::Time GetCreationTimeForPath(const base::FilePath& path) {
+  base::File::Info info;
+  if (base::GetFileInfo(path, &info))
+    return info.creation_time;
+  return base::Time::Now();
+}
+
 // Creates the profile directory synchronously if it doesn't exist. If
 // |create_readme| is true, the profile README will be created asynchronously in
-// the profile directory.
-void CreateProfileDirectory(base::SequencedTaskRunner* io_task_runner,
-                            const base::FilePath& path,
-                            bool create_readme) {
+// the profile directory. Returns the creation time/date of the profile
+// directory.
+base::Time CreateProfileDirectory(base::SequencedTaskRunner* io_task_runner,
+                                  const base::FilePath& path,
+                                  bool create_readme) {
   // Create the profile directory synchronously otherwise we would need to
   // sequence every otherwise independent I/O operation inside the profile
   // directory with this operation. base::PathExists() and
@@ -282,16 +292,20 @@ void CreateProfileDirectory(base::SequencedTaskRunner* io_task_runner,
 
   // If the readme exists, the profile directory must also already exist.
   if (base::PathExists(path.Append(chrome::kReadmeFilename)))
-    return;
+    return GetCreationTimeForPath(path);
 
   DVLOG(1) << "Creating directory " << path.value();
-  if (base::CreateDirectory(path) && create_readme) {
-    base::PostTask(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-         base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-        base::BindOnce(&CreateProfileReadme, path));
+  if (base::CreateDirectory(path)) {
+    if (create_readme) {
+      base::PostTask(FROM_HERE,
+                     {base::ThreadPool(), base::MayBlock(),
+                      base::TaskPriority::BEST_EFFORT,
+                      base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+                     base::BindOnce(&CreateProfileReadme, path));
+    }
+    return GetCreationTimeForPath(path);
   }
+  return base::Time::Now();
 }
 
 // Converts the kSessionExitedCleanly pref to the corresponding EXIT_TYPE.
@@ -344,11 +358,14 @@ std::unique_ptr<Profile> Profile::CreateProfile(const base::FilePath& path,
       base::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
            base::MayBlock()});
+  base::Time creation_time = base::Time::Now();
   if (create_mode == CREATE_MODE_ASYNCHRONOUS) {
     DCHECK(delegate);
-    CreateProfileDirectory(io_task_runner.get(), path, true);
+    creation_time = CreateProfileDirectory(io_task_runner.get(), path, true);
   } else if (create_mode == CREATE_MODE_SYNCHRONOUS) {
-    if (!base::PathExists(path)) {
+    if (base::PathExists(path)) {
+      creation_time = GetCreationTimeForPath(path);
+    } else {
       // TODO(rogerta): http://crbug/160553 - Bad things happen if we can't
       // write to the profile directory.  We should eventually be able to run in
       // this situation.
@@ -361,8 +378,8 @@ std::unique_ptr<Profile> Profile::CreateProfile(const base::FilePath& path,
     NOTREACHED();
   }
 
-  std::unique_ptr<Profile> profile = base::WrapUnique(
-      new ProfileImpl(path, delegate, create_mode, io_task_runner));
+  std::unique_ptr<Profile> profile = base::WrapUnique(new ProfileImpl(
+      path, delegate, create_mode, creation_time, io_task_runner));
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS) && !defined(OS_ANDROID) && \
     !defined(OS_CHROMEOS)
   if (create_mode == CREATE_MODE_SYNCHRONOUS && profile->IsLegacySupervised())
@@ -449,8 +466,10 @@ ProfileImpl::ProfileImpl(
     const base::FilePath& path,
     Delegate* delegate,
     CreateMode create_mode,
+    base::Time creation_time,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)
     : path_(path),
+      creation_time_(creation_time),
       io_task_runner_(std::move(io_task_runner)),
       io_data_(this),
       last_session_exit_type_(EXIT_NORMAL),
@@ -856,6 +875,10 @@ base::FilePath ProfileImpl::GetPath() {
 
 base::FilePath ProfileImpl::GetPath() const {
   return path_;
+}
+
+base::Time ProfileImpl::GetCreationTime() const {
+  return creation_time_;
 }
 
 scoped_refptr<base::SequencedTaskRunner> ProfileImpl::GetIOTaskRunner() {
@@ -1479,6 +1502,10 @@ void ProfileImpl::InitChromeOSPreferences() {
 }
 
 #endif  // defined(OS_CHROMEOS)
+
+void ProfileImpl::SetCreationTimeForTesting(base::Time creation_time) {
+  creation_time_ = creation_time;
+}
 
 GURL ProfileImpl::GetHomePage() {
   // --homepage overrides any preferences.

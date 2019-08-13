@@ -91,7 +91,7 @@ class CustomFakeGCMDriver : public FakeGCMDriver {
 
   // GCMDriver implementation:
   void UpdateAccountMapping(const AccountMapping& account_mapping) override;
-  void RemoveAccountMapping(const std::string& account_id) override;
+  void RemoveAccountMapping(const CoreAccountId& account_id) override;
   void RegisterImpl(const std::string& app_id,
                     const std::vector<std::string>& sender_ids) override;
 
@@ -111,7 +111,7 @@ class CustomFakeGCMDriver : public FakeGCMDriver {
     return account_mapping_;
   }
   const std::string& last_message_id() const { return last_message_id_; }
-  const std::string& last_removed_account_id() const {
+  const CoreAccountId& last_removed_account_id() const {
     return last_removed_account_id_;
   }
   LastMessageAction last_action() const { return last_action_; }
@@ -125,7 +125,7 @@ class CustomFakeGCMDriver : public FakeGCMDriver {
  private:
   AccountMapping account_mapping_;
   std::string last_message_id_;
-  std::string last_removed_account_id_;
+  CoreAccountId last_removed_account_id_;
   LastMessageAction last_action_;
   std::map<std::string, LastMessageAction> all_messages_;
   bool registration_id_requested_;
@@ -149,7 +149,8 @@ void CustomFakeGCMDriver::UpdateAccountMapping(
   account_mapping_.last_message_id = account_mapping.last_message_id;
 }
 
-void CustomFakeGCMDriver::RemoveAccountMapping(const std::string& account_id) {
+void CustomFakeGCMDriver::RemoveAccountMapping(
+    const CoreAccountId& account_id) {
   last_removed_account_id_ = account_id;
 }
 
@@ -224,7 +225,7 @@ void CustomFakeGCMDriver::AcknowledgeSendAllMessages() {
 void CustomFakeGCMDriver::Clear() {
   account_mapping_ = AccountMapping();
   last_message_id_.clear();
-  last_removed_account_id_.clear();
+  last_removed_account_id_ = CoreAccountId();
   last_action_ = NONE;
   registration_id_requested_ = false;
 }

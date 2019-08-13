@@ -4,6 +4,8 @@
 
 #include "fuchsia/engine/context_provider_main.h"
 
+#include <lib/sys/cpp/outgoing_directory.h>
+
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
 #include "base/logging.h"
@@ -23,7 +25,7 @@ int ContextProviderMain() {
       directory, &context_provider);
 
   base::fuchsia::ScopedServiceBinding<fuchsia::web::Debug> debug_binding(
-      directory->debug(), &context_provider);
+      directory->outgoing_directory()->debug_dir(), &context_provider);
 
   base::RunLoop run_loop;
   cr_fuchsia::LifecycleImpl lifecycle(directory, run_loop.QuitClosure());

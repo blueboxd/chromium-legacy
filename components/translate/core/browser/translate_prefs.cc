@@ -368,6 +368,11 @@ void TranslatePrefs::RearrangeLanguage(
   }
 }
 
+void TranslatePrefs::SetLanguageOrder(
+    const std::vector<std::string>& new_order) {
+  UpdateLanguageList(new_order);
+}
+
 // static
 void TranslatePrefs::GetLanguageInfoList(
     const std::string& app_locale,

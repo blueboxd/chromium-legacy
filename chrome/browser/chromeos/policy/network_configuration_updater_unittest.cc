@@ -375,12 +375,10 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
 
   UserNetworkConfigurationUpdater*
   CreateNetworkConfigurationUpdaterForUserPolicy(
-      bool allow_trusted_certs_from_policy,
       bool set_client_cert_importer) {
     UserNetworkConfigurationUpdater* updater =
         UserNetworkConfigurationUpdater::CreateForUserPolicy(
             &profile_,
-            allow_trusted_certs_from_policy,
             fake_user_,
             policy_service_.get(),
             &network_config_handler_).release();
@@ -508,52 +506,19 @@ TEST_F(NetworkConfigurationUpdaterTest, PolicyIsValidatedAndRepaired) {
       expected_client_certificates);
 
   CreateNetworkConfigurationUpdaterForUserPolicy(
-      false /* do not allow trusted certs from policy */,
       true /* set certificate importer */);
   MarkPolicyProviderInitialized();
   EXPECT_EQ(1u, certificate_importer_->GetAndResetImportCount());
 }
 
 TEST_F(NetworkConfigurationUpdaterTest,
-       DoNotAllowTrustedCertificatesFromPolicy) {
-  EXPECT_CALL(network_config_handler_,
-              SetPolicy(onc::ONC_SOURCE_USER_POLICY, _, _, _))
-      .Times(AnyNumber());
-
-  UserNetworkConfigurationUpdater* updater =
-      CreateNetworkConfigurationUpdaterForUserPolicy(
-          false /* do not allow trusted certs from policy */,
-          false /* set certificate importer */);
-
-  MockPolicyProvidedCertsObserver observer;
-  EXPECT_CALL(observer, OnPolicyProvidedCertsChanged());
-  updater->AddPolicyProvidedCertsObserver(&observer);
-
-  PolicyMap policy;
-  policy.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(kFakeONC), nullptr);
-  UpdateProviderPolicy(policy);
-  MarkPolicyProviderInitialized();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(updater->GetWebTrustedCertificates().empty());
-  EXPECT_EQ(2u, updater->GetCertificatesWithoutWebTrust().size());
-  EXPECT_EQ(2u, updater->GetAllServerAndAuthorityCertificates().size());
-
-  Mock::VerifyAndClearExpectations(&observer);
-  updater->RemovePolicyProvidedCertsObserver(&observer);
-}
-
-TEST_F(NetworkConfigurationUpdaterTest,
-       AllowTrustedCertificatesFromPolicyInitially) {
+       WebTrustedCertificatesFromPolicyInitially) {
   // Ignore network configuration changes.
   EXPECT_CALL(network_config_handler_, SetPolicy(_, _, _, _))
       .Times(AnyNumber());
 
   UserNetworkConfigurationUpdater* updater =
       CreateNetworkConfigurationUpdaterForUserPolicy(
-          true /* allow trusted certs from policy */,
           false /* set certificate importer */);
 
   MockPolicyProvidedCertsObserver observer;
@@ -585,7 +550,6 @@ TEST_F(NetworkConfigurationUpdaterTest,
   // Start with an empty certificate list.
   UserNetworkConfigurationUpdater* updater =
       CreateNetworkConfigurationUpdaterForUserPolicy(
-          true /* allow trusted certs from policy */,
           false /* set certificate importer */);
   MockPolicyProvidedCertsObserver observer;
   EXPECT_CALL(observer, OnPolicyProvidedCertsChanged()).Times(0);
@@ -634,7 +598,6 @@ TEST_F(NetworkConfigurationUpdaterTest,
 
   UserNetworkConfigurationUpdater* updater =
       CreateNetworkConfigurationUpdaterForUserPolicy(
-          true /* allow trusted certs from policy */,
           false /* do not set certificate importer */);
   MarkPolicyProviderInitialized();
 
@@ -787,7 +750,6 @@ class NetworkConfigurationUpdaterTestWithParam
   void CreateNetworkConfigurationUpdater() {
     if (GetParam() == key::kOpenNetworkConfiguration) {
       CreateNetworkConfigurationUpdaterForUserPolicy(
-          false /* do not allow trusted certs from policy */,
           true /* set certificate importer */);
     } else {
       CreateNetworkConfigurationUpdaterForDevicePolicy();

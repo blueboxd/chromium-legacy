@@ -263,8 +263,7 @@ BluetoothAdapterBlueZ::BluetoothAdapterBlueZ(InitCallback init_callback)
       initialized_(false),
       dbus_is_shutdown_(false),
       discovery_request_pending_(false),
-      force_deactivate_discovery_(false),
-      weak_ptr_factory_(this) {
+      force_deactivate_discovery_(false) {
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   socket_thread_ = device::BluetoothSocketThread::Get();
 

@@ -47,8 +47,7 @@ BluetoothRemoteGattCharacteristicBlueZ::BluetoothRemoteGattCharacteristicBlueZ(
     : BluetoothGattCharacteristicBlueZ(object_path),
       has_notify_session_(false),
       service_(service),
-      num_of_characteristic_value_read_in_progress_(0),
-      weak_ptr_factory_(this) {
+      num_of_characteristic_value_read_in_progress_(0) {
   VLOG(1) << "Creating remote GATT characteristic with identifier: "
           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value();
   bluez::BluezDBusManager::Get()

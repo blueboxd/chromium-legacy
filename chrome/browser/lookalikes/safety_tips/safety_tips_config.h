@@ -14,8 +14,13 @@ namespace safety_tips {
 // Sets the global configuration for Safety Tips retrieved from the component
 // updater. The configuration proto contains the list of URLs that can trigger
 // a safety tip.
-void SetProto(
+void SetRemoteConfigProto(
     std::unique_ptr<chrome_browser_safety_tips::SafetyTipsConfig> proto);
+
+// Gets the global configuration for Safety Tips as retrieved from the component
+// updater. The configuration proto contains the list of URLs that can trigger
+// a safety tip.
+const chrome_browser_safety_tips::SafetyTipsConfig* GetRemoteConfigProto();
 
 }  // namespace safety_tips
 

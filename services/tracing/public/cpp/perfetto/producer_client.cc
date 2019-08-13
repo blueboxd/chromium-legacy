@@ -21,7 +21,7 @@
 namespace tracing {
 
 ProducerClient::ProducerClient(PerfettoTaskRunner* task_runner)
-    : PerfettoProducer(task_runner), weak_ptr_factory_(this) {
+    : PerfettoProducer(task_runner) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 

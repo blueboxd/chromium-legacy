@@ -236,7 +236,7 @@ class CookieStoreIOS : public net::CookieStore,
                               net::CookieChangeCause cause);
 
   // Called by this CookieStoreIOS' internal CookieMonster instance when
-  // GetAllCookiesForURLAsync() completes. Updates the cookie cache and runs
+  // UpdateCachesFromCookieMonster completes. Updates the cookie cache and runs
   // callbacks if the cache changed.
   void GotCookieListFor(const std::pair<GURL, std::string> key,
                         const net::CookieList& cookies,

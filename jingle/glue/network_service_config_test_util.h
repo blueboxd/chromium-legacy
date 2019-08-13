@@ -70,8 +70,8 @@ class NetworkServiceConfigTestUtil {
       network_context_;  // lives on |net_runner_|
   network::mojom::NetworkContextPtr
       network_context_ptr_;  // lives on |mojo_runner_|
-  base::WeakPtrFactory<NetworkServiceConfigTestUtil>
-      weak_ptr_factory_;  // lives on |mojo_runner_|
+  base::WeakPtrFactory<NetworkServiceConfigTestUtil> weak_ptr_factory_{
+      this};  // lives on |mojo_runner_|
 };
 
 }  // namespace jingle_glue

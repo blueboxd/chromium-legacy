@@ -39,9 +39,6 @@ void FakeAccessibilityController::SetSelectToSpeakEventHandlerDelegate(
 void FakeAccessibilityController::SetSwitchAccessEventHandlerDelegate(
     ash::SwitchAccessEventHandlerDelegate* delegate) {}
 
-void FakeAccessibilityController::SetSwitchAccessKeysToCapture(
-    const std::vector<int>& keys_to_capture) {}
-
 void FakeAccessibilityController::SetDictationActive(bool is_active) {}
 
 void FakeAccessibilityController::ToggleDictationFromSource(

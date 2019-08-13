@@ -241,7 +241,7 @@ class DesktopSessionAgent
   CurrentProcessStatsAgent current_process_stats_;
 
   // Used to disable callbacks to |this|.
-  base::WeakPtrFactory<DesktopSessionAgent> weak_factory_;
+  base::WeakPtrFactory<DesktopSessionAgent> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DesktopSessionAgent);
 };

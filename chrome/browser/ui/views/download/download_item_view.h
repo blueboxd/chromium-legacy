@@ -96,20 +96,14 @@ class DownloadItemView : public views::InkDropHostView,
   void Layout() override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   gfx::Size CalculatePreferredSize() const override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseCaptureLost() override;
-  bool OnKeyPressed(const ui::KeyEvent& event) override;
   base::string16 GetTooltipText(const gfx::Point& p) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // view::InkDropHostView:
   void OnInkDropCreated() override;
   SkColor GetInkDropBaseColor() const override;
-
-  // ui::EventHandler:
-  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // views::ContextMenuController.
   void ShowContextMenuForViewImpl(View* source,
@@ -125,8 +119,6 @@ class DownloadItemView : public views::InkDropHostView,
  protected:
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
-  void OnFocus() override;
-  void OnBlur() override;
   void AddedToWidget() override;
   void OnThemeChanged() override;
 
@@ -368,6 +360,14 @@ class DownloadItemView : public views::InkDropHostView,
 
   // The status text label.
   views::Label* status_label_;
+
+  // The "open download" button. This button is visually transparent and fills
+  // the entire bounds of the DownloadItemView, to make the DownloadItemView
+  // itself seem to be clickable while not requiring DownloadItemView itself to
+  // be a button. This is necessary because buttons are not allowed to have
+  // children in macOS Accessibility, and to avoid reimplementing much of the
+  // button logic in DownloadItemView.
+  views::Button* open_button_ = nullptr;
 
   // The drop down button.
   views::ImageButton* dropdown_button_ = nullptr;

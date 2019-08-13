@@ -47,7 +47,7 @@ class FtlHostChangeNotificationListener : public SignalStrategy::Listener {
 
   Listener* listener_;
   SignalStrategy* signal_strategy_;
-  base::WeakPtrFactory<FtlHostChangeNotificationListener> weak_factory_;
+  base::WeakPtrFactory<FtlHostChangeNotificationListener> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FtlHostChangeNotificationListener);
 };
 

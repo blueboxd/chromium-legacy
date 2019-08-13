@@ -92,8 +92,8 @@ class CastActivityManagerTest : public testing::Test,
                                 public CastActivityRecordFactoryForTest {
  public:
   CastActivityManagerTest()
-      : socket_service_(base::CreateSingleThreadTaskRunnerWithTraits(
-            {content::BrowserThread::UI})),
+      : socket_service_(
+            base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})),
         message_handler_(&socket_service_) {
     media_sink_service_.AddOrUpdateSink(sink_);
     socket_.set_id(kChannelId);

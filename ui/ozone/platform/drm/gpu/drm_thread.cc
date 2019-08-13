@@ -19,7 +19,6 @@
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
 #include "ui/ozone/common/linux/gbm_device.h"
-#include "ui/ozone/common/linux/gbm_wrapper.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
@@ -84,34 +83,14 @@ void CreateBufferWithGbmFlags(const scoped_refptr<DrmDevice>& drm,
   *out_framebuffer = std::move(framebuffer);
 }
 
-class GbmDeviceGenerator : public DrmDeviceGenerator {
- public:
-  GbmDeviceGenerator() {}
-  ~GbmDeviceGenerator() override {}
-
-  // DrmDeviceGenerator:
-  scoped_refptr<DrmDevice> CreateDevice(const base::FilePath& path,
-                                        base::File file,
-                                        bool is_primary_device) override {
-    auto gbm = CreateGbmDevice(file.GetPlatformFile());
-    if (!gbm) {
-      PLOG(ERROR) << "Unable to initialize GBM for " << path.value();
-      return nullptr;
-    }
-
-    auto drm = base::MakeRefCounted<DrmDevice>(
-        path, std::move(file), is_primary_device, std::move(gbm));
-    if (!drm->Initialize())
-      return nullptr;
-    return drm;
-  }
-
- private:
-
-  DISALLOW_COPY_AND_ASSIGN(GbmDeviceGenerator);
-};
-
 }  // namespace
+
+DrmThread::TaskInfo::TaskInfo(base::OnceClosure task, base::WaitableEvent* done)
+    : task(std::move(task)), done(done) {}
+
+DrmThread::TaskInfo::TaskInfo(TaskInfo&& other) = default;
+
+DrmThread::TaskInfo::~TaskInfo() = default;
 
 DrmThread::DrmThread() : base::Thread("DrmThread"), weak_ptr_factory_(this) {}
 
@@ -119,8 +98,11 @@ DrmThread::~DrmThread() {
   Stop();
 }
 
-void DrmThread::Start(base::OnceClosure binding_completer) {
+void DrmThread::Start(base::OnceClosure binding_completer,
+                      std::unique_ptr<DrmDeviceGenerator> device_generator) {
   complete_early_binding_requests_ = std::move(binding_completer);
+  device_generator_ = std::move(device_generator);
+
   base::Thread::Options thread_options;
   thread_options.message_pump_type = base::MessagePumpType::IO;
   thread_options.priority = base::ThreadPriority::DISPLAY;
@@ -129,11 +111,22 @@ void DrmThread::Start(base::OnceClosure binding_completer) {
     LOG(FATAL) << "Failed to create DRM thread";
 }
 
-void DrmThread::Init() {
-  device_manager_.reset(
-      new DrmDeviceManager(std::make_unique<GbmDeviceGenerator>()));
-  screen_manager_.reset(new ScreenManager());
+void DrmThread::RunTaskAfterWindowReady(gfx::AcceleratedWidget window,
+                                        base::OnceClosure task,
+                                        base::WaitableEvent* done) {
+  if (!device_manager_->GetDrmDevices().empty() &&
+      window <= last_created_window_) {
+    std::move(task).Run();
+    if (done)
+      done->Signal();
+    return;
+  }
+  pending_tasks_[window].emplace_back(std::move(task), done);
+}
 
+void DrmThread::Init() {
+  device_manager_.reset(new DrmDeviceManager(std::move(device_generator_)));
+  screen_manager_.reset(new ScreenManager());
   display_manager_.reset(
       new DrmGpuDisplayManager(screen_manager_.get(), device_manager_.get()));
 
@@ -262,10 +255,16 @@ void DrmThread::IsDeviceAtomic(gfx::AcceleratedWidget widget, bool* is_atomic) {
 }
 
 void DrmThread::CreateWindow(gfx::AcceleratedWidget widget) {
+  DCHECK_GT(widget, last_created_window_);
+  last_created_window_ = widget;
+
   std::unique_ptr<DrmWindow> window(
       new DrmWindow(widget, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
   screen_manager_->AddWindow(widget, std::move(window));
+
+  // There might be tasks that were waiting for |widget| to become available.
+  ProcessPendingTasks();
 }
 
 void DrmThread::DestroyWindow(gfx::AcceleratedWidget widget) {
@@ -343,6 +342,9 @@ void DrmThread::RelinquishDisplayControl(
 
 void DrmThread::AddGraphicsDevice(const base::FilePath& path, base::File file) {
   device_manager_->AddDrmDevice(path, std::move(file));
+
+  // There might be tasks that were blocked on a DrmDevice becoming available.
+  ProcessPendingTasks();
 }
 
 void DrmThread::RemoveGraphicsDevice(const base::FilePath& path) {
@@ -379,6 +381,22 @@ void DrmThread::SetGammaCorrection(
 void DrmThread::AddBindingDrmDevice(ozone::mojom::DrmDeviceRequest request) {
   TRACE_EVENT0("drm", "DrmThread::AddBindingDrmDevice");
   drm_bindings_.AddBinding(this, std::move(request));
+}
+
+void DrmThread::ProcessPendingTasks() {
+  DCHECK(!device_manager_->GetDrmDevices().empty());
+
+  auto it = pending_tasks_.begin();
+  for (; it != pending_tasks_.end() && it->first <= last_created_window_;
+       ++it) {
+    for (auto& task_info : it->second) {
+      std::move(task_info.task).Run();
+      if (task_info.done)
+        task_info.done->Signal();
+    }
+  }
+
+  pending_tasks_.erase(pending_tasks_.begin(), it);
 }
 
 }  // namespace ui

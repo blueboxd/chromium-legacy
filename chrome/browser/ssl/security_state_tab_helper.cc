@@ -195,13 +195,25 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
         return security_state::MALICIOUS_CONTENT_STATUS_MALWARE;
       case safe_browsing::SB_THREAT_TYPE_URL_UNWANTED:
         return security_state::MALICIOUS_CONTENT_STATUS_UNWANTED_SOFTWARE;
-      case safe_browsing::SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE:
+      case safe_browsing::SB_THREAT_TYPE_SIGNED_IN_SYNC_PASSWORD_REUSE:
 #if BUILDFLAG(FULL_SAFE_BROWSING)
         if (safe_browsing::ChromePasswordProtectionService::
                 ShouldShowPasswordReusePageInfoBubble(
                     web_contents(), PasswordType::PRIMARY_ACCOUNT_PASSWORD)) {
           return security_state::
-              MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE;
+              MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE;
+        }
+        // If user has already changed Gaia password, returns the regular
+        // social engineering content status.
+        return security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING;
+#endif
+      case safe_browsing::SB_THREAT_TYPE_SIGNED_IN_NON_SYNC_PASSWORD_REUSE:
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+        if (safe_browsing::ChromePasswordProtectionService::
+                ShouldShowPasswordReusePageInfoBubble(
+                    web_contents(), PasswordType::OTHER_GAIA_PASSWORD)) {
+          return security_state::
+              MALICIOUS_CONTENT_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE;
         }
         // If user has already changed Gaia password, returns the regular
         // social engineering content status.

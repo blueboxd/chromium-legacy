@@ -244,6 +244,10 @@ WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
     event.touches[event.touches_length++] =
         CreateWebTouchPointFromWebPointerEvent(touch_pointer_event,
                                                touch_point_attribute->stale_);
+    if (!touch_point_attribute->stale_) {
+      event.SetTimeStamp(std::max(event.TimeStamp(),
+                                  touch_point_attribute->event_.TimeStamp()));
+    }
 
     // Only change the touch event type from move. So if we have two pointers
     // in up and down state we just set the touch event type to the first one

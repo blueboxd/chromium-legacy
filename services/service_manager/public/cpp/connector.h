@@ -265,7 +265,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
   std::map<service_manager::ServiceFilter, BinderOverrideMap>
       local_binder_overrides_;
 
-  base::WeakPtrFactory<Connector> weak_factory_;
+  base::WeakPtrFactory<Connector> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Connector);
 };

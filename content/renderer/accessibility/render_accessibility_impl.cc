@@ -427,7 +427,7 @@ int RenderAccessibilityImpl::GenerateAXID() {
 }
 
 void RenderAccessibilityImpl::SetPluginTreeSource(
-    RenderAccessibilityImpl::PluginAXTreeSource* plugin_tree_source) {
+    PluginAXTreeSource* plugin_tree_source) {
   plugin_tree_source_ = plugin_tree_source;
   plugin_serializer_.reset(new PluginAXTreeSerializer(plugin_tree_source_));
 
@@ -748,11 +748,14 @@ void RenderAccessibilityImpl::OnPerformAction(
     return;
 
   std::unique_ptr<ui::AXActionTarget> target =
-      AXActionTargetFactory::CreateFromNodeId(document, data.target_node_id);
+      AXActionTargetFactory::CreateFromNodeId(document, plugin_tree_source_,
+                                              data.target_node_id);
   std::unique_ptr<ui::AXActionTarget> anchor =
-      AXActionTargetFactory::CreateFromNodeId(document, data.anchor_node_id);
+      AXActionTargetFactory::CreateFromNodeId(document, plugin_tree_source_,
+                                              data.anchor_node_id);
   std::unique_ptr<ui::AXActionTarget> focus =
-      AXActionTargetFactory::CreateFromNodeId(document, data.focus_node_id);
+      AXActionTargetFactory::CreateFromNodeId(document, plugin_tree_source_,
+                                              data.focus_node_id);
 
   switch (data.action) {
     case ax::mojom::Action::kBlur:
@@ -1128,34 +1131,6 @@ void RenderAccessibilityImpl::Scroll(const ui::AXActionTarget* target,
   }
 
   target->SetScrollOffset(gfx::Point(x, y));
-}
-
-void RenderAccessibilityImpl::ScrollPlugin(int id_to_make_visible) {
-  // Plugin content doesn't scroll itself, so when we're requested to
-  // scroll to make a particular plugin node visible, get the
-  // coordinates of the target plugin node and then tell the document
-  // node to scroll to those coordinates.
-  //
-  // Note that calling scrollToMakeVisibleWithSubFocus() is preferable to
-  // telling the document to scroll to a specific coordinate because it will
-  // first compute whether that rectangle is visible and do nothing if it is.
-  // If it's not visible, it will automatically center it.
-
-  DCHECK(plugin_tree_source_);
-  ui::AXNodeData root_data = plugin_tree_source_->GetRoot()->data();
-  ui::AXNodeData target_data =
-      plugin_tree_source_->GetFromId(id_to_make_visible)->data();
-
-  gfx::RectF bounds = target_data.relative_bounds.bounds;
-  if (root_data.relative_bounds.transform)
-    root_data.relative_bounds.transform->TransformRect(&bounds);
-
-  const WebDocument& document = GetMainDocument();
-  if (document.IsNull())
-    return;
-
-  WebAXObject::FromWebDocument(document).ScrollToMakeVisibleWithSubFocus(
-      WebRect(bounds.x(), bounds.y(), bounds.width(), bounds.height()));
 }
 
 void RenderAccessibilityImpl::RecordImageMetrics(AXContentTreeUpdate* update) {

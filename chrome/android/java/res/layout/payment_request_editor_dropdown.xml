@@ -17,7 +17,8 @@
             android:id="@+id/spinner_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.BlackCaption" />
+            android:textAppearance="@style/TextAppearance.BlackCaption"
+            android:layout_marginTop="@dimen/editor_dialog_section_small_spacing"/>
 
     <android.support.v7.widget.AppCompatSpinner
             android:id="@+id/spinner"

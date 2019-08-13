@@ -22,10 +22,7 @@
 -MSE_ClearKey/EncryptedMediaTest.Playback_Encryption_CBCS_Video_CENC_Audio/0
 -MSE_ClearKey/EncryptedMediaTest.Playback_Encryption_CENC/0
 -MSE_ClearKey/EncryptedMediaTest.Playback_Encryption_CENC_Video_CBCS_Audio/0
--MSE_ExternalClearKey/EncryptedMediaTest.Playback_Encryption_CBCS/0
--MSE_ExternalClearKey/EncryptedMediaTest.Playback_Encryption_CBCS_Video_CENC_Audio/0
--MSE_ExternalClearKey/EncryptedMediaTest.Playback_Encryption_CENC/0
--MSE_ExternalClearKey/EncryptedMediaTest.Playback_Encryption_CENC_Video_CBCS_Audio/0
+-MSE_ExternalClearKey/EncryptedMediaTest.*
 -NavigationBrowserTest.*
 -NavigationControllerBrowserTest.DontIgnoreBackAfterNavEntryLimit
 -NavigationControllerBrowserTest.ReloadWithUrlAnchor
@@ -65,7 +62,7 @@
 -SitePerProcessHitTestBrowserTest.TouchpadPinchWhenMissingHitTestDataDoesNotCrash/1
 -SnapshotBrowserTest.SyncMultiWindowTest
 -SRC_ClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
--SRC_ExternalClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
+-SRC_ExternalClearKey/EncryptedMediaTest.*
 -TouchActionBrowserTest.DefaultAuto/1
 -TouchActionBrowserTest.PanXMainThreadJanky/1
 -TouchActionBrowserTest.PanXYMainThreadJanky/1

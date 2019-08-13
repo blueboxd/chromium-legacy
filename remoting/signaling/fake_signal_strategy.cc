@@ -31,8 +31,7 @@ void FakeSignalStrategy::Connect(FakeSignalStrategy* peer1,
 FakeSignalStrategy::FakeSignalStrategy(const SignalingAddress& address)
     : main_thread_(base::ThreadTaskRunnerHandle::Get()),
       address_(address),
-      last_id_(0),
-      weak_factory_(this) {
+      last_id_(0) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 

@@ -17,6 +17,7 @@ import("//chrome/common/features.gni")
 import("//chromeos/assistant/assistant.gni")
 import("//components/feature_engagement/features.gni")
 import("//components/feed/features.gni")
+import("//components/gwp_asan/buildflags/buildflags.gni")
 import("//components/nacl/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
 import("//components/os_crypt/features.gni")
@@ -1271,7 +1272,6 @@ if (!is_android) {
       "../browser/ui/webui/policy_ui_browsertest.cc",
       "../browser/ui/webui/prefs_internals_browsertest.cc",
       "../browser/ui/webui/profile_helper_browsertest.cc",
-      "../browser/ui/webui/set_as_default_browser_ui_browsertest_win.cc",
       "../browser/ui/webui/settings/settings_ui_browsertest.cc",
       "../browser/ui/webui/signin/user_manager_ui_browsertest.cc",
       "../browser/ui/webui/webui_browsertest.cc",
@@ -2170,6 +2170,7 @@ if (!is_android) {
         "../browser/chromeos/policy/login_policy_test_base.h",
         "../browser/chromeos/policy/login_screen_default_policy_browsertest.cc",
         "../browser/chromeos/policy/network_policy_application_browsertest.cc",
+        "../browser/chromeos/policy/policy_certs_browsertest.cc",
         "../browser/chromeos/policy/power_policy_browsertest.cc",
         "../browser/chromeos/policy/restore_on_startup_browsertest_chromeos.cc",
         "../browser/chromeos/policy/signin_profile_extensions_policy_browsertest.cc",
@@ -2182,7 +2183,6 @@ if (!is_android) {
         "../browser/chromeos/policy/user_affiliation_browsertest.cc",
         "../browser/chromeos/policy/user_cloud_external_data_manager_browsertest.cc",
         "../browser/chromeos/policy/user_cloud_policy_manager_chromeos_browsertest.cc",
-        "../browser/chromeos/policy/user_network_configuration_updater_factory_browsertest.cc",
         "../browser/chromeos/policy/user_policy_test_helper.cc",
         "../browser/chromeos/policy/user_policy_test_helper.h",
         "../browser/chromeos/policy/variations_service_policy_browsertest.cc",
@@ -3013,6 +3013,7 @@ test("unit_tests") {
     "../browser/performance_manager/graph/process_node_impl_unittest.cc",
     "../browser/performance_manager/graph/properties_unittest.cc",
     "../browser/performance_manager/graph/system_node_impl_unittest.cc",
+    "../browser/performance_manager/graph/worker_node_impl_unittest.cc",
     "../browser/performance_manager/mechanisms/working_set_trimmer_win_unittest.cc",
     "../browser/performance_manager/observers/graph_observer_unittest.cc",
     "../browser/performance_manager/observers/isolation_context_metrics_unittest.cc",
@@ -3588,6 +3589,7 @@ test("unit_tests") {
       "../browser/importer/profile_writer_unittest.cc",
       "../browser/lifetime/application_lifetime_unittest.cc",
       "../browser/lookalikes/lookalike_url_navigation_throttle_unittest.cc",
+      "../browser/lookalikes/safety_tips/reputation_service_unittest.cc",
 
       # Media remoting is not supported on Android for now.
       "../browser/media/cast_remoting_connector_unittest.cc",
@@ -3920,7 +3922,7 @@ test("unit_tests") {
       "../browser/renderer_context_menu/render_view_context_menu_test_util.cc",
       "../browser/renderer_context_menu/render_view_context_menu_test_util.h",
       "../browser/sharing/click_to_call/click_to_call_context_menu_observer_unittest.cc",
-      "../browser/sharing/click_to_call/click_to_call_sharing_dialog_controller_unittest.cc",
+      "../browser/sharing/click_to_call/click_to_call_ui_controller_unittest.cc",
       "../browser/sharing/click_to_call/click_to_call_utils_unittest.cc",
       "../browser/sharing/shared_clipboard/shared_clipboard_ui_controller_unittest.cc",
       "../browser/ui/autofill/payments/local_card_migration_bubble_controller_impl_unittest.cc",
@@ -4742,6 +4744,7 @@ test("unit_tests") {
       "../browser/ui/cocoa/profiles/profile_menu_controller_unittest.mm",
       "../browser/ui/cocoa/scoped_menu_bar_lock_unittest.mm",
       "../browser/ui/cocoa/status_icons/status_icon_mac_unittest.mm",
+      "../browser/ui/cocoa/tab_menu_bridge_unittest.mm",
       "../browser/ui/cocoa/test/cocoa_profile_test.h",
       "../browser/ui/cocoa/test/cocoa_profile_test.mm",
       "../browser/ui/cocoa/test/run_loop_testing_unittest.mm",
@@ -4971,6 +4974,9 @@ test("unit_tests") {
       "../browser/supervised_user/supervised_user_settings_service_unittest.cc",
       "../browser/supervised_user/supervised_user_url_filter_unittest.cc",
       "../browser/supervised_user/supervised_user_whitelist_service_unittest.cc",
+    ]
+    deps += [
+      "//chrome/browser/supervised_user/supervised_user_error_page:unit_tests",
     ]
   }
   if (safe_browsing_mode == 1 && enable_extensions) {
@@ -5548,6 +5554,7 @@ if (!is_android) {
         "../browser/ui/ash/launcher_drag_interactive_uitest.cc",
         "../browser/ui/ash/launcher_page_switches_interactive_uitest.cc",
         "../browser/ui/ash/overview_animations_interactive_uitest.cc",
+        "../browser/ui/ash/overview_scroll_interactive_uitest.cc",
         "../browser/ui/ash/overview_window_drag_interactive_uitest.cc",
         "../browser/ui/ash/screen_rotation_interactive_uitest.cc",
         "../browser/ui/ash/split_view_interactive_uitest.cc",
@@ -5695,12 +5702,16 @@ test("chrome_app_unittests") {
     "//chrome/gpu",
     "//components/crash/core/common",
     "//components/flags_ui:switches",
+    "//components/gwp_asan/buildflags",
     "//components/safe_browsing:buildflags",
     "//components/tracing",
   ]
   if (!is_fuchsia) {
     # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
     deps += [ "//third_party/breakpad:client" ]
+  }
+  if (enable_gwp_asan) {
+    deps += [ "//components/gwp_asan/client" ]
   }
 }
 

@@ -207,6 +207,11 @@ bool IOSChromeSavePasswordInfoBarDelegate::Cancel() {
   return true;
 }
 
+void IOSChromeSavePasswordInfoBarDelegate::InfoBarDismissed() {
+  DCHECK(form_to_save());
+  set_infobar_response(password_manager::metrics_util::CLICKED_CANCEL);
+}
+
 bool IOSChromeSavePasswordInfoBarDelegate::ShouldExpire(
     const NavigationDetails& details) const {
   return !details.is_redirect && ConfirmInfoBarDelegate::ShouldExpire(details);

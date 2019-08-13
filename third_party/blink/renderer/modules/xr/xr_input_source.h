@@ -120,6 +120,8 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   // from InvalidatesSameObject
   void UpdateGamepad(const base::Optional<device::Gamepad>& gamepad);
 
+  void SetProfiles(const device::mojom::blink::XRInputSourceStatePtr& state);
+
   XRInputSourceEvent* CreateInputSourceEvent(const AtomicString& type);
 
   // These member variables all require special behavior when being copied or

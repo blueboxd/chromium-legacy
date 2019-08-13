@@ -10,13 +10,12 @@ import android.support.v7.preference.PreferenceViewHolder;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.util.AttributeSet;
-import android.view.accessibility.AccessibilityManager;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.ListMenuButton.Item;
 import org.chromium.chrome.browser.widget.TintedDrawable;
@@ -35,14 +34,13 @@ public class LanguageListPreference extends Preference {
         }
 
         @Override
-        public void onBindViewHolder(
-                LanguageListBaseAdapter.LanguageRowViewHolder holder, int position) {
+        public void onBindViewHolder(ViewHolder holder, int position) {
             super.onBindViewHolder(holder, position);
 
-            showDragIndicatorInRow(holder, R.drawable.ic_drag_handle_grey600_24dp);
-
             final LanguageItem info = getItemByPosition(position);
-            holder.setMenuButtonDelegate(new ListMenuButton.Delegate() {
+
+            showDragIndicatorInRow((LanguageRowViewHolder) holder);
+            ((LanguageRowViewHolder) holder).setMenuButtonDelegate(new ListMenuButton.Delegate() {
                 @Override
                 public Item[] getItems() {
                     ArrayList<Item> menuItems = new ArrayList<>();
@@ -66,7 +64,7 @@ public class LanguageListPreference extends Preference {
 
                     // Add some appropriate options for moving the language when the list is not
                     // draggable. E.g. in the accessibility mode.
-                    if (!isDragEnabled()) {
+                    if (!mDragStateDelegate.getDragEnabled()) {
                         // Add "Move to top" and "Move up" menu when it's not the first one.
                         if (position > 0) {
                             menuItems.add(new Item(mContext, R.string.menu_item_move_to_top, true));
@@ -114,14 +112,18 @@ public class LanguageListPreference extends Preference {
 
         @Override
         public void onDataUpdated() {
-            reload(LanguagesManager.getInstance().getUserAcceptLanguageItems());
+            if (mDragStateDelegate.getDragActive()) {
+                enableDrag();
+            } else {
+                disableDrag();
+            }
+            setDisplayedLanguages(LanguagesManager.getInstance().getUserAcceptLanguageItems());
         }
     }
 
     private TextView mAddLanguageButton;
     private RecyclerView mRecyclerView;
     private LanguageListAdapter mAdapter;
-
     private AddLanguageFragment.Launcher mLauncher;
 
     public LanguageListPreference(Context context, AttributeSet attrs) {
@@ -152,27 +154,13 @@ public class LanguageListPreference extends Preference {
         mRecyclerView.addItemDecoration(
                 new DividerItemDecoration(getContext(), layoutMangager.getOrientation()));
 
-        // Due to a known native bug (crbug/640763), the list order written into Preference Service
-        // might be different from the order shown after it's adjusted by dragging.
-        if (!AccessibilityUtil.isAccessibilityEnabled()) mAdapter.enableDrag(mRecyclerView);
-        AccessibilityManager manager =
-                (AccessibilityManager) getContext().getSystemService(Context.ACCESSIBILITY_SERVICE);
-        manager.addAccessibilityStateChangeListener(enabled -> {
-            if (enabled) {
-                mAdapter.disableDrag();
-            } else {
-                mAdapter.enableDrag(mRecyclerView);
-            }
-            mAdapter.notifyDataSetChanged();
-        });
-
         // We do not want the RecyclerView to be announced by screen readers every time
         // the view is bound.
         if (mRecyclerView.getAdapter() != mAdapter) {
             mRecyclerView.setAdapter(mAdapter);
             LanguagesManager.getInstance().setAcceptLanguageObserver(mAdapter);
             // Initialize accept language list.
-            mAdapter.reload(LanguagesManager.getInstance().getUserAcceptLanguageItems());
+            mAdapter.onDataUpdated();
         }
     }
 

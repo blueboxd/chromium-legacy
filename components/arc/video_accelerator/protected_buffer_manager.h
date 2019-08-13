@@ -10,8 +10,8 @@
 #include <set>
 
 #include "base/files/scoped_file.h"
+#include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
@@ -35,10 +35,10 @@ class ProtectedBufferManager
   CreateProtectedBufferAllocator(
       scoped_refptr<ProtectedBufferManager> protected_buffer_manager);
 
-  // Return a duplicated SharedMemoryHandle associated with the |dummy_fd|,
-  // if one exists, or an invalid handle otherwise.
-  // The client is responsible for closing the handle after use.
-  base::SharedMemoryHandle GetProtectedSharedMemoryHandleFor(
+  // Return a duplicated PlatformSharedMemoryRegion associated with the
+  // |dummy_fd|, if one exists, or an invalid handle otherwise. The client is
+  // responsible for closing the handle after use.
+  base::subtle::PlatformSharedMemoryRegion GetProtectedSharedMemoryRegionFor(
       base::ScopedFD dummy_fd);
 
   // Return a duplicated NativePixmapHandle associated with the |dummy_fd|,

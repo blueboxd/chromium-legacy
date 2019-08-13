@@ -674,6 +674,7 @@ TEST(WebInputEventBuilderMacTest, ScrollWheelMatchesUIEvent) {
   [window close];
 }
 
+#if !defined(MAC_OS_X_VERSION_10_12)
 // Test if the value of twist and rotation_angle are set correctly when the
 // NSEvent's rotation is less than 90.
 TEST(WebInputEventBuilderMacTest, TouchEventsWithPointerTypePenRotationLess90) {
@@ -781,6 +782,7 @@ TEST(WebInputEventBuilderMacTest, BuildWebTouchEvents) {
   EXPECT_EQ(60, touch_event.touches[0].twist);
   EXPECT_FLOAT_EQ(60.0, touch_event.touches[0].rotation_angle);
 }
+#endif  // MAC_OS_X_VERSION_10_12
 
 // Test if the mouse back button values of a WebMouseEvent are set correctly.
 TEST(WebInputEventBuilderMacTest, BuildWebMouseEventsWithBackButton) {

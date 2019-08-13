@@ -43,6 +43,7 @@ class ViewElement : public views::ViewObserver, public UIElement {
       const override;
   static views::View* From(const UIElement* element);
   void PaintRect() const override;
+  void InitSources() override;
 
  private:
   views::View* view_;

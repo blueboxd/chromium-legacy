@@ -16,6 +16,7 @@ class NodeBase;
 class PageNodeImpl;
 class ProcessNodeImpl;
 class SystemNodeImpl;
+class WorkerNodeImpl;
 
 // An observer API for the graph.
 //
@@ -87,6 +88,19 @@ class GraphImplObserver {
   // SystemNodeObserver analogs:
   virtual void OnProcessCPUUsageReady(SystemNodeImpl* system_node) = 0;
 
+  // WorkerNodeObserver analogs:
+  virtual void OnWorkerNodeAdded(WorkerNodeImpl* worker_node) = 0;
+  virtual void OnBeforeWorkerNodeRemoved(WorkerNodeImpl* worker_node) = 0;
+  virtual void OnClientFrameAdded(WorkerNodeImpl* worker_node,
+                                  FrameNodeImpl* client_frame_node) = 0;
+  virtual void OnBeforeClientFrameRemoved(WorkerNodeImpl* worker_node,
+                                          FrameNodeImpl* client_frame_node) = 0;
+  virtual void OnClientWorkerAdded(WorkerNodeImpl* worker_node,
+                                   WorkerNodeImpl* client_worker_node) = 0;
+  virtual void OnBeforeClientWorkerRemoved(
+      WorkerNodeImpl* worker_node,
+      WorkerNodeImpl* client_worker_node) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(GraphImplObserver);
 };
@@ -130,6 +144,19 @@ class GraphImplObserverDefaultImpl : public GraphImplObserver {
 
   // SystemNodeImplObserver implementation:
   void OnProcessCPUUsageReady(SystemNodeImpl* system_node) override {}
+
+  // WorkerNodeImplObserver implementation:
+  void OnWorkerNodeAdded(WorkerNodeImpl* worker_node) override {}
+  void OnBeforeWorkerNodeRemoved(WorkerNodeImpl* worker_node) override {}
+  void OnClientFrameAdded(WorkerNodeImpl* worker_node,
+                          FrameNodeImpl* client_frame_node) override {}
+  void OnBeforeClientFrameRemoved(WorkerNodeImpl* worker_node,
+                                  FrameNodeImpl* client_frame_node) override {}
+  void OnClientWorkerAdded(WorkerNodeImpl* worker_node,
+                           WorkerNodeImpl* client_worker_node) override {}
+  void OnBeforeClientWorkerRemoved(
+      WorkerNodeImpl* worker_node,
+      WorkerNodeImpl* client_worker_node) override {}
 
   GraphImpl* graph() const { return graph_; }
 

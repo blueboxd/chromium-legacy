@@ -131,7 +131,7 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
 
   Delegate* delegate_;
   Parameters parameters_;
-  base::WeakPtrFactory<OAuth2MintTokenFlow> weak_factory_;
+  base::WeakPtrFactory<OAuth2MintTokenFlow> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2MintTokenFlow);
 };

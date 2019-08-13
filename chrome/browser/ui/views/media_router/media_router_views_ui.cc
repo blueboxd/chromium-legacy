@@ -192,8 +192,7 @@ class MediaRouterViewsUI::WebContentsFullscreenOnLoadedObserver final
   }
 };
 
-MediaRouterViewsUI::MediaRouterViewsUI()
-    : initiator_(nullptr), weak_factory_(this) {}
+MediaRouterViewsUI::MediaRouterViewsUI() : initiator_(nullptr) {}
 
 MediaRouterViewsUI::~MediaRouterViewsUI() {
   for (CastDialogController::Observer& observer : observers_)

@@ -11,12 +11,7 @@
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
 
-namespace gpu {
-class SharedImageRepresentationSkia;
-}  // namespace gpu
-
 namespace gl {
-class GLFence;
 class GLSurface;
 }  // namespace gl
 
@@ -58,36 +53,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
 
  private:
   friend class SkiaOutputDeviceBufferQueueTest;
-
-  class VIZ_SERVICE_EXPORT Image {
-   public:
-    Image(gpu::SharedImageFactory* factory,
-          gpu::SharedImageRepresentationFactory* representation_factory);
-    ~Image();
-
-    bool Initialize(const gfx::Size& size,
-                    const gfx::ColorSpace& color_space,
-                    ResourceFormat format,
-                    SkiaOutputSurfaceDependency* deps,
-                    uint32_t shared_image_usage);
-
-    sk_sp<SkSurface> BeginWriteSkia();
-    void EndWriteSkia();
-    gl::GLImage* GetImage() const;
-    std::unique_ptr<gfx::GpuFence> CreateFence();
-    void ResetFence();
-
-   private:
-    gpu::Mailbox mailbox;
-    std::unique_ptr<gpu::SharedImageRepresentationSkia> skia_representation_;
-    std::unique_ptr<gpu::SharedImageRepresentationGLTexture> gl_representation_;
-    std::vector<GrBackendSemaphore> end_semaphores_;
-    sk_sp<SkSurface> sk_surface_;
-    std::unique_ptr<gl::GLFence> fence_;
-
-    gpu::SharedImageFactory* factory_;
-    gpu::SharedImageRepresentationFactory* representation_factory_;
-  };
+  class Image;
 
   Image* GetCurrentImage();
   std::unique_ptr<Image> GetNextImage();

@@ -595,7 +595,7 @@ void GCMClientImpl::UpdateAccountMapping(
                                            weak_ptr_factory_.GetWeakPtr()));
 }
 
-void GCMClientImpl::RemoveAccountMapping(const std::string& account_id) {
+void GCMClientImpl::RemoveAccountMapping(const CoreAccountId& account_id) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   gcm_store_->RemoveAccountMapping(
       account_id,

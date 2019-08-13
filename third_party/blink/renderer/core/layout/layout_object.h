@@ -1991,7 +1991,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool CreatesGroup() const {
     return StyleRef().HasOpacity() || HasMask() || HasClipPath() ||
-           HasFilterInducingProperty() || StyleRef().HasBlendMode();
+           HasFilterInducingProperty() || HasBackdropFilter() ||
+           StyleRef().HasBlendMode();
   }
 
   Vector<PhysicalRect> OutlineRects(const PhysicalOffset& additional_offset,

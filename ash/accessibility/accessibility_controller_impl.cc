@@ -623,14 +623,6 @@ void AccessibilityControllerImpl::SetSwitchAccessEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
-void AccessibilityControllerImpl::SetSwitchAccessKeysToCapture(
-    const std::vector<int>& keys_to_capture) {
-  // Forward the keys to capture to switch_access_event_handler_.
-  if (switch_access_event_handler_)
-    switch_access_event_handler_->set_keys_to_capture(keys_to_capture);
-  NotifyAccessibilityStatusChanged();
-}
-
 void AccessibilityControllerImpl::SetSwitchAccessIgnoreVirtualKeyEvent(
     bool should_ignore) {
   switch_access_event_handler_->set_ignore_virtual_key_events(should_ignore);

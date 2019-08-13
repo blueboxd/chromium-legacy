@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/sampler_manager.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_base.h"
 #include "gpu/gpu_gles2_export.h"
 #include "ui/gfx/geometry/rect.h"
@@ -796,6 +797,13 @@ class GPU_GLES2_EXPORT TextureRef : public base::RefCounted<TextureRef> {
   SharedImageRepresentationGLTexture* shared_image() const {
     return shared_image_.get();
   }
+  const base::Optional<SharedImageRepresentationGLTexture::ScopedAccess>&
+  shared_image_scoped_access() const {
+    return shared_image_scoped_access_;
+  }
+
+  bool BeginAccessSharedImage(GLenum mode);
+  void EndAccessSharedImage();
 
   // When the TextureRef is destroyed, it will assume that the context has been
   // lost, regardless of the state of the TextureManager.
@@ -818,6 +826,8 @@ class GPU_GLES2_EXPORT TextureRef : public base::RefCounted<TextureRef> {
   bool force_context_lost_;
 
   std::unique_ptr<SharedImageRepresentationGLTexture> shared_image_;
+  base::Optional<SharedImageRepresentationGLTexture::ScopedAccess>
+      shared_image_scoped_access_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureRef);
 };

@@ -88,7 +88,7 @@ class FtlServicesPlayground {
 
   base::OnceClosure receive_messages_done_callback_;
 
-  base::WeakPtrFactory<FtlServicesPlayground> weak_factory_;
+  base::WeakPtrFactory<FtlServicesPlayground> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FtlServicesPlayground);
 };
 

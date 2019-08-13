@@ -9,6 +9,8 @@
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/named_guide_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/incognito_color_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/material_timing.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
@@ -23,7 +25,30 @@ const CGFloat kMinScale = 0.7;
 CGFloat kRotationAngleInRadians = 20.0 / 180 * M_PI;
 }  // namespace
 
+@interface BackgroundTabAnimationView ()
+
+// Whether the animation is taking place in incognito.
+@property(nonatomic, assign) BOOL incognito;
+
+@end
+
 @implementation BackgroundTabAnimationView
+
+- (instancetype)initWithFrame:(CGRect)frame incognito:(BOOL)incognito {
+  self = [super initWithFrame:frame];
+  if (self) {
+    _incognito = incognito;
+
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+    if (@available(iOS 13, *)) {
+      self.overrideUserInterfaceStyle = incognito
+                                            ? UIUserInterfaceStyleDark
+                                            : UIUserInterfaceStyleUnspecified;
+    }
+#endif
+  }
+  return self;
+}
 
 #pragma mark - Public
 
@@ -96,7 +121,9 @@ CGFloat kRotationAngleInRadians = 20.0 / 180 * M_PI;
   [super didMoveToSuperview];
 
   if (self.subviews.count == 0) {
-    self.backgroundColor = [UIColor colorWithWhite:0.98 alpha:1];
+    self.backgroundColor = color::IncognitoDynamicColor(
+        self.incognito, [UIColor colorNamed:kBackgroundColor],
+        [UIColor colorNamed:kBackgroundDarkColor]);
     self.layer.shadowRadius = 20;
     self.layer.shadowOpacity = 0.4;
     self.layer.shadowOffset = CGSizeMake(0, 3);
@@ -106,7 +133,9 @@ CGFloat kRotationAngleInRadians = 20.0 / 180 * M_PI;
             [[UIImage imageNamed:@"open_new_tab_background"]
                 imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
     linkImage.translatesAutoresizingMaskIntoConstraints = NO;
-    linkImage.tintColor = [UIColor colorWithWhite:0.4 alpha:1];
+    linkImage.tintColor = color::IncognitoDynamicColor(
+        self.incognito, [UIColor colorNamed:kToolbarButtonColor],
+        [UIColor colorNamed:kToolbarButtonDarkColor]);
 
     [self addSubview:linkImage];
 

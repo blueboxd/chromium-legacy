@@ -348,6 +348,12 @@ const base::Feature kHardwareSecureDecryption{
 const base::Feature kWidevineAv1{"WidevineAv1",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Forces to support encrypted AV1 in EME requestMediaKeySystemAccess() query by
+// Widevine key system even if the underlying Widevine CDM doesn't support it.
+// No effect if "WidevineAv1" feature is disabled.
+const base::Feature kWidevineAv1ForceSupportForTesting{
+    "WidevineAv1ForceSupportForTesting", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables handling of hardware media keys for controlling media.
 const base::Feature kHardwareMediaKeyHandling{
   "HardwareMediaKeyHandling",

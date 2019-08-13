@@ -101,7 +101,7 @@ class TabsAddedNotificationObserver : public TabStripModelObserver {
  public:
   TabsAddedNotificationObserver(Browser* browser, size_t observations)
       : observations_(observations) {
-    tab_strip_observer_.Add(browser->tab_strip_model());
+    browser->tab_strip_model()->AddObserver(this);
   }
 
   ~TabsAddedNotificationObserver() override = default;
@@ -129,8 +129,6 @@ class TabsAddedNotificationObserver : public TabStripModelObserver {
   base::RunLoop run_loop_;
   size_t observations_;
   std::vector<content::WebContents*> observed_tabs_;
-  ScopedObserver<TabStripModel, TabStripModelObserver> tab_strip_observer_{
-      this};
 
   DISALLOW_COPY_AND_ASSIGN(TabsAddedNotificationObserver);
 };

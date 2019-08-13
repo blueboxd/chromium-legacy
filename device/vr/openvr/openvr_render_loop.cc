@@ -290,9 +290,11 @@ std::vector<mojom::XRInputSourceStatePtr> OpenVRRenderLoop::GetInputState(
                                                   controller_state, handedness);
     state->gamepad = input_source_data.gamepad;
 
-    // If this is a newly active controller or if the handedness has changed
-    // since the last update, re-send the controller's description.
-    if (newly_active || controller_role != input_active_state.controller_role) {
+    // Re-send the controller's description if it's newly active or if the
+    // handedness or profile strings have changed.
+    if (newly_active ||
+        (controller_role != input_active_state.controller_role) ||
+        (input_source_data.profiles != input_active_state.profiles)) {
       device::mojom::XRInputSourceDescriptionPtr desc =
           device::mojom::XRInputSourceDescription::New();
 
@@ -313,6 +315,9 @@ std::vector<mojom::XRInputSourceStatePtr> OpenVRRenderLoop::GetInputState(
       desc->profiles = input_source_data.profiles;
 
       state->description = std::move(desc);
+
+      // Keep track of the current profiles so we know if it changes next frame.
+      input_active_state.profiles = input_source_data.profiles;
     }
 
     input_states.push_back(std::move(state));
@@ -320,5 +325,8 @@ std::vector<mojom::XRInputSourceStatePtr> OpenVRRenderLoop::GetInputState(
 
   return input_states;
 }
+
+OpenVRRenderLoop::InputActiveState::InputActiveState() = default;
+OpenVRRenderLoop::InputActiveState::~InputActiveState() = default;
 
 }  // namespace device

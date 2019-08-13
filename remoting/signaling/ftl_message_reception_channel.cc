@@ -18,8 +18,7 @@ namespace remoting {
 constexpr base::TimeDelta FtlMessageReceptionChannel::kPongTimeout;
 
 FtlMessageReceptionChannel::FtlMessageReceptionChannel()
-    : reconnect_retry_backoff_(&FtlGrpcContext::GetBackoffPolicy()),
-      weak_factory_(this) {}
+    : reconnect_retry_backoff_(&FtlGrpcContext::GetBackoffPolicy()) {}
 
 FtlMessageReceptionChannel::~FtlMessageReceptionChannel() = default;
 

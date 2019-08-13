@@ -316,8 +316,7 @@ BlobBuilderFromStream::BlobBuilderFromStream(
       context_(std::move(context)),
       callback_(std::move(callback)),
       content_type_(std::move(content_type)),
-      content_disposition_(std::move(content_disposition)),
-      weak_factory_(this) {
+      content_disposition_(std::move(content_disposition)) {
   DCHECK(context_);
 }
 

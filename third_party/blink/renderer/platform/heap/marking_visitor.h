@@ -116,8 +116,12 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
 
   size_t marked_bytes() const { return marked_bytes_; }
 
+  int task_id() const { return task_id_; }
+
+  void AdjustMarkedBytes(HeapObjectHeader*, size_t);
+
  protected:
-  MarkingVisitorBase(ThreadState*, MarkingMode);
+  MarkingVisitorBase(ThreadState*, MarkingMode, int task_id);
   ~MarkingVisitorBase() override = default;
 
   // Marks an object and adds a tracing callback for processing of the object.
@@ -141,6 +145,7 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
   BackingStoreCallbackWorklist::View backing_store_callback_worklist_;
   size_t marked_bytes_ = 0;
   const MarkingMode marking_mode_;
+  int task_id_;
 };
 
 ALWAYS_INLINE void MarkingVisitorBase::AccountMarkedBytes(
@@ -210,8 +215,6 @@ class PLATFORM_EXPORT MarkingVisitor : public MarkingVisitorBase {
   // to be in construction.
   void DynamicallyMarkAddress(Address);
 
-  void AdjustMarkedBytes(HeapObjectHeader*, size_t);
-
  private:
   // Exact version of the marking write barriers.
   static void WriteBarrierSlow(void*);
@@ -235,6 +238,13 @@ ALWAYS_INLINE void MarkingVisitor::TraceMarkedBackingStore(void* value) {
   // inlining otherwise pollutes the regular execution paths.
   TraceMarkedBackingStoreSlow(value);
 }
+
+// Visitor used to mark Oilpan objects on concurrent threads.
+class PLATFORM_EXPORT ConcurrentMarkingVisitor : public MarkingVisitorBase {
+ public:
+  ConcurrentMarkingVisitor(ThreadState*, MarkingMode, int);
+  ~ConcurrentMarkingVisitor() override = default;
+};
 
 }  // namespace blink
 

@@ -358,4 +358,84 @@ INSTANTIATE_TEST_SUITE_P(
     ServiceWorkerMainScriptRequestNetworkIsolationKeyBrowserTest,
     testing::Bool());
 
+using SharedWorkerMainScriptRequestNetworkIsolationKeyBrowserTest =
+    ServiceWorkerMainScriptRequestNetworkIsolationKeyBrowserTest;
+
+// Test that network isolation key is filled in correctly for shared worker's
+// main script request. The test navigates to "a.com" and creates an iframe
+// having origin "c.com" that creates |worker1|. The test then navigates to
+// "b.com" and creates an iframe also having origin "c.com" that creates
+// |worker1| again.
+//
+// We expect the second creation request for |worker1| to exist in the cache.
+//
+// Note that it's sufficient not to test the cache miss when subframe origins
+// are different as in that case the two script urls must be different.
+IN_PROC_BROWSER_TEST_P(
+    SharedWorkerMainScriptRequestNetworkIsolationKeyBrowserTest,
+    SharedWorkerMainScriptRequest) {
+  if (!SupportsSharedWorker())
+    return;
+
+  // Discard the old process to clear the in-memory cache.
+  CrossProcessNavigation();
+
+  net::EmbeddedTestServer subframe_server;
+  subframe_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  ASSERT_TRUE(subframe_server.Start());
+
+  net::EmbeddedTestServer new_tab_server;
+  new_tab_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  ASSERT_TRUE(new_tab_server.Start());
+
+  size_t num_completed = 0;
+  std::string main_script_file = "empty.js";
+  GURL main_script_request_url =
+      subframe_server.GetURL("/workers/" + main_script_file);
+
+  base::RunLoop cache_status_waiter;
+  URLLoaderInterceptor interceptor(
+      base::BindLambdaForTesting(
+          [&](URLLoaderInterceptor::RequestParams* params) { return false; }),
+      base::BindLambdaForTesting(
+          [&](const GURL& request_url,
+              const network::URLLoaderCompletionStatus& status) {
+            if (request_url == main_script_request_url) {
+              num_completed += 1;
+              if (num_completed == 1) {
+                EXPECT_FALSE(status.exists_in_cache);
+              } else if (num_completed == 2) {
+                EXPECT_TRUE(status.exists_in_cache);
+                cache_status_waiter.Quit();
+              } else {
+                NOTREACHED();
+              }
+            }
+          }),
+      {});
+
+  // Navigate to "a.com" and create the iframe "c.com", which creates |worker1|.
+  NavigateToURLBlockUntilNavigationsComplete(
+      shell(), embedded_test_server()->GetURL("/workers/frame_factory.html"),
+      1);
+  RenderFrameHost* subframe_rfh_1 = CreateSubframe(
+      subframe_server.GetURL("/workers/service_worker_setup.html"));
+  RegisterWorker(subframe_rfh_1, WorkerType::kSharedWorker, "empty.js");
+
+  // Navigate to "b.com" and create the another iframe on "c.com", which creates
+  // |worker1| again.
+  NavigateToURLBlockUntilNavigationsComplete(
+      shell(), new_tab_server.GetURL("/workers/frame_factory.html"), 1);
+  RenderFrameHost* subframe_rfh_2 = CreateSubframe(
+      subframe_server.GetURL("/workers/service_worker_setup.html"));
+  RegisterWorker(subframe_rfh_2, WorkerType::kSharedWorker, "empty.js");
+
+  cache_status_waiter.Run();
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    SharedWorkerMainScriptRequestNetworkIsolationKeyBrowserTest,
+    testing::Bool());
+
 }  // namespace content

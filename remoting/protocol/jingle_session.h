@@ -182,7 +182,7 @@ class JingleSession : public Session {
   // The SessionPlugins attached to this session.
   std::vector<SessionPlugin*> plugins_;
 
-  base::WeakPtrFactory<JingleSession> weak_factory_;
+  base::WeakPtrFactory<JingleSession> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(JingleSession);
 };

@@ -489,7 +489,7 @@
   'oreo_fleet': {
     'swarming': {
       'dimensions': {
-        'device_os': 'OPM1.171019.021',
+        'device_os': 'OPM4.171019.021.P2',
         'device_os_flavor': 'google',
       },
     },

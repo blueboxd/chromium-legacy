@@ -23,6 +23,7 @@
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_item_impl_delegate.h"
+#include "components/download/public/common/download_job.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/in_progress_download_manager.h"
 #include "components/download/public/common/url_download_handler.h"
@@ -41,13 +42,11 @@ namespace download {
 class DownloadFileFactory;
 class DownloadItemFactory;
 class DownloadItemImpl;
-class DownloadRequestHandleInterface;
 }
 
 namespace content {
 class CONTENT_EXPORT DownloadManagerImpl
     : public DownloadManager,
-      public download::UrlDownloadHandler::Delegate,
       public download::InProgressDownloadManager::Delegate,
       private download::DownloadItemImplDelegate {
  public:
@@ -70,7 +69,7 @@ class CONTENT_EXPORT DownloadManagerImpl
       const std::string& mime_type,
       int render_process_id,
       int render_frame_id,
-      std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
+      download::DownloadJob::CancelRequestCallback cancel_request_callback,
       const DownloadItemImplCreated& item_created);
 
   // DownloadManager functions.
@@ -138,19 +137,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   download::DownloadItem* GetDownloadByGuid(const std::string& guid) override;
   void GetNextId(GetNextIdCallback callback) override;
 
-  // UrlDownloadHandler::Delegate implementation.
-  void OnUrlDownloadStarted(
-      std::unique_ptr<download::DownloadCreateInfo> download_create_info,
-      std::unique_ptr<download::InputStream> stream,
-      scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-          url_loader_factory_getter,
-      const download::DownloadUrlParameters::OnStartedCallback& callback)
-      override;
-  void OnUrlDownloadStopped(download::UrlDownloadHandler* downloader) override;
-  void OnUrlDownloadHandlerCreated(
-      download::UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader)
-      override;
-
   // For testing; specifically, accessed from TestFileErrorInjector.
   void SetDownloadItemFactoryForTesting(
       std::unique_ptr<download::DownloadItemFactory> item_factory);
@@ -185,7 +171,7 @@ class CONTENT_EXPORT DownloadManagerImpl
       const std::string& mime_type,
       int render_process_id,
       int render_frame_id,
-      std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
+      download::DownloadJob::CancelRequestCallback cancel_request_callback,
       const DownloadItemImplCreated& on_started,
       uint32_t id);
 
@@ -249,6 +235,8 @@ class CONTENT_EXPORT DownloadManagerImpl
   bool IsOffTheRecord() const override;
   void ReportBytesWasted(download::DownloadItemImpl* download) override;
   service_manager::Connector* GetServiceManagerConnector() override;
+  download::QuarantineConnectionCallback GetQuarantineConnectionCallback()
+      override;
 
   // Drops a download before it is created.
   void DropDownload();
@@ -340,10 +328,6 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   // Allows an embedder to control behavior. Guaranteed to outlive this object.
   DownloadManagerDelegate* delegate_;
-
-  // TODO(qinmin): remove this once network service is enabled by default.
-  std::vector<download::UrlDownloadHandler::UniqueUrlDownloadHandlerPtr>
-      url_download_handlers_;
 
   std::unique_ptr<download::InProgressDownloadManager> in_progress_manager_;
 

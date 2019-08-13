@@ -76,8 +76,7 @@ WebrtcFrameSchedulerSimple::WebrtcFrameSchedulerSimple(
     : tick_clock_(base::DefaultTickClock::GetInstance()),
       pacing_bucket_(LeakyBucket::kUnlimitedDepth, 0),
       updated_region_area_(kStatsWindow),
-      bandwidth_estimator_(new WebrtcBandwidthEstimator()),
-      weak_factory_(this) {}
+      bandwidth_estimator_(new WebrtcBandwidthEstimator()) {}
 
 WebrtcFrameSchedulerSimple::~WebrtcFrameSchedulerSimple() {
   DCHECK(thread_checker_.CalledOnValidThread());

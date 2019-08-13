@@ -61,7 +61,9 @@ class ASH_EXPORT LoginAuthUserView
     LoginAuthUserView* const view_;
   };
 
-  using OnAuthCallback = base::RepeatingCallback<void(bool auth_success)>;
+  using OnAuthCallback =
+      base::RepeatingCallback<void(bool auth_success,
+                                   bool display_error_messages)>;
   using OnEasyUnlockIconTapped = base::RepeatingClosure;
   using OnEasyUnlockIconHovered = base::RepeatingClosure;
 
@@ -160,12 +162,17 @@ class ASH_EXPORT LoginAuthUserView
  private:
   struct AnimationState;
   class FingerprintView;
+  class ChallengeResponseView;
   class DisabledAuthMessageView;
 
   // Called when the user submits an auth method. Runs mojo call.
   void OnAuthSubmit(const base::string16& password);
-  // Called with the result of the request started in |OnAuthSubmit|.
+  // Called with the result of the request started in |OnAuthSubmit| or
+  // |AttemptAuthenticateWithExternalBinary|.
   void OnAuthComplete(base::Optional<bool> auth_success);
+  // Called with the result of the request started in
+  // |AttemptAuthenticateWithChallengeResponse|.
+  void OnChallengeResponseAuthComplete(base::Optional<bool> auth_success);
   // Called with the result of the external binary enrollment request.
   void OnEnrollmentComplete(base::Optional<bool> enrollment_success);
 
@@ -203,9 +210,9 @@ class ASH_EXPORT LoginAuthUserView
   views::LabelButton* online_sign_in_message_ = nullptr;
   DisabledAuthMessageView* disabled_auth_message_ = nullptr;
   FingerprintView* fingerprint_view_ = nullptr;
+  ChallengeResponseView* challenge_response_view_ = nullptr;
   views::LabelButton* external_binary_auth_button_ = nullptr;
   views::LabelButton* external_binary_enrollment_button_ = nullptr;
-  views::LabelButton* challenge_response_auth_button_ = nullptr;
 
   // Displays padding between:
   // 1. Password field and pin keyboard

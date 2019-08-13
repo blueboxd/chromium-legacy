@@ -317,7 +317,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationRunner {
   std::map<OperationID, StatusCallback> stray_cancel_callbacks_;
 
   base::WeakPtr<FileSystemOperationRunner> weak_ptr_;
-  base::WeakPtrFactory<FileSystemOperationRunner> weak_factory_;
+  base::WeakPtrFactory<FileSystemOperationRunner> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationRunner);
 };

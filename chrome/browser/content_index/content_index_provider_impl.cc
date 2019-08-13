@@ -138,9 +138,8 @@ void DidGetAllEntriesAcrossStorageParitions(
 ContentIndexProviderImpl::ContentIndexProviderImpl(Profile* profile)
     : profile_(profile),
       metrics_(ukm::UkmBackgroundRecorderFactory::GetForProfile(profile)),
-      aggregator_(
-          OfflineContentAggregatorFactory::GetForKey(profile->GetProfileKey())),
-      weak_ptr_factory_(this) {
+      aggregator_(OfflineContentAggregatorFactory::GetForKey(
+          profile->GetProfileKey())) {
   aggregator_->RegisterProvider(kProviderNamespace, this);
 }
 
@@ -152,6 +151,21 @@ ContentIndexProviderImpl::~ContentIndexProviderImpl() {
 void ContentIndexProviderImpl::Shutdown() {
   aggregator_->UnregisterProvider(kProviderNamespace);
   aggregator_ = nullptr;
+}
+
+std::vector<gfx::Size> ContentIndexProviderImpl::GetIconSizes(
+    blink::mojom::ContentCategory category) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (icon_sizes_for_testing_)
+    return *icon_sizes_for_testing_;
+
+#if defined(OS_ANDROID)
+  // Recommended notification icon size for Android.
+  return {{192, 192}};
+#else
+  return {};
+#endif
 }
 
 void ContentIndexProviderImpl::OnContentAdded(
@@ -342,8 +356,10 @@ void ContentIndexProviderImpl::DidGetIcons(const ContentId& id,
                                            std::vector<SkBitmap> icons) {
   auto visuals =
       std::make_unique<offline_items_collection::OfflineItemVisuals>();
-  if (!icons.empty())
+  if (!icons.empty()) {
+    DCHECK_EQ(icons.size(), 1u);
     visuals->icon = gfx::Image::CreateFrom1xBitmap(std::move(icons.front()));
+  }
   std::move(callback).Run(id, std::move(visuals));
 }
 

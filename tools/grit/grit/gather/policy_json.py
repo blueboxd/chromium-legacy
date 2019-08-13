@@ -10,6 +10,8 @@ from __future__ import print_function
 import json
 import sys
 
+import six
+
 from grit.gather import skeleton_gatherer
 from grit import util
 from grit import tclib
@@ -83,7 +85,7 @@ class PolicyJson(skeleton_gatherer.SkeletonGatherer):
       node = minidom.parseString(xml).childNodes[0]
     except ExpatError:
       reason = '''Input isn't valid XML (has < & > been escaped?): ''' + string
-      raise Exception, reason, sys.exc_info()[2]
+      six.reraise(Exception, reason, sys.exc_info()[2])
 
     for child in node.childNodes:
       if child.nodeType == minidom.Node.TEXT_NODE:

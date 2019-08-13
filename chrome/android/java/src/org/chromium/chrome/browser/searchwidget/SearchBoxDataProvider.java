@@ -123,8 +123,4 @@ class SearchBoxDataProvider implements ToolbarDataProvider {
     public @ColorRes int getSecurityIconColorStateList() {
         return 0;
     }
-
-    @Override
-    public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
-            boolean isSearchEngineGoogle, String searchEngineUrl) {}
 }

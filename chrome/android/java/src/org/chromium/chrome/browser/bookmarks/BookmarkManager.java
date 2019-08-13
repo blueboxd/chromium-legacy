@@ -88,6 +88,8 @@ public class BookmarkManager
 
         void moveUpOne(BookmarkId bookmarkId);
         void moveDownOne(BookmarkId bookmarkId);
+
+        void highlightBookmark(BookmarkId bookmarkId);
     }
 
     private final BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
@@ -576,6 +578,11 @@ public class BookmarkManager
         // the BookmarkItemsAdapter, will be notified of the change and the list of bookmarks will
         // be updated.
         setState(mStateStack.pop());
+    }
+
+    @Override
+    public void highlightBookmark(BookmarkId bookmarkId) {
+        mAdapter.highlightBookmark(bookmarkId);
     }
 
     // Testing methods

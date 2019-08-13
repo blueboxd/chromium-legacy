@@ -20,6 +20,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
@@ -98,8 +99,10 @@ void EnterpriseStartupDialogView::DisplayErrorMessage(
   ResetDialog(accept_button.has_value());
   std::unique_ptr<views::Label> text = CreateText(error_message);
   auto error_icon = std::make_unique<views::ImageView>();
-  error_icon->SetImage(gfx::CreateVectorIcon(kBrowserToolsErrorIcon, kIconSize,
-                                             gfx::kGoogleRed700));
+  error_icon->SetImage(
+      gfx::CreateVectorIcon(kBrowserToolsErrorIcon, kIconSize,
+                            GetNativeTheme()->GetSystemColor(
+                                ui::NativeTheme::kColorId_AlertSeverityHigh)));
 
   if (accept_button)
     GetDialogClientView()->ok_button()->SetText(*accept_button);

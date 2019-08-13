@@ -52,7 +52,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobImpl
   mojo::BindingSet<blink::mojom::Blob> bindings_;
   mojo::BindingSet<network::mojom::DataPipeGetter> data_pipe_getter_bindings_;
 
-  base::WeakPtrFactory<BlobImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<BlobImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BlobImpl);
 };

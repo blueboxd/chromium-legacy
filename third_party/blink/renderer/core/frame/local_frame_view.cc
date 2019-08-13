@@ -796,7 +796,7 @@ void LocalFrameView::UpdateLayout() {
       ClearLayoutSubtreeRootsAndMarkContainingBlocks();
       Node* body = document->body();
       if (body && body->GetLayoutObject()) {
-        if (IsHTMLFrameSetElement(*body)) {
+        if (IsA<HTMLFrameSetElement>(*body)) {
           body->GetLayoutObject()->SetChildNeedsLayout();
         } else if (IsA<HTMLBodyElement>(*body)) {
           if (!first_layout_ && size_.Height() != GetLayoutSize().Height() &&

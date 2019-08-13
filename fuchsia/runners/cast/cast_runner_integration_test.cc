@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fuchsia/modular/cpp/fidl.h>
+#include <lib/fdio/directory.h>
 #include <lib/fidl/cpp/binding.h>
 #include <lib/zx/channel.h>
 
@@ -208,6 +210,20 @@ class CastRunnerIntegrationTest : public testing::Test {
     fuchsia::sys::StartupInfo startup_info;
     startup_info.launch_info.url = component_url.as_string();
 
+    fidl::InterfaceHandle<fuchsia::io::Directory> outgoing_directory;
+    startup_info.launch_info.directory_request =
+        outgoing_directory.NewRequest().TakeChannel();
+
+    fidl::InterfaceHandle<::fuchsia::io::Directory> svc_directory;
+    CHECK_EQ(fdio_service_connect_at(
+                 outgoing_directory.channel().get(), "svc",
+                 svc_directory.NewRequest().TakeChannel().release()),
+             ZX_OK);
+
+    component_services_client_ =
+        std::make_unique<base::fuchsia::ServiceDirectoryClient>(
+            std::move(svc_directory));
+
     // Place the ServiceDirectory in the |flat_namespace|.
     startup_info.flat_namespace.paths.emplace_back(
         base::fuchsia::kServiceDirectoryPath);
@@ -259,6 +275,8 @@ class CastRunnerIntegrationTest : public testing::Test {
   // Incoming service directory, ComponentContext and per-component state.
   std::unique_ptr<base::fuchsia::ServiceDirectory> component_services_;
   std::unique_ptr<cr_fuchsia::FakeComponentContext> component_context_;
+  std::unique_ptr<base::fuchsia::ServiceDirectoryClient>
+      component_services_client_;
   FakeComponentState* component_state_ = nullptr;
 
   // ServiceDirectory into which the CastRunner will publish itself.
@@ -455,4 +473,33 @@ TEST_F(CastRunnerIntegrationTest, ApplicationControllerNotSupported) {
   ASSERT_TRUE(component_state_);
   EXPECT_FALSE(component_state_->controller_receiver()->controller());
 }
+
+// Verify that we can connect to the Lifecycle interface and terminate the
+// component. Service connection is sent immediately after the component start
+// request, so this test also verifies that the component doesn't start handling
+// incoming service requests before the service has been published.
+TEST_F(CastRunnerIntegrationTest, Lifecycle) {
+  const char kCastChannelAppId[] = "00000001";
+  const char kCastChannelAppPath[] = "/defaultresponse";
+
+  provide_controller_receiver_ = false;
+
+  app_config_manager_.AddAppMapping(kCastChannelAppId,
+                                    test_server_.GetURL(kCastChannelAppPath));
+
+  fuchsia::sys::ComponentControllerPtr component_controller =
+      StartCastComponent(base::StringPrintf("cast:%s", kCastChannelAppId));
+
+  fuchsia::modular::LifecyclePtr lifecycle;
+  component_services_client_->ConnectToService(lifecycle.NewRequest());
+  lifecycle->Terminate();
+
+  base::RunLoop run_loop;
+  component_controller.set_error_handler([&run_loop](zx_status_t status) {
+    EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
+    run_loop.Quit();
+  });
+  run_loop.Run();
+}
+
 }  // namespace castrunner

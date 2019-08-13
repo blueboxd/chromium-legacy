@@ -204,8 +204,6 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void SetSelectToSpeakState(SelectToSpeakState state) override;
   void SetSelectToSpeakEventHandlerDelegate(
       SelectToSpeakEventHandlerDelegate* delegate) override;
-  void SetSwitchAccessKeysToCapture(
-      const std::vector<int>& keys_to_capture) override;
   void SetSwitchAccessEventHandlerDelegate(
       SwitchAccessEventHandlerDelegate* delegate) override;
   void SetDictationActive(bool is_active) override;

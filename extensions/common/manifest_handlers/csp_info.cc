@@ -29,7 +29,7 @@ using csp_validator::SanitizeContentSecurityPolicy;
 namespace {
 
 const char kDefaultContentSecurityPolicy[] =
-    "script-src 'self' blob: filesystem: chrome-extension-resource:; "
+    "script-src 'self' blob: filesystem:; "
     "object-src 'self' blob: filesystem:;";
 
 const char kDefaultIsolatedWorldCSP_BypassMainWorld[] = "";
@@ -40,13 +40,12 @@ const char kDefaultSandboxedPageContentSecurityPolicy[] =
     "sandbox allow-scripts allow-forms allow-popups allow-modals; "
     "script-src 'self' 'unsafe-inline' 'unsafe-eval'; child-src 'self';";
 
-#define PLATFORM_APP_LOCAL_CSP_SOURCES \
-    "'self' blob: filesystem: data: chrome-extension-resource:"
+#define PLATFORM_APP_LOCAL_CSP_SOURCES "'self' blob: filesystem: data:"
 
 // clang-format off
 const char kDefaultPlatformAppContentSecurityPolicy[] =
     // Platform apps can only use local resources by default.
-    "default-src 'self' blob: filesystem: chrome-extension-resource:;"
+    "default-src 'self' blob: filesystem:;"
     // For remote resources, they can fetch them via XMLHttpRequest.
     " connect-src * data: blob: filesystem:;"
     // And serve them via data: or same-origin (blob:, filesystem:) URLs
@@ -61,8 +60,7 @@ const char kDefaultPlatformAppContentSecurityPolicy[] =
     //    streaming or partial buffering.
     " media-src * data: blob: filesystem:;"
     // Scripts are allowed to use WebAssembly
-    " script-src 'self' blob: filesystem: chrome-extension-resource:"
-    " 'wasm-eval';";
+    " script-src 'self' blob: filesystem: 'wasm-eval';";
 // clang-format on
 
 int GetValidatorOptions(Extension* extension) {

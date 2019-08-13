@@ -24,7 +24,7 @@
 - (instancetype)initWithActionHandler:(BadgeButtonActionHandler*)actionHandler {
   self = [super init];
   if (self) {
-    _actionHandler = self.actionHandler;
+    _actionHandler = actionHandler;
   }
   return self;
 }

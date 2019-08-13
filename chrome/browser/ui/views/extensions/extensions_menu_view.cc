@@ -11,7 +11,8 @@
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
+#include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
+#include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -19,6 +20,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
@@ -55,7 +57,7 @@ ExtensionsMenuView::ExtensionsMenuView(
 ExtensionsMenuView::~ExtensionsMenuView() {
   DCHECK_EQ(g_extensions_dialog, this);
   g_extensions_dialog = nullptr;
-  extension_menu_buttons_.clear();
+  extensions_menu_items_.clear();
 }
 
 void ExtensionsMenuView::ButtonPressed(views::Button* sender,
@@ -109,7 +111,7 @@ void ExtensionsMenuView::Repopulate() {
 
 std::unique_ptr<views::View>
 ExtensionsMenuView::CreateExtensionButtonsContainer() {
-  extension_menu_buttons_.clear();
+  extensions_menu_items_.clear();
   content::WebContents* const web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
 
@@ -175,11 +177,12 @@ ExtensionsMenuView::CreateExtensionButtonsContainer() {
             });
 
         for (auto& controller : *controller_group) {
-          std::unique_ptr<ExtensionsMenuButton> extension_button =
-              std::make_unique<ExtensionsMenuButton>(browser_,
-                                                     std::move(controller));
-          extension_menu_buttons_.push_back(extension_button.get());
-          extension_buttons->AddChildView(std::move(extension_button));
+          std::unique_ptr<ExtensionsMenuItemView> extensions_menu_item =
+              std::make_unique<ExtensionsMenuItemView>(browser_,
+                                                       std::move(controller));
+
+          extensions_menu_items_.push_back(extensions_menu_item.get());
+          extension_buttons->AddChildView(std::move(extensions_menu_item));
         }
         controller_group->clear();
       };
@@ -231,8 +234,8 @@ void ExtensionsMenuView::OnToolbarModelInitialized() {
 }
 
 void ExtensionsMenuView::OnToolbarPinnedActionsChanged() {
-  for (auto* button : extension_menu_buttons_) {
-    button->UpdatePinButton();
+  for (auto* menu_item : extensions_menu_items_) {
+    menu_item->UpdatePinButton();
   }
 }
 

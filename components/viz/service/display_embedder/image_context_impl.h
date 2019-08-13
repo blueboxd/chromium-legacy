@@ -14,6 +14,7 @@
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/service/display/external_use_client.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -32,7 +33,6 @@ namespace gpu {
 class MailboxManager;
 class SharedContextState;
 class SharedImageRepresentationFactory;
-class SharedImageRepresentationSkia;
 class TextureBase;
 }  // namespace gpu
 
@@ -66,20 +66,21 @@ class ImageContextImpl final : public ExternalUseClient::ImageContext {
 
   void set_promise_image_texture(
       sk_sp<SkPromiseImageTexture> promise_image_texture) {
-    promise_image_texture_ = promise_image_texture;
+    owned_promise_image_texture_ = std::move(promise_image_texture);
+    promise_image_texture_ = owned_promise_image_texture_.get();
   }
-  sk_sp<SkPromiseImageTexture> promise_image_texture() const {
+  SkPromiseImageTexture* promise_image_texture() const {
     return promise_image_texture_;
   }
 
-  void BeginAccess(
+  void BeginAccessIfNecessary(
       gpu::SharedContextState* context_state,
       gpu::SharedImageRepresentationFactory* representation_factory,
       gpu::MailboxManager* mailbox_manager,
       const gl::GLVersionInfo* gl_version_info,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores);
-  void EndAccess();
+  void EndAccessIfNecessary();
 
  private:
   void CreateFallbackImage(gpu::SharedContextState* context_state);
@@ -98,10 +99,19 @@ class ImageContextImpl final : public ExternalUseClient::ImageContext {
   GrBackendTexture fallback_texture_;
 
   std::unique_ptr<gpu::SharedImageRepresentationSkia> representation_;
-  bool representation_is_being_accessed_ = false;
 
-  // The |promise_image_texture| is used for fulfilling |image|.
-  sk_sp<SkPromiseImageTexture> promise_image_texture_;
+  // For scoped read accessing |representation|. It is only accessed on GPU
+  // thread.
+  base::Optional<gpu::SharedImageRepresentationSkia::ScopedReadAccess>
+      representation_scoped_read_access_;
+
+  // For holding SkPromiseImageTexture create from |fallback_texture| or legacy
+  // mailbox.
+  sk_sp<SkPromiseImageTexture> owned_promise_image_texture_;
+
+  // The |promise_image_texture| is used for fulfilling the promise image. It is
+  // used on GPU thread.
+  SkPromiseImageTexture* promise_image_texture_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ImageContextImpl);
 };

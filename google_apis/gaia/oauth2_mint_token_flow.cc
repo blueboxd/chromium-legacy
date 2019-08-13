@@ -128,8 +128,7 @@ OAuth2MintTokenFlow::Parameters::~Parameters() {}
 
 OAuth2MintTokenFlow::OAuth2MintTokenFlow(Delegate* delegate,
                                          const Parameters& parameters)
-    : delegate_(delegate), parameters_(parameters), weak_factory_(this) {
-}
+    : delegate_(delegate), parameters_(parameters) {}
 
 OAuth2MintTokenFlow::~OAuth2MintTokenFlow() { }
 

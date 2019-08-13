@@ -72,6 +72,9 @@ const int kDistanceFromPinKeyboardToBigUserViewBottomDp = 50;
 // Distance from the top of the user view to the user icon.
 constexpr int kDistanceFromTopOfBigUserViewToUserIconDp = 54;
 
+constexpr SkColor kChallengeResponseErrorColor =
+    SkColorSetRGB(0xEE, 0x67, 0x5C);
+
 // The color of the online sign-in message text.
 constexpr SkColor kOnlineSignInMessageColor = SkColorSetRGB(0xE6, 0x7C, 0x73);
 
@@ -92,6 +95,12 @@ constexpr int kFingerprintViewWidthDp = 204;
 constexpr int kDistanceBetweenPasswordFieldAndFingerprintViewDp = 90;
 constexpr int kFingerprintFailedAnimationDurationMs = 700;
 constexpr int kFingerprintFailedAnimationNumFrames = 45;
+
+constexpr base::TimeDelta kChallengeResponseResetAfterFailureDelay =
+    base::TimeDelta::FromSeconds(5);
+constexpr int kSpacingBetweenChallengeResponseIconAndLabelDp = 15;
+constexpr int kChallengeResponseIconSizeDp = 32;
+constexpr int kDistanceBetweenPasswordFieldAndChallengeResponseViewDp = 50;
 
 constexpr int kDisabledAuthMessageVerticalBorderDp = 16;
 constexpr int kDisabledAuthMessageHorizontalBorderDp = 16;
@@ -437,6 +446,113 @@ class LoginAuthUserView::FingerprintView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(FingerprintView);
 };
 
+// Consists of challenge-response icon view and a label.
+class LoginAuthUserView::ChallengeResponseView : public views::View,
+                                                 public views::ButtonListener {
+ public:
+  enum class State { kInitial, kAuthenticating, kFailure };
+
+  explicit ChallengeResponseView(base::RepeatingClosure on_start_tap)
+      : on_start_tap_(std::move(on_start_tap)) {
+    SetPaintToLayer();
+    layer()->SetFillsBoundsOpaquely(false);
+
+    auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+        kSpacingBetweenChallengeResponseIconAndLabelDp));
+    layout->set_cross_axis_alignment(
+        views::BoxLayout::CrossAxisAlignment::kCenter);
+
+    image_button_ = AddChildView(std::make_unique<views::ImageButton>(
+        /*listener=*/this));
+    image_button_->SetImage(views::Button::STATE_NORMAL,
+                            GetIconForImageButton());
+
+    label_button_ = AddChildView(std::make_unique<views::LabelButton>(
+        /*listener=*/this, /*text=*/base::string16()));
+    for (auto button_state :
+         {views::Button::STATE_NORMAL, views::Button::STATE_HOVERED,
+          views::Button::STATE_PRESSED, views::Button::STATE_DISABLED}) {
+      label_button_->SetTextColor(button_state, SK_ColorWHITE);
+    }
+    label_button_->SetText(GetTextForLabelButton());
+  }
+
+  ~ChallengeResponseView() override = default;
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
+    if (sender == image_button_ || sender == label_button_) {
+      if (state_ == State::kInitial)
+        on_start_tap_.Run();
+      else if (state_ == State::kFailure)
+        SetState(State::kInitial);
+      else
+        NOTREACHED();
+    } else {
+      NOTREACHED();
+    }
+  }
+
+  void SetState(State state) {
+    if (state_ == state)
+      return;
+    state_ = state;
+
+    reset_state_timer_.Stop();
+    if (state == State::kFailure) {
+      reset_state_timer_.Start(
+          FROM_HERE, kChallengeResponseResetAfterFailureDelay,
+          base::BindRepeating(&ChallengeResponseView::SetState,
+                              base::Unretained(this), State::kInitial));
+    }
+
+    image_button_->SetImage(views::Button::STATE_NORMAL,
+                            GetIconForImageButton());
+    image_button_->SetEnabled(state_ != State::kAuthenticating);
+
+    label_button_->SetText(GetTextForLabelButton());
+    label_button_->SetEnabled(state_ != State::kAuthenticating);
+
+    Layout();
+  }
+
+ private:
+  gfx::ImageSkia GetIconForImageButton() const {
+    switch (state_) {
+      case State::kInitial:
+      case State::kAuthenticating:
+        return gfx::CreateVectorIcon(kLockScreenSmartCardIcon,
+                                     kChallengeResponseIconSizeDp,
+                                     SK_ColorWHITE);
+      case State::kFailure:
+        return gfx::CreateVectorIcon(kLockScreenSmartCardFailureIcon,
+                                     kChallengeResponseIconSizeDp,
+                                     kChallengeResponseErrorColor);
+    }
+  }
+
+  base::string16 GetTextForLabelButton() const {
+    // TODO(crbug.com/983103): Put localized strings after the string review.
+    switch (state_) {
+      case State::kInitial:
+      case State::kAuthenticating:
+        return base::ASCIIToUTF16("Unlock with smart card");
+      case State::kFailure:
+        return base::UTF8ToUTF16(
+            "Couldn’t recognize your smart card. Try again.");
+    }
+  }
+
+  base::RepeatingClosure on_start_tap_;
+  State state_ = State::kInitial;
+  views::ImageButton* image_button_ = nullptr;
+  views::LabelButton* label_button_ = nullptr;
+  base::OneShotTimer reset_state_timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChallengeResponseView);
+};
+
 // The message shown to user when the auth method is |AUTH_DISABLED|.
 class LoginAuthUserView::DisabledAuthMessageView : public views::View {
  public:
@@ -643,6 +759,12 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   auto fingerprint_view = std::make_unique<FingerprintView>();
   fingerprint_view_ = fingerprint_view.get();
 
+  auto challenge_response_view =
+      std::make_unique<ChallengeResponseView>(base::BindRepeating(
+          &LoginAuthUserView::AttemptAuthenticateWithChallengeResponse,
+          weak_factory_.GetWeakPtr()));
+  challenge_response_view_ = challenge_response_view.get();
+
   // TODO(jdufault): Implement real UI.
   external_binary_auth_button_ =
       views::MdTextButton::Create(
@@ -651,12 +773,6 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   external_binary_enrollment_button_ =
       views::MdTextButton::Create(
           this, base::ASCIIToUTF16("Enroll with external binary"))
-          .release();
-
-  // TODO(crbug.com/983103): Replace with the real UI.
-  challenge_response_auth_button_ =
-      views::MdTextButton::Create(this,
-                                  base::ASCIIToUTF16("Unlock with smart card"))
           .release();
 
   SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
@@ -681,15 +797,15 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
       login_views_utils::WrapViewForPreferredSize(std::move(pin_view));
   auto wrapped_fingerprint_view =
       login_views_utils::WrapViewForPreferredSize(std::move(fingerprint_view));
+  auto wrapped_challenge_response_view =
+      login_views_utils::WrapViewForPreferredSize(
+          std::move(challenge_response_view));
   auto wrapped_external_binary_view =
       login_views_utils::WrapViewForPreferredSize(
           base::WrapUnique(external_binary_auth_button_));
   auto wrapped_external_binary_enrollment_view =
       login_views_utils::WrapViewForPreferredSize(
           base::WrapUnique(external_binary_enrollment_button_));
-  auto wrapped_challenge_response_view =
-      login_views_utils::WrapViewForPreferredSize(
-          base::WrapUnique(challenge_response_auth_button_));
   auto wrapped_padding_below_password_view =
       login_views_utils::WrapViewForPreferredSize(
           std::move(padding_below_password_view));
@@ -704,12 +820,12 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   views::View* wrapped_pin_view_ptr = AddChildView(std::move(wrapped_pin_view));
   views::View* wrapped_fingerprint_view_ptr =
       AddChildView(std::move(wrapped_fingerprint_view));
+  views::View* wrapped_challenge_response_view_ptr =
+      AddChildView(std::move(wrapped_challenge_response_view));
   views::View* wrapped_external_binary_view_ptr =
       AddChildView(std::move(wrapped_external_binary_view));
   views::View* wrapped_external_binary_enrollment_view_ptr =
       AddChildView(std::move(wrapped_external_binary_enrollment_view));
-  views::View* wrapped_challenge_response_view_ptr =
-      AddChildView(std::move(wrapped_challenge_response_view));
   views::View* wrapped_user_view_ptr =
       AddChildView(std::move(wrapped_user_view));
   views::View* wrapped_padding_below_password_view_ptr =
@@ -741,9 +857,9 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   add_view(wrapped_padding_below_password_view_ptr);
   add_view(wrapped_pin_view_ptr);
   add_view(wrapped_fingerprint_view_ptr);
+  add_view(wrapped_challenge_response_view_ptr);
   add_view(wrapped_external_binary_view_ptr);
   add_view(wrapped_external_binary_enrollment_view_ptr);
-  add_view(wrapped_challenge_response_view_ptr);
   add_padding(kDistanceFromPinKeyboardToBigUserViewBottomDp);
 
   // Update authentication UI.
@@ -811,9 +927,9 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
 
   pin_view_->SetVisible(has_pin);
   fingerprint_view_->SetVisible(has_fingerprint);
+  challenge_response_view_->SetVisible(has_challenge_response);
   external_binary_auth_button_->SetVisible(has_external_binary);
   external_binary_enrollment_button_->SetVisible(has_external_binary);
-  challenge_response_auth_button_->SetVisible(has_challenge_response);
 
   if (has_external_binary) {
     power_manager_client_observer_.Add(chromeos::PowerManagerClient::Get());
@@ -822,6 +938,9 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   int padding_view_height = kDistanceBetweenPasswordFieldAndPinKeyboardDp;
   if (has_fingerprint && !has_pin) {
     padding_view_height = kDistanceBetweenPasswordFieldAndFingerprintViewDp;
+  } else if (has_challenge_response && !has_pin) {
+    padding_view_height =
+        kDistanceBetweenPasswordFieldAndChallengeResponseViewDp;
   }
   padding_below_password_view_->SetPreferredSize(
       gfx::Size(kNonEmptyWidthDp, padding_view_height));
@@ -1066,8 +1185,7 @@ void LoginAuthUserView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
   DCHECK(sender == online_sign_in_message_ ||
          sender == external_binary_auth_button_ ||
-         sender == external_binary_enrollment_button_ ||
-         sender == challenge_response_auth_button_);
+         sender == external_binary_enrollment_button_);
   if (sender == online_sign_in_message_) {
     OnOnlineSignInMessageTap();
   } else if (sender == external_binary_auth_button_) {
@@ -1079,8 +1197,6 @@ void LoginAuthUserView::ButtonPressed(views::Button* sender,
     Shell::Get()->login_screen_controller()->EnrollUserWithExternalBinary(
         base::BindOnce(&LoginAuthUserView::OnEnrollmentComplete,
                        weak_factory_.GetWeakPtr()));
-  } else if (sender == challenge_response_auth_button_) {
-    AttemptAuthenticateWithChallengeResponse();
   }
 }
 
@@ -1123,10 +1239,20 @@ void LoginAuthUserView::OnAuthComplete(base::Optional<bool> auth_success) {
     password_view_->SetReadOnly(false);
     external_binary_auth_button_->SetEnabled(true);
     external_binary_enrollment_button_->SetEnabled(true);
-    challenge_response_auth_button_->SetEnabled(true);
   }
 
-  on_auth_.Run(auth_success.value());
+  on_auth_.Run(auth_success.value(), /*display_error_messages=*/true);
+}
+
+void LoginAuthUserView::OnChallengeResponseAuthComplete(
+    base::Optional<bool> auth_success) {
+  if (!auth_success.has_value() || !auth_success.value()) {
+    password_view_->Clear();
+    password_view_->SetReadOnly(false);
+    challenge_response_view_->SetState(ChallengeResponseView::State::kFailure);
+  }
+
+  on_auth_.Run(auth_success.value_or(false), /*display_error_messages=*/false);
 }
 
 void LoginAuthUserView::OnEnrollmentComplete(
@@ -1180,12 +1306,13 @@ void LoginAuthUserView::AttemptAuthenticateWithExternalBinary() {
 }
 
 void LoginAuthUserView::AttemptAuthenticateWithChallengeResponse() {
-  challenge_response_auth_button_->SetEnabled(false);
+  challenge_response_view_->SetState(
+      ChallengeResponseView::State::kAuthenticating);
   Shell::Get()
       ->login_screen_controller()
       ->AuthenticateUserWithChallengeResponse(
           current_user().basic_user_info.account_id,
-          base::BindOnce(&LoginAuthUserView::OnAuthComplete,
+          base::BindOnce(&LoginAuthUserView::OnChallengeResponseAuthComplete,
                          weak_factory_.GetWeakPtr()));
 }
 

@@ -316,6 +316,14 @@
                file="cr_components/chromeos/cellular_setup/final_page.js"
                type="chrome_html"
                compress="gzip" />
+    <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_WEBVIEW_POST_UTIL_HTML"
+               file="cr_components/chromeos/cellular_setup/webview_post_util.html"
+               type="chrome_html"
+               compress="gzip" />
+    <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_WEBVIEW_POST_UTIL_JS"
+               file="cr_components/chromeos/cellular_setup/webview_post_util.js"
+               type="chrome_html"
+               compress="gzip" />
 
     <!-- Shared between MultiDevice setup flow and OOBE. -->
     <structure name="IDR_WEBUI_CHROMEOS_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_BROWSER_PROXY_HTML"

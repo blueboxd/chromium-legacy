@@ -79,16 +79,15 @@ class MediaAuthorizationWrapperImpl : public MediaAuthorizationWrapper {
         [target performSelector:selector
                      withObject:media_type
                      withObject:^(BOOL granted) {
-                       base::PostTaskWithTraits(FROM_HERE, traits,
-                                                std::move(callback));
+                       base::PostTask(FROM_HERE, traits, std::move(callback));
                      }];
       } else {
         DLOG(WARNING) << "requestAccessForMediaType could not be executed";
-        base::PostTaskWithTraits(FROM_HERE, traits, std::move(callback));
+        base::PostTask(FROM_HERE, traits, std::move(callback));
       }
     } else {
       NOTREACHED();
-      base::PostTaskWithTraits(FROM_HERE, traits, std::move(callback));
+      base::PostTask(FROM_HERE, traits, std::move(callback));
     }
   }
 
@@ -146,7 +145,7 @@ void RequestSystemMediaCapturePermission(NSString* media_type,
                                          base::RepeatingClosure callback,
                                          const base::TaskTraits& traits) {
   if (UsingFakeMediaDevices()) {
-    base::PostTaskWithTraits(FROM_HERE, traits, std::move(callback));
+    base::PostTask(FROM_HERE, traits, std::move(callback));
     return;
   }
 
@@ -158,7 +157,7 @@ void RequestSystemMediaCapturePermission(NSString* media_type,
     // Should never happen since for pre-10.14 system permissions don't exist
     // and checking them in CheckSystemAudioCapturePermission() will always
     // return allowed, and this function should not be called.
-    base::PostTaskWithTraits(FROM_HERE, traits, std::move(callback));
+    base::PostTask(FROM_HERE, traits, std::move(callback));
   }
 }
 

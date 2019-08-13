@@ -50,9 +50,9 @@ LayoutScrollbar::LayoutScrollbar(ScrollableArea* scrollable_area,
     : Scrollbar(scrollable_area,
                 orientation,
                 kRegularScrollbar,
+                style_source,
                 nullptr,
-                LayoutScrollbarTheme::GetLayoutScrollbarTheme()),
-      style_source_(style_source) {
+                LayoutScrollbarTheme::GetLayoutScrollbarTheme()) {
   DCHECK(style_source);
 
   // FIXME: We need to do this because LayoutScrollbar::styleChanged is called
@@ -104,7 +104,6 @@ int LayoutScrollbar::HypotheticalScrollbarThickness(
 }
 
 void LayoutScrollbar::Trace(blink::Visitor* visitor) {
-  visitor->Trace(style_source_);
   Scrollbar::Trace(visitor);
 }
 
@@ -153,11 +152,11 @@ void LayoutScrollbar::SetPressedPart(ScrollbarPart part,
 scoped_refptr<ComputedStyle> LayoutScrollbar::GetScrollbarPseudoStyle(
     ScrollbarPart part_type,
     PseudoId pseudo_id) {
-  if (!style_source_->GetLayoutObject())
+  if (!StyleSource()->GetLayoutObject())
     return nullptr;
-  return style_source_->StyleForPseudoElement(
+  return StyleSource()->StyleForPseudoElement(
       PseudoStyleRequest(pseudo_id, this, part_type),
-      style_source_->GetLayoutObject()->Style());
+      StyleSource()->GetLayoutObject()->Style());
 }
 
 void LayoutScrollbar::UpdateScrollbarParts(bool destroy) {
@@ -280,7 +279,7 @@ void LayoutScrollbar::UpdateScrollbarPart(ScrollbarPart part_type,
   LayoutScrollbarPart* part_layout_object = parts_.at(part_type);
   if (!part_layout_object && need_layout_object && scrollable_area_) {
     part_layout_object = LayoutScrollbarPart::CreateAnonymous(
-        &style_source_->GetDocument(), scrollable_area_, this, part_type);
+        &StyleSource()->GetDocument(), scrollable_area_, this, part_type);
     parts_.Set(part_type, part_layout_object);
     SetNeedsPaintInvalidation(part_type);
   } else if (part_layout_object && !need_layout_object) {

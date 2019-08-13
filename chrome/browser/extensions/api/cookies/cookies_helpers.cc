@@ -140,13 +140,8 @@ void GetCookieListFromManager(
     manager->GetAllCookies(
         net::cookie_util::AddCookieStatusList(std::move(callback)));
   } else {
-    net::CookieOptions options;
-    options.set_include_httponly();
-    options.set_same_site_cookie_context(
-        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
-    options.set_do_not_update_access_time();
-
-    manager->GetCookieList(url, options, std::move(callback));
+    manager->GetCookieList(url, net::CookieOptions::MakeAllInclusive(),
+                           std::move(callback));
   }
 }
 

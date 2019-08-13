@@ -22,6 +22,37 @@ static constexpr uint32_t kSharedImageUsage =
     gpu::SHARED_IMAGE_USAGE_SCANOUT | gpu::SHARED_IMAGE_USAGE_DISPLAY |
     gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
 
+class SkiaOutputDeviceBufferQueue::Image {
+ public:
+  Image(gpu::SharedImageFactory* factory,
+        gpu::SharedImageRepresentationFactory* representation_factory);
+  ~Image();
+
+  bool Initialize(const gfx::Size& size,
+                  const gfx::ColorSpace& color_space,
+                  ResourceFormat format,
+                  SkiaOutputSurfaceDependency* deps,
+                  uint32_t shared_image_usage);
+
+  SkSurface* BeginWriteSkia();
+  void EndWriteSkia();
+  gl::GLImage* GetImage() const;
+  std::unique_ptr<gfx::GpuFence> CreateFence();
+  void ResetFence();
+
+ private:
+  gpu::Mailbox mailbox;
+  std::unique_ptr<gpu::SharedImageRepresentationSkia> skia_representation_;
+  std::unique_ptr<gpu::SharedImageRepresentationGLTexture> gl_representation_;
+  base::Optional<gpu::SharedImageRepresentationSkia::ScopedWriteAccess>
+      scoped_write_access_;
+  std::vector<GrBackendSemaphore> end_semaphores_;
+  std::unique_ptr<gl::GLFence> fence_;
+
+  gpu::SharedImageFactory* factory_;
+  gpu::SharedImageRepresentationFactory* representation_factory_;
+};
+
 SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
     scoped_refptr<gl::GLSurface> gl_surface,
     SkiaOutputSurfaceDependency* deps,
@@ -204,7 +235,7 @@ void SkiaOutputDeviceBufferQueue::Reshape(const gfx::Size& size,
 
 SkSurface* SkiaOutputDeviceBufferQueue::BeginPaint() {
   auto* image = GetCurrentImage();
-  return image->BeginWriteSkia().get();
+  return image->BeginWriteSkia();
 }
 void SkiaOutputDeviceBufferQueue::EndPaint(
     const GrBackendSemaphore& semaphore) {
@@ -212,33 +243,36 @@ void SkiaOutputDeviceBufferQueue::EndPaint(
   image->EndWriteSkia();
 }
 
-sk_sp<SkSurface> SkiaOutputDeviceBufferQueue::Image::BeginWriteSkia() {
-  std::vector<GrBackendSemaphore> begin_semaphores;
+SkSurface* SkiaOutputDeviceBufferQueue::Image::BeginWriteSkia() {
+  DCHECK(!scoped_write_access_);
   DCHECK(end_semaphores_.empty());
-  DCHECK(!sk_surface_);
 
+  std::vector<GrBackendSemaphore> begin_semaphores;
   SkSurfaceProps surface_props{0, kUnknown_SkPixelGeometry};
 
   // TODO(vasilyt): Props and MSAA
-  sk_surface_ = skia_representation_->BeginWriteAccess(
-      0, surface_props, &begin_semaphores, &end_semaphores_);
+  scoped_write_access_.emplace(skia_representation_.get(),
+                               0 /* final_msaa_count */, surface_props,
+                               &begin_semaphores, &end_semaphores_);
+  DCHECK(scoped_write_access_->success());
   if (!begin_semaphores.empty()) {
-    sk_surface_->wait(begin_semaphores.size(), begin_semaphores.data());
+    scoped_write_access_->surface()->wait(begin_semaphores.size(),
+                                          begin_semaphores.data());
   }
 
-  return sk_surface_;
+  return scoped_write_access_->surface();
 }
 
 void SkiaOutputDeviceBufferQueue::Image::EndWriteSkia() {
+  DCHECK(scoped_write_access_);
   GrFlushInfo flush_info = {
       .fFlags = kNone_GrFlushFlags,
       .fNumSemaphores = end_semaphores_.size(),
       .fSignalSemaphores = end_semaphores_.data(),
   };
-  sk_surface_->flush(SkSurface::BackendSurfaceAccess::kPresent, flush_info);
-
-  skia_representation_->EndWriteAccess(std::move(sk_surface_));
-
+  scoped_write_access_->surface()->flush(
+      SkSurface::BackendSurfaceAccess::kPresent, flush_info);
+  scoped_write_access_.reset();
   end_semaphores_.clear();
 }
 

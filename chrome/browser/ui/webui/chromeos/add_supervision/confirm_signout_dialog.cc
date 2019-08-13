@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
-#include "components/user_manager/user_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -35,15 +34,12 @@ ConfirmSignoutDialog::ConfirmSignoutDialog() {
       views::LayoutProvider::Get()->GetDialogInsetsForContentType(
           views::DialogContentType::TEXT, views::DialogContentType::TEXT)));
 
-  base::string16 given_name =
-      user_manager::UserManager::Get()->GetPrimaryUser()->GetGivenName();
-
-  // |body_| will be owned by the views system.
+  // |body| will be owned by the views system.
   views::Label* body = new views::Label;
   body->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   body->SetMultiLine(true);
-  body->SetText(l10n_util::GetStringFUTF16(IDS_ADD_SUPERVISION_EXIT_DIALOG_BODY,
-                                           given_name));
+  body->SetText(
+      l10n_util::GetStringUTF16(IDS_ADD_SUPERVISION_EXIT_DIALOG_BODY));
   body->SizeToFit(kDialogBodyTextWidth);
   AddChildView(body);
 }

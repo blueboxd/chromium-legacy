@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "components/domain_reliability/clear_mode.h"
@@ -146,6 +147,11 @@ class Profile : public content::BrowserContext {
   // also off the record.
   bool IsOffTheRecord() override = 0;
   virtual bool IsOffTheRecord() const = 0;
+
+  // Returns the creation time of this profile. This will either be the creation
+  // time of the profile directory or, for ephemeral off-the-record profiles,
+  // the creation time of the profile object instance.
+  virtual base::Time GetCreationTime() const = 0;
 
   // Typesafe upcast.
   virtual TestingProfile* AsTestingProfile();
@@ -409,6 +415,8 @@ class Profile : public content::BrowserContext {
 
   // Wipes all data for this profile.
   void Wipe();
+
+  virtual void SetCreationTimeForTesting(base::Time creation_time) = 0;
 
  protected:
   friend class OffTheRecordProfileIOData;

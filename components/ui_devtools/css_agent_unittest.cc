@@ -6,6 +6,8 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
+#include "components/ui_devtools/agent_util.h"
 #include "components/ui_devtools/dom_agent.h"
 #include "components/ui_devtools/ui_devtools_unittest_utils.h"
 #include "components/ui_devtools/ui_element.h"
@@ -30,6 +32,9 @@ class FakeUIElement : public UIElement {
   }
   bool visible() const { return visible_; }
   gfx::Rect bounds() const { return bounds_; }
+  void AddSource(std::string path, int line) {
+    UIElement::AddSource(path, line);
+  }
 
  private:
   gfx::Rect bounds_;
@@ -84,6 +89,7 @@ class CSSAgentTest : public testing::Test {
   }
 
  protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   using StyleArray = protocol::Array<protocol::CSS::CSSStyle>;
 
   std::pair<bool, std::unique_ptr<StyleArray>>
@@ -115,11 +121,19 @@ class CSSAgentTest : public testing::Test {
     }
     return std::string();
   }
+
   int GetStyleSheetChangedCount(std::string stylesheet_id) {
     return frontend_channel_->CountProtocolNotificationMessage(
         "{\"method\":\"CSS.styleSheetChanged\",\"params\":{"
         "\"styleSheetId\":\"" +
         stylesheet_id + "\"}}");
+  }
+
+  std::pair<bool, std::string> GetSourceForElement() {
+    std::string output;
+    auto response = css_agent_->getStyleSheetText(
+        BuildStylesheetUId(element()->node_id(), 0), &output);
+    return {response.isSuccess(), output};
   }
 
   CSSAgent* css_agent() { return css_agent_.get(); }
@@ -300,6 +314,28 @@ TEST_F(CSSAgentTest, UpdateOnBoundsChange) {
   css_agent()->OnElementBoundsChanged(&another_element);
   EXPECT_EQ(1, GetStyleSheetChangedCount(element_stylesheet_id));
   EXPECT_EQ(2, GetStyleSheetChangedCount(another_element_stylesheet_id));
+}
+
+TEST_F(CSSAgentTest, DISABLED_GetSource) {
+  std::string file = "components/test/data/ui_devtools/test_file.cc";
+  element()->AddSource(file, 0);
+  auto result = GetSourceForElement();
+
+  EXPECT_TRUE(result.first);
+
+  std::string source_code;
+  DCHECK(GetSourceCode(file, &source_code));
+  DCHECK(source_code != "");
+
+  EXPECT_EQ(result.second, source_code);
+}
+
+TEST_F(CSSAgentTest, BadPathFails) {
+  element()->AddSource("not/a/real/path", 0);
+  auto result = GetSourceForElement();
+
+  EXPECT_FALSE(result.first);
+  EXPECT_EQ(result.second, "");
 }
 
 }  // namespace ui_devtools

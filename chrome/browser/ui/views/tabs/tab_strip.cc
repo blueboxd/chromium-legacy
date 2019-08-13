@@ -1091,89 +1091,7 @@ void TabStrip::MoveTab(int from_model_index,
 void TabStrip::RemoveTabAt(content::WebContents* contents,
                            int model_index,
                            bool was_active) {
-  const int model_count = GetModelCount();
-  const int tab_overlap = TabStyle::GetTabOverlap();
-  if (in_tab_close_ && model_count > 0 && model_index != model_count) {
-    // The user closed a tab other than the last tab. Set
-    // available_width_for_tabs_ so that as the user closes tabs with the mouse
-    // a tab continues to fall under the mouse.
-    int next_active_index = controller_->GetActiveIndex();
-    DCHECK(IsValidModelIndex(next_active_index));
-    if (model_index <= next_active_index) {
-      // At this point, model's internal state has already been updated.
-      // |contents| has been detached from model and the active index has been
-      // updated. But the tab for |contents| isn't removed yet. Thus, we need to
-      // fix up next_active_index based on it.
-      next_active_index++;
-    }
-    Tab* next_active_tab = tab_at(next_active_index);
-    Tab* tab_being_removed = tab_at(model_index);
-
-    UpdateIdealBounds();
-    int size_delta = tab_being_removed->width();
-    if (!tab_being_removed->data().pinned && was_active &&
-        GetActiveTabWidth() > GetInactiveTabWidth()) {
-      // When removing an active, non-pinned tab, an inactive tab will be made
-      // active and thus given the active width. Thus the width being removed
-      // from the strip is really the current width of whichever inactive tab
-      // will be made active.
-      size_delta = next_active_tab->width();
-    }
-
-    available_width_for_tabs_ =
-        ideal_bounds(model_count).right() - size_delta + tab_overlap;
-  }
-
-  if (!touch_layout_)
-    PrepareForAnimation();
-
-  Tab* tab = tab_at(model_index);
-  tab->SetClosing(true);
-
-  int old_x = tabs_.ideal_bounds(model_index).x();
-  RemoveTabFromViewModel(model_index);
-
-  if (touch_layout_) {
-    touch_layout_->RemoveTab(model_index,
-                             UpdateIdealBoundsForPinnedTabs(nullptr), old_x);
-  }
-
-  layout_helper_->CloseTabAt(model_index);
-  UpdateIdealBounds();
-  AnimateToIdealBounds();
-
-  // TODO(pkasting): When closing multiple tabs, we get repeated RemoveTabAt()
-  // calls, each of which closes a new tab and thus generates different ideal
-  // bounds.  We should update the animations of any other tabs that are
-  // currently being closed to reflect the new ideal bounds, or else change from
-  // removing one tab at a time to animating the removal of all tabs at once.
-
-  // Compute the target bounds for animating this tab closed.  The tab's left
-  // edge should stay joined to the right edge of the previous tab, if any.
-  gfx::Rect tab_bounds = tab->bounds();
-  tab_bounds.set_x((model_index > 0)
-                       ? (ideal_bounds(model_index - 1).right() - tab_overlap)
-                       : 0);
-
-  // The tab should animate to the width of the overlap in order to close at the
-  // same speed the surrounding tabs are moving, since at this width the
-  // subsequent tab is naturally positioned at the same X coordinate.
-  tab_bounds.set_width(tab_overlap);
-
-  // Animate the tab closed.
-  bounds_animator_.AnimateViewTo(
-      tab, tab_bounds, std::make_unique<RemoveTabDelegate>(this, tab));
-
-  // TODO(pkasting): The first part of this conditional doesn't really make
-  // sense to me.  Why is each condition justified?
-  if ((touch_layout_ || !in_tab_close_ || model_index == GetModelCount()) &&
-      TabDragController::IsAttachedTo(GetDragContext())) {
-    // Don't animate the new tab button when dragging tabs. Otherwise it looks
-    // like the new tab button magically appears from beyond the end of the tab
-    // strip.
-    bounds_animator_.StopAnimatingView(new_tab_button_);
-    new_tab_button_->SetBoundsRect(new_tab_button_ideal_bounds_);
-  }
+  StartRemoveTabAnimation(model_index, was_active);
 
   SwapLayoutIfNecessary();
 
@@ -2191,6 +2109,146 @@ void TabStrip::StartInsertTabAnimation(
   }
 }
 
+void TabStrip::StartRemoveTabAnimation(int model_index, bool was_active) {
+  if (bounds_animator_.IsAnimating() ||
+      !base::FeatureList::IsEnabled(features::kNewTabstripAnimation)) {
+    StartFallbackRemoveTabAnimation(model_index, was_active);
+    return;
+  }
+
+  // The tab formerly at |model_index| has already been removed from the model,
+  // so |model_count| won't include it.
+  const int model_count = GetModelCount();
+  // If |in_tab_close_| is true then we want to animate the remaining tabs
+  // (if there are any) differently in order to ensure that a useful tab will
+  // end up under the cursor.
+  if (in_tab_close_ && model_count > 0) {
+    if (model_index < model_count) {
+      // The user closed a tab other than the last tab. Override the standard
+      // tab width so that each tab remains the same size during the animation.
+      // This ensures that the next tab to the right will fall under the mouse.
+      // TODO(958173): Implement this case of tab removal animation.
+      // It should also work to override the layout interpolation factor, i.e.
+      // the TabSizer computed in the first layout phase. That might be simpler
+      // to reason about than overriding standard tab size (or harder, who
+      // knows).
+      StartFallbackRemoveTabAnimation(model_index, was_active);
+      return;
+    }
+    if (model_index == model_count) {
+      // The user closed the last tab. Override the width available for tabs so
+      // that tabs take up the same total amount of space during the animation.
+      // This ensures that the previous tab to the left will fall under the
+      // mouse (excepting the case where tabs reach standard size).
+      // TODO(958173): Implement this case of tab removal animation.
+      StartFallbackRemoveTabAnimation(model_index, was_active);
+      return;
+    }
+  }
+
+  Tab* tab = tab_at(model_index);
+  tab->SetClosing(true);
+
+  const int old_x = ideal_bounds(model_index).x();
+  RemoveTabFromViewModel(model_index);
+
+  if (touch_layout_) {
+    touch_layout_->RemoveTab(model_index,
+                             UpdateIdealBoundsForPinnedTabs(nullptr), old_x);
+  }
+
+  layout_helper_->RemoveTab(model_index);
+}
+
+void TabStrip::StartFallbackRemoveTabAnimation(int model_index,
+                                               bool was_active) {
+  // TODO(958173): Delete this once all animations have been migrated to the
+  // new style.
+  const int model_count = GetModelCount();
+  const int tab_overlap = TabStyle::GetTabOverlap();
+  if (in_tab_close_ && model_count > 0 && model_index != model_count) {
+    // The user closed a tab other than the last tab. Set
+    // available_width_for_tabs_ so that as the user closes tabs with the mouse
+    // a tab continues to fall under the mouse.
+    int next_active_index = controller_->GetActiveIndex();
+    DCHECK(IsValidModelIndex(next_active_index));
+    if (model_index <= next_active_index) {
+      // At this point, model's internal state has already been updated.
+      // |contents| has been detached from model and the active index has been
+      // updated. But the tab for |contents| isn't removed yet. Thus, we need to
+      // fix up next_active_index based on it.
+      next_active_index++;
+    }
+    Tab* next_active_tab = tab_at(next_active_index);
+    Tab* tab_being_removed = tab_at(model_index);
+
+    UpdateIdealBounds();
+    int size_delta = tab_being_removed->width();
+    if (!tab_being_removed->data().pinned && was_active &&
+        GetActiveTabWidth() > GetInactiveTabWidth()) {
+      // When removing an active, non-pinned tab, an inactive tab will be made
+      // active and thus given the active width. Thus the width being removed
+      // from the strip is really the current width of whichever inactive tab
+      // will be made active.
+      size_delta = next_active_tab->width();
+    }
+
+    available_width_for_tabs_ =
+        ideal_bounds(model_count).right() - size_delta + tab_overlap;
+  }
+
+  if (!touch_layout_)
+    PrepareForAnimation();
+
+  Tab* tab = tab_at(model_index);
+  tab->SetClosing(true);
+
+  int old_x = tabs_.ideal_bounds(model_index).x();
+  RemoveTabFromViewModel(model_index);
+
+  if (touch_layout_) {
+    touch_layout_->RemoveTab(model_index,
+                             UpdateIdealBoundsForPinnedTabs(nullptr), old_x);
+  }
+
+  layout_helper_->RemoveTabNoAnimation(model_index);
+  UpdateIdealBounds();
+  AnimateToIdealBounds();
+
+  // TODO(pkasting): When closing multiple tabs, we get repeated RemoveTabAt()
+  // calls, each of which closes a new tab and thus generates different ideal
+  // bounds.  We should update the animations of any other tabs that are
+  // currently being closed to reflect the new ideal bounds, or else change from
+  // removing one tab at a time to animating the removal of all tabs at once.
+
+  // Compute the target bounds for animating this tab closed.  The tab's left
+  // edge should stay joined to the right edge of the previous tab, if any.
+  gfx::Rect tab_bounds = tab->bounds();
+  tab_bounds.set_x((model_index > 0)
+                       ? (ideal_bounds(model_index - 1).right() - tab_overlap)
+                       : 0);
+
+  // The tab should animate to the width of the overlap in order to close at the
+  // same speed the surrounding tabs are moving, since at this width the
+  // subsequent tab is naturally positioned at the same X coordinate.
+  tab_bounds.set_width(tab_overlap);
+
+  // Animate the tab closed.
+  bounds_animator_.AnimateViewTo(
+      tab, tab_bounds, std::make_unique<RemoveTabDelegate>(this, tab));
+
+  // TODO(pkasting): The first part of this conditional doesn't really make
+  // sense to me.  Why is each condition justified?
+  if ((touch_layout_ || !in_tab_close_ || model_index == GetModelCount()) &&
+      TabDragController::IsAttachedTo(GetDragContext())) {
+    // Don't animate the new tab button when dragging tabs. Otherwise it looks
+    // like the new tab button magically appears from beyond the end of the tab
+    // strip.
+    bounds_animator_.StopAnimatingView(new_tab_button_);
+    new_tab_button_->SetBoundsRect(new_tab_button_ideal_bounds_);
+  }
+}
+
 void TabStrip::StartMoveTabAnimation() {
   PrepareForAnimation();
   UpdateIdealBounds();
@@ -2199,12 +2257,18 @@ void TabStrip::StartMoveTabAnimation() {
 
 void TabStrip::AnimateToIdealBounds() {
   UpdateHoverCard(nullptr);
-  // bounds_animator_ and TabStripLayoutHelper::animator_ should not run
-  // concurrently. bounds_animator_ takes precedence, and can finish what the
+  // |bounds_animator_| and |layout_helper_| should not run
+  // concurrently. |bounds_animator_| takes precedence, and can finish what the
   // other started.
   if (layout_helper_->IsAnimating()) {
+    // Move tabs to their current bounds according to |layout_helper_| so
+    // |bounds_animator_| picks up from the correct place.
     LayoutToCurrentBounds();
-    layout_helper_->CompleteAnimationsWithoutDestroyingTabs();
+    // Complete animations so |layout_helper_| will be in sync with
+    // ideal bounds instead of the current bounds. This also destroys
+    // any tabs that are currently being closed so we don't have to wrangle
+    // handing off that responsibility.
+    layout_helper_->CompleteAnimations();
   }
 
   for (int i = 0; i < tab_count(); ++i) {

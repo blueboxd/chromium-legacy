@@ -24,8 +24,7 @@ class BluetoothAdvertisementManagerClientImpl
     : public BluetoothLEAdvertisingManagerClient,
       public dbus::ObjectManager::Interface {
  public:
-  BluetoothAdvertisementManagerClientImpl()
-      : object_manager_(NULL), weak_ptr_factory_(this) {}
+  BluetoothAdvertisementManagerClientImpl() : object_manager_(nullptr) {}
 
   ~BluetoothAdvertisementManagerClientImpl() override {
     if (object_manager_) {
@@ -211,7 +210,7 @@ class BluetoothAdvertisementManagerClientImpl
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<BluetoothAdvertisementManagerClientImpl>
-      weak_ptr_factory_;
+      weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothAdvertisementManagerClientImpl);
 };

@@ -133,7 +133,7 @@ class COMPONENT_EXPORT(IPC) ChannelMojo
   std::map<std::string, GenericAssociatedInterfaceFactory>
       associated_interfaces_;
 
-  base::WeakPtrFactory<ChannelMojo> weak_factory_;
+  base::WeakPtrFactory<ChannelMojo> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChannelMojo);
 };

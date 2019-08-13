@@ -234,10 +234,19 @@ are declared in tools/grit/grit_rule.gni.
         </if>
       </if>
 
+      <!-- Supervised user error page -->
+      <if expr="enable_supervised_users">
+        <part file="../browser/supervised_user/supervised_user_error_page_strings.grdp" />
+      </if>
+
       <!-- TODO add all of your "string table" messages here.  Remember to
       change nontranslateable parts of the messages into placeholders (using the
       <ph> element).  You can also use the 'grit add' tool to help you identify
       nontranslateable parts and create placeholders for them. -->
+      <message name="IDS_BACK_BUTTON_AUTHENTICATOR_REQUEST_DIALOG" desc="A back button for authenticator request dialog.">
+        Go back
+      </message>
+
       <if expr="is_win">
         <message name="IDS_BACKGROUND_APP_INSTALLED_BALLOON_TITLE" desc="The title of the balloon that is displayed when a background app is installed">
           New background app added
@@ -7727,6 +7736,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_WINDOW_MENU_MAC" desc="The menu title of the Mac window menu.">
           Window
         </message>
+        <message name="IDS_TAB_MENU_MAC" desc="The menu title of the Mac tab menu.">
+          Tab
+        </message>
         <message name="IDS_HELP_MENU_MAC" desc="The menu title of the Mac help menu.">
           Help
         </message>
@@ -8304,6 +8316,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE_MD" desc="The title of the auto-signin toast in Material Design mode.">
         Signing in as
       </message>
+      <message name="IDS_CREDENTIAL_LEAK_TITLE" desc="The title of the dialog for leaked credentials.">
+        Check your passwords
+      </message>
+      <message name="IDS_CREDENTIAL_LEAK_MESSAGE" desc="The text that is used in credentials leak detection dialog.">
+        The password you entered was part of an online data breach. Chrome can help you to protect your saved passwords.
+      </message>
       <message name="IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_MANY_DEVICES" desc="The title of the dialog during the autosign-in first run experience for the Chrome syncing users.">
         Sign in easily across devices
       </message>
@@ -8321,6 +8339,16 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <if expr="not use_titlecase">
         <message name="IDS_AUTO_SIGNIN_FIRST_RUN_OK" desc="The text of the OK button in the dialog during the autosign-in first run experience.">
           OK, got it
+        </message>
+      </if>
+      <if expr="use_titlecase">
+        <message name="IDS_CREDENTIAL_LEAK_OK" desc="The text of the OK button in the dialog for credentials leak detection.">
+          Check Passwords
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_CREDENTIAL_LEAK_OK" desc="The text of the OK button in the dialog for credentials leak detection.">
+          Check passwords
         </message>
       </if>
 
@@ -8591,18 +8619,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
                desc="The title of a link that will open the Chrome Web Store with a dark theme the user might want to install, if they prefer light text on a dark background.">
         Dark Theme
       </message>
-
-      <!-- Windows 8 Metro mode. -->
-      <if expr="is_win">
-        <message name="IDS_METRO_FLOW_DESCRIPTION"
-                 desc="Wordy description of what the set-Chrome-as-Metro flow is all about.">
-          Click next to choose your default browser.
-        </message>
-        <message name="IDS_METRO_FLOW_SET_DEFAULT"
-                 desc="The label of the button invoking Windows8 default app settings window.">
-          Next
-        </message>
-      </if>
 
       <!-- Media Galleries. -->
       <if expr="not is_android">

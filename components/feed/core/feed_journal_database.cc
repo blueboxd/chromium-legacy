@@ -22,8 +22,9 @@ namespace {
 
 const char kJournalDatabaseFolder[] = "journal";
 
-const size_t kDatabaseWriteBufferSizeBytes = 64 * 1024;                 // 64KB
-const size_t kDatabaseWriteBufferSizeBytesForLowEndDevice = 32 * 1024;  // 32KB
+// Journal updates happen infrequently and are typically ~8KB. However there's
+// also one tiny write during startup before more writes that 1KB should handle.
+const size_t kDatabaseWriteBufferSizeBytes = 1 * 1024;  // 1KB
 
 void ReportLoadTimeHistogram(bool success, base::TimeTicks start_time) {
   base::TimeDelta load_time = base::TimeTicks::Now() - start_time;
@@ -69,9 +70,7 @@ bool FeedJournalDatabase::IsInitialized() const {
 
 void FeedJournalDatabase::InitInternal() {
   leveldb_env::Options options = leveldb_proto::CreateSimpleOptions();
-  options.write_buffer_size = base::SysInfo::IsLowEndDevice()
-                                  ? kDatabaseWriteBufferSizeBytesForLowEndDevice
-                                  : kDatabaseWriteBufferSizeBytes;
+  options.write_buffer_size = kDatabaseWriteBufferSizeBytes;
 
   storage_database_->Init(
       options, base::BindOnce(&FeedJournalDatabase::OnDatabaseInitialized,

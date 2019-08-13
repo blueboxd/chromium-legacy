@@ -87,6 +87,25 @@ enum class VerificationType {
   kDV,  // Domain Validation
 };
 
+class PathBuilderDelegateDataImpl : public CertPathBuilderDelegateData {
+ public:
+  ~PathBuilderDelegateDataImpl() override = default;
+
+  static const PathBuilderDelegateDataImpl* Get(
+      const CertPathBuilderResultPath& path) {
+    return static_cast<PathBuilderDelegateDataImpl*>(path.delegate_data.get());
+  }
+
+  static PathBuilderDelegateDataImpl* GetOrCreate(
+      CertPathBuilderResultPath* path) {
+    if (!path->delegate_data)
+      path->delegate_data = std::make_unique<PathBuilderDelegateDataImpl>();
+    return static_cast<PathBuilderDelegateDataImpl*>(path->delegate_data.get());
+  }
+
+  OCSPVerifyResult stapled_ocsp_verify_result;
+};
+
 // TODO(eroman): The path building code in this file enforces its idea of weak
 // keys, and signature algorithms, but separately cert_verify_proc.cc also
 // checks the chains with its own policy. These policies must be aligned to
@@ -171,9 +190,11 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
     // to |policy|. Depending on the policy, errors will be added to the
     // respective certificates, so |errors->ContainsHighSeverityErrors()| will
     // reflect the revocation status of the chain after this call.
-    CheckValidatedChainRevocation(path->certs, policy,
-                                  stapled_leaf_ocsp_response_, net_fetcher_,
-                                  &path->errors);
+    CheckValidatedChainRevocation(
+        path->certs, policy, stapled_leaf_ocsp_response_, net_fetcher_,
+        &path->errors,
+        &PathBuilderDelegateDataImpl::GetOrCreate(path)
+             ->stapled_ocsp_verify_result);
   }
 
  private:
@@ -551,6 +572,11 @@ int AssignVerifyResult(X509Certificate* input_cert,
     LOG(ERROR) << "CertVerifyProcBuiltin for " << hostname << " failed:\n"
                << partial_path.errors.ToDebugString(partial_path.certs);
   }
+
+  const PathBuilderDelegateDataImpl* delegate_data =
+      PathBuilderDelegateDataImpl::Get(partial_path);
+  if (delegate_data)
+    verify_result->ocsp_result = delegate_data->stapled_ocsp_verify_result;
 
   return IsCertStatusError(verify_result->cert_status)
              ? MapCertStatusToNetError(verify_result->cert_status)

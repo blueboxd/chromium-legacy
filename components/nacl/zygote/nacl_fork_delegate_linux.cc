@@ -280,6 +280,15 @@ void NaClForkDelegate::Init(const int sandboxdesc,
     options.clear_environment = true;
     AddPassthroughEnvToOptions(&options);
 
+#ifdef COMPONENT_BUILD
+    // In component build, nacl_helper loads libgnutls.so.
+    // Newer versions of libgnutls do implicit initialization when loaded that
+    // leaves an additional /dev/urandom file descriptor open.  Passing the
+    // following env var asks libgnutls not to do that implicit initialization.
+    // (crbug.com/973024)
+    options.environment["GNUTLS_NO_EXPLICIT_INIT"] = "1";
+#endif
+
     base::Process process =
         using_namespace_sandbox
             ? sandbox::NamespaceSandbox::LaunchProcess(argv_to_launch, options)

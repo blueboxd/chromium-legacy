@@ -1852,6 +1852,9 @@ base::string16 BrowserAccessibility::GetLocalizedStringForRoleDescription()
     case ax::mojom::Role::kAudio:
       return content_client->GetLocalizedString(IDS_AX_ROLE_AUDIO);
 
+    case ax::mojom::Role::kColorWell:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_COLOR_WELL);
+
     case ax::mojom::Role::kDetails:
       return content_client->GetLocalizedString(IDS_AX_ROLE_DETAILS);
 
@@ -1860,6 +1863,9 @@ base::string16 BrowserAccessibility::GetLocalizedStringForRoleDescription()
 
     case ax::mojom::Role::kSearchBox:
       return content_client->GetLocalizedString(IDS_AX_ROLE_SEARCH_BOX);
+
+    case ax::mojom::Role::kStatus:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_OUTPUT);
 
     case ax::mojom::Role::kTextField: {
       std::string input_type;

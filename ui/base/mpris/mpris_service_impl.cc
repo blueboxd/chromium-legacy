@@ -107,6 +107,11 @@ void MprisServiceImpl::SetTitle(const base::string16& value) {
 }
 
 void MprisServiceImpl::SetArtist(const base::string16& value) {
+  // xesam:artist is actually supposed to be a list of strings, but base::Value
+  // only supports lists of base::Value, which makes this difficult to correctly
+  // propagate to |AddPropertiesToWriter()|. Instead, we'll only track the
+  // string in |media_player2_player_properties_| and special-case within
+  // |AddPropertiesToWriter()|.
   SetMetadataPropertyInternal("xesam:artist", base::Value(value));
 }
 
@@ -378,7 +383,13 @@ void MprisServiceImpl::GetProperty(
   } else if (interface == kMprisAPIPlayerInterfaceName) {
     auto property_iter = media_player2_player_properties_.find(property_name);
     if (property_iter != media_player2_player_properties_.end()) {
-      dbus::AppendValueDataAsVariant(&writer, property_iter->second);
+      if (property_name == "Metadata") {
+        const base::DictionaryValue* metadata = nullptr;
+        property_iter->second.GetAsDictionary(&metadata);
+        AddMetadataToWriter(&writer, metadata);
+      } else {
+        dbus::AppendValueDataAsVariant(&writer, property_iter->second);
+      }
       success = true;
     }
   }
@@ -404,11 +415,60 @@ void MprisServiceImpl::AddPropertiesToWriter(dbus::MessageWriter* writer,
   for (auto& property : properties) {
     array_writer.OpenDictEntry(&dict_entry_writer);
     dict_entry_writer.AppendString(property.first);
-    dbus::AppendValueDataAsVariant(&dict_entry_writer, property.second);
+
+    if (property.first == "Metadata") {
+      const base::DictionaryValue* metadata = nullptr;
+      property.second.GetAsDictionary(&metadata);
+      AddMetadataToWriter(&dict_entry_writer, metadata);
+    } else {
+      dbus::AppendValueDataAsVariant(&dict_entry_writer, property.second);
+    }
+
     array_writer.CloseContainer(&dict_entry_writer);
   }
 
   writer->CloseContainer(&array_writer);
+}
+
+void MprisServiceImpl::AddMetadataToWriter(
+    dbus::MessageWriter* writer,
+    const base::DictionaryValue* metadata) {
+  // We need to special-case Metadata's xesam:artist when emitting properties,
+  // since |dbus::AppendValueDataAsVariant()| only supports arrays of variants
+  // and not arrays of strings.
+  DCHECK(writer);
+  DCHECK(metadata);
+
+  dbus::MessageWriter metadata_variant_writer(nullptr);
+  writer->OpenVariant("a{sv}", &metadata_variant_writer);
+  dbus::MessageWriter metadata_writer(nullptr);
+  metadata_variant_writer.OpenArray("{sv}", &metadata_writer);
+
+  for (base::DictionaryValue::Iterator iter(*metadata); !iter.IsAtEnd();
+       iter.Advance()) {
+    dbus::MessageWriter metadata_entry_writer(nullptr);
+    metadata_writer.OpenDictEntry(&metadata_entry_writer);
+    metadata_entry_writer.AppendString(iter.key());
+
+    if (iter.key() == "xesam:artist") {
+      // Here, we convert our string value for artist into an array of
+      // strings to append to the message.
+      dbus::MessageWriter artist_writer(nullptr);
+      metadata_entry_writer.OpenVariant("as", &artist_writer);
+
+      std::vector<std::string> artists{iter.value().GetString()};
+      artist_writer.AppendArrayOfStrings(artists);
+
+      metadata_entry_writer.CloseContainer(&artist_writer);
+    } else {
+      dbus::AppendValueDataAsVariant(&metadata_entry_writer, iter.value());
+    }
+
+    metadata_writer.CloseContainer(&metadata_entry_writer);
+  }
+
+  metadata_variant_writer.CloseContainer(&metadata_writer);
+  writer->CloseContainer(&metadata_variant_writer);
 }
 
 void MprisServiceImpl::SetPropertyInternal(PropertyMap& property_map,

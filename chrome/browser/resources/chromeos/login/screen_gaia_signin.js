@@ -103,6 +103,7 @@ Polymer({
     isSaml_: {
       type: Boolean,
       value: false,
+      observer: 'onSamlChanged_',
     },
 
     /**
@@ -114,6 +115,7 @@ Polymer({
     pinDialogParameters_: {
       type: Object,
       value: null,
+      observer: 'onPinDialogParametersChanged_',
     },
 
     /**
@@ -927,14 +929,28 @@ Polymer({
   onAuthFlowChange_: function() {
     this.isSaml_ =
         this.authenticator_.authFlow == cr.login.Authenticator.AuthFlow.SAML;
+  },
+
+  /**
+   * Observer that is called when the |isSaml_| property gets changed.
+   * @param {number} newValue
+   * @param {number} oldValue
+   * @private
+   */
+  onSamlChanged_: function(newValue, oldValue) {
+    chrome.send('samlStateChanged', [this.isSaml_]);
 
     this.classList.toggle('saml', this.isSaml_);
 
-    if (Oobe.getInstance().currentScreen.id == 'gaia-signin') {
-      Oobe.getInstance().updateScreenSize(this);
-    }
+    // Skip these updates in the initial observer run, which is happening during
+    // the property initialization.
+    if (oldValue !== undefined) {
+      if (Oobe.getInstance().currentScreen.id == 'gaia-signin') {
+        Oobe.getInstance().updateScreenSize(this);
+      }
 
-    this.updateGuestButtonVisibility_();
+      this.updateGuestButtonVisibility_();
+    }
   },
 
   /**
@@ -1239,7 +1255,7 @@ Polymer({
    * Invoked when onLoadAbort message received.
    * @param {!CustomEvent<!Object>} e Event with the payload containing
    *     additional information about error event like:
-   *     {string} error Error code such as "ERR_INTERNET_DISCONNECTED".
+   *     {number} error_code Error code such as net::ERR_INTERNET_DISCONNECTED.
    *     {string} src The URL that failed to load.
    * @private
    */
@@ -1336,12 +1352,12 @@ Polymer({
   /**
    * Handler for webview error handling.
    * @param {!Object} data Additional information about error event like:
-   *     {string} error Error code such as "ERR_INTERNET_DISCONNECTED".
+   *     {number} error_code Error code such as net::ERR_INTERNET_DISCONNECTED.
    *     {string} src The URL that failed to load.
    * @private
    */
   onWebviewError_: function(data) {
-    chrome.send('webviewLoadAborted', [data.error]);
+    chrome.send('webviewLoadAborted', [data.error_code]);
   },
 
   /**
@@ -1440,23 +1456,45 @@ Polymer({
   showPinDialog: function(parameters) {
     assert(parameters);
 
-    // If currently shown, reset and send the cancellation result if not yet.
-    this.closePinDialog();
-    this.$.pinDialog.reset();
-
+    // Note that this must be done before updating |pinDialogResultReported_|,
+    // since the observer will notify the handler about the cancellation of the
+    // previous dialog depending on this flag.
     this.pinDialogParameters_ = parameters;
+
+    this.$.pinDialog.reset();
     this.pinDialogResultReported_ = false;
   },
 
   /**
    * Closes the PIN dialog (that was previously opened using showPinDialog()).
+   * Does nothing if the dialog is not shown.
    */
   closePinDialog: function() {
-    if (this.pinDialogParameters_ && !this.pinDialogResultReported_) {
-      this.pinDialogResultReported_ = true;
-      // TODO(crbug.com/964069): Send the "canceled" result to the C++ side.
-    }
+    // Note that the update triggers the observer, that notifies the handler
+    // about the closing.
     this.pinDialogParameters_ = null;
+  },
+
+  /**
+   * Observer that is called when the |pinDialogParameters_| property gets
+   * changed.
+   * @param {number} newValue
+   * @param {number} oldValue
+   * @private
+   */
+  onPinDialogParametersChanged_: function(newValue, oldValue) {
+    if (oldValue === undefined) {
+      // Don't do anything on the initial call, triggered by the property
+      // initialization.
+      return;
+    }
+    if ((oldValue !== null && newValue === null) ||
+        (oldValue !== null && newValue !== null &&
+         !this.pinDialogResultReported_)) {
+      // Report the cancellation result if the dialog got closed or got reused
+      // before reporting the result.
+      chrome.send('securityTokenPinEntered', [/*user_input=*/ '']);
+    }
   },
 
   /**
@@ -1473,7 +1511,7 @@ Polymer({
    */
   onPinDialogCompleted_: function(e) {
     this.pinDialogResultReported_ = true;
-    // TODO(crbug.com/964069): Send the PIN to the C++ side.
+    chrome.send('securityTokenPinEntered', [/*user_input=*/ e.detail]);
   },
 
 });

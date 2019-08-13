@@ -49,13 +49,8 @@ class TestCreditCardFIDOAuthenticator : public CreditCardFIDOAuthenticator {
     is_user_verifiable_ = is_user_verifiable;
   }
 
-  void SetUserOptIn(bool is_user_opted_in) {
-    is_user_opted_in_ = is_user_opted_in;
-  }
-
   // CreditCardFIDOAuthenticator:
   void IsUserVerifiable(base::OnceCallback<void(bool)> callback) override;
-  bool IsUserOptedIn() override;
 
  private:
   friend class AutofillManagerTest;
@@ -64,7 +59,6 @@ class TestCreditCardFIDOAuthenticator : public CreditCardFIDOAuthenticator {
   PublicKeyCredentialRequestOptionsPtr request_options_;
   PublicKeyCredentialCreationOptionsPtr creation_options_;
   bool is_user_verifiable_ = false;
-  bool is_user_opted_in_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestCreditCardFIDOAuthenticator);
 };

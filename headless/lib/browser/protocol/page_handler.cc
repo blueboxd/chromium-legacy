@@ -28,8 +28,7 @@ PageHandler::PageHandler(scoped_refptr<content::DevToolsAgentHost> agent_host,
                          content::WebContents* web_contents)
     : DomainHandler(Page::Metainfo::domainName, browser),
       agent_host_(agent_host),
-      web_contents_(web_contents),
-      weak_factory_(this) {
+      web_contents_(web_contents) {
   DCHECK(web_contents_);
   DCHECK(agent_host_);
 }

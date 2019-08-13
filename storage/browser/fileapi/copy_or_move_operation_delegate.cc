@@ -113,8 +113,7 @@ class SnapshotCopyOrMoveImpl
         option_(option),
         validator_factory_(validator_factory),
         file_progress_callback_(file_progress_callback),
-        cancel_requested_(false),
-        weak_factory_(this) {}
+        cancel_requested_(false) {}
 
   void Run(CopyOrMoveOperationDelegate::StatusCallback callback) override {
     file_progress_callback_.Run(0);
@@ -351,7 +350,7 @@ class SnapshotCopyOrMoveImpl
   std::unique_ptr<CopyOrMoveFileValidator> validator_;
   FileSystemOperation::CopyFileProgressCallback file_progress_callback_;
   bool cancel_requested_;
-  base::WeakPtrFactory<SnapshotCopyOrMoveImpl> weak_factory_;
+  base::WeakPtrFactory<SnapshotCopyOrMoveImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(SnapshotCopyOrMoveImpl);
 };
 
@@ -388,8 +387,7 @@ class StreamCopyOrMoveImpl
         reader_(std::move(reader)),
         writer_(std::move(writer)),
         file_progress_callback_(file_progress_callback),
-        cancel_requested_(false),
-        weak_factory_(this) {}
+        cancel_requested_(false) {}
 
   void Run(CopyOrMoveOperationDelegate::StatusCallback callback) override {
     // Reader can be created even if the entry does not exist or the entry is
@@ -584,7 +582,7 @@ class StreamCopyOrMoveImpl
   FileSystemOperation::CopyFileProgressCallback file_progress_callback_;
   std::unique_ptr<CopyOrMoveOperationDelegate::StreamCopyHelper> copy_helper_;
   bool cancel_requested_;
-  base::WeakPtrFactory<StreamCopyOrMoveImpl> weak_factory_;
+  base::WeakPtrFactory<StreamCopyOrMoveImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(StreamCopyOrMoveImpl);
 };
 
@@ -606,8 +604,7 @@ CopyOrMoveOperationDelegate::StreamCopyHelper::StreamCopyHelper(
       previous_flush_offset_(0),
       min_progress_callback_invocation_span_(
           min_progress_callback_invocation_span),
-      cancel_requested_(false),
-      weak_factory_(this) {}
+      cancel_requested_(false) {}
 
 CopyOrMoveOperationDelegate::StreamCopyHelper::~StreamCopyHelper() = default;
 
@@ -745,8 +742,7 @@ CopyOrMoveOperationDelegate::CopyOrMoveOperationDelegate(
       option_(option),
       error_behavior_(error_behavior),
       progress_callback_(progress_callback),
-      callback_(std::move(callback)),
-      weak_factory_(this) {
+      callback_(std::move(callback)) {
   same_file_system_ = src_root_.IsInSameFileSystem(dest_root_);
 }
 

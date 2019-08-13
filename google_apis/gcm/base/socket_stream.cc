@@ -30,8 +30,7 @@ SocketInputStream::SocketInputStream(mojo::ScopedDataPipeConsumerHandle stream)
           base::MakeRefCounted<net::DrainableIOBuffer>(io_buffer_,
                                                        kDefaultBufferSize)),
       next_pos_(0),
-      last_error_(net::OK),
-      weak_ptr_factory_(this) {
+      last_error_(net::OK) {
   stream_watcher_.Watch(
       stream_.get(),
       MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
@@ -226,8 +225,7 @@ SocketOutputStream::SocketOutputStream(
       io_buffer_(
           base::MakeRefCounted<net::IOBufferWithSize>(kDefaultBufferSize)),
       next_pos_(0),
-      last_error_(net::OK),
-      weak_ptr_factory_(this) {
+      last_error_(net::OK) {
   stream_watcher_.Watch(
       stream_.get(),
       MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,

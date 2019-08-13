@@ -416,6 +416,7 @@ bool UtilityProcessHost::StartProcess() {
 #if defined(OS_ANDROID)
       switches::kEnableReachedCodeProfiler,
 #endif
+      switches::kEnableExperimentalWebPlatformFeatures,
       // These flags are used by the audio service:
       switches::kAudioBufferSize,
       switches::kAudioServiceQuitTimeoutMs,

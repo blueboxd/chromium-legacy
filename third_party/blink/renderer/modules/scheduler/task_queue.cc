@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
+#include "third_party/blink/renderer/modules/scheduler/scheduler.h"
 #include "third_party/blink/renderer/modules/scheduler/task.h"
 #include "third_party/blink/renderer/modules/scheduler/task_queue_post_task_options.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
@@ -52,17 +53,21 @@ const AtomicString& IdlePriorityKeyword() {
 
 }  // namespace
 
-TaskQueue::TaskQueue(Document* document, WebSchedulingPriority priority)
+TaskQueue::TaskQueue(Document* document,
+                     WebSchedulingPriority priority,
+                     Scheduler* scheduler)
     : ContextLifecycleObserver(document),
       priority_(priority),
       web_scheduling_task_queue_(document->GetScheduler()
                                      ->ToFrameScheduler()
                                      ->CreateWebSchedulingTaskQueue(priority)),
-      task_runner_(web_scheduling_task_queue_->GetTaskRunner()) {
+      task_runner_(web_scheduling_task_queue_->GetTaskRunner()),
+      scheduler_(scheduler) {
   DCHECK(!document->IsContextDestroyed());
 }
 
 void TaskQueue::Trace(Visitor* visitor) {
+  visitor->Trace(scheduler_);
   ScriptWrappable::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }
@@ -84,10 +89,6 @@ Task* TaskQueue::postTask(V8Function* function,
   if (!task_runner_)
     return nullptr;
 
-  // For global task queues, we don't need to track the task objects separately;
-  // tracking is handled by the |web_scheduling_task_queue_|.
-  Task* task = MakeGarbageCollected<Task>(this, function, args);
-
   // TODO(shaseley): We need to figure out the behavior we want for delay. For
   // now, we use behavior that is very similar to setTimeout: negative delays
   // are treated as 0, and we use the Blink scheduler's delayed task behavior.
@@ -95,21 +96,17 @@ Task* TaskQueue::postTask(V8Function* function,
   // the value to a minimal delay.
   base::TimeDelta delay = base::TimeDelta::FromMilliseconds(
       options->delay() > 0 ? options->delay() : 0);
-  task->SetTaskHandle(PostDelayedCancellableTask(
-      *task_runner_, FROM_HERE,
-      WTF::Bind(&TaskQueue::RunTaskCallback, WrapPersistent(this),
-                WrapPersistent(task)),
-      delay));
-  return task;
+
+  // For global task queues, we don't need to track the task objects separately;
+  // tracking is handled by the |web_scheduling_task_queue_|.
+  return MakeGarbageCollected<Task>(this, GetExecutionContext(), function, args,
+                                    delay);
 }
 
-void TaskQueue::RunTaskCallback(Task* task) {
-  // If there are pending tasks queued when the underlying frame's document is
-  // swapped, the callbacks are still invoked. This prevents us from running the
-  // tasks in that case.
+void TaskQueue::take(Task* task) {
   if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed())
     return;
-  task->Invoke();
+  task->MoveTo(this);
 }
 
 // static

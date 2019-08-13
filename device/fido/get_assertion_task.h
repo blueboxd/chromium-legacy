@@ -90,7 +90,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
   size_t current_credential_ = 0;
   bool canceled_ = false;
 
-  base::WeakPtrFactory<GetAssertionTask> weak_factory_;
+  base::WeakPtrFactory<GetAssertionTask> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GetAssertionTask);
 };

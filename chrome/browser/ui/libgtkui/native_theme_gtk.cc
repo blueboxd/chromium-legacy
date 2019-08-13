@@ -421,11 +421,13 @@ SkColor NativeThemeGtk::GetSystemColor(ColorId color_id,
   return color;
 }
 
-void NativeThemeGtk::PaintArrowButton(cc::PaintCanvas* canvas,
-                                      const gfx::Rect& rect,
-                                      Part direction,
-                                      State state,
-                                      ColorScheme color_scheme) const {
+void NativeThemeGtk::PaintArrowButton(
+    cc::PaintCanvas* canvas,
+    const gfx::Rect& rect,
+    Part direction,
+    State state,
+    ColorScheme color_scheme,
+    const ScrollbarArrowExtraParams& arrow) const {
   auto context = GetStyleContextFromCss(
       GtkVersionCheck(3, 20)
           ? "GtkScrollbar#scrollbar #contents GtkButton#button"

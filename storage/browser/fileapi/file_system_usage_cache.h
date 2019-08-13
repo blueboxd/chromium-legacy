@@ -101,7 +101,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemUsageCache {
 
   std::map<base::FilePath, std::unique_ptr<base::File>> cache_files_;
 
-  base::WeakPtrFactory<FileSystemUsageCache> weak_factory_;
+  base::WeakPtrFactory<FileSystemUsageCache> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemUsageCache);
 };

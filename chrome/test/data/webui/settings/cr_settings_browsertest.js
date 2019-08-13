@@ -2331,8 +2331,7 @@ CrSettingsCrostiniPageTest.prototype = {
   ]),
 };
 
-// TODO(crbug.com/962114): Disabled due to flakes on linux-chromeos-rel.
-TEST_F('CrSettingsCrostiniPageTest', 'DISABLED_All', function() {
+TEST_F('CrSettingsCrostiniPageTest', 'All', function() {
   mocha.run();
 });
 

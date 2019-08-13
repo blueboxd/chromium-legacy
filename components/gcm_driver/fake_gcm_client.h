@@ -72,7 +72,7 @@ class FakeGCMClient : public GCMClient {
   void SetAccountTokens(
       const std::vector<AccountTokenInfo>& account_tokens) override;
   void UpdateAccountMapping(const AccountMapping& account_mapping) override;
-  void RemoveAccountMapping(const std::string& account_id) override;
+  void RemoveAccountMapping(const CoreAccountId& account_id) override;
   void SetLastTokenFetchTime(const base::Time& time) override;
   void UpdateHeartbeatTimer(
       std::unique_ptr<base::RetainingOneShotTimer> timer) override;

@@ -25,6 +25,7 @@
 
 namespace content {
 
+class ResourceContext;
 class ServiceWorkerContextCore;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
@@ -32,8 +33,7 @@ class ServiceWorkerVersion;
 
 // Handles main resource requests for service worker clients (documents and
 // shared workers).
-class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
-    : public NavigationLoaderInterceptor {
+class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
  public:
   // If |skip_service_worker| is true, service workers are bypassed for
   // request interception.
@@ -42,23 +42,22 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       ResourceType resource_type,
       bool skip_service_worker);
-  ~ServiceWorkerControlleeRequestHandler() override;
+  ~ServiceWorkerControlleeRequestHandler();
 
   // NavigationLoaderInterceptor overrides:
 
   // This could get called multiple times during the lifetime in redirect
   // cases. (In fallback-to-network cases we basically forward the request
   // to the request to the next request handler)
-  void MaybeCreateLoader(const network::ResourceRequest& tentative_request,
-                         BrowserContext* browser_context,
-                         ResourceContext* resource_context,
-                         LoaderCallback callback,
-                         FallbackCallback fallback_callback) override;
+  void MaybeCreateLoader(
+      const network::ResourceRequest& tentative_request,
+      ResourceContext* resource_context,
+      NavigationLoaderInterceptor::LoaderCallback callback,
+      NavigationLoaderInterceptor::FallbackCallback fallback_callback);
   // Returns params with the ControllerServiceWorkerInfoPtr if we have found
   // a matching controller service worker for the |request| that is given
   // to MaybeCreateLoader(). Otherwise this returns base::nullopt.
-  base::Optional<SubresourceLoaderParams> MaybeCreateSubresourceLoaderParams()
-      override;
+  base::Optional<SubresourceLoaderParams> MaybeCreateSubresourceLoaderParams();
 
   // Does all initialization of |provider_host_| for a request.
   bool InitializeProvider(const network::ResourceRequest& tentative_request);
@@ -112,8 +111,8 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
   bool force_update_started_;
   base::TimeTicks registration_lookup_start_time_;
 
-  LoaderCallback loader_callback_;
-  FallbackCallback fallback_callback_;
+  NavigationLoaderInterceptor::LoaderCallback loader_callback_;
+  NavigationLoaderInterceptor::FallbackCallback fallback_callback_;
 
   base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_{
       this};

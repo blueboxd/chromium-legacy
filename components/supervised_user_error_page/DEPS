@@ -1,9 +1,0 @@
-include_rules = [
-  "+components/grit/components_resources.h",
-  "+components/strings/grit/components_strings.h",
-  "+content/public/renderer",
-  "+third_party/blink",
-  "+ui/base",
-  "+url",
-  "+v8",
-]

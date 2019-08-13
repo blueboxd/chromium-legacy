@@ -317,7 +317,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobMemoryController {
 
   base::MemoryPressureListener memory_pressure_listener_;
 
-  base::WeakPtrFactory<BlobMemoryController> weak_factory_;
+  base::WeakPtrFactory<BlobMemoryController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BlobMemoryController);
 };

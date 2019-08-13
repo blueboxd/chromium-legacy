@@ -79,8 +79,9 @@ class SwapThrashingMonitor {
 
   // The task runner used to run blocking operations.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 
   // The delegate responsible for measuring the swap-thrashing activity. This
   // task runner is expected to be used and destroyed on

@@ -1446,7 +1446,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
   ASSERT_TRUE(tab_download_state);
   tab_download_state->set_download_seen();
   tab_download_state->SetDownloadStatusAndNotify(
-      same_site_url.GetOrigin(), DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
+      url::Origin::Create(same_site_url),
+      DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
 
   // Try to start the download via Javascript and wait for the corresponding
   // load stop event.
@@ -1500,7 +1501,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest,
   // Let the first download to fail.
   tab_download_state->set_download_seen();
   tab_download_state->SetDownloadStatusAndNotify(
-      url.GetOrigin(), DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
+      url::Origin::Create(url), DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
   bool download_attempted;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       browser()->tab_strip_model()->GetActiveWebContents(),
@@ -1514,7 +1515,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest,
   std::unique_ptr<content::DownloadTestObserver> observer(
       CreateWaiter(browser(), 1));
   tab_download_state->SetDownloadStatusAndNotify(
-      url.GetOrigin(), DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS);
+      url::Origin::Create(url), DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS);
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(startDownload2());",

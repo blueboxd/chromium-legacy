@@ -517,7 +517,6 @@ void AppCacheRequestHandler::OnCacheSelectionComplete(AppCacheHost* host) {
 void AppCacheRequestHandler::MaybeCreateLoader(
     const network::ResourceRequest& tentative_resource_request,
     BrowserContext* browser_context,
-    ResourceContext* resource_context,
     LoaderCallback callback,
     FallbackCallback fallback_callback) {
   loader_callback_ =
@@ -605,8 +604,8 @@ void AppCacheRequestHandler::MaybeCreateSubresourceLoader(
 
   // Subresource loads start out just like a main resource loads, but they go
   // down different branches along the way to completion.
-  MaybeCreateLoader(resource_request, nullptr, nullptr,
-                    std::move(loader_callback), std::move(fallback_callback));
+  MaybeCreateLoader(resource_request, nullptr, std::move(loader_callback),
+                    std::move(fallback_callback));
 }
 
 void AppCacheRequestHandler::MaybeFallbackForSubresourceResponse(

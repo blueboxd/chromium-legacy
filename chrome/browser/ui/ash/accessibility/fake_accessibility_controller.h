@@ -36,8 +36,6 @@ class FakeAccessibilityController : ash::AccessibilityController {
       ash::SelectToSpeakEventHandlerDelegate* delegate) override;
   void SetSwitchAccessEventHandlerDelegate(
       ash::SwitchAccessEventHandlerDelegate* delegate) override;
-  void SetSwitchAccessKeysToCapture(
-      const std::vector<int>& keys_to_capture) override;
   void SetDictationActive(bool is_active) override;
   void ToggleDictationFromSource(ash::DictationToggleSource source) override;
   void OnAutoclickScrollableBoundsFound(gfx::Rect& bounds_in_screen) override;

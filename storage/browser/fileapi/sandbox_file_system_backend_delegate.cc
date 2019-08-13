@@ -207,8 +207,7 @@ SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
                                    quota_manager_proxy)))),
       special_storage_policy_(special_storage_policy),
       file_system_options_(file_system_options),
-      is_filesystem_opened_(false),
-      weak_factory_(this) {
+      is_filesystem_opened_(false) {
   // Prepopulate database only if it can run asynchronously (i.e. the current
   // sequence is not file_task_runner). Usually this is the case but may not
   // in test code.

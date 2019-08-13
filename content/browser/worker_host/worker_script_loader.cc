@@ -99,7 +99,7 @@ void WorkerScriptLoader::Start() {
   if (interceptor_index_ < interceptors_.size()) {
     auto* interceptor = interceptors_[interceptor_index_++].get();
     interceptor->MaybeCreateLoader(
-        resource_request_, browser_context, nullptr /* resource_context */,
+        resource_request_, browser_context,
         base::BindOnce(&WorkerScriptLoader::MaybeStartLoader,
                        weak_factory_.GetWeakPtr(), interceptor),
         base::BindOnce(&WorkerScriptLoader::LoadFromNetwork,

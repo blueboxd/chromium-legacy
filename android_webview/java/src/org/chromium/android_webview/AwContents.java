@@ -2527,8 +2527,8 @@ public class AwContents implements SmartClipProvider {
             messagePorts[i] = convertRawHandleToMessagePort(ports[i]);
         }
         MessagePort replyMessagePort = convertRawHandleToMessagePort(replyPort);
-        mWebMessageListener.onPostMessage(this, message, Uri.parse(sourceOrigin), isMainFrame,
-                replyMessagePort, messagePorts);
+        mWebMessageListener.onPostMessage(
+                message, Uri.parse(sourceOrigin), isMainFrame, replyMessagePort, messagePorts);
     }
 
     private static MessagePort convertRawHandleToMessagePort(int rawHandle) {

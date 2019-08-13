@@ -46,16 +46,17 @@ content::WebUIDataSource* CreateCrashesUIHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUICrashesHost);
 
-  for (size_t i = 0; i < crash::kCrashesUILocalizedStringsCount; ++i) {
+  for (size_t i = 0; i < crash_reporter::kCrashesUILocalizedStringsCount; ++i) {
     source->AddLocalizedString(
-        crash::kCrashesUILocalizedStrings[i].name,
-        crash::kCrashesUILocalizedStrings[i].resource_id);
+        crash_reporter::kCrashesUILocalizedStrings[i].name,
+        crash_reporter::kCrashesUILocalizedStrings[i].resource_id);
   }
 
-  source->AddLocalizedString(crash::kCrashesUIShortProductName,
+  source->AddLocalizedString(crash_reporter::kCrashesUIShortProductName,
                              IDS_SHORT_PRODUCT_NAME);
   source->SetJsonPath("strings.js");
-  source->AddResourcePath(crash::kCrashesUICrashesJS, IDR_CRASH_CRASHES_JS);
+  source->AddResourcePath(crash_reporter::kCrashesUICrashesJS,
+                          IDR_CRASH_CRASHES_JS);
   source->SetDefaultResource(IDR_CRASH_CRASHES_HTML);
   return source;
 }
@@ -112,19 +113,19 @@ void CrashesDOMHandler::RegisterMessages() {
   upload_list_->Load(base::BindOnce(&CrashesDOMHandler::OnUploadListAvailable,
                                     base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      crash::kCrashesUIRequestCrashList,
+      crash_reporter::kCrashesUIRequestCrashList,
       base::BindRepeating(&CrashesDOMHandler::HandleRequestCrashes,
                           base::Unretained(this)));
 
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
-      crash::kCrashesUIRequestCrashUpload,
+      crash_reporter::kCrashesUIRequestCrashUpload,
       base::BindRepeating(&CrashesDOMHandler::HandleRequestUploads,
                           base::Unretained(this)));
 #endif
 
   web_ui()->RegisterMessageCallback(
-      crash::kCrashesUIRequestSingleCrashUpload,
+      crash_reporter::kCrashesUIRequestSingleCrashUpload,
       base::BindRepeating(&CrashesDOMHandler::HandleRequestSingleCrashUpload,
                           base::Unretained(this)));
 }
@@ -183,7 +184,7 @@ void CrashesDOMHandler::UpdateUI() {
 
   base::ListValue crash_list;
   if (upload_list)
-    crash::UploadListToValue(upload_list_.get(), &crash_list);
+    crash_reporter::UploadListToValue(upload_list_.get(), &crash_list);
 
   base::Value enabled(crash_reporting_enabled);
   base::Value dynamic_backend(system_crash_reporter);
@@ -199,8 +200,8 @@ void CrashesDOMHandler::UpdateUI() {
   args.push_back(&crash_list);
   args.push_back(&version);
   args.push_back(&os_string);
-  web_ui()->CallJavascriptFunctionUnsafe(crash::kCrashesUIUpdateCrashList,
-                                         args);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      crash_reporter::kCrashesUIUpdateCrashList, args);
 }
 
 void CrashesDOMHandler::HandleRequestSingleCrashUpload(

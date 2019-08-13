@@ -4,6 +4,10 @@
 
 #include "content/public/common/content_switch_dependent_feature_overrides.h"
 
+#include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
+#include "net/base/features.h"
+
 namespace content {
 
 std::vector<base::FeatureList::FeatureOverrideInfo>
@@ -18,8 +22,16 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
     // State to override the feature with.
     base::FeatureList::OverrideState override_state;
   } override_info[] = {
-      // TODO(chlily): Add the Experimental Cookie SameSite features. (Coming in
-      // next CL, https://crrev.com/c/1691522).
+      // Experimental Cookie SameSite features.
+      {switches::kEnableExperimentalWebPlatformFeatures,
+       std::cref(net::features::kSameSiteByDefaultCookies),
+       base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+      {switches::kEnableExperimentalWebPlatformFeatures,
+       std::cref(net::features::kCookiesWithoutSameSiteMustBeSecure),
+       base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+      {switches::kEnableExperimentalWebPlatformFeatures,
+       std::cref(features::kCookieDeprecationMessages),
+       base::FeatureList::OVERRIDE_ENABLE_FEATURE},
   };
 
   // TODO(chlily): There are currently a few places where, to check if some

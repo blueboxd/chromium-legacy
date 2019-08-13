@@ -39,8 +39,7 @@ DesktopProcess::DesktopProcess(
     : caller_task_runner_(caller_task_runner),
       input_task_runner_(input_task_runner),
       io_task_runner_(io_task_runner),
-      daemon_channel_handle_(std::move(daemon_channel_handle)),
-      weak_factory_(this) {
+      daemon_channel_handle_(std::move(daemon_channel_handle)) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
 }

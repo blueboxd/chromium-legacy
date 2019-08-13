@@ -72,8 +72,7 @@ class BluetoothInterfaceDeviceTest : public testing::Test {
                 kTestLeDeviceName0,
                 kTestLeDeviceAddress0,
                 false,
-                true),
-        weak_factory_(this) {
+                true) {
     ON_CALL(*adapter_, GetDevice(kTestLeDeviceAddress0))
         .WillByDefault(Return(&device_));
 
@@ -185,7 +184,7 @@ class BluetoothInterfaceDeviceTest : public testing::Test {
   int actual_callback_count_ = 0;
   int expected_callback_count_ = 0;
 
-  base::WeakPtrFactory<BluetoothInterfaceDeviceTest> weak_factory_;
+  base::WeakPtrFactory<BluetoothInterfaceDeviceTest> weak_factory_{this};
 };
 }  // namespace
 

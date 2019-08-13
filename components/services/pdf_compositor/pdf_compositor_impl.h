@@ -15,22 +15,43 @@
 #include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_types.h"
 #include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
+
+namespace discardable_memory {
+class ClientDiscardableSharedMemoryManager;
+}
 
 namespace printing {
 
 class PdfCompositorImpl : public mojom::PdfCompositor {
  public:
-  explicit PdfCompositorImpl(
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+  // Creates an instance with an optional Mojo receiver (may be null) and
+  // optional initialization of the runtime environment necessary for
+  // compositing operations. |io_task_runner| is used for shared memory
+  // management, if and only if |SetDiscardableSharedMemoryManager()| is
+  // eventually called, which may not be the case in unit tests. In practice,
+  // |initialize_environment| is only false in unit tests.
+  PdfCompositorImpl(mojo::PendingReceiver<mojom::PdfCompositor> receiver,
+                    bool initialize_environment,
+                    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~PdfCompositorImpl() override;
 
   // mojom::PdfCompositor
+  void SetDiscardableSharedMemoryManager(
+      mojo::PendingRemote<
+          discardable_memory::mojom::DiscardableSharedMemoryManager> manager)
+      override;
   void NotifyUnavailableSubframe(uint64_t frame_guid) override;
   void AddSubframeContent(
       uint64_t frame_guid,
@@ -159,9 +180,13 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
   DeserializationContext GetDeserializationContext(
       const ContentToFrameMap& subframe_content_map);
 
-  const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
-  // The creator of this service.
+  mojo::Receiver<mojom::PdfCompositor> receiver_{this};
 
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  std::unique_ptr<discardable_memory::ClientDiscardableSharedMemoryManager>
+      discardable_shared_memory_manager_;
+
+  // The creator of this service.
   // Currently contains the service creator's user agent string if given,
   // otherwise just use string "Chromium".
   std::string creator_ = "Chromium";

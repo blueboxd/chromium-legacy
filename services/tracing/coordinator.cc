@@ -286,8 +286,7 @@ Coordinator::Coordinator(AgentRegistry* agent_registry,
       // priority only when blocking the tracing UI.
       backend_task_runner_(base::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-           base::MayBlock(), base::WithBaseSyncPrimitives()})),
-      weak_ptr_factory_(this) {
+           base::MayBlock(), base::WithBaseSyncPrimitives()})) {
   DCHECK(agent_registry_);
 }
 

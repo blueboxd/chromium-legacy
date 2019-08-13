@@ -306,6 +306,7 @@
 
 using content::BrowserThread;
 using net::URLRequestMockHTTPJob;
+using safe_browsing::ReusedPasswordAccountType;
 using testing::_;
 using testing::Mock;
 using testing::Return;
@@ -753,10 +754,6 @@ class MockPasswordProtectionService
                                 Profile* profile)
       : safe_browsing::ChromePasswordProtectionService(sb_service, profile) {}
   ~MockPasswordProtectionService() override {}
-
-  MOCK_CONST_METHOD0(GetSyncAccountType,
-                     safe_browsing::LoginReputationClientRequest::
-                         PasswordReuseEvent::SyncAccountType());
 
   MOCK_CONST_METHOD0(IsPrimaryAccountGmail, bool());
 
@@ -5023,14 +5020,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
 
   // If user is not signed-in, |GetPasswordProtectionWarningTriggerPref(...)|
   // should return |PHISHING_REUSE| unless specified by policy.
-  EXPECT_CALL(mock_service, GetSyncAccountType())
-      .WillRepeatedly(Return(safe_browsing::LoginReputationClientRequest::
-                                 PasswordReuseEvent::NOT_SIGNED_IN));
   const PrefService* const prefs = browser()->profile()->GetPrefs();
   EXPECT_FALSE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
                    ->IsManaged());
   EXPECT_EQ(safe_browsing::PHISHING_REUSE,
-            mock_service.GetPasswordProtectionWarningTriggerPref());
+            mock_service.GetPasswordProtectionWarningTriggerPref(
+                ReusedPasswordAccountType()));
   // Sets the enterprise policy to 1 (a.k.a PASSWORD_REUSE).
   PolicyMap policies;
   policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
@@ -5040,14 +5035,16 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
   EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
                   ->IsManaged());
   EXPECT_EQ(safe_browsing::PASSWORD_REUSE,
-            mock_service.GetPasswordProtectionWarningTriggerPref());
+            mock_service.GetPasswordProtectionWarningTriggerPref(
+                ReusedPasswordAccountType()));
   // Sets the enterprise policy to 2 (a.k.a PHISHING_REUSE).
   policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(2), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_EQ(safe_browsing::PHISHING_REUSE,
-            mock_service.GetPasswordProtectionWarningTriggerPref());
+            mock_service.GetPasswordProtectionWarningTriggerPref(
+                ReusedPasswordAccountType()));
 }
 
 // Test that when password protection warning trigger is set for Gmail users,
@@ -5064,8 +5061,11 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTriggerGmail) {
   const PrefService* const prefs = browser()->profile()->GetPrefs();
   EXPECT_FALSE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
                    ->IsManaged());
+  ReusedPasswordAccountType account_type;
+  account_type.set_account_type(ReusedPasswordAccountType::GMAIL);
+  account_type.set_is_account_syncing(true);
   EXPECT_EQ(safe_browsing::PHISHING_REUSE,
-            mock_service.GetPasswordProtectionWarningTriggerPref());
+            mock_service.GetPasswordProtectionWarningTriggerPref(account_type));
   // Sets the enterprise policy to 1 (a.k.a PASSWORD_REUSE). Gmail accounts
   // should always return PHISHING_REUSE regardless of what the policy is set
   // to.
@@ -5077,14 +5077,14 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTriggerGmail) {
   EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
                   ->IsManaged());
   EXPECT_EQ(safe_browsing::PHISHING_REUSE,
-            mock_service.GetPasswordProtectionWarningTriggerPref());
+            mock_service.GetPasswordProtectionWarningTriggerPref(account_type));
   // Sets the enterprise policy to 2 (a.k.a PHISHING_REUSE).
   policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(2), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_EQ(safe_browsing::PHISHING_REUSE,
-            mock_service.GetPasswordProtectionWarningTriggerPref());
+            mock_service.GetPasswordProtectionWarningTriggerPref(account_type));
 }
 
 // Test that when password protection warning trigger is set for GSuite users,
@@ -5092,9 +5092,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTriggerGmail) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTriggerGSuite) {
   MockPasswordProtectionService mock_service(
       g_browser_process->safe_browsing_service(), browser()->profile());
-  EXPECT_CALL(mock_service, GetSyncAccountType())
-      .WillRepeatedly(Return(safe_browsing::LoginReputationClientRequest::
-                                 PasswordReuseEvent::GSUITE));
   const PrefService* const prefs = browser()->profile()->GetPrefs();
   PolicyMap policies;
 
@@ -5103,7 +5100,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTriggerGSuite) {
   EXPECT_FALSE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
                    ->IsManaged());
   EXPECT_EQ(safe_browsing::PHISHING_REUSE,
-            mock_service.GetPasswordProtectionWarningTriggerPref());
+            mock_service.GetPasswordProtectionWarningTriggerPref(
+                ReusedPasswordAccountType()));
   // Sets the enterprise policy to 1 (a.k.a PASSWORD_REUSE).
   policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
@@ -5112,14 +5110,16 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTriggerGSuite) {
   EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
                   ->IsManaged());
   EXPECT_EQ(safe_browsing::PASSWORD_REUSE,
-            mock_service.GetPasswordProtectionWarningTriggerPref());
+            mock_service.GetPasswordProtectionWarningTriggerPref(
+                ReusedPasswordAccountType()));
   // Sets the enterprise policy to 2 (a.k.a PHISHING_REUSE).
   policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(2), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_EQ(safe_browsing::PHISHING_REUSE,
-            mock_service.GetPasswordProtectionWarningTriggerPref());
+            mock_service.GetPasswordProtectionWarningTriggerPref(
+                ReusedPasswordAccountType()));
 }
 
 // Test that when safe browsing whitelist domains are set by policy, safe

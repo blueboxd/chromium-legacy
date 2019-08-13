@@ -5345,8 +5345,10 @@ TEST_F(NetworkContextMockHostTest, CustomProxyUsesSpecifiedProxyList) {
 
 // Verifies that custom proxy is used only for requests with process id and
 // render frame id.
+// TODO(https://crbug.com/991035): Crash flakes due to NetworkService'
+// UploadLoadInfo() timer firing during FetchRequest().
 TEST_F(NetworkContextMockHostTest,
-       UseCustomProxyForNavigationAndRenderFrameRequest) {
+       DISABLED_UseCustomProxyForNavigationAndRenderFrameRequest) {
   net::EmbeddedTestServer test_server;
   net::test_server::RegisterDefaultHandlers(&test_server);
   ASSERT_TRUE(test_server.Start());

@@ -248,9 +248,8 @@ TEST(ExtensionCSPValidator, IsSecure) {
   EXPECT_TRUE(CheckCSP(SanitizeCSP(
       "default-src 'self' chrome-extension://aabbcc;",
       OPTIONS_ALLOW_UNSAFE_EVAL)));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' chrome-extension-resource://aabbcc;",
-      OPTIONS_ALLOW_UNSAFE_EVAL)));
+  EXPECT_TRUE(
+      CheckCSP(SanitizeCSP("default-src 'self';", OPTIONS_ALLOW_UNSAFE_EVAL)));
   EXPECT_TRUE(CheckCSP(
       SanitizeCSP("default-src 'self' https:", OPTIONS_ALLOW_UNSAFE_EVAL),
       "default-src 'self';", InsecureValueWarning("default-src", "https:")));

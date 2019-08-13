@@ -2265,4 +2265,14 @@ TEST_P(PaintLayerTest, PaintLayerCommonAncestorBody) {
             GetDocument().body()->GetLayoutObject());
 }
 
+TEST_P(PaintLayerTest, InlineWithBackdropFilterHasPaintLayer) {
+  SetBodyInnerHTML(
+      "<map id='target' style='backdrop-filter: invert(1);'></map>");
+  PaintLayer* paint_layer = GetPaintLayerByElementId("target");
+  PaintLayer* root_layer = GetLayoutView().Layer();
+
+  EXPECT_NE(nullptr, root_layer);
+  EXPECT_NE(nullptr, paint_layer);
+}
+
 }  // namespace blink

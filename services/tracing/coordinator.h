@@ -122,7 +122,7 @@ class Coordinator : public mojom::Coordinator {
   uint32_t approximate_event_count_ = 0;
   RequestBufferUsageCallback request_buffer_usage_callback_;
 
-  base::WeakPtrFactory<Coordinator> weak_ptr_factory_;
+  base::WeakPtrFactory<Coordinator> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Coordinator);
 };

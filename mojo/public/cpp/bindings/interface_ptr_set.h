@@ -89,8 +89,7 @@ class PtrSet {
  private:
   class Element {
    public:
-    explicit Element(Ptr<Interface> ptr)
-        : ptr_(std::move(ptr)), weak_ptr_factory_(this) {
+    explicit Element(Ptr<Interface> ptr) : ptr_(std::move(ptr)) {
       ptr_.set_connection_error_handler(base::Bind(&DeleteElement, this));
     }
 
@@ -118,7 +117,7 @@ class PtrSet {
     static void DeleteElement(Element* element) { delete element; }
 
     Ptr<Interface> ptr_;
-    base::WeakPtrFactory<Element> weak_ptr_factory_;
+    base::WeakPtrFactory<Element> weak_ptr_factory_{this};
 
     DISALLOW_COPY_AND_ASSIGN(Element);
   };

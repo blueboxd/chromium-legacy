@@ -696,7 +696,7 @@ TEST_F(KeyboardControllerAnimationTest, FloatingKeyboardEnsureCaretInWorkArea) {
   // Mock TextInputClient to intercept calls to EnsureCaretNotInRect.
   struct MockTextInputClient : public ui::DummyTextInputClient {
     MockTextInputClient() : DummyTextInputClient(ui::TEXT_INPUT_TYPE_TEXT) {}
-    MOCK_METHOD1(EnsureCaretNotInRect, void(const gfx::Rect&));
+    MOCK_METHOD(void, EnsureCaretNotInRect, (const gfx::Rect&), (override));
   };
 
   // Floating keyboard should call EnsureCaretNotInRect with the empty rect.
@@ -745,7 +745,7 @@ class MockKeyboardControllerObserver : public ash::KeyboardControllerObserver {
   ~MockKeyboardControllerObserver() override = default;
 
   // KeyboardControllerObserver:
-  MOCK_METHOD1(OnKeyboardEnabledChanged, void(bool is_enabled));
+  MOCK_METHOD(void, OnKeyboardEnabledChanged, (bool is_enabled), (override));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockKeyboardControllerObserver);

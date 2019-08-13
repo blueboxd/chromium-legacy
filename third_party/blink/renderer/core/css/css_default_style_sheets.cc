@@ -185,6 +185,8 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
         ParseUASheet(UncompressResourceAsASCIIString(IDR_UASTYLE_SVG_CSS));
     default_style_->AddRulesFromSheet(SvgStyleSheet(), ScreenEval());
     default_print_style_->AddRulesFromSheet(SvgStyleSheet(), PrintEval());
+    default_forced_color_style_->AddRulesFromSheet(SvgStyleSheet(),
+                                                   ForcedColorsEval());
     changed_default_style = true;
   }
 

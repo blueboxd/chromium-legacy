@@ -526,7 +526,7 @@ void TidyUpHTMLStructure(Document& document) {
       current_root && IsHTMLHeadElement(current_root) ? current_root : nullptr;
   Element* const existing_body =
       current_root && (IsA<HTMLBodyElement>(current_root) ||
-                       IsHTMLFrameSetElement(current_root))
+                       IsA<HTMLFrameSetElement>(current_root))
           ? current_root
           : nullptr;
   // We ensure only "the root is <html>."

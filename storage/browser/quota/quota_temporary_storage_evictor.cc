@@ -45,8 +45,7 @@ QuotaTemporaryStorageEvictor::QuotaTemporaryStorageEvictor(
     int64_t interval_ms)
     : quota_eviction_handler_(quota_eviction_handler),
       interval_ms_(interval_ms),
-      timer_disabled_for_testing_(false),
-      weak_factory_(this) {
+      timer_disabled_for_testing_(false) {
   DCHECK(quota_eviction_handler);
 }
 

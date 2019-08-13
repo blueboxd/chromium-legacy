@@ -181,8 +181,7 @@ MCSClient::MCSClient(const std::string& version_string,
       io_task_runner_(io_task_runner),
       heartbeat_manager_(std::move(base::ThreadTaskRunnerHandle::Get()),
                          std::move(io_task_runner)),
-      recorder_(recorder),
-      weak_ptr_factory_(this) {
+      recorder_(recorder) {
   DCHECK(io_task_runner_);
 }
 

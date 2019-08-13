@@ -74,6 +74,7 @@ source_set("synchronization") {
   deps = [
     ":graphcycles_internal",
     "../base",
+    "../base:atomic_hook",
     "../base:base_internal",
     "../base:config",
     "../base:core_headers",

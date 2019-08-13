@@ -66,10 +66,6 @@ class ASH_PUBLIC_EXPORT AccessibilityController {
   virtual void SetSelectToSpeakEventHandlerDelegate(
       SelectToSpeakEventHandlerDelegate* delegate) = 0;
 
-  // Sets the key codes that Switch Access should capture.
-  virtual void SetSwitchAccessKeysToCapture(
-      const std::vector<int>& keys_to_capture) = 0;
-
   // Set the delegate used by the Switch Access event handler.
   virtual void SetSwitchAccessEventHandlerDelegate(
       SwitchAccessEventHandlerDelegate* delegate) = 0;

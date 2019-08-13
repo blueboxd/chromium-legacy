@@ -36,4 +36,8 @@
 "Noto Sans Khmer" : 26,
 "Tinos" : 1
 
+⇦⇧⇨⇩
+#text_presentation_arrows:
+"DejaVu Sans" : 4
+
 

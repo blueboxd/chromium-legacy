@@ -37,7 +37,8 @@ void CreateDedicatedWorkerHostFactory(
 // A host for a single dedicated worker. Its lifetime is managed by the
 // DedicatedWorkerGlobalScope of the corresponding worker in the renderer via a
 // StrongBinding. This lives on the UI thread.
-class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
+class DedicatedWorkerHost final
+    : public service_manager::mojom::InterfaceProvider {
  public:
   DedicatedWorkerHost(int worker_process_id,
                       int ancestor_render_frame_id,
@@ -81,7 +82,6 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
   // dedicated worker to load chrome-extension:// URLs which the renderer's
   // default loader factory can't load.
   //
-  // NetworkService (PlzWorker):
   // |controller| contains information about the service worker controller. Once
   // a ServiceWorker object about the controller is prepared, it is registered
   // to |controller_service_worker_object_host|.
@@ -109,6 +109,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
 
   // May return a nullptr.
   RenderFrameHostImpl* GetAncestorRenderFrameHost();
+
   // The ID of the render process host that hosts this worker.
   const int worker_process_id_;
 

@@ -8,7 +8,9 @@
 #include <utility>
 
 #include "third_party/blink/public/web/web_widget_client.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -19,7 +21,7 @@ namespace blink {
 
 class ImageResourceContent;
 class PropertyTreeState;
-class StyleImage;
+class StyleFetchedImage;
 
 // ImageElementTiming is responsible for tracking the paint timings for <img>
 // elements for a given window.
@@ -42,6 +44,8 @@ class CORE_EXPORT ImageElementTiming final
 
   void NotifyImageFinished(const LayoutObject&, const ImageResourceContent*);
 
+  void NotifyBackgroundImageFinished(const StyleFetchedImage*);
+
   // Called when the LayoutObject has been painted. This method might queue a
   // swap promise to compute and report paint timestamps.
   void NotifyImagePainted(
@@ -51,7 +55,7 @@ class CORE_EXPORT ImageElementTiming final
 
   void NotifyBackgroundImagePainted(
       Node*,
-      const StyleImage* background_image,
+      const StyleFetchedImage* background_image,
       const PropertyTreeState& current_paint_chunk_properties);
 
   void NotifyImageRemoved(const LayoutObject*,
@@ -111,19 +115,23 @@ class CORE_EXPORT ImageElementTiming final
   // next swap promise callback.
   HeapVector<Member<ElementTimingInfo>> element_timings_;
   struct ImageInfo {
-    // HashMap values require default constructor so we set default value for
-    // |load_time|.
-    ImageInfo(base::TimeTicks load_time = base::TimeTicks())
-        : load_time_(load_time), is_painted_(false) {}
+    ImageInfo() {}
 
     base::TimeTicks load_time_;
-    bool is_painted_;
+    bool is_painted_ = false;
   };
   typedef std::pair<const LayoutObject*, const ImageResourceContent*> RecordId;
   // Hashmap of pairs of elements, LayoutObjects (for the elements) and
   // ImageResourceContent (for the src) which correspond to either images or
-  // background images whose paint has been observed.
+  // background images whose paint has been observed. For background images,
+  // only the |is_painted_| bit is used, as the timestamp needs to be tracked by
+  // |background_image_timestamps_|.
   WTF::HashMap<RecordId, ImageInfo> images_notified_;
+
+  // Hashmap of background images which contain information about the load time
+  // of the background image.
+  HeapHashMap<WeakMember<const StyleFetchedImage>, base::TimeTicks>
+      background_image_timestamps_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageElementTiming);
 };

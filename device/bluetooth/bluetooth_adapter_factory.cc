@@ -216,8 +216,8 @@ BluetoothAdapterFactory::GetBleScanParserCallback() {
 }
 #endif  // defined(OS_CHROMEOS)
 
-BluetoothAdapterFactory::GlobalValuesForTesting::GlobalValuesForTesting()
-    : weak_ptr_factory_(this) {}
+BluetoothAdapterFactory::GlobalValuesForTesting::GlobalValuesForTesting() =
+    default;
 
 BluetoothAdapterFactory::GlobalValuesForTesting::~GlobalValuesForTesting() =
     default;

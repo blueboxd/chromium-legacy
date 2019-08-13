@@ -27,8 +27,17 @@ class NavigationHandle;
 // been approved for users that have Data Saver (aka Lite Mode) enabled.
 class DataSaverTopHostProvider : public optimization_guide::TopHostProvider {
  public:
+  // TODO(sophiechang): Make this constructor private when
+  // OptimizationGuideKeyedService is fully rolled out. All future callers
+  // should be using the CreateIfAllowed() factory method instead, which
+  // validates if the user has the proper permissions to use this class.
   explicit DataSaverTopHostProvider(content::BrowserContext* BrowserContext);
   ~DataSaverTopHostProvider() override;
+
+  // Creates a DataSaverTopHostProvider if the user is a Data Saver user and has
+  // also seen the notification.
+  static std::unique_ptr<DataSaverTopHostProvider> CreateIfAllowed(
+      content::BrowserContext* browser_context);
 
   // Update the HintsFetcherTopHostBlacklist by attempting to remove the host
   // for the current navigation from the blacklist. A host is removed if it is
@@ -37,6 +46,7 @@ class DataSaverTopHostProvider : public optimization_guide::TopHostProvider {
   static void MaybeUpdateTopHostBlacklist(
       content::NavigationHandle* navigation_handle);
 
+  // optimization_guide::TopHostProvider implementation:
   std::vector<std::string> GetTopHosts(size_t max_sites) override;
 
  private:

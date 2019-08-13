@@ -48,8 +48,7 @@ WebrtcConnectionToClient::WebrtcConnectionToClient(
       video_encode_task_runner_(video_encode_task_runner),
       audio_task_runner_(audio_task_runner),
       control_dispatcher_(new HostControlDispatcher()),
-      event_dispatcher_(new HostEventDispatcher()),
-      weak_factory_(this) {
+      event_dispatcher_(new HostEventDispatcher()) {
   session_->SetEventHandler(this);
   session_->SetTransport(transport_.get());
 }

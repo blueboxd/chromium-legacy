@@ -241,7 +241,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
     OffscreenSurface& operator=(OffscreenSurface&& offscreen_surface);
     ~OffscreenSurface();
     SkSurface* surface() const;
-    sk_sp<SkPromiseImageTexture> fulfill();
+    SkPromiseImageTexture* fulfill();
     void set_surface(sk_sp<SkSurface> surface);
 
    private:

@@ -230,7 +230,7 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
                                                  : gfx::kGoogleGrey700;
     case STYLE_RED:
       return native_theme->ShouldUseDarkColors() ? gfx::kGoogleRed300
-                                                 : gfx::kGoogleRed700;
+                                                 : gfx::kGoogleRed600;
     case STYLE_GREEN:
       return native_theme->ShouldUseDarkColors() ? gfx::kGoogleGreen300
                                                  : gfx::kGoogleGreen700;

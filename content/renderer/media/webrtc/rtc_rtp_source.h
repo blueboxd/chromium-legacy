@@ -19,7 +19,7 @@ class CONTENT_EXPORT RTCRtpSource : public blink::WebRTCRtpSource {
   ~RTCRtpSource() override;
 
   blink::WebRTCRtpSource::Type SourceType() const override;
-  double TimestampMs() const override;
+  base::TimeTicks Timestamp() const override;
   uint32_t Source() const override;
   base::Optional<double> AudioLevel() const override;
   uint32_t RtpTimestamp() const override;

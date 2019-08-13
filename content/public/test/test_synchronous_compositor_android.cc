@@ -10,20 +10,20 @@
 
 namespace content {
 
-TestSynchronousCompositor::TestSynchronousCompositor(int process_id,
-                                                     int routing_id)
-    : client_(NULL), process_id_(process_id), routing_id_(routing_id) {}
+TestSynchronousCompositor::TestSynchronousCompositor(
+    const viz::FrameSinkId& frame_sink_id)
+    : client_(nullptr), frame_sink_id_(frame_sink_id) {}
 
 TestSynchronousCompositor::~TestSynchronousCompositor() {
-  SetClient(NULL);
+  SetClient(nullptr);
 }
 
 void TestSynchronousCompositor::SetClient(SynchronousCompositorClient* client) {
   if (client_)
-    client_->DidDestroyCompositor(this, process_id_, routing_id_);
+    client_->DidDestroyCompositor(this, frame_sink_id_);
   client_ = client;
   if (client_)
-    client_->DidInitializeCompositor(this, process_id_, routing_id_);
+    client_->DidInitializeCompositor(this, frame_sink_id_);
 }
 
 scoped_refptr<SynchronousCompositor::FrameFuture>

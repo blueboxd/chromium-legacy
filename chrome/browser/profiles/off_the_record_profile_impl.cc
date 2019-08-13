@@ -286,6 +286,10 @@ base::FilePath OffTheRecordProfileImpl::GetPath() const {
   return profile_->GetPath();
 }
 
+base::Time OffTheRecordProfileImpl::GetCreationTime() const {
+  return start_time_;
+}
+
 #if !defined(OS_ANDROID)
 std::unique_ptr<content::ZoomLevelDelegate>
 OffTheRecordProfileImpl::CreateZoomLevelDelegate(
@@ -585,6 +589,11 @@ void OffTheRecordProfileImpl::InitChromeOSPreferences() {
 
 GURL OffTheRecordProfileImpl::GetHomePage() {
   return profile_->GetHomePage();
+}
+
+void OffTheRecordProfileImpl::SetCreationTimeForTesting(
+    base::Time creation_time) {
+  start_time_ = creation_time;
 }
 
 #if defined(OS_CHROMEOS)

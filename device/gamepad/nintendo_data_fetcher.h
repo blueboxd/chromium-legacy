@@ -112,7 +112,7 @@ class DEVICE_GAMEPAD_EXPORT NintendoDataFetcher : public GamepadDataFetcher,
 
   mojom::HidManagerPtr hid_manager_;
   mojo::AssociatedBinding<mojom::HidManagerClient> binding_;
-  base::WeakPtrFactory<NintendoDataFetcher> weak_factory_;
+  base::WeakPtrFactory<NintendoDataFetcher> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NintendoDataFetcher);
 };

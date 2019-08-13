@@ -18,13 +18,11 @@
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/input_stream.h"
+#include "components/services/quarantine/public/mojom/quarantine.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
 class GURL;
-
-namespace service_manager {
-class Connector;
-}
 
 namespace download {
 
@@ -86,16 +84,15 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFile {
   // Rename the download file to |full_path| and annotate it with
   // "Mark of the Web" information about its source.  No uniquification
   // will be performed.
-  // connector is a clone of the service manager connector from
-  // DownloadItemImpl's delegate. It used to create the quarantine service.
-  // In the unexpected case that connector is null, or the service otherwise
-  // fails, mark-of-the-web is manually applied as a fallback.
+  // |remote_quarantine| must be connected to an instance of the Quarantine
+  // service. In the unexpected case that |remote_quarantine| is invalid, or the
+  // service otherwise fails, mark-of-the-web is manually applied as a fallback.
   virtual void RenameAndAnnotate(
       const base::FilePath& full_path,
       const std::string& client_guid,
       const GURL& source_url,
       const GURL& referrer_url,
-      std::unique_ptr<service_manager::Connector> connector,
+      mojo::PendingRemote<quarantine::mojom::Quarantine> remote_quarantine,
       const RenameCompletionCallback& callback) = 0;
 
   // Detach the file so it is not deleted on destruction.

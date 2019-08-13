@@ -321,8 +321,14 @@ IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
   TestVideoQuality("VP8", false /* prefer_hw_video_codec */);
 }
 
+// Fails consistently on Win7 builders.  crbug.com/993020.
+#if defined(OS_WIN)
+#define MAYBE_MANUAL_TestVideoQualityVp9 DISABLED_MANUAL_TestVideoQualityVp9
+#else
+#define MAYBE_MANUAL_TestVideoQualityVp9 MANUAL_TestVideoQualityVp9
+#endif
 IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
-                       MANUAL_TestVideoQualityVp9) {
+                       MAYBE_MANUAL_TestVideoQualityVp9) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   TestVideoQuality("VP9", true /* prefer_hw_video_codec */);
 }

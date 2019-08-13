@@ -21,6 +21,7 @@ namespace performance_manager {
 
 class FrameNodeImpl;
 class ProcessNodeImpl;
+class WorkerNodeImpl;
 
 // A process node follows the lifetime of a RenderProcessHost.
 // It may reference zero or one processes at a time, but during its lifetime, it
@@ -96,8 +97,14 @@ class ProcessNodeImpl
   // Add |frame_node| to this process.
   void AddFrame(FrameNodeImpl* frame_node);
   // Removes |frame_node| from the set of frames hosted by this process. Invoked
-  // from the destructor of FrameNodeImpl.
+  // when the frame is removed from the graph.
   void RemoveFrame(FrameNodeImpl* frame_node);
+
+  // Add |worker_node| to this process.
+  void AddWorker(WorkerNodeImpl* worker_node);
+  // Removes |worker_node| from the set of workers hosted by this process.
+  // Invoked when the worker is removed from the graph.
+  void RemoveWorker(WorkerNodeImpl* worker_node);
 
   void OnAllFramesInProcessFrozenForTesting() { OnAllFramesInProcessFrozen(); }
 
@@ -150,6 +157,8 @@ class ProcessNodeImpl
   double cpu_usage_ = 0;
 
   base::flat_set<FrameNodeImpl*> frame_nodes_;
+
+  base::flat_set<WorkerNodeImpl*> worker_nodes_;
 
   // Inline storage for FrozenFrameAggregator user data.
   InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 8> frozen_frame_data_;

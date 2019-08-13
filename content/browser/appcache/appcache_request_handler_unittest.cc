@@ -92,7 +92,7 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
     const int kRenderFrameId = 2;
     mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote;
     ignore_result(frontend_remote.InitWithNewPipeAndPassReceiver());
-    mock_service_->RegisterHostForFrame(
+    mock_service_->RegisterHost(
         host_remote_.BindNewPipeAndPassReceiver(), std::move(frontend_remote),
         kHostId, kRenderFrameId, kMockProcessId, GetBadMessageCallback());
     host_ = mock_service_->GetHost(kHostId);

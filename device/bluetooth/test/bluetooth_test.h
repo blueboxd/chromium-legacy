@@ -685,7 +685,7 @@ class BluetoothTestBase : public testing::Test {
   bool unexpected_success_callback_ = false;
   bool unexpected_error_callback_ = false;
 
-  base::WeakPtrFactory<BluetoothTestBase> weak_factory_;
+  base::WeakPtrFactory<BluetoothTestBase> weak_factory_{this};
 };
 
 }  // namespace device

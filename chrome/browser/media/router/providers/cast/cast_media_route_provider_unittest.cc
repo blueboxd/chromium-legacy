@@ -40,8 +40,8 @@ class CastMediaRouteProviderTest : public testing::Test {
   CastMediaRouteProviderTest()
       : data_decoder_service_(connector_factory_.RegisterInstance(
             data_decoder::mojom::kServiceName)),
-        socket_service_(base::CreateSingleThreadTaskRunnerWithTraits(
-            {content::BrowserThread::UI})),
+        socket_service_(
+            base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})),
         message_handler_(&socket_service_) {}
   ~CastMediaRouteProviderTest() override = default;
 

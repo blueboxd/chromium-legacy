@@ -79,7 +79,7 @@ std::unique_ptr<views::StyledLabel> CreateHelpText(
 ClickToCallDialogView::ClickToCallDialogView(
     views::View* anchor_view,
     content::WebContents* web_contents,
-    ClickToCallSharingDialogController* controller)
+    ClickToCallUiController* controller)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       controller_(controller),
       devices_(controller_->GetSyncedDevices()),

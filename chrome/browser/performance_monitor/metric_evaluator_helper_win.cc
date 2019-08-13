@@ -81,4 +81,11 @@ base::Optional<float> MetricEvaluatorsHelperWin::GetDiskIdleTimePercent() {
   return result;
 }
 
+base::Optional<int>
+MetricEvaluatorsHelperWin::GetChromeTotalResidentSetEstimateMb() {
+  // TODO(sebmarchand): Implement this.
+  NOTREACHED();
+  return base::nullopt;
+}
+
 }  // namespace performance_monitor

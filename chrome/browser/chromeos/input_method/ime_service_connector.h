@@ -7,13 +7,11 @@
 
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
-#include "base/token.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
@@ -44,22 +42,17 @@ class ImeServiceConnector : public ime::mojom::PlatformAccessProvider {
                               base::FilePath path);
 
  private:
-  void OnPlatformAccessConnectionLost();
-
-  Profile* profile_;
+  Profile* const profile_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // The current request in progress, or NULL.
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
-  // There is 1:1 mapping from the instance IDs to IME services running out of
-  // process.
-  const base::Token instance_id_;
-
-  mojo::Receiver<chromeos::ime::mojom::PlatformAccessProvider> access_;
-
-  mojo::Remote<chromeos::ime::mojom::PlatformAccessClient> access_client_;
+  // Persistent connection to the IME service process.
+  mojo::Remote<chromeos::ime::mojom::ImeService> remote_service_;
+  mojo::Receiver<chromeos::ime::mojom::PlatformAccessProvider>
+      platform_access_receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImeServiceConnector);
 };

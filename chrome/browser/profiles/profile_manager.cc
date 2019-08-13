@@ -41,6 +41,7 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
+#include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -356,26 +357,13 @@ bool IsProfileEphemeral(ProfileAttributesStorage* storage,
 }  // namespace
 
 ProfileManager::ProfileManager(const base::FilePath& user_data_dir)
-    : user_data_dir_(user_data_dir),
-      logged_in_(false),
-#if !defined(OS_ANDROID)
-      browser_list_observer_(this),
-#endif
-      closing_all_browsers_(false) {
+    : user_data_dir_(user_data_dir) {
 #if defined(OS_CHROMEOS)
   registrar_.Add(
       this,
       chrome::NOTIFICATION_LOGIN_USER_CHANGED,
       content::NotificationService::AllSources());
 #endif
-  registrar_.Add(
-      this,
-      chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
-      content::NotificationService::AllSources());
-  registrar_.Add(
-      this,
-      chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
-      content::NotificationService::AllSources());
 
   if (ProfileShortcutManager::IsFeatureEnabled() && !user_data_dir_.empty())
     profile_shortcut_manager_ = ProfileShortcutManager::Create(this);
@@ -1096,53 +1084,28 @@ void ProfileManager::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
 #if defined(OS_CHROMEOS)
-  if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
-    logged_in_ = true;
+  DCHECK_EQ(type, chrome::NOTIFICATION_LOGIN_USER_CHANGED);
+  logged_in_ = true;
 
-    const base::CommandLine& command_line =
-        *base::CommandLine::ForCurrentProcess();
-    if (!command_line.HasSwitch(switches::kTestType)) {
-      // If we don't have a mounted profile directory we're in trouble.
-      // TODO(davemoore) Once we have better api this check should ensure that
-      // our profile directory is the one that's mounted, and that it's mounted
-      // as the current user.
-      chromeos::CryptohomeClient::Get()->IsMounted(
-          base::BindOnce(&CheckCryptohomeIsMounted));
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (!command_line.HasSwitch(switches::kTestType)) {
+    // If we don't have a mounted profile directory we're in trouble.
+    // TODO(davemoore) Once we have better api this check should ensure that
+    // our profile directory is the one that's mounted, and that it's mounted
+    // as the current user.
+    chromeos::CryptohomeClient::Get()->IsMounted(
+        base::BindOnce(&CheckCryptohomeIsMounted));
 
-      // Confirm that we hadn't loaded the new profile previously.
-      base::FilePath default_profile_dir = user_data_dir_.Append(
-          GetInitialProfileDir());
-      CHECK(!GetProfileByPathInternal(default_profile_dir))
-          << "The default profile was loaded before we mounted the cryptohome.";
-    }
-    return;
+    // Confirm that we hadn't loaded the new profile previously.
+    base::FilePath default_profile_dir =
+        user_data_dir_.Append(GetInitialProfileDir());
+    CHECK(!GetProfileByPathInternal(default_profile_dir))
+        << "The default profile was loaded before we mounted the cryptohome.";
   }
+#else
+  NOTREACHED();
 #endif
-  bool save_active_profiles = false;
-  switch (type) {
-    case chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST: {
-      // Ignore any browsers closing from now on.
-      closing_all_browsers_ = true;
-      save_active_profiles = true;
-      break;
-    }
-    case chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED: {
-      // This will cancel the shutdown process, so the active profiles are
-      // tracked again. Also, as the active profiles may have changed (i.e. if
-      // some windows were closed) we save the current list of active profiles
-      // again.
-      closing_all_browsers_ = false;
-      save_active_profiles = true;
-      break;
-    }
-    default: {
-      NOTREACHED();
-      break;
-    }
-  }
-
-  if (save_active_profiles)
-    SaveActiveProfiles();
 }
 
 void ProfileManager::OnProfileCreated(Profile* profile,
@@ -1748,11 +1711,6 @@ void ProfileManager::OnBrowserOpened(Browser* browser) {
     active_profiles_.push_back(profile);
     SaveActiveProfiles();
   }
-  // If browsers are opening, we can't be closing all the browsers. This
-  // can happen if the application was exited, but background mode or
-  // packaged apps prevented the process from shutting down, and then
-  // a new browser window was opened.
-  closing_all_browsers_ = false;
 }
 
 void ProfileManager::OnBrowserClosed(Browser* browser) {
@@ -1761,7 +1719,7 @@ void ProfileManager::OnBrowserClosed(Browser* browser) {
   if (!profile->IsOffTheRecord() && --browser_counts_[profile] == 0) {
     active_profiles_.erase(
         std::find(active_profiles_.begin(), active_profiles_.end(), profile));
-    if (!closing_all_browsers_)
+    if (!browser_shutdown::IsTryingToQuit())
       SaveActiveProfiles();
   }
 
@@ -1826,7 +1784,7 @@ void ProfileManager::BrowserListObserver::OnBrowserSetLastActive(
   // shutting down), this event will be fired after each browser is
   // closed. This does not represent a user intention to change the active
   // browser so is not handled here.
-  if (profile_manager_->closing_all_browsers_)
+  if (browser_shutdown::IsTryingToQuit())
     return;
 
   Profile* last_active = browser->profile();

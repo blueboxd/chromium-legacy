@@ -21,13 +21,11 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_names.mojom.h"
 #include "headless/app/headless_shell_switches.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_devtools_manager_delegate.h"
-#include "headless/lib/browser/headless_overlay_manifests.h"
 #include "headless/lib/browser/headless_quota_permission_context.h"
 #include "headless/lib/headless_macros.h"
 #include "net/base/url_util.h"
@@ -142,18 +140,6 @@ void HeadlessContentBrowserClient::OverrideWebkitPrefs(
 content::DevToolsManagerDelegate*
 HeadlessContentBrowserClient::GetDevToolsManagerDelegate() {
   return new HeadlessDevToolsManagerDelegate(browser_->GetWeakPtr());
-}
-
-base::Optional<service_manager::Manifest>
-HeadlessContentBrowserClient::GetServiceManifestOverlay(
-    base::StringPiece name) {
-  if (name == content::mojom::kBrowserServiceName)
-    return GetHeadlessContentBrowserOverlayManifest();
-
-  if (name == content::mojom::kPackagedServicesServiceName)
-    return GetHeadlessContentPackagedServicesOverlayManifest();
-
-  return base::nullopt;
 }
 
 scoped_refptr<content::QuotaPermissionContext>

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "android_webview/browser/gfx/compositor_id.h"
 #include "android_webview/browser/gfx/hardware_renderer.h"
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/frame_timing_details_map.h"
@@ -59,7 +58,7 @@ class HardwareRendererSingleThread
       parent_local_surface_id_allocator_;
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
   viz::LocalSurfaceId child_id_;
-  CompositorID compositor_id_;
+  viz::FrameSinkId child_frame_sink_id_;
   uint32_t last_submitted_layer_tree_frame_sink_id_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareRendererSingleThread);

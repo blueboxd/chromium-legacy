@@ -27,6 +27,9 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/chromeos/certificate_provider/pin_dialog_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/views_screen_locker.h"
@@ -43,6 +46,7 @@
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/common/chrome_switches.h"
@@ -151,6 +155,14 @@ class ScreenLockObserver : public SessionManagerClient::StubDelegate,
 
 ScreenLockObserver* g_screen_lock_observer = nullptr;
 
+PinDialogManager* GetLoginScreenPinDialogManager() {
+  DCHECK(ProfileHelper::IsSigninProfileInitialized());
+  CertificateProviderService* certificate_provider_service =
+      CertificateProviderServiceFactory::GetForBrowserContext(
+          ProfileHelper::GetSigninProfile());
+  return certificate_provider_service->pin_dialog_manager();
+}
+
 }  // namespace
 
 // static
@@ -183,6 +195,9 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
   device::mojom::FingerprintObserverPtr observer;
   fingerprint_observer_binding_.Bind(mojo::MakeRequest(&observer));
   fp_service_->AddFingerprintObserver(std::move(observer));
+
+  GetLoginScreenPinDialogManager()->AddPinDialogHost(
+      &security_token_pin_dialog_host_ash_impl_);
 }
 
 void ScreenLocker::Init() {
@@ -670,6 +685,9 @@ void ScreenLocker::SetAuthenticatorsForTesting(
 ScreenLocker::~ScreenLocker() {
   VLOG(1) << "Destroying ScreenLocker " << this;
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
+
+  GetLoginScreenPinDialogManager()->RemovePinDialogHost(
+      &security_token_pin_dialog_host_ash_impl_);
 
   if (authenticator_)
     authenticator_->SetConsumer(nullptr);

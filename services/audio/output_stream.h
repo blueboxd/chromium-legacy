@@ -107,7 +107,7 @@ class OutputStream final : public media::mojom::AudioOutputStream,
   base::RepeatingTimer poll_timer_;
   bool is_audible_ = false;
 
-  base::WeakPtrFactory<OutputStream> weak_factory_;
+  base::WeakPtrFactory<OutputStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OutputStream);
 };

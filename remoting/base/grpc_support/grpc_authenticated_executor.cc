@@ -15,8 +15,7 @@
 namespace remoting {
 
 GrpcAuthenticatedExecutor::GrpcAuthenticatedExecutor(
-    OAuthTokenGetter* token_getter)
-    : weak_factory_(this) {
+    OAuthTokenGetter* token_getter) {
   DCHECK(token_getter);
   token_getter_ = token_getter;
   executor_ = std::make_unique<GrpcAsyncExecutor>();

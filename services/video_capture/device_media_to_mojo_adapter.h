@@ -63,7 +63,7 @@ class DeviceMediaToMojoAdapter : public mojom::Device {
   std::unique_ptr<ReceiverMojoToMediaAdapter> receiver_;
   bool device_started_;
   base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<DeviceMediaToMojoAdapter> weak_factory_;
+  base::WeakPtrFactory<DeviceMediaToMojoAdapter> weak_factory_{this};
 };
 
 }  // namespace video_capture

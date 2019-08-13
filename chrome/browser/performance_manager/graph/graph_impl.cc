@@ -18,6 +18,7 @@
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
+#include "chrome/browser/performance_manager/graph/worker_node_impl.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
 
 namespace ukm {
@@ -120,6 +121,11 @@ void GraphImpl::AddSystemNodeObserver(SystemNodeObserver* observer) {
   AddObserverImpl(&system_node_observers_, observer);
 }
 
+void GraphImpl::AddWorkerNodeObserver(WorkerNodeObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  AddObserverImpl(&worker_node_observers_, observer);
+}
+
 void GraphImpl::RemoveGraphObserver(GraphObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RemoveObserverImpl(&graph_observers_, observer);
@@ -143,6 +149,11 @@ void GraphImpl::RemoveProcessNodeObserver(ProcessNodeObserver* observer) {
 void GraphImpl::RemoveSystemNodeObserver(SystemNodeObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RemoveObserverImpl(&system_node_observers_, observer);
+}
+
+void GraphImpl::RemoveWorkerNodeObserver(WorkerNodeObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  RemoveObserverImpl(&worker_node_observers_, observer);
 }
 
 void GraphImpl::PassToGraph(std::unique_ptr<GraphOwned> graph_owned) {
@@ -185,6 +196,11 @@ std::vector<const FrameNode*> GraphImpl::GetAllFrameNodes() const {
 std::vector<const PageNode*> GraphImpl::GetAllPageNodes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return GetAllNodesOfType<PageNodeImpl, const PageNode*>();
+}
+
+std::vector<const WorkerNode*> GraphImpl::GetAllWorkerNodes() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return GetAllNodesOfType<WorkerNodeImpl, const WorkerNode*>();
 }
 
 void GraphImpl::RegisterObserver(GraphImplObserver* observer) {
@@ -240,6 +256,9 @@ void GraphImpl::OnNodeAdded(NodeBase* node) {
         case NodeTypeEnum::kSystem: {
           SystemNodeImpl::FromNodeBase(node)->AddObserver(observer);
         } break;
+        case NodeTypeEnum::kWorker: {
+          WorkerNodeImpl::FromNodeBase(node)->AddObserver(observer);
+        } break;
         case NodeTypeEnum::kInvalidType: {
           NOTREACHED();
         } break;
@@ -269,6 +288,11 @@ void GraphImpl::OnNodeAdded(NodeBase* node) {
       auto* system_node = SystemNodeImpl::FromNodeBase(node);
       for (auto* observer : system_node_observers_)
         observer->OnSystemNodeAdded(system_node);
+    } break;
+    case NodeTypeEnum::kWorker: {
+      auto* worker_node = WorkerNodeImpl::FromNodeBase(node);
+      for (auto* observer : worker_node_observers_)
+        observer->OnWorkerNodeAdded(worker_node);
     } break;
     case NodeTypeEnum::kInvalidType: {
       NOTREACHED();
@@ -300,6 +324,11 @@ void GraphImpl::OnBeforeNodeRemoved(NodeBase* node) {
       auto* system_node = SystemNodeImpl::FromNodeBase(node);
       for (auto* observer : system_node_observers_)
         observer->OnBeforeSystemNodeRemoved(system_node);
+    } break;
+    case NodeTypeEnum::kWorker: {
+      auto* worker_node = WorkerNodeImpl::FromNodeBase(node);
+      for (auto* observer : worker_node_observers_)
+        observer->OnBeforeWorkerNodeRemoved(worker_node);
     } break;
     case NodeTypeEnum::kInvalidType: {
       NOTREACHED();
@@ -356,6 +385,10 @@ std::vector<FrameNodeImpl*> GraphImpl::GetAllFrameNodeImpls() const {
 
 std::vector<PageNodeImpl*> GraphImpl::GetAllPageNodeImpls() const {
   return GetAllNodesOfType<PageNodeImpl, PageNodeImpl*>();
+}
+
+std::vector<WorkerNodeImpl*> GraphImpl::GetAllWorkerNodeImpls() const {
+  return GetAllNodesOfType<WorkerNodeImpl, WorkerNodeImpl*>();
 }
 
 size_t GraphImpl::GetNodeAttachedDataCountForTesting(const Node* node,
@@ -457,6 +490,11 @@ const std::vector<ProcessNodeObserver*>& GraphImpl::GetObservers() const {
 template <>
 const std::vector<SystemNodeObserver*>& GraphImpl::GetObservers() const {
   return system_node_observers_;
+}
+
+template <>
+const std::vector<WorkerNodeObserver*>& GraphImpl::GetObservers() const {
+  return worker_node_observers_;
 }
 
 }  // namespace performance_manager

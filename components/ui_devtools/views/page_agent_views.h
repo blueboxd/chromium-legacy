@@ -17,8 +17,17 @@ class PageAgentViews : public PageAgent {
   // PageAgent:
   protocol::Response disable() override;
   protocol::Response reload(protocol::Maybe<bool> bypass_cache) override;
+  protocol::Response getResourceTree(
+      std::unique_ptr<protocol::Page::FrameResourceTree>* frame_tree) override;
+  protocol::Response getResourceContent(const protocol::String& in_frameId,
+                                        const protocol::String& in_url,
+                                        protocol::String* out_content,
+                                        bool* out_base64Encoded) override;
 
  private:
+  friend class PageAgentViewsTest;
+  bool devtools_dismiss_override();
+
   DISALLOW_COPY_AND_ASSIGN(PageAgentViews);
 };
 

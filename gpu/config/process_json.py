@@ -13,7 +13,7 @@ import zlib
 from optparse import OptionParser
 from subprocess import call
 
-_LICENSE = """// Copyright 2017 The Chromium Authors. All rights reserved.
+_LICENSE = """// Copyright (c) 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -205,7 +205,7 @@ def write_version(version_info, name_tag, data_file):
 
 
 def write_driver_info(entry_id, is_exception, exception_id, driver_vendor,
-                      driver_version, driver_date, unique_symbol_id,
+                      driver_version, unique_symbol_id,
                       data_file, data_helper_file):
   var_name = 'kDriverInfoFor%sEntry%d' % (unique_symbol_id, entry_id)
   if is_exception:
@@ -215,7 +215,6 @@ def write_driver_info(entry_id, is_exception, exception_id, driver_vendor,
                          var_name)
   write_string_value(driver_vendor, 'driver_vendor', data_helper_file)
   write_version(driver_version, 'driver_version', data_helper_file)
-  write_version(driver_date, 'driver_date', data_helper_file)
   data_helper_file.write('};\n\n')
   # reference the GL strings
   data_file.write('&%s,  // driver info\n' % var_name)
@@ -369,7 +368,6 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   gpu_series_list = None
   driver_vendor = ''
   driver_version = None
-  driver_date = None
   gl_renderer = ''
   gl_vendor = ''
   gl_extensions = ''
@@ -431,8 +429,6 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
       driver_vendor = entry[key]
     elif key == 'driver_version':
       driver_version = entry[key]
-    elif key == 'driver_date':
-      driver_date = entry[key]
     elif key == 'gl_vendor':
       gl_vendor = entry[key]
     elif key == 'gl_renderer':
@@ -481,9 +477,9 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   write_multi_gpu_category(multi_gpu_category, data_file)
   write_multi_gpu_style(multi_gpu_style, data_file)
   # group driver info
-  if driver_vendor != '' or driver_version != None or driver_date != None:
+  if driver_vendor != '' or driver_version != None:
     write_driver_info(entry_id, is_exception, exception_id, driver_vendor,
-                      driver_version, driver_date, unique_symbol_id,
+                      driver_version, unique_symbol_id,
                       data_file, data_helper_file)
   else:
     data_file.write('nullptr,  // driver info\n')

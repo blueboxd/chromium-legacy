@@ -19,7 +19,6 @@
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/appcache/appcache.h"
-#include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_histograms.h"
 #include "content/browser/appcache/appcache_host.h"
@@ -394,7 +393,6 @@ AppCacheServiceImpl::AppCacheServiceImpl(
 }
 
 AppCacheServiceImpl::~AppCacheServiceImpl() {
-  DCHECK(backends_.empty());
   hosts_.clear();
   for (auto& observer : observers_)
     observer.OnServiceDestructionImminent(this);
@@ -506,19 +504,6 @@ void AppCacheServiceImpl::set_special_storage_policy(
   special_storage_policy_ = policy;
 }
 
-void AppCacheServiceImpl::RegisterBackend(
-    AppCacheBackendImpl* backend_impl) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(backends_.find(backend_impl->process_id()) == backends_.end());
-  backends_.insert({backend_impl->process_id(), backend_impl});
-}
-
-void AppCacheServiceImpl::UnregisterBackend(
-    AppCacheBackendImpl* backend_impl) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  backends_.erase(backend_impl->process_id());
-}
-
 AppCacheHost* AppCacheServiceImpl::GetHost(
     const base::UnguessableToken& host_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -531,19 +516,7 @@ bool AppCacheServiceImpl::EraseHost(const base::UnguessableToken& host_id) {
   return (hosts_.erase(host_id) != 0);
 }
 
-void AppCacheServiceImpl::RegisterHostForFrame(
-    mojo::PendingReceiver<blink::mojom::AppCacheHost> host_receiver,
-    mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
-    const base::UnguessableToken& host_id,
-    int32_t render_frame_id,
-    int process_id,
-    mojo::ReportBadMessageCallback bad_message_callback) {
-  RegisterHostInternal(std::move(host_receiver), std::move(frontend_remote),
-                       host_id, render_frame_id, process_id,
-                       std::move(bad_message_callback));
-}
-
-void AppCacheServiceImpl::RegisterHostInternal(
+void AppCacheServiceImpl::RegisterHost(
     mojo::PendingReceiver<blink::mojom::AppCacheHost> host_receiver,
     mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
     const base::UnguessableToken& host_id,

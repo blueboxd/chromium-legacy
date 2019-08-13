@@ -30,7 +30,7 @@ constexpr int kIconSize = 20;
 void ShowPasswordReuseModalWarningDialog(
     content::WebContents* web_contents,
     ChromePasswordProtectionService* service,
-    PasswordType password_type,
+    ReusedPasswordAccountType password_type,
     OnWarningDone done_callback) {
   PasswordReuseModalWarningDialog* dialog = new PasswordReuseModalWarningDialog(
       web_contents, service, password_type, std::move(done_callback));
@@ -42,7 +42,7 @@ void ShowPasswordReuseModalWarningDialog(
 PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
     content::WebContents* web_contents,
     ChromePasswordProtectionService* service,
-    PasswordType password_type,
+    ReusedPasswordAccountType password_type,
     OnWarningDone done_callback)
     : content::WebContentsObserver(web_contents),
       done_callback_(std::move(done_callback)),
@@ -133,7 +133,8 @@ base::string16 PasswordReuseModalWarningDialog::GetDialogButtonLabel(
   switch (button) {
     case ui::DIALOG_BUTTON_OK:
       return l10n_util::GetStringUTF16(
-          password_type_ == PasswordType::ENTERPRISE_PASSWORD
+          password_type_.account_type() ==
+                  ReusedPasswordAccountType::NON_GAIA_ENTERPRISE
               ? IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON
               : IDS_PAGE_INFO_PROTECT_ACCOUNT_BUTTON);
     case ui::DIALOG_BUTTON_CANCEL:

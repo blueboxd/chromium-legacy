@@ -23,8 +23,7 @@
 namespace device {
 
 FidoBleDiscovery::FidoBleDiscovery()
-    : FidoBleDiscoveryBase(FidoTransportProtocol::kBluetoothLowEnergy),
-      weak_factory_(this) {}
+    : FidoBleDiscoveryBase(FidoTransportProtocol::kBluetoothLowEnergy) {}
 
 FidoBleDiscovery::~FidoBleDiscovery() = default;
 

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/content_index/content_index.h"
 
+#include "base/barrier_closure.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -64,6 +65,20 @@ WTF::String ValidateDescription(const ContentDescription& description,
   return WTF::String();
 }
 
+void FetchIcon(ExecutionContext* execution_context,
+               const KURL& icon_url,
+               const WebSize& icon_size,
+               ThreadedIconLoader::IconCallback callback) {
+  ResourceRequest resource_request(icon_url);
+  resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
+  resource_request.SetPriority(ResourceLoadPriority::kMedium);
+  resource_request.SetTimeoutInterval(kIconFetchTimeout);
+
+  auto* threaded_icon_loader = MakeGarbageCollected<ThreadedIconLoader>();
+  threaded_icon_loader->Start(execution_context, resource_request, icon_size,
+                              std::move(callback));
+}
+
 }  // namespace
 
 ContentIndex::ContentIndex(ServiceWorkerRegistration* registration,
@@ -95,44 +110,66 @@ ScriptPromise ContentIndex::add(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  KURL icon_url =
-      registration_->GetExecutionContext()->CompleteURL(description->iconUrl());
-  ResourceRequest resource_request(icon_url);
-  resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
-  resource_request.SetPriority(ResourceLoadPriority::kMedium);
-  resource_request.SetTimeoutInterval(kIconFetchTimeout);
-
-  auto* threaded_icon_loader = MakeGarbageCollected<ThreadedIconLoader>();
-  // TODO(crbug.com/973844): Use ideal icon dimensions instead of the max.
-  threaded_icon_loader->Start(
-      registration_->GetExecutionContext(), resource_request,
-      /* resize_dimensions= */ WebSize(256, 256),
-      WTF::Bind(&ContentIndex::DidGetIcon, WrapPersistent(this),
-                WrapPersistent(resolver), WrapPersistent(threaded_icon_loader),
-                mojom::blink::ContentDescription::From(description)));
+  auto mojo_description = mojom::blink::ContentDescription::From(description);
+  auto category = mojo_description->category;
+  GetService()->GetIconSizes(
+      category,
+      WTF::Bind(&ContentIndex::DidGetIconSizes, WrapPersistent(this),
+                WrapPersistent(resolver), std::move(mojo_description)));
 
   return promise;
 }
 
-void ContentIndex::DidGetIcon(ScriptPromiseResolver* resolver,
-                              ThreadedIconLoader* loader,
-                              mojom::blink::ContentDescriptionPtr description,
-                              SkBitmap icon,
-                              double resize_scale) {
+void ContentIndex::DidGetIconSizes(
+    ScriptPromiseResolver* resolver,
+    mojom::blink::ContentDescriptionPtr description,
+    const Vector<WebSize>& icon_sizes) {
+  KURL icon_url =
+      registration_->GetExecutionContext()->CompleteURL(description->icon_url);
+
+  auto icons = std::make_unique<Vector<SkBitmap>>();
+  icons->ReserveCapacity(icon_sizes.size());
+  Vector<SkBitmap>* icons_ptr = icons.get();
+  auto barrier_closure = base::BarrierClosure(
+      icon_sizes.size(),
+      WTF::Bind(&ContentIndex::DidGetIcons, WrapPersistent(this),
+                WrapPersistent(resolver), std::move(description),
+                std::move(icons)));
+
+  for (const auto& icon_size : icon_sizes) {
+    // |icons_ptr| is safe to use since it is owned by |barrier_closure|.
+    FetchIcon(
+        registration_->GetExecutionContext(), icon_url, icon_size,
+        WTF::Bind(
+            [](base::OnceClosure done_closure, Vector<SkBitmap>* icons_ptr,
+               SkBitmap icon, double resize_scale) {
+              icons_ptr->push_back(std::move(icon));
+              std::move(done_closure).Run();
+            },
+            barrier_closure, WTF::Unretained(icons_ptr)));
+  }
+}
+
+void ContentIndex::DidGetIcons(ScriptPromiseResolver* resolver,
+                               mojom::blink::ContentDescriptionPtr description,
+                               std::unique_ptr<Vector<SkBitmap>> icons) {
+  DCHECK(icons);
   ScriptState* script_state = resolver->GetScriptState();
   ScriptState::Scope scope(script_state);
 
-  if (icon.isNull()) {
-    resolver->Reject(V8ThrowException::CreateTypeError(
-        script_state->GetIsolate(), "Icon could not be loaded"));
-    return;
+  for (const auto& icon : *icons) {
+    if (icon.isNull()) {
+      resolver->Reject(V8ThrowException::CreateTypeError(
+          script_state->GetIsolate(), "Icon could not be loaded"));
+      return;
+    }
   }
 
   KURL launch_url = registration_->GetExecutionContext()->CompleteURL(
       description->launch_url);
 
   GetService()->Add(registration_->RegistrationId(), std::move(description),
-                    {std::move(icon)}, launch_url,
+                    *icons, launch_url,
                     WTF::Bind(&ContentIndex::DidAdd, WrapPersistent(this),
                               WrapPersistent(resolver)));
 }

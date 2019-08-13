@@ -55,8 +55,7 @@ void FakeBluetoothGattServiceClient::Properties::Set(
   std::move(callback).Run(false);
 }
 
-FakeBluetoothGattServiceClient::FakeBluetoothGattServiceClient()
-    : weak_ptr_factory_(this) {}
+FakeBluetoothGattServiceClient::FakeBluetoothGattServiceClient() {}
 
 FakeBluetoothGattServiceClient::~FakeBluetoothGattServiceClient() = default;
 

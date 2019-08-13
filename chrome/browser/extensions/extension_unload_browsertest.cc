@@ -37,8 +37,8 @@ namespace {
 class TestTabStripModelObserver : public TabStripModelObserver {
  public:
   explicit TestTabStripModelObserver(TabStripModel* model)
-      : model_(model), desired_count_(0), scoped_observer_(this) {
-    scoped_observer_.Add(model);
+      : model_(model), desired_count_(0) {
+    model->AddObserver(this);
   }
   ~TestTabStripModelObserver() override = default;
 
@@ -62,7 +62,6 @@ class TestTabStripModelObserver : public TabStripModelObserver {
   TabStripModel* model_;
   int desired_count_;
   base::RunLoop run_loop_;
-  ScopedObserver<TabStripModel, TabStripModelObserver> scoped_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTabStripModelObserver);
 };

@@ -18,9 +18,11 @@
 
 namespace quarantine {
 
+QuarantineImpl::QuarantineImpl() = default;
+
 QuarantineImpl::QuarantineImpl(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : service_ref_(std::move(service_ref)) {}
+    mojo::PendingReceiver<mojom::Quarantine> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 QuarantineImpl::~QuarantineImpl() = default;
 

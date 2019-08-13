@@ -50,6 +50,8 @@ aggregate_vector_icons("ash_vector_icons") {
     "lock_screen_caps_lock.icon",
     "lock_screen_dropdown.icon",
     "lock_screen_fingerprint.icon",
+    "lock_screen_smart_card.icon",
+    "lock_screen_smart_card_failure.icon",
     "lock_screen_fingerprint_success.icon",
     "lock_screen_time_limit_lock.icon",
     "lock_screen_time_limit_moon.icon",

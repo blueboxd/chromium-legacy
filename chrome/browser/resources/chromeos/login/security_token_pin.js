@@ -53,6 +53,12 @@ Polymer({
    * @private
    */
   onNextClicked_: function() {
+    if (this.processingCompletion_) {
+      // Race condition: This could happen if Polymer hasn't yet updated the
+      // "disabled" state of the "Next" button before the user clicked on it for
+      // the second time.
+      return;
+    }
     this.processingCompletion_ = true;
     this.fire('completed', this.$.pinKeyboard.value);
   },

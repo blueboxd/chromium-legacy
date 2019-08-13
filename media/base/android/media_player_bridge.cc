@@ -38,9 +38,6 @@ enum UMAExitStatus {
 
 const double kDefaultVolume = 1.0;
 
-constexpr base::TimeDelta kWatchTimeReportingInterval =
-    base::TimeDelta::FromMilliseconds(750);
-
 const char kWatchTimeHistogram[] = "Media.Android.MediaPlayerWatchTime";
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -90,8 +87,10 @@ MediaPlayerBridge::MediaPlayerBridge(const GURL& url,
       has_error_(false),
       has_ever_started_(false),
       is_hls_(is_hls),
-      unreported_watch_time_ms_(0),
-      last_current_time_(kNoTimestamp),
+      watch_timer_(base::BindRepeating(&MediaPlayerBridge::OnWatchTimerTick,
+                                       base::Unretained(this)),
+                   base::BindRepeating(&MediaPlayerBridge::GetCurrentTime,
+                                       base::Unretained(this))),
       client_(client),
       weak_factory_(this) {
   listener_ = std::make_unique<MediaPlayerListener>(
@@ -354,7 +353,7 @@ base::TimeDelta MediaPlayerBridge::GetDuration() {
 }
 
 void MediaPlayerBridge::Release() {
-  StopWatchTimeTimer();
+  watch_timer_.Stop();
   is_active_ = false;
 
   if (j_media_player_bridge_.is_null())
@@ -477,11 +476,11 @@ void MediaPlayerBridge::UpdateAllowedOperations() {
 void MediaPlayerBridge::StartInternal() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_MediaPlayerBridge_start(env, j_media_player_bridge_);
-  StartWatchTimeTimer();
+  watch_timer_.Start();
 }
 
 void MediaPlayerBridge::PauseInternal() {
-  StopWatchTimeTimer();
+  watch_timer_.Stop();
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_MediaPlayerBridge_pause(env, j_media_player_bridge_);
 }
@@ -525,44 +524,8 @@ GURL MediaPlayerBridge::GetSiteForCookies() {
   return site_for_cookies_;
 }
 
-void MediaPlayerBridge::StartWatchTimeTimer() {
-  if (watch_time_timer_.IsRunning())
-    return;
-
-  last_current_time_ = GetCurrentTime();
-  watch_time_timer_.Start(FROM_HERE, kWatchTimeReportingInterval, this,
-                          &MediaPlayerBridge::UpdateWatchTime);
-}
-
-void MediaPlayerBridge::StopWatchTimeTimer() {
-  if (!watch_time_timer_.IsRunning())
-    return;
-
-  UpdateWatchTime();
-  watch_time_timer_.Stop();
-}
-
-void MediaPlayerBridge::UpdateWatchTime() {
-  if (!watch_time_timer_.IsRunning())
-    return;
-
-  // Note: this calculation assumes that the playback rate is 1.0, which
-  // currently it always is.
-  base::TimeDelta current_time = GetCurrentTime();
-  base::TimeDelta duration = current_time - last_current_time_;
-  last_current_time_ = current_time;
-
-  // Discard crazy values.
-  if (duration > base::TimeDelta() &&
-      duration < kWatchTimeReportingInterval * 2) {
-    unreported_watch_time_ms_ += duration.InMilliseconds();
-  }
-
-  // Report to the nearest 1s.
-  if (unreported_watch_time_ms_ >= 500) {
-    RecordWatchTimeUMA(is_hls_, height_ > 0);
-    unreported_watch_time_ms_ -= 1000;
-  }
+void MediaPlayerBridge::OnWatchTimerTick() {
+  RecordWatchTimeUMA(is_hls_, height_ > 0);
 }
 
 }  // namespace media

@@ -11,33 +11,14 @@
 #include "ash/public/cpp/login_types.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
-#include "chrome/browser/chromeos/certificate_provider/pin_dialog_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/profiles/profile.h"
 
 namespace chromeos {
 
-namespace {
+SecurityTokenPinDialogHostAshImpl::SecurityTokenPinDialogHostAshImpl() =
+    default;
 
-PinDialogManager* GetLoginScreenPinDialogManager() {
-  DCHECK(ProfileHelper::IsSigninProfileInitialized());
-  CertificateProviderService* certificate_provider_service =
-      CertificateProviderServiceFactory::GetForBrowserContext(
-          ProfileHelper::GetSigninProfile());
-  return certificate_provider_service->pin_dialog_manager();
-}
-
-}  // namespace
-
-SecurityTokenPinDialogHostAshImpl::SecurityTokenPinDialogHostAshImpl() {
-  GetLoginScreenPinDialogManager()->AddPinDialogHost(this);
-}
-
-SecurityTokenPinDialogHostAshImpl::~SecurityTokenPinDialogHostAshImpl() {
-  GetLoginScreenPinDialogManager()->RemovePinDialogHost(this);
-}
+SecurityTokenPinDialogHostAshImpl::~SecurityTokenPinDialogHostAshImpl() =
+    default;
 
 void SecurityTokenPinDialogHostAshImpl::ShowSecurityTokenPinDialog(
     const std::string& /*caller_extension_name*/,

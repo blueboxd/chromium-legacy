@@ -38,7 +38,7 @@ Bug(none) http/tests/inspector-protocol/network/request-will-be-sent-for-sync-xh
 Bug(none) http/tests/security/script-crossorigin-redirect-credentials.html [ Skip ]
 Bug(none) http/tests/xmlhttprequest/cross-origin-unsupported-url.html [ Skip ]
 Bug(none) http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.html [ Skip ]
-Bug(none) http/tests/security/img-redirect-to-crossorigin-credentials.html [ Skip ]
+Bug(none) http/tests/security/img-redirect-to-crossorigin-credentials.https.html [ Skip ]
 Bug(none) mhtml/cid_in_html_resource.html [ Skip ]
 Bug(none) virtual/omt-worker-fetch [ Skip ]
 

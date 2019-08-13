@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/sequence_checker.h"
+#include "base/threading/thread_checker.h"
 #include "media/base/video_frame.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/blink/public/common/media/video_capture.h"
@@ -154,7 +154,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   bool IsRunning() const { return state_ == STARTED; }
 
   size_t NumTracks() const {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     return tracks_.size();
   }
 
@@ -254,7 +254,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   };
   State state() const { return state_; }
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  THREAD_CHECKER(thread_checker_);
 
  private:
   // Trigger all cached callbacks from AddTrack. AddTrack is successful

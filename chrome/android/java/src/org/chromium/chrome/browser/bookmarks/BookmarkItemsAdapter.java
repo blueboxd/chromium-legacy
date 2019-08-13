@@ -432,4 +432,14 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     public BookmarkDelegate getDelegateForTesting() {
         return mDelegate;
     }
+
+    /**
+     * Scroll the bookmarks list such that bookmarkId is shown in the view, and highlight it.
+     *
+     * @param bookmarkId The BookmarkId of the bookmark of interest.
+     */
+    @Override
+    public void highlightBookmark(BookmarkId bookmarkId) {
+        // This method is currently implemented for the ReorderBookmarkItemsAdapter only.
+    }
 }

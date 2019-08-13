@@ -38,7 +38,6 @@ class SpecialStoragePolicy;
 
 namespace content {
 FORWARD_DECLARE_TEST(AppCacheServiceImplTest, ScheduleReinitialize);
-class AppCacheBackendImpl;
 class AppCacheHost;
 class AppCacheQuotaClient;
 class AppCachePolicy;
@@ -152,15 +151,6 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
     return quota_client_;
   }
 
-  // Each child process in chrome uses a distinct backend instance.
-  // See chrome/browser/AppCacheDispatcherHost.
-  void RegisterBackend(AppCacheBackendImpl* backend_impl);
-  virtual void UnregisterBackend(AppCacheBackendImpl* backend_impl);
-  AppCacheBackendImpl* GetBackend(int id) const {
-    auto it = backends_.find(id);
-    return (it != backends_.end()) ? it->second : nullptr;
-  }
-
   AppCacheStorage* storage() const { return storage_.get(); }
 
   base::WeakPtr<AppCacheServiceImpl> AsWeakPtr() {
@@ -176,7 +166,7 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   // Returns a pointer to a registered host. It retains ownership.
   AppCacheHost* GetHost(const base::UnguessableToken& host_id);
   bool EraseHost(const base::UnguessableToken& host_id);
-  void RegisterHostForFrame(
+  void RegisterHost(
       mojo::PendingReceiver<blink::mojom::AppCacheHost> host_receiver,
       mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
       const base::UnguessableToken& host_id,
@@ -206,8 +196,6 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   std::map<AsyncHelper*, std::unique_ptr<AsyncHelper>> pending_helpers_;
-  // One 'backend' per child process.
-  std::map<int, AppCacheBackendImpl*> backends_;
   // If true, nothing (not even session-only data) should be deleted on exit.
   bool force_keep_session_state_;
   base::Time last_reinit_time_;
@@ -218,16 +206,6 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   base::WeakPtr<StoragePartitionImpl> partition_;
 
  private:
-  // TODO: Once we remove 'blink::mojom::AppCacheBackend', remove this together.
-  friend class content::AppCacheBackendImpl;
-
-  void RegisterHostInternal(
-      mojo::PendingReceiver<blink::mojom::AppCacheHost> host_receiver,
-      mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
-      const base::UnguessableToken& host_id,
-      int32_t render_frame_id,
-      int process_id,
-      mojo::ReportBadMessageCallback bad_message_callback);
   // The (process id, host id) pair that identifies one AppCacheHost.
   using AppCacheHostProcessMap =
       std::map<base::UnguessableToken, std::unique_ptr<AppCacheHost>>;

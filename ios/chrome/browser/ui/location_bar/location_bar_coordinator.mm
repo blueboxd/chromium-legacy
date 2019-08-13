@@ -169,6 +169,8 @@ const int kLocationAuthorizationStatusCount = 5;
   // Create BadgeMediator and set the viewController as its consumer.
   if (IsInfobarUIRebootEnabled()) {
     self.badgeViewController = [[BadgeViewController alloc] init];
+    self.badgeViewController.dispatcher =
+        static_cast<id<InfobarCommands>>(self.dispatcher);
     [self.viewController addChildViewController:self.badgeViewController];
     [self.viewController setBadgeView:self.badgeViewController.view];
     [self.badgeViewController

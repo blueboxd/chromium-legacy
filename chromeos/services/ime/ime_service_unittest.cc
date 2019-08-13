@@ -6,14 +6,11 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/services/ime/public/mojom/constants.mojom.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -78,9 +75,7 @@ class TestClientChannel : mojom::InputChannel {
 
 class ImeServiceTest : public testing::Test {
  public:
-  ImeServiceTest()
-      : service_(
-            test_connector_factory_.RegisterInstance(mojom::kServiceName)) {}
+  ImeServiceTest() : service_(remote_service_.BindNewPipeAndPassReceiver()) {}
   ~ImeServiceTest() override = default;
 
   MOCK_METHOD1(SentTextCallback, void(const std::string&));
@@ -88,15 +83,15 @@ class ImeServiceTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    test_connector_factory_.GetDefaultConnector()->Connect(
-        mojom::kServiceName, remote_manager_.BindNewPipeAndPassReceiver());
+    remote_service_->BindInputEngineManager(
+        remote_manager_.BindNewPipeAndPassReceiver());
   }
 
+  mojo::Remote<mojom::ImeService> remote_service_;
   mojo::Remote<mojom::InputEngineManager> remote_manager_;
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
-  service_manager::TestConnectorFactory test_connector_factory_;
   ImeService service_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeServiceTest);

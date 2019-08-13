@@ -30,8 +30,6 @@ class CupsPrintJobNotification : public message_center::NotificationObserver {
  public:
   enum class ButtonCommand {
     CANCEL_PRINTING,
-    PAUSE_PRINTING,
-    RESUME_PRINTING,
     GET_HELP,
   };
 

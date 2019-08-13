@@ -28,6 +28,7 @@ class ProtoDatabaseProvider;
 
 namespace optimization_guide {
 class OptimizationGuideService;
+class TopHostProvider;
 }  // namespace optimization_guide
 
 class OptimizationGuideHintsManager;
@@ -50,6 +51,10 @@ class OptimizationGuideKeyedService : public KeyedService {
     return hints_manager_.get();
   }
 
+  optimization_guide::TopHostProvider* GetTopHostProvider() {
+    return top_host_provider_.get();
+  }
+
   // Registers the optimization types that intend to be queried during the
   // session.
   void RegisterOptimizationTypes(
@@ -64,12 +69,15 @@ class OptimizationGuideKeyedService : public KeyedService {
   void Shutdown() override;
 
  private:
+  content::BrowserContext* browser_context_;
+
+  // Manages the storing, loading, and fetching of hints.
   std::unique_ptr<OptimizationGuideHintsManager> hints_manager_;
 
-  std::unordered_set<optimization_guide::proto::OptimizationType>
-      registered_optimization_types_;
-
-  content::BrowserContext* browser_context_;
+  // The top host provider to use for fetching information for the user's top
+  // hosts. Will be null if the user has not consented to this type of browser
+  // behavior.
+  std::unique_ptr<optimization_guide::TopHostProvider> top_host_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(OptimizationGuideKeyedService);
 };

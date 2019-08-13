@@ -50,9 +50,35 @@ struct NativeValueTraits<SQLValue> {
 
 template <>
 struct NativeValueTraits<std::unique_ptr<IDBKey>> {
+  // Implementation for ScriptValue::To<std::unique_ptr<IDBKey>>().
+  //
+  // Used by Indexed DB when converting an explicit value to a key.
+  // https://w3c.github.io/IndexedDB/#convert-value-to-key
+  //
+  // Returns an Invalid key if the conversion is a failure (per spec).
+  //
+  // Note that an Array key may contain Invalid members, as the "multi-entry"
+  // index case allows these, and will filter them out later. Use IsValid() to
+  // recursively check.
   static std::unique_ptr<IDBKey> NativeValue(v8::Isolate*,
                                              v8::Local<v8::Value>,
                                              ExceptionState&);
+
+  // Implementation for ScriptValue::To<std::unique_ptr<IDBKey>>().
+  //
+  // Used by Indexed DB when generating the primary key for a record that is
+  // being stored in an object store that uses in-line keys, or an index key.
+  // https://w3c.github.io/IndexedDB/#extract-key-from-value
+  //
+  // Evaluates the given key path against the script value to produce an
+  // IDBKey. Returns either:
+  // * A nullptr, if key path evaluation fails.
+  // * An Invalid key, if the evaluation yielded a non-key.
+  // * An IDBKey, otherwise.
+  //
+  // Note that an Array key may contain with Invalid members, as the
+  // "multi-entry" index case allows these, and will filter them out later.
+  // Use IsValid() to recursively check.
   MODULES_EXPORT static std::unique_ptr<IDBKey> NativeValue(
       v8::Isolate*,
       v8::Local<v8::Value>,

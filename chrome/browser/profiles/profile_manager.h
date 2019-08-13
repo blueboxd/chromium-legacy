@@ -418,10 +418,10 @@ class ProfileManager : public content::NotificationObserver,
   // Indicates that a user has logged in and that the profile specified
   // in the --login-profile command line argument should be used as the
   // default.
-  bool logged_in_;
+  bool logged_in_ = false;
 
 #if !defined(OS_ANDROID)
-  BrowserListObserver browser_list_observer_;
+  BrowserListObserver browser_list_observer_{this};
 #endif  // !defined(OS_ANDROID)
 
   // Maps profile path to ProfileInfo (if profile has been created). Use
@@ -439,7 +439,6 @@ class ProfileManager : public content::NotificationObserver,
   // On startup we launch the active profiles in the order they became active
   // during the last run. This is why they are kept in a list, not in a set.
   std::vector<Profile*> active_profiles_;
-  bool closing_all_browsers_;
 
   // TODO(chrome/browser/profiles/OWNERS): Usage of this in profile_manager.cc
   // should likely be turned into DCHECK_CURRENTLY_ON(BrowserThread::UI) for

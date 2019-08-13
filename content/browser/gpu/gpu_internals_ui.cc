@@ -224,8 +224,6 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
       NewDescriptionValuePair("Driver vendor", active_gpu.driver_vendor));
   basic_info->Append(
       NewDescriptionValuePair("Driver version", active_gpu.driver_version));
-  basic_info->Append(
-      NewDescriptionValuePair("Driver date", active_gpu.driver_date));
   basic_info->Append(NewDescriptionValuePair(
       "GPU CUDA compute capability major version",
       std::make_unique<base::Value>(active_gpu.cuda_compute_capability_major)));

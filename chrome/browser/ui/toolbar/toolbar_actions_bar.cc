@@ -109,15 +109,14 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
       should_check_extension_bubble_(!main_bar),
       popped_out_action_(nullptr),
       is_popped_out_sticky_(false),
-      is_showing_bubble_(false),
-      tab_strip_observer_(this) {
+      is_showing_bubble_(false) {
   if (model_)  // |model_| can be null in unittests.
     model_observer_.Add(model_);
 
   if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
     DCHECK(!in_overflow_mode());
 
-  tab_strip_observer_.Add(browser_->tab_strip_model());
+  browser_->tab_strip_model()->AddObserver(this);
 }
 
 ToolbarActionsBar::~ToolbarActionsBar() {

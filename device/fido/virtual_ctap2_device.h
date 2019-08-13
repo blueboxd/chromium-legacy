@@ -133,7 +133,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
   std::unique_ptr<VirtualU2fDevice> u2f_device_;
 
   const Config config_;
-  base::WeakPtrFactory<FidoDevice> weak_factory_;
+  base::WeakPtrFactory<FidoDevice> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VirtualCtap2Device);
 };

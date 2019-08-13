@@ -120,8 +120,7 @@ UnregistrationRequest::UnregistrationRequest(
       retries_left_(max_retry_count),
       io_task_runner_(io_task_runner),
       recorder_(recorder),
-      source_to_record_(source_to_record),
-      weak_ptr_factory_(this) {
+      source_to_record_(source_to_record) {
   DCHECK(io_task_runner_);
   DCHECK_GE(max_retry_count, 0);
 }

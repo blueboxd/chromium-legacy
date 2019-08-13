@@ -17,6 +17,7 @@
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
+#include "chrome/browser/performance_manager/graph/worker_node_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
@@ -39,7 +40,7 @@ class TestNodeWrapper {
   TestNodeWrapper(TestNodeWrapper&& other) : impl_(std::move(other.impl_)) {}
 
   void operator=(TestNodeWrapper&& other) { impl_ = std::move(other.impl_); }
-  void operator=(TestNodeWrapper& other) = delete;
+  void operator=(const TestNodeWrapper& other) = delete;
 
   ~TestNodeWrapper() { reset(); }
 
@@ -96,6 +97,20 @@ struct TestNodeWrapper<PageNodeImpl>::Factory {
       bool is_audible = false) {
     return std::make_unique<PageNodeImpl>(graph, wc_proxy, is_visible,
                                           is_audible);
+  }
+};
+
+// A specialized factory function for worker nodes that helps fill out some
+// common values.
+template <>
+struct TestNodeWrapper<WorkerNodeImpl>::Factory {
+  static std::unique_ptr<WorkerNodeImpl> Create(
+      GraphImpl* graph,
+      WorkerNode::WorkerType worker_type,
+      ProcessNodeImpl* process_node,
+      const base::UnguessableToken& token = base::UnguessableToken::Create()) {
+    return std::make_unique<WorkerNodeImpl>(graph, worker_type, process_node,
+                                            token);
   }
 };
 

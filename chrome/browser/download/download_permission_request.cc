@@ -17,7 +17,7 @@
 
 DownloadPermissionRequest::DownloadPermissionRequest(
     base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host,
-    const GURL& request_origin)
+    const url::Origin& request_origin)
     : host_(host), request_origin_(request_origin) {}
 
 DownloadPermissionRequest::~DownloadPermissionRequest() {}
@@ -37,11 +37,10 @@ base::string16 DownloadPermissionRequest::GetTitleText() const {
 
 base::string16 DownloadPermissionRequest::GetMessageText() const {
   return l10n_util::GetStringFUTF16(
-      IDS_MULTI_DOWNLOAD_WARNING,
-      url_formatter::FormatOriginForSecurityDisplay(
-          url::Origin::Create(request_origin_),
-          /*scheme_display = */ url_formatter::
-              SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+      IDS_MULTI_DOWNLOAD_WARNING, url_formatter::FormatOriginForSecurityDisplay(
+                                      request_origin_,
+                                      /*scheme_display = */ url_formatter::
+                                          SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 }
 #endif
 
@@ -50,7 +49,7 @@ base::string16 DownloadPermissionRequest::GetMessageTextFragment() const {
 }
 
 GURL DownloadPermissionRequest::GetOrigin() const {
-  return request_origin_;
+  return request_origin_.GetURL();
 }
 
 void DownloadPermissionRequest::PermissionGranted() {

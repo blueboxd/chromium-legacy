@@ -10,6 +10,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "content/public/test/fake_pepper_plugin_instance.h"
 #include "content/public/test/render_view_test.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_settings.h"
@@ -19,17 +20,48 @@
 namespace pdf {
 namespace {
 
+void CompareRect(PP_Rect expected_rect, PP_Rect actual_rect) {
+  EXPECT_EQ(expected_rect.point.x, actual_rect.point.x);
+  EXPECT_EQ(expected_rect.point.y, actual_rect.point.y);
+  EXPECT_EQ(expected_rect.size.height, actual_rect.size.height);
+  EXPECT_EQ(expected_rect.size.width, actual_rect.size.width);
+}
+
+class ActionHandlingFakePepperPluginInstance
+    : public content::FakePepperPluginInstance {
+ public:
+  ActionHandlingFakePepperPluginInstance() = default;
+  ~ActionHandlingFakePepperPluginInstance() override {}
+
+  void HandleAccessibilityAction(
+      const PP_PdfAccessibilityActionData& action_data) override {
+    received_action_data_ = action_data;
+  }
+
+  PP_PdfAccessibilityActionData GetReceivedActionData() {
+    return received_action_data_;
+  }
+
+ private:
+  PP_PdfAccessibilityActionData received_action_data_;
+};
+
 class FakeRendererPpapiHost : public content::RendererPpapiHost {
  public:
-  explicit FakeRendererPpapiHost(content::RenderFrame* render_frame)
-      : render_frame_(render_frame) {}
+  FakeRendererPpapiHost(content::RenderFrame* render_frame)
+      : FakeRendererPpapiHost(render_frame, nullptr) {}
+  FakeRendererPpapiHost(
+      content::RenderFrame* render_frame,
+      ActionHandlingFakePepperPluginInstance* fake_pepper_plugin_instance)
+      : render_frame_(render_frame),
+        fake_pepper_plugin_instance_(fake_pepper_plugin_instance) {}
   ~FakeRendererPpapiHost() override {}
 
   ppapi::host::PpapiHost* GetPpapiHost() override { return nullptr; }
   bool IsValidInstance(PP_Instance instance) override { return true; }
   content::PepperPluginInstance* GetPluginInstance(
       PP_Instance instance) override {
-    return nullptr;
+    return fake_pepper_plugin_instance_;
   }
   content::RenderFrame* GetRenderFrameForInstance(
       PP_Instance instance) override {
@@ -76,6 +108,7 @@ class FakeRendererPpapiHost : public content::RendererPpapiHost {
 
  private:
   content::RenderFrame* render_frame_;
+  ActionHandlingFakePepperPluginInstance* fake_pepper_plugin_instance_;
 };
 
 }  // namespace
@@ -153,6 +186,141 @@ TEST_F(PdfAccessibilityTreeTest, TestAccessibilityDisabledDuringPDFLoad) {
 
   pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
                                                   chars_);
+}
+
+class FakePdfAccessibilityTree : public pdf::PdfAccessibilityTree {
+ public:
+  FakePdfAccessibilityTree(content::RendererPpapiHost* host,
+                           PP_Instance instance)
+      : PdfAccessibilityTree(host, instance) {}
+  ~FakePdfAccessibilityTree() override {}
+
+  void HandleAction(const PP_PdfAccessibilityActionData& action_data) {
+    received_action_data = action_data;
+  }
+
+  PP_PdfAccessibilityActionData GetReceivedActionData() {
+    return received_action_data;
+  }
+
+ private:
+  PP_PdfAccessibilityActionData received_action_data;
+};
+
+TEST_F(PdfAccessibilityTreeTest, TestActionDataConversion) {
+  // This test verifies the AXActionData conversion to
+  // PP_AccessibilityActionData.
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility() != nullptr);
+
+  ActionHandlingFakePepperPluginInstance fake_pepper_instance;
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame(),
+                             &fake_pepper_instance);
+  PP_Instance instance = 0;
+  FakePdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_);
+
+  ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
+  std::unique_ptr<ui::AXActionTarget> pdf_action_target =
+      pdf_accessibility_tree.CreateActionTarget(*root_node);
+  ASSERT_TRUE(pdf_action_target != nullptr);
+  EXPECT_EQ(ui::AXActionTarget::Type::kPdf, pdf_action_target->GetType());
+  EXPECT_TRUE(pdf_action_target->ScrollToMakeVisibleWithSubFocus(
+      gfx::Rect(0, 0, 50, 50), ax::mojom::ScrollAlignment::kScrollAlignmentLeft,
+      ax::mojom::ScrollAlignment::kScrollAlignmentTop));
+  PP_PdfAccessibilityActionData action_data =
+      fake_pepper_instance.GetReceivedActionData();
+  EXPECT_EQ(PP_PdfAccessibilityAction::PP_PDF_SCROLL_TO_MAKE_VISIBLE,
+            action_data.action);
+  EXPECT_EQ(PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_LEFT,
+            action_data.horizontal_scroll_alignment);
+  EXPECT_EQ(PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_TOP,
+            action_data.vertical_scroll_alignment);
+
+  EXPECT_TRUE(pdf_action_target->ScrollToMakeVisibleWithSubFocus(
+      gfx::Rect(0, 0, 50, 50),
+      ax::mojom::ScrollAlignment::kScrollAlignmentRight,
+      ax::mojom::ScrollAlignment::kScrollAlignmentTop));
+  action_data = fake_pepper_instance.GetReceivedActionData();
+  EXPECT_EQ(PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_RIGHT,
+            action_data.horizontal_scroll_alignment);
+
+  EXPECT_TRUE(pdf_action_target->ScrollToMakeVisibleWithSubFocus(
+      gfx::Rect(0, 0, 50, 50),
+      ax::mojom::ScrollAlignment::kScrollAlignmentBottom,
+      ax::mojom::ScrollAlignment::kScrollAlignmentBottom));
+  action_data = fake_pepper_instance.GetReceivedActionData();
+  EXPECT_EQ(PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_BOTTOM,
+            action_data.horizontal_scroll_alignment);
+
+  EXPECT_TRUE(pdf_action_target->ScrollToMakeVisibleWithSubFocus(
+      gfx::Rect(0, 0, 50, 50),
+      ax::mojom::ScrollAlignment::kScrollAlignmentCenter,
+      ax::mojom::ScrollAlignment::kScrollAlignmentClosestEdge));
+  action_data = fake_pepper_instance.GetReceivedActionData();
+  EXPECT_EQ(PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_CENTER,
+            action_data.horizontal_scroll_alignment);
+  EXPECT_EQ(
+      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_CLOSEST_EDGE,
+      action_data.vertical_scroll_alignment);
+  CompareRect({{0, 0}, {1, 1}}, action_data.target_rect);
+}
+
+TEST_F(PdfAccessibilityTreeTest, TestEmptyPdfAxActions) {
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility() != nullptr);
+
+  ActionHandlingFakePepperPluginInstance fake_pepper_instance;
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame(),
+                             &fake_pepper_instance);
+  PP_Instance instance = 0;
+  FakePdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_);
+
+  ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
+  std::unique_ptr<ui::AXActionTarget> pdf_action_target =
+      pdf_accessibility_tree.CreateActionTarget(*root_node);
+  ASSERT_TRUE(pdf_action_target);
+  EXPECT_FALSE(pdf_action_target->ClearAccessibilityFocus());
+  EXPECT_FALSE(pdf_action_target->Click());
+  EXPECT_FALSE(pdf_action_target->Decrement());
+  EXPECT_FALSE(pdf_action_target->Increment());
+  EXPECT_FALSE(pdf_action_target->Focus());
+  gfx::Rect rect = pdf_action_target->GetRelativeBounds();
+  EXPECT_TRUE(rect.origin().IsOrigin());
+  EXPECT_TRUE(rect.IsEmpty());
+
+  gfx::Point point = pdf_action_target->GetScrollOffset();
+  EXPECT_EQ(point.x(), 0);
+  EXPECT_EQ(point.y(), 0);
+
+  point = pdf_action_target->MinimumScrollOffset();
+  EXPECT_EQ(point.x(), 0);
+  EXPECT_EQ(point.y(), 0);
+
+  point = pdf_action_target->MaximumScrollOffset();
+  EXPECT_EQ(point.x(), 0);
+  EXPECT_EQ(point.y(), 0);
+
+  EXPECT_FALSE(pdf_action_target->SetAccessibilityFocus());
+  EXPECT_FALSE(pdf_action_target->SetSelected(true));
+  EXPECT_FALSE(pdf_action_target->SetSelected(false));
+  EXPECT_FALSE(pdf_action_target->SetSelection(nullptr, 0, nullptr, 0));
+  EXPECT_FALSE(pdf_action_target->SetSequentialFocusNavigationStartingPoint());
+  EXPECT_FALSE(pdf_action_target->SetValue("test"));
+  EXPECT_FALSE(pdf_action_target->ShowContextMenu());
+  EXPECT_FALSE(pdf_action_target->ScrollToMakeVisible());
+  EXPECT_FALSE(pdf_action_target->ScrollToGlobalPoint(gfx::Point()));
 }
 
 }  // namespace pdf

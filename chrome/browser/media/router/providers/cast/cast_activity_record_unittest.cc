@@ -179,8 +179,7 @@ class CastActivityRecordTest : public testing::Test,
   MediaSinkInternal sink_ = CreateCastSink(kChannelId);
   service_manager::TestConnectorFactory connector_factory_;
   cast_channel::MockCastSocketService socket_service_{
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::UI})};
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})};
   cast_channel::MockCastMessageHandler message_handler_{&socket_service_};
   std::unique_ptr<DataDecoder> data_decoder_ =
       std::make_unique<DataDecoder>(connector_factory_.GetDefaultConnector());

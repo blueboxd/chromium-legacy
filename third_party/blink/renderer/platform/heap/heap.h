@@ -273,7 +273,7 @@ class PLATFORM_EXPORT ThreadHeap {
   template <typename T>
   static Address Allocate(size_t);
 
-  void WeakProcessing(Visitor*);
+  void WeakProcessing(MarkingVisitor*);
 
   // Moves not fully constructed objects to previously not fully constructed
   // objects. Such objects can be iterated using the Trace() method and do

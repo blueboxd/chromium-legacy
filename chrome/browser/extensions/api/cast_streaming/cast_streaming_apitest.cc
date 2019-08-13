@@ -434,12 +434,12 @@ IN_PROC_BROWSER_TEST_P(CastStreamingApiTestWithPixelOutput,
 // removed after launch. Note: CastStreamingApiTestWithPixelOutput.EndToEnd is
 // the only integration test exercising audio service loopback streams, so it's
 // a very important test to have.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Platforms launched on.
 INSTANTIATE_TEST_SUITE_P(,
                          CastStreamingApiTestWithPixelOutput,
                          ::testing::Values(true));
-#elif defined(OS_MACOSX) || defined(OS_WIN)
+#elif defined(OS_WIN)
 // Supported platforms but not launched on.
 INSTANTIATE_TEST_SUITE_P(,
                          CastStreamingApiTestWithPixelOutput,

@@ -82,6 +82,9 @@ class SystemMonitor {
       SamplingFrequency system_metrics_sampling_frequency =
           SamplingFrequency::kNoSampling;
 
+      SamplingFrequency chrome_total_resident_set_sampling_frequency =
+          SamplingFrequency::kNoSampling;
+
       // A builder used to create instances of this object.
       class Builder;
     };
@@ -98,6 +101,11 @@ class SystemMonitor {
     // Called when a new |base::SystemMetrics| sample is available.
     virtual void OnSystemMetricsStruct(
         const base::SystemMetrics& system_metrics);
+
+    // Reports an estimate of the sum of resident set of all the Chrome
+    // processes.
+    virtual void OnChromeTotalResidentSetEstimateMb(
+        int chrome_total_resident_set_estimate);
   };
   using ObserverToFrequenciesMap =
       base::flat_map<SystemObserver*, SystemObserver::MetricRefreshFrequencies>;
@@ -121,6 +129,7 @@ class SystemMonitor {
 
  protected:
   friend class SystemMonitorTest;
+  friend class MetricEvaluatorsHelper;
 
   // Represents a metric. Overridden for each metric tracked by this monitor.
   class MetricEvaluator {
@@ -133,6 +142,10 @@ class SystemMonitor {
       // A |base::SystemMetrics| instance.
       // TODO(sebmarchand): Split this struct into some smaller ones.
       kSystemMetricsStruct,
+      // The sum of the resident set for all the Chrome processes. This value
+      // is based on the most recent per-process estimates and might not reflect
+      // the exact current state.
+      kChromeTotalResidentSetEstimateMb,
 
       kMax,
     };
@@ -302,6 +315,8 @@ class SystemMonitor::SystemObserver::MetricRefreshFrequencies::Builder {
   Builder& SetFreePhysMemoryMbFrequency(SamplingFrequency freq);
   Builder& SetDiskIdleTimePercentFrequency(SamplingFrequency freq);
   Builder& SetSystemMetricsSamplingFrequency(SamplingFrequency freq);
+  Builder& SetChromeTotalResidentSetEstimateMbSamplingFrequency(
+      SamplingFrequency freq);
 
   // Returns the initialized MetricRefreshFrequencies instance.
   MetricRefreshFrequencies Build();
@@ -331,6 +346,10 @@ class MetricEvaluatorsHelper {
   // NOTE: This function doesn't have to be virtual, the base::SystemMetrics
   // struct is an abstraction that already has a per-platform definition.
   base::Optional<base::SystemMetrics> GetSystemMetricsStruct();
+
+  // Returns an estimate of the sum of the resident set of all the Chrome
+  // processes currently running.
+  virtual base::Optional<int> GetChromeTotalResidentSetEstimateMb() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MetricEvaluatorsHelper);

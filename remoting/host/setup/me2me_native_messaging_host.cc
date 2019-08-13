@@ -83,8 +83,7 @@ Me2MeNativeMessagingHost::Me2MeNativeMessagingHost(
       host_context_(std::move(host_context)),
       daemon_controller_(daemon_controller),
       pairing_registry_(pairing_registry),
-      oauth_client_(std::move(oauth_client)),
-      weak_factory_(this) {
+      oauth_client_(std::move(oauth_client)) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }
 

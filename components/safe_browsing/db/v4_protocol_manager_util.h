@@ -142,8 +142,13 @@ enum SBThreatType {
   // DEPRECATED. Url detected by password protection service.
   DEPRECATED_SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING,
 
-  // Chrome sign in password reuse detected on low reputation page,
-  SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE,
+  // Chrome signed in and syncing gaia password reuse detected on low reputation
+  // page,
+  SB_THREAT_TYPE_SIGNED_IN_SYNC_PASSWORD_REUSE,
+
+  // Chrome signed in non syncing gaia password reuse detected on low reputation
+  // page,
+  SB_THREAT_TYPE_SIGNED_IN_NON_SYNC_PASSWORD_REUSE,
 
   // A Google ad that caused a blocked autoredirect was collected
   SB_THREAT_TYPE_BLOCKED_AD_REDIRECT,

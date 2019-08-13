@@ -13,6 +13,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -37,6 +38,8 @@ class HostContentSettingsMap;
 class Profile;
 class PageInfoUI;
 class PageInfoBubbleViewBrowserTest;
+
+using password_manager::metrics_util::PasswordType;
 
 // The |PageInfo| provides information about a website's permissions,
 // connection state and its identity. It owns a UI that displays the
@@ -99,7 +102,8 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
     SAFE_BROWSING_STATUS_MALWARE,
     SAFE_BROWSING_STATUS_SOCIAL_ENGINEERING,
     SAFE_BROWSING_STATUS_UNWANTED_SOFTWARE,
-    SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE,
+    SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE,
+    SAFE_BROWSING_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE,
     SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE,
     SAFE_BROWSING_STATUS_BILLING,
   };

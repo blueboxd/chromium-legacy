@@ -298,11 +298,6 @@ bool IsSystemWebUIHost(base::StringPiece host) {
 }
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_WIN)
-const char kChromeUIMetroFlowHost[] = "make-metro";
-const char kChromeUIMetroFlowURL[] = "chrome://make-metro/";
-#endif
-
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 const char kChromeUICastHost[] = "cast";
 #endif
@@ -338,6 +333,7 @@ const char kChromeUIPrintHost[] = "print";
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 const char kChromeUITabStripHost[] = "tab-strip";
+const char kChromeUITabStripURL[] = "chrome://tab-strip";
 #endif
 
 const char kChromeUIWebRtcLogsHost[] = "webrtc-logs";

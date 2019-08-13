@@ -31,8 +31,10 @@ class PasswordReuseModalWarningTest : public DialogBrowserTest {
   void ShowUi(const std::string& name) override {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
+    ReusedPasswordAccountType password_type;
+    password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
     dialog_ = new PasswordReuseModalWarningDialog(
-        web_contents, nullptr, PasswordType::PRIMARY_ACCOUNT_PASSWORD,
+        web_contents, nullptr, password_type,
         base::BindOnce(&PasswordReuseModalWarningTest::DialogCallback,
                        base::Unretained(this)));
     constrained_window::CreateBrowserModalDialogViews(

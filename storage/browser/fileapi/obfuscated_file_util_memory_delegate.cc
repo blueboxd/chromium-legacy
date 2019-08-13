@@ -55,7 +55,7 @@ struct ObfuscatedFileUtilMemoryDelegate::DecomposedPath {
 
 ObfuscatedFileUtilMemoryDelegate::ObfuscatedFileUtilMemoryDelegate(
     const base::FilePath& file_system_directory)
-    : root_(std::make_unique<Entry>(Entry::kDirectory)), weak_factory_(this) {
+    : root_(std::make_unique<Entry>(Entry::kDirectory)) {
   file_system_directory.GetComponents(&root_path_components_);
 }
 

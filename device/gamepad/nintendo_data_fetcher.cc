@@ -14,8 +14,7 @@
 
 namespace device {
 
-NintendoDataFetcher::NintendoDataFetcher()
-    : binding_(this), weak_factory_(this) {}
+NintendoDataFetcher::NintendoDataFetcher() : binding_(this) {}
 
 NintendoDataFetcher::~NintendoDataFetcher() {
   for (auto& entry : controllers_) {

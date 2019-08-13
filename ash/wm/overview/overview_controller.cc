@@ -322,16 +322,14 @@ void OverviewController::OnOverviewButtonTrayLongPressed(
 
   // Depending on the state of the windows and split view, a long press has many
   // different results.
-  // 1. Already in split view - exit split view. Activate the left window if it
-  // is snapped left or both sides. Activate the right window if it is snapped
-  // right.
-  // 2. Not in overview mode - enter split view iff
-  //     a) there is an active window
-  //     b) there are at least two windows in the mru list
-  //     c) the active window is snappable
-  // 3. In overview mode - enter split view iff
-  //     a) there are at least two windows in the mru list
-  //     b) the first window in the mru list is snappable
+  // 1. Already in split view - exit split view. The active snapped window
+  // becomes maximized. If overview was seen alongside a snapped window, then
+  // overview mode ends.
+  // 2. Not in overview mode - enter split view iff there is an active window
+  // and it is snappable.
+  // 3. In overview mode - enter split view iff there are at least two windows
+  // in the overview grid for the display where the overview button was long
+  // pressed, and the first window in that overview grid is snappable.
 
   auto* split_view_controller = Shell::Get()->split_view_controller();
   // Exit split view mode if we are already in it.

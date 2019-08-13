@@ -43,13 +43,26 @@ enum class MultiloginMode {
 };
 
 // Specifies the "source" parameter for Gaia calls.
-enum class GaiaSource {
-  kChrome,
-  kChromeOS,
-  kAccountReconcilorDice,
-  kAccountReconcilorMirror,
-  kOAuth2LoginVerifier,
-  kPrimaryAccountManager
+class GaiaSource {
+ public:
+  enum Type {
+    kChrome,
+    kChromeOS,
+    kAccountReconcilorDice,
+    kAccountReconcilorMirror,
+    kOAuth2LoginVerifier,
+    kPrimaryAccountManager
+  };
+
+  // Implicit conversion is necessary to avoid boilerplate code.
+  GaiaSource(Type type);
+  GaiaSource(Type source, const std::string& suffix);
+  void SetGaiaSourceSuffix(const std::string& suffix);
+  std::string ToString();
+
+ private:
+  Type type_;
+  std::string suffix_;
 };
 
 }  // namespace gaia

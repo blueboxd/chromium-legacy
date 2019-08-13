@@ -31,6 +31,7 @@ class DesksBarView;
 class FpsCounter;
 class OverviewGridPreEventHandler;
 class OverviewItem;
+class PresentationTimeRecorder;
 
 // Represents a grid of windows in the Overview Mode in a particular root
 // window, and manages a selection widget that can be moved with the arrow keys.
@@ -268,11 +269,13 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
 
   // Prepares the |scroll_offset_min_| as a limit for |scroll_offset| from
   // scrolling or positioning windows too far offscreen.
-  void PrepareScrollLimitMin();
+  void StartScroll();
 
   // |delta| is used for updating |scroll_offset_| with new scroll values so
   // that windows in tablet overview mode get positioned accordingly.
   void UpdateScrollOffset(float delta);
+
+  void EndScroll();
 
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
@@ -434,6 +437,9 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
 
   // Handles events that are not handled by the OverviewItems.
   std::unique_ptr<OverviewGridPreEventHandler> grid_pre_event_handler_;
+
+  // Records the presentation time of scrolling the grid in overview mode.
+  std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewGrid);
 };

@@ -5,6 +5,7 @@
 #ifndef ASH_STYLE_ASH_COLOR_PROVIDER_H_
 #define ASH_STYLE_ASH_COLOR_PROVIDER_H_
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -19,7 +20,7 @@ namespace ash {
 // icons and inkdrops lay on, it may also indicate the state of an interactive
 // element (active/inactive states). The color of an element in system UI will
 // be the combination of the colors of the three layers.
-class AshColorProvider {
+class ASH_EXPORT AshColorProvider {
  public:
   // The color mode of system UI. Switch "--ash-color-mode" can only set
   // |color_mode_| to |kLight| or |kDark|, |color_mode_| will be |kDefault| if

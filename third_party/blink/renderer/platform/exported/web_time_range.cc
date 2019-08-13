@@ -31,6 +31,7 @@
 #include "third_party/blink/public/platform/web_time_range.h"
 
 #include <cmath>
+#include <limits>
 
 namespace blink {
 

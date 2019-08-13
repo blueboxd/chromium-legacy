@@ -23,20 +23,17 @@ AppCacheBackendImpl::AppCacheBackendImpl(AppCacheServiceImpl* service,
     : service_(service),
       process_id_(process_id) {
   DCHECK(service);
-  service_->RegisterBackend(this);
 }
 
-AppCacheBackendImpl::~AppCacheBackendImpl() {
-  service_->UnregisterBackend(this);
-}
+AppCacheBackendImpl::~AppCacheBackendImpl() = default;
 
 void AppCacheBackendImpl::RegisterHost(
     mojo::PendingReceiver<blink::mojom::AppCacheHost> host_receiver,
     mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
     const base::UnguessableToken& host_id) {
-  service_->RegisterHostInternal(
-      std::move(host_receiver), std::move(frontend_remote), host_id,
-      MSG_ROUTING_NONE, process_id_, mojo::GetBadMessageCallback());
+  service_->RegisterHost(std::move(host_receiver), std::move(frontend_remote),
+                         host_id, MSG_ROUTING_NONE, process_id_,
+                         mojo::GetBadMessageCallback());
 }
 
 }  // namespace content

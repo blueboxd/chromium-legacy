@@ -43,11 +43,13 @@ class MemberMetaDataBase;
 class VIEWS_EXPORT ClassMetaData {
  public:
   ClassMetaData();
+  ClassMetaData(std::string file, int line);
   virtual ~ClassMetaData();
 
   const std::string& type_name() const { return type_name_; }
   const std::vector<MemberMetaDataBase*>& members() const { return members_; }
-
+  const std::string& file() const { return file_; }
+  const int& line() const { return line_; }
   void AddMemberData(std::unique_ptr<MemberMetaDataBase> member_data);
 
   // Lookup the member data entry for a member of this class with a given name.
@@ -115,6 +117,8 @@ class VIEWS_EXPORT ClassMetaData {
   std::string type_name_;
   std::vector<MemberMetaDataBase*> members_;
   ClassMetaData* parent_class_meta_data_ = nullptr;
+  std::string file_;
+  const int line_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ClassMetaData);
 };

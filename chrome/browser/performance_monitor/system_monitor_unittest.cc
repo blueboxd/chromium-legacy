@@ -20,6 +20,7 @@ using MetricsRefreshFrequencies = SystemObserver::MetricRefreshFrequencies;
 
 const int kFakeFreePhysMemoryMb = 42;
 const float kFakeDiskIdleTimePercent = 0.07;
+const int kFakeChromeTotalResidentSetEstimateMb = 123;
 
 class MockMetricsMonitorObserver : public SystemObserver {
  public:
@@ -28,6 +29,8 @@ class MockMetricsMonitorObserver : public SystemObserver {
   MOCK_METHOD1(OnDiskIdleTimePercent, void(float disk_idle_time_percent));
   MOCK_METHOD1(OnSystemMetricsStruct,
                void(const base::SystemMetrics& system_metrics));
+  MOCK_METHOD1(OnChromeTotalResidentSetEstimateMb,
+               void(int chrome_total_resident_set_estimate_mb));
 };
 
 // Test version of a MetricEvaluatorsHelper that returns constant values.
@@ -42,6 +45,10 @@ class TestMetricEvaluatorsHelper : public MetricEvaluatorsHelper {
 
   base::Optional<float> GetDiskIdleTimePercent() override {
     return kFakeDiskIdleTimePercent;
+  }
+
+  base::Optional<int> GetChromeTotalResidentSetEstimateMb() override {
+    return kFakeChromeTotalResidentSetEstimateMb;
   }
 
  private:
@@ -73,11 +80,13 @@ class SystemMonitorTest : public testing::Test {
       SamplingFrequency expected_disk_idle_time_percent_freq =
           SamplingFrequency::kNoSampling,
       SamplingFrequency expected_system_metrics_struct_freq =
+          SamplingFrequency::kNoSampling,
+      SamplingFrequency expected_chrome_total_resident_set_sampling_frequency =
           SamplingFrequency::kNoSampling) {
     const auto& observed_metrics_and_frequencies =
         system_monitor_->GetMetricSamplingFrequencyArrayForTesting();
 
-    EXPECT_EQ(3U, observed_metrics_and_frequencies.size());
+    EXPECT_EQ(4U, observed_metrics_and_frequencies.size());
     EXPECT_EQ(expected_free_memory_mb_freq,
               observed_metrics_and_frequencies[static_cast<size_t>(
                   SystemMonitor::MetricEvaluator::Type::kFreeMemoryMb)]);
@@ -87,6 +96,10 @@ class SystemMonitorTest : public testing::Test {
     EXPECT_EQ(expected_system_metrics_struct_freq,
               observed_metrics_and_frequencies[static_cast<size_t>(
                   SystemMonitor::MetricEvaluator::Type::kSystemMetricsStruct)]);
+    EXPECT_EQ(expected_chrome_total_resident_set_sampling_frequency,
+              observed_metrics_and_frequencies[static_cast<size_t>(
+                  SystemMonitor::MetricEvaluator::Type::
+                      kChromeTotalResidentSetEstimateMb)]);
   }
 
   std::unique_ptr<SystemMonitor> system_monitor_;
@@ -166,9 +179,12 @@ TEST_F(SystemMonitorTest, ObserverGetsCalled) {
           .SetDiskIdleTimePercentFrequency(SamplingFrequency::kDefaultFrequency)
           .SetSystemMetricsSamplingFrequency(
               SamplingFrequency::kDefaultFrequency)
+          .SetChromeTotalResidentSetEstimateMbSamplingFrequency(
+              SamplingFrequency::kDefaultFrequency)
           .Build());
 
   EnsureMetricsAreObservedAtExpectedFrequency(
+      SamplingFrequency::kDefaultFrequency,
       SamplingFrequency::kDefaultFrequency,
       SamplingFrequency::kDefaultFrequency,
       SamplingFrequency::kDefaultFrequency);
@@ -181,6 +197,9 @@ TEST_F(SystemMonitorTest, ObserverGetsCalled) {
   EXPECT_CALL(mock_observer_2, OnDiskIdleTimePercent(kFakeDiskIdleTimePercent))
       .Times(2);
   EXPECT_CALL(mock_observer_2, OnSystemMetricsStruct(::testing::_)).Times(2);
+  EXPECT_CALL(mock_observer_2, OnChromeTotalResidentSetEstimateMb(
+                                   kFakeChromeTotalResidentSetEstimateMb))
+      .Times(2);
 
   // Fast forward by enough time to get multiple samples and wait for the tasks
   // to complete.

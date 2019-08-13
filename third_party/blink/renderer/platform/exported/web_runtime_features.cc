@@ -116,6 +116,14 @@ void WebRuntimeFeatures::EnableCacheInlineScriptCode(bool enable) {
   RuntimeEnabledFeatures::SetCacheInlineScriptCodeEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableCookieDeprecationMessages(bool enable) {
+  RuntimeEnabledFeatures::SetCookieDeprecationMessagesEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableCookiesWithoutSameSiteMustBeSecure(bool enable) {
+  RuntimeEnabledFeatures::SetCookiesWithoutSameSiteMustBeSecureEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableWasmCodeCache(bool enable) {
   RuntimeEnabledFeatures::SetWasmCodeCacheEnabled(enable);
 }
@@ -138,6 +146,10 @@ void WebRuntimeFeatures::EnableCompositorTouchAction(bool enable) {
 
 void WebRuntimeFeatures::EnableCSSHexAlphaColor(bool enable) {
   RuntimeEnabledFeatures::SetCSSHexAlphaColorEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableSameSiteByDefaultCookies(bool enable) {
+  RuntimeEnabledFeatures::SetSameSiteByDefaultCookiesEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableScrollTopLeftInterop(bool enable) {

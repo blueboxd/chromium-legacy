@@ -214,6 +214,10 @@
 #include "chrome/browser/ui/views/sync/one_click_signin_dialog_view.h"
 #endif
 
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+#include "chrome/browser/ui/views/frame/webui_tab_strip_container_view.h"
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+
 using base::TimeDelta;
 using base::UserMetricsAction;
 using content::NativeWebKeyboardEvent;
@@ -464,8 +468,6 @@ BrowserView::~BrowserView() {
 
   // Immersive mode may need to reparent views before they are removed/deleted.
   immersive_mode_controller_.reset();
-
-  browser_->tab_strip_model()->RemoveObserver(this);
 
   extensions::ExtensionCommandsGlobalRegistry* global_registry =
       extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile());
@@ -1402,7 +1404,7 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
 
 SharingDialog* BrowserView::ShowClickToCallDialog(
     content::WebContents* web_contents,
-    ClickToCallSharingDialogController* controller) {
+    ClickToCallUiController* controller) {
   auto* dialog_view = new ClickToCallDialogView(
       toolbar_button_provider()->GetAnchorView(), web_contents, controller);
 
@@ -2625,11 +2627,24 @@ void BrowserView::InitViews() {
   immersive_mode_controller_->Init(this);
   immersive_mode_controller_->AddObserver(this);
 
+  views::View* webui_tab_strip_view = nullptr;
+  views::View* webui_tab_strip_caption_buttons = nullptr;
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  if (base::FeatureList::IsEnabled(features::kWebUITabStrip)) {
+    WebUITabStripContainerView* const webui_tab_strip = AddChildView(
+        std::make_unique<WebUITabStripContainerView>(browser_.get()));
+
+    webui_tab_strip_caption_buttons =
+        AddChildView(webui_tab_strip->CreateControlButtons());
+    webui_tab_strip_view = webui_tab_strip;
+  }
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+
   auto browser_view_layout = std::make_unique<BrowserViewLayout>(
       std::make_unique<BrowserViewLayoutDelegateImpl>(this), browser(), this,
-      top_container_, tab_strip_region_view_, tabstrip_, toolbar_,
-      infobar_container_, contents_container_,
-      immersive_mode_controller_.get());
+      top_container_, tab_strip_region_view_, tabstrip_, webui_tab_strip_view,
+      webui_tab_strip_caption_buttons, toolbar_, infobar_container_,
+      contents_container_, immersive_mode_controller_.get());
   SetLayoutManager(std::move(browser_view_layout));
 
   EnsureFocusOrder();

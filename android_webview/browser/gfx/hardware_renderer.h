@@ -53,7 +53,7 @@ class HardwareRenderer {
   void ReturnChildFrame(std::unique_ptr<ChildFrame> child_frame);
   void ReturnResourcesToCompositor(
       const std::vector<viz::ReturnedResource>& resources,
-      const CompositorID& compositor_id,
+      const viz::FrameSinkId& frame_sink_id,
       uint32_t layer_tree_frame_sink_id);
 
   virtual void DrawAndSwap(HardwareRendererDrawParams* params) = 0;

@@ -106,7 +106,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   bool processed_page_ready_ = false;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   std::unique_ptr<base::FileProxy> file_proxy_;
-  base::WeakPtrFactory<HeadlessShell> weak_factory_;
+  base::WeakPtrFactory<HeadlessShell> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessShell);
 };

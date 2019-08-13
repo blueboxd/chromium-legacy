@@ -70,7 +70,7 @@ class DelegatingSignalStrategy : public SignalStrategy {
   IqCallback send_iq_callback_;
   base::ObserverList<Listener> listeners_;
 
-  base::WeakPtrFactory<DelegatingSignalStrategy> weak_factory_;
+  base::WeakPtrFactory<DelegatingSignalStrategy> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DelegatingSignalStrategy);
 };

@@ -25,7 +25,7 @@ namespace device {
 
 FidoDeviceAuthenticator::FidoDeviceAuthenticator(
     std::unique_ptr<FidoDevice> device)
-    : device_(std::move(device)), weak_factory_(this) {}
+    : device_(std::move(device)) {}
 FidoDeviceAuthenticator::~FidoDeviceAuthenticator() = default;
 
 void FidoDeviceAuthenticator::InitializeAuthenticator(

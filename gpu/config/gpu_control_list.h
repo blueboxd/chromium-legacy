@@ -123,7 +123,6 @@ class GPU_EXPORT GpuControlList {
   struct GPU_EXPORT DriverInfo {
     const char* driver_vendor;
     Version driver_version;
-    Version driver_date;
 
     bool Contains(const GPUInfo& gpu_info) const;
   };

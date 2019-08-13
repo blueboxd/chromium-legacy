@@ -123,4 +123,11 @@ interface BookmarkDelegate {
      * Notified when the menu is opened for a bookmark row displayed in the UI.
      */
     void onBookmarkItemMenuOpened();
+
+    /**
+     * Scroll the bookmarks list such that bookmarkId is shown in the view, and highlight it.
+     *
+     * @param bookmarkId The BookmarkId of the bookmark of interest.
+     */
+    void highlightBookmark(BookmarkId bookmarkId);
 }

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "content/common/content_export.h"
+#include "ui/accessibility/ax_node.h"
 
 namespace blink {
 class WebDocument;
@@ -19,13 +20,16 @@ class AXActionTarget;
 
 namespace content {
 
+class PluginAXTreeSource;
+
 class CONTENT_EXPORT AXActionTargetFactory {
  public:
   // Given a node id, obtain a node from the appropriate tree source and wrap
   // it in an abstraction for dispatching accessibility actions.
   static std::unique_ptr<ui::AXActionTarget> CreateFromNodeId(
       const blink::WebDocument& document,
-      int node_id);
+      content::PluginAXTreeSource* plugin_tree_source,
+      ui::AXNode::AXID node_id);
 };
 
 }  // namespace content

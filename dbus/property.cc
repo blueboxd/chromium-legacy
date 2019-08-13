@@ -42,8 +42,7 @@ PropertySet::PropertySet(
     const PropertyChangedCallback& property_changed_callback)
     : object_proxy_(object_proxy),
       interface_(interface),
-      property_changed_callback_(property_changed_callback),
-      weak_ptr_factory_(this) {}
+      property_changed_callback_(property_changed_callback) {}
 
 PropertySet::~PropertySet() = default;
 

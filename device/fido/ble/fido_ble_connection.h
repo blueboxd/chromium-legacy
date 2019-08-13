@@ -124,7 +124,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
   base::Optional<std::string> service_revision_id_;
   base::Optional<std::string> service_revision_bitfield_id_;
 
-  base::WeakPtrFactory<FidoBleConnection> weak_factory_;
+  base::WeakPtrFactory<FidoBleConnection> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FidoBleConnection);
 };

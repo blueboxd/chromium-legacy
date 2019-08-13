@@ -5033,4 +5033,66 @@ TEST(CertVerifyProcTest, HasTrustAnchorVerifyOutOfDateUMA) {
   histograms.ExpectUniqueSample(kTrustAnchorVerifyOutOfDateHistogram, true, 1);
 }
 
+// If the CertVerifyProc::VerifyInternal implementation calculated the stapled
+// OCSP results in the CertVerifyResult, CertVerifyProc::Verify should not
+// re-calculate them.
+TEST(CertVerifyProcTest, DoesNotRecalculateStapledOCSPResult) {
+  scoped_refptr<X509Certificate> cert = CreateCertificateChainFromFile(
+      GetTestCertsDirectory(), "ok_cert_by_intermediate.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_TRUE(cert);
+  ASSERT_EQ(1U, cert->intermediate_buffers().size());
+
+  CertVerifyResult result;
+
+  result.ocsp_result.response_status = OCSPVerifyResult::PROVIDED;
+  result.ocsp_result.revocation_status = OCSPRevocationStatus::GOOD;
+
+  scoped_refptr<CertVerifyProc> verify_proc = new MockCertVerifyProc(result);
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error = verify_proc->Verify(cert.get(), "127.0.0.1",
+                                  /*ocsp_response=*/"invalid OCSP data",
+                                  /*sct_list=*/std::string(), flags,
+                                  CRLSet::BuiltinCRLSet().get(),
+                                  CertificateList(), &verify_result);
+  EXPECT_EQ(OK, error);
+
+  EXPECT_EQ(OCSPVerifyResult::PROVIDED,
+            verify_result.ocsp_result.response_status);
+  EXPECT_EQ(OCSPRevocationStatus::GOOD,
+            verify_result.ocsp_result.revocation_status);
+}
+
+TEST(CertVerifyProcTest, CalculateStapledOCSPResultIfNotAlreadyDone) {
+  scoped_refptr<X509Certificate> cert = CreateCertificateChainFromFile(
+      GetTestCertsDirectory(), "ok_cert_by_intermediate.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_TRUE(cert);
+  ASSERT_EQ(1U, cert->intermediate_buffers().size());
+
+  CertVerifyResult result;
+
+  // Confirm the default-constructed values are as expected.
+  EXPECT_EQ(OCSPVerifyResult::NOT_CHECKED, result.ocsp_result.response_status);
+  EXPECT_EQ(OCSPRevocationStatus::UNKNOWN,
+            result.ocsp_result.revocation_status);
+
+  scoped_refptr<CertVerifyProc> verify_proc = new MockCertVerifyProc(result);
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error = verify_proc->Verify(
+      cert.get(), "127.0.0.1", /*ocsp_response=*/"invalid OCSP data",
+      /*sct_list=*/std::string(), flags, CRLSet::BuiltinCRLSet().get(),
+      CertificateList(), &verify_result);
+  EXPECT_EQ(OK, error);
+
+  EXPECT_EQ(OCSPVerifyResult::PARSE_RESPONSE_ERROR,
+            verify_result.ocsp_result.response_status);
+  EXPECT_EQ(OCSPRevocationStatus::UNKNOWN,
+            verify_result.ocsp_result.revocation_status);
+}
+
 }  // namespace net

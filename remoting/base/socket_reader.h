@@ -46,7 +46,7 @@ class SocketReader {
   ReadResultCallback read_result_callback_;
   scoped_refptr<net::IOBuffer> read_buffer_;
 
-  base::WeakPtrFactory<SocketReader> weak_factory_;
+  base::WeakPtrFactory<SocketReader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SocketReader);
 };

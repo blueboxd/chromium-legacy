@@ -1323,6 +1323,28 @@ class PpdProviderImpl : public PpdProvider {
     return PpdProvider::SUCCESS;
   }
 
+  // Convenience function which logs the error message associated with the value
+  // of |result|. The given |type| is used to indicate which type of JSON
+  // metadata file the validation error occurred on.
+  void LogJSONValidationError(const std::string& type,
+                              PpdProvider::CallbackResultCode result) {
+    DCHECK(result != PpdProvider::SUCCESS);
+    switch (result) {
+      case PpdProvider::NOT_FOUND:
+        LOG(ERROR) << "Could not find the " << type << " metadata file";
+        break;
+      case PpdProvider::SERVER_ERROR:
+        LOG(ERROR) << "Failed to retrieve the " << type
+                   << " metadata from the server";
+        break;
+      case PpdProvider::INTERNAL_ERROR:
+        LOG(ERROR) << "Failed to parse the " << type << " metadata";
+        break;
+      default:
+        break;
+    }
+  }
+
   // Attempts to parse a ReverseIndexJSON reply to |fetcher| into the passed
   // contents. Returns PpdProvider::SUCCESS on valid JSON formatting and filled
   // |contents|, clears |contents| otherwise.
@@ -1334,7 +1356,7 @@ class PpdProviderImpl : public PpdProvider {
     base::Value::ListStorage top_list;
     auto ret = ParseAndValidateJSONFormat(&top_list, 3);
     if (ret != PpdProvider::SUCCESS) {
-      LOG(ERROR) << "Failed to parse ReverseIndex metadata";
+      LogJSONValidationError("ReverseIndex", ret);
       return ret;
     }
 
@@ -1369,7 +1391,7 @@ class PpdProviderImpl : public PpdProvider {
     base::Value::ListStorage top_list;
     auto ret = ParseAndValidateJSONFormat(&top_list, 2);
     if (ret != PpdProvider::SUCCESS) {
-      LOG(ERROR) << "Failed to process Manufacturers metadata";
+      LogJSONValidationError("Manufacturers", ret);
       return ret;
     }
 
@@ -1403,7 +1425,7 @@ class PpdProviderImpl : public PpdProvider {
     base::Value::ListStorage top_list;
     auto ret = ParseAndValidateJSONFormat(&top_list, 2);
     if (ret != PpdProvider::SUCCESS) {
-      LOG(ERROR) << "Failed to parse Printers metadata";
+      LogJSONValidationError("Printers", ret);
       return ret;
     }
 
@@ -1437,7 +1459,7 @@ class PpdProviderImpl : public PpdProvider {
     base::Value::ListStorage top_list;
     auto ret = ParseAndValidateJSONFormat(&top_list, 2);
     if (ret != PpdProvider::SUCCESS) {
-      LOG(ERROR) << "Failed to parse PpdIndex metadata";
+      LogJSONValidationError("PpdIndex", ret);
       return ret;
     }
 

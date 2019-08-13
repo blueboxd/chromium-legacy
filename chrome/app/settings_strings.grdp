@@ -4134,6 +4134,9 @@
   <message name="IDS_SETTINGS_THEMES_AND_WALLPAPERS_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing themes and wallpapers between multiple browser instances.">
     Themes &amp; Wallpapers
   </message>
+  <message name="IDS_SETTINGS_WIFI_CONFIGURATIONS_CHECKBOX_LABEL" desc="Label for the checkbox which enables syncing of Wi-Fi networks across devices.">
+    Wi-Fi networks
+  </message>
 </if>
 <if expr="not chromeos">
   <message name="IDS_SETTINGS_THEMES_AND_WALLPAPERS_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing themes and wallpapers between multiple browser instances.">
@@ -4292,16 +4295,16 @@
   <!-- Parental Controls -->
   <if expr="chromeos">
     <message name="IDS_SETTINGS_PARENTAL_CONTROLS_PAGE_TITLE" desc="Name of the settings page which manages ChromeOS's parental controls.">
-      Parental Controls
+      Parental controls
     </message>
     <message name="IDS_SETTINGS_PARENTAL_CONTROLS_PAGE_SET_UP_LABEL" desc="Label/description of the settings page which manages ChromeOS's parental controls.">
       Set website restrictions &amp; screen time limits with Family Link
     </message>
     <message name="IDS_SETTINGS_PARENTAL_CONTROLS_PAGE_CONNECT_TO_INTERNET_LABEL" desc="Label/description shown when the Parental control setup can't be launched because there is no Internet Connection.">
-      Connect to the Internet to set up Parental Controls
+      Connect to the internet to set up parental controls
     </message>
     <message name="IDS_SETTINGS_PARENTAL_CONTROLS_PAGE_VIEW_SETTINGS_LABEL" desc="Label/description of the settings page which manages ChromeOS's parental controls.">
-      View your Family Link settings
+      Open the Family Link app to see your supervision settings
     </message>
     <message name="IDS_SETTINGS_PARENTAL_CONTROLS_SET_UP_BUTTON_LABEL" desc="Label/description of the button which launches page which enables ChromeOS's parental controls.">
       Set up
@@ -4312,10 +4315,6 @@
   <if expr="chromeos">
     <message name="IDS_SETTINGS_CLOSE_ADD_SUPERVISION_DIALOG_TITLE" desc="Title of dialog shown when a user closes the Add Supervision dialog after an account has been converted to use supervision.">
       Sign out to finish?
-    </message>
-    <message name="IDS_SETTINGS_CLOSE_ADD_SUPERVISION_DIALOG_BODY" desc="Body of dialog shown when a user closes the Add Supervision dialog after an account has been converted to use supervision.">
-      <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>To finish setting up supervision on this device, you must sign out of <ph name="USER_NAME">$1<ex>John Smith</ex></ph>'s account.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
-      <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can manage your child's parental controls by installing Family Link for parents on your own device.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
     </message>
     <message name="IDS_SETTINGS_CLOSE_ADD_SUPERVISION_DIALOG_SIGN_OUT_BUTTON_LABEL" desc="Text of sign-out button on dialog shown when the Add Supervision flow is closed, which results in a user being signed out.">
       Sign out

@@ -64,8 +64,7 @@ PluginGlobals::PluginGlobals(
       ipc_task_runner_(ipc_task_runner),
       resource_reply_thread_registrar_(
           new ResourceReplyThreadRegistrar(GetMainThreadMessageLoop())),
-      udp_socket_filter_(new UDPSocketFilter()),
-      weak_factory_(this) {
+      udp_socket_filter_(new UDPSocketFilter()) {
   DCHECK(!plugin_globals_);
   plugin_globals_ = this;
 
@@ -85,8 +84,7 @@ PluginGlobals::PluginGlobals(
       callback_tracker_(new CallbackTracker),
       ipc_task_runner_(ipc_task_runner),
       resource_reply_thread_registrar_(
-          new ResourceReplyThreadRegistrar(GetMainThreadMessageLoop())),
-      weak_factory_(this) {
+          new ResourceReplyThreadRegistrar(GetMainThreadMessageLoop())) {
   DCHECK(!plugin_globals_);
 }
 

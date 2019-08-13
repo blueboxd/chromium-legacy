@@ -12,13 +12,12 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/omnibox/browser/document_provider.h"
 #include "components/omnibox/common/omnibox_features.h"
-#include "components/search_engines/template_url_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -72,7 +71,7 @@ DocumentSuggestionsService::~DocumentSuggestionsService() {}
 
 void DocumentSuggestionsService::CreateDocumentSuggestionsRequest(
     const base::string16& query,
-    const TemplateURLService* template_url_service,
+    bool is_incognito,
     StartCallback start_callback,
     CompletionCallback completion_callback) {
   std::string endpoint = base::GetFieldTrialParamValueByFeature(
@@ -111,6 +110,14 @@ void DocumentSuggestionsService::CreateDocumentSuggestionsRequest(
   request->method = "POST";
   std::string request_body = BuildDocumentSuggestionRequest(query);
   request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
+  // It is expected that the user is signed in here. But we only care about
+  // experiment IDs from the variations server, which do not require the
+  // signed-in version of this method.
+  variations::AppendVariationsHeaderUnknownSignedIn(
+      request->url,
+      is_incognito ? variations::InIncognito::kYes
+                   : variations::InIncognito::kNo,
+      request.get());
 
   // Create and fetch an OAuth2 token.
   std::string scope = "https://www.googleapis.com/auth/cloud_search.query";

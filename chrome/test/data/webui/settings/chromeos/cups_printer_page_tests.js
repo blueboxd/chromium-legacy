@@ -576,6 +576,47 @@ suite('CupsAddPrinterDialogTests', function() {
           assertFalse(urlElement.hidden);
         });
   });
+
+  /**
+   * Test that the add button of the manufacturer dialog is disabled after
+   * clicking it.
+   */
+  test('AddButtonDisabledAfterClicking', function() {
+    // Starting in the discovery dialog, select the add manually button.
+    const discoveryDialog = dialog.$$('add-printer-discovery-dialog');
+    assertTrue(!!discoveryDialog);
+    discoveryDialog.$.manuallyAddPrinterButton.click();
+    Polymer.dom.flush();
+
+    // From the add manually dialog, click the add button to advance to the
+    // manufacturer dialog.
+    const addDialog = dialog.$$('add-printer-manually-dialog');
+    assertTrue(!!addDialog);
+    fillAddManuallyDialog(addDialog);
+    clickAddButton(addDialog);
+    Polymer.dom.flush();
+
+    // Click the add button on the manufacturer dialog and then verify it is
+    // disabled.
+    return cupsPrintersBrowserProxy
+        .whenCalled('getCupsPrinterManufacturersList')
+        .then(function() {
+          const manufacturerDialog =
+              dialog.$$('add-printer-manufacturer-model-dialog');
+          assertTrue(!!manufacturerDialog);
+
+          // Populate the manufacturer and model fields to enable the add
+          // button.
+          manufacturerDialog.$$('#manufacturerDropdown').value = 'make';
+          manufacturerDialog.$$('#modelDropdown').value = 'model';
+
+          const addButton = manufacturerDialog.$$('#addPrinterButton');
+          assertTrue(!!addButton);
+          assertFalse(addButton.disabled);
+          addButton.click();
+          assertTrue(addButton.disabled);
+        });
+  });
 });
 
 suite('EditPrinterDialog', function() {

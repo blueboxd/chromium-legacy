@@ -90,7 +90,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
   // and this pointer is cleared if it's removed during processing.
   FidoAuthenticator* authenticator_ = nullptr;
   SEQUENCE_CHECKER(my_sequence_checker_);
-  base::WeakPtrFactory<MakeCredentialRequestHandler> weak_factory_;
+  base::WeakPtrFactory<MakeCredentialRequestHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MakeCredentialRequestHandler);
 };

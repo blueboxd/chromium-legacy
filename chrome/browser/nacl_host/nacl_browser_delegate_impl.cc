@@ -66,9 +66,9 @@ NaClBrowserDelegateImpl::~NaClBrowserDelegateImpl() {
 
 void NaClBrowserDelegateImpl::ShowMissingArchInfobar(int render_process_id,
                                                      int render_view_id) {
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(&CreateInfoBarOnUiThread,
-                                          render_process_id, render_view_id));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&CreateInfoBarOnUiThread, render_process_id,
+                                render_view_id));
 }
 
 bool NaClBrowserDelegateImpl::DialogsAreSuppressed() {

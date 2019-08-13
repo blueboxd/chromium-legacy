@@ -187,8 +187,7 @@ BluetoothAdapterClient::Properties::~Properties() = default;
 class BluetoothAdapterClientImpl : public BluetoothAdapterClient,
                                    public dbus::ObjectManager::Interface {
  public:
-  BluetoothAdapterClientImpl()
-      : object_manager_(NULL), weak_ptr_factory_(this) {}
+  BluetoothAdapterClientImpl() : object_manager_(nullptr) {}
 
   ~BluetoothAdapterClientImpl() override {
     // There is an instance of this client that is created but not initialized
@@ -614,7 +613,7 @@ class BluetoothAdapterClientImpl : public BluetoothAdapterClient,
   // than we do.
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BluetoothAdapterClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothAdapterClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothAdapterClientImpl);
 };

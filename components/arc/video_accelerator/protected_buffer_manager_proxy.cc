@@ -24,12 +24,11 @@ void GpuArcProtectedBufferManagerProxy::GetProtectedSharedMemoryFromHandle(
     GetProtectedSharedMemoryFromHandleCallback callback) {
   base::ScopedFD unwrapped_fd = UnwrapFdFromMojoHandle(std::move(dummy_handle));
 
-  base::ScopedFD shmem_fd(
-      protected_buffer_manager_
-          ->GetProtectedSharedMemoryHandleFor(std::move(unwrapped_fd))
-          .Release());
-
-  std::move(callback).Run(mojo::WrapPlatformFile(shmem_fd.release()));
+  auto region = protected_buffer_manager_->GetProtectedSharedMemoryRegionFor(
+      std::move(unwrapped_fd));
+  // This ScopedFDPair dance is chromeos-specific.
+  base::subtle::ScopedFDPair fd_pair = region.PassPlatformHandle();
+  std::move(callback).Run(mojo::WrapPlatformFile(fd_pair.fd.release()));
 }
 
 }  // namespace arc

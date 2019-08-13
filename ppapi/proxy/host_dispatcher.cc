@@ -68,8 +68,7 @@ HostDispatcher::HostDispatcher(PP_Module module,
     : Dispatcher(local_get_interface, permissions),
       pp_module_(module),
       ppb_proxy_(NULL),
-      allow_plugin_reentrancy_(false),
-      weak_ptr_factory_(this) {
+      allow_plugin_reentrancy_(false) {
   if (!g_module_to_dispatcher)
     g_module_to_dispatcher = new ModuleToDispatcherMap;
   (*g_module_to_dispatcher)[pp_module_] = this;

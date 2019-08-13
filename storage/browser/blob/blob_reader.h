@@ -248,7 +248,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobReader {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<BlobReader> weak_factory_;
+  base::WeakPtrFactory<BlobReader> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(BlobReader);
 };
 

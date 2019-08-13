@@ -56,8 +56,7 @@ InputStream::InputStream(
           shared_memory_count,
           params,
           &foreign_socket_)),
-      user_input_monitor_(std::move(user_input_monitor)),
-      weak_factory_(this) {
+      user_input_monitor_(std::move(user_input_monitor)) {
   DCHECK(audio_manager);
   DCHECK(receiver_.is_bound());
   DCHECK(client_);

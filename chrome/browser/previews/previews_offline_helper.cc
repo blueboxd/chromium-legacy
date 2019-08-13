@@ -5,6 +5,7 @@
 #include "chrome/browser/previews/previews_offline_helper.h"
 
 #include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -152,9 +153,7 @@ PreviewsOfflineHelper::PreviewsOfflineHelper(
       offline_pages::OfflinePageModelFactory::GetForBrowserContext(
           browser_context);
 
-  if (offline_page_model_ &&
-      base::FeatureList::IsEnabled(
-          previews::features::kOfflinePreviewsFalsePositivePrevention)) {
+  if (offline_page_model_) {
     offline_page_model_->AddObserver(this);
     // Schedule a low priority task with a slight delay to ensure that the
     // expensive DB query doesn't occur during startup or during other user

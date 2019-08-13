@@ -18538,7 +18538,13 @@ void GLES2DecoderImpl::DoBeginSharedImageAccessDirectCHROMIUM(GLuint client_id,
     return;
   }
 
-  if (!shared_image->BeginAccess(mode)) {
+  if (texture_ref->shared_image_scoped_access()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "DoBeginSharedImageAccessCHROMIUM",
+                       "shared image is being accessed");
+    return;
+  }
+
+  if (!texture_ref->BeginAccessSharedImage(mode)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "DoBeginSharedImageAccessCHROMIUM",
                        "Unable to begin access");
     return;
@@ -18561,7 +18567,13 @@ void GLES2DecoderImpl::DoEndSharedImageAccessDirectCHROMIUM(GLuint client_id) {
     return;
   }
 
-  shared_image->EndAccess();
+  if (!texture_ref->shared_image_scoped_access()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "DoEndSharedImageAccessCHROMIUM",
+                       "shared image is not being accessed");
+    return;
+  }
+
+  texture_ref->EndAccessSharedImage();
 }
 
 void GLES2DecoderImpl::DoApplyScreenSpaceAntialiasingCHROMIUM() {

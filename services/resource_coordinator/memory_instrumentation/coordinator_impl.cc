@@ -67,8 +67,7 @@ CoordinatorImpl* CoordinatorImpl::GetInstance() {
 
 CoordinatorImpl::CoordinatorImpl(service_manager::Connector* connector)
     : next_dump_id_(0),
-      client_process_timeout_(base::TimeDelta::FromSeconds(15)),
-      weak_ptr_factory_(this) {
+      client_process_timeout_(base::TimeDelta::FromSeconds(15)) {
   process_map_ = std::make_unique<ProcessMap>(connector);
   DCHECK(!g_coordinator_impl);
   g_coordinator_impl = this;

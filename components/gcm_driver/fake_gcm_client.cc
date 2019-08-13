@@ -199,8 +199,7 @@ void FakeGCMClient::UpdateAccountMapping(
     const AccountMapping& account_mapping) {
 }
 
-void FakeGCMClient::RemoveAccountMapping(const std::string& account_id) {
-}
+void FakeGCMClient::RemoveAccountMapping(const CoreAccountId& account_id) {}
 
 void FakeGCMClient::SetLastTokenFetchTime(const base::Time& time) {
 }

@@ -150,7 +150,7 @@ class TestNavigationObserverManager
       public TabStripModelObserver {
  public:
   explicit TestNavigationObserverManager(Browser* browser) {
-    observer_.Add(browser->tab_strip_model());
+    browser->tab_strip_model()->AddObserver(this);
   }
 
   // TabStripModelObserver:
@@ -175,7 +175,6 @@ class TestNavigationObserverManager
   ~TestNavigationObserverManager() override = default;
 
  private:
-  ScopedObserver<TabStripModel, TabStripModelObserver> observer_{this};
   std::vector<std::unique_ptr<SafeBrowsingNavigationObserver>> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigationObserverManager);

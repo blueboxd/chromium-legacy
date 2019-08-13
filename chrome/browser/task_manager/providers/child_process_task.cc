@@ -133,10 +133,10 @@ void ConnectResourceReporterOnIOThread(
 ProcessResourceUsage* CreateProcessResourcesSampler(
     int unique_child_process_id) {
   content::mojom::ResourceUsageReporterPtr usage_reporter;
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           base::BindOnce(&ConnectResourceReporterOnIOThread,
-                                          unique_child_process_id,
-                                          mojo::MakeRequest(&usage_reporter)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&ConnectResourceReporterOnIOThread,
+                                unique_child_process_id,
+                                mojo::MakeRequest(&usage_reporter)));
   return new ProcessResourceUsage(std::move(usage_reporter));
 }
 

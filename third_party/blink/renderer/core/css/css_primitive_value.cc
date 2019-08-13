@@ -106,16 +106,16 @@ bool CSSPrimitiveValue::IsFontRelativeLength() const {
 }
 
 bool CSSPrimitiveValue::IsResolution() const {
-  // TODO(style-dev): Either support math functions on resolutions; or provide a
-  // justification for not supporting it, and move this function to
+  // TODO(crbug.com/983613): Either support math functions on resolutions; or
+  // provide a justification for not supporting it, and move this function to
   // |CSSNumericLiteralValue|.
   return IsNumericLiteralValue() &&
          To<CSSNumericLiteralValue>(this)->IsResolution();
 }
 
 bool CSSPrimitiveValue::IsFlex() const {
-  // TODO(style-dev): Either support math functions on flexible lengths; or
-  // provide a justification for not supporting it, and move this function to
+  // TODO(crbug.com/993136): Either support math functions on flexible lengths;
+  // or provide a justification for not supporting it, and move this function to
   // |CSSNumericLiteralValue|.
   return IsNumericLiteralValue() && To<CSSNumericLiteralValue>(this)->IsFlex();
 }
@@ -145,7 +145,7 @@ bool CSSPrimitiveValue::IsNumber() const {
 }
 
 bool CSSPrimitiveValue::IsInteger() const {
-  // TODO(style-dev): Support integer math functions properly.
+  // TODO(crbug.com/931216): Support integer math functions properly.
   return IsNumericLiteralValue() &&
          To<CSSNumericLiteralValue>(this)->IsInteger();
 }
@@ -216,8 +216,8 @@ double CSSPrimitiveValue::ComputeDegrees() const {
 }
 
 double CSSPrimitiveValue::ComputeDotsPerPixel() const {
-  // TODO(style-dev): Either support math functions on resolutions; or provide a
-  // justification for not supporting it.
+  // TODO(crbug.com/983613): Either support math functions on resolutions; or
+  // provide a justification for not supporting it.
   DCHECK(IsNumericLiteralValue());
   return To<CSSNumericLiteralValue>(this)->ComputeDotsPerPixel();
 }

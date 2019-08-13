@@ -38,7 +38,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaControlsProgressView
   void SetProgressTime(const base::string16& time);
   void SetDuration(const base::string16& duration);
 
-  void HandleSeeking(const gfx::Point& location_in_bar);
+  void HandleSeeking(const gfx::Point& location);
 
   views::ProgressBar* progress_bar_;
   views::Label* progress_time_;

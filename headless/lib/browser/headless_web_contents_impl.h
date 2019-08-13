@@ -176,7 +176,7 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
 
   base::ObserverList<HeadlessWebContents::Observer>::Unchecked observers_;
 
-  base::WeakPtrFactory<HeadlessWebContentsImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<HeadlessWebContentsImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessWebContentsImpl);
 };

@@ -134,8 +134,7 @@ ZipReader::EntryInfo::EntryInfo(const std::string& file_name_in_zip,
     last_modified_ = base::Time::UnixEpoch();
 }
 
-ZipReader::ZipReader()
-    : weak_ptr_factory_(this) {
+ZipReader::ZipReader() {
   Reset();
 }
 

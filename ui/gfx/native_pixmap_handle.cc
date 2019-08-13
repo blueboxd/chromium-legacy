@@ -96,10 +96,14 @@ NativePixmapHandle CloneHandleForIPC(const NativePixmapHandle& handle) {
 #endif
   }
 
+#if defined(OS_LINUX)
   clone.modifier = handle.modifier;
+#endif
+
 #if defined(OS_FUCHSIA)
   clone.buffer_collection_id = handle.buffer_collection_id;
   clone.buffer_index = handle.buffer_index;
+  clone.ram_coherency = handle.ram_coherency;
 #endif
 
   return clone;

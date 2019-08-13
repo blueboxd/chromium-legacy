@@ -526,7 +526,6 @@ Browser::~Browser() {
 
   // The tab strip should not have any tabs at this point.
   DCHECK(tab_strip_model_->empty());
-  tab_strip_model_->RemoveObserver(this);
   bubble_manager_.reset();
 
   // Destroy the BrowserCommandController before removing the browser, so that

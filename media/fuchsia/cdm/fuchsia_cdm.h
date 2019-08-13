@@ -7,8 +7,11 @@
 
 #include <fuchsia/media/drm/cpp/fidl.h>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "media/base/cdm_context.h"
+#include "media/base/cdm_promise_adapter.h"
 #include "media/base/content_decryption_module.h"
 
 namespace media {
@@ -60,7 +63,25 @@ class FuchsiaCdm : public ContentDecryptionModule, public CdmContext {
   int GetCdmId() const override;
 
  private:
+  class CdmSession;
+
   ~FuchsiaCdm() override;
+
+  void OnCreateSession(std::unique_ptr<CdmSession> session,
+                       uint32_t promise_id,
+                       const std::string& session_id);
+  void OnGenerateLicenseRequestStatus(
+      CdmSession* session,
+      uint32_t promise_id,
+      base::Optional<CdmPromise::Exception> exception);
+  void OnProcessLicenseServerMessageStatus(
+      uint32_t promise_id,
+      base::Optional<CdmPromise::Exception> exception);
+
+  void OnCdmError(zx_status_t status);
+
+  CdmPromiseAdapter promises_;
+  base::flat_map<std::string, std::unique_ptr<CdmSession>> session_map_;
 
   fuchsia::media::drm::ContentDecryptionModulePtr cdm_;
   SessionCallbacks session_callbacks_;

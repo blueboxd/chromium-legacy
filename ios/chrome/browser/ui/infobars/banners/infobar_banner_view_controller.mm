@@ -268,7 +268,10 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   if (!self.touchInProgress) {
     [self.metricsRecorder
         recordBannerDismissType:MobileMessagesBannerDismissType::TimedOut];
-    [self.delegate dismissInfobarBanner:self animated:YES completion:nil];
+    [self.delegate dismissInfobarBanner:self
+                               animated:YES
+                             completion:nil
+                          userInitiated:NO];
   }
   self.shouldDismissAfterTouchesEnded = YES;
 }
@@ -330,11 +333,18 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
       if (dragUpExceededThreshold) {
         [self.metricsRecorder
             recordBannerDismissType:MobileMessagesBannerDismissType::SwipedUp];
+        [self.delegate dismissInfobarBanner:self
+                                   animated:YES
+                                 completion:nil
+                              userInitiated:YES];
       } else {
         [self.metricsRecorder
             recordBannerDismissType:MobileMessagesBannerDismissType::TimedOut];
+        [self.delegate dismissInfobarBanner:self
+                                   animated:YES
+                                 completion:nil
+                              userInitiated:NO];
       }
-      [self.delegate dismissInfobarBanner:self animated:YES completion:nil];
     } else {
       [self.metricsRecorder
           recordBannerEvent:MobileMessagesBannerEvent::ReturnedToOrigin];
@@ -469,7 +479,10 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 }
 
 - (BOOL)dismiss {
-  [self.delegate dismissInfobarBanner:self animated:YES completion:nil];
+  [self.delegate dismissInfobarBanner:self
+                             animated:YES
+                           completion:nil
+                        userInitiated:YES];
   return NO;
 }
 

@@ -5,6 +5,11 @@
 import("//build/config/android/rules.gni")
 
 # Library groups
+# TODO(bjoyce): Empty Java Groups. Remove after upstream review 1541944 lands.
+java_group("com_android_support_collections_java") {}
+java_group("com_android_support_drawerlayout_java") {}
+java_group("com_android_support_localbroadcastmanager_java") {}
+
 java_group("android_support_v4_java") {
   deps = [
     ":com_android_support_support_compat_java",

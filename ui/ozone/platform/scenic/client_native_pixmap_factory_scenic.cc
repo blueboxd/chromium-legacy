@@ -65,6 +65,15 @@ class ClientNativePixmapFuchsia : public gfx::ClientNativePixmap {
 
   void Unmap() override {
     DCHECK(mapping_);
+
+    // Flush the CPu cache in case the GPU reads the data directly from RAM.
+    if (handle_.ram_coherency) {
+      zx_status_t status =
+          zx_cache_flush(mapping_, mapping_size_,
+                         ZX_CACHE_FLUSH_DATA | ZX_CACHE_FLUSH_INVALIDATE);
+      ZX_DCHECK(status == ZX_OK, status) << "zx_cache_flush";
+    }
+
     zx_status_t status = zx::vmar::root_self()->unmap(
         reinterpret_cast<uintptr_t>(mapping_), mapping_size_);
     ZX_DCHECK(status == ZX_OK, status) << "zx_vmar_unmap";

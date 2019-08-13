@@ -27,6 +27,9 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/chromeos/certificate_provider/pin_dialog_manager.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/lock_screen_utils.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
@@ -59,6 +62,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/constants/devicetype.h"
+#include "chromeos/constants/security_token_pin_types.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/login/auth/challenge_response/cert_utils.h"
 #include "chromeos/login/auth/cryptohome_key_constants.h"
@@ -78,6 +82,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
 #include "services/network/nss_temp_certs_cache_chromeos.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -254,6 +259,27 @@ bool GaiaActionButtonsEnabled() {
   return base::FeatureList::IsEnabled(chromeos::features::kGaiaActionButtons);
 }
 
+PinDialogManager* GetLoginScreenPinDialogManager() {
+  DCHECK(ProfileHelper::IsSigninProfileInitialized());
+  CertificateProviderService* certificate_provider_service =
+      CertificateProviderServiceFactory::GetForBrowserContext(
+          ProfileHelper::GetSigninProfile());
+  return certificate_provider_service->pin_dialog_manager();
+}
+
+base::Value MakeSecurityTokenPinDialogParameters(
+    SecurityTokenPinCodeType code_type,
+    bool enable_user_input,
+    SecurityTokenPinErrorLabel error_label,
+    int attempts_left) {
+  base::Value params(base::Value::Type::DICTIONARY);
+  params.SetIntKey("codeType", static_cast<int>(code_type));
+  params.SetBoolKey("enableUserInput", enable_user_input);
+  params.SetIntKey("errorLabel", static_cast<int>(error_label));
+  params.SetIntKey("attemptsLeft", attempts_left);
+  return params;
+}
+
 }  // namespace
 
 constexpr StaticOobeScreenId GaiaView::kScreenId;
@@ -298,6 +324,8 @@ GaiaScreenHandler::GaiaScreenHandler(
 GaiaScreenHandler::~GaiaScreenHandler() {
   if (network_portal_detector_)
     network_portal_detector_->RemoveObserver(this);
+  if (is_security_token_pin_enabled_)
+    GetLoginScreenPinDialogManager()->RemovePinDialogHost(this);
 }
 
 void GaiaScreenHandler::MaybePreloadAuthExtension() {
@@ -632,6 +660,9 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("updateSigninUIState",
               &GaiaScreenHandler::HandleUpdateSigninUIState);
   AddCallback("showGuestInOobe", &GaiaScreenHandler::HandleShowGuestInOobe);
+  AddCallback("samlStateChanged", &GaiaScreenHandler::HandleSamlStateChanged);
+  AddCallback("securityTokenPinEntered",
+              &GaiaScreenHandler::HandleSecurityTokenPinEntered);
 
   // Allow UMA metrics collection from JS.
   web_ui()->AddMessageHandler(std::make_unique<MetricsHandler>());
@@ -673,34 +704,15 @@ void GaiaScreenHandler::HandleAuthExtensionLoaded() {
       std::make_unique<LoginClientCertUsageObserver>();
 }
 
-void GaiaScreenHandler::HandleWebviewLoadAborted(
-    const std::string& error_reason_str) {
-  // TODO(nkostylev): Switch to int code once webview supports that.
-  // http://crbug.com/470483
-  if (error_reason_str == "ERR_ABORTED") {
-    LOG(WARNING) << "Ignoring Gaia webview error: " << error_reason_str;
+void GaiaScreenHandler::HandleWebviewLoadAborted(int error_code) {
+  if (error_code == net::ERR_ABORTED) {
+    LOG(WARNING) << "Ignoring Gaia webview error: "
+                 << net::ErrorToShortString(error_code);
     return;
   }
 
-  // TODO(nkostylev): Switch to int code once webview supports that.
-  // http://crbug.com/470483
-  // Extract some common codes used by SigninScreenHandler for now.
-  if (error_reason_str == "ERR_NAME_NOT_RESOLVED")
-    frame_error_ = net::ERR_NAME_NOT_RESOLVED;
-  else if (error_reason_str == "ERR_INTERNET_DISCONNECTED")
-    frame_error_ = net::ERR_INTERNET_DISCONNECTED;
-  else if (error_reason_str == "ERR_NETWORK_CHANGED")
-    frame_error_ = net::ERR_NETWORK_CHANGED;
-  else if (error_reason_str == "ERR_INTERNET_DISCONNECTED")
-    frame_error_ = net::ERR_INTERNET_DISCONNECTED;
-  else if (error_reason_str == "ERR_PROXY_CONNECTION_FAILED")
-    frame_error_ = net::ERR_PROXY_CONNECTION_FAILED;
-  else if (error_reason_str == "ERR_TUNNEL_CONNECTION_FAILED")
-    frame_error_ = net::ERR_TUNNEL_CONNECTION_FAILED;
-  else
-    frame_error_ = net::ERR_INTERNET_DISCONNECTED;
-
-  LOG(ERROR) << "Gaia webview error: " << error_reason_str;
+  frame_error_ = static_cast<net::Error>(error_code);
+  LOG(ERROR) << "Gaia webview error: " << net::ErrorToShortString(error_code);
   NetworkError::ErrorReason error_reason =
       NetworkError::ERROR_REASON_FRAME_ERROR;
   frame_state_ = FRAME_STATE_ERROR;
@@ -968,6 +980,48 @@ void GaiaScreenHandler::HandleShowGuestInOobe(bool show) {
   ash::LoginScreen::Get()->ShowGuestButtonInOobe(show);
 }
 
+void GaiaScreenHandler::HandleSamlStateChanged(bool is_saml) {
+  if (is_saml == is_security_token_pin_enabled_) {
+    // We're already in the needed |is_security_token_pin_enabled_| state.
+    return;
+  }
+  // Enable ourselves as a security token PIN dialog host during the SAML
+  // sign-in, so that when the SAML page requires client authentication (e.g.,
+  // against a smart card), this PIN request is embedded into the SAML login UI.
+  if (is_saml) {
+    GetLoginScreenPinDialogManager()->AddPinDialogHost(this);
+  } else {
+    security_token_pin_entered_callback_.Reset();
+    security_token_pin_dialog_closed_callback_.Reset();
+    GetLoginScreenPinDialogManager()->RemovePinDialogHost(this);
+  }
+  is_security_token_pin_enabled_ = is_saml;
+}
+
+void GaiaScreenHandler::HandleSecurityTokenPinEntered(
+    const std::string& user_input) {
+  // Invariant: when the pin_entered_callback is present, the closed_callback
+  // must be present as well.
+  DCHECK(!security_token_pin_entered_callback_ ||
+         security_token_pin_dialog_closed_callback_);
+
+  if (!security_token_pin_dialog_closed_callback_) {
+    // The PIN request has already been canceled on the handler side.
+    return;
+  }
+
+  if (user_input.empty()) {
+    security_token_pin_entered_callback_.Reset();
+    std::move(security_token_pin_dialog_closed_callback_).Run();
+  } else {
+    // The callback must be non-null, since the UI implementation should not
+    // send multiple non-empty results.
+    std::move(security_token_pin_entered_callback_).Run(user_input);
+    // Keep |security_token_pin_dialog_closed_callback_|, in order to be able to
+    // notify about the dialog closing afterwards.
+  }
+}
+
 void GaiaScreenHandler::OnShowAddUser() {
   signin_screen_handler_->is_account_picker_showing_first_time_ = false;
   lock_screen_utils::EnforcePolicyInputMethods(std::string());
@@ -1141,6 +1195,45 @@ void GaiaScreenHandler::ShowSigninScreenForTest(const std::string& username,
              !auth_extension_being_loaded_) {
     OnShowAddUser();
   }
+}
+
+void GaiaScreenHandler::ShowSecurityTokenPinDialog(
+    const std::string& /*caller_extension_name*/,
+    SecurityTokenPinCodeType code_type,
+    bool enable_user_input,
+    SecurityTokenPinErrorLabel error_label,
+    int attempts_left,
+    const base::Optional<AccountId>& /*authenticating_user_account_id*/,
+    SecurityTokenPinEnteredCallback pin_entered_callback,
+    SecurityTokenPinDialogClosedCallback pin_dialog_closed_callback) {
+  DCHECK(is_security_token_pin_enabled_);
+  // There must be either no active PIN dialog, or the active dialog for which
+  // the PIN has already been entered.
+  DCHECK(!security_token_pin_entered_callback_);
+
+  security_token_pin_entered_callback_ = std::move(pin_entered_callback);
+  // Note that this overwrites the previous closed_callback in the case where
+  // the dialog was already shown. This is intended, since the closing callback
+  // should only be used to notify that the dialog got canceled, which imposes a
+  // stricter quota on the PIN request caller.
+  security_token_pin_dialog_closed_callback_ =
+      std::move(pin_dialog_closed_callback);
+
+  CallJS("login.GaiaSigninScreen.showPinDialog",
+         MakeSecurityTokenPinDialogParameters(code_type, enable_user_input,
+                                              error_label, attempts_left));
+}
+
+void GaiaScreenHandler::CloseSecurityTokenPinDialog() {
+  DCHECK(is_security_token_pin_enabled_);
+  // Invariant: when the pin_entered_callback is present, the closed_callback
+  // must be present as well.
+  DCHECK(!security_token_pin_entered_callback_ ||
+         security_token_pin_dialog_closed_callback_);
+
+  security_token_pin_entered_callback_.Reset();
+  security_token_pin_dialog_closed_callback_.Reset();
+  CallJS("login.GaiaSigninScreen.closePinDialog");
 }
 
 bool GaiaScreenHandler::IsOfflineLoginActive() const {

@@ -28,19 +28,16 @@ bool FloatEquals(float f1, float f2) {
 }  // namespace
 
 DirectManipulationEventHandler::DirectManipulationEventHandler(
-    DirectManipulationHelper* helper)
-    : helper_(helper) {}
+    DirectManipulationHelper* helper,
+    ui::WindowEventTarget* event_target)
+    : helper_(helper), event_target_(event_target) {}
 
-void DirectManipulationEventHandler::SetWindowEventTarget(
-    ui::WindowEventTarget* event_target) {
-  if (!event_target && LoggingEnabled()) {
-    DebugLogging("Event target is null.", S_OK);
-    if (event_target_)
-      DebugLogging("Previous event target is not null", S_OK);
-    else
-      DebugLogging("Previous event target is null", S_OK);
-  }
-  event_target_ = event_target;
+bool DirectManipulationEventHandler::SetViewportSizeInPixels(
+    const gfx::Size& viewport_size_in_pixels) {
+  if (viewport_size_in_pixels_ == viewport_size_in_pixels)
+    return false;
+  viewport_size_in_pixels_ = viewport_size_in_pixels;
+  return true;
 }
 
 void DirectManipulationEventHandler::SetDeviceScaleFactor(
@@ -175,19 +172,28 @@ HRESULT DirectManipulationEventHandler::OnViewportStatusChanged(
   if (current != DIRECTMANIPULATION_READY)
     return S_OK;
 
-  // Reset the viewport when we're idle, so the content transforms always start
-  // at identity.
-  // Every animation will receive 2 ready message, we should stop request
-  // compositor animation at the second ready.
-  first_ready_ = !first_ready_;
-  HRESULT hr = helper_->Reset(first_ready_);
+  // Normally gesture sequence will receive 2 READY message, the first one is
+  // gesture end, the second one is from viewport reset. We don't have content
+  // transform in the second RUNNING -> READY. We should not reset on an empty
+  // RUNNING -> READY sequence.
+  if (last_scale_ != 1.0f || last_x_offset_ != 0 || last_y_offset_ != 0) {
+    HRESULT hr = viewport->ZoomToRect(
+        static_cast<float>(0), static_cast<float>(0),
+        static_cast<float>(viewport_size_in_pixels_.width()),
+        static_cast<float>(viewport_size_in_pixels_.height()), FALSE);
+    if (!SUCCEEDED(hr)) {
+      DebugLogging("Viewport zoom to rect failed.", hr);
+      return hr;
+    }
+  }
+
   last_scale_ = 1.0f;
   last_x_offset_ = 0.0f;
   last_y_offset_ = 0.0f;
 
   TransitionToState(GestureState::kNone);
 
-  return hr;
+  return S_OK;
 }
 
 HRESULT DirectManipulationEventHandler::OnViewportUpdated(
@@ -292,6 +298,20 @@ HRESULT DirectManipulationEventHandler::OnContentUpdated(
   last_y_offset_ = y_offset;
 
   return hr;
+}
+
+HRESULT DirectManipulationEventHandler::OnInteraction(
+    IDirectManipulationViewport2* viewport,
+    DIRECTMANIPULATION_INTERACTION_TYPE interaction) {
+  if (interaction == DIRECTMANIPULATION_INTERACTION_BEGIN) {
+    DebugLogging("OnInteraction BEGIN.", S_OK);
+    helper_->AddAnimationObserver();
+  } else if (interaction == DIRECTMANIPULATION_INTERACTION_END) {
+    DebugLogging("OnInteraction END.", S_OK);
+    helper_->RemoveAnimationObserver();
+  }
+
+  return S_OK;
 }
 
 }  // namespace content

@@ -93,8 +93,7 @@ DeviceFactoryMediaToMojoAdapter::DeviceFactoryMediaToMojoAdapter(
 DeviceFactoryMediaToMojoAdapter::DeviceFactoryMediaToMojoAdapter(
     std::unique_ptr<media::VideoCaptureSystem> capture_system)
     : capture_system_(std::move(capture_system)),
-      has_called_get_device_infos_(false),
-      weak_factory_(this) {}
+      has_called_get_device_infos_(false) {}
 #endif  // defined(OS_CHROMEOS)
 
 DeviceFactoryMediaToMojoAdapter::~DeviceFactoryMediaToMojoAdapter() = default;

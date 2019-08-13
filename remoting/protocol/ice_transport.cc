@@ -26,9 +26,7 @@ static const char kMuxChannelName[] = "mux";
 
 IceTransport::IceTransport(scoped_refptr<TransportContext> transport_context,
                            EventHandler* event_handler)
-    : transport_context_(transport_context),
-      event_handler_(event_handler),
-      weak_factory_(this) {
+    : transport_context_(transport_context), event_handler_(event_handler) {
   transport_context->Prepare();
 }
 

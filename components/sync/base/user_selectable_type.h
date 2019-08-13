@@ -27,6 +27,7 @@ enum class UserSelectableType {
 #if BUILDFLAG(ENABLE_READING_LIST)
   kReadingList,
 #endif
+  kWifiConfigurations,
   kTabs,
   kLastType = kTabs
 };

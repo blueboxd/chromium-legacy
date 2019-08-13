@@ -103,7 +103,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
   // Check that we don't trigger when previews are not allowed.
   request.previews_state = content::PREVIEWS_OFF;
   interceptor().MaybeCreateLoader(
-      request, nullptr, nullptr,
+      request, nullptr,
       base::BindOnce(&PreviewsLitePageURLLoaderInterceptorTest::HandlerCallback,
                      base::Unretained(this)));
 
@@ -122,7 +122,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
   // Check that we trigger when previews are allowed.
   request.previews_state = content::LITE_PAGE_REDIRECT_ON;
   interceptor().MaybeCreateLoader(
-      request, nullptr, nullptr,
+      request, nullptr,
       base::BindOnce(&PreviewsLitePageURLLoaderInterceptorTest::HandlerCallback,
                      base::Unretained(this)));
 
@@ -150,7 +150,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest, InterceptRequestRedirect) {
       net::URLRequestStatus::SUCCESS);
 
   interceptor().MaybeCreateLoader(
-      request, nullptr, nullptr,
+      request, nullptr,
       base::BindOnce(&PreviewsLitePageURLLoaderInterceptorTest::HandlerCallback,
                      base::Unretained(this)));
 
@@ -175,7 +175,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
       net::URLRequestStatus::SUCCESS);
 
   interceptor().MaybeCreateLoader(
-      request, nullptr, nullptr,
+      request, nullptr,
       base::BindOnce(&PreviewsLitePageURLLoaderInterceptorTest::HandlerCallback,
                      base::Unretained(this)));
 
@@ -200,7 +200,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
       "Fake Body", net::HTTP_FORBIDDEN, net::URLRequestStatus::SUCCESS);
 
   interceptor().MaybeCreateLoader(
-      request, nullptr, nullptr,
+      request, nullptr,
       base::BindOnce(&PreviewsLitePageURLLoaderInterceptorTest::HandlerCallback,
                      base::Unretained(this)));
 
@@ -224,7 +224,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest, NetStackError) {
       "Fake Body", net::HTTP_OK, net::URLRequestStatus::FAILED);
 
   interceptor().MaybeCreateLoader(
-      request, nullptr, nullptr,
+      request, nullptr,
       base::BindOnce(&PreviewsLitePageURLLoaderInterceptorTest::HandlerCallback,
                      base::Unretained(this)));
 

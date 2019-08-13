@@ -20,7 +20,10 @@ enum class ForceDarkInversionMethod {
 
   // Modify colors by converting them to CIE L*a*b color space and inverting the
   // L value.
-  kCielabBased
+  kCielabBased,
+
+  // Modify colors by subtracting each of r, g, and b from their maximum value.
+  kRgbBased
 };
 
 // Specifies algorithm for determining which images to invert in Force Dark.

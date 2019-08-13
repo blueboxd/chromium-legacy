@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
+#include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -57,9 +58,9 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
         ->OnMousePressed(click_event);
   }
 
-  static std::vector<ExtensionsMenuButton*> GetExtensionMenuButtons() {
+  static std::vector<ExtensionsMenuItemView*> GetExtensionsMenuItemView() {
     return ExtensionsMenuView::GetExtensionsMenuViewForTesting()
-        ->extension_menu_buttons_for_testing();
+        ->extensions_menu_items_for_testing();
   }
 
   std::vector<ToolbarActionView*> GetToolbarActionViews() const {
@@ -81,12 +82,14 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
   }
 
   void TriggerSingleExtensionButton() {
-    auto buttons = GetExtensionMenuButtons();
-    ASSERT_EQ(1u, buttons.size());
+    auto menu_items = GetExtensionsMenuItemView();
+    ASSERT_EQ(1u, menu_items.size());
     ui::MouseEvent click_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
                                gfx::Point(), base::TimeTicks(),
                                ui::EF_LEFT_MOUSE_BUTTON, 0);
-    buttons[0]->button_controller()->OnMouseReleased(click_event);
+    menu_items[0]
+        ->primary_action_button_controller_for_testing()
+        ->OnMouseReleased(click_event);
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -162,13 +165,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
-                       CreatesOneButtonPerExtension) {
+                       CreatesOneMenuItemPerExtension) {
   LoadTestExtension("extensions/uitest/long_name");
   LoadTestExtension("extensions/uitest/window_open");
   ShowUi("");
   VerifyUi();
   EXPECT_EQ(2u, extensions_.size());
-  EXPECT_EQ(extensions_.size(), GetExtensionMenuButtons().size());
+  EXPECT_EQ(extensions_.size(), GetExtensionsMenuItemView().size());
   DismissUi();
 }
 

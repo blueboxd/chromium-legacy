@@ -34,8 +34,7 @@ GetAssertionTask::GetAssertionTask(FidoDevice* device,
                                    GetAssertionTaskCallback callback)
     : FidoTask(device),
       request_(std::move(request)),
-      callback_(std::move(callback)),
-      weak_factory_(this) {
+      callback_(std::move(callback)) {
   // This code assumes that user-presence is requested in order to implement
   // possible U2F-fallback.
   DCHECK(request_.user_presence_required);

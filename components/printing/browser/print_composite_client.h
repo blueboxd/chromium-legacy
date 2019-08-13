@@ -12,12 +12,9 @@
 #include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 struct PrintHostMsg_DidPrintContent_Params;
-
-namespace service_manager {
-class Connector;
-}
 
 namespace printing {
 
@@ -86,18 +83,16 @@ class PrintCompositeClient
   // Get the request or create a new one if none exists.
   // Since printed pages always share content with its document, they share the
   // same composite request.
-  mojom::PdfCompositorPtr& GetCompositeRequest(int cookie);
+  mojom::PdfCompositor* GetCompositeRequest(int cookie);
 
   // Remove an existing request from |compositor_map_|.
   void RemoveCompositeRequest(int cookie);
 
-  mojom::PdfCompositorPtr CreateCompositeRequest();
-
-  std::unique_ptr<service_manager::Connector> connector_;
+  mojo::Remote<mojom::PdfCompositor> CreateCompositeRequest();
 
   // Stores the mapping between document cookies and their corresponding
   // requests.
-  std::map<int, mojom::PdfCompositorPtr> compositor_map_;
+  std::map<int, mojo::Remote<mojom::PdfCompositor>> compositor_map_;
 
   // Stores the mapping between render frame's global unique id and document
   // cookies that requested such frame.

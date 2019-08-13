@@ -346,7 +346,7 @@ void BluetoothAdapter::NotifyGattDescriptorValueChanged(
 BluetoothAdapter::SetPoweredCallbacks::SetPoweredCallbacks() = default;
 BluetoothAdapter::SetPoweredCallbacks::~SetPoweredCallbacks() = default;
 
-BluetoothAdapter::BluetoothAdapter() : weak_ptr_factory_(this) {}
+BluetoothAdapter::BluetoothAdapter() {}
 
 BluetoothAdapter::~BluetoothAdapter() {
   // If there's a pending powered request, run its error callback.

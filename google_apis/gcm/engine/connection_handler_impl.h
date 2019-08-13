@@ -135,7 +135,7 @@ class GCM_EXPORT ConnectionHandlerImpl : public ConnectionHandler {
   // will be empty otherwise).
   std::vector<uint8_t> payload_input_buffer_;
 
-  base::WeakPtrFactory<ConnectionHandlerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ConnectionHandlerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionHandlerImpl);
 };

@@ -18,9 +18,8 @@ class ExternalProtocolHandlerBrowserTest : public InProcessBrowserTest {};
 // Observe that the tab is created then automatically closed.
 class TabAddedRemovedObserver : public TabStripModelObserver {
  public:
-  explicit TabAddedRemovedObserver(TabStripModel* tab_strip_model)
-      : scoped_observer_(this) {
-    scoped_observer_.Add(tab_strip_model);
+  explicit TabAddedRemovedObserver(TabStripModel* tab_strip_model) {
+    tab_strip_model->AddObserver(this);
   }
 
   void OnTabStripModelChanged(
@@ -50,7 +49,6 @@ class TabAddedRemovedObserver : public TabStripModelObserver {
   bool inserted_ = false;
   bool removed_ = false;
   base::RunLoop loop_;
-  ScopedObserver<TabStripModel, TabAddedRemovedObserver> scoped_observer_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolHandlerBrowserTest,

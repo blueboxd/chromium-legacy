@@ -25,7 +25,7 @@ const size_t kMaxHandleCacheSize = 2;
 }  // namespace
 
 FileSystemUsageCache::FileSystemUsageCache(bool is_incognito)
-    : is_incognito_(is_incognito), weak_factory_(this) {
+    : is_incognito_(is_incognito) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 

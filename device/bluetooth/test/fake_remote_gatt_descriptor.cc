@@ -18,8 +18,7 @@ FakeRemoteGattDescriptor::FakeRemoteGattDescriptor(
     device::BluetoothRemoteGattCharacteristic* characteristic)
     : descriptor_id_(descriptor_id),
       descriptor_uuid_(descriptor_uuid),
-      characteristic_(characteristic),
-      weak_ptr_factory_(this) {}
+      characteristic_(characteristic) {}
 
 FakeRemoteGattDescriptor::~FakeRemoteGattDescriptor() = default;
 

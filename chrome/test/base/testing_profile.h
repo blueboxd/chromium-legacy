@@ -267,6 +267,7 @@ class TestingProfile : public Profile {
   // content::BrowserContext
   base::FilePath GetPath() override;
   base::FilePath GetPath() const override;
+  base::Time GetCreationTime() const override;
 #if !defined(OS_ANDROID)
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
@@ -372,6 +373,8 @@ class TestingProfile : public Profile {
   void BlockUntilHistoryProcessesPendingRequests();
 
   GURL GetHomePage() override;
+
+  void SetCreationTimeForTesting(base::Time creation_time) override;
 
   PrefService* GetOffTheRecordPrefs() override;
 

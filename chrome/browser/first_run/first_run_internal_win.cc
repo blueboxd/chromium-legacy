@@ -112,8 +112,9 @@ void DoPostImportPlatformSpecificTasks(Profile* /* profile */) {
   if (!InstallUtil::IsPerUserInstall()) {
     content::BrowserThread::PostBestEffortTask(
         FROM_HERE,
-        base::CreateTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+        base::CreateTaskRunner(
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
         base::BindOnce(&InstallUtil::TriggerActiveSetupCommand));
   }

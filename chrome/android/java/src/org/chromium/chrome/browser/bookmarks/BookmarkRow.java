@@ -91,6 +91,13 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
     }
 
     private void updateVisualState() {
+        // This check is needed because it is possible for updateVisualState to be called between
+        // onDelegateInitialized (SelectionDelegate triggers a redraw) and setBookmarkId. View is
+        // not currently bound, so we can skip this for now. updateVisualState will run inside of
+        // setBookmarkId.
+        if (mBookmarkId == null) {
+            return;
+        }
         BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(mBookmarkId);
         // This check is needed because updateVisualState is called when the item has been deleted
         // in the model but not in the adapter. If we hit this if-block, the
@@ -152,11 +159,12 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
                         new Item(getContext(), R.string.bookmark_item_edit, true),
                         new Item(getContext(), R.string.bookmark_item_move, canMove),
                         new Item(getContext(), R.string.bookmark_item_delete, true)));
-        if (mReorderBookmarksEnabled
-                && mDelegate.getCurrentState() == BookmarkUIState.STATE_FOLDER) {
-            // Only add move up / move down buttons if there is more than 1 item,
-            // and the bookmark item is moveable.
-            if (mLocation != Location.SOLO && canMove) {
+        if (mReorderBookmarksEnabled) {
+            if (mDelegate.getCurrentState() == BookmarkUIState.STATE_SEARCHING) {
+                menuItems.add(new Item(getContext(), R.string.bookmark_show_in_folder, true));
+            } else if (mDelegate.getCurrentState() == BookmarkUIState.STATE_FOLDER
+                    && mLocation != Location.SOLO) {
+                // Only add move up / move down buttons if there is more than 1 item
                 if (mLocation != Location.TOP) {
                     menuItems.add(new Item(getContext(), R.string.menu_item_move_up, true));
                 }
@@ -192,6 +200,10 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
                 RecordUserAction.record("Android.BookmarkPage.RemoveItem");
             }
 
+        } else if (item.getTextId() == R.string.bookmark_show_in_folder) {
+            BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(mBookmarkId);
+            mDelegate.openFolder(bookmarkItem.getParentId());
+            mDelegate.highlightBookmark(mBookmarkId);
         } else if (item.getTextId() == R.string.menu_item_move_up) {
             mDelegate.moveUpOne(mBookmarkId);
             RecordUserAction.record("MobileBookmarkManagerMoveUp");

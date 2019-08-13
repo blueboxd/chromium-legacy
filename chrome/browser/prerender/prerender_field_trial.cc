@@ -17,6 +17,9 @@ const base::Feature kNoStatePrefetchFeature{"NoStatePrefetch",
 const base::Feature kGWSPrefetchHoldback{"GWSPrefetchHoldback",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kNavigationPredictorPrefetchHoldback{
+    "NavigationPredictorPrefetchHoldback", base::FEATURE_DISABLED_BY_DEFAULT};
+
 void ConfigureNoStatePrefetch() {
   auto mode = PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH;
   if (!base::FeatureList::IsEnabled(kNoStatePrefetchFeature))

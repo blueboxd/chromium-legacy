@@ -103,8 +103,7 @@ It2MeNativeMessagingHost::It2MeNativeMessagingHost(
     : needs_elevation_(needs_elevation),
       host_context_(std::move(context)),
       factory_(std::move(factory)),
-      policy_watcher_(std::move(policy_watcher)),
-      weak_factory_(this) {
+      policy_watcher_(std::move(policy_watcher)) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
 
   // The policy watcher runs on the |file_task_runner| but we want to run the

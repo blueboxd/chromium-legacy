@@ -7,10 +7,12 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/content_index_provider.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/origin.h"
 
 namespace content {
@@ -23,6 +25,8 @@ class WebTestContentIndexProvider : public ContentIndexProvider {
   ~WebTestContentIndexProvider() override;
 
   // ContentIndexProvider implementation.
+  std::vector<gfx::Size> GetIconSizes(
+      blink::mojom::ContentCategory category) override;
   void OnContentAdded(ContentIndexEntry entry) override;
   void OnContentDeleted(int64_t service_worker_registration_id,
                         const url::Origin& origin,
@@ -34,9 +38,15 @@ class WebTestContentIndexProvider : public ContentIndexProvider {
   std::pair<int64_t, url::Origin> GetRegistrationDataFromId(
       const std::string& id);
 
+  void set_icon_sizes(std::vector<gfx::Size> icon_sizes) {
+    icon_sizes_ = std::move(icon_sizes);
+  }
+
  private:
   // Map from |description_id| to <|service_worker_registration_id|, |origin|>.
   std::map<std::string, std::pair<int64_t, url::Origin>> entries_;
+
+  std::vector<gfx::Size> icon_sizes_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestContentIndexProvider);
 };

@@ -149,14 +149,12 @@ void OnReadServiceRevisionBitfieldError(
 
 }  // namespace
 
-FidoBleConnection::FidoBleConnection(
-    BluetoothAdapter* adapter,
-    std::string device_address,
-    ReadCallback read_callback)
+FidoBleConnection::FidoBleConnection(BluetoothAdapter* adapter,
+                                     std::string device_address,
+                                     ReadCallback read_callback)
     : adapter_(adapter),
       address_(std::move(device_address)),
-      read_callback_(std::move(read_callback)),
-      weak_factory_(this) {
+      read_callback_(std::move(read_callback)) {
   DCHECK(adapter_);
   adapter_->AddObserver(this);
   DCHECK(!address_.empty());
@@ -176,9 +174,7 @@ const BluetoothDevice* FidoBleConnection::GetBleDevice() const {
 
 FidoBleConnection::FidoBleConnection(BluetoothAdapter* adapter,
                                      std::string device_address)
-    : adapter_(adapter),
-      address_(std::move(device_address)),
-      weak_factory_(this) {
+    : adapter_(adapter), address_(std::move(device_address)) {
   adapter_->AddObserver(this);
 }
 

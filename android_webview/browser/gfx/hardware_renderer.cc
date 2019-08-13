@@ -27,7 +27,7 @@ HardwareRenderer::~HardwareRenderer() {
   // Reset draw constraints.
   if (child_frame_) {
     render_thread_manager_->PostParentDrawDataToChildCompositorOnRT(
-        ParentCompositorDrawConstraints(), child_frame_->compositor_id,
+        ParentCompositorDrawConstraints(), child_frame_->frame_sink_id,
         viz::FrameTimingDetailsMap(), 0u);
   }
   for (auto& child_frame : child_frame_queue_) {
@@ -94,19 +94,19 @@ void HardwareRenderer::ReturnChildFrame(
       viz::TransferableResource::ReturnResources(
           child_frame->frame->resource_list);
 
-  // The child frame's compositor id is not necessarily same as
-  // compositor_id_.
-  ReturnResourcesToCompositor(resources_to_return, child_frame->compositor_id,
+  // The child frame's frame_sink_id is not necessarily same as
+  // |child_frame_sink_id_|.
+  ReturnResourcesToCompositor(resources_to_return, child_frame->frame_sink_id,
                               child_frame->layer_tree_frame_sink_id);
 }
 
 void HardwareRenderer::ReturnResourcesToCompositor(
     const std::vector<viz::ReturnedResource>& resources,
-    const CompositorID& compositor_id,
+    const viz::FrameSinkId& frame_sink_id,
     uint32_t layer_tree_frame_sink_id) {
   if (layer_tree_frame_sink_id != last_committed_layer_tree_frame_sink_id_)
     return;
-  render_thread_manager_->InsertReturnedResourcesOnRT(resources, compositor_id,
+  render_thread_manager_->InsertReturnedResourcesOnRT(resources, frame_sink_id,
                                                       layer_tree_frame_sink_id);
 }
 

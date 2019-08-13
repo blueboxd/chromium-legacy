@@ -25,8 +25,7 @@ SetPINRequestHandler::SetPINRequestHandler(
                              supported_transports),
       get_pin_callback_(std::move(get_pin_callback)),
       finished_callback_(std::move(finished_callback)),
-      fido_discovery_factory_(std::move(fido_discovery_factory)),
-      weak_factory_(this) {
+      fido_discovery_factory_(std::move(fido_discovery_factory)) {
   Start();
 }
 

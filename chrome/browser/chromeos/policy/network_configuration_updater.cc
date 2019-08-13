@@ -98,9 +98,6 @@ net::CertificateList NetworkConfigurationUpdater::GetAllAuthorityCertificates()
 net::CertificateList NetworkConfigurationUpdater::GetWebTrustedCertificates()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!allow_trusted_certificates_from_policy_)
-    return net::CertificateList();
-
   return GetFilteredCertificateListFromOnc(
       certs_->server_or_authority_certificates(),
       base::BindRepeating(
@@ -112,9 +109,6 @@ net::CertificateList NetworkConfigurationUpdater::GetWebTrustedCertificates()
 net::CertificateList
 NetworkConfigurationUpdater::GetCertificatesWithoutWebTrust() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!allow_trusted_certificates_from_policy_)
-    return GetAllServerAndAuthorityCertificates();
-
   return GetFilteredCertificateListFromOnc(
       certs_->server_or_authority_certificates(),
       base::BindRepeating(
@@ -126,13 +120,11 @@ NetworkConfigurationUpdater::GetCertificatesWithoutWebTrust() const {
 NetworkConfigurationUpdater::NetworkConfigurationUpdater(
     onc::ONCSource onc_source,
     std::string policy_key,
-    bool allow_trusted_certs_from_policy,
     PolicyService* policy_service,
     chromeos::ManagedNetworkConfigurationHandler* network_config_handler)
     : onc_source_(onc_source),
       network_config_handler_(network_config_handler),
       policy_key_(policy_key),
-      allow_trusted_certificates_from_policy_(allow_trusted_certs_from_policy),
       policy_change_registrar_(
           policy_service,
           PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())),

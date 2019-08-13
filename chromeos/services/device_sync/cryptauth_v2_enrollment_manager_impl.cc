@@ -17,6 +17,7 @@
 #include "chromeos/services/device_sync/async_execution_time_metrics_logger.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_constants.h"
 #include "chromeos/services/device_sync/cryptauth_key_registry.h"
+#include "chromeos/services/device_sync/cryptauth_task_metrics_logger.h"
 #include "chromeos/services/device_sync/cryptauth_v2_enroller_impl.h"
 #include "chromeos/services/device_sync/pref_names.h"
 #include "chromeos/services/device_sync/public/cpp/client_app_metadata_provider.h"
@@ -122,16 +123,21 @@ void RecordEnrollmentResult(CryptAuthEnrollmentResult result) {
                                 result.result_code());
 }
 
-void RecordGcmRegistrationMetrics(const base::TimeDelta& execution_time) {
+void RecordGcmRegistrationMetrics(const base::TimeDelta& execution_time,
+                                  CryptAuthAsyncTaskResult result) {
   LogAsyncExecutionTimeMetric(
       "CryptAuth.EnrollmentV2.ExecutionTime.GcmRegistration", execution_time);
+  LogCryptAuthAsyncTaskSuccessMetric(
+      "CryptAuth.EnrollmentV2.AsyncTaskResult.GcmRegistration", result);
 }
 
-void RecordClientAppMetadataFetchMetrics(
-    const base::TimeDelta& execution_time) {
+void RecordClientAppMetadataFetchMetrics(const base::TimeDelta& execution_time,
+                                         CryptAuthAsyncTaskResult result) {
   LogAsyncExecutionTimeMetric(
       "CryptAuth.EnrollmentV2.ExecutionTime.ClientAppMetadataFetch",
       execution_time);
+  LogCryptAuthAsyncTaskSuccessMetric(
+      "CryptAuth.EnrollmentV2.AsyncTaskResult.ClientAppMetadataFetch", result);
 }
 
 }  // namespace
@@ -368,9 +374,15 @@ void CryptAuthV2EnrollmentManagerImpl::OnGCMRegistrationResult(bool success) {
   if (state_ != State::kWaitingForGcmRegistration)
     return;
 
-  RecordGcmRegistrationMetrics(clock_->Now() - last_state_change_timestamp_);
+  bool was_successful = success && !gcm_manager_->GetRegistrationId().empty();
 
-  if (!success || gcm_manager_->GetRegistrationId().empty()) {
+  CryptAuthAsyncTaskResult result = was_successful
+                                        ? CryptAuthAsyncTaskResult::kSuccess
+                                        : CryptAuthAsyncTaskResult::kError;
+  RecordGcmRegistrationMetrics(clock_->Now() - last_state_change_timestamp_,
+                               result);
+
+  if (!was_successful) {
     OnEnrollmentFinished(CryptAuthEnrollmentResult(
         CryptAuthEnrollmentResult::ResultCode::kErrorGcmRegistrationFailed,
         base::nullopt /* client_directive */));
@@ -390,10 +402,14 @@ void CryptAuthV2EnrollmentManagerImpl::OnClientAppMetadataFetched(
     const base::Optional<cryptauthv2::ClientAppMetadata>& client_app_metadata) {
   DCHECK(state_ == State::kWaitingForClientAppMetadata);
 
-  RecordClientAppMetadataFetchMetrics(clock_->Now() -
-                                      last_state_change_timestamp_);
+  bool success = client_app_metadata.has_value();
 
-  if (!client_app_metadata) {
+  CryptAuthAsyncTaskResult result = success ? CryptAuthAsyncTaskResult::kSuccess
+                                            : CryptAuthAsyncTaskResult::kError;
+  RecordClientAppMetadataFetchMetrics(
+      clock_->Now() - last_state_change_timestamp_, result);
+
+  if (!success) {
     OnEnrollmentFinished(
         CryptAuthEnrollmentResult(CryptAuthEnrollmentResult::ResultCode::
                                       kErrorClientAppMetadataFetchFailed,
@@ -507,10 +523,12 @@ void CryptAuthV2EnrollmentManagerImpl::OnTimeout() {
   base::TimeDelta execution_time = clock_->Now() - last_state_change_timestamp_;
   switch (state_) {
     case State::kWaitingForGcmRegistration:
-      RecordGcmRegistrationMetrics(execution_time);
+      RecordGcmRegistrationMetrics(execution_time,
+                                   CryptAuthAsyncTaskResult::kTimeout);
       break;
     case State::kWaitingForClientAppMetadata:
-      RecordClientAppMetadataFetchMetrics(execution_time);
+      RecordClientAppMetadataFetchMetrics(execution_time,
+                                          CryptAuthAsyncTaskResult::kTimeout);
       break;
     default:
       NOTREACHED();

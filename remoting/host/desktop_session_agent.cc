@@ -213,8 +213,7 @@ DesktopSessionAgent::DesktopSessionAgent(
       caller_task_runner_(caller_task_runner),
       input_task_runner_(input_task_runner),
       io_task_runner_(io_task_runner),
-      current_process_stats_("DesktopSessionAgent"),
-      weak_factory_(this) {
+      current_process_stats_("DesktopSessionAgent") {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 }
 

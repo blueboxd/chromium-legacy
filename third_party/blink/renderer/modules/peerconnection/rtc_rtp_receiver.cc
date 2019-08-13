@@ -83,7 +83,7 @@ RTCRtpReceiver::getSynchronizationSources() {
     synchronization_source->setTimestamp(
         time_converter
             .MonotonicTimeToPseudoWallTime(
-                pc_->WebRtcMsToBlinkTimeTicks(web_source->TimestampMs()))
+                pc_->WebRtcTimestampToBlinkTimestamp(web_source->Timestamp()))
             .InMilliseconds());
     synchronization_source->setSource(web_source->Source());
     if (web_source->AudioLevel())
@@ -110,7 +110,7 @@ RTCRtpReceiver::getContributingSources() {
     contributing_source->setTimestamp(
         time_converter
             .MonotonicTimeToPseudoWallTime(
-                pc_->WebRtcMsToBlinkTimeTicks(web_source->TimestampMs()))
+                pc_->WebRtcTimestampToBlinkTimestamp(web_source->Timestamp()))
             .InMilliseconds());
     contributing_source->setSource(web_source->Source());
     if (web_source->AudioLevel())

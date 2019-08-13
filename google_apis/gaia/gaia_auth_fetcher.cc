@@ -112,25 +112,38 @@ GetTokenRevocationStatusFromResponseData(const std::string& data,
   return GaiaAuthConsumer::TokenRevocationStatus::kUnknownError;
 }
 
-std::string GaiaSourceToString(gaia::GaiaSource source) {
+}  // namespace
+
+namespace gaia {
+
+GaiaSource::GaiaSource(Type type) : type_(type) {}
+
+GaiaSource::GaiaSource(Type type, const std::string& suffix)
+    : type_(type), suffix_(suffix) {}
+
+void GaiaSource::SetGaiaSourceSuffix(const std::string& suffix) {
+  suffix_ = suffix;
+}
+
+std::string GaiaSource::ToString() {
   std::string source_string;
-  switch (source) {
-    case gaia::GaiaSource::kChrome:
+  switch (type_) {
+    case Type::kChrome:
       source_string = GaiaConstants::kChromeSource;
       break;
-    case gaia::GaiaSource::kChromeOS:
+    case Type::kChromeOS:
       source_string = GaiaConstants::kChromeOSSource;
       break;
-    case gaia::GaiaSource::kAccountReconcilorDice:
+    case Type::kAccountReconcilorDice:
       source_string = "ChromiumAccountReconcilorDice";
       break;
-    case gaia::GaiaSource::kAccountReconcilorMirror:
+    case Type::kAccountReconcilorMirror:
       source_string = "ChromiumAccountReconcilor";
       break;
-    case gaia::GaiaSource::kOAuth2LoginVerifier:
+    case Type::kOAuth2LoginVerifier:
       source_string = "ChromiumOAuth2LoginVerifier";
       break;
-    case gaia::GaiaSource::kPrimaryAccountManager:
+    case Type::kPrimaryAccountManager:
       // Even though this string refers to an old name from the Chromium POV, it
       // should not be changed as it is passed server-side.
       source_string = "ChromiumSigninManager";
@@ -141,10 +154,10 @@ std::string GaiaSourceToString(gaia::GaiaSource source) {
   DCHECK(source_string == "chromeos" ||
          base::StartsWith(source_string, "Chromium",
                           base::CompareCase::SENSITIVE));
-  return source_string;
+  return source_string + suffix_;
 }
 
-}  // namespace
+}  // namespace gaia
 
 // static
 const char GaiaAuthFetcher::kIssueAuthTokenFormat[] =
@@ -203,7 +216,7 @@ GaiaAuthFetcher::GaiaAuthFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : url_loader_factory_(url_loader_factory),
       consumer_(consumer),
-      source_(GaiaSourceToString(source)),
+      source_(source.ToString()),
       oauth2_token_gurl_(GaiaUrls::GetInstance()->oauth2_token_url()),
       oauth2_revoke_gurl_(GaiaUrls::GetInstance()->oauth2_revoke_url()),
       get_user_info_gurl_(GaiaUrls::GetInstance()->get_user_info_url()),

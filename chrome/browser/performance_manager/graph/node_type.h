@@ -15,6 +15,7 @@ enum class NodeTypeEnum : uint8_t {
   kPage,
   kProcess,
   kSystem,
+  kWorker,
 };
 
 }  // namespace performance_manager

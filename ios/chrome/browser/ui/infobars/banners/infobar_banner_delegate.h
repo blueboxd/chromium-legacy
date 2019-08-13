@@ -16,9 +16,14 @@
 - (void)bannerInfobarButtonWasPressed:(UIButton*)sender;
 
 // Asks the delegate to dismiss the InfobarBanner. |completion| will always run.
+// If dismissal is directly triggered by a user action e.g. swiping up the
+// banner, |userInitiated| is YES. For all other cases, even if the banner is
+// dismissed indirectly by a user action e.g. Accepting the banner, presenting
+// settings, etc. |userInitiated| is NO.
 - (void)dismissInfobarBanner:(id)sender
                     animated:(BOOL)animated
-                  completion:(ProceduralBlock)completion;
+                  completion:(ProceduralBlock)completion
+               userInitiated:(BOOL)userInitiated;
 
 // Asks the delegate to present the InfobarModal for this InfobarBanner.
 - (void)presentInfobarModalFromBanner;

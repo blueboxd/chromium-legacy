@@ -55,7 +55,7 @@ void RecordPermissionRevocation(WebUsbPermissionRevoked kind) {
 }
 
 bool CanStorePersistentEntry(const device::mojom::UsbDeviceInfo& device_info) {
-  return !device_info.serial_number->empty();
+  return device_info.serial_number && !device_info.serial_number->empty();
 }
 
 std::pair<int, int> GetDeviceIds(const base::Value& object) {

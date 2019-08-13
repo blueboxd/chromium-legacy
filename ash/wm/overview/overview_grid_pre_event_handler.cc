@@ -54,18 +54,21 @@ void OverviewGridPreEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_SCROLL_BEGIN: {
       if (!ShouldUseTabletModeGridLayout())
         return;
-      StartDrag(event->location());
+      grid_->StartScroll();
       event->SetHandled();
       break;
     }
     case ui::ET_GESTURE_SCROLL_UPDATE: {
       if (!ShouldUseTabletModeGridLayout())
         return;
-      UpdateDrag(event->details().scroll_x());
+      grid_->UpdateScrollOffset(event->details().scroll_x());
       event->SetHandled();
       break;
     }
     case ui::ET_GESTURE_SCROLL_END: {
+      if (!ShouldUseTabletModeGridLayout())
+        return;
+      grid_->EndScroll();
       event->SetHandled();
       break;
     }
@@ -81,16 +84,6 @@ void OverviewGridPreEventHandler::HandleClickOrTap(ui::Event* event) {
   if (!IsSlidingOutOverviewFromShelf())
     Shell::Get()->overview_controller()->EndOverview();
   event->StopPropagation();
-}
-
-void OverviewGridPreEventHandler::StartDrag(const gfx::Point& location) {
-  grid_->PrepareScrollLimitMin();
-}
-
-void OverviewGridPreEventHandler::UpdateDrag(float scroll) {
-  // Pass new scroll values to update the offset which will also update overview
-  // mode to position windows according to the scroll values.
-  grid_->UpdateScrollOffset(scroll);
 }
 
 }  // namespace ash

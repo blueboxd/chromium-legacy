@@ -57,7 +57,6 @@ class ServiceWorkerNavigationLoaderInterceptor final
   // to the request to the next request handler)
   void MaybeCreateLoader(const network::ResourceRequest& tentative_request,
                          BrowserContext* browser_context,
-                         ResourceContext* resource_context,
                          LoaderCallback callback,
                          FallbackCallback fallback_callback) override;
   // Returns params with the ControllerServiceWorkerInfoPtr if we have found

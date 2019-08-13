@@ -19,6 +19,7 @@ class HomepageTest(ChromeEnterpriseTestCase):
   See:
      https://cloud.google.com/docs/chrome-enterprise/policies/?policy=HomepageLocation
      https://cloud.google.com/docs/chrome-enterprise/policies/?policy=HomepageIsNewTabPage
+     https://cloud.google.com/docs/chrome-enterprise/policies/?policy=ShowHomeButton
   """
 
   @before_all
@@ -32,6 +33,12 @@ class HomepageTest(ChromeEnterpriseTestCase):
                             os.path.join(dir, 'get_homepage_url.py'))
     m = re.search(r"homepage:([^ \r\n]+)", output)
     return m.group(1)
+
+  def _isHomeButtonShown(self, instance_name):
+    dir = os.path.dirname(os.path.abspath(__file__))
+    output = self.RunUITest(instance_name,
+                            os.path.join(dir, 'get_home_button.py'))
+    return 'home button exists' in output
 
   @test
   def test_HomepageLocation(self):
@@ -69,3 +76,19 @@ class HomepageTest(ChromeEnterpriseTestCase):
       pass
     else:
       self.fail('homepage url is not new tab: %s' % homepage)
+
+  @test
+  def test_ShowHomeButton(self):
+    # Test the case when ShowHomeButton is true
+    self.SetPolicy('win2012-dc', 'ShowHomeButton', 1, 'DWORD')
+    self.RunCommand('client2012', 'gpupdate /force')
+
+    isHomeButtonShown = self._isHomeButtonShown('client2012')
+    self.assertTrue(isHomeButtonShown)
+
+    # Test the case when ShowHomeButton is false
+    self.SetPolicy('win2012-dc', 'ShowHomeButton', 0, 'DWORD')
+    self.RunCommand('client2012', 'gpupdate /force')
+
+    isHomeButtonShown = self._isHomeButtonShown('client2012')
+    self.assertFalse(isHomeButtonShown)

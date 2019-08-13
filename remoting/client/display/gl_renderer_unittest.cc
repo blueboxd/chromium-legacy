@@ -20,7 +20,7 @@ namespace remoting {
 
 class FakeGlRendererDelegate : public GlRendererDelegate {
  public:
-  FakeGlRendererDelegate() : weak_factory_(this) {}
+  FakeGlRendererDelegate() {}
 
   bool CanRenderFrame() override {
     can_render_frame_call_count_++;
@@ -69,14 +69,14 @@ class FakeGlRendererDelegate : public GlRendererDelegate {
   int canvas_height_ = 0;
 
   base::Closure on_frame_rendered_callback_;
-  base::WeakPtrFactory<FakeGlRendererDelegate> weak_factory_;
+  base::WeakPtrFactory<FakeGlRendererDelegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeGlRendererDelegate);
 };
 
 class FakeDrawable : public Drawable {
  public:
-  FakeDrawable() : weak_factory_(this) {}
+  FakeDrawable() {}
 
   void SetId(int id) { id_ = id; }
   int GetId() { return id_; }
@@ -103,7 +103,7 @@ class FakeDrawable : public Drawable {
   int id_ = -1;
   int z_index_ = -1;
 
-  base::WeakPtrFactory<FakeDrawable> weak_factory_;
+  base::WeakPtrFactory<FakeDrawable> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeDrawable);
 };

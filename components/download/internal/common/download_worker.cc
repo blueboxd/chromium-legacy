@@ -13,7 +13,6 @@
 #include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/input_stream.h"
 #include "components/download/public/common/url_download_handler_factory.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -54,13 +53,11 @@ void CreateUrlDownloadHandler(
     scoped_refptr<download::DownloadURLLoaderFactoryGetter>
         url_loader_factory_getter,
     const URLSecurityPolicy& url_security_policy,
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
     std::unique_ptr<service_manager::Connector> connector,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   auto downloader = UrlDownloadHandlerFactory::Create(
       std::move(params), delegate, std::move(url_loader_factory_getter),
-      url_security_policy, std::move(url_request_context_getter),
-      std::move(connector), task_runner);
+      url_security_policy, std::move(connector), task_runner);
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&UrlDownloadHandler::Delegate::OnUrlDownloadHandlerCreated,
@@ -77,7 +74,6 @@ DownloadWorker::DownloadWorker(DownloadWorker::Delegate* delegate,
       length_(length),
       is_paused_(false),
       is_canceled_(false),
-      is_user_cancel_(false),
       url_download_handler_(nullptr, base::OnTaskRunnerDeleter(nullptr)) {
   DCHECK(delegate_);
 }
@@ -88,35 +84,27 @@ void DownloadWorker::SendRequest(
     std::unique_ptr<DownloadUrlParameters> params,
     scoped_refptr<download::DownloadURLLoaderFactoryGetter>
         url_loader_factory_getter,
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
     service_manager::Connector* connector) {
   GetIOTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&CreateUrlDownloadHandler, std::move(params),
                                 weak_factory_.GetWeakPtr(),
                                 std::move(url_loader_factory_getter),
                                 base::BindRepeating(&IsURLSafe),
-                                std::move(url_request_context_getter),
                                 connector ? connector->Clone() : nullptr,
                                 base::ThreadTaskRunnerHandle::Get()));
 }
 
 void DownloadWorker::Pause() {
   is_paused_ = true;
-  if (request_handle_)
-    request_handle_->PauseRequest();
 }
 
 void DownloadWorker::Resume() {
   is_paused_ = false;
-  if (request_handle_)
-    request_handle_->ResumeRequest();
 }
 
 void DownloadWorker::Cancel(bool user_cancel) {
   is_canceled_ = true;
-  is_user_cancel_ = user_cancel;
-  if (request_handle_)
-    request_handle_->CancelRequest(user_cancel);
+  url_download_handler_.reset();
 }
 
 void DownloadWorker::OnUrlDownloadStarted(
@@ -124,6 +112,7 @@ void DownloadWorker::OnUrlDownloadStarted(
     std::unique_ptr<InputStream> input_stream,
     scoped_refptr<download::DownloadURLLoaderFactoryGetter>
         url_loader_factory_getter,
+    UrlDownloadHandler* downloader,
     const DownloadUrlParameters::OnStartedCallback& callback) {
   // |callback| is not used in subsequent requests.
   DCHECK(callback.is_null());
@@ -132,7 +121,7 @@ void DownloadWorker::OnUrlDownloadStarted(
   if (is_canceled_) {
     VLOG(kWorkerVerboseLevel)
         << "Byte stream arrived after user cancel the request.";
-    create_info->request_handle->CancelRequest(is_user_cancel_);
+    url_download_handler_.reset();
     return;
   }
 
@@ -143,8 +132,6 @@ void DownloadWorker::OnUrlDownloadStarted(
         << create_info->result;
     input_stream.reset(new CompletedInputStream(create_info->result));
   }
-
-  request_handle_ = std::move(create_info->request_handle);
 
   // Pause the stream if user paused, still push the stream reader to the sink.
   if (is_paused_) {

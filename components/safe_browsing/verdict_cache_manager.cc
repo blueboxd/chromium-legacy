@@ -163,7 +163,7 @@ VerdictCacheManager::~VerdictCacheManager() {
 void VerdictCacheManager::CachePhishGuardVerdict(
     const GURL& url,
     LoginReputationClientRequest::TriggerType trigger_type,
-    PasswordType password_type,
+    ReusedPasswordAccountType password_type,
     const LoginReputationClientResponse& verdict,
     const base::Time& receive_time) {
   DCHECK(content_settings_);
@@ -198,7 +198,9 @@ void VerdictCacheManager::CachePhishGuardVerdict(
     }
   } else {
     std::string password_type_key = base::NumberToString(
-        static_cast<std::underlying_type_t<PasswordType>>(password_type));
+        static_cast<
+            std::underlying_type_t<ReusedPasswordAccountType::AccountType>>(
+            password_type.account_type()));
     verdict_dictionary = cache_dictionary->FindKeyOfType(
         password_type_key, base::Value::Type::DICTIONARY);
     if (!verdict_dictionary) {
@@ -226,7 +228,7 @@ LoginReputationClientResponse::VerdictType
 VerdictCacheManager::GetCachedPhishGuardVerdict(
     const GURL& url,
     LoginReputationClientRequest::TriggerType trigger_type,
-    PasswordType password_type,
+    ReusedPasswordAccountType password_type,
     LoginReputationClientResponse* out_response) {
   DCHECK(trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE ||
          trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
@@ -249,7 +251,9 @@ VerdictCacheManager::GetCachedPhishGuardVerdict(
       return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
   } else {
     verdict_dictionary = cache_dictionary->FindKey(base::NumberToString(
-        static_cast<std::underlying_type_t<PasswordType>>(password_type)));
+        static_cast<
+            std::underlying_type_t<ReusedPasswordAccountType::AccountType>>(
+            password_type.account_type())));
     if (!verdict_dictionary)
       return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
   }

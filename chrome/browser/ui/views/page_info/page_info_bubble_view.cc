@@ -925,13 +925,15 @@ PageInfoBubbleView::CreateSecurityDescriptionForPasswordReuse(
   security_description->summary_style = SecuritySummaryColor::RED;
   security_description->summary =
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY);
-  security_description->details =
-      safe_browsing::ChromePasswordProtectionService::
-          GetPasswordProtectionService(profile_)
-              ->GetWarningDetailText(
-                  is_enterprise_password
-                      ? PasswordType::ENTERPRISE_PASSWORD
-                      : PasswordType::PRIMARY_ACCOUNT_PASSWORD);
+  // TODO(crbug/914410): Need to account for non-sync users.
+  auto* service = safe_browsing::ChromePasswordProtectionService::
+      GetPasswordProtectionService(profile_);
+  security_description->details = service->GetWarningDetailText(
+      is_enterprise_password
+          ? service->GetPasswordProtectionReusedPasswordAccountType(
+                PasswordType::ENTERPRISE_PASSWORD, service->username())
+          : service->GetPasswordProtectionReusedPasswordAccountType(
+                PasswordType::PRIMARY_ACCOUNT_PASSWORD, service->username()));
   return security_description;
 }
 #endif

@@ -258,7 +258,7 @@ void OnSyncSetupComplete(Profile* profile,
                                             ServiceAccessType::EXPLICIT_ACCESS);
     password_store->SaveGaiaPasswordHash(
         username, base::UTF8ToUTF16(password),
-        password_manager::metrics_util::SyncPasswordHashChange::
+        password_manager::metrics_util::GaiaPasswordHashChange::
             SAVED_ON_CHROME_SIGNIN);
 
     if (profiles::IsLockAvailable(profile))
@@ -374,7 +374,7 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     if (password_store && !primary_email.empty()) {
       password_store->SaveGaiaPasswordHash(
           primary_email, base::UTF8ToUTF16(password_),
-          password_manager::metrics_util::SyncPasswordHashChange::
+          password_manager::metrics_util::GaiaPasswordHashChange::
               SAVED_ON_CHROME_SIGNIN);
     }
   }

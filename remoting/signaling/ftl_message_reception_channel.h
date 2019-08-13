@@ -74,7 +74,7 @@ class FtlMessageReceptionChannel final : public MessageReceptionChannel {
   base::OneShotTimer reconnect_retry_timer_;
   std::unique_ptr<base::DelayTimer> stream_pong_timer_;
 
-  base::WeakPtrFactory<FtlMessageReceptionChannel> weak_factory_;
+  base::WeakPtrFactory<FtlMessageReceptionChannel> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FtlMessageReceptionChannel);
 };
 

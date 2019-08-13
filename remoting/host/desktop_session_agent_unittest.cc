@@ -45,12 +45,11 @@ class FakeDelegate : public DesktopSessionAgent::Delegate {
  private:
   FakeDesktopEnvironmentFactory factory_;
 
-  base::WeakPtrFactory<FakeDelegate> weak_ptr_;
+  base::WeakPtrFactory<FakeDelegate> weak_ptr_{this};
 };
 
 FakeDelegate::FakeDelegate(scoped_refptr<base::SingleThreadTaskRunner> runner)
-    : factory_(runner),
-      weak_ptr_(this) {}
+    : factory_(runner) {}
 
 class ProcessStatsListener : public IPC::Listener {
  public:

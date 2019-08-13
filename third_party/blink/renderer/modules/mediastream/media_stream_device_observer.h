@@ -21,11 +21,11 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
-class MediaStreamDispatcherEventHandler;
+class UserMediaProcessor;
 class WebLocalFrame;
 
 // This class implements a Mojo object that receives device stopped
-// notifications and forwards them to MediaStreamDispatcherEventHandler.
+// notifications and forwards them to UserMediaProcessor.
 class MODULES_EXPORT MediaStreamDeviceObserver
     : public mojom::blink::MediaStreamDeviceObserver {
  public:
@@ -41,8 +41,7 @@ class MODULES_EXPORT MediaStreamDeviceObserver
   void AddStream(const String& label,
                  const blink::MediaStreamDevices& audio_devices,
                  const blink::MediaStreamDevices& video_devices,
-                 const base::WeakPtr<blink::MediaStreamDispatcherEventHandler>&
-                     event_handler);
+                 const base::WeakPtr<blink::UserMediaProcessor>& event_handler);
   void AddStream(const String& label, const blink::MediaStreamDevice& device);
   bool RemoveStream(const String& label);
   void RemoveStreamDevice(const blink::MediaStreamDevice& device);

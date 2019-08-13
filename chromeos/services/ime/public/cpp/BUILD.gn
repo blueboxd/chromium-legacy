@@ -107,18 +107,3 @@ source_set("rulebased_unit_tests") {
     "rulebased/rulebased_unittest.cc",
   ]
 }
-
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//chromeos/services/ime/public/cpp:buildflags",
-    "//chromeos/services/ime/public/mojom",
-    "//chromeos/strings",
-    "//services/service_manager/public/cpp",
-  ]
-}

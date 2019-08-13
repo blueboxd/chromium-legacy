@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {CustomElement} from './custom_element.js';
+import {TabsApiProxy} from './tabs_api_proxy.js';
 
 export class TabElement extends CustomElement {
   static get template() {
@@ -12,16 +13,21 @@ export class TabElement extends CustomElement {
   constructor() {
     super();
 
+    /** @private {!HTMLElement} */
+    this.closeButtonEl_ =
+        /** @type {!HTMLElement} */ (this.shadowRoot.querySelector('#close'));
+
     /** @private {!Tab} */
     this.tab_;
+
+    /** @private {!TabsApiProxy} */
+    this.tabsApi_ = TabsApiProxy.getInstance();
 
     /** @private {!HTMLElement} */
     this.titleTextEl_ = /** @type {!HTMLElement} */ (
         this.shadowRoot.querySelector('#titleText'));
-  }
 
-  connectedCallback() {
-    this.setAttribute('tabindex', 0);
+    this.closeButtonEl_.addEventListener('click', this.onClose_.bind(this));
   }
 
   /** @return {!Tab} */
@@ -39,6 +45,16 @@ export class TabElement extends CustomElement {
     this.setAttribute('data-tab-id', tab.id);
 
     this.tab_ = Object.freeze(tab);
+  }
+
+  /** @private */
+  onClose_() {
+    // There is no tab data and therefore nothing to close
+    if (!this.tab_) {
+      return;
+    }
+
+    this.tabsApi_.closeTab(this.tab_.id);
   }
 }
 

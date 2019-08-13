@@ -39,7 +39,7 @@ class WebrtcVideoEncoderProxy : public WebrtcVideoEncoder {
 
   std::unique_ptr<Core> core_;
   scoped_refptr<base::SequencedTaskRunner> encode_task_runner_;
-  base::WeakPtrFactory<WebrtcVideoEncoderProxy> weak_factory_;
+  base::WeakPtrFactory<WebrtcVideoEncoderProxy> weak_factory_{this};
 };
 
 }  // namespace remoting

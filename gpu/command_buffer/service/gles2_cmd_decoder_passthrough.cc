@@ -216,13 +216,29 @@ void PassthroughResources::Destroy(gl::GLApi* api) {
         [](GLuint client_id, scoped_refptr<TexturePassthrough> texture) {
           texture->MarkContextLost();
         });
-    for (const auto& pair : texture_shared_image_map) {
-      pair.second->OnContextLost();
+    for (auto& pair : texture_shared_image_map) {
+      pair.second.representation()->OnContextLost();
     }
   }
   texture_object_map.Clear();
   texture_shared_image_map.clear();
   DestroyPendingTextures(have_context);
+}
+
+PassthroughResources::SharedImageData::SharedImageData() = default;
+PassthroughResources::SharedImageData::SharedImageData(
+    std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+        representation)
+    : representation_(std::move(representation)) {}
+PassthroughResources::SharedImageData::SharedImageData(
+    SharedImageData&& other) = default;
+PassthroughResources::SharedImageData::~SharedImageData() = default;
+
+PassthroughResources::SharedImageData& PassthroughResources::SharedImageData::
+operator=(SharedImageData&& other) {
+  scoped_access_ = std::move(other.scoped_access_);
+  representation_ = std::move(other.representation_);
+  return *this;
 }
 
 ScopedFramebufferBindingReset::ScopedFramebufferBindingReset(

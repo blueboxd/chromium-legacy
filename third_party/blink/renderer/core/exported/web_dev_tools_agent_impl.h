@@ -62,19 +62,10 @@ class CORE_EXPORT WebDevToolsAgentImpl final
       public InspectorLayerTreeAgent::Client,
       private Thread::TaskObserver {
  public:
-  class WorkerClient {
-   public:
-    virtual ~WorkerClient() {}
-    virtual void ResumeStartup() = 0;
-  };
-
   static WebDevToolsAgentImpl* CreateForFrame(WebLocalFrameImpl*);
-  static WebDevToolsAgentImpl* CreateForWorker(WebLocalFrameImpl*,
-                                               WorkerClient*);
+  static WebDevToolsAgentImpl* CreateForWorker(WebLocalFrameImpl*);
 
-  WebDevToolsAgentImpl(WebLocalFrameImpl*,
-                       bool include_view_agents,
-                       WorkerClient*);
+  WebDevToolsAgentImpl(WebLocalFrameImpl*, bool include_view_agents);
   ~WebDevToolsAgentImpl() override;
   virtual void Trace(blink::Visitor*);
   DevToolsAgent* GetDevToolsAgent() const { return agent_.Get(); }
@@ -124,7 +115,6 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   HeapHashMap<Member<DevToolsSession>, Member<InspectorPageAgent>> page_agents_;
   HeapHashMap<Member<DevToolsSession>, Member<InspectorOverlayAgent>>
       overlay_agents_;
-  WorkerClient* worker_client_;
   Member<WebLocalFrameImpl> web_local_frame_impl_;
   Member<CoreProbeSink> probe_sink_;
   Member<InspectorResourceContentLoader> resource_content_loader_;

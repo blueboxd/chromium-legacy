@@ -167,10 +167,11 @@ class PaymentsClientTest : public testing::Test {
 
   void OnDidMigrateLocalCards(
       AutofillClient::PaymentsRpcResult result,
-      std::unique_ptr<std::unordered_map<std::string, std::string>> save_result,
+      std::unique_ptr<std::unordered_map<std::string, std::string>>
+          migration_save_results,
       const std::string& display_text) {
     result_ = result;
-    save_result_ = std::move(save_result);
+    migration_save_results_ = std::move(migration_save_results);
     display_text_ = display_text;
   }
 
@@ -296,14 +297,25 @@ class PaymentsClientTest : public testing::Test {
   AutofillClient::PaymentsRpcResult result_;
   AutofillClient::UnmaskDetails* unmask_details_;
 
+  // Server ID of a saved card via credit card upload save.
   std::string server_id_;
+  // Status of the user's FIDO auth opt-in; returned from an OptChange call.
   base::Optional<bool> user_is_opted_in_;
+  // FIDO auth enrollment creation options; returned from an OptChange call.
   base::Value fido_creation_options_;
+  // The UnmaskResponseDetails retrieved from an UnmaskRequest.  Includes PAN.
   PaymentsClient::UnmaskResponseDetails* unmask_response_details_ = nullptr;
+  // The legal message returned from a GetDetails upload save preflight call.
   std::unique_ptr<base::Value> legal_message_;
+  // A list of card BIN ranges supported by Google Payments, returned from a
+  // GetDetails upload save preflight call.
   std::vector<std::pair<int, int>> supported_card_bin_ranges_;
+  // Credit cards to be upload saved during a local credit card migration call.
   std::vector<MigratableCreditCard> migratable_credit_cards_;
-  std::unique_ptr<std::unordered_map<std::string, std::string>> save_result_;
+  // A mapping of results from a local credit card migration call.
+  std::unique_ptr<std::unordered_map<std::string, std::string>>
+      migration_save_results_;
+  // A tip message to be displayed during local card migration.
   std::string display_text_;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -411,6 +423,19 @@ TEST_F(PaymentsClientTest, UnmaskSuccessViaFIDO) {
   ReturnResponse(net::HTTP_OK, "{ \"pan\": \"1234\" }");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
   EXPECT_EQ("1234", unmask_response_details_->real_pan);
+}
+
+TEST_F(PaymentsClientTest, UnmaskSuccessViaCVCWithCreationOptions) {
+  StartUnmasking(CardUnmaskOptions().with_use_fido(false));
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK,
+                 "{ \"pan\": \"1234\", \"fido_creation_options\": "
+                 "{\"relying_party_id\": \"google.com\"}}");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+  EXPECT_EQ("1234", unmask_response_details_->real_pan);
+  EXPECT_EQ("google.com",
+            *unmask_response_details_->fido_creation_options.FindStringKey(
+                "relying_party_id"));
 }
 
 TEST_F(PaymentsClientTest, UnmaskSuccessAccountFromSyncTest) {
@@ -1061,11 +1086,13 @@ TEST_F(PaymentsClientTest, MigrationSuccessWithSaveResult) {
                  "FAILURE\"}],\"value_prop_display_text\":\"display text\"}");
 
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
-  EXPECT_TRUE(save_result_.get());
-  EXPECT_TRUE(save_result_->find("0") != save_result_->end());
-  EXPECT_TRUE(save_result_->at("0") == "SUCCESS");
-  EXPECT_TRUE(save_result_->find("1") != save_result_->end());
-  EXPECT_TRUE(save_result_->at("1") == "TEMPORARY_FAILURE");
+  EXPECT_TRUE(migration_save_results_.get());
+  EXPECT_TRUE(migration_save_results_->find("0") !=
+              migration_save_results_->end());
+  EXPECT_TRUE(migration_save_results_->at("0") == "SUCCESS");
+  EXPECT_TRUE(migration_save_results_->find("1") !=
+              migration_save_results_->end());
+  EXPECT_TRUE(migration_save_results_->at("1") == "TEMPORARY_FAILURE");
 }
 
 TEST_F(PaymentsClientTest, MigrationMissingSaveResult) {
@@ -1074,7 +1101,7 @@ TEST_F(PaymentsClientTest, MigrationMissingSaveResult) {
   ReturnResponse(net::HTTP_OK,
                  "{\"value_prop_display_text\":\"display text\"}");
   EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
-  EXPECT_EQ(nullptr, save_result_.get());
+  EXPECT_EQ(nullptr, migration_save_results_.get());
 }
 
 TEST_F(PaymentsClientTest, MigrationSuccessWithDisplayText) {

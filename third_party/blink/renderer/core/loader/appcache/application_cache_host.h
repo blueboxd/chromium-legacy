@@ -148,10 +148,13 @@ class CORE_EXPORT ApplicationCacheHost
   void GetAssociatedCacheInfo(CacheInfo* info);
 
   mojo::Receiver<mojom::blink::AppCacheFrontend> receiver_{this};
+  mojo::Remote<mojom::blink::AppCacheBackend> backend_remote_;
+
   base::UnguessableToken host_id_;
   mojom::blink::AppCacheInfo cache_info_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   mojom::blink::DocumentInterfaceBroker* interface_broker_;
+
   // Invoked when CacheSelected() is called.
   base::OnceClosure select_cache_for_shared_worker_completion_callback_;
 

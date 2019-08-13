@@ -25,8 +25,7 @@ class TaskDestination {
                   base::OnceClosure on_complete)
       : expected_tasks_(expected_tasks),
         on_complete_(std::move(on_complete)),
-        last_task_id_(number_of_sequences),
-        weak_ptr_factory_(this) {}
+        last_task_id_(number_of_sequences) {}
 
   size_t tasks_run() const { return tasks_run_; }
 
@@ -51,7 +50,7 @@ class TaskDestination {
   std::vector<int> last_task_id_;
   size_t tasks_run_ = 0;
 
-  base::WeakPtrFactory<TaskDestination> weak_ptr_factory_;
+  base::WeakPtrFactory<TaskDestination> weak_ptr_factory_{this};
 };
 
 class PosterThread : public base::SimpleThread {

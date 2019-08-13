@@ -114,9 +114,9 @@ void DeleteSelectionCommand::InitializeStartEnd(Position& start,
   // For HRs, we'll get a position at (HR,1) when hitting delete from the
   // beginning of the previous line, or (HR,0) when forward deleting, but in
   // these cases, we want to delete it, so manually expand the selection
-  if (IsHTMLHRElement(*start.AnchorNode()))
+  if (IsA<HTMLHRElement>(*start.AnchorNode()))
     start = Position::BeforeNode(*start.AnchorNode());
-  else if (IsHTMLHRElement(*end.AnchorNode()))
+  else if (IsA<HTMLHRElement>(*end.AnchorNode()))
     end = Position::AfterNode(*end.AnchorNode());
 
   // FIXME: This is only used so that moveParagraphs can avoid the bugs in

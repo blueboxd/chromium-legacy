@@ -39,9 +39,14 @@ class MODULES_EXPORT Scheduler : public ScriptWrappable,
 
   explicit Scheduler(Document*);
 
+  // Returns the TaskQueue of the currently executing Task. If the current task
+  // was not scheduled through the scheduler, this returns the default priority
+  // global task queue.
+  TaskQueue* currentTaskQueue();
+
   // Returns the TaskQueue for the given |priority| or nullptr if the underlying
   // context is destroyed, e.g. for detached documents.
-  TaskQueue* getTaskQueue(AtomicString priority) const;
+  TaskQueue* getTaskQueue(AtomicString priority);
 
   // postTask creates and queues a Task in the |global_task_queues_| entry
   // corresponding to the priority in the SchedulerPostTaskOptions, and returns
@@ -50,6 +55,10 @@ class MODULES_EXPORT Scheduler : public ScriptWrappable,
   Task* postTask(V8Function*,
                  SchedulerPostTaskOptions*,
                  const Vector<ScriptValue>& args);
+
+  // Callbacks invoked by TaskQueues when they run scheduled tasks.
+  void OnTaskStarted(TaskQueue*, Task*);
+  void OnTaskCompleted(TaskQueue*, Task*);
 
   void ContextDestroyed(ExecutionContext*) override;
 
@@ -60,11 +69,15 @@ class MODULES_EXPORT Scheduler : public ScriptWrappable,
       static_cast<size_t>(WebSchedulingPriority::kLastPriority) + 1;
 
   void CreateGlobalTaskQueues(Document*);
+  TaskQueue* GetTaskQueue(WebSchedulingPriority);
 
   // |global_task_queues_| is initialized with one entry per priority, indexed
   // by priority. This will be empty when the document is detached.
   HeapVector<Member<TaskQueue>, kWebSchedulingPriorityCount>
       global_task_queues_;
+  // The TaskQueue associated with the currently running Task, or nullptr if the
+  // current task was not scheduled through this Scheduler.
+  Member<TaskQueue> current_task_queue_;
 };
 
 }  // namespace blink

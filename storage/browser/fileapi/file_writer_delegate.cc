@@ -36,8 +36,8 @@ FileWriterDelegate::FileWriterDelegate(
       bytes_written_(0),
       bytes_read_(0),
       io_buffer_(base::MakeRefCounted<net::IOBufferWithSize>(kReadBufSize)),
-      data_pipe_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
-      weak_factory_(this) {}
+      data_pipe_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL) {
+}
 
 FileWriterDelegate::~FileWriterDelegate() = default;
 

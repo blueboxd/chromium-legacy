@@ -14,8 +14,7 @@
 namespace audio {
 
 DeviceNotifier::DeviceNotifier()
-    : task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      weak_factory_(this) {
+    : task_runner_(base::SequencedTaskRunnerHandle::Get()) {
   base::SystemMonitor::Get()->AddDevicesChangedObserver(this);
 }
 

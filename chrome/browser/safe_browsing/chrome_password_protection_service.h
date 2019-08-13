@@ -56,7 +56,7 @@ using url::Origin;
 void ShowPasswordReuseModalWarningDialog(
     content::WebContents* web_contents,
     ChromePasswordProtectionService* service,
-    PasswordType password_type,
+    ReusedPasswordAccountType password_type,
     OnWarningDone done_callback);
 
 // Called by ChromeContentBrowserClient to create a
@@ -106,14 +106,14 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   void ShowModalWarning(content::WebContents* web_contents,
                         const std::string& verdict_token,
-                        PasswordType password_type) override;
+                        ReusedPasswordAccountType password_type) override;
 
   void ShowInterstitial(content::WebContents* web_contens,
-                        PasswordType password_type) override;
+                        ReusedPasswordAccountType password_type) override;
 
   // Called when user interacts with password protection UIs.
   void OnUserAction(content::WebContents* web_contents,
-                    PasswordType password_type,
+                    ReusedPasswordAccountType password_type,
                     WarningUIType ui_type,
                     WarningAction action);
 
@@ -125,9 +125,10 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   // Starts collecting threat details if user has extended reporting enabled and
   // is not in incognito mode.
-  void MaybeStartThreatDetailsCollection(content::WebContents* web_contents,
-                                         const std::string& token,
-                                         PasswordType password_type);
+  void MaybeStartThreatDetailsCollection(
+      content::WebContents* web_contents,
+      const std::string& token,
+      ReusedPasswordAccountType password_type);
 
   // Sends threat details if user has extended reporting enabled and is not in
   // incognito mode.
@@ -153,9 +154,10 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   // If |prefs::kPasswordProtectionWarningTrigger| is not managed by enterprise
   // policy, this function should always return PHISHING_REUSE. Otherwise,
-  // returns the specified pref value.
-  PasswordProtectionTrigger GetPasswordProtectionWarningTriggerPref()
-      const override;
+  // returns the specified pref value adjusted for the given username's account
+  // type.
+  PasswordProtectionTrigger GetPasswordProtectionWarningTriggerPref(
+      ReusedPasswordAccountType password_type) const override;
 
   // Gets the enterprise change password URL if specified in policy,
   // otherwise gets the default GAIA change password URL.
@@ -177,12 +179,14 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   // Gets the detailed warning text that should show in the modal warning dialog
   // and page info bubble.
-  base::string16 GetWarningDetailText(PasswordType password_type) const;
+  base::string16 GetWarningDetailText(
+      ReusedPasswordAccountType password_type) const;
 
   // If password protection trigger is configured via enterprise policy, gets
   // the name of the organization that owns the enterprise policy. Otherwise,
   // returns an empty string.
-  std::string GetOrganizationName(PasswordType password_type) const;
+  std::string GetOrganizationName(
+      ReusedPasswordAccountType password_type) const;
 
   // If the browser is not incognito and the user is reusing their enterprise
   // password or is a GSuite user, triggers
@@ -198,9 +202,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   void ReportPasswordChanged() override;
 
   // Returns true if there's any enterprise password reuses unhandled in
-  // |web_contents|.
-  // "Unhandled" is defined as user hasn't clicked on "Change Password" button
-  // in modal warning dialog.
+  // |web_contents|. "Unhandled" is defined as user hasn't clicked on
+  // "Change Password" button in modal warning dialog.
   bool HasUnhandledEnterprisePasswordReuse(
       content::WebContents* web_contents) const;
 
@@ -208,7 +211,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // reused |password_type|, |verdict| and |receive_time|.
   void CacheVerdict(const GURL& url,
                     LoginReputationClientRequest::TriggerType trigger_type,
-                    PasswordType password_type,
+                    ReusedPasswordAccountType password_type,
                     const LoginReputationClientResponse& verdict,
                     const base::Time& receive_time) override;
 
@@ -221,7 +224,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   LoginReputationClientResponse::VerdictType GetCachedVerdict(
       const GURL& url,
       LoginReputationClientRequest::TriggerType trigger_type,
-      PasswordType password_type,
+      ReusedPasswordAccountType password_type,
       LoginReputationClientResponse* out_response) override;
 
   // Gets |account_info_| based on |profile_|.
@@ -242,12 +245,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   bool IsIncognito() override;
 
   // Checks if pinging should be enabled based on the |trigger_type|,
-  // |password_type| and |username|, updates |reason| accordingly.
-  // The |username| can be an email or a username for a non-GAIA or
-  // saved-password reuse. No validation has been done on it.
+  // |password_type|, updates |reason| accordingly.
   bool IsPingingEnabled(LoginReputationClientRequest::TriggerType trigger_type,
-                        PasswordType password_type,
-                        const std::string& username,
+                        ReusedPasswordAccountType password_type,
                         RequestOutcome* reason) override;
 
   // If current profile has enabled history syncing.
@@ -263,8 +263,14 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // account is a Gmail account.
   bool IsPrimaryAccountGmail() const override;
 
-  // If non sync account is currently still signed in.
-  bool IsOtherGaiaAccountSignedIn(const std::string& username) const override;
+  // Gets the AccountInfo for the account corresponding to |username| from the
+  // list of signed-in users.
+  AccountInfo GetSignedInNonSyncAccount(
+      const std::string& username) const override;
+
+  // If the domain for the non-syncing account is equal to
+  // |kNoHostedDomainFound|, this means that the account is a Gmail account.
+  bool IsOtherGaiaAccountGmail(const std::string& username) const override;
 
   // If user is under advanced protection.
   bool IsUnderAdvancedProtection() override;
@@ -281,7 +287,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // |threat_type| and reused |password_type|, such that page info bubble will
   // show appropriate status when user clicks on the security chip.
   void UpdateSecurityState(SBThreatType threat_type,
-                           PasswordType password_type,
+                           ReusedPasswordAccountType password_type,
                            content::WebContents* web_contents) override;
 
   void RemoveUnhandledSyncPasswordReuseOnURLsDeleted(
@@ -289,14 +295,15 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       const history::URLRows& deleted_rows) override;
 
   void HandleUserActionOnModalWarning(content::WebContents* web_contents,
-                                      PasswordType password_type,
+                                      ReusedPasswordAccountType password_type,
                                       WarningAction action);
 
   void HandleUserActionOnPageInfo(content::WebContents* web_contents,
-                                  PasswordType password_type,
+                                  ReusedPasswordAccountType password_type,
                                   WarningAction action);
 
   void HandleUserActionOnSettings(content::WebContents* web_contents,
+                                  ReusedPasswordAccountType password_type,
                                   WarningAction action);
 
   void HandleResetPasswordOnInterstitial(content::WebContents* web_contents,
@@ -313,7 +320,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // previous request outcome, the reused |password_type| and the
   // |main_frame_url|.
   bool CanShowInterstitial(RequestOutcome reason,
-                           PasswordType password_type,
+                           ReusedPasswordAccountType password_type,
                            const GURL& main_frame_url) override;
 
   // Unit tests
@@ -369,6 +376,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
  private:
   friend class MockChromePasswordProtectionService;
   friend class ChromePasswordProtectionServiceBrowserTest;
+  friend class SecurityStateTabHelperTest;
   FRIEND_TEST_ALL_PREFIXES(
       ChromePasswordProtectionServiceTest,
       VerifyOnPolicySpecifiedPasswordReuseDetectedEventForPhishingReuse);
@@ -400,11 +408,14 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   void MaybeLogPasswordCapture(bool did_log_in);
   void SetLogPasswordCaptureTimer(const base::TimeDelta& delay);
 
-  void OnModalWarningShownForSignInPassword(content::WebContents* web_contents,
-                                            const std::string& verdict_token);
+  void OnModalWarningShownForGaiaPassword(
+      content::WebContents* web_contents,
+      ReusedPasswordAccountType password_type,
+      const std::string& verdict_token);
 
   void OnModalWarningShownForEnterprisePassword(
       content::WebContents* web_contents,
+      ReusedPasswordAccountType password_type,
       const std::string& verdict_token);
 
   // Constructor used for tests only.

@@ -22,7 +22,6 @@ class PrimaryAccountAccessTokenFetcher;
 }  // namespace signin
 
 class GoogleServiceAuthError;
-class TemplateURLService;
 
 // A service to fetch suggestions from a remote endpoint given a URL.
 class DocumentSuggestionsService : public KeyedService {
@@ -43,11 +42,10 @@ class DocumentSuggestionsService : public KeyedService {
 
   // Creates and starts a document suggestion request for |query|.
   // May obtain an OAuth2 token for the signed-in user.
-  void CreateDocumentSuggestionsRequest(
-      const base::string16& query,
-      const TemplateURLService* template_url_service,
-      StartCallback start_callback,
-      CompletionCallback completion_callback);
+  void CreateDocumentSuggestionsRequest(const base::string16& query,
+                                        bool is_incognito,
+                                        StartCallback start_callback,
+                                        CompletionCallback completion_callback);
 
   // Advises the service to stop any process that creates a suggestion request.
   void StopCreatingDocumentSuggestionsRequest();

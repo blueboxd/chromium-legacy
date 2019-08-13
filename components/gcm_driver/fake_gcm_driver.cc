@@ -105,8 +105,7 @@ void FakeGCMDriver::UpdateAccountMapping(
     const AccountMapping& account_mapping) {
 }
 
-void FakeGCMDriver::RemoveAccountMapping(const std::string& account_id) {
-}
+void FakeGCMDriver::RemoveAccountMapping(const CoreAccountId& account_id) {}
 
 base::Time FakeGCMDriver::GetLastTokenFetchTime() {
   return base::Time();

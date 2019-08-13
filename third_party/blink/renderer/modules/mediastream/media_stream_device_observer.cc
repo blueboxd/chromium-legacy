@@ -11,9 +11,9 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "third_party/blink/public/platform/interface_registry.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_dispatcher_eventhandler.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_processor.h"
 
 namespace blink {
 
@@ -36,7 +36,7 @@ bool RemoveStreamDeviceFromArray(const MediaStreamDevice& device,
 struct MediaStreamDeviceObserver::Stream {
   Stream() {}
   ~Stream() {}
-  base::WeakPtr<MediaStreamDispatcherEventHandler> handler;
+  base::WeakPtr<UserMediaProcessor> handler;
   MediaStreamDevices audio_devices;
   MediaStreamDevices video_devices;
 };
@@ -142,7 +142,7 @@ void MediaStreamDeviceObserver::AddStream(
     const String& label,
     const MediaStreamDevices& audio_devices,
     const MediaStreamDevices& video_devices,
-    const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler) {
+    const base::WeakPtr<UserMediaProcessor>& event_handler) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   Stream stream;

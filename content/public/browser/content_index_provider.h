@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_CONTENT_INDEX_PROVIDER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -13,6 +14,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/mojom/content_index/content_index.mojom.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
 namespace url {
@@ -48,6 +50,10 @@ class CONTENT_EXPORT ContentIndexProvider {
  public:
   ContentIndexProvider();
   virtual ~ContentIndexProvider();
+
+  // Returns the number of icons needed and their ideal sizes (in pixels).
+  virtual std::vector<gfx::Size> GetIconSizes(
+      blink::mojom::ContentCategory category) = 0;
 
   // Called when a new entry is registered. Must be called on the UI thread.
   virtual void OnContentAdded(ContentIndexEntry entry) = 0;

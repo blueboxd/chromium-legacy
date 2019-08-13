@@ -217,7 +217,14 @@ bool SysmemBufferCollection::Initialize(
   if (is_mappable()) {
     constraints.usage.cpu =
         fuchsia::sysmem::cpuUsageRead | fuchsia::sysmem::cpuUsageWrite;
+
+    constraints.has_buffer_memory_constraints = true;
+    constraints.buffer_memory_constraints.ram_domain_supported = true;
+    constraints.buffer_memory_constraints.cpu_domain_supported = true;
+  } else {
+    constraints.usage.none = fuchsia::sysmem::noneUsage;
   }
+
   constraints.min_buffer_count_for_camping = num_buffers;
   constraints.image_format_constraints_count = 0;
 
@@ -315,6 +322,9 @@ scoped_refptr<gfx::NativePixmap> SysmemBufferCollection::CreateNativePixmap(
   gfx::NativePixmapHandle handle;
   handle.buffer_collection_id = id();
   handle.buffer_index = buffer_index;
+  handle.ram_coherency =
+      buffers_info_.settings.buffer_settings.coherency_domain ==
+      fuchsia::sysmem::CoherencyDomain::RAM;
 
   zx::vmo main_plane_vmo;
   if (is_mappable()) {

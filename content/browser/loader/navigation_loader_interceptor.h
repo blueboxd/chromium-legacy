@@ -20,7 +20,6 @@
 namespace content {
 
 class BrowserContext;
-class ResourceContext;
 struct ResourceRequest;
 struct SubresourceLoaderParams;
 class ThrottlingURLLoader;
@@ -30,6 +29,7 @@ class ThrottlingURLLoader;
 // default URLLoader, e.g. the one from the network service.
 // NavigationLoaderInterceptor is a per-request object and kept around during
 // the lifetime of a navigation request (including multiple redirect legs).
+// All methods are called on the UI thread.
 class CONTENT_EXPORT NavigationLoaderInterceptor {
  public:
   NavigationLoaderInterceptor() = default;
@@ -68,17 +68,9 @@ class CONTENT_EXPORT NavigationLoaderInterceptor {
   //
   // |callback| and |fallback_callback| must not be invoked after the
   // destruction of this interceptor.
-  //
-  // |browser_context| will only be non-null when this interceptor is running on
-  // the UI thread, and |resource_context| will only be non-null when running on
-  // the IO thread.
-  //
-  // TODO(http://crbug.com/824840): Once all interceptors support
-  // running on UI, remove |resource_context|.
   virtual void MaybeCreateLoader(
       const network::ResourceRequest& tentative_resource_request,
       BrowserContext* browser_context,
-      ResourceContext* resource_context,
       LoaderCallback callback,
       FallbackCallback fallback_callback) = 0;
 

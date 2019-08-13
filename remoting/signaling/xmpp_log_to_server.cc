@@ -25,8 +25,7 @@ XmppLogToServer::XmppLogToServer(
     scoped_refptr<base::SequencedTaskRunner> caller_task_runner)
     : mode_(mode),
       signal_strategy_(signal_strategy),
-      directory_bot_jid_(directory_bot_jid),
-      weak_factory_(this) {
+      directory_bot_jid_(directory_bot_jid) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   if (!caller_task_runner || caller_task_runner->RunsTasksInCurrentSequence()) {
     Init();

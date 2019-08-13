@@ -59,9 +59,12 @@ class ResetPasswordHandlerImpl : public mojom::ResetPasswordHandler {
     safe_browsing::ChromePasswordProtectionService* service = safe_browsing::
         ChromePasswordProtectionService::GetPasswordProtectionService(profile);
     if (service) {
-      service->OnUserAction(web_contents_, password_type_,
-                            safe_browsing::WarningUIType::INTERSTITIAL,
-                            safe_browsing::WarningAction::CHANGE_PASSWORD);
+      service->OnUserAction(
+          web_contents_,
+          service->GetPasswordProtectionReusedPasswordAccountType(
+              password_type_, service->username()),
+          safe_browsing::WarningUIType::INTERSTITIAL,
+          safe_browsing::WarningAction::CHANGE_PASSWORD);
     }
   }
 
@@ -127,10 +130,11 @@ void ResetPasswordUI::BindResetPasswordHandler(
 }
 
 base::DictionaryValue ResetPasswordUI::PopulateStrings() const {
-  std::string org_name =
-      safe_browsing::ChromePasswordProtectionService::
-          GetPasswordProtectionService(Profile::FromWebUI(web_ui()))
-              ->GetOrganizationName(password_type_);
+  auto* service = safe_browsing::ChromePasswordProtectionService::
+      GetPasswordProtectionService(Profile::FromWebUI(web_ui()));
+  std::string org_name = service->GetOrganizationName(
+      service->GetPasswordProtectionReusedPasswordAccountType(
+          password_type_, service->username()));
   bool known_password_type =
       password_type_ != PasswordType::PASSWORD_TYPE_UNKNOWN;
 

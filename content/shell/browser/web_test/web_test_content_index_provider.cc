@@ -6,9 +6,15 @@
 
 namespace content {
 
-WebTestContentIndexProvider::WebTestContentIndexProvider() = default;
+WebTestContentIndexProvider::WebTestContentIndexProvider()
+    : icon_sizes_({{96, 96}}) {}
 
 WebTestContentIndexProvider::~WebTestContentIndexProvider() = default;
+
+std::vector<gfx::Size> WebTestContentIndexProvider::GetIconSizes(
+    blink::mojom::ContentCategory category) {
+  return icon_sizes_;
+}
 
 void WebTestContentIndexProvider::OnContentAdded(ContentIndexEntry entry) {
   entries_[entry.description->id] = {

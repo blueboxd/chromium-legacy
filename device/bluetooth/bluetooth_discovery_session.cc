@@ -19,8 +19,7 @@ BluetoothDiscoverySession::BluetoothDiscoverySession(
     : active_(true),
       is_stop_in_progress_(false),
       adapter_(adapter),
-      discovery_filter_(discovery_filter.release()),
-      weak_ptr_factory_(this) {
+      discovery_filter_(discovery_filter.release()) {
   DCHECK(adapter_.get());
 }
 

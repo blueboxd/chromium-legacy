@@ -521,7 +521,7 @@ RenderWidgetHostViewBase* RenderWidgetHostImpl::GetView() {
   return view_.get();
 }
 
-const viz::FrameSinkId& RenderWidgetHostImpl::GetFrameSinkId() const {
+const viz::FrameSinkId& RenderWidgetHostImpl::GetFrameSinkId() {
   return frame_sink_id_;
 }
 

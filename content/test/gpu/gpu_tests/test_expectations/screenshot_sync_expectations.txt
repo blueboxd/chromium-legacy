@@ -1,6 +1,6 @@
 # tags: [ linux mac win ]
 # tags: [ debug ]
-# tags: [ amd amd-0x6613 intel ]
+# tags: [ amd amd-0x6613 intel intel-0x3e92 ]
 # results: [ Failure RetryOnFailure Skip ]
 
 crbug.com/599776 [ win amd ] ScreenshotSync_GPURasterWithCanvas [ RetryOnFailure ]
@@ -12,3 +12,6 @@ crbug.com/978492 [ mac amd ] ScreenshotSync_SWRasterWithCanvas [ RetryOnFailure 
 
 # TODO(kbr): flakily timing out on this configuration.
 crbug.com/648369 [ linux debug intel ] * [ RetryOnFailure ]
+
+# Flakily getting a WebSocketException on Windows w/ Intel UHD 630
+crbug.com/986939 [ win intel-0x3e92 ] ScreenshotSync_GPURasterWithCanvas [ RetryOnFailure ]

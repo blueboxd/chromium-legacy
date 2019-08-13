@@ -24,11 +24,11 @@ class FlingBooster {
       const blink::WebGestureEvent& gesture_start);
   void ObserveGestureEvent(const blink::WebGestureEvent& gesture_event);
   void ObserveProgressFling(const gfx::Vector2dF& current_velocity);
+  void Reset();
 
  private:
   bool ShouldBoostFling(const blink::WebGestureEvent& fling_start_event);
 
-  void Reset();
 
   // When non-null, the current gesture stream is being considered for
   // boosting. If a fling hasn't occurred by this time, we won't cause a boost.

@@ -53,7 +53,7 @@ class DebugRecording : public mojom::DebugRecording {
   mojo::Remote<mojom::DebugRecordingFileProvider> file_provider_;
   TracedServiceRef service_ref_;
 
-  base::WeakPtrFactory<DebugRecording> weak_factory_;
+  base::WeakPtrFactory<DebugRecording> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DebugRecording);
 };
 

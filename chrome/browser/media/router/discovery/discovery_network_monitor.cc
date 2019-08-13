@@ -96,8 +96,8 @@ DiscoveryNetworkMonitor::DiscoveryNetworkMonitor(NetworkInfoFunction strategy)
     : network_id_(kNetworkIdDisconnected),
       observers_(new base::ObserverListThreadSafe<Observer>(
           base::ObserverListPolicy::EXISTING_ONLY)),
-      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(),
+      task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       network_info_function_(strategy),
       metric_observer_(std::make_unique<DiscoveryNetworkMonitorMetricObserver>(

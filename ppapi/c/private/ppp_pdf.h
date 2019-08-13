@@ -60,6 +60,49 @@ struct PP_PdfPrintSettings_Dev {
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_PdfPrintSettings_Dev, 8);
 
+typedef enum {
+  // No action specified, default value.
+  PP_PDF_ACTION_NONE = 0,
+  // Action specifying a command to scroll the rect into viewport.
+  PP_PDF_SCROLL_TO_MAKE_VISIBLE = 1,
+  // Last enum value marker.
+  PP_PDF_ACCESSIBILITYACTION_LAST = PP_PDF_SCROLL_TO_MAKE_VISIBLE
+} PP_PdfAccessibilityAction;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_PdfAccessibilityAction, 4);
+
+typedef enum {
+  // No scroll alignment specified.
+  PP_PDF_SCROLL_NONE = 0,
+  // Scroll the point to the center of the viewport.
+  PP_PDF_SCROLL_ALIGNMENT_CENTER,
+  // Scroll the point to the top of the viewport.
+  PP_PDF_SCROLL_ALIGNMENT_TOP,
+  // Scroll the point to the bottom of the viewport.
+  PP_PDF_SCROLL_ALIGNMENT_BOTTOM,
+  // Scroll the point to the left of the viewport.
+  PP_PDF_SCROLL_ALIGNMENT_LEFT,
+  // Scroll the point to the right of the viewport.
+  PP_PDF_SCROLL_ALIGNMENT_RIGHT,
+  // Scroll the point to the closest edge of the viewport.
+  PP_PDF_SCROLL_ALIGNMENT_CLOSEST_EDGE,
+  // Last enum value marker.
+  PP_PDF_ACCESSIBILITYSCROLLALIGNMENT_LAST =
+      PP_PDF_SCROLL_ALIGNMENT_CLOSEST_EDGE
+} PP_PdfAccessibilityScrollAlignment;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_PdfAccessibilityScrollAlignment, 4);
+
+struct PP_PdfAccessibilityActionData {
+  // Accessibility action type.
+  PP_PdfAccessibilityAction action;
+  // Target rect on which the action is to be performed.
+  struct PP_Rect target_rect;
+  // Horizontal scroll alignment with respect to the viewport
+  PP_PdfAccessibilityScrollAlignment horizontal_scroll_alignment;
+  // Vertical scroll alignment with respect to the viewport
+  PP_PdfAccessibilityScrollAlignment vertical_scroll_alignment;
+};
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_PdfAccessibilityActionData, 28);
+
 struct PPP_Pdf_1_1 {
   // Returns an absolute URL if the position is over a link.
   PP_Var (*GetLinkAtPosition)(PP_Instance instance,
@@ -108,6 +151,11 @@ struct PPP_Pdf_1_1 {
 
   // Perform a redo operation.
   void (*Redo)(PP_Instance instance);
+
+  // Enables PDF to respond to Accessibility Actions.
+  void (*HandleAccessibilityAction)(
+      PP_Instance instance,
+      const PP_PdfAccessibilityActionData& action_data);
 
   // This is a specialized version of PPP_Printing_Dev's Begin method.
   // It functions in the same way, but takes an additional |pdf_print_settings|

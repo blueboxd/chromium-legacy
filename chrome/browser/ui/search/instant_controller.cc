@@ -41,8 +41,8 @@ class InstantController::TabObserver : public content::WebContentsObserver {
 
 InstantController::InstantController(Profile* profile,
                                      TabStripModel* tab_strip_model)
-    : profile_(profile), tab_strip_observer_(this) {
-  tab_strip_observer_.Add(tab_strip_model);
+    : profile_(profile) {
+  tab_strip_model->AddObserver(this);
 }
 
 InstantController::~InstantController() = default;

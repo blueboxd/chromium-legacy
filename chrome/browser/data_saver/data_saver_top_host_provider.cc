@@ -4,12 +4,17 @@
 
 #include "chrome/browser/data_saver/data_saver_top_host_provider.h"
 
+#include <algorithm>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "chrome/browser/engagement/site_engagement_details.mojom.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/previews/previews_service.h"
+#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/optimization_guide/hints_processing_util.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/prefs/pref_service.h"
@@ -28,7 +33,35 @@ bool IsHostBlacklisted(const base::DictionaryValue* top_host_blacklist,
       optimization_guide::HashHostForDictionary(host));
 }
 
+bool IsPermittedToUseTopHostProvider(content::BrowserContext* browser_context) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  // Check if they are a data saver user.
+  if (!data_reduction_proxy::DataReductionProxySettings::
+          IsDataSaverEnabledByUser(profile->GetPrefs())) {
+    return false;
+  }
+
+  // Now ensure that they have seen the HTTPS infobar notification.
+  PreviewsService* previews_service =
+      PreviewsServiceFactory::GetForProfile(profile);
+  if (!previews_service)
+    return false;
+
+  PreviewsHTTPSNotificationInfoBarDecider* info_bar_decider =
+      previews_service->previews_https_notification_infobar_decider();
+  return !info_bar_decider->NeedsToNotifyUser();
+}
+
 }  // namespace
+
+// static
+std::unique_ptr<DataSaverTopHostProvider>
+DataSaverTopHostProvider::CreateIfAllowed(
+    content::BrowserContext* browser_context) {
+  if (IsPermittedToUseTopHostProvider(browser_context))
+    return std::make_unique<DataSaverTopHostProvider>(browser_context);
+  return nullptr;
+}
 
 DataSaverTopHostProvider::DataSaverTopHostProvider(
     content::BrowserContext* browser_context)

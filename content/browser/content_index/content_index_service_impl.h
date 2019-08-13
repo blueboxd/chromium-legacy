@@ -32,6 +32,8 @@ class CONTENT_EXPORT ContentIndexServiceImpl
   ~ContentIndexServiceImpl() override;
 
   // blink::mojom::ContentIndexService implementation.
+  void GetIconSizes(blink::mojom::ContentCategory category,
+                    GetIconSizesCallback callback) override;
   void Add(int64_t service_worker_registration_id,
            blink::mojom::ContentDescriptionPtr description,
            const std::vector<SkBitmap>& icons,

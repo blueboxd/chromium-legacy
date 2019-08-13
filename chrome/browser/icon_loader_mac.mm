@@ -23,7 +23,7 @@ IconLoader::IconGroup IconLoader::GroupForFilepath(
 // static
 scoped_refptr<base::TaskRunner> IconLoader::GetReadIconTaskRunner() {
   // NSWorkspace is thread-safe.
-  return base::CreateTaskRunnerWithTraits(traits());
+  return base::CreateTaskRunner(traits());
 }
 
 void IconLoader::ReadIcon() {

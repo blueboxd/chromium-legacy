@@ -1092,6 +1092,9 @@ jumbo_split_static_library("browser") {
     "performance_manager/graph/system_node.cc",
     "performance_manager/graph/system_node_impl.cc",
     "performance_manager/graph/system_node_impl.h",
+    "performance_manager/graph/worker_node.cc",
+    "performance_manager/graph/worker_node_impl.cc",
+    "performance_manager/graph/worker_node_impl.h",
     "performance_manager/mechanisms/working_set_trimmer.cc",
     "performance_manager/mechanisms/working_set_trimmer.h",
     "performance_manager/mechanisms/working_set_trimmer_chromeos.cc",
@@ -1148,6 +1151,7 @@ jumbo_split_static_library("browser") {
     "performance_manager/public/graph/page_node.h",
     "performance_manager/public/graph/process_node.h",
     "performance_manager/public/graph/system_node.h",
+    "performance_manager/public/graph/worker_node.h",
     "performance_manager/public/web_contents_proxy.h",
     "performance_manager/render_process_user_data.cc",
     "performance_manager/render_process_user_data.h",
@@ -2058,7 +2062,6 @@ jumbo_split_static_library("browser") {
     "//components/subresource_filter/content/browser",
     "//components/subresource_filter/core/browser",
     "//components/suggestions",
-    "//components/supervised_user_error_page",
     "//components/sync",
     "//components/sync_bookmarks",
     "//components/sync_preferences",
@@ -2891,6 +2894,7 @@ jumbo_split_static_library("browser") {
         "supervised_user/child_accounts/child_account_service_android.cc",
         "supervised_user/child_accounts/child_account_service_android.h",
       ]
+      deps += [ "//chrome/browser/supervised_user/supervised_user_error_page" ]
     }
   } else {  # !is_android
     sources += [
@@ -3357,15 +3361,15 @@ jumbo_split_static_library("browser") {
       "serial/serial_chooser_context_factory.h",
       "sharing/click_to_call/click_to_call_context_menu_observer.cc",
       "sharing/click_to_call/click_to_call_context_menu_observer.h",
-      "sharing/click_to_call/click_to_call_sharing_dialog_controller.cc",
-      "sharing/click_to_call/click_to_call_sharing_dialog_controller.h",
+      "sharing/click_to_call/click_to_call_ui_controller.cc",
+      "sharing/click_to_call/click_to_call_ui_controller.h",
       "sharing/click_to_call/click_to_call_utils.cc",
       "sharing/click_to_call/click_to_call_utils.h",
       "sharing/shared_clipboard/shared_clipboard_ui_controller.cc",
       "sharing/shared_clipboard/shared_clipboard_ui_controller.h",
       "sharing/sharing_dialog.h",
-      "sharing/sharing_dialog_controller.cc",
-      "sharing/sharing_dialog_controller.h",
+      "sharing/sharing_ui_controller.cc",
+      "sharing/sharing_ui_controller.h",
       "signin/signin_promo.cc",
       "signin/signin_promo.h",
       "signin/signin_ui_util.cc",
@@ -3645,7 +3649,6 @@ jumbo_split_static_library("browser") {
       "//chromeos/services/cellular_setup",
       "//chromeos/services/device_sync",
       "//chromeos/services/device_sync/public/mojom",
-      "//chromeos/services/ime/public/mojom",
       "//chromeos/services/multidevice_setup",
       "//chromeos/services/multidevice_setup/public/cpp:first_run_field_trial",
       "//chromeos/services/multidevice_setup/public/mojom",
@@ -4170,6 +4173,7 @@ jumbo_split_static_library("browser") {
     ]
     deps += [
       "//components/printing/browser",
+      "//components/services/pdf_compositor/public/cpp",
       "//components/services/pdf_compositor/public/mojom",
       "//printing",
     ]

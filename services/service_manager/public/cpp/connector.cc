@@ -11,12 +11,12 @@
 namespace service_manager {
 
 Connector::Connector(mojom::ConnectorPtrInfo unbound_state)
-    : unbound_state_(std::move(unbound_state)), weak_factory_(this) {
+    : unbound_state_(std::move(unbound_state)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 Connector::Connector(mojom::ConnectorPtr connector)
-    : connector_(std::move(connector)), weak_factory_(this) {
+    : connector_(std::move(connector)) {
   connector_.set_connection_error_handler(
       base::Bind(&Connector::OnConnectionError, base::Unretained(this)));
 }

@@ -225,7 +225,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
       || (!canonical_pos.IsNull() &&
           IsDisplayInsideTable(canonical_pos.AnchorNode())) ||
       (!canonical_pos.IsNull() &&
-       IsHTMLHRElement(*canonical_pos.AnchorNode()))) {
+       IsA<HTMLHRElement>(*canonical_pos.AnchorNode()))) {
     ApplyCommandToComposite(
         MakeGarbageCollected<InsertLineBreakCommand>(GetDocument()),
         editing_state);

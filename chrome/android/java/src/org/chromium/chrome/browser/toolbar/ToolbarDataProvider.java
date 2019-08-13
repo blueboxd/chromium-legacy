@@ -21,7 +21,9 @@ import org.chromium.components.security_state.ConnectionSecurityLevel;
 /**
  * Defines the data that is exposed to properly render the Toolbar.
  */
-public interface ToolbarDataProvider {
+// TODO(crbug.com/865801): Refine split between common/generally toolbar properties and
+//                         sub-component properties.
+public interface ToolbarDataProvider extends ToolbarCommonPropertiesModel {
     /**
      * @return The tab that contains the information currently displayed in the toolbar.
      */
@@ -37,16 +39,19 @@ public interface ToolbarDataProvider {
      * @return The current url for the current tab. Returns empty string when there is no tab.
      */
     @NonNull
+    @Override
     String getCurrentUrl();
 
     /**
      * @return The NewTabPage shown for the current Tab or null if one is not being shown.
      */
+    @Override
     NewTabPage getNewTabPageForCurrentTab();
 
     /**
      * @return Whether the toolbar is currently being displayed for incognito.
      */
+    @Override
     boolean isIncognito();
 
     /**
@@ -150,18 +155,8 @@ public interface ToolbarDataProvider {
      *         instead of the URL.
      */
     @Nullable
+    @Override
     default public String getDisplaySearchTerms() {
         return null;
     }
-
-    /**
-     * Update the information required to display the search engine logo in the omnibox.
-     *
-     * @param shouldShowSearchEngineLogo True if we should show the search engine logo in the
-     *         omnibox.
-     * @param isSearchEngineGoogle True if the default search engine is Google.
-     * @param searchEngineUrl The url for the search engine, used to fetch the favicon.
-     */
-    void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
-            boolean isSearchEngineGoogle, String searchEngineUrl);
 }

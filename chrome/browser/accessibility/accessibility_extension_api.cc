@@ -237,18 +237,6 @@ AccessibilityPrivateDarkenScreenFunction::Run() {
 
 #if defined(OS_CHROMEOS)
 ExtensionFunction::ResponseAction
-AccessibilityPrivateSetSwitchAccessKeysFunction::Run() {
-  std::unique_ptr<accessibility_private::SetSwitchAccessKeys::Params> params =
-      accessibility_private::SetSwitchAccessKeys::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  ash::AccessibilityController::Get()->SetSwitchAccessKeysToCapture(
-      params->key_codes);
-
-  return RespondNow(NoArguments());
-}
-
-ExtensionFunction::ResponseAction
 AccessibilityPrivateSetNativeChromeVoxArcSupportForCurrentAppFunction::Run() {
   std::unique_ptr<
       accessibility_private::SetNativeChromeVoxArcSupportForCurrentApp::Params>

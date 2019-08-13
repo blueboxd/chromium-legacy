@@ -39,10 +39,7 @@ const QuotaClient::ID kClientDB = QuotaClient::kIndexedDatabase;
 
 class MockQuotaManagerTest : public testing::Test {
  public:
-  MockQuotaManagerTest()
-    : deletion_callback_count_(0),
-      weak_factory_(this) {
-  }
+  MockQuotaManagerTest() : deletion_callback_count_(0) {}
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
@@ -110,7 +107,7 @@ class MockQuotaManagerTest : public testing::Test {
   std::set<url::Origin> origins_;
   StorageType type_;
 
-  base::WeakPtrFactory<MockQuotaManagerTest> weak_factory_;
+  base::WeakPtrFactory<MockQuotaManagerTest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockQuotaManagerTest);
 };

@@ -93,7 +93,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
   // read when multiple responses are returned.
   size_t remaining_responses_ = 0;
   SEQUENCE_CHECKER(my_sequence_checker_);
-  base::WeakPtrFactory<GetAssertionRequestHandler> weak_factory_;
+  base::WeakPtrFactory<GetAssertionRequestHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GetAssertionRequestHandler);
 };

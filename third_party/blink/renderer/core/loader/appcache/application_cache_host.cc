@@ -300,18 +300,12 @@ bool ApplicationCacheHost::BindBackend() {
     return true;
   }
 
-  DEFINE_STATIC_LOCAL(
-      const mojo::Remote<mojom::blink::AppCacheBackend>, backend_remote, ([] {
-        mojo::Remote<mojom::blink::AppCacheBackend> result;
-        Platform::Current()->GetInterfaceProvider()->GetInterface(
-            result.BindNewPipeAndPassReceiver());
-        return result;
-      }()));
-
   // Once we have 'WebContextInterfaceBroker', we can call this function through
   // it like render frame.
   // Refer to the design document, 'https://bit.ly/2GT0rZv'.
-  backend_remote->RegisterHost(
+  Platform::Current()->GetInterfaceProvider()->GetInterface(
+      backend_remote_.BindNewPipeAndPassReceiver());
+  backend_remote_->RegisterHost(
       backend_host_.BindNewPipeAndPassReceiver(std::move(task_runner_)),
       std::move(frontend_remote), host_id_);
   return true;

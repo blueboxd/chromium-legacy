@@ -172,26 +172,35 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
 #if defined(OS_LINUX) || defined(USE_OZONE)
   gfx::GpuMemoryBufferHandle handle2;
   const uint64_t kSize = kOffset + kStride;
-  const uint64_t kModifier = 2;
   handle2.type = gfx::NATIVE_PIXMAP;
   handle2.id = kId;
   handle2.offset = kOffset;
   handle2.stride = kStride;
 #if defined(OS_LINUX)
+  const uint64_t kModifier = 2;
   base::ScopedFD buffer_handle;
+  handle2.native_pixmap_handle.modifier = kModifier;
 #elif defined(OS_FUCHSIA)
   zx::vmo buffer_handle;
   handle2.native_pixmap_handle.buffer_collection_id =
       gfx::SysmemBufferCollectionId::Create();
-  handle2.native_pixmap_handle.buffer_index = 0;
+  handle2.native_pixmap_handle.buffer_index = 4;
+  handle2.native_pixmap_handle.ram_coherency = true;
 #endif
-  handle2.native_pixmap_handle.modifier = kModifier;
   handle2.native_pixmap_handle.planes.emplace_back(kOffset, kStride, kSize,
                                                    std::move(buffer_handle));
   proxy->EchoGpuMemoryBufferHandle(std::move(handle2), &output);
   EXPECT_EQ(gfx::NATIVE_PIXMAP, output.type);
+#if defined(OS_LINUX)
   EXPECT_EQ(kModifier, output.native_pixmap_handle.modifier);
-  EXPECT_EQ(kId, output.id);
+#elif defined(OS_FUCHSIA)
+  EXPECT_EQ(handle2.native_pixmap_handle.buffer_collection_id,
+            output.native_pixmap_handle.buffer_collection_id);
+  EXPECT_EQ(handle2.native_pixmap_handle.buffer_index,
+            output.native_pixmap_handle.buffer_index);
+  EXPECT_EQ(handle2.native_pixmap_handle.ram_coherency,
+            output.native_pixmap_handle.ram_coherency);
+#endif
   ASSERT_EQ(1u, output.native_pixmap_handle.planes.size());
   EXPECT_EQ(kSize, output.native_pixmap_handle.planes.back().size);
 #endif

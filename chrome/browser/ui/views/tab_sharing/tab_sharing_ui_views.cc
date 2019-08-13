@@ -166,7 +166,7 @@ void TabSharingUIViews::StopSharing() {
 
 void TabSharingUIViews::OnBrowserAdded(Browser* browser) {
   if (browser->profile()->GetOriginalProfile() == profile_)
-    tab_strip_models_observer_.Add(browser->tab_strip_model());
+    browser->tab_strip_model()->AddObserver(this);
 }
 
 void TabSharingUIViews::OnBrowserRemoved(Browser* browser) {
@@ -174,9 +174,7 @@ void TabSharingUIViews::OnBrowserRemoved(Browser* browser) {
   if (browser_list->empty())
     browser_list->RemoveObserver(this);
 
-  TabStripModel* tab_strip_model = browser->tab_strip_model();
-  if (tab_strip_models_observer_.IsObserving(tab_strip_model))
-    tab_strip_models_observer_.Remove(tab_strip_model);
+  browser->tab_strip_model()->RemoveObserver(this);
 }
 
 void TabSharingUIViews::OnTabStripModelChanged(
@@ -233,7 +231,7 @@ void TabSharingUIViews::CreateInfobarForWebContents(
 
 void TabSharingUIViews::RemoveInfobarsForAllTabs() {
   BrowserList::GetInstance()->RemoveObserver(this);
-  tab_strip_models_observer_.RemoveAll();
+  TabStripModelObserver::StopObservingAll(this);
 
   for (const auto& infobars_entry : infobars_)
     infobars_entry.second->RemoveSelf();

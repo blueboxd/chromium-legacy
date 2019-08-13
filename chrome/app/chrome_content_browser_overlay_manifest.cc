@@ -33,7 +33,6 @@
 #include "components/metrics/public/mojom/call_stack_profile_collector.mojom.h"
 #include "components/rappor/public/mojom/rappor_recorder.mojom.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
-#include "components/services/quarantine/public/mojom/quarantine.mojom.h"
 #include "components/translate/content/common/translate.mojom.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/identity/public/cpp/manifest.h"
@@ -136,12 +135,9 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability("nacl_loader", "browser")
         .RequireCapability("noop", "noop")
         .RequireCapability("patch", "patch_file")
-        .RequireCapability("pdf_compositor", "compositor")
         .RequireCapability("preferences", "pref_client")
         .RequireCapability("preferences", "pref_control")
         .RequireCapability("profile_import", "import")
-        .RequireCapability(quarantine::mojom::kServiceName,
-                           quarantine::mojom::kQuarantineFileCapability)
         .RequireCapability("removable_storage_writer",
                            "removable_storage_writer")
         .RequireCapability("secure_channel", "secure_channel")

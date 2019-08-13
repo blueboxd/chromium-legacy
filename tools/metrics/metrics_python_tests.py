@@ -21,7 +21,6 @@ def resolve(*paths):
 
 sys.exit(typ.main(tests=resolve(
    'actions/extract_actions_test.py',
-   'histograms/expand_owners_in_histograms_xml_unittest.py',
    'histograms/generate_expired_histograms_array_unittest.py',
    'histograms/pretty_print_test.py',
    'rappor/rappor_model_test.py',

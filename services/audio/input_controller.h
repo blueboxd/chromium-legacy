@@ -358,7 +358,7 @@ class InputController final : public StreamMonitor {
   // the error notification is pending and then make a callback from an
   // InputController that has already been closed.
   // All outstanding weak pointers, are invalidated at the end of DoClose.
-  base::WeakPtrFactory<InputController> weak_ptr_factory_;
+  base::WeakPtrFactory<InputController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InputController);
 };

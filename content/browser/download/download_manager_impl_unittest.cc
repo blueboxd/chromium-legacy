@@ -33,7 +33,6 @@
 #include "components/download/public/common/download_item_factory.h"
 #include "components/download/public/common/download_item_impl.h"
 #include "components/download/public/common/download_item_impl_delegate.h"
-#include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/mock_download_file.h"
 #include "components/download/public/common/mock_download_item_impl.h"
 #include "components/download/public/common/mock_input_stream.h"
@@ -162,7 +161,7 @@ class MockDownloadItemFactory
       const base::FilePath& path,
       const GURL& url,
       const std::string& mime_type,
-      std::unique_ptr<download::DownloadRequestHandleInterface> request_handle)
+      download::DownloadJob::CancelRequestCallback cancel_request_callback)
       override;
 
   void set_is_download_persistent(bool is_download_persistent) {
@@ -299,7 +298,7 @@ download::DownloadItemImpl* MockDownloadItemFactory::CreateActiveItem(
 
   // Active items are created and then immediately are called to start
   // the download.
-  EXPECT_CALL(*result, MockStart(_, _));
+  EXPECT_CALL(*result, MockStart(_));
 
   return result;
 }
@@ -310,7 +309,7 @@ download::DownloadItemImpl* MockDownloadItemFactory::CreateSavePageItem(
     const base::FilePath& path,
     const GURL& url,
     const std::string& mime_type,
-    std::unique_ptr<download::DownloadRequestHandleInterface> request_handle) {
+    download::DownloadJob::CancelRequestCallback cancel_request_callback) {
   DCHECK(items_.find(download_id) == items_.end());
 
   download::MockDownloadItemImpl* result =
@@ -465,9 +464,8 @@ class DownloadManagerTest : public testing::Test {
     // Satisfy expectation.  If the item is created in StartDownload(),
     // we call Start on it immediately, so we need to set that expectation
     // in the factory.
-    std::unique_ptr<download::DownloadRequestHandleInterface> req_handle;
-    item.Start(std::unique_ptr<download::DownloadFile>(), std::move(req_handle),
-               info, nullptr, nullptr);
+    item.Start(std::unique_ptr<download::DownloadFile>(), base::DoNothing(),
+               info, nullptr);
     DCHECK(id < download_urls_.size());
     EXPECT_CALL(item, GetURL()).WillRepeatedly(ReturnRef(download_urls_[id]));
 

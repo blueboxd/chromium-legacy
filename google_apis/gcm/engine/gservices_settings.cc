@@ -200,7 +200,7 @@ std::string GServicesSettings::CalculateDigest(const SettingsMap& settings) {
   return digest;
 }
 
-GServicesSettings::GServicesSettings() : weak_ptr_factory_(this) {
+GServicesSettings::GServicesSettings() {
   digest_ = CalculateDigest(settings_);
 }
 

@@ -79,9 +79,6 @@ class AwBrowserContext : public content::BrowserContext,
   AwFormDatabaseService* GetFormDatabaseService();
   autofill::AutocompleteHistoryManager* GetAutocompleteHistoryManager();
 
-  // TODO(amalova): implement for non-default browser context
-  bool IsDefaultBrowserContext() { return true; }
-
   // content::BrowserContext implementation.
   base::FilePath GetPath() override;
   bool IsOffTheRecord() override;

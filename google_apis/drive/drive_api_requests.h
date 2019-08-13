@@ -143,9 +143,7 @@ class DriveApiDataRequest : public DriveApiPartialFieldRequest {
   // |callback| is called when the request finishes either by success or by
   // failure. On success, a JSON Value object is passed. It must not be null.
   DriveApiDataRequest(RequestSender* sender, const Callback& callback)
-      : DriveApiPartialFieldRequest(sender),
-        callback_(callback),
-        weak_ptr_factory_(this) {
+      : DriveApiPartialFieldRequest(sender), callback_(callback) {
     DCHECK(!callback_.is_null());
   }
   ~DriveApiDataRequest() override {}
@@ -197,7 +195,7 @@ class DriveApiDataRequest : public DriveApiPartialFieldRequest {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<DriveApiDataRequest> weak_ptr_factory_;
+  base::WeakPtrFactory<DriveApiDataRequest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DriveApiDataRequest);
 };
@@ -1169,7 +1167,7 @@ class SingleBatchableDelegateRequest : public UrlFetchRequestBase {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<SingleBatchableDelegateRequest> weak_ptr_factory_;
+  base::WeakPtrFactory<SingleBatchableDelegateRequest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SingleBatchableDelegateRequest);
 };
@@ -1266,7 +1264,7 @@ class BatchUploadRequest : public UrlFetchRequestBase {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BatchUploadRequest> weak_ptr_factory_;
+  base::WeakPtrFactory<BatchUploadRequest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BatchUploadRequest);
 };

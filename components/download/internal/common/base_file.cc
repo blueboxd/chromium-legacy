@@ -25,7 +25,6 @@
 #include "components/download/public/common/download_stats.h"
 #include "components/download/quarantine/quarantine.h"
 #include "crypto/secure_hash.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_WIN)
 #include "components/services/quarantine/public/cpp/quarantine_features_win.h"
@@ -651,10 +650,10 @@ void BaseFile::AnnotateWithSourceInformation(
     const std::string& client_guid,
     const GURL& source_url,
     const GURL& referrer_url,
-    std::unique_ptr<service_manager::Connector> connector,
+    mojo::PendingRemote<quarantine::mojom::Quarantine> remote_quarantine,
     OnAnnotationDoneCallback on_annotation_done_callback) {
   GURL authority_url = GetEffectiveAuthorityURL(source_url, referrer_url);
-  if (!connector) {
+  if (!remote_quarantine) {
 #if defined(OS_WIN)
     QuarantineFileResult result = quarantine::SetInternetZoneIdentifierDirectly(
         full_path_, authority_url, referrer_url);
@@ -664,12 +663,11 @@ void BaseFile::AnnotateWithSourceInformation(
     std::move(on_annotation_done_callback)
         .Run(QuarantineFileResultToReason(result));
   } else {
-    connector->BindInterface(quarantine::mojom::kServiceName,
-                             mojo::MakeRequest(&quarantine_service_));
+    quarantine_service_.Bind(std::move(remote_quarantine));
 
     on_annotation_done_callback_ = std::move(on_annotation_done_callback);
 
-    quarantine_service_.set_connection_error_handler(base::BindOnce(
+    quarantine_service_.set_disconnect_handler(base::BindOnce(
         &BaseFile::OnQuarantineServiceError, weak_factory_.GetWeakPtr(),
         authority_url, referrer_url));
 

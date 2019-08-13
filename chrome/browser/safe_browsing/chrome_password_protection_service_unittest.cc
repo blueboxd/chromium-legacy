@@ -122,15 +122,44 @@ class MockChromePasswordProtectionService
                                         sync_password_hash_provider,
                                         cache_manager),
         is_incognito_(false),
-        is_extended_reporting_(false) {}
+        is_extended_reporting_(false),
+        is_syncing_(false),
+        is_no_hosted_domain_found_(false),
+        is_account_signed_in_(false) {}
   bool IsExtendedReporting() override { return is_extended_reporting_; }
   bool IsIncognito() override { return is_incognito_; }
+  bool IsPrimaryAccountSyncing() const override { return is_syncing_; }
+  bool IsPrimaryAccountSignedIn() const override {
+    return is_account_signed_in_;
+  }
+  bool IsPrimaryAccountGmail() const override {
+    return is_no_hosted_domain_found_;
+  }
+  AccountInfo GetSignedInNonSyncAccount(
+      const std::string& username) const override {
+    return account_info_;
+  }
 
   // Configures the results returned by IsExtendedReporting(), IsIncognito(),
   // and IsHistorySyncEnabled().
   void ConfigService(bool is_incognito, bool is_extended_reporting) {
     is_incognito_ = is_incognito;
     is_extended_reporting_ = is_extended_reporting;
+  }
+
+  void SetIsSyncing(bool is_syncing) { is_syncing_ = is_syncing; }
+  void SetIsNoHostedDomainFound(bool is_no_hosted_domain_found) {
+    is_no_hosted_domain_found_ = is_no_hosted_domain_found;
+  }
+  void SetIsAccountSignedIn(bool is_account_signed_in) {
+    is_account_signed_in_ = is_account_signed_in;
+  }
+  void SetAccountInfo(const std::string& username) {
+    AccountInfo account_info;
+    account_info.account_id = "account_id";
+    account_info.email = username;
+    account_info.gaia = "gaia";
+    account_info_ = account_info;
   }
 
   SafeBrowsingUIManager* ui_manager() { return ui_manager_.get(); }
@@ -141,6 +170,10 @@ class MockChromePasswordProtectionService
  private:
   bool is_incognito_;
   bool is_extended_reporting_;
+  bool is_syncing_;
+  bool is_no_hosted_domain_found_;
+  bool is_account_signed_in_;
+  AccountInfo account_info_;
   std::string mocked_sync_password_hash_;
 };
 
@@ -286,7 +319,7 @@ class ChromePasswordProtectionServiceTest
 
   int GetSizeofUnhandledSyncPasswordReuses() {
     DictionaryPrefUpdate unhandled_sync_password_reuses(
-        profile()->GetPrefs(), prefs::kSafeBrowsingUnhandledSyncPasswordReuses);
+        profile()->GetPrefs(), prefs::kSafeBrowsingUnhandledGaiaPasswordReuses);
     return unhandled_sync_password_reuses->size();
   }
 
@@ -314,100 +347,108 @@ class ChromePasswordProtectionServiceTest
 
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyUserPopulationForPasswordOnFocusPing) {
+  ReusedPasswordAccountType reused_password_type;
+  reused_password_type.set_account_type(ReusedPasswordAccountType::UNKNOWN);
+
   // Password field on focus pinging is enabled on !incognito && SBER.
   RequestOutcome reason;
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
   EXPECT_FALSE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-      PasswordType::PASSWORD_TYPE_UNKNOWN,
-      /*username=*/"", &reason));
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, reused_password_type,
+      &reason));
   EXPECT_EQ(RequestOutcome::DISABLED_DUE_TO_USER_POPULATION, reason);
 
   service_->ConfigService(false /*incognito*/, true /*SBER*/);
   EXPECT_TRUE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-      PasswordType::PASSWORD_TYPE_UNKNOWN, /*username=*/"", &reason));
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, reused_password_type,
+      &reason));
 
   service_->ConfigService(true /*incognito*/, false /*SBER*/);
   EXPECT_FALSE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-      PasswordType::PASSWORD_TYPE_UNKNOWN, /*username=*/"", &reason));
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, reused_password_type,
+      &reason));
   EXPECT_EQ(RequestOutcome::DISABLED_DUE_TO_INCOGNITO, reason);
 
   service_->ConfigService(true /*incognito*/, true /*SBER*/);
   EXPECT_FALSE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-      PasswordType::PASSWORD_TYPE_UNKNOWN, /*username=*/"", &reason));
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, reused_password_type,
+      &reason));
   EXPECT_EQ(RequestOutcome::DISABLED_DUE_TO_INCOGNITO, reason);
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyUserPopulationForSavedPasswordEntryPing) {
+  ReusedPasswordAccountType reused_password_type;
+  reused_password_type.set_account_type(
+      ReusedPasswordAccountType::SAVED_PASSWORD);
+
   RequestOutcome reason;
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
   EXPECT_TRUE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::SAVED_PASSWORD, /*username=*/"", &reason));
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
+      &reason));
 
   service_->ConfigService(false /*incognito*/, true /*SBER*/);
   EXPECT_TRUE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::SAVED_PASSWORD, /*username=*/"", &reason));
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
+      &reason));
 
   service_->ConfigService(true /*incognito*/, false /*SBER*/);
   EXPECT_TRUE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::SAVED_PASSWORD, /*username=*/"", &reason));
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
+      &reason));
 
   service_->ConfigService(true /*incognito*/, true /*SBER*/);
   EXPECT_TRUE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::SAVED_PASSWORD, /*username=*/"", &reason));
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
+      &reason));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyUserPopulationForSyncPasswordEntryPing) {
   RequestOutcome reason;
   // Sets up the account as a gmail account as there is no hosted domain.
-  CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
-  SetUpSyncAccount(kNoHostedDomainFound, account_info);
+  ReusedPasswordAccountType reused_password_type;
+  reused_password_type.set_account_type(ReusedPasswordAccountType::GMAIL);
+  reused_password_type.set_is_account_syncing(true);
 
   // Sync password entry pinging is enabled by default.
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
   EXPECT_TRUE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::PRIMARY_ACCOUNT_PASSWORD, /*username=*/"", &reason));
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
+      &reason));
 
   service_->ConfigService(false /*incognito*/, true /*SBER*/);
   EXPECT_TRUE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::PRIMARY_ACCOUNT_PASSWORD, /*username=*/"", &reason));
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
+      &reason));
 
   service_->ConfigService(true /*incognito*/, false /*SBER*/);
   EXPECT_TRUE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::PRIMARY_ACCOUNT_PASSWORD, /*username=*/"", &reason));
-
-  service_->ConfigService(true /*incognito*/, true /*SBER*/);
-  EXPECT_TRUE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::PRIMARY_ACCOUNT_PASSWORD, /*username=*/"", &reason));
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
+      &reason));
 
   // Even if sync password entry pinging is disabled by policy,
   // |IsPingingEnabled(..)| should still default to true if the
-  // the password reuse type is PRIMARY_ACCOUNT_PASSWORD.
+  // the password reuse type is syncing Gmail account.
+  service_->ConfigService(true /*incognito*/, true /*SBER*/);
+  service_->SetIsNoHostedDomainFound(true);
+  EXPECT_TRUE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
+      &reason));
+
   profile()->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
                                     PASSWORD_PROTECTION_OFF);
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
   EXPECT_TRUE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::PRIMARY_ACCOUNT_PASSWORD, /*username=*/"", &reason));
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
+      &reason));
 
   profile()->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
                                     PASSWORD_REUSE);
   EXPECT_TRUE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::PRIMARY_ACCOUNT_PASSWORD, /*username=*/"", &reason));
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
+      &reason));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
@@ -460,42 +501,21 @@ TEST_F(ChromePasswordProtectionServiceTest,
   EXPECT_EQ(RequestOutcome::MATCHED_ENTERPRISE_LOGIN_URL, reason);
 }
 
-TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountTypeGmail) {
-  EXPECT_EQ(PasswordReuseEvent::NOT_SIGNED_IN, service_->GetSyncAccountType());
-  EXPECT_TRUE(
-      service_->GetOrganizationName(PasswordType::PRIMARY_ACCOUNT_PASSWORD)
-          .empty());
-  CoreAccountInfo account_info = SetPrimaryAccount(kTestGmail);
-  SetUpSyncAccount(kNoHostedDomainFound, account_info);
-  EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
-  EXPECT_EQ("", service_->GetOrganizationName(
-                    PasswordType::PRIMARY_ACCOUNT_PASSWORD));
-  EXPECT_EQ("",
-            service_->GetOrganizationName(PasswordType::ENTERPRISE_PASSWORD));
-
-  // Verify GetSyncAccountType() for incognito profile.
-  service_->ConfigService(true /*is_incognito*/,
-                          false /*is_extended_reporting*/);
-  EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
+TEST_F(ChromePasswordProtectionServiceTest, VerifyGetOrganizationTypeGmail) {
+  ReusedPasswordAccountType reused_password_type;
+  reused_password_type.set_account_type(ReusedPasswordAccountType::GMAIL);
+  reused_password_type.set_is_account_syncing(true);
+  EXPECT_TRUE(service_->GetOrganizationName(reused_password_type).empty());
+  EXPECT_EQ("", service_->GetOrganizationName(reused_password_type));
 }
 
-TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountTypeGSuite) {
-  EXPECT_EQ(PasswordReuseEvent::NOT_SIGNED_IN, service_->GetSyncAccountType());
-  EXPECT_TRUE(
-      service_->GetOrganizationName(PasswordType::PRIMARY_ACCOUNT_PASSWORD)
-          .empty());
+TEST_F(ChromePasswordProtectionServiceTest, VerifyGetOrganizationTypeGSuite) {
   CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount("example.com", account_info);
-  EXPECT_EQ(PasswordReuseEvent::GSUITE, service_->GetSyncAccountType());
-  EXPECT_EQ("example.com", service_->GetOrganizationName(
-                               PasswordType::PRIMARY_ACCOUNT_PASSWORD));
-  EXPECT_EQ("",
-            service_->GetOrganizationName(PasswordType::ENTERPRISE_PASSWORD));
-
-  // Verify GetSyncAccountType() for incognito profile.
-  service_->ConfigService(true /*is_incognito*/,
-                          false /*is_extended_reporting*/);
-  EXPECT_EQ(PasswordReuseEvent::GSUITE, service_->GetSyncAccountType());
+  ReusedPasswordAccountType reused_password_type;
+  reused_password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
+  reused_password_type.set_is_account_syncing(true);
+  EXPECT_EQ("example.com", service_->GetOrganizationName(reused_password_type));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyUpdateSecurityState) {
@@ -512,22 +532,22 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyUpdateSecurityState) {
   verdict_proto.set_verdict_type(LoginReputationClientResponse::PHISHING);
   verdict_proto.set_cache_duration_sec(600);
   verdict_proto.set_cache_expression("password_reuse_url.com/");
-
+  ReusedPasswordAccountType reused_password_type;
+  reused_password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
+  reused_password_type.set_is_account_syncing(true);
   service_->CacheVerdict(
       url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::PRIMARY_ACCOUNT_PASSWORD, verdict_proto, base::Time::Now());
+      reused_password_type, verdict_proto, base::Time::Now());
 
-  service_->UpdateSecurityState(SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE,
-                                PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-                                web_contents());
+  service_->UpdateSecurityState(SB_THREAT_TYPE_SIGNED_IN_SYNC_PASSWORD_REUSE,
+                                reused_password_type, web_contents());
   ASSERT_TRUE(service_->ui_manager()->IsUrlWhitelistedOrPendingForWebContents(
       url, false, web_contents()->GetController().GetLastCommittedEntry(),
       web_contents(), false, &current_threat_type));
-  EXPECT_EQ(SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE, current_threat_type);
+  EXPECT_EQ(SB_THREAT_TYPE_SIGNED_IN_SYNC_PASSWORD_REUSE, current_threat_type);
 
   service_->UpdateSecurityState(safe_browsing::SB_THREAT_TYPE_SAFE,
-                                PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-                                web_contents());
+                                reused_password_type, web_contents());
   current_threat_type = SB_THREAT_TYPE_UNUSED;
   service_->ui_manager()->IsUrlWhitelistedOrPendingForWebContents(
       url, false, web_contents()->GetController().GetLastCommittedEntry(),
@@ -537,35 +557,7 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyUpdateSecurityState) {
   EXPECT_EQ(LoginReputationClientResponse::SAFE,
             service_->GetCachedVerdict(
                 url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordType::PRIMARY_ACCOUNT_PASSWORD, &verdict));
-}
-
-TEST_F(ChromePasswordProtectionServiceTest,
-       VerifyPasswordReuseUserEventNotRecordedDueToNotSignedIn) {
-  // Feature not enabled so nothing should be logged.
-  NavigateAndCommit(GURL("https:www.example.com/"));
-
-  // PasswordReuseDetected
-  service_->MaybeLogPasswordReuseDetectedEvent(web_contents());
-  EXPECT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
-  service_->MaybeLogPasswordReuseLookupEvent(
-      web_contents(), RequestOutcome::MATCHED_WHITELIST, nullptr);
-  EXPECT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
-
-  // PasswordReuseLookup
-  unsigned long t = 0;
-  for (const auto& it : kTestCasesWithoutVerdict) {
-    service_->MaybeLogPasswordReuseLookupEvent(web_contents(),
-                                               it.request_outcome, nullptr);
-    ASSERT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty()) << t;
-    t++;
-  }
-
-  // PasswordReuseDialogInteraction
-  service_->MaybeLogPasswordReuseDialogInteraction(
-      1000 /* navigation_id */,
-      PasswordReuseDialogInteraction::WARNING_ACTION_TAKEN);
-  ASSERT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
+                reused_password_type, &verdict));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
@@ -573,7 +565,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
   // Configure sync account type to GMAIL.
   CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount(kNoHostedDomainFound, account_info);
-  EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
   service_->ConfigService(true /*is_incognito*/,
                           false /*is_extended_reporting*/);
   ASSERT_TRUE(service_->IsIncognito());
@@ -609,8 +600,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
   // Configure sync account type to GMAIL.
   CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount(kNoHostedDomainFound, account_info);
-  EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
-
+  service_->SetIsAccountSignedIn(true);
   NavigateAndCommit(GURL("https://www.example.com/"));
 
   // Case 1: safe_browsing_enabled = true
@@ -642,7 +632,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
   // Configure sync account type to GMAIL.
   CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount(kNoHostedDomainFound, account_info);
-  EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
 
   // Case 1: Check that the timer is not set in the ctor if no password hash is
   // saved.
@@ -669,7 +658,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
   // Configure sync account type to GMAIL.
   CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount(kNoHostedDomainFound, account_info);
-  EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
 
   service_ = NewMockPasswordProtectionService(
       /*sync_password_hash=*/"");
@@ -695,7 +683,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
   // Configure sync account type to GMAIL.
   CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount(kNoHostedDomainFound, account_info);
-  EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
 
   // Case 1: Default service_ ctor has an empty password hash. Should not log.
   service_->MaybeLogPasswordCapture(/*did_log_in=*/false);
@@ -704,7 +691,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
   // Cases 2 and 3: With a password hash. Should log.
   service_ = NewMockPasswordProtectionService(
       /*sync_password_hash=*/"some-hash-value");
-
+  service_->SetIsAccountSignedIn(true);
   service_->MaybeLogPasswordCapture(/*did_log_in=*/false);
   ASSERT_EQ(1ul, GetUserEventService()->GetRecordedUserEvents().size());
   GaiaPasswordCaptured event = GetUserEventService()
@@ -726,7 +713,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
   // Configure sync account type to GMAIL.
   CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount(kNoHostedDomainFound, account_info);
-  EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
 
   // Case 1: Default service_ ctor has an empty password hash, so we don't log
   // or reschedule the logging.
@@ -736,6 +722,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
   // Case 2: A non-empty password hash.
   service_ = NewMockPasswordProtectionService(
       /*sync_password_hash=*/"some-hash-value");
+  service_->SetIsAccountSignedIn(true);
 
   service_->MaybeLogPasswordCapture(/*did_log_in=*/false);
 
@@ -752,7 +739,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
   // Configure sync account type to GMAIL.
   CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount(kNoHostedDomainFound, account_info);
-  EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
 
   NavigateAndCommit(GURL("https://www.example.com/"));
 
@@ -853,6 +839,9 @@ TEST_F(ChromePasswordProtectionServiceTest,
        VerifyNavigationDuringPasswordReusePingDeferred) {
   GURL trigger_url(kPhishingURL);
   NavigateAndCommit(trigger_url);
+  service_->SetIsSyncing(true);
+  service_->SetIsAccountSignedIn(true);
+
   // Simulate a on-going password reuse request that hasn't received
   // verdict yet.
   PrepareRequest(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
@@ -910,6 +899,8 @@ TEST_F(ChromePasswordProtectionServiceTest,
        VerifyNavigationThrottleRemovedWhenNavigationHandleIsGone) {
   GURL trigger_url(kPhishingURL);
   NavigateAndCommit(trigger_url);
+  service_->SetIsSyncing(true);
+  service_->SetIsAccountSignedIn(true);
   // Simulate a on-going password reuse request that hasn't received
   // verdict yet.
   PrepareRequest(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
@@ -946,7 +937,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
   GURL url_c("https://www.phishingc.com");
 
   DictionaryPrefUpdate update(profile()->GetPrefs(),
-                              prefs::kSafeBrowsingUnhandledSyncPasswordReuses);
+                              prefs::kSafeBrowsingUnhandledGaiaPasswordReuses);
   update->SetKey(Origin::Create(url_a).Serialize(),
                  base::Value("navigation_id_a"));
   update->SetKey(Origin::Create(url_b).Serialize(),
@@ -976,6 +967,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
   // Preparing sync account.
   CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount("example.com", account_info);
+  service_->SetIsAccountSignedIn(true);
 
   // Simulates change password.
   service_->OnGaiaPasswordChanged("foo@example.com", false);
@@ -1019,6 +1011,8 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
   // If the reused password is not Enterprise password but the account is
   // GSuite, event should be sent.
+  service_->SetAccountInfo(kUserName);
+  service_->SetIsAccountSignedIn(true);
   service_->MaybeReportPasswordReuseDetected(web_contents(), kUserName,
                                              PasswordType::OTHER_GAIA_PASSWORD,
                                              /*is_phishing_url =*/true);
@@ -1094,27 +1088,35 @@ TEST_F(ChromePasswordProtectionServiceTest,
   base::string16 warning_text_sync =
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SYNC);
 
-  EXPECT_EQ(warning_text_sync, service_->GetWarningDetailText(
-                                   PasswordType::PRIMARY_ACCOUNT_PASSWORD));
+  ReusedPasswordAccountType reused_password_type;
+  reused_password_type.set_account_type(ReusedPasswordAccountType::GMAIL);
+  reused_password_type.set_is_account_syncing(true);
+  EXPECT_EQ(warning_text_sync,
+            service_->GetWarningDetailText(reused_password_type));
+  reused_password_type.set_account_type(
+      ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
+  reused_password_type.set_is_account_syncing(false);
   EXPECT_EQ(generic_enterprise_warning_text,
-            service_->GetWarningDetailText(PasswordType::ENTERPRISE_PASSWORD));
+            service_->GetWarningDetailText(reused_password_type));
   {
     base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeatures(
-        {safe_browsing::kPasswordProtectionForSignedInUsers}, {});
-    EXPECT_EQ(warning_text_non_sync, service_->GetWarningDetailText(
-                                         PasswordType::OTHER_GAIA_PASSWORD));
+    feature_list.InitAndEnableFeature(
+        safe_browsing::kPasswordProtectionForSignedInUsers);
+    reused_password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
+    EXPECT_EQ(warning_text_non_sync,
+              service_->GetWarningDetailText(reused_password_type));
   }
 
-  // Signs in as a GSuite user.
-  CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
-  SetUpSyncAccount(std::string("example.com"), account_info);
-  EXPECT_EQ(PasswordReuseEvent::GSUITE, service_->GetSyncAccountType());
-  EXPECT_EQ(
-      warning_text_with_org_name,
-      service_->GetWarningDetailText(PasswordType::PRIMARY_ACCOUNT_PASSWORD));
+  reused_password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
+  reused_password_type.set_is_account_syncing(true);
+  CoreAccountInfo core_account_info = SetPrimaryAccount(kTestEmail);
+  SetUpSyncAccount(std::string("example.com"), core_account_info);
+  EXPECT_EQ(warning_text_with_org_name,
+            service_->GetWarningDetailText(reused_password_type));
+  reused_password_type.set_account_type(
+      ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
   EXPECT_EQ(generic_enterprise_warning_text,
-            service_->GetWarningDetailText(PasswordType::ENTERPRISE_PASSWORD));
+            service_->GetWarningDetailText(reused_password_type));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextGmail) {
@@ -1122,92 +1124,102 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextGmail) {
       IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SIGNED_IN_NON_SYNC);
   base::string16 warning_text_sync =
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SYNC);
-  base::string16 generic_enterprise_warning_text = l10n_util::GetStringUTF16(
-      IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE);
 
-  EXPECT_EQ(warning_text_sync, service_->GetWarningDetailText(
-                                   PasswordType::PRIMARY_ACCOUNT_PASSWORD));
-  EXPECT_EQ(generic_enterprise_warning_text,
-            service_->GetWarningDetailText(PasswordType::ENTERPRISE_PASSWORD));
-
-  // Signs in as a Gmail user.
-  CoreAccountInfo account_info = SetPrimaryAccount(kTestGmail);
-  SetUpSyncAccount(kNoHostedDomainFound, account_info);
-  EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
-  EXPECT_EQ(warning_text_sync, service_->GetWarningDetailText(
-                                   PasswordType::PRIMARY_ACCOUNT_PASSWORD));
-  EXPECT_EQ(generic_enterprise_warning_text,
-            service_->GetWarningDetailText(PasswordType::ENTERPRISE_PASSWORD));
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      safe_browsing::kPasswordProtectionForSignedInUsers);
+  ReusedPasswordAccountType reused_password_type;
+  reused_password_type.set_account_type(ReusedPasswordAccountType::GMAIL);
+  EXPECT_EQ(warning_text_non_sync,
+            service_->GetWarningDetailText(reused_password_type));
+  reused_password_type.set_is_account_syncing(true);
+  EXPECT_EQ(warning_text_sync,
+            service_->GetWarningDetailText(reused_password_type));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyCanShowInterstitial) {
+  // Do not show interstitial if policy not set for password_alert.
   ASSERT_FALSE(
       profile()->GetPrefs()->HasPrefPath(prefs::kSafeBrowsingWhitelistDomains));
   GURL trigger_url = GURL(kPhishingURL);
-  EXPECT_FALSE(
-      service_->CanShowInterstitial(RequestOutcome::TURNED_OFF_BY_ADMIN,
-                                    PasswordType::SAVED_PASSWORD, trigger_url));
+  ReusedPasswordAccountType reused_password_type;
+  reused_password_type.set_account_type(
+      ReusedPasswordAccountType::SAVED_PASSWORD);
   EXPECT_FALSE(service_->CanShowInterstitial(
-      RequestOutcome::TURNED_OFF_BY_ADMIN,
-      PasswordType::PRIMARY_ACCOUNT_PASSWORD, trigger_url));
+      RequestOutcome::TURNED_OFF_BY_ADMIN, reused_password_type, trigger_url));
+  reused_password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
+  reused_password_type.set_is_account_syncing(true);
+  EXPECT_FALSE(service_->CanShowInterstitial(
+      RequestOutcome::TURNED_OFF_BY_ADMIN, reused_password_type, trigger_url));
   {
     base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeatures(
-        {safe_browsing::kPasswordProtectionForSignedInUsers}, {});
-
-    EXPECT_FALSE(service_->CanShowInterstitial(
-        RequestOutcome::TURNED_OFF_BY_ADMIN, PasswordType::OTHER_GAIA_PASSWORD,
-        trigger_url));
+    feature_list.InitAndEnableFeature(
+        safe_browsing::kPasswordProtectionForSignedInUsers);
+    service_->SetAccountInfo(kUserName);
+    reused_password_type.set_is_account_syncing(false);
+    EXPECT_FALSE(
+        service_->CanShowInterstitial(RequestOutcome::TURNED_OFF_BY_ADMIN,
+                                      reused_password_type, trigger_url));
   }
 
+  reused_password_type.set_account_type(
+      ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
+  reused_password_type.set_is_account_syncing(false);
   EXPECT_FALSE(service_->CanShowInterstitial(
-      RequestOutcome::TURNED_OFF_BY_ADMIN, PasswordType::ENTERPRISE_PASSWORD,
-      trigger_url));
-  EXPECT_FALSE(
-      service_->CanShowInterstitial(RequestOutcome::PASSWORD_ALERT_MODE,
-                                    PasswordType::SAVED_PASSWORD, trigger_url));
-
-  EXPECT_TRUE(service_->CanShowInterstitial(
-      RequestOutcome::PASSWORD_ALERT_MODE,
-      PasswordType::PRIMARY_ACCOUNT_PASSWORD, trigger_url));
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeatures(
-        {safe_browsing::kPasswordProtectionForSignedInUsers}, {});
-
-    EXPECT_TRUE(service_->CanShowInterstitial(
-        RequestOutcome::PASSWORD_ALERT_MODE, PasswordType::OTHER_GAIA_PASSWORD,
-        trigger_url));
-  }
-
+      RequestOutcome::TURNED_OFF_BY_ADMIN, reused_password_type, trigger_url));
+  reused_password_type.set_account_type(
+      ReusedPasswordAccountType::SAVED_PASSWORD);
+  EXPECT_FALSE(service_->CanShowInterstitial(
+      RequestOutcome::PASSWORD_ALERT_MODE, reused_password_type, trigger_url));
+  // Show interstitial if user is a syncing GSuite user and the policy is set to
+  // password_alert.
+  reused_password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
+  reused_password_type.set_is_account_syncing(true);
   EXPECT_TRUE(service_->CanShowInterstitial(RequestOutcome::PASSWORD_ALERT_MODE,
-                                            PasswordType::ENTERPRISE_PASSWORD,
-                                            trigger_url));
+                                            reused_password_type, trigger_url));
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        safe_browsing::kPasswordProtectionForSignedInUsers);
+    service_->SetAccountInfo(kUserName);
+    reused_password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
+    reused_password_type.set_is_account_syncing(false);
+    EXPECT_TRUE(
+        service_->CanShowInterstitial(RequestOutcome::PASSWORD_ALERT_MODE,
+                                      reused_password_type, trigger_url));
+  }
+  // Show interstitial if user is a Enterprise user and the policy is set to
+  // password_alert.
+  reused_password_type.set_account_type(
+      ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
+  reused_password_type.set_is_account_syncing(false);
+  EXPECT_TRUE(service_->CanShowInterstitial(RequestOutcome::PASSWORD_ALERT_MODE,
+                                            reused_password_type, trigger_url));
 
   // Add |trigger_url| to enterprise whitelist.
   base::ListValue whitelisted_domains;
   whitelisted_domains.AppendString(trigger_url.host());
   profile()->GetPrefs()->Set(prefs::kSafeBrowsingWhitelistDomains,
                              whitelisted_domains);
-  EXPECT_FALSE(
-      service_->CanShowInterstitial(RequestOutcome::PASSWORD_ALERT_MODE,
-                                    PasswordType::SAVED_PASSWORD, trigger_url));
+  reused_password_type.set_account_type(
+      ReusedPasswordAccountType::SAVED_PASSWORD);
+  reused_password_type.set_is_account_syncing(false);
   EXPECT_FALSE(service_->CanShowInterstitial(
-      RequestOutcome::PASSWORD_ALERT_MODE,
-      PasswordType::PRIMARY_ACCOUNT_PASSWORD, trigger_url));
+      RequestOutcome::PASSWORD_ALERT_MODE, reused_password_type, trigger_url));
+  reused_password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
+  reused_password_type.set_is_account_syncing(true);
   EXPECT_FALSE(service_->CanShowInterstitial(
-      RequestOutcome::PASSWORD_ALERT_MODE, PasswordType::OTHER_GAIA_PASSWORD,
-      trigger_url));
-  EXPECT_FALSE(service_->CanShowInterstitial(
-      RequestOutcome::PASSWORD_ALERT_MODE, PasswordType::ENTERPRISE_PASSWORD,
-      trigger_url));
+      RequestOutcome::PASSWORD_ALERT_MODE, reused_password_type, trigger_url));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifySendsPingForAboutBlank) {
   RequestOutcome reason;
+  ReusedPasswordAccountType reused_password_type;
+  reused_password_type.set_account_type(
+      ReusedPasswordAccountType::SAVED_PASSWORD);
   EXPECT_TRUE(service_->CanSendPing(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT, GURL("about:blank"),
-      PasswordType::SAVED_PASSWORD, /*username=*/"", &reason));
+      reused_password_type, &reason));
 }
 
 }  // namespace safe_browsing

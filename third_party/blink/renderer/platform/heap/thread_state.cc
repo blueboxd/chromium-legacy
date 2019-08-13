@@ -129,6 +129,10 @@ ThreadState::ThreadState()
     : thread_(CurrentThread()),
       persistent_region_(std::make_unique<PersistentRegion>()),
       weak_persistent_region_(std::make_unique<PersistentRegion>()),
+      cross_thread_persistent_region_(
+          std::make_unique<CrossThreadPersistentRegion>()),
+      cross_thread_weak_persistent_region_(
+          std::make_unique<CrossThreadPersistentRegion>()),
       start_of_stack_(reinterpret_cast<Address*>(WTF::GetStackStart())),
 #if defined(ADDRESS_SANITIZER)
       asan_fake_stack_(__asan_get_current_fake_stack()),
@@ -230,8 +234,7 @@ void ThreadState::RunTerminationGC() {
 
   // PrepareForThreadStateTermination removes strong references so no need to
   // call it on CrossThreadWeakPersistentRegion.
-  ProcessHeap::GetCrossThreadPersistentRegion()
-      .PrepareForThreadStateTermination(this);
+  GetCrossThreadPersistentRegion()->PrepareForThreadStateTermination(this);
 
   // Do thread local GC's as long as the count of thread local Persistents
   // changes and is above zero.
@@ -346,7 +349,7 @@ void ThreadState::VisitPersistents(Visitor* visitor) {
         ThreadHeapStatsCollector::kVisitCrossThreadPersistents);
     // See ProcessHeap::CrossThreadPersistentMutex().
     MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
-    ProcessHeap::GetCrossThreadPersistentRegion().TracePersistentNodes(visitor);
+    GetCrossThreadPersistentRegion()->TracePersistentNodes(visitor);
   }
   {
     ThreadHeapStatsCollector::Scope inner_stats_scope(
@@ -356,8 +359,7 @@ void ThreadState::VisitPersistents(Visitor* visitor) {
 }
 
 void ThreadState::VisitWeakPersistents(Visitor* visitor) {
-  ProcessHeap::GetCrossThreadWeakPersistentRegion().TracePersistentNodes(
-      visitor);
+  cross_thread_weak_persistent_region_->TracePersistentNodes(visitor);
   weak_persistent_region_->TracePersistentNodes(visitor);
 }
 
@@ -1552,10 +1554,8 @@ void ThreadState::PoisonUnmarkedObjects() {
     // CrossThreadPersistents in unmarked objects may be accessed from other
     // threads (e.g. in CrossThreadPersistentRegion::ShouldTracePersistent) and
     // that would be fine.
-    ProcessHeap::GetCrossThreadPersistentRegion()
-        .UnpoisonCrossThreadPersistents();
-    ProcessHeap::GetCrossThreadWeakPersistentRegion()
-        .UnpoisonCrossThreadPersistents();
+    GetCrossThreadPersistentRegion()->UnpoisonCrossThreadPersistents();
+    GetCrossThreadWeakPersistentRegion()->UnpoisonCrossThreadPersistents();
   }
 
   // Similarly, unmarked object may contain handles to V8 that may be accessed
@@ -1675,7 +1675,7 @@ void ThreadState::MarkPhaseVisitNotFullyConstructedObjects() {
 }
 
 void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
-  Visitor* visitor = current_gc_data_.visitor.get();
+  MarkingVisitor* visitor = current_gc_data_.visitor.get();
   {
     // See ProcessHeap::CrossThreadPersistentMutex().
     MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());

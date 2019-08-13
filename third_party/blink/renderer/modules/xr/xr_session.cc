@@ -134,6 +134,7 @@ XRSession::XRSession(
       sensorless_session_(sensorless_session) {
   render_state_ = MakeGarbageCollected<XRRenderState>(immersive());
   blurred_ = !HasAppropriateFocus();
+  visibility_state_string_ = HasAppropriateFocus() ? "visible" : "hidden";
 
   switch (environment_blend_mode) {
     case kBlendModeOpaque:
@@ -537,7 +538,9 @@ void XRSession::OnFocus() {
     return;
 
   blurred_ = false;
-  DispatchEvent(*XRSessionEvent::Create(event_type_names::kFocus, this));
+  visibility_state_string_ = "visible";
+  DispatchEvent(
+      *XRSessionEvent::Create(event_type_names::kVisibilitychange, this));
 }
 
 void XRSession::OnBlur() {
@@ -545,7 +548,9 @@ void XRSession::OnBlur() {
     return;
 
   blurred_ = true;
-  DispatchEvent(*XRSessionEvent::Create(event_type_names::kBlur, this));
+  visibility_state_string_ = "hidden";
+  DispatchEvent(
+      *XRSessionEvent::Create(event_type_names::kVisibilitychange, this));
 }
 
 // Immersive sessions may still not be blurred in headset even if the page isn't

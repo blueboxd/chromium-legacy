@@ -324,8 +324,7 @@ class BlobMemoryController::MemoryQuotaAllocationTask
       : controller_(controller),
         pending_items_(std::move(pending_items)),
         done_callback_(std::move(done_callback)),
-        allocation_size_(quota_request_size),
-        weak_factory_(this) {}
+        allocation_size_(quota_request_size) {}
 
   ~MemoryQuotaAllocationTask() override = default;
 
@@ -365,7 +364,7 @@ class BlobMemoryController::MemoryQuotaAllocationTask
   size_t allocation_size_;
   PendingMemoryQuotaTaskList::iterator my_list_position_;
 
-  base::WeakPtrFactory<MemoryQuotaAllocationTask> weak_factory_;
+  base::WeakPtrFactory<MemoryQuotaAllocationTask> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(MemoryQuotaAllocationTask);
 };
 
@@ -379,8 +378,7 @@ class BlobMemoryController::FileQuotaAllocationTask
       std::vector<scoped_refptr<ShareableBlobDataItem>> unreserved_file_items,
       FileQuotaRequestCallback done_callback)
       : controller_(memory_controller),
-        done_callback_(std::move(done_callback)),
-        weak_factory_(this) {
+        done_callback_(std::move(done_callback)) {
     // Get the file sizes and total size.
     uint64_t total_size =
         GetTotalSizeAndFileSizes(unreserved_file_items, &file_sizes_);
@@ -523,7 +521,7 @@ class BlobMemoryController::FileQuotaAllocationTask
   uint64_t allocation_size_;
   PendingFileQuotaTaskList::iterator my_list_position_;
 
-  base::WeakPtrFactory<FileQuotaAllocationTask> weak_factory_;
+  base::WeakPtrFactory<FileQuotaAllocationTask> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FileQuotaAllocationTask);
 };
 
@@ -538,8 +536,7 @@ BlobMemoryController::BlobMemoryController(
           base::MRUCache<uint64_t, ShareableBlobDataItem*>::NO_AUTO_EVICT),
       memory_pressure_listener_(
           base::BindRepeating(&BlobMemoryController::OnMemoryPressure,
-                              base::Unretained(this))),
-      weak_factory_(this) {}
+                              base::Unretained(this))) {}
 
 BlobMemoryController::~BlobMemoryController() = default;
 

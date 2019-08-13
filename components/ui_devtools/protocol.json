@@ -272,6 +272,23 @@
                     ]
                 },
                 {
+                    "name": "getStyleSheetText",
+                    "parameters": [
+                        {
+                            "name": "styleSheetId",
+                            "$ref": "StyleSheetId"
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "name": "text",
+                            "type": "string",
+                            "description": "The stylesheet text."
+                        }
+                    ],
+                    "description": "Returns the current source content for a stylesheet."
+                },
+                {
                     "name": "setStyleTexts",
                     "description": "Applies specified style edits one after another in the given order.",
                     "parameters": [
@@ -311,6 +328,17 @@
                             "$ref": "StyleSheetId"
                         }
                     ]
+                },
+                {
+                    "name": "styleSheetAdded",
+                    "parameters": [
+                        {
+                            "name": "header",
+                            "$ref": "CSSStyleSheetHeader",
+                            "description": "Added stylesheet metainfo."
+                        }
+                    ],
+                    "description": "Fired whenever an active document stylesheet is added."
                 }
             ],
             "types": [
@@ -477,6 +505,33 @@
                         }
                     ],
                     "description": "Selector list data."
+                },
+                {
+                    "id": "CSSStyleSheetHeader",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "styleSheetId",
+                            "$ref": "StyleSheetId",
+                            "description": "The stylesheet identifier."
+                        },
+                        {
+                            "name": "sourceURL",
+                            "type": "string",
+                            "description": "Stylesheet resource URL."
+                        },
+                        {
+                            "name": "startLine",
+                            "type": "number",
+                            "description": "Line offset of the stylesheet within the resource (zero based)."
+                        },
+                        {
+                            "name": "startColumn",
+                            "type": "number",
+                            "description": "Column offset of the stylesheet within the resource (zero based)."
+                        }
+                    ],
+                    "description": "CSS stylesheet metainformation."
                 },
                 {
                     "id": "CSSRule",
@@ -716,12 +771,134 @@
                         }
                     ],
                     "description": "Called on Ctrl+R with |ignoreCache|=false, which is used to toggle debug bounds rectangles and Ctrl+Shift+R with |ignoreCache|=true, which is used to toggle bubble locking."
+                },
+                {
+                    "name": "getResourceTree",
+                    "description": "Called when UI DevTools first loads. Used to populate sources panel.",
+                    "returns": [
+                        {
+                            "name": "frameTree",
+                            "$ref": "FrameResourceTree",
+                            "description": "Present frame / resource tree structure."
+                        }
+                    ],
+                    "experimental": true
+                },
+                {
+                    "name": "getResourceContent",
+                    "async": true,
+                    "description": "Returns source file content of the given resource.",
+                    "parameters": [
+                        {
+                            "name": "frameId",
+                            "type": "string",
+                            "description": "Frame id to get resource for."
+                        },
+                        {
+                            "name": "url",
+                            "type": "string",
+                            "description": "URL of the resource to get content for."
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "name": "content",
+                            "type": "string",
+                            "description": "Resource content."
+                        },
+                        {
+                            "name": "base64Encoded",
+                            "type": "boolean",
+                            "description": "True, if content was served as base64."
+                        }
+                    ],
+                    "experimental": true
                 }
             ],
             "description": "Actions and events related to the inspected page belong to the page domain.",
             "domain": "Page",
             "dependencies": [
                 "DOM"
+            ],
+            "types": [
+                {
+                    "id": "ResourceType",
+                    "type": "string",
+                    "enum": ["Document", "Stylesheet", "Image", "Media", "Font", "Script", "TextTrack", "XHR", "Fetch", "EventSource", "WebSocket", "Manifest", "Other"],
+                    "description": "Resource type as it was perceived by the rendering engine."
+                },
+                {
+                    "id": "Frame",
+                    "type": "object",
+                    "description": "Information about the Frame on the page.",
+                    "properties": [
+                        {
+                            "name": "id",
+                            "type": "string",
+                            "description": "Frame unique identifier."
+                        },
+                        {
+                            "name": "url",
+                            "type": "string",
+                            "description": "Frame document's URL."
+                        }
+                   ]
+                },
+                {
+                    "id": "FrameResource",
+                    "type": "object",
+                    "description": "Information about the Resource on the page.",
+                    "properties": [
+                        {
+                            "name": "url",
+                            "type": "string",
+                            "description": "Resource URL."
+                        },
+                        {
+                            "name": "type",
+                            "$ref": "ResourceType",
+                            "description": "Type of this resource."
+                        },
+                        {
+                            "name": "mimeType",
+                            "type": "string",
+                            "description": "Resource mimeType as determined by the browser."
+                        }
+                    ],
+                    "experimental": true
+                },
+                {
+                    "id": "FrameResourceTree",
+                    "type": "object",
+                    "description": "Information about the Frame hierarchy along with their cached resources.",
+                    "properties": [
+                        {
+                            "name": "frame",
+                            "$ref": "Frame",
+                            "description": "Frame information for this tree item."
+                        },
+                        {
+                            "name": "childFrames",
+                            "type": "array",
+                            "optional": true,
+                            "items":
+                                {
+                                    "$ref": "FrameResourceTree"
+                                },
+                            "description": "Child frames."
+                        },
+                        {
+                            "name": "resources",
+                            "type": "array",
+                            "items":
+                                {
+                                    "$ref": "FrameResource"
+                                },
+                            "description": "Information about frame resources."
+                        }
+                    ],
+                    "experimental": true
+                }
             ]
         }
     ],

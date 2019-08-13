@@ -243,10 +243,6 @@ bool GpuControlList::DriverInfo::Contains(const GPUInfo& gpu_info) const {
       !driver_version.Contains(active_gpu.driver_version)) {
     return false;
   }
-  if (driver_date.IsSpecified() && !active_gpu.driver_date.empty() &&
-      !driver_date.Contains(active_gpu.driver_date, '-')) {
-    return false;
-  }
   return true;
 }
 

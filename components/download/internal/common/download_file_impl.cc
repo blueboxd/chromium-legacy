@@ -27,7 +27,6 @@
 #include "crypto/sha2.h"
 #include "mojo/public/c/system/types.h"
 #include "net/base/io_buffer.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/content_uri_utils.h"
@@ -356,14 +355,14 @@ void DownloadFileImpl::RenameAndAnnotate(
     const std::string& client_guid,
     const GURL& source_url,
     const GURL& referrer_url,
-    std::unique_ptr<service_manager::Connector> connector,
+    mojo::PendingRemote<quarantine::mojom::Quarantine> remote_quarantine,
     const RenameCompletionCallback& callback) {
   std::unique_ptr<RenameParameters> parameters(new RenameParameters(
       ANNOTATE_WITH_SOURCE_INFORMATION, full_path, callback));
   parameters->client_guid = client_guid;
   parameters->source_url = source_url;
   parameters->referrer_url = referrer_url;
-  parameters->connector = std::move(connector);
+  parameters->remote_quarantine = std::move(remote_quarantine);
   RenameWithRetryInternal(std::move(parameters));
 }
 
@@ -483,7 +482,7 @@ void DownloadFileImpl::RenameWithRetryInternal(
             download::features::kPreventDownloadsWithSamePath)) {
       file_.AnnotateWithSourceInformation(
           parameters->client_guid, parameters->source_url,
-          parameters->referrer_url, std::move(parameters->connector),
+          parameters->referrer_url, std::move(parameters->remote_quarantine),
           base::BindOnce(&DownloadFileImpl::OnRenameComplete,
                          weak_factory_.GetWeakPtr(), new_path,
                          parameters->completion_callback));

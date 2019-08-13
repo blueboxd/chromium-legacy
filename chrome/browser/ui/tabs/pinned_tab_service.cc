@@ -41,7 +41,7 @@ void PinnedTabService::Observe(int type,
   //     over-writing the correct state.
   // Saving is re-enabled if a new tab or window is opened.
   DCHECK_EQ(type, chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST);
-  if (observed_tab_strips_.IsObservingSources())
+  if (TabStripModelObserver::IsObservingAny(this))
     WritePinnedTabsIfNecessary();
 }
 
@@ -50,14 +50,14 @@ void PinnedTabService::OnBrowserAdded(Browser* browser) {
     return;
 
   need_to_write_pinned_tabs_ = true;
-  observed_tab_strips_.Add(browser->tab_strip_model());
+  browser->tab_strip_model()->AddObserver(this);
 }
 
 void PinnedTabService::OnBrowserClosing(Browser* browser) {
   if (browser->profile() != profile_ || !browser->is_type_tabbed())
     return;
 
-  if (observed_tab_strips_.GetSourcesCount() == 1U)
+  if (TabStripModelObserver::CountObservedModels(this) == 1)
     WritePinnedTabsIfNecessary();
 }
 
@@ -65,14 +65,14 @@ void PinnedTabService::OnBrowserRemoved(Browser* browser) {
   if (browser->profile() != profile_ || !browser->is_type_tabbed())
     return;
 
-  observed_tab_strips_.Remove(browser->tab_strip_model());
+  browser->tab_strip_model()->RemoveObserver(this);
 
   // This happens when user closes each tabs manually via the close button on
   // them. In this case OnBrowserClosing() above is not called. This causes
   // pinned tabs to repopen on the next startup. So we should call
   // WritePinnedTab() to clear the data.
   // http://crbug.com/71939
-  if (!observed_tab_strips_.IsObservingSources())
+  if (!TabStripModelObserver::IsObservingAny(this))
     WritePinnedTabsIfNecessary();
 }
 

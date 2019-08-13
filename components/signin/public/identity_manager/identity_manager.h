@@ -24,7 +24,7 @@
 #endif
 
 namespace gaia {
-enum class GaiaSource;
+class GaiaSource;
 struct ListedAccount;
 }  // namespace gaia
 

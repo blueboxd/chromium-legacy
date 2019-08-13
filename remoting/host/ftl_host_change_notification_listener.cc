@@ -16,9 +16,7 @@ namespace remoting {
 FtlHostChangeNotificationListener::FtlHostChangeNotificationListener(
     Listener* listener,
     SignalStrategy* signal_strategy)
-    : listener_(listener),
-      signal_strategy_(signal_strategy),
-      weak_factory_(this) {
+    : listener_(listener), signal_strategy_(signal_strategy) {
   DCHECK(signal_strategy_);
 
   signal_strategy_->AddListener(this);

@@ -956,6 +956,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           _browserState);
   ChromeBroadcaster* broadcaster = fullscreenController->broadcaster();
   if (_broadcasting) {
+    fullscreenController->SetWebStateList(self.tabModel.webStateList);
+
     _toolbarUIUpdater = [[LegacyToolbarUIUpdater alloc]
         initWithToolbarUI:[[ToolbarUIState alloc] init]
              toolbarOwner:self
@@ -969,8 +971,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         initWithUpdater:_mainContentUIUpdater
            webStateList:self.tabModel.webStateList];
     StartBroadcastingMainContentUI(self, broadcaster);
-
-    fullscreenController->SetWebStateList(self.tabModel.webStateList);
 
     _fullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(self);
     fullscreenController->AddObserver(_fullscreenUIUpdater.get());
@@ -1381,8 +1381,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     const CGFloat kAnimatedViewSize = 50;
     BackgroundTabAnimationView* animatedView =
         [[BackgroundTabAnimationView alloc]
-            initWithFrame:CGRectMake(0, 0, kAnimatedViewSize,
-                                     kAnimatedViewSize)];
+            initWithFrame:CGRectMake(0, 0, kAnimatedViewSize, kAnimatedViewSize)
+                incognito:self.isOffTheRecord];
     __weak UIView* weakAnimatedView = animatedView;
     auto completionBlock = ^() {
       self.inNewTabAnimation = NO;

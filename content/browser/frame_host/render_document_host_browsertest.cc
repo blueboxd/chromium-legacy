@@ -55,19 +55,19 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostBrowserTest, DISABLED_BasicMainFrame) {
   GURL url_3(embedded_test_server()->GetURL("/title3.html"));
 
   // 1) Navigate to A1.
-  NavigateToURL(shell(), url_1);
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
   RenderFrameHostImpl* rfh_1 = current_main_frame();
   RenderFrameDeletedObserver delete_rfh_1(rfh_1);
 
   // 2) Navigate to A2.
-  NavigateToURL(shell(), url_2);
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
   RenderFrameHostImpl* rfh_2 = current_main_frame();
   EXPECT_TRUE(delete_rfh_1.deleted());
   EXPECT_NE(rfh_1, rfh_2);
   RenderFrameDeletedObserver delete_rfh_2(rfh_2);
 
   // 3) Navigate to A3.
-  NavigateToURL(shell(), url_3);
+  EXPECT_TRUE(NavigateToURL(shell(), url_3));
   EXPECT_TRUE(delete_rfh_2.deleted());
 }
 
@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostBrowserTest, DISABLED_BasicSubframe) {
   GURL url_subframe_4(embedded_test_server()->GetURL("b.com", "/title2.html"));
 
   // 1) Setup a main frame with a same-process subframe
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   FrameTreeNode* subframe = current_main_frame()->child_at(0);
   RenderFrameHostImpl* child_rfh_1 = subframe->current_frame_host();
   RenderFrameDeletedObserver delete_child_rfh_1(child_rfh_1);
@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostBrowserTest, PopupScriptableNavigate) {
   GURL url_2(embedded_test_server()->GetURL("/title2.html"));
 
   // 1) Navigate and open a new window.
-  NavigateToURL(shell(), url_1);
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
   ShellAddedObserver shell_added_observer;
   EXPECT_TRUE(ExecJs(shell(), JsReplace("w = window.open($1)", url_1)));
   WebContents* new_contents = shell_added_observer.GetShell()->web_contents();
@@ -160,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostBrowserTest,
   GURL url_3(embedded_test_server()->GetURL("/title3.html"));
 
   // 1) Setup a main frame with an subframe.
-  NavigateToURL(shell(), url_1);
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
   RenderFrameHostImpl* main_rfh = current_main_frame();
   RenderFrameHostImpl* child_rfh_1 =
       main_rfh->child_at(0)->current_frame_host();
@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostBrowserTest, InjectedFunction) {
   GURL url(embedded_test_server()->GetURL("/title1.html"));
 
   // 1) Navigate and open a new window with an injected function.
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   ShellAddedObserver shell_added_observer;
   EXPECT_TRUE(ExecJs(
       shell(), JsReplace("w = window.open($1);"

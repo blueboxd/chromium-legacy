@@ -52,7 +52,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableHandshakeHandler {
   std::array<uint8_t, 16> client_session_random_;
   std::string handshake_key_;
 
-  base::WeakPtrFactory<FidoCableHandshakeHandler> weak_factory_;
+  base::WeakPtrFactory<FidoCableHandshakeHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FidoCableHandshakeHandler);
 };

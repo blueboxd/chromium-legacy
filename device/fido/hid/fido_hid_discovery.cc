@@ -17,8 +17,7 @@ namespace device {
 FidoHidDiscovery::FidoHidDiscovery(::service_manager::Connector* connector)
     : FidoDeviceDiscovery(FidoTransportProtocol::kUsbHumanInterfaceDevice),
       connector_(connector),
-      binding_(this),
-      weak_factory_(this) {
+      binding_(this) {
   // TODO(piperc@): Give this constant a name.
   filter_.SetUsagePage(0xf1d0);
 }

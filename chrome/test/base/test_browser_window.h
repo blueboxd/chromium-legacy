@@ -122,7 +122,7 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsToolbarShowing() const override;
   SharingDialog* ShowClickToCallDialog(
       content::WebContents* contents,
-      ClickToCallSharingDialogController* controller) override;
+      ClickToCallUiController* controller) override;
   void ShowUpdateChromeDialog() override {}
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override {}
 #if !defined(OS_ANDROID)

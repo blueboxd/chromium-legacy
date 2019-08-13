@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/webauthn/authenticator_request_sheet_model.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -110,7 +111,8 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
   if (model()->IsBackButtonVisible()) {
     auto back_arrow = views::CreateVectorImageButton(this);
     back_arrow->SetFocusForPlatform();
-    back_arrow->SetAccessibleName(l10n_util::GetStringUTF16(IDS_BACK_BUTTON));
+    back_arrow->SetAccessibleName(l10n_util::GetStringUTF16(
+        IDS_BACK_BUTTON_AUTHENTICATOR_REQUEST_DIALOG));
 
     // Position the back button so that there is the standard amount of padding
     // between the top/left side of the back button and the dialog borders.

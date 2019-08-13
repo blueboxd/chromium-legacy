@@ -210,8 +210,7 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
               supported_transports,
               GetTransportsAllowedAndConfiguredByRP(request)),
           std::move(completion_callback)),
-      request_(std::move(request)),
-      weak_factory_(this) {
+      request_(std::move(request)) {
   transport_availability_info().request_type =
       FidoRequestHandlerBase::RequestType::kGetAssertion;
   transport_availability_info().has_empty_allow_list =

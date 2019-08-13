@@ -282,10 +282,9 @@ bool WebRtcTextLogHandler::StopLogging(const GenericDoneCallback& callback) {
   stop_callback_ = callback;
   logging_state_ = STOPPING;
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&content::WebRtcLog::ClearLogMessageCallback,
-                     render_process_id_));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&content::WebRtcLog::ClearLogMessageCallback,
+                                render_process_id_));
   return true;
 }
 
@@ -315,10 +314,9 @@ void WebRtcTextLogHandler::StopDone() {
 void WebRtcTextLogHandler::ChannelClosing() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (logging_state_ == STARTING || logging_state_ == STARTED) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&content::WebRtcLog::ClearLogMessageCallback,
-                       render_process_id_));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(&content::WebRtcLog::ClearLogMessageCallback,
+                                  render_process_id_));
   }
   channel_is_closing_ = true;
 }
@@ -563,7 +561,7 @@ void WebRtcTextLogHandler::OnGetNetworkInterfaceList(
       &ForwardMessageViaTaskRunner, base::SequencedTaskRunnerHandle::Get(),
       base::Bind(&WebRtcTextLogHandler::LogMessage,
                  weak_factory_.GetWeakPtr()));
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&content::WebRtcLog::SetLogMessageCallback,
                      render_process_id_, std::move(log_message_callback)));

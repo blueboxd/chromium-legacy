@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/passwords/account_chooser_dialog_view.h"
 #include "chrome/browser/ui/views/passwords/auto_signin_first_run_dialog_view.h"
+#include "chrome/browser/ui/views/passwords/credential_leak_dialog_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
@@ -49,6 +50,8 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
       CredentialManagerDialogController* controller) override;
   AutoSigninFirstRunPrompt* CreateAutoSigninPrompt(
       CredentialManagerDialogController* controller) override;
+  CredentialLeakPrompt* CreateCredentialLeakPrompt(
+      CredentialLeakDialogController* controller) override;
 
   AccountChooserDialogView* current_account_chooser() const {
     return static_cast<AccountChooserDialogView*>(current_account_chooser_);
@@ -59,11 +62,17 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
         current_autosignin_prompt_);
   }
 
+  CredentialLeakDialogView* current_credential_leak_prompt() const {
+    return static_cast<CredentialLeakDialogView*>(
+        current_credential_leak_prompt_);
+  }
+
   MOCK_METHOD0(OnDialogClosed, void());
 
  private:
   AccountChooserPrompt* current_account_chooser_;
   AutoSigninFirstRunPrompt* current_autosignin_prompt_;
+  CredentialLeakPrompt* current_credential_leak_prompt_;
 
   DISALLOW_COPY_AND_ASSIGN(TestManagePasswordsUIController);
 };
@@ -72,7 +81,8 @@ TestManagePasswordsUIController::TestManagePasswordsUIController(
     content::WebContents* web_contents)
     : ManagePasswordsUIController(web_contents),
       current_account_chooser_(nullptr),
-      current_autosignin_prompt_(nullptr) {
+      current_autosignin_prompt_(nullptr),
+      current_credential_leak_prompt_(nullptr) {
   // Attach TestManagePasswordsUIController to |web_contents| so the default
   // ManagePasswordsUIController isn't created.
   // Do not silently replace an existing ManagePasswordsUIController because it
@@ -99,6 +109,14 @@ TestManagePasswordsUIController::CreateAutoSigninPrompt(
   current_autosignin_prompt_ =
       ManagePasswordsUIController::CreateAutoSigninPrompt(controller);
   return current_autosignin_prompt_;
+}
+
+CredentialLeakPrompt*
+TestManagePasswordsUIController::CreateCredentialLeakPrompt(
+    CredentialLeakDialogController* controller) {
+  current_credential_leak_prompt_ =
+      ManagePasswordsUIController::CreateCredentialLeakPrompt(controller);
+  return current_credential_leak_prompt_;
 }
 
 class PasswordDialogViewTest : public DialogBrowserTest {
@@ -403,6 +421,19 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupAutoSigninPrompt) {
   EXPECT_TRUE(
       password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
           browser()->profile()->GetPrefs()));
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupCredentialsLeakedPrompt) {
+  GURL origin("https://example.com");
+  controller()->OnCredentialLeak(origin);
+  ASSERT_TRUE(controller()->current_credential_leak_prompt());
+  EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->GetState());
+  CredentialLeakDialogView* dialog =
+      controller()->current_credential_leak_prompt();
+  views::test::WidgetClosingObserver bubble_observer(dialog->GetWidget());
+  ui::Accelerator esc(ui::VKEY_ESCAPE, 0);
+  EXPECT_TRUE(dialog->GetWidget()->client_view()->AcceleratorPressed(esc));
+  EXPECT_TRUE(bubble_observer.widget_closed());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,

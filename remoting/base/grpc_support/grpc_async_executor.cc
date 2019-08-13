@@ -89,7 +89,7 @@ void CompletionQueueDispatcher::RunQueueOnDispatcherThread() {
 
 }  // namespace
 
-GrpcAsyncExecutor::GrpcAsyncExecutor() : weak_factory_(this) {
+GrpcAsyncExecutor::GrpcAsyncExecutor() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 

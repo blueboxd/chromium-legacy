@@ -26,8 +26,7 @@ void RunTaskIfScopedStreamIsAlive(
 GrpcAsyncServerStreamingRequestBase::GrpcAsyncServerStreamingRequestBase(
     base::OnceClosure on_channel_ready,
     base::OnceCallback<void(const grpc::Status&)> on_channel_closed,
-    std::unique_ptr<ScopedGrpcServerStream>* scoped_stream)
-    : weak_factory_(this) {
+    std::unique_ptr<ScopedGrpcServerStream>* scoped_stream) {
   DCHECK(on_channel_closed);
   DCHECK_NE(nullptr, scoped_stream);
   on_channel_ready_ = std::move(on_channel_ready);

@@ -23,13 +23,20 @@ void SetListAccountsResponseHttpNotFound(
       /*content=*/"", net::HTTP_NOT_FOUND);
 }
 
-void SetListAccountsResponseWebLoginRequired(
+void SetListAccountsResponseWithUnexpectedServiceResponse(
     TestURLLoaderFactory* test_url_loader_factory) {
+  std::string source = GaiaConstants::kChromeSource;
+  // Set response for first request that will lead to a one time retry request.
+  test_url_loader_factory->AddResponse(
+      GaiaUrls::GetInstance()->ListAccountsURLWithSource(source).spec(), "");
+
+  // Seconde request would have the source with the error as a suffix.
   test_url_loader_factory->AddResponse(
       GaiaUrls::GetInstance()
-          ->ListAccountsURLWithSource(GaiaConstants::kChromeSource)
+          ->ListAccountsURLWithSource(source +
+                                      GaiaConstants::kUnexpectedServiceResponse)
           .spec(),
-      "Info=WebLoginRequired");
+      "");
 }
 
 void SetListAccountsResponseWithParams(

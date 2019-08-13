@@ -291,7 +291,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   // Set of active notify sessions.
   std::set<BluetoothGattNotifySession*> notify_sessions_;
 
-  base::WeakPtrFactory<BluetoothRemoteGattCharacteristic> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothRemoteGattCharacteristic> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattCharacteristic);
 };

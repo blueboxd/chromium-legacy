@@ -703,7 +703,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsEmbeddedObject())
     return ax::mojom::Role::kEmbeddedObject;
 
-  if (IsHTMLHRElement(*GetNode()))
+  if (IsA<HTMLHRElement>(*GetNode()))
     return ax::mojom::Role::kSplitter;
 
   if (IsFieldset())

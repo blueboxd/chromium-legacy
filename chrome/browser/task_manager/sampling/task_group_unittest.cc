@@ -59,8 +59,8 @@ class FakeTask : public Task {
 class TaskGroupTest : public testing::Test {
  public:
   TaskGroupTest()
-      : io_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
-            {content::BrowserThread::IO})),
+      : io_task_runner_(
+            base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})),
         run_loop_(std::make_unique<base::RunLoop>()) {}
 
  protected:

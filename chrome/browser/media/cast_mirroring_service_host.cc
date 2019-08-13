@@ -53,8 +53,8 @@ void CreateVideoCaptureHostOnIO(const std::string& device_id,
                                 media::mojom::VideoCaptureHostRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_refptr<base::SingleThreadTaskRunner> device_task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {base::TaskPriority::USER_BLOCKING,
+      base::CreateSingleThreadTaskRunner(
+          {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
           base::SingleThreadTaskRunnerThreadMode::DEDICATED);
   mojo::MakeStrongBinding(
@@ -240,7 +240,7 @@ gfx::Size CastMirroringServiceHost::GetClampedResolution(
 
 void CastMirroringServiceHost::GetVideoCaptureHost(
     media::mojom::VideoCaptureHostRequest request) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&CreateVideoCaptureHostOnIO, source_media_id_.ToString(),
                      ConvertVideoStreamType(source_media_id_.type),

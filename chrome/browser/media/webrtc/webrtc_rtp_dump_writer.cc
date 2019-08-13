@@ -259,8 +259,9 @@ WebRtcRtpDumpWriter::WebRtcRtpDumpWriter(
     : max_dump_size_(max_dump_size),
       max_dump_size_reached_callback_(max_dump_size_reached_callback),
       total_dump_size_on_disk_(0),
-      background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
+      background_task_runner_(
+          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                           base::TaskPriority::BEST_EFFORT})),
       incoming_file_thread_worker_(new FileWorker(incoming_dump_path)),
       outgoing_file_thread_worker_(new FileWorker(outgoing_dump_path)) {}
 

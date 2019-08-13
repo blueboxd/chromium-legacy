@@ -17,6 +17,7 @@
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_state.h"
@@ -126,6 +127,34 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
   }
 
   aura::client::GetTransientWindowClient()->AddObserver(this);
+
+  // Tablet mode grid layout has scrolling, so all windows must be stacked under
+  // the current split view window if they share the same parent so that during
+  // scrolls, they get scrolled underneath the split view window. The window
+  // will be returned to its proper z-order on exiting overview if it is
+  // activated.
+  // TODO(sammiequon): This does not handle the case if either the snapped
+  // window or this window is an always on top window.
+  auto* split_view_controller = Shell::Get()->split_view_controller();
+  if (ShouldUseTabletModeGridLayout() &&
+      split_view_controller->InSplitViewMode()) {
+    aura::Window* snapped_window =
+        split_view_controller->GetDefaultSnappedWindow();
+    if (window->parent() == snapped_window->parent()) {
+      // Helper to get the z order of a window in its parent.
+      auto get_z_order = [](aura::Window* window) -> size_t {
+        for (size_t i = 0u; i < window->parent()->children().size(); ++i) {
+          if (window == window->parent()->children()[i])
+            return i;
+        }
+        NOTREACHED();
+        return 0u;
+      };
+
+      if (get_z_order(window_) > get_z_order(snapped_window))
+        window_->parent()->StackChildBelow(window_, snapped_window);
+    }
+  }
 }
 
 ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {

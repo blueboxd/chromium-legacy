@@ -110,6 +110,7 @@ class ProfileImpl : public Profile {
   std::string GetProfileUserName() const override;
   ProfileType GetProfileType() const override;
   base::FilePath GetPath() override;
+  base::Time GetCreationTime() const override;
   bool IsOffTheRecord() override;
   bool IsOffTheRecord() const override;
   base::FilePath GetPath() const override;
@@ -162,6 +163,8 @@ class ProfileImpl : public Profile {
   void InitChromeOSPreferences() override;
 #endif  // defined(OS_CHROMEOS)
 
+  void SetCreationTimeForTesting(base::Time creation_time) override;
+
  private:
 #if defined(OS_CHROMEOS)
   friend class chromeos::KioskTest;
@@ -178,6 +181,7 @@ class ProfileImpl : public Profile {
   ProfileImpl(const base::FilePath& path,
               Delegate* delegate,
               CreateMode create_mode,
+              base::Time creation_time,
               scoped_refptr<base::SequencedTaskRunner> io_task_runner);
 
 #if defined(OS_ANDROID)
@@ -215,6 +219,8 @@ class ProfileImpl : public Profile {
   PrefChangeRegistrar pref_change_registrar_;
 
   base::FilePath path_;
+
+  base::Time creation_time_;
 
   // Task runner used for file access in the profile path.
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;

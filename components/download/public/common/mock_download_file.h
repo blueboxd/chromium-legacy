@@ -48,13 +48,14 @@ class MockDownloadFile : public DownloadFile {
   MOCK_METHOD2(RenameAndUniquify,
                void(const base::FilePath& full_path,
                     const RenameCompletionCallback& callback));
-  MOCK_METHOD6(RenameAndAnnotate,
-               void(const base::FilePath& full_path,
-                    const std::string& client_guid,
-                    const GURL& source_url,
-                    const GURL& referrer_url,
-                    std::unique_ptr<service_manager::Connector> connector,
-                    const RenameCompletionCallback& callback));
+  MOCK_METHOD6(
+      RenameAndAnnotate,
+      void(const base::FilePath& full_path,
+           const std::string& client_guid,
+           const GURL& source_url,
+           const GURL& referrer_url,
+           mojo::PendingRemote<quarantine::mojom::Quarantine> remote_quarantine,
+           const RenameCompletionCallback& callback));
   MOCK_METHOD0(Detach, void());
   MOCK_METHOD0(Cancel, void());
   MOCK_METHOD1(SetPotentialFileLength, void(int64_t length));

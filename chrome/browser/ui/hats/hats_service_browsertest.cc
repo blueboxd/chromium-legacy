@@ -10,6 +10,7 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
@@ -140,7 +141,9 @@ class HatsServiceProbabilityOne : public HatsServiceBrowserTestBase {
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         features::kHappinessTrackingSurveysForDesktop,
         {{"probability", "1.000"}, {"survey", "satisfaction"}});
-    GetHatsService()->SetSurveyMetadataForTesting({});
+    // Set the profile creation time to be old enough to ensure triggering.
+    browser()->profile()->SetCreationTimeForTesting(
+        base::Time::Now() - base::TimeDelta::FromDays(45));
   }
 
   void TearDownOnMainThread() override {
@@ -211,4 +214,24 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne,
   GetHatsService()->SetSurveyMetadataForTesting(metadata);
   GetHatsService()->LaunchSatisfactionSurvey();
   EXPECT_FALSE(HatsDialogShowRequested());
+}
+
+IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, ProfileTooYoungToShow) {
+  SetMetricsConsent(true);
+  // Set creation time to only 15 days.
+  static_cast<ProfileImpl*>(browser()->profile())
+      ->SetCreationTimeForTesting(base::Time::Now() -
+                                  base::TimeDelta::FromDays(15));
+  GetHatsService()->LaunchSatisfactionSurvey();
+  EXPECT_FALSE(HatsDialogShowRequested());
+}
+
+IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, ProfileOldEnoughToShow) {
+  SetMetricsConsent(true);
+  // Set creation time to 31 days. This is just past the threshold.
+  static_cast<ProfileImpl*>(browser()->profile())
+      ->SetCreationTimeForTesting(base::Time::Now() -
+                                  base::TimeDelta::FromDays(31));
+  GetHatsService()->LaunchSatisfactionSurvey();
+  EXPECT_TRUE(HatsDialogShowRequested());
 }

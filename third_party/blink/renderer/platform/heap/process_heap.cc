@@ -42,18 +42,6 @@ void ProcessHeap::ResetHeapCounters() {
   total_allocated_object_size_ = 0;
 }
 
-CrossThreadPersistentRegion& ProcessHeap::GetCrossThreadPersistentRegion() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(CrossThreadPersistentRegion,
-                                  persistent_region, ());
-  return persistent_region;
-}
-
-CrossThreadPersistentRegion& ProcessHeap::GetCrossThreadWeakPersistentRegion() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(CrossThreadPersistentRegion,
-                                  persistent_region, ());
-  return persistent_region;
-}
-
 Mutex& ProcessHeap::CrossThreadPersistentMutex() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
   return mutex;

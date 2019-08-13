@@ -288,7 +288,12 @@ class ThreadedHighContentionDelegate
 
 // Test that allocator remains in consistent state under high contention and
 // doesn't double-allocate pages or fail to deallocate pages.
-TEST_P(GuardedPageAllocatorTest, ThreadedHighContention) {
+#if defined(OS_ANDROID)
+#define MAYBE_ThreadedHighContention DISABLED_ThreadedHighContention
+#else
+#define MAYBE_ThreadedHighContention ThreadedHighContention
+#endif
+TEST_P(GuardedPageAllocatorTest, MAYBE_ThreadedHighContention) {
   constexpr size_t num_threads = 1000;
   {
     base::DelegateSimpleThreadPool threads("page_writers", num_threads);

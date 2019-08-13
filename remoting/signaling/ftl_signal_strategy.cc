@@ -106,15 +106,14 @@ class FtlSignalStrategy::Core {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<Core> weak_factory_;
+  base::WeakPtrFactory<Core> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
 FtlSignalStrategy::Core::Core(
     std::unique_ptr<OAuthTokenGetter> oauth_token_getter,
     std::unique_ptr<RegistrationManager> registration_manager,
-    std::unique_ptr<MessagingClient> messaging_client)
-    : weak_factory_(this) {
+    std::unique_ptr<MessagingClient> messaging_client) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(oauth_token_getter);
   DCHECK(registration_manager);
@@ -301,10 +300,8 @@ void FtlSignalStrategy::Core::OnReceiveMessagesStreamClosed(
     // Stream is canceled by calling Disconnect().
     return;
   }
-  if (!status.ok()) {
-    HandleGrpcStatusError(FROM_HERE, status);
-    return;
-  }
+  DCHECK(!status.ok());
+  HandleGrpcStatusError(FROM_HERE, status);
 }
 
 void FtlSignalStrategy::Core::OnMessageReceived(

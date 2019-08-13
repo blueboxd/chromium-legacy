@@ -281,7 +281,7 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<UrlFetchRequestBase> weak_ptr_factory_;
+  base::WeakPtrFactory<UrlFetchRequestBase> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UrlFetchRequestBase);
 };
@@ -462,7 +462,7 @@ class UploadRangeRequestBase : public UrlFetchRequestBase {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<UploadRangeRequestBase> weak_ptr_factory_;
+  base::WeakPtrFactory<UploadRangeRequestBase> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UploadRangeRequestBase);
 };
@@ -609,7 +609,7 @@ class MultipartUploadRequestBase : public BatchableDelegate {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<MultipartUploadRequestBase> weak_ptr_factory_;
+  base::WeakPtrFactory<MultipartUploadRequestBase> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MultipartUploadRequestBase);
 };

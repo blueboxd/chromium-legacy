@@ -44,7 +44,7 @@ bool NeedsManualSignin() {
 
 namespace remoting {
 
-FtlServicesPlayground::FtlServicesPlayground() : weak_factory_(this) {}
+FtlServicesPlayground::FtlServicesPlayground() {}
 
 FtlServicesPlayground::~FtlServicesPlayground() = default;
 

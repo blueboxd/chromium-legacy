@@ -869,6 +869,11 @@ TEST_F(GaiaCookieManagerServiceTest, GaiaCookieLastListAccountsDataSaved) {
     InstrumentedGaiaCookieManagerService helper(token_service(),
                                                 signin_client());
     MockObserver observer(&helper);
+    auto test_task_runner =
+        base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+    base::ScopedClosureRunner task_runner_ =
+        base::ThreadTaskRunnerHandle::OverrideForTesting(test_task_runner);
+
     EXPECT_CALL(helper, StartFetchingListAccounts()).Times(3);
 
     // Though |SimulateListAccountsSuccess| is not yet called, we are able to
@@ -904,6 +909,12 @@ TEST_F(GaiaCookieManagerServiceTest, GaiaCookieLastListAccountsDataSaved) {
                     ListedAccountEquals(expected_signed_out_accounts), error));
     SimulateListAccountsSuccess(&helper, "[]");
     EXPECT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts));
+
+    // List accounts retries once on |UNEXPECTED_SERVICE_RESPONSE| errors with
+    // backoff protection.
+    Advance(test_task_runner, helper.GetBackoffEntry()->GetTimeUntilRelease());
+    SimulateListAccountsSuccess(&helper, "[]");
+
     // |kGaiaCookieLastListAccountsData| is cleared.
     EXPECT_TRUE(signin_client()
                     ->GetPrefs()

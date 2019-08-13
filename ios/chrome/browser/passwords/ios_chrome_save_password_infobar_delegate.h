@@ -41,6 +41,7 @@ class IOSChromeSavePasswordInfoBarDelegate
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;
+  void InfoBarDismissed() override;
 
   // Updates the credentials being saved with |username| and |password|.
   void UpdateCredentials(NSString* username, NSString* password);

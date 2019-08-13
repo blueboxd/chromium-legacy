@@ -28,8 +28,7 @@ FidoHidDevice::FidoHidDevice(device::mojom::HidDeviceInfoPtr device_info,
     : FidoDevice(),
       output_report_size_(device_info->max_output_report_size),
       hid_manager_(hid_manager),
-      device_info_(std::move(device_info)),
-      weak_factory_(this) {
+      device_info_(std::move(device_info)) {
   DCHECK_GE(std::numeric_limits<decltype(output_report_size_)>::max(),
             device_info_->max_output_report_size);
   // These limits on the report size are enforced in fido_hid_discovery.cc.

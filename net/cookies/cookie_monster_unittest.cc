@@ -1036,8 +1036,9 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlCookies) {
                       Time::Now() + TimeDelta::FromDays(3));
 
   GetCookieListCallback call1;
-  cookie_monster_->GetAllCookiesForURLAsync(http_www_foo_.url(),
-                                            call1.MakeCallback());
+  cookie_monster_->GetCookieListWithOptionsAsync(
+      http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
+      call1.MakeCallback());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(call1.was_run());
 
@@ -1047,8 +1048,9 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlCookies) {
   EXPECT_EQ("LOAD; LOAD_FOR_KEY:foo.com; ", TakeCommandSummary());
 
   GetCookieListCallback call2;
-  cookie_monster_->GetAllCookiesForURLAsync(http_www_foo_.url(),
-                                            call2.MakeCallback());
+  cookie_monster_->GetCookieListWithOptionsAsync(
+      http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
+      call2.MakeCallback());
   EXPECT_TRUE(call2.was_run());
   EXPECT_THAT(call2.cookies(), MatchesCookieLine("X=1"));
   EXPECT_EQ("", TakeCommandSummary());

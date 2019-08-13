@@ -30,14 +30,19 @@ class AssistantNotificationModelObserverMock
   AssistantNotificationModelObserverMock() = default;
   ~AssistantNotificationModelObserverMock() override = default;
 
-  MOCK_METHOD1(OnNotificationAdded,
-               void(const AssistantNotification* notification));
-  MOCK_METHOD1(OnNotificationUpdated,
-               void(const AssistantNotification* notification));
-  MOCK_METHOD2(OnNotificationRemoved,
-               void(const AssistantNotification* notification,
-                    bool from_server));
-  MOCK_METHOD1(OnAllNotificationsRemoved, void(bool from_server));
+  MOCK_METHOD(void,
+              OnNotificationAdded,
+              (const AssistantNotification* notification),
+              (override));
+  MOCK_METHOD(void,
+              OnNotificationUpdated,
+              (const AssistantNotification* notification),
+              (override));
+  MOCK_METHOD(void,
+              OnNotificationRemoved,
+              (const AssistantNotification* notification, bool from_server),
+              (override));
+  MOCK_METHOD(void, OnAllNotificationsRemoved, (bool from_server), (override));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AssistantNotificationModelObserverMock);

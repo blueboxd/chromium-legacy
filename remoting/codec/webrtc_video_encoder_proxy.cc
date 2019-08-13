@@ -41,8 +41,7 @@ WebrtcVideoEncoderProxy::WebrtcVideoEncoderProxy(
     std::unique_ptr<WebrtcVideoEncoder> encoder,
     scoped_refptr<base::SequencedTaskRunner> encode_task_runner)
     : core_(new Core(std::move(encoder))),
-      encode_task_runner_(encode_task_runner),
-      weak_factory_(this) {}
+      encode_task_runner_(encode_task_runner) {}
 
 WebrtcVideoEncoderProxy::~WebrtcVideoEncoderProxy() {
   encode_task_runner_->DeleteSoon(FROM_HERE, core_.release());

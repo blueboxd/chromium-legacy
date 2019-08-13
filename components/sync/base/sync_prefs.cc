@@ -119,6 +119,8 @@ const char* GetPrefNameForType(UserSelectableType type) {
 #endif
     case UserSelectableType::kTabs:
       return prefs::kSyncTabs;
+    case UserSelectableType::kWifiConfigurations:
+      return prefs::kSyncWifiConfigurations;
   }
   NOTREACHED();
   return nullptr;

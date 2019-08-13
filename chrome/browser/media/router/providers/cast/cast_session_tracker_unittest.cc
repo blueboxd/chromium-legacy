@@ -76,8 +76,8 @@ class MockCastSessionObserver : public CastSessionTracker::Observer {
 class CastSessionTrackerTest : public testing::Test {
  public:
   CastSessionTrackerTest()
-      : socket_service_(base::CreateSingleThreadTaskRunnerWithTraits(
-            {content::BrowserThread::UI})),
+      : socket_service_(
+            base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})),
         message_handler_(&socket_service_),
         session_tracker_(&media_sink_service_,
                          &message_handler_,

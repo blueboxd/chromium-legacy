@@ -74,8 +74,7 @@ BlobReader::BlobReader(const BlobDataHandle* blob_handle)
     : file_task_runner_(
           base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
                                   base::TaskPriority::USER_VISIBLE})),
-      net_error_(net::OK),
-      weak_factory_(this) {
+      net_error_(net::OK) {
   if (blob_handle) {
     if (blob_handle->IsBroken()) {
       net_error_ = ConvertBlobErrorToNetError(blob_handle->GetBlobStatus());

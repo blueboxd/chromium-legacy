@@ -32,17 +32,20 @@
   views::metadata::ClassMetaData* GetClassMetaData() override;
 
 // Metadata Class -------------------------------------------------------------
-#define METADATA_CLASS_INTERNAL(class_name)                                  \
-  class METADATA_CLASS_NAME_INTERNAL(class_name)                             \
-      : public views::metadata::ClassMetaData {                              \
-   public:                                                                   \
-    explicit METADATA_CLASS_NAME_INTERNAL(class_name)() { BuildMetaData(); } \
-                                                                             \
-   private:                                                                  \
-    friend class class_name;                                                 \
-    virtual void BuildMetaData();                                            \
-    static views::metadata::ClassMetaData* meta_data_ ALLOW_UNUSED_TYPE;     \
-    DISALLOW_COPY_AND_ASSIGN(METADATA_CLASS_NAME_INTERNAL(class_name));      \
+#define METADATA_CLASS_INTERNAL(class_name, file, line)                  \
+  class METADATA_CLASS_NAME_INTERNAL(class_name)                         \
+      : public views::metadata::ClassMetaData {                          \
+   public:                                                               \
+    explicit METADATA_CLASS_NAME_INTERNAL(class_name)()                  \
+        : ClassMetaData(file, line) {                                    \
+      BuildMetaData();                                                   \
+    }                                                                    \
+                                                                         \
+   private:                                                              \
+    friend class class_name;                                             \
+    virtual void BuildMetaData();                                        \
+    static views::metadata::ClassMetaData* meta_data_ ALLOW_UNUSED_TYPE; \
+    DISALLOW_COPY_AND_ASSIGN(METADATA_CLASS_NAME_INTERNAL(class_name));  \
   }
 
 #define METADATA_PROPERTY_TYPE_INTERNAL(class_name, property_type, \

@@ -85,8 +85,7 @@ bool PasswordProtectionService::CanGetReputationOfURL(const GURL& url) {
 
 bool PasswordProtectionService::ShouldShowModalWarning(
     LoginReputationClientRequest::TriggerType trigger_type,
-    PasswordType password_type,
-    const std::string& username,
+    ReusedPasswordAccountType password_type,
     LoginReputationClientResponse::VerdictType verdict_type) {
   if (trigger_type != LoginReputationClientRequest::PASSWORD_REUSE_EVENT ||
       !IsSupportedPasswordTypeForModalWarning(password_type)) {
@@ -94,23 +93,22 @@ bool PasswordProtectionService::ShouldShowModalWarning(
   }
 
   // Accounts are not signed in only in tests.
-  if ((password_type == PasswordType::PRIMARY_ACCOUNT_PASSWORD &&
-       !IsPrimaryAccountSignedIn()) ||
-      (password_type == PasswordType::OTHER_GAIA_PASSWORD &&
-       !IsOtherGaiaAccountSignedIn(username))) {
+  if (!IsPrimaryAccountSignedIn() &&
+      (password_type.account_type() == ReusedPasswordAccountType::GMAIL ||
+       password_type.account_type() == ReusedPasswordAccountType::GSUITE)) {
     return false;
   }
 
   return (verdict_type == LoginReputationClientResponse::PHISHING ||
           verdict_type == LoginReputationClientResponse::LOW_REPUTATION) &&
-         IsWarningEnabled();
+         IsWarningEnabled(password_type);
 }
 
 LoginReputationClientResponse::VerdictType
 PasswordProtectionService::GetCachedVerdict(
     const GURL& url,
     LoginReputationClientRequest::TriggerType trigger_type,
-    PasswordType password_type,
+    ReusedPasswordAccountType password_type,
     LoginReputationClientResponse* out_response) {
   return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
 }
@@ -118,7 +116,7 @@ PasswordProtectionService::GetCachedVerdict(
 void PasswordProtectionService::CacheVerdict(
     const GURL& url,
     LoginReputationClientRequest::TriggerType trigger_type,
-    PasswordType password_type,
+    ReusedPasswordAccountType password_type,
     const LoginReputationClientResponse& verdict,
     const base::Time& receive_time) {}
 
@@ -151,7 +149,10 @@ void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RequestOutcome reason;
   if (CanSendPing(LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-                  main_frame_url, PasswordType::PASSWORD_TYPE_UNKNOWN, "",
+                  main_frame_url,
+                  GetPasswordProtectionReusedPasswordAccountType(
+                      PasswordType::PASSWORD_TYPE_UNKNOWN,
+                      /*username=*/""),
                   &reason)) {
     StartRequest(web_contents, main_frame_url, password_form_action,
                  password_form_frame_url, /* username */ "",
@@ -179,34 +180,38 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
       "PasswordProtection.PageZoomFactor",
       static_cast<int>(100 * content::ZoomLevelToZoomFactor(zoom_level)));
 
+  ReusedPasswordAccountType reused_password_account_type =
+      GetPasswordProtectionReusedPasswordAccountType(password_type, username);
   RequestOutcome reason;
   if (CanSendPing(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                  main_frame_url, password_type, username, &reason)) {
+                  main_frame_url, reused_password_account_type, &reason)) {
     StartRequest(web_contents, main_frame_url, GURL(), GURL(), username,
                  password_type, matching_domains,
                  LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
                  password_field_exists);
   } else {
-    MaybeLogPasswordReuseLookupEvent(web_contents, reason, nullptr);
+    if (reused_password_account_type.is_account_syncing())
+      MaybeLogPasswordReuseLookupEvent(web_contents, reason, nullptr);
   }
-  if (CanShowInterstitial(reason, password_type, main_frame_url)) {
-    ShowInterstitial(web_contents, password_type);
+  if (CanShowInterstitial(reason, reused_password_account_type,
+                          main_frame_url)) {
+    username_ = username;
+    ShowInterstitial(web_contents, reused_password_account_type);
   }
 }
 
 bool PasswordProtectionService::CanSendPing(
     LoginReputationClientRequest::TriggerType trigger_type,
     const GURL& main_frame_url,
-    PasswordType password_type,
-    const std::string& username,
+    ReusedPasswordAccountType password_type,
     RequestOutcome* reason) {
   *reason = RequestOutcome::UNKNOWN;
   bool is_pinging_enabled =
-      IsPingingEnabled(trigger_type, password_type, username, reason);
+      IsPingingEnabled(trigger_type, password_type, reason);
   // Pinging is enabled for password_reuse trigger level; however we need to
   // make sure *reason is set appropriately.
   PasswordProtectionTrigger trigger_level =
-      GetPasswordProtectionWarningTriggerPref();
+      GetPasswordProtectionWarningTriggerPref(password_type);
   if (trigger_level == PASSWORD_REUSE) {
     *reason = RequestOutcome::PASSWORD_ALERT_MODE;
   }
@@ -214,9 +219,7 @@ bool PasswordProtectionService::CanSendPing(
       !IsURLWhitelistedForPasswordEntry(main_frame_url, reason)) {
     return true;
   }
-  LogNoPingingReason(
-      trigger_type, *reason,
-      GetPasswordProtectionReusedPasswordAccountType(password_type));
+  LogNoPingingReason(trigger_type, *reason, password_type);
   return false;
 }
 
@@ -228,15 +231,25 @@ void PasswordProtectionService::RequestFinished(
   DCHECK(request);
 
   if (response) {
+    ReusedPasswordAccountType password_type =
+        GetPasswordProtectionReusedPasswordAccountType(request->password_type(),
+                                                       request->username());
     if (outcome != RequestOutcome::RESPONSE_ALREADY_CACHED) {
       CacheVerdict(request->main_frame_url(), request->trigger_type(),
-                   request->password_type(), *response, base::Time::Now());
+                   password_type, *response, base::Time::Now());
     }
-    if (ShouldShowModalWarning(request->trigger_type(),
-                               request->password_type(), request->username(),
+    bool enable_warning_for_non_sync_users = base::FeatureList::IsEnabled(
+        safe_browsing::kPasswordProtectionForSignedInUsers);
+    if (!enable_warning_for_non_sync_users &&
+        request->password_type() == PasswordType::OTHER_GAIA_PASSWORD) {
+      return;
+    }
+
+    if (ShouldShowModalWarning(request->trigger_type(), password_type,
                                response->verdict_type())) {
+      username_ = request->username();
       ShowModalWarning(request->web_contents(), response->verdict_token(),
-                       request->password_type());
+                       password_type);
       request->set_is_modal_warning_showing(true);
     }
   }
@@ -344,7 +357,9 @@ PasswordProtectionService::MaybeCreateNavigationThrottle(
     if (request->web_contents() == web_contents &&
         request->trigger_type() ==
             safe_browsing::LoginReputationClientRequest::PASSWORD_REUSE_EVENT &&
-        IsSupportedPasswordTypeForModalWarning(request->password_type())) {
+        IsSupportedPasswordTypeForModalWarning(
+            GetPasswordProtectionReusedPasswordAccountType(
+                request->password_type(), username()))) {
       return std::make_unique<PasswordProtectionNavigationThrottle>(
           navigation_handle, request, /*is_warning_showing=*/false);
     }
@@ -378,13 +393,14 @@ bool PasswordProtectionService::IsModalWarningShowingInWebContents(
   return false;
 }
 
-bool PasswordProtectionService::IsWarningEnabled() {
-  return GetPasswordProtectionWarningTriggerPref() == PHISHING_REUSE;
+bool PasswordProtectionService::IsWarningEnabled(
+    ReusedPasswordAccountType password_type) {
+  return GetPasswordProtectionWarningTriggerPref(password_type) ==
+         PHISHING_REUSE;
 }
 
 bool PasswordProtectionService::IsEventLoggingEnabled() {
-  // TODO(bdea): Incorporate non-sync users.
-  return !IsIncognito() && IsPrimaryAccountSignedIn();
+  return !IsIncognito();
 }
 
 // static
@@ -409,10 +425,10 @@ PasswordProtectionService::GetPasswordProtectionReusedPasswordType(
   return PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN;
 }
 
-// static
 ReusedPasswordAccountType
 PasswordProtectionService::GetPasswordProtectionReusedPasswordAccountType(
-    password_manager::metrics_util::PasswordType password_type) const {
+    password_manager::metrics_util::PasswordType password_type,
+    const std::string& username) const {
   ReusedPasswordAccountType reused_password_account_type;
   switch (password_type) {
     case PasswordType::SAVED_PASSWORD:
@@ -423,11 +439,9 @@ PasswordProtectionService::GetPasswordProtectionReusedPasswordAccountType(
       reused_password_account_type.set_account_type(
           ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
       return reused_password_account_type;
-    case PasswordType::PRIMARY_ACCOUNT_PASSWORD:
-    case PasswordType::OTHER_GAIA_PASSWORD:
-      if (password_type == PasswordType::PRIMARY_ACCOUNT_PASSWORD)
-        reused_password_account_type.set_is_account_syncing(
-            IsPrimaryAccountSyncing());
+    case PasswordType::PRIMARY_ACCOUNT_PASSWORD: {
+      reused_password_account_type.set_is_account_syncing(
+          IsPrimaryAccountSyncing());
       if (!IsPrimaryAccountSignedIn()) {
         reused_password_account_type.set_account_type(
             ReusedPasswordAccountType::UNKNOWN);
@@ -437,6 +451,20 @@ PasswordProtectionService::GetPasswordProtectionReusedPasswordAccountType(
           IsPrimaryAccountGmail() ? ReusedPasswordAccountType::GMAIL
                                   : ReusedPasswordAccountType::GSUITE);
       return reused_password_account_type;
+    }
+    case PasswordType::OTHER_GAIA_PASSWORD: {
+      AccountInfo account_info = GetSignedInNonSyncAccount(username);
+      if (account_info.account_id.empty()) {
+        reused_password_account_type.set_account_type(
+            ReusedPasswordAccountType::UNKNOWN);
+        return reused_password_account_type;
+      }
+      reused_password_account_type.set_account_type(
+          IsOtherGaiaAccountGmail(username)
+              ? ReusedPasswordAccountType::GMAIL
+              : ReusedPasswordAccountType::GSUITE);
+      return reused_password_account_type;
+    }
     case PasswordType::PASSWORD_TYPE_UNKNOWN:
     case PasswordType::PASSWORD_TYPE_COUNT:
       reused_password_account_type.set_account_type(
@@ -445,6 +473,26 @@ PasswordProtectionService::GetPasswordProtectionReusedPasswordAccountType(
   }
   NOTREACHED();
   return reused_password_account_type;
+}
+
+// static
+PasswordType
+PasswordProtectionService::ConvertReusedPasswordAccountTypeToPasswordType(
+    ReusedPasswordAccountType password_type) {
+  if (password_type.is_account_syncing()) {
+    return PasswordType::PRIMARY_ACCOUNT_PASSWORD;
+  } else if (password_type.account_type() ==
+             ReusedPasswordAccountType::NON_GAIA_ENTERPRISE) {
+    return PasswordType::ENTERPRISE_PASSWORD;
+  } else if (password_type.account_type() ==
+             ReusedPasswordAccountType::SAVED_PASSWORD) {
+    return PasswordType::SAVED_PASSWORD;
+  } else if (password_type.account_type() ==
+             ReusedPasswordAccountType::UNKNOWN) {
+    return PasswordType::PASSWORD_TYPE_UNKNOWN;
+  } else {
+    return PasswordType::OTHER_GAIA_PASSWORD;
+  }
 }
 
 bool PasswordProtectionService::IsSupportedPasswordTypeForPinging(
@@ -468,13 +516,18 @@ bool PasswordProtectionService::IsSupportedPasswordTypeForPinging(
 }
 
 bool PasswordProtectionService::IsSupportedPasswordTypeForModalWarning(
-    PasswordType password_type) const {
-  if (password_type == PasswordType::OTHER_GAIA_PASSWORD) {
-    return base::FeatureList::IsEnabled(
-        safe_browsing::kPasswordProtectionForSignedInUsers);
-  }
-  return password_type == PasswordType::PRIMARY_ACCOUNT_PASSWORD ||
-         password_type == PasswordType::ENTERPRISE_PASSWORD;
+    ReusedPasswordAccountType password_type) const {
+  if (password_type.account_type() ==
+      ReusedPasswordAccountType::NON_GAIA_ENTERPRISE)
+    return true;
+
+  if (password_type.account_type() != ReusedPasswordAccountType::GMAIL &&
+      password_type.account_type() != ReusedPasswordAccountType::GSUITE)
+    return false;
+
+  return password_type.is_account_syncing() ||
+         base::FeatureList::IsEnabled(
+             safe_browsing::kPasswordProtectionForSignedInUsers);
 }
 
 void PasswordProtectionService::GetPhishingDetector(

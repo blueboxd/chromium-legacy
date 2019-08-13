@@ -25,12 +25,29 @@ namespace {
 constexpr int kDotCount = 3;
 constexpr float kDotLargeSizeDip = 9.f;
 constexpr float kDotSmallSizeDip = 6.f;
-constexpr int kEmbeddedUiPreferredHeightDip = 9;
 constexpr int kSpacingDip = 4;
+constexpr float kEmbeddedUiDotLargeSizeDip = 6.f;
+constexpr float kEmbeddedUiDotSmallSizeDip = 4.f;
+constexpr int kEmbeddedUiSpacingDip = 3;
+constexpr int kEmbeddedUiPreferredHeightDip = 9;
 
-// Transformation.
-constexpr float kScaleFactor = kDotLargeSizeDip / kDotSmallSizeDip;
-constexpr float kTranslationDip = -(kDotLargeSizeDip - kDotSmallSizeDip) / 2.f;
+float GetDotLargeSizeDip() {
+  return app_list_features::IsEmbeddedAssistantUIEnabled()
+             ? kEmbeddedUiDotLargeSizeDip
+             : kDotLargeSizeDip;
+}
+
+float GetDotSmallSizeDip() {
+  return app_list_features::IsEmbeddedAssistantUIEnabled()
+             ? kEmbeddedUiDotSmallSizeDip
+             : kDotSmallSizeDip;
+}
+
+int GetDotSpacingDip() {
+  return app_list_features::IsEmbeddedAssistantUIEnabled()
+             ? kEmbeddedUiSpacingDip
+             : kSpacingDip;
+}
 
 // DotBackground ---------------------------------------------------------------
 
@@ -119,8 +136,11 @@ void AssistantProgressIndicator::VisibilityChanged(views::View* starting_from,
   // illusion that scaling is being performed about the center of the view as
   // the transformation origin, we also need to perform a translation.
   gfx::Transform transform;
-  transform.Translate(kTranslationDip, kTranslationDip);
-  transform.Scale(kScaleFactor, kScaleFactor);
+  const float translation_dip =
+      -(GetDotLargeSizeDip() - GetDotSmallSizeDip()) / 2.f;
+  const float scale_factor = GetDotLargeSizeDip() / GetDotSmallSizeDip();
+  transform.Translate(translation_dip, translation_dip);
+  transform.Scale(scale_factor, scale_factor);
 
   base::TimeDelta start_offset;
   for (auto* child : children()) {
@@ -154,7 +174,7 @@ void AssistantProgressIndicator::InitLayout() {
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
-          kSpacingDip));
+          GetDotSpacingDip()));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
@@ -163,7 +183,8 @@ void AssistantProgressIndicator::InitLayout() {
   for (int i = 0; i < kDotCount; ++i) {
     views::View* dot_view = new views::View();
     dot_view->SetBackground(std::make_unique<DotBackground>());
-    dot_view->SetPreferredSize(gfx::Size(kDotSmallSizeDip, kDotSmallSizeDip));
+    dot_view->SetPreferredSize(
+        gfx::Size(GetDotSmallSizeDip(), GetDotSmallSizeDip()));
 
     // Dots will animate on their own layers.
     dot_view->SetPaintToLayer();

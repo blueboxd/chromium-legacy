@@ -27,7 +27,7 @@ class PasswordReuseModalWarningDialog
  public:
   PasswordReuseModalWarningDialog(content::WebContents* web_contents,
                                   ChromePasswordProtectionService* service,
-                                  PasswordType password_type,
+                                  ReusedPasswordAccountType password_type,
                                   OnWarningDone done_callback);
 
   ~PasswordReuseModalWarningDialog() override;
@@ -58,7 +58,7 @@ class PasswordReuseModalWarningDialog
   OnWarningDone done_callback_;
   ChromePasswordProtectionService* service_;
   const GURL url_;
-  PasswordType password_type_;
+  ReusedPasswordAccountType password_type_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordReuseModalWarningDialog);
 };

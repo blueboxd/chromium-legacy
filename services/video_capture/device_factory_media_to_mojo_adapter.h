@@ -90,7 +90,7 @@ class DeviceFactoryMediaToMojoAdapter : public DeviceFactory {
 #endif  // defined(OS_CHROMEOS)
 
   bool has_called_get_device_infos_;
-  base::WeakPtrFactory<DeviceFactoryMediaToMojoAdapter> weak_factory_;
+  base::WeakPtrFactory<DeviceFactoryMediaToMojoAdapter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceFactoryMediaToMojoAdapter);
 };

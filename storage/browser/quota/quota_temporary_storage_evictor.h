@@ -111,7 +111,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaTemporaryStorageEvictor {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<QuotaTemporaryStorageEvictor> weak_factory_;
+  base::WeakPtrFactory<QuotaTemporaryStorageEvictor> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(QuotaTemporaryStorageEvictor);
 };

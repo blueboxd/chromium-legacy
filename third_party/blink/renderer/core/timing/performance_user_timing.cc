@@ -25,15 +25,10 @@
 
 #include "third_party/blink/renderer/core/timing/performance_user_timing.h"
 
-#include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
-#include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/performance_mark.h"
 #include "third_party/blink/renderer/core/timing/performance_mark_options.h"
 #include "third_party/blink/renderer/core/timing/performance_measure.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
@@ -41,6 +36,7 @@ namespace blink {
 
 namespace {
 
+typedef uint64_t (PerformanceTiming::*NavigationTimingFunction)() const;
 using RestrictedKeyMap = HashMap<AtomicString, NavigationTimingFunction>;
 
 const RestrictedKeyMap& GetRestrictedKeyMap() {
@@ -148,10 +144,6 @@ void UserTiming::AddMarkToPerformanceTimeline(PerformanceMark& mark) {
     TRACE_EVENT_COPY_MARK("blink.user_timing", mark.name().Utf8().c_str());
   }
   InsertPerformanceEntry(marks_map_, mark);
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram,
-                                  user_timing_mark_histogram,
-                                  ("PLT.UserTiming_Mark", 0, 600000, 100));
-  user_timing_mark_histogram.Count(static_cast<int>(mark.startTime()));
 }
 
 void UserTiming::ClearMarks(const AtomicString& mark_name) {
@@ -255,12 +247,6 @@ PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
   if (!measure)
     return nullptr;
   InsertPerformanceEntry(measures_map_, *measure);
-  if (end_time >= start_time) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, measure_duration_histogram,
-        ("PLT.UserTiming_MeasureDuration", 0, 600000, 100));
-    measure_duration_histogram.Count(static_cast<int>(end_time - start_time));
-  }
   return measure;
 }
 

@@ -46,6 +46,19 @@ void MediaToolbarButtonView::Show() {
   PreferredSizeChanged();
 }
 
+void MediaToolbarButtonView::Hide() {
+  SetVisible(false);
+  PreferredSizeChanged();
+}
+
+void MediaToolbarButtonView::Enable() {
+  SetEnabled(true);
+}
+
+void MediaToolbarButtonView::Disable() {
+  SetEnabled(false);
+}
+
 void MediaToolbarButtonView::UpdateIcon() {
   // TODO(https://crbug.com/973500): Use actual icon instead of this
   // placeholder.
@@ -55,9 +68,13 @@ void MediaToolbarButtonView::UpdateIcon() {
   // of the icon in the icon definition so we don't need to specify a size here.
   const int dip_size = 18;
 
-  SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(icon, dip_size,
-                            GetThemeProvider()->GetColor(
-                                ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)));
+  const SkColor normal_color =
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+  const SkColor disabled_color = GetThemeProvider()->GetColor(
+      ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE);
+
+  SetImage(views::Button::STATE_NORMAL,
+           gfx::CreateVectorIcon(icon, dip_size, normal_color));
+  SetImage(views::Button::STATE_DISABLED,
+           gfx::CreateVectorIcon(icon, dip_size, disabled_color));
 }

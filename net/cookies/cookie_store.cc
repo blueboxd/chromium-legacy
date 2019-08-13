@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "net/cookies/cookie_options.h"
 
 namespace net {
 
@@ -19,16 +18,6 @@ void CookieStore::DeleteAllAsync(DeleteCallback callback) {
 
 void CookieStore::SetForceKeepSessionState() {
   // By default, do nothing.
-}
-
-void CookieStore::GetAllCookiesForURLAsync(const GURL& url,
-                                           GetCookieListCallback callback) {
-  CookieOptions options;
-  options.set_include_httponly();
-  options.set_same_site_cookie_context(
-      CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
-  options.set_do_not_update_access_time();
-  GetCookieListWithOptionsAsync(url, options, std::move(callback));
 }
 
 void CookieStore::DumpMemoryStats(

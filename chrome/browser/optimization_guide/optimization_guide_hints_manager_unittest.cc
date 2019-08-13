@@ -10,7 +10,9 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/optimization_guide/bloom_filter.h"
+#include "components/optimization_guide/command_line_top_host_provider.h"
 #include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
@@ -96,7 +98,8 @@ class OptimizationGuideHintsManagerTest
     ResetHintsManager();
   }
 
-  void CreateServiceAndHintsManager() {
+  void CreateServiceAndHintsManager(
+      optimization_guide::TopHostProvider* top_host_provider = nullptr) {
     if (hints_manager_) {
       ResetHintsManager();
     }
@@ -108,7 +111,7 @@ class OptimizationGuideHintsManagerTest
 
     hints_manager_ = std::make_unique<OptimizationGuideHintsManager>(
         optimization_guide_service_.get(), temp_dir(), pref_service_.get(),
-        db_provider_.get());
+        db_provider_.get(), top_host_provider);
 
     // Add observer is called after the HintCache is fully initialized,
     // indicating that the OptimizationGuideHintsManager is ready to process
@@ -700,4 +703,54 @@ TEST_F(OptimizationGuideHintsManagerTest, InvalidOptimizationFilterNotLoaded) {
       1);
   EXPECT_FALSE(hints_manager()->HasLoadedOptimizationFilter(
       optimization_guide::proto::LITE_PAGE_REDIRECT));
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       HintsFetchNotAllowedIfFeatureIsEnabledButTopHostProviderIsNotProvided) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {optimization_guide::features::kOptimizationHintsFetching}, {});
+
+  base::HistogramTester histogram_tester;
+
+  CreateServiceAndHintsManager(/*top_host_provider=*/nullptr);
+
+  histogram_tester.ExpectUniqueSample("OptimizationGuide.HintsFetching.Allowed",
+                                      false, 1);
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       HintsFetchNotAllowedIfFeatureIsNotEnabledButTopHostProviderIsProvided) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      optimization_guide::switches::kFetchHintsOverride, "whatever.com");
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {}, {optimization_guide::features::kOptimizationHintsFetching});
+
+  base::HistogramTester histogram_tester;
+
+  std::unique_ptr<optimization_guide::TopHostProvider> top_host_provider =
+      optimization_guide::CommandLineTopHostProvider::CreateIfEnabled();
+  CreateServiceAndHintsManager(top_host_provider.get());
+
+  histogram_tester.ExpectUniqueSample("OptimizationGuide.HintsFetching.Allowed",
+                                      false, 1);
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       HintsFetchAllowedIfFeatureIsEnabledAndTopHostProviderIsProvided) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      optimization_guide::switches::kFetchHintsOverride, "whatever.com");
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {optimization_guide::features::kOptimizationHintsFetching}, {});
+
+  base::HistogramTester histogram_tester;
+
+  std::unique_ptr<optimization_guide::TopHostProvider> top_host_provider =
+      optimization_guide::CommandLineTopHostProvider::CreateIfEnabled();
+  CreateServiceAndHintsManager(top_host_provider.get());
+
+  histogram_tester.ExpectUniqueSample("OptimizationGuide.HintsFetching.Allowed",
+                                      true, 1);
 }

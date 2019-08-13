@@ -16,7 +16,6 @@ import org.chromium.content_public.browser.MessagePort;
 public interface WebMessageListener {
     /**
      * Receives postMessage information.
-     * @param awContents   The associated {@link AwContents} of this onPostMessage() call.
      * @param message      The message from JavaScript.
      * @param sourceOrigin The origin of the frame where the message is from.
      * @param isMainframe  If the message is from a main frame.
@@ -25,6 +24,6 @@ public interface WebMessageListener {
      *                     ports to establish new communication channels. Could be empty array but
      *                     won't be null.
      */
-    void onPostMessage(AwContents awContents, String message, Uri sourceOrigin, boolean isMainFrame,
-            MessagePort replyPort, MessagePort[] ports);
+    void onPostMessage(String message, Uri sourceOrigin, boolean isMainFrame, MessagePort replyPort,
+            MessagePort[] ports);
 }

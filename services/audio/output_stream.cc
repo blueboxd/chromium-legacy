@@ -52,8 +52,7 @@ OutputStream::OutputStream(
                   &reader_,
                   stream_monitor_coordinator,
                   processing_id),
-      loopback_group_id_(loopback_group_id),
-      weak_factory_(this) {
+      loopback_group_id_(loopback_group_id) {
   DCHECK(receiver_.is_bound());
   DCHECK(created_callback);
   DCHECK(delete_callback_);

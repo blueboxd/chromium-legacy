@@ -18,6 +18,8 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/mediastream/aec_dump_agent_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
@@ -59,10 +61,10 @@ void AudioServiceAudioProcessorProxy::OnStartDump(base::File dump_file) {
     processor_controls_->StartEchoCancellationDump(std::move(dump_file));
   } else {
     // Post the file close to avoid blocking the main thread.
-    base::PostTask(
+    worker_pool::PostTask(
         FROM_HERE,
         {base::ThreadPool(), base::TaskPriority::LOWEST, base::MayBlock()},
-        base::BindOnce([](base::File) {}, std::move(dump_file)));
+        CrossThreadBindOnce([](base::File) {}, std::move(dump_file)));
   }
 }
 

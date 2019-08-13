@@ -211,6 +211,7 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, ContextAPI) {
 }
 
 IN_PROC_BROWSER_TEST_F(ContentIndexTest, GetVisuals) {
+  provider()->SetIconSizesForTesting({{92, 92}});
   RunScript("AddContent('my-id')");
   base::RunLoop().RunUntilIdle();  // Wait for the provider to get the content.
 
@@ -230,7 +231,6 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, GetVisuals) {
   run_loop.Run();
 
   EXPECT_FALSE(icon.isNull());
-  EXPECT_FALSE(icon.drawsNothing());
 }
 
 IN_PROC_BROWSER_TEST_F(ContentIndexTest, LaunchUrl) {

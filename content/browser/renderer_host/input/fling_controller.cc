@@ -30,8 +30,8 @@ constexpr base::TimeDelta kMaxMicrosecondsFromFlingTimestampToFirstProgress =
 // processing the GFS, it is possible to have a very small delta for the first
 // event. Don't send an event with deltas smaller than the
 // |kMinInertialScrollDelta| since the renderer ignores it and the fling gets
-// cancelled in FlingController::OnGestureEventAck due to an inertial GSU with
-// ack ignored.
+// cancelled in RenderWidgetHostViewAndroid::GestureEventAck due to an inertial
+// GSU with ack ignored.
 const float kMinInertialScrollDelta = 0.1f;
 
 const char* kFlingTraceName = "FlingController::HandlingGestureFling";
@@ -168,6 +168,11 @@ void FlingController::ScheduleFlingProgress() {
 void FlingController::ProcessGestureFlingCancel(
     const GestureEventWithLatencyInfo& gesture_event) {
   DCHECK(fling_curve_);
+
+  // Note: We don't want to reset the fling booster here because a FlingCancel
+  // will be received when the user puts their finger down for a potential
+  // boost. FlingBooster will process the event stream after the current fling
+  // is ended and decide whether or not to boost any subsequent FlingStart.
   EndCurrentFling();
 }
 
@@ -216,6 +221,7 @@ void FlingController::ProgressFling(base::TimeTicks current_time) {
 
   if (!fling_is_active && current_fling_parameters_.source_device !=
                               blink::WebGestureDevice::kSyntheticAutoscroll) {
+    fling_booster_.Reset();
     EndCurrentFling();
     return;
   }
@@ -232,6 +238,7 @@ void FlingController::ProgressFling(base::TimeTicks current_time) {
 }
 
 void FlingController::StopFling() {
+  fling_booster_.Reset();
   if (fling_curve_)
     EndCurrentFling();
 }
@@ -365,6 +372,7 @@ bool FlingController::UpdateCurrentFlingState(
 
   if (velocity.IsZero() && fling_start_event.SourceDevice() !=
                                blink::WebGestureDevice::kSyntheticAutoscroll) {
+    fling_booster_.Reset();
     EndCurrentFling();
     return false;
   }

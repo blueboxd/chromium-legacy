@@ -21,6 +21,7 @@ namespace performance_manager {
 class FrameNodeObserver;
 class PageNode;
 class ProcessNode;
+class WorkerNode;
 
 // Frame nodes form a tree structure, each FrameNode at most has one parent that
 // is a FrameNode. Conceptually, a frame corresponds to a
@@ -124,6 +125,12 @@ class FrameNode : public Node {
 
   // Returns true if all intervention policies have been set for this frame.
   virtual bool AreAllInterventionPoliciesSet() const = 0;
+
+  // Returns the child workers of this frame. These are either dedicated workers
+  // or shared workers created by this frame, or a service worker that handles
+  // this frame's network requests.
+  virtual const base::flat_set<const WorkerNode*> GetChildWorkerNodes()
+      const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FrameNode);

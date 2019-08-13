@@ -61,7 +61,7 @@ class XmppLogToServer : public LogToServer, public SignalStrategy::Listener {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<XmppLogToServer> weak_factory_;
+  base::WeakPtrFactory<XmppLogToServer> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(XmppLogToServer);
 };
 

@@ -11,7 +11,7 @@ absoluteChildContainer: layer(0,0 785x1722) has hit test rect (13,172 290x12)
 absoluteChildContainer: layer(0,0 785x1722) has hit test rect (320,173 142x12)
 
 relativeChildContainer: layer(0,0 785x1802) has hit test rect (13,189 290x22)
-relativeChildContainer: layer(0,0 785x1802) has hit test rect (315,209 142x12)
+relativeChildContainer: layer(0,0 785x1802) has hit test rect (314,199 142x12)
 
 fixed: layer(405,98 52x12) has hit test rect (0,0 52x12)
 

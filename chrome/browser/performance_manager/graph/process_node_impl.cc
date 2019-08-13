@@ -4,6 +4,8 @@
 
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
@@ -18,18 +20,6 @@ ProcessNodeImpl::ProcessNodeImpl(GraphImpl* graph)
 
 ProcessNodeImpl::~ProcessNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-void ProcessNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const bool inserted = frame_nodes_.insert(frame_node).second;
-  DCHECK(inserted);
-}
-
-void ProcessNodeImpl::RemoveFrame(FrameNodeImpl* frame_node) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(base::Contains(frame_nodes_, frame_node));
-  frame_nodes_.erase(frame_node);
 }
 
 void ProcessNodeImpl::SetCPUUsage(double cpu_usage) {
@@ -94,6 +84,30 @@ PageNodeImpl* ProcessNodeImpl::GetPageNodeIfExclusive() const {
       return nullptr;
   }
   return page_node;
+}
+
+void ProcessNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const bool inserted = frame_nodes_.insert(frame_node).second;
+  DCHECK(inserted);
+}
+
+void ProcessNodeImpl::RemoveFrame(FrameNodeImpl* frame_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(base::Contains(frame_nodes_, frame_node));
+  frame_nodes_.erase(frame_node);
+}
+
+void ProcessNodeImpl::AddWorker(WorkerNodeImpl* worker_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const bool inserted = worker_nodes_.insert(worker_node).second;
+  DCHECK(inserted);
+}
+
+void ProcessNodeImpl::RemoveWorker(WorkerNodeImpl* worker_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(base::Contains(worker_nodes_, worker_node));
+  worker_nodes_.erase(worker_node);
 }
 
 void ProcessNodeImpl::SetProcessImpl(base::Process process,

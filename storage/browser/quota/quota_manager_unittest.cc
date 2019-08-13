@@ -87,10 +87,7 @@ class QuotaManagerTest : public testing::Test {
   using OriginInfoTableEntries = QuotaManager::OriginInfoTableEntries;
 
  public:
-  QuotaManagerTest()
-      : mock_time_counter_(0),
-        weak_factory_(this) {
-  }
+  QuotaManagerTest() : mock_time_counter_(0) {}
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
@@ -515,7 +512,7 @@ class QuotaManagerTest : public testing::Test {
 
   int mock_time_counter_;
 
-  base::WeakPtrFactory<QuotaManagerTest> weak_factory_;
+  base::WeakPtrFactory<QuotaManagerTest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(QuotaManagerTest);
 };

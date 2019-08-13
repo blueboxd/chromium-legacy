@@ -55,12 +55,6 @@ cr.define('extensions', function() {
       showPackDialog_: Boolean,
 
       /**
-       * Text to display in update toast
-       * @private
-       */
-      toastLabel_: String,
-
-      /**
        * Prevents initiating update while update is in progress.
        * @private
        */
@@ -71,14 +65,6 @@ cr.define('extensions', function() {
 
     hostAttributes: {
       role: 'banner',
-    },
-
-    /** @override */
-    detached: function() {
-      const openToastElement = this.$$('cr-toast[open]');
-      if (openToastElement) {
-        openToastElement.hide();
-      }
     },
 
     /**
@@ -163,23 +149,20 @@ cr.define('extensions', function() {
       }
 
       this.isUpdating_ = true;
-      const toastElement = this.$$('cr-toast');
-      this.toastLabel_ = this.i18n('toolbarUpdatingToast');
 
+      const toastManager = cr.toastManager.getInstance();
       // Keep the toast open indefinitely.
-      toastElement.duration = 0;
-      toastElement.show();
-      this.delegate.updateAllExtensions()
-          .then(() => {
-            Polymer.IronA11yAnnouncer.requestAvailability();
-            const doneText = this.i18n('toolbarUpdateDone');
-            this.fire('iron-announce', {text: doneText});
-            this.toastLabel_ = doneText;
-            toastElement.show(3000);
+      toastManager.duration = 0;
+      toastManager.show(this.i18n('toolbarUpdatingToast'), false);
+      this.delegate.updateAllExtensions().then(
+          () => {
+            toastManager.hide();
+            toastManager.duration = 3000;
+            toastManager.show(this.i18n('toolbarUpdateDone'), false);
             this.isUpdating_ = false;
-          })
-          .catch(function() {
-            toastElement.hide();
+          },
+          () => {
+            toastManager.hide();
             this.isUpdating_ = false;
           });
     },

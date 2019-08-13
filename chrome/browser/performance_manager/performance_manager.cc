@@ -23,6 +23,7 @@
 #include "chrome/browser/performance_manager/graph/policies/working_set_trimmer_policy.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
+#include "chrome/browser/performance_manager/graph/worker_node_impl.h"
 #include "chrome/browser/performance_manager/observers/isolation_context_metrics.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
 #include "content/public/browser/system_connector.h"
@@ -171,6 +172,15 @@ std::unique_ptr<PageNodeImpl> PerformanceManager::CreatePageNode(
 std::unique_ptr<ProcessNodeImpl> PerformanceManager::CreateProcessNode() {
   return CreateNodeImpl<ProcessNodeImpl>(
       base::OnceCallback<void(ProcessNodeImpl*)>());
+}
+
+std::unique_ptr<WorkerNodeImpl> PerformanceManager::CreateWorkerNode(
+    WorkerNode::WorkerType worker_type,
+    ProcessNodeImpl* process_node,
+    const base::UnguessableToken& dev_tools_token) {
+  return CreateNodeImpl<WorkerNodeImpl>(
+      base::OnceCallback<void(WorkerNodeImpl*)>(), worker_type, process_node,
+      dev_tools_token);
 }
 
 void PerformanceManager::BatchDeleteNodes(

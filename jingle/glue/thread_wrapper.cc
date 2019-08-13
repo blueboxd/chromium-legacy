@@ -71,8 +71,7 @@ JingleThreadWrapper::JingleThreadWrapper(
       send_allowed_(false),
       last_task_id_(0),
       pending_send_event_(base::WaitableEvent::ResetPolicy::MANUAL,
-                          base::WaitableEvent::InitialState::NOT_SIGNALED),
-      weak_ptr_factory_(this) {
+                          base::WaitableEvent::InitialState::NOT_SIGNALED) {
   DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK(!rtc::Thread::Current());
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();

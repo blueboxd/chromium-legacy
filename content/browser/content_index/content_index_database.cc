@@ -108,9 +108,7 @@ ContentIndexDatabase::ContentIndexDatabase(
     BrowserContext* browser_context,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
     : provider_(browser_context->GetContentIndexProvider()),
-      service_worker_context_(std::move(service_worker_context)),
-      weak_ptr_factory_io_(this),
-      weak_ptr_factory_ui_(this) {}
+      service_worker_context_(std::move(service_worker_context)) {}
 
 ContentIndexDatabase::~ContentIndexDatabase() = default;
 

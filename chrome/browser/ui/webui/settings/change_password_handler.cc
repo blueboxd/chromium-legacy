@@ -40,7 +40,7 @@ void ChangePasswordHandler::RegisterMessages() {
 void ChangePasswordHandler::OnJavascriptAllowed() {
   pref_registrar_.Init(profile_->GetPrefs());
   pref_registrar_.Add(
-      prefs::kSafeBrowsingUnhandledSyncPasswordReuses,
+      prefs::kSafeBrowsingUnhandledGaiaPasswordReuses,
       base::Bind(&ChangePasswordHandler::UpdateChangePasswordCardVisibility,
                  base::Unretained(this)));
 }
@@ -55,16 +55,21 @@ void ChangePasswordHandler::HandleInitialize(const base::ListValue* args) {
 }
 
 void ChangePasswordHandler::HandleChangePassword(const base::ListValue* args) {
-  service_->OnUserAction(web_ui()->GetWebContents(),
-                         PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-                         safe_browsing::WarningUIType::CHROME_SETTINGS,
-                         safe_browsing::WarningAction::CHANGE_PASSWORD);
+  service_->OnUserAction(
+      web_ui()->GetWebContents(),
+      service_->GetPasswordProtectionReusedPasswordAccountType(
+          PasswordType::PRIMARY_ACCOUNT_PASSWORD, service_->username()),
+      safe_browsing::WarningUIType::CHROME_SETTINGS,
+      safe_browsing::WarningAction::CHANGE_PASSWORD);
 }
 
 void ChangePasswordHandler::UpdateChangePasswordCardVisibility() {
   FireWebUIListener(
       "change-password-visibility",
-      base::Value(service_->IsWarningEnabled() &&
+      base::Value(service_->IsWarningEnabled(
+                      service_->GetPasswordProtectionReusedPasswordAccountType(
+                          PasswordType::PRIMARY_ACCOUNT_PASSWORD,
+                          service_->username())) &&
                   safe_browsing::ChromePasswordProtectionService::
                       ShouldShowChangePasswordSettingUI(profile_)));
 }

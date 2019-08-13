@@ -145,8 +145,7 @@ struct PersistentPrefStoreClient::InFlightWrite {
 };
 
 PersistentPrefStoreClient::PersistentPrefStoreClient(
-    mojom::PersistentPrefStoreConnectionPtr connection)
-    : weak_factory_(this) {
+    mojom::PersistentPrefStoreConnectionPtr connection) {
   read_error_ = connection->read_error;
   read_only_ = connection->read_only;
   pref_store_.Bind(std::move(connection->pref_store));

@@ -240,8 +240,7 @@ PerfettoTracingCoordinator::PerfettoTracingCoordinator(
     AgentRegistry* agent_registry,
     base::RepeatingClosure on_disconnect_callback)
     : Coordinator(agent_registry, std::move(on_disconnect_callback)),
-      binding_(this),
-      weak_factory_(this) {
+      binding_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 

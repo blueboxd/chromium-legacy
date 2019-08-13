@@ -52,13 +52,13 @@ ApplyConstraintsProcessor::ApplyConstraintsProcessor(
       task_runner_(std::move(task_runner)) {}
 
 ApplyConstraintsProcessor::~ApplyConstraintsProcessor() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void ApplyConstraintsProcessor::ProcessRequest(
     const blink::WebApplyConstraintsRequest& request,
     base::OnceClosure callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!request_completed_cb_);
   DCHECK(current_request_.IsNull());
   DCHECK(!request.Track().IsNull());
@@ -80,7 +80,7 @@ void ApplyConstraintsProcessor::ProcessRequest(
 }
 
 void ApplyConstraintsProcessor::ProcessAudioRequest() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!current_request_.IsNull());
   DCHECK_EQ(current_request_.Track().Source().GetType(),
             blink::WebMediaStreamSource::kTypeAudio);
@@ -101,7 +101,7 @@ void ApplyConstraintsProcessor::ProcessAudioRequest() {
 }
 
 void ApplyConstraintsProcessor::ProcessVideoRequest() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!current_request_.IsNull());
   DCHECK_EQ(current_request_.Track().Source().GetType(),
             blink::WebMediaStreamSource::kTypeVideo);
@@ -121,7 +121,7 @@ void ApplyConstraintsProcessor::ProcessVideoRequest() {
 }
 
 void ApplyConstraintsProcessor::ProcessVideoDeviceRequest() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (AbortIfVideoRequestStateInvalid())
     return;
 
@@ -145,7 +145,7 @@ void ApplyConstraintsProcessor::ProcessVideoDeviceRequest() {
 
 void ApplyConstraintsProcessor::MaybeStopSourceForRestart(
     const Vector<media::VideoCaptureFormat>& formats) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (AbortIfVideoRequestStateInvalid())
     return;
 
@@ -168,7 +168,7 @@ void ApplyConstraintsProcessor::MaybeStopSourceForRestart(
 
 void ApplyConstraintsProcessor::MaybeSourceStoppedForRestart(
     blink::MediaStreamVideoSource::RestartResult result) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (AbortIfVideoRequestStateInvalid())
     return;
 
@@ -186,7 +186,7 @@ void ApplyConstraintsProcessor::MaybeSourceStoppedForRestart(
 
 void ApplyConstraintsProcessor::FindNewFormatAndRestart(
     const Vector<media::VideoCaptureFormat>& formats) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (AbortIfVideoRequestStateInvalid())
     return;
 
@@ -204,7 +204,7 @@ void ApplyConstraintsProcessor::FindNewFormatAndRestart(
 
 void ApplyConstraintsProcessor::MaybeSourceRestarted(
     blink::MediaStreamVideoSource::RestartResult result) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (AbortIfVideoRequestStateInvalid())
     return;
 
@@ -218,7 +218,7 @@ void ApplyConstraintsProcessor::MaybeSourceRestarted(
 }
 
 void ApplyConstraintsProcessor::FinalizeVideoRequest() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (AbortIfVideoRequestStateInvalid())
     return;
 
@@ -241,7 +241,7 @@ void ApplyConstraintsProcessor::FinalizeVideoRequest() {
 
 blink::VideoCaptureSettings ApplyConstraintsProcessor::SelectVideoSettings(
     Vector<media::VideoCaptureFormat> formats) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!current_request_.IsNull());
   DCHECK_EQ(current_request_.Track().Source().GetType(),
             blink::WebMediaStreamSource::kTypeVideo);
@@ -279,14 +279,14 @@ blink::VideoCaptureSettings ApplyConstraintsProcessor::SelectVideoSettings(
 
 blink::MediaStreamAudioSource*
 ApplyConstraintsProcessor::GetCurrentAudioSource() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!current_request_.Track().IsNull());
   return blink::MediaStreamAudioSource::From(current_request_.Track().Source());
 }
 
 blink::MediaStreamVideoTrack*
 ApplyConstraintsProcessor::GetCurrentVideoTrack() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   blink::MediaStreamVideoTrack* track =
       blink::MediaStreamVideoTrack::GetVideoTrack(current_request_.Track());
   DCHECK(track);
@@ -295,12 +295,12 @@ ApplyConstraintsProcessor::GetCurrentVideoTrack() {
 
 blink::MediaStreamVideoSource*
 ApplyConstraintsProcessor::GetCurrentVideoSource() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return GetCurrentVideoTrack()->source();
 }
 
 bool ApplyConstraintsProcessor::AbortIfVideoRequestStateInvalid() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!current_request_.IsNull());
   DCHECK_EQ(current_request_.Track().Source().GetType(),
             blink::WebMediaStreamSource::kTypeVideo);
@@ -324,7 +324,7 @@ void ApplyConstraintsProcessor::ApplyConstraintsSucceeded() {
 
 void ApplyConstraintsProcessor::ApplyConstraintsFailed(
     const char* failed_constraint_name) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(
       *task_runner_.get(), FROM_HERE,
       CrossThreadBindOnce(
@@ -336,7 +336,7 @@ void ApplyConstraintsProcessor::ApplyConstraintsFailed(
 }
 
 void ApplyConstraintsProcessor::CannotApplyConstraints(const String& message) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(
       *task_runner_.get(), FROM_HERE,
       CrossThreadBindOnce(&ApplyConstraintsProcessor::CleanupRequest,
@@ -347,7 +347,7 @@ void ApplyConstraintsProcessor::CannotApplyConstraints(const String& message) {
 
 void ApplyConstraintsProcessor::CleanupRequest(
     CrossThreadOnceClosure web_request_callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!current_request_.IsNull());
   DCHECK(request_completed_cb_);
   std::move(request_completed_cb_).Run();
@@ -358,7 +358,7 @@ void ApplyConstraintsProcessor::CleanupRequest(
 
 const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
 ApplyConstraintsProcessor::GetMediaDevicesDispatcher() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return media_devices_dispatcher_cb_.Run();
 }
 

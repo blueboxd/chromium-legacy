@@ -23,21 +23,16 @@
 #include "components/download/public/common/download_destination_observer.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
-#include "components/download/public/common/download_request_handle_interface.h"
+#include "components/download/public/common/download_job.h"
 #include "components/download/public/common/download_url_loader_factory_getter.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/resume_mode.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace download {
 class DownloadFile;
 class DownloadItemImplDelegate;
-class DownloadJob;
 
 // See download_item.h for usage.
 class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
@@ -206,13 +201,12 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
 
   // Constructing for the "Save Page As..." feature:
   // |net_log| is constructed externally for our use.
-  DownloadItemImpl(
-      DownloadItemImplDelegate* delegate,
-      uint32_t id,
-      const base::FilePath& path,
-      const GURL& url,
-      const std::string& mime_type,
-      std::unique_ptr<DownloadRequestHandleInterface> request_handle);
+  DownloadItemImpl(DownloadItemImplDelegate* delegate,
+                   uint32_t id,
+                   const base::FilePath& path,
+                   const GURL& url,
+                   const std::string& mime_type,
+                   DownloadJob::CancelRequestCallback cancel_request_callback);
 
   ~DownloadItemImpl() override;
 
@@ -310,17 +304,16 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
 
   // Start the download.
   // |download_file| is the associated file on the storage medium.
-  // |req_handle| is the new request handle associated with the download.
+  // |cancel_request_callback| is the callback to cancel the download.
   // |new_create_info| is a DownloadCreateInfo containing the new response
   // parameters. It may be different from the DownloadCreateInfo used to create
   // the DownloadItem if Start() is being called in response for a
   // download resumption request.
   virtual void Start(std::unique_ptr<DownloadFile> download_file,
-                     std::unique_ptr<DownloadRequestHandleInterface> req_handle,
+                     DownloadJob::CancelRequestCallback cancel_request_callback,
                      const DownloadCreateInfo& new_create_info,
                      scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-                         url_loader_factory_getter,
-                     net::URLRequestContextGetter* url_request_context_getter);
+                         url_loader_factory_getter);
 
   // Needed because of intertwining with DownloadManagerImpl -------------------
 

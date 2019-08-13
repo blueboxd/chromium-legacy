@@ -11,12 +11,14 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/null_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/safe_browsing/common/safe_browsing.mojom-forward.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/db/test_database_manager.h"
+#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/password_protection/mock_password_protection_service.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
@@ -148,7 +150,7 @@ class TestPasswordProtectionService : public MockPasswordProtectionService {
 
   void CacheVerdict(const GURL& url,
                     LoginReputationClientRequest::TriggerType trigger_type,
-                    PasswordType password_type,
+                    ReusedPasswordAccountType password_type,
                     const LoginReputationClientResponse& verdict,
                     const base::Time& receive_time) override {
     if (!CanGetReputationOfURL(url) || IsIncognito())
@@ -161,7 +163,7 @@ class TestPasswordProtectionService : public MockPasswordProtectionService {
   LoginReputationClientResponse::VerdictType GetCachedVerdict(
       const GURL& url,
       LoginReputationClientRequest::TriggerType trigger_type,
-      PasswordType password_type,
+      ReusedPasswordAccountType password_type,
       LoginReputationClientResponse* out_response) override {
     if (!url.is_valid() || !CanGetReputationOfURL(url))
       return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
@@ -220,13 +222,11 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
         .WillRepeatedly(Return(GetParam()));
     EXPECT_CALL(*password_protection_service_, IsIncognito())
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-        .WillRepeatedly(Return(PasswordReuseEvent::NOT_SIGNED_IN));
     EXPECT_CALL(*password_protection_service_,
                 IsURLWhitelistedForPasswordEntry(_, _))
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*password_protection_service_,
-                GetPasswordProtectionWarningTriggerPref())
+                GetPasswordProtectionWarningTriggerPref(_))
         .WillRepeatedly(Return(PASSWORD_PROTECTION_OFF));
     url_ = PasswordProtectionService::GetPasswordProtectionRequestUrl();
   }
@@ -274,7 +274,7 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
 
   void CacheVerdict(const GURL& url,
                     LoginReputationClientRequest::TriggerType trigger,
-                    PasswordType password_type,
+                    ReusedPasswordAccountType password_type,
                     LoginReputationClientResponse::VerdictType verdict,
                     int cache_duration_sec,
                     const std::string& cache_expression,
@@ -286,7 +286,7 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
                                                response, verdict_received_time);
   }
 
-  void CacheInvalidVerdict(PasswordType password_type) {
+  void CacheInvalidVerdict(ReusedPasswordAccountType password_type) {
     GURL invalid_hostname("http://invalid.com");
     std::unique_ptr<base::DictionaryValue> verdict_dictionary =
         base::DictionaryValue::From(content_setting_map_->GetWebsiteSetting(
@@ -305,8 +305,10 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
     invalid_cache_expression_entry->SetWithoutPathExpansion(
         "invalid_cache_expression", std::move(invalid_verdict_entry));
     verdict_dictionary->SetWithoutPathExpansion(
-        base::NumberToString(
-            static_cast<std::underlying_type_t<PasswordType>>(password_type)),
+        base::NumberToString(static_cast<std::underlying_type_t<PasswordType>>(
+            password_protection_service_
+                ->ConvertReusedPasswordAccountTypeToPasswordType(
+                    password_type))),
         std::move(invalid_cache_expression_entry));
     content_setting_map_->SetWebsiteSettingDefaultScope(
         invalid_hostname, GURL(), CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
@@ -350,12 +352,17 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
 TEST_P(PasswordProtectionServiceTest, TestCachePasswordReuseVerdicts) {
   ASSERT_EQ(0U, GetStoredVerdictCount(
                     LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
-
+  EXPECT_CALL(*password_protection_service_, IsPrimaryAccountSignedIn())
+      .WillRepeatedly(Return(true));
   // Assume each verdict has a TTL of 10 minutes.
   // Cache a verdict for http://www.test.com/foo/index.html
+  ReusedPasswordAccountType reused_password_account_type;
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::GSUITE);
+  reused_password_account_type.set_is_account_syncing(true);
   CacheVerdict(GURL("http://www.test.com/foo/index.html"),
                LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-               PasswordType::PRIMARY_ACCOUNT_PASSWORD,
+               reused_password_account_type,
                LoginReputationClientResponse::SAFE, 10 * kMinute,
                "test.com/foo/", base::Time::Now());
 
@@ -366,7 +373,7 @@ TEST_P(PasswordProtectionServiceTest, TestCachePasswordReuseVerdicts) {
   // override the cache.
   CacheVerdict(GURL("http://www.test.com/foo/index2.html"),
                LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-               PasswordType::PRIMARY_ACCOUNT_PASSWORD,
+               reused_password_account_type,
                LoginReputationClientResponse::PHISHING, 10 * kMinute,
                "test.com/foo/", base::Time::Now());
   EXPECT_EQ(1U, GetStoredVerdictCount(
@@ -376,13 +383,15 @@ TEST_P(PasswordProtectionServiceTest, TestCachePasswordReuseVerdicts) {
             password_protection_service_->GetCachedVerdict(
                 GURL("http://www.test.com/foo/index2.html"),
                 LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordType::PRIMARY_ACCOUNT_PASSWORD, &out_verdict));
+                reused_password_account_type, &out_verdict));
 
   // Cache a password reuse verdict with a different password type but same
   // origin and cache expression should add a new entry.
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
   CacheVerdict(GURL("http://www.test.com/foo/index2.html"),
                LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-               PasswordType::ENTERPRISE_PASSWORD,
+               reused_password_account_type,
                LoginReputationClientResponse::PHISHING, 10 * kMinute,
                "test.com/foo/", base::Time::Now());
   EXPECT_EQ(2U, GetStoredVerdictCount(
@@ -391,14 +400,14 @@ TEST_P(PasswordProtectionServiceTest, TestCachePasswordReuseVerdicts) {
             password_protection_service_->GetCachedVerdict(
                 GURL("http://www.test.com/foo/index2.html"),
                 LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordType::ENTERPRISE_PASSWORD, &out_verdict));
+                reused_password_account_type, &out_verdict));
 
   // Cache another verdict with the same origin but different cache_expression
   // will not increase setting count, but will increase the number of verdicts
   // in the given origin.
   CacheVerdict(GURL("http://www.test.com/bar/index2.html"),
                LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-               PasswordType::PRIMARY_ACCOUNT_PASSWORD,
+               reused_password_account_type,
                LoginReputationClientResponse::SAFE, 10 * kMinute,
                "test.com/bar/", base::Time::Now());
   EXPECT_EQ(3U, GetStoredVerdictCount(
@@ -408,7 +417,7 @@ TEST_P(PasswordProtectionServiceTest, TestCachePasswordReuseVerdicts) {
   // PASSWORD_REUSE_EVENT should be the same.
   CacheVerdict(GURL("http://www.test.com/foobar/index3.html"),
                LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-               PasswordType::PASSWORD_TYPE_UNKNOWN,
+               reused_password_account_type,
                LoginReputationClientResponse::SAFE, 10 * kMinute,
                "test.com/foobar/", base::Time::Now());
   EXPECT_EQ(3U, GetStoredVerdictCount(
@@ -423,10 +432,14 @@ TEST_P(PasswordProtectionServiceTest, TestCachePasswordReuseVerdictsIncognito) {
   ASSERT_EQ(0U, GetStoredVerdictCount(
                     LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
 
+  ReusedPasswordAccountType reused_password_account_type;
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::GSUITE);
+  reused_password_account_type.set_is_account_syncing(true);
   // No verdict will be cached for incognito profile.
   CacheVerdict(GURL("http://www.test.com/foo/index.html"),
                LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-               PasswordType::PRIMARY_ACCOUNT_PASSWORD,
+               reused_password_account_type,
                LoginReputationClientResponse::SAFE, 10 * kMinute,
                "test.com/foo/", base::Time::Now());
 
@@ -437,7 +450,7 @@ TEST_P(PasswordProtectionServiceTest, TestCachePasswordReuseVerdictsIncognito) {
   // Verdict count should not increase.
   CacheVerdict(GURL("http://www.test.com/foo/index2.html"),
                LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-               PasswordType::PRIMARY_ACCOUNT_PASSWORD,
+               reused_password_account_type,
                LoginReputationClientResponse::PHISHING, 10 * kMinute,
                "test.com/foo/", base::Time::Now());
   EXPECT_EQ(0U, GetStoredVerdictCount(
@@ -447,7 +460,7 @@ TEST_P(PasswordProtectionServiceTest, TestCachePasswordReuseVerdictsIncognito) {
   // increase.
   CacheVerdict(GURL("http://www.test.com/foobar/index3.html"),
                LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-               PasswordType::PASSWORD_TYPE_UNKNOWN,
+               reused_password_account_type,
                LoginReputationClientResponse::SAFE, 10 * kMinute,
                "test.com/foobar/", base::Time::Now());
   EXPECT_EQ(0U, GetStoredVerdictCount(
@@ -459,12 +472,15 @@ TEST_P(PasswordProtectionServiceTest, TestCachePasswordReuseVerdictsIncognito) {
 TEST_P(PasswordProtectionServiceTest, TestCacheUnfamiliarLoginVerdicts) {
   ASSERT_EQ(0U, GetStoredVerdictCount(
                     LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
-
+  ReusedPasswordAccountType reused_password_account_type;
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::UNKNOWN);
+  reused_password_account_type.set_is_account_syncing(true);
   // Assume each verdict has a TTL of 10 minutes.
   // Cache a verdict for http://www.test.com/foo/index.html
   CacheVerdict(GURL("http://www.test.com/foo/index.html"),
                LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-               PasswordType::PASSWORD_TYPE_UNKNOWN,
+               reused_password_account_type,
                LoginReputationClientResponse::SAFE, 10 * kMinute,
                "test.com/foo/", base::Time::Now());
 
@@ -476,7 +492,7 @@ TEST_P(PasswordProtectionServiceTest, TestCacheUnfamiliarLoginVerdicts) {
   // in the given origin.
   CacheVerdict(GURL("http://www.test.com/bar/index2.html"),
                LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-               PasswordType::PASSWORD_TYPE_UNKNOWN,
+               reused_password_account_type,
                LoginReputationClientResponse::SAFE, 10 * kMinute,
                "test.com/bar/", base::Time::Now());
   EXPECT_EQ(2U, GetStoredVerdictCount(
@@ -486,7 +502,7 @@ TEST_P(PasswordProtectionServiceTest, TestCacheUnfamiliarLoginVerdicts) {
   // UNFAMILIAR_LOGIN_PAGE should be the same.
   CacheVerdict(GURL("http://www.test.com/foobar/index3.html"),
                LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-               PasswordType::PRIMARY_ACCOUNT_PASSWORD,
+               reused_password_account_type,
                LoginReputationClientResponse::SAFE, 10 * kMinute,
                "test.com/foobar/", base::Time::Now());
   EXPECT_EQ(2U, GetStoredVerdictCount(
@@ -502,10 +518,14 @@ TEST_P(PasswordProtectionServiceTest,
   ASSERT_EQ(0U, GetStoredVerdictCount(
                     LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
 
+  ReusedPasswordAccountType reused_password_account_type;
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::UNKNOWN);
+  reused_password_account_type.set_is_account_syncing(true);
   // No verdict will be cached for incognito profile.
   CacheVerdict(GURL("http://www.test.com/foo/index.html"),
                LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-               PasswordType::PASSWORD_TYPE_UNKNOWN,
+               reused_password_account_type,
                LoginReputationClientResponse::SAFE, 10 * kMinute,
                "test.com/foo/", base::Time::Now());
 
@@ -514,7 +534,7 @@ TEST_P(PasswordProtectionServiceTest,
 
   CacheVerdict(GURL("http://www.test.com/bar/index2.html"),
                LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-               PasswordType::PASSWORD_TYPE_UNKNOWN,
+               reused_password_account_type,
                LoginReputationClientResponse::SAFE, 10 * kMinute,
                "test.com/bar/", base::Time::Now());
   EXPECT_EQ(0U, GetStoredVerdictCount(
@@ -522,9 +542,12 @@ TEST_P(PasswordProtectionServiceTest,
 
   // Now cache a PASSWORD_REUSE_EVENT verdict. Verdict count should not
   // increase.
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::GSUITE);
+  reused_password_account_type.set_is_account_syncing(true);
   CacheVerdict(GURL("http://www.test.com/foobar/index3.html"),
                LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-               PasswordType::PRIMARY_ACCOUNT_PASSWORD,
+               reused_password_account_type,
                LoginReputationClientResponse::SAFE, 10 * kMinute,
                "test.com/foobar/", base::Time::Now());
   EXPECT_EQ(0U, GetStoredVerdictCount(
@@ -538,29 +561,37 @@ TEST_P(PasswordProtectionServiceTest, TestGetCachedVerdicts) {
                     LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
   ASSERT_EQ(0U, GetStoredVerdictCount(
                     LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
+  ReusedPasswordAccountType reused_password_account_type;
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::GSUITE);
+  reused_password_account_type.set_is_account_syncing(true);
   // Prepare 4 verdicts of the same origin with different cache expressions,
   // or password type, one is expired, one is not, one is of a different
   // trigger type, and the other is with a different password type.
   base::Time now = base::Time::Now();
   CacheVerdict(GURL("http://test.com/login.html"),
                LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-               PasswordType::PRIMARY_ACCOUNT_PASSWORD,
+               reused_password_account_type,
                LoginReputationClientResponse::SAFE, 10 * kMinute, "test.com/",
                now);
   CacheVerdict(
       GURL("http://test.com/def/index.jsp"),
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-      LoginReputationClientResponse::PHISHING, 10 * kMinute, "test.com/def/",
+      reused_password_account_type, LoginReputationClientResponse::PHISHING,
+      10 * kMinute, "test.com/def/",
       base::Time::FromDoubleT(now.ToDoubleT() - kDay));  // Yesterday, expired.
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::UNKNOWN);
   CacheVerdict(GURL("http://test.com/bar/login.html"),
                LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-               PasswordType::PASSWORD_TYPE_UNKNOWN,
+               reused_password_account_type,
                LoginReputationClientResponse::PHISHING, 10 * kMinute,
                "test.com/bar/", now);
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
   CacheVerdict(GURL("http://test.com/login.html"),
                LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-               PasswordType::ENTERPRISE_PASSWORD,
+               reused_password_account_type,
                LoginReputationClientResponse::SAFE, 10 * kMinute, "test.com/",
                now);
 
@@ -571,48 +602,60 @@ TEST_P(PasswordProtectionServiceTest, TestGetCachedVerdicts) {
 
   // Return VERDICT_TYPE_UNSPECIFIED if look up for a URL with unknown origin.
   LoginReputationClientResponse actual_verdict;
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::GSUITE);
   EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
             password_protection_service_->GetCachedVerdict(
                 GURL("http://www.unknown.com/"),
                 LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordType::PRIMARY_ACCOUNT_PASSWORD, &actual_verdict));
+                reused_password_account_type, &actual_verdict));
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
   EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
             password_protection_service_->GetCachedVerdict(
                 GURL("http://www.unknown.com/"),
                 LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordType::ENTERPRISE_PASSWORD, &actual_verdict));
+                reused_password_account_type, &actual_verdict));
 
   // Return SAFE if look up for a URL that matches "test.com" cache expression.
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::GSUITE);
   EXPECT_EQ(LoginReputationClientResponse::SAFE,
             password_protection_service_->GetCachedVerdict(
                 GURL("http://test.com/xyz/foo.jsp"),
                 LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordType::PRIMARY_ACCOUNT_PASSWORD, &actual_verdict));
+                reused_password_account_type, &actual_verdict));
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
   EXPECT_EQ(LoginReputationClientResponse::SAFE,
             password_protection_service_->GetCachedVerdict(
                 GURL("http://test.com/xyz/foo.jsp"),
                 LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordType::ENTERPRISE_PASSWORD, &actual_verdict));
+                reused_password_account_type, &actual_verdict));
 
   // Return VERDICT_TYPE_UNSPECIFIED if look up for a URL whose variants match
   // test.com/def, but the corresponding verdict is expired.
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::GSUITE);
   EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
             password_protection_service_->GetCachedVerdict(
                 GURL("http://test.com/def/ghi/index.html"),
                 LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordType::PRIMARY_ACCOUNT_PASSWORD, &actual_verdict));
+                reused_password_account_type, &actual_verdict));
 
   // Return PHISHING. Matches "test.com/bar/" cache expression.
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::UNKNOWN);
   EXPECT_EQ(LoginReputationClientResponse::PHISHING,
             password_protection_service_->GetCachedVerdict(
                 GURL("http://test.com/bar/foo.jsp"),
                 LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-                PasswordType::PASSWORD_TYPE_UNKNOWN, &actual_verdict));
+                reused_password_account_type, &actual_verdict));
 
   // Now cache SAFE verdict for the full path.
   CacheVerdict(GURL("http://test.com/bar/foo.jsp"),
                LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-               PasswordType::PASSWORD_TYPE_UNKNOWN,
+               reused_password_account_type,
                LoginReputationClientResponse::SAFE, 10 * kMinute,
                "test.com/bar/foo.jsp", now);
 
@@ -621,18 +664,21 @@ TEST_P(PasswordProtectionServiceTest, TestGetCachedVerdicts) {
             password_protection_service_->GetCachedVerdict(
                 GURL("http://test.com/bar/foo.jsp"),
                 LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-                PasswordType::PASSWORD_TYPE_UNKNOWN, &actual_verdict));
+                reused_password_account_type, &actual_verdict));
 }
 
 TEST_P(PasswordProtectionServiceTest, TestDoesNotCacheAboutBlank) {
   ASSERT_EQ(0U, GetStoredVerdictCount(
                     LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
+  ReusedPasswordAccountType reused_password_account_type;
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::UNKNOWN);
 
   // Should not actually cache, since about:blank is not valid for reputation
   // computing.
   CacheVerdict(
       GURL("about:blank"), LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-      PasswordType::PASSWORD_TYPE_UNKNOWN, LoginReputationClientResponse::SAFE,
+      reused_password_account_type, LoginReputationClientResponse::SAFE,
       10 * kMinute, "about:blank", base::Time::Now());
 
   EXPECT_EQ(0U, GetStoredVerdictCount(
@@ -693,9 +739,12 @@ TEST_P(PasswordProtectionServiceTest, TestNoRequestSentForWhitelistedURL) {
 
 TEST_P(PasswordProtectionServiceTest, TestNoRequestSentIfVerdictAlreadyCached) {
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 0);
+  ReusedPasswordAccountType reused_password_account_type;
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::UNKNOWN);
   CacheVerdict(GURL(kTargetUrl),
                LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-               PasswordType::PASSWORD_TYPE_UNKNOWN,
+               reused_password_account_type,
                LoginReputationClientResponse::LOW_REPUTATION, 10 * kMinute,
                GURL(kTargetUrl).host().append("/"), base::Time::Now());
   InitializeAndStartPasswordOnFocusRequest(
@@ -781,8 +830,7 @@ TEST_P(PasswordProtectionServiceTest,
        TestProtectedPasswordEntryRequestAndResponseSuccessfull) {
   histograms_.ExpectTotalCount(kAnyPasswordEntryRequestOutcomeHistogram, 0);
   histograms_.ExpectTotalCount(kSyncPasswordEntryRequestOutcomeHistogram, 0);
-  histograms_.ExpectTotalCount(kProtectedPasswordEntryRequestOutcomeHistogram,
-                               0);
+  histograms_.ExpectTotalCount(kNonSyncPasswordEntryRequestOutcomeHistogram, 0);
   // Set up valid response.
   LoginReputationClientResponse expected_response =
       CreateVerdictProto(LoginReputationClientResponse::PHISHING, 10 * kMinute,
@@ -802,27 +850,24 @@ TEST_P(PasswordProtectionServiceTest,
       ElementsAre(base::Bucket(1 /* SUCCEEDED */, 1)));
   histograms_.ExpectTotalCount(kSyncPasswordEntryRequestOutcomeHistogram, 0);
   EXPECT_THAT(
-      histograms_.GetAllSamples(kProtectedPasswordEntryRequestOutcomeHistogram),
+      histograms_.GetAllSamples(kNonSyncPasswordEntryRequestOutcomeHistogram),
       ElementsAre(base::Bucket(1 /* SUCCEEDED */, 1)));
-  EXPECT_THAT(
-      histograms_.GetAllSamples(kProtectedPasswordEntryVerdictHistogram),
-      ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
+  EXPECT_THAT(histograms_.GetAllSamples(kNonSyncPasswordEntryVerdictHistogram),
+              ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
 
   // UMA: verdicts
   EXPECT_THAT(histograms_.GetAllSamples(kAnyPasswordEntryVerdictHistogram),
               ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
   histograms_.ExpectTotalCount(kSyncPasswordEntryVerdictHistogram, 0);
-  EXPECT_THAT(
-      histograms_.GetAllSamples(kProtectedPasswordEntryVerdictHistogram),
-      ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
+  EXPECT_THAT(histograms_.GetAllSamples(kNonSyncPasswordEntryVerdictHistogram),
+              ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
 }
 
 TEST_P(PasswordProtectionServiceTest,
        TestSyncPasswordEntryRequestAndResponseSuccessfull) {
   histograms_.ExpectTotalCount(kAnyPasswordEntryRequestOutcomeHistogram, 0);
   histograms_.ExpectTotalCount(kSyncPasswordEntryRequestOutcomeHistogram, 0);
-  histograms_.ExpectTotalCount(kProtectedPasswordEntryRequestOutcomeHistogram,
-                               0);
+  histograms_.ExpectTotalCount(kNonSyncPasswordEntryRequestOutcomeHistogram, 0);
   // Set up valid response.
   LoginReputationClientResponse expected_response =
       CreateVerdictProto(LoginReputationClientResponse::PHISHING, 10 * kMinute,
@@ -830,6 +875,8 @@ TEST_P(PasswordProtectionServiceTest,
   test_url_loader_factory_.AddResponse(url_.spec(),
                                        expected_response.SerializeAsString());
   EXPECT_CALL(*password_protection_service_, IsPrimaryAccountSyncing())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*password_protection_service_, IsPrimaryAccountSignedIn())
       .WillRepeatedly(Return(true));
   // Initiate a sync password entry request (w/ no saved password).
   InitializeAndStartPasswordEntryRequest(
@@ -844,15 +891,14 @@ TEST_P(PasswordProtectionServiceTest,
   EXPECT_THAT(
       histograms_.GetAllSamples(kSyncPasswordEntryRequestOutcomeHistogram),
       ElementsAre(base::Bucket(1 /* SUCCEEDED */, 1)));
-  histograms_.ExpectTotalCount(kProtectedPasswordEntryRequestOutcomeHistogram,
-                               0);
+  histograms_.ExpectTotalCount(kNonSyncPasswordEntryRequestOutcomeHistogram, 0);
 
   // UMA: verdicts
   EXPECT_THAT(histograms_.GetAllSamples(kAnyPasswordEntryVerdictHistogram),
               ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
   EXPECT_THAT(histograms_.GetAllSamples(kSyncPasswordEntryVerdictHistogram),
               ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
-  histograms_.ExpectTotalCount(kProtectedPasswordEntryVerdictHistogram, 0);
+  histograms_.ExpectTotalCount(kNonSyncPasswordEntryVerdictHistogram, 0);
 }
 
 TEST_P(PasswordProtectionServiceTest, TestTearDownWithPendingRequests) {
@@ -967,101 +1013,130 @@ TEST_P(PasswordProtectionServiceTest,
 
 TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
   EXPECT_CALL(*password_protection_service_,
-              GetPasswordProtectionWarningTriggerPref())
+              GetPasswordProtectionWarningTriggerPref(_))
       .WillRepeatedly(Return(PHISHING_REUSE));
   EXPECT_CALL(*password_protection_service_, IsPrimaryAccountSignedIn())
       .WillRepeatedly(Return(true));
+  AccountInfo account_info;
+  account_info.account_id = "account_id";
+  account_info.email = "email";
+  account_info.gaia = "gaia";
+  EXPECT_CALL(*password_protection_service_, GetSignedInNonSyncAccount(_))
+      .WillRepeatedly(Return(account_info));
 
   // Don't show modal warning if it is not a password reuse ping.
+  ReusedPasswordAccountType reused_password_account_type;
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::UNKNOWN);
+  reused_password_account_type.set_is_account_syncing(true);
   EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-      PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-      /*username=*/"", LoginReputationClientResponse::PHISHING));
+      reused_password_account_type, LoginReputationClientResponse::PHISHING));
 
   // Don't show modal warning if it is a saved password reuse.
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::SAVED_PASSWORD);
   EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::SAVED_PASSWORD,
-      /*username=*/"", LoginReputationClientResponse::PHISHING));
+      reused_password_account_type, LoginReputationClientResponse::PHISHING));
 
-  // Don't show modal warning if it is a non-sync gaia password reuse.
-  EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
-      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::OTHER_GAIA_PASSWORD,
-      /*username=*/"", LoginReputationClientResponse::PHISHING));
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures(
+        {}, {safe_browsing::kPasswordProtectionForSignedInUsers});
+
+    // Don't show modal warning if non-sync gaia account experiment is not
+    // on.
+    reused_password_account_type.set_account_type(
+        ReusedPasswordAccountType::GMAIL);
+    reused_password_account_type.set_is_account_syncing(false);
+    EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
+        LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+        reused_password_account_type, LoginReputationClientResponse::PHISHING));
+  }
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        safe_browsing::kPasswordProtectionForSignedInUsers);
+    // Show modal warning if non-sync gaia account experiment is on.
+    reused_password_account_type.set_account_type(
+        ReusedPasswordAccountType::GMAIL);
+    reused_password_account_type.set_is_account_syncing(false);
+    EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
+        LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+        reused_password_account_type, LoginReputationClientResponse::PHISHING));
+  }
 
   // Don't show modal warning if reused password type unknown.
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::UNKNOWN);
   EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::PASSWORD_TYPE_UNKNOWN,
-      /*username=*/"", LoginReputationClientResponse::PHISHING));
+      reused_password_account_type, LoginReputationClientResponse::PHISHING));
 
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::GMAIL);
+  reused_password_account_type.set_is_account_syncing(true);
   EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-      /*username=*/"", LoginReputationClientResponse::PHISHING));
+      reused_password_account_type, LoginReputationClientResponse::PHISHING));
 
   // For a GSUITE account, don't show warning if password protection is set to
   // off by enterprise policy.
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::GSUITE);
   EXPECT_CALL(*password_protection_service_,
-              GetPasswordProtectionWarningTriggerPref())
+              GetPasswordProtectionWarningTriggerPref(_))
       .WillRepeatedly(Return(PASSWORD_PROTECTION_OFF));
-  EXPECT_EQ(
-      PASSWORD_PROTECTION_OFF,
-      password_protection_service_->GetPasswordProtectionWarningTriggerPref());
   EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-      /*username=*/"", LoginReputationClientResponse::PHISHING));
+      reused_password_account_type, LoginReputationClientResponse::PHISHING));
 
   // For a GSUITE account, show warning if password protection is set to
   // PHISHING_REUSE.
   EXPECT_CALL(*password_protection_service_,
-              GetPasswordProtectionWarningTriggerPref())
+              GetPasswordProtectionWarningTriggerPref(_))
       .WillRepeatedly(Return(PHISHING_REUSE));
   EXPECT_EQ(
       PHISHING_REUSE,
-      password_protection_service_->GetPasswordProtectionWarningTriggerPref());
+      password_protection_service_->GetPasswordProtectionWarningTriggerPref(
+          reused_password_account_type));
   EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-      /*username=*/"", LoginReputationClientResponse::PHISHING));
+      reused_password_account_type, LoginReputationClientResponse::PHISHING));
 
   // Modal dialog warning is also shown on LOW_REPUTATION verdict.
   EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-      /*username=*/"", LoginReputationClientResponse::LOW_REPUTATION));
+      reused_password_account_type,
+      LoginReputationClientResponse::LOW_REPUTATION));
 
   // Modal dialog warning should not be shown for enterprise password reuse
   // if it is turned off by policy.
   EXPECT_CALL(*password_protection_service_,
-              GetPasswordProtectionWarningTriggerPref())
+              GetPasswordProtectionWarningTriggerPref(_))
       .WillRepeatedly(Return(PASSWORD_PROTECTION_OFF));
   EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::ENTERPRISE_PASSWORD,
-      /*username=*/"", LoginReputationClientResponse::PHISHING));
+      reused_password_account_type, LoginReputationClientResponse::PHISHING));
 
   // Show modal warning for enterprise password reuse if the trigger is
   // configured to PHISHING_REUSE.
+  reused_password_account_type.set_account_type(
+      ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
   EXPECT_CALL(*password_protection_service_,
-              GetPasswordProtectionWarningTriggerPref())
+              GetPasswordProtectionWarningTriggerPref(_))
       .WillRepeatedly(Return(PHISHING_REUSE));
   EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::ENTERPRISE_PASSWORD,
-      /*username=*/"", LoginReputationClientResponse::PHISHING));
+      reused_password_account_type, LoginReputationClientResponse::PHISHING));
 }
 
 TEST_P(PasswordProtectionServiceTest, VerifyIsEventLoggingEnabled) {
-  // For user who is not signed-in, event logging should be disabled.
-  EXPECT_FALSE(password_protection_service_->IsEventLoggingEnabled());
-
-  // Event logging should be enable for all signed-in users..
-  EXPECT_CALL(*password_protection_service_, IsPrimaryAccountSignedIn())
-      .WillRepeatedly(Return(true));
   EXPECT_TRUE(password_protection_service_->IsEventLoggingEnabled());
+  EXPECT_CALL(*password_protection_service_, IsIncognito())
+      .WillRepeatedly(Return(true));
+  EXPECT_FALSE(password_protection_service_->IsEventLoggingEnabled());
 }
 
 TEST_P(PasswordProtectionServiceTest, VerifyContentTypeIsPopulated) {
@@ -1087,6 +1162,15 @@ TEST_P(PasswordProtectionServiceTest, VerifyContentTypeIsPopulated) {
 }
 
 TEST_P(PasswordProtectionServiceTest, VerifyIsSupportedPasswordTypeForPinging) {
+  EXPECT_CALL(*password_protection_service_, IsPrimaryAccountSignedIn())
+      .WillRepeatedly(Return(true));
+  AccountInfo account_info;
+  account_info.account_id = "account_id";
+  account_info.email = "email";
+  account_info.gaia = "gaia";
+  EXPECT_CALL(*password_protection_service_, GetSignedInNonSyncAccount(_))
+      .WillRepeatedly(Return(account_info));
+
   EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
       PasswordType::SAVED_PASSWORD));
   EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
@@ -1098,10 +1182,24 @@ TEST_P(PasswordProtectionServiceTest, VerifyIsSupportedPasswordTypeForPinging) {
 
   EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
       PasswordType::SAVED_PASSWORD));
-  EXPECT_FALSE(password_protection_service_->IsSupportedPasswordTypeForPinging(
-      PasswordType::OTHER_GAIA_PASSWORD));
   EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
       PasswordType::ENTERPRISE_PASSWORD));
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures(
+        {}, {safe_browsing::kPasswordProtectionForSignedInUsers});
+    // Only ping for signed in, non-syncing users if the experiment is on.
+    EXPECT_FALSE(
+        password_protection_service_->IsSupportedPasswordTypeForPinging(
+            PasswordType::OTHER_GAIA_PASSWORD));
+  }
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        safe_browsing::kPasswordProtectionForSignedInUsers);
+    EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+        PasswordType::OTHER_GAIA_PASSWORD));
+  }
 }
 
 TEST_P(PasswordProtectionServiceTest, TestPingsForAboutBlank) {

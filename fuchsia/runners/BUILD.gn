@@ -163,6 +163,7 @@ test("cast_runner_integration_tests") {
     "//fuchsia/base:test_support",
     "//net:test_support",
     "//testing/gtest",
+    "//third_party/fuchsia-sdk/sdk:modular",
   ]
   package_deps = [ [
         "//fuchsia/engine:web_engine",

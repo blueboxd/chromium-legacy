@@ -71,7 +71,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLLoader
   mojo::ScopedDataPipeProducerHandle response_body_producer_handle_;
   mojo::ScopedDataPipeConsumerHandle response_body_consumer_handle_;
 
-  base::WeakPtrFactory<BlobURLLoader> weak_factory_;
+  base::WeakPtrFactory<BlobURLLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BlobURLLoader);
 };

@@ -58,7 +58,6 @@ class GpuControlListEntryTest : public testing::Test {
     gpu_info_.gpu.active = true;
     gpu_info_.gpu.driver_vendor = "NVIDIA";
     gpu_info_.gpu.driver_version = "1.6.18";
-    gpu_info_.gpu.driver_date = "7-14-2009";
     gpu_info_.gl_version = "2.1 NVIDIA-8.24.11 310.90.9b01";
     gpu_info_.gl_vendor = "NVIDIA Corporation";
     gpu_info_.gl_renderer = "NVIDIA GeForce GT 120 OpenGL Engine";
@@ -121,18 +120,6 @@ TEST_F(GpuControlListEntryTest, AllExceptIntelOnLinuxEntry) {
   for (size_t i = 0; i < base::size(os_type); ++i)
     EXPECT_FALSE(entry.Contains(os_type[i], "10.6", gpu_info()));
   EXPECT_TRUE(entry.Contains(kOsLinux, "10.6", gpu_info()));
-}
-
-TEST_F(GpuControlListEntryTest, DateOnWindowsEntry) {
-  const Entry& entry = GetEntry(kGpuControlListEntryTest_DateOnWindowsEntry);
-  EXPECT_EQ(kOsWin, entry.conditions.os_type);
-  GPUInfo gpu_info;
-  gpu_info.gpu.driver_date = "4-12-2010";
-  EXPECT_TRUE(entry.Contains(kOsWin, "10.6", gpu_info));
-  gpu_info.gpu.driver_date = "5-8-2010";
-  EXPECT_FALSE(entry.Contains(kOsWin, "10.6", gpu_info));
-  gpu_info.gpu.driver_date = "5-9-2010";
-  EXPECT_FALSE(entry.Contains(kOsWin, "10.6", gpu_info));
 }
 
 TEST_F(GpuControlListEntryTest, MultipleDevicesEntry) {

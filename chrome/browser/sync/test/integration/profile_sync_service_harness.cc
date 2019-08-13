@@ -256,10 +256,11 @@ bool ProfileSyncServiceHarness::SetupSyncImpl(
   if (!AwaitEngineInitialization()) {
     return false;
   }
-  // Choose the datatypes to be synced. If all datatypes are to be synced,
-  // set sync_everything to true; otherwise, set it to false.
+  // Choose the datatypes to be synced. If all registered datatypes are to be
+  // synced, set sync_everything to true; otherwise, set it to false.
   bool sync_everything =
-      (selected_types == syncer::UserSelectableTypeSet::All());
+      (selected_types ==
+       service()->GetUserSettings()->GetRegisteredSelectableTypes());
   service()->GetUserSettings()->SetSelectedTypes(sync_everything,
                                                  selected_types);
 

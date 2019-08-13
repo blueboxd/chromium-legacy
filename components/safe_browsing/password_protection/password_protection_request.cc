@@ -160,8 +160,13 @@ void PasswordProtectionRequest::CheckCachedVerdicts() {
 
   std::unique_ptr<LoginReputationClientResponse> cached_response =
       std::make_unique<LoginReputationClientResponse>();
+  ReusedPasswordAccountType password_account_type =
+      password_protection_service_
+          ->GetPasswordProtectionReusedPasswordAccountType(password_type_,
+                                                           username_);
   auto verdict = password_protection_service_->GetCachedVerdict(
-      main_frame_url_, trigger_type_, password_type_, cached_response.get());
+      main_frame_url_, trigger_type_, password_account_type,
+      cached_response.get());
   if (verdict != LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED)
     Finish(RequestOutcome::RESPONSE_ALREADY_CACHED, std::move(cached_response));
   else
@@ -238,8 +243,8 @@ void PasswordProtectionRequest::FillRequestProto() {
               safe_browsing::kPasswordProtectionForSignedInUsers)) {
         ReusedPasswordAccountType password_account_type_to_add =
             password_protection_service_
-                ->GetPasswordProtectionReusedPasswordAccountType(
-                    password_type_);
+                ->GetPasswordProtectionReusedPasswordAccountType(password_type_,
+                                                                 username_);
         *reuse_event->mutable_reused_password_account_type() =
             password_account_type_to_add;
       }
@@ -461,12 +466,13 @@ void PasswordProtectionRequest::Finish(
   if (outcome != RequestOutcome::CANCELED) {
     ReusedPasswordAccountType password_account_type =
         password_protection_service_
-            ->GetPasswordProtectionReusedPasswordAccountType(password_type_);
+            ->GetPasswordProtectionReusedPasswordAccountType(password_type_,
+                                                             username_);
     if (trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
       LogPasswordOnFocusRequestOutcome(outcome);
     } else {
       LogPasswordEntryRequestOutcome(outcome, password_account_type);
-      // TODO(crbug/914410): Account for non sync users.
+
       if (password_type_ == PasswordType::PRIMARY_ACCOUNT_PASSWORD) {
         password_protection_service_->MaybeLogPasswordReuseLookupEvent(
             web_contents_, outcome, response.get());

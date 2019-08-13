@@ -412,7 +412,7 @@ DownloadItemImpl::DownloadItemImpl(
     const base::FilePath& path,
     const GURL& url,
     const std::string& mime_type,
-    std::unique_ptr<DownloadRequestHandleInterface> request_handle)
+    DownloadJob::CancelRequestCallback cancel_request_callback)
     : request_info_(url),
       guid_(base::GenerateGUID()),
       download_id_(download_id),
@@ -423,9 +423,9 @@ DownloadItemImpl::DownloadItemImpl(
       delegate_(delegate),
       destination_info_(path, path, 0, false, std::string(), base::Time()),
       is_updating_observers_(false) {
-  job_ = DownloadJobFactory::CreateJob(this, std::move(request_handle),
+  job_ = DownloadJobFactory::CreateJob(this, std::move(cancel_request_callback),
                                        DownloadCreateInfo(), true, nullptr,
-                                       nullptr, nullptr);
+                                       nullptr);
   delegate_->Attach();
   Init(true /* actively downloading */, TYPE_SAVE_PAGE_AS);
 }
@@ -1415,11 +1415,10 @@ void DownloadItemImpl::Init(bool active,
 // We're starting the download.
 void DownloadItemImpl::Start(
     std::unique_ptr<DownloadFile> file,
-    std::unique_ptr<DownloadRequestHandleInterface> req_handle,
+    DownloadJob::CancelRequestCallback cancel_request_callback,
     const DownloadCreateInfo& new_create_info,
     scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-        url_loader_factory_getter,
-    net::URLRequestContextGetter* url_request_context_getter) {
+        url_loader_factory_getter) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!download_file_);
   DVLOG(20) << __func__ << "() this=" << DebugString(true);
@@ -1427,8 +1426,8 @@ void DownloadItemImpl::Start(
 
   download_file_ = std::move(file);
   job_ = DownloadJobFactory::CreateJob(
-      this, std::move(req_handle), new_create_info, false,
-      std::move(url_loader_factory_getter), url_request_context_getter,
+      this, std::move(cancel_request_callback), new_create_info, false,
+      std::move(url_loader_factory_getter),
       delegate_ ? delegate_->GetServiceManagerConnector() : nullptr);
   if (job_->IsParallelizable()) {
     RecordParallelizableDownloadCount(START_COUNT, IsParallelDownloadEnabled());
@@ -1788,12 +1787,10 @@ void DownloadItemImpl::OnDownloadCompleting() {
   }
 #endif  // defined(OS_ANDROID)
 
-  std::unique_ptr<service_manager::Connector> new_connector;
-  service_manager::Connector* connector =
-      delegate_->GetServiceManagerConnector();
-  if (connector)
-    new_connector = connector->Clone();
-
+  mojo::PendingRemote<quarantine::mojom::Quarantine> quarantine;
+  auto quarantine_callback = delegate_->GetQuarantineConnectionCallback();
+  if (quarantine_callback)
+    quarantine_callback.Run(quarantine.InitWithNewPipeAndPassReceiver());
   GetDownloadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&DownloadFile::RenameAndAnnotate,
@@ -1802,7 +1799,7 @@ void DownloadItemImpl::OnDownloadCompleting() {
                      delegate_->GetApplicationClientIdForFileScanning(),
                      delegate_->IsOffTheRecord() ? GURL() : GetURL(),
                      delegate_->IsOffTheRecord() ? GURL() : GetReferrerUrl(),
-                     std::move(new_connector), std::move(callback)));
+                     std::move(quarantine), std::move(callback)));
 }
 
 void DownloadItemImpl::OnDownloadRenamedToFinalName(

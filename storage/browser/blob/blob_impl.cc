@@ -192,7 +192,7 @@ void BlobImpl::FlushForTesting() {
 
 BlobImpl::BlobImpl(std::unique_ptr<BlobDataHandle> handle,
                    blink::mojom::BlobRequest request)
-    : handle_(std::move(handle)), weak_ptr_factory_(this) {
+    : handle_(std::move(handle)) {
   DCHECK(handle_);
   bindings_.AddBinding(this, std::move(request));
   bindings_.set_connection_error_handler(base::BindRepeating(

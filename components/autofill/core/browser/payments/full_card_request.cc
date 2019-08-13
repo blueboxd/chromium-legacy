@@ -199,6 +199,12 @@ void FullCardRequest::OnDidGetRealPan(
       if (request_->user_response.should_store_pan)
         personal_data_manager_->UpdateServerCreditCard(request_->card);
 
+      // TODO(crbug/949269): Once |fido_opt_in| is added to
+      // UserProvidedUnmaskDetails, add a check here that
+      // |user_response.fido_opt_in| is true before copying over
+      // |creation_options|.
+      if (response_details.fido_creation_options.is_dict())
+        fido_creation_options_ = response_details.fido_creation_options.Clone();
       if (result_delegate_)
         result_delegate_->OnFullCardRequestSucceeded(
             *this, request_->card, request_->user_response.cvc);
@@ -212,6 +218,10 @@ void FullCardRequest::OnDidGetRealPan(
   }
 }
 
+base::Value FullCardRequest::GetFIDOCreationOptions() const {
+  return fido_creation_options_.Clone();
+}
+
 void FullCardRequest::Reset() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   payments_client_->CancelRequest();
@@ -219,6 +229,7 @@ void FullCardRequest::Reset() {
   ui_delegate_ = nullptr;
   request_.reset();
   should_unmask_card_ = false;
+  fido_creation_options_ = base::Value();
 }
 
 }  // namespace payments

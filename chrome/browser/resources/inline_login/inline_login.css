@@ -15,7 +15,7 @@ body,
 
 #signin-frame,
 #spinner-container {
-  background-color: #f5f5f5;
+  background-color: var(--cr-card-background-color);
   bottom: 0;
   left: 0;
   position: absolute;

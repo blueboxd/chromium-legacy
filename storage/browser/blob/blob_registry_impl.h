@@ -96,7 +96,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobRegistryImpl
                  base::UniquePtrComparator>
       blobs_being_streamed_;
 
-  base::WeakPtrFactory<BlobRegistryImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<BlobRegistryImpl> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(BlobRegistryImpl);
 };
 

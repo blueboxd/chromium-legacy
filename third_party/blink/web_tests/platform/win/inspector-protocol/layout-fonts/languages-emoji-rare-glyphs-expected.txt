@@ -35,4 +35,8 @@
 "Leelawadee UI" : 26,
 "Times New Roman" : 1
 
+⇦⇧⇨⇩
+#text_presentation_arrows:
+"Cambria Math" : 4
+
 

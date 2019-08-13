@@ -93,6 +93,9 @@ class FullCardRequest final : public CardUnmaskDelegate {
       AutofillClient::PaymentsRpcResult result,
       payments::PaymentsClient::UnmaskResponseDetails& response_details);
 
+  // Returns a copy of |fido_creation_options_|.
+  base::Value GetFIDOCreationOptions() const;
+
   base::TimeTicks form_parsed_timestamp() const {
     return form_parsed_timestamp_;
   }
@@ -157,6 +160,10 @@ class FullCardRequest final : public CardUnmaskDelegate {
 
   // The timestamp when the form is parsed. For histograms.
   base::TimeTicks form_parsed_timestamp_;
+
+  // Includes a challenge for enrolling user into FIDO Authentication for card
+  // unmasking.
+  base::Value fido_creation_options_;
 
   // Enables destroying FullCardRequest while CVC prompt is showing or a server
   // communication is pending.

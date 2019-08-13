@@ -26,6 +26,7 @@ class LenientMockMetricEvaluatorsHelper
   ~LenientMockMetricEvaluatorsHelper() override {}
   MOCK_METHOD0(GetFreePhysicalMemoryMb, base::Optional<int>());
   MOCK_METHOD0(GetDiskIdleTimePercent, base::Optional<float>());
+  MOCK_METHOD0(GetChromeTotalResidentSetEstimateMb, base::Optional<int>());
 };
 using MockMetricHelper =
     ::testing::StrictMock<LenientMockMetricEvaluatorsHelper>;

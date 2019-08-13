@@ -27,7 +27,6 @@
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/security_interstitials/content/origin_policy_ui.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
-#include "components/supervised_user_error_page/supervised_user_error_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -47,6 +46,11 @@
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/ssl/captive_portal_blocking_page.h"
+#endif
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_error_page/supervised_user_error_page.h"
+#include "chrome/browser/supervised_user/supervised_user_interstitial.h"
 #endif
 
 using security_interstitials::TestSafeBrowsingBlockingPageQuiet;
@@ -93,7 +97,9 @@ class InterstitialHTMLSource : public content::URLDataSource {
       const content::URLDataSource::GotDataCallback& callback) override;
 
  private:
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   std::string GetSupervisedUserInterstitialHTML(const std::string& path);
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(InterstitialHTMLSource);
 };
@@ -496,13 +502,15 @@ void InterstitialHTMLSource::StartDataRequest(
         CreateOriginPolicyInterstitialPage(web_contents));
   }
 
-  if (path_without_query == "/supervised_user") {
-    html = GetSupervisedUserInterstitialHTML(path);
-  } else if (path_without_query == "/quietsafebrowsing") {
+  if (path_without_query == "/quietsafebrowsing") {
     TestSafeBrowsingBlockingPageQuiet* blocking_page =
         CreateSafeBrowsingQuietBlockingPage(web_contents);
     interstitial_delegate.reset(blocking_page);
     html = blocking_page->GetHTML();
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  } else if (path_without_query == "/supervised_user") {
+    html = GetSupervisedUserInterstitialHTML(path);
+#endif
   } else if (interstitial_delegate.get()) {
     html = interstitial_delegate.get()->GetHTMLContents();
   } else {
@@ -514,6 +522,7 @@ void InterstitialHTMLSource::StartDataRequest(
   callback.Run(html_bytes.get());
 }
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 std::string InterstitialHTMLSource::GetSupervisedUserInterstitialHTML(
     const std::string& path) {
   GURL url("https://localhost/" + path);
@@ -571,3 +580,4 @@ std::string InterstitialHTMLSource::GetSupervisedUserInterstitialHTML(
       is_child_account, is_deprecated, reason,
       g_browser_process->GetApplicationLocale());
 }
+#endif

@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/ax_content_node_data.h"
 #include "content/common/content_export.h"
+#include "content/public/renderer/plugin_ax_tree_source.h"
 #include "content/public/renderer/render_accessibility.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/accessibility/blink_ax_tree_source.h"
@@ -169,7 +170,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl
 
   void Scroll(const ui::AXActionTarget* target,
               ax::mojom::Action scroll_action);
-  void ScrollPlugin(int id_to_make_visible);
   void ScheduleSendAccessibilityEventsIfNeeded();
   void RecordImageMetrics(AXContentTreeUpdate* update);
   void AddImageAnnotationDebuggingAttributes(
@@ -249,6 +249,8 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   base::WeakPtrFactory<RenderAccessibilityImpl> weak_factory_{this};
 
   friend class AXImageAnnotatorTest;
+  friend class PluginActionHandlingTest;
+
   DISALLOW_COPY_AND_ASSIGN(RenderAccessibilityImpl);
 };
 

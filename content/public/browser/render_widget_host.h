@@ -37,6 +37,10 @@ namespace ui {
 class LatencyInfo;
 }
 
+namespace viz {
+class FrameSinkId;
+}
+
 namespace content {
 
 struct CursorInfo;
@@ -123,6 +127,12 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   static std::unique_ptr<RenderWidgetHostIterator> GetRenderWidgetHosts();
 
   ~RenderWidgetHost() override {}
+
+  // Returns the viz::FrameSinkId that this object uses to put things on screen.
+  // This value is constant throughout the lifetime of this object. Note that
+  // until a RenderWidgetHostView is created, initialized, and assigned to this
+  // object, viz may not be aware of this FrameSinkId.
+  virtual const viz::FrameSinkId& GetFrameSinkId() = 0;
 
   // Update the text direction of the focused input element and notify it to a
   // renderer process.

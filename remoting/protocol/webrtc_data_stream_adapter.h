@@ -73,7 +73,7 @@ class WebrtcDataStreamAdapter : public MessagePipe,
   // The data and done callbacks for queued but not yet sent messages.
   base::queue<PendingMessage> pending_messages_;
 
-  base::WeakPtrFactory<WebrtcDataStreamAdapter> weak_ptr_factory_;
+  base::WeakPtrFactory<WebrtcDataStreamAdapter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcDataStreamAdapter);
 };

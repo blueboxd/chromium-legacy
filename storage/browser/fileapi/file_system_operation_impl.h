@@ -202,7 +202,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationImpl
   OperationType pending_operation_;
 
   base::WeakPtr<FileSystemOperationImpl> weak_ptr_;
-  base::WeakPtrFactory<FileSystemOperationImpl> weak_factory_;
+  base::WeakPtrFactory<FileSystemOperationImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationImpl);
 };

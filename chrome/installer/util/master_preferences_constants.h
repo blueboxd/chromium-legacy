@@ -55,11 +55,6 @@ extern const char kMsi[];
 extern const char kMsiProductId[];
 // Boolean. Show EULA dialog before install.
 extern const char kRequireEula[];
-// Boolean. Indicates that the first-run 'set-as-default' dialog should not be
-// shown. Relevant in Windows 8+ context only. If this is true, the standard
-// 'set default browser' prompt on the butter-bar will appear during the first
-// run.
-extern const char kSuppressFirstRunDefaultBrowserPrompt[];
 // Boolean. Install Chrome to system wise location. Cmd line override present.
 extern const char kSystemLevel[];
 // Boolean. Run installer in verbose mode. Cmd line override present.

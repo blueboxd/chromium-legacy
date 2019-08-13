@@ -53,10 +53,9 @@ void FeedbackProfileObserver::Observe(
 void FeedbackProfileObserver::QueueSingleReport(
     feedback::FeedbackUploader* uploader,
     std::unique_ptr<std::string> data) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&FeedbackUploaderChrome::QueueReport,
-                     uploader->AsWeakPtr(), std::move(data)));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&FeedbackUploaderChrome::QueueReport,
+                                uploader->AsWeakPtr(), std::move(data)));
 }
 
 void FeedbackProfileObserver::QueueUnsentReports(

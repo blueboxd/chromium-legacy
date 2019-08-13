@@ -142,8 +142,11 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceSyncBrowserTest,
   // Shows interstitial on current web_contents.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  service->ShowInterstitial(web_contents,
-                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
+  safe_browsing::ReusedPasswordAccountType reused_password_account_type;
+  reused_password_account_type.set_account_type(
+      safe_browsing::ReusedPasswordAccountType::GSUITE);
+  reused_password_account_type.set_is_account_syncing(true);
+  service->ShowInterstitial(web_contents, reused_password_account_type);
   content::WebContents* interstitial_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver observer(interstitial_web_contents,

@@ -71,8 +71,7 @@ HeadlessDevToolsClientImpl::HeadlessDevToolsClientImpl()
       security_domain_(this),
       service_worker_domain_(this),
       target_domain_(this),
-      tracing_domain_(this),
-      weak_ptr_factory_(this) {}
+      tracing_domain_(this) {}
 
 HeadlessDevToolsClientImpl::~HeadlessDevToolsClientImpl() {
   if (parent_client_)

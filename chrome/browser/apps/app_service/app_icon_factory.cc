@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/apps/app_service/dip_px_util.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
 #include "chrome/browser/extensions/chrome_app_icon_loader.h"
@@ -63,6 +64,9 @@ void ApplyIconEffects(apps::IconEffects icon_effects,
 }
 
 std::vector<uint8_t> ReadFileAsCompressedData(const base::FilePath path) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+
   std::string data;
   base::ReadFileToString(path, &data);
   return std::vector<uint8_t>(data.begin(), data.end());
@@ -70,6 +74,9 @@ std::vector<uint8_t> ReadFileAsCompressedData(const base::FilePath path) {
 
 std::vector<uint8_t> CompressedDataFromResource(
     extensions::ExtensionResource resource) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+
   const base::FilePath& path = resource.GetFilePath();
   if (path.empty()) {
     return std::vector<uint8_t>();

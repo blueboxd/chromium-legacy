@@ -352,6 +352,47 @@ IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrOpenVrBrowserTest,
   t->EndTest();
 }
 
+// Ensure that when an input source's profiles array changes, an input source
+// change event is fired and a new input source is created.
+// OpenVR-only since WMR only supports one kind of gamepad, so it's not possible
+// to update the connected gamepad functionality to force the profiles array to
+// change.
+IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestInputProfilesChange) {
+  WebXrControllerInputMock my_mock;
+  unsigned int controller_index = my_mock.CreateAndConnectMinimalGamepad();
+
+  LoadUrlAndAwaitInitialization(
+      GetFileUrlForHtmlTestFile("test_webxr_input_same_object"));
+  EnterSessionWithUserGestureOrFail();
+
+  // Wait for the first changed event
+  PollJavaScriptBooleanOrFail("inputChangeEvents === 1",
+                              WebXrVrBrowserTestBase::kPollTimeoutShort);
+
+  // We only expect one input source, cache it.
+  RunJavaScriptOrFail("validateInputSourceLength(1)");
+  RunJavaScriptOrFail("updateCachedInputSource(0)");
+
+  // Add a touchpad so that the profiles array changes and verify that we get a
+  // change event.
+  uint64_t supported_buttons =
+      device::XrButtonMaskFromId(device::XrButtonId::kAxisTrigger) |
+      device::XrButtonMaskFromId(device::XrButtonId::kAxisTrackpad);
+  std::map<device::XrButtonId, unsigned int> axis_types = {
+      {device::XrButtonId::kAxisTrackpad, device::XrAxisType::kTrackpad},
+      {device::XrButtonId::kAxisTrigger, device::XrAxisType::kTrigger},
+  };
+  my_mock.UpdateControllerSupport(controller_index, axis_types,
+                                  supported_buttons);
+
+  PollJavaScriptBooleanOrFail("inputChangeEvents === 2",
+                              WebXrVrBrowserTestBase::kPollTimeoutShort);
+  RunJavaScriptOrFail("validateCachedSourcePresence(false)");
+  RunJavaScriptOrFail("validateInputSourceLength(1)");
+  RunJavaScriptOrFail("done()");
+  EndTest();
+}
+
 // Ensure that changes to a gamepad object respect that it is the same object
 // and that if whether or not an input source has a gamepad changes that the
 // input source change event is fired and a new input source is created.

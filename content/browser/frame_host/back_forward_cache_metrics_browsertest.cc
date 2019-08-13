@@ -374,11 +374,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
 
   const GURL url1(embedded_test_server()->GetURL(
       "/back_forward_cache/page_with_pageshow.html"));
-  const GURL url2(
-      embedded_test_server()->GetURL("/cross-site/bar.com/title1.html"));
+  const GURL url2(embedded_test_server()->GetURL("bar.com", "/title1.html"));
 
   EXPECT_TRUE(NavigateToURL(shell(), url1));
-  NavigateToURL(shell(), url2);
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
 
   {
     TestNavigationObserver navigation_observer(shell()->web_contents());
@@ -430,11 +429,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
 
   const GURL url1(embedded_test_server()->GetURL(
       "/back_forward_cache/page_with_same_origin_subframe_with_pageshow.html"));
-  const GURL url2(
-      embedded_test_server()->GetURL("/cross-site/bar.com/title1.html"));
+  const GURL url2(embedded_test_server()->GetURL("bar.com", "/title1.html"));
 
   EXPECT_TRUE(NavigateToURL(shell(), url1));
-  NavigateToURL(shell(), url2);
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
 
   {
     TestNavigationObserver navigation_observer(shell()->web_contents(), 2);

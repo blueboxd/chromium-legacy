@@ -22,7 +22,10 @@ class EventDispatcher {
 
 export class TestTabsApiProxy extends TestBrowserProxy {
   constructor() {
-    super(['getCurrentWindow']);
+    super([
+      'closeTab',
+      'getCurrentWindow',
+    ]);
 
     this.callbackRouter = {
       onCreated: new EventDispatcher(),
@@ -31,6 +34,11 @@ export class TestTabsApiProxy extends TestBrowserProxy {
     };
 
     this.currentWindow_;
+  }
+
+  closeTab(tabId) {
+    this.methodCalled('closeTab', tabId);
+    return Promise.resolve();
   }
 
   getCurrentWindow() {

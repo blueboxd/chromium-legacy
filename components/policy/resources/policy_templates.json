@@ -17204,7 +17204,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceEphemeralUsersEnabled': 'ephemeral_users_enabled.ephemeral_users_enabled',
     'LoginAuthenticationBehavior': 'login_authentication_behavior.login_authentication_behavior',
     'DeviceAllowBluetooth': 'allow_bluetooth.allow_bluetooth',
-    'DeviceLoginScreenExtensions': 'device_login_screen_app_install_list.device_login_screen_extensions',
+    'DeviceLoginScreenExtensions': 'device_login_screen_extensions.device_login_screen_extensions',
     'DeviceLoginScreenDomainAutoComplete': 'login_screen_domain_auto_complete.login_screen_domain_auto_complete',
     'DeviceLoginScreenLocales': 'login_screen_locales.login_screen_locales',
     'DeviceLoginScreenInputMethods': 'login_screen_input_methods.login_screen_input_methods',

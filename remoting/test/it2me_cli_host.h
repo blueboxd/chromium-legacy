@@ -80,7 +80,7 @@ class It2MeCliHost final : public extensions::NativeMessageHost::Client {
   // True if remote session was established.
   bool remote_connected_;
 
-  base::WeakPtrFactory<It2MeCliHost> weak_factory_;
+  base::WeakPtrFactory<It2MeCliHost> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(It2MeCliHost);
 };
 

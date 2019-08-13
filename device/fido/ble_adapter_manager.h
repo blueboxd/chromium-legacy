@@ -53,7 +53,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BleAdapterManager
   FidoBlePairingDelegate pairing_delegate_;
   bool adapter_powered_on_programmatically_ = false;
 
-  base::WeakPtrFactory<BleAdapterManager> weak_factory_;
+  base::WeakPtrFactory<BleAdapterManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BleAdapterManager);
 };

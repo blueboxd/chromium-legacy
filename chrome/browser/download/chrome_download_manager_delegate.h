@@ -124,6 +124,8 @@ class ChromeDownloadManagerDelegate
       const std::string& request_method,
       base::Optional<url::Origin> request_initiator,
       content::CheckDownloadAllowedCallback check_download_allowed_cb) override;
+  download::QuarantineConnectionCallback GetQuarantineConnectionCallback()
+      override;
 
   // Opens a download using the platform handler. DownloadItem::OpenDownload,
   // which ends up being handled by OpenDownload(), will open a download in the

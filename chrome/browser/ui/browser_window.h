@@ -33,7 +33,7 @@
 
 class Browser;
 class SharingDialog;
-class ClickToCallSharingDialogController;
+class ClickToCallUiController;
 class DownloadShelf;
 class ExclusiveAccessContext;
 class ExtensionsContainer;
@@ -334,7 +334,7 @@ class BrowserWindow : public ui::BaseWindow {
   // Shows the Click to Call dialog.
   virtual SharingDialog* ShowClickToCallDialog(
       content::WebContents* contents,
-      ClickToCallSharingDialogController* controller) = 0;
+      ClickToCallUiController* controller) = 0;
 
   // Shows the Update Recommended dialog box.
   virtual void ShowUpdateChromeDialog() = 0;

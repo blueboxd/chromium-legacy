@@ -9,11 +9,14 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "components/pdf/renderer/pdf_accessibility_tree.h"
+#include "components/pdf/renderer/pdf_ax_action_target.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_accessibility.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "ui/accessibility/null_ax_action_target.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
@@ -500,6 +503,20 @@ const ui::AXNode* PdfAccessibilityTree::GetNull() const {
 void PdfAccessibilityTree::SerializeNode(
     const ui::AXNode* node, ui::AXNodeData* out_data) const {
   *out_data = node->data();
+}
+
+std::unique_ptr<ui::AXActionTarget> PdfAccessibilityTree::CreateActionTarget(
+    const ui::AXNode& target_node) {
+  return std::make_unique<pdf::PdfAXActionTarget>(target_node, this);
+}
+
+void PdfAccessibilityTree::HandleAction(
+    const PP_PdfAccessibilityActionData& action_data) {
+  content::PepperPluginInstance* plugin_instance =
+      host_->GetPluginInstance(instance_);
+  if (plugin_instance) {
+    plugin_instance->HandleAccessibilityAction(action_data);
+  }
 }
 
 }  // namespace pdf

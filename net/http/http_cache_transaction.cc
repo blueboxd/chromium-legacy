@@ -172,6 +172,7 @@ HttpCache::Transaction::Transaction(RequestPriority priority, HttpCache* cache)
       bypass_lock_for_test_(false),
       bypass_lock_after_headers_for_test_(false),
       fail_conditionalization_for_test_(false),
+      read_buf_len_(0),
       io_buf_len_(0),
       read_offset_(0),
       effective_load_flags_(0),
@@ -350,7 +351,7 @@ int HttpCache::Transaction::Read(IOBuffer* buf,
 
   reading_ = true;
   read_buf_ = buf;
-  io_buf_len_ = buf_len;
+  read_buf_len_ = buf_len;
   int rv = TransitionToReadingState();
   if (rv != OK || next_state_ == STATE_NONE)
     return rv;
@@ -2134,7 +2135,7 @@ int HttpCache::Transaction::DoNetworkReadCacheWrite() {
   TRACE_EVENT0("io", "HttpCacheTransaction::DoNetworkReadCacheWrite");
   DCHECK(InWriters());
   TransitionToState(STATE_NETWORK_READ_CACHE_WRITE_COMPLETE);
-  return entry_->writers->Read(read_buf_, io_buf_len_, io_callback_, this);
+  return entry_->writers->Read(read_buf_, read_buf_len_, io_callback_, this);
 }
 
 int HttpCache::Transaction::DoNetworkReadCacheWriteComplete(int result) {
@@ -2207,7 +2208,7 @@ int HttpCache::Transaction::DoPartialNetworkReadCompleted(int result) {
 int HttpCache::Transaction::DoNetworkRead() {
   TRACE_EVENT0("io", "HttpCacheTransaction::DoNetworkRead");
   TransitionToState(STATE_NETWORK_READ_COMPLETE);
-  return network_trans_->Read(read_buf_.get(), io_buf_len_, io_callback_);
+  return network_trans_->Read(read_buf_.get(), read_buf_len_, io_callback_);
 }
 
 int HttpCache::Transaction::DoNetworkReadComplete(int result) {
@@ -2239,12 +2240,12 @@ int HttpCache::Transaction::DoCacheReadData() {
   if (net_log_.IsCapturing())
     net_log_.BeginEvent(NetLogEventType::HTTP_CACHE_READ_DATA);
   if (partial_) {
-    return partial_->CacheRead(entry_->disk_entry, read_buf_.get(), io_buf_len_,
-                               io_callback_);
+    return partial_->CacheRead(entry_->disk_entry, read_buf_.get(),
+                               read_buf_len_, io_callback_);
   }
 
   return entry_->disk_entry->ReadData(kResponseContentIndex, read_offset_,
-                                      read_buf_.get(), io_buf_len_,
+                                      read_buf_.get(), read_buf_len_,
                                       io_callback_);
 }
 

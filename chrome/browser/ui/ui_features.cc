@@ -24,6 +24,11 @@ const base::Feature kEvDetailsInPageInfo{"EvDetailsInPageInfo",
 const base::Feature kExtensionsToolbarMenu{"ExtensionsToolbarMenu",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables updated tabstrip animations, required for a scrollable tabstrip.
+// https://crbug.com/958173
+const base::Feature kNewTabstripAnimation{"NewTabstripAnimation",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables tabs to scroll in the tabstrip. https://crbug.com/951078
 const base::Feature kScrollableTabStrip{"ScrollableTabStrip",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -32,7 +37,7 @@ const base::Feature kScrollableTabStrip{"ScrollableTabStrip",
 // settings set to clear cookies on exit.
 const base::Feature kShowSyncPausedReasonCookiesClearedOnExit{
     "ShowSyncPausedReasonCookiesClearedOnExit",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables grouping tabs together in the tab strip. https://crbug.com/905491
 const base::Feature kTabGroups{"TabGroups", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -53,6 +58,12 @@ const base::Feature kTabHoverCardImages{"TabHoverCardImages",
 // Enables tab outlines in additional situations for accessibility.
 const base::Feature kTabOutlinesInLowContrastThemes{
     "TabOutlinesInLowContrastThemes", base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+// Enables a web-based toolbar. See https://crbug.com/989131
+const base::Feature kWebUITabStrip{"WebUITabStrip",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 constexpr base::Feature kEnableDbusAndX11StatusIcons{

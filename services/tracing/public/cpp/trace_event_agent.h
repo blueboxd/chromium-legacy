@@ -64,7 +64,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventAgent : public BaseAgent {
   std::vector<MetadataGeneratorFunction> metadata_generator_functions_;
 
   THREAD_CHECKER(thread_checker_);
-  base::WeakPtrFactory<TraceEventAgent> weak_ptr_factory_;
+  base::WeakPtrFactory<TraceEventAgent> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(TraceEventAgent);
 };
 

@@ -29,9 +29,7 @@ QuotaBackendImpl::QuotaBackendImpl(
     : file_task_runner_(file_task_runner),
       obfuscated_file_util_(obfuscated_file_util),
       file_system_usage_cache_(file_system_usage_cache),
-      quota_manager_proxy_(quota_manager_proxy),
-      weak_ptr_factory_(this) {
-}
+      quota_manager_proxy_(quota_manager_proxy) {}
 
 QuotaBackendImpl::~QuotaBackendImpl() = default;
 

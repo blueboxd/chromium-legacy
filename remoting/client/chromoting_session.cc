@@ -203,7 +203,7 @@ class ChromotingSession::Core : public ClientUserInterface,
   // |weak_ptr_| in GetWeakPtr() so that its copies are still invalidated once
   // InvalidateWeakPtrs() is called.
   base::WeakPtr<Core> weak_ptr_;
-  base::WeakPtrFactory<Core> weak_factory_;
+  base::WeakPtrFactory<Core> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
@@ -212,8 +212,7 @@ ChromotingSession::Core::Core(ChromotingClientRuntime* runtime,
                               std::unique_ptr<SessionContext> session_context)
     : runtime_(runtime),
       logger_(std::move(logger)),
-      session_context_(std::move(session_context)),
-      weak_factory_(this) {
+      session_context_(std::move(session_context)) {
   DCHECK(ui_task_runner()->BelongsToCurrentThread());
   DCHECK(runtime_);
   DCHECK(logger_);

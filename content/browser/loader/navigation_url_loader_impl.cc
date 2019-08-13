@@ -106,12 +106,10 @@ class NavigationLoaderInterceptorBrowserContainer
   void MaybeCreateLoader(
       const network::ResourceRequest& tentative_resource_request,
       BrowserContext* browser_context,
-      ResourceContext* resource_context,
       LoaderCallback callback,
       FallbackCallback fallback_callback) override {
-    browser_interceptor_->MaybeCreateLoader(tentative_resource_request,
-                                            browser_context, resource_context,
-                                            std::move(callback));
+    browser_interceptor_->MaybeCreateLoader(
+        tentative_resource_request, browser_context, std::move(callback));
   }
 
  private:
@@ -568,7 +566,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (interceptor_index_ < interceptors_.size()) {
       auto* next_interceptor = interceptors_[interceptor_index_++].get();
       next_interceptor->MaybeCreateLoader(
-          *resource_request_, browser_context_, nullptr /* resource_context */,
+          *resource_request_, browser_context_,
           base::BindOnce(&URLLoaderRequestController::MaybeStartLoader,
                          base::Unretained(this), next_interceptor),
           base::BindOnce(

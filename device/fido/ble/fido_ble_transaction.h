@@ -65,7 +65,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleTransaction {
   // cancel_sent_ records whether a cancel message has already been sent.
   bool cancel_sent_ = false;
 
-  base::WeakPtrFactory<FidoBleTransaction> weak_factory_;
+  base::WeakPtrFactory<FidoBleTransaction> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FidoBleTransaction);
 };

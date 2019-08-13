@@ -16,6 +16,7 @@
 #include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/gcm_activity.h"
 #include "components/gcm_driver/registration_info.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom-forward.h"
 
 namespace base {
@@ -142,7 +143,7 @@ class GCMClient {
 
   // Information about account.
   struct AccountTokenInfo {
-    std::string account_id;
+    CoreAccountId account_id;
     std::string email;
     std::string access_token;
   };
@@ -323,7 +324,7 @@ class GCMClient {
 
   // Removes the account mapping related to |account_id| from the persistent
   // store.
-  virtual void RemoveAccountMapping(const std::string& account_id) = 0;
+  virtual void RemoveAccountMapping(const CoreAccountId& account_id) = 0;
 
   // Sets last token fetch time in persistent store.
   virtual void SetLastTokenFetchTime(const base::Time& time) = 0;

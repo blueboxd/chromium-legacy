@@ -321,7 +321,7 @@ TEST_F(CookieStoreIOSTest, SameValueDoesNotCallHook) {
   EXPECT_EQ(1U, cookies_changed_.size());
 }
 
-TEST_F(CookieStoreIOSTest, GetAllCookiesForURLAsync) {
+TEST_F(CookieStoreIOSTest, GetAllCookies) {
   const GURL kTestCookieURLFooBar("http://foo.google.com/bar");
   ScopedTestingCookieStoreIOSClient scoped_cookie_store_ios_client(
       std::make_unique<TestCookieStoreIOSClient>());
@@ -330,18 +330,17 @@ TEST_F(CookieStoreIOSTest, GetAllCookiesForURLAsync) {
       std::make_unique<NSHTTPSystemCookieStore>(), nullptr /* net_log */);
 
   // Add a cookie.
-  net::CookieOptions options;
-  options.set_include_httponly();
   auto canonical_cookie = net::CanonicalCookie::Create(
       kTestCookieURLFooBar, "a=b", base::Time::Now(),
       base::nullopt /* server_time */);
   cookie_store->SetCanonicalCookieAsync(std::move(canonical_cookie),
-                                        kTestCookieURLFooBar.scheme(), options,
+                                        kTestCookieURLFooBar.scheme(),
+                                        net::CookieOptions::MakeAllInclusive(),
                                         net::CookieStore::SetCookiesCallback());
   // Check we can get the cookie.
   GetAllCookiesCallback callback;
-  cookie_store->GetAllCookiesForURLAsync(
-      kTestCookieURLFooBar,
+  cookie_store->GetCookieListWithOptionsAsync(
+      kTestCookieURLFooBar, net::CookieOptions::MakeAllInclusive(),
       base::Bind(&GetAllCookiesCallback::Run, base::Unretained(&callback)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(callback.did_run());

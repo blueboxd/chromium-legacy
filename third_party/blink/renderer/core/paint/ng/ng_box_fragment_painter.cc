@@ -205,25 +205,6 @@ void NGBoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
   }
 }
 
-void NGBoxFragmentPainter::RecordHitTestData(
-    const PaintInfo& paint_info,
-    const PhysicalOffset& paint_offset) {
-  const NGPhysicalFragment& physical_fragment = PhysicalFragment();
-  // TODO(pdr): If we are painting the background into the scrolling contents
-  // layer, we need to use the overflow rect instead of the border box rect. We
-  // may want to move the call to RecordHitTestRect into
-  // BoxPainter::PaintBoxDecorationBackgroundWithRect and share the logic
-  // the background painting code already uses.
-  PhysicalRect border_box = physical_fragment.LocalRect();
-  if (physical_fragment.IsInline())
-    border_box.offset += paint_fragment_->InlineOffsetToContainerBox();
-  border_box.offset += paint_offset;
-  HitTestDisplayItem::Record(
-      paint_info.context, GetDisplayItemClient(),
-      HitTestRect(border_box.ToLayoutRect(),
-                  physical_fragment.EffectiveAllowedTouchAction()));
-}
-
 void NGBoxFragmentPainter::RecordHitTestDataForLine(
     const PaintInfo& paint_info,
     const PhysicalOffset& paint_offset,
@@ -244,23 +225,12 @@ void NGBoxFragmentPainter::PaintObject(
   const NGPhysicalBoxFragment& physical_box_fragment = PhysicalFragment();
   const ComputedStyle& style = box_fragment_.Style();
   bool is_visible = IsVisibleToPaint(physical_box_fragment, style);
+  if (!is_visible)
+    suppress_box_decoration_background = true;
 
   if (ShouldPaintSelfBlockBackground(paint_phase)) {
-    if (!suppress_box_decoration_background && is_visible)
-      PaintBoxDecorationBackground(paint_info, paint_offset);
-
-    if (NGFragmentPainter::ShouldRecordHitTestData(paint_info,
-                                                   physical_box_fragment))
-      RecordHitTestData(paint_info, paint_offset);
-
-    // Record the scroll hit test after the background so background squashing
-    // is not affected. Hit test order would be equivalent if this were
-    // immediately before the background.
-    // TODO(pdr): Uncomment this and support non-fast scrollable regions for
-    // NGBoxFragments (see: https://crbug.com/864567).
-    // if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
-    //  PaintScrollHitTestDisplayItem(paint_info);
-
+    PaintBoxDecorationBackground(paint_info, paint_offset,
+                                 suppress_box_decoration_background);
     // We're done. We don't bother painting any children.
     if (paint_phase == PaintPhase::kSelfBlockBackgroundOnly)
       return;
@@ -454,26 +424,17 @@ void NGBoxFragmentPainter::PaintMask(const PaintInfo& paint_info,
 // eliminate LayoutObject dependency were done yet.
 void NGBoxFragmentPainter::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
-    const PhysicalOffset& paint_offset) {
-  if (PhysicalFragment().IsFieldsetContainer()) {
-    NGFieldsetPainter(box_fragment_)
-        .PaintBoxDecorationBackground(paint_info, paint_offset);
-    return;
-  }
-
-  // Note that for fieldsets we need to enter decoration and background painting
-  // even if we have no such things, because the rendered legend is painted in
-  // this phase as well. Hence the early check above.
-  const ComputedStyle& style = box_fragment_.Style();
-  if (!style.HasBoxDecorationBackground())
-    return;
-
+    const PhysicalOffset& paint_offset,
+    bool suppress_box_decoration_background) {
   // TODO(mstensho): Break dependency on LayoutObject functionality.
   const LayoutObject& layout_object = *box_fragment_.GetLayoutObject();
 
   PhysicalRect paint_rect;
+  const DisplayItemClient* background_client = nullptr;
   base::Optional<ScopedBoxContentsPaintState> contents_paint_state;
-  if (IsPaintingScrollingBackground(paint_info)) {
+  bool painting_scrolling_background =
+      IsPaintingScrollingBackground(paint_info);
+  if (painting_scrolling_background) {
     // For the case where we are painting the background into the scrolling
     // contents layer of a composited scroller we need to include the entire
     // overflow rect.
@@ -487,14 +448,44 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
     // paintRect so we expand the paintRect by the border size when painting the
     // background into the scrolling contents layer.
     paint_rect.Expand(layout_box.BorderBoxOutsets());
+
+    background_client = &layout_box.GetScrollableArea()
+                             ->GetScrollingBackgroundDisplayItemClient();
   } else {
     paint_rect.offset = paint_offset;
     paint_rect.size = box_fragment_.Size();
+    background_client = &GetDisplayItemClient();
   }
 
-  PaintBoxDecorationBackgroundWithRect(
-      contents_paint_state ? contents_paint_state->GetPaintInfo() : paint_info,
-      paint_rect);
+  if (!suppress_box_decoration_background) {
+    // The fieldset painter is not skipped when there is no background because
+    // the legend needs to paint.
+    if (PhysicalFragment().IsFieldsetContainer()) {
+      NGFieldsetPainter(box_fragment_)
+          .PaintBoxDecorationBackground(paint_info, paint_offset);
+    } else if (box_fragment_.Style().HasBoxDecorationBackground()) {
+      PaintBoxDecorationBackgroundWithRect(
+          contents_paint_state ? contents_paint_state->GetPaintInfo()
+                               : paint_info,
+          paint_rect, *background_client);
+    }
+  }
+
+  if (NGFragmentPainter::ShouldRecordHitTestData(paint_info,
+                                                 PhysicalFragment())) {
+    HitTestDisplayItem::Record(
+        paint_info.context, *background_client,
+        HitTestRect(paint_rect.ToLayoutRect(),
+                    PhysicalFragment().EffectiveAllowedTouchAction()));
+  }
+
+  // Record the scroll hit test after the background so background squashing
+  // is not affected. Hit test order would be equivalent if this were
+  // immediately before the background.
+  // TODO(pdr): Uncomment this and support non-fast scrollable regions for
+  // NGBoxFragments (see: https://crbug.com/864567).
+  // if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
+  //  PaintScrollHitTestDisplayItem(paint_info);
 }
 
 // TODO(kojii): This logic is kept in sync with BoxPainter. Not much efforts to
@@ -519,7 +510,8 @@ bool NGBoxFragmentPainter::BackgroundIsKnownToBeOpaque(
 // eliminate LayoutObject dependency were done yet.
 void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
     const PaintInfo& paint_info,
-    const PhysicalRect& paint_rect) {
+    const PhysicalRect& paint_rect,
+    const DisplayItemClient& background_client) {
   const LayoutObject& layout_object = *box_fragment_.GetLayoutObject();
   const LayoutBox& layout_box = ToLayoutBox(layout_object);
 
@@ -542,17 +534,12 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
   if (!box_decoration_data.ShouldPaint())
     return;
 
-  const DisplayItemClient& display_item_client =
-      box_decoration_data.IsPaintingScrollingBackground()
-          ? layout_box.GetScrollableArea()
-                ->GetScrollingBackgroundDisplayItemClient()
-          : GetDisplayItemClient();
   if (DrawingRecorder::UseCachedDrawingIfPossible(
-          paint_info.context, display_item_client,
+          paint_info.context, background_client,
           DisplayItem::kBoxDecorationBackground))
     return;
 
-  DrawingRecorder recorder(paint_info.context, display_item_client,
+  DrawingRecorder recorder(paint_info.context, background_client,
                            DisplayItem::kBoxDecorationBackground);
   GraphicsContextStateSaver state_saver(paint_info.context, false);
 

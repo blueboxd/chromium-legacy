@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_VIDEO_CAPTURE_WEB_VIDEO_CAPTURE_IMPL_MANAGER_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_VIDEO_CAPTURE_WEB_VIDEO_CAPTURE_IMPL_MANAGER_H_
 
-#include <string.h>
 #include <memory>
 #include <vector>
 
@@ -20,10 +19,12 @@
 #include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
 class VideoCaptureImpl;
+class WebString;
 
 // TODO(hclam): This class should be renamed to VideoCaptureService.
 
@@ -99,9 +100,7 @@ class BLINK_PLATFORM_EXPORT WebVideoCaptureImplManager {
   // Resume(id).
   void SuspendDevices(const MediaStreamDevices& video_devices, bool suspend);
 
-  // TODO(crbug.com/704136): Switch to WebString.
-  void OnLog(const media::VideoCaptureSessionId& id,
-             const std::string& message);
+  void OnLog(const media::VideoCaptureSessionId& id, const WebString& message);
   void OnFrameDropped(const media::VideoCaptureSessionId& id,
                       media::VideoCaptureFrameDropReason reason);
 
@@ -116,9 +115,7 @@ class BLINK_PLATFORM_EXPORT WebVideoCaptureImplManager {
   void UnrefDevice(const media::VideoCaptureSessionId& id);
 
   // Devices currently in use.
-  //
-  // TODO(crbug.com/704136): Switch to WebVector.
-  std::vector<DeviceEntry> devices_;
+  WebVector<DeviceEntry> devices_;
 
   // This is an internal ID for identifying clients of VideoCaptureImpl.
   // The ID is global for the render process.

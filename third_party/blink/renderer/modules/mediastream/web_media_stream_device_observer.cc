@@ -21,7 +21,7 @@ void WebMediaStreamDeviceObserver::AddStream(
     const WebString& label,
     const MediaStreamDevices& audio_devices,
     const MediaStreamDevices& video_devices,
-    const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler) {
+    const base::WeakPtr<UserMediaProcessor>& event_handler) {
   observer_->AddStream(label, audio_devices, video_devices, event_handler);
 }
 

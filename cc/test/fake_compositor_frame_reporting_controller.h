@@ -5,7 +5,7 @@
 #ifndef CC_TEST_FAKE_COMPOSITOR_FRAME_REPORTING_CONTROLLER_H_
 #define CC_TEST_FAKE_COMPOSITOR_FRAME_REPORTING_CONTROLLER_H_
 
-#include "cc/scheduler/compositor_frame_reporting_controller.h"
+#include "cc/metrics/compositor_frame_reporting_controller.h"
 
 namespace cc {
 // This class is to be used for testing, during cases where the DCHECKs won't

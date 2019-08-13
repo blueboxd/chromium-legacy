@@ -171,6 +171,9 @@ extern const char kCloudImportDescription[];
 extern const char kCloudPrinterHandlerName[];
 extern const char kCloudPrinterHandlerDescription[];
 
+extern const char kDecodeLossyWebPImagesToYUVName[];
+extern const char kDecodeLossyWebPImagesToYUVDescription[];
+
 extern const char kDrawVerticallyEdgeToEdgeName[];
 extern const char kDrawVerticallyEdgeToEdgeDescription[];
 
@@ -769,6 +772,9 @@ extern const char kNewblueDescription[];
 extern const char kNewTabLoadingAnimation[];
 extern const char kNewTabLoadingAnimationDescription[];
 
+extern const char kNewTabstripAnimationName[];
+extern const char kNewTabstripAnimationDescription[];
+
 extern const char kNotificationIndicatorName[];
 extern const char kNotificationIndicatorDescription[];
 
@@ -1012,6 +1018,9 @@ extern const char kSharedClipboardUIDescription[];
 extern const char kSharingDeviceRegistrationName[];
 extern const char kSharingDeviceRegistrationDescription[];
 
+extern const char kSharingUseDeviceInfoName[];
+extern const char kSharingUseDeviceInfoDescription[];
+
 extern const char kShelfDenseClamshellName[];
 extern const char kShelfDenseClamshellDescription[];
 
@@ -1238,6 +1247,9 @@ extern const char kWebrtcSrtpAesGcmDescription[];
 
 extern const char kWebrtcStunOriginName[];
 extern const char kWebrtcStunOriginDescription[];
+
+extern const char kWebUITabStripName[];
+extern const char kWebUITabStripDescription[];
 
 extern const char kWebvrName[];
 extern const char kWebvrDescription[];

@@ -15,7 +15,7 @@
 namespace device {
 
 BleAdapterManager::BleAdapterManager(FidoRequestHandlerBase* request_handler)
-    : request_handler_(request_handler), weak_factory_(this) {
+    : request_handler_(request_handler) {
   BluetoothAdapterFactory::Get().GetAdapter(
       base::BindOnce(&BleAdapterManager::Start, weak_factory_.GetWeakPtr()));
 }

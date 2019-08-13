@@ -6,6 +6,7 @@
 
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "components/ui_devtools/agent_util.h"
 #include "components/ui_devtools/ui_element.h"
 
 namespace ui_devtools {
@@ -90,6 +91,7 @@ std::unique_ptr<protocol::CSS::CSSRule> BuildCSSRule(
     std::string stylesheet_uid,
     const UIElement::ClassProperties& class_properties) {
   return protocol::CSS::CSSRule::create()
+      .setStyleSheetId(stylesheet_uid)
       .setSelectorList(BuildSelectorList(class_properties.class_name_))
       .setStyle(BuildCSSStyle(stylesheet_uid, class_properties.properties_))
       .build();
@@ -167,6 +169,21 @@ Response ParseProperties(const std::string& style_text,
   return Response::OK();
 }
 
+std::unique_ptr<protocol::CSS::CSSStyleSheetHeader>
+BuildObjectForStyleSheetInfo(std::string stylesheet_uid,
+                             std::string url_path,
+                             int line) {
+  std::unique_ptr<protocol::CSS::CSSStyleSheetHeader> result =
+      protocol::CSS::CSSStyleSheetHeader::create()
+          .setStyleSheetId(stylesheet_uid)
+          .setSourceURL(kChromiumCodeSearchSrcURL + url_path +
+                        "?l=" + base::NumberToString(line))
+          .setStartLine(line)
+          .setStartColumn(0)
+          .build();
+  return result;
+}
+
 }  // namespace
 
 CSSAgent::CSSAgent(DOMAgent* dom_agent) : dom_agent_(dom_agent) {
@@ -196,6 +213,29 @@ Response CSSAgent::getMatchedStylesForNode(
     return NodeNotFoundError(node_id);
   *matched_css_rules = BuildMatchedStyles(ui_element);
   return Response::OK();
+}
+
+Response CSSAgent::getStyleSheetText(const protocol::String& style_sheet_id,
+                                     protocol::String* result) {
+  int node_id;
+  int stylesheet_id;
+  std::vector<std::string> ids = base::SplitString(
+      style_sheet_id, "_", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (ids.size() < 2 || !base::StringToInt(ids[0], &node_id) ||
+      !base::StringToInt(ids[1], &stylesheet_id))
+    return Response::Error("Invalid stylesheet id");
+
+  UIElement* ui_element = dom_agent_->GetElementFromNodeId(node_id);
+  if (!ui_element)
+    return Response::Error("Node id not found");
+
+  auto sources = ui_element->GetSources();
+  if (static_cast<int>(sources.size()) <= stylesheet_id)
+    return Response::Error("Stylesheet id not found");
+
+  if (GetSourceCode(sources[stylesheet_id].path_, result))
+    return protocol::Response::OK();
+  return protocol::Response::Error("Could not read source file");
 }
 
 Response CSSAgent::setStyleTexts(
@@ -291,8 +331,20 @@ CSSAgent::BuildMatchedStyles(UIElement* ui_element) {
             .setMatchingSelectors(BuildDefaultMatchingSelectors())
             .build());
   }
-
+  if (!ui_element->header_sent()) {
+    InitStylesheetHeaders(ui_element);
+  }
   return result;
+}
+
+void CSSAgent::InitStylesheetHeaders(UIElement* ui_element) {
+  std::vector<UIElement::Source> sources = ui_element->GetSources();
+  for (size_t i = 0; i < sources.size(); i++) {
+    frontend()->styleSheetAdded(BuildObjectForStyleSheetInfo(
+        BuildStylesheetUId(ui_element->node_id(), i), sources[i].path_,
+        sources[i].line_));
+  }
+  ui_element->set_header_sent();
 }
 
 }  // namespace ui_devtools

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/performance_manager/webui_graph_dump_impl.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/macros.h"
@@ -16,6 +19,7 @@
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
+#include "chrome/browser/performance_manager/graph/worker_node_impl.h"
 #include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/favicon/core/favicon_service.h"
@@ -192,6 +196,8 @@ void WebUIGraphDumpImpl::OnNodeAdded(NodeBase* node) {
       SendProcessNotification(ProcessNodeImpl::FromNodeBase(node), true);
       break;
     case SystemNodeImpl::Type():
+      break;
+    case WorkerNodeImpl::Type():
       break;
     case NodeTypeEnum::kInvalidType:
       break;

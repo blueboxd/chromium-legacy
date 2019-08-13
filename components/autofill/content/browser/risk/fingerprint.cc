@@ -175,7 +175,6 @@ void AddGpuInfoToFingerprint(Fingerprint::MachineCharacteristics* machine,
   graphics->set_vendor_id(active_gpu.vendor_id);
   graphics->set_device_id(active_gpu.device_id);
   graphics->set_driver_version(active_gpu.driver_version);
-  graphics->set_driver_date(active_gpu.driver_date);
 }
 
 // Waits for all asynchronous data required for the fingerprint to be loaded,

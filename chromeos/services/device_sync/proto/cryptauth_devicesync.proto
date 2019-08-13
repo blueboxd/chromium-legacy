@@ -6,9 +6,9 @@
 // DeviceSync protocol. Specifically,
 //
 // -- SyncMetadata --
-// * Request: The device sends its metadata to CryptAuth, most of it encrypted
-//     with the (alleged) group public key. The device also sends what it thinks
-//     is the group public key.
+// * Request: The device sends its metadata to CryptAuth, some of it encrypted
+//     with the the device's version of the group public key. This version of
+//     the group public key is also sent in the request.
 // * Response: If CryptAuth can confirm that the device is in possession of the
 //     correct group public key, then CryptAuth returns metadata for the user's
 //     devices in the DeviceSync group. The group public key and/or the
@@ -16,8 +16,9 @@
 //
 // -- ShareGroupPrivateKey --
 // * Request: The device shares the group private key by encrypting it with the
-//     public key of the user's other devices. These encrypted keys are
-//     persisted by CryptAuth for the other devices to retrieve as necessary.
+//     public key of the user's other devices. These encrypted group private
+//     keys are persisted by CryptAuth for the other devices to retrieve as
+//     necessary.
 // * Response: Trivial
 //
 // -- BatchNotifyGroupDevices --
@@ -46,6 +47,10 @@ import "cryptauth_common.proto";
 import "cryptauth_directive.proto";
 
 // A common context for requests.
+//
+// Note: This message is encoded as query parameters for some requests. If any
+// field or subfield of this proto changes, update the files
+// cryptauth_proto_to_query_parameters_util.{h,cc}.
 message RequestContext {
   // The group name.
   // A device can join multiple groups. Each group will be identified by a
@@ -213,6 +218,14 @@ message DeviceFeatureStatus {
 
     // If the feature is enabled.
     bool enabled = 2;
+
+    // The last time the feature was set. Only set for BatchGetFeatureStatuses.
+    int64 last_modified_time_millis = 3;
+
+    // Set to true to disable all group devices other than the specified device.
+    // This can only be used when enabling features. Only set for
+    // BatchSetFeatureStatuses.
+    bool enable_exclusively = 4;
   }
 
   // Device identifier.
@@ -239,7 +252,7 @@ message BatchSetFeatureStatusesRequest {
 
   // Set to true to disable all group devices other than the specified device.
   // This can only be used with a single device and only when enabling features.
-  bool enable_exclusively = 3;
+  bool enable_exclusively = 3 [deprecated = true];
 }
 
 // Response to BatchSetFeatureStatuses.

@@ -80,7 +80,7 @@ class GrpcAsyncRequest {
  private:
   grpc_impl::ClientContext context_;
 
-  base::WeakPtrFactory<GrpcAsyncRequest> grpc_async_request_weak_factory_;
+  base::WeakPtrFactory<GrpcAsyncRequest> grpc_async_request_weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(GrpcAsyncRequest);
 };
 

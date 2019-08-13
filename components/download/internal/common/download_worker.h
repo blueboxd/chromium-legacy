@@ -11,13 +11,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/download/public/common/download_export.h"
-#include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/url_download_handler.h"
-
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
 
 namespace service_manager {
 class Connector;
@@ -57,7 +52,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadWorker
       std::unique_ptr<DownloadUrlParameters> params,
       scoped_refptr<download::DownloadURLLoaderFactoryGetter>
           url_loader_factory_getter,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
       service_manager::Connector* connector);
 
   // Download operations.
@@ -72,6 +66,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadWorker
       std::unique_ptr<InputStream> input_stream,
       scoped_refptr<download::DownloadURLLoaderFactoryGetter>
           url_loader_factory_getter,
+      UrlDownloadHandler* downloader,
       const DownloadUrlParameters::OnStartedCallback& callback) override;
   void OnUrlDownloadStopped(UrlDownloadHandler* downloader) override;
   void OnUrlDownloadHandlerCreated(
@@ -88,10 +83,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadWorker
   // States of the worker.
   bool is_paused_;
   bool is_canceled_;
-  bool is_user_cancel_;
-
-  // Used to control the network request. Live on UI thread.
-  std::unique_ptr<DownloadRequestHandleInterface> request_handle_;
 
   // Used to handle the url request. Live and die on IO thread.
   UrlDownloadHandler::UniqueUrlDownloadHandlerPtr url_download_handler_;

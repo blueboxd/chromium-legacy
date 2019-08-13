@@ -84,6 +84,10 @@ views::Widget* WidgetElement::From(const UIElement* element) {
   return static_cast<const WidgetElement*>(element)->widget_;
 }
 
+void WidgetElement::InitSources() {
+  AddSource("ui/views/widget/widget.h", 0);
+}
+
 template <>
 int UIElement::FindUIElementIdForBackendElement<views::Widget>(
     views::Widget* element) const {
@@ -99,4 +103,5 @@ int UIElement::FindUIElementIdForBackendElement<views::Widget>(
   }
   return 0;
 }
+
 }  // namespace ui_devtools

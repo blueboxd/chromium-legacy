@@ -86,7 +86,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileStreamWriter
 
   int64_t default_quota_;
 
-  base::WeakPtrFactory<SandboxFileStreamWriter> weak_factory_;
+  base::WeakPtrFactory<SandboxFileStreamWriter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SandboxFileStreamWriter);
 };

@@ -62,6 +62,14 @@ class NET_EXPORT CookieOptions {
   void unset_return_excluded_cookies() { return_excluded_cookies_ = false; }
   bool return_excluded_cookies() const { return return_excluded_cookies_; }
 
+  // Convenience method for where you need a CookieOptions that will
+  // work for getting/setting all types of cookies, including HttpOnly and
+  // SameSite cookies. Also specifies not to update the access time, because
+  // usually this is done to get all the cookies to check that they are correct,
+  // including the creation time. This basically makes a CookieOptions that is
+  // the opposite of the default CookieOptions.
+  static CookieOptions MakeAllInclusive();
+
  private:
   bool exclude_httponly_;
   SameSiteCookieContext same_site_cookie_context_;

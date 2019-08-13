@@ -495,13 +495,15 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
       // TODO(dgrogan): Add an extra pass for kColumnReverse containers like
       // legacy does in LayoutColumnReverse.
 
-      // AddChild treats location parameter as logical offset from parent rect.
-      // TODO(dgrogan): Does this need to transpose the location for
-      // non-horizontal flexboxes, like
-      // LayoutFlexibleBox::SetFlowAwareLocationForChild does?
-      container_builder_.AddChild(
-          flex_item.layout_result->PhysicalFragment(),
-          {flex_item.desired_location.X(), flex_item.desired_location.Y()});
+      // flex_item.desired_location stores the main axis offset in X and the
+      // cross axis offset in Y. But AddChild wants offset from parent
+      // rectangle, so we have to transpose for columns. AddChild takes care of
+      // any writing mode differences though.
+      LayoutPoint location = is_column_
+                                 ? flex_item.desired_location.TransposedPoint()
+                                 : flex_item.desired_location;
+      container_builder_.AddChild(flex_item.layout_result->PhysicalFragment(),
+                                  {location.X(), location.Y()});
     }
   }
 }

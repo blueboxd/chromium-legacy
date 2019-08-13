@@ -25,14 +25,17 @@
 #include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 
 #include <algorithm>
-#include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/video_capture/video_capture_impl.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -83,7 +86,7 @@ WebVideoCaptureImplManager::~WebVideoCaptureImplManager() {
     Platform::Current()->GetIOTaskRunner()->DeleteSoon(FROM_HERE,
                                                        entry.impl.release());
   }
-  devices_.clear();
+  devices_.Clear();
 }
 
 base::OnceClosure WebVideoCaptureImplManager::UseDevice(
@@ -94,7 +97,7 @@ base::OnceClosure WebVideoCaptureImplManager::UseDevice(
       devices_.begin(), devices_.end(),
       [id](const DeviceEntry& entry) { return entry.session_id == id; });
   if (it == devices_.end()) {
-    devices_.push_back(DeviceEntry());
+    devices_.emplace_back(DeviceEntry());
     it = devices_.end() - 1;
     it->session_id = id;
     it->impl = CreateVideoCaptureImplForTesting(id);
@@ -263,7 +266,8 @@ void WebVideoCaptureImplManager::UnrefDevice(
   Platform::Current()->GetIOTaskRunner()->DeleteSoon(FROM_HERE,
                                                      it->impl.release());
 
-  devices_.erase(it);
+  size_t index = std::distance(devices_.begin(), it);
+  devices_.EraseAt(index);
 }
 
 void WebVideoCaptureImplManager::SuspendDevices(
@@ -303,7 +307,7 @@ void WebVideoCaptureImplManager::OnFrameDropped(
 }
 
 void WebVideoCaptureImplManager::OnLog(const media::VideoCaptureSessionId& id,
-                                       const std::string& message) {
+                                       const WebString& message) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
@@ -311,9 +315,10 @@ void WebVideoCaptureImplManager::OnLog(const media::VideoCaptureSessionId& id,
   DCHECK(it != devices_.end());
   // Use of base::Unretained() is safe because |devices_| is released on the
   // |io_task_runner()| as well.
-  Platform::Current()->GetIOTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&VideoCaptureImpl::OnLog,
-                                base::Unretained(it->impl.get()), message));
+  PostCrossThreadTask(*Platform::Current()->GetIOTaskRunner().get(), FROM_HERE,
+                      CrossThreadBindOnce(&VideoCaptureImpl::OnLog,
+                                          CrossThreadUnretained(it->impl.get()),
+                                          String(message)));
 }
 
 }  // namespace blink

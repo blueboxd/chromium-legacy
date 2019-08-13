@@ -1802,9 +1802,10 @@ TEST_F(DnsTransactionTest, HttpsPostTestNoCookies) {
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
 
   CookieCallback callback;
-  helper0.request_context()->cookie_store()->GetAllCookiesForURLAsync(
+  helper0.request_context()->cookie_store()->GetCookieListWithOptionsAsync(
       GURL(GetURLFromTemplateWithoutParameters(
           config_.dns_over_https_servers[0].server_template)),
+      CookieOptions::MakeAllInclusive(),
       base::Bind(&CookieCallback::GetAllCookiesCallback,
                  base::Unretained(&callback)));
   callback.WaitUntilDone();

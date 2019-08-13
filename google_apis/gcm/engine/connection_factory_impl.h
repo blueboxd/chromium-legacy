@@ -194,7 +194,7 @@ class GCM_EXPORT ConnectionFactoryImpl
   // The currently registered listener to notify of connection changes.
   ConnectionListener* listener_;
 
-  base::WeakPtrFactory<ConnectionFactoryImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ConnectionFactoryImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionFactoryImpl);
 };

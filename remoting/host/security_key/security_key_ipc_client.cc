@@ -21,8 +21,7 @@
 namespace remoting {
 
 SecurityKeyIpcClient::SecurityKeyIpcClient()
-    : named_channel_handle_(remoting::GetSecurityKeyIpcChannel()),
-      weak_factory_(this) {}
+    : named_channel_handle_(remoting::GetSecurityKeyIpcChannel()) {}
 
 SecurityKeyIpcClient::~SecurityKeyIpcClient() {
   DCHECK(thread_checker_.CalledOnValidThread());

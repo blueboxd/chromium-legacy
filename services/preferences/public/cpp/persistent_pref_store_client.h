@@ -93,7 +93,7 @@ class PersistentPrefStoreClient
   base::queue<std::vector<InFlightWrite>> in_flight_writes_queue_;
   std::map<std::string, InFlightWriteTrie> in_flight_writes_tries_;
 
-  base::WeakPtrFactory<PersistentPrefStoreClient> weak_factory_;
+  base::WeakPtrFactory<PersistentPrefStoreClient> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PersistentPrefStoreClient);
 };

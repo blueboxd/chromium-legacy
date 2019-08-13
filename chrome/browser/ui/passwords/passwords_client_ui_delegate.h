@@ -89,6 +89,10 @@ class PasswordsClientUIDelegate {
       const GURL& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches) = 0;
 
+  // Called when user credentials were leaked. This triggers the UI to prompt
+  // the user whether they would like to check their passwords.
+  virtual void OnCredentialLeak(const GURL& origin) = 0;
+
  protected:
   virtual ~PasswordsClientUIDelegate() = default;
 };

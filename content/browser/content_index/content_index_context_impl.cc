@@ -17,7 +17,8 @@ namespace content {
 ContentIndexContextImpl::ContentIndexContextImpl(
     BrowserContext* browser_context,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
-    : service_worker_context_(service_worker_context),
+    : provider_(browser_context->GetContentIndexProvider()),
+      service_worker_context_(service_worker_context),
       content_index_database_(browser_context, service_worker_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
@@ -159,8 +160,23 @@ void ContentIndexContextImpl::DidDispatchEvent(
   content_index_database_.UnblockOrigin(origin);
 }
 
+void ContentIndexContextImpl::GetIconSizes(
+    blink::mojom::ContentCategory category,
+    blink::mojom::ContentIndexService::GetIconSizesCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  std::vector<gfx::Size> icon_sizes;
+  if (provider_)
+    icon_sizes = provider_->GetIconSizes(category);
+
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(std::move(callback), std::move(icon_sizes)));
+}
+
 void ContentIndexContextImpl::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  provider_ = nullptr;
   content_index_database_.Shutdown();
 }
 

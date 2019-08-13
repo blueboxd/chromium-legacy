@@ -57,7 +57,7 @@ class MockMediaStreamVideoSink : public MediaStreamVideoSink {
   WebMediaStreamSource::ReadyState state_;
   gfx::Size frame_size_;
   scoped_refptr<media::VideoFrame> last_frame_;
-  base::WeakPtrFactory<MockMediaStreamVideoSink> weak_factory_;
+  base::WeakPtrFactory<MockMediaStreamVideoSink> weak_factory_{this};
 };
 
 }  // namespace blink

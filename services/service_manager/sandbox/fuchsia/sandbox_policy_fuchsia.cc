@@ -16,6 +16,9 @@
 #include <fuchsia/netstack/cpp/fidl.h>
 #include <fuchsia/sysmem/cpp/fidl.h>
 #include <fuchsia/ui/scenic/cpp/fidl.h>
+#include <lib/sys/cpp/component_context.h>
+#include <lib/sys/cpp/service_directory.h>
+
 #include <memory>
 #include <utility>
 
@@ -23,8 +26,8 @@
 #include "base/command_line.h"
 #include "base/containers/span.h"
 #include "base/files/file_util.h"
+#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/filtered_service_directory.h"
-#include "base/fuchsia/service_directory_client.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
@@ -149,7 +152,7 @@ void SandboxPolicyFuchsia::Initialize(service_manager::SandboxType type) {
     service_directory_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     service_directory_ =
         std::make_unique<base::fuchsia::FilteredServiceDirectory>(
-            base::fuchsia::ServiceDirectoryClient::ForCurrentProcess());
+            base::fuchsia::ComponentContextForCurrentProcess()->svc().get());
     for (const char* service_name : kDefaultServices) {
       service_directory_->AddService(service_name);
     }
@@ -158,7 +161,7 @@ void SandboxPolicyFuchsia::Initialize(service_manager::SandboxType type) {
     }
     // Bind the service directory and store the client channel for
     // UpdateLaunchOptionsForSandbox()'s use.
-    service_directory_client_ = service_directory_->ConnectClient();
+    service_directory_->ConnectClient(service_directory_client_.NewRequest());
     CHECK(service_directory_client_);
   }
 }

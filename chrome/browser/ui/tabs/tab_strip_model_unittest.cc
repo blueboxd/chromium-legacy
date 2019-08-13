@@ -3439,3 +3439,13 @@ TEST_F(TabStripModelTest, VisualDataChangeNotifiesObservers) {
 
   strip.CloseAllTabs();
 }
+
+TEST_F(TabStripModelTest, ObserverCanBeDestroyedEarly) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+
+  {
+    MockTabStripModelObserver observer;
+    strip.AddObserver(&observer);
+  }
+}

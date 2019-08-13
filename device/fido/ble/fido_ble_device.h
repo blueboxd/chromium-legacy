@@ -108,7 +108,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDevice : public FidoDevice {
   base::Optional<CancelToken> current_token_;
   base::Optional<FidoBleTransaction> transaction_;
 
-  base::WeakPtrFactory<FidoBleDevice> weak_factory_;
+  base::WeakPtrFactory<FidoBleDevice> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FidoBleDevice);
 };

@@ -42,8 +42,7 @@ using StatusCallback = base::OnceCallback<void(const grpc::Status&)>;
 // Fake stream implementation to allow probing if a stream is closed by client.
 class FakeScopedGrpcServerStream : public ScopedGrpcServerStream {
  public:
-  FakeScopedGrpcServerStream()
-      : ScopedGrpcServerStream(nullptr), weak_factory_(this) {}
+  FakeScopedGrpcServerStream() : ScopedGrpcServerStream(nullptr) {}
   ~FakeScopedGrpcServerStream() override = default;
 
   base::WeakPtr<FakeScopedGrpcServerStream> GetWeakPtr() {
@@ -51,7 +50,7 @@ class FakeScopedGrpcServerStream : public ScopedGrpcServerStream {
   }
 
  private:
-  base::WeakPtrFactory<FakeScopedGrpcServerStream> weak_factory_;
+  base::WeakPtrFactory<FakeScopedGrpcServerStream> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FakeScopedGrpcServerStream);
 };
 

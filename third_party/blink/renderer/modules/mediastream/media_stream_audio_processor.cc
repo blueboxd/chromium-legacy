@@ -31,6 +31,7 @@
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/renderer/platform/mediastream/aec_dump_agent_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_config.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_config_json.h"
@@ -384,10 +385,10 @@ void MediaStreamAudioProcessor::OnStartDump(base::File dump_file) {
                                      std::move(dump_file), worker_queue_.get());
   } else {
     // Post the file close to avoid blocking the main thread.
-    base::PostTask(
+    worker_pool::PostTask(
         FROM_HERE,
         {base::ThreadPool(), base::TaskPriority::LOWEST, base::MayBlock()},
-        base::BindOnce([](base::File) {}, std::move(dump_file)));
+        CrossThreadBindOnce([](base::File) {}, std::move(dump_file)));
   }
 }
 

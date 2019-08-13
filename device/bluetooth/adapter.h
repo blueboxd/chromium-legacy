@@ -71,7 +71,7 @@ class Adapter : public mojom::Adapter,
   // The adapter client that listens to this service.
   mojom::AdapterClientPtr client_;
 
-  base::WeakPtrFactory<Adapter> weak_ptr_factory_;
+  base::WeakPtrFactory<Adapter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Adapter);
 };

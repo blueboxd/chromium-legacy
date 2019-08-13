@@ -896,7 +896,7 @@ TEST_F(PasswordStoreTest, SavingClearingProtectedPassword) {
   const base::string16 input = base::ASCIIToUTF16("123password");
   store->SaveGaiaPasswordHash(
       "sync_username", sync_password,
-      metrics_util::SyncPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
+      metrics_util::GaiaPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
   WaitForPasswordStore();
   EXPECT_TRUE(prefs.HasPrefPath(prefs::kPasswordHashDataList));
   base::Optional<PasswordHashData> sync_password_hash =
@@ -916,7 +916,7 @@ TEST_F(PasswordStoreTest, SavingClearingProtectedPassword) {
   const base::string16 gaia_password = base::ASCIIToUTF16("3password");
   store->SaveGaiaPasswordHash(
       "other_gaia_username", gaia_password,
-      metrics_util::SyncPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
+      metrics_util::GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
   base::Optional<PasswordHashData> gaia_password_hash = GetPasswordFromPref(
       "other_gaia_username", /*is_gaia_password=*/true, &prefs);
   ASSERT_TRUE(gaia_password_hash.has_value());
@@ -1003,6 +1003,7 @@ TEST_F(PasswordStoreTest, ReportMetricsForAdvancedProtection) {
   ASSERT_FALSE(prefs.HasPrefPath(prefs::kSyncPasswordHash));
   store->Init(syncer::SyncableService::StartSyncFlare(), &prefs);
 
+  // Hash does not exist yet.
   base::HistogramTester histogram_tester;
   store->ReportMetrics("sync_username", false, true);
   std::string name =
@@ -1015,13 +1016,55 @@ TEST_F(PasswordStoreTest, ReportMetricsForAdvancedProtection) {
   const base::string16 input = base::ASCIIToUTF16("123password");
   store->SaveGaiaPasswordHash(
       "sync_username", sync_password,
-      metrics_util::SyncPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
+      metrics_util::GaiaPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
   WaitForPasswordStore();
 
   store->ReportMetrics("sync_username", false, true);
   histogram_tester.ExpectBucketCount(
       name, metrics_util::IsSyncPasswordHashSaved::SAVED_VIA_LIST_PREF, 1);
+  histogram_tester.ExpectBucketCount(
+      "PasswordManager.SyncPasswordHashChange",
+      metrics_util::GaiaPasswordHashChange::SAVED_ON_CHROME_SIGNIN, 1);
+  store->ShutdownOnUIThread();
+}
 
+TEST_F(PasswordStoreTest, ReportMetricsForNonSyncPassword) {
+  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
+      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+
+  TestingPrefServiceSimple prefs;
+  prefs.registry()->RegisterListPref(prefs::kPasswordHashDataList,
+                                     PrefRegistry::NO_REGISTRATION_FLAGS);
+  ASSERT_FALSE(prefs.HasPrefPath(prefs::kSyncPasswordHash));
+  store->Init(syncer::SyncableService::StartSyncFlare(), &prefs);
+
+  // Hash does not exist yet.
+  base::HistogramTester histogram_tester;
+  store->ReportMetrics("not_sync_username",
+                       /*custom_passphrase_sync_enabled=*/false,
+                       /*is_under_advanced_protection=*/true);
+  std::string name =
+      "PasswordManager.IsSyncPasswordHashSavedForAdvancedProtectionUser";
+  histogram_tester.ExpectBucketCount(
+      name, metrics_util::IsSyncPasswordHashSaved::NOT_SAVED, 1);
+
+  // Save password.
+  const base::string16 not_sync_password = base::ASCIIToUTF16("password");
+  const base::string16 input = base::ASCIIToUTF16("123password");
+  store->SaveGaiaPasswordHash(
+      "not_sync_username", not_sync_password,
+      metrics_util::GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
+  WaitForPasswordStore();
+
+  store->ReportMetrics("not_sync_username",
+                       /*custom_passphrase_sync_enabled=*/false,
+                       /*is_under_advanced_protection=*/true);
+  // Check that the non sync hash password was saved.
+  histogram_tester.ExpectBucketCount(
+      name, metrics_util::IsSyncPasswordHashSaved::SAVED_VIA_LIST_PREF, 1);
+  histogram_tester.ExpectBucketCount(
+      "PasswordManager.NonSyncPasswordHashChange",
+      metrics_util::GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE, 1);
   store->ShutdownOnUIThread();
 }
 

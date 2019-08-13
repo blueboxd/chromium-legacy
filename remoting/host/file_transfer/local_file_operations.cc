@@ -97,7 +97,7 @@ class LocalFileReader : public FileOperations::Reader {
   std::unique_ptr<FileChooser> file_chooser_;
   base::Optional<base::FileProxy> file_proxy_;
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<LocalFileReader> weak_ptr_factory_;
+  base::WeakPtrFactory<LocalFileReader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileReader);
 };
@@ -147,14 +147,14 @@ class LocalFileWriter : public FileOperations::Writer {
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   base::Optional<base::FileProxy> file_proxy_;
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<LocalFileWriter> weak_ptr_factory_;
+  base::WeakPtrFactory<LocalFileWriter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileWriter);
 };
 
 LocalFileReader::LocalFileReader(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner)
-    : ui_task_runner_(std::move(ui_task_runner)), weak_ptr_factory_(this) {}
+    : ui_task_runner_(std::move(ui_task_runner)) {}
 
 LocalFileReader::~LocalFileReader() = default;
 
@@ -296,7 +296,7 @@ void LocalFileReader::SetState(FileOperations::State state) {
   state_ = state;
 }
 
-LocalFileWriter::LocalFileWriter() : weak_ptr_factory_(this) {}
+LocalFileWriter::LocalFileWriter() {}
 
 LocalFileWriter::~LocalFileWriter() {
   Cancel();

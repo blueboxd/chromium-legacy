@@ -102,7 +102,7 @@ class FakeStreamSocket : public P2PStreamSocket {
   int input_pos_ = 0;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtrFactory<FakeStreamSocket> weak_factory_;
+  base::WeakPtrFactory<FakeStreamSocket> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeStreamSocket);
 };
@@ -147,7 +147,7 @@ class FakeStreamChannelFactory : public StreamChannelFactory {
   bool async_write_ = false;
 
   base::WeakPtr<FakeStreamChannelFactory> peer_factory_;
-  base::WeakPtrFactory<FakeStreamChannelFactory> weak_factory_;
+  base::WeakPtrFactory<FakeStreamChannelFactory> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeStreamChannelFactory);
 };

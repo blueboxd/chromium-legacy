@@ -220,7 +220,7 @@ bool ValidateCommandLine(const base::CommandLine& command_line) {
 
 }  // namespace
 
-HeadlessShell::HeadlessShell() : weak_factory_(this) {}
+HeadlessShell::HeadlessShell() = default;
 
 HeadlessShell::~HeadlessShell() = default;
 

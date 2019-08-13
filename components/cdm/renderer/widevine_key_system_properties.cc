@@ -99,19 +99,27 @@ EmeConfigRule WidevineKeySystemProperties::GetEncryptionSchemeConfigRule(
     return EmeConfigRule::NOT_SUPPORTED;
 }
 
+static SupportedCodecs OverrideAv1SupportIfNeeded(SupportedCodecs codecs) {
+  auto result = codecs;
+
+  // Enable AV1 if force-support is enabled.
+  if (base::FeatureList::IsEnabled(media::kWidevineAv1ForceSupportForTesting))
+    result |= media::EME_CODEC_AV1;
+
+  // Disable AV1 if the master switch kWidevineAv1 is disabled.
+  if (!base::FeatureList::IsEnabled(media::kWidevineAv1))
+    result &= ~media::EME_CODEC_AV1;
+
+  return result;
+}
+
 SupportedCodecs WidevineKeySystemProperties::GetSupportedCodecs() const {
-  // Disable AV1 if feature kWidevineAv1 is disabled
-  return base::FeatureList::IsEnabled(media::kWidevineAv1)
-             ? codecs_
-             : (codecs_ & ~media::EME_CODEC_AV1);
+  return OverrideAv1SupportIfNeeded(codecs_);
 }
 
 SupportedCodecs WidevineKeySystemProperties::GetSupportedHwSecureCodecs()
     const {
-  // Disable AV1 if feature kWidevineAv1 is disabled
-  return base::FeatureList::IsEnabled(media::kWidevineAv1)
-             ? hw_secure_codecs_
-             : (hw_secure_codecs_ & ~media::EME_CODEC_AV1);
+  return OverrideAv1SupportIfNeeded(hw_secure_codecs_);
 }
 
 EmeConfigRule WidevineKeySystemProperties::GetRobustnessConfigRule(

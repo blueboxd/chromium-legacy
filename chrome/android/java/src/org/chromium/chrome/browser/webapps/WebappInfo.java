@@ -5,9 +5,6 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.text.TextUtils;
@@ -17,12 +14,9 @@ import org.chromium.base.Log;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
-import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
-
-import androidx.browser.customtabs.CustomTabsSessionToken;
 
 /**
  * Stores info about a web app.
@@ -111,33 +105,6 @@ public class WebappInfo {
     private static String shortNameFromIntent(Intent intent) {
         String shortName = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_SHORT_NAME);
         return shortName == null ? titleFromIntent(intent) : shortName;
-    }
-
-    public static WebappInfo create(Intent intent, CustomTabsSessionToken session) {
-        CustomTabsConnection connection = CustomTabsConnection.getInstance();
-        String url = intent.getDataString();
-
-        PackageManager pm = ContextUtils.getApplicationContext().getPackageManager();
-        String packageName = connection.getClientPackageNameForSession(session);
-        intent.putExtra(ShortcutHelper.EXTRA_ID, packageName);
-        intent.putExtra(ShortcutHelper.EXTRA_URL, url);
-        // TODO(yusufo): This should be based on scope defined by Android Manifest intent filters.
-        intent.putExtra(ShortcutHelper.EXTRA_SCOPE, url);
-        intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.TRUSTED_WEB_ACTIVITY);
-        intent.setClassName(ContextUtils.getApplicationContext(), WebappActivity.class.getName());
-        ApplicationInfo info = null;
-        try {
-            info = pm.getApplicationInfo(packageName, 0);
-            if (info != null) {
-                String label = pm.getApplicationLabel(info).toString();
-                intent.putExtra(ShortcutHelper.EXTRA_NAME, label);
-                intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, label);
-            }
-        } catch (NameNotFoundException e) {
-            // Failing gracefully below. This is a best effort.
-        }
-
-        return create(intent);
     }
 
     /**

@@ -242,27 +242,26 @@ class TabDragController::SourceTabStripEmptinessTracker
  public:
   explicit SourceTabStripEmptinessTracker(TabStripModel* tabstrip,
                                           TabDragController* parent)
-      : tab_strip_(tabstrip), parent_(parent), observer_(this) {
-    observer_.Add(tab_strip_);
+      : tab_strip_(tabstrip), parent_(parent) {
+    tab_strip_->AddObserver(this);
   }
 
  private:
   void TabStripEmpty() override {
-    observer_.Remove(tab_strip_);
+    tab_strip_->RemoveObserver(this);
     parent_->OnSourceTabStripEmpty();
   }
 
   TabStripModel* const tab_strip_;
   TabDragController* const parent_;
-  ScopedObserver<TabStripModel, TabStripModelObserver> observer_;
 };
 
 class TabDragController::DraggedTabsClosedTracker
     : public TabStripModelObserver {
  public:
   DraggedTabsClosedTracker(TabStripModel* tabstrip, TabDragController* parent)
-      : parent_(parent), observer_(this) {
-    observer_.Add(tabstrip);
+      : parent_(parent) {
+    tabstrip->AddObserver(this);
   }
 
   void OnTabStripModelChanged(
@@ -277,7 +276,6 @@ class TabDragController::DraggedTabsClosedTracker
 
  private:
   TabDragController* const parent_;
-  ScopedObserver<TabStripModel, TabStripModelObserver> observer_;
 };
 
 TabDragController::TabDragData::TabDragData()

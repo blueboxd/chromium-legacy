@@ -40,14 +40,12 @@ UserNetworkConfigurationUpdater::~UserNetworkConfigurationUpdater() {
 std::unique_ptr<UserNetworkConfigurationUpdater>
 UserNetworkConfigurationUpdater::CreateForUserPolicy(
     Profile* profile,
-    bool allow_trusted_certs_from_policy,
     const user_manager::User& user,
     PolicyService* policy_service,
     chromeos::ManagedNetworkConfigurationHandler* network_config_handler) {
   std::unique_ptr<UserNetworkConfigurationUpdater> updater(
-      new UserNetworkConfigurationUpdater(
-          profile, allow_trusted_certs_from_policy, user, policy_service,
-          network_config_handler));
+      new UserNetworkConfigurationUpdater(profile, user, policy_service,
+                                          network_config_handler));
   updater->Init();
   return updater;
 }
@@ -67,13 +65,11 @@ bool UserNetworkConfigurationUpdater::PolicyHasWebTrustedAuthorityCertificate(
 
 UserNetworkConfigurationUpdater::UserNetworkConfigurationUpdater(
     Profile* profile,
-    bool allow_trusted_certs_from_policy,
     const user_manager::User& user,
     PolicyService* policy_service,
     chromeos::ManagedNetworkConfigurationHandler* network_config_handler)
     : NetworkConfigurationUpdater(onc::ONC_SOURCE_USER_POLICY,
                                   key::kOpenNetworkConfiguration,
-                                  allow_trusted_certs_from_policy,
                                   policy_service,
                                   network_config_handler),
       user_(&user),

@@ -254,7 +254,7 @@ class GCMDriver {
 
   // Removes the account mapping information reated to |account_id| from
   // persistent store.
-  virtual void RemoveAccountMapping(const std::string& account_id) = 0;
+  virtual void RemoveAccountMapping(const CoreAccountId& account_id) = 0;
 
   // Getter and setter of last token fetch time.
   virtual base::Time GetLastTokenFetchTime() = 0;

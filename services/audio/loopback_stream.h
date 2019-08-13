@@ -251,7 +251,7 @@ class LoopbackStream : public media::mojom::AudioInputStream,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<LoopbackStream> weak_factory_;
+  base::WeakPtrFactory<LoopbackStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoopbackStream);
 };

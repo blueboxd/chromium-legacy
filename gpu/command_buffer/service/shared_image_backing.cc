@@ -114,6 +114,17 @@ bool SharedImageBacking::HasAnyRefs() const {
   return !refs_.empty();
 }
 
+void SharedImageBacking::OnReadSucceeded() {
+  if (scoped_write_uma_) {
+    scoped_write_uma_->SetConsumed();
+    scoped_write_uma_.reset();
+  }
+}
+
+void SharedImageBacking::OnWriteSucceeded() {
+  scoped_write_uma_.emplace();
+}
+
 size_t SharedImageBacking::EstimatedSizeForMemTracking() const {
   return estimated_size_;
 }

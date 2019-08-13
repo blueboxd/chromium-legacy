@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -59,6 +60,11 @@ std::string GetCookieFromJS(RenderFrameHost* frame) {
 void SetCookieDirect(WebContentsImpl* tab,
                      const GURL& url,
                      const std::string& cookie_line) {
+  net::CookieOptions options;
+  // Allow setting SameSite cookies.
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+
   auto cookie_obj = net::CanonicalCookie::Create(
       url, cookie_line, base::Time::Now(), base::nullopt /* server_time */);
 
@@ -66,7 +72,7 @@ void SetCookieDirect(WebContentsImpl* tab,
   BrowserContext::GetDefaultStoragePartition(tab->GetBrowserContext())
       ->GetCookieManagerForBrowserProcess()
       ->SetCanonicalCookie(
-          *cookie_obj, url.scheme(), net::CookieOptions(),
+          *cookie_obj, url.scheme(), options,
           base::BindLambdaForTesting(
               [&](net::CanonicalCookie::CookieInclusionStatus status) {
                 run_loop.Quit();
@@ -75,11 +81,15 @@ void SetCookieDirect(WebContentsImpl* tab,
 }
 
 std::string GetCookiesDirect(WebContentsImpl* tab, const GURL& url) {
+  net::CookieOptions options;
+  // Allow setting SameSite cookies.
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   net::CookieList result;
   base::RunLoop run_loop;
   BrowserContext::GetDefaultStoragePartition(tab->GetBrowserContext())
       ->GetCookieManagerForBrowserProcess()
-      ->GetCookieList(url, net::CookieOptions(),
+      ->GetCookieList(url, options,
                       base::BindLambdaForTesting(
                           [&](const net::CookieList& cookie_list,
                               const net::CookieStatusList& excluded_cookies) {
@@ -92,6 +102,9 @@ std::string GetCookiesDirect(WebContentsImpl* tab, const GURL& url) {
 
 }  // namespace
 
+// TODO(crbug.com/965982): document.cookie is now handled by the
+// RestrictedCookieManager, not the RenderFrameMessageFilter, so these cookie
+// tests should be moved accordingly.
 class RenderFrameMessageFilterBrowserTest : public ContentBrowserTest {
  protected:
   void SetUp() override {
@@ -122,8 +135,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, Cookies) {
   GURL http_url = embedded_test_server()->GetURL("/frame_with_load_event.html");
 
   Shell* shell2 = CreateBrowser();
-  NavigateToURL(shell(), http_url);
-  NavigateToURL(shell2, https_url);
+  EXPECT_TRUE(NavigateToURL(shell(), http_url));
+  EXPECT_TRUE(NavigateToURL(shell2, https_url));
 
   WebContentsImpl* web_contents_https =
       static_cast<WebContentsImpl*>(shell2->web_contents());
@@ -194,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, CookiePriority) {
   for (auto test_case : cases) {
     GURL url = embedded_test_server()->GetURL("/set_document_cookie.html?" +
                                               test_case.param);
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     std::vector<net::CanonicalCookie> cookies =
         GetCanonicalCookies(shell()->web_contents()->GetBrowserContext(), url);
 
@@ -208,25 +221,49 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, CookiePriority) {
 // SameSite cookies (that aren't marked as http-only) should be available to
 // JavaScript.
 IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, SameSiteCookies) {
-  SetupCrossSiteRedirector(embedded_test_server());
-  ASSERT_TRUE(embedded_test_server()->Start());
+  // Must use HTTPS because SameSite=None cookies must be Secure.
+  net::EmbeddedTestServer a_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  a_server.SetSSLConfig(net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
+  a_server.AddDefaultHandlers(GetTestDataFilePath());
+  SetupCrossSiteRedirector(&a_server);
+  ASSERT_TRUE(a_server.Start());
+  net::EmbeddedTestServer b_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  b_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  b_server.AddDefaultHandlers(GetTestDataFilePath());
+  SetupCrossSiteRedirector(&b_server);
+  ASSERT_TRUE(b_server.Start());
 
-  // The server sets five cookies on 'a.com' and on 'b.com', then loads a
+  // The server sets eight cookies on 'a.com' and on 'b.com', then loads a
   // page that frames both 'a.com' and 'b.com' under 'a.com'.
   std::string cookies_to_set =
-      "/set-cookie?normal=1"
+      "/set-cookie?none=1;SameSite=None;Secure"  // SameSite=None must be
+                                                 // Secure.
+      "&none-insecure=1;SameSite=None"
       "&strict=1;SameSite=Strict"
+      "&unspecified=1"  // unspecified SameSite should be treated as Lax.
       "&lax=1;SameSite=Lax"
+      "&none-http=1;SameSite=None;Secure;httponly"
       "&strict-http=1;SameSite=Strict;httponly"
+      "&unspecified-http=1;httponly"
       "&lax-http=1;SameSite=Lax;httponly";
 
-  GURL url = embedded_test_server()->GetURL("a.com", cookies_to_set);
+  std::string a_hostname = "localhost";
+  std::string b_hostname = "127.0.0.1";
+  GURL url = a_server.GetURL(a_hostname, cookies_to_set);
   NavigateToURL(shell(), url);
-  url = embedded_test_server()->GetURL("b.com", cookies_to_set);
+  url = b_server.GetURL(b_hostname, cookies_to_set);
   NavigateToURL(shell(), url);
-  url = embedded_test_server()->GetURL(
-      "a.com", "/cross_site_iframe_factory.html?a(a(),b())");
-  NavigateToURL(shell(), url);
+  // TODO(crbug.com/984685): Make it less painful to set up https cross-site
+  // iframe tests.
+  std::string a_hostname_and_port =
+      a_hostname + ":" + base::NumberToString(a_server.port());
+  std::string b_hostname_and_port =
+      b_hostname + ":" + base::NumberToString(b_server.port());
+  url = a_server.GetURL(a_hostname, "/cross_site_iframe_factory.html?" +
+                                        a_hostname_and_port + "(" +
+                                        a_hostname_and_port + "()," +
+                                        b_hostname_and_port + "())");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
@@ -236,16 +273,19 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, SameSiteCookies) {
   RenderFrameHost* b_iframe =
       web_contents->GetFrameTree()->root()->child_at(1)->current_frame_host();
 
-  // The top-level frame should get both kinds of same-site cookies.
-  EXPECT_EQ("normal=1; strict=1; lax=1", GetCookieFromJS(main_frame));
+  // The top-level frame should get all same-site cookies.
+  EXPECT_EQ("none=1; strict=1; unspecified=1; lax=1",
+            GetCookieFromJS(main_frame));
 
   // Same-site cookies will be delievered to the 'a.com' frame, as it is same-
   // site with its ancestors.
-  EXPECT_EQ("normal=1; strict=1; lax=1", GetCookieFromJS(a_iframe));
+  EXPECT_EQ("none=1; strict=1; unspecified=1; lax=1",
+            GetCookieFromJS(a_iframe));
 
   // Same-site cookies should not be delievered to the 'b.com' frame, as it
-  // isn't same-site with its ancestors.
-  EXPECT_EQ("normal=1", GetCookieFromJS(b_iframe));
+  // isn't same-site with its ancestors. The SameSite=None but insecure cookie
+  // is rejected.
+  EXPECT_EQ("none=1", GetCookieFromJS(b_iframe));
 }
 
 class RestrictedCookieManagerInterceptor
@@ -340,8 +380,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest,
 
   SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("/frame_with_load_event.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/frame_with_load_event.html")));
 
   WebContentsImpl* tab = static_cast<WebContentsImpl*>(shell()->web_contents());
 

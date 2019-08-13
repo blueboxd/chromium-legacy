@@ -168,6 +168,7 @@ class WrappedSkImage : public SharedImageBacking {
           kTopLeft_GrSurfaceOrigin, /*sampleCnt=*/0, GetSkColorType(),
           color_space().ToSkColorSpace(), /*surfaceProps=*/nullptr);
       surface->writePixels(bitmap, /*dstX=*/0, /*dstY=*/0);
+      OnWriteSucceeded();
     }
 
     promise_texture_ = SkPromiseImageTexture::Make(backend_texture_);

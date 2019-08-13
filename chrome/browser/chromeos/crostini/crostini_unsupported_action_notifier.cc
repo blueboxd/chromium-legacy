@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/toast_manager.h"
 #include "base/logging.h"
@@ -29,12 +30,14 @@ CrostiniUnsupportedActionNotifier::CrostiniUnsupportedActionNotifier(
   delegate_->AddTabletModeObserver(this);
   delegate_->AddFocusObserver(this);
   delegate_->AddInputMethodObserver(this);
+  delegate_->AddKeyboardControllerObserver(this);
 }
 
 CrostiniUnsupportedActionNotifier::~CrostiniUnsupportedActionNotifier() {
   delegate_->RemoveTabletModeObserver(this);
   delegate_->RemoveFocusObserver(this);
   delegate_->RemoveInputMethodObserver(this);
+  delegate_->RemoveKeyboardControllerObserver(this);
 }
 
 // Testing on using Debian/stretch on Eve shows Crostini supports all tested xkb
@@ -62,12 +65,20 @@ void CrostiniUnsupportedActionNotifier::InputMethodChanged(
   ShowIMEUnsupportedNotifictionIfNeeded();
 }
 
+void CrostiniUnsupportedActionNotifier::OnKeyboardVisibilityChanged(
+    bool visible) {
+  if (visible) {
+    ShowVirtualKeyboardUnsupportedNotifictionIfNeeded();
+  }
+}
+
 void CrostiniUnsupportedActionNotifier::
     ShowVirtualKeyboardUnsupportedNotifictionIfNeeded() {
   if (virtual_keyboard_unsupported_message_shown_) {
     return;
   }
-  if (delegate_->IsInTabletMode() && delegate_->IsFocusedWindowCrostini()) {
+  if ((delegate_->IsInTabletMode() || delegate_->IsVirtualKeyboardVisible()) &&
+      delegate_->IsFocusedWindowCrostini()) {
     ash::ToastData data = {
         /*id=*/"VKUnsupportedInCrostini",
         /*text=*/
@@ -124,6 +135,10 @@ CrostiniUnsupportedActionNotifier::Delegate::GetCurrentInputMethod() {
       ->GetCurrentInputMethod();
 }
 
+bool CrostiniUnsupportedActionNotifier::Delegate::IsVirtualKeyboardVisible() {
+  return ash::KeyboardController::Get()->IsKeyboardVisible();
+}
+
 void CrostiniUnsupportedActionNotifier::Delegate::ShowToast(
     const ash::ToastData& toast_data) {
   ash::ToastManager::Get()->Show(toast_data);
@@ -173,6 +188,16 @@ void CrostiniUnsupportedActionNotifier::Delegate::AddInputMethodObserver(
 void CrostiniUnsupportedActionNotifier::Delegate::RemoveInputMethodObserver(
     chromeos::input_method::InputMethodManager::Observer* observer) {
   chromeos::input_method::InputMethodManager::Get()->RemoveObserver(observer);
+}
+
+void CrostiniUnsupportedActionNotifier::Delegate::AddKeyboardControllerObserver(
+    ash::KeyboardControllerObserver* observer) {
+  ash::KeyboardController::Get()->AddObserver(observer);
+}
+void CrostiniUnsupportedActionNotifier::Delegate::
+    RemoveKeyboardControllerObserver(
+        ash::KeyboardControllerObserver* observer) {
+  ash::KeyboardController::Get()->RemoveObserver(observer);
 }
 
 }  // namespace crostini

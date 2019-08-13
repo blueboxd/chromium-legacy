@@ -211,6 +211,7 @@ bool StructTraits<
       data.should_also_use_factory_bound_origin_for_cors();
   out->is_signed_exchange_prefetch_cache_enabled =
       data.is_signed_exchange_prefetch_cache_enabled();
+  out->obey_origin_policy = data.obey_origin_policy();
   return true;
 }
 

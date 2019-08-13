@@ -1640,6 +1640,9 @@ void RenderFrameHostImpl::RenderProcessExited(
   // process's channel.
   remote_associated_interfaces_.reset();
 
+  // Ensure that the AssociatedRemote<blink::mojom::Frame> works after a crash.
+  frame_remote_.reset();
+
   // Any termination disablers in content loaded by the new process will
   // be sent again.
   sudden_termination_disabler_types_enabled_ = 0;
@@ -2921,7 +2924,8 @@ void RenderFrameHostImpl::RequestTextSurroundingSelection(
     TextSurroundingSelectionCallback callback,
     int max_length) {
   DCHECK(!callback.is_null());
-  frame_->GetTextSurroundingSelection(max_length, std::move(callback));
+  GetAssociatedFrameRemote()->GetTextSurroundingSelection(max_length,
+                                                          std::move(callback));
 }
 
 void RenderFrameHostImpl::AllowBindings(int bindings_flags) {
@@ -5547,6 +5551,13 @@ RenderFrameHostImpl::GetFindInPage() {
   return find_in_page_;
 }
 
+const mojo::AssociatedRemote<blink::mojom::Frame>&
+RenderFrameHostImpl::GetAssociatedFrameRemote() {
+  if (!frame_remote_)
+    GetRemoteAssociatedInterfaces()->GetInterface(&frame_remote_);
+  return frame_remote_;
+}
+
 void RenderFrameHostImpl::ResetLoadingState() {
   if (is_loading()) {
     // When pending deletion, just set the loading state to not loading.
@@ -5596,10 +5607,10 @@ void RenderFrameHostImpl::CancelBlockedRequestsForFrame() {
 }
 
 void RenderFrameHostImpl::BindDevToolsAgent(
-    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
-    blink::mojom::DevToolsAgentAssociatedRequest request) {
+    mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host,
+    mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver) {
   GetNavigationControl()->BindDevToolsAgent(std::move(host),
-                                            std::move(request));
+                                            std::move(receiver));
 }
 
 bool RenderFrameHostImpl::IsSameSiteInstance(
@@ -6693,6 +6704,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   navigation_request->set_has_user_gesture(validated_params->gesture ==
                                            NavigationGestureUser);
 
+  last_http_status_code_ = validated_params->http_status_code;
   UpdateSiteURL(validated_params->url, validated_params->url_is_unreachable);
 
   // Set the state whether this navigation is to an MHTML document, since there

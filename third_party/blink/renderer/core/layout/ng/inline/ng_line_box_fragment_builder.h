@@ -91,6 +91,10 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     // The index of |box_data_list_|, used in |PrepareForReorder()| and
     // |UpdateAfterReorder()| to track children of boxes across BiDi reorder.
     unsigned box_data_index = 0;
+    // For an inline box, shows the number of descendant |Child|ren, including
+    // empty ones. Includes itself, so 1 means no descendants. 0 if not an
+    // inline box. Available only after |CreateBoxFragments()|.
+    unsigned children_count = 0;
     UBiDiLevel bidi_level = 0xff;
     // The current text direction for OOF positioned items.
     TextDirection container_direction = TextDirection::kLtr;

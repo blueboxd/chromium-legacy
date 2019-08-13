@@ -423,7 +423,7 @@ V8EmbedderGraphBuilder::~V8EmbedderGraphBuilder() {
 void V8EmbedderGraphBuilder::BuildEmbedderGraph() {
   isolate_->VisitHandlesWithClassIds(this);
   v8::EmbedderHeapTracer* const tracer = static_cast<v8::EmbedderHeapTracer*>(
-      Visitor::State()->unified_heap_controller());
+      ThreadState::Current()->unified_heap_controller());
   tracer->IterateTracedGlobalHandles(this);
 // At this point we collected ScriptWrappables in three groups:
 // attached, detached, and unknown.
@@ -638,7 +638,7 @@ void V8EmbedderGraphBuilder::VisitBlinkRoots() {
         std::unique_ptr<Graph::Node>(new EmbedderRootNode("Blink roots"))));
     EnsureRootState(root);
     ParentScope parent(this, root);
-    Visitor::State()->GetPersistentRegion()->TracePersistentNodes(this);
+    ThreadState::Current()->GetPersistentRegion()->TracePersistentNodes(this);
   }
   {
     EmbedderNode* root =
@@ -647,8 +647,7 @@ void V8EmbedderGraphBuilder::VisitBlinkRoots() {
     EnsureRootState(root);
     ParentScope parent(this, root);
     MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
-    Visitor::State()->GetCrossThreadPersistentRegion()->TracePersistentNodes(
-        this);
+    ProcessHeap::GetCrossThreadPersistentRegion().TracePersistentNodes(this);
   }
 }
 

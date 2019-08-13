@@ -3413,24 +3413,21 @@ void GLRenderer::ScheduleCALayers() {
 void GLRenderer::ScheduleDCLayers() {
   for (DCLayerOverlay& dc_layer_overlay :
        current_frame()->dc_layer_overlay_list) {
-    ResourceId resource_ids[] = {dc_layer_overlay.y_resource_id,
-                                 dc_layer_overlay.uv_resource_id};
-    GLuint texture_ids[2] = {};
-    size_t i = 0;
-    for (ResourceId resource_id : resource_ids) {
-      DCHECK(resource_id);
+    DCHECK_EQ(DCLayerOverlay::kNumResources, 2u);
+    GLuint texture_ids[DCLayerOverlay::kNumResources] = {};
+    for (size_t i = 0; i < DCLayerOverlay::kNumResources; i++) {
+      ResourceId resource_id = dc_layer_overlay.resources[i];
+      if (resource_id == kInvalidResourceId)
+        break;
       pending_overlay_resources_.push_back(
           std::make_unique<DisplayResourceProvider::ScopedReadLockGL>(
               resource_provider_, resource_id));
-      texture_ids[i++] = pending_overlay_resources_.back()->texture_id();
+      texture_ids[i] = pending_overlay_resources_.back()->texture_id();
     }
-    GLuint y_texture_id = texture_ids[0];
-    GLuint uv_texture_id = texture_ids[1];
-    DCHECK(y_texture_id && uv_texture_id);
-
+    DCHECK(texture_ids[0]);
     // TODO(sunnyps): Set color space in renderer like we do for tiles.
     gl_->SetColorSpaceMetadataCHROMIUM(
-        y_texture_id,
+        texture_ids[0],
         reinterpret_cast<GLColorSpace>(&dc_layer_overlay.color_space));
 
     int z_order = dc_layer_overlay.z_order;
@@ -3444,7 +3441,7 @@ void GLRenderer::ScheduleDCLayers() {
         static_cast<unsigned>(dc_layer_overlay.protected_video_type);
 
     gl_->ScheduleDCLayerCHROMIUM(
-        y_texture_id, uv_texture_id, z_order, content_rect.x(),
+        texture_ids[0], texture_ids[1], z_order, content_rect.x(),
         content_rect.y(), content_rect.width(), content_rect.height(),
         quad_rect.x(), quad_rect.y(), quad_rect.width(), quad_rect.height(),
         transform.get(0, 0), transform.get(0, 1), transform.get(1, 0),

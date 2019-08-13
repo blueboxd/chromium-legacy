@@ -60,19 +60,6 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
   extensions::LaunchType launch_type =
       web_app_info.open_as_window ? LAUNCH_TYPE_WINDOW : LAUNCH_TYPE_REGULAR;
 
-  // Override extensions::LaunchType with force web_app::LaunchContainer:
-  switch (options.force_launch_container) {
-    case web_app::LaunchContainer::kDefault:
-      // force_launch_container is not defined, do not override.
-      break;
-    case web_app::LaunchContainer::kTab:
-      launch_type = LAUNCH_TYPE_REGULAR;
-      break;
-    case web_app::LaunchContainer::kWindow:
-      launch_type = LAUNCH_TYPE_WINDOW;
-      break;
-  }
-
   crx_installer->set_installer_callback(base::BindOnce(
       &BookmarkAppInstallFinalizer::OnExtensionInstalled,
       weak_ptr_factory_.GetWeakPtr(), web_app_info.app_url, launch_type,

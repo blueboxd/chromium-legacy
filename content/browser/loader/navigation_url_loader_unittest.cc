@@ -75,10 +75,15 @@ class NavigationURLLoaderTest : public testing::Test {
     std::unique_ptr<NavigationRequestInfo> request_info(
         new NavigationRequestInfo(
             std::move(common_params), std::move(begin_params), url,
-            net::NetworkIsolationKey(origin, origin), true, false, false, -1,
-            false, false, false, false, nullptr,
-            base::UnguessableToken::Create(),
-            base::UnguessableToken::Create()));
+            net::NetworkIsolationKey(origin, origin), true /* is_main_frame */,
+            false /* parent_is_main_frame */, false /* are_ancestors_secure */,
+            -1 /* frame_tree_node_id */, false /* is_for_guests_only */,
+            false /* report_raw_headers */, false /* is_prerendering */,
+            false /* upgrade_if_insecure */,
+            nullptr /* blob_url_loader_factory */,
+            base::UnguessableToken::Create() /* devtools_navigation_token */,
+            base::UnguessableToken::Create() /* devtools_frame_token */,
+            false /* obey_origin_policy */));
     return NavigationURLLoader::Create(
         browser_context_.get(),
         BrowserContext::GetDefaultStoragePartition(browser_context_.get()),

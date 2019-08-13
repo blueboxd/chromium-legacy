@@ -31,7 +31,7 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
+#include "chrome/browser/ui/views/profiles/profile_menu_view.h"
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_paths.h"
@@ -111,11 +111,11 @@ Profile* SetupProfilesForLock(Profile* signed_in) {
 
 }  // namespace
 
-class ProfileChooserViewExtensionsTest
+class ProfileMenuViewExtensionsTest
     : public SupportsTestDialog<extensions::ExtensionBrowserTest> {
  public:
-  ProfileChooserViewExtensionsTest() {}
-  ~ProfileChooserViewExtensionsTest() override {}
+  ProfileMenuViewExtensionsTest() {}
+  ~ProfileMenuViewExtensionsTest() override {}
 
   // SupportsTestUi:
   void ShowUi(const std::string& name) override {
@@ -161,19 +161,19 @@ class ProfileChooserViewExtensionsTest
       EXPECT_TRUE(supervised);
       target_browser = chrome::FindAnyBrowser(supervised, true);
     }
-    OpenProfileChooserView(target_browser);
+    OpenProfileMenuView(target_browser);
   }
 
  protected:
-  void OpenProfileChooserView(Browser* browser) {
-    ProfileChooserView::close_on_deactivate_for_testing_ = false;
-    OpenProfileChooserViews(browser);
+  void OpenProfileMenuView(Browser* browser) {
+    ProfileMenuView::close_on_deactivate_for_testing_ = false;
+    OpenProfileMenuViews(browser);
 
     base::RunLoop().RunUntilIdle();
-    ASSERT_TRUE(ProfileChooserView::IsShowing());
+    ASSERT_TRUE(ProfileMenuView::IsShowing());
   }
 
-  void OpenProfileChooserViews(Browser* browser) {
+  void OpenProfileMenuViews(Browser* browser) {
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
     views::View* button = browser_view->toolbar()->GetAvatarToolbarButton();
     DCHECK(button);
@@ -183,11 +183,11 @@ class ProfileChooserViewExtensionsTest
     button->OnMousePressed(e);
   }
 
-  AvatarMenu* GetProfileChooserViewAvatarMenu() {
+  AvatarMenu* GetProfileMenuViewAvatarMenu() {
     return current_profile_bubble()->avatar_menu_.get();
   }
 
-  void ClickProfileChooserViewLockButton() {
+  void ClickProfileMenuViewLockButton() {
     ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                      ui::EventTimeForNow(), 0, 0);
     current_profile_bubble()->ButtonPressed(
@@ -208,9 +208,9 @@ class ProfileChooserViewExtensionsTest
     return registry;
   }
 
-  ProfileChooserView* current_profile_bubble() {
-    return static_cast<ProfileChooserView*>(
-        ProfileChooserView::GetBubbleForTesting());
+  ProfileMenuView* current_profile_bubble() {
+    return static_cast<ProfileMenuView*>(
+        ProfileMenuView::GetBubbleForTesting());
   }
 
   views::Button* signin_current_profile_button() {
@@ -222,20 +222,20 @@ class ProfileChooserViewExtensionsTest
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ProfileChooserViewExtensionsTest);
+  DISALLOW_COPY_AND_ASSIGN(ProfileMenuViewExtensionsTest);
 };
 
 // TODO(crbug.com/932818): Remove this class after
 // |kAutofillEnableToolbarStatusChip| is cleaned up. Otherwise we need it
 // because the toolbar is init-ed before each test is set up. Thus need to
 // enable the feature in the general browsertest SetUp().
-class ProfileChooserViewExtensionsParamTest
-    : public ProfileChooserViewExtensionsTest,
+class ProfileMenuViewExtensionsParamTest
+    : public ProfileMenuViewExtensionsTest,
       public ::testing::WithParamInterface<bool> {
  protected:
-  ProfileChooserViewExtensionsParamTest()
-      : ProfileChooserViewExtensionsTest() {}
-  ~ProfileChooserViewExtensionsParamTest() override {}
+  ProfileMenuViewExtensionsParamTest()
+      : ProfileMenuViewExtensionsTest() {}
+  ~ProfileMenuViewExtensionsParamTest() override {}
 
   void SetUp() override {
     if (GetParam()) {
@@ -243,7 +243,7 @@ class ProfileChooserViewExtensionsParamTest
           autofill::features::kAutofillEnableToolbarStatusChip);
     }
 
-    ProfileChooserViewExtensionsTest::SetUp();
+    ProfileMenuViewExtensionsTest::SetUp();
   }
 
  private:
@@ -256,16 +256,16 @@ class ProfileChooserViewExtensionsParamTest
 #else
 #define MAYBE_SigninButtonHasFocus SigninButtonHasFocus
 #endif
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest,
                        MAYBE_SigninButtonHasFocus) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
-  ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
+  ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));
 
   EXPECT_TRUE(signin_current_profile_button()->HasFocus());
 }
 
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, ClickSigninButton) {
-  ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest, ClickSigninButton) {
+  ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));
 
   views::ButtonListener* bubble = current_profile_bubble();
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
@@ -276,10 +276,10 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, ClickSigninButton) {
 }
 
 // Make sure nothing bad happens when the browser theme changes while the
-// ProfileChooserView is visible. Regression test for crbug.com/737470
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, ThemeChanged) {
+// ProfileMenuView is visible. Regression test for crbug.com/737470
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest, ThemeChanged) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
-  ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
+  ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));
 
   // The theme change destroys the avatar button. Make sure the profile chooser
   // widget doesn't try to reference a stale observer during its shutdown.
@@ -290,23 +290,23 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, ThemeChanged) {
           ThemeServiceFactory::GetForProfile(profile())));
   theme_change_observer.Wait();
 
-  EXPECT_TRUE(ProfileChooserView::IsShowing());
+  EXPECT_TRUE(ProfileMenuView::IsShowing());
   current_profile_bubble()->GetWidget()->Close();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(ProfileChooserView::IsShowing());
+  EXPECT_FALSE(ProfileMenuView::IsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, ViewProfileUMA) {
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest, ViewProfileUMA) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
 
   base::HistogramTester histograms;
   Profile* profile = browser()->profile();
   profile->GetPrefs()->SetInteger(prefs::kProfileAvatarTutorialShown, 0);
 
-  ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
+  ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));
 }
 
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, LockProfile) {
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest, LockProfile) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
 
   // Set up the message loop for the user manager.
@@ -317,11 +317,11 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, LockProfile) {
   SetupProfilesForLock(browser()->profile());
   EXPECT_EQ(1U, BrowserList::GetInstance()->size());
 
-  ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
-  AvatarMenu* menu = GetProfileChooserViewAvatarMenu();
+  ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));
+  AvatarMenu* menu = GetProfileMenuViewAvatarMenu();
   EXPECT_FALSE(menu->GetItemAt(menu->GetActiveProfileIndex()).signin_required);
 
-  ClickProfileChooserViewLockButton();
+  ClickProfileMenuViewLockButton();
   EXPECT_TRUE(menu->GetItemAt(menu->GetActiveProfileIndex()).signin_required);
 
   if (!BrowserList::GetInstance()->empty())
@@ -335,7 +335,7 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, LockProfile) {
   UserManager::Hide();
 }
 
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest,
                        LockProfileBlockExtensions) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
   // Make sure we have at least one enabled extension.
@@ -349,8 +349,8 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
 
   SetupProfilesForLock(browser()->profile());
 
-  ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
-  ClickProfileChooserViewLockButton();
+  ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));
+  ClickProfileMenuViewLockButton();
 
   if (!BrowserList::GetInstance()->empty())
     ui_test_utils::WaitForBrowserToClose(browser());
@@ -366,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
   UserManager::Hide();
 }
 
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest,
                        LockProfileNoBlockOtherProfileExtensions) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
   // Make sure we have at least one enabled extension.
@@ -387,8 +387,8 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
   Browser* browser_to_lock = CreateBrowser(signed_in);
   EXPECT_EQ(2U, BrowserList::GetInstance()->size());
 
-  ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser_to_lock));
-  ClickProfileChooserViewLockButton();
+  ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser_to_lock));
+  ClickProfileMenuViewLockButton();
 
   if (1U != BrowserList::GetInstance()->size())
     ui_test_utils::WaitForBrowserToClose(browser_to_lock);
@@ -407,23 +407,23 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
 
 // Profile chooser view should close when a tab is added.
 // Regression test for http://crbug.com/792845
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest,
                        CloseBubbleOnTadAdded) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
   ASSERT_EQ(0, tab_strip->active_index());
 
-  ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
+  ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));
   AddTabAtIndex(1, GURL("https://test_url.com"),
                 ui::PageTransition::PAGE_TRANSITION_LINK);
   EXPECT_EQ(1, tab_strip->active_index());
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(ProfileChooserView::IsShowing());
+  EXPECT_FALSE(ProfileMenuView::IsShowing());
 }
 
 // Profile chooser view should close when active tab is changed.
 // Regression test for http://crbug.com/792845
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest,
                        CloseBubbleOnActiveTabChanged) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   AddTabAtIndex(1, GURL("https://test_url.com"),
@@ -431,15 +431,15 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
   ASSERT_EQ(2, tab_strip->count());
   ASSERT_EQ(1, tab_strip->active_index());
 
-  ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
+  ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));
   tab_strip->ActivateTabAt(0);
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(ProfileChooserView::IsShowing());
+  EXPECT_FALSE(ProfileMenuView::IsShowing());
 }
 
 // Profile chooser view should close when active tab is closed.
 // Regression test for http://crbug.com/792845
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest,
                        CloseBubbleOnActiveTabClosed) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   AddTabAtIndex(1, GURL("https://test_url.com"),
@@ -447,52 +447,52 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
   ASSERT_EQ(2, tab_strip->count());
   ASSERT_EQ(1, tab_strip->active_index());
 
-  ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
+  ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));
   tab_strip->CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(ProfileChooserView::IsShowing());
+  EXPECT_FALSE(ProfileMenuView::IsShowing());
 }
 
 // Profile chooser view should close when the last tab is closed.
 // Regression test for http://crbug.com/792845
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest,
                        CloseBubbleOnLastTabClosed) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
   ASSERT_EQ(0, tab_strip->active_index());
 
-  ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
+  ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));
   tab_strip->CloseWebContentsAt(0, TabStripModel::CLOSE_NONE);
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(ProfileChooserView::IsShowing());
+  EXPECT_FALSE(ProfileMenuView::IsShowing());
 }
 
 // Shows a non-signed in profile with no others.
-IN_PROC_BROWSER_TEST_P(ProfileChooserViewExtensionsParamTest,
+IN_PROC_BROWSER_TEST_P(ProfileMenuViewExtensionsParamTest,
                        InvokeUi_default) {
   ShowAndVerifyUi();
 }
 
 // Shows a signed in profile with no others.
-IN_PROC_BROWSER_TEST_P(ProfileChooserViewExtensionsParamTest,
+IN_PROC_BROWSER_TEST_P(ProfileMenuViewExtensionsParamTest,
                        InvokeUi_SignedIn) {
   ShowAndVerifyUi();
 }
 
-// Shows the |ProfileChooserView| with three different profiles.
-IN_PROC_BROWSER_TEST_P(ProfileChooserViewExtensionsParamTest,
+// Shows the |ProfileMenuView| with three different profiles.
+IN_PROC_BROWSER_TEST_P(ProfileMenuViewExtensionsParamTest,
                        InvokeUi_MultiProfile) {
   ShowAndVerifyUi();
 }
 
-// Shows the |ProfileChooserView| during a Guest browsing session.
-IN_PROC_BROWSER_TEST_P(ProfileChooserViewExtensionsParamTest, InvokeUi_Guest) {
+// Shows the |ProfileMenuView| during a Guest browsing session.
+IN_PROC_BROWSER_TEST_P(ProfileMenuViewExtensionsParamTest, InvokeUi_Guest) {
   ShowAndVerifyUi();
 }
 
-// Shows the |ProfileChooserView| during a Guest browsing session when the DICE
+// Shows the |ProfileMenuView| during a Guest browsing session when the DICE
 // flag is enabled.
-IN_PROC_BROWSER_TEST_P(ProfileChooserViewExtensionsParamTest,
+IN_PROC_BROWSER_TEST_P(ProfileMenuViewExtensionsParamTest,
                        InvokeUi_DiceGuest) {
   ScopedAccountConsistencyDice scoped_dice;
   ShowAndVerifyUi();
@@ -500,21 +500,21 @@ IN_PROC_BROWSER_TEST_P(ProfileChooserViewExtensionsParamTest,
 
 // Shows the manage account link, which appears when account consistency is
 // enabled for signed-in accounts.
-IN_PROC_BROWSER_TEST_P(ProfileChooserViewExtensionsParamTest,
+IN_PROC_BROWSER_TEST_P(ProfileMenuViewExtensionsParamTest,
                        InvokeUi_ManageAccountLink) {
   ShowAndVerifyUi();
 }
 
-// Shows the |ProfileChooserView| from a signed-in account that has a supervised
+// Shows the |ProfileMenuView| from a signed-in account that has a supervised
 // user profile attached.
-IN_PROC_BROWSER_TEST_P(ProfileChooserViewExtensionsParamTest,
+IN_PROC_BROWSER_TEST_P(ProfileMenuViewExtensionsParamTest,
                        InvokeUi_SupervisedOwner) {
   ShowAndVerifyUi();
 }
 
 // Crashes because account consistency changes:  http://crbug.com/820390
-// Shows the |ProfileChooserView| when a supervised user is the active profile.
-IN_PROC_BROWSER_TEST_P(ProfileChooserViewExtensionsParamTest,
+// Shows the |ProfileMenuView| when a supervised user is the active profile.
+IN_PROC_BROWSER_TEST_P(ProfileMenuViewExtensionsParamTest,
                        DISABLED_InvokeUi_SupervisedUser) {
   ShowAndVerifyUi();
 }
@@ -530,12 +530,12 @@ IN_PROC_BROWSER_TEST_P(ProfileChooserViewExtensionsParamTest,
 #define MAYBE_IncrementDiceSigninPromoShowCounter \
   IncrementDiceSigninPromoShowCounter
 #endif
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest,
                        MAYBE_IncrementDiceSigninPromoShowCounter) {
   ScopedAccountConsistencyDice scoped_dice;
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kDiceSigninUserMenuPromoCount, 7);
-  ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
+  ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));
   EXPECT_EQ(GetDiceSigninPromoShowCount(), 8);
 }
 
@@ -550,22 +550,22 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
 #define MAYBE_DiceSigninPromoWithoutIllustration \
   DiceSigninPromoWithoutIllustration
 #endif
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest,
                        MAYBE_DiceSigninPromoWithoutIllustration) {
   ScopedAccountConsistencyDice scoped_dice;
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kDiceSigninUserMenuPromoCount, 10);
-  ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
+  ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));
   EXPECT_EQ(GetDiceSigninPromoShowCount(), 11);
 }
 
 // Verify there is no crash when the chooser is used to display a signed-in
 // profile with an empty username.
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, SignedInNoUsername) {
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest, SignedInNoUsername) {
   AddAccountToProfile(browser()->profile(), "");
-  OpenProfileChooserView(browser());
+  OpenProfileMenuView(browser());
 }
 
 INSTANTIATE_TEST_SUITE_P(,
-                         ProfileChooserViewExtensionsParamTest,
+                         ProfileMenuViewExtensionsParamTest,
                          ::testing::Bool());

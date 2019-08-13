@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_CHOOSER_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_CHOOSER_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_MENU_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_MENU_VIEW_H_
 
 #include <stddef.h>
 
@@ -33,19 +33,19 @@ class HoverButton;
 
 // This bubble view is displayed when the user clicks on the avatar button.
 // It displays a list of profiles and allows users to switch between profiles.
-class ProfileChooserView : public ProfileMenuViewBase,
+class ProfileMenuView : public ProfileMenuViewBase,
                            public AvatarMenuObserver,
                            public signin::IdentityManager::Observer {
  public:
-  ProfileChooserView(views::Button* anchor_button,
+  ProfileMenuView(views::Button* anchor_button,
                      Browser* browser,
                      profiles::BubbleViewMode view_mode,
                      signin::GAIAServiceType service_type,
                      signin_metrics::AccessPoint access_point);
-  ~ProfileChooserView() override;
+  ~ProfileMenuView() override;
 
  private:
-  friend class ProfileChooserViewExtensionsTest;
+  friend class ProfileMenuViewExtensionsTest;
 
   typedef std::vector<size_t> Indexes;
   typedef std::map<views::Button*, int> ButtonIndexes;
@@ -88,7 +88,7 @@ class ProfileChooserView : public ProfileMenuViewBase,
   void ShowViewOrOpenTab(profiles::BubbleViewMode mode);
 
   // Adds the profile chooser view.
-  void AddProfileChooserView(AvatarMenu* avatar_menu);
+  void AddProfileMenuView(AvatarMenu* avatar_menu);
 
   // Adds the main profile card for the profile |avatar_item|. |is_guest| is
   // used to determine whether to show any Sign in/Sign out/Manage accounts
@@ -192,7 +192,7 @@ class ProfileChooserView : public ProfileMenuViewBase,
 
   const bool dice_enabled_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProfileChooserView);
+  DISALLOW_COPY_AND_ASSIGN(ProfileMenuView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_CHOOSER_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_MENU_VIEW_H_

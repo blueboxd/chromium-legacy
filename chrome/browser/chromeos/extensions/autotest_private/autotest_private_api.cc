@@ -14,6 +14,8 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/split_view.h"
+#include "ash/public/cpp/split_view_test_api.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/mojom/constants.mojom.h"
@@ -2076,6 +2078,19 @@ AutotestPrivateSetArcAppWindowStateFunction::Run() {
       base::BindOnce(
           &AutotestPrivateSetArcAppWindowStateFunction::WindowStateChanged,
           this, expected_state));
+
+  // TODO(crbug.com/990713): Make WMEvent trigger split view in tablet mode.
+  if (ash::TabletMode::Get()->InTabletMode()) {
+    if (expected_state == ash::WindowStateType::kLeftSnapped) {
+      ash::SplitViewTestApi().SnapWindow(
+          arc_window, ash::SplitViewTestApi::SnapPosition::LEFT);
+    } else if (expected_state == ash::WindowStateType::kRightSnapped) {
+      ash::SplitViewTestApi().SnapWindow(
+          arc_window, ash::SplitViewTestApi::SnapPosition::RIGHT);
+    }
+    return RespondLater();
+  }
+
   const ash::WMEvent event(ToWMEventType(params->change.event_type));
   ash::WindowState::Get(arc_window)->OnWMEvent(&event);
 
@@ -2092,6 +2107,34 @@ void AutotestPrivateSetArcAppWindowStateFunction::WindowStateChanged(
     Respond(OneArgument(std::make_unique<base::Value>(
         api::autotest_private::ToString(ToWindowStateType(expected_type)))));
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetArcAppWindowStateFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetArcAppWindowStateFunction::
+    AutotestPrivateGetArcAppWindowStateFunction() = default;
+AutotestPrivateGetArcAppWindowStateFunction::
+    ~AutotestPrivateGetArcAppWindowStateFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateGetArcAppWindowStateFunction::Run() {
+  std::unique_ptr<api::autotest_private::GetArcAppWindowState::Params> params(
+      api::autotest_private::GetArcAppWindowState::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateGetArcAppWindowStateFunction "
+           << params->package_name;
+
+  aura::Window* arc_window = GetArcAppWindow(params->package_name);
+  if (!arc_window) {
+    return RespondNow(Error(base::StrCat(
+        {"No ARC app window is found for ", params->package_name})));
+  }
+
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
+      api::autotest_private::ToString(ToWindowStateType(
+          arc_window->GetProperty(ash::kWindowStateTypeKey))))));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

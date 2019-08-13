@@ -108,6 +108,15 @@ const TestParams kTestParams[] = {
     {"has_single_extension.pem", OCSPRevocationStatus::GOOD,
      OCSPVerifyResult::PROVIDED},
 
+    {"has_critical_single_extension.pem", OCSPRevocationStatus::UNKNOWN,
+     OCSPVerifyResult::UNHANDLED_CRITICAL_EXTENSION},
+
+    {"has_critical_response_extension.pem", OCSPRevocationStatus::UNKNOWN,
+     OCSPVerifyResult::UNHANDLED_CRITICAL_EXTENSION},
+
+    {"has_critical_ct_extension.pem", OCSPRevocationStatus::GOOD,
+     OCSPVerifyResult::PROVIDED},
+
     {"missing_response.pem", OCSPRevocationStatus::UNKNOWN,
      OCSPVerifyResult::NO_MATCHING_RESPONSE},
 };

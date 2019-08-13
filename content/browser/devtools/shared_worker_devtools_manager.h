@@ -36,8 +36,9 @@ class CONTENT_EXPORT SharedWorkerDevToolsManager {
                      base::UnguessableToken* devtools_worker_token);
   void WorkerReadyForInspection(
       SharedWorkerHost* worker_host,
-      blink::mojom::DevToolsAgentPtr agent_ptr,
-      blink::mojom::DevToolsAgentHostRequest agent_host_request);
+      mojo::PendingRemote<blink::mojom::DevToolsAgent> agent_remote,
+      mojo::PendingReceiver<blink::mojom::DevToolsAgentHost>
+          agent_host_receiver);
   void WorkerDestroyed(SharedWorkerHost* worker_host);
 
  private:

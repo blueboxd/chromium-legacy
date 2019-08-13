@@ -340,6 +340,11 @@ struct URLRequest {
   // enabled by flags, or OriginTrial. TODO(horo): Remove this when these
   // features are enabled by default.
   bool is_signed_exchange_prefetch_cache_enabled;
+
+  // If set, the network service will attempt to retrieve the appropriate origin
+  // policy, if necessary, and attach it to the ResourceResponseHead.
+  // Spec: https://wicg.github.io/origin-policy/
+  bool obey_origin_policy;
 };
 
 // URLRequestBody represents body (i.e. upload data) of a HTTP request.

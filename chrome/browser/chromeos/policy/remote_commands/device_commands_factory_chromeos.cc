@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_fetch_status_job.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_reboot_job.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_refresh_machine_certificate_job.h"
+#include "chrome/browser/chromeos/policy/remote_commands/device_command_remote_powerwash_job.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_screenshot_job.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_set_volume_job.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_start_crd_session_job.h"
@@ -51,6 +52,8 @@ DeviceCommandsFactoryChromeOS::BuildJobForType(em::RemoteCommand_Type type,
     case em::RemoteCommand_Type_DEVICE_REFRESH_ENTERPRISE_MACHINE_CERTIFICATE:
       return std::make_unique<DeviceCommandRefreshMachineCertificateJob>(
           policy_manager_->GetMachineCertificateUploader());
+    case em::RemoteCommand_Type_DEVICE_REMOTE_POWERWASH:
+      return std::make_unique<DeviceCommandRemotePowerwashJob>(service);
     default:
       // Other types of commands should be sent to UserCommandsFactoryChromeOS
       // instead of here.

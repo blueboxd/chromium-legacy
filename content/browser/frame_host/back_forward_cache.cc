@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/page_messages.h"
 #include "content/public/common/navigation_policy.h"
+#include "net/http/http_status_code.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 
 namespace content {
@@ -121,6 +122,11 @@ bool BackForwardCache::CanStoreDocument(RenderFrameHostImpl* rfh) {
   // This check makes sure the old and new document aren't sharing the same
   // BrowsingInstance.
   if (rfh->GetSiteInstance()->GetRelatedActiveContentsCount() != 0)
+    return false;
+
+  // Only store documents that have successful http status code.
+  // Note that for non-http navigations, |last_http_status_code| is equal to 0.
+  if (rfh->last_http_status_code() != net::HTTP_OK)
     return false;
 
   return true;

@@ -62,7 +62,7 @@ constexpr int kTallestFrameHeight = kTallestTabHeight + 19;
 // change default theme assets, if you need themes to recreate their generated
 // images (which are cached), or if you changed how missing values are
 // generated.
-const int kThemePackVersion = 67;
+const int kThemePackVersion = 68;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -606,7 +606,9 @@ void BrowserThemePack::SetTint(int id, color_utils::HSL tint) {
   int first_available_index = -1;
   for (size_t i = 0; i < kTintTableLength; ++i) {
     if (tints_[i].id == id) {
-      tints_[i].hsl = tint;
+      tints_[i].h = tint.h;
+      tints_[i].s = tint.s;
+      tints_[i].l = tint.l;
       return;
     }
     if (tints_[i].id == -1 && first_available_index == -1)
@@ -615,7 +617,9 @@ void BrowserThemePack::SetTint(int id, color_utils::HSL tint) {
 
   DCHECK_NE(-1, first_available_index);
   tints_[first_available_index].id = id;
-  tints_[first_available_index].hsl = tint;
+  tints_[first_available_index].h = tint.h;
+  tints_[first_available_index].s = tint.s;
+  tints_[first_available_index].l = tint.l;
 }
 
 void BrowserThemePack::SetDisplayProperty(int id, int value) {
@@ -849,7 +853,9 @@ bool BrowserThemePack::GetTint(int id, color_utils::HSL* hsl) const {
   if (tints_) {
     for (size_t i = 0; i < kTintTableLength; ++i) {
       if (tints_[i].id == id) {
-        *hsl = tints_[i].hsl;
+        hsl->h = tints_[i].h;
+        hsl->s = tints_[i].s;
+        hsl->l = tints_[i].l;
         return true;
       }
     }
@@ -1072,7 +1078,9 @@ void BrowserThemePack::InitTints() {
   tints_ = new TintEntry[kTintTableLength];
   for (size_t i = 0; i < kTintTableLength; ++i) {
     tints_[i].id = -1;
-    tints_[i].hsl = {-1, -1, -1};
+    tints_[i].h = -1;
+    tints_[i].s = -1;
+    tints_[i].l = -1;
   }
 }
 
@@ -1138,7 +1146,9 @@ void BrowserThemePack::SetTintsFromJSON(
        it != temp_tints.end() && count < kTintTableLength;
        ++it, ++count) {
     tints_[count].id = it->first;
-    tints_[count].hsl = it->second;
+    tints_[count].h = it->second.h;
+    tints_[count].s = it->second.s;
+    tints_[count].l = it->second.l;
   }
 }
 

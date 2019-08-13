@@ -238,6 +238,7 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->previews_state = request_info->common_params->previews_state;
   new_request->devtools_request_id =
       request_info->devtools_navigation_token.ToString();
+  new_request->obey_origin_policy = request_info->obey_origin_policy;
   return new_request;
 }
 

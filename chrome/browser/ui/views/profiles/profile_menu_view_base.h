@@ -138,7 +138,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   int GetDefaultIconSize();
 
  private:
-  friend class ProfileChooserViewExtensionsTest;
+  friend class ProfileMenuViewExtensionsTest;
 
   // Requests focus for a button when opened by keyboard.
   virtual void FocusButtonOnKeyboardOpen() {}

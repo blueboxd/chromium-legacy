@@ -335,6 +335,9 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
 
   bool ignore_bounds_change_request_ = false;
 
+  // True if the window state has changed during the commit.
+  bool state_changed_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(ClientControlledShellSurface);
 };
 

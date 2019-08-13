@@ -1250,7 +1250,7 @@ TEST_F(LazyLoadAutomaticImagesTest, ImageInsideLazyLoadedFrame) {
   partial_image.Append(full_image.data(), 2048U);
 
   Document* child_frame_document =
-      ToHTMLIFrameElement(GetDocument().getElementById("child_frame"))
+      To<HTMLIFrameElement>(GetDocument().getElementById("child_frame"))
           ->contentDocument();
 
   eager_resource.Complete(full_image);

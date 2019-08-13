@@ -405,6 +405,7 @@ if (is_win) {
       "//content/app/resources",
       "//content/public/common:service_names",
       "//crypto",
+      "//headless:headless_shell_browser_lib",
       "//net:net_resources",
       "//ppapi/buildflags",
       "//services/service_manager/embedder",
@@ -432,10 +433,7 @@ if (is_win) {
 
     if (is_multi_dll_chrome) {
       defines += [ "CHROME_MULTIPLE_DLL_BROWSER" ]
-      deps += [
-        "//content/public/app:browser",
-        "//headless:headless_shell_browser_lib",
-      ]
+      deps += [ "//content/public/app:browser" ]
       assert_no_deps = [
         # The browser DLL may not depend on blink or v8.
         "//third_party/blink/public:blink",
@@ -449,7 +447,7 @@ if (is_win) {
       deps += [
         ":child_dependencies",
         "//content/public/app:both",
-        "//headless:headless_shell_lib",
+        "//headless:headless_renderer",
       ]
     }
 

@@ -2151,7 +2151,7 @@ TEST_F(ScrollbarsTest, OverlayScrollbarHitTest) {
 
   // Enable the iframe scrollbar.
   auto* iframe_element =
-      ToHTMLIFrameElement(GetDocument().getElementById("iframe"));
+      To<HTMLIFrameElement>(GetDocument().getElementById("iframe"));
   iframe_element->contentDocument()
       ->View()
       ->LayoutViewport()

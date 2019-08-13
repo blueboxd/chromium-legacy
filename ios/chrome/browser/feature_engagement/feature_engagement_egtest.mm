@@ -183,11 +183,9 @@ void EnableBadgedTranslateManualTrigger(
       "name:badged_translate_manual_trigger_trigger;comparator:==0;window:360;"
       "storage:360";
 
-  feature_list.InitWithFeaturesAndParameters(
-      {{feature_engagement::kIPHBadgedTranslateManualTriggerFeature,
-        badged_translate_manual_trigger_params},
-       {translate::kTranslateMobileManualTrigger, {}}},
-      {});
+  feature_list.InitAndEnableFeatureWithParameters(
+      feature_engagement::kIPHBadgedTranslateManualTriggerFeature,
+      badged_translate_manual_trigger_params);
 }
 
 // Enables the New Tab Tip to be triggered for |feature_list|.

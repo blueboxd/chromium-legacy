@@ -1325,7 +1325,7 @@ void ApplyStyleCommand::ApplyInlineStyleToPushDown(
   node->GetDocument().UpdateStyleAndLayoutTree();
 
   if (!style || style->IsEmpty() || !node->GetLayoutObject() ||
-      IsHTMLIFrameElement(*node))
+      IsA<HTMLIFrameElement>(*node))
     return;
 
   EditingStyle* new_inline_style = style;

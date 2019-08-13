@@ -3927,7 +3927,7 @@ _FUNCTION_INFO = {
     'unit_test': False,
   },
   'ScheduleDCLayerCHROMIUM': {
-    'cmd_args': 'GLuint y_texture_id, GLuint uv_texture_id, GLint z_order, '
+    'cmd_args': 'GLuint texture_0, GLuint texture_1, GLint z_order, '
                 'GLint content_x, GLint content_y, GLint content_width, '
                 'GLint content_height, GLint quad_x, GLint quad_y, '
                 'GLint quad_width, GLint quad_height, '

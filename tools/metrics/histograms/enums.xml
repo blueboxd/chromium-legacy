@@ -20277,6 +20277,7 @@ Called by update_net_error_codes.py.-->
   <int value="1371" label="LOGINSCREENSTORAGE_RETRIEVEPERSISTENTDATA"/>
   <int value="1372" label="LOGINSCREENSTORAGE_STORECREDENTIALS"/>
   <int value="1373" label="LOGINSCREENSTORAGE_RETRIEVECREDENTIALS"/>
+  <int value="1374" label="AUTOTESTPRIVATE_GETARCAPPWINDOWSTATE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -57963,6 +57964,7 @@ would be helpful to identify which type is being sent.
   <int value="15" label="Send Tab To Self"/>
   <int value="16" label="Updates"/>
   <int value="17" label="Click To Call"/>
+  <int value="18" label="Shared Clipboard"/>
 </enum>
 
 <enum name="TabBackgroundLoadStatus">

@@ -250,7 +250,7 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
       kViewportHeight / 2, 5 * kViewportHeight));
 
   Element* iframe = GetDocument().getElementById("iframe");
-  HTMLIFrameElement* iframe_element = ToHTMLIFrameElement(iframe);
+  auto* iframe_element = To<HTMLIFrameElement>(iframe);
   Frame* sub = iframe_element->ContentFrame();
   auto* subframe = To<LocalFrame>(sub);
 
@@ -319,7 +319,7 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframeNonHttp) {
       kViewportHeight / 2, 5 * kViewportHeight));
 
   Element* iframe = GetDocument().getElementById("iframe");
-  HTMLIFrameElement* iframe_element = ToHTMLIFrameElement(iframe);
+  auto* iframe_element = To<HTMLIFrameElement>(iframe);
   Frame* sub = iframe_element->ContentFrame();
   auto* subframe = To<LocalFrame>(sub);
 

@@ -49,7 +49,7 @@ TEST_F(PartitionsTest, Decommit) {
   EXPECT_GT(committed_after, committed_before);
   // Decommit works.
   base::PartitionAllocMemoryReclaimer::Instance()->Reclaim();
-  EXPECT_EQ(committed_before, Partitions::TotalSizeOfCommittedPages());
+  EXPECT_LT(Partitions::TotalSizeOfCommittedPages(), committed_after);
 }
 
 #endif  // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)

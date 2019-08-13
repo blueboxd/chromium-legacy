@@ -216,7 +216,6 @@
 #include "third_party/blink/public/web/web_security_policy.h"
 #include "third_party/blink/public/web/web_serialized_script_value.h"
 #include "third_party/blink/public/web/web_settings.h"
-#include "third_party/blink/public/web/web_surrounding_text.h"
 #include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_user_media_client.h"
 #include "third_party/blink/public/web/web_view.h"
@@ -2824,24 +2823,6 @@ void RenderFrameImpl::SetLifecycleState(
   frame_->SetLifecycleState(state);
 }
 
-void RenderFrameImpl::GetTextSurroundingSelection(
-    uint32_t max_length,
-    GetTextSurroundingSelectionCallback callback) {
-  blink::WebSurroundingText surrounding_text(frame_, max_length);
-
-  if (surrounding_text.IsEmpty()) {
-    // |surrounding_text| might not be correctly initialized, for example if
-    // |frame_->SelectionRange().IsNull()|, in other words, if there was no
-    // selection.
-    std::move(callback).Run(base::string16(), 0, 0);
-    return;
-  }
-
-  std::move(callback).Run(surrounding_text.TextContent().Utf16(),
-                          surrounding_text.StartOffsetInTextContent(),
-                          surrounding_text.EndOffsetInTextContent());
-}
-
 void RenderFrameImpl::VisibilityChanged(
     blink::mojom::FrameVisibility visibility) {
   GetFrameHost()->VisibilityChanged(visibility);
@@ -4070,9 +4051,9 @@ void RenderFrameImpl::MarkInitiatorAsRequiringSeparateURLLoaderFactory(
 }
 
 void RenderFrameImpl::BindDevToolsAgent(
-    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
-    blink::mojom::DevToolsAgentAssociatedRequest request) {
-  frame_->BindDevToolsAgent(host.PassHandle(), request.PassHandle());
+    mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host,
+    mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver) {
+  frame_->BindDevToolsAgent(host.PassHandle(), receiver.PassHandle());
 }
 
 // mojom::HostZoom implementation ----------------------------------------------

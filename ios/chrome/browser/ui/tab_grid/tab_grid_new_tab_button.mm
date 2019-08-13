@@ -33,8 +33,9 @@
 #pragma mark - Public
 
 - (void)setPage:(TabGridPage)page {
-  if (page == _page)
-    return;
+  // self.page is inited to 0 (i.e. TabGridPageIncognito) so do not early return
+  // here, otherwise when app is launched in incognito mode the image will be
+  // missing.
   UIImage* renderedImage;
   switch (page) {
     case TabGridPageIncognitoTabs:

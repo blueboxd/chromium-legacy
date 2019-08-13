@@ -200,7 +200,8 @@ String WebFrameSerializerImpl::PostActionAfterSerializeOpenTag(
   if (!param->is_html_document)
     return result.ToString();
   // Check after processing the open tag of HEAD element
-  if (!param->have_added_charset_declaration && IsHTMLHeadElement(*element)) {
+  if (!param->have_added_charset_declaration &&
+      IsA<HTMLHeadElement>(*element)) {
     param->have_added_charset_declaration = true;
     // Check meta element. WebKit only pre-parse the first 512 bytes of the
     // document. If the whole <HEAD> is larger and meta is the end of head
@@ -362,7 +363,7 @@ void WebFrameSerializerImpl::OpenTagToString(Element* element,
   // is written even if the original document didn't have that attribute
   // (mainly needed for iframes with srcdoc, but with no src attribute).
   if (should_rewrite_frame_src && !did_rewrite_frame_src &&
-      IsHTMLIFrameElement(element)) {
+      IsA<HTMLIFrameElement>(element)) {
     AppendAttribute(result, param->is_html_document,
                     html_names::kSrcAttr.ToString(), rewritten_frame_link);
   }

@@ -13,31 +13,34 @@ namespace blink {
 void ModuleRecordResolverImpl::RegisterModuleScript(
     const ModuleScript* module_script) {
   DCHECK(module_script);
-  if (module_script->Record().IsNull())
+  if (module_script->V8Module().IsEmpty())
     return;
 
   DVLOG(1) << "ModuleRecordResolverImpl::RegisterModuleScript(url="
-           << module_script->BaseURL().GetString()
-           << ", hash=" << ModuleRecordHash::GetHash(module_script->Record())
+           << module_script->BaseURL().GetString() << ", hash="
+           << ModuleRecordHash::GetHash(
+                  GetModuleRecordFromModuleScript(module_script))
            << ")";
 
-  auto result =
-      record_to_module_script_map_.Set(module_script->Record(), module_script);
+  auto result = record_to_module_script_map_.Set(
+      GetModuleRecordFromModuleScript(module_script), module_script);
   DCHECK(result.is_new_entry);
 }
 
 void ModuleRecordResolverImpl::UnregisterModuleScript(
     const ModuleScript* module_script) {
   DCHECK(module_script);
-  if (module_script->Record().IsNull())
+  if (module_script->V8Module().IsEmpty())
     return;
 
   DVLOG(1) << "ModuleRecordResolverImpl::UnregisterModuleScript(url="
-           << module_script->BaseURL().GetString()
-           << ", hash=" << ModuleRecordHash::GetHash(module_script->Record())
+           << module_script->BaseURL().GetString() << ", hash="
+           << ModuleRecordHash::GetHash(
+                  GetModuleRecordFromModuleScript(module_script))
            << ")";
 
-  record_to_module_script_map_.erase(module_script->Record());
+  record_to_module_script_map_.erase(
+      GetModuleRecordFromModuleScript(module_script));
 }
 
 const ModuleScript* ModuleRecordResolverImpl::GetModuleScriptFromModuleRecord(
@@ -96,16 +99,23 @@ ModuleRecord ModuleRecordResolverImpl::Resolve(
   //
   // <spec step="9">Assert: resolved module script's record is not null.</spec>
   DCHECK(module_script);
-  CHECK(!module_script->Record().IsNull());
+  CHECK(!module_script->V8Module().IsEmpty());
 
   // <spec step="10">Return resolved module script's record.</spec>
-  return module_script->Record();
+  return GetModuleRecordFromModuleScript(module_script);
 }
 
 void ModuleRecordResolverImpl::ContextDestroyed(ExecutionContext*) {
   // crbug.com/725816 : What we should really do is to make the map key
   // weak reference to v8::Module.
   record_to_module_script_map_.clear();
+}
+
+ModuleRecord ModuleRecordResolverImpl::GetModuleRecordFromModuleScript(
+    const ModuleScript* module_script) {
+  v8::Isolate* isolate = modulator_->GetScriptState()->GetIsolate();
+  return ModuleRecord(isolate, module_script->V8Module(),
+                      module_script->SourceURL());
 }
 
 void ModuleRecordResolverImpl::Trace(Visitor* visitor) {

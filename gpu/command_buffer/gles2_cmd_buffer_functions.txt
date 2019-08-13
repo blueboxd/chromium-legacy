@@ -334,7 +334,7 @@ GL_APICALL void         GL_APIENTRY glScheduleCALayerInUseQueryCHROMIUM (GLsizei
 GL_APICALL void         GL_APIENTRY glCommitOverlayPlanesCHROMIUM (GLuint64 swap_id, GLbitfieldSwapBuffersFlags flags = 0);
 GL_APICALL void         GL_APIENTRY glFlushDriverCachesCHROMIUM (void);
 GL_APICALL GLuint       GL_APIENTRY glGetLastFlushIdCHROMIUM (void);
-GL_APICALL void         GL_APIENTRY glScheduleDCLayerCHROMIUM (GLuint y_texture_id, GLuint uv_texture_id, GLint z_order, GLint content_x, GLint content_y, GLint content_width, GLint content_height, GLint quad_x, GLint quad_y, GLint quad_width, GLint quad_height, GLfloat transform_c1r1, GLfloat transform_c2r1, GLfloat transform_c1r2, GLfloat transform_c2r2, GLfloat transform_tx, GLfloat transform_ty, GLboolean is_clipped, GLint clip_x, GLint clip_y, GLint clip_width, GLint clip_height, GLuint protected_video_type);
+GL_APICALL void         GL_APIENTRY glScheduleDCLayerCHROMIUM (GLuint texture_0, GLuint texture_1, GLint z_order, GLint content_x, GLint content_y, GLint content_width, GLint content_height, GLint quad_x, GLint quad_y, GLint quad_width, GLint quad_height, GLfloat transform_c1r1, GLfloat transform_c2r1, GLfloat transform_c1r2, GLfloat transform_c2r2, GLfloat transform_tx, GLfloat transform_ty, GLboolean is_clipped, GLint clip_x, GLint clip_y, GLint clip_width, GLint clip_height, GLuint protected_video_type);
 GL_APICALL void         GL_APIENTRY glSetActiveURLCHROMIUM (const char* url);
 
 // Extension CHROMIUM_path_rendering.

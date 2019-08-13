@@ -695,7 +695,7 @@ DocumentFragment* CreateContextualFragment(
   Node* next_node = nullptr;
   for (Node* node = fragment->firstChild(); node; node = next_node) {
     next_node = node->nextSibling();
-    if (IsHTMLHtmlElement(*node) || IsHTMLHeadElement(*node) ||
+    if (IsHTMLHtmlElement(*node) || IsA<HTMLHeadElement>(*node) ||
         IsA<HTMLBodyElement>(*node)) {
       auto* element = To<HTMLElement>(node);
       if (Node* first_child = element->firstChild())

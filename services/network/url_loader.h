@@ -41,6 +41,10 @@ class URLRequestContext;
 
 namespace network {
 
+namespace mojom {
+class OriginPolicyManager;
+}
+
 constexpr size_t kMaxFileUploadRequestsPerBatch = 64;
 
 class NetToMojoPendingBuffer;
@@ -48,6 +52,7 @@ class NetworkUsageAccumulator;
 class KeepaliveStatisticsRecorder;
 struct ResourceResponse;
 class ScopedThrottlingToken;
+struct OriginPolicy;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
     : public mojom::URLLoader,
@@ -59,6 +64,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   // |delete_callback| tells the URLLoader's owner to destroy the URLLoader.
   // The URLLoader must be destroyed before the |url_request_context|.
+  // The |origin_policy_manager| must always be provided for requests that
+  // have the |obey_origin_policy| flag set.
   URLLoader(
       net::URLRequestContext* url_request_context,
       mojom::NetworkServiceClient* network_service_client,
@@ -74,7 +81,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
       base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder,
       base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator,
-      mojom::TrustedURLLoaderHeaderClient* url_loader_header_client);
+      mojom::TrustedURLLoaderHeaderClient* url_loader_header_client,
+      mojom::OriginPolicyManager* origin_policy_manager);
   ~URLLoader() override;
 
   // mojom::URLLoader implementation:
@@ -233,6 +241,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   BlockResponseForCorbResult BlockResponseForCorb();
 
   void ReportFlaggedResponseCookies();
+  void StartReading();
+  void OnOriginPolicyManagerRetrieveDone(const OriginPolicy& origin_policy);
 
   net::URLRequestContext* url_request_context_;
   mojom::NetworkServiceClient* network_service_client_;
@@ -356,6 +366,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // mojom::network::URLRequest::update_network_isolation_key_on_redirect.
   mojom::UpdateNetworkIsolationKeyOnRedirect
       update_network_isolation_key_on_redirect_;
+
+  // Will only be set for requests that have |obey_origin_policy| set.
+  mojom::OriginPolicyManager* origin_policy_manager_;
 
   base::WeakPtrFactory<URLLoader> weak_ptr_factory_{this};
 

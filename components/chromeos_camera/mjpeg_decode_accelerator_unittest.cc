@@ -428,7 +428,6 @@ class JpegClient : public MjpegDecodeAccelerator::Client {
   std::unique_ptr<media::test::ClientStateNotification<ClientState>> note_;
 
   // Use DMA-buf backed output buffer for hardware decoder.
-  // TODO(kamesan): update the comment when this applies to software decoder.
   bool use_dmabuf_;
 
   // Skip JDA decode result. Used for testing performance.
@@ -681,6 +680,8 @@ void JpegClient::StartDecode(int32_t bitstream_buffer_id,
 }
 
 bool JpegClient::GetSoftwareDecodeResult(int32_t bitstream_buffer_id) {
+  DCHECK(sw_out_frame_->IsMappable());
+  DCHECK_EQ(sw_out_frame_->format(), media::PIXEL_FORMAT_I420);
   ParsedJpegImage* image_file = test_image_files_[bitstream_buffer_id];
   if (libyuv::ConvertToI420(static_cast<uint8_t*>(in_shm_mapping_.memory()),
                             image_file->data_str.size(),
@@ -819,16 +820,12 @@ void MjpegDecodeAcceleratorTest::PerfDecodeByJDA(
 void MjpegDecodeAcceleratorTest::PerfDecodeBySW(
     int decode_times,
     const std::vector<ParsedJpegImage*>& images) {
-  // TODO(kamesan): implement SW decoding into DMA-bufs in
-  // GetSoftwareDecodeResult().
-  if (GetParam())
-    GTEST_SKIP();
   LOG_ASSERT(images.size() == 1);
 
   std::unique_ptr<JpegClient> client = std::make_unique<JpegClient>(
       images,
       std::make_unique<media::test::ClientStateNotification<ClientState>>(),
-      GetParam() /* use_dmabuf */, true /* is_skip */);
+      false /* use_dmabuf */, true /* is_skip */);
 
   const int32_t bitstream_buffer_id = 0;
   client->PrepareMemory(bitstream_buffer_id);
@@ -997,7 +994,7 @@ TEST_P(MjpegDecodeAcceleratorTest, PerfJDA) {
   PerfDecodeByJDA(g_env->perf_decode_times_, images);
 }
 
-TEST_P(MjpegDecodeAcceleratorTest, PerfSW) {
+TEST_F(MjpegDecodeAcceleratorTest, PerfSW) {
   // Only the first image will be used for perf testing.
   ASSERT_GE(g_env->image_data_user_.size(), 1u);
   const std::vector<ParsedJpegImage*> images = {

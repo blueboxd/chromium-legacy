@@ -786,7 +786,7 @@ static void FillStaticResponseIfNeeded(WebNavigationParams* params,
     // committing navigation.
     String srcdoc;
     HTMLFrameOwnerElement* owner_element = frame->DeprecatedLocalOwner();
-    if (!IsHTMLIFrameElement(owner_element) ||
+    if (!IsA<HTMLIFrameElement>(owner_element) ||
         !owner_element->FastHasAttribute(html_names::kSrcdocAttr)) {
       // Cannot retrieve srcdoc content anymore (perhaps, the attribute was
       // cleared) - load empty instead.

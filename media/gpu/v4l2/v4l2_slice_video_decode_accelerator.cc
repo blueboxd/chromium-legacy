@@ -1576,8 +1576,9 @@ void V4L2SliceVideoDecodeAccelerator::ReusePictureBufferTask(
   // When the last fence is signaled, all the previous fences must be executed.
   if (!output_record.at_client()) {
     // Take ownership of the EGL fence.
-    surfaces_awaiting_fence_.push(
-        std::make_pair(std::move(egl_fence), std::move(it->second)));
+    if (egl_fence)
+      surfaces_awaiting_fence_.push(
+          std::make_pair(std::move(egl_fence), std::move(it->second)));
 
     surfaces_at_display_.erase(it);
   }

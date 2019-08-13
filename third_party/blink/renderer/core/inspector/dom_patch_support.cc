@@ -139,7 +139,7 @@ Node* DOMPatchSupport::PatchNode(Node* node,
     new_list.push_back(CreateDigest(child, nullptr));
   for (Node* child = fragment->firstChild(); child;
        child = child->nextSibling()) {
-    if (IsHTMLHeadElement(*child) && !child->hasChildren() &&
+    if (IsA<HTMLHeadElement>(*child) && !child->hasChildren() &&
         markup_copy.Find("</head>") == kNotFound) {
       // HTML5 parser inserts empty <head> tag whenever it parses <body>
       continue;
@@ -335,7 +335,7 @@ bool DOMPatchSupport::InnerPatchChildren(
 
     // Always match <head> and <body> tags with each other - we can't remove
     // them from the DOM upon patching.
-    if (IsHTMLHeadElement(*old_list[i]->node_)) {
+    if (IsA<HTMLHeadElement>(*old_list[i]->node_)) {
       old_head = old_list[i].Get();
       continue;
     }
@@ -387,7 +387,7 @@ bool DOMPatchSupport::InnerPatchChildren(
   // Mark <head> and <body> nodes for merge.
   if (old_head || old_body) {
     for (wtf_size_t i = 0; i < new_list.size(); ++i) {
-      if (old_head && IsHTMLHeadElement(*new_list[i]->node_))
+      if (old_head && IsA<HTMLHeadElement>(*new_list[i]->node_))
         merges.Set(new_list[i].Get(), old_head);
       if (old_body && IsA<HTMLBodyElement>(*new_list[i]->node_))
         merges.Set(new_list[i].Get(), old_body);
@@ -418,7 +418,7 @@ bool DOMPatchSupport::InnerPatchChildren(
     Node* anchor_node = NodeTraversal::ChildAt(*parent_node, old_map[i].second);
     if (node == anchor_node)
       continue;
-    if (IsA<HTMLBodyElement>(*node) || IsHTMLHeadElement(*node)) {
+    if (IsA<HTMLBodyElement>(*node) || IsA<HTMLHeadElement>(*node)) {
       // Never move head or body, move the rest of the nodes around them.
       continue;
     }

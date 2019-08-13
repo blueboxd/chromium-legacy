@@ -159,7 +159,7 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreHiddenElement(
   // being loaded. But if an iframe is injected into the head later, it will
   // stay there and not been displayed. To prevent it from being brought to the
   // saved page and cause it being displayed, we should not include it.
-  if (IsHTMLIFrameElement(element) &&
+  if (IsA<HTMLIFrameElement>(element) &&
       Traversal<HTMLHeadElement>::FirstAncestor(element)) {
     return true;
   }

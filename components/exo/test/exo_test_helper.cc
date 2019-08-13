@@ -67,10 +67,17 @@ void HandleBoundsChangedRequest(ClientControlledShellSurface* shell_surface,
 
   if (!shell_surface->host_window()->GetRootWindow())
     return;
+
   display::Display target_display;
   const display::Screen* screen = display::Screen::GetScreen();
 
   if (!screen->GetDisplayWithDisplayId(display_id, &target_display)) {
+    return;
+  }
+
+  // Don't change the bounds in maximize/fullscreen/pinned state.
+  if (window_state->IsMaximizedOrFullscreenOrPinned() &&
+      requested_state == window_state->GetStateType()) {
     return;
   }
 
@@ -81,6 +88,7 @@ void HandleBoundsChangedRequest(ClientControlledShellSurface* shell_surface,
   if (requested_state != window_state->GetStateType()) {
     DCHECK(requested_state == ash::WindowStateType::kLeftSnapped ||
            requested_state == ash::WindowStateType::kRightSnapped);
+
     if (requested_state == ash::WindowStateType::kLeftSnapped)
       shell_surface->SetSnappedToLeft();
     else

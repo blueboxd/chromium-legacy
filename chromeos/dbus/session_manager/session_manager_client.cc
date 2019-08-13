@@ -299,6 +299,18 @@ class SessionManagerClientImpl : public SessionManagerClient {
         login_manager::kSessionManagerStartDeviceWipe);
   }
 
+  void StartRemoteDeviceWipe(
+      const enterprise_management::SignedData& signed_command) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerStartRemoteDeviceWipe);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(signed_command);
+    session_manager_proxy_->CallMethod(&method_call,
+                                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                       base::DoNothing());
+  }
+
   void ClearForcedReEnrollmentVpd(VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,

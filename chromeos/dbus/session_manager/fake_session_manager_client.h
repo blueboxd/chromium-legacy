@@ -74,6 +74,8 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
       const cryptohome::AccountIdentifier& cryptohome_id) override;
   void StopSession() override;
   void StartDeviceWipe() override;
+  void StartRemoteDeviceWipe(
+      const enterprise_management::SignedData& signed_command) override;
   void ClearForcedReEnrollmentVpd(VoidDBusMethodCallback callback) override;
   void StartTPMFirmwareUpdate(const std::string& update_mode) override;
   void RequestLockScreen() override;
@@ -214,6 +216,7 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
     return clear_forced_re_enrollment_vpd_call_count_;
   }
 
+  void set_on_start_device_wipe_callback(base::OnceClosure callback);
   int start_device_wipe_call_count() const {
     return start_device_wipe_call_count_;
   }
@@ -292,6 +295,9 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   bool force_retrieve_policy_load_error_ = false;
 
   int clear_forced_re_enrollment_vpd_call_count_ = 0;
+  // Callback which is run after calling |StartDeviceWipe| or
+  // |StartRemoteDeviceWipe|.
+  base::OnceClosure on_start_device_wipe_callback_;
   int start_device_wipe_call_count_ = 0;
   int request_lock_screen_call_count_ = 0;
   int notify_lock_screen_shown_call_count_ = 0;

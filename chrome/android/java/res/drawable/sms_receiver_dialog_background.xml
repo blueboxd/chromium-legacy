@@ -4,6 +4,6 @@
      found in the LICENSE file. -->
 
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="@color/default_bg_color_light"/>
+    <solid android:color="@color/sheet_bg_color"/>
     <corners android:radius="10dp"/>
 </shape>

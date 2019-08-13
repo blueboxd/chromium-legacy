@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
+#include "chrome/browser/ui/views/profiles/profile_menu_view.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -71,7 +71,7 @@ void ProfileSigninConfirmationDialogViews::ShowDialog(
   // bubble.
   // TODO(guohui): removes the workaround once the profile confirmation dialog
   // is fixed.
-  ProfileChooserView::Hide();
+  ProfileMenuView::Hide();
 
   ProfileSigninConfirmationDialogViews* dialog =
       new ProfileSigninConfirmationDialogViews(browser, username,

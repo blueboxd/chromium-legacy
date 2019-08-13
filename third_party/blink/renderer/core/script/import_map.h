@@ -22,7 +22,8 @@ class ParsedSpecifier;
 // Import maps.
 // https://wicg.github.io/import-maps/
 // https://github.com/WICG/import-maps/blob/master/spec.md
-class ImportMap final : public GarbageCollectedFinalized<ImportMap> {
+class CORE_EXPORT ImportMap final
+    : public GarbageCollectedFinalized<ImportMap> {
  public:
   static ImportMap* Create(const Modulator& modulator_for_built_in_modules,
                            const String& text,

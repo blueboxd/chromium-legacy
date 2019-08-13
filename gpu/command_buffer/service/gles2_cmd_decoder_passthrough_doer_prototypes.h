@@ -912,8 +912,8 @@ error::Error DoScheduleCALayerCHROMIUM(GLuint contents_texture_id,
 error::Error DoScheduleCALayerInUseQueryCHROMIUM(
     GLuint n,
     const volatile GLuint* textures);
-error::Error DoScheduleDCLayerCHROMIUM(GLuint y_texture_id,
-                                       GLuint uv_texture_id,
+error::Error DoScheduleDCLayerCHROMIUM(GLuint texture_0,
+                                       GLuint texture_1,
                                        GLint z_order,
                                        GLint content_x,
                                        GLint content_y,

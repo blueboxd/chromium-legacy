@@ -88,6 +88,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& FilesNg() {
+    files_ng = true;
+    return *this;
+  }
+
   TestCase& DisableNativeSmb() {
     enable_native_smb = false;
     return *this;
@@ -125,6 +130,9 @@ struct TestCase {
     if (test.enable_drivefs.value_or(false))
       name.append("_DriveFs");
 
+    if (test.files_ng)
+      name.append("_FilesNg");
+
     if (!test.enable_native_smb)
       name.append("_DisableNativeSmb");
 
@@ -148,6 +156,7 @@ struct TestCase {
   bool with_browser = false;
   bool needs_zip = false;
   bool offline = false;
+  bool files_ng = false;
   bool enable_native_smb = true;
   bool mount_no_volumes = false;
 };
@@ -219,6 +228,8 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
   bool GetNeedsZipSupport() const override { return GetParam().needs_zip; }
 
   bool GetIsOffline() const override { return GetParam().offline; }
+
+  bool GetEnableFilesNg() const override { return GetParam().files_ng; }
 
   bool GetEnableNativeSmb() const override {
     return GetParam().enable_native_smb;
@@ -461,6 +472,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .DisableDriveFs(),
         TestCase("checkPasteIntoFolderDisabledForReadOnlyFolder")
             .DisableDriveFs(),
+        TestCase("checkInstallWithLinuxStateForDebianFile").DisableDriveFs(),
         TestCase("checkContextMenusForInputElements"),
         TestCase("checkNewFolderEnabledInsideReadWriteFolder").DisableDriveFs(),
         TestCase("checkNewFolderDisabledInsideReadOnlyFolder").DisableDriveFs(),
@@ -497,6 +509,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .EnableDriveFs(),
         TestCase("checkPasteIntoFolderDisabledForReadOnlyFolder")
             .EnableDriveFs(),
+        TestCase("checkInstallWithLinuxStateForDebianFile").EnableDriveFs(),
         TestCase("checkNewFolderEnabledInsideReadWriteFolder").EnableDriveFs(),
         TestCase("checkNewFolderDisabledInsideReadOnlyFolder").EnableDriveFs(),
         TestCase("checkPasteEnabledInsideReadWriteFolder").EnableDriveFs(),

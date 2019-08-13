@@ -43,7 +43,8 @@ class ProofVerifierChromiumWithOwnership : public net::ProofVerifierChromium {
       : net::ProofVerifierChromium(cert_verifier.get(),
                                    &ct_policy_enforcer_,
                                    &transport_security_state_,
-                                   &ct_verifier_),
+                                   &ct_verifier_,
+                                   std::set<std::string>()),
         cert_verifier_(std::move(cert_verifier)) {}
 
  private:

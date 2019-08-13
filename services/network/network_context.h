@@ -401,6 +401,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // inside the network service.
   mojom::URLLoaderFactoryPtr CreateUrlLoaderFactoryForNetworkService();
 
+  mojom::OriginPolicyManager* origin_policy_manager() const {
+    return origin_policy_manager_.get();
+  }
+
  private:
   class ContextNetworkDelegate;
 

@@ -56,9 +56,13 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
         sink->OnRenderThreadChanged();
     }
 #endif
-    if (!playing_) {
+    if (!playing_ || audio_bus->channels() > 8) {
       // Force silence to AudioBus after stopping playout in case
-      // there is lingering audio data in AudioBus.
+      // there is lingering audio data in AudioBus or if the audio device has
+      // more than eight channels (which is not supported by the channel mixer
+      // in WebRTC).
+      // See http://crbug.com/986415 for details on why the extra check for
+      // number of channels is required.
       audio_bus->Zero();
       return;
     }

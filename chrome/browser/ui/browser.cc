@@ -159,6 +159,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/ssl_insecure_content.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -655,6 +656,12 @@ bool Browser::is_devtools() const {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, State Storage and Retrieval for UI:
 
+GURL Browser::GetNewTabURL() const {
+  if (app_controller_)
+    return app_controller_->GetAppLaunchURL();
+  return GURL(chrome::kChromeUINewTabURL);
+}
+
 gfx::Image Browser::GetCurrentPageIcon() const {
   WebContents* web_contents = tab_strip_model_->GetActiveWebContents();
   // |web_contents| can be NULL since GetCurrentPageIcon() is called by the
@@ -918,11 +925,15 @@ void Browser::ToggleFullscreenModeWithExtension(const GURL& extension_url) {
 }
 
 bool Browser::SupportsWindowFeature(WindowFeature feature) const {
-  return SupportsWindowFeatureImpl(feature, true);
+  bool supports =
+      SupportsWindowFeatureImpl(feature, /*check_can_support=*/false);
+  // Supported features imply CanSupportWindowFeature.
+  DCHECK(!supports || CanSupportWindowFeature(feature));
+  return supports;
 }
 
 bool Browser::CanSupportWindowFeature(WindowFeature feature) const {
-  return SupportsWindowFeatureImpl(feature, false);
+  return SupportsWindowFeatureImpl(feature, /*check_can_support=*/true);
 }
 
 void Browser::OpenFile() {
@@ -2596,62 +2607,101 @@ void Browser::UpdateWindowForLoadingStateChanged(content::WebContents* source,
   }
 }
 
-bool Browser::SupportsLocationBar() const {
-  // Tabbed browser always show a location bar.
-  if (is_type_tabbed())
-    return true;
+bool Browser::TabbedBrowserSupportsWindowFeature(WindowFeature feature,
+                                                 bool check_can_support) const {
+  bool fullscreen = ShouldHideUIForFullscreen();
+  switch (feature) {
+    case FEATURE_INFOBAR:
+    case FEATURE_DOWNLOADSHELF:
+    case FEATURE_BOOKMARKBAR:
+      return true;
+    case FEATURE_TABSTRIP:
+    case FEATURE_TOOLBAR:
+    case FEATURE_LOCATIONBAR:
+      return check_can_support || !fullscreen;
+    case FEATURE_TITLEBAR:
+    case FEATURE_NONE:
+      return false;
+  }
+}
 
-  // Non-app windows that aren't tabbed or system windows should always show a
-  // location bar, unless they are from a trusted source.
-  if (!is_app())
-    return !is_trusted_source();
+bool Browser::PopupBrowserSupportsWindowFeature(WindowFeature feature,
+                                                bool check_can_support) const {
+  bool fullscreen = ShouldHideUIForFullscreen();
 
-  // Web apps always support a location bar.
-  if (app_controller_)
-    return true;
+  switch (feature) {
+    case FEATURE_INFOBAR:
+    case FEATURE_DOWNLOADSHELF:
+      return true;
+    case FEATURE_TITLEBAR:
+    case FEATURE_LOCATIONBAR:
+      return check_can_support || (!fullscreen && !is_trusted_source());
+    case FEATURE_TABSTRIP:
+    case FEATURE_TOOLBAR:
+    case FEATURE_BOOKMARKBAR:
+    case FEATURE_NONE:
+      return false;
+  }
+}
 
-  return false;
+bool Browser::LegacyAppBrowserSupportsWindowFeature(
+    WindowFeature feature,
+    bool check_can_support) const {
+  bool fullscreen = ShouldHideUIForFullscreen();
+  switch (feature) {
+    case FEATURE_TITLEBAR:
+      return check_can_support || !fullscreen;
+    case FEATURE_LOCATIONBAR:
+      return false;
+    default:
+      return PopupBrowserSupportsWindowFeature(feature, check_can_support);
+  }
+}
+
+bool Browser::WebAppBrowserSupportsWindowFeature(WindowFeature feature,
+                                                 bool check_can_support) const {
+  DCHECK(app_controller_);
+  bool fullscreen = ShouldHideUIForFullscreen();
+  switch (feature) {
+    // Web apps should always support the toolbar, so the title/origin of the
+    // current page can be shown when browsing a url that is not inside the app.
+    // Note: Final determination of whether or not the toolbar is shown is made
+    // by the |AppBrowserController|.
+    // TODO(crbug.com/992834): Make this control the visibility of Browser
+    // Controls more generally.
+    case FEATURE_TOOLBAR:
+    case FEATURE_INFOBAR:
+    case FEATURE_DOWNLOADSHELF:
+      return true;
+    case FEATURE_TITLEBAR:
+    // TODO(crbug.com/992834): Make this control the visibility of
+    // CustomTabBarView.
+    case FEATURE_LOCATIONBAR:
+      return check_can_support || !fullscreen;
+    case FEATURE_TABSTRIP:
+      return app_controller_->HasTabStrip();
+    case FEATURE_BOOKMARKBAR:
+    case FEATURE_NONE:
+      return false;
+  }
 }
 
 bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
-                                        bool check_fullscreen) const {
-  bool hide_ui_for_fullscreen = check_fullscreen && ShouldHideUIForFullscreen();
+                                        bool check_can_support) const {
+  // TODO(crbug.com/992834): Change to TYPE_WEB_APP.
+  if (app_controller_)
+    return WebAppBrowserSupportsWindowFeature(feature, check_can_support);
 
-  unsigned int features = FEATURE_INFOBAR | FEATURE_DOWNLOADSHELF;
+  // TODO(crbug.com/992834): Change to TYPE_LEGACY_APP.
+  if (is_app())
+    return LegacyAppBrowserSupportsWindowFeature(feature, check_can_support);
 
-  // Bookmark bar could be present even if the top UI is hidden in fullscreen
-  // mode, such as when it is in 'detached' mode on NTP. Therefore we
-  // support this feature regardless of |hide_ui_for_fullscreen| and manage
-  // its visibility based on its own state.
-  if (is_type_tabbed())
-    features |= FEATURE_BOOKMARKBAR;
-
-  if (!hide_ui_for_fullscreen) {
-    if (!is_type_tabbed())
-      features |= FEATURE_TITLEBAR;
-
-    if (is_type_tabbed())
-      features |= FEATURE_TABSTRIP;
-
-    if (is_type_tabbed())
-      features |= FEATURE_TOOLBAR;
-
-    if (SupportsLocationBar())
-      features |= FEATURE_LOCATIONBAR;
+  switch (type_) {
+    case TYPE_TABBED:
+      return TabbedBrowserSupportsWindowFeature(feature, check_can_support);
+    case TYPE_POPUP:
+      return PopupBrowserSupportsWindowFeature(feature, check_can_support);
   }
-
-  // Web apps should always support the toolbar, so the title/origin of the
-  // current page can be shown when browsing a url that is not inside the app.
-  // Note: Final determination of whether or not the toolbar is shown is made by
-  // the |AppBrowserController|.
-  if (web_app::AppBrowserController::IsForWebAppBrowser(this))
-    features |= FEATURE_TOOLBAR;
-
-  // Some types of web apps will have a tabstrip.
-  if (app_controller_ && app_controller_->HasTabStrip())
-    features |= FEATURE_TABSTRIP;
-
-  return !!(features & feature);
 }
 
 void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {

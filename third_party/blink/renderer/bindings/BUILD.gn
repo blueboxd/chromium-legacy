@@ -99,22 +99,12 @@ collect_idl_files("web_idl_in_modules") {
   output = "${bindings_output_dir}/web_idl_in_modules.pickle"
 }
 
-blink_python_runner("web_idl_database") {
+action_with_pydeps("web_idl_database") {
   script = "${bindings_scripts_dir}/build_web_idl_database.py"
 
   input_data_files = get_target_outputs(":web_idl_in_core") +
                      get_target_outputs(":web_idl_in_modules")
-
-  # List pydeps's content to |pydeps|
-  pydeps_file = "${bindings_scripts_dir}/build_web_idl_database.pydeps"
-  pydeps_dir = get_path_info(pydeps_file, "dir")
-  pydeps_raw = read_file(pydeps_file, "list lines")
-  set_sources_assignment_filter([ "#*" ])
-  sources = pydeps_raw
-  pydeps = sources
-  sources = []
-
-  inputs = input_data_files + rebase_path(pydeps, ".", pydeps_dir)
+  inputs = input_data_files
   output_data_file = "${bindings_output_dir}/web_idl_database.pickle"
   outputs = [
     output_data_file,

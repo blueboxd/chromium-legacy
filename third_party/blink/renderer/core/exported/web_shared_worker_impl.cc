@@ -255,10 +255,12 @@ void WebSharedWorkerImpl::StartWorkerContext(
   auto devtools_params = std::make_unique<WorkerDevToolsParams>();
   devtools_params->devtools_worker_token = devtools_worker_token;
   devtools_params->wait_for_debugger = pause_worker_context_on_start;
-  mojom::blink::DevToolsAgentPtrInfo devtools_agent_ptr_info;
-  devtools_params->agent_request = mojo::MakeRequest(&devtools_agent_ptr_info);
-  mojom::blink::DevToolsAgentHostRequest devtools_agent_host_request =
-      mojo::MakeRequest(&devtools_params->agent_host_ptr_info);
+  mojo::PendingRemote<mojom::blink::DevToolsAgent> devtools_agent_remote;
+  devtools_params->agent_receiver =
+      devtools_agent_remote.InitWithNewPipeAndPassReceiver();
+  mojo::PendingReceiver<mojom::blink::DevToolsAgentHost>
+      devtools_agent_host_receiver =
+          devtools_params->agent_host_remote.InitWithNewPipeAndPassReceiver();
 
   GetWorkerThread()->Start(std::move(creation_params), thread_startup_data,
                            std::move(devtools_params));
@@ -268,9 +270,8 @@ void WebSharedWorkerImpl::StartWorkerContext(
       v8_inspector::V8StackTraceId());
 
   // We are now ready to inspect worker thread.
-  client_->WorkerReadyForInspection(
-      devtools_agent_ptr_info.PassHandle(),
-      devtools_agent_host_request.PassMessagePipe());
+  client_->WorkerReadyForInspection(devtools_agent_remote.PassPipe(),
+                                    devtools_agent_host_receiver.PassPipe());
 }
 
 void WebSharedWorkerImpl::OnAppCacheSelected() {

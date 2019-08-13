@@ -90,5 +90,6 @@ jumbo_source_set("unit_tests") {
     "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/private-join-and-compute/src:ec_commutative_cipher",
   ]
 }

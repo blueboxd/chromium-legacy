@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/features.h"
+#include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
@@ -80,6 +81,12 @@ SharingService::SharingService(
     fcm_handler_->AddSharingHandler(
         chrome_browser_sharing::SharingMessage::kClickToCallMessage,
         &click_to_call_message_handler_);
+  }
+
+  if (base::FeatureList::IsEnabled(kSharedClipboardReceiver)) {
+    fcm_handler_->AddSharingHandler(
+        chrome_browser_sharing::SharingMessage::kSharedClipboardMessage,
+        &shared_clipboard_message_handler_);
   }
 #endif  // defined(OS_ANDROID)
 

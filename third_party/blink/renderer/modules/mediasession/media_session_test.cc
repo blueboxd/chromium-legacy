@@ -26,7 +26,8 @@ class MockMediaSessionService : public mojom::blink::MediaSessionService {
     return service;
   }
 
-  void SetClient(mojom::blink::MediaSessionClientPtr client) override {}
+  void SetClient(
+      mojo::PendingRemote<mojom::blink::MediaSessionClient> client) override {}
   void SetPlaybackState(
       mojom::blink::MediaSessionPlaybackState state) override {}
   MOCK_METHOD1(SetPositionState,

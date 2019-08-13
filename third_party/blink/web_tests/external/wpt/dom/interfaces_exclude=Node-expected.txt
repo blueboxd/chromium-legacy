@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1104 tests; 1079 PASS, 25 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1104 tests; 1080 PASS, 24 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Partial interface Window: original interface defined
 PASS Event interface: existence and properties of interface object
@@ -535,7 +535,7 @@ PASS Element interface: operation getAttributeNodeNS(DOMString, DOMString)
 PASS Element interface: operation setAttributeNode(Attr)
 PASS Element interface: operation setAttributeNodeNS(Attr)
 PASS Element interface: operation removeAttributeNode(Attr)
-FAIL Element interface: operation attachShadow(ShadowRootInit) assert_equals: property has wrong .length expected 0 but got 1
+PASS Element interface: operation attachShadow(ShadowRootInit)
 PASS Element interface: attribute shadowRoot
 PASS Element interface: operation closest(DOMString)
 PASS Element interface: operation matches(DOMString)

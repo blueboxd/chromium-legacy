@@ -25,6 +25,10 @@ namespace dbus {
 class Bus;
 }
 
+namespace enterprise_management {
+class SignedData;
+}
+
 namespace login_manager {
 class LoginScreenStorageMetadata;
 class PolicyDescriptor;
@@ -179,6 +183,11 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
 
   // Starts the factory reset.
   virtual void StartDeviceWipe() = 0;
+
+  // Starts a remotely initiated factory reset, similar to |StartDeviceWipe|
+  // above, but also performs additional checks on Chrome OS side.
+  virtual void StartRemoteDeviceWipe(
+      const enterprise_management::SignedData& signed_command) = 0;
 
   // Set the block_demode and check_enrollment flags to 0 in the VPD.
   virtual void ClearForcedReEnrollmentVpd(VoidDBusMethodCallback callback) = 0;

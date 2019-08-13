@@ -20,6 +20,9 @@ class PLATFORM_EXPORT ProcessHeap {
  public:
   static void Init();
 
+  static CrossThreadPersistentRegion& GetCrossThreadPersistentRegion();
+  static CrossThreadPersistentRegion& GetCrossThreadWeakPersistentRegion();
+
   // Access to the CrossThreadPersistentRegion from multiple threads has to be
   // prevented as allocation, freeing, and iteration of nodes may otherwise
   // cause data races.

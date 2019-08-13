@@ -230,8 +230,8 @@ void TaskQueueImpl::MaybeLogPostTask(PostedTask* task) {
   if (!sequence_manager_->settings().log_post_task)
     return;
 
-  DVLOG(1) << name_ << " PostTask " << task->location.ToString() << " delay "
-           << task->delay;
+  LOG(INFO) << name_ << " PostTask " << task->location.ToString() << " delay "
+            << task->delay;
 #endif  // DCHECK_IS_ON()
 }
 

@@ -63,7 +63,6 @@ class IncrementalMarkingScope;
 class IncrementalMarkingTestDriver;
 }  // namespace incremental_marking_test
 
-class CrossThreadPersistentRegion;
 class MarkingVisitor;
 class PersistentNode;
 class PersistentRegion;
@@ -354,14 +353,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
     return weak_persistent_region_.get();
   }
 
-  CrossThreadPersistentRegion* GetCrossThreadPersistentRegion() const {
-    return cross_thread_persistent_region_.get();
-  }
-
-  CrossThreadPersistentRegion* GetCrossThreadWeakPersistentRegion() const {
-    return cross_thread_weak_persistent_region_.get();
-  }
-
   struct GCSnapshotInfo {
     STACK_ALLOCATED();
 
@@ -584,13 +575,8 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   std::unique_ptr<ThreadHeap> heap_;
   base::PlatformThreadId thread_;
-
   std::unique_ptr<PersistentRegion> persistent_region_;
   std::unique_ptr<PersistentRegion> weak_persistent_region_;
-  // References from other threads to this particular heap.
-  std::unique_ptr<CrossThreadPersistentRegion> cross_thread_persistent_region_;
-  std::unique_ptr<CrossThreadPersistentRegion>
-      cross_thread_weak_persistent_region_;
 
   // Start of the stack which is the boundary until conservative stack scanning
   // needs to search for managed pointers.

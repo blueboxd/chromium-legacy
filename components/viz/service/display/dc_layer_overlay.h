@@ -37,10 +37,10 @@ class VIZ_SERVICE_EXPORT DCLayerOverlay {
             gfx::ProtectedVideoType::kHardwareProtected);
   }
 
-  // Resource ids for video Y and UV planes.  Can be the same resource.
-  // See DirectCompositionSurfaceWin for details.
-  ResourceId y_resource_id = 0;
-  ResourceId uv_resource_id = 0;
+  // Resource ids for video Y and UV planes, a single NV12 image, or a swap
+  // chain image. See DirectCompositionSurfaceWin for details.
+  enum : size_t { kNumResources = 2 };
+  ResourceId resources[kNumResources] = {kInvalidResourceId};
 
   // Stacking order relative to backbuffer which has z-order 0.
   int z_order = 1;

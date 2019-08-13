@@ -30,7 +30,7 @@ cr.define('bluetooth_internals', function() {
   /** @type {devices_page.DevicesPage} */
   let devicesPage = null;
 
-  /** @type {bluetooth.mojom.DiscoverySessionProxy} */
+  /** @type {bluetooth.mojom.DiscoverySessionRemote} */
   let discoverySession = null;
 
   /** @type {boolean} */

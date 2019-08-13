@@ -7,12 +7,12 @@
  *     chrome://bluetooth-internals/.
  */
 cr.define('adapter_broker', function() {
-  /** @typedef {bluetooth.mojom.AdapterProxy} */
-  let AdapterProxy;
-  /** @typedef {bluetooth.mojom.DeviceProxy} */
-  let DeviceProxy;
-  /** @typedef {bluetooth.mojom.DiscoverySessionProxy} */
-  let DiscoverySessionProxy;
+  /** @typedef {bluetooth.mojom.AdapterRemote} */
+  let AdapterRemote;
+  /** @typedef {bluetooth.mojom.DeviceRemote} */
+  let DeviceRemote;
+  /** @typedef {bluetooth.mojom.DiscoverySessionRemote} */
+  let DiscoverySessionRemote;
 
   /**
    * Enum of adapter property names. Used for adapterchanged events.
@@ -29,18 +29,20 @@ cr.define('adapter_broker', function() {
    * The proxy class of an adapter and router of adapter events.
    * Exposes an EventTarget interface that allows other object to subscribe to
    * to specific AdapterClient events.
-   * Provides proxy access to Adapter functions. Converts parameters to Mojo
+   * Provides remote access to Adapter functions. Converts parameters to Mojo
    * handles and back when necessary.
    *
    * @implements {bluetooth.mojom.AdapterClientInterface}
    */
   class AdapterBroker extends cr.EventTarget {
-    /** @param {!AdapterProxy} adapter */
+    /** @param {!AdapterRemote} adapter */
     constructor(adapter) {
       super();
-      this.adapterClient_ = new bluetooth.mojom.AdapterClient(this);
+      this.adapterClientReceiver_ =
+          new bluetooth.mojom.AdapterClientReceiver(this);
       this.adapter_ = adapter;
-      this.adapter_.setClient(this.adapterClient_.$.createProxy());
+      this.adapter_.setClient(
+          this.adapterClientReceiver_.$.bindNewPipeAndPassRemote());
     }
 
     presentChanged(present) {
@@ -135,7 +137,7 @@ cr.define('adapter_broker', function() {
 
     /**
      * Requests the adapter to start a new discovery session.
-     * @return {!Promise<!bluetooth.mojom.DiscoverySessionProxy>}
+     * @return {!Promise<!bluetooth.mojom.DiscoverySessionRemote>}
      */
     startDiscoverySession() {
       return this.adapter_.startDiscoverySession().then(function(response) {
@@ -161,7 +163,7 @@ cr.define('adapter_broker', function() {
     }
 
     const bluetoothInternalsHandler =
-        mojom.BluetoothInternalsHandler.getProxy();
+        mojom.BluetoothInternalsHandler.getRemote();
 
     // Get an Adapter service.
     return bluetoothInternalsHandler.getAdapter().then(function(response) {

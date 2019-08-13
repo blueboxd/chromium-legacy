@@ -50,6 +50,7 @@ mojom("mojom_platform") {
     "filesystem/file_system.mojom",
     "frame/document_interface_broker.mojom",
     "frame/find_in_page.mojom",
+    "frame/frame.mojom",
     "frame/frame_host_test_interface.mojom",
     "frame/lifecycle.mojom",
     "frame/navigation_initiator.mojom",

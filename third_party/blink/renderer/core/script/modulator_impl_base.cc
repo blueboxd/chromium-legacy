@@ -270,21 +270,24 @@ ModuleImportMeta ModulatorImplBase::HostGetImportMetaProperties(
   return ModuleImportMeta(url_string);
 }
 
-ScriptValue ModulatorImplBase::InstantiateModule(ModuleRecord module_record,
-                                                 const KURL& source_url) {
+ScriptValue ModulatorImplBase::InstantiateModule(
+    v8::Local<v8::Module> module_record,
+    const KURL& source_url) {
   UseCounter::Count(GetExecutionContext(),
                     WebFeature::kInstantiateModuleScript);
 
   ScriptState::Scope scope(script_state_);
-  return module_record.Instantiate(script_state_, source_url);
+  return ModuleRecord::Instantiate(script_state_, module_record, source_url);
 }
 
 Vector<Modulator::ModuleRequest>
-ModulatorImplBase::ModuleRequestsFromModuleRecord(ModuleRecord module_record) {
+ModulatorImplBase::ModuleRequestsFromModuleRecord(
+    v8::Local<v8::Module> module_record) {
   ScriptState::Scope scope(script_state_);
-  Vector<String> specifiers = module_record.ModuleRequests(script_state_);
+  Vector<String> specifiers =
+      ModuleRecord::ModuleRequests(script_state_, module_record);
   Vector<TextPosition> positions =
-      module_record.ModuleRequestPositions(script_state_);
+      ModuleRecord::ModuleRequestPositions(script_state_, module_record);
   DCHECK_EQ(specifiers.size(), positions.size());
   Vector<ModuleRequest> requests;
   requests.ReserveInitialCapacity(specifiers.size());
@@ -310,10 +313,13 @@ void ModulatorImplBase::ProduceCacheModuleTree(
     HeapHashSet<Member<const ModuleScript>>* discovered_set) {
   DCHECK(module_script);
 
+  v8::Isolate* isolate = GetScriptState()->GetIsolate();
+  v8::HandleScope scope(isolate);
+
   discovered_set->insert(module_script);
 
-  ModuleRecord record = module_script->Record();
-  DCHECK(!record.IsNull());
+  v8::Local<v8::Module> record = module_script->V8Module();
+  DCHECK(!record.IsEmpty());
 
   module_script->ProduceCache();
 
@@ -372,11 +378,13 @@ ScriptValue ModulatorImplBase::ExecuteModule(
     // <spec step="7">Otherwise:</spec>
 
     // <spec step="7.1">Let record be script's record.</spec>
-    const ModuleRecord& record = module_script->Record();
-    CHECK(!record.IsNull());
+    const v8::Local<v8::Module>& record = module_script->V8Module();
+    CHECK(!record.IsEmpty());
 
-    // <spec step="7.2">Set evaluationStatus to record.Evaluate(). ...</spec>
-    error = record.Evaluate(script_state_);
+    // <spec step="7.2">Set evaluationStatus to ModuleRecord::Evaluate().
+    // ...</spec>
+    error = ModuleRecord::Evaluate(script_state_, record,
+                                   module_script->SourceURL());
 
     // <spec step="7.2">... If Evaluate fails to complete as a result of the
     // user agent aborting the running script, then set evaluationStatus to

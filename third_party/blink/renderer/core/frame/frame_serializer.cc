@@ -163,7 +163,7 @@ AtomicString SerializerMarkupAccumulator::AppendElement(
     const Element& element) {
   AtomicString prefix = MarkupAccumulator::AppendElement(element);
 
-  if (IsHTMLHeadElement(element))
+  if (IsA<HTMLHeadElement>(element))
     AppendExtraForHeadElement(element);
 
   resource_delegate_.AddResourceForElement(*document_, element);
@@ -176,7 +176,7 @@ AtomicString SerializerMarkupAccumulator::AppendElement(
 
 void SerializerMarkupAccumulator::AppendExtraForHeadElement(
     const Element& element) {
-  DCHECK(IsHTMLHeadElement(element));
+  DCHECK(IsA<HTMLHeadElement>(element));
 
   // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an
   // element like this, without special cases for XHTML

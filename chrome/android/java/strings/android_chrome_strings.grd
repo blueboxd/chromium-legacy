@@ -3846,6 +3846,14 @@ The site does NOT gain access to the camera. The camera images are only visible 
         Tap to make call
       </message>
 
+      <!-- Shared Clipboard -->
+      <message name="IDS_SHARED_CLIPBOARD_NOTIFICATION_TITLE" desc="Title text displayed in a shared clipboard notification.">
+        Text shared from other device
+      </message>
+      <message name="IDS_SHARED_CLIPBOARD_NOTIFICATION_TEXT" desc="Content text displayed in a shared clipboard notification.">
+        Copied to your clipboard
+      </message>
+
       <!-- Chrome Duet -->
       <message name="IDS_IPH_DUET_TITLE" desc="This string appears in an overlay that explains a new UI to users. 'Search' refers to searching the web, and 'explore' refers to Chrome's suggested content.">
         Search &amp; explore

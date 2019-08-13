@@ -3994,7 +3994,7 @@ TEST_F(WebViewTest, SetHasTouchEventHandlers) {
   Element* child_frame = document->getElementById("childframe");
   DCHECK(child_frame);
   Document* child_document =
-      ToHTMLIFrameElement(child_frame)->contentDocument();
+      To<HTMLIFrameElement>(child_frame)->contentDocument();
   Element* child_div = child_document->getElementById("childdiv");
   DCHECK(child_div);
   registry->DidAddEventHandler(*child_div, kTouchEvent);

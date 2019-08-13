@@ -294,7 +294,8 @@ void PopulateInfoMapWithContentTypeAllowed(
             profile);
     // If the permission is controlled by the Default Search Engine then don't
     // consider it important. The DSE gets these permissions by default.
-    if (search_permissions_service->IsPermissionControlledByDSE(
+    if (search_permissions_service &&
+        search_permissions_service->IsPermissionControlledByDSE(
             content_type, url::Origin::Create(url))) {
       continue;
     }

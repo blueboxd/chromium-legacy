@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-#include "third_party/blink/public/web/web_surrounding_text.h"
+#include "third_party/blink/renderer/core/editing/surrounding_text.h"
 
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -33,32 +33,28 @@
 #include "third_party/blink/renderer/core/editing/iterators/character_iterator.h"
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 
 namespace blink {
 
 namespace {
 
-EphemeralRange ComputeRangeFromFrameSelection(WebLocalFrame* frame) {
-  LocalFrame* web_frame = To<WebLocalFrameImpl>(frame)->GetFrame();
-
+EphemeralRange ComputeRangeFromFrameSelection(LocalFrame* frame) {
   // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  web_frame->GetDocument()->UpdateStyleAndLayout();
+  frame->GetDocument()->UpdateStyleAndLayout();
 
-  return web_frame->Selection()
+  return frame->Selection()
       .ComputeVisibleSelectionInDOMTree()
       .ToNormalizedEphemeralRange();
 }
 
 }  // namespace
 
-WebSurroundingText::WebSurroundingText(WebLocalFrame* frame, size_t max_length)
-    : WebSurroundingText(ComputeRangeFromFrameSelection(frame), max_length) {}
+SurroundingText::SurroundingText(LocalFrame* frame, size_t max_length)
+    : SurroundingText(ComputeRangeFromFrameSelection(frame), max_length) {}
 
-WebSurroundingText::WebSurroundingText(const EphemeralRange& range,
-                                       size_t max_length)
+SurroundingText::SurroundingText(const EphemeralRange& range, size_t max_length)
     : start_offset_in_text_content_(0), end_offset_in_text_content_(0) {
   const Position start_position = range.StartPosition();
   const Position end_position = range.EndPosition();
@@ -126,19 +122,19 @@ WebSurroundingText::WebSurroundingText(const EphemeralRange& range,
       TextIteratorBehavior::EmitsObjectReplacementCharacterBehavior());
 }
 
-WebString WebSurroundingText::TextContent() const {
+String SurroundingText::TextContent() const {
   return text_content_;
 }
 
-size_t WebSurroundingText::StartOffsetInTextContent() const {
+size_t SurroundingText::StartOffsetInTextContent() const {
   return start_offset_in_text_content_;
 }
 
-size_t WebSurroundingText::EndOffsetInTextContent() const {
+size_t SurroundingText::EndOffsetInTextContent() const {
   return end_offset_in_text_content_;
 }
 
-bool WebSurroundingText::IsEmpty() const {
+bool SurroundingText::IsEmpty() const {
   return text_content_.IsEmpty();
 }
 

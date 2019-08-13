@@ -342,6 +342,8 @@ void ModuleTreeLinker::NotifyModuleLoadFinished(ModuleScript* module_script) {
 void ModuleTreeLinker::FetchDescendants(const ModuleScript* module_script) {
   DCHECK(module_script);
 
+  v8::Isolate* isolate = modulator_->GetScriptState()->GetIsolate();
+  v8::HandleScope scope(isolate);
   // [nospec] Abort the steps if the browsing context is discarded.
   if (!modulator_->HasValidContext()) {
     result_ = nullptr;
@@ -350,11 +352,11 @@ void ModuleTreeLinker::FetchDescendants(const ModuleScript* module_script) {
   }
 
   // <spec step="2">Let record be module script's record.</spec>
-  ModuleRecord record = module_script->Record();
+  v8::Local<v8::Module> record = module_script->V8Module();
 
   // <spec step="1">If module script's record is null, then asynchronously
   // complete this algorithm with module script and abort these steps.</spec>
-  if (record.IsNull()) {
+  if (record.IsEmpty()) {
     found_parse_error_ = true;
     // We don't early-exit here and wait until all module scripts to be
     // loaded, because we might be not sure which error to be reported.
@@ -382,6 +384,7 @@ void ModuleTreeLinker::FetchDescendants(const ModuleScript* module_script) {
   // record.[[RequestedModules]],</spec>
   Vector<Modulator::ModuleRequest> module_requests =
       modulator_->ModuleRequestsFromModuleRecord(record);
+
   for (const auto& module_request : module_requests) {
     // <spec step="5.1">Let url be the result of resolving a module specifier
     // given module script's base URL and requested.</spec>
@@ -512,7 +515,7 @@ void ModuleTreeLinker::Instantiate() {
 #endif
 
     // <spec step="5.1">Let record be result's record.</spec>
-    ModuleRecord record = result_->Record();
+    v8::Local<v8::Module> record = result_->V8Module();
 
     // <spec step="5.2">Perform record.Instantiate(). ...</spec>
     AdvanceState(State::kInstantiating);
@@ -566,8 +569,8 @@ ScriptValue ModuleTreeLinker::FindFirstParseError(
 
   // <spec step="4">If moduleScript's record is null, then return moduleScript's
   // parse error.</spec>
-  ModuleRecord record = module_script->Record();
-  if (record.IsNull())
+  v8::Local<v8::Module> record = module_script->V8Module();
+  if (record.IsEmpty())
     return module_script->CreateParseError();
 
   // <spec step="5.1">Let childSpecifiers be the value of moduleScript's

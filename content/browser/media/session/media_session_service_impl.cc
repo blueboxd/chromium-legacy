@@ -56,8 +56,8 @@ void MediaSessionServiceImpl::FlushForTesting() {
 }
 
 void MediaSessionServiceImpl::SetClient(
-    blink::mojom::MediaSessionClientPtr client) {
-  client_ = std::move(client);
+    mojo::PendingRemote<blink::mojom::MediaSessionClient> client) {
+  client_ = mojo::Remote<blink::mojom::MediaSessionClient>(std::move(client));
 }
 
 void MediaSessionServiceImpl::SetPlaybackState(
@@ -138,7 +138,7 @@ MediaSessionImpl* MediaSessionServiceImpl::GetMediaSession() {
 
 void MediaSessionServiceImpl::Bind(
     blink::mojom::MediaSessionServiceRequest request) {
-  binding_.reset(new mojo::Binding<blink::mojom::MediaSessionService>(
+  receiver_.reset(new mojo::Receiver<blink::mojom::MediaSessionService>(
       this, std::move(request)));
 }
 

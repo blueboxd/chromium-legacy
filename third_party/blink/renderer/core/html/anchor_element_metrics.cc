@@ -51,7 +51,7 @@ bool IsInIFrame(const HTMLAnchorElement& anchor_element) {
   Frame* frame = anchor_element.GetDocument().GetFrame();
   while (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
     HTMLFrameOwnerElement* owner = local_frame->GetDocument()->LocalOwner();
-    if (owner && IsHTMLIFrameElement(owner))
+    if (owner && IsA<HTMLIFrameElement>(owner))
       return true;
     frame = frame->Tree().Parent();
   }

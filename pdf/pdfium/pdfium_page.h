@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "pdf/page_orientation.h"
@@ -134,6 +135,9 @@ class PDFiumPage {
   FPDF_TEXTPAGE text_page() const { return text_page_.get(); }
 
  private:
+  friend class PDFiumPageLinkTest;
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageLinkTest, TestLinkGeneration);
+
   // Returns a link index if the given character index is over a link, or -1
   // otherwise.
   int GetLink(int char_index, LinkTarget* target);
@@ -163,9 +167,15 @@ class PDFiumPage {
     Link(const Link& that);
     ~Link();
 
+    // Represents start index of underlying text range. Should be -1 if the link
+    // is not over text.
+    int32_t start_char_index = -1;
+    // Represents the number of characters that the link overlaps with.
+    int32_t char_count = 0;
+    std::vector<pp::Rect> bounding_rects;
+
+    // Valid for links with external urls only.
     std::string url;
-    // Bounding rectangles of characters.
-    std::vector<pp::Rect> rects;
   };
 
   PDFiumEngine* engine_;

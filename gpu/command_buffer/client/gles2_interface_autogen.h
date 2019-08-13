@@ -844,8 +844,8 @@ virtual void CommitOverlayPlanesCHROMIUM(GLuint64 swap_id,
                                          GLbitfield flags = 0) = 0;
 virtual void FlushDriverCachesCHROMIUM() = 0;
 virtual GLuint GetLastFlushIdCHROMIUM() = 0;
-virtual void ScheduleDCLayerCHROMIUM(GLuint y_texture_id,
-                                     GLuint uv_texture_id,
+virtual void ScheduleDCLayerCHROMIUM(GLuint texture_0,
+                                     GLuint texture_1,
                                      GLint z_order,
                                      GLint content_x,
                                      GLint content_y,

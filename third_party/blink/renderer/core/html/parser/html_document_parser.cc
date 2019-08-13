@@ -510,41 +510,39 @@ size_t HTMLDocumentParser::ProcessTokenizedChunkFromBackgroundParser(
       FROM_HERE, WTF::Bind(&BackgroundHTMLParser::StartedChunkWithCheckpoint,
                            background_parser_, chunk->input_checkpoint));
 
-  // TODO(kouhei): Below should rewritten as range for loop.
-  for (Vector<CompactHTMLToken>::const_iterator it = tokens.begin();
-       it != tokens.end(); ++it) {
+  for (const auto& token : tokens) {
     DCHECK(!IsWaitingForScripts());
 
-    if (!chunk->starting_script && (it->GetType() == HTMLToken::kStartTag ||
-                                    it->GetType() == HTMLToken::kEndTag))
+    if (!chunk->starting_script && (token.GetType() == HTMLToken::kStartTag ||
+                                    token.GetType() == HTMLToken::kEndTag))
       element_token_count++;
 
-    text_position_ = it->GetTextPosition();
+    text_position_ = token.GetTextPosition();
 
-    ConstructTreeFromCompactHTMLToken(*it);
+    ConstructTreeFromCompactHTMLToken(token);
 
     if (IsStopped())
       break;
 
     // Preloads were queued if there was a <meta> csp token in a tokenized
     // chunk.
-    if (pending_csp_meta_token_ && it == pending_csp_meta_token_) {
+    if (pending_csp_meta_token_ && &token == pending_csp_meta_token_) {
       pending_csp_meta_token_ = nullptr;
       FetchQueuedPreloads();
     }
 
     if (IsPaused()) {
       // The script or stylesheet should be the last token of this bunch.
-      DCHECK_EQ(it + 1, tokens.end());
+      DCHECK_EQ(&token, &tokens.back());
       if (IsWaitingForScripts())
         RunScriptsForPausedTreeBuilder();
       ValidateSpeculations(std::move(chunk));
       break;
     }
 
-    if (it->GetType() == HTMLToken::kEndOfFile) {
+    if (token.GetType() == HTMLToken::kEndOfFile) {
       // The EOF is assumed to be the last token of this bunch.
-      DCHECK_EQ(it + 1, tokens.end());
+      DCHECK_EQ(&token, &tokens.back());
       // There should never be any chunks after the EOF.
       DCHECK(speculations_.IsEmpty());
       PrepareToStopParsing();

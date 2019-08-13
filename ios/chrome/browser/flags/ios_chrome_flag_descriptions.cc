@@ -404,10 +404,6 @@ const char kToolbarNewTabButtonName[] =
 const char kToolbarNewTabButtonDescription[] =
     "When enabled, the bottom toolbar middle button opens a new tab";
 
-const char kTranslateManualTriggerName[] = "Enable manual translate trigger";
-const char kTranslateManualTriggerDescription[] =
-    "Show a menu item in the popup menu that triggers page translation.";
-
 const char kUnifiedConsentName[] = "Unified Consent";
 const char kUnifiedConsentDescription[] =
     "Enables a unified management of user consent for privacy-related "

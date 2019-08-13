@@ -81,6 +81,8 @@ std::string GetMimeTypeForPath(const std::string& path) {
 // An URLDataSource implementation that handles devtools://devtools/
 // requests. Three types of requests could be handled based on the URL path:
 // 1. /bundled/: bundled DevTools frontend is served.
+//    when built with debug_devtools=true, the path can be provided via
+//    --custom-devtools-frontend.
 // 2. /remote/: remote DevTools frontend is served from App Engine.
 // 3. /custom/: custom DevTools frontend is served from the server as specified
 //    by the --custom-devtools-frontend flag.
@@ -373,8 +375,14 @@ void DevToolsDataSource::StartFileRequestForDebugDevtools(
   if (command_line->HasSwitch(switches::kCustomDevtoolsFrontend)) {
     inspector_debug_dir =
         command_line->GetSwitchValuePath(switches::kCustomDevtoolsFrontend);
-  } else if (!base::PathService::Get(chrome::DIR_INSPECTOR_DEBUG,
-                                     &inspector_debug_dir)) {
+    // --custom-devtools-frontend may already be used to specify an URL.
+    // In that case, fall back to the default debug-devtools bundle.
+    if (!base::PathExists(inspector_debug_dir))
+      inspector_debug_dir.clear();
+  }
+  if (inspector_debug_dir.empty() &&
+      !base::PathService::Get(chrome::DIR_INSPECTOR_DEBUG,
+                              &inspector_debug_dir)) {
     callback.Run(CreateNotFoundResponse());
     return;
   }

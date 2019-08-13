@@ -1165,7 +1165,6 @@ jumbo_source_set("unit_tests") {
     "exported/web_scoped_window_focus_allowed_indicator_test.cc",
     "exported/web_searchable_form_data_test.cc",
     "exported/web_selector_test.cc",
-    "exported/web_surrounding_text_test.cc",
     "exported/web_user_gesture_token_test.cc",
     "exported/web_view_test.cc",
     "feature_policy/feature_policy_test.cc",

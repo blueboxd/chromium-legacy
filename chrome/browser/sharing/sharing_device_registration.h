@@ -90,6 +90,9 @@ class SharingDeviceRegistration {
   // Returns if device supports telephony capability.
   bool IsTelephonySupported() const;
 
+  // Returns if device can handle receiving of shared clipboard contents.
+  bool IsSharedClipboardSupported() const;
+
   SharingSyncPreference* sharing_sync_preference_;
   instance_id::InstanceIDDriver* instance_id_driver_;
   VapidKeyManager* vapid_key_manager_;

@@ -2258,7 +2258,7 @@ message AppInstallReportLogEvent {
     RESUME = 4;
   }
 
-  // Timestamp, in milliseconds since epoch. Set for all log
+  // Timestamp, in microseconds since epoch. Set for all log
   // events.
   optional int64 timestamp = 1;
 

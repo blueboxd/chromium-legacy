@@ -33,8 +33,9 @@ class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
 
   bool Matches(SharedWorkerHost* worker_host);
   void WorkerReadyForInspection(
-      blink::mojom::DevToolsAgentPtr agent_ptr,
-      blink::mojom::DevToolsAgentHostRequest agent_host_request);
+      mojo::PendingRemote<blink::mojom::DevToolsAgent> agent_remote,
+      mojo::PendingReceiver<blink::mojom::DevToolsAgentHost>
+          agent_host_receiver);
   void WorkerRestarted(SharedWorkerHost* worker_host);
   void WorkerDestroyed();
 

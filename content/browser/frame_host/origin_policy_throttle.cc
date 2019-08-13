@@ -15,6 +15,7 @@
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -52,16 +53,9 @@ OriginPolicyThrottle::MaybeCreateThrottleFor(NavigationHandle* handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(handle);
 
-  // We use presence of the origin policy request header to determine
-  // whether we should create the throttle.
-  if (!handle->GetRequestHeaders().HasHeader(
-          net::HttpRequestHeaders::kSecOriginPolicy))
+  if (!ShouldRequestOriginPolicy(handle->GetURL()))
     return nullptr;
 
-  // TODO(vogelheim): Rewrite & hoist up this DCHECK to ensure that ..HasHeader
-  //     and ShouldRequestOriginPolicy are always equal on entry to the method.
-  //     This depends on https://crbug.com/881234 being fixed.
-  DCHECK(OriginPolicyThrottle::ShouldRequestOriginPolicy(handle->GetURL()));
   return base::WrapUnique(new OriginPolicyThrottle(handle));
 }
 
@@ -93,78 +87,62 @@ NavigationThrottle::ThrottleCheckResult
 OriginPolicyThrottle::WillProcessResponse() {
   DCHECK(navigation_handle());
 
-  // Per spec, Origin Policies are only fetched for https:-requests. So we
-  // should always have HTTP headers at this point.
-  // However, some unit tests generate responses without headers, so we still
-  // need to check.
-  if (!navigation_handle()->GetResponseHeaders())
+  // If no test origin policy is set, look at the actual origin policy from the
+  // response.
+  const base::Optional<network::OriginPolicy>& origin_policy =
+      GetTestOriginPolicy().has_value()
+          ? GetTestOriginPolicy()
+          : static_cast<NavigationHandleImpl*>(navigation_handle())
+                ->navigation_request()
+                ->response()
+                ->head.origin_policy;
+
+  // If there is no origin_policy, treat this case as
+  // network::OriginPolicyState::kNoPolicyApplies.
+  if (!origin_policy.has_value()) {
     return NavigationThrottle::PROCEED;
+  }
 
-  std::string header;
-  navigation_handle()->GetResponseHeaders()->GetNormalizedHeader(
-      net::HttpRequestHeaders::kSecOriginPolicy, &header);
+  switch (origin_policy->state) {
+    case network::OriginPolicyState::kCannotLoadPolicy:
+    case network::OriginPolicyState::kInvalidRedirect:
+    case network::OriginPolicyState::kOther:
+      return NavigationThrottle::ThrottleCheckResult(
+          NavigationThrottle::CANCEL, net::ERR_BLOCKED_BY_CLIENT,
+          GetContentClient()->browser()->GetOriginPolicyErrorPage(
+              origin_policy->state, navigation_handle()));
 
-  network::mojom::OriginPolicyManager::RetrieveOriginPolicyCallback
-      origin_policy_manager_done = base::BindOnce(
-          &OriginPolicyThrottle::OnOriginPolicyManagerRetrieveDone,
-          weak_factory_.GetWeakPtr());
-
-  SiteInstance* site_instance = navigation_handle()->GetStartingSiteInstance();
-  StoragePartitionImpl* storage_partition =
-      static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
-          site_instance->GetBrowserContext(), site_instance));
-  network::mojom::OriginPolicyManager* origin_policy_manager =
-      storage_partition->GetOriginPolicyManagerForBrowserProcess();
-
-  origin_policy_manager->RetrieveOriginPolicy(
-      GetRequestOrigin(), header, std::move(origin_policy_manager_done));
-
-  return NavigationThrottle::DEFER;
+    case network::OriginPolicyState::kNoPolicyApplies:
+    case network::OriginPolicyState::kLoaded:
+      return NavigationThrottle::PROCEED;
+  }
 }
 
 const char* OriginPolicyThrottle::GetNameForLogging() {
   return "OriginPolicyThrottle";
 }
 
+// static
+void OriginPolicyThrottle::SetOriginPolicyForTesting(
+    const network::OriginPolicy& origin_policy) {
+  base::Optional<network::OriginPolicy> new_test_origin_policy = origin_policy;
+  GetTestOriginPolicy().swap(new_test_origin_policy);
+}
+
+// static
+void OriginPolicyThrottle::ResetOriginPolicyForTesting() {
+  GetTestOriginPolicy().reset();
+}
+
 OriginPolicyThrottle::OriginPolicyThrottle(NavigationHandle* handle)
     : NavigationThrottle(handle) {}
 
-const url::Origin OriginPolicyThrottle::GetRequestOrigin() const {
-  return url::Origin::Create(navigation_handle()->GetURL());
-}
-
-void OriginPolicyThrottle::CancelNavigation(network::OriginPolicyState state,
-                                            const GURL& policy_url) {
-  base::Optional<std::string> error_page =
-      GetContentClient()->browser()->GetOriginPolicyErrorPage(
-          state, navigation_handle());
-  CancelDeferredNavigation(NavigationThrottle::ThrottleCheckResult(
-      NavigationThrottle::CANCEL, net::ERR_BLOCKED_BY_CLIENT, error_page));
-}
-
-void OriginPolicyThrottle::OnOriginPolicyManagerRetrieveDone(
-    const network::OriginPolicy& origin_policy) {
-  switch (origin_policy.state) {
-    case network::OriginPolicyState::kCannotLoadPolicy:
-    case network::OriginPolicyState::kInvalidRedirect:
-      CancelNavigation(origin_policy.state, origin_policy.policy_url);
-      return;
-
-    case network::OriginPolicyState::kNoPolicyApplies:
-      Resume();
-      return;
-
-    case network::OriginPolicyState::kLoaded:
-      DCHECK(origin_policy.contents);
-      static_cast<NavigationHandleImpl*>(navigation_handle())
-          ->navigation_request()
-          ->SetOriginPolicy(origin_policy);
-      Resume();
-      return;
-
-    default:
-      NOTREACHED();
-  }
+// static
+base::Optional<network::OriginPolicy>&
+OriginPolicyThrottle::GetTestOriginPolicy() {
+  static base::NoDestructor<base::Optional<network::OriginPolicy>>
+      test_origin_policy;
+  return *test_origin_policy;
 }
 
 }  // namespace content

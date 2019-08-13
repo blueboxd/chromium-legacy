@@ -153,8 +153,9 @@ class CONTENT_EXPORT SharedWorkerHost
   // blink::mojom::SharedWorkerHost methods:
   void OnConnected(int connection_request_id) override;
   void OnContextClosed() override;
-  void OnReadyForInspection(blink::mojom::DevToolsAgentPtr,
-                            blink::mojom::DevToolsAgentHostRequest) override;
+  void OnReadyForInspection(
+      mojo::PendingRemote<blink::mojom::DevToolsAgent>,
+      mojo::PendingReceiver<blink::mojom::DevToolsAgentHost>) override;
   void OnScriptLoadFailed() override;
   void OnFeatureUsed(blink::mojom::WebFeature feature) override;
 

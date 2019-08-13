@@ -590,9 +590,6 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 
 // Whether the translate menu item should be enabled.
 - (BOOL)isTranslateEnabled {
-  if (!base::FeatureList::IsEnabled(translate::kTranslateMobileManualTrigger))
-    return NO;
-
   if (!self.webState)
     return NO;
 
@@ -782,21 +779,18 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   [actionsArray addObject:self.bookmarkItem];
 
   // Translate.
-  if (base::FeatureList::IsEnabled(translate::kTranslateMobileManualTrigger)) {
-    UMA_HISTOGRAM_BOOLEAN("Translate.MobileMenuTranslate.Shown",
-                          [self isTranslateEnabled]);
-
-    self.translateItem = CreateTableViewItem(
-        IDS_IOS_TOOLS_MENU_TRANSLATE, PopupMenuActionTranslate,
-        @"popup_menu_translate", kToolsMenuTranslateId);
-    if (self.engagementTracker &&
-        self.engagementTracker->ShouldTriggerHelpUI(
-            feature_engagement::kIPHBadgedTranslateManualTriggerFeature)) {
-      self.translateItem.badgeText = l10n_util::GetNSStringWithFixup(
-          IDS_IOS_TOOLS_MENU_CELL_NEW_FEATURE_BADGE);
-    }
-    [actionsArray addObject:self.translateItem];
+  UMA_HISTOGRAM_BOOLEAN("Translate.MobileMenuTranslate.Shown",
+                        [self isTranslateEnabled]);
+  self.translateItem = CreateTableViewItem(
+      IDS_IOS_TOOLS_MENU_TRANSLATE, PopupMenuActionTranslate,
+      @"popup_menu_translate", kToolsMenuTranslateId);
+  if (self.engagementTracker &&
+      self.engagementTracker->ShouldTriggerHelpUI(
+          feature_engagement::kIPHBadgedTranslateManualTriggerFeature)) {
+    self.translateItem.badgeText = l10n_util::GetNSStringWithFixup(
+        IDS_IOS_TOOLS_MENU_CELL_NEW_FEATURE_BADGE);
   }
+  [actionsArray addObject:self.translateItem];
 
   // Find in Pad.
   self.findInPageItem = CreateTableViewItem(

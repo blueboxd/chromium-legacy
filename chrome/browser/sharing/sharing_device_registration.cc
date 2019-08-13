@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
+#include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
@@ -198,6 +199,10 @@ int SharingDeviceRegistration::GetDeviceCapabilities() const {
     device_capabilities |=
         static_cast<int>(SharingDeviceCapability::kTelephony);
   }
+  if (IsSharedClipboardSupported()) {
+    device_capabilities |=
+        static_cast<int>(SharingDeviceCapability::kSharedClipboard);
+  }
   return device_capabilities;
 }
 
@@ -210,6 +215,14 @@ bool SharingDeviceRegistration::IsTelephonySupported() const {
 #endif
 
   return false;
+}
+
+bool SharingDeviceRegistration::IsSharedClipboardSupported() const {
+#if defined(OS_ANDROID)
+  return base::FeatureList::IsEnabled(kSharedClipboardReceiver);
+#else
+  return false;
+#endif
 }
 
 void SharingDeviceRegistration::SetDeviceCapabilityForTesting(

@@ -38,7 +38,8 @@ struct CONTENT_EXPORT NavigationRequestInfo {
                         std::unique_ptr<network::SharedURLLoaderFactoryInfo>
                             blob_url_loader_factory,
                         const base::UnguessableToken& devtools_navigation_token,
-                        const base::UnguessableToken& devtools_frame_token);
+                        const base::UnguessableToken& devtools_frame_token,
+                        bool obey_origin_policy);
   NavigationRequestInfo(const NavigationRequestInfo& other) = delete;
   ~NavigationRequestInfo();
 
@@ -78,6 +79,11 @@ struct CONTENT_EXPORT NavigationRequestInfo {
   const base::UnguessableToken devtools_navigation_token;
 
   const base::UnguessableToken devtools_frame_token;
+
+  // If set, the network service will attempt to retrieve the appropriate origin
+  // policy, if necessary, and attach it to the ResourceResponseHead.
+  // Spec: https://wicg.github.io/origin-policy/
+  const bool obey_origin_policy;
 };
 
 }  // namespace content

@@ -35,7 +35,7 @@ void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
   items_.Grow(line_start_index + 1);
   offsets_.Grow(line_start_index + 1);
 
-  AddItems({children.begin(), children.size()});
+  AddItems(children.begin(), children.end());
 
   // All children are added. Create an item for the start of the line.
   wtf_size_t item_count = items_.size() - line_start_index;
@@ -44,16 +44,18 @@ void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
   // traversals.
 }
 
-void NGFragmentItemsBuilder::AddItems(base::span<Child> children) {
+void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
   DCHECK_EQ(items_.size(), offsets_.size());
 
-  for (auto& child : children) {
+  for (Child* child_iter = child_begin; child_iter != child_end;) {
+    Child& child = *child_iter;
     if (const NGPhysicalTextFragment* text = child.fragment.get()) {
       DCHECK(text->TextShapeResult());
       DCHECK_EQ(text->StartOffset(), text->TextShapeResult()->StartIndex());
       DCHECK_EQ(text->EndOffset(), text->TextShapeResult()->EndIndex());
       items_.push_back(std::make_unique<NGFragmentItem>(*text));
       offsets_.push_back(child.offset);
+      ++child_iter;
       continue;
     }
 
@@ -62,9 +64,19 @@ void NGFragmentItemsBuilder::AddItems(base::span<Child> children) {
       wtf_size_t box_start_index = items_.size();
       items_.Grow(box_start_index + 1);
       offsets_.push_back(child.offset);
-      // TODO(kojii): Add children and update children_count.
-      // All children are added. Create an item for the start of the box.
+
+      // Add all children, including their desendants, skipping this item.
+      CHECK_GE(child.children_count, 1u);  // 0 will loop infinitely.
+      Child* end_child_iter = child_iter + child.children_count;
+      CHECK_LE(end_child_iter - child_begin, child_end - child_begin);
+      AddItems(child_iter + 1, end_child_iter);
+      child_iter = end_child_iter;
+
+      // All children are added. Compute how many items are actually added. The
+      // number of items added maybe different from |child.children_count|.
       wtf_size_t item_count = items_.size() - box_start_index;
+
+      // Create an item for the start of the box.
       const NGPhysicalBoxFragment& box =
           To<NGPhysicalBoxFragment>(child.layout_result->PhysicalFragment());
       items_[box_start_index] =
@@ -72,7 +84,10 @@ void NGFragmentItemsBuilder::AddItems(base::span<Child> children) {
       continue;
     }
 
+    // OOF children should have been added to their parent box fragments.
+    // TODO(kojii): Consider handling them in NGFragmentItem too.
     DCHECK(!child.out_of_flow_positioned_box);
+    ++child_iter;
   }
 }
 

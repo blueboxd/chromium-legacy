@@ -63,6 +63,11 @@ import androidx.browser.customtabs.TrustedWebUtils.SplashScreenParamKey;
  */
 public class TwaSplashController
         implements InflationObserver, SplashDelegate, SplashscreenObserver {
+
+    // TODO(pshmakov): move this to AndroidX.
+    private static final String KEY_SHOWN_IN_CLIENT =
+            "androidx.browser.trusted.KEY_SPLASH_SCREEN_SHOWN_IN_CLIENT";
+
     private final SplashController mSplashController;
     private final Activity mActivity;
     private final ActivityWindowAndroid mActivityWindowAndroid;
@@ -87,8 +92,9 @@ public class TwaSplashController
 
         long splashHideAnimationDurationMs = IntentUtils.safeGetInt(
                 getSplashScreenParamsFromIntent(), SplashScreenParamKey.FADE_OUT_DURATION_MS, 0);
+        boolean isWindowInitiallyTranslucent = mActivity instanceof TranslucentCustomTabActivity;
         mSplashController.setConfig(
-                this, true /* isWindowInitiallyTranslucent */, splashHideAnimationDurationMs);
+                this, isWindowInitiallyTranslucent, splashHideAnimationDurationMs);
 
         mSplashController.addObserver(this);
         lifecycleDispatcher.register(this);
@@ -193,7 +199,18 @@ public class TwaSplashController
     public static boolean handleIntent(Activity activity, Intent intent) {
         if (!intentIsForTwaWithSplashScreen(intent)) return false;
 
-        intent.setClassName(activity, TranslucentCustomTabActivity.class.getName());
+        Bundle params = IntentUtils.safeGetBundleExtra(
+                intent, TrustedWebUtils.EXTRA_SPLASH_SCREEN_PARAMS);
+        boolean shownInClient = IntentUtils.safeGetBoolean(params, KEY_SHOWN_IN_CLIENT, true);
+        // shownInClient is "true" by default for the following reasons:
+        // - For compatibility with older clients which don't use this bundle key.
+        // - Because getting "false" when it should be "true" leads to more severe visual glitches,
+        // than vice versa.
+        if (shownInClient) {
+            // If splash screen was shown in client, we must launch a translucent activity to
+            // ensure smooth transition.
+            intent.setClassName(activity, TranslucentCustomTabActivity.class.getName());
+        }
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         activity.startActivity(intent);
         activity.overridePendingTransition(0, 0);

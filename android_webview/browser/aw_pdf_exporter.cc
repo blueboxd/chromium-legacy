@@ -64,13 +64,10 @@ void AwPdfExporter::ExportToPdf(JNIEnv* env,
                                 const JavaParamRef<jintArray>& pages,
                                 const JavaParamRef<jobject>& cancel_signal) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto print_settings = std::make_unique<printing::PrintSettings>();
   printing::PageRanges page_ranges;
   JNI_AwPdfExporter_GetPageRanges(env, pages, &page_ranges);
-  // TODO(crbug.com/964948) make InitPdfSettings() return PrintSettings.
-  InitPdfSettings(env, obj, page_ranges, print_settings.get());
   AwPrintManager* print_manager = AwPrintManager::CreateForWebContents(
-      web_contents_, std::move(print_settings), fd,
+      web_contents_, CreatePdfSettings(env, obj, page_ranges), fd,
       base::Bind(&AwPdfExporter::DidExportPdf, base::Unretained(this)));
 
   if (!print_manager->PrintNow())
@@ -84,10 +81,11 @@ int MilsToDots(int val, int dpi) {
 }
 }  // namespace
 
-void AwPdfExporter::InitPdfSettings(JNIEnv* env,
-                                    const JavaRef<jobject>& obj,
-                                    const printing::PageRanges& page_ranges,
-                                    printing::PrintSettings* settings) {
+std::unique_ptr<printing::PrintSettings> AwPdfExporter::CreatePdfSettings(
+    JNIEnv* env,
+    const JavaRef<jobject>& obj,
+    const printing::PageRanges& page_ranges) {
+  auto settings = std::make_unique<printing::PrintSettings>();
   int dpi = Java_AwPdfExporter_getDpi(env, obj);
   int width = Java_AwPdfExporter_getPageWidth(env, obj);
   int height = Java_AwPdfExporter_getPageHeight(env, obj);
@@ -117,6 +115,7 @@ void AwPdfExporter::InitPdfSettings(JNIEnv* env,
       MilsToDots(Java_AwPdfExporter_getBottomMargin(env, obj), dpi);
   settings->SetCustomMargins(margins);
   settings->set_should_print_backgrounds(true);
+  return settings;
 }
 
 void AwPdfExporter::DidExportPdf(int page_count) {

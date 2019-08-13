@@ -39,14 +39,14 @@ class CORE_EXPORT JSModuleScript final : public ModuleScript,
   // and allows null ModuleRecord.
   static JSModuleScript* CreateForTest(
       Modulator*,
-      ModuleRecord,
+      v8::Local<v8::Module>,
       const KURL& base_url,
       const ScriptFetchOptions& = ScriptFetchOptions());
 
   // Do not call this constructor. Use Create() instead. This is public only for
   // MakeGarbageCollected.
   JSModuleScript(Modulator* settings_object,
-                 ModuleRecord record,
+                 v8::Local<v8::Module> record,
                  const KURL& source_url,
                  const KURL& base_url,
                  const ScriptFetchOptions&,
@@ -66,7 +66,7 @@ class CORE_EXPORT JSModuleScript final : public ModuleScript,
   static JSModuleScript* CreateInternal(
       size_t source_text_length,
       Modulator*,
-      ModuleRecord,
+      v8::Local<v8::Module>,
       const KURL& source_url,
       const KURL& base_url,
       const ScriptFetchOptions&,

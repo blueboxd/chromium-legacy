@@ -75,12 +75,10 @@ ValueWrapperSyntheticModuleScript::CreateWithDefaultExport(
   // Step 6. "Set script's record to the result of creating a synthetic module
   // record with a default export of json with settings."
   // [spec text]
-  ModuleRecord record = ModuleRecord(isolate, v8_synthetic_module, source_url);
-
   ValueWrapperSyntheticModuleScript* value_wrapper_module_script =
       MakeGarbageCollected<ValueWrapperSyntheticModuleScript>(
-          settings_object, record, source_url, base_url, fetch_options, value,
-          start_position);
+          settings_object, v8_synthetic_module, source_url, base_url,
+          fetch_options, value, start_position);
   settings_object->GetModuleRecordResolver()->RegisterModuleScript(
       value_wrapper_module_script);
   // Step 7. "Return script."
@@ -99,8 +97,8 @@ ValueWrapperSyntheticModuleScript::CreateWithError(
     const TextPosition& start_position) {
   ValueWrapperSyntheticModuleScript* value_wrapper_module_script =
       MakeGarbageCollected<ValueWrapperSyntheticModuleScript>(
-          settings_object, ModuleRecord(), source_url, base_url, fetch_options,
-          value, start_position);
+          settings_object, v8::Local<v8::Module>(), source_url, base_url,
+          fetch_options, value, start_position);
   settings_object->GetModuleRecordResolver()->RegisterModuleScript(
       value_wrapper_module_script);
   value_wrapper_module_script->SetParseErrorAndClearRecord(
@@ -112,7 +110,7 @@ ValueWrapperSyntheticModuleScript::CreateWithError(
 
 ValueWrapperSyntheticModuleScript::ValueWrapperSyntheticModuleScript(
     Modulator* settings_object,
-    ModuleRecord record,
+    v8::Local<v8::Module> record,
     const KURL& source_url,
     const KURL& base_url,
     const ScriptFetchOptions& fetch_options,

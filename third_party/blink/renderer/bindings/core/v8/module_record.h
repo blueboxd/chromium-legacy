@@ -66,7 +66,7 @@ class CORE_EXPORT ModuleRecord final {
   DISALLOW_NEW();
 
  public:
-  static ModuleRecord Compile(
+  static v8::Local<v8::Module> Compile(
       v8::Isolate*,
       const String& source,
       const KURL& source_url,
@@ -87,14 +87,21 @@ class CORE_EXPORT ModuleRecord final {
   ModuleRecord(v8::Isolate*, v8::Local<v8::Module>, const KURL&);
 
   // Returns exception, if any.
-  ScriptValue Instantiate(ScriptState*, const KURL& source_url);
+  static ScriptValue Instantiate(ScriptState*,
+                                 v8::Local<v8::Module> record,
+                                 const KURL& source_url);
 
   // Returns exception, if any.
-  ScriptValue Evaluate(ScriptState*) const;
+  static ScriptValue Evaluate(ScriptState*,
+                              v8::Local<v8::Module> record,
+                              const KURL& source_url);
   static void ReportException(ScriptState*, v8::Local<v8::Value> exception);
 
-  Vector<String> ModuleRequests(ScriptState*);
-  Vector<TextPosition> ModuleRequestPositions(ScriptState*);
+  static Vector<String> ModuleRequests(ScriptState*,
+                                       v8::Local<v8::Module> record);
+  static Vector<TextPosition> ModuleRequestPositions(
+      ScriptState*,
+      v8::Local<v8::Module> record);
 
   inline bool operator==(const blink::ModuleRecord& other) const;
   bool operator!=(const blink::ModuleRecord& other) const {
@@ -103,7 +110,7 @@ class CORE_EXPORT ModuleRecord final {
 
   bool IsNull() const { return !module_ || module_->IsEmpty(); }
 
-  v8::Local<v8::Value> V8Namespace(v8::Isolate*);
+  static v8::Local<v8::Value> V8Namespace(v8::Local<v8::Module> record);
 
  private:
   // ModuleScript instances store their record as

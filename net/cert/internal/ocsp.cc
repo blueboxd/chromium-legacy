@@ -672,6 +672,65 @@ WARN_UNUSED_RESULT bool VerifyOCSPResponseSignature(
   return false;
 }
 
+// Parse ResponseData and return false if any unhandled critical extensions are
+// found. No known critical ResponseData extensions exist.
+bool ParseOCSPResponseDataExtensions(
+    const der::Input& response_extensions,
+    OCSPVerifyResult::ResponseStatus* response_details) {
+  std::map<der::Input, ParsedExtension> extensions;
+  if (!ParseExtensions(response_extensions, &extensions)) {
+    *response_details = OCSPVerifyResult::PARSE_RESPONSE_DATA_ERROR;
+    return false;
+  }
+
+  for (const auto& ext : extensions) {
+    // TODO: handle ResponseData extensions
+
+    if (ext.second.critical) {
+      *response_details = OCSPVerifyResult::UNHANDLED_CRITICAL_EXTENSION;
+      return false;
+    }
+  }
+
+  return true;
+}
+
+// Parse SingleResponse and return false if any unhandled critical extensions
+// (other than the CT extension) are found. The CT-SCT extension is not required
+// to be marked critical, but since it is handled by Chrome, we will overlook
+// the flag setting.
+bool ParseOCSPSingleResponseExtensions(
+    const der::Input& single_extensions,
+    OCSPVerifyResult::ResponseStatus* response_details) {
+  std::map<der::Input, ParsedExtension> extensions;
+  if (!ParseExtensions(single_extensions, &extensions)) {
+    *response_details = OCSPVerifyResult::PARSE_RESPONSE_DATA_ERROR;
+    return false;
+  }
+
+  // The wire form of the OID 1.3.6.1.4.1.11129.2.4.5 - OCSP SingleExtension for
+  // X.509v3 Certificate Transparency Signed Certificate Timestamp List, see
+  // Section 3.3 of RFC6962.
+  const uint8_t ct_ocsp_ext_oid[] = {0x2B, 0x06, 0x01, 0x04, 0x01,
+                                     0xD6, 0x79, 0x02, 0x04, 0x05};
+  der::Input ct_ext_oid(ct_ocsp_ext_oid);
+
+  for (const auto& ext : extensions) {
+    // The CT OCSP extension is handled in ct::ExtractSCTListFromOCSPResponse
+    if (ext.second.oid == ct_ext_oid)
+      continue;
+
+    // TODO: handle SingleResponse extensions
+
+    if (ext.second.critical) {
+      *response_details = OCSPVerifyResult::UNHANDLED_CRITICAL_EXTENSION;
+      return false;
+    }
+  }
+
+  return true;
+}
+
 // Loops through the OCSPSingleResponses to find the best match for |cert|.
 OCSPRevocationStatus GetRevocationStatusForCert(
     const OCSPResponseData& response_data,
@@ -694,6 +753,14 @@ OCSPRevocationStatus GetRevocationStatusForCert(
     OCSPSingleResponse single_response;
     if (!ParseOCSPSingleResponse(single_response_der, &single_response))
       return OCSPRevocationStatus::UNKNOWN;
+
+    // Reject unhandled critical extensions in SingleResponse
+    if (single_response.has_extensions &&
+        !ParseOCSPSingleResponseExtensions(single_response.extensions,
+                                           response_details)) {
+      return OCSPRevocationStatus::UNKNOWN;
+    }
+
     OCSPCertID cert_id;
     if (!ParseOCSPCertID(single_response.cert_id_tlv, &cert_id))
       return OCSPRevocationStatus::UNKNOWN;
@@ -781,6 +848,14 @@ OCSPRevocationStatus CheckOCSP(
     return OCSPRevocationStatus::UNKNOWN;
   }
 
+  // Process the OCSP ResponseData extensions. In particular, must reject if
+  // there are any critical extensions that are not understood.
+  if (response_data.has_extensions &&
+      !ParseOCSPResponseDataExtensions(response_data.extensions,
+                                       response_details)) {
+    return OCSPRevocationStatus::UNKNOWN;
+  }
+
   scoped_refptr<ParsedCertificate> parsed_certificate;
   scoped_refptr<ParsedCertificate> parsed_issuer_certificate;
   if (!certificate) {
@@ -810,9 +885,6 @@ OCSPRevocationStatus CheckOCSP(
   OCSPRevocationStatus status =
       GetRevocationStatusForCert(response_data, certificate, issuer_certificate,
                                  verify_time, max_age, response_details);
-
-  // TODO(eroman): Process the OCSP extensions. In particular, must reject if
-  // there are any critical extensions that are not understood.
 
   // Check that the OCSP response has a valid signature. It must either be
   // signed directly by the issuing certificate, or a valid authorized

@@ -297,7 +297,8 @@ cookies](https://en.wikipedia.org/wiki/HTTP_ETag#Tracking_using_ETags), because
 defeating such fingerprinting is likely not practical without fundamental
 changes to how the Web works. One needs roughly 33 bits of non-correlated,
 distinguishing information to have a good chance of telling apart most user
-agents on the planet (see [Arvind Narayanan's site](https://33bits.org/about/)
+agents on the planet (see
+[Arvind Narayanan's site](https://33bits.wordpress.com/about/)
 and [Peter Eckersley's discussion of the information theory behind
 Panopticlick](https://www.eff.org/deeplinks/2010/01/primer-information-theory-and-privacy).)
 

@@ -287,8 +287,7 @@ crbug.com/910627 webexposed/global-interface-listing-shared-worker.html [ Slow ]
 crbug.com/910627 virtual/stable/webexposed/global-interface-listing-shared-worker.html [ Slow ]
 
 ### virtual/gpu/fast/canvas/ blending layout tests are slow
-crbug.com/866850 [ Linux ] virtual/gpu/fast/canvas/canvas-blend-image.html [ Slow ]
-crbug.com/866850 [ Mac ] virtual/gpu/fast/canvas/canvas-blend-image.html [ Slow ]
+crbug.com/866850 virtual/gpu/fast/canvas/canvas-blend-image.html [ Slow ]
 crbug.com/866850 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-color-over-image.html [ Slow ]
 crbug.com/866850 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-color-over-image.html [ Slow ]
 crbug.com/866850 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-color-over-pattern.html [ Slow ]

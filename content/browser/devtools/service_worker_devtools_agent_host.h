@@ -48,8 +48,8 @@ class ServiceWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
 
   void WorkerRestarted(int worker_process_id, int worker_route_id);
   void WorkerReadyForInspection(
-      blink::mojom::DevToolsAgentPtrInfo agent_ptr_info,
-      blink::mojom::DevToolsAgentHostRequest host_request);
+      mojo::PendingRemote<blink::mojom::DevToolsAgent> agent_remote,
+      mojo::PendingReceiver<blink::mojom::DevToolsAgentHost> host_receiver);
   void WorkerDestroyed();
   void WorkerVersionInstalled();
   void WorkerVersionDoomed();

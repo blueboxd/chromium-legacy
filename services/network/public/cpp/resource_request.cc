@@ -69,7 +69,8 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
          fetch_window_id == request.fetch_window_id &&
          devtools_request_id == request.devtools_request_id &&
          is_signed_exchange_prefetch_cache_enabled ==
-             request.is_signed_exchange_prefetch_cache_enabled;
+             request.is_signed_exchange_prefetch_cache_enabled &&
+         obey_origin_policy == request.obey_origin_policy;
 }
 
 bool ResourceRequest::SendsCookies() const {

@@ -143,6 +143,7 @@ PreviewsLitePageDecider::PreviewsLitePageDecider(
       page_id_(base::RandUint64()),
       drp_settings_(nullptr),
       pref_service_(nullptr),
+      need_to_show_notification_(false),
       host_bypass_blacklist_(std::make_unique<base::DictionaryValue>()),
       drp_headers_valid_(false) {
   if (!browser_context)

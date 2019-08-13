@@ -32,7 +32,8 @@ class ModuleScriptTestModulator final : public DummyModulator {
       : script_state_(script_state) {}
   ~ModuleScriptTestModulator() override = default;
 
-  Vector<ModuleRequest> ModuleRequestsFromModuleRecord(ModuleRecord) override {
+  Vector<ModuleRequest> ModuleRequestsFromModuleRecord(
+      v8::Local<v8::Module>) override {
     return Vector<ModuleRequest>();
   }
 
@@ -141,12 +142,14 @@ TEST_F(ModuleScriptTest, V8CodeCache) {
     ASSERT_TRUE(module_script);
 
     // Check that the module script is instantiated/evaluated correctly.
-    ASSERT_TRUE(
-        module_script->Record()
-            .Instantiate(scope.GetScriptState(), module_script->SourceURL())
-            .IsEmpty());
-    ASSERT_TRUE(
-        module_script->Record().Evaluate(scope.GetScriptState()).IsEmpty());
+    ASSERT_TRUE(ModuleRecord::Instantiate(scope.GetScriptState(),
+                                          module_script->V8Module(),
+                                          module_script->SourceURL())
+                    .IsEmpty());
+    ASSERT_TRUE(ModuleRecord::Evaluate(scope.GetScriptState(),
+                                       module_script->V8Module(),
+                                       module_script->SourceURL())
+                    .IsEmpty());
     TestFoo(scope);
 
     Checkpoint checkpoint;
@@ -257,7 +260,7 @@ TEST_F(ModuleScriptTest, ValueWrapperSyntheticModuleScript) {
       MakeGarbageCollected<ModuleScriptTestModulator>(scope.GetScriptState());
   ValueWrapperSyntheticModuleScript* module_script =
       CreateValueWrapperSyntheticModuleScript(modulator, local_value);
-  ASSERT_FALSE(module_script->Record().IsNull());
+  ASSERT_FALSE(module_script->V8Module().IsEmpty());
 }
 
 }  // namespace blink

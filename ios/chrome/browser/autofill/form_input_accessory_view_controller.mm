@@ -27,10 +27,6 @@ CGFloat const kInputAccessoryHeight = 44.0f;
     FormSuggestionViewDelegate,
     ManualFillAccessoryViewControllerDelegate>
 
-// Grey view used as the background of the keyboard to fix
-// http://crbug.com/847523
-@property(nonatomic, strong) UIView* grayBackgroundView;
-
 // The keyboard replacement view, if any.
 @property(nonatomic, weak) UIView* keyboardReplacementView;
 
@@ -84,17 +80,6 @@ CGFloat const kInputAccessoryHeight = 44.0f;
           [[ManualFillAccessoryViewController alloc] initWithDelegate:self];
 
     _suggestionsHaveBeenShown = NO;
-    if (IsIPadIdiom()) {
-      _grayBackgroundView = [[UIView alloc] init];
-      _grayBackgroundView.translatesAutoresizingMaskIntoConstraints = NO;
-      // This color was obtained by try and error.
-      _grayBackgroundView.backgroundColor =
-          [[UIColor alloc] initWithRed:206 / 255.f
-                                 green:212 / 255.f
-                                  blue:217 / 255.f
-                                 alpha:1];
-
-    }
   }
   return self;
 }
@@ -208,14 +193,12 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   if (self.inputAccessoryView) {
     if (!keyboardState.isVisible || keyboardState.isSplit || self.paused) {
       self.inputAccessoryView.hidden = true;
-      self.grayBackgroundView.hidden = true;
     } else {
       // Make sure the input accessory is there if needed.
       [self prepareToShowSuggestions];
       [self addInputAccessoryViewIfNeeded];
       [self addCustomKeyboardViewIfNeeded];
       self.inputAccessoryView.hidden = false;
-      self.grayBackgroundView.hidden = false;
     }
   }
 }
@@ -306,7 +289,6 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 // Removes the custom views related to the input accessory view.
 - (void)removeCustomInputAccessoryView {
   [self.inputAccessoryView removeFromSuperview];
-  [self.grayBackgroundView removeFromSuperview];
 }
 
 // This searches in a keyboard view hierarchy for the best candidate to
@@ -385,7 +367,6 @@ CGFloat const kInputAccessoryHeight = 44.0f;
         // The keyboard view is a different one.
         [self.manualFillAccessoryViewController resetAnimated:NO];
         [self.inputAccessoryView removeFromSuperview];
-        [self.grayBackgroundView removeFromSuperview];
       }
       self.inputAccessoryView.translatesAutoresizingMaskIntoConstraints = NO;
       [keyboardView addSubview:self.inputAccessoryView];
@@ -399,11 +380,6 @@ CGFloat const kInputAccessoryHeight = 44.0f;
         [self.inputAccessoryView.heightAnchor
             constraintEqualToConstant:autofill::kInputAccessoryHeight]
       ]];
-      if (!self.grayBackgroundView.superview) {
-        [keyboardView addSubview:self.grayBackgroundView];
-        [keyboardView sendSubviewToBack:self.grayBackgroundView];
-        AddSameConstraints(self.grayBackgroundView, keyboardView);
-      }
     } else if (!self.inputAccessoryView.superview) {  // Is not an iPad.
       UIResponder* firstResponder = GetFirstResponder();
       if (firstResponder.inputAccessoryView) {

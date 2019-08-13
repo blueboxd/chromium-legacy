@@ -23,7 +23,6 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.Supplier;
 import org.chromium.base.SysUtils;
@@ -539,10 +538,9 @@ public class BottomSheet
         mTabSupplier = activity.getActivityTabProvider();
         mFullscreenManager = activity.getFullscreenManager();
 
-        int colorId = R.color.sheet_bg_color;
         mToolbarHolder =
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_toolbar_container);
-        mToolbarHolder.setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(), colorId));
+        mToolbarHolder.setBackgroundResource(R.drawable.top_round);
         mDefaultToolbarView = mToolbarHolder.findViewById(R.id.bottom_sheet_toolbar);
 
         mActivity = activity;
@@ -552,8 +550,7 @@ public class BottomSheet
         mBottomSheetContentContainer =
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_content);
         mBottomSheetContentContainer.setBottomSheet(this);
-        mBottomSheetContentContainer.setBackgroundColor(
-                ApiCompatibilityUtils.getColor(getResources(), colorId));
+        mBottomSheetContentContainer.setBackgroundResource(R.drawable.top_round);
 
         mDpToPx = mActivity.getResources().getDisplayMetrics().density;
 
@@ -833,18 +830,15 @@ public class BottomSheet
             if (transitionAnimator != null) animators.add(transitionAnimator);
         }
 
-        // Temporarily make the background of the toolbar holder a solid color so the transition
-        // doesn't appear to show a hole in the toolbar.
-        int colorId = R.color.sheet_bg_color;
+        // Set the the background drawable of the toolbar holder so the transition doesn't
+        // appear to show a hole in the toolbar.
         if (!mIsSheetOpen) {
             // If the sheet is closed, the bottom sheet content container is invisible, so
-            // background color is needed on the toolbar holder to prevent a blank rectangle from
+            // background drawable is needed on the toolbar holder to prevent a blank rectangle from
             // appearing during the content transition.
-            mToolbarHolder.setBackgroundColor(
-                    ApiCompatibilityUtils.getColor(getResources(), colorId));
+            mToolbarHolder.setBackgroundResource(R.drawable.top_round);
         }
-        mBottomSheetContentContainer.setBackgroundColor(
-                ApiCompatibilityUtils.getColor(getResources(), colorId));
+        mBottomSheetContentContainer.setBackgroundResource(R.drawable.top_round);
 
         // Return early if there are no animators to run.
         if (animators.isEmpty()) {

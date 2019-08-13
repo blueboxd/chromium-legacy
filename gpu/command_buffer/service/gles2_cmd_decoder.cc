@@ -1210,8 +1210,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void DoFlushMappedBufferRange(
       GLenum target, GLintptr offset, GLsizeiptr size);
 
-  void DoScheduleDCLayerCHROMIUM(GLuint y_texture_id,
-                                 GLuint uv_texture_id,
+  void DoScheduleDCLayerCHROMIUM(GLuint texture_0,
+                                 GLuint texture_1,
                                  GLint z_order,
                                  GLint content_x,
                                  GLint content_y,
@@ -19404,8 +19404,8 @@ void GLES2DecoderImpl::DoFlushMappedBufferRange(
   api()->glFlushMappedBufferRangeFn(target, offset, size);
 }
 
-void GLES2DecoderImpl::DoScheduleDCLayerCHROMIUM(GLuint y_texture_id,
-                                                 GLuint uv_texture_id,
+void GLES2DecoderImpl::DoScheduleDCLayerCHROMIUM(GLuint texture_0,
+                                                 GLuint texture_1,
                                                  GLint z_order,
                                                  GLint content_x,
                                                  GLint content_y,
@@ -19434,35 +19434,33 @@ void GLES2DecoderImpl::DoScheduleDCLayerCHROMIUM(GLuint y_texture_id,
     return;
   }
 
-  GLuint texture_ids[] = {y_texture_id, uv_texture_id};
-  scoped_refptr<gl::GLImage> images[2];
+  if (!texture_0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
+                       "invalid texture");
+    return;
+  }
+
+  ui::DCRendererLayerParams params;
+  GLuint texture_ids[] = {texture_0, texture_1};
   size_t i = 0;
-  for (auto& texture_id : texture_ids) {
-    if (!texture_id) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
-                         "invalid texture");
-      return;
-    }
+  for (GLuint texture_id : texture_ids) {
+    if (!texture_id)
+      break;
     TextureRef* ref = texture_manager()->GetTexture(texture_id);
     if (!ref) {
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
                          "unknown texture");
       return;
     }
-    Texture::ImageState image_state;
-    gl::GLImage* image = ref->texture()->GetLevelImage(ref->texture()->target(),
-                                                       0, &image_state);
+    gl::GLImage* image =
+        ref->texture()->GetLevelImage(ref->texture()->target(), 0);
     if (!image) {
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
                          "unsupported texture format");
       return;
     }
-    images[i++] = scoped_refptr<gl::GLImage>(image);
+    params.images[i++] = scoped_refptr<gl::GLImage>(image);
   }
-
-  ui::DCRendererLayerParams params;
-  params.y_image = std::move(images[0]);
-  params.uv_image = std::move(images[1]);
   params.z_order = z_order;
   params.content_rect =
       gfx::Rect(content_x, content_y, content_width, content_height);

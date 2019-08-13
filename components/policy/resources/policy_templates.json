@@ -13690,7 +13690,7 @@
     },
     {
       'name': 'PasswordProtectionWarningTrigger',
-      'owners': ['bdea@chromium.org', 'nrparker@chromium.org'],
+      'owners': ['bdea@chromium.org', 'nparker@chromium.org'],
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
@@ -13909,7 +13909,7 @@
     },
     {
       'name': 'SafeBrowsingWhitelistDomains',
-      'owners': ['bdea@chromium.org', 'nrparker@chromium.org'],
+      'owners': ['bdea@chromium.org', 'nparker@chromium.org'],
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -13935,7 +13935,7 @@
     },
     {
       'name': 'PasswordProtectionLoginURLs',
-      'owners': ['bdea@chromium.org', 'nrparker@chromium.org'],
+      'owners': ['bdea@chromium.org', 'nparker@chromium.org'],
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -13959,7 +13959,7 @@
     },
     {
       'name': 'PasswordProtectionChangePasswordURL',
-      'owners': ['bdea@chromium.org', 'nrparker@chromium.org'],
+      'owners': ['bdea@chromium.org', 'nparker@chromium.org'],
       'type': 'string',
       'schema': { 'type': 'string' },
       'supported_on': ['chrome.*:69-', 'chrome_os:69-'],
@@ -13980,7 +13980,7 @@
     },
     {
       'name': 'SafeBrowsingExtendedReportingEnabled',
-      'owners': ['bdea@chromium.org', 'nrparker@chromium.org'],
+      'owners': ['bdea@chromium.org', 'nparker@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:66-', 'chrome_os:66-'],
@@ -14728,7 +14728,7 @@
     },
     {
       'name': 'SafeSitesFilterBehavior',
-      'owners': ['bdea@chromium.org', 'nrparker@chromium.org'],
+      'owners': ['bdea@chromium.org', 'nparker@chromium.org'],
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
@@ -14855,6 +14855,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.win:69-'],
+      'future': True,
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -16904,7 +16905,7 @@
     },
     {
       'name': 'SafeBrowsingRealTimeLookupEnabled',
-      'owners': ['drubery@chromium.org', 'nrparker@chromium.org'],
+      'owners': ['drubery@chromium.org', 'nparker@chromium.org'],
       'type': 'main',
       'schema': {
         'type': 'boolean',

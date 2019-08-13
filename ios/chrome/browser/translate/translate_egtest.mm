@@ -15,7 +15,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
@@ -431,7 +430,6 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   std::unique_ptr<net::NetworkChangeNotifier::DisableForTest>
       network_change_notifier_disabler_;
   std::unique_ptr<FakeNetworkChangeNotifier> network_change_notifier_;
-  base::test::ScopedFeatureList feature_list_;
 }
 @end
 
@@ -1523,8 +1521,6 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 // the page when tapped. If the page is already translated the infobar should
 // appear in "after translate" state.
 - (void)testTranslateManualTrigger {
-  feature_list_.InitAndEnableFeature(translate::kTranslateMobileManualTrigger);
-
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -1606,8 +1602,6 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 // Translate infobar even if user has previously selected not to translate the
 // the source language.
 - (void)testTranslateManualTriggerNeverTranslate {
-  feature_list_.InitAndEnableFeature(translate::kTranslateMobileManualTrigger);
-
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -1659,8 +1653,6 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 // Translate infobar even if user has previously selected not to translate the
 // the site.
 - (void)testTranslateManualTriggerNeverTranslateSite {
-  feature_list_.InitAndEnableFeature(translate::kTranslateMobileManualTrigger);
-
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -1710,8 +1702,6 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 // Tests that the "Translate..." button in the tools menu is disabled if
 // translate is not available.
 - (void)testTranslateManualTriggerNotEnabled {
-  feature_list_.InitAndEnableFeature(translate::kTranslateMobileManualTrigger);
-
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -1769,29 +1759,6 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
                             UIAccessibilityTraitNotEnabled)];
   // Close the tools menu.
   [ChromeTestCase removeAnyOpenMenusAndInfoBars];
-}
-
-// Tests that the "Translate..." button in the tools menu should not be visible
-// if the feature is disabled.
-- (void)testTranslateManualTriggerFeatureDisabled {
-  feature_list_.InitAndDisableFeature(translate::kTranslateMobileManualTrigger);
-
-  // Start the HTTP server.
-  std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
-  web::test::SetUpHttpServer(std::move(provider));
-
-  // Load a page with French text.
-  GURL URL = web::test::HttpServer::MakeUrl(
-      base::StringPrintf("http://%s", kFrenchPagePath));
-  [ChromeEarlGrey loadURL:URL];
-
-  [self assertTranslateInfobarIsVisible];
-
-  // Make sure the Translate manual trigger button is not visible.
-  [ChromeEarlGreyUI openToolsMenu];
-  [[[EarlGrey selectElementWithMatcher:toolsMenuTranslateButton()]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
-      onElementWithMatcher:ToolsMenuView()] assertWithMatcher:grey_nil()];
 }
 
 #pragma mark - Utility methods

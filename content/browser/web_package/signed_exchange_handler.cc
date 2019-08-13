@@ -141,6 +141,8 @@ std::string OCSPErrorToString(const net::OCSPVerifyResult& ocsp_result) {
       return "OCSPResponse structure could not be parsed.";
     case net::OCSPVerifyResult::PARSE_RESPONSE_DATA_ERROR:
       return "OCSP ResponseData structure could not be parsed.";
+    case net::OCSPVerifyResult::UNHANDLED_CRITICAL_EXTENSION:
+      return "OCSP Response contained unhandled critical extension.";
   }
 
   switch (ocsp_result.revocation_status) {

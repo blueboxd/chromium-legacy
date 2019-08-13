@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_SERVICE_IMPL_H_
 
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/mediasession/media_session.mojom.h"
 
 namespace content {
@@ -24,7 +24,9 @@ class CONTENT_EXPORT MediaSessionServiceImpl
 
   static void Create(RenderFrameHost* render_frame_host,
                      blink::mojom::MediaSessionServiceRequest request);
-  const blink::mojom::MediaSessionClientPtr& GetClient() { return client_; }
+  const mojo::Remote<blink::mojom::MediaSessionClient>& GetClient() {
+    return client_;
+  }
   RenderFrameHost* GetRenderFrameHost();
 
   blink::mojom::MediaSessionPlaybackState playback_state() const {
@@ -44,7 +46,8 @@ class CONTENT_EXPORT MediaSessionServiceImpl
   void FlushForTesting();
 
   // blink::mojom::MediaSessionService implementation.
-  void SetClient(blink::mojom::MediaSessionClientPtr client) override;
+  void SetClient(
+      mojo::PendingRemote<blink::mojom::MediaSessionClient> client) override;
 
   void SetPlaybackState(blink::mojom::MediaSessionPlaybackState state) override;
   void SetPositionState(
@@ -68,9 +71,9 @@ class CONTENT_EXPORT MediaSessionServiceImpl
   const int render_frame_routing_id_;
 
   // RAII binding of |this| to an MediaSessionService interface request.
-  // The binding is removed when binding_ is cleared or goes out of scope.
-  std::unique_ptr<mojo::Binding<blink::mojom::MediaSessionService>> binding_;
-  blink::mojom::MediaSessionClientPtr client_;
+  // The binding is removed when receiver_ is cleared or goes out of scope.
+  std::unique_ptr<mojo::Receiver<blink::mojom::MediaSessionService>> receiver_;
+  mojo::Remote<blink::mojom::MediaSessionClient> client_;
   blink::mojom::MediaSessionPlaybackState playback_state_;
   blink::mojom::SpecMediaMetadataPtr metadata_;
   std::set<media_session::mojom::MediaSessionAction> actions_;

@@ -50,6 +50,10 @@ class CORE_EXPORT NGInlineCursor {
   // Move the current position to the next fragment in pre-order DFS. Returns
   // |true| if the move was successful.
   bool MoveToNext();
+
+  // Same as |MoveToNext| except that this skips children even if they exist.
+  bool MoveToNextSkippingChildren();
+
   // TODO(kojii): Add more variations as needed, NextSibling,
   // NextSkippingChildren, Previous, etc.
 
@@ -57,7 +61,9 @@ class CORE_EXPORT NGInlineCursor {
   void SetRoot(const NGFragmentItems* items);
   void SetRoot(const NGPaintFragment* root_paint_fragment);
 
+  bool MoveToItem(unsigned item_index);
   bool MoveToNextItem();
+  bool MoveToNextItemSkippingChildren();
 
   bool MoveToParentPaintFragment();
   bool MoveToNextPaintFragment();
@@ -70,7 +76,7 @@ class CORE_EXPORT NGInlineCursor {
   const NGFragmentItem* current_item_ = nullptr;
   const NGPaintFragment* current_paint_fragment_ = nullptr;
 
-  unsigned next_item_index_ = 0;
+  unsigned current_item_index_ = 0;
 };
 
 }  // namespace blink

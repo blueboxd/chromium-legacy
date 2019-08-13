@@ -32,7 +32,7 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   }
   void SetTextContent(const NGInlineNode& node);
 
-  // Add a line at once.
+  // Add a line at once. The children in the given list maybe moved out.
   using Child = NGLineBoxFragmentBuilder::Child;
   using ChildList = NGLineBoxFragmentBuilder::ChildList;
   void AddLine(const NGPhysicalLineBoxFragment& line, ChildList& children);
@@ -45,7 +45,7 @@ class CORE_EXPORT NGFragmentItemsBuilder {
                        void* data);
 
  private:
-  void AddItems(base::span<Child> children);
+  void AddItems(Child* child_begin, Child* child_end);
 
   void ConvertToPhysical(WritingMode writing_mode,
                          TextDirection direction,

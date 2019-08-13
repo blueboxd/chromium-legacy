@@ -43,13 +43,17 @@
 #include "services/network/empty_url_loader_client.h"
 #include "services/network/loader_util.h"
 #include "services/network/network_usage_accumulator.h"
+#include "services/network/origin_policy/origin_policy_constants.h"
+#include "services/network/origin_policy/origin_policy_manager.h"
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/cpp/origin_policy.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/origin_policy_manager.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/sec_header_helpers.h"
@@ -340,7 +344,8 @@ URLLoader::URLLoader(
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
     base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder,
     base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator,
-    mojom::TrustedURLLoaderHeaderClient* url_loader_header_client)
+    mojom::TrustedURLLoaderHeaderClient* url_loader_header_client,
+    mojom::OriginPolicyManager* origin_policy_manager)
     : url_request_context_(url_request_context),
       network_service_client_(network_service_client),
       network_context_client_(network_context_client),
@@ -377,7 +382,8 @@ URLLoader::URLLoader(
           request.custom_proxy_use_alternate_proxy_list),
       fetch_window_id_(request.fetch_window_id),
       update_network_isolation_key_on_redirect_(
-          request.update_network_isolation_key_on_redirect) {
+          request.update_network_isolation_key_on_redirect),
+      origin_policy_manager_(nullptr) {
   DCHECK(delete_callback_);
   DCHECK(factory_params_);
   if (url_loader_header_client &&
@@ -423,6 +429,12 @@ URLLoader::URLLoader(
   // they should be ignored by CORS checks.
   net::HttpRequestHeaders merged_headers = request.headers;
   merged_headers.MergeFrom(request.cors_exempt_headers);
+  if (request.obey_origin_policy) {
+    DCHECK(origin_policy_manager);
+    origin_policy_manager_ = origin_policy_manager;
+    merged_headers.SetHeader(net::HttpRequestHeaders::kSecOriginPolicy,
+                             kDefaultOriginPolicyVersion);
+  }
   // This should be ensured by the CorsURLLoaderFactory(), which is called
   // before URLLoaders are created.
   DCHECK(AreRequestHeadersSafe(merged_headers));
@@ -997,17 +1009,31 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
       response_->head.mime_type.assign("text/plain");
     }
   }
-  if (!is_more_mime_sniffing_needed_ && !is_more_corb_sniffing_needed_) {
-    // Treat feed types as text/plain.
-    if (response_->head.mime_type == "application/rss+xml" ||
-        response_->head.mime_type == "application/atom+xml") {
-      response_->head.mime_type.assign("text/plain");
-    }
-    SendResponseToClient();
+
+  // If necessary, retrieve the associated origin policy, before sending the
+  // response to the client.
+  if (origin_policy_manager_ && url_request_->response_headers()) {
+    std::string sec_origin_policy_header;
+    url_request_->response_headers()->GetNormalizedHeader(
+        net::HttpRequestHeaders::kSecOriginPolicy, &sec_origin_policy_header);
+
+    OriginPolicyManager::RetrieveOriginPolicyCallback
+        origin_policy_manager_done =
+            base::BindOnce(&URLLoader::OnOriginPolicyManagerRetrieveDone,
+                           weak_ptr_factory_.GetWeakPtr());
+    // Passing an empty string if no header is present is intentional as the
+    // origin policy manager needs to also handle an empty header.
+    origin_policy_manager_->RetrieveOriginPolicy(
+        url::Origin::Create(url_request_->url()), sec_origin_policy_header,
+        std::move(origin_policy_manager_done));
+
+    // The callback will continue by calling
+    // `StartReading()` after retrieving the origin
+    // policy.
+    return;
   }
 
-  // Start reading...
-  ReadMore();
+  StartReading();
 }
 
 void URLLoader::ReadMore() {
@@ -1645,6 +1671,27 @@ void URLLoader::ReportFlaggedResponseCookies() {
           reported_cookies);
     }
   }
+}
+
+void URLLoader::StartReading() {
+  if (!is_more_mime_sniffing_needed_ && !is_more_corb_sniffing_needed_) {
+    // Treat feed types as text/plain.
+    if (response_->head.mime_type == "application/rss+xml" ||
+        response_->head.mime_type == "application/atom+xml") {
+      response_->head.mime_type.assign("text/plain");
+    }
+    SendResponseToClient();
+  }
+
+  // Start reading...
+  ReadMore();
+}
+
+void URLLoader::OnOriginPolicyManagerRetrieveDone(
+    const OriginPolicy& origin_policy) {
+  response_->head.origin_policy = origin_policy;
+
+  StartReading();
 }
 
 }  // namespace network

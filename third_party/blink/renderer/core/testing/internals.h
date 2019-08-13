@@ -333,6 +333,8 @@ class Internals final : public ScriptWrappable {
                                 Document*,
                                 ExceptionState&);
 
+  String getParsedImportMap(Document*, ExceptionState&);
+
   void SetDeviceProximity(Document*,
                           const String& event_type,
                           double value,

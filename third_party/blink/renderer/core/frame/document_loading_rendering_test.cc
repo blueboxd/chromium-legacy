@@ -255,7 +255,7 @@ TEST_F(DocumentLoadingRenderingTest,
   // this by doing offsetTop in a setTimeout, or by a parent frame executing
   // script that touched offsetTop in the child frame.
   auto* child_frame =
-      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
+      To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
   child_frame->contentDocument()->UpdateStyleAndLayout();
 
   auto frame2 = Compositor().BeginFrame();
@@ -324,7 +324,7 @@ TEST_F(DocumentLoadingRenderingTest,
   )HTML");
 
   auto* child_frame =
-      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
+      To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
 
   // Frame while the child frame still has pending sheets.
   auto* frame1_callback = MakeGarbageCollected<CheckRafCallback>();

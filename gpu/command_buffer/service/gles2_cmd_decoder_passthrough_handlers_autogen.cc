@@ -4487,8 +4487,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleScheduleDCLayerCHROMIUM(
   const volatile gles2::cmds::ScheduleDCLayerCHROMIUM& c =
       *static_cast<const volatile gles2::cmds::ScheduleDCLayerCHROMIUM*>(
           cmd_data);
-  GLuint y_texture_id = static_cast<GLuint>(c.y_texture_id);
-  GLuint uv_texture_id = static_cast<GLuint>(c.uv_texture_id);
+  GLuint texture_0 = static_cast<GLuint>(c.texture_0);
+  GLuint texture_1 = static_cast<GLuint>(c.texture_1);
   GLint z_order = static_cast<GLint>(c.z_order);
   GLint content_x = static_cast<GLint>(c.content_x);
   GLint content_y = static_cast<GLint>(c.content_y);
@@ -4511,7 +4511,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleScheduleDCLayerCHROMIUM(
   GLint clip_height = static_cast<GLint>(c.clip_height);
   GLuint protected_video_type = static_cast<GLuint>(c.protected_video_type);
   error::Error error = DoScheduleDCLayerCHROMIUM(
-      y_texture_id, uv_texture_id, z_order, content_x, content_y, content_width,
+      texture_0, texture_1, z_order, content_x, content_y, content_width,
       content_height, quad_x, quad_y, quad_width, quad_height, transform_c1r1,
       transform_c2r1, transform_c1r2, transform_c2r2, transform_tx,
       transform_ty, is_clipped, clip_x, clip_y, clip_width, clip_height,

@@ -123,6 +123,8 @@ static const JNINativeMethod kMethods_${ESCAPED_PROXY_CLASS}[] = {
 ${KMETHODS}
 };
 
+namespace {
+
 JNI_REGISTRATION_EXPORT bool ${REGISTRATION_NAME}(JNIEnv* env) {
   const int number_of_methods = base::size(kMethods_${ESCAPED_PROXY_CLASS});
 
@@ -139,6 +141,8 @@ JNI_REGISTRATION_EXPORT bool ${REGISTRATION_NAME}(JNIEnv* env) {
 
   return true;
 }
+
+}  // namespace
 """)
 
   registration_call = string.Template("""\

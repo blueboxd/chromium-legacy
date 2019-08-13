@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
+#include "chrome/browser/ui/views/profiles/profile_menu_view.h"
 
 #include <algorithm>
 #include <string>
@@ -128,12 +128,12 @@ gfx::ImageSkia GetGoogleIconForUserMenu(int icon_size) {
 
 }  // namespace
 
-// ProfileChooserView ---------------------------------------------------------
+// ProfileMenuView ---------------------------------------------------------
 
 // static
-bool ProfileChooserView::close_on_deactivate_for_testing_ = true;
+bool ProfileMenuView::close_on_deactivate_for_testing_ = true;
 
-ProfileChooserView::ProfileChooserView(views::Button* anchor_button,
+ProfileMenuView::ProfileMenuView(views::Button* anchor_button,
                                        Browser* browser,
                                        profiles::BubbleViewMode view_mode,
                                        signin::GAIAServiceType service_type,
@@ -149,9 +149,9 @@ ProfileChooserView::ProfileChooserView(views::Button* anchor_button,
   base::RecordAction(base::UserMetricsAction("ProfileChooser_Show"));
 }
 
-ProfileChooserView::~ProfileChooserView() = default;
+ProfileMenuView::~ProfileMenuView() = default;
 
-void ProfileChooserView::Reset() {
+void ProfileMenuView::Reset() {
   ProfileMenuViewBase::Reset();
   open_other_profile_indexes_map_.clear();
   sync_error_button_ = nullptr;
@@ -172,7 +172,7 @@ void ProfileChooserView::Reset() {
   cookies_cleared_on_exit_label_ = nullptr;
 }
 
-void ProfileChooserView::Init() {
+void ProfileMenuView::Init() {
   Reset();
   set_close_on_deactivate(close_on_deactivate_for_testing_);
 
@@ -198,7 +198,7 @@ void ProfileChooserView::Init() {
   ShowViewOrOpenTab(view_mode_);
 }
 
-void ProfileChooserView::OnAvatarMenuChanged(
+void ProfileMenuView::OnAvatarMenuChanged(
     AvatarMenu* avatar_menu) {
   if (IsProfileChooser(view_mode_)) {
     // Refresh the view with the new menu. We can't just update the local copy
@@ -208,7 +208,7 @@ void ProfileChooserView::OnAvatarMenuChanged(
   }
 }
 
-void ProfileChooserView::OnRefreshTokenUpdatedForAccount(
+void ProfileMenuView::OnRefreshTokenUpdatedForAccount(
     const CoreAccountInfo& account_info) {
   if (view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
       view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH) {
@@ -216,7 +216,7 @@ void ProfileChooserView::OnRefreshTokenUpdatedForAccount(
   }
 }
 
-void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
+void ProfileMenuView::ShowView(profiles::BubbleViewMode view_to_display,
                                   AvatarMenu* avatar_menu) {
   if (browser()->profile()->IsSupervised() &&
       view_to_display == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT) {
@@ -238,13 +238,13 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
       NOTREACHED();
       break;
     case profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER:
-      AddProfileChooserView(avatar_menu);
+      AddProfileMenuView(avatar_menu);
       break;
   }
   RepopulateViewFromMenuItems();
 }
 
-void ProfileChooserView::ShowViewOrOpenTab(profiles::BubbleViewMode mode) {
+void ProfileMenuView::ShowViewOrOpenTab(profiles::BubbleViewMode mode) {
   if (SigninViewController::ShouldShowSigninForMode(mode)) {
     // Hides the user menu if it is currently shown. The user menu automatically
     // closes when it loses focus; however, on Windows, the signin modals do not
@@ -257,12 +257,12 @@ void ProfileChooserView::ShowViewOrOpenTab(profiles::BubbleViewMode mode) {
   }
 }
 
-void ProfileChooserView::FocusButtonOnKeyboardOpen() {
+void ProfileMenuView::FocusButtonOnKeyboardOpen() {
   if (first_profile_button_)
     first_profile_button_->RequestFocus();
 }
 
-void ProfileChooserView::OnWidgetClosing(views::Widget* /*widget*/) {
+void ProfileMenuView::OnWidgetClosing(views::Widget* /*widget*/) {
   // Unsubscribe from everything early so that the updates do not reach the
   // bubble and change its state.
   avatar_menu_.reset();
@@ -272,17 +272,17 @@ void ProfileChooserView::OnWidgetClosing(views::Widget* /*widget*/) {
     identity_manager->RemoveObserver(this);
 }
 
-views::View* ProfileChooserView::GetInitiallyFocusedView() {
+views::View* ProfileMenuView::GetInitiallyFocusedView() {
   return ShouldProvideInitiallyFocusedView() ? signin_current_profile_button_
                                              : nullptr;
 }
 
-base::string16 ProfileChooserView::GetAccessibleWindowTitle() const {
+base::string16 ProfileMenuView::GetAccessibleWindowTitle() const {
   return l10n_util::GetStringUTF16(
       IDS_PROFILES_PROFILE_BUBBLE_ACCESSIBLE_TITLE);
 }
 
-void ProfileChooserView::ButtonPressed(views::Button* sender,
+void ProfileMenuView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
   if (sender == manage_google_account_button_) {
     DCHECK(!dice_accounts_.empty());
@@ -413,7 +413,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   }
 }
 
-void ProfileChooserView::StyledLabelLinkClicked(views::StyledLabel* label,
+void ProfileMenuView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                 const gfx::Range& range,
                                                 int event_flags) {
   DCHECK_EQ(cookies_cleared_on_exit_label_, label);
@@ -424,7 +424,7 @@ void ProfileChooserView::StyledLabelLinkClicked(views::StyledLabel* label,
       base::UserMetricsAction("ProfileChooser_CookieSettingsClicked"));
 }
 
-void ProfileChooserView::AddProfileChooserView(AvatarMenu* avatar_menu) {
+void ProfileMenuView::AddProfileMenuView(AvatarMenu* avatar_menu) {
   // Separate items into active and alternatives.
   const AvatarMenu::Item* active_item = nullptr;
   for (size_t i = 0; i < avatar_menu->GetNumberOfItems(); ++i) {
@@ -464,7 +464,7 @@ void ProfileChooserView::AddProfileChooserView(AvatarMenu* avatar_menu) {
   AddOptionsView(display_lock, avatar_menu);
 }
 
-bool ProfileChooserView::AddSyncErrorViewIfNeeded(
+bool ProfileMenuView::AddSyncErrorViewIfNeeded(
     const AvatarMenu::Item& avatar_item) {
   int content_string_id, button_string_id;
   sync_ui_util::AvatarSyncErrorType error =
@@ -483,7 +483,7 @@ bool ProfileChooserView::AddSyncErrorViewIfNeeded(
   return true;
 }
 
-void ProfileChooserView::AddPreDiceSyncErrorView(
+void ProfileMenuView::AddPreDiceSyncErrorView(
     const AvatarMenu::Item& avatar_item,
     sync_ui_util::AvatarSyncErrorType error,
     int button_string_id,
@@ -510,7 +510,7 @@ void ProfileChooserView::AddPreDiceSyncErrorView(
   }
 }
 
-void ProfileChooserView::AddDiceSyncErrorView(
+void ProfileMenuView::AddDiceSyncErrorView(
     const AvatarMenu::Item& avatar_item,
     sync_ui_util::AvatarSyncErrorType error,
     int button_string_id) {
@@ -559,7 +559,7 @@ void ProfileChooserView::AddDiceSyncErrorView(
   }
 }
 
-void ProfileChooserView::AddSyncPausedReasonCookiesClearedOnExit() {
+void ProfileMenuView::AddSyncPausedReasonCookiesClearedOnExit() {
   size_t offset = 0;
   std::unique_ptr<views::StyledLabel> sync_paused_reason =
       std::make_unique<views::StyledLabel>(base::string16(), this);
@@ -591,7 +591,7 @@ void ProfileChooserView::AddSyncPausedReasonCookiesClearedOnExit() {
   AddViewItem(std::move(sync_paused_reason));
 }
 
-void ProfileChooserView::AddCurrentProfileView(
+void ProfileMenuView::AddCurrentProfileView(
     const AvatarMenu::Item& avatar_item,
     bool is_guest) {
   Profile* profile = browser()->profile();
@@ -652,7 +652,7 @@ void ProfileChooserView::AddCurrentProfileView(
   }
 }
 
-void ProfileChooserView::AddPreDiceSigninPromo() {
+void ProfileMenuView::AddPreDiceSigninPromo() {
   AddMenuGroup(false /* add_separator */);
   CreateAndAddLabel(l10n_util::GetStringUTF16(IDS_PROFILES_SIGNIN_PROMO));
 
@@ -666,7 +666,7 @@ void ProfileChooserView::AddPreDiceSigninPromo() {
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
 }
 
-void ProfileChooserView::AddDiceSigninPromo() {
+void ProfileMenuView::AddDiceSigninPromo() {
   AddMenuGroup();
 
   // Show promo illustration + text when there is no promo account.
@@ -690,7 +690,7 @@ void ProfileChooserView::AddDiceSigninPromo() {
   signin_current_profile_button_ = dice_signin_button_view_->signin_button();
 }
 
-void ProfileChooserView::AddDiceSigninView() {
+void ProfileMenuView::AddDiceSigninView() {
   IncrementDiceSigninPromoShowCount();
   // Create a view that holds an illustration, a promo text and a button to turn
   // on Sync. The promo illustration is only shown the first 10 times per
@@ -729,7 +729,7 @@ void ProfileChooserView::AddDiceSigninView() {
       false /* md_style */);
 }
 
-void ProfileChooserView::AddGuestProfileView() {
+void ProfileMenuView::AddGuestProfileView() {
   gfx::Image guest_icon =
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           profiles::GetPlaceholderAvatarIconResourceID());
@@ -742,7 +742,7 @@ void ProfileChooserView::AddGuestProfileView() {
   AddCurrentProfileView(guest_avatar_item, true);
 }
 
-void ProfileChooserView::AddOptionsView(bool display_lock,
+void ProfileMenuView::AddOptionsView(bool display_lock,
                                         AvatarMenu* avatar_menu) {
   AddMenuGroup();
 
@@ -808,14 +808,14 @@ void ProfileChooserView::AddOptionsView(bool display_lock,
   }
 }
 
-void ProfileChooserView::AddSupervisedUserDisclaimerView() {
+void ProfileMenuView::AddSupervisedUserDisclaimerView() {
   AddMenuGroup();
   auto* disclaimer = CreateAndAddLabel(
       avatar_menu_->GetSupervisedUserInformation(), CONTEXT_BODY_TEXT_SMALL);
   disclaimer->SetAllowCharacterBreak(true);
 }
 
-void ProfileChooserView::AddAutofillHomeView() {
+void ProfileMenuView::AddAutofillHomeView() {
   if (browser()->profile()->IsGuestSession())
     return;
 
@@ -838,7 +838,7 @@ void ProfileChooserView::AddAutofillHomeView() {
 }
 
 #if defined(GOOGLE_CHROME_BUILD)
-void ProfileChooserView::AddManageGoogleAccountButton() {
+void ProfileMenuView::AddManageGoogleAccountButton() {
   AddMenuGroup(false);
   manage_google_account_button_ = CreateAndAddButton(
       GetGoogleIconForUserMenu(GetDefaultIconSize()),
@@ -846,18 +846,18 @@ void ProfileChooserView::AddManageGoogleAccountButton() {
 }
 #endif
 
-void ProfileChooserView::PostActionPerformed(
+void ProfileMenuView::PostActionPerformed(
     ProfileMetrics::ProfileDesktopMenu action_performed) {
   ProfileMetrics::LogProfileDesktopMenu(action_performed, gaia_service_type_);
   gaia_service_type_ = signin::GAIA_SERVICE_TYPE_NONE;
 }
 
-int ProfileChooserView::GetDiceSigninPromoShowCount() const {
+int ProfileMenuView::GetDiceSigninPromoShowCount() const {
   return browser()->profile()->GetPrefs()->GetInteger(
       prefs::kDiceSigninUserMenuPromoCount);
 }
 
-void ProfileChooserView::IncrementDiceSigninPromoShowCount() {
+void ProfileMenuView::IncrementDiceSigninPromoShowCount() {
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kDiceSigninUserMenuPromoCount, GetDiceSigninPromoShowCount() + 1);
 }

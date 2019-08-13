@@ -178,13 +178,14 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   virtual void RegisterImportMap(const ImportMap*) = 0;
   virtual bool IsAcquiringImportMaps() const = 0;
   virtual void ClearIsAcquiringImportMaps() = 0;
+  virtual const ImportMap* GetImportMapForTest() const = 0;
 
   // https://html.spec.whatwg.org/C/#hostgetimportmetaproperties
   virtual ModuleImportMeta HostGetImportMetaProperties(ModuleRecord) const = 0;
 
   virtual bool HasValidContext() = 0;
 
-  virtual ScriptValue InstantiateModule(ModuleRecord, const KURL&) = 0;
+  virtual ScriptValue InstantiateModule(v8::Local<v8::Module>, const KURL&) = 0;
 
   struct ModuleRequest {
     String specifier;
@@ -192,8 +193,9 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
     ModuleRequest(const String& specifier, const TextPosition& position)
         : specifier(specifier), position(position) {}
   };
+  // TODO(rikaf) : Replace ModuleRecord with v8::Local<v8::Module>
   virtual Vector<ModuleRequest> ModuleRequestsFromModuleRecord(
-      ModuleRecord) = 0;
+      v8::Local<v8::Module>) = 0;
 
   enum class CaptureEvalErrorFlag : bool { kReport, kCapture };
 

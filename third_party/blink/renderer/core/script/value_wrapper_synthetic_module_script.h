@@ -48,7 +48,7 @@ class CORE_EXPORT ValueWrapperSyntheticModuleScript final
       const TextPosition& start_position = TextPosition::MinimumPosition());
 
   ValueWrapperSyntheticModuleScript(Modulator* settings_object,
-                                    ModuleRecord record,
+                                    v8::Local<v8::Module> record,
                                     const KURL& source_url,
                                     const KURL& base_url,
                                     const ScriptFetchOptions& fetch_options,

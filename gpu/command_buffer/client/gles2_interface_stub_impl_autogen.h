@@ -1097,8 +1097,8 @@ GLuint GLES2InterfaceStub::GetLastFlushIdCHROMIUM() {
   return 0;
 }
 void GLES2InterfaceStub::ScheduleDCLayerCHROMIUM(
-    GLuint /* y_texture_id */,
-    GLuint /* uv_texture_id */,
+    GLuint /* texture_0 */,
+    GLuint /* texture_1 */,
     GLint /* z_order */,
     GLint /* content_x */,
     GLint /* content_y */,

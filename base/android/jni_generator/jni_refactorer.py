@@ -98,6 +98,7 @@ _NON_STATIC_NATIVES_REGEX = re.compile(
     r'(?P<qualifiers>\w+\s\w+|\w+|\s+)\s*native '
     r'(?P<return_type>\S*) '
     r'(?P<name>native\w+)\((?P<params>.*?)\);\n', re.DOTALL)
+_NATIVE_PTR_REGEX = re.compile(r'\s*long native.*')
 
 JNI_IMPORT_STRING = 'import org.chromium.base.annotations.NativeMethods;'
 IMPORT_REGEX = re.compile(r'^import .*?;', re.MULTILINE)
@@ -141,7 +142,10 @@ def add_chromium_import_to_java_file(contents, import_string):
                        contents[import_insert:])
 
 
-def convert_nonstatic_to_static(java_file_name, dry=False, verbose=True):
+def convert_nonstatic_to_static(java_file_name,
+                                skip_caller=False,
+                                dry=False,
+                                verbose=True):
   if java_file_name is None:
     return
   if not os.path.isfile(java_file_name):
@@ -163,8 +167,10 @@ def convert_nonstatic_to_static(java_file_name, dry=False, verbose=True):
   class_name = jni_generator.ExtractFullyQualifiedJavaClassName(
       java_file_name, no_comment_content).split('/')[-1]
 
+  # For fixing call sites.
   replace_patterns = []
-  should_add_comma = []
+  should_append_comma = []
+  should_prepend_comma = []
 
   new_contents = contents
 
@@ -182,23 +188,53 @@ def convert_nonstatic_to_static(java_file_name, dry=False, verbose=True):
           qual_end:]
       insertion_offset += len(insert_str)
 
+      if skip_caller:
+        continue
+
       # Insert an object param.
-      start = insertion_offset + match.end('params')
       insert_str = '%s caller' % class_name
-      if match.group('params'):
+      # No params.
+      if not match.group('params'):
+        start = insertion_offset + match.start('params')
+        append_comma = False
+        prepend_comma = False
+
+      # One or more params.
+      else:
+        # Has mNativePtr.
+        if _NATIVE_PTR_REGEX.match(match.group('params')):
+          # Only 1 param, append to end of params.
+          if match.group('params').count(',') == 0:
+            start = insertion_offset + match.end('params')
+            append_comma = False
+            prepend_comma = True
+          # Multiple params, insert after first param.
+          else:
+            comma_pos = match.group('params').find(',')
+            start = insertion_offset + match.start('params') + comma_pos + 1
+            append_comma = True
+            prepend_comma = False
+        else:
+          # No mNativePtr, insert as first param.
+          start = insertion_offset + match.start('params')
+          append_comma = True
+          prepend_comma = False
+
+      if prepend_comma:
         insert_str = ', ' + insert_str
+      if append_comma:
+        insert_str = insert_str + ', '
+      new_contents = new_contents[:start] + insert_str + new_contents[start:]
 
       # Match lines that don't have a native keyword.
-      replace_patterns.append(r'(^\s*' + match.group('name') + r'\(.*?(?=\)))')
-      replace_patterns.append(r'(return ' + match.group('name') +
-                              r'\(.*?(?=\)))')
+      native_match = r'\((\s*?(([ms]Native\w+)|([ms]\w+Android(Ptr)?)),?)?)'
+      replace_patterns.append(r'(^\s*' + match.group('name') + native_match)
+      replace_patterns.append(r'(return ' + match.group('name') + native_match)
       replace_patterns.append(r'([\:\)\(\+\*\?\&\|,\.\-\=\!\/][ \t]*' +
-                              match.group('name') + r'\(.*?(?=\)))')
+                              match.group('name') + native_match)
 
-      add_comma = bool(match.group('params'))
-      should_add_comma.extend([add_comma] * 3)
-
-      new_contents = new_contents[:start] + insert_str + new_contents[start:]
+      should_append_comma.extend([append_comma] * 3)
+      should_prepend_comma.extend([prepend_comma] * 3)
       insertion_offset += len(insert_str)
 
   assert len(matches) == len(non_static_natives), ('Regex missed a native '
@@ -207,12 +243,11 @@ def convert_nonstatic_to_static(java_file_name, dry=False, verbose=True):
 
   # 2. Add a this param to all calls.
   for i, r in enumerate(replace_patterns):
-    if should_add_comma[i]:
-      new_contents = re.sub(
-          r, '\g<1>, %s.this' % class_name, new_contents, flags=re.MULTILINE)
-    else:
-      new_contents = re.sub(
-          r, '\g<1>%s.this' % class_name, new_contents, flags=re.MULTILINE)
+    prepend_comma = ', ' if should_prepend_comma[i] else ''
+    append_comma = ', ' if should_append_comma[i] else ''
+    repl_str = '\g<1>' + prepend_comma + ' %s.this' + append_comma
+    new_contents = re.sub(
+        r, repl_str % class_name, new_contents, flags=re.MULTILINE)
 
   if dry:
     print(new_contents)
@@ -254,7 +289,6 @@ def convert_file_to_proxy_natives(java_file_name, dry=False, verbose=True):
   natives = jni_generator.ExtractNatives(no_comment_content, 'long')
 
   static_natives = [n for n in natives if n.static]
-
   if not static_natives:
     if verbose:
       print('%s has no static natives.', java_file_name)
@@ -371,6 +405,11 @@ def main(argv):
       '--ignored-paths',
       action='append',
       help='Paths to ignore during conversion.')
+  arg_parser.add_argument(
+      '--skip-caller-arg',
+      default=False,
+      action='store_true',
+      help='Do not add the "this" param when converting non-static methods.')
 
   args = arg_parser.parse_args()
 
@@ -408,7 +447,11 @@ def main(argv):
   for f in java_file_paths:
     print(f)
     if args.nonstatic:
-      convert_nonstatic_to_static(f, dry=args.dry_run, verbose=args.verbose)
+      convert_nonstatic_to_static(
+          f,
+          skip_caller=args.skip_caller_arg,
+          dry=args.dry_run,
+          verbose=args.verbose)
     else:
       convert_file_to_proxy_natives(f, dry=args.dry_run, verbose=args.verbose)
     print('Done converting %s/%s' % (i, len(java_file_paths)))

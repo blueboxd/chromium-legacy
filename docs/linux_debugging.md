@@ -239,6 +239,39 @@ end
 
 [More STL GDB macros](http://www.yolinux.com/TUTORIALS/src/dbinit_stl_views-1.01.txt)
 
+### JsDbg -- visualize data structures in the browser
+
+JsDbg is a debugger plugin to display various Chrome data structures in a
+browser window, such as the accessibility tree, layout object tree, DOM tree,
+and others.
+[Installation instructions are here](https://github.com/MicrosoftEdge/JsDbg),
+and see [here](https://github.com/MicrosoftEdge/JsDbg/blob/master/docs/FEATURES.md)
+for screenshots and an introduction.
+
+For Googlers, please see [go/jsdbg](https://goto.google.com/jsdbg) for
+installation instructions.
+
+### Time travel debugging with rr
+
+You can use [rr](https://rr-project.org) for time travel debugging, so you
+can also step or execute backwards. This works by first recording a trace
+and then debugging based on that. I recommend installing it by compiling
+[from source](https://github.com/mozilla/rr/wiki/Building-And-Installing).
+
+Once installed, you can use it like this:
+```
+rr record out/Debug/content_shell --single-process --no-sandbox --disable-hang-monitor --single-process  --disable-seccomp-sandbox --disable-setuid-sandbox
+rr replay
+(gdb) c
+(gdb) break blink::NGBlockNode::Layout
+(gdb) rc # reverse-continue to the last Layout call
+(gdb) jsdbg # run JsDbg as described above to find the interesting object
+(gdb) watch -l box_->frame_rect_.size_.width_.value_
+(gdb) rc # reverse-continue to the last time the width was changed
+(gdb) rn # reverse-next to the previous line
+(gdb) reverse-fin # run to where this function was called from
+```
+
 ### Graphical Debugging Aid for Chromium Views
 
 The following link describes a tool that can be used on Linux, Windows and Mac under GDB.

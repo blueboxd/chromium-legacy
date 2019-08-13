@@ -4,15 +4,15 @@
 
 /**
  * Javascript for device_broker, served from chrome://bluetooth-internals/.
- * Provides a single source to access DeviceProxys. DeviceProxys are cached for
+ * Provides a single source to access DeviceRemotes. DeviceRemotes are cached
  * for repeated use. Multiple connection requests will result in the same
- * DeviceProxy being shared among all requesters.
+ * DeviceRemote being shared among all requesters.
  */
 
 // Expose for testing.
 /**
  * @type {?Map<string,
- *     !bluetooth.mojom.DeviceProxy|!Promise<!bluetooth.mojom.DeviceProxy>>}
+ *     !bluetooth.mojom.DeviceRemote|!Promise<!bluetooth.mojom.DeviceRemote>>}
  */
 let connectedDevices = null;
 
@@ -22,10 +22,10 @@ cr.define('device_broker', function() {
   /**
    * Creates a GATT connection to the device with |address|. If a connection to
    * the device already exists, the promise is resolved with the existing
-   * DeviceProxy. If a connection is in progress, the promise resolves when
+   * DeviceRemote. If a connection is in progress, the promise resolves when
    * the existing connection request promise is fulfilled.
    * @param {string} address
-   * @return {!Promise<!bluetooth.mojom.DeviceProxy>}
+   * @return {!Promise<!bluetooth.mojom.DeviceRemote>}
    */
   function connectToDevice(address) {
     const deviceOrPromise = connectedDevices.get(address) || null;
@@ -33,7 +33,7 @@ cr.define('device_broker', function() {
       return Promise.resolve(deviceOrPromise);
     }
 
-    const promise = /** @type {!Promise<!bluetooth.mojom.DeviceProxy>} */ (
+    const promise = /** @type {!Promise<!bluetooth.mojom.DeviceRemote>} */ (
         adapter_broker.getAdapterBroker()
             .then(function(adapterBroker) {
               return adapterBroker.connectToDevice(address);

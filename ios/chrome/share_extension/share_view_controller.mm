@@ -88,7 +88,12 @@ const CGFloat kMediumAlpha = 0.5;
 
   // This view shadows the screen under the share extension.
   UIView* maskView = [[UIView alloc] initWithFrame:CGRectZero];
-  [self setMaskView:maskView];
+  self.maskView = maskView;
+  // On iOS 13, the default share extension presentation style already has a
+  // mask behind the view.
+  if (@available(iOS 13, *)) {
+    self.maskView.hidden = YES;
+  }
   [self.maskView
       setBackgroundColor:[UIColor colorWithWhite:0 alpha:kMediumAlpha]];
   [self.view addSubview:self.maskView];

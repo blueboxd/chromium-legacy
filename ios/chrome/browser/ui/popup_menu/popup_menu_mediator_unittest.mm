@@ -200,10 +200,7 @@ TEST_F(PopupMenuMediatorTest, TestFeatureEngagementDisconnect) {
 // for the Tools Menu type.
 TEST_F(PopupMenuMediatorTest, TestToolsMenuItemsCount) {
   CreateMediator(PopupMenuTypeToolsMenu, NO, NO);
-  NSUInteger number_of_action_items = 6;
-  if (base::FeatureList::IsEnabled(translate::kTranslateMobileManualTrigger)) {
-    number_of_action_items++;
-  }
+  NSUInteger number_of_action_items = 7;
   if (ios::GetChromeBrowserProvider()
           ->GetUserFeedbackProvider()
           ->IsUserFeedbackEnabled()) {

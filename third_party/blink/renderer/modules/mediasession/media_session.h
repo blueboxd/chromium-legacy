@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASESSION_MEDIA_SESSION_H_
 
 #include <memory>
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/mediasession/media_session.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -79,7 +79,8 @@ class MODULES_EXPORT MediaSession final
   Member<MediaMetadata> metadata_;
   HeapHashMap<String, Member<V8MediaSessionActionHandler>> action_handlers_;
   mojom::blink::MediaSessionServicePtr service_;
-  mojo::Binding<blink::mojom::blink::MediaSessionClient> client_binding_;
+  mojo::Receiver<blink::mojom::blink::MediaSessionClient> client_receiver_{
+      this};
 };
 
 }  // namespace blink

@@ -22,48 +22,50 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SURROUNDING_TEXT_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SURROUNDING_TEXT_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SURROUNDING_TEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SURROUNDING_TEXT_H_
+
+#include "third_party/blink/renderer/core/core_export.h"
 
 #if INSIDE_BLINK
 #include "third_party/blink/renderer/core/editing/forward.h"  // nogncheck
 #endif
-#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
-class WebLocalFrame;
+class LocalFrame;
 
-// WebSurroundingText is a Blink API that gives access to the SurroundingText
+// SurroundingText is a Blink API that gives access to the SurroundingText
 // API. It allows caller to know the text surrounding a point or a range.
-class WebSurroundingText {
+class CORE_EXPORT SurroundingText {
  public:
   // Initializes the object with the current selection in a given frame.
   // The maximum length of the contents retrieved is defined by max_length.
   // It does not include the text inside the range.
-  BLINK_EXPORT WebSurroundingText(WebLocalFrame*, size_t max_length);
+  SurroundingText(LocalFrame*, size_t max_length);
 
 #if INSIDE_BLINK
-  BLINK_EXPORT WebSurroundingText(const EphemeralRange&, size_t max_length);
+  SurroundingText(const EphemeralRange&, size_t max_length);
 #endif
 
-  BLINK_EXPORT bool IsEmpty() const;
+  bool IsEmpty() const;
 
   // Surrounding text content retrieved.
-  BLINK_EXPORT WebString TextContent() const;
+  String TextContent() const;
 
   // Start offset of the initial text in the text content.
-  BLINK_EXPORT size_t StartOffsetInTextContent() const;
+  size_t StartOffsetInTextContent() const;
 
   // End offset of the initial text in the text content.
-  BLINK_EXPORT size_t EndOffsetInTextContent() const;
+  size_t EndOffsetInTextContent() const;
 
  private:
-  WebString text_content_;
+  String text_content_;
   size_t start_offset_in_text_content_;
   size_t end_offset_in_text_content_;
 };
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SURROUNDING_TEXT_H_

@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/toast_data.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,7 +24,8 @@ namespace crostini {
 class CrostiniUnsupportedActionNotifier
     : public ash::TabletModeObserver,
       public aura::client::FocusChangeObserver,
-      public chromeos::input_method::InputMethodManager::Observer {
+      public chromeos::input_method::InputMethodManager::Observer,
+      public ash::KeyboardControllerObserver {
  public:
   // Adapter around external integrations which we can mock out for testing,
   // stateless.
@@ -42,6 +44,9 @@ class CrostiniUnsupportedActionNotifier
     virtual chromeos::input_method::InputMethodDescriptor
     GetCurrentInputMethod();
 
+    // Is the current virtual keyboard visible.
+    virtual bool IsVirtualKeyboardVisible();
+
     // Shows a toast to the user.
     virtual void ShowToast(const ash::ToastData& toast_data);
 
@@ -59,6 +64,10 @@ class CrostiniUnsupportedActionNotifier
         chromeos::input_method::InputMethodManager::Observer* observer);
     virtual void RemoveInputMethodObserver(
         chromeos::input_method::InputMethodManager::Observer* observer);
+    virtual void AddKeyboardControllerObserver(
+        ash::KeyboardControllerObserver* observer);
+    virtual void RemoveKeyboardControllerObserver(
+        ash::KeyboardControllerObserver* observer);
   };
 
   CrostiniUnsupportedActionNotifier();
@@ -78,6 +87,9 @@ class CrostiniUnsupportedActionNotifier
                           Profile* profile,
                           bool show_message) override;
 
+  // ash::KeyboardControllerObserver:
+  void OnKeyboardVisibilityChanged(bool visible) override;
+
   Delegate* get_delegate_for_testing() { return delegate_.get(); }
 
  private:
@@ -87,8 +99,8 @@ class CrostiniUnsupportedActionNotifier
   void ShowVirtualKeyboardUnsupportedNotifictionIfNeeded();
 
   // If the user is trying to use an unsupported IME with a crostini app and if
-  // they haven't already been notified that its not supported, notify them.
-  // Generally Crostini supports IMEs with 2:1 mappings betweens keys and glyphs
+  // they haven't already been notified that it's not supported, notify them.
+  // Generally Crostini supports IMEs with 1:1 mappings betweens keys and glyphs
   // e.g. Armenian, and simple combinations like US International, but doesn't
   // support CJK, handwriting, completion, etc.
   void ShowIMEUnsupportedNotifictionIfNeeded();

@@ -15,7 +15,9 @@
 #include "base/values.h"
 #include "content/browser/devtools/protocol/forward.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 
 namespace content {
@@ -103,9 +105,9 @@ class DevToolsSession : public protocol::FrontendChannel,
   // Merges the |updates| received from the renderer into session_state_cookie_.
   void ApplySessionStateUpdates(blink::mojom::DevToolsSessionStatePtr updates);
 
-  mojo::AssociatedBinding<blink::mojom::DevToolsSessionHost> binding_;
-  blink::mojom::DevToolsSessionAssociatedPtr session_ptr_;
-  blink::mojom::DevToolsSessionPtr io_session_ptr_;
+  mojo::AssociatedReceiver<blink::mojom::DevToolsSessionHost> receiver_{this};
+  mojo::AssociatedRemote<blink::mojom::DevToolsSession> session_;
+  mojo::Remote<blink::mojom::DevToolsSession> io_session_;
   DevToolsAgentHostImpl* agent_host_ = nullptr;
   DevToolsAgentHostClient* client_;
   bool browser_only_ = false;

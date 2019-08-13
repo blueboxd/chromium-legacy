@@ -313,7 +313,7 @@ crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-subregion-
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-tile.html [ Failure Pass ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-tile-hw.html [ Failure Pass ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-zoom.html [ Failure Pass ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-zoom-hw.html [ Failure Pass ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-zoom-hw.html [ Failure Pass Timeout ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/filter-effect-removed.html [ Failure Pass ]
 crbug.com/862716 [ Mac ] virtual/scalefactor200/css3/filters/effect-brightness-clamping-hw.html [ Failure Pass Timeout ]
 crbug.com/862716 [ Linux ] virtual/scalefactor200/css3/filters/effect-brightness-clamping-hw.html [ Failure Pass Timeout ]
@@ -2183,9 +2183,7 @@ crbug.com/983788 http/tests/cookies/same-site/popup-cross-site.https.html [ Pass
 crbug.com/984438 external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Failure Pass ]
 crbug.com/982148 [ Win7 ] virtual/blink-cors/external/wpt/referrer-policy/same-origin/http-rp/same-origin/http-http/img-tag/keep-origin-redirect/same-origin-insecure.http.html [ Pass Timeout ]
 crbug.com/982148 [ Win7 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/same-origin/http-rp/same-origin/http-http/img-tag/keep-origin-redirect/same-origin-insecure.http.html [ Pass Timeout ]
-crbug.com/984467 [ Linux Debug ] virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
-crbug.com/984467 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
-crbug.com/984467 [ Win7 ] virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
+crbug.com/984467 virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
 
 ### sheriff 2018-05-28
 
@@ -3405,7 +3403,12 @@ crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-r
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-https/img-tag/swap-origin-redirect/upgrade-protocol.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/meta-referrer/same-origin/http-http/worker-request/keep-origin-redirect/generic.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/http-rp/same-origin/http-http/module-worker/no-redirect/generic.http.html [ Timeout ]
-crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.worker.html [ Timeout ]
+crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.worker.html [ Pass Timeout ]
+crbug.com/626703 [ Win ] virtual/blink-cors/external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.worker.html [ Pass Timeout ]
+crbug.com/626703 [ Linux ] virtual/blink-cors/external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.worker.html [ Pass Timeout ]
+crbug.com/626703 [ Retina ] external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.worker.html [ Pass Timeout ]
+crbug.com/626703 [ Win ] external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.worker.html [ Pass Timeout ]
+crbug.com/626703 [ Linux ] external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.worker.html [ Pass Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/origin-when-cross-origin/attr-referrer/same-origin/http-http/iframe-tag/keep-origin-redirect/same-origin-insecure.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/idl.any.worker.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-http/script-tag/no-redirect/insecure-protocol.http.html [ Timeout ]
@@ -6454,7 +6457,9 @@ crbug.com/989665 [ Win Linux ] virtual/omt-worker-fetch/external/wpt/resource-ti
 crbug.com/990900 [ Linux ] virtual/omt-worker-fetch/external/wpt/resource-timing/idlharness.any.worker.html [ Pass Timeout ]
 
 # Sheriff 2019-08-01
-crbug.com/989860 [ Mac10.13 Linux Debug ] http/tests/devtools/indexeddb/live-update-indexeddb-list.js [ Pass Failure ]
+crbug.com/989860 [ Mac10.13 ] http/tests/devtools/indexeddb/live-update-indexeddb-list.js [ Pass Failure ]
+crbug.com/989860 [ Linux ] http/tests/devtools/indexeddb/live-update-indexeddb-list.js [ Pass Failure ]
+crbug.com/989860 [ Win ] http/tests/devtools/indexeddb/live-update-indexeddb-list.js [ Pass Failure ]
 crbug.com/989717 [ Fuchsia ] http/tests/preload/avoid_delaying_onload_link_preload.html [ Pass Failure ]
 crbug.com/988074 [ Linux ] virtual/omt-worker-fetch/http/tests/security/cors-rfc1918/addressspace-serviceworker-basic.html [ Pass Failure ]
 
@@ -6474,3 +6479,4 @@ crbug.com/856601 [ Linux ] external/wpt/secure-contexts/idlharness.any.html [ Pa
 
 #Sheriff 2019-08-12
 crbug.com/783154 [ Linux Debug ] virtual/audio-service/media/controls/doubletap-to-jump-backwards.html [ Failure ]
+crbug.com/993238 fast/frames/frame-name-reset.html [ Pass Failure ]

@@ -800,6 +800,12 @@ ChromeClient* VisualViewport::GetChromeClient() const {
   return &GetPage().GetChromeClient();
 }
 
+SmoothScrollSequencer* VisualViewport::GetSmoothScrollSequencer() const {
+  if (!MainFrame())
+    return nullptr;
+  return &MainFrame()->GetSmoothScrollSequencer();
+}
+
 void VisualViewport::SetScrollOffset(const ScrollOffset& offset,
                                      ScrollType scroll_type,
                                      ScrollBehavior scroll_behavior,
@@ -832,8 +838,9 @@ PhysicalRect VisualViewport::ScrollIntoView(
     if (params.is_for_scroll_sequence) {
       DCHECK(params.GetScrollType() == kProgrammaticScroll ||
              params.GetScrollType() == kUserScroll);
-      GetSmoothScrollSequencer()->QueueAnimation(this, new_scroll_offset,
-                                                 behavior);
+      if (SmoothScrollSequencer* sequencer = GetSmoothScrollSequencer()) {
+        sequencer->QueueAnimation(this, new_scroll_offset, behavior);
+      }
     } else {
       SetScrollOffset(new_scroll_offset, params.GetScrollType(), behavior,
                       ScrollCallback());

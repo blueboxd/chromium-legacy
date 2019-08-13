@@ -22,6 +22,7 @@
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_dxgi.h"
+#include "ui/gl/gl_image_dxgi_swap_chain.h"
 #include "ui/gl/gl_image_ref_counted_memory.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/gl_factory.h"
@@ -306,8 +307,7 @@ TEST_F(DirectCompositionSurfaceTest, NoPresentTwice) {
   image_dxgi->SetColorSpace(gfx::ColorSpace::CreateREC709());
 
   ui::DCRendererLayerParams params;
-  params.y_image = image_dxgi;
-  params.uv_image = image_dxgi;
+  params.images[0] = image_dxgi;
   params.content_rect = gfx::Rect(texture_size);
   params.quad_rect = gfx::Rect(100, 100);
   surface_->ScheduleDCLayer(params);
@@ -347,8 +347,8 @@ TEST_F(DirectCompositionSurfaceTest, NoPresentTwice) {
   image_dxgi2->SetTexture(texture, 0);
   image_dxgi2->SetColorSpace(gfx::ColorSpace::CreateREC709());
 
-  params.y_image = image_dxgi2;
-  params.uv_image = image_dxgi2;
+  params.images[0] = image_dxgi2;
+  params.images[1] = image_dxgi2;
   surface_->ScheduleDCLayer(params);
 
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
@@ -384,8 +384,7 @@ TEST_F(DirectCompositionSurfaceTest, SwapchainSizeWithScaledOverlays) {
   DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(true);
 
   ui::DCRendererLayerParams params;
-  params.y_image = image_dxgi;
-  params.uv_image = image_dxgi;
+  params.images[0] = image_dxgi;
   params.content_rect = gfx::Rect(texture_size);
   params.quad_rect = gfx::Rect(100, 100);
   surface_->ScheduleDCLayer(params);
@@ -441,8 +440,7 @@ TEST_F(DirectCompositionSurfaceTest, SwapchainSizeWithoutScaledOverlays) {
   image_dxgi->SetColorSpace(gfx::ColorSpace::CreateREC709());
 
   ui::DCRendererLayerParams params;
-  params.y_image = image_dxgi;
-  params.uv_image = image_dxgi;
+  params.images[0] = image_dxgi;
   params.content_rect = gfx::Rect(texture_size);
   params.quad_rect = gfx::Rect(42, 42);
   surface_->ScheduleDCLayer(params);
@@ -494,8 +492,8 @@ TEST_F(DirectCompositionSurfaceTest, ProtectedVideos) {
   // Clear video
   {
     ui::DCRendererLayerParams params;
-    params.y_image = image_dxgi;
-    params.uv_image = image_dxgi;
+    params.images[0] = image_dxgi;
+
     params.quad_rect = gfx::Rect(window_size);
     params.content_rect = gfx::Rect(texture_size);
     params.protected_video_type = gfx::ProtectedVideoType::kClear;
@@ -518,8 +516,8 @@ TEST_F(DirectCompositionSurfaceTest, ProtectedVideos) {
   // Software protected video
   {
     ui::DCRendererLayerParams params;
-    params.y_image = image_dxgi;
-    params.uv_image = image_dxgi;
+    params.images[0] = image_dxgi;
+
     params.quad_rect = gfx::Rect(window_size);
     params.content_rect = gfx::Rect(texture_size);
     params.protected_video_type = gfx::ProtectedVideoType::kSoftwareProtected;
@@ -631,8 +629,8 @@ class DirectCompositionPixelTest : public DirectCompositionSurfaceTest {
     // Pass content rect with odd with and height.  Surface should round up
     // width and height when creating swap chain.
     ui::DCRendererLayerParams params;
-    params.y_image = image_dxgi;
-    params.uv_image = image_dxgi;
+    params.images[0] = image_dxgi;
+
     params.content_rect = content_rect;
     params.quad_rect = quad_rect;
     surface_->ScheduleDCLayer(params);
@@ -720,8 +718,8 @@ class DirectCompositionVideoPixelTest : public DirectCompositionPixelTest {
     image_dxgi->SetColorSpace(color_space);
 
     ui::DCRendererLayerParams params;
-    params.y_image = image_dxgi;
-    params.uv_image = image_dxgi;
+    params.images[0] = image_dxgi;
+
     params.content_rect = gfx::Rect(texture_size);
     params.quad_rect = gfx::Rect(texture_size);
     surface_->ScheduleDCLayer(params);
@@ -793,7 +791,6 @@ TEST_F(DirectCompositionPixelTest, SoftwareVideoSwapchain) {
   std::vector<uint8_t> y_data(y_stride * y_size.height(), 0xff);
   std::vector<uint8_t> uv_data(uv_stride * uv_size.height(), 0xff);
   auto y_image = base::MakeRefCounted<GLImageRefCountedMemory>(y_size);
-
   y_image->Initialize(new base::RefCountedBytes(y_data),
                       gfx::BufferFormat::R_8);
   auto uv_image = base::MakeRefCounted<GLImageRefCountedMemory>(uv_size);
@@ -802,8 +799,8 @@ TEST_F(DirectCompositionPixelTest, SoftwareVideoSwapchain) {
   y_image->SetColorSpace(gfx::ColorSpace::CreateREC709());
 
   ui::DCRendererLayerParams params;
-  params.y_image = y_image;
-  params.uv_image = uv_image;
+  params.images[0] = y_image;
+  params.images[1] = uv_image;
   params.content_rect = gfx::Rect(y_size);
   params.quad_rect = gfx::Rect(window_size);
   surface_->ScheduleDCLayer(params);
@@ -891,8 +888,7 @@ TEST_F(DirectCompositionPixelTest, SkipVideoLayerEmptyContentsRect) {
 
   // Layer with empty content rect.
   ui::DCRendererLayerParams params;
-  params.y_image = image_dxgi;
-  params.uv_image = image_dxgi;
+  params.images[0] = image_dxgi;
   params.quad_rect = gfx::Rect(window_size);
   surface_->ScheduleDCLayer(params);
 
@@ -1056,8 +1052,8 @@ TEST_F(DirectCompositionPixelTest, ResizeVideoLayer) {
 
   {
     ui::DCRendererLayerParams params;
-    params.y_image = image_dxgi;
-    params.uv_image = image_dxgi;
+    params.images[0] = image_dxgi;
+
     params.content_rect = gfx::Rect(texture_size);
     params.quad_rect = gfx::Rect(window_size);
     surface_->ScheduleDCLayer(params);
@@ -1077,8 +1073,8 @@ TEST_F(DirectCompositionPixelTest, ResizeVideoLayer) {
 
   {
     ui::DCRendererLayerParams params;
-    params.y_image = image_dxgi;
-    params.uv_image = image_dxgi;
+    params.images[0] = image_dxgi;
+
     params.content_rect = gfx::Rect(30, 30);
     params.quad_rect = gfx::Rect(window_size);
     surface_->ScheduleDCLayer(params);
@@ -1093,6 +1089,156 @@ TEST_F(DirectCompositionPixelTest, ResizeVideoLayer) {
   EXPECT_TRUE(SUCCEEDED(swap_chain->GetDesc1(&desc)));
   EXPECT_EQ(desc.Width, 30u);
   EXPECT_EQ(desc.Height, 30u);
+}
+
+TEST_F(DirectCompositionPixelTest, SwapChainImage) {
+  if (!surface_)
+    return;
+
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
+      QueryD3D11DeviceObjectFromANGLE();
+  ASSERT_TRUE(d3d11_device);
+  Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
+  d3d11_device.As(&dxgi_device);
+  ASSERT_TRUE(dxgi_device);
+  Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
+  dxgi_device->GetAdapter(&dxgi_adapter);
+  ASSERT_TRUE(dxgi_adapter);
+  Microsoft::WRL::ComPtr<IDXGIFactory2> dxgi_factory;
+  dxgi_adapter->GetParent(IID_PPV_ARGS(&dxgi_factory));
+  ASSERT_TRUE(dxgi_factory);
+
+  gfx::Size swap_chain_size(50, 50);
+  DXGI_SWAP_CHAIN_DESC1 desc = {};
+  desc.Width = swap_chain_size.width();
+  desc.Height = swap_chain_size.height();
+  desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+  desc.Stereo = FALSE;
+  desc.SampleDesc.Count = 1;
+  desc.BufferCount = 2;
+  desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
+  desc.Scaling = DXGI_SCALING_STRETCH;
+  desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+  desc.Flags = 0;
+
+  Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain;
+
+  ASSERT_TRUE(SUCCEEDED(dxgi_factory->CreateSwapChainForComposition(
+      d3d11_device.Get(), &desc, nullptr, &swap_chain)));
+  ASSERT_TRUE(swap_chain);
+
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> front_buffer_texture;
+  ASSERT_TRUE(SUCCEEDED(
+      swap_chain->GetBuffer(1u, IID_PPV_ARGS(&front_buffer_texture))));
+  ASSERT_TRUE(front_buffer_texture);
+
+  auto front_buffer_image = base::MakeRefCounted<GLImageDXGISwapChain>(
+      swap_chain_size, gfx::BufferFormat::BGRA_8888, front_buffer_texture,
+      swap_chain);
+  ASSERT_TRUE(front_buffer_image->Initialize());
+
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> back_buffer_texture;
+  ASSERT_TRUE(
+      SUCCEEDED(swap_chain->GetBuffer(0u, IID_PPV_ARGS(&back_buffer_texture))));
+  ASSERT_TRUE(back_buffer_texture);
+
+  Microsoft::WRL::ComPtr<ID3D11RenderTargetView> rtv;
+  ASSERT_TRUE(SUCCEEDED(d3d11_device->CreateRenderTargetView(
+      back_buffer_texture.Get(), nullptr, &rtv)));
+  ASSERT_TRUE(rtv);
+
+  Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
+  d3d11_device->GetImmediateContext(&context);
+  ASSERT_TRUE(context);
+
+  gfx::Size window_size(100, 100);
+  EXPECT_TRUE(surface_->Resize(window_size, 1.0,
+                               GLSurface::ColorSpace::UNSPECIFIED, true));
+  EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
+
+  glClearColor(0.0, 0.0, 0.0, 1.0);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  ui::DCRendererLayerParams dc_layer_params;
+  dc_layer_params.images[0] = front_buffer_image;
+  dc_layer_params.content_rect = gfx::Rect(swap_chain_size);
+  dc_layer_params.quad_rect = gfx::Rect(window_size);
+
+  DXGI_PRESENT_PARAMETERS present_params = {};
+  present_params.DirtyRectsCount = 0;
+  present_params.pDirtyRects = nullptr;
+
+  // Clear to red and present.
+  {
+    float clear_color[] = {1.0, 0.0, 0.0, 1.0};
+    context->ClearRenderTargetView(rtv.Get(), clear_color);
+
+    ASSERT_TRUE(SUCCEEDED(swap_chain->Present1(0, 0, &present_params)));
+
+    surface_->ScheduleDCLayer(dc_layer_params);
+    EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+              surface_->SwapBuffers(base::DoNothing()));
+
+    SkColor expected_color = SK_ColorRED;
+    SkColor actual_color =
+        ReadBackWindowPixel(window_.hwnd(), gfx::Point(75, 75));
+    EXPECT_TRUE(AreColorsSimilar(expected_color, actual_color))
+        << std::hex << "Expected " << expected_color << " Actual "
+        << actual_color;
+  }
+
+  // Clear to green and present.
+  {
+    float clear_color[] = {0.0, 1.0, 0.0, 1.0};
+    context->ClearRenderTargetView(rtv.Get(), clear_color);
+
+    ASSERT_TRUE(SUCCEEDED(swap_chain->Present1(0, 0, &present_params)));
+
+    surface_->ScheduleDCLayer(dc_layer_params);
+    EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+              surface_->SwapBuffers(base::DoNothing()));
+
+    SkColor expected_color = SK_ColorGREEN;
+    SkColor actual_color =
+        ReadBackWindowPixel(window_.hwnd(), gfx::Point(75, 75));
+    EXPECT_TRUE(AreColorsSimilar(expected_color, actual_color))
+        << std::hex << "Expected " << expected_color << " Actual "
+        << actual_color;
+  }
+
+  // Present without clearing.  This will flip front and back buffers so the
+  // previous rendered contents (red) will become visible again.
+  {
+    ASSERT_TRUE(SUCCEEDED(swap_chain->Present1(0, 0, &present_params)));
+
+    surface_->ScheduleDCLayer(dc_layer_params);
+    EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+              surface_->SwapBuffers(base::DoNothing()));
+
+    SkColor expected_color = SK_ColorRED;
+    SkColor actual_color =
+        ReadBackWindowPixel(window_.hwnd(), gfx::Point(75, 75));
+    EXPECT_TRUE(AreColorsSimilar(expected_color, actual_color))
+        << std::hex << "Expected " << expected_color << " Actual "
+        << actual_color;
+  }
+
+  // Clear to blue without present.
+  {
+    float clear_color[] = {0.0, 0.0, 1.0, 1.0};
+    context->ClearRenderTargetView(rtv.Get(), clear_color);
+
+    surface_->ScheduleDCLayer(dc_layer_params);
+    EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+              surface_->SwapBuffers(base::DoNothing()));
+
+    SkColor expected_color = SK_ColorRED;
+    SkColor actual_color =
+        ReadBackWindowPixel(window_.hwnd(), gfx::Point(75, 75));
+    EXPECT_TRUE(AreColorsSimilar(expected_color, actual_color))
+        << std::hex << "Expected " << expected_color << " Actual "
+        << actual_color;
+  }
 }
 
 }  // namespace

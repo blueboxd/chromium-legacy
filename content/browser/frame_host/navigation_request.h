@@ -323,11 +323,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // for commit. Only used with PerNavigationMojoInterface enabled.
   mojom::NavigationClient* GetCommitNavigationClient();
 
-  // TODO(andypaicu): Currently the origin_policy_throttle is responsible for
-  // setting the origin policy. Remove this function after this is done inside
-  // the network service.
-  void SetOriginPolicy(const network::OriginPolicy& policy);
-
   void set_transition(ui::PageTransition transition) {
     common_params_->transition = transition;
   }

@@ -131,6 +131,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/script/import_map.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/scroll/programmatic_scroll_animator.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
@@ -2575,7 +2576,7 @@ void Internals::updateLayoutAndRunPostLayoutTasks(
     document = document_;
   } else if (IsA<Document>(node)) {
     document = To<Document>(node);
-  } else if (auto* iframe = ToHTMLIFrameElementOrNull(*node)) {
+  } else if (auto* iframe = DynamicTo<HTMLIFrameElement>(*node)) {
     document = iframe->contentDocument();
   }
 
@@ -3478,6 +3479,23 @@ String Internals::resolveModuleSpecifier(const String& specifier,
   }
 
   return result.GetString();
+}
+
+String Internals::getParsedImportMap(Document* document,
+                                     ExceptionState& exception_state) {
+  Modulator* modulator =
+      Modulator::From(ToScriptStateForMainWorld(document->GetFrame()));
+
+  if (!modulator) {
+    V8ThrowException::ThrowTypeError(v8::Isolate::GetCurrent(), "No modulator");
+    return String();
+  }
+
+  const ImportMap* import_map = modulator->GetImportMapForTest();
+  if (!import_map)
+    return "{}";
+
+  return import_map->ToString();
 }
 
 void Internals::setDeviceEmulationScale(float scale,

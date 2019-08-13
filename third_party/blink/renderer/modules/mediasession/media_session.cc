@@ -126,11 +126,10 @@ mojom::blink::MediaSessionPlaybackState StringToMediaSessionPlaybackState(
 
 MediaSession::MediaSession(ExecutionContext* execution_context)
     : ContextClient(execution_context),
-      playback_state_(mojom::blink::MediaSessionPlaybackState::NONE),
-      client_binding_(this) {}
+      playback_state_(mojom::blink::MediaSessionPlaybackState::NONE) {}
 
 void MediaSession::Dispose() {
-  client_binding_.Close();
+  client_receiver_.reset();
 }
 
 void MediaSession::setPlaybackState(const String& playback_state) {
@@ -326,9 +325,7 @@ mojom::blink::MediaSessionService* MediaSession::GetService() {
     // Record the eTLD+1 of the frame using the API.
     Platform::Current()->RecordRapporURL("Media.Session.APIUsage.Origin",
                                          document->Url());
-    blink::mojom::blink::MediaSessionClientPtr client;
-    client_binding_.Bind(mojo::MakeRequest(&client, task_runner), task_runner);
-    service_->SetClient(std::move(client));
+    service_->SetClient(client_receiver_.BindNewPipeAndPassRemote(task_runner));
   }
 
   return service_.get();

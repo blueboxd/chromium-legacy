@@ -50,7 +50,6 @@ namespace blink {
 
 class ServiceWorkerInstalledScriptsManager;
 class ServiceWorkerThread;
-class WorkerClassicScriptLoader;
 struct CrossThreadFetchClientSettingsObjectData;
 
 // The implementation of WebEmbeddedWorker. This is responsible for starting
@@ -91,7 +90,6 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   void WaitForShutdownForTesting();
 
  private:
-  void OnScriptLoaderFinished();
   void StartWorkerThread();
 
   // Creates a cross-thread copyable outside settings object for top-level
@@ -109,10 +107,6 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   std::unique_ptr<ServiceWorkerInstalledScriptsManager>
       installed_scripts_manager_;
   std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_client_;
-
-  // Kept around only while main script loading is ongoing.
-  // TODO(bashi): Remove. This is no longer used.
-  Persistent<WorkerClassicScriptLoader> main_script_loader_;
 
   std::unique_ptr<ServiceWorkerThread> worker_thread_;
 

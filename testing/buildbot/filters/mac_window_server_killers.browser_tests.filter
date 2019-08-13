@@ -179,8 +179,8 @@
 -PrintPreviewSettingsSectionsTest.*
 -PrintPreviewUIBrowserTest.*
 -ProcessManagerBrowserTest.*
--ProfileChooserViewExtensionsTest.*
 -ProfileMainNetworkContext/NetworkContextConfigurationBrowserTest.*
+-ProfileMenuViewExtensionsTest.*
 -ProfileSigninConfirmationHelperBrowserTest.*
 -PushMessagingBrowserTest.*
 -RedirectTest.*

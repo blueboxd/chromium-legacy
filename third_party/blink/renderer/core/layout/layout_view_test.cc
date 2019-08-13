@@ -49,8 +49,7 @@ TEST_F(LayoutViewTest, DisplayNoneFrame) {
 
   UpdateAllLifecyclePhasesForTest();
 
-  HTMLIFrameElement* iframe =
-      ToHTMLIFrameElement(GetDocument().getElementById("iframe"));
+  auto* iframe = To<HTMLIFrameElement>(GetDocument().getElementById("iframe"));
   Document* frame_doc = iframe->contentDocument();
   ASSERT_TRUE(frame_doc);
   LayoutObject* view = frame_doc->GetLayoutView();

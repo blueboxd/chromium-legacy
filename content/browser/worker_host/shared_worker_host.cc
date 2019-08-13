@@ -64,10 +64,11 @@ class SharedWorkerHost::ScopedDevToolsHandle {
   }
 
   void WorkerReadyForInspection(
-      blink::mojom::DevToolsAgentPtr agent_ptr,
-      blink::mojom::DevToolsAgentHostRequest agent_host_request) {
+      mojo::PendingRemote<blink::mojom::DevToolsAgent> agent_remote,
+      mojo::PendingReceiver<blink::mojom::DevToolsAgentHost>
+          agent_host_receiver) {
     SharedWorkerDevToolsManager::GetInstance()->WorkerReadyForInspection(
-        owner_, std::move(agent_ptr), std::move(agent_host_request));
+        owner_, std::move(agent_remote), std::move(agent_host_receiver));
   }
 
  private:
@@ -402,11 +403,12 @@ void SharedWorkerHost::OnContextClosed() {
 }
 
 void SharedWorkerHost::OnReadyForInspection(
-    blink::mojom::DevToolsAgentPtr agent_ptr,
-    blink::mojom::DevToolsAgentHostRequest agent_host_request) {
+    mojo::PendingRemote<blink::mojom::DevToolsAgent> agent_remote,
+    mojo::PendingReceiver<blink::mojom::DevToolsAgentHost>
+        agent_host_receiver) {
   if (devtools_handle_) {
-    devtools_handle_->WorkerReadyForInspection(std::move(agent_ptr),
-                                               std::move(agent_host_request));
+    devtools_handle_->WorkerReadyForInspection(std::move(agent_remote),
+                                               std::move(agent_host_receiver));
   }
 }
 

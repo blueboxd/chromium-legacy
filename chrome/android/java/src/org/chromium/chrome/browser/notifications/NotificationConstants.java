@@ -101,6 +101,11 @@ public class NotificationConstants {
     public static final int NOTIFICATION_ID_CLICK_TO_CALL = 9;
 
     /**
+     * Unique identifier for Shared Clipboard notifications.
+     */
+    public static final int NOTIFICATION_ID_SHARED_CLIPBOARD = 10;
+
+    /**
      * Separator used to separate the notification origin from additional data such as the
      * developer specified tag. This and the prefix following it need to be the same as the one
      * specified in notification_id_generator.cc.
@@ -123,6 +128,7 @@ public class NotificationConstants {
     public static final String GROUP_WEBAPK = "WebApk";
     public static final String GROUP_SEND_TAB_TO_SELF = "SendTabToSelf";
     public static final String GROUP_CLICK_TO_CALL = "ClickToCall";
+    public static final String GROUP_SHARED_CLIPBOARD = "SharedClipboard";
 
     // Web notification group names are set dynamically as this prefix + notification origin.
     // For example, 'Web:chromium.org' for a notification from chromium.org.

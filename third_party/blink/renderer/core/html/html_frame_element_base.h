@@ -88,7 +88,7 @@ class CORE_EXPORT HTMLFrameElementBase : public HTMLFrameOwnerElement {
 };
 
 inline bool IsHTMLFrameElementBase(const HTMLElement& element) {
-  return IsA<HTMLFrameElement>(element) || IsHTMLIFrameElement(element);
+  return IsA<HTMLFrameElement>(element) || IsA<HTMLIFrameElement>(element);
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLFrameElementBase);

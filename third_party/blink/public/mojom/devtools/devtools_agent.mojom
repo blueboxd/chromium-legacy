@@ -72,9 +72,9 @@ interface DevToolsAgent {
   // |client_expects_binary_response| indicates that responses (and
   // notifications) sent from this session should use binary (CBOR)
   // encoding as opposed to JSON encoding.
-  AttachDevToolsSession(associated DevToolsSessionHost host,
-                        associated DevToolsSession& session,
-                        DevToolsSession& io_session,
+  AttachDevToolsSession(pending_associated_remote<DevToolsSessionHost> host,
+                        pending_associated_receiver<DevToolsSession> session,
+                        pending_receiver<DevToolsSession> io_session,
                         DevToolsSessionState? reattach_session_state,
                         bool client_expects_binary_responses);
 
@@ -102,8 +102,8 @@ interface DevToolsAgentHost {
   // |waiting_for_debugger| is true if worker was paused on startup and
   // should be resumed by debugger to actually start.
   ChildWorkerCreated(
-      DevToolsAgent worker_devtools_agent,
-      DevToolsAgentHost& worker_devtools_agent_host,
+      pending_remote<DevToolsAgent> worker_devtools_agent,
+      pending_receiver<DevToolsAgentHost> worker_devtools_agent_host,
       url.mojom.Url url,
       string name,
       mojo_base.mojom.UnguessableToken devtools_worker_token,

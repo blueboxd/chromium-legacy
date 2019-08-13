@@ -47,15 +47,17 @@ class LayoutWorkletTest : public PageTestBase {
     ScriptState::Scope scope(script_state);
 
     KURL js_url("https://example.com/worklet.js");
-    ModuleRecord module = ModuleRecord::Compile(
+    v8::Local<v8::Module> module = ModuleRecord::Compile(
         script_state->GetIsolate(), source_code, js_url, js_url,
         ScriptFetchOptions(), TextPosition::MinimumPosition(),
         ASSERT_NO_EXCEPTION);
-    EXPECT_FALSE(module.IsNull());
+    EXPECT_FALSE(module.IsEmpty());
 
-    ScriptValue exception = module.Instantiate(script_state, js_url);
+    ScriptValue exception =
+        ModuleRecord::Instantiate(script_state, module, js_url);
     EXPECT_TRUE(exception.IsEmpty());
-    return module.Evaluate(script_state);
+
+    return ModuleRecord::Evaluate(script_state, module, js_url);
   }
 
  private:

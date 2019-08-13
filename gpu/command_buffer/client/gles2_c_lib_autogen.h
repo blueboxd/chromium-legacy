@@ -1608,8 +1608,8 @@ void GL_APIENTRY GLES2FlushDriverCachesCHROMIUM() {
 GLuint GL_APIENTRY GLES2GetLastFlushIdCHROMIUM() {
   return gles2::GetGLContext()->GetLastFlushIdCHROMIUM();
 }
-void GL_APIENTRY GLES2ScheduleDCLayerCHROMIUM(GLuint y_texture_id,
-                                              GLuint uv_texture_id,
+void GL_APIENTRY GLES2ScheduleDCLayerCHROMIUM(GLuint texture_0,
+                                              GLuint texture_1,
                                               GLint z_order,
                                               GLint content_x,
                                               GLint content_y,
@@ -1632,7 +1632,7 @@ void GL_APIENTRY GLES2ScheduleDCLayerCHROMIUM(GLuint y_texture_id,
                                               GLint clip_height,
                                               GLuint protected_video_type) {
   gles2::GetGLContext()->ScheduleDCLayerCHROMIUM(
-      y_texture_id, uv_texture_id, z_order, content_x, content_y, content_width,
+      texture_0, texture_1, z_order, content_x, content_y, content_width,
       content_height, quad_x, quad_y, quad_width, quad_height, transform_c1r1,
       transform_c2r1, transform_c1r2, transform_c2r2, transform_tx,
       transform_ty, is_clipped, clip_x, clip_y, clip_width, clip_height,

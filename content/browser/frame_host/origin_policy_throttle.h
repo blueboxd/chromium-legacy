@@ -15,15 +15,8 @@
 
 class GURL;
 
-namespace url {
-class Origin;
-}
-
 namespace content {
 class NavigationHandle;
-
-// Constant derived from the spec, https://github.com/WICG/origin-policy
-static constexpr const char* kDefaultOriginPolicyVersion = "0";
 
 // The OriginPolicyThrottle is responsible for deciding whether an origin
 // policy should be fetched, and doing so when that is positive.
@@ -59,18 +52,14 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   ThrottleCheckResult WillProcessResponse() override;
   const char* GetNameForLogging() override;
 
+  static void SetOriginPolicyForTesting(
+      const network::OriginPolicy& origin_policy);
+  static void ResetOriginPolicyForTesting();
+
  private:
   explicit OriginPolicyThrottle(NavigationHandle* handle);
 
-  const url::Origin GetRequestOrigin() const;
-
-  void CancelNavigation(network::OriginPolicyState state,
-                        const GURL& policy_url);
-
-  void OnOriginPolicyManagerRetrieveDone(
-      const network::OriginPolicy& origin_policy);
-
-  base::WeakPtrFactory<OriginPolicyThrottle> weak_factory_{this};
+  static base::Optional<network::OriginPolicy>& GetTestOriginPolicy();
 
   DISALLOW_COPY_AND_ASSIGN(OriginPolicyThrottle);
 };

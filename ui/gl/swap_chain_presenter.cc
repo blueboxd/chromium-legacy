@@ -16,6 +16,7 @@
 #include "ui/gl/dc_layer_tree.h"
 #include "ui/gl/direct_composition_surface_win.h"
 #include "ui/gl/gl_image_dxgi.h"
+#include "ui/gl/gl_image_dxgi_swap_chain.h"
 #include "ui/gl/gl_image_memory.h"
 #include "ui/gl/gl_switches.h"
 
@@ -60,6 +61,13 @@ enum class OverlayFullScreenTypes {
   kOverSizedFullScreen,
   kNotAvailable,
   kMaxValue = kNotAvailable,
+};
+
+enum : size_t {
+  kSwapChainImageIndex = 0,
+  kNV12ImageIndex = 0,
+  kYPlaneImageIndex = 0,
+  kUVPlaneImageIndex = 1,
 };
 
 void RecordOverlayFullScreenTypes(const gfx::Rect& overlay_onscreen_rect) {
@@ -482,7 +490,7 @@ void SwapChainPresenter::UpdateVisuals(const ui::DCRendererLayerParams& params,
 }
 
 bool SwapChainPresenter::TryPresentToDecodeSwapChain(
-    GLImageDXGI* image_dxgi,
+    GLImageDXGI* nv12_image,
     const gfx::Rect& content_rect,
     const gfx::Size& swap_chain_size) {
   if (!base::FeatureList::IsEnabled(
@@ -494,9 +502,9 @@ bool SwapChainPresenter::TryPresentToDecodeSwapChain(
   bool nv12_supported =
       (DXGI_FORMAT_NV12 == DirectCompositionSurfaceWin::GetOverlayFormatUsed());
   // TODO(sunnyps): Try using decode swap chain for uploaded video images.
-  if (image_dxgi && nv12_supported && !failed_to_present_decode_swapchain_) {
+  if (nv12_image && nv12_supported && !failed_to_present_decode_swapchain_) {
     D3D11_TEXTURE2D_DESC texture_desc = {};
-    image_dxgi->texture()->GetDesc(&texture_desc);
+    nv12_image->texture()->GetDesc(&texture_desc);
 
     bool is_decoder_texture = texture_desc.BindFlags & D3D11_BIND_DECODER;
 
@@ -532,7 +540,7 @@ bool SwapChainPresenter::TryPresentToDecodeSwapChain(
 
     if (is_decoder_texture && !is_shared_texture && !is_unitary_texture_array &&
         is_overlay_supported_transform) {
-      if (PresentToDecodeSwapChain(image_dxgi, content_rect, swap_chain_size))
+      if (PresentToDecodeSwapChain(nv12_image, content_rect, swap_chain_size))
         return true;
       ReleaseSwapChainResources();
       failed_to_present_decode_swapchain_ = true;
@@ -548,7 +556,7 @@ bool SwapChainPresenter::TryPresentToDecodeSwapChain(
     } else if (!is_overlay_supported_transform) {
       not_used_reason = DecodeSwapChainNotUsedReason::kIncompatibleTransform;
     }
-  } else if (!image_dxgi) {
+  } else if (!nv12_image) {
     not_used_reason = DecodeSwapChainNotUsedReason::kSoftwareFrame;
   } else if (!nv12_supported) {
     not_used_reason = DecodeSwapChainNotUsedReason::kNv12NotSupported;
@@ -562,7 +570,7 @@ bool SwapChainPresenter::TryPresentToDecodeSwapChain(
 }
 
 bool SwapChainPresenter::PresentToDecodeSwapChain(
-    GLImageDXGI* image_dxgi,
+    GLImageDXGI* nv12_image,
     const gfx::Rect& content_rect,
     const gfx::Size& swap_chain_size) {
   DCHECK(!swap_chain_size.IsEmpty());
@@ -572,7 +580,7 @@ bool SwapChainPresenter::PresentToDecodeSwapChain(
                swap_chain_size.ToString());
 
   Microsoft::WRL::ComPtr<IDXGIResource> decode_resource;
-  image_dxgi->texture().As(&decode_resource);
+  nv12_image->texture().As(&decode_resource);
   DCHECK(decode_resource);
 
   if (!decode_swap_chain_ || decode_resource_ != decode_resource) {
@@ -629,7 +637,7 @@ bool SwapChainPresenter::PresentToDecodeSwapChain(
 
     content_visual_->SetContent(decode_surface_.Get());
     layer_tree_->SetNeedsRebuildVisualTree();
-  } else if (last_y_image_ == image_dxgi && last_uv_image_ == image_dxgi &&
+  } else if (last_presented_images_[kNV12ImageIndex] == nv12_image &&
              swap_chain_size_ == swap_chain_size) {
     // Early out if we're presenting the same image again.
     return true;
@@ -643,7 +651,7 @@ bool SwapChainPresenter::PresentToDecodeSwapChain(
   RECT target_rect = gfx::Rect(swap_chain_size).ToRECT();
   decode_swap_chain_->SetTargetRect(&target_rect);
 
-  gfx::ColorSpace color_space = image_dxgi->color_space();
+  gfx::ColorSpace color_space = nv12_image->color_space();
   if (!color_space.IsValid())
     color_space = gfx::ColorSpace::CreateREC709();
 
@@ -665,7 +673,7 @@ bool SwapChainPresenter::PresentToDecodeSwapChain(
   decode_swap_chain_->SetColorSpace(
       static_cast<DXGI_MULTIPLANE_OVERLAY_YCbCr_FLAGS>(flags));
 
-  HRESULT hr = decode_swap_chain_->PresentBuffer(image_dxgi->level(), 1, 0);
+  HRESULT hr = decode_swap_chain_->PresentBuffer(nv12_image->level(), 1, 0);
   // Ignore DXGI_STATUS_OCCLUDED since that's not an error but only indicates
   // that the window is occluded and we can stop rendering.
   if (FAILED(hr) && hr != DXGI_STATUS_OCCLUDED) {
@@ -673,8 +681,8 @@ bool SwapChainPresenter::PresentToDecodeSwapChain(
     return false;
   }
 
-  last_y_image_ = image_dxgi;
-  last_uv_image_ = image_dxgi;
+  last_presented_images_ = ui::DCRendererLayerParams::OverlayImages();
+  last_presented_images_[kNV12ImageIndex] = nv12_image;
   swap_chain_size_ = swap_chain_size;
   if (is_yuv_swapchain_) {
     frames_since_color_space_change_++;
@@ -691,28 +699,39 @@ bool SwapChainPresenter::PresentToDecodeSwapChain(
 
 bool SwapChainPresenter::PresentToSwapChain(
     const ui::DCRendererLayerParams& params) {
-  GLImageDXGI* image_dxgi = GLImageDXGI::FromGLImage(params.y_image.get());
+  GLImageDXGI* nv12_image =
+      GLImageDXGI::FromGLImage(params.images[kNV12ImageIndex].get());
   GLImageMemory* y_image_memory =
-      GLImageMemory::FromGLImage(params.y_image.get());
+      GLImageMemory::FromGLImage(params.images[kYPlaneImageIndex].get());
   GLImageMemory* uv_image_memory =
-      GLImageMemory::FromGLImage(params.uv_image.get());
+      GLImageMemory::FromGLImage(params.images[kUVPlaneImageIndex].get());
+  GLImageDXGISwapChain* swap_chain_image = GLImageDXGISwapChain::FromGLImage(
+      params.images[kSwapChainImageIndex].get());
 
-  if (!image_dxgi && (!y_image_memory || !uv_image_memory)) {
+  if (!nv12_image && (!y_image_memory || !uv_image_memory) &&
+      !swap_chain_image) {
     DLOG(ERROR) << "Video GLImages are missing";
     // No need to release resources as context will be lost soon.
     return false;
   }
 
-  gfx::Size swap_chain_size = CalculateSwapChainSize(params);
+  std::string image_type = "software video frame";
+  if (nv12_image)
+    image_type = "hardware video frame";
+  if (swap_chain_image)
+    image_type = "swap chain";
 
-  TRACE_EVENT2("gpu", "SwapChainPresenter::PresentToSwapChain",
-               "hardware_frame", !!image_dxgi, "swap_chain_size",
-               swap_chain_size.ToString());
+  gfx::Size swap_chain_size = swap_chain_image ? swap_chain_image->GetSize()
+                                               : CalculateSwapChainSize(params);
+
+  TRACE_EVENT2("gpu", "SwapChainPresenter::PresentToSwapChain", "image_type",
+               image_type, "swap_chain_size", swap_chain_size.ToString());
 
   // Do not create a swap chain if swap chain size will be empty.
   if (swap_chain_size.IsEmpty()) {
     swap_chain_size_ = swap_chain_size;
     if (swap_chain_) {
+      last_presented_images_ = ui::DCRendererLayerParams::OverlayImages();
       ReleaseSwapChainResources();
       content_visual_->SetContent(nullptr);
       layer_tree_->SetNeedsRebuildVisualTree();
@@ -722,7 +741,19 @@ bool SwapChainPresenter::PresentToSwapChain(
 
   UpdateVisuals(params, swap_chain_size);
 
-  if (TryPresentToDecodeSwapChain(image_dxgi, params.content_rect,
+  // Swap chain image already has a swap chain that's presented by the client
+  // e.g. for webgl/canvas low-latency/desynchronized mode.
+  if (swap_chain_image) {
+    content_visual_->SetContent(swap_chain_image->swap_chain().Get());
+    if (last_presented_images_[kSwapChainImageIndex] != swap_chain_image) {
+      last_presented_images_ = params.images;
+      ReleaseSwapChainResources();
+      layer_tree_->SetNeedsRebuildVisualTree();
+    }
+    return true;
+  }
+
+  if (TryPresentToDecodeSwapChain(nv12_image, params.content_rect,
                                   swap_chain_size)) {
     return true;
   }
@@ -747,24 +778,22 @@ bool SwapChainPresenter::PresentToSwapChain(
     }
     content_visual_->SetContent(swap_chain_.Get());
     layer_tree_->SetNeedsRebuildVisualTree();
-  } else if (last_y_image_ == params.y_image &&
-             last_uv_image_ == params.uv_image) {
+  } else if (last_presented_images_ == params.images) {
     // The swap chain is presenting the same images as last swap, which means
     // that the images were never returned to the video decoder and should
     // have the same contents as last time. It shouldn't need to be redrawn.
     return true;
   }
-  last_y_image_ = params.y_image;
-  last_uv_image_ = params.uv_image;
+  last_presented_images_ = params.images;
 
   Microsoft::WRL::ComPtr<ID3D11Texture2D> input_texture;
   UINT input_level;
   Microsoft::WRL::ComPtr<IDXGIKeyedMutex> keyed_mutex;
-  if (image_dxgi) {
-    input_texture = image_dxgi->texture();
-    input_level = (UINT)image_dxgi->level();
+  if (nv12_image) {
+    input_texture = nv12_image->texture();
+    input_level = (UINT)nv12_image->level();
     // Keyed mutex may not exist.
-    keyed_mutex = image_dxgi->keyed_mutex();
+    keyed_mutex = nv12_image->keyed_mutex();
     staging_texture_.Reset();
     copy_texture_.Reset();
   } else {
@@ -781,8 +810,8 @@ bool SwapChainPresenter::PresentToSwapChain(
 
   // TODO(sunnyps): Use correct color space for uploaded video frames.
   gfx::ColorSpace src_color_space = gfx::ColorSpace::CreateREC709();
-  if (image_dxgi && image_dxgi->color_space().IsValid())
-    src_color_space = image_dxgi->color_space();
+  if (nv12_image && nv12_image->color_space().IsValid())
+    src_color_space = nv12_image->color_space();
 
   if (!VideoProcessorBlt(input_texture, input_level, keyed_mutex,
                          params.content_rect, src_color_space)) {

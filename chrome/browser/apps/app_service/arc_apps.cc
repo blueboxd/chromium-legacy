@@ -527,12 +527,14 @@ void ArcApps::LoadIconFromVM(const std::string app_id,
 
       AppConnectionHolder* app_connection_holder =
           prefs->app_connection_holder();
-      if (app_connection_holder->IsConnected()) {
-        std::move(pending).Run(app_connection_holder);
-      } else {
-        pending_load_icon_calls_.push_back(std::move(pending));
+      if (app_connection_holder) {
+        if (app_connection_holder->IsConnected()) {
+          std::move(pending).Run(app_connection_holder);
+        } else {
+          pending_load_icon_calls_.push_back(std::move(pending));
+        }
+        return;
       }
-      return;
     }
   }
 

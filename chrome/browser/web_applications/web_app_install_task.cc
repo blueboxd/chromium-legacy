@@ -135,7 +135,7 @@ void WebAppInstallTask::InstallWebAppFromInfo(
   if (no_network_install) {
     options.no_network_install = true;
     // We should only install windowed apps via this method.
-    options.force_launch_container = LaunchContainer::kWindow;
+    web_application_info->open_as_window = true;
   }
 
   install_finalizer_->FinalizeInstall(*web_application_info, options,
@@ -454,8 +454,10 @@ void WebAppInstallTask::OnDialogCompleted(
 
   InstallFinalizer::FinalizeOptions finalize_options;
   finalize_options.install_source = install_source_;
-  if (install_params_) {
-    finalize_options.force_launch_container = install_params_->launch_container;
+  if (install_params_ &&
+      install_params_->launch_container != LaunchContainer::kDefault) {
+    web_app_info_copy.open_as_window =
+        install_params_->launch_container == LaunchContainer::kWindow;
   }
 
   install_finalizer_->FinalizeInstall(

@@ -32,6 +32,19 @@ std::string BucketizeUsername(base::StringPiece canonicalized_username);
 std::string ScryptHashUsernameAndPassword(base::StringPiece username,
                                           base::StringPiece password);
 
+// Encrypt/decrypt routines.
+
+// Encrypts |plaintext| with a new key. The key is returned via |key|.
+std::string CipherEncrypt(const std::string& plaintext, std::string* key);
+
+// Encrypts |plaintext| with the existing key.
+std::string CipherEncryptWithKey(const std::string& plaintext,
+                                 const std::string& key);
+
+// Decrypts |ciphertext| using |key|.
+std::string CipherDecrypt(const std::string& ciphertext,
+                          const std::string& key);
+
 }  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LEAK_DETECTION_ENCRYPTION_UTILS_H_

@@ -64,12 +64,6 @@ interface Frame {
   // Set the lifecycle state.
   SetLifecycleState(blink.mojom.FrameLifecycleState state);
 
-  // Retrieves the text surrounding the current selection for the frame up to
-  // the length specified by |max_length|, along with its start and end offsets.
-  GetTextSurroundingSelection(uint32 max_length)
-      => (mojo_base.mojom.String16 content, uint32 start_offset,
-          uint32 end_offset);
-
   // Samsung Galaxy Note-specific "smart clip" stylus text getter.
   // Extracts the data at the given rect.
   [EnableIf=is_android]
@@ -178,8 +172,9 @@ interface FrameNavigationControl {
   // Returned DevToolsAgent must be associated with navigation control,
   // due to various ordering dependencies between DevTools protocol and
   // navigation.
-  BindDevToolsAgent(associated blink.mojom.DevToolsAgentHost agent_host,
-                    associated blink.mojom.DevToolsAgent& agent);
+  BindDevToolsAgent(
+      pending_associated_remote<blink.mojom.DevToolsAgentHost> agent_host,
+      pending_associated_receiver<blink.mojom.DevToolsAgent> agent);
 
   // Request for the renderer to execute JavaScript in the frame's context.
   //

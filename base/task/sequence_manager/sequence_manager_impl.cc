@@ -518,14 +518,14 @@ void SequenceManagerImpl::LogTaskDebugInfo(
       break;
 
     case Settings::TaskLogging::kEnabled:
-      DVLOG(1) << "#"
-               << static_cast<uint64_t>(
-                      executing_task.pending_task.enqueue_order())
-               << " " << executing_task.task_queue_name
-               << (executing_task.pending_task.cross_thread_
-                       ? " Run crossthread "
-                       : " Run ")
-               << executing_task.pending_task.posted_from.ToString();
+      LOG(INFO) << "#"
+                << static_cast<uint64_t>(
+                       executing_task.pending_task.enqueue_order())
+                << " " << executing_task.task_queue_name
+                << (executing_task.pending_task.cross_thread_
+                        ? " Run crossthread "
+                        : " Run ")
+                << executing_task.pending_task.posted_from.ToString();
       break;
 
     case Settings::TaskLogging::kEnabledWithBacktrace: {
@@ -539,14 +539,14 @@ void SequenceManagerImpl::LogTaskDebugInfo(
         ++length;
       if (length == 0)
         break;
-      DVLOG(1) << "#"
-               << static_cast<uint64_t>(
-                      executing_task.pending_task.enqueue_order())
-               << " " << executing_task.task_queue_name
-               << (executing_task.pending_task.cross_thread_
-                       ? " Run crossthread "
-                       : " Run ")
-               << debug::StackTrace(task_trace.data(), length);
+      LOG(INFO) << "#"
+                << static_cast<uint64_t>(
+                       executing_task.pending_task.enqueue_order())
+                << " " << executing_task.task_queue_name
+                << (executing_task.pending_task.cross_thread_
+                        ? " Run crossthread "
+                        : " Run ")
+                << debug::StackTrace(task_trace.data(), length);
       break;
     }
   }

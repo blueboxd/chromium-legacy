@@ -110,6 +110,7 @@ class ASH_EXPORT HeaderView : public views::View,
   void OnImmersiveFullscreenExited() override;
   void SetVisibleFraction(double visible_fraction) override;
   std::vector<gfx::Rect> GetVisibleBoundsInScreen() const override;
+  void Relayout() override;
 
   DefaultFrameHeader* GetFrameHeader() { return frame_header_.get(); }
 

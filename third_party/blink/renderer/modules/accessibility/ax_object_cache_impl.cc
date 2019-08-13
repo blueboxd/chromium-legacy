@@ -454,7 +454,7 @@ AXObject* AXObjectCacheImpl::GetOrCreate(Node* node) {
   if (!LayoutTreeBuilderTraversal::Parent(*node))
     return nullptr;
 
-  if (IsHTMLHeadElement(node))
+  if (IsA<HTMLHeadElement>(node))
     return nullptr;
 
   AXObject* new_obj = CreateFromNode(node);

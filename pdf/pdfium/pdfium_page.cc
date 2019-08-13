@@ -430,7 +430,7 @@ int PDFiumPage::GetLink(int char_index, LinkTarget* target) {
                                 PageOrientation::kOriginal)
                        .point());
   for (size_t i = 0; i < links_.size(); ++i) {
-    for (const auto& rect : links_[i].rects) {
+    for (const auto& rect : links_[i].bounding_rects) {
       if (rect.Contains(origin)) {
         if (target)
           target->url = links_[i].url;
@@ -495,8 +495,11 @@ void PDFiumPage::CalculateLinks() {
                                    PageOrientation::kOriginal);
       if (rect.IsEmpty())
         continue;
-      link.rects.push_back(rect);
+      link.bounding_rects.push_back(rect);
     }
+    FPDF_BOOL is_link_over_text = FPDFLink_GetTextRange(
+        links, i, &link.start_char_index, &link.char_count);
+    DCHECK(is_link_over_text);
     links_.push_back(link);
   }
   FPDFLink_CloseWebLinks(links);

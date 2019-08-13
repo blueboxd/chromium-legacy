@@ -129,14 +129,14 @@ class SwapChainPresenter {
   // Try presenting to a decode swap chain based on various conditions such as
   // global state (e.g. finch, NV12 support), texture flags, and transform.
   // Returns true on success.  See PresentToDecodeSwapChain() for more info.
-  bool TryPresentToDecodeSwapChain(GLImageDXGI* image_dxgi,
+  bool TryPresentToDecodeSwapChain(GLImageDXGI* nv12_image,
                                    const gfx::Rect& content_rect,
                                    const gfx::Size& swap_chain_size);
 
   // Present to a decode swap chain created from compatible video decoder
-  // buffers using given |image_dxgi| with destination size |swap_chain_size|.
+  // buffers using given |nv12_image| with destination size |swap_chain_size|.
   // Returns true on success.
-  bool PresentToDecodeSwapChain(GLImageDXGI* image_dxgi,
+  bool PresentToDecodeSwapChain(GLImageDXGI* nv12_image,
                                 const gfx::Rect& content_rect,
                                 const gfx::Size& swap_chain_size);
 
@@ -197,8 +197,7 @@ class SwapChainPresenter {
   Microsoft::WRL::ComPtr<IDCompositionVisual2> clip_visual_;
 
   // GLImages that were presented in the last frame.
-  scoped_refptr<GLImage> last_y_image_;
-  scoped_refptr<GLImage> last_uv_image_;
+  ui::DCRendererLayerParams::OverlayImages last_presented_images_;
 
   // NV12 staging texture used for software decoded YUV buffers.  Mapped to CPU
   // for copying from YUV buffers.  Texture usage is DYNAMIC or STAGING.

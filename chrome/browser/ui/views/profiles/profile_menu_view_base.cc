@@ -27,7 +27,7 @@
 #include "ui/views/controls/separator.h"
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
+#include "chrome/browser/ui/views/profiles/profile_menu_view.h"
 #include "chrome/browser/ui/views/sync/dice_signin_button_view.h"
 #endif
 
@@ -82,7 +82,7 @@ void ProfileMenuViewBase::ShowBubble(
     bubble = new IncognitoMenuView(anchor_button, browser);
   } else {
 #if !defined(OS_CHROMEOS)
-    bubble = new ProfileChooserView(anchor_button, browser, view_mode,
+    bubble = new ProfileMenuView(anchor_button, browser, view_mode,
                                     manage_accounts_params.service_type,
                                     access_point);
 #else

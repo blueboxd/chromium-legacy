@@ -37,6 +37,8 @@ static const JNINativeMethod kMethods_org_chromium_base_natives_GEN_1JNIMAIN_DEX
 
 };
 
+namespace {
+
 JNI_REGISTRATION_EXPORT bool RegisterNative_org_chromium_base_natives_GEN_1JNIMAIN_DEX(JNIEnv* env) {
   const int number_of_methods = base::size(kMethods_org_chromium_base_natives_GEN_1JNIMAIN_DEX);
 
@@ -53,6 +55,8 @@ JNI_REGISTRATION_EXPORT bool RegisterNative_org_chromium_base_natives_GEN_1JNIMA
 
   return true;
 }
+
+}  // namespace
 
 
 // Step 4: Main dex and non-main dex registration functions.

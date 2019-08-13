@@ -1,5 +1,8 @@
 # The Passkey Pattern
 
+For the Chromium implementation of this pattern, see
+[//base/util/type_safety/pass_key.h].
+
 The Passkey pattern is used when you need to expose a subset of a class's
 methods to another class in a more granular way than simply friending the other
 class. In essence, it involves creating a "passkey" class that can only be
@@ -45,3 +48,5 @@ are used to pass in the Passkey object.
 
 It is encouraged to leave the `BarPasskey` parameter unnamed to reinforce that it
 carries no semantic information and is not actually used for anything.
+
+[//base/util/type_safety/pass_key.h]: ../../base/util/type_safety/pass_key.h

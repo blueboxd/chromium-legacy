@@ -21,7 +21,9 @@
 #include "net/dns/mapped_host_resolver.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_server_properties.h"
+#include "net/test/cert_test_util.h"
 #include "net/test/quic_simple_test_server.h"
+#include "net/test/test_data_directory.h"
 #include "net/url_request/url_request_test_util.h"
 
 namespace grpc_support {
@@ -47,8 +49,13 @@ class BidirectionalStreamTestURLRequestContextGetter
       host_resolver_.reset(
           new net::MappedHostResolver(std::move(mock_host_resolver)));
       UpdateHostResolverRules();
+      auto test_cert = net::ImportCertFromFile(net::GetTestCertsDirectory(),
+                                               "quic-chain.pem");
       mock_cert_verifier_.reset(new net::MockCertVerifier());
-      mock_cert_verifier_->set_default_result(net::OK);
+      net::CertVerifyResult verify_result;
+      verify_result.verified_cert = test_cert;
+      verify_result.is_issued_by_known_root = true;
+      mock_cert_verifier_->AddResultForCert(test_cert, verify_result, net::OK);
 
       auto params = std::make_unique<net::HttpNetworkSession::Params>();
       params->enable_quic = true;

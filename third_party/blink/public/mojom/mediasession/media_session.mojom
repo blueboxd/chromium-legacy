@@ -47,7 +47,7 @@ struct SpecMediaMetadata {
 interface MediaSessionService {
   // MediaSessionClient interface is used to notify Blink MediaSession of
   // media control actions.
-  SetClient(MediaSessionClient client);
+  SetClient(pending_remote<MediaSessionClient> client);
 
   // Notifies the browser that the page specified its current playback state.
   SetPlaybackState(MediaSessionPlaybackState state);

@@ -705,6 +705,17 @@ class AutotestPrivateSetArcAppWindowStateFunction : public ExtensionFunction {
   std::unique_ptr<WindowStateChangeObserver> window_state_observer_;
 };
 
+class AutotestPrivateGetArcAppWindowStateFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateGetArcAppWindowStateFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getArcAppWindowState",
+                             AUTOTESTPRIVATE_GETARCAPPWINDOWSTATE)
+
+ private:
+  ~AutotestPrivateGetArcAppWindowStateFunction() override;
+  ResponseAction Run() override;
+};
+
 template <>
 KeyedService*
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(

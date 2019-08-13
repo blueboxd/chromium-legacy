@@ -34,7 +34,4 @@ mojom("mojo_bindings") {
   deps = [
     "//device/bluetooth/public/mojom:deprecated_experimental_interfaces",
   ]
-
-  # TODO(https://crbug.com/968369): Change to use new names.
-  use_old_js_lite_bindings_names = true
 }

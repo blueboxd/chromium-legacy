@@ -353,7 +353,7 @@ void HTMLElementStack::RemoveHTMLHeadElement(Element* element) {
 }
 
 void HTMLElementStack::Remove(Element* element) {
-  DCHECK(!IsHTMLHeadElement(element));
+  DCHECK(!IsA<HTMLHeadElement>(element));
   if (top_->GetElement() == element) {
     Pop();
     return;

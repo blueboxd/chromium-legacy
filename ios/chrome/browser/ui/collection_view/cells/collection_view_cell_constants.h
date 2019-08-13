@@ -24,9 +24,7 @@ const int kUIKitMultilineDetailTextColor = 0x767676;
 const CGFloat kUIKitMultilineDetailFontSize = 12;
 
 // The font size and color to use for footer text in UIKit-style cells.
-const int kUIKitFooterTextColor = 0x8A8A8F;
 const CGFloat kUIKitFooterFontSize = 13;
-const int kUIKitFooterLinkColor = 0x1A73E8;
 
 // The tint color to use for switches in UIKit-style cells.
 const int kUIKitSwitchTintColor = 0x1A73E8;

@@ -306,6 +306,11 @@ class PendingAppInstallTaskTest : public ChromeRenderViewHostTestHarness {
 
   TestDataRetriever* data_retriever() { return data_retriever_; }
 
+  const WebApplicationInfo& web_app_info() {
+    DCHECK_EQ(1u, install_finalizer_->web_app_info_list().size());
+    return install_finalizer_->web_app_info_list().at(0);
+  }
+
   const InstallFinalizer::FinalizeOptions& finalize_options() {
     DCHECK_EQ(1u, install_finalizer_->finalize_options_list().size());
     return install_finalizer_->finalize_options_list().at(0);
@@ -372,8 +377,7 @@ TEST_F(PendingAppInstallTaskTest,
         EXPECT_EQ(0u, finalizer()->num_reparent_tab_calls());
         EXPECT_EQ(0u, finalizer()->num_reveal_appshim_calls());
 
-        EXPECT_EQ(LaunchContainer::kDefault,
-                  finalize_options().force_launch_container);
+        EXPECT_FALSE(web_app_info().open_as_window);
         EXPECT_EQ(WebappInstallSource::INTERNAL_DEFAULT,
                   finalize_options().install_source);
 
@@ -510,10 +514,7 @@ TEST_F(PendingAppInstallTaskTest,
       base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
         EXPECT_EQ(InstallResultCode::kSuccess, result.code);
         EXPECT_TRUE(result.app_id.has_value());
-
-        EXPECT_EQ(LaunchContainer::kWindow,
-                  finalize_options().force_launch_container);
-
+        EXPECT_TRUE(web_app_info().open_as_window);
         run_loop.Quit();
       }));
 
@@ -533,9 +534,7 @@ TEST_F(PendingAppInstallTaskTest,
       base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
         EXPECT_EQ(InstallResultCode::kSuccess, result.code);
         EXPECT_TRUE(result.app_id.has_value());
-
-        EXPECT_EQ(LaunchContainer::kTab,
-                  finalize_options().force_launch_container);
+        EXPECT_FALSE(web_app_info().open_as_window);
         run_loop.Quit();
       }));
 

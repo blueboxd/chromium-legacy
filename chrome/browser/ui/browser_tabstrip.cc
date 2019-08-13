@@ -28,8 +28,7 @@ void AddTabAt(Browser* browser,
   // WebContents, but we want to include the time it takes to create the
   // WebContents object too.
   base::TimeTicks new_tab_start_time = base::TimeTicks::Now();
-  NavigateParams params(browser,
-                        url.is_empty() ? GURL(chrome::kChromeUINewTabURL) : url,
+  NavigateParams params(browser, url.is_empty() ? browser->GetNewTabURL() : url,
                         ui::PAGE_TRANSITION_TYPED);
   params.disposition = foreground ? WindowOpenDisposition::NEW_FOREGROUND_TAB
                                   : WindowOpenDisposition::NEW_BACKGROUND_TAB;

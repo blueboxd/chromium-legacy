@@ -16,14 +16,15 @@ class MockMediaSessionClient : public blink::mojom::MediaSessionClient {
   MockMediaSessionClient();
   ~MockMediaSessionClient() override;
 
-  blink::mojom::MediaSessionClientPtr CreateInterfacePtrAndBind();
+  mojo::PendingRemote<blink::mojom::MediaSessionClient>
+  CreateInterfaceRemoteAndBind();
 
   MOCK_METHOD2(DidReceiveAction,
                void(media_session::mojom::MediaSessionAction action,
                     blink::mojom::MediaSessionActionDetailsPtr details));
 
  private:
-  mojo::Binding<blink::mojom::MediaSessionClient> binding_{this};
+  mojo::Receiver<blink::mojom::MediaSessionClient> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockMediaSessionClient);
 };

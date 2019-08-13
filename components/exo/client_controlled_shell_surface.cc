@@ -811,6 +811,8 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
   display::Display display;
   if (screen->GetDisplayWithDisplayId(display_id_, &display)) {
     bool is_display_stale = display_id_ != current_display.id();
+    LOG(ERROR) << "DisplayId:" << display_id_
+               << ", current:" << current_display.id();
 
     // Preserve widget bounds until client acknowledges display move.
     if (preserve_widget_bounds_ && is_display_stale)
@@ -844,6 +846,7 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
 
   bool set_bounds_locally =
       GetWindowState()->is_dragged() && !is_display_move_pending;
+  LOG(ERROR) << "Updating Locally";
 
   if (set_bounds_locally || client_controlled_state_->set_bounds_locally()) {
     // Convert from screen to display coordinates.
@@ -858,6 +861,7 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
     UpdateSurfaceBounds();
     return;
   }
+  LOG(ERROR) << "Updating Remotely";
 
   {
     ScopedSetBoundsLocally scoped_set_bounds(this);
@@ -865,6 +869,8 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
   }
 
   if (bounds != adjusted_bounds || is_display_move_pending) {
+    LOG(ERROR) << "Sending Bounds:" << bounds.ToString()
+               << ", adjusted=" << adjusted_bounds.ToString();
     // Notify client that bounds were adjusted or window moved across displays.
     auto state_type = GetWindowState()->GetStateType();
     OnBoundsChangeEvent(state_type, state_type, target_display.id(),
@@ -937,13 +943,13 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
   }
 
   ash::WindowState* window_state = GetWindowState();
-  if (window_state->GetStateType() == pending_window_state_) {
+  state_changed_ = window_state->GetStateType() != pending_window_state_;
+  if (!state_changed_) {
     // Animate PIP window movement unless it is being dragged.
     if (window_state->IsPip() && !window_state->is_dragged()) {
       client_controlled_state_->set_next_bounds_change_animation_type(
           ash::ClientControlledState::kAnimationAnimated);
     }
-
     return true;
   }
 
@@ -1043,9 +1049,11 @@ void ClientControlledShellSurface::UpdateFrame() {
   bool enable_wide_frame = GetFrameView()->GetVisible() &&
                            window_state->IsMaximizedOrFullscreenOrPinned() &&
                            work_area.width() != geometry().width();
-
+  bool update_frame = state_changed_;
+  state_changed_ = false;
   if (enable_wide_frame) {
     if (!wide_frame_) {
+      update_frame = true;
       wide_frame_ = std::make_unique<ash::WideFrameView>(widget_);
       ash::ImmersiveFullscreenController::EnableForWidget(widget_, false);
       wide_frame_->Init(immersive_fullscreen_controller_.get());
@@ -1063,6 +1071,7 @@ void ClientControlledShellSurface::UpdateFrame() {
     }
   } else {
     if (wide_frame_) {
+      update_frame = true;
       ash::ImmersiveFullscreenController::EnableForWidget(widget_, false);
       wide_frame_.reset();
       GetFrameView()->InitImmersiveFullscreenControllerForView(
@@ -1077,7 +1086,8 @@ void ClientControlledShellSurface::UpdateFrame() {
   // The autohide should be applied when the window state is in
   // maximzied, fullscreen or pinned. Update the auto hide state
   // inside commit.
-  UpdateAutoHideFrame();
+  if (update_frame)
+    UpdateAutoHideFrame();
 }
 
 void ClientControlledShellSurface::UpdateCaptionButtonModel() {

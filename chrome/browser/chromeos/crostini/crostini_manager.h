@@ -255,10 +255,12 @@ class CrostiniManager : public KeyedService,
   // Checks the arguments for exporting an Lxd container via
   // CiceroneClient::ExportLxdContainer. |callback| is called immediately if the
   // arguments are bad, or after the method call finishes.
-  void ExportLxdContainer(std::string vm_name,
-                          std::string container_name,
-                          base::FilePath export_path,
-                          CrostiniResultCallback callback);
+  void ExportLxdContainer(
+      std::string vm_name,
+      std::string container_name,
+      base::FilePath export_path,
+      base::OnceCallback<void(CrostiniResult result, uint64_t container_size)>
+          callback);
 
   // Checks the arguments for importing an Lxd container via
   // CiceroneClient::ImportLxdContainer. |callback| is called immediately if the
@@ -716,7 +718,10 @@ class CrostiniManager : public KeyedService,
   std::multimap<ContainerId, CrostiniResultCallback>
       create_lxd_container_callbacks_;
   std::multimap<ContainerId, BoolCallback> delete_lxd_container_callbacks_;
-  std::map<ContainerId, CrostiniResultCallback> export_lxd_container_callbacks_;
+  std::map<
+      ContainerId,
+      base::OnceCallback<void(CrostiniResult result, uint64_t container_size)>>
+      export_lxd_container_callbacks_;
   std::map<ContainerId, CrostiniResultCallback> import_lxd_container_callbacks_;
 
   // Callbacks to run after Tremplin is started, keyed by vm_name. These are

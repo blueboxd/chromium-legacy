@@ -92,16 +92,16 @@ void ServiceWorkerDevToolsManager::WorkerCreated(
 void ServiceWorkerDevToolsManager::WorkerReadyForInspection(
     int worker_process_id,
     int worker_route_id,
-    blink::mojom::DevToolsAgentPtrInfo agent_ptr_info,
-    blink::mojom::DevToolsAgentHostRequest host_request) {
+    mojo::PendingRemote<blink::mojom::DevToolsAgent> agent_remote,
+    mojo::PendingReceiver<blink::mojom::DevToolsAgentHost> host_receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const WorkerId worker_id(worker_process_id, worker_route_id);
   auto it = live_hosts_.find(worker_id);
   if (it == live_hosts_.end())
     return;
   scoped_refptr<ServiceWorkerDevToolsAgentHost> host = it->second;
-  host->WorkerReadyForInspection(std::move(agent_ptr_info),
-                                 std::move(host_request));
+  host->WorkerReadyForInspection(std::move(agent_remote),
+                                 std::move(host_receiver));
   // Bring up UI for the ones not picked by other clients.
   if (debug_service_worker_on_start_ && !host->IsAttached())
     host->Inspect();

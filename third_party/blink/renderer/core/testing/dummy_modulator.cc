@@ -138,19 +138,25 @@ void DummyModulator::ClearIsAcquiringImportMaps() {
   NOTREACHED();
 }
 
+const ImportMap* DummyModulator::GetImportMapForTest() const {
+  NOTREACHED();
+  return nullptr;
+}
+
 ModuleImportMeta DummyModulator::HostGetImportMetaProperties(
     ModuleRecord) const {
   NOTREACHED();
   return ModuleImportMeta(String());
 }
 
-ScriptValue DummyModulator::InstantiateModule(ModuleRecord, const KURL&) {
+ScriptValue DummyModulator::InstantiateModule(v8::Local<v8::Module>,
+                                              const KURL&) {
   NOTREACHED();
   return ScriptValue();
 }
 
 Vector<Modulator::ModuleRequest> DummyModulator::ModuleRequestsFromModuleRecord(
-    ModuleRecord) {
+    v8::Local<v8::Module>) {
   NOTREACHED();
   return Vector<ModuleRequest>();
 }

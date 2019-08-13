@@ -77,4 +77,34 @@ TEST_P(NGInlineCursorTest, Next) {
                                 "#span2", "text3", "text4", "text5"));
 }
 
+TEST_P(NGInlineCursorTest, NextSkippingChildren) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    span { background: gray; }
+    </style>
+    <div id=root>
+      text1
+      <span id="span1">
+        text2
+        <span id="span2">
+          text3
+        </span>
+        text4
+      </span>
+      text5
+    </div>
+  )HTML");
+
+  LayoutBlockFlow* block_flow =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("root"));
+  NGInlineCursor cursor(block_flow);
+  for (unsigned i = 0; i < 4; ++i)
+    cursor.MoveToNext();
+  EXPECT_EQ("text2", ToDebugString(cursor));
+  Vector<String> list;
+  while (cursor.MoveToNextSkippingChildren())
+    list.push_back(ToDebugString(cursor));
+  EXPECT_THAT(list, ElementsAre("#span2", "text4", "text5"));
+}
+
 }  // namespace blink

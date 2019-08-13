@@ -31,7 +31,7 @@
 #include "ui/gfx/range/range.h"
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
+#include "chrome/browser/ui/views/profiles/profile_menu_view.h"
 #endif
 
 namespace {
@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest,
   if (IsSigninModal(profile())) {
 #if !defined(OS_CHROMEOS)
     // ProfileChooser doesn't show in an incognito window.
-    EXPECT_FALSE(ProfileChooserView::IsShowing());
+    EXPECT_FALSE(ProfileMenuView::IsShowing());
 #endif
 
     // Sign-in dialog is shown when there is at least one tab in the

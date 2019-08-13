@@ -18,6 +18,7 @@ extern NSString* const kMDCInkColor;
 // Color used to tint placeholder images and icons.
 extern NSString* const kPlaceholderImageTintColor;
 extern NSString* const kScrimBackgroundColor;
+extern NSString* const kSeparatorColor;
 extern NSString* const kSolidButtonTextColor;
 extern NSString* const kTableViewRowHighlightColor;
 extern NSString* const kTextPrimaryColor;

@@ -369,38 +369,6 @@ TEST_F(BookmarkAppInstallFinalizerTest, NoNetworkInstallSucceeds) {
   run_loop.Run();
 }
 
-TEST_F(BookmarkAppInstallFinalizerTest, ForceLaunchContainer) {
-  auto info = std::make_unique<WebApplicationInfo>();
-  info->app_url = kWebAppUrl;
-  // The info says extensions::LAUNCH_TYPE_WINDOW needed.
-  info->open_as_window = true;
-
-  web_app::InstallFinalizer::FinalizeOptions options;
-  options.install_source = WebappInstallSource::INTERNAL_DEFAULT;
-  // Force launch as a tab.
-  options.force_launch_container = web_app::LaunchContainer::kTab;
-
-  base::RunLoop run_loop;
-  finalizer().FinalizeInstall(
-      *info, options,
-      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
-                                     web_app::InstallResultCode code) {
-        EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
-
-        auto* extension =
-            ExtensionRegistry::Get(profile())->GetInstalledExtension(
-                installed_app_id);
-
-        extensions::LaunchType launch_type =
-            GetLaunchType(ExtensionPrefs::Get(profile()), extension);
-        // Not extensions::LAUNCH_TYPE_WINDOW.
-        EXPECT_EQ(launch_type, extensions::LAUNCH_TYPE_REGULAR);
-
-        run_loop.Quit();
-      }));
-  run_loop.Run();
-}
-
 TEST_F(BookmarkAppInstallFinalizerTest, CanSkipAppUpdateForSync) {
   auto info = std::make_unique<WebApplicationInfo>();
   info->app_url = kWebAppUrl;

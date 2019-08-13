@@ -11,6 +11,7 @@
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/output_surface.h"
@@ -42,6 +43,12 @@ enum DCLayerResult {
   DC_LAYER_FAILED_TOO_MANY_OVERLAYS,
   DC_LAYER_FAILED_NO_HW_OVERLAY_SUPPORT,
   kMaxValue = DC_LAYER_FAILED_NO_HW_OVERLAY_SUPPORT,
+};
+
+enum : size_t {
+  kTextureResourceIndex = 0,
+  kYPlaneResourceIndex = 0,
+  kUVPlaneResourceIndex = 1,
 };
 
 DCLayerResult FromYUVQuad(const YUVVideoDrawQuad* quad,
@@ -89,8 +96,8 @@ DCLayerResult FromYUVQuad(const YUVVideoDrawQuad* quad,
   // one each for Y and UV planes.
   DCHECK(quad->y_plane_resource_id() && quad->u_plane_resource_id());
   DCHECK_EQ(quad->u_plane_resource_id(), quad->v_plane_resource_id());
-  dc_layer->y_resource_id = quad->y_plane_resource_id();
-  dc_layer->uv_resource_id = quad->u_plane_resource_id();
+  dc_layer->resources[kYPlaneResourceIndex] = quad->y_plane_resource_id();
+  dc_layer->resources[kUVPlaneResourceIndex] = quad->u_plane_resource_id();
 
   dc_layer->z_order = 1;
   dc_layer->content_rect = gfx::ToNearestRect(quad->ya_tex_coord_rect);
@@ -101,7 +108,7 @@ DCLayerResult FromYUVQuad(const YUVVideoDrawQuad* quad,
       quad->shared_quad_state->quad_to_target_transform);
   quad_to_root_transform.ConcatTransform(transform_to_root_target);
   // Flatten transform to 2D since DirectComposition doesn't support 3D
-  // transforms.
+  // transforms.  This only applies when non axis aligned overlays are enabled.
   quad_to_root_transform.FlattenTo2d();
   dc_layer->transform = quad_to_root_transform;
 
@@ -115,6 +122,58 @@ DCLayerResult FromYUVQuad(const YUVVideoDrawQuad* quad,
   }
   dc_layer->color_space = quad->video_color_space;
   dc_layer->protected_video_type = quad->protected_video_type;
+
+  return DC_LAYER_SUCCESS;
+}
+
+DCLayerResult FromTextureQuad(const TextureDrawQuad* quad,
+                              const gfx::Transform& transform_to_root_target,
+                              DisplayResourceProvider* resource_provider,
+                              DCLayerOverlay* dc_layer) {
+  // Check that resources are overlay compatible first so that subsequent
+  // assumptions are valid.
+  for (const auto& resource : quad->resources) {
+    if (!resource_provider->IsOverlayCandidate(resource))
+      return DC_LAYER_FAILED_TEXTURE_NOT_CANDIDATE;
+  }
+  if (quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver)
+    return DC_LAYER_FAILED_QUAD_BLEND_MODE;
+
+  if (!quad->shared_quad_state->quad_to_target_transform
+           .Preserves2dAxisAlignment() &&
+      !base::FeatureList::IsEnabled(
+          features::kDirectCompositionComplexOverlays)) {
+    return DC_LAYER_FAILED_COMPLEX_TRANSFORM;
+  }
+
+  dc_layer->resources[kTextureResourceIndex] = quad->resource_id();
+  dc_layer->z_order = 1;
+  dc_layer->content_rect = gfx::Rect(quad->resource_size_in_pixels());
+  dc_layer->quad_rect = quad->rect;
+  // Quad rect is in quad content space so both quad to target, and target to
+  // root transforms must be applied to it.
+  gfx::Transform quad_to_root_transform;
+  if (quad->y_flipped) {
+    quad_to_root_transform.Scale(1.0, -1.0);
+    quad_to_root_transform.PostTranslate(0.0, dc_layer->content_rect.height());
+  }
+  quad_to_root_transform.ConcatTransform(
+      quad->shared_quad_state->quad_to_target_transform);
+  quad_to_root_transform.ConcatTransform(transform_to_root_target);
+  // Flatten transform to 2D since DirectComposition doesn't support 3D
+  // transforms.  This only applies when non axis aligned overlays are enabled.
+  quad_to_root_transform.FlattenTo2d();
+  dc_layer->transform = quad_to_root_transform;
+
+  dc_layer->is_clipped = quad->shared_quad_state->is_clipped;
+  if (dc_layer->is_clipped) {
+    // Clip rect is in quad target space, and must be transformed to root target
+    // space.
+    gfx::RectF clip_rect = gfx::RectF(quad->shared_quad_state->clip_rect);
+    transform_to_root_target.TransformRect(&clip_rect);
+    dc_layer->clip_rect = gfx::ToEnclosingRect(clip_rect);
+  }
+  dc_layer->color_space = gfx::ColorSpace::CreateSRGB();
 
   return DC_LAYER_SUCCESS;
 }
@@ -411,6 +470,11 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
                              resource_provider, &dc_layer);
         uma_protected_video_type =
             YUVVideoDrawQuad::MaterialCast(*it)->protected_video_type;
+        break;
+      case DrawQuad::Material::kTextureContent:
+        result = FromTextureQuad(TextureDrawQuad::MaterialCast(*it),
+                                 render_pass->transform_to_root_target,
+                                 resource_provider, &dc_layer);
         break;
       default:
         result = DC_LAYER_FAILED_UNSUPPORTED_QUAD;

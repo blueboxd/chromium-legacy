@@ -14,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.MediaCodec.CryptoInfo;
 import android.os.Build;
+import android.security.NetworkSecurityPolicy;
 import android.view.PointerIcon;
 import android.view.View;
 import android.view.View.DragShadowBuilder;
@@ -72,5 +73,10 @@ public final class ApiHelperForN {
     public static void setVrModeEnabled(Activity activity, boolean enabled,
             ComponentName requestedComponent) throws PackageManager.NameNotFoundException {
         activity.setVrModeEnabled(enabled, requestedComponent);
+    }
+
+    /** See {@link NetworkSecurityPolicy#isCleartextTrafficPermitted(String)}. */
+    public static boolean isCleartextTrafficPermitted(String host) {
+        return NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted(host);
     }
 }

@@ -15,8 +15,12 @@
 // when the device is registered, and the values should never be changed. When
 // adding a new capability, the value should be '1 << (NEXT_FREE_BIT_ID)' and
 // NEXT_FREE_BIT_ID should be incremented by one.
-// NEXT_FREE_BIT_ID: 1
-enum class SharingDeviceCapability { kNone = 0, kTelephony = 1 << 0 };
+// NEXT_FREE_BIT_ID: 2
+enum class SharingDeviceCapability {
+  kNone = 0,
+  kTelephony = 1 << 0,
+  kSharedClipboard = 1 << 1
+};
 
 // A class that holds information regarding the properties of a device.
 class SharingDeviceInfo {

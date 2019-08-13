@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
+#include "chrome/common/webui_url_constants.h"
 #include "extensions/browser/extension_registry.h"
 
 namespace web_app {
@@ -109,16 +111,28 @@ IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, SomeTest) {
 
   // Check URL of tab1.
   EXPECT_EQ(GetActiveTabURL(), GetAppURL());
-  // Create tab2, check URL, number of tabs.
-  chrome::NewTab(app_browser_);
+  // Create tab2 with specific URL, check URL, number of tabs.
+  chrome::AddTabAt(app_browser_, GURL(chrome::kChromeUINewTabURL), -1, true);
   EXPECT_EQ(app_browser_->tab_strip_model()->count(), 2);
   EXPECT_EQ(GetActiveTabURL(), GURL("chrome://newtab/"));
+  // Create tab3 with default URL, check URL, number of tabs.
+  chrome::NewTab(app_browser_);
+  EXPECT_EQ(app_browser_->tab_strip_model()->count(), 3);
+  EXPECT_EQ(GetActiveTabURL(), GetAppURL());
   // Switch to tab1, check URL.
   chrome::SelectNextTab(app_browser_);
-  EXPECT_EQ(app_browser_->tab_strip_model()->count(), 2);
+  EXPECT_EQ(app_browser_->tab_strip_model()->count(), 3);
   EXPECT_EQ(GetActiveTabURL(), GetAppURL());
   // Switch to tab2, check URL.
   chrome::SelectNextTab(app_browser_);
+  EXPECT_EQ(app_browser_->tab_strip_model()->count(), 3);
+  EXPECT_EQ(GetActiveTabURL(), GURL("chrome://newtab/"));
+  // Switch to tab3, check URL.
+  chrome::SelectNextTab(app_browser_);
+  EXPECT_EQ(app_browser_->tab_strip_model()->count(), 3);
+  EXPECT_EQ(GetActiveTabURL(), GetAppURL());
+  // Close tab3, check number of tabs.
+  chrome::CloseTab(app_browser_);
   EXPECT_EQ(app_browser_->tab_strip_model()->count(), 2);
   EXPECT_EQ(GetActiveTabURL(), GURL("chrome://newtab/"));
   // Close tab2, check number of tabs.

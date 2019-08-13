@@ -819,8 +819,8 @@ void ScheduleCALayerInUseQueryCHROMIUM(GLsizei count,
 void CommitOverlayPlanesCHROMIUM(GLuint64 swap_id, GLbitfield flags) override;
 void FlushDriverCachesCHROMIUM() override;
 GLuint GetLastFlushIdCHROMIUM() override;
-void ScheduleDCLayerCHROMIUM(GLuint y_texture_id,
-                             GLuint uv_texture_id,
+void ScheduleDCLayerCHROMIUM(GLuint texture_0,
+                             GLuint texture_1,
                              GLint z_order,
                              GLint content_x,
                              GLint content_y,

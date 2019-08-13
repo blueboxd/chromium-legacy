@@ -64,9 +64,11 @@ class DummyModulator : public Modulator {
   void RegisterImportMap(const ImportMap*) override;
   bool IsAcquiringImportMaps() const override;
   void ClearIsAcquiringImportMaps() override;
+  const ImportMap* GetImportMapForTest() const override;
   ModuleImportMeta HostGetImportMetaProperties(ModuleRecord) const override;
-  ScriptValue InstantiateModule(ModuleRecord, const KURL&) override;
-  Vector<ModuleRequest> ModuleRequestsFromModuleRecord(ModuleRecord) override;
+  ScriptValue InstantiateModule(v8::Local<v8::Module>, const KURL&) override;
+  Vector<ModuleRequest> ModuleRequestsFromModuleRecord(
+      v8::Local<v8::Module>) override;
   ScriptValue ExecuteModule(ModuleScript*, CaptureEvalErrorFlag) override;
   ModuleScriptFetcher* CreateModuleScriptFetcher(
       ModuleScriptCustomFetchType) override;

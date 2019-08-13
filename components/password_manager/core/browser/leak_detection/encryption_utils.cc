@@ -12,6 +12,8 @@
 #include "crypto/openssl_util.h"
 #include "crypto/sha2.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/boringssl/src/include/openssl/nid.h"
+#include "third_party/private-join-and-compute/src/crypto/ec_commutative_cipher.h"
 
 namespace password_manager {
 
@@ -74,6 +76,39 @@ std::string ScryptHashUsernameAndPassword(base::StringPiece username,
                      kScryptCost, kScryptBlockSize, kScryptParallelization,
                      kScryptMaxMemory, key_data, kHashKeyLength);
   return scrypt_ok == 1 ? std::move(result) : std::string();
+}
+
+std::string CipherEncrypt(const std::string& plaintext, std::string* key) {
+  using ::private_join_and_compute::ECCommutativeCipher;
+  auto cipher = ECCommutativeCipher::CreateWithNewKey(
+      NID_X9_62_prime256v1, ECCommutativeCipher::SHA256);
+  *key = cipher.ValueOrDie()->GetPrivateKeyBytes();
+  auto result = cipher.ValueOrDie()->Encrypt(plaintext);
+  if (result.ok())
+    return result.ValueOrDie();
+  return std::string();
+}
+
+std::string CipherEncryptWithKey(const std::string& plaintext,
+                                 const std::string& key) {
+  using ::private_join_and_compute::ECCommutativeCipher;
+  auto cipher = ECCommutativeCipher::CreateFromKey(NID_X9_62_prime256v1, key,
+                                                   ECCommutativeCipher::SHA256);
+  auto result = cipher.ValueOrDie()->Encrypt(plaintext);
+  if (result.ok())
+    return result.ValueOrDie();
+  return std::string();
+}
+
+std::string CipherDecrypt(const std::string& ciphertext,
+                          const std::string& key) {
+  using ::private_join_and_compute::ECCommutativeCipher;
+  auto cipher = ECCommutativeCipher::CreateFromKey(NID_X9_62_prime256v1, key,
+                                                   ECCommutativeCipher::SHA256);
+  auto result = cipher.ValueOrDie()->Decrypt(ciphertext);
+  if (result.ok())
+    return result.ValueOrDie();
+  return std::string();
 }
 
 }  // namespace password_manager

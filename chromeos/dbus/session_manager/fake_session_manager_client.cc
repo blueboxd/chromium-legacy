@@ -316,6 +316,19 @@ void FakeSessionManagerClient::StopSession() {
 
 void FakeSessionManagerClient::StartDeviceWipe() {
   start_device_wipe_call_count_++;
+  if (!on_start_device_wipe_callback_.is_null()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, std::move(on_start_device_wipe_callback_));
+  }
+}
+
+void FakeSessionManagerClient::StartRemoteDeviceWipe(
+    const enterprise_management::SignedData& signed_command) {
+  start_device_wipe_call_count_++;
+  if (!on_start_device_wipe_callback_.is_null()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, std::move(on_start_device_wipe_callback_));
+  }
 }
 
 void FakeSessionManagerClient::ClearForcedReEnrollmentVpd(
@@ -739,6 +752,11 @@ void FakeSessionManagerClient::HandleOwnerKeySet(
     observer.OwnerKeySet(true /* success */);
 
   std::move(callback_to_run).Run();
+}
+
+void FakeSessionManagerClient::set_on_start_device_wipe_callback(
+    base::OnceClosure callback) {
+  on_start_device_wipe_callback_ = std::move(callback);
 }
 
 }  // namespace chromeos

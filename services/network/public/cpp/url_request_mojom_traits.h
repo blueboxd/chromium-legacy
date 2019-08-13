@@ -221,6 +221,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest& request) {
     return request.is_signed_exchange_prefetch_cache_enabled;
   }
+  static bool obey_origin_policy(const network::ResourceRequest& request) {
+    return request.obey_origin_policy;
+  }
 
   static bool Read(network::mojom::URLRequestDataView data,
                    network::ResourceRequest* out);

@@ -4944,8 +4944,8 @@ TEST_F(GLES2FormatTest, ScheduleDCLayerCHROMIUM) {
   EXPECT_EQ(static_cast<uint32_t>(cmds::ScheduleDCLayerCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.y_texture_id);
-  EXPECT_EQ(static_cast<GLuint>(12), cmd.uv_texture_id);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.texture_0);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.texture_1);
   EXPECT_EQ(static_cast<GLint>(13), cmd.z_order);
   EXPECT_EQ(static_cast<GLint>(14), cmd.content_x);
   EXPECT_EQ(static_cast<GLint>(15), cmd.content_y);

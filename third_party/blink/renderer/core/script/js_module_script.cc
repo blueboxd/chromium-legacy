@@ -45,7 +45,7 @@ JSModuleScript* JSModuleScript::Create(
 
   ModuleRecordProduceCacheData* produce_cache_data = nullptr;
 
-  ModuleRecord result = ModuleRecord::Compile(
+  v8::Local<v8::Module> result = ModuleRecord::Compile(
       isolate, source_text.ToString(), source_url, base_url, options,
       start_position, exception_state, modulator->GetV8CacheOptions(),
       cache_handler, source_location_type, &produce_cache_data);
@@ -62,7 +62,7 @@ JSModuleScript* JSModuleScript::Create(
 
   // <spec step="8">If result is a list of errors, then:</spec>
   if (exception_state.HadException()) {
-    DCHECK(result.IsNull());
+    DCHECK(result.IsEmpty());
 
     // <spec step="8.1">Set script's parse error to result[0].</spec>
     v8::Local<v8::Value> error = exception_state.GetException();
@@ -105,7 +105,7 @@ JSModuleScript* JSModuleScript::Create(
 
 JSModuleScript* JSModuleScript::CreateForTest(
     Modulator* modulator,
-    ModuleRecord record,
+    v8::Local<v8::Module> record,
     const KURL& base_url,
     const ScriptFetchOptions& options) {
   KURL dummy_source_url;
@@ -118,7 +118,7 @@ JSModuleScript* JSModuleScript::CreateForTest(
 JSModuleScript* JSModuleScript::CreateInternal(
     size_t source_text_length,
     Modulator* modulator,
-    ModuleRecord result,
+    v8::Local<v8::Module> result,
     const KURL& source_url,
     const KURL& base_url,
     const ScriptFetchOptions& options,
@@ -144,7 +144,7 @@ JSModuleScript* JSModuleScript::CreateInternal(
 }
 
 JSModuleScript::JSModuleScript(Modulator* settings_object,
-                               ModuleRecord record,
+                               v8::Local<v8::Module> record,
                                const KURL& source_url,
                                const KURL& base_url,
                                const ScriptFetchOptions& fetch_options,

@@ -2617,6 +2617,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/sessions/SessionTabHelper.java",
     "java/src/org/chromium/chrome/browser/sharing/SharingJNIBridge.java",
     "java/src/org/chromium/chrome/browser/sharing/click_to_call/ClickToCallMessageHandler.java",
+    "java/src/org/chromium/chrome/browser/sharing/shared_clipboard/SharedClipboardMessageHandler.java",
     "java/src/org/chromium/chrome/browser/signin/IdentityServicesProvider.java",
     "java/src/org/chromium/chrome/browser/signin/ProfileDownloader.java",
     "java/src/org/chromium/chrome/browser/signin/SigninInvestigator.java",

@@ -56,20 +56,18 @@ void FakeEmbeddedWorkerInstanceClient::StartWorker(
   helper_->OnServiceWorkerRequest(
       std::move(start_params_->service_worker_request));
 
-  // Create message pipes. We may need to keep |devtools_agent_request| and
-  // |devtools_agent_host_ptr_info| if we want not to invoke
+  // Create message pipes. We may need to keep |devtools_agent_receiver| and
+  // |devtools_agent_host_remote| if we want not to invoke
   // connection error handlers.
 
-  blink::mojom::DevToolsAgentPtr devtools_agent_ptr;
-  blink::mojom::DevToolsAgentRequest devtools_agent_request =
-      mojo::MakeRequest(&devtools_agent_ptr);
+  mojo::PendingRemote<blink::mojom::DevToolsAgent> devtools_agent_remote;
+  mojo::PendingReceiver<blink::mojom::DevToolsAgent> devtools_agent_receiver =
+      devtools_agent_remote.InitWithNewPipeAndPassReceiver();
 
-  blink::mojom::DevToolsAgentHostPtrInfo devtools_agent_host_ptr_info;
-  blink::mojom::DevToolsAgentHostRequest devtools_agent_host_request =
-      mojo::MakeRequest(&devtools_agent_host_ptr_info);
-
-  host_->OnReadyForInspection(std::move(devtools_agent_ptr),
-                              std::move(devtools_agent_host_request));
+  mojo::Remote<blink::mojom::DevToolsAgentHost> devtools_agent_host_remote;
+  host_->OnReadyForInspection(
+      std::move(devtools_agent_remote),
+      devtools_agent_host_remote.BindNewPipeAndPassReceiver());
 
   if (start_params_->is_installed) {
     EvaluateScript();

@@ -46,8 +46,8 @@ cr.define('device_details_page', function() {
       /** @type {?Array<bluetooth.mojom.ServiceInfo>} */
       this.services = null;
 
-      /** @private {?bluetooth.mojom.DeviceProxy} */
-      this.deviceProxy_ = null;
+      /** @private {?bluetooth.mojom.DeviceRemote} */
+      this.device_ = null;
 
       /** @private {!object_fieldset.ObjectFieldSet} */
       this.deviceFieldSet_ = new object_fieldset.ObjectFieldSet();
@@ -81,7 +81,7 @@ cr.define('device_details_page', function() {
 
       this.connectBtn_ = this.pageDiv.querySelector('.disconnect');
       this.connectBtn_.addEventListener('click', function() {
-        this.deviceProxy_ !== null ? this.disconnect() : this.connect();
+        this.device_ !== null ? this.disconnect() : this.connect();
       }.bind(this));
 
       this.redraw();
@@ -97,14 +97,14 @@ cr.define('device_details_page', function() {
           device_collection.ConnectionStatus.CONNECTING);
 
       device_broker.connectToDevice(this.deviceInfo.address)
-          .then(function(deviceProxy) {
-            this.deviceProxy_ = deviceProxy;
+          .then(function(device) {
+            this.device_ = device;
 
             this.updateConnectionStatus_(
                 device_collection.ConnectionStatus.CONNECTED);
 
             // Fetch services asynchronously.
-            return this.deviceProxy_.getServices();
+            return this.device_.getServices();
           }.bind(this))
           .then(function(response) {
             this.services = response.services;
@@ -114,10 +114,10 @@ cr.define('device_details_page', function() {
           }.bind(this))
           .catch(function(error) {
             // If a connection error occurs while fetching the services, the
-            // DeviceProxy reference must be removed.
-            if (this.deviceProxy_) {
-              this.deviceProxy_.disconnect();
-              this.deviceProxy_ = null;
+            // DeviceRemote reference must be removed.
+            if (this.device_) {
+              this.device_.disconnect();
+              this.device_ = null;
             }
 
             Snackbar.show(
@@ -131,12 +131,12 @@ cr.define('device_details_page', function() {
 
     /** Disconnects the page from the Bluetooth device. */
     disconnect() {
-      if (!this.deviceProxy_) {
+      if (!this.device_) {
         return;
       }
 
-      this.deviceProxy_.disconnect();
-      this.deviceProxy_ = null;
+      this.device_.disconnect();
+      this.device_ = null;
       this.updateConnectionStatus_(
           device_collection.ConnectionStatus.DISCONNECTED);
     }

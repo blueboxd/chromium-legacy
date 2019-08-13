@@ -152,11 +152,11 @@ class MockServiceWorkerContextClient final
   MockServiceWorkerContextClient() = default;
   ~MockServiceWorkerContextClient() override = default;
 
-  MOCK_METHOD2(WorkerReadyForInspectionOnMainThread,
+  MOCK_METHOD2(WorkerReadyForInspectionOnInitiatorThread,
                void(mojo::ScopedMessagePipeHandle,
                     mojo::ScopedMessagePipeHandle));
-  MOCK_METHOD0(WorkerContextFailedToStartOnMainThread, void());
-  MOCK_METHOD0(WorkerScriptLoadedOnMainThread, void());
+  MOCK_METHOD0(WorkerContextFailedToStartOnInitiatorThread, void());
+  MOCK_METHOD0(WorkerScriptLoadedOnInitiatorThread, void());
 
   void WorkerContextStarted(WebServiceWorkerContextProxy* proxy,
                             scoped_refptr<base::SequencedTaskRunner>) override {
@@ -202,8 +202,8 @@ class MockServiceWorkerContextClient final
     script_evaluated_event_.Signal();
   }
 
-  scoped_refptr<WebWorkerFetchContext> CreateWorkerFetchContextOnMainThread()
-      override {
+  scoped_refptr<WebWorkerFetchContext>
+  CreateWorkerFetchContextOnInitiatorThread() override {
     return base::MakeRefCounted<FakeWebWorkerFetchContext>();
   }
 

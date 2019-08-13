@@ -84,6 +84,13 @@ const gfx::VectorIcon& SendTabToSelfIconView::GetVectorIcon() const {
   return kSendTabToSelfIcon;
 }
 
+SkColor SendTabToSelfIconView::GetTextColor() const {
+  return GetOmniboxColor(OmniboxPart::LOCATION_BAR_TEXT_DEFAULT,
+                         GetNativeTheme()->ShouldUseDarkColors()
+                             ? OmniboxTint::DARK
+                             : OmniboxTint::LIGHT);
+}
+
 base::string16 SendTabToSelfIconView::GetTextForTooltipAndAccessibleName()
     const {
   return l10n_util::GetStringUTF16(IDS_OMNIBOX_TOOLTIP_SEND_TAB_TO_SELF);

@@ -477,6 +477,8 @@ TEST_F(ClientControlledShellSurfaceTest, ShadowStartMaximized) {
 }
 
 TEST_F(ClientControlledShellSurfaceTest, Frame) {
+  UpdateDisplay("800x600");
+
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -484,7 +486,7 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   std::unique_ptr<Surface> surface(new Surface);
 
   gfx::Rect client_bounds(20, 50, 300, 200);
-  gfx::Rect fullscreen_bounds(0, 0, 800, 500);
+  gfx::Rect fullscreen_bounds(0, 0, 800, 600);
   // The window bounds is the client bounds + frame size.
   gfx::Rect normal_window_bounds(20, 18, 300, 232);
 
@@ -508,13 +510,13 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
 
   // Maximized
   shell_surface->SetMaximized();
-  shell_surface->SetGeometry(gfx::Rect(0, 0, 800, 468));
+  shell_surface->SetGeometry(gfx::Rect(0, 0, 800, 568));
   surface->Commit();
 
   EXPECT_TRUE(frame_view->GetVisible());
   EXPECT_EQ(fullscreen_bounds, widget->GetWindowBoundsInScreen());
   EXPECT_EQ(
-      gfx::Size(800, 468),
+      gfx::Size(800, 568),
       frame_view->GetClientBoundsForWindowBounds(fullscreen_bounds).size());
 
   // AutoHide
@@ -533,6 +535,15 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   EXPECT_EQ(fullscreen_bounds, widget->GetWindowBoundsInScreen());
   EXPECT_EQ(fullscreen_bounds,
             frame_view->GetClientBoundsForWindowBounds(fullscreen_bounds));
+
+  // Updating frame, then window state should still update the frame state.
+  surface->SetFrame(SurfaceFrameType::NORMAL);
+  surface->Commit();
+  EXPECT_FALSE(frame_view->GetHeaderView()->GetVisible());
+
+  shell_surface->SetMaximized();
+  surface->Commit();
+  EXPECT_TRUE(frame_view->GetHeaderView()->GetVisible());
 
   // Restore to normal state.
   shell_surface->SetRestored();

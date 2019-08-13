@@ -6,6 +6,7 @@ package org.chromium.base.compat;
 
 import android.annotation.TargetApi;
 import android.content.pm.PackageInfo;
+import android.location.LocationManager;
 import android.net.LinkProperties;
 import android.os.Build;
 
@@ -34,5 +35,10 @@ public final class ApiHelperForP {
     /** See {@link PackageInfo#getLongVersionCode() }. */
     public static long getLongVersionCode(PackageInfo packageInfo) {
         return packageInfo.getLongVersionCode();
+    }
+
+    /** See {@link LocationManager#isLocationEnabled() }. */
+    public static boolean isLocationEnabled(LocationManager locationManager) {
+        return locationManager.isLocationEnabled();
     }
 }

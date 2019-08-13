@@ -11,6 +11,7 @@ import android.net.Network;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Process;
+import android.security.NetworkSecurityPolicy;
 import android.view.ActionMode;
 import android.view.ViewConfiguration;
 import android.webkit.WebView;
@@ -80,6 +81,11 @@ public final class ApiHelperForM {
     public static boolean isPermissionRevokedByPolicy(Activity activity, String permission) {
         return activity.getPackageManager().isPermissionRevokedByPolicy(
                 permission, activity.getPackageName());
+    }
+
+    /** See {@link NetworkSecurityPolicy#isCleartextTrafficPermitted()}. */
+    public static boolean isCleartextTrafficPermitted() {
+        return NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
     }
 
     /*

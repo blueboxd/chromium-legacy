@@ -38,6 +38,12 @@ void LogFallbackResult(DirectWriteFontFallbackResult fallback_result) {
                             fallback_result, FONT_FALLBACK_RESULT_MAX_VALUE);
 }
 
+base::string16 MakeCacheKey(const wchar_t* base_family_name,
+                            const wchar_t* locale) {
+  base::string16 cache_key(base_family_name);
+  return cache_key + L"_" + locale;
+}
+
 }  // namespace
 
 HRESULT FontFallback::Create(FontFallback** font_fallback_out,
@@ -79,16 +85,6 @@ HRESULT FontFallback::MapCharacters(IDWriteTextAnalysisSource* source,
 
   base_family_name = base_family_name ? base_family_name : L"";
 
-  if (GetCachedFont(text_chunk, base_family_name, base_weight, base_style,
-                    base_stretch, mapped_font, mapped_length)) {
-    DCHECK(*mapped_font);
-    DCHECK_GT(*mapped_length, 0u);
-    LogFallbackResult(SUCCESS_CACHE);
-    return S_OK;
-  }
-
-  TRACE_EVENT0("dwrite,fonts", "FontFallback::MapCharacters (IPC)");
-
   const WCHAR* locale = nullptr;
   // |locale_text_length| is actually the length of text with the locale, not
   // the length of the locale string itself.
@@ -97,6 +93,16 @@ HRESULT FontFallback::MapCharacters(IDWriteTextAnalysisSource* source,
                         &locale);
 
   locale = locale ? locale : L"";
+
+  if (GetCachedFont(text_chunk, base_family_name, locale, base_weight,
+                    base_style, base_stretch, mapped_font, mapped_length)) {
+    DCHECK(*mapped_font);
+    DCHECK_GT(*mapped_length, 0u);
+    LogFallbackResult(SUCCESS_CACHE);
+    return S_OK;
+  }
+
+  TRACE_EVENT0("dwrite,fonts", "FontFallback::MapCharacters (IPC)");
 
   blink::mojom::MapCharactersResultPtr result;
 
@@ -145,7 +151,7 @@ HRESULT FontFallback::MapCharacters(IDWriteTextAnalysisSource* source,
   }
 
   DCHECK(*mapped_font);
-  AddCachedFamily(std::move(family), base_family_name);
+  AddCachedFamily(std::move(family), base_family_name, locale);
   LogFallbackResult(SUCCESS_IPC);
   return S_OK;
 }
@@ -158,13 +164,14 @@ FontFallback::RuntimeClassInitialize(DWriteFontCollectionProxy* collection) {
 
 bool FontFallback::GetCachedFont(const base::string16& text,
                                  const wchar_t* base_family_name,
+                                 const wchar_t* locale,
                                  DWRITE_FONT_WEIGHT base_weight,
                                  DWRITE_FONT_STYLE base_style,
                                  DWRITE_FONT_STRETCH base_stretch,
                                  IDWriteFont** font,
                                  uint32_t* mapped_length) {
   std::map<base::string16, std::list<mswr::ComPtr<IDWriteFontFamily>>>::iterator
-      it = fallback_family_cache_.find(base_family_name);
+      it = fallback_family_cache_.find(MakeCacheKey(base_family_name, locale));
   if (it == fallback_family_cache_.end())
     return false;
 
@@ -211,9 +218,10 @@ bool FontFallback::GetCachedFont(const base::string16& text,
 
 void FontFallback::AddCachedFamily(
     Microsoft::WRL::ComPtr<IDWriteFontFamily> family,
-    const wchar_t* base_family_name) {
+    const wchar_t* base_family_name,
+    const wchar_t* locale) {
   std::list<mswr::ComPtr<IDWriteFontFamily>>& family_list =
-      fallback_family_cache_[base_family_name];
+      fallback_family_cache_[MakeCacheKey(base_family_name, locale)];
   family_list.push_front(std::move(family));
 
   UMA_HISTOGRAM_COUNTS_100("DirectWrite.Fonts.Proxy.Fallback.CacheSize",

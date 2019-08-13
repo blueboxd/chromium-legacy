@@ -65,13 +65,41 @@ bool NGInlineCursor::MoveToNext() {
   return false;
 }
 
-bool NGInlineCursor::MoveToNextItem() {
+bool NGInlineCursor::MoveToNextSkippingChildren() {
+  if (items_)
+    return MoveToNextItemSkippingChildren();
+  if (root_paint_fragment_)
+    return MoveToNextPaintFragmentSkippingChildren();
+  NOTREACHED();
+  return false;
+}
+
+bool NGInlineCursor::MoveToItem(unsigned item_index) {
   DCHECK(items_);
-  if (next_item_index_ < items_->Items().size()) {
-    current_item_ = items_->Items()[next_item_index_++].get();
+  if (item_index < items_->Items().size()) {
+    current_item_index_ = item_index;
+    current_item_ = items_->Items()[item_index].get();
     return true;
   }
   return false;
+}
+
+bool NGInlineCursor::MoveToNextItem() {
+  DCHECK(items_);
+  return MoveToItem(current_item_ ? current_item_index_ + 1
+                                  : current_item_index_);
+}
+
+bool NGInlineCursor::MoveToNextItemSkippingChildren() {
+  DCHECK(items_);
+  if (UNLIKELY(!current_item_))
+    return false;
+  // If the current item has |ChildrenCount|, add it to move to the next
+  // sibling, skipping all children and their descendants.
+  if (wtf_size_t children_count = current_item_->ChildrenCount()) {
+    return MoveToItem(current_item_index_ + children_count);
+  }
+  return MoveToNextItem();
 }
 
 bool NGInlineCursor::MoveToParentPaintFragment() {

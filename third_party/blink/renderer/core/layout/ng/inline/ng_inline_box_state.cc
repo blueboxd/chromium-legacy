@@ -572,18 +572,24 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
     unsigned start = box_data.fragment_start;
     unsigned end = box_data.fragment_end;
     DCHECK_GT(end, start);
-    NGLineBoxFragmentBuilder::Child& start_child = (*line_box)[start];
+    NGLineBoxFragmentBuilder::Child* child = &(*line_box)[start];
 
     scoped_refptr<const NGLayoutResult> box_fragment =
         box_data.CreateBoxFragment(line_box);
-    if (!start_child.HasFragment()) {
-      start_child.layout_result = std::move(box_fragment);
-      start_child.offset = box_data.offset;
+    if (!child->HasFragment()) {
+      child->layout_result = std::move(box_fragment);
+      child->offset = box_data.offset;
+      child->children_count = end - start;
     } else {
       // In most cases, |start_child| is moved to the children of the box, and
       // is empty. It's not empty when it's out-of-flow. Insert in such case.
+      // TODO(kojii): With |NGFragmentItem|, all cases hit this code. Consider
+      // creating an empty item beforehand to avoid inserting.
       line_box->InsertChild(start, std::move(box_fragment), box_data.offset,
                             LayoutUnit(), 0);
+      ChildInserted(start + 1);
+      child = &(*line_box)[start];
+      child->children_count = end - start + 1;
     }
   }
 

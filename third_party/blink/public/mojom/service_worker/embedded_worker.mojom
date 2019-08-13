@@ -171,8 +171,8 @@ interface EmbeddedWorkerInstanceHost {
   // Indicates that the worker is ready for inspection, passes a DevToolsAgent
   // interface for this embedded worker and requests a corresponding host.
   // See DevToolsAgent for details.
-  OnReadyForInspection(blink.mojom.DevToolsAgent agent,
-                       blink.mojom.DevToolsAgentHost& agent_host);
+  OnReadyForInspection(pending_remote<blink.mojom.DevToolsAgent> agent,
+                       pending_receiver<blink.mojom.DevToolsAgentHost> agent_host);
   // Indicates that the worker has finished loading the main script.
   //
   // This is only called for new (non-installed) workers. It's used so the

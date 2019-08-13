@@ -22,7 +22,6 @@ import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.os.Process;
-import android.security.NetworkSecurityPolicy;
 import android.util.Log;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -32,6 +31,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeUnchecked;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.compat.ApiHelperForM;
+import org.chromium.base.compat.ApiHelperForN;
 import org.chromium.base.compat.ApiHelperForP;
 import org.chromium.base.metrics.RecordHistogram;
 
@@ -344,7 +344,7 @@ class AndroidNetworkLibrary {
                 // No per-host configuration before N.
                 return isCleartextTrafficPermitted();
             }
-            return NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted(host);
+            return ApiHelperForN.isCleartextTrafficPermitted(host);
         }
 
         @TargetApi(Build.VERSION_CODES.M)
@@ -353,7 +353,7 @@ class AndroidNetworkLibrary {
                 // Always true before M.
                 return true;
             }
-            return NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
+            return ApiHelperForM.isCleartextTrafficPermitted();
         }
     }
 

@@ -134,13 +134,17 @@ class Browser : public TabStripModelObserver,
   // Possible elements of the Browser window.
   enum WindowFeature {
     FEATURE_NONE = 0,
-    FEATURE_TITLEBAR = 1,
-    FEATURE_TABSTRIP = 2,
-    FEATURE_TOOLBAR = 4,
-    FEATURE_LOCATIONBAR = 8,
-    FEATURE_BOOKMARKBAR = 16,
-    FEATURE_INFOBAR = 32,
-    FEATURE_DOWNLOADSHELF = 64,
+    FEATURE_TITLEBAR = 1 << 0,
+    FEATURE_TABSTRIP = 1 << 1,
+    FEATURE_TOOLBAR = 1 << 2,
+    FEATURE_LOCATIONBAR = 1 << 3,
+    FEATURE_BOOKMARKBAR = 1 << 4,
+    FEATURE_INFOBAR = 1 << 5,
+    FEATURE_DOWNLOADSHELF = 1 << 6,
+    // TODO(crbug.com/992834): Add FEATURE_PAGECONTROLS to describe the presence
+    // of per-page controls such as Content Settings Icons, which should be
+    // decoupled from FEATURE_LOCATIONBAR as they have independent presence in
+    // Web App browsers.
   };
 
   // The context for a download blocked notification from
@@ -345,6 +349,8 @@ class Browser : public TabStripModelObserver,
   BookmarkBar::State bookmark_bar_state() const { return bookmark_bar_state_; }
 
   // State Storage and Retrieval for UI ///////////////////////////////////////
+
+  GURL GetNewTabURL() const;
 
   // Gets the Favicon of the page in the selected tab.
   gfx::Image GetCurrentPageIcon() const;
@@ -929,9 +935,17 @@ class Browser : public TabStripModelObserver,
   // Shared code between Reload() and ReloadBypassingCache().
   void ReloadInternal(WindowOpenDisposition disposition, bool bypass_cache);
 
-  // Returns true if the Browser window supports a location bar. Having support
-  // for the location bar does not mean it will be visible.
-  bool SupportsLocationBar() const;
+  bool TabbedBrowserSupportsWindowFeature(WindowFeature feature,
+                                          bool check_can_support) const;
+
+  bool PopupBrowserSupportsWindowFeature(WindowFeature feature,
+                                         bool check_can_support) const;
+
+  bool LegacyAppBrowserSupportsWindowFeature(WindowFeature feature,
+                                             bool check_can_support) const;
+
+  bool WebAppBrowserSupportsWindowFeature(WindowFeature feature,
+                                          bool check_can_support) const;
 
   // Implementation of SupportsWindowFeature and CanSupportWindowFeature. If
   // |check_fullscreen| is true, the set of features reflect the actual state of

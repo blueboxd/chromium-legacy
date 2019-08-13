@@ -73,6 +73,17 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   const PhysicalOffset& Offset() const { return offset_; }
   void SetOffset(const PhysicalOffset& offset) { offset_ = offset; }
 
+  // Count of following items that are descendants of this item in the box tree,
+  // including this item. 1 means this is a box (box or line box) without
+  // children. 0 if this item type cannot have children.
+  wtf_size_t ChildrenCount() const {
+    if (Type() == kBox)
+      return box_.children_count;
+    if (Type() == kLine)
+      return line_.children_count;
+    return 0;
+  }
+
   // DisplayItemClient overrides
   String DebugName() const override;
   IntRect VisualRect() const override;

@@ -16,6 +16,7 @@ NSString* const kFaviconBackgroundColor = @"favicon_background_color";
 NSString* const kMDCInkColor = @"mdc_ink_color";
 NSString* const kPlaceholderImageTintColor = @"placeholder_image_tint_color";
 NSString* const kScrimBackgroundColor = @"scrim_background_color";
+NSString* const kSeparatorColor = @"separator_color";
 NSString* const kSolidButtonTextColor = @"solid_button_text_color";
 NSString* const kTableViewRowHighlightColor = @"table_view_row_highlight_color";
 NSString* const kTextPrimaryColor = @"text_primary_color";

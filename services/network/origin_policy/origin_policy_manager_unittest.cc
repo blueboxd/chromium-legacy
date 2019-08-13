@@ -349,6 +349,7 @@ TEST_F(OriginPolicyManagerTest, CacheStatesAfterPolicyFetches) {
     OriginPolicyState expected_state;
     std::string expected_raw_policy;
     const url::Origin& origin;
+    bool add_exception_first = false;
   } kTests[] = {
       // The order of these tests is important as the cache is not cleared in
       // between tests and some tests rely on the state left over by previous
@@ -360,6 +361,10 @@ TEST_F(OriginPolicyManagerTest, CacheStatesAfterPolicyFetches) {
       // An invalid header and nothing in the cache means an error.
       {"invalid", OriginPolicyState::kCannotLoadPolicy, "",
        test_server_origin()},
+
+      // The invalid policy header has not been kept in the cache, an empty
+      // policy still means no policy applies.
+      {"", OriginPolicyState::kNoPolicyApplies, "", test_server_origin()},
 
       // A valid header results in loaded policy.
       {"policy=policy-1", OriginPolicyState::kLoaded,
@@ -423,9 +428,58 @@ TEST_F(OriginPolicyManagerTest, CacheStatesAfterPolicyFetches) {
       {"", OriginPolicyState::kLoaded,
        R"({ "feature-policy": ["geolocation http://example1.com"] })",
        test_server_origin()},
+
+      // Start testing exception logic.
+
+      // Adding an exception means a kNoPolicyApplies state will be returned,
+      // without attempting to retrieve a policy.
+      {"policy=policy-1", OriginPolicyState::kNoPolicyApplies, "",
+       test_server_origin(), true /* add_exception_first */},
+
+      // And it will still be exempted in further calls, even if a valid policy
+      // header is present.
+      {"policy=policy-1", OriginPolicyState::kNoPolicyApplies, "",
+       test_server_origin()},
+
+      // And also if an invalid header is present.
+      {"invalid", OriginPolicyState::kNoPolicyApplies, "",
+       test_server_origin()},
+
+      // This only affects the specified origin, a second origin should be
+      // unaffected.
+      {"policy=policy-2", OriginPolicyState::kLoaded,
+       R"({ "feature-policy": ["geolocation http://example2.com"] })",
+       test_server_origin_2()},
+
+      // Adding an exception will work for the second origin as well.
+      {"invalid", OriginPolicyState::kNoPolicyApplies, "",
+       test_server_origin_2(), true /* add_exception_first */},
+
+      // And future calls on the second origin will now return a
+      // kNoPolicyApplies
+      // state.
+      {"invalid", OriginPolicyState::kNoPolicyApplies, "",
+       test_server_origin_2()},
+
+      // Deleting a policy will delete the exception (which will become apparent
+      // in subsequent calls).
+      {kOriginPolicyDeletePolicy, OriginPolicyState::kNoPolicyApplies, "",
+       test_server_origin()},
+
+      // Now attempting to load a policy will proceed as normal.
+      {"policy=policy-1", OriginPolicyState::kLoaded,
+       R"({ "feature-policy": ["geolocation http://example1.com"] })",
+       test_server_origin()},
+
+      // But the second origin is unaffected by the deletion and still exempted.
+      {"invalid", OriginPolicyState::kNoPolicyApplies, "",
+       test_server_origin_2()},
   };
 
   for (const auto& test : kTests) {
+    if (test.add_exception_first)
+      manager()->AddExceptionFor(test.origin);
+
     TestOriginPolicyManagerResult tester(this);
     tester.RetrieveOriginPolicy(test.header, &test.origin);
     EXPECT_EQ(test.expected_state, tester.origin_policy_result()->state);

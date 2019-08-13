@@ -232,17 +232,17 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
 
   // Simulate events the shared worker would send.
 
-  // Create message pipes. We may need to keep |devtools_agent_request| and
-  // |devtools_agent_host_ptr_info| if we want not to invoke
-  // connection error handlers.
-  blink::mojom::DevToolsAgentPtr devtools_agent_ptr;
-  blink::mojom::DevToolsAgentRequest devtools_agent_request =
-      mojo::MakeRequest(&devtools_agent_ptr);
-  blink::mojom::DevToolsAgentHostPtrInfo devtools_agent_host_ptr_info;
-  blink::mojom::DevToolsAgentHostRequest devtools_agent_host_request =
-      mojo::MakeRequest(&devtools_agent_host_ptr_info);
-  worker_host->OnReadyForInspection(std::move(devtools_agent_ptr),
-                                    std::move(devtools_agent_host_request));
+  // Create message pipes. We may need to keep |devtools_agent_receiver| and
+  // |devtools_agent_host_remote| if we want not to invoke connection error
+  // handlers.
+  mojo::PendingRemote<blink::mojom::DevToolsAgent> devtools_agent_remote;
+  mojo::PendingReceiver<blink::mojom::DevToolsAgent> devtools_agent_receiver =
+      devtools_agent_remote.InitWithNewPipeAndPassReceiver();
+  mojo::PendingRemote<blink::mojom::DevToolsAgentHost>
+      devtools_agent_host_remote;
+  worker_host->OnReadyForInspection(
+      std::move(devtools_agent_remote),
+      devtools_agent_host_remote.InitWithNewPipeAndPassReceiver());
 
   worker_host->OnConnected(connection_request_id);
 
@@ -320,17 +320,17 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
 
   // Simulate events the shared worker would send.
 
-  // Create message pipes. We may need to keep |devtools_agent_request| and
-  // |devtools_agent_host_ptr_info| if we want not to invoke
-  // connection error handlers.
-  blink::mojom::DevToolsAgentPtr devtools_agent_ptr;
-  blink::mojom::DevToolsAgentRequest devtools_agent_request =
-      mojo::MakeRequest(&devtools_agent_ptr);
-  blink::mojom::DevToolsAgentHostPtrInfo devtools_agent_host_ptr_info;
-  blink::mojom::DevToolsAgentHostRequest devtools_agent_host_request =
-      mojo::MakeRequest(&devtools_agent_host_ptr_info);
-  worker_host->OnReadyForInspection(std::move(devtools_agent_ptr),
-                                    std::move(devtools_agent_host_request));
+  // Create message pipes. We may need to keep |devtools_agent_receiver| and
+  // |devtools_agent_host_remote| if we want not to invoke connection error
+  // handlers.
+  mojo::PendingRemote<blink::mojom::DevToolsAgent> devtools_agent_remote;
+  mojo::PendingReceiver<blink::mojom::DevToolsAgent> devtools_agent_receiver =
+      devtools_agent_remote.InitWithNewPipeAndPassReceiver();
+  mojo::PendingRemote<blink::mojom::DevToolsAgentHost>
+      devtools_agent_host_remote;
+  worker_host->OnReadyForInspection(
+      std::move(devtools_agent_remote),
+      devtools_agent_host_remote.InitWithNewPipeAndPassReceiver());
   worker_host->OnConnected(connection_request_id0);
 
   base::RunLoop().RunUntilIdle();

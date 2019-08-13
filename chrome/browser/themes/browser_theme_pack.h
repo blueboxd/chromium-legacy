@@ -298,7 +298,9 @@ class BrowserThemePack : public CustomThemeSupplier {
   // will point directly to mmapped data.
   struct TintEntry {
     int32_t id;
-    color_utils::HSL hsl;
+    double h;
+    double s;
+    double l;
   }* tints_ = nullptr;
 
   struct ColorPair {

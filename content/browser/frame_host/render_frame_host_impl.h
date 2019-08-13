@@ -77,6 +77,7 @@
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom.h"
@@ -439,6 +440,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // cases, use GetLastCommittedURL instead.
   const GURL& last_successful_url() { return last_successful_url_; }
 
+  // Return the http status code of the last committed navigation.
+  int last_http_status_code() { return last_http_status_code_; }
+
   // Computes site_for_cookies to be used when navigating this frame to
   // |destination|.
   GURL ComputeSiteForCookiesForNavigation(const GURL& destination) const;
@@ -754,6 +758,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Returns remote to renderer side FindInPage associated with this frame.
   const mojo::AssociatedRemote<blink::mojom::FindInPage>& GetFindInPage();
 
+  // Returns associated remote for the blink::mojom::Frame Mojo interface.
+  const mojo::AssociatedRemote<blink::mojom::Frame>& GetAssociatedFrameRemote();
+
   // Resets the loading state. Following this call, the RenderFrameHost will be
   // in a non-loading state.
   void ResetLoadingState();
@@ -797,8 +804,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CancelBlockedRequestsForFrame();
 
   // Binds a DevToolsAgent interface for debugging.
-  void BindDevToolsAgent(blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
-                         blink::mojom::DevToolsAgentAssociatedRequest request);
+  void BindDevToolsAgent(
+      mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host,
+      mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver);
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaRenderFrameHost();
@@ -1816,6 +1824,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // See https://crbug.com/588314.
   GURL last_successful_url_;
 
+  // The http status code of the last committed navigation.
+  int last_http_status_code_ = 0;
+
   std::map<uint64_t, VisualStateCallback> visual_state_callbacks_;
 
   // Local root subframes directly own their RenderWidgetHost.
@@ -1957,6 +1968,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Holder of Mojo connection with FindInPage service in Blink.
   mojo::AssociatedRemote<blink::mojom::FindInPage> find_in_page_;
+
+  // Holder of Mojo connection with the Frame service in Blink.
+  mojo::AssociatedRemote<blink::mojom::Frame> frame_remote_;
 
   // Holds a NavigationRequest when it's about to commit, ie. after
   // OnCrossDocumentCommitProcessed has returned a positive answer for this

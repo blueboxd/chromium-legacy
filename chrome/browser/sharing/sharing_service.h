@@ -24,6 +24,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/sharing/click_to_call/click_to_call_message_handler_android.h"
+#include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler_android.h"
 #endif  // defined(OS_ANDROID)
 
 namespace gcm {
@@ -157,6 +158,7 @@ class SharingService : public KeyedService,
 
 #if defined(OS_ANDROID)
   ClickToCallMessageHandler click_to_call_message_handler_;
+  SharedClipboardMessageHandler shared_clipboard_message_handler_;
 #endif  // defined(OS_ANDROID)
 
   base::WeakPtrFactory<SharingService> weak_ptr_factory_{this};

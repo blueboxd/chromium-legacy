@@ -65,6 +65,8 @@
 
   // Suport dark mode.
   self.collectionView.backgroundColor = UIColor.cr_systemGroupedBackgroundColor;
+  self.styler.cellBackgroundColor =
+      UIColor.cr_secondarySystemGroupedBackgroundColor;
 }
 
 - (void)contentSizeCategoryDidChange:(id)sender {
@@ -97,6 +99,25 @@
         [self.collectionViewModel itemAtIndexPath:indexPath];
     [self reconfigureCellAtIndexPath:indexPath withItem:item];
   }
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    if ([self.traitCollection
+            hasDifferentColorAppearanceComparedToTraitCollection:
+                previousTraitCollection]) {
+      // MDCCollectionView doesn't support dynamic colors, so they have to be
+      // resolved now.
+      // TODO(crbug.com/984928): Clean up once dynamic color support is added.
+      self.styler.cellBackgroundColor =
+          [UIColor.cr_secondarySystemGroupedBackgroundColor
+              resolvedColorWithTraitCollection:self.traitCollection];
+      [self.collectionViewLayout invalidateLayout];
+    }
+  }
+#endif
 }
 
 #pragma mark MDCCollectionViewEditingDelegate

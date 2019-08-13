@@ -234,7 +234,7 @@ namespace autotestPrivate {
 
   callback GetShelfAlignmentCallback = void (ShelfAlignmentType alignment);
 
-  callback WindowStateChangedCallback = void (WindowStateType currentType);
+  callback WindowStateCallback = void (WindowStateType currentType);
 
   callback VoidCallback = void ();
 
@@ -464,12 +464,17 @@ namespace autotestPrivate {
     // Show virtual keyboard of the current input method if it's available.
     static void showVirtualKeyboardIfEnabled();
 
-    // Sends WM event to change the ARC app window's window state.
+    // Send WM event to change the ARC app window's window state.
     // |packageName|: the package name of the ARC app window.
     // |eventType|: WM event type to send to the ARC app window.
     // |callback|: called when the window state is changed.
     static void setArcAppWindowState(DOMString packageName,
                                      WindowStateChangeDict change,
-                                     WindowStateChangedCallback callback);
+                                     WindowStateCallback callback);
+
+    // Get ARC app window's window state.
+    // |packageName|: the package name of the ARC app window.
+    // |callback| is invoked with the window state.
+    static void getArcAppWindowState(DOMString packageName, WindowStateCallback callback);
   };
 };

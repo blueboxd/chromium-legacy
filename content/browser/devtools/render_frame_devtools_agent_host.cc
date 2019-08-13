@@ -755,18 +755,21 @@ void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
 }
 
 void RenderFrameDevToolsAgentHost::UpdateRendererChannel(bool force) {
-  blink::mojom::DevToolsAgentAssociatedPtr agent_ptr;
-  blink::mojom::DevToolsAgentHostAssociatedRequest host_request;
+  mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgent> agent_remote;
+  mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgentHost>
+      host_receiver;
   if (frame_host_ && render_frame_alive_ && force) {
-    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host_ptr_info;
-    host_request = mojo::MakeRequest(&host_ptr_info);
-    frame_host_->BindDevToolsAgent(std::move(host_ptr_info),
-                                   mojo::MakeRequest(&agent_ptr));
+    mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host_remote;
+    host_receiver = host_remote.InitWithNewEndpointAndPassReceiver();
+    frame_host_->BindDevToolsAgent(
+        std::move(host_remote),
+        agent_remote.InitWithNewEndpointAndPassReceiver());
   }
   int process_id = frame_host_ ? frame_host_->GetProcess()->GetID()
                                : ChildProcessHost::kInvalidUniqueID;
-  GetRendererChannel()->SetRendererAssociated(
-      std::move(agent_ptr), std::move(host_request), process_id, frame_host_);
+  GetRendererChannel()->SetRendererAssociated(std::move(agent_remote),
+                                              std::move(host_receiver),
+                                              process_id, frame_host_);
 }
 
 bool RenderFrameDevToolsAgentHost::IsChildFrame() {

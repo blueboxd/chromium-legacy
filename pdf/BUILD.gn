@@ -151,11 +151,14 @@ if (enable_pdf) {
       "test/test_client.h",
       "test/test_document_loader.cc",
       "test/test_document_loader.h",
+      "test/test_utils.cc",
+      "test/test_utils.h",
     ]
 
     deps = [
       ":pdf",
       "//base",
+      "//testing/gtest",
     ]
   }
 

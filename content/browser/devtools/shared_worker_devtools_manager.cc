@@ -52,11 +52,12 @@ void SharedWorkerDevToolsManager::WorkerCreated(
 
 void SharedWorkerDevToolsManager::WorkerReadyForInspection(
     SharedWorkerHost* worker_host,
-    blink::mojom::DevToolsAgentPtr agent_ptr,
-    blink::mojom::DevToolsAgentHostRequest agent_host_request) {
+    mojo::PendingRemote<blink::mojom::DevToolsAgent> agent_remote,
+    mojo::PendingReceiver<blink::mojom::DevToolsAgentHost>
+        agent_host_receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   live_hosts_[worker_host]->WorkerReadyForInspection(
-      std::move(agent_ptr), std::move(agent_host_request));
+      std::move(agent_remote), std::move(agent_host_receiver));
 }
 
 void SharedWorkerDevToolsManager::WorkerDestroyed(

@@ -1324,6 +1324,9 @@
         android:name="org.chromium.chrome.browser.sharing.click_to_call.ClickToCallMessageHandler$TapReceiver"/>
     <receiver
         android:exported="false"
+        android:name="org.chromium.chrome.browser.sharing.shared_clipboard.SharedClipboardMessageHandler$TapReceiver"/>
+    <receiver
+        android:exported="false"
         android:name="org.chromium.chrome.browser.upgrade.PackageReplacedBroadcastReceiver">
       <intent-filter>
         <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>

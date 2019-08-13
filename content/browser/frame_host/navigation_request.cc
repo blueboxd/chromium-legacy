@@ -314,12 +314,6 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
     // Sec-Fetch-Site is covered by network::SetSecFetchSiteHeader function.
   }
 
-  // Ask whether we should request a policy.
-  if (OriginPolicyThrottle::ShouldRequestOriginPolicy(url)) {
-    headers->SetHeader(net::HttpRequestHeaders::kSecOriginPolicy,
-                       kDefaultOriginPolicyVersion);
-  }
-
   // Next, set the HTTP Origin if needed.
   if (!NeedsHTTPOrigin(headers, method))
     return;
@@ -1217,10 +1211,6 @@ mojom::NavigationClient* NavigationRequest::GetCommitNavigationClient() {
   return commit_navigation_client_.get();
 }
 
-void NavigationRequest::SetOriginPolicy(const network::OriginPolicy& policy) {
-  response_head_->head.origin_policy = policy;
-}
-
 void NavigationRequest::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     const scoped_refptr<network::ResourceResponse>& response_head) {
@@ -1915,7 +1905,7 @@ void NavigationRequest::OnStartChecksComplete(
   loader_ = NavigationURLLoader::Create(
       browser_context, partition,
       std::make_unique<NavigationRequestInfo>(
-          common_params_.Clone(), begin_params_.Clone(), site_for_cookies,
+          common_params_->Clone(), begin_params_.Clone(), site_for_cookies,
           net::NetworkIsolationKey(top_frame_origin, frame_origin),
           frame_tree_node_->IsMainFrame(), parent_is_main_frame,
           IsSecureFrame(frame_tree_node_->parent()),
@@ -1926,8 +1916,8 @@ void NavigationRequest::OnStartChecksComplete(
           upgrade_if_insecure_,
           blob_url_loader_factory_ ? blob_url_loader_factory_->Clone()
                                    : nullptr,
-          devtools_navigation_token(),
-          frame_tree_node_->devtools_frame_token()),
+          devtools_navigation_token(), frame_tree_node_->devtools_frame_token(),
+          OriginPolicyThrottle::ShouldRequestOriginPolicy(common_params_->url)),
       std::move(navigation_ui_data), service_worker_handle_.get(),
       appcache_handle_.get(), std::move(prefetched_signed_exchange_cache_),
       this, is_served_from_back_forward_cache(), std::move(interceptor));
@@ -2199,7 +2189,7 @@ void NavigationRequest::CommitNavigation() {
         render_frame_host_->GetProcess()->GetID(),
         render_frame_host_->GetRoutingID(), &service_worker_provider_info);
   }
-  auto common_params = common_params_.Clone();
+  auto common_params = common_params_->Clone();
   auto commit_params = commit_params_.Clone();
   if (subresource_loader_params_ &&
       !subresource_loader_params_->prefetched_signed_exchanges.empty()) {

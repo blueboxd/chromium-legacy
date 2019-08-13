@@ -4,6 +4,7 @@
 
 #include "pdf/draw_utils/coordinates.h"
 
+#include "pdf/test/test_utils.h"
 #include "ppapi/cpp/point.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,18 +25,6 @@ void CompareInsetSizes(const PageInsetSizes& expected_insets,
   EXPECT_EQ(expected_insets.top, given_insets.top);
   EXPECT_EQ(expected_insets.right, given_insets.right);
   EXPECT_EQ(expected_insets.bottom, given_insets.bottom);
-}
-
-void CompareRect(const pp::Rect& expected_rect, const pp::Rect& given_rect) {
-  EXPECT_EQ(expected_rect.x(), given_rect.x());
-  EXPECT_EQ(expected_rect.y(), given_rect.y());
-  EXPECT_EQ(expected_rect.width(), given_rect.width());
-  EXPECT_EQ(expected_rect.height(), given_rect.height());
-}
-
-void CompareSize(const pp::Size& expected_size, const pp::Size& given_size) {
-  EXPECT_EQ(expected_size.width(), given_size.width());
-  EXPECT_EQ(expected_size.height(), given_size.height());
 }
 
 }  // namespace

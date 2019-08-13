@@ -298,6 +298,10 @@ std::vector<gfx::Rect> HeaderView::GetVisibleBoundsInScreen() const {
   return bounds_in_screen;
 }
 
+void HeaderView::Relayout() {
+  parent()->Layout();
+}
+
 void HeaderView::PaintHeaderContent(gfx::Canvas* canvas) {
   if (!should_paint_ || !target_widget_)
     return;

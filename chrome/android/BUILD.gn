@@ -1606,12 +1606,6 @@ template("chrome_public_apk_or_module_tmpl") {
 
     shared_libraries = [ ":libchrome" ]
 
-    # Android supports webp transparent resources properly since API level 18,
-    # so this can only be activated for modern ones (which target API >= 21).
-    # TODO(digit): Turn this on for all builds once JellyBean support is
-    # dropped in the future.
-    png_to_webp = _is_modern && !is_java_debug
-
     # Native libraries can be loaded directly from the APK using the
     # Chromium linker. However, we disable this for J-K due to an OEM-specific
     # platform bug, where overzealous SELinux settings prevent mapping some apk
@@ -1926,6 +1920,9 @@ template("chrome_test_apk_tmpl") {
       proguard_enabled = true
       proguard_configs = [ "//chrome/android/java/apk_for_test.flags" ]
     }
+    
+    # TODO(crbug.com/993340): Update test goldens with webp versions of images.
+    png_to_webp = false
   }
 }
 
@@ -2208,7 +2205,9 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
 
   if (_is_trichrome) {
     _bundle_name = "TrichromeChrome${invoker.bundle_suffix}"
-    _min_sdk_version = 28
+
+    # TODO(torne): make minsdk=Q once we no longer build hacky P version
+    _min_sdk_version = android_sdk_version
     _module_descs = trichrome_module_descs
     if (defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) {
       if (build_apk_secondary_abi && invoker.include_32_bit_webview) {

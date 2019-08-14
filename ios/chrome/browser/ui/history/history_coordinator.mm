@@ -16,6 +16,7 @@
 #include "ios/chrome/browser/ui/history/history_table_view_controller.h"
 #import "ios/chrome/browser/ui/history/history_transitioning_delegate.h"
 #include "ios/chrome/browser/ui/history/ios_browsing_history_driver.h"
+#import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 
@@ -86,12 +87,28 @@
   self.historyTableViewController.localDispatcher = self;
   self.historyTableViewController.presentationDelegate =
       self.presentationDelegate;
-  self.historyTransitioningDelegate =
-      [[HistoryTransitioningDelegate alloc] init];
-  self.historyNavigationController.transitioningDelegate =
-      self.historyTransitioningDelegate;
-  [self.historyNavigationController
-      setModalPresentationStyle:UIModalPresentationCustom];
+
+  BOOL useCustomPresentation = YES;
+  if (IsCollectionsCardPresentationStyleEnabled()) {
+    if (@available(iOS 13, *)) {
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+      [self.historyNavigationController
+          setModalPresentationStyle:UIModalPresentationFormSheet];
+      self.historyNavigationController.presentationController.delegate =
+          self.historyTableViewController;
+      useCustomPresentation = NO;
+#endif
+    }
+  }
+
+  if (useCustomPresentation) {
+    self.historyTransitioningDelegate =
+        [[HistoryTransitioningDelegate alloc] init];
+    self.historyNavigationController.transitioningDelegate =
+        self.historyTransitioningDelegate;
+    [self.historyNavigationController
+        setModalPresentationStyle:UIModalPresentationCustom];
+  }
   [self.baseViewController
       presentViewController:self.historyNavigationController
                    animated:YES

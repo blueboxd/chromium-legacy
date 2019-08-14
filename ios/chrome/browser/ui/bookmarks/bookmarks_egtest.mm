@@ -9,6 +9,7 @@
 
 #include "base/format_macros.h"
 #include "base/ios/ios_util.h"
+#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -1496,12 +1497,20 @@ id<GREYMatcher> SearchIconButton() {
 
 // Scroll the bookmarks to top.
 + (void)scrollToTop {
-  // Provide a start points since it prevents some tests timing out under
-  // certain configurations.
+  // On iOS 13 the settings menu appears as a card that can be dismissed with a
+  // downward swipe, for this reason we need to swipe up programatically to
+  // avoid dismissin the VC.
+  GREYPerformBlock scrollToTopBlock =
+      ^BOOL(id element, __strong NSError** error) {
+        UIScrollView* view = base::mac::ObjCCastStrict<UIScrollView>(element);
+        view.contentOffset = CGPointZero;
+        return YES;
+      };
+
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"bookmarksTableView")]
-      performAction:grey_scrollToContentEdgeWithStartPoint(kGREYContentEdgeTop,
-                                                           0.5, 0.5)];
+      performAction:[GREYActionBlock actionWithName:@"Scroll to top"
+                                       performBlock:scrollToTopBlock]];
 }
 
 // Scroll the bookmarks to bottom.
@@ -3954,6 +3963,7 @@ id<GREYMatcher> SearchIconButton() {
 
   // Interrupt the folder name editing by entering Folder 1
   [BookmarksTestCase scrollToTop];
+
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
   // Come back to Mobile Bookmarks.
@@ -3970,6 +3980,7 @@ id<GREYMatcher> SearchIconButton() {
 
   // Interrupt the folder name editing by tapping on First URL.
   [BookmarksTestCase scrollToTop];
+
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
       performAction:grey_tap()];
   // Reopen bookmarks.

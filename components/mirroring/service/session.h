@@ -63,7 +63,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
           mojom::ResourceProviderPtr resource_provider,
           mojom::CastMessageChannelPtr outbound_channel,
           mojom::CastMessageChannelRequest inbound_channel,
-          std::unique_ptr<viz::Gpu> gpu);
+          scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   ~Session() override;
 

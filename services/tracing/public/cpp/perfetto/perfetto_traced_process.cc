@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "services/tracing/public/cpp/perfetto/dummy_producer.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
+#include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 
 #if defined(OS_ANDROID)
@@ -79,6 +80,7 @@ PerfettoTracedProcess::PerfettoTracedProcess()
 
 PerfettoTracedProcess::PerfettoTracedProcess(const char* system_socket)
     : producer_client_(std::make_unique<ProducerClient>(GetTaskRunner())) {
+  CHECK(IsTracingInitialized());
   DETACH_FROM_SEQUENCE(sequence_checker_);
   // All communication with the system Perfetto service should occur on a single
   // sequence. To ensure we set up the socket correctly we construct the
@@ -143,6 +145,7 @@ PerfettoTaskRunner* PerfettoTracedProcess::GetTaskRunner() {
 void PerfettoTracedProcess::ResetTaskRunnerForTesting(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   GetTaskRunner()->ResetTaskRunnerForTesting(task_runner);
+  InitTracingPostThreadPoolStartAndFeatureList();
   // Detaching the sequence_checker_ must happen after we reset the task runner.
   // This is because the Get() could call the constructor (if this is the first
   // call to Get()) which would then PostTask which would create races if we

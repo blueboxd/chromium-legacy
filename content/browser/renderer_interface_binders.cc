@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/no_destructor.h"
-#include "content/browser/background_fetch/background_fetch_service_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/content_index/content_index_service_impl.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
@@ -203,8 +202,6 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
             ->GetPlatformNotificationContext()
             ->CreateService(origin, std::move(request));
       }));
-  parameterized_binder_registry_.AddInterface(
-      base::BindRepeating(&BackgroundFetchServiceImpl::CreateForWorker));
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(&QuotaDispatcherHost::CreateForWorker));
   parameterized_binder_registry_.AddInterface(base::BindRepeating(

@@ -79,17 +79,37 @@ TEST(ExtensionActionTest, Icon) {
 TEST(ExtensionActionTest, Badge) {
   std::unique_ptr<ExtensionAction> action =
       CreateAction(ActionInfo(ActionInfo::TYPE_PAGE));
-  ASSERT_EQ("", action->GetBadgeText(1));
+  ASSERT_EQ("", action->GetExplicitlySetBadgeText(1));
   action->SetBadgeText(ExtensionAction::kDefaultTabId, "foo");
-  ASSERT_EQ("foo", action->GetBadgeText(1));
-  ASSERT_EQ("foo", action->GetBadgeText(100));
+  ASSERT_EQ("foo", action->GetExplicitlySetBadgeText(1));
+  ASSERT_EQ("foo", action->GetExplicitlySetBadgeText(100));
   action->SetBadgeText(100, "bar");
-  ASSERT_EQ("foo", action->GetBadgeText(1));
-  ASSERT_EQ("bar", action->GetBadgeText(100));
+  ASSERT_EQ("foo", action->GetExplicitlySetBadgeText(1));
+  ASSERT_EQ("bar", action->GetExplicitlySetBadgeText(100));
   action->SetBadgeText(ExtensionAction::kDefaultTabId, "baz");
-  ASSERT_EQ("baz", action->GetBadgeText(1));
+  ASSERT_EQ("baz", action->GetExplicitlySetBadgeText(1));
   action->ClearAllValuesForTab(100);
-  ASSERT_EQ("baz", action->GetBadgeText(100));
+  ASSERT_EQ("baz", action->GetExplicitlySetBadgeText(100));
+}
+
+TEST(ExtensionActionTest, DisplayBadgeText) {
+  constexpr int kFirstTabId = 1;
+  constexpr int kSecondTabId = 2;
+
+  std::unique_ptr<ExtensionAction> action =
+      CreateAction(ActionInfo(ActionInfo::TYPE_PAGE));
+  ASSERT_EQ("", action->GetDisplayBadgeText(kFirstTabId));
+  action->SetDNRActionCount(kFirstTabId, 10 /* action_count */);
+  ASSERT_EQ("10", action->GetDisplayBadgeText(kFirstTabId));
+  action->SetBadgeText(ExtensionAction::kDefaultTabId, "foo");
+  ASSERT_EQ("10", action->GetDisplayBadgeText(kFirstTabId));
+  ASSERT_EQ("foo", action->GetDisplayBadgeText(kSecondTabId));
+  action->SetBadgeText(kFirstTabId, "bar");
+  ASSERT_EQ("bar", action->GetDisplayBadgeText(kFirstTabId));
+  action->SetDNRActionCount(kFirstTabId, 100 /* action_count */);
+  ASSERT_EQ("bar", action->GetDisplayBadgeText(kFirstTabId));
+  action->ClearAllValuesForTab(kFirstTabId);
+  ASSERT_EQ("foo", action->GetDisplayBadgeText(kFirstTabId));
 }
 
 TEST(ExtensionActionTest, BadgeTextColor) {

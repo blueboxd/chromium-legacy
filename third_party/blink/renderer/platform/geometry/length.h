@@ -181,6 +181,11 @@ class PLATFORM_EXPORT Length {
 
   CalculationValue& GetCalculationValue() const;
 
+  // If |this| is calculated, returns the underlying |CalculationValue|. If not,
+  // returns a |CalculationValue| constructed from |GetPixelsAndPercent()|. Hits
+  // a DCHECK if |this| is not a specified value (e.g., 'auto').
+  scoped_refptr<CalculationValue> AsCalculationValue() const;
+
   Length::Type GetType() const { return static_cast<Length::Type>(type_); }
   bool Quirk() const { return quirk_; }
 

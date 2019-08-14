@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/accelerator_table.h"
+
 #include <stddef.h>
 
 #include <set>
 
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/views/accelerator_table.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
 
@@ -71,7 +73,7 @@ TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
     // See http://crbug.com/737307 for details.
     if (ash_entry.action == ash::NEW_WINDOW ||
         ash_entry.action == ash::NEW_INCOGNITO_WINDOW ||
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
         ash_entry.action == ash::OPEN_FEEDBACK_PAGE ||
 #endif
         ash_entry.action == ash::RESTORE_TAB ||

@@ -30,16 +30,29 @@ constexpr int kIconSize = 18;
 constexpr int kHeaderTextFontSize = 12;
 constexpr gfx::Insets kIconPadding = gfx::Insets(1, 1, 1, 1);
 constexpr gfx::Insets kAppNamePadding = gfx::Insets(0, 10, 0, 0);
+constexpr gfx::Size kAppNamePreferredSize = gfx::Size(200, 10);
 constexpr int kIconCornerRadius = 1;
 constexpr gfx::Size kCloseButtonSize = gfx::Size(20, 20);
 constexpr int kCloseButtonIconSize = 18;
-constexpr gfx::Size kSpacerPreferredSize = gfx::Size(10, 5);
+constexpr gfx::Size kSpacerPreferredSize = gfx::Size(5, 5);
 
 }  // namespace
 
 MediaControlsHeaderView::MediaControlsHeaderView(
     base::OnceClosure close_button_cb)
     : close_button_cb_(std::move(close_button_cb)) {
+  const views::FlexSpecification kAppNameFlex =
+      views::FlexSpecification::ForSizeRule(
+          views::MinimumFlexSizeRule::kScaleToZero,
+          views::MaximumFlexSizeRule::kPreferred)
+          .WithOrder(1);
+
+  const views::FlexSpecification kSpacerFlex =
+      views::FlexSpecification::ForSizeRule(
+          views::MinimumFlexSizeRule::kScaleToMinimum,
+          views::MaximumFlexSizeRule::kUnbounded)
+          .WithOrder(2);
+
   auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout->SetInteriorMargin(kHeaderViewInsets);
 
@@ -65,15 +78,15 @@ MediaControlsHeaderView::MediaControlsHeaderView(
   app_name_view->SetEnabledColor(SK_ColorWHITE);
   app_name_view->SetAutoColorReadabilityEnabled(false);
   app_name_view->SetBorder(views::CreateEmptyBorder(kAppNamePadding));
+  app_name_view->SetPreferredSize(kAppNamePreferredSize);
+  app_name_view->SetProperty(views::kFlexBehaviorKey, kAppNameFlex);
+  app_name_view->SetElideBehavior(gfx::ELIDE_TAIL);
   app_name_view_ = AddChildView(std::move(app_name_view));
 
   // Space between app name and close button.
   auto spacer = std::make_unique<NonAccessibleView>();
   spacer->SetPreferredSize(kSpacerPreferredSize);
-  spacer->SetProperty(views::kFlexBehaviorKey,
-                      views::FlexSpecification::ForSizeRule(
-                          views::MinimumFlexSizeRule::kScaleToMinimum,
-                          views::MaximumFlexSizeRule::kUnbounded));
+  spacer->SetProperty(views::kFlexBehaviorKey, kSpacerFlex);
   AddChildView(std::move(spacer));
 
   auto close_button = CreateVectorImageButton(this);

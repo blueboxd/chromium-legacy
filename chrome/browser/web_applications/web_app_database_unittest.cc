@@ -32,10 +32,11 @@ bool operator==(const WebApp::IconInfo& icon_info,
 bool operator==(const WebApp& web_app, const WebApp& web_app2) {
   return std::tie(web_app.app_id(), web_app.name(), web_app.launch_url(),
                   web_app.description(), web_app.scope(), web_app.theme_color(),
-                  web_app.icons()) ==
+                  web_app.icons(), web_app.launch_container()) ==
          std::tie(web_app2.app_id(), web_app2.name(), web_app2.launch_url(),
                   web_app2.description(), web_app2.scope(),
-                  web_app2.theme_color(), web_app2.icons());
+                  web_app2.theme_color(), web_app2.icons(),
+                  web_app2.launch_container());
 }
 
 bool operator!=(const WebApp& web_app, const WebApp& web_app2) {
@@ -94,6 +95,8 @@ class WebAppDatabaseTest : public testing::Test {
     app->SetLaunchUrl(GURL(launch_url));
     app->SetScope(GURL(scope));
     app->SetThemeColor(theme_color);
+    app->SetLaunchContainer((suffix & 1) ? LaunchContainer::kTab
+                                         : LaunchContainer::kWindow);
 
     const std::string icon_url =
         base_url + "/icon" + base::NumberToString(suffix);
@@ -207,11 +210,13 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   const auto launch_url = GURL("https://example.com/");
   const AppId app_id = GenerateAppIdFromURL(GURL(launch_url));
   const std::string name = "Name";
+  const auto launch_container = LaunchContainer::kTab;
 
   auto app = std::make_unique<WebApp>(app_id);
   // Required fields:
   app->SetLaunchUrl(launch_url);
   app->SetName(name);
+  app->SetLaunchContainer(launch_container);
   // Let optional fields be empty:
   EXPECT_TRUE(app->description().empty());
   EXPECT_TRUE(app->scope().is_empty());
@@ -228,6 +233,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_EQ(app_id, app_copy->app_id());
   EXPECT_EQ(launch_url, app_copy->launch_url());
   EXPECT_EQ(name, app_copy->name());
+  EXPECT_EQ(launch_container, app_copy->launch_container());
   // No optional fields.
   EXPECT_TRUE(app_copy->description().empty());
   EXPECT_TRUE(app_copy->scope().is_empty());

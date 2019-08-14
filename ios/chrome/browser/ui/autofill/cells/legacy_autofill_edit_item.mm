@@ -5,11 +5,10 @@
 #import "ios/chrome/browser/ui/autofill/cells/legacy_autofill_edit_item.h"
 
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -79,8 +78,8 @@ const CGFloat kLabelAndFieldGap = 5;
   }
   cell.textField.enabled = self.textFieldEnabled;
   cell.textField.textColor = self.textFieldEnabled
-                                 ? [[MDCPalette cr_bluePalette] tint500]
-                                 : [[MDCPalette greyPalette] tint500];
+                                 ? [UIColor colorNamed:kBlueColor]
+                                 : [UIColor colorNamed:kTextSecondaryColor];
   [cell.textField addTarget:self
                      action:@selector(textFieldChanged:)
            forControlEvents:UIControlEventEditingChanged];
@@ -182,11 +181,11 @@ const CGFloat kLabelAndFieldGap = 5;
   } else {
     MaybeSetUILabelScaledFont(withFontScaling, self.textLabel,
                               [[MDCTypography fontLoader] mediumFontOfSize:14]);
-    self.textLabel.textColor = [[MDCPalette greyPalette] tint900];
+    self.textLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
     MaybeSetUITextFieldScaledFont(
         withFontScaling, self.textField,
         [[MDCTypography fontLoader] lightFontOfSize:16]);
-    self.textField.textColor = [[MDCPalette greyPalette] tint500];
+    self.textField.textColor = [UIColor colorNamed:kTextSecondaryColor];
   }
 }
 

@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "extensions/browser/api/declarative_net_request/action_tracker.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -60,6 +61,11 @@ class RulesetManager {
 
     // Valid iff |type| is |REDIRECT|.
     base::Optional<GURL> redirect_url;
+
+    // The ids of the extensions the action is attributed to.
+    // TODO(crbug.com/991420): This is not exactly correct for attributing
+    // an Action to the extension(s) for |REMOVE_HEADERS| rules.
+    std::vector<ExtensionId> extension_ids;
 
     // Valid iff |type| is |REMOVE_HEADERS|. The vectors point to strings of
     // static storage duration.
@@ -124,6 +130,9 @@ class RulesetManager {
   // Sets the TestObserver. Client maintains ownership of |observer|.
   void SetObserverForTest(TestObserver* observer);
 
+  const ActionTracker& action_tracker() const { return action_tracker_; }
+  ActionTracker& action_tracker() { return action_tracker_; }
+
  private:
   struct ExtensionRulesetData {
     ExtensionRulesetData(const ExtensionId& extension_id,
@@ -186,6 +195,10 @@ class RulesetManager {
 
   // Non-owning pointer to TestObserver.
   TestObserver* test_observer_ = nullptr;
+
+  // Mutable because this is updated in multiple const methods where we create
+  // and return the appropriate action based on the rule matched.
+  mutable ActionTracker action_tracker_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

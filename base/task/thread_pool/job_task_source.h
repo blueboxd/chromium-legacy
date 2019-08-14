@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <atomic>
+#include <limits>
 
 #include "base/base_export.h"
 #include "base/callback.h"
@@ -42,6 +43,9 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
   size_t GetRemainingConcurrency() const override;
 
  private:
+  static constexpr size_t kInvalidWorkerCount =
+      std::numeric_limits<size_t>::max();
+
   ~JobTaskSource() override;
 
   // Returns the maximum number of tasks from this TaskSource that can run
@@ -51,13 +55,12 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
 
   // TaskSource:
   Optional<Task> TakeTask() override;
-  bool DidProcessTask(RunResult run_result) override;
+  Optional<Task> Clear() override;
+  bool DidProcessTask() override;
   SequenceSortKey GetSortKey() const override;
-  void Clear() override;
 
   // The current number of workers concurrently running tasks from this
-  // TaskSource. "memory_order_relaxed" is sufficient to access this variable as
-  // no other state is synchronized with it.
+  // TaskSource.
   std::atomic_size_t worker_count_{0U};
 
   const Location from_here_;

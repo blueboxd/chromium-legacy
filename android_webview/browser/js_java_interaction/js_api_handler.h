@@ -5,10 +5,10 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_JS_JAVA_INTERACTION_JS_API_HANDLER_H_
 #define ANDROID_WEBVIEW_BROWSER_JS_JAVA_INTERACTION_JS_API_HANDLER_H_
 
-#include <string>
 #include <vector>
 
 #include "android_webview/common/js_java_interaction/interfaces.mojom.h"
+#include "base/strings/string16.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -32,7 +32,7 @@ class JsApiHandler : public mojom::JsApiHandler {
       mojo::PendingAssociatedReceiver<mojom::JsApiHandler> pending_receiver);
 
   // mojom::JsApiHandler implementation.
-  void PostMessage(const std::string& message,
+  void PostMessage(const base::string16& message,
                    std::vector<mojo::ScopedMessagePipeHandle> ports) override;
 
  private:

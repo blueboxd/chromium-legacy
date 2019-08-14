@@ -25,6 +25,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -325,7 +326,7 @@ AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
   html_source->AddString("aboutObsoleteSystemURL",
                          ObsoleteSystem::GetLinkURL());
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   base::string16 tos = l10n_util::GetStringFUTF16(
       IDS_ABOUT_TERMS_OF_SERVICE, base::UTF8ToUTF16(chrome::kChromeUITermsURL));
   html_source->AddString("aboutProductTos", tos);
@@ -334,7 +335,7 @@ AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
 #if defined(OS_CHROMEOS)
   std::string safetyInfoLink = GetSafetyInfoLink();
   html_source->AddBoolean("shouldShowSafetyInfo", !safetyInfoLink.empty());
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   html_source->AddString(
       "aboutProductSafety",
       l10n_util::GetStringUTF16(IDS_ABOUT_SAFETY_INFORMATION));

@@ -20,6 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "content/browser/browser_interface_broker_impl.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
@@ -324,7 +325,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void CompleteStartWorkerPreparation(
       int process_id,
       service_manager::mojom::InterfaceProviderRequest
-          interface_provider_request);
+          interface_provider_request,
+      mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+          broker_receiver);
 
   // Called when the web worker main script resource has finished loading.
   // After this is called, is_response_committed() and is_execution_ready()
@@ -685,6 +688,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // For service worker execution contexts.
   mojo::Binding<service_manager::mojom::InterfaceProvider>
       interface_provider_binding_;
+  BrowserInterfaceBrokerImpl<ServiceWorkerProviderHost,
+                             const ServiceWorkerRunningInfo&>
+      broker_{this};
+  mojo::Receiver<blink::mojom::BrowserInterfaceBroker> broker_receiver_{
+      &broker_};
 
   // For service worker clients.
   ClientPhase client_phase_ = ClientPhase::kInitial;

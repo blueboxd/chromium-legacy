@@ -28,11 +28,11 @@ class OverviewGridPreEventHandler : public ui::EventHandler {
   explicit OverviewGridPreEventHandler(OverviewGrid* grid);
   ~OverviewGridPreEventHandler() override;
 
- private:
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
+ private:
   void HandleClickOrTap(ui::Event* event);
 
   // Cached value of the OverviewGrid that handles a series of gesture scroll

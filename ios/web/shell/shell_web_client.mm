@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "ios/web/common/user_agent.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "ios/web/shell/shell_web_main_parts.h"
 #import "ios/web/shell/web_usage_controller.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"

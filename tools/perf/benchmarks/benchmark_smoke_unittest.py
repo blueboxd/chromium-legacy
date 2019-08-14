@@ -24,6 +24,7 @@ from py_utils import discover
 from py_utils import tempfile_ext
 
 from benchmarks import jetstream
+from benchmarks import jetstream2
 from benchmarks import octane
 from benchmarks import rasterize_and_record_micro
 from benchmarks import speedometer
@@ -103,6 +104,7 @@ _BLACK_LIST_TEST_MODULES = {
     rasterize_and_record_micro,  # Always fails on cq bot.
     speedometer,  # Takes 101 seconds.
     jetstream,  # Take 206 seconds.
+    jetstream2, # Causes CQ shard to timeout, crbug.com/992837
     v8_browsing, # Flaky on Android, crbug.com/628368.
 }
 

@@ -18,14 +18,12 @@
 #include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/test_simple_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/test/base/test_browser_window.h"
-#include "chrome/test/base/testing_profile.h"
+#include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
@@ -129,23 +127,53 @@ PerfDataProto GetSampleHeapPerfDataProto() {
   return proto;
 }
 
+// Allows testing of HeapCollector behavior when an incognito window is opened.
+class TestIncognitoObserver : public WindowedIncognitoObserver {
+ public:
+  // Factory function to create a TestIncognitoObserver object contained in a
+  // std::unique_ptr<WindowedIncognitoObserver> object. |incognito_launched|
+  // simulates the presence of an open incognito window, or the lack thereof.
+  // Used for passing observers to ParseOutputProtoIfValid().
+  static std::unique_ptr<WindowedIncognitoObserver> CreateWithIncognitoLaunched(
+      bool incognito_launched) {
+    return base::WrapUnique(new TestIncognitoObserver(incognito_launched));
+  }
+
+  bool IncognitoLaunched() const override { return incognito_launched_; }
+
+ private:
+  explicit TestIncognitoObserver(bool incognito_launched)
+      : WindowedIncognitoObserver(nullptr, 0),
+        incognito_launched_(incognito_launched) {}
+
+  bool incognito_launched_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestIncognitoObserver);
+};
+
 // Allows access to some private methods for testing.
 class TestHeapCollector : public HeapCollector {
  public:
   TestHeapCollector() : HeapCollector(HeapCollectionMode::kTcmalloc) {}
   explicit TestHeapCollector(HeapCollectionMode mode) : HeapCollector(mode) {}
 
+  using HeapCollector::AddCachedDataDelta;
   using HeapCollector::collection_params;
-  using HeapCollector::CollectProfile;
   using HeapCollector::DumpProfileToTempFile;
+  using HeapCollector::Init;
   using HeapCollector::IsEnabled;
+  using HeapCollector::IsRunning;
   using HeapCollector::MakeQuipperCommand;
   using HeapCollector::Mode;
   using HeapCollector::ParseAndSaveProfile;
+  using HeapCollector::RecordUserLogin;
+  using HeapCollector::set_profile_done_callback;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(TestHeapCollector);
 };
+
+const base::TimeDelta kPeriodicCollectionInterval =
+    base::TimeDelta::FromHours(1);
 
 #if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 size_t HeapSamplingPeriod(const TestHeapCollector& collector) {
@@ -163,133 +191,84 @@ size_t HeapSamplingPeriod(const TestHeapCollector& collector) {
 
 class HeapCollectorTest : public testing::Test {
  public:
-  HeapCollectorTest() {}
+  HeapCollectorTest()
+      : test_browser_thread_bundle_(
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
-  // Opens a new browser window, which can be incognito, and returns a unique
-  // handle for it.
-  size_t OpenBrowserWindow(bool incognito) {
-    auto browser_window = std::make_unique<TestBrowserWindow>();
-    Profile* browser_profile =
-        incognito ? profile_->GetOffTheRecordProfile() : profile_.get();
-    Browser::CreateParams params(browser_profile, true);
-    params.type = Browser::TYPE_TABBED;
-    params.window = browser_window.get();
-    auto browser = std::make_unique<Browser>(params);
-
-    size_t handle = next_browser_id++;
-    open_browsers_[handle] =
-        std::make_pair(std::move(browser_window), std::move(browser));
-    return handle;
-  }
-
-  // Closes the browser window with the given handle.
-  void CloseBrowserWindow(size_t handle) {
-    auto it = open_browsers_.find(handle);
-    ASSERT_FALSE(it == open_browsers_.end());
-    open_browsers_.erase(it);
-  }
-
-  void SetUp() override {
-    // Instantiate a testing profile.
-    TestingProfile::Builder profile_builder;
-    profile_ = profile_builder.Build();
+  void SaveProfile(std::unique_ptr<SampledProfile> sampled_profile) {
+    cached_profile_data_.resize(cached_profile_data_.size() + 1);
+    cached_profile_data_.back().Swap(sampled_profile.get());
   }
 
   void MakeHeapCollector(HeapCollectionMode mode) {
     heap_collector_ = std::make_unique<TestHeapCollector>(mode);
+    // Set the periodic collection delay to a well known quantity, so we can
+    // fast forward the time.
+    heap_collector_->collection_params().periodic_interval =
+        kPeriodicCollectionInterval;
+    heap_collector_->set_profile_done_callback(base::BindRepeating(
+        &HeapCollectorTest::SaveProfile, base::Unretained(this)));
+
+    heap_collector_->Init();
     // HeapCollector requires the user to be logged in.
-    heap_collector_->OnUserLoggedIn();
+    heap_collector_->RecordUserLogin(base::TimeTicks::Now());
   }
 
   void TearDown() override {
     heap_collector_.reset();
-    open_browsers_.clear();
-    profile_.reset();
+    cached_profile_data_.clear();
   }
 
  protected:
-  // Needed to pass PrerenderManager's DCHECKs.
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
-  // The associated testing browser profile.
-  std::unique_ptr<TestingProfile> profile_;
-
-  // Keep track of the open browsers and accompanying windows.
-  std::unordered_map<
-      size_t,
-      std::pair<std::unique_ptr<TestBrowserWindow>, std::unique_ptr<Browser>>>
-      open_browsers_;
-  static size_t next_browser_id;
+  std::vector<SampledProfile> cached_profile_data_;
 
   std::unique_ptr<TestHeapCollector> heap_collector_;
 
   DISALLOW_COPY_AND_ASSIGN(HeapCollectorTest);
 };
 
-size_t HeapCollectorTest::next_browser_id = 1;
+TEST_F(HeapCollectorTest, CheckTestIncognitoObserver) {
+  EXPECT_FALSE(TestIncognitoObserver::CreateWithIncognitoLaunched(false)
+                   ->IncognitoLaunched());
+  EXPECT_TRUE(TestIncognitoObserver::CreateWithIncognitoLaunched(true)
+                  ->IncognitoLaunched());
+}
 
 #if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 TEST_F(HeapCollectorTest, CheckSetup_Tcmalloc) {
   MakeHeapCollector(HeapCollectionMode::kTcmalloc);
-  heap_collector_->Init();
 
   // No profiles are cached on start.
-  std::vector<SampledProfile> stored_profiles;
-  EXPECT_FALSE(heap_collector_->GetSampledProfiles(&stored_profiles));
-  EXPECT_TRUE(stored_profiles.empty());
-
-  // Heap sampling is enabled when no incognito window is open.
-  size_t sampling_period = HeapSamplingPeriod(*heap_collector_);
-  EXPECT_GT(sampling_period, 0u);
-}
-
-TEST_F(HeapCollectorTest, IncognitoWindowDisablesSamplingOnInit_Tcmalloc) {
-  MakeHeapCollector(HeapCollectionMode::kTcmalloc);
-  OpenBrowserWindow(/*incognito=*/true);
-  heap_collector_->Init();
-
-  // Heap sampling is disabled when an incognito session is active.
-  size_t sampling_period = HeapSamplingPeriod(*heap_collector_);
-  EXPECT_EQ(sampling_period, 0u);
-}
-
-TEST_F(HeapCollectorTest, IncognitoWindowPausesSampling_Tcmalloc) {
-  MakeHeapCollector(HeapCollectionMode::kTcmalloc);
-  heap_collector_->Init();
+  EXPECT_TRUE(cached_profile_data_.empty());
 
   // Heap sampling is enabled.
   size_t sampling_period = HeapSamplingPeriod(*heap_collector_);
   EXPECT_GT(sampling_period, 0u);
-
-  // Opening an incognito window disables sampling.
-  auto win1 = OpenBrowserWindow(/*incognito=*/true);
-  sampling_period = HeapSamplingPeriod(*heap_collector_);
-  EXPECT_EQ(sampling_period, 0u);
-
-  // Opening a regular window doesn't resume sampling.
-  OpenBrowserWindow(/*incognito=*/false);
-  // Heap sampling is still disabled.
-  sampling_period = HeapSamplingPeriod(*heap_collector_);
-  EXPECT_EQ(sampling_period, 0u);
-
-  // Open another incognito window and close the first one.
-  auto win3 = OpenBrowserWindow(/*incognito=*/true);
-  CloseBrowserWindow(win1);
-  // Heap sampling is still disabled.
-  sampling_period = HeapSamplingPeriod(*heap_collector_);
-  EXPECT_EQ(sampling_period, 0u);
-
-  // Closing the last incognito window resumes heap sampling.
-  CloseBrowserWindow(win3);
-  // Heap sampling is enabled.
-  sampling_period = HeapSamplingPeriod(*heap_collector_);
-  EXPECT_GT(sampling_period, 0u);
 }
 
-TEST_F(HeapCollectorTest, DumpProfileToTempFile_Tcmalloc) {
+TEST_F(HeapCollectorTest, NoCollectionWhenProfileCacheFull_Tcmalloc) {
   MakeHeapCollector(HeapCollectionMode::kTcmalloc);
+  // Timer is active after login and a periodic collection is scheduled.
+  EXPECT_TRUE(heap_collector_->IsRunning());
+  // Pretend the cache is full.
+  heap_collector_->AddCachedDataDelta(4 * 1024 * 1024);
+
+  // Advance the clock by a periodic collection interval. We shouldn't find a
+  // profile because the cache is full.
+  test_browser_thread_bundle_.FastForwardBy(kPeriodicCollectionInterval);
+
+  EXPECT_TRUE(cached_profile_data_.empty());
+}
+
+TEST_F(HeapCollectorTest, DumpProfileToTempFile_NoIncognito_Tcmalloc) {
+  MakeHeapCollector(HeapCollectionMode::kTcmalloc);
+
+  auto incognito_observer =
+      TestIncognitoObserver::CreateWithIncognitoLaunched(false);
   base::Optional<base::FilePath> got_path =
-      heap_collector_->DumpProfileToTempFile();
+      heap_collector_->DumpProfileToTempFile(std::move(incognito_observer));
   // Check that we got a path.
   ASSERT_TRUE(got_path);
   // Check that the file is readable and not empty.
@@ -302,8 +281,20 @@ TEST_F(HeapCollectorTest, DumpProfileToTempFile_Tcmalloc) {
   ASSERT_TRUE(base::DeleteFile(got_path.value(), false));
 }
 
+TEST_F(HeapCollectorTest, DumpProfileToTempFile_IncognitoOpened_Tcmalloc) {
+  MakeHeapCollector(HeapCollectionMode::kTcmalloc);
+
+  auto incognito_observer =
+      TestIncognitoObserver::CreateWithIncognitoLaunched(true);
+  base::Optional<base::FilePath> got_path =
+      heap_collector_->DumpProfileToTempFile(std::move(incognito_observer));
+  // Check that we got a path.
+  ASSERT_FALSE(got_path);
+}
+
 TEST_F(HeapCollectorTest, ParseAndSaveProfile_Tcmalloc) {
   MakeHeapCollector(HeapCollectionMode::kTcmalloc);
+
   // Write a sample perf data proto to a temp file.
   const base::FilePath kTempProfile(
       FILE_PATH_LITERAL("/tmp/ParseAndSaveProfile.test"));
@@ -324,20 +315,19 @@ TEST_F(HeapCollectorTest, ParseAndSaveProfile_Tcmalloc) {
   base::CommandLine::StringVector argv;
   argv.push_back("cat");
   argv.push_back(kTempProfile.value());
-  base::CommandLine cat(argv);
+  auto cat = std::make_unique<base::CommandLine>(argv);
 
   // Run the command.
   auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
-  heap_collector_->ParseAndSaveProfile(cat, kTempProfile,
+  heap_collector_->ParseAndSaveProfile(std::move(cat), kTempProfile,
                                        std::move(sampled_profile));
+  test_browser_thread_bundle_.RunUntilIdle();
 
   // Check that the profile was cached.
-  std::vector<SampledProfile> stored_profiles;
-  EXPECT_TRUE(heap_collector_->GetSampledProfiles(&stored_profiles));
-  ASSERT_EQ(1U, stored_profiles.size());
+  ASSERT_EQ(1U, cached_profile_data_.size());
 
-  const SampledProfile& profile = stored_profiles[0];
+  const SampledProfile& profile = cached_profile_data_[0];
   EXPECT_EQ(SampledProfile::PERIODIC_COLLECTION, profile.trigger_event());
   EXPECT_TRUE(profile.has_ms_after_boot());
   EXPECT_TRUE(profile.has_ms_after_login());
@@ -346,8 +336,6 @@ TEST_F(HeapCollectorTest, ParseAndSaveProfile_Tcmalloc) {
   EXPECT_EQ(serialized_proto, profile.perf_data().SerializeAsString());
 
   // Check that the temp profile file is removed after pending tasks complete.
-  heap_collector_->Deactivate();
-  test_browser_thread_bundle_.RunUntilIdle();
   temp =
       base::File(kTempProfile, base::File::FLAG_OPEN | base::File::FLAG_READ);
   ASSERT_FALSE(temp.IsValid());
@@ -356,55 +344,35 @@ TEST_F(HeapCollectorTest, ParseAndSaveProfile_Tcmalloc) {
 
 TEST_F(HeapCollectorTest, CheckSetup_ShimLayer) {
   MakeHeapCollector(HeapCollectionMode::kShimLayer);
-  heap_collector_->Init();
 
   // No profiles are cached on start.
-  std::vector<SampledProfile> stored_profiles;
-  EXPECT_FALSE(heap_collector_->GetSampledProfiles(&stored_profiles));
-  EXPECT_TRUE(stored_profiles.empty());
-
-  EXPECT_TRUE(heap_collector_->IsEnabled());
-}
-
-TEST_F(HeapCollectorTest, IncognitoWindowDisablesSamplingOnInit_ShimLayer) {
-  MakeHeapCollector(HeapCollectionMode::kShimLayer);
-  OpenBrowserWindow(/*incognito=*/true);
-  heap_collector_->Init();
-
-  // Heap sampling is disabled when an incognito session is active.
-  EXPECT_FALSE(heap_collector_->IsEnabled());
-}
-
-TEST_F(HeapCollectorTest, IncognitoWindowPausesSampling_ShimLayer) {
-  MakeHeapCollector(HeapCollectionMode::kShimLayer);
-  heap_collector_->Init();
+  EXPECT_TRUE(cached_profile_data_.empty());
 
   // Heap sampling is enabled.
   EXPECT_TRUE(heap_collector_->IsEnabled());
-
-  // Opening an incognito window disables sampling and doesn't crash the test.
-  auto win1 = OpenBrowserWindow(/*incognito=*/true);
-  EXPECT_FALSE(heap_collector_->IsEnabled());
-
-  // Open also a regular window. Sampling still disabled.
-  OpenBrowserWindow(/*incognito=*/false);
-  EXPECT_FALSE(heap_collector_->IsEnabled());
-
-  // Open another incognito window and close the first one.
-  auto win3 = OpenBrowserWindow(/*incognito=*/true);
-  CloseBrowserWindow(win1);
-  EXPECT_FALSE(heap_collector_->IsEnabled());
-
-  // Closing the last incognito window resumes heap sampling, without
-  // crashing the test.
-  CloseBrowserWindow(win3);
-  EXPECT_TRUE(heap_collector_->IsEnabled());
 }
 
-TEST_F(HeapCollectorTest, DumpProfileToTempFile_ShimLayer) {
+TEST_F(HeapCollectorTest, NoCollectionWhenProfileCacheFull_ShimLayer) {
   MakeHeapCollector(HeapCollectionMode::kShimLayer);
+  // Timer is active after login and a periodic collection is scheduled.
+  EXPECT_TRUE(heap_collector_->IsRunning());
+  // Pretend the cache is full.
+  heap_collector_->AddCachedDataDelta(4 * 1024 * 1024);
+
+  // Advance the clock by a periodic collection interval. We shouldn't find a
+  // profile because the cache is full.
+  test_browser_thread_bundle_.FastForwardBy(kPeriodicCollectionInterval);
+
+  EXPECT_TRUE(cached_profile_data_.empty());
+}
+
+TEST_F(HeapCollectorTest, DumpProfileToTempFile_NoIncognito_ShimLayer) {
+  MakeHeapCollector(HeapCollectionMode::kShimLayer);
+
+  auto incognito_observer =
+      TestIncognitoObserver::CreateWithIncognitoLaunched(false);
   base::Optional<base::FilePath> got_path =
-      heap_collector_->DumpProfileToTempFile();
+      heap_collector_->DumpProfileToTempFile(std::move(incognito_observer));
   // Check that we got a path.
   ASSERT_TRUE(got_path);
   // Check that the file is readable and not empty.
@@ -417,25 +385,39 @@ TEST_F(HeapCollectorTest, DumpProfileToTempFile_ShimLayer) {
   ASSERT_TRUE(base::DeleteFile(got_path.value(), false));
 }
 
+TEST_F(HeapCollectorTest, DumpProfileToTempFile_IncognitoOpened_ShimLayer) {
+  MakeHeapCollector(HeapCollectionMode::kShimLayer);
+
+  auto incognito_observer =
+      TestIncognitoObserver::CreateWithIncognitoLaunched(true);
+  base::Optional<base::FilePath> got_path =
+      heap_collector_->DumpProfileToTempFile(std::move(incognito_observer));
+  // Check that we got a path.
+  ASSERT_FALSE(got_path);
+}
+
 TEST_F(HeapCollectorTest, MakeQuipperCommand) {
   const base::FilePath kTempProfile(
       FILE_PATH_LITERAL("/tmp/MakeQuipperCommand.test"));
-  base::CommandLine got = heap_collector_->MakeQuipperCommand(kTempProfile);
+  std::unique_ptr<base::CommandLine> got =
+      TestHeapCollector::MakeQuipperCommand(kTempProfile);
+  ASSERT_TRUE(got);
 
   // Check that we got the correct two switch names.
-  ASSERT_EQ(got.GetSwitches().size(), 2u);
-  EXPECT_TRUE(got.HasSwitch("input_heap_profile"));
-  EXPECT_TRUE(got.HasSwitch("pid"));
+  ASSERT_EQ(got->GetSwitches().size(), 2u);
+  EXPECT_TRUE(got->HasSwitch("input_heap_profile"));
+  EXPECT_TRUE(got->HasSwitch("pid"));
 
   // Check that we got the correct program name and switch values.
-  EXPECT_EQ(got.GetProgram().value(), "/usr/bin/quipper");
-  EXPECT_EQ(got.GetSwitchValuePath("input_heap_profile"), kTempProfile);
-  EXPECT_EQ(got.GetSwitchValueASCII("pid"),
+  EXPECT_EQ(got->GetProgram().value(), "/usr/bin/quipper");
+  EXPECT_EQ(got->GetSwitchValuePath("input_heap_profile"), kTempProfile);
+  EXPECT_EQ(got->GetSwitchValueASCII("pid"),
             base::NumberToString(base::GetCurrentProcId()));
 }
 
 TEST_F(HeapCollectorTest, ParseAndSaveProfile_ShimLayer) {
   MakeHeapCollector(HeapCollectionMode::kShimLayer);
+
   // Write a sample perf data proto to a temp file.
   const base::FilePath kTempProfile(
       FILE_PATH_LITERAL("/tmp/ParseAndSaveProfile.test"));
@@ -456,20 +438,19 @@ TEST_F(HeapCollectorTest, ParseAndSaveProfile_ShimLayer) {
   base::CommandLine::StringVector argv;
   argv.push_back("cat");
   argv.push_back(kTempProfile.value());
-  base::CommandLine cat(argv);
+  auto cat = std::make_unique<base::CommandLine>(argv);
 
   // Run the command.
   auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
-  heap_collector_->ParseAndSaveProfile(cat, kTempProfile,
+  heap_collector_->ParseAndSaveProfile(std::move(cat), kTempProfile,
                                        std::move(sampled_profile));
+  test_browser_thread_bundle_.RunUntilIdle();
 
   // Check that the profile was cached.
-  std::vector<SampledProfile> stored_profiles;
-  EXPECT_TRUE(heap_collector_->GetSampledProfiles(&stored_profiles));
-  ASSERT_EQ(1U, stored_profiles.size());
+  ASSERT_EQ(1U, cached_profile_data_.size());
 
-  const SampledProfile& profile = stored_profiles[0];
+  const SampledProfile& profile = cached_profile_data_[0];
   EXPECT_EQ(SampledProfile::PERIODIC_COLLECTION, profile.trigger_event());
   EXPECT_TRUE(profile.has_ms_after_boot());
   EXPECT_TRUE(profile.has_ms_after_login());
@@ -478,8 +459,6 @@ TEST_F(HeapCollectorTest, ParseAndSaveProfile_ShimLayer) {
   EXPECT_EQ(serialized_proto, profile.perf_data().SerializeAsString());
 
   // Check that the temp profile file is removed after pending tasks complete.
-  heap_collector_->Deactivate();
-  test_browser_thread_bundle_.RunUntilIdle();
   temp =
       base::File(kTempProfile, base::File::FLAG_OPEN | base::File::FLAG_READ);
   ASSERT_FALSE(temp.IsValid());
@@ -487,13 +466,10 @@ TEST_F(HeapCollectorTest, ParseAndSaveProfile_ShimLayer) {
 
 class HeapCollectorCollectionParamsTest : public testing::Test {
  public:
-  HeapCollectorCollectionParamsTest()
-      : task_runner_(base::MakeRefCounted<base::TestSimpleTaskRunner>()),
-        task_runner_handle_(task_runner_) {}
+  HeapCollectorCollectionParamsTest() = default;
 
- private:
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
+ protected:
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(HeapCollectorCollectionParamsTest);
 };
@@ -512,11 +488,12 @@ TEST_F(HeapCollectorCollectionParamsTest, ParametersOverride_Tcmalloc) {
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       heap_profiling::kOOPHeapProfilingFeature, params);
 
-  TestHeapCollector heap_collector(HeapCollectionMode::kTcmalloc);
-  const auto& parsed_params = heap_collector.collection_params();
+  auto heap_collector =
+      std::make_unique<TestHeapCollector>(HeapCollectionMode::kTcmalloc);
+  const auto& parsed_params = heap_collector->collection_params();
 
   // Not initialized yet:
-  size_t sampling_period = HeapSamplingPeriod(heap_collector);
+  size_t sampling_period = HeapSamplingPeriod(*heap_collector);
   EXPECT_NE(800000u, sampling_period);
   EXPECT_NE(base::TimeDelta::FromHours(1), parsed_params.periodic_interval);
   EXPECT_NE(1, parsed_params.resume_from_suspend.sampling_factor);
@@ -526,9 +503,9 @@ TEST_F(HeapCollectorCollectionParamsTest, ParametersOverride_Tcmalloc) {
   EXPECT_NE(base::TimeDelta::FromSeconds(20),
             parsed_params.restore_session.max_collection_delay);
 
-  heap_collector.Init();
+  heap_collector->Init();
 
-  sampling_period = HeapSamplingPeriod(heap_collector);
+  sampling_period = HeapSamplingPeriod(*heap_collector);
   EXPECT_EQ(800000u, sampling_period);
   EXPECT_EQ(base::TimeDelta::FromHours(1), parsed_params.periodic_interval);
   EXPECT_EQ(1, parsed_params.resume_from_suspend.sampling_factor);
@@ -553,8 +530,9 @@ TEST_F(HeapCollectorCollectionParamsTest, ParametersOverride_ShimLayer) {
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       heap_profiling::kOOPHeapProfilingFeature, params);
 
-  TestHeapCollector heap_collector(HeapCollectionMode::kShimLayer);
-  const auto& parsed_params = heap_collector.collection_params();
+  auto heap_collector =
+      std::make_unique<TestHeapCollector>(HeapCollectionMode::kShimLayer);
+  const auto& parsed_params = heap_collector->collection_params();
 
   // Not initialized yet:
   EXPECT_NE(base::TimeDelta::FromHours(1), parsed_params.periodic_interval);
@@ -565,7 +543,7 @@ TEST_F(HeapCollectorCollectionParamsTest, ParametersOverride_ShimLayer) {
   EXPECT_NE(base::TimeDelta::FromSeconds(20),
             parsed_params.restore_session.max_collection_delay);
 
-  heap_collector.Init();
+  heap_collector->Init();
 
   EXPECT_EQ(base::TimeDelta::FromHours(1), parsed_params.periodic_interval);
   EXPECT_EQ(1, parsed_params.resume_from_suspend.sampling_factor);

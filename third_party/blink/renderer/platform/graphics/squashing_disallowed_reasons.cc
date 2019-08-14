@@ -46,10 +46,6 @@ constexpr SquashingDisallowedReasonStringMap
          "Cannot be squashed without breaking paint order"},
         {SquashingDisallowedReason::kSquashingVideoIsDisallowed,
          "squashingVideoIsDisallowed", "Squashing video is not supported"},
-        {SquashingDisallowedReason::kSquashedLayerClipsCompositingDescendants,
-         "squashedLayerClipsSquashingDisallowedDescendants",
-         "Squashing a layer that clips composited descendants is not "
-         "supported."},
         {SquashingDisallowedReason::kSquashingLayoutEmbeddedContentIsDisallowed,
          "squashingLayoutEmbeddedContentIsDisallowed",
          "Squashing a frame, iframe or plugin is not supported."},

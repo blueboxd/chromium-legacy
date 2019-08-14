@@ -57,9 +57,6 @@ class CORE_EXPORT CSSAnimations final {
  public:
   CSSAnimations();
 
-  bool IsAnimationForInspector(const Animation&);
-  bool IsTransitionAnimationForInspector(const Animation&) const;
-
   static const StylePropertyShorthand& PropertiesForTransitionAll();
   static bool IsAnimationAffectingProperty(const CSSProperty&);
   static bool IsAffectedByKeyframesFromScope(const Element&, const TreeScope&);

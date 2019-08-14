@@ -31,7 +31,6 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/features.h"
@@ -2453,7 +2452,7 @@ class BroadcastChannelProviderInterceptor
  public:
   BroadcastChannelProviderInterceptor(
       RenderProcessHostImpl* rph,
-      blink::mojom::BroadcastChannelProviderRequest request,
+      mojo::PendingReceiver<blink::mojom::BroadcastChannelProvider> receiver,
       const url::Origin& origin_to_inject)
       : origin_to_inject_(origin_to_inject) {
     StoragePartitionImpl* storage_partition =
@@ -2462,13 +2461,13 @@ class BroadcastChannelProviderInterceptor
     // Bind the real BroadcastChannelProvider implementation.
     mojo::BindingId binding_id =
         storage_partition->GetBroadcastChannelProvider()->Connect(
-            rph->GetID(), std::move(request));
+            rph->GetID(), std::move(receiver));
 
     // Now replace it with this object and keep a pointer to the real
     // implementation.
     original_broadcast_channel_provider_ =
         storage_partition->GetBroadcastChannelProvider()
-            ->bindings_for_testing()
+            ->receivers_for_testing()
             .SwapImplForTesting(binding_id, this);
 
     // Register the |this| as a RenderProcessHostObserver, so it can be
@@ -2496,9 +2495,10 @@ class BroadcastChannelProviderInterceptor
   void ConnectToChannel(
       const url::Origin& origin,
       const std::string& name,
-      blink::mojom::BroadcastChannelClientAssociatedPtrInfo client,
-      blink::mojom::BroadcastChannelClientAssociatedRequest connection)
-      override {
+      mojo::PendingAssociatedRemote<blink::mojom::BroadcastChannelClient>
+          client,
+      mojo::PendingAssociatedReceiver<blink::mojom::BroadcastChannelClient>
+          connection) override {
     GetForwardingInterface()->ConnectToChannel(
         origin_to_inject_, name, std::move(client), std::move(connection));
   }
@@ -2516,10 +2516,10 @@ class BroadcastChannelProviderInterceptor
 void CreateTestBroadcastChannelProvider(
     const url::Origin& origin_to_inject,
     RenderProcessHostImpl* rph,
-    blink::mojom::BroadcastChannelProviderRequest request) {
+    mojo::PendingReceiver<blink::mojom::BroadcastChannelProvider> receiver) {
   // This object will register as RenderProcessHostObserver, so it will
   // clean itself automatically on process exit.
-  new BroadcastChannelProviderInterceptor(rph, std::move(request),
+  new BroadcastChannelProviderInterceptor(rph, std::move(receiver),
                                           origin_to_inject);
 }
 
@@ -2528,7 +2528,7 @@ void CreateTestBroadcastChannelProvider(
 IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, BroadcastChannelOriginEnforcement) {
   auto mismatched_origin = url::Origin::Create(GURL("http://abc.foo.com"));
   EXPECT_FALSE(IsIsolatedOrigin(mismatched_origin));
-  RenderProcessHostImpl::SetBroadcastChannelProviderRequestHandlerForTesting(
+  RenderProcessHostImpl::SetBroadcastChannelProviderReceiverHandlerForTesting(
       base::BindRepeating(&CreateTestBroadcastChannelProvider,
                           mismatched_origin));
 

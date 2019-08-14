@@ -64,7 +64,12 @@ bool InitializeVisuals() {
 
 }  // namespace
 
-ViewsTestBase::ViewsTestBase() = default;
+ViewsTestBase::ViewsTestBase() {
+  // MaterialDesignController is initialized here instead of in SetUp because
+  // a subclass might construct a MaterialDesignControllerTestAPI as a member to
+  // override the value, and this must happen first.
+  ui::MaterialDesignController::Initialize();
+}
 
 ViewsTestBase::~ViewsTestBase() {
   CHECK(setup_called_)
@@ -82,7 +87,6 @@ void ViewsTestBase::SetUp() {
   has_compositing_manager_ = InitializeVisuals();
 
   testing::Test::SetUp();
-  ui::MaterialDesignController::Initialize();
   setup_called_ = true;
   if (!views_delegate_for_setup_)
     views_delegate_for_setup_ = std::make_unique<TestViewsDelegate>();

@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 
 // This macro declares a static variable inside the class that inherits from
 // WebStateUserData. The address of this static variable is used as the key to

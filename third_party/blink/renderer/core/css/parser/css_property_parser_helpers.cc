@@ -461,14 +461,24 @@ CSSPrimitiveValue* ConsumeLengthOrPercent(CSSParserTokenRange& range,
 namespace {
 
 bool IsNonZeroUserUnitsValue(const CSSPrimitiveValue* value) {
-  // TODO(crbug.com/979895): This is the result of a refactoring, which might
-  // have revealed an existing bug in handling user units in math functions. Fix
-  // it if necessary.
-  const auto* numeric_literal = DynamicTo<CSSNumericLiteralValue>(value);
-  return numeric_literal &&
-         numeric_literal->GetType() ==
-             CSSPrimitiveValue::UnitType::kUserUnits &&
-         value->GetDoubleValue() != 0;
+  if (!value)
+    return false;
+  if (const auto* numeric_literal = DynamicTo<CSSNumericLiteralValue>(value)) {
+    return numeric_literal->GetType() ==
+               CSSPrimitiveValue::UnitType::kUserUnits &&
+           value->GetDoubleValue() != 0;
+  }
+  const auto& math_value = To<CSSMathFunctionValue>(*value);
+  switch (math_value.Category()) {
+    case kCalcNumber:
+      return math_value.DoubleValue() != 0;
+    case kCalcPercentNumber:
+    case kCalcLengthNumber:
+    case kCalcPercentLengthNumber:
+      return true;
+    default:
+      return false;
+  }
 }
 
 }  // namespace

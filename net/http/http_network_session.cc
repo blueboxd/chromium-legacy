@@ -32,6 +32,7 @@
 #include "net/socket/client_socket_pool_manager_impl.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
@@ -80,6 +81,7 @@ HttpNetworkSession::Params::Params()
       enable_spdy_ping_based_connection_checking(true),
       enable_http2(true),
       spdy_session_max_recv_window_size(kSpdySessionMaxRecvWindowSize),
+      spdy_session_max_queued_capped_frames(kSpdySessionMaxQueuedCappedFrames),
       time_func(&base::TimeTicks::Now),
       enable_http2_alternative_service(false),
       enable_websocket_over_http2(false),
@@ -173,6 +175,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
                          params.enable_spdy_ping_based_connection_checking,
                          params.quic_params.support_ietf_format_quic_altsvc,
                          params.spdy_session_max_recv_window_size,
+                         params.spdy_session_max_queued_capped_frames,
                          AddDefaultHttp2Settings(params.http2_settings),
                          params.greased_http2_frame,
                          params.time_func,

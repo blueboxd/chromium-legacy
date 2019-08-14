@@ -16,6 +16,12 @@ message WebAppIconInfoProto {
   required int32 size_in_px = 2;
 }
 
+// TODO(loyso): Move this enum to components/sync/protocol/sync_enums.proto.
+enum LaunchContainerProto {
+  TAB = 1;
+  WINDOW = 2;
+}
+
 // WebApp class data.
 // This should be a superset for WebAppSpecifics in
 // components/sync/protocol/web_app_specifics.proto
@@ -24,11 +30,12 @@ message WebAppProto {
   required string app_id = 1;
   required string launch_url = 2;
   required string name = 3;
-  optional uint32 theme_color = 4;
+  required LaunchContainerProto launch_container = 4;
+  optional uint32 theme_color = 5;
 
   // Local data members, not to be synced:
-  optional string description = 5;
-  optional string scope = 6;
+  optional string description = 6;
+  optional string scope = 7;
   // List of icon infos.
-  repeated WebAppIconInfoProto icons = 7;
+  repeated WebAppIconInfoProto icons = 8;
 }

@@ -20,7 +20,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "ios/web/public/thread/web_thread.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/system/core.h"
 

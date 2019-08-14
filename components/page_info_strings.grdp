@@ -274,7 +274,7 @@
       Serial ports
     </message>
     <message name="IDS_PAGE_INFO_TYPE_NATIVE_FILE_SYSTEM_WRITE" desc="The label used for the native file system write permission controls in the Page Info popup. The write permission determines whether sites are allowed to save to the original file that was selected by the user through the Native File System API.">
-      Files on device
+      File editing
     </message>
     <message name="IDS_PAGE_INFO_TYPE_BLUETOOTH_SCANNING" desc="The label used for the Bluetooth scanning controls in the Page Info popup.">
       Bluetooth scanning

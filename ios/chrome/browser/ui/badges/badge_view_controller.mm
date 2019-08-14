@@ -20,13 +20,19 @@
 // Button factory.
 @property(nonatomic, strong) BadgeButtonFactory* buttonFactory;
 
-// Badge button to show when FullScreen is in expanded mode (i.e. when the
+// BadgeButton to show when in FullScreen (i.e. when the
 // toolbars are expanded). Setting this property will add the button to the
-// view hierarchy.
+// StackView.
 @property(nonatomic, strong) BadgeButton* displayedBadge;
+
+// BadgeButton to show in both FullScreen and non FullScreen.
+@property(nonatomic, strong) BadgeButton* fullScreenBadge;
 
 // Array of all available badges.
 @property(nonatomic, strong) NSMutableArray<BadgeButton*>* badges;
+
+// StackView holding the displayedBadge and fullScreenBadge.
+@property(nonatomic, strong) UIStackView* stackView;
 
 @end
 
@@ -39,6 +45,11 @@
   actionHandler.dispatcher = self.dispatcher;
   self.buttonFactory =
       [[BadgeButtonFactory alloc] initWithActionHandler:actionHandler];
+  self.stackView = [[UIStackView alloc] init];
+  self.stackView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.stackView.axis = UILayoutConstraintAxisHorizontal;
+  [self.view addSubview:self.stackView];
+  AddSameConstraints(self.view, self.stackView);
 }
 
 #pragma mark - Protocols
@@ -49,7 +60,7 @@
   if (!self.badges) {
     self.badges = [[NSMutableArray alloc] init];
   }
-  [self.displayedBadge removeFromSuperview];
+  self.fullScreenBadge = nil;
   self.displayedBadge = nil;
   [self.badges removeAllObjects];
   for (id<BadgeItem> item in badges) {
@@ -63,11 +74,17 @@
 }
 
 - (void)addBadge:(id<BadgeItem>)badgeItem {
+  BadgeButton* newButton =
+      [self.buttonFactory getBadgeButtonForBadgeType:badgeItem.badgeType];
+  // The incognito badge is one that must be visible at all times and persist
+  // when fullscreen is expanded and collapsed.
+  if (badgeItem.badgeType == BadgeType::kBadgeTypeIncognito) {
+    self.fullScreenBadge = newButton;
+    return;
+  }
   if (!self.badges) {
     self.badges = [[NSMutableArray alloc] init];
   }
-  BadgeButton* newButton =
-      [self.buttonFactory getBadgeButtonForBadgeType:badgeItem.badgeType];
   // No need to animate this change since it is the initial state.
   [newButton setAccepted:badgeItem.accepted animated:NO];
   [self.badges addObject:newButton];
@@ -103,25 +120,25 @@
 #pragma mark - Getter/Setter
 
 - (void)setDisplayedBadge:(BadgeButton*)badgeButton {
+  [self.stackView removeArrangedSubview:_displayedBadge];
   [_displayedBadge removeFromSuperview];
   if (!badgeButton) {
     _displayedBadge = nil;
     return;
   }
-
   _displayedBadge = badgeButton;
-  [self.view addSubview:_displayedBadge];
-  [NSLayoutConstraint activateConstraints:@[
-    [_displayedBadge.widthAnchor
-        constraintEqualToAnchor:_displayedBadge.heightAnchor],
-    [_displayedBadge.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-    [_displayedBadge.bottomAnchor
-        constraintEqualToAnchor:self.view.bottomAnchor],
-    [_displayedBadge.leadingAnchor
-        constraintEqualToAnchor:self.view.leadingAnchor],
-    [_displayedBadge.trailingAnchor
-        constraintEqualToAnchor:self.view.trailingAnchor],
-  ]];
+  [self.stackView addArrangedSubview:_displayedBadge];
+}
+
+- (void)setFullScreenBadge:(BadgeButton*)fullScreenBadge {
+  [self.stackView removeArrangedSubview:_fullScreenBadge];
+  [_fullScreenBadge removeFromSuperview];
+  if (!fullScreenBadge) {
+    _fullScreenBadge = nil;
+    return;
+  }
+  _fullScreenBadge = fullScreenBadge;
+  [self.stackView insertArrangedSubview:_fullScreenBadge atIndex:0];
 }
 
 #pragma mark - Helpers

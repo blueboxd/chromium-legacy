@@ -207,9 +207,15 @@ void PasswordStoreX::CheckMigration() {
 
   if (migration_checked_)
     return;
-
   migration_checked_ = true;
+
   if (migration_to_login_db_step_ == LOGIN_DB_REPLACED) {
+    return;
+  }
+
+  if (!login_db()) {
+    LOG(ERROR) << "Could not start the migration into the encrypted "
+                  "LoginDatabase because the database failed to initialise.";
     return;
   }
 

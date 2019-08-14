@@ -10,7 +10,9 @@
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
 #include "third_party/blink/renderer/core/animation/computed_effect_timing.h"
+#include "third_party/blink/renderer/core/animation/css/css_animation.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
+#include "third_party/blink/renderer/core/animation/css/css_transition.h"
 #include "third_party/blink/renderer/core/animation/effect_model.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
@@ -33,6 +35,21 @@
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 
 namespace blink {
+
+namespace {
+
+String AnimationDisplayName(const Animation& animation) {
+  if (!animation.id().IsEmpty())
+    return animation.id();
+  else if (animation.IsCSSAnimation())
+    return ToCSSAnimation(animation).animationName();
+  else if (animation.IsCSSTransition())
+    return ToCSSTransition(animation).transitionProperty();
+  else
+    return animation.id();
+}
+
+}  // namespace
 
 using protocol::Response;
 
@@ -65,7 +82,6 @@ Response InspectorAnimationAgent::disable() {
   enabled_.Clear();
   instrumenting_agents_->RemoveInspectorAnimationAgent(this);
   id_to_animation_.clear();
-  id_to_animation_type_.clear();
   id_to_animation_clone_.clear();
   cleared_animations_.clear();
   return Response::OK();
@@ -74,7 +90,6 @@ Response InspectorAnimationAgent::disable() {
 void InspectorAnimationAgent::DidCommitLoadForLocalFrame(LocalFrame* frame) {
   if (frame == inspected_frames_->Root()) {
     id_to_animation_.clear();
-    id_to_animation_type_.clear();
     id_to_animation_clone_.clear();
     cleared_animations_.clear();
   }
@@ -145,47 +160,32 @@ BuildObjectForAnimationKeyframes(const KeyframeEffect* effect) {
 
 std::unique_ptr<protocol::Animation::Animation>
 InspectorAnimationAgent::BuildObjectForAnimation(blink::Animation& animation) {
-  String animation_type;
+  String animation_type = AnimationType::WebAnimation;
   std::unique_ptr<protocol::Animation::AnimationEffect> animation_effect_object;
 
-  if (!animation.effect()) {
-    animation_type = AnimationType::WebAnimation;
-  } else {
-    const Element* element = ToKeyframeEffect(animation.effect())->target();
-    std::unique_ptr<protocol::Animation::KeyframesRule> keyframe_rule;
-
-    if (!element) {
-      animation_type = AnimationType::WebAnimation;
-    } else {
-      CSSAnimations& css_animations =
-          element->GetElementAnimations()->CssAnimations();
-
-      if (css_animations.IsTransitionAnimationForInspector(animation)) {
-        // CSS Transitions
-        animation_type = AnimationType::CSSTransition;
-      } else {
-        // Keyframe based animations
-        keyframe_rule = BuildObjectForAnimationKeyframes(
-            ToKeyframeEffect(animation.effect()));
-        animation_type = css_animations.IsAnimationForInspector(animation)
-                             ? AnimationType::CSSAnimation
-                             : AnimationType::WebAnimation;
-      }
-    }
-
+  if (animation.effect()) {
     animation_effect_object =
         BuildObjectForAnimationEffect(ToKeyframeEffect(animation.effect()));
-    animation_effect_object->setKeyframesRule(std::move(keyframe_rule));
+
+    if (animation.IsCSSTransition()) {
+      animation_type = AnimationType::CSSTransition;
+    } else {
+      animation_effect_object->setKeyframesRule(
+          BuildObjectForAnimationKeyframes(
+              ToKeyframeEffect(animation.effect())));
+
+      if (animation.IsCSSAnimation())
+        animation_type = AnimationType::CSSAnimation;
+    }
   }
 
   String id = String::Number(animation.SequenceNumber());
   id_to_animation_.Set(id, &animation);
-  id_to_animation_type_.Set(id, animation_type);
 
   std::unique_ptr<protocol::Animation::Animation> animation_object =
       protocol::Animation::Animation::create()
           .setId(id)
-          .setName(animation.id())
+          .setName(AnimationDisplayName(animation))
           .setPausedState(animation.Paused())
           .setPlayState(animation.playState())
           .setPlaybackRate(animation.playbackRate())
@@ -343,7 +343,6 @@ Response InspectorAnimationAgent::releaseAnimations(
       clone->cancel();
     id_to_animation_clone_.erase(animation_id);
     id_to_animation_.erase(animation_id);
-    id_to_animation_type_.erase(animation_id);
     cleared_animations_.insert(animation_id);
   }
   return Response::OK();
@@ -417,26 +416,28 @@ String InspectorAnimationAgent::CreateCSSId(blink::Animation& animation) {
       &GetCSSPropertyTransitionProperty(),
       &GetCSSPropertyTransitionTimingFunction(),
   };
-  String type =
-      id_to_animation_type_.at(String::Number(animation.SequenceNumber()));
-  DCHECK_NE(type, AnimationType::WebAnimation);
 
   KeyframeEffect* effect = ToKeyframeEffect(animation.effect());
   Vector<const CSSProperty*> css_properties;
-  if (type == AnimationType::CSSAnimation) {
+  if (animation.IsCSSAnimation()) {
     for (const CSSProperty* property : g_animation_properties)
       css_properties.push_back(property);
-  } else {
+  } else if (animation.IsCSSTransition()) {
     for (const CSSProperty* property : g_transition_properties)
       css_properties.push_back(property);
-    css_properties.push_back(&CSSProperty::Get(cssPropertyID(animation.id())));
+    css_properties.push_back(
+        &ToCSSTransition(animation).TransitionCSSProperty());
+  } else {
+    NOTREACHED();
   }
 
   Element* element = effect->target();
   HeapVector<Member<CSSStyleDeclaration>> styles =
       css_agent_->MatchingStyles(element);
   Digestor digestor(kHashAlgorithmSha1);
-  digestor.UpdateUtf8(type);
+  digestor.UpdateUtf8(animation.IsCSSTransition()
+                          ? AnimationType::CSSTransition
+                          : AnimationType::CSSAnimation);
   digestor.UpdateUtf8(animation.id());
   for (const CSSProperty* property : css_properties) {
     CSSStyleDeclaration* style =

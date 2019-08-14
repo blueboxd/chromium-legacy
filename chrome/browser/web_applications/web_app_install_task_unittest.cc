@@ -169,7 +169,8 @@ class WebAppInstallTaskTest : public WebAppTest {
                              const std::string name,
                              const std::string description,
                              const GURL& scope,
-                             base::Optional<SkColor> theme_color) {
+                             base::Optional<SkColor> theme_color,
+                             bool open_as_window) {
     auto web_app_info = std::make_unique<WebApplicationInfo>();
 
     web_app_info->app_url = url;
@@ -177,7 +178,7 @@ class WebAppInstallTaskTest : public WebAppTest {
     web_app_info->description = base::UTF8ToUTF16(description);
     web_app_info->scope = scope;
     web_app_info->theme_color = theme_color;
-    web_app_info->open_as_window = true;
+    web_app_info->open_as_window = open_as_window;
 
     data_retriever_->SetRendererWebApplicationInfo(std::move(web_app_info));
   }
@@ -185,7 +186,8 @@ class WebAppInstallTaskTest : public WebAppTest {
   void CreateRendererAppInfo(const GURL& url,
                              const std::string name,
                              const std::string description) {
-    CreateRendererAppInfo(url, name, description, GURL(), base::nullopt);
+    CreateRendererAppInfo(url, name, description, GURL(), base::nullopt,
+                          /*open_as_window*/ true);
   }
 
   static base::NullableString16 ToNullableUTF16(const std::string& str) {
@@ -323,7 +325,8 @@ TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
   const AppId app_id = GenerateAppIdFromURL(url);
 
   CreateDefaultDataToRetrieve(url, scope);
-  CreateRendererAppInfo(url, name, description, /*scope*/ GURL{}, theme_color);
+  CreateRendererAppInfo(url, name, description, /*scope*/ GURL{}, theme_color,
+                        /*open_as_window*/ true);
 
   base::RunLoop run_loop;
   bool callback_called = false;
@@ -442,9 +445,9 @@ TEST_F(WebAppInstallTaskTest, WebContentsDestroyed) {
 
 TEST_F(WebAppInstallTaskTest, InstallableCheck) {
   const std::string renderer_description = "RendererDescription";
-  CreateRendererAppInfo(GURL("https://renderer.com/path"), "RendererName",
-                        renderer_description,
-                        GURL("https://renderer.com/scope"), 0x00);
+  CreateRendererAppInfo(
+      GURL("https://renderer.com/path"), "RendererName", renderer_description,
+      GURL("https://renderer.com/scope"), 0x00, /*open_as_window*/ true);
 
   const GURL manifest_start_url = GURL("https://example.com/start");
   const AppId app_id = GenerateAppIdFromURL(manifest_start_url);
@@ -1026,7 +1029,8 @@ TEST_F(WebAppInstallTaskTest, IntentToPlayStore) {
   const GURL scope("https://example.com/scope");
   const base::Optional<SkColor> theme_color = 0xAABBCCDD;
 
-  CreateRendererAppInfo(url, name, description, /*scope*/ GURL{}, theme_color);
+  CreateRendererAppInfo(url, name, description, /*scope*/ GURL{}, theme_color,
+                        /*open_as_window*/ true);
   {
     auto manifest = std::make_unique<blink::Manifest>();
     manifest->start_url = url;
@@ -1086,40 +1090,36 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_GuestProfile) {
 }
 
 TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_LaunchContainer) {
-  SetInstallFinalizerForTesting();
   {
     CreateDataToRetrieve(GURL("https://example.com/"),
                          /*open_as_window*/ false);
 
     InstallManager::InstallParams params;
     params.launch_container = LaunchContainer::kDefault;
-    InstallWebAppWithParams(params);
+    auto app_id = InstallWebAppWithParams(params);
 
-    std::unique_ptr<WebApplicationInfo> web_app_info =
-        test_install_finalizer().web_app_info();
-    EXPECT_FALSE(web_app_info->open_as_window);
+    EXPECT_EQ(LaunchContainer::kTab,
+              registrar_->GetAppById(app_id)->launch_container());
   }
   {
     CreateDataToRetrieve(GURL("https://example.org/"), /*open_as_window*/ true);
 
     InstallManager::InstallParams params;
     params.launch_container = LaunchContainer::kDefault;
-    InstallWebAppWithParams(params);
+    auto app_id = InstallWebAppWithParams(params);
 
-    std::unique_ptr<WebApplicationInfo> web_app_info =
-        test_install_finalizer().web_app_info();
-    EXPECT_TRUE(web_app_info->open_as_window);
+    EXPECT_EQ(LaunchContainer::kWindow,
+              registrar_->GetAppById(app_id)->launch_container());
   }
   {
     CreateDataToRetrieve(GURL("https://example.au/"), /*open_as_window*/ true);
 
     InstallManager::InstallParams params;
     params.launch_container = LaunchContainer::kTab;
-    InstallWebAppWithParams(params);
+    auto app_id = InstallWebAppWithParams(params);
 
-    std::unique_ptr<WebApplicationInfo> web_app_info =
-        test_install_finalizer().web_app_info();
-    EXPECT_FALSE(web_app_info->open_as_window);
+    EXPECT_EQ(LaunchContainer::kTab,
+              registrar_->GetAppById(app_id)->launch_container());
   }
   {
     CreateDataToRetrieve(GURL("https://example.app/"),
@@ -1127,11 +1127,10 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_LaunchContainer) {
 
     InstallManager::InstallParams params;
     params.launch_container = LaunchContainer::kWindow;
-    InstallWebAppWithParams(params);
+    auto app_id = InstallWebAppWithParams(params);
 
-    std::unique_ptr<WebApplicationInfo> web_app_info =
-        test_install_finalizer().web_app_info();
-    EXPECT_TRUE(web_app_info->open_as_window);
+    EXPECT_EQ(LaunchContainer::kWindow,
+              registrar_->GetAppById(app_id)->launch_container());
   }
 }
 

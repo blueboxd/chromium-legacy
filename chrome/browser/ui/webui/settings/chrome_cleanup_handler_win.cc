@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -119,7 +120,7 @@ void ChromeCleanupHandler::GetExtensionNamesFromIds(
     Profile* profile,
     const std::set<base::string16>& extension_ids,
     std::set<base::string16>* extension_names) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   extensions::ExtensionRegistry* extension_registry =
       extensions::ExtensionRegistry::Get(profile);
   for (const base::string16& extension_id : extension_ids) {
@@ -303,16 +304,16 @@ void ChromeCleanupHandler::HandleNotifyChromeCleanupLearnMoreClicked(
 
 void ChromeCleanupHandler::HandleGetMoreItemsPluralString(
     const base::ListValue* args) {
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   GetPluralString(IDS_SETTINGS_RESET_CLEANUP_DETAILS_MORE, args);
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 void ChromeCleanupHandler::HandleGetItemsToRemovePluralString(
     const base::ListValue* args) {
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   GetPluralString(IDS_SETTINGS_RESET_CLEANUP_DETAILS_ITEMS_TO_BE_REMOVED, args);
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 void ChromeCleanupHandler::GetPluralString(int id,

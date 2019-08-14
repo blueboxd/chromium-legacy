@@ -87,8 +87,9 @@ struct PerformanceMetrics {
   // The number of frames dropped because of the decoder running behind, only
   // relevant for capped performance tests.
   size_t frames_dropped_ = 0;
-  // The rate at which frames are dropped: dropped frames / non-dropped frames.
-  double dropped_frame_rate_ = 0;
+  // The percentage of frames dropped because of the decoder running behind,
+  // only relevant for capped performance tests.
+  double dropped_frame_percentage_ = 0.0;
   // Statistics about the time between subsequent frame deliveries.
   PerformanceTimeStats delivery_time_stats_;
   // Statistics about the time between decode start and frame deliveries.
@@ -165,12 +166,12 @@ void PerformanceEvaluator::StopMeasuring() {
                                      perf_metrics_.total_duration_.InSecondsF();
   perf_metrics_.frames_dropped_ = frame_renderer_->FramesDropped();
 
-  // Calculate the frame drop rate.
-  // TODO(dstaessens@) Find a better metric for dropped frames.
-  size_t frames_rendered =
-      perf_metrics_.frames_decoded_ - perf_metrics_.frames_dropped_;
-  perf_metrics_.dropped_frame_rate_ =
-      perf_metrics_.frames_dropped_ / std::max<size_t>(frames_rendered, 1ul);
+  // Calculate the dropped frame percentage.
+  perf_metrics_.dropped_frame_percentage_ =
+      static_cast<double>(perf_metrics_.frames_dropped_) /
+      static_cast<double>(
+          std::max<size_t>(perf_metrics_.frames_decoded_, 1ul)) *
+      100.0;
 
   // Calculate delivery and decode time metrics.
   perf_metrics_.delivery_time_stats_ =
@@ -186,8 +187,8 @@ void PerformanceEvaluator::StopMeasuring() {
             << std::endl;
   std::cout << "Frames Dropped:     " << perf_metrics_.frames_dropped_
             << std::endl;
-  std::cout << "Dropped frame rate: " << perf_metrics_.dropped_frame_rate_
-            << std::endl;
+  std::cout << "Dropped frame percentage: "
+            << perf_metrics_.dropped_frame_percentage_ << "%" << std::endl;
   std::cout << "Frame delivery time - average:       "
             << perf_metrics_.delivery_time_stats_.avg_ms_ << "ms" << std::endl;
   std::cout << "Frame delivery time - percentile 25: "
@@ -229,8 +230,8 @@ void PerformanceEvaluator::WriteMetricsToFile() const {
   metrics.SetKey(
       "FramesDropped",
       base::Value(base::checked_cast<int>(perf_metrics_.frames_dropped_)));
-  metrics.SetKey("DroppedFrameRate",
-                 base::Value(perf_metrics_.dropped_frame_rate_));
+  metrics.SetKey("DroppedFramePercentage",
+                 base::Value(perf_metrics_.dropped_frame_percentage_));
   metrics.SetKey("FrameDeliveryTimeAverage",
                  base::Value(perf_metrics_.delivery_time_stats_.avg_ms_));
   metrics.SetKey(

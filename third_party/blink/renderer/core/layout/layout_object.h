@@ -1405,7 +1405,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // when the width of the LayoutObject changes as this impacts children with
   // 'width' set to auto.
   virtual void UpdateLayout() = 0;
-  virtual bool UpdateImageLoadingPriorities() { return false; }
 
   void HandleSubtreeModifications();
   virtual void SubtreeDidChange() {}
@@ -2033,10 +2032,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Called when the previous visual rect(s) is no longer valid.
   virtual void ClearPreviousVisualRects();
 
-  void SetSelfNeedsLayoutForAvailableSpace(bool flag) {
-    bitfields_.SetSelfNeedsLayoutForAvailableSpace(flag);
-    if (flag)
-      MarkSelfPaintingLayerForVisualOverflowRecalc();
+  void SetSelfNeedsLayoutForAvailableSpace(bool b) {
+    bitfields_.SetSelfNeedsLayoutForAvailableSpace(b);
   }
 
   PaintInvalidationReason FullPaintInvalidationReason() const {
@@ -2728,8 +2725,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       LayoutUnit position,
       LayoutUnit width,
       const LayoutBox* box_for_flipping) const;
-
-  void MarkSelfPaintingLayerForVisualOverflowRecalc();
 
   // This is set by Set[Subtree]ShouldDoFullPaintInvalidation, and cleared
   // during PrePaint in this object's InvalidatePaint(). It's different from

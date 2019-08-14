@@ -129,18 +129,6 @@ HistogramBase* GetHistogramForTaskTraits(
                         : 0];
 }
 
-// Returns shutdown behavior based on |traits|; returns SKIP_ON_SHUTDOWN if
-// shutdown behavior is BLOCK_SHUTDOWN and |is_delayed|, because delayed tasks
-// are not allowed to block shutdown.
-TaskShutdownBehavior GetEffectiveShutdownBehavior(
-    TaskShutdownBehavior shutdown_behavior,
-    bool is_delayed) {
-  if (shutdown_behavior == TaskShutdownBehavior::BLOCK_SHUTDOWN && is_delayed) {
-    return TaskShutdownBehavior::SKIP_ON_SHUTDOWN;
-  }
-  return shutdown_behavior;
-}
-
 bool HasLogBestEffortTasksSwitch() {
   // The CommandLine might not be initialized if ThreadPool is initialized in a
   // dynamic library which doesn't have access to argc/argv.
@@ -394,10 +382,9 @@ bool TaskTracker::WillPostTask(Task* task,
 
   if (state_->HasShutdownStarted()) {
     // A non BLOCK_SHUTDOWN task is allowed to be posted iff shutdown hasn't
-    // started.
-    if (GetEffectiveShutdownBehavior(shutdown_behavior,
-                                     !task->delayed_run_time.is_null()) !=
-        TaskShutdownBehavior::BLOCK_SHUTDOWN) {
+    // started and the task is not delayed.
+    if (shutdown_behavior != TaskShutdownBehavior::BLOCK_SHUTDOWN ||
+        !task->delayed_run_time.is_null()) {
       return false;
     }
 
@@ -414,12 +401,15 @@ bool TaskTracker::WillPostTask(Task* task,
   return true;
 }
 
-void TaskTracker::WillPostTaskNow(const Task& task, TaskPriority priority) {
+bool TaskTracker::WillPostTaskNow(const Task& task, TaskPriority priority) {
+  if (!task.delayed_run_time.is_null() && state_->HasShutdownStarted())
+    return false;
   if (has_log_best_effort_tasks_switch_ &&
       priority == TaskPriority::BEST_EFFORT) {
     // A TaskPriority::BEST_EFFORT task is being posted.
     LOG(INFO) << task.posted_from.ToString();
   }
+  return true;
 }
 
 RegisteredTaskSource TaskTracker::WillQueueTaskSource(
@@ -453,43 +443,35 @@ RegisteredTaskSource TaskTracker::RunAndPopNextTask(
   DCHECK(run_intent_with_task_source);
   auto task_source = run_intent_with_task_source.take_task_source();
 
+  const bool can_run_worker_task =
+      BeforeRunTask(task_source->shutdown_behavior());
+
   // Run the next task in |task_source|.
   Optional<Task> task;
   TaskTraits traits{ThreadPool()};
   {
     TaskSource::Transaction task_source_transaction(
         task_source->BeginTransaction());
-    task = task_source_transaction.TakeTask(&run_intent_with_task_source);
+    task = can_run_worker_task
+               ? task_source_transaction.TakeTask(&run_intent_with_task_source)
+               : task_source_transaction.Clear(
+                     std::move(run_intent_with_task_source));
     traits = task_source_transaction.traits();
   }
 
   if (task) {
-    const TaskShutdownBehavior effective_shutdown_behavior =
-        GetEffectiveShutdownBehavior(task_source->shutdown_behavior(),
-                                     !task->delayed_run_time.is_null());
-
-    const bool can_run_task = BeforeRunTask(effective_shutdown_behavior);
-
-    RunOrSkipTask(std::move(task.value()), task_source.get(), traits,
-                  can_run_task);
-
+    // Run the |task| (whether it's a worker task or the Clear() closure).
+    RunTask(std::move(task.value()), task_source.get(), traits);
+  }
+  if (can_run_worker_task) {
+    AfterRunTask(task_source->shutdown_behavior());
     const bool task_source_must_be_queued =
         task_source->BeginTransaction().DidProcessTask(
-            std::move(run_intent_with_task_source),
-            can_run_task ? TaskSource::RunResult::kDidRun
-                         : TaskSource::RunResult::kSkippedAtShutdown);
-
-    if (can_run_task) {
-      IncrementNumTasksRun();
-      AfterRunTask(effective_shutdown_behavior);
-    }
-
+            std::move(run_intent_with_task_source));
     // |task_source| should be reenqueued iff requested by DidProcessTask().
-    if (task_source_must_be_queued) {
+    if (task_source_must_be_queued)
       return task_source;
-    }
   }
-
   return nullptr;
 }
 
@@ -543,10 +525,9 @@ void TaskTracker::IncrementNumTasksRun() {
   num_tasks_run_.fetch_add(1, std::memory_order_relaxed);
 }
 
-void TaskTracker::RunOrSkipTask(Task task,
-                                TaskSource* task_source,
-                                const TaskTraits& traits,
-                                bool can_run_task) {
+void TaskTracker::RunTask(Task task,
+                          TaskSource* task_source,
+                          const TaskTraits& traits) {
   DCHECK(task_source);
   RecordLatencyHistogram(LatencyHistogramType::TASK_LATENCY, traits,
                          task.queue_time);
@@ -599,21 +580,19 @@ void TaskTracker::RunOrSkipTask(Task task,
         break;
     }
 
-    if (can_run_task) {
-      TRACE_TASK_EXECUTION("ThreadPool_RunTask", task);
+    TRACE_TASK_EXECUTION("ThreadPool_RunTask", task);
 
-      // TODO(gab): In a better world this would be tacked on as an extra arg
-      // to the trace event generated above. This is not possible however until
-      // http://crbug.com/652692 is resolved.
-      TRACE_EVENT1("thread_pool", "ThreadPool_TaskInfo", "task_info",
-                   std::make_unique<TaskTracingInfo>(
-                       traits,
-                       kExecutionModeString[static_cast<size_t>(
-                           task_source->execution_mode())],
-                       environment.token));
+    // TODO(gab): In a better world this would be tacked on as an extra arg
+    // to the trace event generated above. This is not possible however until
+    // http://crbug.com/652692 is resolved.
+    TRACE_EVENT1("thread_pool", "ThreadPool_TaskInfo", "task_info",
+                 std::make_unique<TaskTracingInfo>(
+                     traits,
+                     kExecutionModeString[static_cast<size_t>(
+                         task_source->execution_mode())],
+                     environment.token));
 
-      RunTaskWithShutdownBehavior(traits.shutdown_behavior(), &task);
-    }
+    RunTaskWithShutdownBehavior(traits.shutdown_behavior(), &task);
 
     // Make sure the arguments bound to the callback are deleted within the
     // scope in which the callback runs.
@@ -652,9 +631,8 @@ bool TaskTracker::BeforeQueueTaskSource(
   return !state_->HasShutdownStarted();
 }
 
-bool TaskTracker::BeforeRunTask(
-    TaskShutdownBehavior effective_shutdown_behavior) {
-  switch (effective_shutdown_behavior) {
+bool TaskTracker::BeforeRunTask(TaskShutdownBehavior shutdown_behavior) {
+  switch (shutdown_behavior) {
     case TaskShutdownBehavior::BLOCK_SHUTDOWN: {
       // The number of tasks blocking shutdown has been incremented when the
       // task was posted.
@@ -693,9 +671,9 @@ bool TaskTracker::BeforeRunTask(
   return false;
 }
 
-void TaskTracker::AfterRunTask(
-    TaskShutdownBehavior effective_shutdown_behavior) {
-  if (effective_shutdown_behavior == TaskShutdownBehavior::SKIP_ON_SHUTDOWN) {
+void TaskTracker::AfterRunTask(TaskShutdownBehavior shutdown_behavior) {
+  IncrementNumTasksRun();
+  if (shutdown_behavior == TaskShutdownBehavior::SKIP_ON_SHUTDOWN) {
     DecrementNumItemsBlockingShutdown();
   }
 }

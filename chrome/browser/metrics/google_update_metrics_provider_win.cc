@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/branding_buildflags.h"
 #include "chrome/install_static/install_details.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
@@ -22,11 +23,11 @@ namespace {
 // the macro to allow checking for successful code compilation on non-official
 // builds.
 bool IsGoogleChromeBuild() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return true;
 #else
   return false;
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 void ProductDataToProto(const GoogleUpdateSettings::ProductData& product_data,

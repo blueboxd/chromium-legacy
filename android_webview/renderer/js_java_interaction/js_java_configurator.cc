@@ -25,7 +25,7 @@ JsJavaConfigurator::~JsJavaConfigurator() = default;
 
 void JsJavaConfigurator::SetJsApiService(
     bool need_to_inject_js_object,
-    const std::string& js_object_name,
+    const base::string16& js_object_name,
     const net::ProxyBypassRules& allowed_origin_rules) {
   need_to_inject_js_object_ = need_to_inject_js_object;
   js_object_name_ = js_object_name;

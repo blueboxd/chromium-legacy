@@ -230,6 +230,25 @@ class UnifiedSystemTrayView::FocusSearch : public views::FocusSearch {
   DISALLOW_COPY_AND_ASSIGN(FocusSearch);
 };
 
+// static
+SkColor UnifiedSystemTrayView::GetBackgroundColor() {
+  if (app_list_features::IsBackgroundBlurEnabled()) {
+    return AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
+        AshColorProvider::BaseLayerType::kTransparentWithBlur,
+        kUnifiedMenuBackgroundColorWithBlur);
+  }
+  return AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
+      AshColorProvider::BaseLayerType::kTransparentWithoutBlur,
+      kUnifiedMenuBackgroundColor);
+}
+
+// static
+std::unique_ptr<views::Background> UnifiedSystemTrayView::CreateBackground() {
+  return views::CreateBackgroundFromPainter(
+      views::Painter::CreateSolidRoundRectPainter(GetBackgroundColor(),
+                                                  kUnifiedTrayCornerRadius));
+}
+
 UnifiedSystemTrayView::UnifiedSystemTrayView(
     UnifiedSystemTrayController* controller,
     bool initially_expanded)
@@ -447,23 +466,6 @@ void UnifiedSystemTrayView::SetNotificationRectBelowScroll(
 
 int UnifiedSystemTrayView::GetVisibleFeaturePodCount() const {
   return feature_pods_container_->GetVisibleCount();
-}
-
-// static
-std::unique_ptr<views::Background> UnifiedSystemTrayView::CreateBackground() {
-  SkColor bg_color = gfx::kPlaceholderColor;
-  if (app_list_features::IsBackgroundBlurEnabled()) {
-    bg_color = AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
-        AshColorProvider::BaseLayerType::kTransparentWithBlur,
-        kUnifiedMenuBackgroundColorWithBlur);
-  } else {
-    bg_color = AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
-        AshColorProvider::BaseLayerType::kTransparentWithoutBlur,
-        kUnifiedMenuBackgroundColor);
-  }
-  return views::CreateBackgroundFromPainter(
-      views::Painter::CreateSolidRoundRectPainter(bg_color,
-                                                  kUnifiedTrayCornerRadius));
 }
 
 void UnifiedSystemTrayView::OnGestureEvent(ui::GestureEvent* event) {

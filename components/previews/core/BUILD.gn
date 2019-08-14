@@ -6,8 +6,6 @@ static_library("core") {
   sources = [
     "previews_black_list.cc",
     "previews_black_list.h",
-    "previews_constants.cc",
-    "previews_constants.h",
     "previews_decider.h",
     "previews_experiments.cc",
     "previews_experiments.h",

@@ -560,8 +560,6 @@ void PaintController::FinishCycle() {
 
 void PaintController::ClearPropertyTreeChangedStateTo(
     const PropertyTreeState& to) {
-  DCHECK(RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
-
   // Calling |ClearChangedTo| for every chunk is O(|property nodes|^2) and
   // could be optimized by caching which nodes that have already been cleared.
   for (const auto& chunk : current_paint_artifact_->PaintChunks()) {

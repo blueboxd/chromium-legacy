@@ -284,6 +284,7 @@ def forward_signals(procs):
     signal.signal(signal.SIGTERM, _sig_handler)
     signal.signal(signal.SIGINT, _sig_handler)
 
+
 def run_executable(cmd, env, stdoutfile=None):
   """Runs an executable with:
     - CHROME_HEADLESS set to indicate that the test is running on a

@@ -940,7 +940,8 @@ class LoadingPredictorNetworkIsolationKeyBrowserTest
     request->url = url;
     content::SimpleURLLoaderTestHelper simple_loader_helper;
     url::Origin origin = url::Origin::Create(url);
-    request->trusted_network_isolation_key =
+    request->trusted_params = network::ResourceRequest::TrustedParams();
+    request->trusted_params->network_isolation_key =
         net::NetworkIsolationKey(origin, origin);
     std::unique_ptr<network::SimpleURLLoader> simple_loader =
         network::SimpleURLLoader::Create(std::move(request),

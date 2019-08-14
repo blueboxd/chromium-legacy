@@ -37,16 +37,6 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 
-namespace chrome {
-
-payments::PaymentRequestDialog* CreatePaymentRequestDialog(
-    payments::PaymentRequest* request) {
-  return new payments::PaymentRequestDialogView(request,
-                                                /* no observer */ nullptr);
-}
-
-}  // namespace chrome
-
 namespace payments {
 
 namespace {

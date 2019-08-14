@@ -53,23 +53,60 @@ TEST(ThreadPoolJobTaskSourceTest, RunTasks) {
   }
 }
 
-// Verifies that a job task source doesn't get reenqueued when a task is not
-// run.
-TEST(ThreadPoolJobTaskSourceTest, SkipTask) {
+// Verifies that a job task source doesn't allow any new RunIntent after Clear()
+// is called.
+TEST(ThreadPoolJobTaskSourceTest, Clear) {
   auto job_task = base::MakeRefCounted<test::MockJobTask>(
-      DoNothing(), /* num_tasks_to_run */ 1);
+      DoNothing(), /* num_tasks_to_run */ 5);
   scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
       FROM_HERE, {ThreadPool(), TaskPriority::BEST_EFFORT});
 
   TaskSource::Transaction task_source_transaction(
       task_source->BeginTransaction());
+  EXPECT_EQ(5U, task_source->GetRemainingConcurrency());
 
-  auto run_intent = task_source->WillRunTask();
-  EXPECT_TRUE(run_intent);
-  EXPECT_TRUE(run_intent.IsSaturated());
-  auto task = task_source_transaction.TakeTask(&run_intent);
-  EXPECT_FALSE(task_source_transaction.DidProcessTask(
-      std::move(run_intent), TaskSource::RunResult::kSkippedAtShutdown));
+  auto run_intent_a = task_source->WillRunTask();
+  EXPECT_TRUE(run_intent_a);
+  auto task_a = task_source_transaction.TakeTask(&run_intent_a);
+
+  auto run_intent_b = task_source->WillRunTask();
+  EXPECT_TRUE(run_intent_b);
+
+  auto run_intent_c = task_source->WillRunTask();
+  EXPECT_TRUE(run_intent_c);
+
+  auto run_intent_d = task_source->WillRunTask();
+  EXPECT_TRUE(run_intent_d);
+  EXPECT_FALSE(run_intent_c.IsSaturated());
+
+  {
+    EXPECT_EQ(1U, task_source->GetRemainingConcurrency());
+    auto task = task_source_transaction.Clear(std::move(run_intent_c));
+    std::move(task->task).Run();
+    EXPECT_EQ(0U, task_source->GetRemainingConcurrency());
+  }
+  // The task source shouldn't allow any further tasks after Clear.
+  EXPECT_FALSE(task_source->WillRunTask());
+
+  // Another outstanding RunIntent can still call Clear.
+  {
+    auto task = task_source_transaction.Clear(std::move(run_intent_d));
+    std::move(task->task).Run();
+    EXPECT_EQ(0U, task_source->GetRemainingConcurrency());
+  }
+
+  // A task that was already acquired can still run.
+  std::move(task_a->task).Run();
+  task_source_transaction.DidProcessTask(std::move(run_intent_a));
+
+  // A valid outstanding RunIntent can also take & run a task.
+  {
+    auto task = task_source_transaction.TakeTask(&run_intent_b);
+    std::move(task->task).Run();
+    task_source_transaction.DidProcessTask(std::move(run_intent_b));
+  }
+  // Sanity check.
+  EXPECT_FALSE(task_source->WillRunTask());
 }
 
 // Verifies that multiple tasks can run in parallel up to |max_concurrency|.

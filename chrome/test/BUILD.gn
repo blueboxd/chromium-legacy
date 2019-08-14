@@ -45,10 +45,6 @@ if (is_android) {
   include_js_tests = !(is_asan || is_msan || is_tsan)
 }
 
-if (is_chromeos) {
-  import("//chrome/browser/chromeos/kiosk_next_home/kiosk_next.gni")
-}
-
 # This target exists to reference other test executables to bring these files
 # into the build.
 group("test") {
@@ -1094,6 +1090,7 @@ if (!is_android) {
       "../browser/ui/passwords/google_password_manager_navigation_throttle_browsertest.cc",
       "../browser/ui/tabs/pinned_tab_service_browsertest.cc",
       "../browser/ui/views/tabs/tab_hover_card_bubble_view_browsertest.cc",
+      "../browser/ui/views/tabs/tab_strip_browsertest.cc",
       "../browser/wake_lock/wake_lock_browsertest.cc",
 
       # If this list is used on Android in the future, these browser / speech/*
@@ -2939,6 +2936,7 @@ test("unit_tests") {
     "../browser/net/chrome_network_delegate_unittest.cc",
     "../browser/net/dns_probe_runner_unittest.cc",
     "../browser/net/dns_probe_service_factory_unittest.cc",
+    "../browser/net/dns_util_unittest.cc",
     "../browser/net/file_downloader_unittest.cc",
     "../browser/net/net_error_tab_helper_unittest.cc",
     "../browser/net/probe_message_unittest.cc",
@@ -3925,6 +3923,7 @@ test("unit_tests") {
       "../browser/sharing/click_to_call/click_to_call_context_menu_observer_unittest.cc",
       "../browser/sharing/click_to_call/click_to_call_ui_controller_unittest.cc",
       "../browser/sharing/click_to_call/click_to_call_utils_unittest.cc",
+      "../browser/sharing/shared_clipboard/shared_clipboard_context_menu_observer_unittest.cc",
       "../browser/sharing/shared_clipboard/shared_clipboard_ui_controller_unittest.cc",
       "../browser/ui/autofill/payments/local_card_migration_bubble_controller_impl_unittest.cc",
       "../browser/ui/autofill/payments/save_card_bubble_controller_impl_unittest.cc",
@@ -4008,6 +4007,7 @@ test("unit_tests") {
       "../browser/google/google_brand_code_map_chromeos_unittest.cc",
       "../browser/media/webrtc/desktop_media_list_ash_unittest.cc",
       "../browser/metrics/perf/metric_collector_unittest.cc",
+      "../browser/metrics/perf/metric_provider_unittest.cc",
       "../browser/metrics/perf/perf_events_collector_unittest.cc",
       "../browser/metrics/perf/process_type_collector_unittest.cc",
       "../browser/metrics/perf/profile_provider_chromeos_unittest.cc",
@@ -4883,6 +4883,7 @@ test("unit_tests") {
       "../browser/ui/views/hover_button_unittest.cc",
       "../browser/ui/views/infobars/infobar_view_unittest.cc",
       "../browser/ui/views/intent_picker_bubble_view_unittest.cc",
+      "../browser/ui/views/layout/interpolating_layout_manager_unittest.cc",
       "../browser/ui/views/layout_provider_unittest.cc",
       "../browser/ui/views/location_bar/icon_label_bubble_view_unittest.cc",
       "../browser/ui/views/location_bar/location_icon_view_unittest.cc",

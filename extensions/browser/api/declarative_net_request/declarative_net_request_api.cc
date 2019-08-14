@@ -330,6 +330,11 @@ DeclarativeNetRequestSetActionCountAsBadgeTextFunction::Run() {
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context());
   prefs->SetDNRUseActionCountAsBadgeText(extension_id(), params->enable);
+
+  // TODO(crbug.com/979068): If the preference is switched on, update the
+  // extension's badge text with the number of actions matched for this
+  // extension. Otherwise, clear the badge text for the extension's icon and
+  // show the default badge text.
   return RespondNow(NoArguments());
 }
 

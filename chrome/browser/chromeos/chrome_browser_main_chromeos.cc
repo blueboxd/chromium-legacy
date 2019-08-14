@@ -32,6 +32,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/thread_pool.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -276,7 +277,7 @@ void GetSystemSlotOnIOThread(
 // For Chromium builds, don't send it here. Instead, rely on this signal being
 // sent after each successful login.
 bool ShallAttemptTpmOwnership() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return StartupUtils::IsEulaAccepted();
 #else
   return false;
@@ -946,7 +947,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // ChromeSessionManager because it depends on NetworkPortalDetector.
   InitializeNetworkPortalDetector();
   {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     bool is_official_build = true;
 #else
     bool is_official_build = false;

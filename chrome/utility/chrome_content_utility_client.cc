@@ -17,9 +17,6 @@
 #include "base/time/time.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/utility/services.h"
-#include "components/mirroring/mojom/constants.mojom.h"
-#include "components/mirroring/service/features.h"
-#include "components/mirroring/service/mirroring_service.h"
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -135,15 +132,6 @@ std::unique_ptr<service_manager::Service>
 ChromeContentUtilityClient::MaybeCreateMainThreadService(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
-#if !defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(mirroring::features::kMirroringService) &&
-      base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams) &&
-      service_name == mirroring::mojom::kServiceName) {
-    return std::make_unique<mirroring::MirroringService>(
-        std::move(request), content::ChildThread::Get()->GetIOTaskRunner());
-  }
-#endif
-
 #if defined(OS_CHROMEOS)
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   if (service_name == chromeos::assistant::mojom::kAudioDecoderServiceName) {

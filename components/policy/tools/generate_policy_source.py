@@ -5,10 +5,11 @@
 '''python %prog [options]
 
 Pass at least:
---chrome-version-file <path to src/chrome/VERSION>
+--chrome-version-file <path to src/chrome/VERSION> or --all-chrome-versions
 --target-platform <which platform the target code will be generated for and can
   be one of (win, mac, linux, chromeos, fuchsia)>
 --policy_templates <path to the policy_templates.json input file>.'''
+
 
 from __future__ import with_statement
 from collections import namedtuple
@@ -103,10 +104,12 @@ class PolicyDetails:
       if version_min == '':
         raise RuntimeError('supported_on must define a start version: "%s"' % p)
 
-      # Skip if the current Chromium version does not support the policy.
-      if (int(version_min) > chrome_major_version or
-          version_max != '' and int(version_max) < chrome_major_version):
-        continue
+      # Skip if filtering by Chromium version and the current Chromium version
+      # does not support the policy.
+      if chrome_major_version:
+        if (int(version_min) > chrome_major_version or
+            version_max != '' and int(version_max) < chrome_major_version):
+          continue
 
       if platform.startswith('chrome.'):
         platform_sub = platform[7:]
@@ -195,15 +198,15 @@ class PolicyAtomicGroup:
 
 
 def ParseVersionFile(version_path):
-  major_version = None
+  chrome_major_version = None
   for line in open(version_path, 'r').readlines():
     key, val = line.rstrip('\r\n').split('=', 1)
     if key == 'MAJOR':
-      major_version = val
+      chrome_major_version = val
       break
-  if major_version is None:
+  if chrome_major_version is None:
     raise RuntimeError('VERSION file does not contain major version.')
-  return int(major_version)
+  return int(chrome_major_version)
 
 
 def main():
@@ -277,6 +280,12 @@ def main():
       help='path to src/chrome/VERSION',
       metavar='FILE')
   parser.add_option(
+      '--all-chrome-versions',
+      action='store_true',
+      dest='all_chrome_versions',
+      default=False,
+      help='do not restrict generated policies by chrome version')
+  parser.add_option(
       '--target-platform',
       dest='target_platform',
       help='the platform the generated code should run on - can be one of'
@@ -289,12 +298,25 @@ def main():
       metavar='FILE')
   (opts, args) = parser.parse_args()
 
-  if (not opts.chrome_version_file or not opts.target_platform or
-      not opts.policy_templates_file):
-    print('Please specify at least:\n'
-          '--chrome-version-file=<path to src/chrome/VERSION>\n'
-          '--target-platform=<platform>\n'
-          '--policy-templates-file=<path to policy_templates.json')
+  has_arg_error = False
+
+  if not opts.target_platform:
+    print('Error: Missing --target-platform=<platform>')
+    has_arg_error = True
+
+  if not opts.policy_templates_file:
+    print('Error: Missing'
+          ' --policy-templates-file=<path to policy_templates.json>')
+    has_arg_error = True
+
+  if not opts.chrome_version_file and not opts.all_chrome_versions:
+    print('Error: Missing'
+          ' --chrome-version-file=<path to src/chrome/VERSION>\n'
+          ' or --all-chrome-versions')
+    has_arg_error = True
+
+  if has_arg_error:
+    print('')
     parser.print_help()
     return 2
 
@@ -307,11 +329,15 @@ def main():
   if target_platform == 'chromeos':
     target_platform = 'chrome_os'
 
-  major_version = ParseVersionFile(version_path)
+  if opts.all_chrome_versions:
+    chrome_major_version = None
+  else:
+    chrome_major_version = ParseVersionFile(version_path)
+
   template_file_contents = _LoadJSONFile(template_file_name)
   risk_tags = RiskTags(template_file_contents)
   policy_details = [
-      PolicyDetails(policy, major_version, target_platform,
+      PolicyDetails(policy, chrome_major_version, target_platform,
                     risk_tags.GetValidTags())
       for policy in template_file_contents['policy_definitions']
       if policy['type'] != 'group'

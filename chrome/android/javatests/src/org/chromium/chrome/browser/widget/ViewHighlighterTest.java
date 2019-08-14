@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.widget;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.rule.UiThreadTestRule;
@@ -22,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ViewHighlighterTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
@@ -83,17 +82,21 @@ public class ViewHighlighterTest {
         checkHighlightOn(tintedImageButton);
     }
 
-    private void checkHighlightOn(View view) {
-        Assert.assertTrue(view.getBackground() instanceof LayerDrawable);
-        LayerDrawable layerDrawable = (LayerDrawable) view.getBackground();
-        Drawable drawable = layerDrawable.getDrawable(layerDrawable.getNumberOfLayers() - 1);
-        Assert.assertTrue(drawable instanceof PulseDrawable);
-        PulseDrawable pulse = (PulseDrawable) drawable;
-        Assert.assertTrue(pulse.isRunning());
-        Assert.assertTrue(pulse.isVisible());
+    /**
+     * Assert that the provided view is highlighted.
+     *
+     * @param view The view of interest.
+     */
+    private static void checkHighlightOn(View view) {
+        Assert.assertTrue(ViewHighlighterTestUtils.checkHighlightOn(view));
     }
 
-    private void checkHighlightOff(View view) {
-        Assert.assertFalse(view.getBackground() instanceof LayerDrawable);
+    /**
+     * Assert that the provided view is not highlighted.
+     *
+     * @param view The view of interest.
+     */
+    private static void checkHighlightOff(View view) {
+        Assert.assertTrue(ViewHighlighterTestUtils.checkHighlightOff(view));
     }
 }

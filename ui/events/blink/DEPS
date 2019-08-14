@@ -22,4 +22,6 @@ include_rules = [
   "+ui/display/win",
   "+ui/gfx",
   "+ui/gfx/geometry",
+
+  "+third_party/one_euro_filter/src/one_euro_filter.h",
 ]

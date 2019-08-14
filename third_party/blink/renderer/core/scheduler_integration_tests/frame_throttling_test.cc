@@ -1391,8 +1391,7 @@ TEST_P(FrameThrottlingTest, LifecycleUpdateAfterUnthrottledCompositingUpdate) {
 
 TEST_P(FrameThrottlingTest, GraphicsLayerCollection) {
   // This test is for BlinkGenPropertyTrees only.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SimRequest main_resource("https://example.com/", "text/html");

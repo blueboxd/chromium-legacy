@@ -24,8 +24,6 @@
 #include "ui/views/controls/menu/menu_config.h"
 #include "url/url_constants.h"
 
-using SharingMessage = chrome_browser_sharing::SharingMessage;
-
 ClickToCallContextMenuObserver::SubMenuDelegate::SubMenuDelegate(
     ClickToCallContextMenuObserver* parent)
     : parent_(parent) {}

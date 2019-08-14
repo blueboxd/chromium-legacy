@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_dialog_factory.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_dialog_state.h"
@@ -76,7 +77,7 @@ std::unique_ptr<views::Label> CreateTitle(
   auto title = std::make_unique<views::Label>(
       l10n_util::GetPluralStringFUTF16(message_id, card_list_size));
   constexpr int kMigrationDialogTitleFontSize = 8;
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   constexpr int kMigrationDialogTitleMarginTop = 0;
 #else
   constexpr int kMigrationDialogTitleMarginTop = 12;
@@ -478,7 +479,7 @@ void LocalCardMigrationDialogView::ConstructView() {
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       kMigrationDialogMainContainerChildSpacing));
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   auto* image = new views::ImageView();
   constexpr int kImageBorderBottom = 8;
   image->SetBorder(views::CreateEmptyBorder(0, 0, kImageBorderBottom, 0));
@@ -490,7 +491,7 @@ void LocalCardMigrationDialogView::ConstructView() {
   image->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_GOOGLE_PAY_LOGO_ACCESSIBLE_NAME));
   AddChildView(image);
-#endif  // GOOGLE_CHROME_BUILD
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   LocalCardMigrationDialogState view_state = controller_->GetViewState();
   AddChildView(CreateTitle(view_state, this, controller_->GetCardList().size())

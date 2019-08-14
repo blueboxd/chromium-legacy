@@ -4,6 +4,9 @@
 
 import("//chrome/chrome_cleaner/chrome_cleaner_args.gni")
 
+# Nothing outside //chrome/chrome_cleaner can depend on these targets.
+visibility = [ "//chrome/chrome_cleaner/*" ]
+
 source_set("scoped_timed_task_logger") {
   sources = [
     "scoped_timed_task_logger.cc",

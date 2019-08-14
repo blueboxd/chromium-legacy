@@ -12,6 +12,10 @@
 #include "base/threading/thread_checker.h"
 #include "components/viz/service/main/viz_compositor_thread_runner.h"
 
+namespace base {
+class Location;
+}  // namespace base
+
 namespace viz {
 class FrameSinkManagerImpl;
 }  // namespace viz
@@ -35,7 +39,15 @@ class VizCompositorThreadRunnerWebView : public viz::VizCompositorThreadRunner {
   static VizCompositorThreadRunnerWebView* GetInstance();
 
   viz::FrameSinkManagerImpl* GetFrameSinkManager();
+
+  // Must be called from the TaskQueueWebView thread. |task| is allowed to call
+  // TaskQueueWebView::ScheduleTask.
   void ScheduleOnVizAndBlock(base::OnceClosure task);
+
+  // Can be called from any thread, and blocks the caller until the task
+  // finishes executing.
+  void PostTaskAndBlock(const base::Location& from_here,
+                        base::OnceClosure task);
 
   // viz::VizCompositorThreadRunner overrides.
   base::SingleThreadTaskRunner* task_runner() override;

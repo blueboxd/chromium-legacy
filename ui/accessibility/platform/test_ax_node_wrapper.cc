@@ -99,6 +99,10 @@ const AXTreeData& TestAXNodeWrapper::GetTreeData() const {
   return tree_->data();
 }
 
+const AXTree::Selection TestAXNodeWrapper::GetUnignoredSelection() const {
+  return tree_->GetUnignoredSelection();
+}
+
 AXNodePosition::AXPositionInstance TestAXNodeWrapper::CreateTextPositionAt(
     int offset,
     ax::mojom::TextAffinity affinity) const {

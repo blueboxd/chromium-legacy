@@ -17,7 +17,6 @@
 #include "chrome/browser/media/router/discovery/media_sink_discovery_metrics.h"
 #include "chrome/browser/media/router/providers/wired_display/wired_display_presentation_receiver.h"
 #include "chrome/common/media_router/media_route_provider_helper.h"
-#include "chrome/common/media_router/media_status.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/display/display.h"
@@ -143,7 +142,7 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
    private:
     MediaRoute route_;
     std::unique_ptr<WiredDisplayPresentationReceiver> receiver_;
-    MediaStatus status_;
+    mojom::MediaStatus status_;
 
     // |media_controller_request| is retained but not used.
     mojo::PendingReceiver<mojom::MediaController> media_controller_receiver_;

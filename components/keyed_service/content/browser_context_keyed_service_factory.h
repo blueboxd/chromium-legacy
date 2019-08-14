@@ -110,7 +110,7 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedServiceFactory
   // and the default implementation removes it from |mapping_| and deletes
   // the pointer.
   virtual void BrowserContextShutdown(content::BrowserContext* context);
-  virtual void BrowserContextDestroyed(content::BrowserContext* context);
+  void BrowserContextDestroyed(content::BrowserContext* context);
 
  private:
   friend class BrowserContextDependencyManagerUnittests;

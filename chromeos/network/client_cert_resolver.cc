@@ -97,7 +97,7 @@ std::map<std::string, std::string> GetSubstitutionsForCert(
     std::string firstSANEmail;
     if (!names.empty())
       firstSANEmail = names[0];
-    substitutions[onc::substitutes::kCertSANEmail] = firstSANEmail;
+    substitutions[::onc::substitutes::kCertSANEmail] = firstSANEmail;
   }
 
   {
@@ -107,10 +107,10 @@ std::map<std::string, std::string> GetSubstitutionsForCert(
     std::string firstSANUPN;
     if (!names.empty())
       firstSANUPN = names[0];
-    substitutions[onc::substitutes::kCertSANUPN] = firstSANUPN;
+    substitutions[::onc::substitutes::kCertSANUPN] = firstSANUPN;
   }
 
-  substitutions[onc::substitutes::kCertSubjectCommonName] =
+  substitutions[::onc::substitutes::kCertSubjectCommonName] =
       certificate::GetCertAsciiSubjectCommonName(cert);
 
   return substitutions;
@@ -616,7 +616,7 @@ void ClientCertResolver::ResolveNetworks(
     if (network->profile_path().empty())
       continue;
 
-    onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
+    ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_NONE;
     const base::DictionaryValue* policy =
         managed_network_config_handler_->FindPolicyByGuidAndProfile(
             network->guid(), network->profile_path(), &onc_source);

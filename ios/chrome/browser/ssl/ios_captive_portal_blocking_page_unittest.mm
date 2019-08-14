@@ -8,7 +8,7 @@
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #include "ios/web/public/security/web_interstitial.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

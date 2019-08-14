@@ -105,7 +105,7 @@ class LinkHighlightImplTest : public testing::Test,
 
   PaintArtifactCompositor* paint_artifact_compositor() {
     auto* local_frame_view = web_view_helper_.LocalMainFrame()->GetFrameView();
-    return local_frame_view->GetPaintArtifactCompositorForTesting();
+    return local_frame_view->GetPaintArtifactCompositor();
   }
 
   void UpdateAllLifecyclePhases() {
@@ -290,11 +290,6 @@ TEST_P(LinkHighlightImplTest, HighlightInvalidation) {
 }
 
 TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {
-  // This is testing the blink->cc layer integration.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   bool was_running_web_test = WebTestSupport::IsRunningWebTest();
   WebTestSupport::SetIsRunningWebTest(false);
   int page_width = 640;
@@ -361,11 +356,6 @@ TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {
 }
 
 TEST_P(LinkHighlightImplTest, MultiColumn) {
-  // This is testing the blink->cc layer integration.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   int page_width = 640;
   int page_height = 480;
   WebViewImpl* web_view_impl = web_view_helper_.GetWebView();

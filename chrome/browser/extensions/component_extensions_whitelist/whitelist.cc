@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -95,11 +96,11 @@ bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
     case IDR_MOBILE_MANIFEST:
     case IDR_VIDEO_PLAYER_MANIFEST:
     case IDR_WALLPAPERMANAGER_MANIFEST:
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     case IDR_GENIUS_APP_MANIFEST:
     case IDR_HELP_MANIFEST:
     case IDR_QUICKOFFICE_MANIFEST:
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif  // defined(OS_CHROMEOS)
       return true;
   }

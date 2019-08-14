@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Nothing outside //chrome/chrome_cleaner can depend on these targets.
+visibility = [ "//chrome/chrome_cleaner/*" ]
+
 static_library("common") {
   sources = [
     "sandbox_setup.cc",
@@ -11,9 +14,9 @@ static_library("common") {
   deps = [
     "//base",
     "//chrome/chrome_cleaner/constants:common_strings",
-    "//chrome/chrome_cleaner/mojom:zip_archiver_interface",
     "//chrome/chrome_cleaner/ipc:mojo_task_runner",
     "//chrome/chrome_cleaner/ipc:sandbox",
+    "//chrome/chrome_cleaner/mojom:zip_archiver_interface",
     "//components/chrome_cleaner/public/constants:constants",
     "//mojo/public/cpp/system:system",
     "//sandbox/win:sandbox",

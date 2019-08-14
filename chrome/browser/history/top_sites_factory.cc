@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
@@ -56,7 +57,7 @@ struct RawPrepopulatedPage {
 #if !defined(OS_ANDROID)
 // Android does not use prepopulated pages.
 const RawPrepopulatedPage kRawPrepopulatedPages[] = {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {
         IDS_NTP_DEFAULT_SEARCH_URL,
         IDS_NTP_DEFAULT_SEARCH_TITLE,

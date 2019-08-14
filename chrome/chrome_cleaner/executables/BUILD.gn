@@ -4,6 +4,9 @@
 
 import("//chrome/chrome_cleaner/chrome_cleaner_args.gni")
 
+# Nothing outside //chrome/chrome_cleaner can depend on these targets.
+visibility = [ "//chrome/chrome_cleaner/*" ]
+
 group("engine_target_factory") {
   if (is_internal_chrome_cleaner_build) {
     deps = [

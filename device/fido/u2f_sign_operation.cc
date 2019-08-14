@@ -34,17 +34,22 @@ void U2fSignOperation::Start() {
       // authenticator (at least) crashes if we try the wrong AppID first.
       app_param_type_ = ApplicationParameterType::kAlternative;
     }
-    TrySign();
+    WinkAndTrySign();
   } else {
     // In order to make U2F authenticators blink on sign request with an empty
     // allow list, we send fake enrollment to the device and error out when the
     // user has provided presence.
-    TryFakeEnrollment();
+    WinkAndTryFakeEnrollment();
   }
 }
 
 void U2fSignOperation::Cancel() {
   canceled_ = true;
+}
+
+void U2fSignOperation::WinkAndTrySign() {
+  device()->TryWink(
+      base::BindOnce(&U2fSignOperation::TrySign, weak_factory_.GetWeakPtr()));
 }
 
 void U2fSignOperation::TrySign() {
@@ -107,13 +112,13 @@ void U2fSignOperation::OnSignResponseReceived(
         // |application_parameter_| failed, but there is also
         // the primary value to try.
         app_param_type_ = ApplicationParameterType::kPrimary;
-        TrySign();
+        WinkAndTrySign();
       } else if (++current_key_handle_index_ < request().allow_list.size()) {
         // Key is not for this device. Try signing with the next key.
         if (request().alternative_application_parameter.has_value()) {
           app_param_type_ = ApplicationParameterType::kAlternative;
         }
-        TrySign();
+        WinkAndTrySign();
       } else {
         // No provided key was accepted by this device. Send registration
         // (i.e. fake enroll) request to device.
@@ -125,7 +130,7 @@ void U2fSignOperation::OnSignResponseReceived(
       // Waiting for user touch. Retry after 200 milliseconds delay.
       base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
-          base::BindOnce(&U2fSignOperation::TrySign,
+          base::BindOnce(&U2fSignOperation::WinkAndTrySign,
                          weak_factory_.GetWeakPtr()),
           kU2fRetryDelay);
       break;
@@ -136,6 +141,11 @@ void U2fSignOperation::OnSignResponseReceived(
           .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
       return;
   }
+}
+
+void U2fSignOperation::WinkAndTryFakeEnrollment() {
+  device()->TryWink(base::BindOnce(&U2fSignOperation::TryFakeEnrollment,
+                                   weak_factory_.GetWeakPtr()));
 }
 
 void U2fSignOperation::TryFakeEnrollment() {

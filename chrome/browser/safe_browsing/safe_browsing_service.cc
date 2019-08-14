@@ -22,6 +22,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -252,7 +253,7 @@ std::string SafeBrowsingService::GetProtocolConfigClientName() const {
 #if defined(OS_WIN)
   client_name = install_static::GetSafeBrowsingName();
 #else
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   client_name = "googlechrome";
 #else
   client_name = "chromium";

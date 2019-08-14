@@ -14,4 +14,7 @@ const char kRulesetFormatVersionString[] = "1.0.0";
 const char kOptimizationGuideServiceDefaultURL[] =
     "https://optimizationguide-pa.googleapis.com/v1:GetHints";
 
+const char kLoadedHintLocalHistogramString[] =
+    "OptimizationGuide.LoadedHint.Result";
+
 }  // namespace optimization_guide

@@ -15,8 +15,6 @@
 #include "chrome/common/media_router/mojom/media_status.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-class PrefService;
-
 namespace content {
 class BrowserContext;
 }
@@ -63,7 +61,7 @@ class MediaRouteController
     // Removes itself as an observer if |controller_| is still valid.
     virtual ~Observer();
 
-    virtual void OnMediaStatusUpdated(const MediaStatus& status) = 0;
+    virtual void OnMediaStatusUpdated(const mojom::MediaStatus& status) = 0;
 
     // Returns a reference to the observed MediaRouteController. The reference
     // should not be stored by any object that does not subclass ::Observer.
@@ -118,7 +116,7 @@ class MediaRouteController
 
   // mojom::MediaStatusObserver:
   // Notifies |observers_| of a status update.
-  void OnMediaStatusUpdated(const MediaStatus& status) override;
+  void OnMediaStatusUpdated(mojom::MediaStatusPtr status) override;
 
   // Notifies |observers_| to dispose their references to the controller. The
   // controller gets destroyed when all the references are disposed.
@@ -129,12 +127,6 @@ class MediaRouteController
   void Invalidate();
 
   MediaRoute::Id route_id() const { return route_id_; }
-
-  // Returns the latest media status that the controller has been notified with.
-  // Returns a nullopt if the controller hasn't been notified yet.
-  const base::Optional<MediaStatus>& current_media_status() const {
-    return current_media_status_;
-  }
 
  protected:
   ~MediaRouteController() override;
@@ -194,50 +186,9 @@ class MediaRouteController
   bool is_valid_ = true;
 
   // The latest media status that the controller has been notified with.
-  base::Optional<MediaStatus> current_media_status_;
+  mojom::MediaStatusPtr current_media_status_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouteController);
-};
-
-// Controller subclass for Cast streaming mirroring routes. Responsible for:
-// (1) updating the media remoting pref according to user input
-// (2) augmenting the MediaStatus update sent by the MRP with the value from the
-//     media remoting pref.
-class MirroringMediaRouteController : public MediaRouteController {
- public:
-  // Casts |controller| to a MirroringMediaRouteController if its
-  // RouteControllerType is MIRRORING. Returns nullptr otherwise.
-  static MirroringMediaRouteController* From(MediaRouteController* controller);
-
-  MirroringMediaRouteController(const MediaRoute::Id& route_id,
-                                content::BrowserContext* context,
-                                MediaRouter* router);
-
-  // MediaRouteController
-  RouteControllerType GetType() const override;
-  void OnMediaStatusUpdated(const MediaStatus& status) override;
-
-  // Sets the media remoting pref to |enabled| and notifies the observers.
-  // Note that the MRP listens for updates on this pref value and enable/disable
-  // media remoting as needed.
-  void SetMediaRemotingEnabled(bool enabled);
-
-  bool media_remoting_enabled() const { return media_remoting_enabled_; }
-
- protected:
-  ~MirroringMediaRouteController() override;
-
- private:
-  PrefService* const prefs_;
-
-  // This is initialized from |prefs_| in the constructor and updated in
-  // |SetMediaRemotingEnabled()|. This class does not need to listen for pref
-  // changes because this is the only place where the media remoting pref value
-  // can be modified.
-  bool media_remoting_enabled_ = true;
-  MediaStatus latest_status_;
-
-  DISALLOW_COPY_AND_ASSIGN(MirroringMediaRouteController);
 };
 
 }  // namespace media_router

@@ -99,7 +99,7 @@
             ],
             "experiments": [
                 {
-                    "name": "InstallApp",
+                    "name": "Install app",
                     "params": {
                         "include_no_download_required": "false"
                     },
@@ -108,7 +108,7 @@
                     ]
                 },
                 {
-                    "name": "InstallAppNoDownloadRequired",
+                    "name": "Install app (no download required)",
                     "params": {
                         "include_no_download_required": "true"
                     },
@@ -1866,7 +1866,8 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "DirectCompositionGpuVSync"
+                        "DirectCompositionGpuVSync",
+                        "DirectCompositionPresentationFeedback"
                     ]
                 }
             ]

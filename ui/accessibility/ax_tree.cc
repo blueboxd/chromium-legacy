@@ -18,6 +18,7 @@
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_language_detection.h"
 #include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_table_info.h"
 #include "ui/accessibility/ax_tree_observer.h"
@@ -1954,6 +1955,75 @@ int32_t AXTree::GetSetSize(const AXNode& node, const AXNode* ordered_set) {
   if (ordered_set_info_map_.find(node.id()) == ordered_set_info_map_.end())
     ComputeSetSizePosInSetAndCache(node, ordered_set);
   return ordered_set_info_map_[node.id()].set_size;
+}
+
+AXTree::Selection AXTree::GetUnignoredSelection() const {
+  Selection unignored_selection = {
+      data().sel_is_backward,     data().sel_anchor_object_id,
+      data().sel_anchor_offset,   data().sel_anchor_affinity,
+      data().sel_focus_object_id, data().sel_focus_offset,
+      data().sel_focus_affinity};
+  AXNode* anchor_node = GetFromId(data().sel_anchor_object_id);
+  AXNode* focus_node = GetFromId(data().sel_focus_object_id);
+
+  AXNodePosition::AXPositionInstance anchor_position =
+      anchor_node ? AXNodePosition::CreatePosition(data().tree_id, *anchor_node,
+                                                   data().sel_anchor_offset,
+                                                   data().sel_anchor_affinity)
+                  : AXNodePosition::CreateNullPosition();
+  if (anchor_position->IsIgnoredPosition()) {
+    anchor_position = anchor_position->AsUnignoredTextPosition(
+        data().sel_is_backward ? AXNodePosition::AdjustmentBehavior::kMoveRight
+                               : AXNodePosition::AdjustmentBehavior::kMoveLeft);
+    // We do not expect the selection to have an endpoint on an inline text
+    // box.
+    if (!anchor_position->IsNullPosition() &&
+        anchor_position->GetAnchor()->data().role ==
+            ax::mojom::Role::kInlineTextBox)
+      anchor_position = anchor_position->CreateParentPosition();
+    unignored_selection.anchor_object_id = anchor_position->anchor_id();
+    unignored_selection.anchor_offset = anchor_position->text_offset();
+    unignored_selection.anchor_affinity = anchor_position->affinity();
+  } else if (anchor_position->IsTreePosition()) {
+    // Fix offset to be in terms of the unignored index.
+    if (data().sel_anchor_offset == int32_t{anchor_node->children().size()}) {
+      unignored_selection.anchor_offset = anchor_node->GetUnignoredChildCount();
+    } else {
+      AXNode* child = anchor_node->children()[data().sel_anchor_offset];
+      unignored_selection.anchor_offset = child->GetUnignoredIndexInParent();
+    }
+  }
+
+  AXNodePosition::AXPositionInstance focus_position =
+      focus_node ? AXNodePosition::CreatePosition(data().tree_id, *focus_node,
+                                                  data().sel_focus_offset,
+                                                  data().sel_focus_affinity)
+                 : AXNodePosition::CreateNullPosition();
+  if (focus_position->IsIgnoredPosition()) {
+    focus_position = focus_position->AsUnignoredTextPosition(
+        !data().sel_is_backward
+            ? AXNodePosition::AdjustmentBehavior::kMoveRight
+            : AXNodePosition::AdjustmentBehavior::kMoveLeft);
+    // We do not expect the selection to have an endpoint on an inline text
+    // box.
+    if (!focus_position->IsNullPosition() &&
+        focus_position->GetAnchor()->data().role ==
+            ax::mojom::Role::kInlineTextBox)
+      focus_position = focus_position->CreateParentPosition();
+    unignored_selection.focus_object_id = focus_position->anchor_id();
+    unignored_selection.focus_offset = focus_position->text_offset();
+    unignored_selection.focus_affinity = focus_position->affinity();
+  } else if (focus_position->IsTreePosition()) {
+    // Fix offset to be in terms of the unignored index.
+    if (data().sel_focus_offset == int32_t{focus_node->children().size()}) {
+      unignored_selection.focus_offset = focus_node->GetUnignoredChildCount();
+    } else {
+      AXNode* child = focus_node->children()[data().sel_focus_offset];
+      unignored_selection.focus_offset = child->GetUnignoredIndexInParent();
+    }
+  }
+
+  return unignored_selection;
 }
 
 bool AXTree::GetTreeUpdateInProgressState() const {

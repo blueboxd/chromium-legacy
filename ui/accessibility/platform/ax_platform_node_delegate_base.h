@@ -35,6 +35,9 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   // Get the accessibility tree data for this node.
   const AXTreeData& GetTreeData() const override;
 
+  // Get the unignored selection from the tree
+  const AXTree::Selection GetUnignoredSelection() const override;
+
   // Creates a text position rooted at this object.
   AXNodePosition::AXPositionInstance CreateTextPositionAt(
       int offset,

@@ -14,12 +14,17 @@
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_loader_helpers.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/common/throttling_url_loader.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 // TODO(momohatt): Add UMA to capture the result of the update checking.
@@ -94,6 +99,8 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
     blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
     base::TimeDelta time_since_last_check,
     const net::HttpRequestHeaders& default_headers,
+    ServiceWorkerUpdatedScriptLoader::BrowserContextGetter
+        browser_context_getter,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
     std::unique_ptr<ServiceWorkerResponseReader> compare_reader,
     std::unique_ptr<ServiceWorkerResponseReader> copy_reader,
@@ -125,7 +132,8 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
 
   // This key is used to isolate requests from different contexts in accessing
   // shared network resources like the http cache.
-  resource_request.trusted_network_isolation_key =
+  resource_request.trusted_params = network::ResourceRequest::TrustedParams();
+  resource_request.trusted_params->network_isolation_key =
       net::NetworkIsolationKey(origin, origin);
 
   if (is_main_script_) {
@@ -193,20 +201,20 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
 
   cache_writer_ = ServiceWorkerCacheWriter::CreateForComparison(
       std::move(compare_reader), std::move(copy_reader), std::move(writer),
-      true /* pause_when_not_identical */);
+      /*pause_when_not_identical=*/true);
 
-  network::mojom::URLLoaderClientPtr network_client;
+  network::mojom::URLLoaderClientPtrInfo network_client;
   network_client_binding_.Bind(mojo::MakeRequest(&network_client));
 
   // Use NavigationURLLoaderImpl to get a unique request id across
   // browser-initiated navigations and worker script fetch.
   const int request_id =
       NavigationURLLoaderImpl::MakeGlobalRequestID().request_id;
-  loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&network_loader_), MSG_ROUTING_NONE, request_id,
-      network::mojom::kURLLoadOptionNone, resource_request,
-      std::move(network_client),
-      net::MutableNetworkTrafficAnnotationTag(kUpdateCheckTrafficAnnotation));
+  network_loader_ = ServiceWorkerUpdatedScriptLoader::
+      ThrottlingURLLoaderIOWrapper::CreateLoaderAndStart(
+          loader_factory->Clone(), browser_context_getter, MSG_ROUTING_NONE,
+          request_id, network::mojom::kURLLoadOptionNone, resource_request,
+          std::move(network_client), kUpdateCheckTrafficAnnotation);
   DCHECK_EQ(network_loader_state_,
             ServiceWorkerUpdatedScriptLoader::LoaderState::kNotStarted);
   network_loader_state_ =
@@ -577,7 +585,9 @@ void ServiceWorkerSingleScriptUpdateChecker::Finish(
 
 ServiceWorkerSingleScriptUpdateChecker::PausedState::PausedState(
     std::unique_ptr<ServiceWorkerCacheWriter> cache_writer,
-    network::mojom::URLLoaderPtr network_loader,
+    std::unique_ptr<
+        ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper>
+        network_loader,
     network::mojom::URLLoaderClientRequest network_client_request,
     mojo::ScopedDataPipeConsumerHandle network_consumer,
     ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state,

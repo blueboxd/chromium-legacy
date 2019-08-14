@@ -82,7 +82,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) const override;
 
-  void SetPolicy(onc::ONCSource onc_source,
+  void SetPolicy(::onc::ONCSource onc_source,
                  const std::string& userhash,
                  const base::ListValue& network_configs_onc,
                  const base::DictionaryValue& global_network_config) override;
@@ -92,7 +92,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   const base::DictionaryValue* FindPolicyByGUID(
       const std::string userhash,
       const std::string& guid,
-      onc::ONCSource* onc_source) const override;
+      ::onc::ONCSource* onc_source) const override;
 
   const GuidToPolicyMap* GetNetworkConfigsFromPolicy(
       const std::string& userhash) const override;
@@ -103,7 +103,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   const base::DictionaryValue* FindPolicyByGuidAndProfile(
       const std::string& guid,
       const std::string& profile_path,
-      onc::ONCSource* onc_source) const override;
+      ::onc::ONCSource* onc_source) const override;
 
   bool AllowOnlyPolicyNetworksToConnect() const override;
   bool AllowOnlyPolicyNetworksToConnectIfAvailable() const override;

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/critical_closure.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -83,7 +84,7 @@ Optional<Task> Sequence::TakeTask() {
   return std::move(next_task);
 }
 
-bool Sequence::DidProcessTask(RunResult run_result) {
+bool Sequence::DidProcessTask() {
   // There should never be a call to DidProcessTask without an associated
   // WillRunTask().
   DCHECK(has_worker_);
@@ -103,15 +104,21 @@ SequenceSortKey Sequence::GetSortKey() const {
   return SequenceSortKey(traits_.priority(), queue_.front().queue_time);
 }
 
-void Sequence::Clear() {
-  bool queue_was_empty = queue_.empty();
-  while (!queue_.empty())
-    queue_.pop();
-  if (!queue_was_empty) {
-    // No member access after this point, ReleaseTaskRunner() might have deleted
-    // |this|.
-    ReleaseTaskRunner();
-  }
+Optional<Task> Sequence::Clear() {
+  has_worker_ = false;
+  return base::make_optional<Task>(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<Sequence> self, base::queue<Task> queue) {
+            bool queue_was_empty = queue.empty();
+            while (!queue.empty())
+              queue.pop();
+            if (!queue_was_empty) {
+              self->ReleaseTaskRunner();
+            }
+          },
+          scoped_refptr<Sequence>(this), std::move(queue_)),
+      TimeDelta());
 }
 
 void Sequence::ReleaseTaskRunner() {

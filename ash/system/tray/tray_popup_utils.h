@@ -154,7 +154,7 @@ class TrayPopupUtils {
       TrayPopupInkDropStyle ink_drop_style,
       const views::View* host,
       const gfx::Point& center_point,
-      SkColor color = kTrayPopupInkDropBaseColor);
+      SkColor background_color);
 
   // Creates in InkDropHighlight instance for |host| according to the
   // |ink_drop_style|.
@@ -164,7 +164,7 @@ class TrayPopupUtils {
   static std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight(
       TrayPopupInkDropStyle ink_drop_style,
       const views::View* host,
-      SkColor color = kTrayPopupInkDropBaseColor);
+      SkColor background_color);
 
   // Creates a SkPath matching the TrayPopupInkDropStyle. This path is normally
   // used to generate the focus ring and ink drop shapes.

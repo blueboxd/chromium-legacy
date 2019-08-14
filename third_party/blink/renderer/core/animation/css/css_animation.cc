@@ -21,12 +21,6 @@ CSSAnimation::CSSAnimation(ExecutionContext* execution_context,
                            AnimationEffect* content,
                            const String& animation_name)
     : Animation(execution_context, timeline, content),
-      animation_name_(animation_name) {
-  setId(animation_name);
-}
-
-const String& CSSAnimation::animationName() const {
-  return animation_name_;
-}
+      animation_name_(animation_name) {}
 
 }  // namespace blink

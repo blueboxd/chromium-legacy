@@ -80,10 +80,22 @@ enum UpdateNetworkIsolationKeyOnRedirect {
   // the top frame origin and frame origin.
   kUpdateTopFrameAndFrameOrigin,
 
-  // The updated network isolation key will take existing
-  // |trusted_network_isolation_key|'s top frame origin and redirected url's
-  // origin as the frame origin.
+  // The updated network isolation key will take the existing
+  // NetworkIsolationKey's top frame origin and redirected url's origin as the
+  // frame origin.
   kUpdateFrameOrigin
+};
+
+// Options that may only be set on URLRequests passed to a URLLoaderFactory
+// created with |is_trusted| set to true.
+struct TrustedUrlRequestParams {
+  // This resource request will be keyed using |network_isolation_key| for
+  // accessing shared network resources like the http cache.
+  NetworkIsolationKey? network_isolation_key;
+
+  // Whether or not the network isolation key needs to be recomputed on
+  // redirects. Typically this is only done for navigations.
+  UpdateNetworkIsolationKeyOnRedirect update_network_isolation_key_on_redirect;
 };
 
 // Typemapped to network::ResourceRequest.
@@ -120,18 +132,6 @@ struct URLRequest {
   // TODO(crbug.com/911299, crbug.com/978968): This field will most likely be
   // removed at some point.
   url.mojom.Origin? top_frame_origin;
-
-  // This resource request will be keyed using |trusted_network_isolation_key|
-  // for accessing shared network resources like the http cache. This must only
-  // be populated from a trusted process. Optional since it is not filled for
-  // all requests e.g. those coming from a less trusted process. This parameter
-  // may only be set if the URLLoaderFactory was not created with a pre-bound
-  // network isolation key, and it is an error to do otherwise.
-  NetworkIsolationKey? trusted_network_isolation_key;
-
-  // Whether or not the network isolation key needs to be recomputed on
-  // redirects. Typically this is only done for navigations.
-  UpdateNetworkIsolationKeyOnRedirect update_network_isolation_key_on_redirect;
 
   // Boolean indicating whether SameSite cookies are allowed to be attached
   // to the request. It should be used as additional input to network side
@@ -345,6 +345,9 @@ struct URLRequest {
   // policy, if necessary, and attach it to the ResourceResponseHead.
   // Spec: https://wicg.github.io/origin-policy/
   bool obey_origin_policy;
+
+  // Setting these from an untrusted URLLoader will cause the request to fail.
+  TrustedUrlRequestParams? trusted_params;
 };
 
 // URLRequestBody represents body (i.e. upload data) of a HTTP request.

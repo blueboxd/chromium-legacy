@@ -6,6 +6,9 @@ import("//build/buildflag_header.gni")
 import("//chrome/chrome_cleaner/chrome_cleaner_args.gni")
 import("//testing/test.gni")
 
+# Nothing outside //chrome/chrome_cleaner can depend on these targets.
+visibility = [ "//chrome/chrome_cleaner/*" ]
+
 # Generate a buildflag header so code can check is_official_chrome_cleaner_build.
 buildflag_header("buildflags") {
   header = "buildflags.h"
@@ -61,6 +64,9 @@ static_library("other_executable_definitions") {
 }
 
 test("chrome_cleaner_unittests") {
+  # Make this target findable from the "all" target used by the builders.
+  visibility += [ "//.:gn_all" ]
+
   sources = [
     "//chrome/chrome_cleaner/test/test_main.cc",
   ]

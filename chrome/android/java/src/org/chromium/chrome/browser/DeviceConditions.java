@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser;
 
 import android.annotation.TargetApi;
+import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -14,6 +15,7 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.PowerManager;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifier;
@@ -27,6 +29,7 @@ public class DeviceConditions {
     private boolean mPowerConnected;
     private int mBatteryPercentage;
     private boolean mPowerSaveOn;
+    private boolean mScreenOnAndUnlocked;
 
     // Network related variables.
     private @ConnectionType int mNetConnectionType = ConnectionType.CONNECTION_UNKNOWN;
@@ -42,12 +45,13 @@ public class DeviceConditions {
      */
     @VisibleForTesting
     public DeviceConditions(boolean powerConnected, int batteryPercentage, int netConnectionType,
-            boolean powerSaveOn, boolean activeNetworkMetered) {
+            boolean powerSaveOn, boolean activeNetworkMetered, boolean screenOnAndUnlocked) {
         mPowerConnected = powerConnected;
         mBatteryPercentage = batteryPercentage;
         mPowerSaveOn = powerSaveOn;
         mNetConnectionType = netConnectionType;
         mActiveNetworkMetered = activeNetworkMetered;
+        mScreenOnAndUnlocked = screenOnAndUnlocked;
     }
 
     @VisibleForTesting
@@ -64,7 +68,7 @@ public class DeviceConditions {
         return new DeviceConditions(isCurrentlyPowerConnected(context, batteryStatus),
                 getCurrentBatteryPercentage(context, batteryStatus),
                 getCurrentNetConnectionType(context), isCurrentlyInPowerSaveMode(context),
-                isCurrentActiveNetworkMetered(context));
+                isCurrentActiveNetworkMetered(context), isCurrentlyScreenOnAndUnlocked(context));
     }
 
     /** @return Whether the device is connected to a power source. */
@@ -173,6 +177,16 @@ public class DeviceConditions {
         return cm.isActiveNetworkMetered();
     }
 
+    /**
+     * @return Whether the screen is currently on and unlocked.
+     */
+    public static boolean isCurrentlyScreenOnAndUnlocked(Context context) {
+        KeyguardManager keyguardManager =
+                (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+        return keyguardManager != null && !keyguardManager.isKeyguardLocked()
+                && ApiCompatibilityUtils.isInteractive(context);
+    }
+
     private static Intent getBatteryStatus(Context context) {
         IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         // Note this is a sticky intent, so we aren't really registering a receiver, just getting
@@ -231,5 +245,10 @@ public class DeviceConditions {
     /** Returns whether network connection is metered. */
     public boolean isActiveNetworkMetered() {
         return mActiveNetworkMetered;
+    }
+
+    /** Returns whether the screen is on and unlocked. */
+    public boolean isScreenOnAndUnlocked() {
+        return mScreenOnAndUnlocked;
     }
 }

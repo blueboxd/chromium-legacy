@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/configuration_policy_handler_list_factory.h"
 #include "chrome/browser/policy/device_management_service_configuration.h"
@@ -177,7 +178,7 @@ ChromeBrowserPolicyConnector::CreatePlatformProvider() {
   return std::make_unique<AsyncPolicyProvider>(GetSchemaRegistry(),
                                                std::move(loader));
 #elif defined(OS_MACOSX)
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Explicitly watch the "com.google.Chrome" bundle ID, no matter what this
   // app's bundle ID actually is. All channels of Chrome should obey the same
   // policies.

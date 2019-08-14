@@ -459,11 +459,8 @@ scoped_refptr<MediaRouteController> MediaRouterMojoImpl::GetRouteController(
           << __func__ << ": route does not support controller: " << route_id;
       return nullptr;
     case RouteControllerType::kGeneric:
-      route_controller = new MediaRouteController(route_id, context_, this);
-      break;
     case RouteControllerType::kMirroring:
-      route_controller =
-          new MirroringMediaRouteController(route_id, context_, this);
+      route_controller = new MediaRouteController(route_id, context_, this);
       break;
   }
   DCHECK(route_controller);

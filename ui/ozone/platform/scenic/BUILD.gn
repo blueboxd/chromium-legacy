@@ -71,6 +71,7 @@ source_set("scenic") {
       "vulkan_implementation_scenic.h",
     ]
     defines += [ "VK_USE_PLATFORM_MAGMA_KHR" ]
+    deps += [ "//gpu/ipc/common:vulkan_ycbcr_info" ]
     data_deps += [
       "//third_party/angle:libEGL",
       "//third_party/angle:libGLESv2",

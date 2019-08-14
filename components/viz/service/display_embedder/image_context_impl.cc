@@ -44,7 +44,7 @@ ImageContextImpl::~ImageContextImpl() {
 
 void ImageContextImpl::CreateFallbackImage(
     gpu::SharedContextState* context_state) {
-  DCHECK(!context_state);
+  DCHECK(!fallback_context_state_);
   fallback_context_state_ = context_state;
 
   SkColorType color_type = ResourceFormatToClosestSkColorType(

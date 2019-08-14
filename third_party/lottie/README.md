@@ -54,3 +54,30 @@ data: {
   }
 },
 ```
+
+## Events fired back to the parent thread
+The web worker running the lottie player will send the following events back to
+its parent thread:
+1. **'initialized'**
+```javascript
+{
+    name: 'initialized',
+    success: true/false // True if the animation was successfully initialized.
+}
+```
+2. **'playing'**
+```javascript
+{
+    name: 'playing'
+}
+```
+3. **'resized'**
+```javascript
+{
+    name: 'resized',
+    size: {
+        height: HEIGHT, // Current height of canvas in pixels.
+        width: WIDTH    // Current width of canvas in pixels.
+    }
+}
+```

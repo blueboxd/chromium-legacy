@@ -42,7 +42,7 @@ namespace ksr = keystone_registration;
 // Constants for the brand file (uses an external file so it can survive
 // updates to Chrome.)
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #define kStableBrandFileName @"Google Chrome Brand.plist"
 #define kCanaryBrandFileName @"Google Chrome Canary Brand.plist"
 #elif BUILDFLAG(CHROMIUM_BRANDING)
@@ -330,7 +330,7 @@ NSString* const kVersionKey = @"KSVersion";
   version_info::Channel channelType = chrome::GetChannelByName(channel);
   if (channelType == version_info::Channel::STABLE) {
     channel = base::SysNSStringToUTF8(ksr::KSRegistrationRemoveExistingTag);
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     DCHECK(chrome::GetChannelByName(channel) == version_info::Channel::STABLE)
         << "-channel name modification has side effect";
 #endif

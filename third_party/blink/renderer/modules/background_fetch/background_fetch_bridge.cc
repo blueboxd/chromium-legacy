@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_options.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_type_converters.h"
@@ -93,14 +94,14 @@ void BackgroundFetchBridge::GetDeveloperIds(GetDeveloperIdsCallback callback) {
 
 mojom::blink::BackgroundFetchService* BackgroundFetchBridge::GetService() {
   if (!background_fetch_service_) {
-    auto request = mojo::MakeRequest(
-        &background_fetch_service_,
+    auto receiver = background_fetch_service_.BindNewPipeAndPassReceiver(
         GetSupplementable()->GetExecutionContext()->GetTaskRunner(
             TaskType::kBackgroundFetch));
-    if (auto* interface_provider = GetSupplementable()
-                                       ->GetExecutionContext()
-                                       ->GetInterfaceProvider()) {
-      interface_provider->GetInterface(std::move(request));
+    if (auto* browser_interface_broker_proxy =
+            GetSupplementable()
+                ->GetExecutionContext()
+                ->GetBrowserInterfaceBrokerProxy()) {
+      browser_interface_broker_proxy->GetInterface(std::move(receiver));
     }
   }
   return background_fetch_service_.get();

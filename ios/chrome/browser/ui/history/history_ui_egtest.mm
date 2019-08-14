@@ -404,6 +404,62 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
                  _URL1.spec().c_str());
 }
 
+// Tests that the VC can be dismissed by swiping down.
+- (void)DISABLED_testSwipeDownDismiss {
+  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
+  }
+  [self loadTestURLs];
+  [self openHistoryPanel];
+
+  // Check that the TableView is presented.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kHistoryTableViewIdentifier)]
+      assertWithMatcher:grey_notNil()];
+
+  // Swipe TableView down.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kHistoryTableViewIdentifier)]
+      performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
+
+  // Check that the TableView has been dismissed.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kHistoryTableViewIdentifier)]
+      assertWithMatcher:grey_nil()];
+}
+
+// Tests that the VC can be dismissed by swiping down while its searching.
+- (void)DISABLED_testSwipeDownDismissWhileSearching {
+  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
+  }
+  [self loadTestURLs];
+  [self openHistoryPanel];
+
+  // Check that the TableView is presented.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kHistoryTableViewIdentifier)]
+      assertWithMatcher:grey_notNil()];
+
+  // Search for the first URL.
+  [[EarlGrey selectElementWithMatcher:SearchIconButton()]
+      performAction:grey_tap()];
+  NSString* searchString =
+      [NSString stringWithFormat:@"%s", _URL1.path().c_str()];
+  [[EarlGrey selectElementWithMatcher:SearchIconButton()]
+      performAction:grey_typeText(searchString)];
+
+  // Swipe TableView down.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kHistoryTableViewIdentifier)]
+      performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
+
+  // Check that the TableView has been dismissed.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kHistoryTableViewIdentifier)]
+      assertWithMatcher:grey_nil()];
+}
+
 // Navigates to history and checks elements for accessibility.
 - (void)testAccessibilityOnHistory {
   [self loadTestURLs];

@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.sms.Event;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -49,16 +50,24 @@ public class SmsReceiverDialogTest {
 
     final private CallbackHelper mCancelButtonClickedCallback = new CallbackHelper();
     final private CallbackHelper mConfirmButtonClickedCallback = new CallbackHelper();
+    final private CallbackHelper mTryAgainButtonClickedCallback = new CallbackHelper();
 
     private class TestSmsReceiverDialogJni implements SmsReceiverDialog.Natives {
         @Override
-        public void onCancel(long nativeSmsDialogAndroid) {
-            mCancelButtonClickedCallback.notifyCalled();
-        }
-
-        @Override
-        public void onConfirm(long nativeSmsDialogAndroid) {
-            mConfirmButtonClickedCallback.notifyCalled();
+        public void onEvent(long nativeSmsDialogAndroid, int eventType) {
+            switch (eventType) {
+                case Event.CANCEL:
+                    mCancelButtonClickedCallback.notifyCalled();
+                    return;
+                case Event.CONFIRM:
+                    mConfirmButtonClickedCallback.notifyCalled();
+                    return;
+                case Event.TIMEOUT:
+                    mTryAgainButtonClickedCallback.notifyCalled();
+                    return;
+                default:
+                    assert false : "|eventType| is invalid";
+            }
         }
     }
 
@@ -81,41 +90,105 @@ public class SmsReceiverDialogTest {
 
     @Test
     @LargeTest
-    public void testCancelButtonAndConfirmButton() {
+    public void testSmsCancel() throws Throwable {
         Dialog dialog = mSmsDialog.getDialogForTesting();
 
         Button cancelButton = (Button) dialog.findViewById(R.id.cancel_button);
         Assert.assertTrue(cancelButton.isEnabled());
 
-        Button confirmButton = (Button) dialog.findViewById(R.id.confirm_button);
-        Assert.assertFalse(confirmButton.isEnabled());
-
-        TestThreadUtils.runOnUiThreadBlocking(mSmsDialog::smsReceived);
-        Assert.assertTrue(confirmButton.isEnabled());
-    }
-
-    @Test
-    @LargeTest
-    public void testClickCancelButton() throws Throwable {
-        Dialog dialog = mSmsDialog.getDialogForTesting();
-        Button cancelButton = (Button) dialog.findViewById(R.id.cancel_button);
-
+        // Simulates the user clicking the "Cancel" button.
         TestTouchUtils.performClickOnMainSync(
                 InstrumentationRegistry.getInstrumentation(), cancelButton);
-
         mCancelButtonClickedCallback.waitForCallback(0, 1);
     }
 
     @Test
     @LargeTest
-    public void testClickConfirmButton() throws Throwable {
+    public void testSmsReceivedUserClickingCancelButton() throws Throwable {
         Dialog dialog = mSmsDialog.getDialogForTesting();
-        Button confirmButton = (Button) dialog.findViewById(R.id.confirm_button);
 
+        ProgressBar progressBar = (ProgressBar) dialog.findViewById(R.id.progress);
+        ImageView doneIcon = (ImageView) dialog.findViewById(R.id.done_icon);
+        ImageView errorIcon = (ImageView) dialog.findViewById(R.id.error_icon);
+        TextView status = (TextView) dialog.findViewById(R.id.status);
+        Button cancelButton = (Button) dialog.findViewById(R.id.cancel_button);
+        Button confirmButton = (Button) dialog.findViewById(R.id.confirm_or_try_again_button);
+
+        Assert.assertEquals(View.VISIBLE, progressBar.getVisibility());
+        Assert.assertEquals(View.GONE, doneIcon.getVisibility());
+        Assert.assertEquals(View.GONE, errorIcon.getVisibility());
+        Assert.assertEquals(
+                mActivityTestRule.getActivity().getString(R.string.sms_dialog_status_waiting),
+                status.getText().toString());
+        Assert.assertTrue(cancelButton.isEnabled());
+        Assert.assertEquals(mActivityTestRule.getActivity().getString(R.string.confirm),
+                confirmButton.getText().toString());
+        Assert.assertFalse(confirmButton.isEnabled());
+
+        // Simulates the SMS being received.
+        TestThreadUtils.runOnUiThreadBlocking(mSmsDialog::smsReceived);
+
+        Assert.assertEquals(View.GONE, progressBar.getVisibility());
+        Assert.assertEquals(View.VISIBLE, doneIcon.getVisibility());
+        Assert.assertEquals(View.GONE, errorIcon.getVisibility());
+        Assert.assertEquals(
+                mActivityTestRule.getActivity().getString(R.string.sms_dialog_status_sms_received),
+                status.getText().toString());
+        Assert.assertTrue(cancelButton.isEnabled());
+        Assert.assertTrue(confirmButton.isEnabled());
+
+        // Simulates the user clicking the "Cancel" button.
+        TestTouchUtils.performClickOnMainSync(
+                InstrumentationRegistry.getInstrumentation(), cancelButton);
+        mCancelButtonClickedCallback.waitForCallback(0, 1);
+    }
+
+    @Test
+    @LargeTest
+    public void testSmsReceivedUserClickingConfirmButton() throws Throwable {
+        Dialog dialog = mSmsDialog.getDialogForTesting();
+
+        Button confirmButton = (Button) dialog.findViewById(R.id.confirm_or_try_again_button);
+
+        // Simulates the SMS being received.
+        TestThreadUtils.runOnUiThreadBlocking(mSmsDialog::smsReceived);
+
+        // Simulates the user clicking the "Confirm" button.
         TestTouchUtils.performClickOnMainSync(
                 InstrumentationRegistry.getInstrumentation(), confirmButton);
-
         mConfirmButtonClickedCallback.waitForCallback(0, 1);
+    }
+
+    @Test
+    @LargeTest
+    public void testSmsTimeout() throws Throwable {
+        Dialog dialog = mSmsDialog.getDialogForTesting();
+
+        ProgressBar progressBar = (ProgressBar) dialog.findViewById(R.id.progress);
+        ImageView doneIcon = (ImageView) dialog.findViewById(R.id.done_icon);
+        ImageView errorIcon = (ImageView) dialog.findViewById(R.id.error_icon);
+        TextView status = (TextView) dialog.findViewById(R.id.status);
+        Button cancelButton = (Button) dialog.findViewById(R.id.cancel_button);
+        Button tryAgainButton = (Button) dialog.findViewById(R.id.confirm_or_try_again_button);
+
+        // Simulates receiving the SMS having timed out.
+        TestThreadUtils.runOnUiThreadBlocking(mSmsDialog::smsTimeout);
+
+        Assert.assertEquals(View.GONE, progressBar.getVisibility());
+        Assert.assertEquals(View.GONE, doneIcon.getVisibility());
+        Assert.assertEquals(View.VISIBLE, errorIcon.getVisibility());
+        Assert.assertEquals(
+                mActivityTestRule.getActivity().getString(R.string.sms_dialog_status_timeout),
+                status.getText().toString());
+        Assert.assertEquals(View.GONE, cancelButton.getVisibility());
+        Assert.assertEquals(mActivityTestRule.getActivity().getString(R.string.try_again),
+                tryAgainButton.getText().toString());
+        Assert.assertTrue(tryAgainButton.isEnabled());
+
+        // Simulates the user clicking the "Try again" button.
+        TestTouchUtils.performClickOnMainSync(
+                InstrumentationRegistry.getInstrumentation(), tryAgainButton);
+        mTryAgainButtonClickedCallback.waitForCallback(0, 1);
     }
 
     @Test

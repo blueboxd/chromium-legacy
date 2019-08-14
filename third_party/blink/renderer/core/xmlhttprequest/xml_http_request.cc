@@ -1472,9 +1472,15 @@ String XMLHttpRequest::getAllResponseHeaders() const {
                             : network::mojom::CredentialsMode::kSameOrigin,
           response_);
 
-  HTTPHeaderMap::const_iterator end = response_.HttpHeaderFields().end();
-  for (HTTPHeaderMap::const_iterator it = response_.HttpHeaderFields().begin();
-       it != end; ++it) {
+  // "Let |headers| be the result of sorting |initialHeaders| in ascending
+  // order, with |a| being less than |b| if |a|’s name is legacy-uppercased-byte
+  // less than |b|’s name."
+  Vector<std::pair<String, String>> headers;
+  // Although we omit some headers in |response_.HttpHeaderFields()| below,
+  // we pre-allocate the buffer for performance.
+  headers.ReserveInitialCapacity(response_.HttpHeaderFields().size());
+  for (auto it = response_.HttpHeaderFields().begin();
+       it != response_.HttpHeaderFields().end(); ++it) {
     // Hide any headers whose name is a forbidden response-header name.
     // This is required for all kinds of filtered responses.
     //
@@ -1491,10 +1497,18 @@ String XMLHttpRequest::getAllResponseHeaders() const {
       continue;
     }
 
-    string_builder.Append(it->key.LowerASCII());
+    headers.push_back(std::make_pair(it->key.UpperASCII(), it->value));
+  }
+  std::sort(headers.begin(), headers.end(),
+            [](const std::pair<String, String>& x,
+               const std::pair<String, String>& y) {
+              return CodeUnitCompareLessThan(x.first, y.first);
+            });
+  for (const auto& header : headers) {
+    string_builder.Append(header.first.LowerASCII());
     string_builder.Append(':');
     string_builder.Append(' ');
-    string_builder.Append(it->value);
+    string_builder.Append(header.second);
     string_builder.Append('\r');
     string_builder.Append('\n');
   }

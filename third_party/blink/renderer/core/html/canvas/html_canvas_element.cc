@@ -451,7 +451,7 @@ void HTMLCanvasElement::FinalizeFrame() {
     if (GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
       const bool webgl_overlay_enabled =
           RuntimeEnabledFeatures::WebGLImageChromiumEnabled() ||
-          RuntimeEnabledFeatures::WebGLSwapChainEnabled();
+          context_->UsingSwapChain();
       // TryEnableSingleBuffering() the first time we FinalizeFrame().
       if (!ResourceProvider()->IsSingleBuffered()) {
         ResourceProvider()->TryEnableSingleBuffering();

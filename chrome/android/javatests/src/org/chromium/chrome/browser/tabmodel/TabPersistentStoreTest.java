@@ -179,7 +179,7 @@ public class TabPersistentStoreTest {
                                     mTabCreatorManager, mTabPersistentStoreObserver);
                         }
                     });
-            mTabModelOrderController = new TabModelOrderController(this);
+            mTabModelOrderController = new TabModelOrderControllerImpl(this);
 
             Callable<TabModelImpl> callable = new Callable<TabModelImpl>() {
                 @Override

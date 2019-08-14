@@ -36,6 +36,7 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
     const OriginAccessList* origin_access_list,
     std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory_for_testing)
     : context_(context),
+      is_trusted_(params->is_trusted),
       disable_web_security_(params->disable_web_security),
       process_id_(params->process_id),
       request_initiator_site_lock_(params->request_initiator_site_lock),
@@ -139,6 +140,14 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
     LOG(WARNING) << "|mode| is " << request.mode
                  << ", but |request_initiator| is not set.";
     mojo::ReportBadMessage("CorsURLLoaderFactory: cors without initiator");
+    return false;
+  }
+
+  // Reject request with trusted params if factory is not for a trusted
+  // consumer.
+  if (request.trusted_params && !is_trusted_) {
+    mojo::ReportBadMessage(
+        "CorsURLLoaderFactory: Untrusted caller making trusted request");
     return false;
   }
 

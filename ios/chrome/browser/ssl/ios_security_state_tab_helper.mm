@@ -16,7 +16,7 @@
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/security/security_style.h"
 #include "ios/web/public/security/ssl_status.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "net/cert/x509_certificate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

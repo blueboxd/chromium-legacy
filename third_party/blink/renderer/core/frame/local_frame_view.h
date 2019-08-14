@@ -670,12 +670,6 @@ class CORE_EXPORT LocalFrameView final
   void ScrollRectToVisibleInRemoteParent(const PhysicalRect&,
                                          const WebScrollIntoViewParams&);
 
-  PaintArtifactCompositor* GetPaintArtifactCompositorForTesting() {
-    DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
-    return paint_artifact_compositor_.get();
-  }
-
   PaintArtifactCompositor* GetPaintArtifactCompositor() const;
 
   const cc::Layer* RootCcLayer() const;

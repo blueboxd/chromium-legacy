@@ -60,7 +60,7 @@
 #import "ios/chrome/common/favicon/favicon_view.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 
@@ -1146,6 +1146,13 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 
 - (void)showSignin:(ShowSigninCommand*)command {
   [self.dispatcher showSignin:command baseViewController:self];
+}
+
+#pragma mark - UIAdaptivePresentationControllerDelegate
+- (void)presentationControllerDidDismiss:
+    (UIPresentationController*)presentationController {
+  // Call dismissRecentTabs so the Coordinator cleans up any state it needs to.
+  [self.presentationDelegate dismissRecentTabs];
 }
 
 #pragma mark - Accessibility

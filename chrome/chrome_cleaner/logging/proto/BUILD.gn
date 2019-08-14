@@ -4,6 +4,9 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
+# Nothing outside //chrome/chrome_cleaner can depend on these targets.
+visibility = [ "//chrome/chrome_cleaner/*" ]
+
 proto_library("shared_data_proto") {
   sources = [
     "shared_data.proto",

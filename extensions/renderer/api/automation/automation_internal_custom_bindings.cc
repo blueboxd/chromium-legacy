@@ -40,6 +40,7 @@
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_language_detection.h"
 #include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -574,9 +575,8 @@ void AutomationInternalCustomBindings::AddRoutes() {
       "GetIsSelectionBackward",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper) {
-        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
-        const ui::AXNode* anchor =
-            tree_wrapper->tree()->GetFromId(tree_data.sel_anchor_object_id);
+        const ui::AXNode* anchor = tree_wrapper->tree()->GetFromId(
+            tree_wrapper->GetUnignoredSelection().anchor_object_id);
         if (!anchor)
           return;
 
@@ -587,103 +587,114 @@ void AutomationInternalCustomBindings::AddRoutes() {
       "GetAnchorObjectID",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper) {
-        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
-        result.Set(v8::Number::New(isolate, tree_data.sel_anchor_object_id));
+        result.Set(v8::Number::New(
+            isolate, tree_wrapper->GetUnignoredSelection().anchor_object_id));
       });
   RouteTreeIDFunction(
       "GetAnchorOffset",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper) {
-        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
-        result.Set(v8::Number::New(isolate, tree_data.sel_anchor_offset));
+        result.Set(v8::Number::New(
+            isolate, tree_wrapper->GetUnignoredSelection().anchor_offset));
       });
   RouteTreeIDFunction(
       "GetAnchorAffinity",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper) {
-        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
-        result.Set(CreateV8String(isolate,
-                                  ui::ToString(tree_data.sel_anchor_affinity)));
+        result.Set(CreateV8String(
+            isolate,
+            ui::ToString(
+                tree_wrapper->GetUnignoredSelection().anchor_affinity)));
       });
   RouteTreeIDFunction(
       "GetFocusObjectID",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper) {
-        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
-        result.Set(v8::Number::New(isolate, tree_data.sel_focus_object_id));
+        result.Set(v8::Number::New(
+            isolate, tree_wrapper->GetUnignoredSelection().focus_object_id));
       });
   RouteTreeIDFunction(
       "GetFocusOffset",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper) {
-        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
-        result.Set(v8::Number::New(isolate, tree_data.sel_focus_offset));
+        result.Set(v8::Number::New(
+            isolate, tree_wrapper->GetUnignoredSelection().focus_offset));
       });
   RouteTreeIDFunction(
       "GetFocusAffinity",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper) {
-        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
-        result.Set(CreateV8String(isolate,
-                                  ui::ToString(tree_data.sel_focus_affinity)));
+        result.Set(CreateV8String(
+            isolate,
+            ui::ToString(
+                tree_wrapper->GetUnignoredSelection().focus_affinity)));
       });
   RouteTreeIDFunction(
       "GetSelectionStartObjectID",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper) {
-        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
-        int32_t start_object_id = tree_data.sel_is_backward
-                                      ? tree_data.sel_focus_object_id
-                                      : tree_data.sel_anchor_object_id;
+        ui::AXTree::Selection unignored_selection =
+            tree_wrapper->GetUnignoredSelection();
+        int32_t start_object_id = unignored_selection.is_backward
+                                      ? unignored_selection.focus_object_id
+                                      : unignored_selection.anchor_object_id;
         result.Set(v8::Number::New(isolate, start_object_id));
       });
   RouteTreeIDFunction(
       "GetSelectionStartOffset",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper) {
-        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
-        int start_offset = tree_data.sel_is_backward
-                               ? tree_data.sel_focus_offset
-                               : tree_data.sel_anchor_offset;
+        ui::AXTree::Selection unignored_selection =
+            tree_wrapper->GetUnignoredSelection();
+        int start_offset = unignored_selection.is_backward
+                               ? unignored_selection.focus_offset
+                               : unignored_selection.anchor_offset;
         result.Set(v8::Number::New(isolate, start_offset));
       });
   RouteTreeIDFunction(
       "GetSelectionStartAffinity",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper) {
-        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
+        ui::AXTree::Selection unignored_selection =
+            tree_wrapper->GetUnignoredSelection();
         ax::mojom::TextAffinity start_affinity =
-            tree_data.sel_is_backward ? tree_data.sel_focus_affinity
-                                      : tree_data.sel_anchor_affinity;
+            unignored_selection.is_backward
+                ? unignored_selection.focus_affinity
+                : unignored_selection.anchor_affinity;
         result.Set(CreateV8String(isolate, ui::ToString(start_affinity)));
       });
   RouteTreeIDFunction(
       "GetSelectionEndObjectID",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper) {
-        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
-        int32_t end_object_id = tree_data.sel_is_backward
-                                    ? tree_data.sel_anchor_object_id
-                                    : tree_data.sel_focus_object_id;
+        ui::AXTree::Selection unignored_selection =
+            tree_wrapper->GetUnignoredSelection();
+        int32_t end_object_id = unignored_selection.is_backward
+                                    ? unignored_selection.anchor_object_id
+                                    : unignored_selection.focus_object_id;
         result.Set(v8::Number::New(isolate, end_object_id));
       });
   RouteTreeIDFunction(
       "GetSelectionEndOffset",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper) {
-        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
-        int end_offset = tree_data.sel_is_backward ? tree_data.sel_anchor_offset
-                                                   : tree_data.sel_focus_offset;
+        ui::AXTree::Selection unignored_selection =
+            tree_wrapper->GetUnignoredSelection();
+        int end_offset = unignored_selection.is_backward
+                             ? unignored_selection.anchor_offset
+                             : unignored_selection.focus_offset;
         result.Set(v8::Number::New(isolate, end_offset));
       });
   RouteTreeIDFunction(
       "GetSelectionEndAffinity",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper) {
-        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
+        ui::AXTree::Selection unignored_selection =
+            tree_wrapper->GetUnignoredSelection();
         ax::mojom::TextAffinity end_affinity =
-            tree_data.sel_is_backward ? tree_data.sel_anchor_affinity
-                                      : tree_data.sel_focus_affinity;
+            unignored_selection.is_backward
+                ? unignored_selection.anchor_affinity
+                : unignored_selection.focus_affinity;
         result.Set(CreateV8String(isolate, ui::ToString(end_affinity)));
       });
 

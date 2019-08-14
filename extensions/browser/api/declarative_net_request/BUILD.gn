@@ -4,6 +4,8 @@
 
 source_set("declarative_net_request") {
   sources = [
+    "action_tracker.cc",
+    "action_tracker.h",
     "composite_matcher.cc",
     "composite_matcher.h",
     "constants.cc",

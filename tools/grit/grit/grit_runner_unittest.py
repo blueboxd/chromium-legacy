@@ -13,14 +13,15 @@ if __name__ == '__main__':
   sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import unittest
-import StringIO
+
+from six import StringIO
 
 from grit import util
 import grit.grit_runner
 
 class OptionArgsUnittest(unittest.TestCase):
   def setUp(self):
-    self.buf = StringIO.StringIO()
+    self.buf = StringIO()
     self.old_stdout = sys.stdout
     sys.stdout = self.buf
 

@@ -1830,11 +1830,14 @@ const char kH2ClientCertCoalescingHosts[] =
 // Boolean that specifies whether the built-in asynchronous DNS client is used.
 const char kBuiltInDnsClientEnabled[] = "async_dns.enabled";
 
-// String containing list of DNS over HTTPS servers to be used.
-const char kDnsOverHttpsServers[] = "dns_over_https.servers";
-// String contianing list of methods (GET or POST) to use with DNS over HTTPS
-// servers, in the same order of the above pref.
-const char kDnsOverHttpsServerMethods[] = "dns_over_https.methods";
+// String specifying the secure DNS mode to use. Any string other than
+// "secure" or "automatic" will be mapped to the default "off" mode.
+const char kDnsOverHttpsMode[] = "dns_over_https.mode";
+// String containing a space-separated list of DNS over HTTPS templates to use
+// in secure mode or automatic mode. If no templates are specified in automatic
+// mode, we will attempt discovery of DoH servers associated with the configured
+// insecure resolvers.
+const char kDnsOverHttpsTemplates[] = "dns_over_https.templates";
 
 // A pref holding the value of the policy used to explicitly allow or deny
 // access to audio capture devices.  When enabled or not set, the user is

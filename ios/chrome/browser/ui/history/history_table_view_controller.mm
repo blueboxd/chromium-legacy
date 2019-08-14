@@ -167,6 +167,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   // Add a tableFooterView in order to disable separators at the bottom of the
   // tableView.
   self.tableView.tableFooterView = [[UIView alloc] init];
+  self.tableView.accessibilityIdentifier = kHistoryTableViewIdentifier;
 
   // ContextMenu gesture recognizer.
   UILongPressGestureRecognizer* longPressRecognizer = [
@@ -473,6 +474,24 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 - (void)searchBarTextDidEndEditing:(UISearchBar*)searchBar {
   self.searchInProgress = NO;
   [self updateEntriesStatusMessage];
+}
+
+#pragma mark UIAdaptivePresentationControllerDelegate
+
+- (void)presentationControllerWillDismiss:
+    (UIPresentationController*)presentationController {
+  if (self.searchInProgress) {
+    // Dismiss the keyboard if trying to dismiss the VC so the keyboard doesn't
+    // linger until the VC dismissal has completed.
+    [self.searchController.searchBar endEditing:YES];
+  }
+}
+
+- (void)presentationControllerDidDismiss:
+    (UIPresentationController*)presentationController {
+  // Call the localDispatcher dismissHistoryWithCompletion to clean up state and
+  // stop the Coordinator.
+  [self.localDispatcher dismissHistoryWithCompletion:nil];
 }
 
 #pragma mark - History Data Updates

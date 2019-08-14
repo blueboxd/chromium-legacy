@@ -1028,7 +1028,9 @@ void LayoutObject::MarkContainerChainForLayout(bool schedule_relayout,
     DCHECK(!object->IsSetNeedsLayoutForbidden());
 #endif
 
-    object->MarkSelfPaintingLayerForVisualOverflowRecalc();
+    if (object->HasLayer() &&
+        ToLayoutBoxModelObject(object)->Layer()->IsSelfPaintingLayer())
+      ToLayoutBoxModelObject(object)->Layer()->SetNeedsVisualOverflowRecalc();
 
     if (layouter) {
       layouter->RecordObjectMarkedForLayout(object);
@@ -1036,6 +1038,7 @@ void LayoutObject::MarkContainerChainForLayout(bool schedule_relayout,
       if (object == layouter->Root()) {
         if (auto* painting_layer = PaintingLayer())
           painting_layer->SetNeedsVisualOverflowRecalc();
+
         return;
       }
     }
@@ -1943,7 +1946,12 @@ void LayoutObject::MarkContainerChainForOverflowRecalcIfNeeded() {
                  : object->Container();
     if (object) {
       object->SetChildNeedsLayoutOverflowRecalc();
-      object->MarkSelfPaintingLayerForVisualOverflowRecalc();
+
+      if (object->HasLayer()) {
+        auto* box_model_object = ToLayoutBoxModelObject(object);
+        if (box_model_object->HasSelfPaintingLayer())
+          box_model_object->Layer()->SetNeedsVisualOverflowRecalc();
+      }
     }
 
   } while (object);
@@ -1953,8 +1961,12 @@ void LayoutObject::SetNeedsOverflowRecalc() {
   bool needed_recalc = SelfNeedsLayoutOverflowRecalc();
   SetSelfNeedsLayoutOverflowRecalc();
   SetShouldCheckForPaintInvalidation();
-  MarkSelfPaintingLayerForVisualOverflowRecalc();
 
+  if (HasLayer()) {
+    auto* box_model_object = ToLayoutBoxModelObject(this);
+    if (box_model_object->HasSelfPaintingLayer())
+      box_model_object->Layer()->SetNeedsVisualOverflowRecalc();
+  }
   if (!needed_recalc)
     MarkContainerChainForOverflowRecalcIfNeeded();
 }
@@ -4061,14 +4073,6 @@ LayoutUnit LayoutObject::FlipForWritingModeInternal(
     return position;
   return (box_for_flipping ? box_for_flipping : ContainingBlock())
       ->FlipForWritingMode(position, width);
-}
-
-void LayoutObject::MarkSelfPaintingLayerForVisualOverflowRecalc() {
-  if (HasLayer()) {
-    auto* box_model_object = ToLayoutBoxModelObject(this);
-    if (box_model_object->HasSelfPaintingLayer())
-      box_model_object->Layer()->SetNeedsVisualOverflowRecalc();
-  }
 }
 
 }  // namespace blink

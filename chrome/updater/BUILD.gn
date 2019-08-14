@@ -85,7 +85,7 @@ if (is_win || is_mac) {
     ]
 
     if (is_win) {
-      deps += [ "//chrome/updater/win:unittest" ]
+      deps += [ "//chrome/updater/win:updater_tests" ]
 
       data_deps = [
         "//chrome/updater/win:updater",

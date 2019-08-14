@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/autofill/payments/payments_view_util.h"
 
+#include "build/branding_buildflags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -31,7 +32,7 @@ namespace autofill {
 namespace {
 
 // Dimensions of the Google Pay logo.
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 constexpr int kGooglePayLogoWidth = 40;
 #endif
 constexpr int kGooglePayLogoHeight = 16;
@@ -61,7 +62,7 @@ TitleWithIconAndSeparatorView::TitleWithIconAndSeparatorView(
   layout->StartRow(views::GridLayout::kFixedSize, 0);
 
   auto icon_view = std::make_unique<views::ImageView>();
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // kGooglePayLogoIcon is square, and CreateTiledImage() will clip it whereas
   // setting the icon size would rescale it incorrectly.
   gfx::ImageSkia image = gfx::ImageSkiaOperations::CreateTiledImage(

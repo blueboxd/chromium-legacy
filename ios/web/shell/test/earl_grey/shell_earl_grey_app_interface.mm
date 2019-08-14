@@ -12,7 +12,7 @@
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #import "ios/web/shell/test/app/web_shell_test_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

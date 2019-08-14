@@ -99,6 +99,9 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   ~Animation() override;
   void Dispose();
 
+  virtual bool IsCSSAnimation() const { return false; }
+  virtual bool IsCSSTransition() const { return false; }
+
   // Returns whether the animation is finished.
   bool Update(TimingUpdateReason);
 

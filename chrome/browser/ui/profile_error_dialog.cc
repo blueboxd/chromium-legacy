@@ -69,7 +69,7 @@ void ShowProfileErrorDialog(ProfileErrorType type,
   chrome::ShowWarningMessageBox(
       nullptr, l10n_util::GetStringUTF16(IDS_PROFILE_ERROR_DIALOG_TITLE),
       l10n_util::GetStringUTF16(message_id));
-#endif  // BUILDFLAGdefined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 #endif  // !defined(OS_ANDROID)
 }

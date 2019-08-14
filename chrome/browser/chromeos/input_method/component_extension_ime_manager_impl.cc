@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -40,44 +41,53 @@ struct WhitelistedComponentExtensionIME {
   const char* id;
   int manifest_resource_id;
 } whitelisted_component_extension[] = {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {
         // Official Google XKB Input.
-        extension_ime_util::kXkbExtensionId, IDR_GOOGLE_XKB_MANIFEST,
+        extension_ime_util::kXkbExtensionId,
+        IDR_GOOGLE_XKB_MANIFEST,
     },
 #else
     {
         // Open-sourced ChromeOS xkb extension.
-        extension_ime_util::kXkbExtensionId, IDR_XKB_MANIFEST,
+        extension_ime_util::kXkbExtensionId,
+        IDR_XKB_MANIFEST,
     },
     {
         // Open-sourced ChromeOS Keyboards extension.
-        extension_ime_util::kM17nExtensionId, IDR_M17N_MANIFEST,
+        extension_ime_util::kM17nExtensionId,
+        IDR_M17N_MANIFEST,
     },
     {
         // Open-sourced Pinyin Chinese Input Method.
-        extension_ime_util::kChinesePinyinExtensionId, IDR_PINYIN_MANIFEST,
+        extension_ime_util::kChinesePinyinExtensionId,
+        IDR_PINYIN_MANIFEST,
     },
     {
         // Open-sourced Zhuyin Chinese Input Method.
-        extension_ime_util::kChineseZhuyinExtensionId, IDR_ZHUYIN_MANIFEST,
+        extension_ime_util::kChineseZhuyinExtensionId,
+        IDR_ZHUYIN_MANIFEST,
     },
     {
         // Open-sourced Cangjie Chinese Input Method.
-        extension_ime_util::kChineseCangjieExtensionId, IDR_CANGJIE_MANIFEST,
+        extension_ime_util::kChineseCangjieExtensionId,
+        IDR_CANGJIE_MANIFEST,
     },
     {
         // Open-sourced Japanese Mozc Input.
-        extension_ime_util::kMozcExtensionId, IDR_MOZC_MANIFEST,
+        extension_ime_util::kMozcExtensionId,
+        IDR_MOZC_MANIFEST,
     },
     {
         // Open-sourced Hangul Input.
-        extension_ime_util::kHangulExtensionId, IDR_HANGUL_MANIFEST,
+        extension_ime_util::kHangulExtensionId,
+        IDR_HANGUL_MANIFEST,
     },
 #endif
     {
         // Braille hardware keyboard IME that works together with ChromeVox.
-        extension_ime_util::kBrailleImeExtensionId, IDR_BRAILLE_MANIFEST,
+        extension_ime_util::kBrailleImeExtensionId,
+        IDR_BRAILLE_MANIFEST,
     },
 };
 

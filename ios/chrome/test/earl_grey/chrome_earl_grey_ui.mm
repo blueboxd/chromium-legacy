@@ -121,6 +121,21 @@ bool IsAppCompactWidth() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ClearCacheButton()]
       performAction:grey_tap()];
+
+  // Set 'Time Range' to 'All Time'.
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::ButtonWithAccessibilityLabelId(
+                     IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_TITLE)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:
+          chrome_test_util::ButtonWithAccessibilityLabelId(
+              IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_BEGINNING_OF_TIME)]
+      performAction:grey_tap()];
+  [[[EarlGrey
+      selectElementWithMatcher:chrome_test_util::SettingsMenuBackButton()]
+      atIndex:0] performAction:grey_tap()];
+
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ClearBrowsingDataButton()]
       performAction:grey_tap()];
@@ -130,6 +145,12 @@ bool IsAppCompactWidth() {
   // Wait until activity indicator modal is cleared, meaning clearing browsing
   // data has been finished.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  // Recheck "Cookies, Site Data" and "Cached Images and Files."
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ClearCookiesButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ClearCacheButton()]
+      performAction:grey_tap()];
 
   // Include sufficientlyVisible condition for the case of the clear browsing
   // dialog, which also has a "Done" button and is displayed over the history

@@ -6,6 +6,7 @@
 
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ash/system/unified/unified_system_tray_view.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -71,13 +72,15 @@ std::unique_ptr<views::InkDropRipple> CustomShapeButton::CreateInkDropRipple()
     const {
   return TrayPopupUtils::CreateInkDropRipple(
       TrayPopupInkDropStyle::FILL_BOUNDS, this,
-      GetInkDropCenterBasedOnLastEvent(), kIconOnDarkBackgroundColor);
+      GetInkDropCenterBasedOnLastEvent(),
+      UnifiedSystemTrayView::GetBackgroundColor());
 }
 
 std::unique_ptr<views::InkDropHighlight>
 CustomShapeButton::CreateInkDropHighlight() const {
   return TrayPopupUtils::CreateInkDropHighlight(
-      TrayPopupInkDropStyle::FILL_BOUNDS, this, kIconOnDarkBackgroundColor);
+      TrayPopupInkDropStyle::FILL_BOUNDS, this,
+      UnifiedSystemTrayView::GetBackgroundColor());
 }
 
 std::unique_ptr<views::InkDropMask> CustomShapeButton::CreateInkDropMask()

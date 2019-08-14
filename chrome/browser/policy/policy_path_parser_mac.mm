@@ -18,6 +18,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "components/policy/policy_constants.h"
 
 namespace policy {
@@ -101,7 +102,7 @@ base::FilePath::StringType ExpandPathVariables(
 void CheckUserDataDirPolicy(base::FilePath* user_data_dir) {
   // Since the configuration management infrastructure is not initialized when
   // this code runs, read the policy preference directly.
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Explicitly access the "com.google.Chrome" bundle ID, no matter what this
   // app's bundle ID actually is. All channels of Chrome should obey the same
   // policies.

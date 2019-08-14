@@ -43,11 +43,6 @@ namespace net {
 class AuthChallengeInfo;
 }
 
-namespace payments {
-class PaymentRequest;
-class PaymentRequestDialog;
-}  // namespace payments
-
 namespace safe_browsing {
 class ChromeCleanerController;
 class ChromeCleanerDialogController;
@@ -139,9 +134,6 @@ void SetAutoAcceptPWAInstallConfirmationForTesting(bool auto_accept);
 task_manager::TaskManagerTableModel* ShowTaskManagerViews(Browser* browser);
 void HideTaskManagerViews();
 
-// Show the Views "Chrome Update" dialog.
-void ShowUpdateChromeDialogViews(gfx::NativeWindow parent);
-
 #endif  // OS_MACOSX
 
 #if defined(TOOLKIT_VIEWS)
@@ -151,15 +143,6 @@ std::unique_ptr<LoginHandler> CreateLoginHandlerViews(
     const net::AuthChallengeInfo& auth_info,
     content::WebContents* web_contents,
     LoginAuthRequiredCallback auth_required_callback);
-
-// Shows the toolkit-views based BookmarkEditor.
-void ShowBookmarkEditorViews(gfx::NativeWindow parent_window,
-                             Profile* profile,
-                             const BookmarkEditor::EditDetails& details,
-                             BookmarkEditor::Configuration configuration);
-
-payments::PaymentRequestDialog* CreatePaymentRequestDialog(
-    payments::PaymentRequest* request);
 
 #endif  // TOOLKIT_VIEWS
 

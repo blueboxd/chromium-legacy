@@ -139,19 +139,22 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
     // |task| will be pushed to |sequence|, and |sequence| will be queued
     // to |priority_queue_| iff |sequence_should_be_queued| is true.
     const bool sequence_should_be_queued = transaction.WillPushTask();
-    if (!sequence_should_be_queued) {
-      transaction.PushTask(std::move(task));
-      return true;
+    RegisteredTaskSource task_source;
+    if (sequence_should_be_queued) {
+      task_source = task_tracker_->WillQueueTaskSource(sequence);
+      // We shouldn't push |task| if we're not allowed to queue |task_source|.
+      if (!task_source)
+        return false;
     }
-    auto registered_task_source = task_tracker_->WillQueueTaskSource(sequence);
-    if (!registered_task_source)
+    if (!task_tracker_->WillPostTaskNow(task, transaction.traits().priority()))
       return false;
-    task_tracker_->WillPostTaskNow(task, transaction.traits().priority());
     transaction.PushTask(std::move(task));
-    bool should_wakeup = EnqueueTaskSource(
-        {std::move(registered_task_source), std::move(transaction)});
-    if (should_wakeup)
-      worker_->WakeUp();
+    if (task_source) {
+      bool should_wakeup =
+          EnqueueTaskSource({std::move(task_source), std::move(transaction)});
+      if (should_wakeup)
+        worker_->WakeUp();
+    }
     return true;
   }
 

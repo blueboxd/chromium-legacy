@@ -190,7 +190,6 @@ void PaintArtifact::FinishCycle() {
   // for clearing the property tree changed state at the end of paint instead of
   // in FinishCycle. See: LocalFrameView::RunPaintLifecyclePhase.
   bool clear_property_tree_changed =
-      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
       RuntimeEnabledFeatures::CompositeAfterPaintEnabled();
   for (auto& chunk : chunks_) {
     chunk.client_is_just_created = false;

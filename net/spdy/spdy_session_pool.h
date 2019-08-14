@@ -140,6 +140,7 @@ class NET_EXPORT SpdySessionPool
                   bool enable_ping_based_connection_checking,
                   bool support_ietf_format_quic_altsvc,
                   size_t session_max_recv_window_size,
+                  int session_max_queued_capped_frames,
                   const spdy::SettingsMap& initial_settings,
                   const base::Optional<GreasedHttp2Frame>& greased_http2_frame,
                   SpdySessionPool::TimeFunc time_func,
@@ -426,6 +427,9 @@ class NET_EXPORT SpdySessionPool
   bool support_ietf_format_quic_altsvc_;
 
   size_t session_max_recv_window_size_;
+
+  // Maximum number of capped frames that can be queued at any time.
+  int session_max_queued_capped_frames_;
 
   // Settings that are sent in the initial SETTINGS frame
   // (if |enable_sending_initial_data_| is true),

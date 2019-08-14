@@ -513,6 +513,10 @@ const base::Feature kPreloadMediaEngagementData{
 const base::Feature kMediaEngagementHTTPSOnly{
     "MediaEngagementHTTPSOnly", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Send events to devtools rather than to chrome://media-internals
+const base::Feature kMediaInspectorLogging{"MediaInspectorLogging",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables experimental local learning for media.  Adds reporting only; does not
 // change media behavior.
 const base::Feature kMediaLearningExperiment{"MediaLearningExperiment",

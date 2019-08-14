@@ -224,7 +224,6 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
       return gfx::kGoogleBlue700;
     case STYLE_SECONDARY:
     case STYLE_SECONDARY_MONOSPACED:
-    case STYLE_EMPHASIZED_SECONDARY:
     case STYLE_HINT:
       return native_theme->ShouldUseDarkColors() ? gfx::kGoogleGrey500
                                                  : gfx::kGoogleGrey700;

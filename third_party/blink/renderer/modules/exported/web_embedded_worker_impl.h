@@ -68,7 +68,8 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
       std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>,
       std::unique_ptr<ServiceWorkerContentSettingsProxy>,
       mojom::blink::CacheStoragePtrInfo,
-      service_manager::mojom::blink::InterfaceProviderPtrInfo);
+      service_manager::mojom::blink::InterfaceProviderPtrInfo,
+      mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>);
   ~WebEmbeddedWorkerImpl() override;
 
   // WebEmbeddedWorker overrides.
@@ -131,6 +132,9 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
 
   service_manager::mojom::blink::InterfaceProviderPtrInfo
       interface_provider_info_;
+
+  mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
+      browser_interface_broker_;
 
   DISALLOW_COPY_AND_ASSIGN(WebEmbeddedWorkerImpl);
 };

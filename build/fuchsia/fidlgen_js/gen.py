@@ -221,11 +221,6 @@ const %(name)s = {
                             '/' + name + '.' + member.name)
       javascript_name = name + '.' + member.name
       self.resolved_constant_name[fidl_constant_name] = javascript_name
-
-      # https://crbug.com/988195: Also map the legacy unqualified name.
-      legacy_fidl_constant_name = ('.'.join(compound.library) +
-                                   '/' + member.name)
-      self.resolved_constant_name[legacy_fidl_constant_name] = javascript_name
     self.f.write('};\n')
     self.f.write('const _kTT_%(name)s = _kTT_%(type)s;\n\n' % data)
 
@@ -527,10 +522,11 @@ function %(name)s() {}
     for method in interface.methods:
       method_name = _CompileIdentifier(method.name)
       self.f.write(
-          'const _k%(name)s_%(method_name)s_Ordinal = %(ordinal)s;\n' % {
+          'const _k%(name)s_%(method_name)s_Ordinal = %(ordinal)sn;\n' % {
               'name': name,
               'method_name': method_name,
-              'ordinal': method.ordinal
+              # TODO(https://crbug.com/991300): Use |ordinal| once it is 64-bit.
+              'ordinal': method.generated_ordinal
           })
 
     self.f.write('\n')

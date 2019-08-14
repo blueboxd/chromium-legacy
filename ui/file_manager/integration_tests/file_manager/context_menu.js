@@ -31,35 +31,6 @@ async function maybeCopyToClipboard(appId, commandId, file = 'hello.txt') {
 }
 
 /**
- * Selects a file.
- *
- * @param {string} appId ID of the app window.
- * @param {string} path Path to the file to be selected.
- */
-async function selectFile(appId, path) {
-  // Select the file |path|.
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil('selectFile', appId, [path]));
-
-  // Wait for the file to be selected.
-  await remoteCall.waitForElement(appId, '.table-row[selected]');
-}
-
-/**
- * Right clicks the currently selected file to show context menu.
- *
- * @param {string} appId ID of the app window.
- */
-async function rightClickSelectedFile(appId) {
-  // Right-click the selected file.
-  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
-      'fakeMouseRightClick', appId, ['.table-row[selected]']));
-
-  // Wait for the context menu to appear.
-  await remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])');
-}
-
-/**
  * Tests that the specified menu item is in |expectedEnabledState| when the
  * entry at |path| is selected.
  *
@@ -280,53 +251,6 @@ testcase.checkPasteIntoFolderEnabledForReadWriteFolder = () => {
  */
 testcase.checkPasteIntoFolderDisabledForReadOnlyFolder = () => {
   return checkContextMenu('paste-into-folder', 'Read-Only Folder', false);
-};
-
-/**
- * Tests that the Install with Linux menu item is enabled for read-write
- * Debian file if Crostini root access is allowed and disabled if not allowed.
- */
-testcase.checkInstallWithLinuxStateForDebianFile = async () => {
-  const optionShown = '#file-context-menu:not([hidden])' +
-      ' [command="#default-task"]:not([hidden]):not([disabled])';
-  const optionHidden = '#file-context-menu:not([hidden])' +
-      ' [command="#default-task"][disabled][hidden]';
-  const downloads = '#directory-tree [volume-type-icon="downloads"]';
-
-  // Open FilesApp on Downloads with deb file and other file.
-  const appId = await setupAndWaitUntilReady(
-      RootPath.DOWNLOADS, [ENTRIES.debPackage, ENTRIES.hello]);
-
-  // Ensure menu option "Install with Linux" is shown.
-  await selectFile(appId, 'package.deb');
-  await rightClickSelectedFile(appId);
-  await remoteCall.waitForElement(appId, optionShown);
-
-  // Close context menu.
-  await remoteCall.waitAndClickElement(appId, downloads);
-
-  // Select other file, so that menu options for package.deb will be
-  // reloaded on next select.
-  await selectFile(appId, 'hello.txt');
-
-  // Disallow root access, ensure menu option "Install with Linux" is not shown.
-  await sendTestMessage({name: 'setCrostiniRootAccessAllowed', enabled: false});
-  await selectFile(appId, 'package.deb');
-  await rightClickSelectedFile(appId);
-  await remoteCall.waitForElement(appId, optionHidden);
-
-  // Close context menu.
-  await remoteCall.waitAndClickElement(appId, downloads);
-
-  // Select other file, so that menu options for package.deb will be
-  // reloaded on next select.
-  await selectFile(appId, 'hello.txt');
-
-  // Allow root access, ensure menu option "Install with Linux" is shown.
-  await sendTestMessage({name: 'setCrostiniRootAccessAllowed', enabled: true});
-  await selectFile(appId, 'package.deb');
-  await rightClickSelectedFile(appId);
-  await remoteCall.waitForElement(appId, optionShown);
 };
 
 /**

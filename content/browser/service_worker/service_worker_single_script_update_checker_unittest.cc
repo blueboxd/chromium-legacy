@@ -13,6 +13,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
@@ -60,7 +61,11 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
   };
 
   ServiceWorkerSingleScriptUpdateCheckerTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+        browser_context_(std::make_unique<TestBrowserContext>()) {
+    BrowserContext::EnsureResourceContextInitialized(browser_context_.get());
+    base::RunLoop().RunUntilIdle();
+  }
   ~ServiceWorkerSingleScriptUpdateCheckerTest() override = default;
 
   ServiceWorkerStorage* storage() { return helper_->context()->storage(); }
@@ -115,6 +120,8 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
         GURL(url), url == main_script_url, GURL(main_script_url), scope,
         force_bypass_cache, update_via_cache, time_since_last_check,
         net::HttpRequestHeaders(),
+        base::BindRepeating([](BrowserContext* context) { return context; },
+                            browser_context_.get()),
         helper_->context()->GetLoaderFactoryBundleForUpdateCheck(),
         std::move(compare_reader), std::move(copy_reader), std::move(writer),
         base::BindOnce(
@@ -154,6 +161,7 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   base::test::ScopedFeatureList feature_list_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSingleScriptUpdateCheckerTest);

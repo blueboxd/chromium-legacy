@@ -83,9 +83,8 @@ void ContentHashFetcher::Start(HashFetcherCallback hash_fetcher_callback) {
         })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = fetch_params_.fetch_url;
-  resource_request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
-                                 net::LOAD_DO_NOT_SAVE_COOKIES |
-                                 net::LOAD_DISABLE_CACHE;
+  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   network::mojom::URLLoaderFactoryPtr url_loader_factory_ptr;
   url_loader_factory_ptr.Bind(

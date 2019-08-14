@@ -177,23 +177,20 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
     const cc::Layer* root,
     const cc::Layer* layer,
     bool report_wheel_event_listeners) {
-  bool using_layer_list =
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled();
-
   // When the front-end doesn't show internal layers, it will use the the first
   // DrawsContent layer as the root of the shown layer tree. This doesn't work
-  // for layer list because the non-DrawsContent root layer is the parent of
-  // all DrawsContent layers. We have to cheat the front-end by setting
-  // drawsContent to true for the root layer.
-  bool draws_content =
-      (using_layer_list && root == layer) || layer->DrawsContent();
+  // because the non-DrawsContent root layer is the parent of all DrawsContent
+  // layers. We have to cheat the front-end by setting drawsContent to true for
+  // the root layer.
+  bool draws_content = root == layer || layer->DrawsContent();
 
+  // TODO(pdr): Now that BlinkGenPropertyTrees has launched, we can remove
+  // setOffsetX and setOffsetY.
   std::unique_ptr<protocol::LayerTree::Layer> layer_object =
       protocol::LayerTree::Layer::create()
           .setLayerId(IdForLayer(layer))
-          .setOffsetX(using_layer_list ? 0 : layer->position().x())
-          .setOffsetY(using_layer_list ? 0 : layer->position().y())
+          .setOffsetX(0)
+          .setOffsetY(0)
           .setWidth(layer->bounds().width())
           .setHeight(layer->bounds().height())
           .setPaintCount(layer->paint_count())
@@ -206,14 +203,7 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
   if (const auto* parent = layer->parent())
     layer_object->setParentLayerId(IdForLayer(parent));
 
-  gfx::Transform transform;
-  gfx::Point3F transform_origin;
-  if (using_layer_list) {
-    transform = layer->ScreenSpaceTransform();
-  } else {
-    transform = layer->transform();
-    transform_origin = layer->transform_origin();
-  }
+  gfx::Transform transform = layer->ScreenSpaceTransform();
 
   if (!transform.IsIdentity()) {
     auto transform_array = std::make_unique<protocol::Array<double>>();
@@ -223,17 +213,11 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
     }
     layer_object->setTransform(std::move(transform_array));
     // FIXME: rename these to setTransformOrigin*
-    if (layer->bounds().width() > 0) {
-      layer_object->setAnchorX(transform_origin.x() / layer->bounds().width());
-    } else {
-      layer_object->setAnchorX(0.f);
-    }
-    if (layer->bounds().height() > 0) {
-      layer_object->setAnchorY(transform_origin.y() / layer->bounds().height());
-    } else {
-      layer_object->setAnchorY(0.f);
-    }
-    layer_object->setAnchorZ(transform_origin.z());
+    // TODO(pdr): Now that BlinkGenPropertyTrees has launched, we can remove
+    // setAnchorX, setAnchorY, and setAnchorZ.
+    layer_object->setAnchorX(0.f);
+    layer_object->setAnchorY(0.f);
+    layer_object->setAnchorZ(0.f);
   }
   std::unique_ptr<Array<protocol::LayerTree::ScrollRect>> scroll_rects =
       BuildScrollRectsForLayer(layer, report_wheel_event_listeners);
@@ -272,14 +256,8 @@ Response InspectorLayerTreeAgent::enable() {
   if (!document)
     return Response::Error("The root frame doesn't have document");
 
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    if (document->Lifecycle().GetState() >= DocumentLifecycle::kPaintClean) {
-      LayerTreePainted();
-      LayerTreeDidChange();
-    }
-  } else if (document->Lifecycle().GetState() >=
-             DocumentLifecycle::kCompositingClean) {
+  if (document->Lifecycle().GetState() >= DocumentLifecycle::kPaintClean) {
+    LayerTreePainted();
     LayerTreeDidChange();
   }
   return Response::OK();
@@ -295,31 +273,7 @@ void InspectorLayerTreeAgent::LayerTreeDidChange() {
   GetFrontend()->layerTreeDidChange(BuildLayerTree());
 }
 
-void InspectorLayerTreeAgent::DidPaint(const cc::Layer* layer,
-                                       const LayoutRect& rect) {
-  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-         !RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  if (suppress_layer_paint_events_)
-    return;
-
-  // Should only happen for LocalFrameView paints when compositing is off.
-  // Consider different instrumentation method for that.
-  if (!layer)
-    return;
-
-  std::unique_ptr<protocol::DOM::Rect> dom_rect = protocol::DOM::Rect::create()
-                                                      .setX(rect.X())
-                                                      .setY(rect.Y())
-                                                      .setWidth(rect.Width())
-                                                      .setHeight(rect.Height())
-                                                      .build();
-  GetFrontend()->layerPainted(IdForLayer(layer), std::move(dom_rect));
-}
-
 void InspectorLayerTreeAgent::LayerTreePainted() {
-  DCHECK(RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-         RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-
   for (const auto& layer :
        inspected_frames_->Root()->View()->RootCcLayer()->children()) {
     if (!layer->update_rect().IsEmpty()) {

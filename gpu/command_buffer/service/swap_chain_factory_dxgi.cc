@@ -204,6 +204,7 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
   }
 
   bool PresentSwapChain() override {
+    TRACE_EVENT0("gpu", "SharedImageBackingDXGISwapChain::PresentSwapChain");
     if (buffer_index_ != 0) {
       DLOG(ERROR) << "Swap chain backing does not correspond to back buffer";
       return false;
@@ -213,8 +214,9 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
     params.DirtyRectsCount = 0;
     params.pDirtyRects = nullptr;
 
-    HRESULT hr =
-        swap_chain_->Present1(0 /* interval */, 0 /* flags */, &params);
+    UINT flags = DXGI_PRESENT_ALLOW_TEARING;
+
+    HRESULT hr = swap_chain_->Present1(0 /* interval */, flags, &params);
     if (FAILED(hr)) {
       DLOG(ERROR) << "Present1 failed with error " << std::hex << hr;
       return false;
@@ -232,6 +234,11 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
       DLOG(ERROR) << "GLImageDXGISwapChain::BindTexImage failed";
       return false;
     }
+
+    TRACE_EVENT0("gpu",
+                 "SharedImageBackingDXGISwapChain::PresentSwapChain::Flush");
+    // Flush device context through ANGLE otherwise present could be deferred.
+    api->glFlushFn();
     return true;
   }
 
@@ -290,7 +297,8 @@ SwapChainFactoryDXGI::SwapChainBackings::operator=(
 
 // static
 bool SwapChainFactoryDXGI::IsSupported() {
-  return gl::DirectCompositionSurfaceWin::IsDirectCompositionSupported();
+  return gl::DirectCompositionSurfaceWin::IsDirectCompositionSupported() &&
+         gl::DirectCompositionSurfaceWin::IsSwapChainTearingSupported();
 }
 
 std::unique_ptr<SharedImageBacking> SwapChainFactoryDXGI::MakeBacking(
@@ -413,7 +421,7 @@ SwapChainFactoryDXGI::SwapChainBackings SwapChainFactoryDXGI::CreateSwapChain(
   desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
   desc.Scaling = DXGI_SCALING_STRETCH;
   desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-  desc.Flags = 0;
+  desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain;
 

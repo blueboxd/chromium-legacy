@@ -1917,7 +1917,8 @@ test("content_unittests") {
     "../renderer/media/audio/mock_audio_device_factory.h",
     "../renderer/media/audio/mojo_audio_input_ipc_unittest.cc",
     "../renderer/media/audio/mojo_audio_output_ipc_unittest.cc",
-    "../renderer/media/render_media_log_unittest.cc",
+    "../renderer/media/batching_media_log_unittest.cc",
+    "../renderer/media/inspector_media_event_handler_unittest.cc",
     "../renderer/media/renderer_webaudiodevice_impl_unittest.cc",
     "../renderer/media/webrtc/fake_rtc_rtp_transceiver.cc",
     "../renderer/media/webrtc/fake_rtc_rtp_transceiver.h",
@@ -2247,6 +2248,7 @@ test("content_unittests") {
       "../browser/renderer_host/render_widget_host_view_android_unittest.cc",
       "../browser/sms/sms_provider_android_unittest.cc",
       "../renderer/java/gin_java_bridge_value_converter_unittest.cc",
+      "../renderer/media/android/stream_texture_proxy_unittest.cc",
       "../renderer/media/android/stream_texture_wrapper_impl_unittest.cc",
     ]
     sources -= [ "../browser/tracing/tracing_ui_unittest.cc" ]

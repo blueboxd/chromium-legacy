@@ -1437,6 +1437,9 @@ void DrawingBuffer::PresentSwapChain() {
   DCHECK(UsingSwapChain());
   DCHECK_EQ(texture_target_, static_cast<unsigned>(GL_TEXTURE_2D));
 
+  if (!contents_changed_)
+    return;
+
   ScopedStateRestorer scoped_state_restorer(this);
   ResolveIfNeeded();
 
@@ -1472,6 +1475,7 @@ void DrawingBuffer::PresentSwapChain() {
                                 GL_FALSE, GL_FALSE);
   }
   ResetBuffersToAutoClear();
+  contents_changed_ = false;
 }
 
 scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(

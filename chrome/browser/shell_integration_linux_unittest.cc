@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -332,125 +333,99 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
     bool nodisplay;
     const char* const expected_output;
   } test_cases[] = {
-    // Real-world case.
-    { "http://gmail.com",
-      "GMail",
-      "chrome-http__gmail.com",
-      "",
-      false,
+      // Real-world case.
+      {"http://gmail.com", "GMail", "chrome-http__gmail.com", "", false,
 
-      "#!/usr/bin/env xdg-open\n"
-      "[Desktop Entry]\n"
-      "Version=1.0\n"
-      "Terminal=false\n"
-      "Type=Application\n"
-      "Name=GMail\n"
-      "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
-      "Icon=chrome-http__gmail.com\n"
-      "StartupWMClass=gmail.com\n"
-    },
+       "#!/usr/bin/env xdg-open\n"
+       "[Desktop Entry]\n"
+       "Version=1.0\n"
+       "Terminal=false\n"
+       "Type=Application\n"
+       "Name=GMail\n"
+       "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
+       "Icon=chrome-http__gmail.com\n"
+       "StartupWMClass=gmail.com\n"},
 
-    // Make sure that empty icons are replaced by the chrome icon.
-    { "http://gmail.com",
-      "GMail",
-      "",
-      "",
-      false,
+      // Make sure that empty icons are replaced by the chrome icon.
+      {"http://gmail.com", "GMail", "", "", false,
 
-      "#!/usr/bin/env xdg-open\n"
-      "[Desktop Entry]\n"
-      "Version=1.0\n"
-      "Terminal=false\n"
-      "Type=Application\n"
-      "Name=GMail\n"
-      "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
-#if defined(GOOGLE_CHROME_BUILD)
-      "Icon=google-chrome\n"
+       "#!/usr/bin/env xdg-open\n"
+       "[Desktop Entry]\n"
+       "Version=1.0\n"
+       "Terminal=false\n"
+       "Type=Application\n"
+       "Name=GMail\n"
+       "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+       "Icon=google-chrome\n"
 #else
-      "Icon=chromium-browser\n"
+       "Icon=chromium-browser\n"
 #endif
-      "StartupWMClass=gmail.com\n"
-    },
+       "StartupWMClass=gmail.com\n"},
 
-    // Test adding categories and NoDisplay=true.
-    { "http://gmail.com",
-      "GMail",
-      "chrome-http__gmail.com",
-      "Graphics;Education;",
-      true,
+      // Test adding categories and NoDisplay=true.
+      {"http://gmail.com", "GMail", "chrome-http__gmail.com",
+       "Graphics;Education;", true,
 
-      "#!/usr/bin/env xdg-open\n"
-      "[Desktop Entry]\n"
-      "Version=1.0\n"
-      "Terminal=false\n"
-      "Type=Application\n"
-      "Name=GMail\n"
-      "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
-      "Icon=chrome-http__gmail.com\n"
-      "Categories=Graphics;Education;\n"
-      "NoDisplay=true\n"
-      "StartupWMClass=gmail.com\n"
-    },
+       "#!/usr/bin/env xdg-open\n"
+       "[Desktop Entry]\n"
+       "Version=1.0\n"
+       "Terminal=false\n"
+       "Type=Application\n"
+       "Name=GMail\n"
+       "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
+       "Icon=chrome-http__gmail.com\n"
+       "Categories=Graphics;Education;\n"
+       "NoDisplay=true\n"
+       "StartupWMClass=gmail.com\n"},
 
-    // Now we're starting to be more evil...
-    { "http://evil.com/evil --join-the-b0tnet",
-      "Ownz0red\nExec=rm -rf /",
-      "chrome-http__evil.com_evil",
-      "",
-      false,
+      // Now we're starting to be more evil...
+      {"http://evil.com/evil --join-the-b0tnet", "Ownz0red\nExec=rm -rf /",
+       "chrome-http__evil.com_evil", "", false,
 
-      "#!/usr/bin/env xdg-open\n"
-      "[Desktop Entry]\n"
-      "Version=1.0\n"
-      "Terminal=false\n"
-      "Type=Application\n"
-      "Name=http://evil.com/evil%20--join-the-b0tnet\n"
-      "Exec=/opt/google/chrome/google-chrome "
-      "--app=http://evil.com/evil%20--join-the-b0tnet\n"
-      "Icon=chrome-http__evil.com_evil\n"
-      "StartupWMClass=evil.com__evil%20--join-the-b0tnet\n"
-    },
-    { "http://evil.com/evil; rm -rf /; \"; rm -rf $HOME >ownz0red",
-      "Innocent Title",
-      "chrome-http__evil.com_evil",
-      "",
-      false,
+       "#!/usr/bin/env xdg-open\n"
+       "[Desktop Entry]\n"
+       "Version=1.0\n"
+       "Terminal=false\n"
+       "Type=Application\n"
+       "Name=http://evil.com/evil%20--join-the-b0tnet\n"
+       "Exec=/opt/google/chrome/google-chrome "
+       "--app=http://evil.com/evil%20--join-the-b0tnet\n"
+       "Icon=chrome-http__evil.com_evil\n"
+       "StartupWMClass=evil.com__evil%20--join-the-b0tnet\n"},
+      {"http://evil.com/evil; rm -rf /; \"; rm -rf $HOME >ownz0red",
+       "Innocent Title", "chrome-http__evil.com_evil", "", false,
 
-      "#!/usr/bin/env xdg-open\n"
-      "[Desktop Entry]\n"
-      "Version=1.0\n"
-      "Terminal=false\n"
-      "Type=Application\n"
-      "Name=Innocent Title\n"
-      "Exec=/opt/google/chrome/google-chrome "
-      "\"--app=http://evil.com/evil;%20rm%20-rf%20/;%20%22;%20rm%20"
-      // Note: $ is escaped as \$ within an arg to Exec, and then
-      // the \ is escaped as \\ as all strings in a Desktop file should
-      // be; finally, \\ becomes \\\\ when represented in a C++ string!
-      "-rf%20\\\\$HOME%20%3Eownz0red\"\n"
-      "Icon=chrome-http__evil.com_evil\n"
-      "StartupWMClass=evil.com__evil;%20rm%20-rf%20_;%20%22;%20"
-      "rm%20-rf%20$HOME%20%3Eownz0red\n"
-    },
-    { "http://evil.com/evil | cat `echo ownz0red` >/dev/null",
-      "Innocent Title",
-      "chrome-http__evil.com_evil",
-      "",
-      false,
+       "#!/usr/bin/env xdg-open\n"
+       "[Desktop Entry]\n"
+       "Version=1.0\n"
+       "Terminal=false\n"
+       "Type=Application\n"
+       "Name=Innocent Title\n"
+       "Exec=/opt/google/chrome/google-chrome "
+       "\"--app=http://evil.com/evil;%20rm%20-rf%20/;%20%22;%20rm%20"
+       // Note: $ is escaped as \$ within an arg to Exec, and then
+       // the \ is escaped as \\ as all strings in a Desktop file should
+       // be; finally, \\ becomes \\\\ when represented in a C++ string!
+       "-rf%20\\\\$HOME%20%3Eownz0red\"\n"
+       "Icon=chrome-http__evil.com_evil\n"
+       "StartupWMClass=evil.com__evil;%20rm%20-rf%20_;%20%22;%20"
+       "rm%20-rf%20$HOME%20%3Eownz0red\n"},
+      {"http://evil.com/evil | cat `echo ownz0red` >/dev/null",
+       "Innocent Title", "chrome-http__evil.com_evil", "", false,
 
-      "#!/usr/bin/env xdg-open\n"
-      "[Desktop Entry]\n"
-      "Version=1.0\n"
-      "Terminal=false\n"
-      "Type=Application\n"
-      "Name=Innocent Title\n"
-      "Exec=/opt/google/chrome/google-chrome "
-      "--app=http://evil.com/evil%20%7C%20cat%20%60echo%20ownz0red"
-      "%60%20%3E/dev/null\n"
-      "Icon=chrome-http__evil.com_evil\n"
-      "StartupWMClass=evil.com__evil%20%7C%20cat%20%60echo%20ownz0red"
-      "%60%20%3E_dev_null\n"
-    },
+       "#!/usr/bin/env xdg-open\n"
+       "[Desktop Entry]\n"
+       "Version=1.0\n"
+       "Terminal=false\n"
+       "Type=Application\n"
+       "Name=Innocent Title\n"
+       "Exec=/opt/google/chrome/google-chrome "
+       "--app=http://evil.com/evil%20%7C%20cat%20%60echo%20ownz0red"
+       "%60%20%3E/dev/null\n"
+       "Icon=chrome-http__evil.com_evil\n"
+       "StartupWMClass=evil.com__evil%20%7C%20cat%20%60echo%20ownz0red"
+       "%60%20%3E_dev_null\n"},
   };
 
   for (size_t i = 0; i < base::size(test_cases); i++) {
@@ -501,31 +476,28 @@ TEST(ShellIntegrationTest, GetDirectoryFileContents) {
     const char* const icon_name;
     const char* const expected_output;
   } test_cases[] = {
-    // Real-world case.
-    { "Chrome Apps",
-      "chrome-apps",
+      // Real-world case.
+      {"Chrome Apps", "chrome-apps",
 
-      "[Desktop Entry]\n"
-      "Version=1.0\n"
-      "Type=Directory\n"
-      "Name=Chrome Apps\n"
-      "Icon=chrome-apps\n"
-    },
+       "[Desktop Entry]\n"
+       "Version=1.0\n"
+       "Type=Directory\n"
+       "Name=Chrome Apps\n"
+       "Icon=chrome-apps\n"},
 
-    // Make sure that empty icons are replaced by the chrome icon.
-    { "Chrome Apps",
-      "",
+      // Make sure that empty icons are replaced by the chrome icon.
+      {"Chrome Apps", "",
 
-      "[Desktop Entry]\n"
-      "Version=1.0\n"
-      "Type=Directory\n"
-      "Name=Chrome Apps\n"
-#if defined(GOOGLE_CHROME_BUILD)
-      "Icon=google-chrome\n"
+       "[Desktop Entry]\n"
+       "Version=1.0\n"
+       "Type=Directory\n"
+       "Name=Chrome Apps\n"
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+       "Icon=google-chrome\n"
 #else
-      "Icon=chromium-browser\n"
+       "Icon=chromium-browser\n"
 #endif
-    },
+      },
   };
 
   for (size_t i = 0; i < base::size(test_cases); i++) {

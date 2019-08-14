@@ -45,7 +45,6 @@ class Layer;
 namespace blink {
 
 class InspectedFrames;
-class LayoutRect;
 class PictureSnapshot;
 
 class CORE_EXPORT InspectorLayerTreeAgent final
@@ -65,7 +64,6 @@ class CORE_EXPORT InspectorLayerTreeAgent final
 
   // Called from InspectorInstrumentation
   void LayerTreeDidChange();
-  void DidPaint(const cc::Layer*, const LayoutRect&);
   void LayerTreePainted();
 
   // Called from the front-end.

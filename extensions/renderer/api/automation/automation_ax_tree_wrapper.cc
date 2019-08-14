@@ -7,6 +7,7 @@
 #include "extensions/renderer/api/automation/automation_internal_custom_bindings.h"
 #include "ui/accessibility/ax_language_detection.h"
 #include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_node_position.h"
 
 namespace extensions {
 
@@ -411,6 +412,14 @@ bool AutomationAXTreeWrapper::IsInFocusChain(int32_t node_id) {
   // The only way we end up here is if the tree is detached from any desktop.
   // This can occur in tabs-only mode.
   return true;
+}
+
+ui::AXTree::Selection AutomationAXTreeWrapper::GetUnignoredSelection() {
+  // As there is no Tree Manager, this is necessary for AXPositions to work.
+  ui::AXNodePosition::SetTree(tree());
+  ui::AXTree::Selection unignored_selection = tree()->GetUnignoredSelection();
+  ui::AXNodePosition::SetTree(nullptr);
+  return unignored_selection;
 }
 
 // static

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -29,8 +30,7 @@ namespace blink {
 
 NFC::NFC(LocalFrame* frame)
     : PageVisibilityObserver(frame->GetPage()),
-      ContextLifecycleObserver(frame->GetDocument()),
-      client_binding_(this) {
+      ContextLifecycleObserver(frame->GetDocument()) {
   String error_message;
 
   // Only connect to NFC if we are in a context that supports it.
@@ -40,12 +40,11 @@ NFC::NFC(LocalFrame* frame)
   // See https://bit.ly/2S0zRAS for task types.
   auto task_runner = frame->GetTaskRunner(TaskType::kMiscPlatformAPI);
   frame->GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&nfc_, task_runner));
-  nfc_.set_connection_error_handler(
+      nfc_remote_.BindNewPipeAndPassReceiver());
+  nfc_remote_.set_disconnect_handler(
       WTF::Bind(&NFC::OnConnectionError, WrapWeakPersistent(this)));
-  device::mojom::blink::NFCClientPtr client;
-  client_binding_.Bind(mojo::MakeRequest(&client, task_runner), task_runner);
-  nfc_->SetClient(std::move(client));
+  nfc_remote_->SetClient(
+      client_receiver_.BindNewPipeAndPassRemote(task_runner));
 }
 
 NFC* NFC::Create(LocalFrame* frame) {
@@ -60,11 +59,11 @@ NFC::~NFC() {
 }
 
 void NFC::Dispose() {
-  client_binding_.Close();
+  client_receiver_.reset();
 }
 
 void NFC::ContextDestroyed(ExecutionContext*) {
-  nfc_.reset();
+  nfc_remote_.reset();
   requests_.clear();
   callbacks_.clear();
 }
@@ -121,9 +120,9 @@ ScriptPromise NFC::push(ScriptState* script_state,
   requests_.insert(resolver);
   auto callback = WTF::Bind(&NFC::OnRequestCompleted, WrapPersistent(this),
                             WrapPersistent(resolver));
-  nfc_->Push(std::move(message),
-             device::mojom::blink::NFCPushOptions::From(options),
-             std::move(callback));
+  nfc_remote_->Push(std::move(message),
+                    device::mojom::blink::NFCPushOptions::From(options),
+                    std::move(callback));
 
   return resolver->Promise();
 }
@@ -138,7 +137,7 @@ ScriptPromise NFC::cancelPush(ScriptState* script_state, const String& target) {
   requests_.insert(resolver);
   auto callback = WTF::Bind(&NFC::OnRequestCompleted, WrapPersistent(this),
                             WrapPersistent(resolver));
-  nfc_->CancelPush(StringToNFCPushTarget(target), std::move(callback));
+  nfc_remote_->CancelPush(StringToNFCPushTarget(target), std::move(callback));
 
   return resolver->Promise();
 }
@@ -168,8 +167,8 @@ ScriptPromise NFC::watch(ScriptState* script_state,
   auto watch_callback = WTF::Bind(&NFC::OnWatchRegistered, WrapPersistent(this),
                                   WrapPersistent(callback),
                                   WrapPersistent(resolver), next_watch_id_);
-  nfc_->Watch(device::mojom::blink::NFCReaderOptions::From(options),
-              next_watch_id_, std::move(watch_callback));
+  nfc_remote_->Watch(device::mojom::blink::NFCReaderOptions::From(options),
+                     next_watch_id_, std::move(watch_callback));
   next_watch_id_++;
   return resolver->Promise();
 }
@@ -190,9 +189,9 @@ ScriptPromise NFC::cancelWatch(ScriptState* script_state, int32_t id) {
   callbacks_.erase(id);
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   requests_.insert(resolver);
-  nfc_->CancelWatch(id,
-                    WTF::Bind(&NFC::OnRequestCompleted, WrapPersistent(this),
-                              WrapPersistent(resolver)));
+  nfc_remote_->CancelWatch(
+      id, WTF::Bind(&NFC::OnRequestCompleted, WrapPersistent(this),
+                    WrapPersistent(resolver)));
   return resolver->Promise();
 }
 
@@ -206,23 +205,23 @@ ScriptPromise NFC::cancelWatch(ScriptState* script_state) {
   callbacks_.clear();
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   requests_.insert(resolver);
-  nfc_->CancelAllWatches(WTF::Bind(&NFC::OnRequestCompleted,
-                                   WrapPersistent(this),
-                                   WrapPersistent(resolver)));
+  nfc_remote_->CancelAllWatches(WTF::Bind(&NFC::OnRequestCompleted,
+                                          WrapPersistent(this),
+                                          WrapPersistent(resolver)));
   return resolver->Promise();
 }
 
 void NFC::PageVisibilityChanged() {
   // If service is not initialized, there cannot be any pending NFC activities
-  if (!nfc_)
+  if (!nfc_remote_)
     return;
 
   // NFC operations should be suspended.
   // https://w3c.github.io/web-nfc/#nfc-suspended
   if (GetPage()->IsPageVisible())
-    nfc_->ResumeNFCOperations();
+    nfc_remote_->ResumeNFCOperations();
   else
-    nfc_->SuspendNFCOperations();
+    nfc_remote_->SuspendNFCOperations();
 }
 
 void NFC::OnRequestCompleted(ScriptPromiseResolver* resolver,
@@ -238,8 +237,8 @@ void NFC::OnRequestCompleted(ScriptPromiseResolver* resolver,
 }
 
 void NFC::OnConnectionError() {
-  nfc_.reset();
-  client_binding_.Close();
+  nfc_remote_.reset();
+  client_receiver_.reset();
   callbacks_.clear();
 
   // If NFCService is not available or disappears when NFC hardware is
@@ -294,7 +293,7 @@ ScriptPromise NFC::RejectIfNotSupported(ScriptState* script_state) {
                           DOMExceptionCode::kNotAllowedError, error_message));
   }
 
-  if (!nfc_) {
+  if (!nfc_remote_) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,

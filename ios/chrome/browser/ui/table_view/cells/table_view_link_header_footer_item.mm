@@ -41,6 +41,7 @@ const CGFloat kVerticalPadding = 8;
   [super configureHeaderFooterView:headerFooter withStyler:styler];
 
   headerFooter.linkURL = self.linkURL;
+  headerFooter.accessibilityTraits |= UIAccessibilityTraitLink;
   [headerFooter setText:self.text];
 }
 
@@ -139,6 +140,12 @@ const CGFloat kVerticalPadding = 8;
   [self.delegate view:self didTapLinkURL:convertedURL];
   // Returns NO as the app is handling the opening of the URL.
   return NO;
+}
+
+#pragma mark - NSObject(Accessibility)
+
+- (NSString*)accessibilityLabel {
+  return [self.textView.attributedText string];
 }
 
 @end

@@ -307,6 +307,7 @@ target(link_target_type, "gles2_sources") {
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/config",
     "//gpu/ipc/common:surface_handle_type",
+    "//gpu/ipc/common:vulkan_ycbcr_info",
     "//gpu/vulkan:buildflags",
     "//third_party/angle:angle_image_util",
     "//third_party/angle:commit_id",

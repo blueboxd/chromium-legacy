@@ -14,7 +14,8 @@ if __name__ == '__main__':
   sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
 import unittest
-import StringIO
+
+from six import StringIO
 
 from grit import util
 from grit.tool import build
@@ -40,7 +41,7 @@ Statement.  Two all.  Game point.
     </messages>
       """)
 
-    buf = StringIO.StringIO()
+    buf = StringIO()
     build.RcBuilder.ProcessNode(root, DummyOutput('c_format', 'en'), buf)
     output = util.StripBlankLinesAndComments(buf.getvalue())
     self.assertEqual(u"""\

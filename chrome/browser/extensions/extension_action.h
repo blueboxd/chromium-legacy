@@ -118,8 +118,9 @@ class ExtensionAction {
   void SetBadgeText(int tab_id, const std::string& text) {
     SetValue(&badge_text_, tab_id, text);
   }
-  // Get the badge text for a tab, or the default if no badge text was set.
-  std::string GetBadgeText(int tab_id) const {
+  // Get the badge text that has been set using SetBadgeText for a tab, or the
+  // default if no badge text was set.
+  std::string GetExplicitlySetBadgeText(int tab_id) const {
     return GetValue(&badge_text_, tab_id);
   }
 
@@ -142,6 +143,23 @@ class ExtensionAction {
   SkColor GetBadgeBackgroundColor(int tab_id) const {
     return GetValue(&badge_background_color_, tab_id);
   }
+
+  // Set this ExtensionAction's DNR matched action count on a specific tab.
+  void SetDNRActionCount(int tab_id, int action_count) {
+    SetValue(&dnr_action_count_, tab_id, action_count);
+  }
+  // Get this ExtensionAction's DNR matched action count on a specific tab.
+  // Returns -1 if no entry is found.
+  int GetDNRActionCount(int tab_id) const {
+    return GetValue(&dnr_action_count_, tab_id);
+  }
+
+  // Get the badge text displayed for a tab, calculated based on both
+  // |badge_text_| and |dnr_action_count_|. Returns in order of priority:
+  // - GetExplicitlySetBadgeText(tab_id) if it exists for the |tab_id|
+  // - GetDNRActionCount(tab_id)
+  // - The default badge text, if set, otherwise: an empty string.
+  std::string GetDisplayBadgeText(int tab_id) const;
 
   // Set this action's badge visibility on a specific tab.  Returns true if
   // the visibility has changed.
@@ -196,6 +214,7 @@ class ExtensionAction {
   bool HasBadgeTextColor(int tab_id) const;
   bool HasIsVisible(int tab_id) const;
   bool HasIcon(int tab_id) const;
+  bool HasDNRActionCount(int tab_id) const;
 
   extensions::IconImage* default_icon_image() {
     return default_icon_image_.get();
@@ -282,6 +301,11 @@ class ExtensionAction {
   // declarative_icon_[tab_id][declarative_rule_priority] is a vector of icon
   // images that are currently in effect
   std::map<int, std::map<int, std::vector<gfx::Image> > > declarative_icon_;
+
+  // Maps tab_id to the number of actions taken based on declarative net request
+  // rule matches on incoming requests. Overrides the default |badge_text_| for
+  // this extension if it has called chrome.setActionCountAsBadgeText(true).
+  std::map<int, int> dnr_action_count_;
 
   // ExtensionIconSet containing paths to bitmaps from which default icon's
   // image representations will be selected.

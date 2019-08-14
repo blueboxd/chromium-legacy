@@ -4,6 +4,7 @@
 
 module android_webview.mojom;
 
+import "mojo/public/mojom/base/string16.mojom";
 import "services/network/public/mojom/proxy_config.mojom";
 
 // For JavaScript postMessage() API, implemented by browser.
@@ -12,7 +13,8 @@ interface JsApiHandler {
   // the current frame |origin|.
   // The |message| is an opaque type and the contents are defined by the client
   // of this API.
-  PostMessage(string message, array<handle<message_pipe>> ports);
+  PostMessage(mojo_base.mojom.String16 message,
+              array<handle<message_pipe>> ports);
 };
 
 // For browser to configure renderer, implemented by renderer.
@@ -21,6 +23,7 @@ interface JsJavaConfigurator {
   // a JavaScript object with the given |js_object_name| based on
   // |need_to_inject_js_object| flag. Only frames with the origin matches
   // |allowed_origin_rules| will have the object injected.
-  SetJsApiService(bool need_to_inject_js_object, string js_object_name,
+  SetJsApiService(bool need_to_inject_js_object,
+                  mojo_base.mojom.String16 js_object_name,
                   network.mojom.ProxyBypassRules allowed_origin_rules);
 };

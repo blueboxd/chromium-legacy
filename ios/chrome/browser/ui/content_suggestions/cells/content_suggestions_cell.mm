@@ -8,7 +8,7 @@
 #import "ios/chrome/browser/ui/util/i18n_string.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -30,10 +30,6 @@ const CGFloat kIconSize = 24;
 // Name of the icon displayed when there is not image but one should be
 // displayed.
 NSString* const kNoImageIconName = @"content_suggestions_no_image";
-// No image icon percentage of white.
-const CGFloat kNoImageIconWhite = 0.38;
-// No image background percentage of white.
-const CGFloat kNoImageBackgroundWhite = 0.95;
 // Duration of the animation to display the image.
 const CGFloat kAnimationDuration = 0.3;
 }
@@ -104,17 +100,16 @@ const CGFloat kAnimationDuration = 0.3;
     [_imageContainer addSubview:_noImageIcon];
     [_imageContainer addSubview:_contentImageView];
 
-    _imageContainer.backgroundColor =
-        [UIColor colorWithWhite:kNoImageBackgroundWhite alpha:1];
+    _imageContainer.backgroundColor = [UIColor colorNamed:kGrey100Color];
     _noImageIcon.image = [[UIImage imageNamed:kNoImageIconName]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    [_noImageIcon
-        setTintColor:[UIColor colorWithWhite:kNoImageIconWhite alpha:1]];
+    _noImageIcon.tintColor = [UIColor colorNamed:kGrey400Color];
 
     [[self class] configureTitleLabel:_titleLabel];
     _additionalInformationLabel.font = [[self class] additionalInformationFont];
     _faviconView.font = [[MDCTypography fontLoader] mediumFontOfSize:10];
-    _additionalInformationLabel.textColor = UIColor.cr_secondaryLabelColor;
+    _additionalInformationLabel.textColor =
+        [UIColor colorNamed:kTextSecondaryColor];
 
     [self applyConstraints];
   }
@@ -124,7 +119,7 @@ const CGFloat kAnimationDuration = 0.3;
 - (void)setHighlighted:(BOOL)highlighted {
   [super setHighlighted:highlighted];
   self.contentView.backgroundColor =
-      highlighted ? [UIColor colorWithWhite:0 alpha:0.05] : nil;
+      highlighted ? [UIColor colorNamed:kTableViewRowHighlightColor] : nil;
 }
 
 - (void)setContentImage:(UIImage*)image animated:(BOOL)animated {
@@ -376,7 +371,7 @@ const CGFloat kAnimationDuration = 0.3;
 
 // Configures the |titleLabel|.
 + (void)configureTitleLabel:(UILabel*)titleLabel {
-  titleLabel.textColor = UIColor.cr_labelColor;
+  titleLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
   UIFontDescriptor* descriptor = [[UIFontDescriptor
       preferredFontDescriptorWithTextStyle:UIFontTextStyleSubheadline]
       fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];

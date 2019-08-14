@@ -273,8 +273,10 @@ std::unique_ptr<WebMediaPlayer> ModulesInitializer::CreateWebMediaPlayer(
       HTMLMediaElementEncryptedMedia::From(html_media_element);
   WebString sink_id(
       HTMLMediaElementAudioOutputDevice::sinkId(html_media_element));
+  MediaInspectorContextImpl* context_impl =
+      MediaInspectorContextImpl::FromHtmlMediaElement(html_media_element);
   return base::WrapUnique(web_frame_client->CreateMediaPlayer(
-      source, media_player_client, &encrypted_media,
+      source, media_player_client, context_impl, &encrypted_media,
       encrypted_media.ContentDecryptionModule(), sink_id, view));
 }
 

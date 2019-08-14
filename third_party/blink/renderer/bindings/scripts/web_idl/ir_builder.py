@@ -15,6 +15,7 @@ from .constant import Constant
 from .dictionary import Dictionary
 from .dictionary import DictionaryMember
 from .enumeration import Enumeration
+from .extended_attribute import ExtendedAttribute
 from .extended_attribute import ExtendedAttributes
 from .idl_type import IdlTypeFactory
 from .includes import Includes
@@ -331,8 +332,42 @@ class _IRBuilder(object):
         return DefaultValue()
 
     def _build_extended_attributes(self, node):
+        def build_extended_attribute(node):
+            key = node.GetName()
+            values = node.GetProperty('VALUE', default=None)
+            arguments = None
+
+            # Drop constructors as they do not fit in ExtendedAttribute which
+            # doesn't support IdlType.
+            if key in ('Constructor', 'CustomConstructor', 'NamedConstructor'):
+                return None
+
+            child_nodes = node.GetChildren()
+            if child_nodes:
+                assert len(child_nodes) == 1
+                assert child_nodes[0].GetClass() == 'Arguments'
+                arguments = map(build_extattr_argument,
+                                child_nodes[0].GetChildren())
+
+            return ExtendedAttribute(
+                key=key, values=values, arguments=arguments)
+
+        def build_extattr_argument(node):
+            assert node.GetClass() == 'Argument'
+
+            child_nodes = node.GetChildren()
+            assert len(child_nodes) == 1
+            assert child_nodes[0].GetClass() == 'Type'
+
+            type_node = child_nodes[0]
+            type_children = type_node.GetChildren()
+            assert len(type_children) == 1
+
+            return (type_children[0].GetName(), node.GetName())
+
         assert node.GetClass() == 'ExtAttributes'
-        return ExtendedAttributes()
+        return ExtendedAttributes(
+            filter(None, map(build_extended_attribute, node.GetChildren())))
 
     def _build_inheritance(self, node):
         assert node.GetClass() == 'Inherit'

@@ -29,10 +29,8 @@ class DisplayItemRasterInvalidatorTest : public PaintControllerTestBase,
         // invalidation rects.
         IntRect(0, 0, 20000, 20000), PropertyTreeState::Root());
     GetPaintController().FinishCycle();
-    if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-      GetPaintController().ClearPropertyTreeChangedStateTo(
-          PropertyTreeState::Root());
-    }
+    GetPaintController().ClearPropertyTreeChangedStateTo(
+        PropertyTreeState::Root());
 
     if (invalidator_.GetTracking())
       return invalidator_.GetTracking()->Invalidations();

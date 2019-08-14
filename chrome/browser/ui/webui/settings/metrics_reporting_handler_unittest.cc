@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+#include "build/branding_buildflags.h"
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_CHROMEOS)
 
 #include "chrome/browser/ui/webui/settings/metrics_reporting_handler.h"
 
@@ -124,4 +126,4 @@ TEST_F(MetricsReportingHandlerTest, PolicyChangesNotifyPage) {
 
 }  // namespace settings
 
-#endif  // defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_CHROMEOS)

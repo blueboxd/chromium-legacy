@@ -22,11 +22,14 @@ source_set("badges") {
     "badge_consumer.h",
     "badge_mediator.h",
     "badge_mediator.mm",
+    "badge_static_item.h",
+    "badge_static_item.mm",
     "badge_view_controller.h",
     "badge_view_controller.mm",
   ]
   deps = [
     ":public",
+    "resources:incognito_badge",
     "//base:base",
     "//ios/chrome/browser/infobars:badge",
     "//ios/chrome/browser/infobars:public",
@@ -40,5 +43,6 @@ source_set("badges") {
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/common/colors",
     "//ios/chrome/common/ui_util",
+    "//ios/web/public",
   ]
 }

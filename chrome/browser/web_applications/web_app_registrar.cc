@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "chrome/browser/web_applications/abstract_web_app_database.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app.h"
 
 namespace web_app {
@@ -144,8 +145,8 @@ base::Optional<GURL> WebAppRegistrar::GetAppScope(const AppId& app_id) const {
 
 LaunchContainer WebAppRegistrar::GetAppLaunchContainer(
     const AppId& app_id) const {
-  // TODO(loyso): Implement it.
-  return LaunchContainer::kTab;
+  WebApp* web_app = GetAppById(app_id);
+  return web_app ? web_app->launch_container() : LaunchContainer::kDefault;
 }
 
 base::flat_set<AppId> WebAppRegistrar::GetAppIdsForTesting() const {

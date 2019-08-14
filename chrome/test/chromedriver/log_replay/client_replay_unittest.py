@@ -116,6 +116,23 @@ class ChromeDriverClientReplayUnitTest(unittest.TestCase):
     self.assertEqual(response.GetPayloadPrimitive(), {"param2": 42})
     self.assertEqual(response.session_id, _SESSION_ID)
 
+  def testIngestRealResponseInitSession(self):
+    real_resp = {u'value': {
+        u'sessionId': u'b15232d5497ec0d8300a5a1ea56f33ce',
+        u'capabilities': {
+            u'browserVersion': u'76.0.3809.100',
+            u'browserName': u'chrome',
+        }
+    }}
+
+    command_sequence = client_replay.CommandSequence()
+    command_sequence._staged_logged_session_id = _SESSION_ID_ALT
+    command_sequence._IngestRealResponse(real_resp)
+
+    self.assertEqual(
+        command_sequence._id_map[_SESSION_ID_ALT], _SESSION_ID)
+    self.assertEqual(command_sequence._staged_logged_session_id, None)
+
   def testGetPayload_simple(self):
     string_buffer = StringIO.StringIO(_RESPONSE_ONLY)
     header = string_buffer.readline()

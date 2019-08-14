@@ -12,16 +12,15 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
-#include "base/task/thread_pool/thread_pool.h"
-#include "base/test/scoped_task_environment.h"
-#include "base/test/test_simple_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/metrics/perf/cpu_identity.h"
 #include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 
@@ -119,12 +118,10 @@ class TestIncognitoObserver : public WindowedIncognitoObserver {
     return base::WrapUnique(new TestIncognitoObserver(incognito_launched));
   }
 
-  ~TestIncognitoObserver() override = default;
-
   bool IncognitoLaunched() const override { return incognito_launched_; }
 
  private:
-  TestIncognitoObserver(bool incognito_launched)
+  explicit TestIncognitoObserver(bool incognito_launched)
       : WindowedIncognitoObserver(nullptr, 0),
         incognito_launched_(incognito_launched) {}
 
@@ -136,70 +133,100 @@ class TestIncognitoObserver : public WindowedIncognitoObserver {
 // Allows access to some private methods for testing.
 class TestPerfCollector : public PerfCollector {
  public:
-  TestPerfCollector() {}
+  TestPerfCollector() = default;
 
-  using MetricCollector::PerfProtoType;
+  void CollectProfile(
+      std::unique_ptr<SampledProfile> sampled_profile) override {
+    PerfDataProto perf_data_proto = GetExamplePerfDataProto();
+    SaveSerializedPerfProto(std::move(sampled_profile),
+                            PerfProtoType::PERF_TYPE_DATA,
+                            perf_data_proto.SerializeAsString());
+  }
+
+  using PerfCollector::AddCachedDataDelta;
   using PerfCollector::collection_params;
   using PerfCollector::command_selector;
-  using PerfCollector::max_frequencies_mhz_;
+  using PerfCollector::Init;
+  using PerfCollector::IsRunning;
+  using PerfCollector::max_frequencies_mhz;
   using PerfCollector::ParseOutputProtoIfValid;
+  using PerfCollector::PerfProtoType;
+  using PerfCollector::RecordUserLogin;
+  using PerfCollector::set_profile_done_callback;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(TestPerfCollector);
 };
+
+const base::TimeDelta kPeriodicCollectionInterval =
+    base::TimeDelta::FromHours(1);
 
 }  // namespace
 
 class PerfCollectorTest : public testing::Test {
  public:
   PerfCollectorTest()
-      : scoped_task_environment_(
-            std::make_unique<base::test::ScopedTaskEnvironment>()),
-        task_runner_(base::MakeRefCounted<base::TestSimpleTaskRunner>()) {}
+      : test_browser_thread_bundle_(
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+
+  void SaveProfile(std::unique_ptr<SampledProfile> sampled_profile) {
+    cached_profile_data_.resize(cached_profile_data_.size() + 1);
+    cached_profile_data_.back().Swap(sampled_profile.get());
+  }
 
   void SetUp() override {
-    // PerfCollector requires chromeos::LoginState and
-    // chromeos::DBusThreadManagerto be initialized.
-    chromeos::LoginState::Initialize();
-    chromeos::DBusThreadManager::Initialize();
-
     perf_collector_ = std::make_unique<TestPerfCollector>();
-    perf_collector_->Init();
+    // Set the periodic collection delay to a well known quantity, so we can
+    // fast forward the time.
+    perf_collector_->collection_params().periodic_interval =
+        kPeriodicCollectionInterval;
+    perf_collector_->set_profile_done_callback(base::BindRepeating(
+        &PerfCollectorTest::SaveProfile, base::Unretained(this)));
 
+    perf_collector_->Init();
     // PerfCollector requires the user to be logged in.
-    perf_collector_->OnUserLoggedIn();
+    perf_collector_->RecordUserLogin(base::TimeTicks::Now());
   }
 
   void TearDown() override {
     perf_collector_.reset();
-    chromeos::DBusThreadManager::Shutdown();
-    chromeos::LoginState::Shutdown();
+    cached_profile_data_.clear();
   }
 
  protected:
+  // test_browser_thread_bundle_ must be the first member (or at least before
+  // any member that cares about tasks) to be initialized first and destroyed
+  // last.
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+
+  std::vector<SampledProfile> cached_profile_data_;
+
   std::unique_ptr<TestPerfCollector> perf_collector_;
-
-  // scoped_task_environment_ must be the first member (or at least before any
-  // member that cares about tasks) to be initialized first and destroyed last.
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
-
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PerfCollectorTest);
 };
 
 TEST_F(PerfCollectorTest, CheckSetup) {
-  std::vector<SampledProfile> stored_profiles;
-  EXPECT_FALSE(perf_collector_->GetSampledProfiles(&stored_profiles));
-  EXPECT_TRUE(stored_profiles.empty());
+  // No profiles saved at start.
+  EXPECT_TRUE(cached_profile_data_.empty());
 
   EXPECT_FALSE(TestIncognitoObserver::CreateWithIncognitoLaunched(false)
                    ->IncognitoLaunched());
   EXPECT_TRUE(TestIncognitoObserver::CreateWithIncognitoLaunched(true)
                   ->IncognitoLaunched());
-  base::ThreadPoolInstance::Get()->FlushForTesting();
-  scoped_task_environment_->RunUntilIdle();
-  EXPECT_GT(perf_collector_->max_frequencies_mhz_.size(), 0u);
+  test_browser_thread_bundle_.RunUntilIdle();
+  EXPECT_GT(perf_collector_->max_frequencies_mhz().size(), 0u);
+}
+
+TEST_F(PerfCollectorTest, NoCollectionWhenProfileCacheFull) {
+  // Timer is active after login and a periodic collection is scheduled.
+  EXPECT_TRUE(perf_collector_->IsRunning());
+  // Pretend the cache is full.
+  perf_collector_->AddCachedDataDelta(4 * 1024 * 1024);
+
+  // Advance the clock by a periodic collection interval. We shouldn't find a
+  // profile because the cache is full.
+  test_browser_thread_bundle_.FastForwardBy(kPeriodicCollectionInterval);
+  EXPECT_TRUE(cached_profile_data_.empty());
 }
 
 // Simulate opening and closing of incognito window in between calls to
@@ -209,30 +236,27 @@ TEST_F(PerfCollectorTest, IncognitoWindowOpened) {
   PerfStatProto perf_stat_proto = GetExamplePerfStatProto();
   EXPECT_GT(perf_data_proto.ByteSize(), 0);
   EXPECT_GT(perf_stat_proto.ByteSize(), 0);
-  base::ThreadPoolInstance::Get()->FlushForTesting();
-  scoped_task_environment_->RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
+  auto incognito_observer =
+      TestIncognitoObserver::CreateWithIncognitoLaunched(false);
   perf_collector_->ParseOutputProtoIfValid(
-      TestIncognitoObserver::CreateWithIncognitoLaunched(false),
-      std::move(sampled_profile),
+      std::move(incognito_observer), std::move(sampled_profile),
       TestPerfCollector::PerfProtoType::PERF_TYPE_DATA, true,
       perf_data_proto.SerializeAsString());
 
-  // Run the (Thread|Sequenced)TaskRunnerHandle queue until both the
-  // (Thread|Sequenced)TaskRunnerHandle queue and the TaskSchedule queue are
-  // empty as the above ParseOutputProtoIfValid call posts a task to
-  // asynchronously collect process and thread types and the profile cache will
-  // be updated only after this collection completes.
-  scoped_task_environment_->RunUntilIdle();
+  // Run the TestBrowserThreadBundle queue until it's empty as the above
+  // ParseOutputProtoIfValid call posts a task to asynchronously collect process
+  // and thread types and the profile cache will be updated asynchronously via
+  // another PostTask request after this collection completes.
+  test_browser_thread_bundle_.RunUntilIdle();
 
-  std::vector<SampledProfile> stored_profiles1;
-  EXPECT_TRUE(perf_collector_->GetSampledProfiles(&stored_profiles1));
-  ASSERT_EQ(1U, stored_profiles1.size());
+  ASSERT_EQ(1U, cached_profile_data_.size());
 
-  const SampledProfile& profile1 = stored_profiles1[0];
+  const SampledProfile& profile1 = cached_profile_data_[0];
   EXPECT_EQ(SampledProfile::PERIODIC_COLLECTION, profile1.trigger_event());
   EXPECT_TRUE(profile1.has_ms_after_login());
   ASSERT_TRUE(profile1.has_perf_data());
@@ -240,23 +264,22 @@ TEST_F(PerfCollectorTest, IncognitoWindowOpened) {
   EXPECT_EQ(SerializeMessageToVector(perf_data_proto),
             SerializeMessageToVector(profile1.perf_data()));
   EXPECT_GT(profile1.cpu_max_frequency_mhz_size(), 0);
+  cached_profile_data_.clear();
 
   sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::RESTORE_SESSION);
   sampled_profile->set_ms_after_restore(3000);
+  incognito_observer =
+      TestIncognitoObserver::CreateWithIncognitoLaunched(false);
   perf_collector_->ParseOutputProtoIfValid(
-      TestIncognitoObserver::CreateWithIncognitoLaunched(false),
-      std::move(sampled_profile),
+      std::move(incognito_observer), std::move(sampled_profile),
       TestPerfCollector::PerfProtoType::PERF_TYPE_STAT, false,
       perf_stat_proto.SerializeAsString());
+  test_browser_thread_bundle_.RunUntilIdle();
 
-  scoped_task_environment_->RunUntilIdle();
+  ASSERT_EQ(1U, cached_profile_data_.size());
 
-  std::vector<SampledProfile> stored_profiles2;
-  EXPECT_TRUE(perf_collector_->GetSampledProfiles(&stored_profiles2));
-  ASSERT_EQ(1U, stored_profiles2.size());
-
-  const SampledProfile& profile2 = stored_profiles2[0];
+  const SampledProfile& profile2 = cached_profile_data_[0];
   EXPECT_EQ(SampledProfile::RESTORE_SESSION, profile2.trigger_event());
   EXPECT_TRUE(profile2.has_ms_after_login());
   EXPECT_EQ(3000, profile2.ms_after_restore());
@@ -265,52 +288,48 @@ TEST_F(PerfCollectorTest, IncognitoWindowOpened) {
   EXPECT_EQ(SerializeMessageToVector(perf_stat_proto),
             SerializeMessageToVector(profile2.perf_stat()));
   EXPECT_EQ(profile2.cpu_max_frequency_mhz_size(), 0);
+  cached_profile_data_.clear();
 
   sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::RESUME_FROM_SUSPEND);
   // An incognito window opens.
+  incognito_observer = TestIncognitoObserver::CreateWithIncognitoLaunched(true);
   perf_collector_->ParseOutputProtoIfValid(
-      TestIncognitoObserver::CreateWithIncognitoLaunched(true),
-      std::move(sampled_profile),
+      std::move(incognito_observer), std::move(sampled_profile),
       TestPerfCollector::PerfProtoType::PERF_TYPE_DATA, true,
       perf_data_proto.SerializeAsString());
+  test_browser_thread_bundle_.RunUntilIdle();
 
-  scoped_task_environment_->RunUntilIdle();
-
-  std::vector<SampledProfile> stored_profiles_empty;
-  EXPECT_FALSE(perf_collector_->GetSampledProfiles(&stored_profiles_empty));
+  EXPECT_TRUE(cached_profile_data_.empty());
 
   sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
   // Incognito window is still open.
+  incognito_observer = TestIncognitoObserver::CreateWithIncognitoLaunched(true);
   perf_collector_->ParseOutputProtoIfValid(
-      TestIncognitoObserver::CreateWithIncognitoLaunched(true),
-      std::move(sampled_profile),
+      std::move(incognito_observer), std::move(sampled_profile),
       TestPerfCollector::PerfProtoType::PERF_TYPE_STAT, false,
       perf_stat_proto.SerializeAsString());
+  test_browser_thread_bundle_.RunUntilIdle();
 
-  scoped_task_environment_->RunUntilIdle();
-
-  EXPECT_FALSE(perf_collector_->GetSampledProfiles(&stored_profiles_empty));
+  EXPECT_TRUE(cached_profile_data_.empty());
 
   sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::RESUME_FROM_SUSPEND);
   sampled_profile->set_suspend_duration_ms(60000);
   sampled_profile->set_ms_after_resume(1500);
   // Incognito window closes.
+  incognito_observer =
+      TestIncognitoObserver::CreateWithIncognitoLaunched(false);
   perf_collector_->ParseOutputProtoIfValid(
-      TestIncognitoObserver::CreateWithIncognitoLaunched(false),
-      std::move(sampled_profile),
+      std::move(incognito_observer), std::move(sampled_profile),
       TestPerfCollector::PerfProtoType::PERF_TYPE_DATA, true,
       perf_data_proto.SerializeAsString());
+  test_browser_thread_bundle_.RunUntilIdle();
 
-  scoped_task_environment_->RunUntilIdle();
+  ASSERT_EQ(1U, cached_profile_data_.size());
 
-  std::vector<SampledProfile> stored_profiles3;
-  EXPECT_TRUE(perf_collector_->GetSampledProfiles(&stored_profiles3));
-  ASSERT_EQ(1U, stored_profiles3.size());
-
-  const SampledProfile& profile3 = stored_profiles3[0];
+  const SampledProfile& profile3 = cached_profile_data_[0];
   EXPECT_EQ(SampledProfile::RESUME_FROM_SUSPEND, profile3.trigger_event());
   EXPECT_TRUE(profile3.has_ms_after_login());
   EXPECT_EQ(60000, profile3.suspend_duration_ms());
@@ -629,28 +648,12 @@ class PerfCollectorCollectionParamsTest : public testing::Test {
  public:
   PerfCollectorCollectionParamsTest() : field_trial_list_(nullptr) {}
 
-  void SetUp() override {
-    // PerfCollector requires chromeos::LoginState and
-    // chromeos::DBusThreadManagerto be initialized.
-    chromeos::LoginState::Initialize();
-    chromeos::DBusThreadManager::Initialize();
-
-    // PerfCollector requires the user to be logged in.
-    chromeos::LoginState::Get()->SetLoggedInState(
-        chromeos::LoginState::LOGGED_IN_ACTIVE,
-        chromeos::LoginState::LOGGED_IN_USER_REGULAR);
-  }
-
   void TearDown() override {
-    chromeos::DBusThreadManager::Shutdown();
-    chromeos::LoginState::Shutdown();
     variations::testing::ClearAllVariationParams();
   }
 
- private:
-  // scoped_task_environment_ must be the first member (or at least before any
-  // member that cares about tasks) to be initialized first and destroyed last.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+ protected:
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   base::FieldTrialList field_trial_list_;
 
@@ -658,11 +661,11 @@ class PerfCollectorCollectionParamsTest : public testing::Test {
 };
 
 TEST_F(PerfCollectorCollectionParamsTest, Commands_InitializedAfterVariations) {
-  TestPerfCollector perf_provider;
-  EXPECT_TRUE(perf_provider.command_selector().odds().empty());
+  auto perf_collector = std::make_unique<TestPerfCollector>();
+  EXPECT_TRUE(perf_collector->command_selector().odds().empty());
   // Init would be called after VariationsService is initialized.
-  perf_provider.Init();
-  EXPECT_FALSE(perf_provider.command_selector().odds().empty());
+  perf_collector->Init();
+  EXPECT_FALSE(perf_collector->command_selector().odds().empty());
 }
 
 TEST_F(PerfCollectorCollectionParamsTest, Commands_EmptyExperiment) {
@@ -674,10 +677,10 @@ TEST_F(PerfCollectorCollectionParamsTest, Commands_EmptyExperiment) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "ChromeOSWideProfilingCollection", "group_name"));
 
-  TestPerfCollector perf_provider;
-  EXPECT_TRUE(perf_provider.command_selector().odds().empty());
-  perf_provider.Init();
-  EXPECT_EQ(default_cmds, perf_provider.command_selector().odds());
+  auto perf_collector = std::make_unique<TestPerfCollector>();
+  EXPECT_TRUE(perf_collector->command_selector().odds().empty());
+  perf_collector->Init();
+  EXPECT_EQ(default_cmds, perf_collector->command_selector().odds());
 }
 
 TEST_F(PerfCollectorCollectionParamsTest, Commands_InvalidValues) {
@@ -700,10 +703,10 @@ TEST_F(PerfCollectorCollectionParamsTest, Commands_InvalidValues) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "ChromeOSWideProfilingCollection", "group_name"));
 
-  TestPerfCollector perf_provider;
-  EXPECT_TRUE(perf_provider.command_selector().odds().empty());
-  perf_provider.Init();
-  EXPECT_EQ(default_cmds, perf_provider.command_selector().odds());
+  auto perf_collector = std::make_unique<TestPerfCollector>();
+  EXPECT_TRUE(perf_collector->command_selector().odds().empty());
+  perf_collector->Init();
+  EXPECT_EQ(default_cmds, perf_collector->command_selector().odds());
 }
 
 TEST_F(PerfCollectorCollectionParamsTest, Commands_Override) {
@@ -726,16 +729,16 @@ TEST_F(PerfCollectorCollectionParamsTest, Commands_Override) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "ChromeOSWideProfilingCollection", "group_name"));
 
-  TestPerfCollector perf_provider;
-  EXPECT_TRUE(perf_provider.command_selector().odds().empty());
-  perf_provider.Init();
+  auto perf_collector = std::make_unique<TestPerfCollector>();
+  EXPECT_TRUE(perf_collector->command_selector().odds().empty());
+  perf_collector->Init();
 
   std::vector<WeightAndValue> expected_cmds;
   expected_cmds.push_back(WeightAndValue(50.0, "perf record foo"));
   expected_cmds.push_back(WeightAndValue(25.0, "perf record bar"));
   expected_cmds.push_back(WeightAndValue(25.0, "perf record baz"));
 
-  EXPECT_EQ(expected_cmds, perf_provider.command_selector().odds());
+  EXPECT_EQ(expected_cmds, perf_collector->command_selector().odds());
 }
 
 TEST_F(PerfCollectorCollectionParamsTest, Parameters_Override) {
@@ -751,8 +754,8 @@ TEST_F(PerfCollectorCollectionParamsTest, Parameters_Override) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "ChromeOSWideProfilingCollection", "group_name"));
 
-  TestPerfCollector perf_provider;
-  const auto& parsed_params = perf_provider.collection_params();
+  auto perf_collector = std::make_unique<TestPerfCollector>();
+  const auto& parsed_params = perf_collector->collection_params();
 
   // Not initialized yet:
   EXPECT_NE(base::TimeDelta::FromSeconds(15),
@@ -765,7 +768,7 @@ TEST_F(PerfCollectorCollectionParamsTest, Parameters_Override) {
   EXPECT_NE(base::TimeDelta::FromSeconds(20),
             parsed_params.restore_session.max_collection_delay);
 
-  perf_provider.Init();
+  perf_collector->Init();
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(15),
             parsed_params.collection_duration);

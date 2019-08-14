@@ -185,6 +185,9 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   OverviewAnimationType GetExitOverviewAnimationType();
   OverviewAnimationType GetExitTransformAnimationType();
 
+  // If kNewOverviewLayout is on, use this function for handling events.
+  void HandleGestureEventForTabletModeLayout(ui::GestureEvent* event);
+
   // CaptionContainerView::EventDelegate:
   void HandleMouseEvent(const ui::MouseEvent& event) override;
   void HandleGestureEvent(ui::GestureEvent* event) override;

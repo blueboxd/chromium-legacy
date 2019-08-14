@@ -20,6 +20,7 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/content_browser_client.h"
 #include "net/base/ip_endpoint.h"
@@ -33,6 +34,116 @@ namespace content {
 
 // We chose this size because the AppCache uses this.
 const uint32_t ServiceWorkerUpdatedScriptLoader::kReadBufferSize = 32768;
+
+ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::LoaderOnUI::
+    LoaderOnUI() = default;
+ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::LoaderOnUI::
+    ~LoaderOnUI() = default;
+ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::
+    ThrottlingURLLoaderIOWrapper()
+    : loader_on_ui_(new LoaderOnUI()) {}
+ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::
+    ~ThrottlingURLLoaderIOWrapper() = default;
+
+// static
+std::unique_ptr<ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper>
+ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::
+    CreateLoaderAndStart(
+        std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+            loader_factory_info,
+        BrowserContextGetter browser_context_getter,
+        int32_t routing_id,
+        int32_t request_id,
+        uint32_t options,
+        const network::ResourceRequest& resource_request,
+        network::mojom::URLLoaderClientPtrInfo client,
+        const net::NetworkTrafficAnnotationTag& traffic_annotation) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  auto wrapper = base::WrapUnique(new ThrottlingURLLoaderIOWrapper());
+
+  base::PostTask(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&ThrottlingURLLoaderIOWrapper::StartInternalOnUI,
+                     std::move(loader_factory_info),
+                     std::move(browser_context_getter), routing_id, request_id,
+                     options, network::ResourceRequest(resource_request),
+                     std::move(client),
+                     net::NetworkTrafficAnnotationTag(traffic_annotation),
+                     base::Unretained(wrapper->loader_on_ui_.get())));
+  return wrapper;
+}
+
+// static
+void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::
+    StartInternalOnUI(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+                          loader_factory_info,
+                      BrowserContextGetter browser_context_getter,
+                      int32_t routing_id,
+                      int32_t request_id,
+                      uint32_t options,
+                      network::ResourceRequest resource_request,
+                      network::mojom::URLLoaderClientPtrInfo client_info,
+                      net::NetworkTrafficAnnotationTag traffic_annotation,
+                      LoaderOnUI* loader_on_ui) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserContext* browser_context = browser_context_getter.Run();
+  if (!browser_context)
+    return;
+
+  // Service worker update checking doesn't have a relevant frame and tab, so
+  // that |wc_getter| returns nullptr and the frame id is set to
+  // kNoFrameTreeNodeId.
+  base::RepeatingCallback<WebContents*()> wc_getter =
+      base::BindRepeating([]() -> WebContents* { return nullptr; });
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles =
+      GetContentClient()->browser()->CreateURLLoaderThrottles(
+          resource_request, browser_context, std::move(wc_getter),
+          /*navigation_ui_data=*/nullptr, RenderFrameHost::kNoFrameTreeNodeId);
+
+  network::mojom::URLLoaderClientPtr client(std::move(client_info));
+  auto loader = ThrottlingURLLoader::CreateLoaderAndStart(
+      network::SharedURLLoaderFactory::Create(std::move(loader_factory_info)),
+      std::move(throttles), routing_id, request_id, options, &resource_request,
+      client.get(), traffic_annotation, base::ThreadTaskRunnerHandle::Get());
+  loader_on_ui->loader = std::move(loader);
+  loader_on_ui->client = std::move(client);
+}
+
+void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::
+    SetPriority(net::RequestPriority priority, int32_t intra_priority_value) {
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(
+                     [](LoaderOnUI* loader_on_ui, net::RequestPriority priority,
+                        int32_t intra_priority_value) {
+                       DCHECK(loader_on_ui->loader);
+                       loader_on_ui->loader->SetPriority(priority,
+                                                         intra_priority_value);
+                     },
+                     base::Unretained(loader_on_ui_.get()), priority,
+                     intra_priority_value));
+}
+
+void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::
+    PauseReadingBodyFromNet() {
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(
+                     [](LoaderOnUI* loader_on_ui) {
+                       DCHECK(loader_on_ui->loader);
+                       loader_on_ui->loader->PauseReadingBodyFromNet();
+                     },
+                     base::Unretained(loader_on_ui_.get())));
+}
+
+void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::
+    ResumeReadingBodyFromNet() {
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(
+                     [](LoaderOnUI* loader_on_ui) {
+                       DCHECK(loader_on_ui->loader);
+                       loader_on_ui->loader->ResumeReadingBodyFromNet();
+                     },
+                     base::Unretained(loader_on_ui_.get())));
+}
 
 // This is for debugging https://crbug.com/959627.
 // The purpose is to see where the IOBuffer comes from by checking |__vfptr|.

@@ -1095,13 +1095,13 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Note that you can set multiple accelerators for a view by invoking this
   // method several times. Note also that AcceleratorPressed is invoked only
   // when CanHandleAccelerators() is true.
-  virtual void AddAccelerator(const ui::Accelerator& accelerator);
+  void AddAccelerator(const ui::Accelerator& accelerator);
 
   // Removes the specified accelerator for this view.
-  virtual void RemoveAccelerator(const ui::Accelerator& accelerator);
+  void RemoveAccelerator(const ui::Accelerator& accelerator);
 
   // Removes all the keyboard accelerators for this view.
-  virtual void ResetAccelerators();
+  void ResetAccelerators();
 
   // Overridden from AcceleratorTarget:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
@@ -1144,8 +1144,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Convenience method to retrieve the FocusManager associated with the
   // Widget that contains this view.  This can return NULL if this view is not
   // part of a view hierarchy with a Widget.
-  virtual FocusManager* GetFocusManager();
-  virtual const FocusManager* GetFocusManager() const;
+  FocusManager* GetFocusManager();
+  const FocusManager* GetFocusManager() const;
 
   // Request keyboard focus. The receiving view will become the focused view.
   virtual void RequestFocus();
@@ -1330,7 +1330,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Scrolls the view's bounds or some subset thereof to be visible. By default
   // this function calls ScrollRectToVisible(GetLocalBounds()).
-  virtual void ScrollViewToVisible();
+  void ScrollViewToVisible();
 
   // The following methods are used by ScrollView to determine the amount
   // to scroll relative to the visible bounds of the view. For example, a
@@ -1351,10 +1351,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   //
   // See VariableRowHeightScrollHelper and FixedRowHeightScrollHelper for
   // implementations of common cases.
-  virtual int GetPageScrollIncrement(ScrollView* scroll_view,
-                                     bool is_horizontal, bool is_positive);
-  virtual int GetLineScrollIncrement(ScrollView* scroll_view,
-                                     bool is_horizontal, bool is_positive);
+  int GetPageScrollIncrement(ScrollView* scroll_view,
+                             bool is_horizontal,
+                             bool is_positive);
+  int GetLineScrollIncrement(ScrollView* scroll_view,
+                             bool is_horizontal,
+                             bool is_positive);
 
   void AddObserver(ViewObserver* observer);
   void RemoveObserver(ViewObserver* observer);
@@ -1518,7 +1520,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Finds the layer that this view paints to (it may belong to an ancestor
   // view), then reorders the immediate children of that layer to match the
   // order of the view tree.
-  virtual void ReorderLayers();
+  void ReorderLayers();
 
   // This reorders the immediate children of |*parent_layer| to match the
   // order of the view tree. Child layers which are owned by a view are

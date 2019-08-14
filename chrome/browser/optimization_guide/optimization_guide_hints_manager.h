@@ -11,10 +11,13 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/time/clock.h"
+#include "base/timer/timer.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/proto/hints.pb.h"
@@ -31,9 +34,14 @@ namespace leveldb_proto {
 class ProtoDatabaseProvider;
 }  // namespace leveldb_proto
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace optimization_guide {
 class HintCache;
 class HintUpdateData;
+class HintsFetcher;
 class OptimizationFilter;
 class OptimizationGuideService;
 class TopHostProvider;
@@ -49,7 +57,8 @@ class OptimizationGuideHintsManager
       const base::FilePath& profile_path,
       PrefService* pref_service,
       leveldb_proto::ProtoDatabaseProvider* database_provider,
-      optimization_guide::TopHostProvider* top_host_provider);
+      optimization_guide::TopHostProvider* top_host_provider,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   ~OptimizationGuideHintsManager() override;
 
@@ -87,6 +96,18 @@ class OptimizationGuideHintsManager
   bool HasLoadedOptimizationFilter(
       optimization_guide::proto::OptimizationType optimization_type);
 
+  // Overrides |hints_fetcher_| for testing.
+  void SetHintsFetcherForTesting(
+      std::unique_ptr<optimization_guide::HintsFetcher> hints_fetcher);
+
+  // Returns the current hints fetcher.
+  optimization_guide::HintsFetcher* hints_fetcher() const {
+    return hints_fetcher_.get();
+  }
+
+  // Overrides |clock_| for testing.
+  void SetClockForTesting(const base::Clock* clock);
+
  private:
   // Processes the hints component.
   //
@@ -123,8 +144,35 @@ class OptimizationGuideHintsManager
   void OnComponentHintsUpdated(base::OnceClosure update_closure,
                                bool hints_updated) const;
 
-  // Method to request new hints for user's sites.
+  // Method to decide whether to fetch new hints for user's top sites and
+  // proceeds to schedule the fetch.
   void MaybeScheduleHintsFetch();
+
+  // Schedules |hints_fetch_timer_| to fire based on:
+  // 1. The update time for the fetched hints in the store and
+  // 2. The last time a fetch attempt was made.
+  void ScheduleHintsFetch();
+
+  // Called to make a request to fetch hints from the remote Optimization Guide
+  // Service.
+  void FetchHints();
+
+  // Called when the hints have been fetched from the remote Optimization Guide
+  // Service and are ready for parsing.
+  void OnHintsFetched(
+      base::Optional<
+          std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
+          get_hints_response);
+
+  // Called when the fetched hints have been stored in |hint_cache| and are
+  // ready to be used.
+  void OnFetchedHintsStored();
+
+  // Returns the time when a hints fetch request was last attempted.
+  base::Time GetLastHintsFetchAttemptTime() const;
+
+  // Sets the time when a hints fetch was last attempted to |last_attempt_time|.
+  void SetLastHintsFetchAttemptTime(base::Time last_attempt_time);
 
   // Called when the request to load a hint has completed.
   void OnHintLoaded(base::OnceClosure callback,
@@ -169,8 +217,24 @@ class OptimizationGuideHintsManager
   // fetched from the remote Optimization Guide Service.
   std::unique_ptr<optimization_guide::HintCache> hint_cache_;
 
+  // The fetcher that handles making requests to update hints from the remote
+  // Optimization Guide Service.
+  std::unique_ptr<optimization_guide::HintsFetcher> hints_fetcher_;
+
   // The top host provider that can be queried. Not owned.
   optimization_guide::TopHostProvider* top_host_provider_ = nullptr;
+
+  // The URL loader factory used for fetching hints from the remote Optimization
+  // Guide Service.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
+  // The timer used to schedule fetching hints from the remote Optimization
+  // Guide Service.
+  base::OneShotTimer hints_fetch_timer_;
+
+  // The clock used to schedule fetching from the remote Optimization Guide
+  // Service.
+  const base::Clock* clock_;
 
   // Used in testing to subscribe to an update event in this class.
   base::OnceClosure next_update_closure_;

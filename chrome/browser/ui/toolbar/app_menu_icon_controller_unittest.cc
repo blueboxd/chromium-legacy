@@ -8,6 +8,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
@@ -93,7 +94,7 @@ class AppMenuIconControllerTest : public ::testing::TestWithParam<int> {
 
   // Returns true if the test is apparently running as an unstable channel.
   bool IsUnstableChannel() {
-#if !defined(GOOGLE_CHROME_BUILD)
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
     // Dev and canary channels are specific to Google Chrome branding.
     return false;
 #elif defined(OS_WIN)

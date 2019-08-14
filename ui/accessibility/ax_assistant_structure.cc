@@ -336,8 +336,9 @@ void WalkAXTreeDepthFirst(const AXNode* node,
   if (IsLeaf(node) && update.has_tree_data) {
     int start_selection = 0;
     int end_selection = 0;
-    if (update.tree_data.sel_anchor_object_id == node->id()) {
-      start_selection = update.tree_data.sel_anchor_offset;
+    AXTree::Selection unignored_selection = tree->GetUnignoredSelection();
+    if (unignored_selection.anchor_object_id == node->id()) {
+      start_selection = unignored_selection.anchor_offset;
       config->should_select_leaf = true;
     }
 
@@ -346,8 +347,8 @@ void WalkAXTreeDepthFirst(const AXNode* node,
           static_cast<int32_t>(GetText(node, config->show_password).length());
     }
 
-    if (update.tree_data.sel_focus_object_id == node->id()) {
-      end_selection = update.tree_data.sel_focus_offset;
+    if (unignored_selection.focus_object_id == node->id()) {
+      end_selection = unignored_selection.focus_offset;
       config->should_select_leaf = false;
     }
     if (end_selection > 0)

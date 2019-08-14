@@ -70,6 +70,16 @@ class HomedirMethodsImpl : public HomedirMethods {
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
+  void MassRemoveKeys(const Identification& id,
+                      const AuthorizationRequest& auth,
+                      const MassRemoveKeysRequest& request,
+                      const Callback& callback) override {
+    chromeos::CryptohomeClient::Get()->MassRemoveKeys(
+        CreateAccountIdentifierFromIdentification(id), auth, request,
+        base::BindOnce(&HomedirMethodsImpl::OnBaseReplyCallback,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
  private:
   void OnBaseReplyCallback(const Callback& callback,
                            base::Optional<BaseReply> reply) {

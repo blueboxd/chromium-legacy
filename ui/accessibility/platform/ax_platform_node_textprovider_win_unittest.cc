@@ -117,7 +117,7 @@ TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderRangeFromChild) {
   Init(update);
 
   AXNode* root_node = GetRootNode();
-  AXNodePosition::SetTreeForTesting(tree_.get());
+  AXNodePosition::SetTree(tree_.get());
   AXNode* text_node = root_node->children()[0];
   AXNode* empty_text_node = root_node->children()[1];
 
@@ -194,7 +194,7 @@ TEST_F(AXPlatformNodeTextProviderTest, TestNearestTextIndexToPoint) {
   Init(root_data, text_data);
 
   AXNode* root_node = GetRootNode();
-  AXNodePosition::SetTreeForTesting(tree_.get());
+  AXNodePosition::SetTree(tree_.get());
   AXNode* text_node = root_node->children()[0];
 
   struct NearestTextIndexTestData {
@@ -346,7 +346,7 @@ TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderGetSelection) {
   update.nodes.push_back(textbox_data);
   Init(update);
 
-  AXNodePosition::SetTreeForTesting(tree_.get());
+  AXNodePosition::SetTree(tree_.get());
 
   ComPtr<IRawElementProviderSimple> root_node =
       GetRootIRawElementProviderSimple();
@@ -463,7 +463,7 @@ TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderGetSelection) {
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
             text_edit_provider->GetSelection(selections.Receive()));
 
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
 }
 
 TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderGetActiveComposition) {
@@ -488,7 +488,7 @@ TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderGetActiveComposition) {
   update.nodes.push_back(text_data);
   Init(update);
 
-  AXNodePosition::SetTreeForTesting(tree_.get());
+  AXNodePosition::SetTree(tree_.get());
 
   ComPtr<IRawElementProviderSimple> root_node =
       GetRootIRawElementProviderSimple();
@@ -550,7 +550,7 @@ TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderGetConversionTarget) {
   update.nodes.push_back(text_data);
   Init(update);
 
-  AXNodePosition::SetTreeForTesting(tree_.get());
+  AXNodePosition::SetTree(tree_.get());
 
   ComPtr<IRawElementProviderSimple> root_node =
       GetRootIRawElementProviderSimple();

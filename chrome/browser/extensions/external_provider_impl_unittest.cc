@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_path_override.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -160,7 +161,7 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
 
 }  // namespace
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 TEST_F(ExternalProviderImplTest, InAppPayments) {
   InitServiceWithExternalProviders();
 
@@ -177,6 +178,6 @@ TEST_F(ExternalProviderImplTest, InAppPayments) {
   EXPECT_TRUE(service_->IsExtensionEnabled(
       extension_misc::kInAppPaymentsSupportAppId));
 }
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 }  // namespace extensions

@@ -8,14 +8,29 @@
 
 #include "base/containers/span.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_api.pb.h"
 #include "components/password_manager/core/browser/leak_detection/single_lookup_response.h"
 
 namespace password_manager {
+namespace {
 
 using google::internal::identity::passwords::leak::check::v1::
     LookupSingleLeakRequest;
+
+// Despite the function is short, it executes long. That's why it should be done
+// asynchronously.
+LookupSingleLeakData PrepareLookupSingleLeakData(const std::string& username,
+                                                 const std::string& password) {
+  LookupSingleLeakData data;
+  data.username_hash_prefix = BucketizeUsername(CanonicalizeUsername(username));
+  data.encrypted_payload = CipherEncrypt(
+      ScryptHashUsernameAndPassword(username, password), &data.encryption_key);
+  return data;
+}
+
+}  // namespace
 
 LookupSingleLeakRequest MakeLookupSingleLeakRequest(
     base::StringPiece username,
@@ -36,6 +51,17 @@ LookupSingleLeakRequest MakeLookupSingleLeakRequest(
   request.set_encrypted_lookup_hash(
       std::string(kTestEncryptedLookupHash, sizeof(kTestEncryptedLookupHash)));
   return request;
+}
+
+void PrepareSingleLeakRequestData(const std::string& username,
+                                  const std::string& password,
+                                  SingleLeakRequestDataCallback callback) {
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&PrepareLookupSingleLeakData, username, password),
+      std::move(callback));
 }
 
 bool ParseLookupSingleLeakResponse(const SingleLookupResponse& response) {

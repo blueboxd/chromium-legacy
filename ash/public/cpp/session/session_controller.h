@@ -77,9 +77,6 @@ class ASH_PUBLIC_EXPORT SessionController {
   // Adds a countdown timer to the system tray menu and creates or updates a
   // notification saying the session length is limited (e.g. a public session in
   // a library). Setting |length_limit| to zero removes the notification.
-  // NOTE: Chrome enforces the limit, not ash. Ash could enforce it if local
-  // state prefs and user activity monitoring were available under mustash.
-  // http://crbug.com/729808
   virtual void SetSessionLengthLimit(base::TimeDelta length_limit,
                                      base::TimeTicks start_time) = 0;
 

@@ -37,11 +37,9 @@ class RasterInvalidatorTest : public testing::Test,
   void FinishCycle(PaintArtifact& artifact) {
     artifact.FinishCycle();
     ClearGeometryMapperCache();
-    if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-      // See PaintArtifact::FinishCycle() for the reason of doing this.
-      for (auto& chunk : artifact.PaintChunks())
-        chunk.properties.ClearChangedToRoot();
-    }
+    // See PaintArtifact::FinishCycle() for the reason of doing this.
+    for (auto& chunk : artifact.PaintChunks())
+      chunk.properties.ClearChangedToRoot();
   }
 
   const Vector<RasterInvalidationInfo>& TrackedRasterInvalidations() {

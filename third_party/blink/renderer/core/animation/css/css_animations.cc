@@ -225,24 +225,6 @@ double StartTimeFromDelay(double start_delay) {
 
 CSSAnimations::CSSAnimations() = default;
 
-bool CSSAnimations::IsAnimationForInspector(const Animation& animation) {
-  for (const auto& running_animation : running_animations_) {
-    if (running_animation->animation->SequenceNumber() ==
-        animation.SequenceNumber())
-      return true;
-  }
-  return false;
-}
-
-bool CSSAnimations::IsTransitionAnimationForInspector(
-    const Animation& animation) const {
-  for (const auto& it : transitions_) {
-    if (it.value.animation->SequenceNumber() == animation.SequenceNumber())
-      return true;
-  }
-  return false;
-}
-
 namespace {
 
 const KeyframeEffectModelBase* GetKeyframeEffectModelBase(

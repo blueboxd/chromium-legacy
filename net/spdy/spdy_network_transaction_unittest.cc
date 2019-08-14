@@ -7075,6 +7075,56 @@ TEST_F(SpdyNetworkTransactionTest, InitialWindowSizeOverflow) {
   EXPECT_THAT(out.rv, IsError(ERR_HTTP2_FLOW_CONTROL_ERROR));
 }
 
+// Tests that we close the connection if we try to enqueue more frames than
+// the cap allows.
+TEST_F(SpdyNetworkTransactionTest, SessionMaxQueuedCappedFramesExceeded) {
+  const int kTestSessionMaxQueuedCappedFrames = 5;
+  const int kTestNumPings = kTestSessionMaxQueuedCappedFrames + 1;
+  spdy::SettingsMap settings;
+  settings[spdy::SETTINGS_INITIAL_WINDOW_SIZE] = 0xffff;
+  spdy::SpdySerializedFrame settings_frame(
+      spdy_util_.ConstructSpdySettings(settings));
+  std::vector<spdy::SpdySerializedFrame> ping_frames;
+
+  spdy::SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
+  spdy::SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
+
+  std::vector<MockWrite> writes;
+  std::vector<MockRead> reads;
+  // Send request, receive SETTINGS and send a SETTINGS ACK.
+  writes.push_back(CreateMockWrite(req, writes.size() + reads.size()));
+  reads.push_back(CreateMockRead(settings_frame, writes.size() + reads.size()));
+  writes.push_back(CreateMockWrite(settings_ack, writes.size() + reads.size()));
+  // Receive more pings than our limit allows.
+  for (int i = 1; i <= kTestNumPings; ++i) {
+    ping_frames.push_back(
+        spdy_util_.ConstructSpdyPing(/*ping_id=*/i, /*is_ack=*/false));
+    reads.push_back(
+        CreateMockRead(ping_frames.back(), writes.size() + reads.size()));
+  }
+  // Only write PING ACKs after receiving all of them to ensure they are all in
+  // the write queue.
+  for (int i = 1; i <= kTestNumPings; ++i) {
+    ping_frames.push_back(
+        spdy_util_.ConstructSpdyPing(/*ping_id=*/i, /*is_ack=*/true));
+    writes.push_back(
+        CreateMockWrite(ping_frames.back(), writes.size() + reads.size()));
+  }
+  // Stop reading.
+  reads.push_back(MockRead(ASYNC, 0, writes.size() + reads.size()));
+
+  SequencedSocketData data(reads, writes);
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+  session_deps->session_max_queued_capped_frames =
+      kTestSessionMaxQueuedCappedFrames;
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+  helper.RunToCompletion(&data);
+  TransactionHelperResult out = helper.output();
+  EXPECT_THAT(out.rv, IsError(ERR_CONNECTION_CLOSED));
+}
+
 // Test that after hitting a send window size of 0, the write process
 // stalls and upon receiving WINDOW_UPDATE frame write resumes.
 

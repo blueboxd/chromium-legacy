@@ -384,7 +384,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
   void TokenVectorFromAttribute(Vector<String>&, const QualifiedName&) const;
 
-  virtual void GetSparseAXAttributes(AXSparseAttributeClient&) const;
+  void GetSparseAXAttributes(AXSparseAttributeClient&) const;
 
   // Determine subclass type.
   virtual bool IsAXNodeObject() const { return false; }
@@ -398,7 +398,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Check object role or purpose.
   virtual ax::mojom::Role RoleValue() const { return role_; }
   bool IsARIATextControl() const;
-  virtual bool IsARIARow() const { return false; }
   virtual bool IsAnchor() const { return false; }
   bool IsButton() const;
   bool IsCanvas() const { return RoleValue() == ax::mojom::Role::kCanvas; }
@@ -435,7 +434,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
     return false;
   }  // contenteditable or role=textbox
   virtual bool IsPasswordField() const { return false; }
-  virtual bool IsPasswordFieldAndShouldHideValue() const;
+  bool IsPasswordFieldAndShouldHideValue() const;
   bool IsPresentational() const {
     return RoleValue() == ax::mojom::Role::kNone ||
            RoleValue() == ax::mojom::Role::kPresentational;
@@ -498,7 +497,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool IsVisited() const { return false; }
 
   // Check whether certain properties can be modified.
-  virtual bool CanSetFocusAttribute() const;
+  bool CanSetFocusAttribute() const;
   bool CanSetValueAttribute() const;
 
   // Whether objects are ignored, i.e. hidden from the AT.
@@ -553,7 +552,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   typedef HeapVector<NameSource> NameSources;
   // Retrieves the accessible name of the object and a list of all potential
   // sources for the name, indicating which were used.
-  virtual String GetName(NameSources*) const;
+  String GetName(NameSources*) const;
 
   typedef HeapVector<DescriptionSource> DescriptionSources;
   // Takes the result of nameFrom from calling |name|, above, and retrieves the
@@ -888,9 +887,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool NeedsToUpdateChildren() const { return false; }
   virtual void SetNeedsToUpdateChildren() {}
   virtual void ClearChildren();
-  virtual void DetachFromParent() { parent_ = nullptr; }
-  virtual AXObject* ScrollBar(AccessibilityOrientation) { return nullptr; }
-  virtual void AddAccessibleNodeChildren();
+  void DetachFromParent() { parent_ = nullptr; }
+  void AddAccessibleNodeChildren();
   virtual void SelectedOptions(AXObjectVector&) const {}
 
   // Properties of the object's owning document or page.
@@ -898,7 +896,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
   // DOM and layout tree access.
   virtual Node* GetNode() const { return nullptr; }
-  virtual Element* GetElement() const;  // Same as GetNode, if it's an Element.
+  Element* GetElement() const;  // Same as GetNode, if it's an Element.
   virtual LayoutObject* GetLayoutObject() const { return nullptr; }
   virtual Document* GetDocument() const;
   virtual LocalFrameView* DocumentFrameView() const;
@@ -916,11 +914,10 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   void SetScrollOffset(const IntPoint&) const;
 
   // Tables and grids.
-  virtual bool IsTableLikeRole() const;
-  virtual bool IsTableRowLikeRole() const;
-  virtual bool IsTableCellLikeRole() const;
+  bool IsTableLikeRole() const;
+  bool IsTableRowLikeRole() const;
+  bool IsTableCellLikeRole() const;
   virtual bool IsDataTable() const { return false; }
-  virtual bool IsTableCol() const { return false; }
 
   // For a table.
   virtual unsigned ColumnCount() const;
@@ -934,10 +931,10 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual unsigned RowIndex() const;
   virtual unsigned ColumnSpan() const;
   virtual unsigned RowSpan() const;
-  virtual unsigned AriaColumnIndex() const;
-  virtual unsigned AriaRowIndex() const;
-  virtual int AriaColumnCount() const;
-  virtual int AriaRowCount() const;
+  unsigned AriaColumnIndex() const;
+  unsigned AriaRowIndex() const;
+  int AriaColumnCount() const;
+  int AriaRowCount() const;
   virtual ax::mojom::SortDirection GetSortDirection() const {
     return ax::mojom::SortDirection::kNone;
   }
@@ -980,8 +977,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // to keep track of nodes that gain or lose accessibility focus, but
   // this isn't exposed to the open web so they're explicitly marked as
   // internal so it's clear that these should not dispatch DOM events.
-  virtual bool InternalClearAccessibilityFocusAction();
-  virtual bool InternalSetAccessibilityFocusAction();
+  bool InternalClearAccessibilityFocusAction();
+  bool InternalSetAccessibilityFocusAction();
 
   // Native implementations of actions that aren't handled by AOM
   // event listeners. These all return true if handled.
@@ -989,16 +986,16 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool OnNativeClickAction();
   virtual bool OnNativeFocusAction();
   virtual bool OnNativeIncrementAction();
-  virtual bool OnNativeScrollToGlobalPointAction(const IntPoint&) const;
-  virtual bool OnNativeScrollToMakeVisibleAction() const;
-  virtual bool OnNativeScrollToMakeVisibleWithSubFocusAction(
+  bool OnNativeScrollToGlobalPointAction(const IntPoint&) const;
+  bool OnNativeScrollToMakeVisibleAction() const;
+  bool OnNativeScrollToMakeVisibleWithSubFocusAction(
       const IntRect&,
       blink::ScrollAlignment horizontal_scroll_alignment,
       blink::ScrollAlignment vertical_scroll_alignment) const;
   virtual bool OnNativeSetSelectedAction(bool);
   virtual bool OnNativeSetSequentialFocusNavigationStartingPointAction();
   virtual bool OnNativeSetValueAction(const String&);
-  virtual bool OnNativeShowContextMenuAction();
+  bool OnNativeShowContextMenuAction();
 
   // Notifications that this object may have changed.
   virtual void ChildrenChanged() {}
@@ -1087,7 +1084,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
     return nullptr;
   }
 
-  virtual bool CanSetSelectedAttribute() const;
+  bool CanSetSelectedAttribute() const;
   const AXObject* InertRoot() const;
 
   // Returns true if the event was handled.

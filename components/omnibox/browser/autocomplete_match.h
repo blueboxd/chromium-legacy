@@ -170,8 +170,16 @@ struct AutocompleteMatch {
 
   // Comparison function for determining whether the first match is better than
   // the second.
-  static bool MoreRelevant(const AutocompleteMatch& elem1,
-                           const AutocompleteMatch& elem2);
+  static bool MoreRelevant(const AutocompleteMatch& match1,
+                           const AutocompleteMatch& match2);
+
+  // Comparison functions for determining whether the first match is preferred
+  // over the second when choosing between candidate duplicates.
+  static bool BetterDuplicate(const AutocompleteMatch& match1,
+                              const AutocompleteMatch& match2);
+  static bool BetterDuplicateByIterator(
+      const std::vector<AutocompleteMatch>::const_iterator it1,
+      const std::vector<AutocompleteMatch>::const_iterator it2);
 
   // Helper functions for classes creating matches:
   // Fills in the classifications for |text|, using |style| as the base style
@@ -424,6 +432,11 @@ struct AutocompleteMatch {
   // Returns true if the suggestion should show a tab match button or pedal.
   bool ShouldShowButton() const;
 
+  // Upgrades this match by absorbing the best properties from
+  // |duplicate_match|. For instance: if |duplicate_match| has a higher
+  // relevance score, this match's own relevance score will be upgraded.
+  void UpgradeMatchWithPropertiesFrom(const AutocompleteMatch& duplicate_match);
+
   // The provider of this match, used to remember which provider the user had
   // selected when the input changes. This may be NULL, in which case there is
   // no provider (or memory of the user's selection).
@@ -575,8 +588,11 @@ struct AutocompleteMatch {
   // property and associated value and which is presented in chrome://omnibox.
   AdditionalInfo additional_info;
 
-  // A list of matches culled during de-duplication process, retained to
-  // ensure if a match is deleted, the duplicates are deleted as well.
+  // A vector of matches culled during de-duplication process, sorted from
+  // second-best to worst according to the de-duplication preference criteria.
+  // This vector is retained so that if the user deletes a match, all the
+  // duplicates are deleted as well. This is also used for re-duping Search
+  // Entity vs. plain Search suggestions.
   std::vector<AutocompleteMatch> duplicate_matches;
 
   // So users of AutocompleteMatch can use the same ellipsis that it uses.

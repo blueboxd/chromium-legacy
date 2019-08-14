@@ -77,8 +77,7 @@ void URLProvisionFetcher::Retrieve(
         })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GURL(request_string);
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->method = "POST";
   resource_request->headers.SetHeader("User-Agent", "Widevine CDM v1.0");
   simple_url_loader_ = network::SimpleURLLoader::Create(

@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_presentation_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_transitioning_delegate.h"
+#import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -83,12 +84,29 @@
   self.recentTabsNavigationController = [[TableViewNavigationController alloc]
       initWithTable:recentTabsTableViewController];
   self.recentTabsNavigationController.toolbarHidden = YES;
-  self.recentTabsTransitioningDelegate =
-      [[RecentTabsTransitioningDelegate alloc] init];
-  self.recentTabsNavigationController.transitioningDelegate =
-      self.recentTabsTransitioningDelegate;
-  [self.recentTabsNavigationController
-      setModalPresentationStyle:UIModalPresentationCustom];
+
+  BOOL useCustomPresentation = YES;
+  if (IsCollectionsCardPresentationStyleEnabled()) {
+    if (@available(iOS 13, *)) {
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+      [self.recentTabsNavigationController
+          setModalPresentationStyle:UIModalPresentationFormSheet];
+      self.recentTabsNavigationController.presentationController.delegate =
+          recentTabsTableViewController;
+      useCustomPresentation = NO;
+#endif
+    }
+  }
+
+  if (useCustomPresentation) {
+    self.recentTabsTransitioningDelegate =
+        [[RecentTabsTransitioningDelegate alloc] init];
+    self.recentTabsNavigationController.transitioningDelegate =
+        self.recentTabsTransitioningDelegate;
+    [self.recentTabsNavigationController
+        setModalPresentationStyle:UIModalPresentationCustom];
+  }
+
   [self.baseViewController
       presentViewController:self.recentTabsNavigationController
                    animated:YES

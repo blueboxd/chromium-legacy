@@ -717,10 +717,6 @@ TEST_P(PaintPropertyTreeBuilderTest, Perspective3DTransformedDescendant) {
 
 TEST_P(PaintPropertyTreeBuilderTest,
        TransformNodeWithActiveAnimationHasDirectCompositingReason) {
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    return;
-
   LoadTestData("transform-animation.html");
   EXPECT_TRUE(PaintPropertiesForElement("target")
                   ->Transform()
@@ -733,14 +729,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
   // TODO(flackr): Verify that after https://crbug.com/900241 is fixed we no
   // longer create opacity or filter nodes for transform animations.
   EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Transform());
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Effect());
-    EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Filter());
-  } else {
-    EXPECT_EQ(nullptr, PaintPropertiesForElement("target")->Effect());
-    EXPECT_EQ(nullptr, PaintPropertiesForElement("target")->Filter());
-  }
+  EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Effect());
+  EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Filter());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
@@ -750,19 +740,11 @@ TEST_P(PaintPropertyTreeBuilderTest,
   // longer create transform or filter nodes for opacity animations.
   EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Transform());
   EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Effect());
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Filter());
-  else
-    EXPECT_EQ(nullptr, PaintPropertiesForElement("target")->Filter());
+  EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Filter());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
        EffectNodeWithActiveAnimationHasDirectCompositingReason) {
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    return;
-
   LoadTestData("opacity-animation.html");
   EXPECT_TRUE(PaintPropertiesForElement("target")
                   ->Effect()
@@ -3185,9 +3167,6 @@ TEST_P(PaintPropertyTreeBuilderTest, PerspectiveIsNotFlattened) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FlatteningIn3DContext) {
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <div id="a" style="transform-style: preserve-3d">
       <div id="b" style="transform: translate3d(0, 0, 33px)">
@@ -4870,10 +4849,6 @@ TEST_P(PaintPropertyTreeBuilderTest, ChangePositionUpdateDescendantProperties) {
 
 TEST_P(PaintPropertyTreeBuilderTest,
        TransformNodeNotAnimatedStillHasCompositorElementId) {
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    return;
-
   SetBodyInnerHTML("<div id='target' style='transform: translateX(2em)'></div");
   const ObjectPaintProperties* properties = PaintPropertiesForElement("target");
   EXPECT_TRUE(properties->Transform());
@@ -4883,10 +4858,6 @@ TEST_P(PaintPropertyTreeBuilderTest,
 
 TEST_P(PaintPropertyTreeBuilderTest,
        EffectNodeNotAnimatedStillHasCompositorElementId) {
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    return;
-
   SetBodyInnerHTML("<div id='target' style='opacity: 0.5'></div");
   const ObjectPaintProperties* properties = PaintPropertiesForElement("target");
   EXPECT_TRUE(properties->Effect());
@@ -4899,10 +4870,6 @@ TEST_P(PaintPropertyTreeBuilderTest,
 
 TEST_P(PaintPropertyTreeBuilderTest,
        TransformNodeAnimatedHasCompositorElementId) {
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    return;
-
   LoadTestData("transform-animation.html");
   const ObjectPaintProperties* properties = PaintPropertiesForElement("target");
   EXPECT_TRUE(properties->Transform());
@@ -4912,10 +4879,6 @@ TEST_P(PaintPropertyTreeBuilderTest,
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, EffectNodeAnimatedHasCompositorElementId) {
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    return;
-
   LoadTestData("opacity-animation.html");
   const ObjectPaintProperties* properties = PaintPropertiesForElement("target");
   EXPECT_TRUE(properties->Effect());
@@ -4952,10 +4915,6 @@ TEST_P(PaintPropertyTreeBuilderTest, FloatUnderInline) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ScrollNodeHasCompositorElementId) {
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <div id='target' style='overflow: auto; width: 100px; height: 100px'>
       <div style='width: 200px; height: 200px'></div>
@@ -5369,15 +5328,10 @@ TEST_P(PaintPropertyTreeBuilderTest, BackfaceHidden) {
   }
 
   const auto* transform = target_properties->Transform();
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    ASSERT_NE(nullptr, transform);
-    EXPECT_TRUE(transform->IsIdentity());
-    EXPECT_EQ(TransformPaintPropertyNode::BackfaceVisibility::kHidden,
-              transform->GetBackfaceVisibilityForTesting());
-  } else {
-    EXPECT_EQ(nullptr, transform);
-  }
+  ASSERT_NE(nullptr, transform);
+  EXPECT_TRUE(transform->IsIdentity());
+  EXPECT_EQ(TransformPaintPropertyNode::BackfaceVisibility::kHidden,
+            transform->GetBackfaceVisibilityForTesting());
 
   To<Element>(target->GetNode())->setAttribute(html_names::kStyleAttr, "");
   UpdateAllLifecyclePhasesForTest();
@@ -5591,11 +5545,10 @@ TEST_P(PaintPropertyTreeBuilderTest,
   opacity_element->setAttribute(html_names::kStyleAttr, "opacity: 0.5");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
 
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // TODO(crbug.com/900241): In BlinkGenPropertyTrees (but not
-    // CompoisteAfterPaint) we create effect and filter nodes when the transform
-    // node needs compositing for will-change:transform, for crbug.com/942681.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // TODO(crbug.com/900241): Without CompositeAfterPaint, we create effect and
+    // filter nodes when the transform node needs compositing for
+    // will-change:transform, for crbug.com/942681.
     EXPECT_FALSE(ToLayoutBoxModelObject(target)->Layer()->NeedsRepaint());
   } else {
     // All paint chunks contained by the new opacity effect node need to be
@@ -5670,9 +5623,7 @@ TEST_P(PaintPropertyTreeBuilderTest, RootHasCompositedScrolling) {
   )HTML");
 
   // When the root scrolls, there should be direct compositing reasons.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    EXPECT_TRUE(DocScrollTranslation()->HasDirectCompositingReasons());
+  EXPECT_TRUE(DocScrollTranslation()->HasDirectCompositingReasons());
 
   // Remove scrolling from the root.
   Element* force_scroll_element = GetDocument().getElementById("forceScroll");
@@ -5699,9 +5650,7 @@ TEST_P(PaintPropertyTreeBuilderTest, IframeDoesNotRequireCompositedScrolling) {
   )HTML");
   UpdateAllLifecyclePhasesForTest();
 
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    EXPECT_TRUE(DocScrollTranslation()->HasDirectCompositingReasons());
+  EXPECT_TRUE(DocScrollTranslation()->HasDirectCompositingReasons());
 
   // When the child iframe scrolls, there should not be direct compositing
   // reasons because only the root frame needs scrolling compositing reasons.
@@ -6466,9 +6415,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootCompositedClipPath) {
   const auto* transform = properties->Transform();
   ASSERT_NE(nullptr, transform);
   EXPECT_EQ(properties->PaintOffsetTranslation(), transform->Parent());
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    EXPECT_TRUE(transform->HasDirectCompositingReasons());
+  EXPECT_TRUE(transform->HasDirectCompositingReasons());
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(nullptr, properties->MaskClip());
@@ -6530,11 +6477,9 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootCompositedClipPath) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SimpleOpacityChangeDoesNotCausePacUpdate) {
-  // This is a BGPT test only.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-      // TODO(vmpstr): For CompositeAfterPaint, we don't seem to get a
-      // cc_effect, which we need to investigate.
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+  // TODO(vmpstr): For CompositeAfterPaint, we don't seem to get a
+  // cc_effect, which we need to investigate.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetHtmlInnerHTML(R"HTML(
@@ -6587,10 +6532,8 @@ TEST_P(PaintPropertyTreeBuilderTest, SimpleOpacityChangeDoesNotCausePacUpdate) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SimpleScrollChangeDoesNotCausePacUpdate) {
-  // This is a BGPT test only.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-      // TODO(vmpstr): Make this test pass for CompositeAfterPaint.
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+  // TODO(vmpstr): Make this test pass for CompositeAfterPaint.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetHtmlInnerHTML(R"HTML(
@@ -6686,15 +6629,10 @@ TEST_P(PaintPropertyTreeBuilderTest,
                                    .LocalBorderBoxProperties();
   EXPECT_EQ(clip_path_properties->MaskClip(),
             span_all_state.Clip().Parent()->Parent());
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    // TODO(crbug.com/900241): In BlinkGenPropertyTrees/CompositeAfterPaint we
-    // create effect and filter nodes when the transform node needs compositing,
-    // for crbug.com/942681.
-    EXPECT_EQ(clip_path_properties->Effect(),
-              span_all_state.Effect().Parent()->Parent()->Parent());
-  } else {
-    EXPECT_EQ(clip_path_properties->Effect(), span_all_state.Effect().Parent());
-  }
+  // TODO(crbug.com/900241): We create effect and filter nodes when the
+  // transform node needs compositing, for crbug.com/942681.
+  EXPECT_EQ(clip_path_properties->Effect(),
+            span_all_state.Effect().Parent()->Parent()->Parent());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, VideoClipRect) {
@@ -6876,8 +6814,6 @@ TEST_P(PaintPropertyTreeBuilderTest, IsAffectedByOuterViewportBoundsDelta) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, TransformAnimationAxisAlignment) {
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    return;
   SetBodyInnerHTML(R"HTML(
       <!DOCTYPE html>
       <style>

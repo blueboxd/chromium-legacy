@@ -115,10 +115,9 @@ class ScopedTaskEnvironment::TestTaskTracker
   friend class ScopedTaskEnvironment;
 
   // internal::ThreadPoolImpl::TaskTrackerImpl:
-  void RunOrSkipTask(internal::Task task,
-                     internal::TaskSource* sequence,
-                     const TaskTraits& traits,
-                     bool can_run_task) override;
+  void RunTask(internal::Task task,
+               internal::TaskSource* sequence,
+               const TaskTraits& traits) override;
 
   // Synchronizes accesses to members below.
   mutable Lock lock_;
@@ -739,11 +738,10 @@ bool ScopedTaskEnvironment::TestTaskTracker::DisallowRunTasks() {
   return true;
 }
 
-void ScopedTaskEnvironment::TestTaskTracker::RunOrSkipTask(
+void ScopedTaskEnvironment::TestTaskTracker::RunTask(
     internal::Task task,
     internal::TaskSource* sequence,
-    const TaskTraits& traits,
-    bool can_run_task) {
+    const TaskTraits& traits) {
   {
     AutoLock auto_lock(lock_);
 
@@ -753,8 +751,8 @@ void ScopedTaskEnvironment::TestTaskTracker::RunOrSkipTask(
     ++num_tasks_running_;
   }
 
-  internal::ThreadPoolImpl::TaskTrackerImpl::RunOrSkipTask(
-      std::move(task), sequence, traits, can_run_task);
+  internal::ThreadPoolImpl::TaskTrackerImpl::RunTask(std::move(task), sequence,
+                                                     traits);
 
   {
     AutoLock auto_lock(lock_);

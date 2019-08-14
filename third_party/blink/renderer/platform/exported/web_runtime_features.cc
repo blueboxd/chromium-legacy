@@ -65,7 +65,9 @@ void WebRuntimeFeatures::EnableFeatureFromString(const std::string& name,
 }
 
 bool WebRuntimeFeatures::IsBlinkGenPropertyTreesEnabled() {
-  return RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled();
+  // TODO(pdr): Remove this function now that BlinkGenPropertyTrees has
+  // launched.
+  return true;
 }
 
 bool WebRuntimeFeatures::IsFractionalScrollOffsetsEnabled() {

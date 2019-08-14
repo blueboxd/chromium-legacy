@@ -382,7 +382,9 @@ URLLoader::URLLoader(
           request.custom_proxy_use_alternate_proxy_list),
       fetch_window_id_(request.fetch_window_id),
       update_network_isolation_key_on_redirect_(
-          request.update_network_isolation_key_on_redirect),
+          request.trusted_params
+              ? request.trusted_params->update_network_isolation_key_on_redirect
+              : mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate),
       origin_policy_manager_(nullptr) {
   DCHECK(delete_callback_);
   DCHECK(factory_params_);
@@ -411,17 +413,13 @@ URLLoader::URLLoader(
   url_request_->set_referrer_policy(request.referrer_policy);
   url_request_->set_upgrade_if_insecure(request.upgrade_if_insecure);
 
-  // Populate network isolation key from the factory params or from the resource
-  // request for navigation resources.
-  if (!request.trusted_network_isolation_key.IsEmpty()) {
-    DCHECK(!factory_params_->network_isolation_key);
-    url_request_->set_network_isolation_key(
-        request.trusted_network_isolation_key);
-  }
   if (factory_params_->network_isolation_key) {
-    DCHECK(request.trusted_network_isolation_key.IsEmpty());
     url_request_->set_network_isolation_key(
         factory_params_->network_isolation_key.value());
+  } else if (request.trusted_params &&
+             !request.trusted_params->network_isolation_key.IsEmpty()) {
+    url_request_->set_network_isolation_key(
+        request.trusted_params->network_isolation_key);
   }
 
   // |cors_excempt_headers| must be merged here to avoid breaking CORS checks.

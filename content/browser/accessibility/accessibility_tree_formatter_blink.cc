@@ -338,14 +338,16 @@ void AccessibilityTreeFormatterBlink::AddProperties(
   }
 
   //  Check for relevant rich text selection info in AXTreeData
-  int anchor_id = node.manager()->GetTreeData().sel_anchor_object_id;
+  ui::AXTree::Selection unignored_selection =
+      node.manager()->ax_tree()->GetUnignoredSelection();
+  int anchor_id = unignored_selection.anchor_object_id;
   if (id == anchor_id) {
-    int anchor_offset = node.manager()->GetTreeData().sel_anchor_offset;
+    int anchor_offset = unignored_selection.anchor_offset;
     dict->SetInteger("TreeData.textSelStartOffset", anchor_offset);
   }
-  int focus_id = node.manager()->GetTreeData().sel_focus_object_id;
+  int focus_id = unignored_selection.focus_object_id;
   if (id == focus_id) {
-    int focus_offset = node.manager()->GetTreeData().sel_focus_offset;
+    int focus_offset = unignored_selection.focus_offset;
     dict->SetInteger("TreeData.textSelEndOffset", focus_offset);
   }
 

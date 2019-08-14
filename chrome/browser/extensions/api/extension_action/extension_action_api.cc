@@ -467,8 +467,10 @@ ExtensionActionGetPopupFunction::RunExtensionAction() {
 
 ExtensionFunction::ResponseAction
 ExtensionActionGetBadgeTextFunction::RunExtensionAction() {
-  return RespondNow(OneArgument(
-      std::make_unique<base::Value>(extension_action_->GetBadgeText(tab_id_))));
+  // TODO(crbug.com/990224): Return a placeholder value if the extension has
+  // called setActionCountAsBadgeText(true).
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
+      extension_action_->GetExplicitlySetBadgeText(tab_id_))));
 }
 
 ExtensionFunction::ResponseAction

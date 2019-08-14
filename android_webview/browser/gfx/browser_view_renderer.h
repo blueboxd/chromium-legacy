@@ -39,6 +39,7 @@ namespace android_webview {
 class BrowserViewRendererClient;
 class ChildFrame;
 class CompositorFrameConsumer;
+class RootFrameSinkProxy;
 
 // Interface for all the WebView-specific content rendering operations.
 // Provides software and hardware rendering and the Capture Picture API.
@@ -181,6 +182,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
       CompositorFrameConsumer* compositor_frame_consumer);
   void ReleaseHardware();
   bool DoUpdateParentDrawData();
+  void SetNeedsBeginFrames(bool needs_begin_frames);
 
   gfx::Vector2d max_scroll_offset() const;
 
@@ -196,6 +198,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   BrowserViewRendererClient* const client_;
   const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   CompositorFrameConsumer* current_compositor_frame_consumer_;
+  std::unique_ptr<RootFrameSinkProxy> root_frame_sink_proxy_;
 
   // The current compositor that's owned by the current RVH.
   content::SynchronousCompositor* compositor_;

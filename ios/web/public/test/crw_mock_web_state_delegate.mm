@@ -5,7 +5,7 @@
 #import "ios/web/public/test/crw_mock_web_state_delegate.h"
 
 #import "ios/web/public/ui/context_menu_params.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

@@ -3432,6 +3432,11 @@ class ConnectionListener
     std::move(on_done_accepting_connections_).Run();
   }
 
+  int GetTotalSocketsSeen() const {
+    base::AutoLock lock(lock_);
+    return total_sockets_seen_;
+  }
+
  private:
   static uint16_t GetPort(const net::StreamSocket& connection) {
     // Get the remote port of the peer, since the local port will always be the
@@ -3753,6 +3758,59 @@ TEST_F(NetworkContextTest, CloseConnections) {
               GetSocketPoolInfo(network_context.get(), "idle_socket_count"));
     EXPECT_EQ(
         0, GetSocketPoolInfo(network_context.get(), "handed_out_socket_count"));
+  }
+}
+
+// Test that only trusted URLLoaderFactories accept
+// ResourceRequest::trusted_params.
+TEST_F(NetworkContextTest, TrustedParams) {
+  for (bool trusted_factory : {false, true}) {
+    ConnectionListener connection_listener;
+    net::EmbeddedTestServer test_server;
+    test_server.AddDefaultHandlers(
+        base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+    test_server.SetConnectionListener(&connection_listener);
+    ASSERT_TRUE(test_server.Start());
+
+    std::unique_ptr<NetworkContext> network_context =
+        CreateContextWithParams(CreateContextParams());
+
+    mojom::URLLoaderFactoryPtr loader_factory;
+    mojom::URLLoaderFactoryParamsPtr params =
+        mojom::URLLoaderFactoryParams::New();
+    params->process_id = mojom::kBrowserProcessId;
+    params->is_corb_enabled = false;
+    // URLLoaderFactories should not be trusted by default.
+    EXPECT_FALSE(params->is_trusted);
+    params->is_trusted = trusted_factory;
+    network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
+                                            std::move(params));
+
+    ResourceRequest request;
+    request.url = test_server.GetURL("/echo");
+    request.trusted_params = ResourceRequest::TrustedParams();
+    mojom::URLLoaderPtr loader;
+    TestURLLoaderClient client;
+    loader_factory->CreateLoaderAndStart(
+        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
+        0 /* options */, request, client.CreateInterfacePtr(),
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+    client.RunUntilComplete();
+
+    // If the factory was trusted, the request should have succeeded. Otherwise,
+    // it should have failed.
+    EXPECT_EQ(trusted_factory, client.has_received_response());
+
+    if (trusted_factory) {
+      EXPECT_THAT(client.completion_status().error_code, net::test::IsOk());
+      EXPECT_EQ(1, connection_listener.GetTotalSocketsSeen());
+    } else {
+      EXPECT_THAT(client.completion_status().error_code,
+                  net::test::IsError(net::ERR_INVALID_ARGUMENT));
+      // No connection should have been made to the test server.
+      EXPECT_EQ(0, connection_listener.GetTotalSocketsSeen());
+    }
   }
 }
 
@@ -5731,16 +5789,22 @@ class NetworkContextSplitCacheTest : public NetworkContextTest {
       base::Optional<GURL> new_url = base::nullopt) {
     ResourceRequest request = CreateResourceRequest("GET", url);
     request.load_flags |= net::LOAD_SKIP_CACHE_VALIDATION;
-    request.update_network_isolation_key_on_redirect =
-        update_network_isolation_key_on_redirect;
 
     mojom::URLLoaderFactoryPtr loader_factory;
     auto params = mojom::URLLoaderFactoryParams::New();
     params->process_id = mojom::kBrowserProcessId;
     params->is_corb_enabled = false;
     if (is_navigation) {
-      request.trusted_network_isolation_key = key;
+      request.trusted_params = ResourceRequest::TrustedParams();
+      request.trusted_params->network_isolation_key = key;
+      request.trusted_params->update_network_isolation_key_on_redirect =
+          update_network_isolation_key_on_redirect;
+      params->is_trusted = true;
     } else {
+      // Different |update_network_isolation_key_on_redirect| values may only be
+      // set for navigations.
+      DCHECK_EQ(mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate,
+                update_network_isolation_key_on_redirect);
       params->network_isolation_key = key;
     }
     network_context_->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),

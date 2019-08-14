@@ -15,7 +15,7 @@
 #import "ios/web/public/download/download_task_observer.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #import "ios/web/web_view/error_translation_util.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/data_url.h"

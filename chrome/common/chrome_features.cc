@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
@@ -258,6 +257,22 @@ const base::Feature kDesktopPWAsOmniboxInstall{
 const base::Feature kDisallowUnsafeHttpDownloads{
     "DisallowUnsafeHttpDownloads", base::FEATURE_DISABLED_BY_DEFAULT};
 const char kDisallowUnsafeHttpDownloadsParamName[] = "MimeTypeList";
+
+// Enable DNS over HTTPS (DoH).
+const base::Feature kDnsOverHttps{"DnsOverHttps",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Set whether fallback to insecure DNS is allowed by default. This setting may
+// be overridden for individual transactions.
+const base::FeatureParam<bool> kDnsOverHttpsFallbackParam{&kDnsOverHttps,
+                                                          "Fallback", true};
+
+// Supply one or more space-separated DoH server URI templates to use when this
+// feature is enabled. If no templates are specified, then a hardcoded mapping
+// will be used to construct a list of DoH templates associated with the IP
+// addresses of insecure resolvers in the discovered configuration.
+const base::FeatureParam<std::string> kDnsOverHttpsTemplatesParam{
+    &kDnsOverHttps, "Templates", ""};
 
 #if defined(OS_ANDROID)
 // Enable changing default downloads storage location on Android.

@@ -29,6 +29,23 @@ namespace network {
 // Note: Please revise EqualsForTesting accordingly on any updates to this
 // struct.
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
+  // Typemapped to network.mojom::TrustedUrlRequestParams, see comments there
+  // for details of each field.
+  //
+  // TODO(mmenke):  There are likely other fields that should be moved into this
+  // class.
+  struct COMPONENT_EXPORT(NETWORK_CPP_BASE) TrustedParams {
+    TrustedParams();
+    ~TrustedParams();
+
+    bool operator==(const TrustedParams& other) const;
+
+    net::NetworkIsolationKey network_isolation_key;
+    mojom::UpdateNetworkIsolationKeyOnRedirect
+        update_network_isolation_key_on_redirect =
+            network::mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate;
+  };
+
   ResourceRequest();
   ResourceRequest(const ResourceRequest& request);
   ~ResourceRequest();
@@ -41,10 +58,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   GURL url;
   GURL site_for_cookies;
   base::Optional<url::Origin> top_frame_origin;
-  net::NetworkIsolationKey trusted_network_isolation_key;
-  mojom::UpdateNetworkIsolationKeyOnRedirect
-      update_network_isolation_key_on_redirect =
-          network::mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate;
   bool attach_same_site_cookies = false;
   bool update_first_party_url_on_redirect = false;
   base::Optional<url::Origin> request_initiator;
@@ -91,6 +104,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   base::Optional<std::string> devtools_request_id;
   bool is_signed_exchange_prefetch_cache_enabled = false;
   bool obey_origin_policy = false;
+
+  base::Optional<TrustedParams> trusted_params;
 };
 
 }  // namespace network

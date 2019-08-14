@@ -42,18 +42,18 @@ void VerifySessionAndMediaSessionIds(const Value& v2_message_body) {
   EXPECT_EQ(kMediaSessionId, mediaSessionId->GetInt());
 }
 
-Value GetPlayerStateValue(const MediaStatus& status) {
+Value GetPlayerStateValue(const mojom::MediaStatus& status) {
   switch (status.play_state) {
-    case MediaStatus::PlayState::PLAYING:
+    case mojom::MediaStatus::PlayState::PLAYING:
       return Value("PLAYING");
-    case MediaStatus::PlayState::PAUSED:
+    case mojom::MediaStatus::PlayState::PAUSED:
       return Value("PAUSED");
-    case MediaStatus::PlayState::BUFFERING:
+    case mojom::MediaStatus::PlayState::BUFFERING:
       return Value("BUFFERING");
   }
 }
 
-Value GetSupportedMediaCommandsValue(const MediaStatus& status) {
+Value GetSupportedMediaCommandsValue(const mojom::MediaStatus& status) {
   int commands = 0;
   // |can_set_volume| and |can_mute| are not used, because the receiver volume
   // is used instead.
@@ -64,8 +64,8 @@ Value GetSupportedMediaCommandsValue(const MediaStatus& status) {
   return Value(commands);
 }
 
-MediaStatus CreateSampleMediaStatus() {
-  MediaStatus status;
+mojom::MediaStatus CreateSampleMediaStatus() {
+  mojom::MediaStatus status;
   status.title = "media title";
   status.can_play_pause = true;
   status.can_mute = true;
@@ -73,7 +73,7 @@ MediaStatus CreateSampleMediaStatus() {
   status.can_seek = false;
   status.is_muted = false;
   status.volume = 0.7;
-  status.play_state = MediaStatus::PlayState::BUFFERING;
+  status.play_state = mojom::MediaStatus::PlayState::BUFFERING;
   status.duration = base::TimeDelta::FromSeconds(30);
   status.current_time = base::TimeDelta::FromSeconds(12);
   return status;
@@ -134,7 +134,7 @@ class CastMediaControllerTest : public testing::Test {
     SetMediaStatus(CreateSampleMediaStatus());
   }
 
-  void SetMediaStatus(const MediaStatus& status) {
+  void SetMediaStatus(const mojom::MediaStatus& status) {
     Value status_value(Value::Type::DICTIONARY);
     status_value.SetKey("mediaSessionId", Value(kMediaSessionId));
     status_value.SetKey("media", Value(Value::Type::DICTIONARY));
@@ -239,15 +239,15 @@ TEST_F(CastMediaControllerTest, SendSeekRequest) {
 }
 
 TEST_F(CastMediaControllerTest, UpdateMediaStatus) {
-  const MediaStatus expected_status = CreateSampleMediaStatus();
+  const mojom::MediaStatus expected_status = CreateSampleMediaStatus();
 
   EXPECT_CALL(*status_observer_, OnMediaStatusUpdated(_))
-      .WillOnce([&](const MediaStatus& status) {
-        EXPECT_EQ(expected_status.title, status.title);
-        EXPECT_EQ(expected_status.can_play_pause, status.can_play_pause);
-        EXPECT_EQ(expected_status.play_state, status.play_state);
-        EXPECT_EQ(expected_status.duration, status.duration);
-        EXPECT_EQ(expected_status.current_time, status.current_time);
+      .WillOnce([&](mojom::MediaStatusPtr status) {
+        EXPECT_EQ(expected_status.title, status->title);
+        EXPECT_EQ(expected_status.can_play_pause, status->can_play_pause);
+        EXPECT_EQ(expected_status.play_state, status->play_state);
+        EXPECT_EQ(expected_status.duration, status->duration);
+        EXPECT_EQ(expected_status.current_time, status->current_time);
       });
   SetMediaStatus(expected_status);
   VerifyAndClearExpectations();
@@ -260,9 +260,9 @@ TEST_F(CastMediaControllerTest, UpdateVolumeStatus) {
   const bool session_muted =
       session->value().FindPath("receiver.volume.muted")->GetBool();
   EXPECT_CALL(*status_observer_, OnMediaStatusUpdated(_))
-      .WillOnce([&](const MediaStatus& status) {
-        EXPECT_FLOAT_EQ(session_volume, status.volume);
-        EXPECT_EQ(session_muted, status.is_muted);
+      .WillOnce([&](mojom::MediaStatusPtr status) {
+        EXPECT_FLOAT_EQ(session_volume, status->volume);
+        EXPECT_EQ(session_muted, status->is_muted);
       });
   controller_->SetSession(*session);
   VerifyAndClearExpectations();
@@ -270,11 +270,11 @@ TEST_F(CastMediaControllerTest, UpdateVolumeStatus) {
   // The volume info is set in SetSession() rather than SetMediaStatus(), so the
   // volume info in the latter should be ignored.
   EXPECT_CALL(*status_observer_, OnMediaStatusUpdated(_))
-      .WillOnce([&](const MediaStatus& status) {
-        EXPECT_FLOAT_EQ(session_volume, status.volume);
-        EXPECT_EQ(session_muted, status.is_muted);
+      .WillOnce([&](mojom::MediaStatusPtr status) {
+        EXPECT_FLOAT_EQ(session_volume, status->volume);
+        EXPECT_EQ(session_muted, status->is_muted);
       });
-  MediaStatus updated_status = CreateSampleMediaStatus();
+  mojom::MediaStatus updated_status = CreateSampleMediaStatus();
   updated_status.volume = 0.3;
   updated_status.is_muted = true;
   SetMediaStatus(updated_status);

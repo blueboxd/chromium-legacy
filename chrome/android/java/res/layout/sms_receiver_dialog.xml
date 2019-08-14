@@ -38,6 +38,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" >
             <ImageView
+                android:id="@+id/error_icon"
+                android:layout_height="20dp"
+                android:layout_width="20dp"
+                android:visibility="gone"
+                app:srcCompat="@drawable/ic_error_blue_18dp"
+                tools:ignore="ContentDescription" />
+            <ImageView
                 android:id="@+id/done_icon"
                 android:layout_height="20dp"
                 android:layout_width="20dp"
@@ -70,11 +77,11 @@
         app:stackedMargin="@dimen/button_bar_stacked_margin"
         app:buttonAlignment="end">
         <org.chromium.ui.widget.ButtonCompat
-            android:id="@+id/confirm_button"
+            android:id="@+id/confirm_or_try_again_button"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:layout_gravity="end"
-            android:text="@string/sms_dialog_confirm_button_text"
+            android:text="@string/confirm"
             android:enabled="false"
             style="@style/TextButton" />
         <org.chromium.ui.widget.ButtonCompat

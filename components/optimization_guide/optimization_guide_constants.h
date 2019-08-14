@@ -17,6 +17,10 @@ extern const char kRulesetFormatVersionString[];
 // The remote Optimization Guide Service production server to fetch hints from.
 extern const char kOptimizationGuideServiceDefaultURL[];
 
+// The local histogram used to record that the component hints are stored in
+// the cache and are ready for use.
+extern const char kLoadedHintLocalHistogramString[];
+
 }  // namespace optimization_guide
 
 #endif  // COMPONENTS_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_CONSTANTS_H_

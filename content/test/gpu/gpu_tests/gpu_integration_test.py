@@ -157,9 +157,13 @@ class GpuIntegrationTest(
   @classmethod
   def _RestartBrowser(cls, reason):
     logging.warning('Restarting browser due to '+ reason)
-    cls.StopBrowser()
-    cls.SetBrowserOptions(cls._finder_options)
-    cls.StartBrowser()
+    if cls.browser is None:
+      cls.SetBrowserOptions(cls._original_finder_options)
+      cls.StartBrowser()
+    else:
+      cls.StopBrowser()
+      cls.SetBrowserOptions(cls._finder_options)
+      cls.StartBrowser()
 
   def _RunGpuTest(self, url, test_name, *args):
     expected_results, should_retry_on_failure = (
@@ -323,6 +327,14 @@ class GpuIntegrationTest(
   @classmethod
   def _EnsureTabIsAvailable(cls):
     try:
+      # If there is no browser, the previous run may have failed an additional
+      # time, while trying to recover from an initial failure.
+      # ChromeBrowserBackend._GetDevToolsClient can cause this if there is a
+      # crash during browser startup. If this has occurred, reset the options,
+      # and attempt to bring up a browser for this test. Otherwise failures
+      # begin to cascade between tests. https://crbug.com/993379
+      if cls.browser is None:
+        cls._RestartBrowser('failure in previous shutdown')
       cls.tab = cls.browser.tabs[0]
     except Exception:
       # restart the browser to make sure a failure in a test doesn't

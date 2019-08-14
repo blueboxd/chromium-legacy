@@ -23,7 +23,6 @@ SSLConfig::CertAndStatus::~CertAndStatus() = default;
 
 SSLConfig::SSLConfig()
     : early_data_enabled(false),
-      false_start_enabled(true),
       require_ecdhe(false),
       ignore_certificate_errors(false),
       disable_cert_verification_network_fetches(false),

@@ -174,14 +174,16 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->method = request_info->common_params->method;
   new_request->url = request_info->common_params->url;
   new_request->site_for_cookies = request_info->site_for_cookies;
-  new_request->trusted_network_isolation_key =
+  new_request->trusted_params = network::ResourceRequest::TrustedParams();
+  new_request->trusted_params->network_isolation_key =
       request_info->network_isolation_key;
 
   if (request_info->is_main_frame) {
-    new_request->update_network_isolation_key_on_redirect = network::mojom::
-        UpdateNetworkIsolationKeyOnRedirect::kUpdateTopFrameAndFrameOrigin;
+    new_request->trusted_params->update_network_isolation_key_on_redirect =
+        network::mojom::UpdateNetworkIsolationKeyOnRedirect::
+            kUpdateTopFrameAndFrameOrigin;
   } else {
-    new_request->update_network_isolation_key_on_redirect =
+    new_request->trusted_params->update_network_isolation_key_on_redirect =
         network::mojom::UpdateNetworkIsolationKeyOnRedirect::kUpdateFrameOrigin;
   }
 
@@ -330,7 +332,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     return options;
   }
 
-  // This can be called on the UI or IO thread.
   void Start(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
                  network_loader_factory_info,
              ServiceWorkerNavigationHandle*
@@ -736,16 +737,17 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (resource_request_->resource_type ==
         static_cast<int>(ResourceType::kMainFrame)) {
       url::Origin origin = url::Origin::Create(resource_request_->url);
-      resource_request_->trusted_network_isolation_key =
+      resource_request_->trusted_params->network_isolation_key =
           net::NetworkIsolationKey(origin, origin);
     } else {
       DCHECK_EQ(static_cast<int>(ResourceType::kSubFrame),
                 resource_request_->resource_type);
       url::Origin subframe_origin = url::Origin::Create(resource_request_->url);
       base::Optional<url::Origin> top_frame_origin =
-          resource_request_->trusted_network_isolation_key.GetTopFrameOrigin();
+          resource_request_->trusted_params->network_isolation_key
+              .GetTopFrameOrigin();
       DCHECK(top_frame_origin);
-      resource_request_->trusted_network_isolation_key =
+      resource_request_->trusted_params->network_isolation_key =
           net::NetworkIsolationKey(top_frame_origin.value(), subframe_origin);
     }
 
@@ -1435,6 +1437,7 @@ void NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(
       network::mojom::URLLoaderFactoryParams::New();
   params->header_client = std::move(header_client);
   params->process_id = network::mojom::kBrowserProcessId;
+  params->is_trusted = true;
   params->is_corb_enabled = false;
   params->disable_web_security =
       base::CommandLine::ForCurrentProcess()->HasSwitch(

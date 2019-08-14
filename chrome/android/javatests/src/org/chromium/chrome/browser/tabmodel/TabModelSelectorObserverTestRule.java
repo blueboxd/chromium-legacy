@@ -75,7 +75,7 @@ public class TabModelSelectorObserverTestRule extends ChromeBrowserTestRule {
             }
         };
 
-        TabModelOrderController orderController = new TabModelOrderController(mSelector);
+        TabModelOrderController orderController = new TabModelOrderControllerImpl(mSelector);
         TabContentManager tabContentManager =
                 new TabContentManager(InstrumentationRegistry.getTargetContext(), null, false);
         TabPersistencePolicy persistencePolicy = new TabbedModeTabPersistencePolicy(0, false);

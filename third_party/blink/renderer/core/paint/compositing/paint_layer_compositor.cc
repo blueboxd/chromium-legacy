@@ -278,18 +278,6 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
   // crbug.com/667547
   if (!layout_view_.GetDocument().Printing() ||
       RuntimeEnabledFeatures::PrintBrowserEnabled()) {
-    // Although BlinkGenPropertyTreesEnabled still uses PaintLayerCompositor to
-    // generate the composited layer tree/list, it also has the CAP behavior of
-    // removing layers that do not draw content. As such, we use the same path
-    // as CAP for updating composited animations once we know the final set of
-    // composited elements (see LocalFrameView::UpdateLifecyclePhasesInternal,
-    // during kPaintClean).
-    if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-      DocumentAnimations::UpdateAnimations(layout_view_.GetDocument(),
-                                           DocumentLifecycle::kCompositingClean,
-                                           nullptr);
-    }
-
     layout_view_.GetFrameView()
         ->GetScrollableArea()
         ->UpdateCompositorScrollAnimations();
@@ -569,15 +557,6 @@ void PaintLayerCompositor::UpdateIfNeeded(
         layers_needing_paint_invalidation[i]->GetLayoutObject());
   }
 
-  // When BlinkGenPropertyTrees is enabled, layer attachment, including the root
-  // layer, must occur in the paint lifecycle step.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    AttachRootLayerViaChromeClient();
-
-  // Inform the inspector that the layer tree has changed.
-  if (IsMainFrame() && !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    probe::LayerTreeDidChange(layout_view_.GetFrame());
-
   Lifecycle().AdvanceTo(DocumentLifecycle::kCompositingClean);
 }
 
@@ -808,21 +787,6 @@ bool PaintLayerCompositor::CanBeComposited(const PaintLayer* layer) const {
          !layer->GetLayoutObject().IsSVGForeignObject();
 }
 
-// Return true if the given layer is a stacking context and has compositing
-// child layers that it needs to clip, or is an embedded object with a border
-// radius. In these cases we insert a clipping GraphicsLayer into the hierarchy
-// between this layer and its children in the z-order hierarchy.
-bool PaintLayerCompositor::ClipsCompositingDescendants(
-    const PaintLayer* layer) const {
-  if (!layer->HasCompositingDescendant())
-    return false;
-  if (!layer->GetLayoutObject().IsBox())
-    return false;
-  const LayoutBox& box = ToLayoutBox(layer->GetLayoutObject());
-  return box.ShouldClipOverflow() || box.HasClip() ||
-         (box.IsLayoutEmbeddedContent() && box.StyleRef().HasBorderRadius());
-}
-
 // If an element has composited negative z-index children, those children paint
 // in front of the layer background, so we need an extra 'contents' layer for
 // the foreground of the layer object.
@@ -845,10 +809,6 @@ static void UpdateTrackingRasterInvalidationsRecursive(
 
   if (GraphicsLayer* mask_layer = graphics_layer->MaskLayer())
     UpdateTrackingRasterInvalidationsRecursive(mask_layer);
-
-  if (GraphicsLayer* clipping_mask_layer =
-          graphics_layer->ContentsClippingMaskLayer())
-    UpdateTrackingRasterInvalidationsRecursive(clipping_mask_layer);
 }
 
 void PaintLayerCompositor::UpdateTrackingRasterInvalidations() {

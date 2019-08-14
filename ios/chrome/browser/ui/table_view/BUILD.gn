@@ -15,10 +15,9 @@ source_set("table_view") {
     "table_view_navigation_controller.mm",
     "table_view_navigation_controller_constants.h",
     "table_view_navigation_controller_constants.mm",
-    "table_view_navigation_controller_delegate.h",
-    "table_view_navigation_controller_delegate.mm",
   ]
   deps = [
+    ":feature_flags",
     ":presentation",
     ":styler",
     ":views",

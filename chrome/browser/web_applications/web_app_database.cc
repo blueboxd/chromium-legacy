@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
@@ -72,6 +73,12 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 
   proto->set_name(web_app.name());
 
+  DCHECK_NE(LaunchContainer::kDefault, web_app.launch_container());
+  proto->set_launch_container(web_app.launch_container() ==
+                                      LaunchContainer::kWindow
+                                  ? LaunchContainerProto::WINDOW
+                                  : LaunchContainerProto::TAB);
+
   // Optional fields:
   proto->set_description(web_app.description());
   if (!web_app.scope().is_empty())
@@ -106,6 +113,15 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
     return nullptr;
   }
   web_app->SetName(proto.name());
+
+  if (!proto.has_launch_container()) {
+    DLOG(ERROR) << "WebApp proto parse error: no launch_container field";
+    return nullptr;
+  }
+  web_app->SetLaunchContainer(proto.launch_container() ==
+                                      LaunchContainerProto::WINDOW
+                                  ? LaunchContainer::kWindow
+                                  : LaunchContainer::kTab);
 
   // Optional fields:
   if (proto.has_description())

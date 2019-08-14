@@ -10,6 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/sequenced_task_runner.h"
 #include "components/mirroring/mojom/mirroring_service.mojom.h"
 #include "components/mirroring/mojom/mirroring_service_host.mojom.h"
 #include "components/mirroring/mojom/resource_provider.mojom.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/geometry/size.h"
 
 // TODO(https://crbug.com/879012): Remove the build flag. OffscreenTab should
@@ -31,6 +33,10 @@ class AudioLoopbackStreamCreator;
 class BrowserContext;
 class WebContents;
 }  // namespace content
+
+namespace viz {
+class GpuClient;
+}
 
 namespace mirroring {
 
@@ -76,6 +82,7 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
   static gfx::Size GetClampedResolution(gfx::Size screen_resolution);
 
   // ResourceProvider implementation.
+  void BindGpu(mojo::PendingReceiver<viz::mojom::Gpu> receiver) override;
   void GetVideoCaptureHost(
       media::mojom::VideoCaptureHostRequest request) override;
   void GetNetworkContext(
@@ -113,9 +120,12 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
   // The binding to this mojom::ResourceProvider implementation.
   mojo::Binding<mojom::ResourceProvider> resource_provider_binding_;
 
-  // The Mojo pointer that will be bound to mojom::MirroringService
-  // implementation.
-  mojom::MirroringServicePtr mirroring_service_;
+  // Connection to the remote mojom::MirroringService implementation.
+  mojo::Remote<mojom::MirroringService> mirroring_service_;
+
+  // The GpuClient associated with the Mirroring Service's GPU connection, if
+  // any.
+  std::unique_ptr<viz::GpuClient, base::OnTaskRunnerDeleter> gpu_client_;
 
   // Used to create an audio loopback stream through the Audio Service.
   std::unique_ptr<content::AudioLoopbackStreamCreator> audio_stream_creator_;

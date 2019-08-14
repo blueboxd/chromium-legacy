@@ -94,11 +94,8 @@ TEST_F(TranslateScriptTest, CheckScriptParameters) {
   EXPECT_EQ(expected_url.GetOrigin().spec(), url.GetOrigin().spec());
   EXPECT_EQ(expected_url.path(), url.path());
 
-  int load_flags = last_resource_request.load_flags;
-  EXPECT_EQ(net::LOAD_DO_NOT_SEND_COOKIES,
-            load_flags & net::LOAD_DO_NOT_SEND_COOKIES);
-  EXPECT_EQ(net::LOAD_DO_NOT_SAVE_COOKIES,
-            load_flags & net::LOAD_DO_NOT_SAVE_COOKIES);
+  EXPECT_EQ(network::mojom::CredentialsMode::kOmit,
+            last_resource_request.credentials_mode);
 
   std::string expected_extra_headers =
       base::StringPrintf("%s\r\n\r\n", TranslateScript::kRequestHeader);

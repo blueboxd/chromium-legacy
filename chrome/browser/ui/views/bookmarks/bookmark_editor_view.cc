@@ -639,17 +639,3 @@ void BookmarkEditorView::EditorTreeModel::SetTitle(
   if (!title.empty())
     ui::TreeNodeModel<EditorNode>::SetTitle(node, title);
 }
-
-namespace chrome {
-
-void ShowBookmarkEditorViews(gfx::NativeWindow parent_window,
-                             Profile* profile,
-                             const BookmarkEditor::EditDetails& details,
-                             BookmarkEditor::Configuration configuration) {
-  DCHECK(profile);
-  BookmarkEditorView* editor = new BookmarkEditorView(
-      profile, details.parent_node, details, configuration);
-  editor->Show(parent_window);
-}
-
-}  // namespace chrome

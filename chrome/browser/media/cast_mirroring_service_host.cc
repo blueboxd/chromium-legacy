@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/cast_remoting_connector.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -20,22 +21,22 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "components/mirroring/browser/single_client_video_capture_host.h"
 #include "components/mirroring/mojom/cast_message_channel.mojom.h"
-#include "components/mirroring/mojom/constants.mojom.h"
 #include "components/mirroring/mojom/session_observer.mojom.h"
 #include "components/mirroring/mojom/session_parameters.mojom.h"
 #include "content/public/browser/audio_loopback_stream_creator.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_streams_registry.h"
+#include "content/public/browser/gpu_client.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/service_process_host.h"
 #include "content/public/browser/video_capture_device_launcher.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/viz/public/mojom/gpu.mojom.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
@@ -166,7 +167,9 @@ void CastMirroringServiceHost::GetForOffscreenTab(
 
 CastMirroringServiceHost::CastMirroringServiceHost(
     content::DesktopMediaID source_media_id)
-    : source_media_id_(source_media_id), resource_provider_binding_(this) {
+    : source_media_id_(source_media_id),
+      resource_provider_binding_(this),
+      gpu_client_(nullptr, base::OnTaskRunnerDeleter(nullptr)) {
   // Observe the target WebContents for Tab mirroring.
   if (source_media_id_.type == content::DesktopMediaID::TYPE_WEB_CONTENTS)
     Observe(GetContents(source_media_id_.web_contents_id));
@@ -186,9 +189,14 @@ void CastMirroringServiceHost::Start(
     return;
   }
 
-  // Connect to the Mirroring Service.
-  content::GetSystemConnector()->BindInterface(mojom::kServiceName,
-                                               &mirroring_service_);
+  // Launch and connect to the Mirroring Service. The process will run until
+  // |mirroring_service_| is reset.
+  content::ServiceProcessHost::Launch(
+      mirroring_service_.BindNewPipeAndPassReceiver(),
+      content::ServiceProcessHost::Options()
+          .WithDisplayName("Mirroring Service")
+          .WithSandboxType(service_manager::SANDBOX_TYPE_UTILITY)
+          .Pass());
   mojom::ResourceProviderPtr provider;
   resource_provider_binding_.Bind(mojo::MakeRequest(&provider));
   mirroring_service_->Start(
@@ -236,6 +244,12 @@ gfx::Size CastMirroringServiceHost::GetClampedResolution(
   clamped_width = std::max(clamped_width, width_step);
   clamped_height = std::max(clamped_height, height_step);
   return gfx::Size(clamped_width, clamped_height);
+}
+
+void CastMirroringServiceHost::BindGpu(
+    mojo::PendingReceiver<viz::mojom::Gpu> receiver) {
+  gpu_client_ = content::CreateGpuClient(std::move(receiver), base::DoNothing(),
+                                         base::ThreadTaskRunnerHandle::Get());
 }
 
 void CastMirroringServiceHost::GetVideoCaptureHost(
@@ -305,6 +319,7 @@ void CastMirroringServiceHost::ConnectToRemotingSource(
 void CastMirroringServiceHost::WebContentsDestroyed() {
   audio_stream_creator_.reset();
   mirroring_service_.reset();
+  gpu_client_.reset();
 }
 
 void CastMirroringServiceHost::ShowCaptureIndicator() {

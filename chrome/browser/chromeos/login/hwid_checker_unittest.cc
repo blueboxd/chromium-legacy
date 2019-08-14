@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/login/hwid_checker.h"
+
 #include "base/system/sys_info.h"
 #include "base/test/scoped_command_line.h"
 #include "base/time/time.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/chromeos/scoped_set_running_on_chromeos_for_testing.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "content/public/common/content_switches.h"
@@ -134,7 +136,7 @@ TEST(HWIDCheckerTest, KnownHWIDs) {
       IsHWIDCorrect("SARIEN-MCOO 0-20-1DC-180 B2B-A6J-23P-43A-B2L-A7I"));
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 const char kLsbRelease[] =
     "CHROMEOS_RELEASE_NAME=Chrome OS\n"
     "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
@@ -264,7 +266,7 @@ TEST(MachineHWIDCheckerTest, InvalidHWIDInVMNotTrue) {
   EXPECT_FALSE(IsMachineHWIDCorrect());
 }
 
-#else  // defined(GOOGLE_CHROME_BUILD)
+#else  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 // Test non-Google Chromium builds.
 TEST(MachineHWIDCheckerTest, NonGoogleBuild) {
@@ -273,5 +275,5 @@ TEST(MachineHWIDCheckerTest, NonGoogleBuild) {
   EXPECT_TRUE(IsMachineHWIDCorrect());
 }
 
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }  // namespace chromeos

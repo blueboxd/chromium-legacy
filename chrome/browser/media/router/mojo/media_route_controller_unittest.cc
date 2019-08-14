@@ -29,6 +29,10 @@ namespace {
 
 constexpr char kRouteId[] = "routeId";
 
+MATCHER_P(Equals, value, "") {
+  return arg.Equals(value);
+}
+
 }  // namespace
 
 class MediaRouteControllerTest : public ::testing::Test {
@@ -85,16 +89,6 @@ class MediaRouteControllerTest : public ::testing::Test {
   }
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouteControllerTest);
-};
-
-class MirroringMediaRouteControllerTest : public MediaRouteControllerTest {
- public:
-  ~MirroringMediaRouteControllerTest() override {}
-
-  scoped_refptr<MediaRouteController> CreateMediaRouteController() override {
-    return base::MakeRefCounted<MirroringMediaRouteController>(
-        kRouteId, &profile_, &router_);
-  }
 };
 
 // Test that when Mojo connections are ready, calls to the Mojo controller go
@@ -163,22 +157,22 @@ TEST_F(MediaRouteControllerTest, NotifyMediaRouteControllerObservers) {
   auto observer1 = CreateObserver();
   auto observer2 = CreateObserver();
 
-  MediaStatus status;
+  mojom::MediaStatus status;
   status.title = "test media status";
 
-  EXPECT_CALL(*observer_, OnMediaStatusUpdated(status));
-  EXPECT_CALL(*observer1, OnMediaStatusUpdated(status));
-  EXPECT_CALL(*observer2, OnMediaStatusUpdated(status));
-  mojo_media_status_observer_->OnMediaStatusUpdated(status);
+  EXPECT_CALL(*observer_, OnMediaStatusUpdated(Equals(status)));
+  EXPECT_CALL(*observer1, OnMediaStatusUpdated(Equals(status)));
+  EXPECT_CALL(*observer2, OnMediaStatusUpdated(Equals(status)));
+  mojo_media_status_observer_->OnMediaStatusUpdated(status.Clone());
   base::RunLoop().RunUntilIdle();
 
   observer1.reset();
   auto observer3 = CreateObserver();
 
-  EXPECT_CALL(*observer_, OnMediaStatusUpdated(status));
-  EXPECT_CALL(*observer2, OnMediaStatusUpdated(status));
-  EXPECT_CALL(*observer3, OnMediaStatusUpdated(status));
-  mojo_media_status_observer_->OnMediaStatusUpdated(status);
+  EXPECT_CALL(*observer_, OnMediaStatusUpdated(Equals(status)));
+  EXPECT_CALL(*observer2, OnMediaStatusUpdated(Equals(status)));
+  EXPECT_CALL(*observer3, OnMediaStatusUpdated(Equals(status)));
+  mojo_media_status_observer_->OnMediaStatusUpdated(status.Clone());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -198,17 +192,6 @@ TEST_F(MediaRouteControllerTest, DestroyControllerOnNoObservers) {
   EXPECT_CALL(router_, DetachRouteController(kRouteId, controller)).Times(1);
   observer2.reset();
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&router_));
-}
-
-TEST_F(MirroringMediaRouteControllerTest, MirroringCommands) {
-  auto controller = GetController();
-  auto* mirroring_controller =
-      MirroringMediaRouteController::From(controller.get());
-
-  mirroring_controller->SetMediaRemotingEnabled(false);
-  EXPECT_FALSE(mirroring_controller->media_remoting_enabled());
-  EXPECT_FALSE(
-      profile_.GetPrefs()->GetBoolean(prefs::kMediaRouterMediaRemotingEnabled));
 }
 
 }  // namespace media_router

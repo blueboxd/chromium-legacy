@@ -12,13 +12,8 @@
 
 class ConfirmInfoBarDelegate;
 class HungRendererInfoBarDelegate;
-class InsecureContentInfoBarDelegate;
-class NativeAppInfoBarDelegate;
 class PopupBlockedInfoBarDelegate;
-class RegisterProtocolHandlerInfoBarDelegate;
-class ScreenCaptureInfoBarDelegate;
 class ThemeInstalledInfoBarDelegate;
-class ThreeDAPIInfoBarDelegate;
 
 #if defined(OS_ANDROID)
 namespace offline_pages {
@@ -232,14 +227,8 @@ class InfoBarDelegate {
   // Type-checking downcast routines:
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate();
   virtual HungRendererInfoBarDelegate* AsHungRendererInfoBarDelegate();
-  virtual InsecureContentInfoBarDelegate* AsInsecureContentInfoBarDelegate();
-  virtual NativeAppInfoBarDelegate* AsNativeAppInfoBarDelegate();
   virtual PopupBlockedInfoBarDelegate* AsPopupBlockedInfoBarDelegate();
-  virtual RegisterProtocolHandlerInfoBarDelegate*
-      AsRegisterProtocolHandlerInfoBarDelegate();
-  virtual ScreenCaptureInfoBarDelegate* AsScreenCaptureInfoBarDelegate();
   virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();
-  virtual ThreeDAPIInfoBarDelegate* AsThreeDAPIInfoBarDelegate();
   virtual translate::TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
 #if defined(OS_ANDROID)
   virtual offline_pages::OfflinePageInfoBarDelegate*

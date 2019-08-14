@@ -4,12 +4,6 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("constants") {
-  sources = [
-    "constants.mojom",
-  ]
-}
-
 mojom("common") {
   sources = [
     "cast_message_channel.mojom",
@@ -45,6 +39,7 @@ mojom("service") {
     "//media/mojo/mojom",
     "//media/mojo/mojom:remoting",
     "//services/network/public/mojom",
+    "//services/viz/public/mojom",
     "//ui/gfx/geometry/mojom",
   ]
 }

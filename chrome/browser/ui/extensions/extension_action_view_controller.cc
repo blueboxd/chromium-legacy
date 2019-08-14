@@ -432,7 +432,7 @@ ExtensionActionViewController::GetIconImageSource(
   image_source->SetIcon(icon_factory_.GetIcon(tab_id));
 
   std::unique_ptr<IconWithBadgeImageSource::Badge> badge;
-  std::string badge_text = extension_action_->GetBadgeText(tab_id);
+  std::string badge_text = extension_action_->GetDisplayBadgeText(tab_id);
   if (!badge_text.empty()) {
     badge.reset(new IconWithBadgeImageSource::Badge(
             badge_text,

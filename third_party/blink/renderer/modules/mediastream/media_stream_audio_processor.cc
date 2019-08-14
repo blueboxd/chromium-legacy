@@ -10,7 +10,6 @@
 #include <limits>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
@@ -18,8 +17,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -33,6 +30,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_config.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_config_json.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_factory.h"
@@ -462,7 +460,7 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
   // supported.
   int channels = std::min(2, audio_bus->channels());
 
-  std::vector<const float*> channel_ptrs(channels);
+  Vector<const float*> channel_ptrs(channels);
   for (int i = 0; i < channels; ++i)
     channel_ptrs[i] = audio_bus->channel(i);
 

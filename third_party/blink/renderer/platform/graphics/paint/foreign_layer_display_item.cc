@@ -55,8 +55,6 @@ ForeignLayerDisplayItem::ForeignLayerDisplayItem(Type type,
                   type,
                   sizeof(*this)),
       offset_(offset) {
-  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-         RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
   DCHECK(IsForeignLayerType(type));
   DCHECK(GetLayer());
   DCHECK(!IsCacheable());

@@ -26,10 +26,6 @@ import("//third_party/protobuf/proto_library.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/views/features.gni")
 
-if (is_chromeos) {
-  import("//chrome/browser/chromeos/kiosk_next_home/kiosk_next.gni")
-}
-
 # Use a static library here because many test binaries depend on this but don't
 # require many files from it. This makes linking more efficient.
 jumbo_split_static_library("ui") {
@@ -1957,10 +1953,6 @@ jumbo_split_static_library("ui") {
     if (use_cras) {
       defines += [ "USE_CRAS" ]
     }
-
-    if (enable_kiosk_next) {
-      defines += [ "KIOSK_NEXT" ]
-    }
   }
 
   if (is_win || is_mac || is_desktop_linux || is_chromeos) {
@@ -2775,6 +2767,8 @@ jumbo_split_static_library("ui") {
       "views/infobars/infobar_container_view.h",
       "views/infobars/infobar_view.cc",
       "views/infobars/infobar_view.h",
+      "views/layout/interpolating_layout_manager.cc",
+      "views/layout/interpolating_layout_manager.h",
       "views/load_complete_listener.cc",
       "views/load_complete_listener.h",
       "views/location_bar/content_setting_image_view.cc",

@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <sys/types.h>
+
 #include <string>
 #include <utility>
 #include <vector>
@@ -28,6 +29,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -295,7 +297,7 @@ bool WizardController::skip_post_login_screens_ = false;
 bool WizardController::skip_enrollment_prompts_ = false;
 
 // static
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 bool WizardController::is_official_build_ = true;
 #else
 bool WizardController::is_official_build_ = false;
@@ -1120,7 +1122,7 @@ void WizardController::OnChangedMetricsReportingState(bool enabled) {
       ProfileManager::GetActiveUserProfile(), enabled);
   if (!enabled)
     return;
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   base::PostTask(FROM_HERE, {base::MayBlock()},
                  base::BindOnce(&breakpad::InitCrashReporter, std::string()));
 #endif

@@ -187,9 +187,6 @@ template("webapk_tmpl") {
     native_lib_placeholders = [ "libfoo.so" ]
 
     if (!is_java_debug) {
-      if (defined(webapk_proguard_jar_path)) {
-        proguard_jar_path = webapk_proguard_jar_path
-      }
       proguard_enabled = true
       proguard_configs = [
         "//chrome/android/webapk/shell_apk/proguard.flags",

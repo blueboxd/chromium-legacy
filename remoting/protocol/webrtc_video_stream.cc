@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "remoting/base/constants.h"
 #include "remoting/codec/webrtc_video_encoder_proxy.h"
@@ -83,12 +82,16 @@ struct WebrtcVideoStream::FrameStats {
 
 WebrtcVideoStream::WebrtcVideoStream(const SessionOptions& session_options)
     : video_stats_dispatcher_(kStreamLabel), session_options_(session_options) {
+  // WeakPtr can't be used here, as the Create...() methods return a value
+  // which would be undefined if the pointer were invalidated. But
+  // Unretained(this) is safe because |encoder_selector_| is owned by this
+  // object.
   encoder_selector_.RegisterEncoder(
       base::Bind(&WebrtcVideoEncoderVpx::IsSupportedByVP8),
-      base::Bind(&WebrtcVideoEncoderVpx::CreateForVP8));
+      base::Bind(&WebrtcVideoStream::CreateVP8Encoder, base::Unretained(this)));
   encoder_selector_.RegisterEncoder(
       base::Bind(&WebrtcVideoEncoderVpx::IsSupportedByVP9),
-      base::Bind(&WebrtcVideoEncoderVpx::CreateForVP9));
+      base::Bind(&WebrtcVideoStream::CreateVP9Encoder, base::Unretained(this)));
 #if defined(USE_H264_ENCODER)
   encoder_selector_.RegisterEncoder(
       base::Bind(&WebrtcVideoEncoderGpu::IsSupportedByH264),
@@ -339,6 +342,16 @@ void WebrtcVideoStream::OnEncoderCreated(webrtc::VideoCodecType codec_type) {
   } else {
     LOG(FATAL) << "Unknown codec type: " << codec_type;
   }
+}
+
+std::unique_ptr<WebrtcVideoEncoder> WebrtcVideoStream::CreateVP8Encoder() {
+  return std::make_unique<WebrtcVideoEncoderProxy>(
+      WebrtcVideoEncoderVpx::CreateForVP8(), encode_task_runner_);
+}
+
+std::unique_ptr<WebrtcVideoEncoder> WebrtcVideoStream::CreateVP9Encoder() {
+  return std::make_unique<WebrtcVideoEncoderProxy>(
+      WebrtcVideoEncoderVpx::CreateForVP9(), encode_task_runner_);
 }
 
 }  // namespace protocol

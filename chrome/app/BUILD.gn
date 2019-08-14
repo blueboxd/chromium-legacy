@@ -567,10 +567,6 @@ source_set("builtin_service_manifests") {
       "//chromeos/services/secure_channel/public/cpp:manifest",
     ]
   }
-
-  if (!is_android) {
-    deps += [ "//components/mirroring/service:manifest" ]
-  }
 }
 
 source_set("chrome_service_manifests") {

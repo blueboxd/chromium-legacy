@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -240,8 +239,7 @@ void CrostiniExportImport::OnExportComplete(
     const base::Time& start,
     const ContainerId& container_id,
     CrostiniManager::CrostiniResultCallback callback,
-    CrostiniResult result,
-    uint64_t container_size) {
+    CrostiniResult result) {
   auto it = notifications_.find(container_id);
   DCHECK(it != notifications_.end())
       << ContainerIdToString(container_id) << " has no notification to update";
@@ -264,43 +262,6 @@ void CrostiniExportImport::OnExportComplete(
       case CrostiniExportImportNotification::Status::RUNNING:
         UMA_HISTOGRAM_LONG_TIMES("Crostini.BackupTimeSuccess",
                                  base::Time::Now() - start);
-        // Log backup size statistics.
-        // TODO(juwa): Send compressed bytes written in progress message from
-        // tremplin, to remove the need to read the file's size.
-        base::PostTask(
-            FROM_HERE,
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskPriority::BEST_EFFORT},
-            base::BindOnce(
-                [](const base::FilePath& path, uint64_t size) {
-                  if (size == 0) {
-                    LOG(ERROR) << "Uncompressed container size from export "
-                                  "progress is zero.";
-                    NOTREACHED();
-                    return;
-                  }
-                  uint64_t compressed_size{};
-                  {
-                    int64_t file_size;
-                    if (!base::GetFileSize(path, &file_size) || file_size < 0) {
-                      LOG(ERROR) << "Couldn't get exported file size for "
-                                    "histogram";
-                      return;
-                    }
-                    compressed_size = static_cast<uint64_t>(file_size);
-                  }
-
-                  base::UmaHistogramCustomCounts(
-                      "Crostini.BackupUncompressedSizeLog2",
-                      std::round(std::log2(size)), 0, 50, 50);
-                  base::UmaHistogramCustomCounts(
-                      "Crostini.BackupCompressedSizeLog2",
-                      std::round(std::log2(compressed_size)), 0, 50, 50);
-                  base::UmaHistogramPercentage(
-                      "Crostini.BackupCompressionRatio",
-                      std::round(compressed_size * 100.0 / size));
-                },
-                it->second->path(), container_size));
         RemoveNotification(it).SetStatusDone();
         break;
       default:

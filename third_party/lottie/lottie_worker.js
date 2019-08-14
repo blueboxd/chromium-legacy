@@ -12150,47 +12150,117 @@ GroupEffect.prototype.init = function(data,element){
  * a wrapper that manages animation control for each animation.
  */
 
+/**
+ * An instance of the currently running lottie animation.
+ * @type {?AnimationItem}
+ */
 var currentAnimation = null;
 
+/**
+ * Events sent back to the parent thread.
+ */
+var events = {
+  INITIALIZED: 'initialized',  // Send when the animation was successfully
+                               // initialized.
+  RESIZED: 'resized',  // Sent when the animation has been resized.
+  PLAYING: 'playing'   // Send when the animation started playing.
+};
+
+/**
+ * Returns the size of the canvas on which the current animation is running on.
+ * @return {Object<string, number>} Returns the current size of canvas
+ */
+getCurrentCanvasSize = function() {
+  var canvas = currentAnimation.renderer.canvasContext.canvas;
+  return {
+    height: canvas.height,
+    width: canvas.width
+  };
+}
+
+/**
+ * Informs the parent thread that the canvas has been resized and also sends the
+ * new size.
+ */
+sendResizeEvent = function() {
+  var canvas = currentAnimation.renderer.canvasContext.canvas;
+  postMessage({
+    name: events.RESIZED,
+    size: getCurrentCanvasSize()
+  });
+};
+
+/**
+ * Informs the parent thread that the animation has started playing.
+ */
+sendPlayEvent = function() {
+  postMessage({
+    name: events.PLAYING
+  });
+}
+
+/**
+ * Informs the parent thread that the animation has finished initializing.
+ */
+sendInitializedEvent = function() {
+  var canvas = currentAnimation.renderer.canvasContext.canvas;
+  postMessage({
+    name: events.INITIALIZED,
+    success: currentAnimation.isLoaded
+  })
+}
+
 onmessage = function(evt) {
-    if (!evt || !evt.data) return;
+  if (!evt || !evt.data) return;
 
-    var canvas = null;
+  var canvas = null;
+  if (currentAnimation) {
+    canvas = currentAnimation.renderer.canvasContext.canvas;
+  } else if (evt.data.canvas) {
+    canvas = evt.data.canvas;
+  } else {
+    return;
+  }
+
+  // Set the draw size of the canvas. This is the pixel size at which the
+  // lottie renderer will render the frames.
+  if (evt.data.drawSize && evt.data.drawSize.height > 0 &&
+    evt.data.drawSize.width > 0) {
+    canvas.height = evt.data.drawSize.height;
+    canvas.width = evt.data.drawSize.width;
+
+    // Update lottie player to use the new canvas size.
     if (currentAnimation) {
-        canvas = currentAnimation.renderer.canvasContext.canvas;
-    } else if (evt.data.canvas) {
-        canvas = evt.data.canvas;
-    } else {
-        return;
+      currentAnimation.resize();
+      sendResizeEvent();
+    }
+  }
+
+  if (!currentAnimation) {
+    if (!evt.data.animationData || !evt.data.params)
+      return;
+    var params = evt.data.params;
+    var ctx = canvas.getContext("2d");
+    currentAnimation = lottiejs.loadAnimation({
+      renderer: 'canvas',
+      loop: params.loop,
+      autoplay: params.autoplay,
+      animationData: evt.data.animationData,
+      rendererSettings: {
+        context: ctx,
+        scaleMode: 'noScale',
+        clearCanvas: true
+      }
+    });
+
+    sendInitializedEvent();
+
+    if (params.autoplay) {
+      currentAnimation.play();
     }
 
-    // Set the draw size of the canvas. This is the pixel size at which the
-    // lottie renderer will render the frames.
-    if (evt.data.drawSize) {
-        canvas.height = evt.data.drawSize.height;
-        canvas.width = evt.data.drawSize.width;
-
-        // Update lottie player to use the new canvas size.
-        if (currentAnimation)
-            currentAnimation.resize();
+    if (currentAnimation.isLoaded && !currentAnimation.isPaused) {
+      sendPlayEvent();
     }
-
-    if (!currentAnimation) {
-        if (!evt.data.animationData || !evt.data.params)
-            return;
-        var params = evt.data.params;
-        var ctx = canvas.getContext("2d");
-        currentAnimation = lottiejs.loadAnimation({
-            renderer: 'canvas',
-            loop: params.loop,
-            autoplay: params.autoplay,
-            animationData: evt.data.animationData,
-            rendererSettings: {
-                context: ctx,
-                scaleMode: 'noScale',
-                clearCanvas: true
-            }
-        });
-        currentAnimation.play();
-    }
+  }
 };

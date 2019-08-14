@@ -5,11 +5,9 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_JS_JAVA_INTERACTION_JS_JAVA_CONFIGURATOR_HOST_H_
 #define ANDROID_WEBVIEW_BROWSER_JS_JAVA_INTERACTION_JS_JAVA_CONFIGURATOR_HOST_H_
 
-#include <string>
-#include <vector>
-
 #include "android_webview/common/js_java_interaction/interfaces.mojom.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/strings/string16.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/proxy_resolution/proxy_bypass_rules.h"
 #include "services/network/public/mojom/proxy_config.mojom.h"
@@ -46,7 +44,7 @@ class JsJavaConfiguratorHost : public content::WebContentsObserver {
   void NotifyFrame(content::RenderFrameHost* render_frame_host);
 
   bool need_to_inject_js_object_ = false;
-  std::string js_object_name_;
+  base::string16 js_object_name_;
   // We use ProxyBypassRules because it has the functionality that suitable
   // here, but it is not for proxy bypass.
   net::ProxyBypassRules allowed_origin_rules_;

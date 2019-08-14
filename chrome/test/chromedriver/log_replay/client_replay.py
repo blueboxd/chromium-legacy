@@ -748,8 +748,13 @@ class CommandSequence(object):
           self._id_map[id_old] = id_new
         self._staged_logged_ids = None
 
-    if "sessionId" in response and self._staged_logged_session_id:
-      self._id_map[self._staged_logged_session_id] = response["sessionId"]
+    # In W3C format, the http response is a single key dict,
+    # where the value is another dictionary
+    # sessionId is contained in the nested dictionary
+    if ("value" in response and "sessionId" in response["value"]
+        and self._staged_logged_session_id):
+      self._id_map[self._staged_logged_session_id] = (
+        response["value"]["sessionId"])
       self._staged_logged_session_id = None
 
   def _IngestLoggedResponse(self, response):

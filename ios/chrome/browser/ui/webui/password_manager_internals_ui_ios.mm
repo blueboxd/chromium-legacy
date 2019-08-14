@@ -16,7 +16,7 @@
 #import "ios/chrome/browser/passwords/password_manager_log_router_factory.h"
 #import "ios/chrome/common/channel_info.h"
 #import "ios/web/public/web_client.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #import "ios/web/public/webui/web_ui_ios.h"
 #import "ios/web/public/webui/web_ui_ios_data_source.h"
 #include "net/base/escape.h"

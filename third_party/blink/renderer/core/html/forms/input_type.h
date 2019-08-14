@@ -132,10 +132,10 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
   double Minimum() const;
   double Maximum() const;
   bool StepMismatch(const String&) const;
-  virtual bool GetAllowedValueStep(Decimal*) const;
+  bool GetAllowedValueStep(Decimal*) const;
   virtual StepRange CreateStepRange(AnyStepHandling) const;
-  virtual void StepUp(double, ExceptionState&);
-  virtual void StepUpFromLayoutObject(int);
+  void StepUp(double, ExceptionState&);
+  void StepUpFromLayoutObject(int);
   virtual String BadInputText() const;
   virtual String RangeOverflowText(const Decimal& maximum) const;
   virtual String RangeUnderflowText(const Decimal& minimum) const;

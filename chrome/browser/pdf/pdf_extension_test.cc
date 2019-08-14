@@ -24,6 +24,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -427,7 +428,7 @@ class PDFAnnotationsTest : public PDFExtensionTest {
 #define MAYBE_Load Load
 #endif
 IN_PROC_BROWSER_TEST_P(PDFExtensionLoadTest, MAYBE_Load) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Load private PDFs.
   LoadAllPdfsTest("pdf_private", GetParam());
 #endif
@@ -1137,7 +1138,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilitySelection) {
   EXPECT_EQ(ax::mojom::Role::kRegion, region->data().role);
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Test a particular PDF encountered in the wild that triggered a crash
 // when accessibility is enabled.  (http://crbug.com/668724)
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityTextRunCrash) {
@@ -2337,16 +2338,16 @@ class PDFExtensionAccessibilityTreeDumpTest
     // the expectation file contains a skip marker.
     // This is used to skip certain tests on certain platforms.
     content::DumpAccessibilityTestHelper test_helper(formatter.get());
-    base::Optional<base::FilePath> expected_file_path =
+    base::FilePath expected_file_path =
         test_helper.GetExpectationFilePath(test_file_path);
-    if (!expected_file_path) {
+    if (expected_file_path.empty()) {
       LOG(INFO) << "No expectation file present, ignoring test on this "
                    "platform.";
       return;
     }
 
     base::Optional<std::vector<std::string>> expected_lines =
-        test_helper.LoadExpectationFile(*expected_file_path);
+        test_helper.LoadExpectationFile(expected_file_path);
     if (!expected_lines) {
       LOG(INFO) << "Skipping this test on this platform.";
       return;
@@ -2378,7 +2379,7 @@ class PDFExtensionAccessibilityTreeDumpTest
 
     // Validate the dump against the expectation file.
     EXPECT_TRUE(test_helper.ValidateAgainstExpectation(
-        test_file_path, *expected_file_path, actual_lines, *expected_lines));
+        test_file_path, expected_file_path, actual_lines, *expected_lines));
   }
 
   void AddDefaultFilters(std::vector<PropertyFilter>* property_filters) {

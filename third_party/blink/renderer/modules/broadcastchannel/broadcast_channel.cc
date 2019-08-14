@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/broadcastchannel/broadcast_channel.h"
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
@@ -20,12 +21,14 @@ namespace {
 // connection as basis for all connections to channels from the same thread. The
 // actual connections used to send/receive messages are then created using
 // associated interfaces, ensuring proper message ordering.
-mojom::blink::BroadcastChannelProviderPtr& GetThreadSpecificProvider() {
+mojo::Remote<mojom::blink::BroadcastChannelProvider>&
+GetThreadSpecificProvider() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      ThreadSpecific<mojom::blink::BroadcastChannelProviderPtr>, provider, ());
+      ThreadSpecific<mojo::Remote<mojom::blink::BroadcastChannelProvider>>,
+      provider, ());
   if (!provider.IsSet()) {
     Platform::Current()->GetInterfaceProvider()->GetInterface(
-        mojo::MakeRequest(&*provider));
+        provider->BindNewPipeAndPassReceiver());
   }
   return *provider;
 }
@@ -55,7 +58,7 @@ void BroadcastChannel::Dispose() {
 
 void BroadcastChannel::postMessage(const ScriptValue& message,
                                    ExceptionState& exception_state) {
-  if (!binding_.is_bound()) {
+  if (!receiver_.is_bound()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Channel is closed");
     return;
@@ -73,8 +76,8 @@ void BroadcastChannel::postMessage(const ScriptValue& message,
 
 void BroadcastChannel::close() {
   remote_client_.reset();
-  if (binding_.is_bound())
-    binding_.Close();
+  if (receiver_.is_bound())
+    receiver_.reset();
   feature_handle_for_scheduler_.reset();
 }
 
@@ -83,7 +86,7 @@ const AtomicString& BroadcastChannel::InterfaceName() const {
 }
 
 bool BroadcastChannel::HasPendingActivity() const {
-  return binding_.is_bound() && HasEventListeners(event_type_names::kMessage);
+  return receiver_.is_bound() && HasEventListeners(event_type_names::kMessage);
 }
 
 void BroadcastChannel::ContextDestroyed(ExecutionContext*) {
@@ -128,17 +131,13 @@ BroadcastChannel::BroadcastChannel(ExecutionContext* execution_context,
     : ContextLifecycleObserver(execution_context),
       origin_(execution_context->GetSecurityOrigin()),
       name_(name),
-      binding_(this),
       feature_handle_for_scheduler_(
           execution_context->GetScheduler()->RegisterFeature(
               SchedulingPolicy::Feature::kBroadcastChannel,
               {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {
-  mojom::blink::BroadcastChannelProviderPtr& provider =
+  mojo::Remote<mojom::blink::BroadcastChannelProvider>& provider =
       GetThreadSpecificProvider();
 
-  // Local BroadcastChannelClient for messages send from the browser to this
-  // channel.
-  mojom::blink::BroadcastChannelClientAssociatedPtrInfo local_client_info;
   // Note: We cannot associate per-frame task runner here, but postTask
   //       to it manually via EnqueueEvent, since the current expectation
   //       is to receive messages even after close for which queued before
@@ -146,18 +145,17 @@ BroadcastChannel::BroadcastChannel(ExecutionContext* execution_context,
   //       https://github.com/whatwg/html/issues/1319
   //       Relying on Mojo binding will cancel the enqueued messages
   //       at close().
-  binding_.Bind(mojo::MakeRequest(&local_client_info));
-  binding_.set_connection_error_handler(
-      WTF::Bind(&BroadcastChannel::OnError, WrapWeakPersistent(this)));
 
-  // Remote BroadcastChannelClient for messages send from this channel to the
-  // browser.
-  auto remote_cient_request = mojo::MakeRequest(&remote_client_);
-  remote_client_.set_connection_error_handler(
+  // Local BroadcastChannelClient for messages send from the browser to this
+  // channel and Remote BroadcastChannelClient for messages send from this
+  // channel to the browser.
+  provider->ConnectToChannel(origin_, name_,
+                             receiver_.BindNewEndpointAndPassRemote(),
+                             remote_client_.BindNewEndpointAndPassReceiver());
+  receiver_.set_disconnect_handler(
       WTF::Bind(&BroadcastChannel::OnError, WrapWeakPersistent(this)));
-
-  provider->ConnectToChannel(origin_, name_, std::move(local_client_info),
-                             std::move(remote_cient_request));
+  remote_client_.set_disconnect_handler(
+      WTF::Bind(&BroadcastChannel::OnError, WrapWeakPersistent(this)));
 }
 
 }  // namespace blink

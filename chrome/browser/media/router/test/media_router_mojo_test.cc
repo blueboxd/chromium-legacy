@@ -34,6 +34,10 @@ const int kInvalidTabId = -1;
 const int kTimeoutMillis = 5 * 1000;
 const uint8_t kBinaryMessage[] = {0x01, 0x02, 0x03, 0x04};
 
+MATCHER_P(Equals, value, "") {
+  return arg.Equals(value);
+}
+
 // Creates a media route whose ID is |kRouteId|.
 MediaRoute CreateMediaRoute() {
   MediaRoute route(kRouteId, MediaSource(kSource), kSinkId, kDescription, true,
@@ -403,7 +407,7 @@ void MediaRouterMojoTest::TestSearchSinks() {
 void MediaRouterMojoTest::TestCreateMediaRouteController() {
   MockMediaController media_controller;
   mojom::MediaStatusObserverPtr route_controller_as_observer;
-  MediaStatus media_status;
+  mojom::MediaStatus media_status;
   media_status.title = "test title";
 
   router()->OnRoutesUpdated(MediaRouteProviderId::EXTENSION,
@@ -440,8 +444,8 @@ void MediaRouterMojoTest::TestCreateMediaRouteController() {
 
   // The MediaRouteController should be registered with the MediaRouteProvider
   // as a MediaStatusObserver, and should also notify its own observers.
-  EXPECT_CALL(controller_observer, OnMediaStatusUpdated(media_status));
-  route_controller_as_observer->OnMediaStatusUpdated(media_status);
+  EXPECT_CALL(controller_observer, OnMediaStatusUpdated(Equals(media_status)));
+  route_controller_as_observer->OnMediaStatusUpdated(media_status.Clone());
 
   base::RunLoop().RunUntilIdle();
 }

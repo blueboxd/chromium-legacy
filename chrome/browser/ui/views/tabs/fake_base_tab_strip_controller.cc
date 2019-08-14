@@ -51,12 +51,15 @@ void FakeBaseTabStripController::RemoveTab(int index) {
   num_tabs_--;
   // RemoveTabAt() expects the controller state to have been updated already.
   const bool was_active = index == active_index_;
-  if (active_index_ > index) {
+  if (was_active) {
+    active_index_ = std::min(active_index_, num_tabs_ - 1);
+    selection_model_.SetSelectedIndex(active_index_);
+  } else if (active_index_ > index) {
     --active_index_;
-  } else if (active_index_ == index) {
-    SetActiveIndex(std::min(active_index_, num_tabs_ - 1));
   }
   tab_strip_->RemoveTabAt(nullptr, index, was_active);
+  if (was_active && IsValidIndex(active_index_))
+    tab_strip_->SetSelection(selection_model_);
 }
 
 void FakeBaseTabStripController::MoveTabIntoGroup(

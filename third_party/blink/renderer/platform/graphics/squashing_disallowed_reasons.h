@@ -21,7 +21,6 @@ using SquashingDisallowedReasons = unsigned;
   V(FilterMismatch)                             \
   V(WouldBreakPaintOrder)                       \
   V(SquashingVideoIsDisallowed)                 \
-  V(SquashedLayerClipsCompositingDescendants)   \
   V(SquashingLayoutEmbeddedContentIsDisallowed) \
   V(SquashingBlendingIsDisallowed)              \
   V(NearestFixedPositionMismatch)               \

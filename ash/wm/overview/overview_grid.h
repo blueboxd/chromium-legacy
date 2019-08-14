@@ -304,6 +304,10 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
 
   views::Widget* drop_target_widget() { return drop_target_widget_.get(); }
 
+  OverviewGridPreEventHandler* grid_pre_event_handler() {
+    return grid_pre_event_handler_.get();
+  }
+
  private:
   class TargetWindowObserver;
   friend class OverviewSessionTest;

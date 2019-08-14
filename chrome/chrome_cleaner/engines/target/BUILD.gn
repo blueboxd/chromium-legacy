@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Nothing outside //chrome/chrome_cleaner can depend on these targets.
+visibility = [ "//chrome/chrome_cleaner/*" ]
+
 source_set("common") {
   sources = [
     "cleaner_engine_requests_proxy.cc",
@@ -33,9 +36,9 @@ source_set("common") {
     "//chrome/chrome_cleaner/crash:crash_keys",
     "//chrome/chrome_cleaner/engines/common",
     "//chrome/chrome_cleaner/engines/common:resources_header",
-    "//chrome/chrome_cleaner/mojom:engine_sandbox_interface",
     "//chrome/chrome_cleaner/ipc:mojo_task_runner",
     "//chrome/chrome_cleaner/ipc:sandbox",
+    "//chrome/chrome_cleaner/mojom:engine_sandbox_interface",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
     "//chrome/chrome_cleaner/strings",
     "//components/chrome_cleaner/public/constants:constants",

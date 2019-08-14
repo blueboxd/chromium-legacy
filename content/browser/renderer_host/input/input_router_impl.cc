@@ -471,6 +471,7 @@ void InputRouterImpl::OnMouseWheelEventAck(
     InputEventAckSource ack_source,
     InputEventAckState ack_result) {
   disposition_handler_->OnWheelEventAck(event, ack_source, ack_result);
+  gesture_event_queue_.OnWheelEventAck(event, ack_source, ack_result);
 }
 
 void InputRouterImpl::ForwardGestureEventWithLatencyInfo(

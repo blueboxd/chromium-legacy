@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_shortcut_tile_view.h"
 
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -27,6 +28,7 @@ const CGFloat kIconSize = 56;
   if (self) {
     _iconView = [[UIImageView alloc] initWithFrame:self.bounds];
     _iconView.translatesAutoresizingMaskIntoConstraints = NO;
+    _iconView.tintColor = [UIColor colorNamed:kBlueColor];
 
     [self.imageContainerView addSubview:_iconView];
     AddSameConstraints(self.imageContainerView, _iconView);
@@ -36,7 +38,7 @@ const CGFloat kIconSize = 56;
     ]];
 
     self.imageBackgroundView.tintColor =
-        [UIColor colorWithRed:0.91 green:0.95 blue:0.99 alpha:1.0];
+        [[UIColor colorNamed:kBlueColor] colorWithAlphaComponent:0.1];
   }
   return self;
 }
@@ -44,7 +46,7 @@ const CGFloat kIconSize = 56;
 - (UILabel*)countLabel {
   if (!_countLabel) {
     _countContainer = [[UIView alloc] init];
-    _countContainer.backgroundColor = [UIColor whiteColor];
+    _countContainer.backgroundColor = [UIColor colorNamed:kBackgroundColor];
     // Unfortunately, simply setting a CALayer borderWidth and borderColor
     // on |_countContainer|, and setting a background color on |_countLabel|
     // will result in the inner color bleeeding thru to the outside.
@@ -54,10 +56,9 @@ const CGFloat kIconSize = 56;
     _countLabel = [[UILabel alloc] init];
     _countLabel.layer.cornerRadius = kCountWidth / 2;
     _countLabel.layer.masksToBounds = YES;
-    _countLabel.textColor = [UIColor whiteColor];
+    _countLabel.textColor = [UIColor colorNamed:kSolidButtonTextColor];
     _countLabel.textAlignment = NSTextAlignmentCenter;
-    _countLabel.backgroundColor =
-        [UIColor colorWithRed:0.10 green:0.45 blue:0.91 alpha:1.0];
+    _countLabel.backgroundColor = [UIColor colorNamed:kBlueColor];
 
     _countContainer.translatesAutoresizingMaskIntoConstraints = NO;
     _countLabel.translatesAutoresizingMaskIntoConstraints = NO;
@@ -80,13 +81,6 @@ const CGFloat kIconSize = 56;
     AddSameCenterConstraints(_countLabel, _countContainer);
   }
   return _countLabel;
-}
-
-+ (UIImage*)backgroundImage {
-  // This subclass uses tintColor on the background view, so use template
-  // rendering mode.
-  return [[super backgroundImage]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 }
 
 @end

@@ -865,6 +865,7 @@ SpdySession::SpdySession(
     bool support_ietf_format_quic_altsvc,
     bool is_trusted_proxy,
     size_t session_max_recv_window_size,
+    int session_max_queued_capped_frames,
     const spdy::SettingsMap& initial_settings,
     const base::Optional<SpdySessionPool::GreasedHttp2Frame>&
         greased_http2_frame,
@@ -909,6 +910,7 @@ SpdySession::SpdySession(
       check_ping_status_pending_(false),
       session_send_window_size_(0),
       session_max_recv_window_size_(session_max_recv_window_size),
+      session_max_queued_capped_frames_(session_max_queued_capped_frames),
       session_recv_window_size_(0),
       session_unacked_recv_window_bytes_(0),
       stream_initial_send_window_size_(kDefaultInitialWindowSize),
@@ -2712,6 +2714,16 @@ void SpdySession::EnqueueSessionWrite(
          frame_type == spdy::SpdyFrameType::WINDOW_UPDATE ||
          frame_type == spdy::SpdyFrameType::PING ||
          frame_type == spdy::SpdyFrameType::GOAWAY);
+  DCHECK(IsSpdyFrameTypeWriteCapped(frame_type));
+  if (write_queue_.num_queued_capped_frames() >
+      session_max_queued_capped_frames_) {
+    LOG(WARNING)
+        << "Draining session due to exceeding max queued capped frames";
+    // Use ERR_CONNECTION_CLOSED to avoid sending a GOAWAY frame since that
+    // frame would also exceed the cap.
+    DoDrainSession(ERR_CONNECTION_CLOSED, "Exceeded max queued capped frames");
+    return;
+  }
   auto buffer = std::make_unique<SpdyBuffer>(std::move(frame));
   EnqueueWrite(priority, frame_type,
                std::make_unique<SimpleBufferProducer>(std::move(buffer)),

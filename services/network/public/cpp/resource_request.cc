@@ -8,6 +8,16 @@
 
 namespace network {
 
+ResourceRequest::TrustedParams::TrustedParams() = default;
+ResourceRequest::TrustedParams::~TrustedParams() = default;
+
+bool ResourceRequest::TrustedParams::operator==(
+    const TrustedParams& other) const {
+  return network_isolation_key == other.network_isolation_key &&
+         update_network_isolation_key_on_redirect ==
+             other.update_network_isolation_key_on_redirect;
+}
+
 ResourceRequest::ResourceRequest() {}
 ResourceRequest::ResourceRequest(const ResourceRequest& request) = default;
 ResourceRequest::~ResourceRequest() {}
@@ -16,10 +26,6 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
   return method == request.method && url == request.url &&
          site_for_cookies == request.site_for_cookies &&
          top_frame_origin == request.top_frame_origin &&
-         trusted_network_isolation_key ==
-             request.trusted_network_isolation_key &&
-         update_network_isolation_key_on_redirect ==
-             request.update_network_isolation_key_on_redirect &&
          attach_same_site_cookies == request.attach_same_site_cookies &&
          update_first_party_url_on_redirect ==
              request.update_first_party_url_on_redirect &&
@@ -70,7 +76,8 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
          devtools_request_id == request.devtools_request_id &&
          is_signed_exchange_prefetch_cache_enabled ==
              request.is_signed_exchange_prefetch_cache_enabled &&
-         obey_origin_policy == request.obey_origin_policy;
+         obey_origin_policy == request.obey_origin_policy &&
+         trusted_params == trusted_params;
 }
 
 bool ResourceRequest::SendsCookies() const {

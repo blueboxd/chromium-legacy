@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/storage_partition.h"
 
 namespace {
 
@@ -57,10 +58,12 @@ void OptimizationGuideKeyedService::Initialize(
   DCHECK(optimization_guide_service);
 
   top_host_provider_ = GetTopHostProviderIfUserPermitted(browser_context_);
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
   hints_manager_ = std::make_unique<OptimizationGuideHintsManager>(
-      optimization_guide_service, profile_path,
-      Profile::FromBrowserContext(browser_context_)->GetPrefs(),
-      database_provider, top_host_provider_.get());
+      optimization_guide_service, profile_path, profile->GetPrefs(),
+      database_provider, top_host_provider_.get(),
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLLoaderFactoryForBrowserProcess());
 }
 
 void OptimizationGuideKeyedService::RegisterOptimizationTypes(

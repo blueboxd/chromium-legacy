@@ -31,7 +31,7 @@ class StreamTextureFactory;
 
 // The proxy class for the gpu thread to notify the compositor thread
 // when a new video frame is available.
-class StreamTextureProxy : public StreamTextureHost::Listener {
+class CONTENT_EXPORT StreamTextureProxy : public StreamTextureHost::Listener {
  public:
   ~StreamTextureProxy() override;
 
@@ -68,6 +68,7 @@ class StreamTextureProxy : public StreamTextureHost::Listener {
   };
  private:
   friend class StreamTextureFactory;
+  friend class StreamTextureProxyTest;
   explicit StreamTextureProxy(std::unique_ptr<StreamTextureHost> host);
 
   void BindOnThread();

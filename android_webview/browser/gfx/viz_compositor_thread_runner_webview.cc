@@ -7,19 +7,28 @@
 #include <utility>
 
 #include "android_webview/browser/gfx/task_queue_web_view.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
+#include "base/synchronization/waitable_event.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 
 namespace android_webview {
 
 namespace {
+
 void RunAndDone(base::OnceClosure viz_task, base::OnceClosure done_task) {
   std::move(viz_task).Run();
 
   // |done_task| is provided by TaskQueueWebView unblocks the gpu service.
   std::move(done_task).Run();
 }
+
+void RunAndSignal(base::OnceClosure viz_task, base::WaitableEvent* done) {
+  std::move(viz_task).Run();
+  done->Signal();
+}
+
 }  // namespace
 
 // static
@@ -66,6 +75,15 @@ void VizCompositorThreadRunnerWebView::ScheduleOnVizAndBlock(
     base::OnceClosure task) {
   TaskQueueWebView::GetInstance()->ScheduleOnVizAndBlock(
       base::BindOnce(&RunAndDone, std::move(task)));
+}
+
+void VizCompositorThreadRunnerWebView::PostTaskAndBlock(
+    const base::Location& from_here,
+    base::OnceClosure task) {
+  base::WaitableEvent e;
+  task_runner()->PostTask(from_here,
+                          base::BindOnce(&RunAndSignal, std::move(task), &e));
+  e.Wait();
 }
 
 VizCompositorThreadRunnerWebView::~VizCompositorThreadRunnerWebView() = default;

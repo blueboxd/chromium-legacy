@@ -30,6 +30,7 @@ class GetKeyDataRequest;
 class GetSupportedKeyPoliciesRequest;
 class GetTpmStatusRequest;
 class LockToSingleUserMountUntilRebootRequest;
+class MassRemoveKeysRequest;
 class MigrateKeyRequest;
 class MigrateToDircryptoRequest;
 class MountGuestRequest;
@@ -533,6 +534,16 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) CryptohomeClient {
                         const cryptohome::AddKeyRequest& request,
                         DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
+  // Asynchronously calls AddDataRestoreKey method. |callback| is called after
+  // method call, and with reply protobuf.
+  // AddDataRestoreKey generates data_restore_key in OS and adds it to the
+  // given key set. The reply protobuf needs to be extended to
+  // AddDataRestoreKeyReply so that caller gets raw bytes of data_restore_key
+  virtual void AddDataRestoreKey(
+      const cryptohome::AccountIdentifier& id,
+      const cryptohome::AuthorizationRequest& auth,
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
+
   // Asynchronously calls UpdateKeyEx method. |callback| is called after method
   // call, and with reply protobuf. Reply will contain MountReply extension.
   // UpdateKeyEx replaces key used for authorization, without affecting any
@@ -551,6 +562,16 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) CryptohomeClient {
       const cryptohome::AccountIdentifier& id,
       const cryptohome::AuthorizationRequest& auth,
       const cryptohome::RemoveKeyRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
+
+  // Asynchronously calls MassRemoveKeys method. |callback| is called after
+  // method call, and with reply protobuf.
+  // MassRemoveKeys removes all keys except those whose labels are exempted
+  // in MassRemoveKeysRequest.
+  virtual void MassRemoveKeys(
+      const cryptohome::AccountIdentifier& id,
+      const cryptohome::AuthorizationRequest& auth,
+      const cryptohome::MassRemoveKeysRequest& request,
       DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Asynchronously calls GetBootAttribute method. |callback| is called after

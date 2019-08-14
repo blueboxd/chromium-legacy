@@ -147,6 +147,8 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   // set_size values, minimizing the size of the cache.
   int32_t GetSetSize(const AXNode& node, const AXNode* ordered_set) override;
 
+  Selection GetUnignoredSelection() const override;
+
   bool GetTreeUpdateInProgressState() const override;
   void SetTreeUpdateInProgressState(bool set_tree_update_value);
 

@@ -909,9 +909,9 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
       StartBrowserThreadPool();
     }
 
-    tracing::InitTracingPostThreadPoolStart();
-
     BrowserTaskExecutor::PostFeatureListSetup();
+
+    tracing::InitTracingPostThreadPoolStartAndFeatureList();
 
     delegate_->PostTaskSchedulerStart();
 

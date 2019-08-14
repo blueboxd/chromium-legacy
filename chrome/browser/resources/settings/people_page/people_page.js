@@ -233,10 +233,24 @@ Polymer({
 
   /** @override */
   attached: function() {
-    const profileInfoProxy = settings.ProfileInfoBrowserProxyImpl.getInstance();
-    profileInfoProxy.getProfileInfo().then(this.handleProfileInfo_.bind(this));
-    this.addWebUIListener(
-        'profile-info-changed', this.handleProfileInfo_.bind(this));
+    let useProfileNameAndIcon = true;
+    // <if expr="chromeos">
+    if (!loadTimeData.getBoolean('showOSSettings') &&
+        this.isAccountManagerEnabled_) {
+      // If this is SplitSettings and we have the Google Account manager,
+      // prefer the GAIA name and icon.
+      useProfileNameAndIcon = false;
+      this.addWebUIListener(
+          'accounts-changed', this.updateAccounts_.bind(this));
+      this.updateAccounts_();
+    }
+    // </if>
+    if (useProfileNameAndIcon) {
+      settings.ProfileInfoBrowserProxyImpl.getInstance().getProfileInfo().then(
+          this.handleProfileInfo_.bind(this));
+      this.addWebUIListener(
+          'profile-info-changed', this.handleProfileInfo_.bind(this));
+    }
 
     this.syncBrowserProxy_ = settings.SyncBrowserProxyImpl.getInstance();
     this.syncBrowserProxy_.getSyncStatus().then(
@@ -317,6 +331,27 @@ Polymer({
 
     this.profileIconUrl_ = info.iconUrl;
   },
+
+  // <if expr="chromeos">
+  /**
+   * @private
+   * @suppress {checkTypes} The types only exists in Chrome OS builds, but
+   * Closure doesn't understand the <if> above.
+   */
+  updateAccounts_: async function() {
+    const /** @type {!Array<{settings.Account}>} */ accounts =
+        await settings.AccountManagerBrowserProxyImpl.getInstance()
+            .getAccounts();
+    // The user might not have any GAIA accounts (e.g. guest mode, Kerberos,
+    // Active Directory). In these cases the profile row is hidden, so there's
+    // nothing to do.
+    if (accounts.length == 0) {
+      return;
+    }
+    this.profileName_ = accounts[0].fullName;
+    this.profileIconUrl_ = accounts[0].pic;
+  },
+  // </if>
 
   /**
    * Handler for when the sync state is pushed from the browser.

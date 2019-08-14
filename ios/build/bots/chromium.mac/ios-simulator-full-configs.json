@@ -3,7 +3,7 @@
     "Runs tests on 64-bit iOS 11 and 12 tests on iPad, iPhone,",
     "@3x, and @2x on main waterfall ios-simulator-full-configs."
   ],
-  "xcode build version": "10b61",
+  "xcode build version": "11m382q",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",
@@ -22,80 +22,80 @@
       "include": "eg_tests.json",
       "device type": "iPhone 7",
       "os": "12.1",
-      "host os": "Mac-10.13.6",
+      "host os": "Mac-10.14.4",
       "pool":"Chrome",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.4"
-          }],
-          "120": [{
-            "host os": "Mac-10.14.3"
-          }]
-      },
       "priority": 30
     },
     {
       "include": "eg_tests.json",
       "device type": "iPad Air 2",
       "os": "12.1",
-      "host os": "Mac-10.13.6",
+      "host os": "Mac-10.14.4",
       "pool":"Chrome",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.4"
-          }],
-          "120": [{
-            "host os": "Mac-10.14.3"
-          }]
-      },
       "priority": 30
     },
     {
       "include": "eg_tests.json",
       "device type": "iPhone X",
       "os": "12.1",
-      "host os": "Mac-10.13.6",
+      "host os": "Mac-10.14.4",
       "pool":"Chrome",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.4"
-          }],
-          "120": [{
-            "host os": "Mac-10.14.3"
-          }]
-      },
       "priority": 30
     },
     {
       "include": "eg_cq_tests.json",
       "device type": "iPhone X",
       "os": "12.1",
-      "host os": "Mac-10.13.6",
+      "host os": "Mac-10.14.4",
       "pool":"Chrome",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.4"
-          }],
-          "120": [{
-            "host os": "Mac-10.14.3"
-          }]
-      },
       "priority": 30
     },
     {
       "include": "eg_cq_tests.json",
       "device type": "iPad Air 2",
       "os": "12.1",
-      "host os": "Mac-10.13.6",
+      "host os": "Mac-10.14.4",
       "pool":"Chrome",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.4"
-          }],
-          "120": [{
-            "host os": "Mac-10.14.3"
-          }]
-      },
+      "priority": 30
+    },
+    {
+      "include": "eg_tests.json",
+      "device type": "iPhone 7",
+      "os": "13.0",
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome",
+      "priority": 30
+    },
+    {
+      "include": "eg_tests.json",
+      "device type": "iPad Air 2",
+      "os": "13.0",
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome",
+      "priority": 30
+    },
+    {
+      "include": "eg_tests.json",
+      "device type": "iPhone X",
+      "os": "13.0",
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome",
+      "priority": 30
+    },
+    {
+      "include": "eg_cq_tests.json",
+      "device type": "iPhone X",
+      "os": "13.0",
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome",
+      "priority": 30
+    },
+    {
+      "include": "eg_cq_tests.json",
+      "device type": "iPad Air 2",
+      "os": "13.0",
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome",
       "priority": 30
     }
   ]

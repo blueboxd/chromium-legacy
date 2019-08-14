@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
 #include "chrome/common/url_constants.h"
@@ -99,7 +100,7 @@ AccountMigrationWelcomeUI::AccountMigrationWelcomeUI(content::WebUI* web_ui)
                                IDR_ACCOUNT_MIGRATION_BROWSER_PROXY_HTML);
   html_source->AddResourcePath("account_migration_browser_proxy.js",
                                IDR_ACCOUNT_MIGRATION_BROWSER_PROXY_JS);
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   html_source->AddResourcePath("account_manager_welcome_1x.png",
                                IDR_ACCOUNT_MANAGER_WELCOME_1X_PNG);
   html_source->AddResourcePath("account_manager_welcome_2x.png",

@@ -64,10 +64,12 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetSelection(
 
   AXPlatformNodeDelegate* delegate = owner()->GetDelegate();
 
+  ui::AXTree::Selection unignored_selection = delegate->GetUnignoredSelection();
+
   AXPlatformNode* anchor_object =
-      delegate->GetFromNodeID(delegate->GetTreeData().sel_anchor_object_id);
+      delegate->GetFromNodeID(unignored_selection.anchor_object_id);
   AXPlatformNode* focus_object =
-      delegate->GetFromNodeID(delegate->GetTreeData().sel_focus_object_id);
+      delegate->GetFromNodeID(unignored_selection.focus_object_id);
 
   // If there's no selected object (or the selected object is not in the
   // subtree), return success and don't fill the SAFEARRAY
@@ -81,12 +83,12 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetSelection(
       (!anchor_object->IsDescendantOf(owner())))
     return S_OK;
 
-  // sel_anchor_offset corresponds to the selection start index
-  // and sel_focus_offset is where the selection ends.
+  // anchor_offset corresponds to the selection start index
+  // and focus_offset is where the selection ends.
   // If they are equal, that indicates a caret on editable text,
   // which should return a degenerate (empty) text range.
-  auto start_offset = delegate->GetTreeData().sel_anchor_offset;
-  auto end_offset = delegate->GetTreeData().sel_focus_offset;
+  auto start_offset = unignored_selection.anchor_offset;
+  auto end_offset = unignored_selection.focus_offset;
 
   // Reverse start and end if the selection goes backwards
   if (start_offset > end_offset)

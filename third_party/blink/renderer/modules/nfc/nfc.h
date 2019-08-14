@@ -5,7 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NFC_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NFC_H_
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/nfc.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_message_callback.h"
@@ -88,8 +89,8 @@ class NFC final : public ScriptWrappable,
                device::mojom::blink::NDEFMessagePtr) override;
 
  private:
-  device::mojom::blink::NFCPtr nfc_;
-  mojo::Binding<device::mojom::blink::NFCClient> client_binding_;
+  mojo::Remote<device::mojom::blink::NFC> nfc_remote_;
+  mojo::Receiver<device::mojom::blink::NFCClient> client_receiver_{this};
   HeapHashSet<Member<ScriptPromiseResolver>> requests_;
   using WatchCallbacksMap = HeapHashMap<uint32_t, Member<V8MessageCallback>>;
   WatchCallbacksMap callbacks_;

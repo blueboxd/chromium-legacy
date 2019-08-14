@@ -12,8 +12,9 @@ import sys
 if __name__ == '__main__':
   sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
-import StringIO
 import unittest
+
+from six import StringIO
 
 from grit.tool import transl2tc
 from grit import grd_reader
@@ -28,7 +29,7 @@ def MakeOptions():
 class TranslationToTcUnittest(unittest.TestCase):
 
   def testOutput(self):
-    buf = StringIO.StringIO()
+    buf = StringIO()
     tool = transl2tc.TranslationToTc()
     translations = [
       ['1', 'Hello USERNAME, how are you?'],
@@ -51,7 +52,7 @@ how are you?
 
   def testExtractTranslations(self):
     path = util.PathFromRoot('grit/testdata')
-    current_grd = grd_reader.Parse(StringIO.StringIO('''<?xml version="1.0" encoding="UTF-8"?>
+    current_grd = grd_reader.Parse(StringIO('''<?xml version="1.0" encoding="UTF-8"?>
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <release seq="3">
           <messages>
@@ -94,7 +95,7 @@ how are you?
     transl_rc = util.ReadFile(transl_rc_path, util.RAW_TEXT)
 
     tool = transl2tc.TranslationToTc()
-    output_buf = StringIO.StringIO()
+    output_buf = StringIO()
     globopts = MakeOptions()
     globopts.verbose = True
     globopts.output_stream = output_buf

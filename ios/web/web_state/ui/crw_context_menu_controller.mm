@@ -17,7 +17,7 @@
 #import "ios/web/public/deprecated/crw_context_menu_delegate.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/ui/context_menu_params.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #import "ios/web/web_state/context_menu_constants.h"
 #import "ios/web/web_state/context_menu_params_utils.h"

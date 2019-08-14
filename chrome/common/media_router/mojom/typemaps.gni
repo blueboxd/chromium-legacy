@@ -2,7 +2,4 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [
-  "//chrome/common/media_router/mojom/media_router.typemap",
-  "//chrome/common/media_router/mojom/media_status.typemap",
-]
+typemaps = [ "//chrome/common/media_router/mojom/media_router.typemap" ]

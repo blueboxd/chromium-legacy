@@ -14,10 +14,6 @@
 #include "base/optional.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "chrome/browser/metrics/perf/metric_collector.h"
-#include "chrome/browser/metrics/perf/perf_output.h"
-#include "chrome/browser/ui/browser_list_observer.h"
-
-class Browser;
 
 namespace base {
 class CommandLine;
@@ -37,41 +33,53 @@ enum class HeapCollectionMode {
   kShimLayer = 2,
 };
 
+class WindowedIncognitoObserver;
+
 // Enables collection of heap profiles using the tcmalloc heap sampling
 // profiler.
-class HeapCollector : public MetricCollector, public BrowserListObserver {
+class HeapCollector : public internal::MetricCollector {
  public:
   explicit HeapCollector(HeapCollectionMode mode);
-  ~HeapCollector() override;
-
-  // MetricCollector:
-  void Init() override;
 
   static HeapCollectionMode CollectionModeFromString(std::string mode);
 
+  // MetricCollector:
+  ~HeapCollector() override;
+  const char* ToolName() const override;
+
  protected:
   // MetricCollector:
-  base::WeakPtr<MetricCollector> GetWeakPtr() override;
+  void SetUp() override;
+  base::WeakPtr<internal::MetricCollector> GetWeakPtr() override;
   bool ShouldCollect() const override;
   void CollectProfile(std::unique_ptr<SampledProfile> sampled_profile) override;
 
-  // BrowserListObserver:
-  void OnBrowserAdded(Browser* browser) override;
-  void OnBrowserRemoved(Browser* browser) override;
-
   // Fetches a heap profile from tcmalloc, dumps it to a temp file, and returns
   // the path.
-  base::Optional<base::FilePath> DumpProfileToTempFile();
+  base::Optional<base::FilePath> DumpProfileToTempFile(
+      std::unique_ptr<WindowedIncognitoObserver> incognito_observer);
 
   // Generates a quipper command to parse the given profile file.
-  base::CommandLine MakeQuipperCommand(const base::FilePath& profile_path);
+  static std::unique_ptr<base::CommandLine> MakeQuipperCommand(
+      const base::FilePath& profile_path);
 
   // Executes the given command line to parse a profile stored at the given
-  // path and saves it in the given sampled profile. The given temporary profile
-  // file is removed after parsing.
-  void ParseAndSaveProfile(const base::CommandLine& parser,
-                           const base::FilePath& profile_path,
+  // path by posting an asynchronous task to the thread pool, since the parsing
+  // may be blocking.
+  void ParseAndSaveProfile(std::unique_ptr<base::CommandLine> parser,
+                           base::FilePath profile_path,
                            std::unique_ptr<SampledProfile> sampled_profile);
+
+  // Executes on the thread pool the given command line to parse a profile
+  // stored at the given path and saves it in the given sampled profile. The
+  // given temporary profile path is removed after parsing. The updated sampled
+  // profile is passed to SaveSerializedPerfProto on the given task runner.
+  static void ParseProfileOnThreadPool(
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      base::WeakPtr<HeapCollector> heap_collector,
+      std::unique_ptr<base::CommandLine> parser,
+      base::FilePath profile_path,
+      std::unique_ptr<SampledProfile> sampled_profile);
 
   // Start and stop the collection.
   void EnableSampling();
@@ -84,14 +92,13 @@ class HeapCollector : public MetricCollector, public BrowserListObserver {
   // trial parameters.
   void SetCollectionParamsFromFeatureParams();
 
+  // Heap collection mode. Thread safe.
+  const HeapCollectionMode mode_;
+
+  bool is_enabled_;
+
   // Heap sampling period.
   size_t sampling_period_bytes_;
-
-  // Heap collection mode.
-  HeapCollectionMode mode_;
-
-  // The collector state.
-  bool is_enabled_;
 
   base::WeakPtrFactory<HeapCollector> weak_factory_;
 

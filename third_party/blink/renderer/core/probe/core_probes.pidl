@@ -83,8 +83,6 @@ interface CoreProbes {
   void DidFireWebGLWarning(Element*);
   void DidFireWebGLErrorOrWarning(Element*, const String& message);
   void DidResizeMainFrame(LocalFrame*);
-  /* This is for pre-BlinkGenPropertyTrees. TODO(wangxianzhu): Remove this function for BlinkGenPropertyTrees. */
-  void DidPaint(LocalFrame*, const cc::Layer*, const LayoutRect&);
   void ApplyAcceptLanguageOverride(ExecutionContext*, String* accept_language);
   void ApplyUserAgentOverride(CoreProbeSink*, String* user_agent);
   void DidBlockRequest(CoreProbeSink*, const ResourceRequest&, DocumentLoader*, const KURL& fetch_context_url, const FetchInitiatorInfo&, ResourceRequestBlockedReason, ResourceType);

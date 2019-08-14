@@ -450,9 +450,11 @@ VkFormat ToVkFormat(ResourceFormat format) {
       return VK_FORMAT_R8_UNORM;
     case LUMINANCE_8:
       return VK_FORMAT_R8_UNORM;
-    case LUMINANCE_F16:
     case YVU_420:
+      return VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM;
     case YUV_420_BIPLANAR:
+      return VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+    case LUMINANCE_F16:
     case UYVY_422:
     case ETC1:
     case P010:

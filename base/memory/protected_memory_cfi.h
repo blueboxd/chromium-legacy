@@ -64,7 +64,9 @@ class UnsanitizedCfiCall {
 template <typename T>
 auto UnsanitizedCfiCall(const ProtectedMemory<T>& PM) {
 #if PROTECTED_MEMORY_ENABLED
-  DCHECK(&PM >= ProtectedMemoryStart && &PM < ProtectedMemoryEnd);
+  DCHECK(&PM >= ProtectedMemoryStart && &PM < ProtectedMemoryEnd)
+      << "ProtectedMemoryStart=" << ProtectedMemoryStart << ", &PM=" << &PM
+      << ", ProtectedMemoryEnd=" << ProtectedMemoryEnd;
 #endif  // PROTECTED_MEMORY_ENABLED
   return internal::UnsanitizedCfiCall<T>(*PM);
 }
@@ -76,7 +78,9 @@ auto UnsanitizedCfiCall(const ProtectedMemory<T>& PM) {
 template <typename T, typename Member>
 auto UnsanitizedCfiCall(const ProtectedMemory<T>& PM, Member member) {
 #if PROTECTED_MEMORY_ENABLED
-  DCHECK(&PM >= ProtectedMemoryStart && &PM < ProtectedMemoryEnd);
+  DCHECK(&PM >= ProtectedMemoryStart && &PM < ProtectedMemoryEnd)
+      << "ProtectedMemoryStart=" << ProtectedMemoryStart << ", &PM=" << &PM
+      << ", ProtectedMemoryEnd=" << ProtectedMemoryEnd;
 #endif  // PROTECTED_MEMORY_ENABLED
   return internal::UnsanitizedCfiCall<decltype(*PM.*member)>(*PM.*member);
 }

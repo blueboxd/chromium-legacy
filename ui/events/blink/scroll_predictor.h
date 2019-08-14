@@ -9,7 +9,7 @@
 
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/event_with_callback.h"
-#include "ui/events/blink/prediction/input_filter.h"
+#include "ui/events/blink/prediction/filter_factory.h"
 #include "ui/events/blink/prediction/input_predictor.h"
 
 namespace ui {
@@ -62,6 +62,8 @@ class ScrollPredictor {
 
   std::unique_ptr<InputPredictor> predictor_;
   std::unique_ptr<InputFilter> filter_;
+
+  std::unique_ptr<FilterFactory> filter_factory_;
 
   // Whether predicted scroll events should be filtered or not
   bool filtering_enabled_ = false;

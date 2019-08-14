@@ -8,10 +8,11 @@ from __future__ import print_function
 
 import getopt
 import os.path
-import StringIO
 import sys
 from xml.dom import Node
 import xml.dom.minidom
+
+from six import StringIO
 
 import grit.node.empty
 from grit.node import node_io
@@ -194,7 +195,7 @@ OPTIONS may be any of the following:
     """
 
     # Start with a basic skeleton for the .grd file.
-    root = grd_reader.Parse(StringIO.StringIO(
+    root = grd_reader.Parse(StringIO(
       '''<?xml version="1.0" encoding="UTF-8"?>
          <grit base_dir="." latest_public_release="0"
              current_release="1" source_lang_id="en">

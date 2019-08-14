@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#include <list>
 #include <map>
 
 #include "base/macros.h"
@@ -155,22 +154,12 @@ class AutocompleteResult {
   typedef ACMatches::iterator::difference_type matches_difference_type;
 #endif
 
-  // Sort |matches| by destination, taking into account demotions based on
-  // |page_classification| when resolving ties about which of several
-  // duplicates to keep.  The matches are also deduplicated. Duplicate matches
-  // are stored in the |duplicate_matches| vector of the corresponding
-  // AutocompleteMatch.
-  static void SortAndDedupMatches(
+  // Modifies |matches| such that any duplicate matches are coalesced into
+  // representative "best" matches. The erased matches are moved into the
+  // |duplicate_matches| members of their representative matches.
+  static void DeduplicateMatches(
       metrics::OmniboxEventProto::PageClassification page_classification,
       ACMatches* matches);
-
-  // Examines |first| and |second| and returns the match that is preferred when
-  // choosing between candidate duplicates. Note that this may modify the
-  // relevance, allowed_to_be_default_match, or inline_autocompletion values of
-  // the returned match.
-  static std::list<ACMatches::iterator>::iterator BetterDuplicate(
-      std::list<ACMatches::iterator>::iterator first,
-      std::list<ACMatches::iterator>::iterator second);
 
   // Returns true if |matches| contains a match with the same destination as
   // |match|.

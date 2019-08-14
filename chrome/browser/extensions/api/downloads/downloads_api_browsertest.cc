@@ -1232,14 +1232,6 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   RunFunction(new DownloadsShowDefaultFolderFunction(),
               DownloadItemIdAsArgList(item.get()));
 }
-
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       DownloadsDragFunction) {
-  ScopedCancellingItem item(CreateFirstSlowTestDownload());
-  ASSERT_TRUE(item.get());
-
-  RunFunction(new DownloadsDragFunction(), DownloadItemIdAsArgList(item.get()));
-}
 #endif
 
 
@@ -2329,14 +2321,14 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                           "  \"paused\": false,"
                           "  \"url\": \"%s\"}]",
                           download_url.c_str())));
-  ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
-                      base::StringPrintf(
-                          "[{\"id\": %d,"
-                          "  \"filename\": {"
-                          "    \"previous\": \"\","
-                          "    \"current\": \"%s\"}}]",
-                          result_id,
-                          GetFilename("file.txt").c_str())));
+  // File will be renamed to file.html due to its mime type.
+  ASSERT_TRUE(
+      WaitFor(downloads::OnChanged::kEventName,
+              base::StringPrintf("[{\"id\": %d,"
+                                 "  \"filename\": {"
+                                 "    \"previous\": \"\","
+                                 "    \"current\": \"%s\"}}]",
+                                 result_id, GetFilename("file.html").c_str())));
   ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
                       base::StringPrintf(
                           "[{\"id\": %d,"
@@ -3008,6 +3000,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   EXPECT_FALSE(determine_result.get());  // No return value.
 }
 
+// Tests that overriding a safe file extension to a dangerous extension will not
+// trigger the dangerous prompt and will not change the extension.
 IN_PROC_BROWSER_TEST_F(
     DownloadExtensionTest,
     DownloadExtensionTest_OnDeterminingFilename_DangerousOverride) {
@@ -3047,7 +3041,7 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(item->GetTargetFilePath().empty());
   ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
-  // Respond to the onDeterminingFilename.
+  // Respond to the onDeterminingFilename with a dangerous extension.
   std::string error;
   ASSERT_TRUE(ExtensionDownloadsEventRouter::DetermineFilename(
       current_browser()->profile(), false, GetExtensionId(), result_id,
@@ -3056,12 +3050,68 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ("", error);
 
   ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
-                      base::StringPrintf(
-                          "[{\"id\": %d,"
-                          "  \"danger\": {"
-                          "    \"previous\":\"safe\","
-                          "    \"current\":\"file\"}}]",
-                          result_id)));
+                      base::StringPrintf("[{\"id\": %d,"
+                                         "  \"state\": {"
+                                         "    \"previous\": \"in_progress\","
+                                         "    \"current\": \"complete\"}}]",
+                                         result_id)));
+  EXPECT_EQ(downloads_directory().AppendASCII("overridden.txt"),
+            item->GetTargetFilePath());
+}
+
+// Tests that overriding a dangerous file extension to a safe extension will
+// trigger the dangerous prompt and will not change the extension.
+IN_PROC_BROWSER_TEST_F(
+    DownloadExtensionTest,
+    DownloadExtensionTest_OnDeterminingFilename_SafeOverride) {
+  GoOnTheRecord();
+  LoadExtension("downloads_split");
+  AddFilenameDeterminer();
+
+  std::string download_url = "data:application/x-shockwave-flash,";
+  // Start downloading a file.
+  std::unique_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsDownloadFunction(),
+      base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
+  ASSERT_TRUE(result.get());
+  int result_id = -1;
+  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(item);
+  ScopedCancellingItem canceller(item);
+  ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
+
+  ASSERT_TRUE(WaitFor(
+      downloads::OnCreated::kEventName,
+      base::StringPrintf("[{\"danger\": \"safe\","
+                         "  \"incognito\": false,"
+                         "  \"id\": %d,"
+                         "  \"mime\": \"application/x-shockwave-flash\","
+                         "  \"paused\": false,"
+                         "  \"url\": \"%s\"}]",
+                         result_id, download_url.c_str())));
+  ASSERT_TRUE(WaitFor(downloads::OnDeterminingFilename::kEventName,
+                      base::StringPrintf("[{\"id\": %d,"
+                                         "  \"filename\":\"download.swf\"}]",
+                                         result_id)));
+  ASSERT_TRUE(item->GetTargetFilePath().empty());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
+
+  // Respond to the onDeterminingFilename with a safe extension.
+  std::string error;
+  ASSERT_TRUE(ExtensionDownloadsEventRouter::DetermineFilename(
+      current_browser()->profile(), false, GetExtensionId(), result_id,
+      base::FilePath(FILE_PATH_LITERAL("overridden.txt")),
+      downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY, &error));
+  EXPECT_EQ("", error);
+
+  // Dangerous download prompt will be shown.
+  ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
+                      base::StringPrintf("[{\"id\": %d, "
+                                         "  \"danger\": {"
+                                         "    \"previous\": \"safe\","
+                                         "    \"current\": \"file\"}}]",
+                                         result_id)));
 
   item->ValidateDangerousDownload();
   ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
@@ -3071,6 +3121,7 @@ IN_PROC_BROWSER_TEST_F(
                           "    \"previous\":\"file\","
                           "    \"current\":\"accepted\"}}]",
                           result_id)));
+
   ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
                       base::StringPrintf(
                           "[{\"id\": %d,"
@@ -4342,7 +4393,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   LoadExtension("downloads_split");
   std::unique_ptr<base::Value> result(RunFunctionAndReturnResult(
       new DownloadsDownloadFunction(),
-      "[{\"url\": \"data:,\", \"filename\": \"dangerous.swf\"}]"));
+      "[{\"url\": \"data:application/x-shockwave-flash,\", \"filename\": "
+      "\"dangerous.swf\"}]"));
   ASSERT_TRUE(result.get());
   int result_id = -1;
   ASSERT_TRUE(result->GetAsInteger(&result_id));

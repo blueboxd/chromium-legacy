@@ -21,6 +21,7 @@
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_grid_pre_event_handler.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
@@ -812,6 +813,10 @@ void OverviewItem::HandleMouseEvent(const ui::MouseEvent& event) {
 }
 
 void OverviewItem::HandleGestureEvent(ui::GestureEvent* event) {
+  if (ShouldUseTabletModeGridLayout()) {
+    HandleGestureEventForTabletModeLayout(event);
+    return;
+  }
   const gfx::PointF location = event->details().bounding_box_f().CenterPoint();
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
@@ -837,6 +842,41 @@ void OverviewItem::HandleGestureEvent(ui::GestureEvent* event) {
       HandleGestureEndEvent();
       break;
     default:
+      break;
+  }
+}
+
+void OverviewItem::HandleGestureEventForTabletModeLayout(
+    ui::GestureEvent* event) {
+  const gfx::PointF location = event->details().bounding_box_f().CenterPoint();
+  switch (event->type()) {
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      if (IsDragItem())
+        HandleDragEvent(location);
+      else
+        overview_grid()->grid_pre_event_handler()->OnGestureEvent(event);
+      break;
+    case ui::ET_SCROLL_FLING_START:
+      HandleFlingStartEvent(location, event->details().velocity_x(),
+                            event->details().velocity_y());
+      break;
+    case ui::ET_GESTURE_SCROLL_END:
+      if (IsDragItem())
+        HandleReleaseEvent(location);
+      else
+        overview_grid()->grid_pre_event_handler()->OnGestureEvent(event);
+      break;
+    case ui::ET_GESTURE_LONG_PRESS:
+      HandlePressEvent(location, /*from_touch_gesture=*/true);
+      break;
+    case ui::ET_GESTURE_TAP:
+      overview_session_->SelectWindow(this);
+      break;
+    case ui::ET_GESTURE_END:
+      HandleGestureEndEvent();
+      break;
+    default:
+      overview_grid()->grid_pre_event_handler()->OnGestureEvent(event);
       break;
   }
 }

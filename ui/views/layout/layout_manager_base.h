@@ -31,9 +31,14 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   // Represents layout information for a child view within a host being laid
   // out.
   struct VIEWS_EXPORT ChildLayout {
+    bool operator==(const ChildLayout& other) const;
+    bool operator!=(const ChildLayout& other) const {
+      return !(*this == other);
+    }
+
     View* child_view = nullptr;
-    gfx::Rect bounds;
     bool visible = false;
+    gfx::Rect bounds;
   };
 
   // Contains a full layout specification for the children of the host view.
@@ -42,8 +47,15 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
     ~ProposedLayout();
     ProposedLayout(const ProposedLayout& other);
     ProposedLayout(ProposedLayout&& other);
+    ProposedLayout(const gfx::Size& size,
+                   const std::initializer_list<ChildLayout>& children);
     ProposedLayout& operator=(const ProposedLayout& other);
     ProposedLayout& operator=(ProposedLayout&& other);
+
+    bool operator==(const ProposedLayout& other) const;
+    bool operator!=(const ProposedLayout& other) const {
+      return !(*this == other);
+    }
 
     // The size of the host view given the size bounds for this layout. If both
     // dimensions of the size bounds are specified, this will be the same size.
@@ -83,6 +95,41 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
  protected:
   LayoutManagerBase();
 
+  // Direct cache control for subclasses that want to override default caching
+  // behavior. Use at your own risk.
+  base::Optional<gfx::Size> cached_minimum_size() const {
+    return cached_minimum_size_;
+  }
+  void set_cached_minimum_size(
+      const base::Optional<gfx::Size>& minimum_size) const {
+    cached_minimum_size_ = minimum_size;
+  }
+  const base::Optional<gfx::Size>& cached_preferred_size() const {
+    return cached_preferred_size_;
+  }
+  void set_cached_preferred_size(
+      const base::Optional<gfx::Size>& preferred_size) const {
+    cached_preferred_size_ = preferred_size;
+  }
+  const base::Optional<gfx::Size>& cached_height_for_width() const {
+    return cached_height_for_width_;
+  }
+  void set_cached_height_for_width(
+      const base::Optional<gfx::Size>& height_for_width) const {
+    cached_height_for_width_ = height_for_width;
+  }
+  const base::Optional<gfx::Size>& cached_layout_size() const {
+    return cached_layout_size_;
+  }
+  void set_cached_layout_size(
+      const base::Optional<gfx::Size>& layout_size) const {
+    cached_layout_size_ = layout_size;
+  }
+  const ProposedLayout& cached_layout() const { return cached_layout_; }
+  void set_cached_layout(const ProposedLayout& layout) const {
+    cached_layout_ = layout;
+  }
+
   bool IsChildIncludedInLayout(const View* child) const;
 
   // Creates a proposed layout for the host view, including bounds and
@@ -111,11 +158,11 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
 
   // Do some really simple caching because layout generation can cost as much
   // as 1ms or more for complex views.
-  mutable base::Optional<gfx::Size> minimum_size_;
-  mutable base::Optional<gfx::Size> preferred_size_;
-  mutable base::Optional<gfx::Size> last_height_for_width_;
-  mutable base::Optional<gfx::Size> last_requested_size_;
-  mutable ProposedLayout last_layout_;
+  mutable base::Optional<gfx::Size> cached_minimum_size_;
+  mutable base::Optional<gfx::Size> cached_preferred_size_;
+  mutable base::Optional<gfx::Size> cached_height_for_width_;
+  mutable base::Optional<gfx::Size> cached_layout_size_;
+  mutable ProposedLayout cached_layout_;
 
   DISALLOW_COPY_AND_ASSIGN(LayoutManagerBase);
 };

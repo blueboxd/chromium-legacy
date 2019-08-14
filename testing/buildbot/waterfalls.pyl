@@ -2232,6 +2232,30 @@
         # We keep this value enabled to provide minimal regression testing.
         'use_multi_dimension_trigger_script': True,
       },
+      'Win10 x64 Debug (NVIDIA)': {
+        'browser_config': 'debug_x64',
+        'os_type': 'win',
+        'mixins': [
+          'win10_nvidia_quadro_p400_stable',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_win_gtests',
+          'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
+        },
+      },
+      'Win10 x64 Release (NVIDIA)': {
+        'browser_config': 'release_x64',
+        'os_type': 'win',
+        'mixins': [
+          'win10_nvidia_quadro_p400_stable',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_win_gtests',
+          'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
+        },
+        # We keep this value enabled to provide minimal regression testing.
+        'use_multi_dimension_trigger_script': True,
+      },
     },
   },
   {
@@ -2637,6 +2661,17 @@
         'browser_config': 'release',
         'mixins': [
           'linux_intel_hd_630',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_fyi_linux_release_gtests',
+          'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
+        },
+      },
+      'Linux FYI Release (Intel UHD 630)': {
+        'os_type': 'linux',
+        'browser_config': 'release',
+        'mixins': [
+          'linux_intel_uhd_630',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',

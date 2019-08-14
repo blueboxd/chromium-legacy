@@ -21,7 +21,7 @@
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

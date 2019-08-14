@@ -21,6 +21,7 @@ public_deps = [
   "//services/network/public/cpp:cpp_base",
 ]
 type_mappings = [
+  "network.mojom.TrustedUrlRequestParams=network::ResourceRequest::TrustedParams",
   "network.mojom.URLRequest=network::ResourceRequest",
   "network.mojom.URLRequestBody=scoped_refptr<network::ResourceRequestBody>[nullable_is_same_type,copyable_pass_by_value]",
   "network.mojom.URLRequestReferrerPolicy=net::URLRequest::ReferrerPolicy",

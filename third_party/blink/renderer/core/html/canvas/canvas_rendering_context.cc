@@ -124,11 +124,13 @@ void CanvasRenderingContext::DidProcessTask(
     const base::PendingTask& /* pending_task */) {
   StopListeningForDidProcessTask();
 
+  // Call FinalizeFrame() on self first before informing host so that we can
+  // present swap chain before exporting it.
+  FinalizeFrame();
   // The end of a script task that drew content to the canvas is the point
   // at which the current frame may be considered complete.
   if (Host())
     Host()->FinalizeFrame();
-  FinalizeFrame();
 }
 
 CanvasRenderingContext::ContextType CanvasRenderingContext::ContextTypeFromId(

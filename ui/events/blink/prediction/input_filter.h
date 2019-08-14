@@ -18,7 +18,7 @@ class InputFilter {
 
   // Filters the position sent to the filter at a specific timestamp.
   // Returns true if the value is filtered, false otherwise.
-  virtual bool Filter(const base::TimeTicks timestamp,
+  virtual bool Filter(const base::TimeTicks& timestamp,
                       gfx::PointF* position) const = 0;
 
   // Returns the name of the filter

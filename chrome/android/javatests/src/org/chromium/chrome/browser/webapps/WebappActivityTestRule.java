@@ -247,10 +247,14 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
      * Waits for the splash screen to be hidden.
      */
     public void waitUntilSplashscreenHides() {
+        waitUntilSplashHides(getActivity());
+    }
+
+    public static void waitUntilSplashHides(WebappActivity activity) {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return !isSplashScreenVisible();
+                return activity.getSplashControllerForTests().wasSplashScreenHiddenForTests();
             }
         }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }

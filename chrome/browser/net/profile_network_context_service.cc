@@ -109,11 +109,7 @@ bool ShouldUseBuiltinCertVerifier(Profile* profile) {
 
   if (chromeos::ProfileHelper::Get()->IsSigninProfile(profile) ||
       chromeos::ProfileHelper::Get()->IsLockScreenAppProfile(profile)) {
-    // No need to override the feature-set setting through policy for sign-in
-    // and lock screen app profiles, as no custom trust anchors can be active
-    // there.
-    return base::FeatureList::IsEnabled(
-        net::features::kCertVerifierBuiltinFeature);
+    return true;
   }
 
   // TODO(https://crbug.com/982936): Instead of evaluating the primary profile

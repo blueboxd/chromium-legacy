@@ -10,7 +10,7 @@
 #include "components/ukm/test_ukm_recorder.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #import "ios/web/public/navigation/navigation_manager.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"

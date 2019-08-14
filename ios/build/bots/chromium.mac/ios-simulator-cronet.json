@@ -1,8 +1,8 @@
 {
   "comments": [
-    "Cronet tests 64-bit iOS 9.3, 10.3, 11.4 and 12 simulators."
+    "Cronet tests 64-bit iOS 9.3, 10.3, 11.4 and 12 and 13 simulators."
   ],
-  "xcode build version": "10b61",
+  "xcode build version": "11M382q",
   "gn_args": [
     "additional_target_cpus=[\"x86\"]",
     "disable_brotli_filter=false",
@@ -25,7 +25,7 @@
       "app": "cronet_unittests_ios",
       "device type": "iPhone 5s",
       "os": "9.3",
-      "host os": "Mac-10.13.6",
+      "host os": "Mac-10.14.4",
       "pool": "Chrome",
       "priority": 30
     },
@@ -33,7 +33,7 @@
       "app": "cronet_unittests_ios",
       "device type": "iPhone 5s",
       "os": "11.4",
-      "host os": "Mac-10.13.6",
+      "host os": "Mac-10.14.4",
       "pool": "Chrome",
       "priority": 30
     },
@@ -41,7 +41,7 @@
       "app": "cronet_unittests_ios",
       "device type": "iPhone 5s",
       "os": "12.1",
-      "host os": "Mac-10.13.6",
+      "host os": "Mac-10.14.4",
       "pool": "Chrome",
       "priority": 30
     },
@@ -49,7 +49,7 @@
       "app": "cronet_test",
       "device type": "iPhone 5s",
       "os": "9.3",
-      "host os": "Mac-10.13.6",
+      "host os": "Mac-10.14.4",
       "pool": "Chrome",
       "priority": 30
     },
@@ -57,7 +57,7 @@
       "app": "cronet_test",
       "device type": "iPad Air 2",
       "os": "11.4",
-      "host os": "Mac-10.13.6",
+      "host os": "Mac-10.14.4",
       "pool": "Chrome",
       "priority": 30
     },
@@ -65,7 +65,7 @@
       "app": "cronet_test",
       "device type": "iPad Air 2",
       "os": "10.3",
-      "host os": "Mac-10.13.6",
+      "host os": "Mac-10.14.4",
       "pool": "Chrome",
       "priority": 30
     },
@@ -73,7 +73,15 @@
       "app": "cronet_test",
       "device type": "iPad Air 2",
       "os": "12.1",
-      "host os": "Mac-10.13.6",
+      "host os": "Mac-10.14.4",
+      "pool": "Chrome",
+      "priority": 30
+    },
+    {
+      "app": "cronet_test",
+      "device type": "iPad Air 2",
+      "os": "13.0",
+      "host os": "Mac-10.14.4",
       "pool": "Chrome",
       "priority": 30
     }

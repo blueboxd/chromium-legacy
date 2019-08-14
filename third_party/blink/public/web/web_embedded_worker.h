@@ -66,7 +66,8 @@ class BLINK_EXPORT WebEmbeddedWorker {
       std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>,
       mojo::ScopedMessagePipeHandle content_settings_handle,
       mojo::ScopedMessagePipeHandle cache_storage,
-      mojo::ScopedMessagePipeHandle interface_provider);
+      mojo::ScopedMessagePipeHandle interface_provider,
+      mojo::ScopedMessagePipeHandle browser_interface_broker);
 
   virtual ~WebEmbeddedWorker() = default;
 

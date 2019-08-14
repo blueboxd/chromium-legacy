@@ -34,20 +34,16 @@
   // The following engines are included in country lists and are added to the
   // list of search engines on the first run depending on user's country.
   "elements": {
-    // Ask and Ask UK have suggestion URLs reachable over HTTPS, but they
-    // throw a certificate error, so those will remain as HTTP for now.
     "ask": {
       "name": "Ask",
       "keyword": "ask.com",
       "favicon_url": "https://sp.ask.com/sh/i/a16/favicon/favicon.ico",
       "search_url": "https://www.ask.com/web?q={searchTerms}",
-      "suggest_url": "http://ss.ask.com/query?q={searchTerms}&li=ff",
+      "suggest_url": "https://lss.sse-iacapps.com/query?q={searchTerms}&li=ff",
       "type": "SEARCH_ENGINE_ASK",
       "id": 4
     },
 
-    // Baidu's suggestion URL is not reachable over HTTPS, so it remains as
-    // HTTP for now.
     "baidu": {
       "name": "\u767e\u5ea6",
       "keyword": "baidu.com",
@@ -58,7 +54,7 @@
         "https://www.baidu.com/s?ie={inputEncoding}&word={searchTerms}",
         "https://www.baidu.com/{google:pathWildcard}/s?ie={inputEncoding}&word={searchTerms}"
       ],
-      "suggest_url": "http://suggestion.baidu.com/su?wd={searchTerms}&action=opensearch&ie={inputEncoding}",
+      "suggest_url": "https://suggestion.baidu.com/su?wd={searchTerms}&action=opensearch&ie={inputEncoding}",
       "type": "SEARCH_ENGINE_BAIDU",
       "id": 21
     },

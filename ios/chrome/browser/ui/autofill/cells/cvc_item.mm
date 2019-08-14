@@ -5,11 +5,10 @@
 #import "ios/chrome/browser/ui/autofill/cells/cvc_item.h"
 
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -110,7 +109,7 @@ const CGFloat kDateTextFieldWidth = 40;
     _instructionsTextLabel = [[UILabel alloc] init];
     _instructionsTextLabel.font =
         [[MDCTypography fontLoader] mediumFontOfSize:14];
-    _instructionsTextLabel.textColor = [[MDCPalette greyPalette] tint500];
+    _instructionsTextLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
     _instructionsTextLabel.numberOfLines = 0;
     _instructionsTextLabel.lineBreakMode = NSLineBreakByWordWrapping;
     _instructionsTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
@@ -118,7 +117,7 @@ const CGFloat kDateTextFieldWidth = 40;
 
     _errorLabel = [[UILabel alloc] init];
     _errorLabel.font = [[MDCTypography fontLoader] regularFontOfSize:12];
-    _errorLabel.textColor = [[MDCPalette cr_redPalette] tint500];
+    _errorLabel.textColor = [UIColor colorNamed:kRedColor];
     _errorLabel.numberOfLines = 0;
     _errorLabel.lineBreakMode = NSLineBreakByWordWrapping;
     _errorLabel.translatesAutoresizingMaskIntoConstraints = NO;
@@ -157,6 +156,7 @@ const CGFloat kDateTextFieldWidth = 40;
     [contentView addSubview:_CVCContainerView];
 
     _CVCInput = ios::GetChromeBrowserProvider()->CreateStyledTextField();
+    _CVCInput.textColor = [UIColor colorNamed:kTextPrimaryColor];
     _CVCInput.placeholder =
         l10n_util::GetNSString(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC);
     _CVCInput.accessibilityIdentifier = @"CVC_textField";
@@ -175,7 +175,7 @@ const CGFloat kDateTextFieldWidth = 40;
     [_buttonForNewCard
         setTitle:l10n_util::GetNSString(IDS_AUTOFILL_CARD_UNMASK_NEW_CARD_LINK)
         forState:UIControlStateNormal];
-    [_buttonForNewCard setTitleColor:[[MDCPalette cr_bluePalette] tint500]
+    [_buttonForNewCard setTitleColor:[UIColor colorNamed:kBlueColor]
                             forState:UIControlStateNormal];
     _buttonForNewCard.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:_buttonForNewCard];

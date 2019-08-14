@@ -33,7 +33,7 @@
 #include "ios/web/public/test/http_server/html_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 
@@ -655,9 +655,7 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
 - (void)testOpenLinkInNewTab {
   // TODO(crbug.com/989550) Disable broken context menu tests on Xc11b5.
   if (@available(iOS 13, *)) {
-    if ([ChromeEarlGrey isIPadIdiom]) {
-      EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-    }
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS13.");
   }
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;

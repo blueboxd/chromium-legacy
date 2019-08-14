@@ -19,7 +19,9 @@
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
-#include "content/renderer/media/render_media_log.h"
+#include "content/renderer/media/batching_media_log.h"
+#include "content/renderer/media/inspector_media_event_handler.h"
+#include "content/renderer/media/render_media_event_handler.h"
 #include "content/renderer/media/renderer_webmediaplayer_delegate.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -267,6 +269,7 @@ std::unique_ptr<blink::WebVideoFrameSubmitter> MediaFactory::CreateSubmitter(
 blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
     const blink::WebMediaPlayerSource& source,
     blink::WebMediaPlayerClient* client,
+    blink::MediaInspectorContext* inspector_context,
     blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
     blink::WebContentDecryptionModule* initial_cdm,
     const blink::WebString& sink_id,
@@ -279,7 +282,8 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
       blink::GetWebMediaStreamFromWebMediaPlayerSource(source);
   if (!web_stream.IsNull())
     return CreateWebMediaPlayerForMediaStream(
-        client, sink_id, security_origin, web_frame, layer_tree_view, settings);
+        client, inspector_context, sink_id, security_origin, web_frame,
+        layer_tree_view, settings);
 
   // If |source| was not a MediaStream, it must be a URL.
   // TODO(guidou): Fix this when support for other srcObject types is added.
@@ -317,11 +321,20 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
           media::kMemoryPressureBasedSourceBufferGC,
           "enable_instant_source_buffer_gc", false);
 
+  std::unique_ptr<BatchingMediaLog::EventHandler> event_handler;
+  if (base::FeatureList::IsEnabled(media::kMediaInspectorLogging)) {
+    event_handler =
+        std::make_unique<InspectorMediaEventHandler>(inspector_context);
+  } else {
+    event_handler = std::make_unique<RenderMediaEventHandler>();
+  }
+
   // This must be created for every new WebMediaPlayer, each instance generates
   // a new player id which is used to collate logs on the browser side.
-  std::unique_ptr<media::MediaLog> media_log(new RenderMediaLog(
+  auto media_log = std::make_unique<BatchingMediaLog>(
       url::Origin(security_origin).GetURL(),
-      render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
+      render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia),
+      std::move(event_handler));
 
   base::WeakPtr<media::MediaObserver> media_observer;
 
@@ -535,6 +548,7 @@ MediaFactory::CreateRendererFactorySelector(
 
 blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
     blink::WebMediaPlayerClient* client,
+    blink::MediaInspectorContext* inspector_context,
     const blink::WebString& sink_id,
     const blink::WebSecurityOrigin& security_origin,
     blink::WebLocalFrame* frame,
@@ -548,11 +562,24 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
       CreateSubmitter(&video_frame_compositor_task_runner, settings);
 
   DCHECK(layer_tree_view);
+
+  std::unique_ptr<BatchingMediaLog::EventHandler> event_handler;
+  if (base::FeatureList::IsEnabled(media::kMediaInspectorLogging)) {
+    event_handler =
+        std::make_unique<InspectorMediaEventHandler>(inspector_context);
+  } else {
+    event_handler = std::make_unique<RenderMediaEventHandler>();
+  }
+
+  // This must be created for every new WebMediaPlayer, each instance generates
+  // a new player id which is used to collate logs on the browser side.
+  auto media_log = std::make_unique<BatchingMediaLog>(
+      url::Origin(security_origin).GetURL(),
+      render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia),
+      std::move(event_handler));
+
   return new blink::WebMediaPlayerMS(
-      frame, client, GetWebMediaPlayerDelegate(),
-      std::make_unique<RenderMediaLog>(
-          url::Origin(security_origin).GetURL(),
-          render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia)),
+      frame, client, GetWebMediaPlayerDelegate(), std::move(media_log),
       CreateMediaStreamRendererFactory(),
       render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia),
       render_thread->GetIOTaskRunner(), video_frame_compositor_task_runner,

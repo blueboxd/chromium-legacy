@@ -20,6 +20,7 @@ class Connector;
 }
 
 namespace views {
+class Label;
 class ImageView;
 class ToggleImageButton;
 }  // namespace views
@@ -200,6 +201,8 @@ class ASH_EXPORT LockScreenMediaControlsView
   // Container views attached to |contents_view_|.
   MediaControlsHeaderView* header_row_ = nullptr;
   views::ImageView* session_artwork_ = nullptr;
+  views::Label* title_label_ = nullptr;
+  views::Label* artist_label_ = nullptr;
   NonAccessibleView* button_row_ = nullptr;
   views::ToggleImageButton* play_pause_button_ = nullptr;
   media_message_center::MediaControlsProgressView* progress_ = nullptr;

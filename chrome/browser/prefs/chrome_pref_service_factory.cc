@@ -19,6 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
@@ -178,7 +179,7 @@ const prefs::TrackedPreferenceMetadata kTrackedPrefs[] = {
 #endif  // defined(OS_WIN)
     {29, prefs::kMediaStorageIdSalt, EnforcementLevel::ENFORCE_ON_LOAD,
      PrefTrackingStrategy::ATOMIC, ValueType::IMPERSONAL},
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {30, prefs::kModuleBlacklistCacheMD5Digest,
      EnforcementLevel::ENFORCE_ON_LOAD, PrefTrackingStrategy::ATOMIC,
      ValueType::IMPERSONAL},
@@ -321,7 +322,7 @@ std::unique_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
 #endif
   std::string seed;
   CHECK(ui::ResourceBundle::HasSharedInstance());
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   seed = ui::ResourceBundle::GetSharedInstance()
              .GetRawDataResource(IDR_PREF_HASH_SEED_BIN)
              .as_string();

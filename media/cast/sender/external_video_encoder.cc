@@ -208,7 +208,7 @@ class ExternalVideoEncoder::VEAClientImpl
           input_buffers_[index].get();
       DCHECK(input_buffer->first.IsValid());
       DCHECK(input_buffer->second.IsValid());
-      scoped_refptr<media::VideoFrame> frame = VideoFrame::WrapExternalData(
+      frame = VideoFrame::WrapExternalData(
           video_frame->format(), frame_coded_size_, video_frame->visible_rect(),
           video_frame->visible_rect().size(),
           input_buffer->second.GetMemoryAsSpan<uint8_t>().data(),

@@ -285,6 +285,8 @@ void URLLoaderFactoryGetter::HandleNetworkFactoryRequestOnUIThread(
     return;
   network::mojom::URLLoaderFactoryParamsPtr params =
       network::mojom::URLLoaderFactoryParams::New();
+  // The browser process is considered trusted.
+  params->is_trusted = true;
   params->process_id = network::mojom::kBrowserProcessId;
   params->is_corb_enabled = is_corb_enabled;
   params->disable_web_security =

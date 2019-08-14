@@ -288,16 +288,14 @@ NavigateToURLWithDispositionBlockUntilNavigationsComplete(
   for (auto* browser : *BrowserList::GetInstance())
     initial_browsers.insert(browser);
 
-  content::WindowedNotificationObserver tab_added_observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
+  AllBrowserTabAddedWaiter tab_added_waiter;
 
   browser->OpenURL(OpenURLParams(
       url, Referrer(), disposition, ui::PAGE_TRANSITION_TYPED, false));
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_BROWSER)
     browser = WaitForBrowserNotInSet(initial_browsers);
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_TAB)
-    tab_added_observer.Wait();
+    tab_added_waiter.Wait();
   if (!(browser_test_flags & BROWSER_TEST_WAIT_FOR_NAVIGATION)) {
     // Some other flag caused the wait prior to this.
     return nullptr;
@@ -654,6 +652,9 @@ void AllBrowserTabAddedWaiter::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
+  if (web_contents_)
+    return;
+
   if (change.type() != TabStripModelChange::kInserted)
     return;
 

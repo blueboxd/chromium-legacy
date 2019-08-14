@@ -283,12 +283,20 @@ ONC_EXPORT extern const char kAuthority[];
 ONC_EXPORT extern const char kClient[];
 ONC_EXPORT extern const char kGUID[];
 ONC_EXPORT extern const char kPKCS12[];
+ONC_EXPORT extern const char kScope[];
 ONC_EXPORT extern const char kServer[];
 ONC_EXPORT extern const char kTrustBits[];
 ONC_EXPORT extern const char kType[];
 ONC_EXPORT extern const char kWeb[];
 ONC_EXPORT extern const char kX509[];
 }  // namespace certificate
+
+namespace scope {
+ONC_EXPORT extern const char kDefault[];
+ONC_EXPORT extern const char kExtension[];
+ONC_EXPORT extern const char kId[];
+ONC_EXPORT extern const char kType[];
+}  // namespace scope
 
 namespace encrypted {
 ONC_EXPORT extern const char kAES256[];

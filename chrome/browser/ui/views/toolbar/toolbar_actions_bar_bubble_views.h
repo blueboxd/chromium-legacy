@@ -22,11 +22,9 @@ class Label;
 class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
                                      public views::ButtonListener {
  public:
-  // Creates the bubble anchored to |anchor_view| or, if that is null, to
-  // |anchor_point| in screen coordinates.
+  // Creates the bubble anchored to |anchor_view|, which may not be nullptr.
   ToolbarActionsBarBubbleViews(
       views::View* anchor_view,
-      const gfx::Point& anchor_point,
       bool anchored_to_action,
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate);
   ~ToolbarActionsBarBubbleViews() override;

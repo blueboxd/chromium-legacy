@@ -42,7 +42,8 @@ class WebStateList;
 @end
 
 // Class to navigate the bookmark hierarchy.
-@interface BookmarkHomeViewController : ChromeTableViewController
+@interface BookmarkHomeViewController
+    : ChromeTableViewController <UIAdaptivePresentationControllerDelegate>
 
 // Delegate for presenters. Note that this delegate is currently being set only
 // in case of handset, and not tablet. In the future it will be used by both

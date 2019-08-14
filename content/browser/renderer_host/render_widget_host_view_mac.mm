@@ -343,8 +343,7 @@ RenderWidgetHostViewMac::GetTextSelection() {
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewMac, RenderWidgetHostView implementation:
 
-void RenderWidgetHostViewMac::InitAsChild(
-    gfx::NativeView parent_view) {
+void RenderWidgetHostViewMac::InitAsChild(gfx::NativeView parent_view) {
   DCHECK_EQ(widget_type_, WidgetType::kFrame);
 }
 
@@ -375,15 +374,15 @@ void RenderWidgetHostViewMac::InitAsFullscreen(
 }
 
 RenderWidgetHostViewBase*
-    RenderWidgetHostViewMac::GetFocusedViewForTextSelection() {
+RenderWidgetHostViewMac::GetFocusedViewForTextSelection() {
   // We obtain the TextSelection from focused RWH which is obtained from the
   // frame tree. BrowserPlugin-based guests' RWH is not part of the frame tree
   // and the focused RWH will be that of the embedder which is incorrect. In
   // this case we should use TextSelection for |this| since RWHV for guest
   // forwards text selection information to its platform view.
-  return is_guest_view_hack_ ? this : GetFocusedWidget()
-                                          ? GetFocusedWidget()->GetView()
-                                          : nullptr;
+  return is_guest_view_hack_
+             ? this
+             : GetFocusedWidget() ? GetFocusedWidget()->GetView() : nullptr;
 }
 
 RenderWidgetHostDelegate*
@@ -441,8 +440,6 @@ void RenderWidgetHostViewMac::Show() {
   is_visible_ = true;
   ns_view_->SetVisible(is_visible_);
   browser_compositor_->SetViewVisible(is_visible_);
-  browser_compositor_->SetRenderWidgetHostIsHidden(false);
-
   WasUnOccluded();
 }
 
@@ -450,11 +447,13 @@ void RenderWidgetHostViewMac::Hide() {
   is_visible_ = false;
   ns_view_->SetVisible(is_visible_);
   browser_compositor_->SetViewVisible(is_visible_);
-  host()->WasHidden();
-  browser_compositor_->SetRenderWidgetHostIsHidden(true);
+  WasOccluded();
 }
 
 void RenderWidgetHostViewMac::WasUnOccluded() {
+  if (!host()->is_hidden())
+    return;
+
   browser_compositor_->SetRenderWidgetHostIsHidden(false);
 
   DelegatedFrameHost* delegated_frame_host =
@@ -483,6 +482,9 @@ void RenderWidgetHostViewMac::WasUnOccluded() {
 }
 
 void RenderWidgetHostViewMac::WasOccluded() {
+  if (host()->is_hidden())
+    return;
+
   host()->WasHidden();
   browser_compositor_->SetRenderWidgetHostIsHidden(true);
 }
@@ -636,8 +638,8 @@ void RenderWidgetHostViewMac::OnSelectionBoundsChanged(
   // the same as the caret position if the selection is collapsed. That's
   // what we want to try to keep centered on-screen if possible.
   gfx::Rect gfx_caret_rect(region->focus.edge_top_rounded().x(),
-                           region->focus.edge_top_rounded().y(),
-                           1, region->focus.GetHeight());
+                           region->focus.edge_top_rounded().y(), 1,
+                           region->focus.GetHeight());
   gfx_caret_rect += view_bounds_in_window_dip_.OffsetFromOrigin();
   gfx_caret_rect += window_frame_in_screen_dip_.OffsetFromOrigin();
 

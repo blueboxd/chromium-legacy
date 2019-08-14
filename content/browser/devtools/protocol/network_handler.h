@@ -202,10 +202,6 @@ class NetworkHandler : public DevToolsDomainHandler,
       const network::ResourceRequest& request,
       const std::string& cookie_line);
 
-  void WillSendNavigationRequest(net::HttpRequestHeaders* headers,
-                                 bool* skip_service_worker,
-                                 bool* disable_cache);
-
  private:
   void RequestIntercepted(std::unique_ptr<InterceptedRequestInfo> request_info);
   void SetNetworkConditions(network::mojom::NetworkConditionsPtr conditions);

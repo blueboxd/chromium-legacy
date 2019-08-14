@@ -79,7 +79,9 @@ class MenuManager {
      */
     this.menuPanel_;
 
-    this.init_();
+    if (window.switchAccess.improvedTextInputEnabled()) {
+      this.init_();
+    }
   }
 
   /**
@@ -123,9 +125,12 @@ class MenuManager {
       chrome.accessibilityPrivate.setSwitchAccessMenuState(
           true, navNode.location, actions.length);
       this.menuOriginNode_ = navNode;
-      this.menuOriginNode_.addEventListener(
-          chrome.automation.EventType.TEXT_SELECTION_CHANGED,
-          this.onSelectionChanged_.bind(this), false /** Don't use capture. */);
+      if (window.switchAccess.improvedTextInputEnabled()) {
+        this.menuOriginNode_.addEventListener(
+            chrome.automation.EventType.TEXT_SELECTION_CHANGED,
+            this.onSelectionChanged_.bind(this),
+            false /** Don't use capture. */);
+      }
     } else {
       console.log('Unable to show Switch Access menu.');
     }
@@ -191,9 +196,11 @@ class MenuManager {
     if (this.node_)
       this.node_ = null;
 
-    this.menuOriginNode_.removeEventListener(
-        chrome.automation.EventType.TEXT_SELECTION_CHANGED,
-        this.onSelectionChanged_.bind(this), false /** Don't use capture. */);
+    if (window.switchAccess.improvedTextInputEnabled()) {
+      this.menuOriginNode_.removeEventListener(
+          chrome.automation.EventType.TEXT_SELECTION_CHANGED,
+          this.onSelectionChanged_.bind(this), false /** Don't use capture. */);
+    }
     chrome.accessibilityPrivate.setSwitchAccessMenuState(
         false /** Hide the menu. */, SAConstants.EMPTY_LOCATION, 0);
   }

@@ -1527,6 +1527,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_POD_PASSWORD_TAP_PLACEHOLDER" desc="Text to display as placeholder in the password field when the user can click/tap their profile picture to unlock.">
         Select your photo
       </message>
+      <message name="IDS_ASH_LOGIN_POD_PASSWORD_SMART_CARD_PIN_PLACEHOLDER" desc="Text to display as placeholder in the password field on the Login or Lock screen when the smart card PIN is requested.">
+        Smart card PIN
+      </message>
       <message name="IDS_ASH_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't sign in because password is invalid">
         Sorry, your password couldn't be verified. Please try again.
       </message>
@@ -1691,6 +1694,12 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_LOGIN_PARENT_ACCESS_NEXT_NUMBER_PROMPT" desc="Accessible prompt read when next access code input field has been focused. Asks user to enter next piece of the access code.">
         Next number
+      </message>
+      <message name="IDS_ASH_LOGIN_SMART_CARD_SIGN_IN_MESSAGE" desc="Label for the button shown in the user pod that starts signing in via a smart card.">
+        Sign in with smart card
+      </message>
+      <message name="IDS_ASH_LOGIN_SMART_CARD_SIGN_IN_FAILURE_MESSAGE" desc="Message shown in the user pod when the sign in attempt via a smart card fails.">
+        Couldn’t recognize your smart card. Try again.
       </message>
 
       <!-- Multi-profiles intro dialog -->

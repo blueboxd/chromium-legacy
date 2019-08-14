@@ -362,12 +362,18 @@ const OncFieldSignature global_network_configuration_fields[] = {
 
 const OncFieldSignature certificate_fields[] = {
     {::onc::certificate::kGUID, &kStringSignature},
+    {::onc::certificate::kScope, &kScopeSignature},
     {::onc::certificate::kPKCS12, &kStringSignature},
     {::onc::kRemove, &kBoolSignature},
     {::onc::certificate::kTrustBits, &kStringListSignature},
     {::onc::certificate::kType, &kStringSignature},
     {::onc::certificate::kX509, &kStringSignature},
     {NULL}};
+
+const OncFieldSignature scope_fields[] = {
+    {::onc::scope::kType, &kStringSignature},
+    {::onc::scope::kId, &kStringSignature},
+    {nullptr}};
 
 const OncFieldSignature toplevel_configuration_fields[] = {
     {::onc::toplevel_config::kCertificates, &kCertificateListSignature},
@@ -430,6 +436,8 @@ const OncValueSignature kWiFiSignature = {base::Value::Type::DICTIONARY,
                                           wifi_fields, NULL};
 const OncValueSignature kCertificateSignature = {base::Value::Type::DICTIONARY,
                                                  certificate_fields, NULL};
+const OncValueSignature kScopeSignature = {base::Value::Type::DICTIONARY,
+                                           scope_fields, nullptr};
 const OncValueSignature kNetworkConfigurationSignature = {
     base::Value::Type::DICTIONARY, network_configuration_fields, NULL};
 const OncValueSignature kGlobalNetworkConfigurationSignature = {

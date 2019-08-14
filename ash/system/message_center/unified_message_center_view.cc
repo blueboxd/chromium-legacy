@@ -27,7 +27,6 @@
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -91,6 +90,10 @@ class StackingBarClearAllButton : public views::LabelButton {
     label()->SetFontList(views::Label::GetDefaultFontList().Derive(
         1, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
     TrayPopupUtils::ConfigureTrayPopupButton(this);
+
+    background_color_ = AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
+        AshColorProvider::BaseLayerType::kTransparentWithoutBlur,
+        kNotificationBackgroundColor);
   }
 
   ~StackingBarClearAllButton() override = default;
@@ -126,13 +129,13 @@ class StackingBarClearAllButton : public views::LabelButton {
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     return TrayPopupUtils::CreateInkDropRipple(
         TrayPopupInkDropStyle::FILL_BOUNDS, this,
-        GetInkDropCenterBasedOnLastEvent(), SK_ColorBLACK);
+        GetInkDropCenterBasedOnLastEvent(), background_color_);
   }
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
     return TrayPopupUtils::CreateInkDropHighlight(
-        TrayPopupInkDropStyle::FILL_BOUNDS, this, SK_ColorBLACK);
+        TrayPopupInkDropStyle::FILL_BOUNDS, this, background_color_);
   }
 
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
@@ -152,6 +155,8 @@ class StackingBarClearAllButton : public views::LabelButton {
   }
 
  private:
+  SkColor background_color_ = gfx::kPlaceholderColor;
+
   DISALLOW_COPY_AND_ASSIGN(StackingBarClearAllButton);
 };
 
@@ -227,7 +232,9 @@ void StackingNotificationCounterView::SetAnimationState(
 
 void StackingNotificationCounterView::OnPaint(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
-  flags.setColor(message_center::kNotificationBackgroundColor);
+  flags.setColor(AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
+      AshColorProvider::BaseLayerType::kTransparentWithoutBlur,
+      kNotificationBackgroundColor));
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
 

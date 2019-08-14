@@ -8,11 +8,13 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_mock_clock_override.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
@@ -142,6 +144,10 @@ class SearchRankingEventLoggerTest : public testing::Test {
         base::BindRepeating(&BuildHistoryService));
     profile_ = profile_builder.Build();
 
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {}, {app_list_features::kEnableQueryBasedMixedTypesRanker,
+             app_list_features::kEnableAppRanker});
+
     search_controller_ = std::make_unique<SearchControllerFake>(profile_.get());
 
     logger_ = std::make_unique<SearchRankingEventLogger>(
@@ -214,6 +220,7 @@ class SearchRankingEventLoggerTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedMockClockOverride time_;
   base::ScopedTempDir history_dir_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   ukm::TestAutoSetUkmRecorder recorder_;
 

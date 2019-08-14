@@ -113,10 +113,6 @@ class CORE_EXPORT PaintLayerCompositor {
   // frame that gets drawn.
   void SetNeedsCompositingUpdate(CompositingUpdateType);
 
-  // Whether layer's compositedLayerMapping needs a GraphicsLayer to clip
-  // z-order children of the given Layer.
-  bool ClipsCompositingDescendants(const PaintLayer*) const;
-
   // Whether the given layer needs an extra 'contents' layer.
   bool NeedsContentsCompositingLayer(const PaintLayer*) const;
 

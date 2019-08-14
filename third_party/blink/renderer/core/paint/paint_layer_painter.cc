@@ -40,9 +40,7 @@ void PaintLayerPainter::Paint(GraphicsContext& context,
 static ShouldRespectOverflowClipType ShouldRespectOverflowClip(
     PaintLayerFlags paint_flags,
     const LayoutObject& layout_object) {
-  return (paint_flags & kPaintLayerPaintingOverflowContents ||
-          (paint_flags & kPaintLayerPaintingChildClippingMaskPhase &&
-           layout_object.HasClipPath()))
+  return (paint_flags & kPaintLayerPaintingOverflowContents)
              ? kIgnoreOverflowClip
              : kRespectOverflowClip;
 }
@@ -425,30 +423,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       is_painting_overlay_scrollbars) {
     // Collect the fragments. This will compute the clip rectangles and paint
     // offsets for each layer fragment.
-    PhysicalOffset offset_to_clipper;
-    const PaintLayer* paint_layer_for_fragments = &paint_layer_;
-    if (paint_flags & kPaintLayerPaintingAncestorClippingMaskPhase) {
-      // Compute fragments and their clips with respect to the outermost
-      // clipping container. This handles nested border radius by including
-      // all of them in the mask.
-      //
-      // The cull rect is in this layer's space, so convert it to the clipper's
-      // layer's space. The root_layer is also changed to the clipper's layer to
-      // simplify coordinate system adjustments. The change to root_layer must
-      // persist to correctly record the clips.
-      paint_layer_for_fragments =
-          paint_layer_.EnclosingLayerWithCompositedLayerMapping(kExcludeSelf);
-      local_painting_info.root_layer = paint_layer_for_fragments;
-      paint_layer_.ConvertToLayerCoords(local_painting_info.root_layer,
-                                        offset_to_clipper);
-      PhysicalRect new_cull_rect(local_painting_info.cull_rect.Rect());
-      new_cull_rect.Move(offset_to_clipper);
-      local_painting_info.cull_rect = CullRect(EnclosingIntRect(new_cull_rect));
-      // Overflow clip of the compositing container is irrelevant.
-      respect_overflow_clip = kIgnoreOverflowClip;
-    }
-
-    paint_layer_for_fragments->CollectFragments(
+    paint_layer_.CollectFragments(
         layer_fragments, local_painting_info.root_layer,
         &local_painting_info.cull_rect, kIgnorePlatformOverlayScrollbarSize,
         respect_overflow_clip, &offset_from_root,
@@ -460,17 +435,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     if (layer_fragments.size() > 1)
       result = kMayBeClippedByCullRect;
 
-    if (paint_flags & kPaintLayerPaintingAncestorClippingMaskPhase) {
-      // Fragment offsets have been computed in the clipping container's
-      // layer's coordinate system, but for the rest of painting we need
-      // them in the layer coordinate. So move them and the
-      // foreground/background rects that are also in the clipper's space.
-      PhysicalOffset negative_offset = -offset_to_clipper;
-      for (auto& fragment : layer_fragments) {
-        fragment.background_rect.Move(negative_offset);
-        fragment.foreground_rect.Move(negative_offset);
-      }
-    } else if (should_paint_content) {
+    if (should_paint_content) {
       should_paint_content = AtLeastOneFragmentIntersectsDamageRect(
           layer_fragments, local_painting_info, paint_flags, offset_from_root);
       if (!should_paint_content)
@@ -621,21 +586,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   }
 
   clip_path_clipper = base::nullopt;
-
-  if (should_paint_content && !selection_only) {
-    // Paint the border radius mask for the fragments.
-    if (paint_flags & kPaintLayerPaintingAncestorClippingMaskPhase) {
-      // |layer_fragments| comes from the compositing container which doesn't
-      // have multiple fragments.
-      DCHECK_EQ(1u, layer_fragments.size());
-      PaintAncestorClippingMask(layer_fragments[0], context,
-                                local_painting_info, paint_flags);
-    }
-    if (paint_flags & kPaintLayerPaintingChildClippingMaskPhase) {
-      PaintChildClippingMaskForFragments(layer_fragments, context,
-                                         local_painting_info, paint_flags);
-    }
-  }
 
   paint_layer_.SetPreviousPaintResult(result);
   paint_layer_.SetPreviousCullRect(local_painting_info.cull_rect);
@@ -897,52 +847,6 @@ void PaintLayerPainter::PaintMaskForFragments(
                                            fragment.background_rect,
                                            local_painting_info, paint_flags);
                   });
-}
-
-void PaintLayerPainter::PaintAncestorClippingMask(
-    const PaintLayerFragment& fragment,
-    GraphicsContext& context,
-    const PaintLayerPaintingInfo& local_painting_info,
-    PaintLayerFlags paint_flags) {
-  const DisplayItemClient& client =
-      *paint_layer_.GetCompositedLayerMapping()->AncestorClippingMaskLayer();
-  const auto& layer_fragment = paint_layer_.GetLayoutObject().FirstFragment();
-  auto state = layer_fragment.PreEffectProperties();
-  // This is a hack to incorporate mask-based clip-path.
-  // See CompositingLayerPropertyUpdater.cpp about AncestorClippingMaskLayer.
-  state.SetEffect(layer_fragment.PreFilter());
-  ScopedPaintChunkProperties properties(context.GetPaintController(), state,
-                                        client, DisplayItem::kClippingMask);
-  ClipRect mask_rect = fragment.background_rect;
-  mask_rect.Move(layer_fragment.PaintOffset());
-  FillMaskingFragment(context, mask_rect, client);
-}
-
-void PaintLayerPainter::PaintChildClippingMaskForFragments(
-    const PaintLayerFragments& layer_fragments,
-    GraphicsContext& context,
-    const PaintLayerPaintingInfo& local_painting_info,
-    PaintLayerFlags paint_flags) {
-  const DisplayItemClient& client =
-      *paint_layer_.GetCompositedLayerMapping()->ChildClippingMaskLayer();
-  ForAllFragments(
-      context, layer_fragments, [&](const PaintLayerFragment& fragment) {
-        // Use the LocalBorderboxProperties as a starting point to ensure that
-        // we don't include the scroll offset when painting the mask layer.
-        auto state = fragment.fragment_data->LocalBorderBoxProperties();
-        // This is a hack to incorporate mask-based clip-path.
-        // See CompositingLayerPropertyUpdater.cpp about
-        // ChildClippingMaskLayer.
-        state.SetEffect(fragment.fragment_data->PreFilter());
-        // Update the clip to be the ContentsProperties clip, since it
-        // includes the InnerBorderRadiusClip.
-        state.SetClip(fragment.fragment_data->ContentsProperties().Clip());
-        ScopedPaintChunkProperties fragment_paint_chunk_properties(
-            context.GetPaintController(), state, client,
-            DisplayItem::kClippingMask);
-        ClipRect mask_rect = fragment.background_rect;
-        FillMaskingFragment(context, mask_rect, client);
-      });
 }
 
 void PaintLayerPainter::PaintOverlayScrollbars(

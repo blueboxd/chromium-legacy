@@ -9,6 +9,7 @@
 #include "ash/system/audio/unified_volume_slider_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ash/system/unified/unified_system_tray_view.h"
 #include "base/i18n/rtl.h"
 #include "base/stl_util.h"
 #include "components/vector_icons/vector_icons.h"
@@ -110,13 +111,15 @@ class MoreButton : public views::Button {
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     return TrayPopupUtils::CreateInkDropRipple(
         TrayPopupInkDropStyle::FILL_BOUNDS, this,
-        GetInkDropCenterBasedOnLastEvent(), kIconOnDarkBackgroundColor);
+        GetInkDropCenterBasedOnLastEvent(),
+        UnifiedSystemTrayView::GetBackgroundColor());
   }
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
     return TrayPopupUtils::CreateInkDropHighlight(
-        TrayPopupInkDropStyle::FILL_BOUNDS, this, kIconOnDarkBackgroundColor);
+        TrayPopupInkDropStyle::FILL_BOUNDS, this,
+        UnifiedSystemTrayView::GetBackgroundColor());
   }
 
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {

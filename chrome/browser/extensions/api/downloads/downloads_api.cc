@@ -45,7 +45,6 @@
 #include "chrome/browser/download/download_query.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_stats.h"
-#include "chrome/browser/download/drag_download_item.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/icon_loader.h"
 #include "chrome/browser/icon_manager.h"
@@ -1493,36 +1492,6 @@ void DownloadsOpenFunction::OpenPromptDone(int download_id, bool accept) {
   }
   download_item->OpenDownload();
   Respond(NoArguments());
-}
-
-DownloadsDragFunction::DownloadsDragFunction() {}
-
-DownloadsDragFunction::~DownloadsDragFunction() {}
-
-ExtensionFunction::ResponseAction DownloadsDragFunction::Run() {
-  std::unique_ptr<downloads::Drag::Params> params(
-      downloads::Drag::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-  DownloadItem* download_item = GetDownload(
-      browser_context(), include_incognito_information(), params->download_id);
-  content::WebContents* web_contents =
-      dispatcher()->GetVisibleWebContents();
-  std::string error;
-  if (InvalidId(download_item, &error) ||
-      Fault(!web_contents, download_extension_errors::kInvisibleContext,
-            &error)) {
-    return RespondNow(Error(error));
-  }
-  RecordApiFunctions(DOWNLOADS_FUNCTION_DRAG);
-  gfx::Image* icon = g_browser_process->icon_manager()->LookupIconFromFilepath(
-      download_item->GetTargetFilePath(), IconLoader::NORMAL);
-  gfx::NativeView view = web_contents->GetNativeView();
-  {
-    // Enable nested tasks during DnD, while |DragDownload()| blocks.
-    base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
-    DragDownloadItem(download_item, icon, view);
-  }
-  return RespondNow(NoArguments());
 }
 
 DownloadsSetShelfEnabledFunction::DownloadsSetShelfEnabledFunction() {}

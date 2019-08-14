@@ -228,31 +228,6 @@ ThrottlingURLLoader::~ThrottlingURLLoader() {
   }
 }
 
-void ThrottlingURLLoader::FollowRedirect(
-    const std::vector<std::string>& removed_headers,
-    const net::HttpRequestHeaders& modified_headers) {
-  MergeRemovedHeaders(&removed_headers_, removed_headers);
-  modified_headers_.MergeFrom(modified_headers);
-
-  if (!throttle_will_start_redirect_url_.is_empty()) {
-    throttle_will_start_redirect_url_ = GURL();
-    // This is a synthesized redirect, so no need to tell the URLLoader.
-    StartNow();
-    return;
-  }
-
-  if (url_loader_) {
-    base::Optional<GURL> new_url;
-    if (!throttle_will_redirect_redirect_url_.is_empty())
-      new_url = throttle_will_redirect_redirect_url_;
-    url_loader_->FollowRedirect(removed_headers_, modified_headers_, new_url);
-    throttle_will_redirect_redirect_url_ = GURL();
-  }
-
-  removed_headers_.clear();
-  modified_headers_.Clear();
-}
-
 void ThrottlingURLLoader::FollowRedirectForcingRestart() {
   url_loader_.reset();
   client_binding_.Close();
@@ -280,6 +255,31 @@ void ThrottlingURLLoader::RestartWithFactory(
   StartNow();
 }
 
+void ThrottlingURLLoader::FollowRedirect(
+    const std::vector<std::string>& removed_headers,
+    const net::HttpRequestHeaders& modified_headers) {
+  MergeRemovedHeaders(&removed_headers_, removed_headers);
+  modified_headers_.MergeFrom(modified_headers);
+
+  if (!throttle_will_start_redirect_url_.is_empty()) {
+    throttle_will_start_redirect_url_ = GURL();
+    // This is a synthesized redirect, so no need to tell the URLLoader.
+    StartNow();
+    return;
+  }
+
+  if (url_loader_) {
+    base::Optional<GURL> new_url;
+    if (!throttle_will_redirect_redirect_url_.is_empty())
+      new_url = throttle_will_redirect_redirect_url_;
+    url_loader_->FollowRedirect(removed_headers_, modified_headers_, new_url);
+    throttle_will_redirect_redirect_url_ = GURL();
+  }
+
+  removed_headers_.clear();
+  modified_headers_.Clear();
+}
+
 void ThrottlingURLLoader::SetPriority(net::RequestPriority priority,
                                       int32_t intra_priority_value) {
   if (!url_loader_) {
@@ -298,6 +298,14 @@ void ThrottlingURLLoader::SetPriority(net::RequestPriority priority,
   }
 
   url_loader_->SetPriority(priority, intra_priority_value);
+}
+
+void ThrottlingURLLoader::PauseReadingBodyFromNet() {
+  PauseReadingBodyFromNet(/*throttle=*/nullptr);
+}
+
+void ThrottlingURLLoader::ResumeReadingBodyFromNet() {
+  ResumeReadingBodyFromNet(/*throttle=*/nullptr);
 }
 
 network::mojom::URLLoaderClientEndpointsPtr ThrottlingURLLoader::Unbind() {

@@ -208,7 +208,7 @@ class MockMediaStatusObserver : public mojom::MediaStatusObserver {
   explicit MockMediaStatusObserver(mojom::MediaStatusObserverRequest request);
   ~MockMediaStatusObserver() override;
 
-  MOCK_METHOD1(OnMediaStatusUpdated, void(const MediaStatus& status));
+  MOCK_METHOD1(OnMediaStatusUpdated, void(mojom::MediaStatusPtr status));
 
  private:
   mojo::Binding<mojom::MediaStatusObserver> binding_;
@@ -255,7 +255,7 @@ class MockMediaRouteControllerObserver : public MediaRouteController::Observer {
       scoped_refptr<MediaRouteController> controller);
   ~MockMediaRouteControllerObserver() override;
 
-  MOCK_METHOD1(OnMediaStatusUpdated, void(const MediaStatus& status));
+  MOCK_METHOD1(OnMediaStatusUpdated, void(const mojom::MediaStatus& status));
   MOCK_METHOD0(OnControllerInvalidated, void());
 };
 

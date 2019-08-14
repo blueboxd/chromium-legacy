@@ -31,7 +31,7 @@
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "url/gurl.h"
 
 // Make sure symbols for GTMTimeUtils are decorated as C otherwise the linker

@@ -427,19 +427,6 @@ const DataResource kDataResources[] = {
      false},
     {"generatePasswordHover", IDR_PASSWORD_GENERATION_ICON_HOVER,
      ui::SCALE_FACTOR_100P, false},
-    // Not limited to Android since it's used for mobile layouts in inspector.
-    {"android.css", IDR_UASTYLE_THEME_CHROMIUM_ANDROID_CSS,
-     ui::SCALE_FACTOR_NONE, true},
-    // Not limited to Android since it's used for mobile layouts in inspector.
-    {"fullscreenAndroid.css", IDR_UASTYLE_FULLSCREEN_ANDROID_CSS,
-     ui::SCALE_FACTOR_NONE, true},
-    // Not limited to Linux since it's used for mobile layouts in inspector.
-    {"linux.css", IDR_UASTYLE_THEME_CHROMIUM_LINUX_CSS, ui::SCALE_FACTOR_NONE,
-     true},
-#if defined(ENABLE_TOUCHLESS_UASTYLE_THEME)
-    {"touchless.css", IDR_UASTYLE_THEME_TOUCHLESS_CSS, ui::SCALE_FACTOR_NONE,
-     true},
-#endif
     {"DocumentXMLTreeViewer.css", IDR_DOCUMENTXMLTREEVIEWER_CSS,
      ui::SCALE_FACTOR_NONE, true},
     {"DocumentXMLTreeViewer.js", IDR_DOCUMENTXMLTREEVIEWER_JS,

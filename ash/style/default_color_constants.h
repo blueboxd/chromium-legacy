@@ -25,6 +25,8 @@ constexpr SkColor kSeparatorOnLightBackgroundColor =
     SkColorSetA(SK_ColorBLACK, 0x23);  // 14%
 constexpr SkColor kSeparatorOnDarkBackgroundColor =
     SkColorSetA(SK_ColorWHITE, 0x23);  // 14%
+
+constexpr SkColor kNotificationBackgroundColor = SK_ColorWHITE;
 //----------------------------------End----------------------------------------
 
 #endif  // ASH_STYLE_DEFAULT_COLOR_CONSTANTS_H_

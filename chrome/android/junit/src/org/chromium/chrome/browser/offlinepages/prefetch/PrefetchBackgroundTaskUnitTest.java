@@ -90,6 +90,7 @@ public class PrefetchBackgroundTaskUnitTest {
     public static final int HIGH_BATTERY_LEVEL = 75;
     public static final int LOW_BATTERY_LEVEL = 25;
     public static final boolean METERED = true;
+    public static final boolean SCREEN_ON_AND_UNLOCKED = true;
 
     @Spy
     private PrefetchBackgroundTask mPrefetchBackgroundTask = new PrefetchBackgroundTask();
@@ -193,9 +194,9 @@ public class PrefetchBackgroundTaskUnitTest {
                 TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID).build();
 
         // Setup battery conditions with no power connected.
-        DeviceConditions deviceConditions =
-                new DeviceConditions(!POWER_CONNECTED, HIGH_BATTERY_LEVEL - 1,
-                        ConnectionType.CONNECTION_WIFI, !POWER_SAVE_MODE_ON, !METERED);
+        DeviceConditions deviceConditions = new DeviceConditions(!POWER_CONNECTED,
+                HIGH_BATTERY_LEVEL - 1, ConnectionType.CONNECTION_WIFI, !POWER_SAVE_MODE_ON,
+                !METERED, SCREEN_ON_AND_UNLOCKED);
         ShadowDeviceConditions.setCurrentConditions(deviceConditions);
 
         mPrefetchBackgroundTask.onStartTask(null, params, new TaskFinishedCallback() {
@@ -225,7 +226,8 @@ public class PrefetchBackgroundTaskUnitTest {
 
         // Setup battery conditions with no power connected.
         DeviceConditions deviceConditions = new DeviceConditions(!POWER_CONNECTED,
-                0 /* battery level */, ConnectionType.CONNECTION_2G, !POWER_SAVE_MODE_ON, METERED);
+                0 /* battery level */, ConnectionType.CONNECTION_2G, !POWER_SAVE_MODE_ON, METERED,
+                SCREEN_ON_AND_UNLOCKED);
         ShadowDeviceConditions.setCurrentConditions(deviceConditions);
 
         mPrefetchBackgroundTask.onStartTask(null, params, new TaskFinishedCallback() {
@@ -244,7 +246,8 @@ public class PrefetchBackgroundTaskUnitTest {
     public void testBatteryLow() throws Exception {
         // Setup low battery conditions with no power connected.
         DeviceConditions deviceConditionsLowBattery = new DeviceConditions(!POWER_CONNECTED,
-                LOW_BATTERY_LEVEL, ConnectionType.CONNECTION_WIFI, !POWER_SAVE_MODE_ON, METERED);
+                LOW_BATTERY_LEVEL, ConnectionType.CONNECTION_WIFI, !POWER_SAVE_MODE_ON, METERED,
+                SCREEN_ON_AND_UNLOCKED);
         ShadowDeviceConditions.setCurrentConditions(deviceConditionsLowBattery);
 
         // Check impact on starting before native loaded.
@@ -265,7 +268,8 @@ public class PrefetchBackgroundTaskUnitTest {
     public void testBatteryHigh() throws Exception {
         // Setup high battery conditions with no power connected.
         DeviceConditions deviceConditionsHighBattery = new DeviceConditions(!POWER_CONNECTED,
-                HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_WIFI, !POWER_SAVE_MODE_ON, !METERED);
+                HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_WIFI, !POWER_SAVE_MODE_ON, !METERED,
+                SCREEN_ON_AND_UNLOCKED);
         ShadowDeviceConditions.setCurrentConditions(deviceConditionsHighBattery);
 
         // Check impact on starting before native loaded.
@@ -286,7 +290,8 @@ public class PrefetchBackgroundTaskUnitTest {
     public void testNoNetwork() throws Exception {
         // Setup no network conditions.
         DeviceConditions deviceConditionsNoNetwork = new DeviceConditions(!POWER_CONNECTED,
-                HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_NONE, !POWER_SAVE_MODE_ON, !METERED);
+                HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_NONE, !POWER_SAVE_MODE_ON, !METERED,
+                SCREEN_ON_AND_UNLOCKED);
         ShadowDeviceConditions.setCurrentConditions(deviceConditionsNoNetwork);
 
         // Check impact on starting before native loaded.
@@ -310,9 +315,9 @@ public class PrefetchBackgroundTaskUnitTest {
     @Test
     public void testNoNetworkLimitless() throws Exception {
         // Setup no network conditions.
-        DeviceConditions deviceConditionsNoNetwork =
-                new DeviceConditions(!POWER_CONNECTED, 0 /* battery level */,
-                        ConnectionType.CONNECTION_NONE, !POWER_SAVE_MODE_ON, !METERED);
+        DeviceConditions deviceConditionsNoNetwork = new DeviceConditions(!POWER_CONNECTED,
+                0 /* battery level */, ConnectionType.CONNECTION_NONE, !POWER_SAVE_MODE_ON,
+                !METERED, SCREEN_ON_AND_UNLOCKED);
         ShadowDeviceConditions.setCurrentConditions(deviceConditionsNoNetwork);
 
         // Check impact on starting before native loaded.
@@ -336,7 +341,8 @@ public class PrefetchBackgroundTaskUnitTest {
     public void testUnmeteredWifiNetwork() throws Exception {
         // Setup unmetered wifi conditions.
         DeviceConditions deviceConditionsUnmeteredWifi = new DeviceConditions(!POWER_CONNECTED,
-                HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_WIFI, !POWER_SAVE_MODE_ON, !METERED);
+                HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_WIFI, !POWER_SAVE_MODE_ON, !METERED,
+                SCREEN_ON_AND_UNLOCKED);
         ShadowDeviceConditions.setCurrentConditions(deviceConditionsUnmeteredWifi);
 
         // Check impact on starting before native loaded.
@@ -357,7 +363,8 @@ public class PrefetchBackgroundTaskUnitTest {
     public void testMeteredWifiNetwork() throws Exception {
         // Setup metered wifi conditions.
         DeviceConditions deviceConditionsMeteredWifi = new DeviceConditions(!POWER_CONNECTED,
-                HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_WIFI, !POWER_SAVE_MODE_ON, METERED);
+                HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_WIFI, !POWER_SAVE_MODE_ON, METERED,
+                SCREEN_ON_AND_UNLOCKED);
         ShadowDeviceConditions.setCurrentConditions(deviceConditionsMeteredWifi);
 
         // Check impact on starting before native loaded.
@@ -378,7 +385,8 @@ public class PrefetchBackgroundTaskUnitTest {
     public void test2GNetwork() throws Exception {
         // Setup metered 2g connection conditions.
         DeviceConditions deviceConditions2G = new DeviceConditions(!POWER_CONNECTED,
-                HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_2G, !POWER_SAVE_MODE_ON, METERED);
+                HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_2G, !POWER_SAVE_MODE_ON, METERED,
+                SCREEN_ON_AND_UNLOCKED);
         // TODO(petewil): this test name and the condition below do not match.
         ShadowDeviceConditions.setCurrentConditions(deviceConditions2G);
 
@@ -399,9 +407,9 @@ public class PrefetchBackgroundTaskUnitTest {
     @Test
     public void testBluetoothNetwork() throws Exception {
         // Setup bluetooth connection conditions.
-        DeviceConditions deviceConditionsBluetooth =
-                new DeviceConditions(!POWER_CONNECTED, HIGH_BATTERY_LEVEL,
-                        ConnectionType.CONNECTION_BLUETOOTH, !POWER_SAVE_MODE_ON, !METERED);
+        DeviceConditions deviceConditionsBluetooth = new DeviceConditions(!POWER_CONNECTED,
+                HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_BLUETOOTH, !POWER_SAVE_MODE_ON,
+                !METERED, SCREEN_ON_AND_UNLOCKED);
         ShadowDeviceConditions.setCurrentConditions(deviceConditionsBluetooth);
 
         // Check impact on starting before native loaded.
@@ -425,9 +433,9 @@ public class PrefetchBackgroundTaskUnitTest {
                 TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID).build();
 
         // Conditions should be appropriate for running the task.
-        DeviceConditions deviceConditions =
-                new DeviceConditions(POWER_CONNECTED, HIGH_BATTERY_LEVEL - 1,
-                        ConnectionType.CONNECTION_WIFI, !POWER_SAVE_MODE_ON, !METERED);
+        DeviceConditions deviceConditions = new DeviceConditions(POWER_CONNECTED,
+                HIGH_BATTERY_LEVEL - 1, ConnectionType.CONNECTION_WIFI, !POWER_SAVE_MODE_ON,
+                !METERED, SCREEN_ON_AND_UNLOCKED);
         ShadowDeviceConditions.setCurrentConditions(deviceConditions);
 
         mPrefetchBackgroundTask.onStartTask(null, params, new TaskFinishedCallback() {
@@ -447,7 +455,8 @@ public class PrefetchBackgroundTaskUnitTest {
     public void testPowerSaverOn() throws Exception {
         // Setup power save mode, battery is high, wifi, not plugged in.
         DeviceConditions deviceConditionsPowerSave = new DeviceConditions(!POWER_CONNECTED,
-                HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_WIFI, POWER_SAVE_MODE_ON, !METERED);
+                HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_WIFI, POWER_SAVE_MODE_ON, !METERED,
+                SCREEN_ON_AND_UNLOCKED);
         ShadowDeviceConditions.setCurrentConditions(deviceConditionsPowerSave);
 
         // Check impact on starting before native loaded.

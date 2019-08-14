@@ -389,7 +389,7 @@ void LocalCardMigrationManager::ShowMainMigrationDialog() {
   // Pops up a larger, modal dialog showing the local cards to be uploaded.
   client_->ConfirmMigrateLocalCardToCloud(
       std::move(legal_message_),
-      client_->GetIdentityManager()->GetPrimaryAccountInfo().email,
+      personal_data_manager_->GetAccountInfoForPaymentsServer().email,
       migratable_credit_cards_,
       base::BindOnce(
           &LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog,

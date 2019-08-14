@@ -9,7 +9,8 @@ from __future__ import print_function
 
 import os
 import re
-import types
+
+import six
 
 from grit import util
 
@@ -35,7 +36,7 @@ def _FormatHeader(root, output_dir):
 def Format(root, lang='en', output_dir='.'):
   """Outputs a C switch statement representing the string table."""
   from grit.node import message
-  assert isinstance(lang, types.StringTypes)
+  assert isinstance(lang, six.string_types)
 
   yield _FormatHeader(root, output_dir)
 

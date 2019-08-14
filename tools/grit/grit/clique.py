@@ -9,7 +9,8 @@ collections of cliques (uber-cliques).
 from __future__ import print_function
 
 import re
-import types
+
+import six
 
 from grit import constants
 from grit import exception
@@ -271,7 +272,7 @@ class CustomType(object):
     '''
     contents = translation.GetContent()
     for ix in range(len(contents)):
-      if (isinstance(contents[ix], types.StringTypes)):
+      if (isinstance(contents[ix], six.string_types)):
         contents[ix] = self.ModifyTextPart(lang, contents[ix])
 
 

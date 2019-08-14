@@ -16,7 +16,7 @@
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/security/ssl_status.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/cert/cert_status_flags.h"
 #include "url/url_constants.h"

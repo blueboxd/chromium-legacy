@@ -5,6 +5,9 @@
 import("//build/util/process_version.gni")
 import("//chrome/chrome_cleaner/constants/args.gni")
 
+# Nothing outside //chrome/chrome_cleaner can depend on these targets.
+visibility = [ "//chrome/chrome_cleaner/*" ]
+
 process_version("version_header") {
   sources = [
     cleaner_branding_path,

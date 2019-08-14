@@ -11,6 +11,7 @@
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -494,7 +495,7 @@ class API_AVAILABLE(macos(10.12.2)) TouchBarNotificationBridge
                                             defaultProvider->short_name());
 
   NSImage* image = nil;
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (isGoogle) {
     image = NSImageFromImageSkiaWithColorSpace(
         gfx::CreateVectorIcon(kGoogleGLogoIcon, kTouchBarIconSize,

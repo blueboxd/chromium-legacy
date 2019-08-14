@@ -43,9 +43,7 @@ enum GraphicsLayerPaintingPhaseFlags {
   kGraphicsLayerPaintMask = (1 << 2),
   kGraphicsLayerPaintOverflowContents = (1 << 3),
   kGraphicsLayerPaintCompositedScroll = (1 << 4),
-  kGraphicsLayerPaintChildClippingMask = (1 << 5),
-  kGraphicsLayerPaintAncestorClippingMask = (1 << 6),
-  kGraphicsLayerPaintDecoration = (1 << 7),
+  kGraphicsLayerPaintDecoration = (1 << 5),
   kGraphicsLayerPaintAllWithOverflowClip =
       (kGraphicsLayerPaintBackground | kGraphicsLayerPaintForeground |
        kGraphicsLayerPaintMask | kGraphicsLayerPaintDecoration)

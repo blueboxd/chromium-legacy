@@ -24,7 +24,7 @@ std::string CanonicalizeUsername(base::StringPiece username);
 std::string HashUsername(base::StringPiece canonicalized_username);
 
 // Bucketizes |canonicalized_username| by hashing it and returning a prefix of
-// 24 bits.
+// |kUsernameHashPrefixLength| bits.
 std::string BucketizeUsername(base::StringPiece canonicalized_username);
 
 // Produces the username/password pair hash using scrypt algorithm.

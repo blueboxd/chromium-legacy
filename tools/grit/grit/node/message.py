@@ -8,7 +8,8 @@
 from __future__ import print_function
 
 import re
-import types
+
+import six
 
 from grit.node import base
 
@@ -166,7 +167,7 @@ class MessageNode(base.ContentNode):
     placeholders = []
 
     for item in self.mixed_content:
-      if isinstance(item, types.StringTypes):
+      if isinstance(item, six.string_types):
         # Not a <ph> element: fail if any <ph> formatters are detected.
         if _FORMATTERS.search(item):
           print(_BAD_PLACEHOLDER_MSG % (item, self.source))
@@ -303,7 +304,7 @@ class MessageNode(base.ContentNode):
 
     items = message.GetContent()
     for ix, item in enumerate(items):
-      if isinstance(item, types.StringTypes):
+      if isinstance(item, six.string_types):
         # Ensure whitespace at front and back of message is correctly handled.
         if ix == 0:
           item = "'''" + item

@@ -4,6 +4,9 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
+# Nothing outside //chrome/chrome_cleaner can depend on these targets.
+visibility = [ "//chrome/chrome_cleaner/*" ]
+
 template("chrome_cleaner_mojom") {
   mojom(target_name) {
     # chrome_cleaner does not interface with blink or any language except C++,

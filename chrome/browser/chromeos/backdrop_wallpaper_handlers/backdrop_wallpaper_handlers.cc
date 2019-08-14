@@ -161,7 +161,7 @@ void CollectionInfoFetcher::Start(OnCollectionsInfoFetched callback) {
             "collections is downloaded from the Backdrop wallpaper service."
           trigger:
             "When ChromeOS Wallpaper Picker extension is open, and "
-            "GOOGLE_CHROME_BUILD is defined."
+            "BUILDFLAG(GOOGLE_CHROME_BUILD) is defined."
           data:
             "The Backdrop protocol buffer messages. No user data is included."
           destination: GOOGLE_OWNED_SERVICE
@@ -231,8 +231,8 @@ void ImageInfoFetcher::Start(OnImagesInfoFetched callback) {
             "downloaded from the Backdrop wallpaper service."
           trigger:
             "When ChromeOS Wallpaper Picker extension is open, "
-            "GOOGLE_CHROME_BUILD is defined and user clicks on a particular "
-            "collection."
+            "BUILDFLAG(GOOGLE_CHROME_BUILD) is defined and user clicks on a "
+            "particular collection."
           data:
             "The Backdrop protocol buffer messages. No user data is included."
           destination: GOOGLE_OWNED_SERVICE

@@ -60,6 +60,7 @@ TEST_F(U2fSignOperationTest, SignSuccess) {
 
   auto device = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device"));
+  device->ExpectWinkedAtLeastOnce();
   InSequence s;
   device->ExpectRequestAndRespondWith(
       test_data::kU2fSignCommandApdu,
@@ -128,6 +129,7 @@ TEST_F(U2fSignOperationTest, DelayedSuccess) {
   // responding successfully.
   auto device = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
+  device->ExpectWinkedAtLeastOnce();
 
   InSequence s;
   device->ExpectRequestAndRespondWith(
@@ -160,6 +162,7 @@ TEST_F(U2fSignOperationTest, MultipleHandles) {
 
   auto device = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
+  device->ExpectWinkedAtLeastOnce();
   InSequence s;
   // Wrong key would respond with SW_WRONG_DATA.
   device->ExpectRequestAndRespondWith(
@@ -193,6 +196,7 @@ TEST_F(U2fSignOperationTest, MultipleHandlesLengthError) {
 
   auto device = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
+  device->ExpectWinkedAtLeastOnce();
   InSequence s;
 
   // Wrong key would respond with the key handle length.
@@ -224,6 +228,7 @@ TEST_F(U2fSignOperationTest, FakeEnroll) {
        fido_parsing_utils::Materialize(test_data::kKeyHandleBeta)});
 
   auto device = std::make_unique<MockFidoDevice>();
+  device->ExpectWinkedAtLeastOnce();
   InSequence s;
   device->ExpectRequestAndRespondWith(
       test_data::kU2fSignCommandApduWithKeyAlpha,
@@ -255,6 +260,7 @@ TEST_F(U2fSignOperationTest, DelayedFakeEnrollment) {
   // enrollment.
   auto device = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device0"));
+  device->ExpectWinkedAtLeastOnce();
   InSequence s;
   device->ExpectRequestAndRespondWith(test_data::kU2fSignCommandApdu,
                                       test_data::kU2fWrongDataApduResponse);
@@ -286,6 +292,7 @@ TEST_F(U2fSignOperationTest, FakeEnrollErroringOut) {
   // to prevent the test from crashing or timing out.
   auto device = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device0"));
+  device->ExpectWinkedAtLeastOnce();
   InSequence s;
   device->ExpectRequestAndRespondWith(test_data::kU2fSignCommandApdu,
                                       test_data::kU2fWrongDataApduResponse);
@@ -310,6 +317,7 @@ TEST_F(U2fSignOperationTest, SignWithCorruptedResponse) {
 
   auto device = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
+  device->ExpectWinkedAtLeastOnce();
   InSequence s;
   device->ExpectRequestAndRespondWith(test_data::kU2fSignCommandApdu,
                                       test_data::kTestCorruptedU2fSignResponse);
@@ -334,6 +342,7 @@ TEST_F(U2fSignOperationTest, AlternativeApplicationParameter) {
 
   auto device = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
+  device->ExpectWinkedAtLeastOnce();
   InSequence s;
   // The first request will use the alternative app_param.
   device->ExpectRequestAndRespondWith(
@@ -368,6 +377,7 @@ TEST_F(U2fSignOperationTest, AlternativeApplicationParameterRejection) {
 
   auto device = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
+  device->ExpectWinkedAtLeastOnce();
   InSequence s;
   // The first request will use the alternative app_param, which will be
   // rejected.

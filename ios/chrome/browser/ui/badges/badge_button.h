@@ -18,6 +18,9 @@
 // The badge type of the button.
 @property(nonatomic, assign, readonly) BadgeType badgeType;
 
+// Whether the button is in an accepted state.
+@property(nonatomic, assign, readonly) BOOL accepted;
+
 // Sets the badge color to the accepted color if |accepted| is YES or the
 // default color if |accepted| is NO. Will animate change if |animated| is YES.
 - (void)setAccepted:(BOOL)accepted animated:(BOOL)animated;

@@ -15,7 +15,8 @@ if __name__ == '__main__':
   sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
 import unittest
-import StringIO
+
+from six import StringIO
 
 from grit import grd_reader
 from grit import util
@@ -60,7 +61,7 @@ class ChromeMessagesJsonFormatUnittest(unittest.TestCase):
     </messages>
     """)
 
-    buf = StringIO.StringIO()
+    buf = StringIO()
     build.RcBuilder.ProcessNode(root, DummyOutput('chrome_messages_json', 'en'),
                                 buf)
     output = buf.getvalue()
@@ -114,7 +115,7 @@ class ChromeMessagesJsonFormatUnittest(unittest.TestCase):
       </messages>
     """)
 
-    buf = StringIO.StringIO()
+    buf = StringIO()
     build.RcBuilder.ProcessNode(root, DummyOutput('chrome_messages_json', 'fr'),
                                 buf)
     output = buf.getvalue()
@@ -142,9 +143,9 @@ class ChromeMessagesJsonFormatUnittest(unittest.TestCase):
     </messages>
   </release>
 </grit>"""
-    root = grd_reader.Parse(StringIO.StringIO(grd), dir=".")
+    root = grd_reader.Parse(StringIO(grd), dir=".")
 
-    buf = StringIO.StringIO()
+    buf = StringIO()
     build.RcBuilder.ProcessNode(root, DummyOutput('chrome_messages_json', 'fr'),
                                 buf)
     output = buf.getvalue()
@@ -160,7 +161,7 @@ class ChromeMessagesJsonFormatUnittest(unittest.TestCase):
     </messages>
     """)
 
-    buf = StringIO.StringIO()
+    buf = StringIO()
     build.RcBuilder.ProcessNode(root, DummyOutput('chrome_messages_json', 'en'),
                                 buf)
     output = buf.getvalue()

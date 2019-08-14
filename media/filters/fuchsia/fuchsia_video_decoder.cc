@@ -338,7 +338,8 @@ class FuchsiaVideoDecoder : public VideoDecoder {
 
  private:
   // Event handlers for |codec_|.
-  void OnStreamFailed(uint64_t stream_lifetime_ordinal);
+  void OnStreamFailed(uint64_t stream_lifetime_ordinal,
+                      fuchsia::media::StreamError error);
   void OnInputConstraints(
       fuchsia::media::StreamBufferConstraints input_constraints);
   void OnFreeInputPacket(fuchsia::media::PacketHeader free_input_packet);
@@ -506,7 +507,7 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
         OnError();
       });
 
-  codec_.events().OnStreamFailed =
+  codec_.events().OnStreamFailed2 =
       fit::bind_member(this, &FuchsiaVideoDecoder::OnStreamFailed);
   codec_.events().OnInputConstraints =
       fit::bind_member(this, &FuchsiaVideoDecoder::OnInputConstraints);
@@ -578,7 +579,8 @@ int FuchsiaVideoDecoder::GetMaxDecodeRequests() const {
   return input_buffers_.size() + 1;
 }
 
-void FuchsiaVideoDecoder::OnStreamFailed(uint64_t stream_lifetime_ordinal) {
+void FuchsiaVideoDecoder::OnStreamFailed(uint64_t stream_lifetime_ordinal,
+                                         fuchsia::media::StreamError error) {
   if (stream_lifetime_ordinal_ != stream_lifetime_ordinal) {
     return;
   }

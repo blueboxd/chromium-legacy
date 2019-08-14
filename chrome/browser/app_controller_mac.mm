@@ -27,6 +27,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "build/branding_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/apps/platform_apps/app_window_registry_util.h"
@@ -660,7 +661,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 // 1) Same spot as other Pref stuff
 // 2) Try and be friendly by keeping this after app launch
 - (void)setUpdateCheckInterval {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   CFStringRef app = CFSTR("com.google.Keystone.Agent");
   CFStringRef checkInterval = CFSTR("checkInterval");
   CFPropertyListRef plist = CFPreferencesCopyAppValue(checkInterval, app);
@@ -1270,7 +1271,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   menuState_->UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS, true);
   menuState_->UpdateCommandEnabled(IDC_HELP_PAGE_VIA_MENU, true);
   menuState_->UpdateCommandEnabled(IDC_IMPORT_SETTINGS, true);
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   menuState_->UpdateCommandEnabled(IDC_FEEDBACK, true);
 #endif
   menuState_->UpdateCommandEnabled(IDC_TASK_MANAGER, true);

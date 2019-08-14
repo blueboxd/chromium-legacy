@@ -865,8 +865,7 @@ int SSLClientSocketImpl::Init() {
   mode.ConfigureFlag(SSL_MODE_RELEASE_BUFFERS, true);
   mode.ConfigureFlag(SSL_MODE_CBC_RECORD_SPLITTING, true);
 
-  mode.ConfigureFlag(SSL_MODE_ENABLE_FALSE_START,
-                     ssl_config_.false_start_enabled);
+  mode.ConfigureFlag(SSL_MODE_ENABLE_FALSE_START, true);
 
   SSL_set_mode(ssl_.get(), mode.set_mask);
   SSL_clear_mode(ssl_.get(), mode.clear_mask);

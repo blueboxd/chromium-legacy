@@ -30,6 +30,11 @@ const AXTreeData& AXPlatformNodeDelegateBase::GetTreeData() const {
   return *empty_data;
 }
 
+const AXTree::Selection AXPlatformNodeDelegateBase::GetUnignoredSelection()
+    const {
+  return AXTree::Selection{-1, -1, -1, ax::mojom::TextAffinity::kDownstream};
+}
+
 AXNodePosition::AXPositionInstance
 AXPlatformNodeDelegateBase::CreateTextPositionAt(
     int offset,

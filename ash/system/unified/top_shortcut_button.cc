@@ -6,6 +6,7 @@
 
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ash/system/unified/unified_system_tray_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -47,7 +48,6 @@ TopShortcutButton::TopShortcutButton(views::ButtonListener* listener,
     SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
 
   TrayPopupUtils::ConfigureTrayPopupButton(this);
-  set_ink_drop_base_color(kIconOnDarkBackgroundColor);
 
   auto path = std::make_unique<SkPath>();
   path->addOval(gfx::RectToSkRect(gfx::Rect(CalculatePreferredSize())));
@@ -72,6 +72,21 @@ void TopShortcutButton::PaintButtonContents(gfx::Canvas* canvas) {
 
 std::unique_ptr<views::InkDrop> TopShortcutButton::CreateInkDrop() {
   return TrayPopupUtils::CreateInkDrop(this);
+}
+
+std::unique_ptr<views::InkDropRipple> TopShortcutButton::CreateInkDropRipple()
+    const {
+  return TrayPopupUtils::CreateInkDropRipple(
+      TrayPopupInkDropStyle::FILL_BOUNDS, this,
+      GetInkDropCenterBasedOnLastEvent(),
+      UnifiedSystemTrayView::GetBackgroundColor());
+}
+
+std::unique_ptr<views::InkDropHighlight>
+TopShortcutButton::CreateInkDropHighlight() const {
+  return TrayPopupUtils::CreateInkDropHighlight(
+      TrayPopupInkDropStyle::FILL_BOUNDS, this,
+      UnifiedSystemTrayView::GetBackgroundColor());
 }
 
 const char* TopShortcutButton::GetClassName() const {

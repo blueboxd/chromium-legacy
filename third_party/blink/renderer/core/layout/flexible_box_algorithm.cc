@@ -39,7 +39,7 @@ namespace blink {
 FlexItem::FlexItem(LayoutBox* box,
                    LayoutUnit flex_base_content_size,
                    MinMaxSize min_max_sizes,
-                   LayoutUnit main_axis_border_and_padding,
+                   LayoutUnit main_axis_border_padding,
                    LayoutUnit main_axis_margin)
     : algorithm(nullptr),
       line_number(0),
@@ -48,7 +48,7 @@ FlexItem::FlexItem(LayoutBox* box,
       min_max_sizes(min_max_sizes),
       hypothetical_main_content_size(
           min_max_sizes.ClampSizeToMinAndMax(flex_base_content_size)),
-      main_axis_border_and_padding(main_axis_border_and_padding),
+      main_axis_border_padding(main_axis_border_padding),
       main_axis_margin(main_axis_margin),
       frozen(false),
       ng_input_node(/* LayoutBox* */ nullptr) {

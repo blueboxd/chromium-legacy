@@ -52,7 +52,8 @@ extern.tclib.api.handlers.html.TCHTMLParser.
 from __future__ import print_function
 
 import re
-import types
+
+import six
 
 from grit import clique
 from grit import exception
@@ -573,7 +574,7 @@ def HtmlToMessage(html, include_block_tags=False, description=''):
       current += m.end()
       continue
 
-    if len(parts) and isinstance(parts[-1], types.StringTypes):
+    if len(parts) and isinstance(parts[-1], six.string_types):
       parts[-1] += html[current]
     else:
       parts.append(html[current])
@@ -582,7 +583,7 @@ def HtmlToMessage(html, include_block_tags=False, description=''):
   msg_text = ''
   placeholders = []
   for part in parts:
-    if isinstance(part, types.TupleType):
+    if isinstance(part, tuple):
       final_name = part[0]()
       original = part[1]
       msg_text += final_name
@@ -594,7 +595,7 @@ def HtmlToMessage(html, include_block_tags=False, description=''):
                       description=description)
   content = msg.GetContent()
   for ix in range(len(content)):
-    if isinstance(content[ix], types.StringTypes):
+    if isinstance(content[ix], six.string_types):
       content[ix] = util.UnescapeHtml(content[ix], replace_nbsp=False)
 
   return msg
@@ -658,7 +659,7 @@ class TrHtml(interface.GathererBase):
 
     out = []
     for item in self.skeleton_:
-      if isinstance(item, types.StringTypes):
+      if isinstance(item, six.string_types):
         out.append(item)
       else:
         msg = item.MessageForLanguage(lang,
@@ -718,8 +719,8 @@ class TrHtml(interface.GathererBase):
       if isinstance(self.skeleton_[ix], clique.MessageClique):
         msg = self.skeleton_[ix].GetMessage()
         for item in msg.GetContent():
-          if (isinstance(item, types.StringTypes) and _NON_WHITESPACE.search(item)
-              and item != '&nbsp;'):
+          if (isinstance(item, six.string_types)
+              and _NON_WHITESPACE.search(item) and item != '&nbsp;'):
             got_text = True
             break
         if not got_text:

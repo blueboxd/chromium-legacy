@@ -1572,7 +1572,7 @@
       "--also-run-disabled-tests",
       "-v",
       "--use-live-sites",
-      "--output-format=chartjson",
+      "--output-format=histograms",
       "--output-dir=${ISOLATED_OUTDIR}",
     ],
     "label": "//chrome/test/media_router:media_router_perf_tests",

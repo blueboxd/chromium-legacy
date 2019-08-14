@@ -49,14 +49,14 @@ class AXPositionTest : public testing::Test {
  protected:
   void SetUp() override;
   void TearDown() override;
-  AXTree* CreateMultipageDocument(ui::AXNodeData& root_data,
-                                  ui::AXNodeData& page_1_data,
-                                  ui::AXNodeData& page_1_text_data,
-                                  ui::AXNodeData& page_2_data,
-                                  ui::AXNodeData& page_2_text_data,
-                                  ui::AXNodeData& page_3_data,
-                                  ui::AXNodeData& page_3_text_data) {
-    AXNodePosition::SetTreeForTesting(nullptr);
+  AXTree* CreateMultipageDocument(AXNodeData& root_data,
+                                  AXNodeData& page_1_data,
+                                  AXNodeData& page_1_text_data,
+                                  AXNodeData& page_2_data,
+                                  AXNodeData& page_2_text_data,
+                                  AXNodeData& page_3_data,
+                                  AXNodeData& page_3_text_data) {
+    AXNodePosition::SetTree(nullptr);
 
     root_data.id = 1;
     root_data.role = ax::mojom::Role::kDocument;
@@ -98,8 +98,8 @@ class AXPositionTest : public testing::Test {
 
     root_data.child_ids = {2, 4, 6};
 
-    ui::AXTreeUpdate update;
-    ui::AXTreeData tree_data;
+    AXTreeUpdate update;
+    AXTreeData tree_data;
     AXTreeID new_id = AXTreeID::CreateNewAXTreeID();
     tree_data.tree_id = new_id;
     update.tree_data = tree_data;
@@ -127,20 +127,19 @@ class AXPositionTest : public testing::Test {
 
   // Creates a new AXTree from a vector of nodes.
   // Assumes the first node in the vector is the root.
-  std::unique_ptr<AXTree> CreateAXTree(
-      const std::vector<ui::AXNodeData>& nodes) {
-    ui::AXTreeUpdate update;
-    ui::AXTreeData tree_data;
-    tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  std::unique_ptr<AXTree> CreateAXTree(const std::vector<AXNodeData>& nodes) {
+    AXTreeUpdate update;
+    AXTreeData tree_data;
+    tree_data.tree_id = AXTreeID::CreateNewAXTreeID();
     update.tree_data = tree_data;
     update.has_tree_data = true;
     update.root_id = nodes[0].id;
     update.nodes = nodes;
 
-    tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+    tree_data.tree_id = AXTreeID::CreateNewAXTreeID();
     update.tree_data = tree_data;
     std::unique_ptr<AXTree> tree = std::make_unique<AXTree>(update);
-    AXNodePosition::SetTreeForTesting(tree.get());
+    AXNodePosition::SetTree(tree.get());
     return tree;
   }
 
@@ -230,8 +229,6 @@ void AXPositionTest::SetUp() {
   button_.SetHasPopup(ax::mojom::HasPopup::kMenu);
   button_.SetName("Button");
   button_.relative_bounds.bounds = gfx::RectF(20, 20, 200, 30);
-  button_.AddIntAttribute(ax::mojom::IntAttribute::kNextOnLineId,
-                          check_box_.id);
   root_.child_ids.push_back(button_.id);
 
   check_box_.role = ax::mojom::Role::kCheckBox;
@@ -240,8 +237,6 @@ void AXPositionTest::SetUp() {
   check_box_.SetCheckedState(ax::mojom::CheckedState::kTrue);
   check_box_.SetName("Check box");
   check_box_.relative_bounds.bounds = gfx::RectF(20, 50, 200, 30);
-  check_box_.AddIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
-                             button_.id);
   root_.child_ids.push_back(check_box_.id);
 
   text_field_.role = ax::mojom::Role::kTextField;
@@ -320,11 +315,11 @@ void AXPositionTest::SetUp() {
   AXTreeUpdate update;
   serializer.SerializeChanges(src_tree.root(), &update);
   ASSERT_TRUE(tree_.Unserialize(update));
-  AXNodePosition::SetTreeForTesting(&tree_);
+  AXNodePosition::SetTree(&tree_);
 }
 
 void AXPositionTest::TearDown() {
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
 }
 
 }  // namespace
@@ -523,18 +518,18 @@ TEST_F(AXPositionTest, GetMaxTextOffsetFromLineBreak) {
 }
 
 TEST_F(AXPositionTest, GetMaxTextOffsetUpdate) {
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
 
-  ui::AXNodeData root_data;
+  AXNodeData root_data;
   root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
 
-  ui::AXNodeData text_data;
+  AXNodeData text_data;
   text_data.id = 2;
   text_data.role = ax::mojom::Role::kStaticText;
   text_data.SetName("some text");
 
-  ui::AXNodeData more_text_data;
+  AXNodeData more_text_data;
   more_text_data.id = 3;
   more_text_data.role = ax::mojom::Role::kStaticText;
   more_text_data.SetName("more text");
@@ -935,43 +930,43 @@ TEST_F(AXPositionTest, ParagraphEdgesWithPreservedNewLine) {
   // ++++++5 kStaticText
   // ++++++++6 kInlineTextBox "\n" isLineBreakingObject
   // ++++++++7 kInlineTextBox "more text"
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
 
-  ui::AXNodeData root_data;
+  AXNodeData root_data;
   root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
   root_data.AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
                              true);
 
-  ui::AXNodeData static_text_data_1;
+  AXNodeData static_text_data_1;
   static_text_data_1.id = 2;
   static_text_data_1.role = ax::mojom::Role::kStaticText;
   static_text_data_1.SetName("some text");
 
-  ui::AXNodeData some_text_data;
+  AXNodeData some_text_data;
   some_text_data.id = 3;
   some_text_data.role = ax::mojom::Role::kInlineTextBox;
   some_text_data.SetName("some text");
 
-  ui::AXNodeData container_data;
+  AXNodeData container_data;
   container_data.id = 4;
   container_data.role = ax::mojom::Role::kGenericContainer;
   container_data.AddBoolAttribute(
       ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
 
-  ui::AXNodeData static_text_data_2;
+  AXNodeData static_text_data_2;
   static_text_data_2.id = 5;
   static_text_data_2.role = ax::mojom::Role::kStaticText;
   static_text_data_2.SetName("\nmore text");
 
-  ui::AXNodeData preserved_newline_data;
+  AXNodeData preserved_newline_data;
   preserved_newline_data.id = 6;
   preserved_newline_data.role = ax::mojom::Role::kInlineTextBox;
   preserved_newline_data.SetName("\n");
   preserved_newline_data.AddBoolAttribute(
       ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
 
-  ui::AXNodeData more_text_data;
+  AXNodeData more_text_data;
   more_text_data.id = 7;
   more_text_data.role = ax::mojom::Role::kInlineTextBox;
   more_text_data.SetName("more text");
@@ -981,19 +976,9 @@ TEST_F(AXPositionTest, ParagraphEdgesWithPreservedNewLine) {
   static_text_data_2.child_ids = {6, 7};
   root_data.child_ids = {2, 4};
 
-  ui::AXTreeUpdate update;
-  ui::AXTreeData tree_data;
-  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
-  update.tree_data = tree_data;
-  update.has_tree_data = true;
-  update.root_id = root_data.id;
-  update.nodes = {root_data,      static_text_data_1, some_text_data,
-                  container_data, static_text_data_2, preserved_newline_data,
-                  more_text_data};
-
-  std::unique_ptr<AXTree> new_tree;
-  new_tree.reset(new AXTree(update));
-  AXNodePosition::SetTreeForTesting(new_tree.get());
+  std::unique_ptr<AXTree> new_tree = CreateAXTree(
+      {root_data, static_text_data_1, some_text_data, container_data,
+       static_text_data_2, preserved_newline_data, more_text_data});
 
   TestPositionType text_position1 = AXNodePosition::CreateTextPosition(
       new_tree->data().tree_id, root_data.id, 8 /* text_offset */,
@@ -1097,70 +1082,70 @@ TEST_F(AXPositionTest,
   // ++++10 kGenericContainer isLineBreakingObject
   // ++++++11 kStaticText
   // ++++++++12 kInlineTextBox "\n" isLineBreakingObject
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
 
-  ui::AXNodeData root_data;
+  AXNodeData root_data;
   root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
   root_data.AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
                              true);
 
-  ui::AXNodeData container_data_a;
+  AXNodeData container_data_a;
   container_data_a.id = 2;
   container_data_a.role = ax::mojom::Role::kGenericContainer;
   container_data_a.AddBoolAttribute(
       ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
 
-  ui::AXNodeData static_text_data_a;
+  AXNodeData static_text_data_a;
   static_text_data_a.id = 3;
   static_text_data_a.role = ax::mojom::Role::kStaticText;
   static_text_data_a.SetName("\n");
 
-  ui::AXNodeData inline_text_data_a;
+  AXNodeData inline_text_data_a;
   inline_text_data_a.id = 4;
   inline_text_data_a.role = ax::mojom::Role::kInlineTextBox;
   inline_text_data_a.SetName("\n");
   inline_text_data_a.AddBoolAttribute(
       ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
 
-  ui::AXNodeData container_data_b;
+  AXNodeData container_data_b;
   container_data_b.id = 5;
   container_data_b.role = ax::mojom::Role::kGenericContainer;
   container_data_b.AddBoolAttribute(
       ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
 
-  ui::AXNodeData static_text_data_b;
+  AXNodeData static_text_data_b;
   static_text_data_b.id = 6;
   static_text_data_b.role = ax::mojom::Role::kStaticText;
   static_text_data_b.SetName("some text");
 
-  ui::AXNodeData inline_text_data_b_1;
+  AXNodeData inline_text_data_b_1;
   inline_text_data_b_1.id = 7;
   inline_text_data_b_1.role = ax::mojom::Role::kInlineTextBox;
   inline_text_data_b_1.SetName("some");
 
-  ui::AXNodeData inline_text_data_b_2;
+  AXNodeData inline_text_data_b_2;
   inline_text_data_b_2.id = 8;
   inline_text_data_b_2.role = ax::mojom::Role::kInlineTextBox;
   inline_text_data_b_2.SetName(" ");
 
-  ui::AXNodeData inline_text_data_b_3;
+  AXNodeData inline_text_data_b_3;
   inline_text_data_b_3.id = 9;
   inline_text_data_b_3.role = ax::mojom::Role::kInlineTextBox;
   inline_text_data_b_3.SetName("text");
 
-  ui::AXNodeData container_data_c;
+  AXNodeData container_data_c;
   container_data_c.id = 10;
   container_data_c.role = ax::mojom::Role::kGenericContainer;
   container_data_c.AddBoolAttribute(
       ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
 
-  ui::AXNodeData static_text_data_c;
+  AXNodeData static_text_data_c;
   static_text_data_c.id = 11;
   static_text_data_c.role = ax::mojom::Role::kStaticText;
   static_text_data_c.SetName("\n");
 
-  ui::AXNodeData inline_text_data_c;
+  AXNodeData inline_text_data_c;
   inline_text_data_c.id = 12;
   inline_text_data_c.role = ax::mojom::Role::kInlineTextBox;
   inline_text_data_c.SetName("\n");
@@ -1178,28 +1163,11 @@ TEST_F(AXPositionTest,
   container_data_c.child_ids = {static_text_data_c.id};
   static_text_data_c.child_ids = {inline_text_data_c.id};
 
-  ui::AXTreeUpdate update;
-  ui::AXTreeData tree_data;
-  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
-  update.tree_data = tree_data;
-  update.has_tree_data = true;
-  update.root_id = root_data.id;
-  update.nodes = {root_data,
-                  container_data_a,
-                  container_data_b,
-                  container_data_c,
-                  static_text_data_a,
-                  static_text_data_b,
-                  static_text_data_c,
-                  inline_text_data_a,
-                  inline_text_data_b_1,
-                  inline_text_data_b_2,
-                  inline_text_data_b_3,
-                  inline_text_data_c};
-
-  std::unique_ptr<AXTree> new_tree;
-  new_tree.reset(new AXTree(update));
-  AXNodePosition::SetTreeForTesting(new_tree.get());
+  std::unique_ptr<AXTree> new_tree = CreateAXTree(
+      {root_data, container_data_a, container_data_b, container_data_c,
+       static_text_data_a, static_text_data_b, static_text_data_c,
+       inline_text_data_a, inline_text_data_b_1, inline_text_data_b_2,
+       inline_text_data_b_3, inline_text_data_c});
 
   TestPositionType text_position1 = AXNodePosition::CreateTextPosition(
       new_tree->data().tree_id, inline_text_data_a.id, 0 /* text_offset */,
@@ -1971,7 +1939,7 @@ TEST_F(AXPositionTest, CreatePositionAtFormatBoundaryWithTextPosition) {
   // This test updates the tree structure to test a specific edge case -
   // CreatePositionAtFormatBoundary when text lies at the beginning and end
   // of the AX tree.
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
 
   AXNodeData root_data;
   root_data.id = 1;
@@ -1989,17 +1957,9 @@ TEST_F(AXPositionTest, CreatePositionAtFormatBoundaryWithTextPosition) {
 
   root_data.child_ids = {text_data.id, more_text_data.id};
 
-  AXTreeUpdate update;
-  AXTreeData tree_data;
-  tree_data.tree_id = AXTreeID::CreateNewAXTreeID();
-  update.tree_data = tree_data;
-  update.has_tree_data = true;
-  update.root_id = root_data.id;
-  update.nodes = {root_data, text_data, more_text_data};
-
-  std::unique_ptr<AXTree> new_tree;
-  new_tree.reset(new AXTree(update));
-  AXNodePosition::SetTreeForTesting(new_tree.get());
+  std::unique_ptr<AXTree> new_tree =
+      CreateAXTree({root_data, text_data, more_text_data});
+  AXNodePosition::SetTree(new_tree.get());
 
   // Test CreatePreviousFormatStartPosition at the start of the document.
   TestPositionType text_position = AXNodePosition::CreateTextPosition(
@@ -2025,19 +1985,18 @@ TEST_F(AXPositionTest, CreatePositionAtFormatBoundaryWithTextPosition) {
   EXPECT_TRUE(test_position->IsTextPosition());
   EXPECT_EQ(more_text_data.id, test_position->anchor_id());
   EXPECT_EQ(9, test_position->text_offset());
-
-  AXNodePosition::SetTreeForTesting(&tree_);
+  AXNodePosition::SetTree(&tree_);
 }
 
 TEST_F(AXPositionTest, CreatePositionAtPageBoundaryWithTextPosition) {
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
 
-  ui::AXNodeData root_data, page_1_data, page_1_text_data, page_2_data,
+  AXNodeData root_data, page_1_data, page_1_text_data, page_2_data,
       page_2_text_data, page_3_data, page_3_text_data;
-  std::unique_ptr<ui::AXTree> new_tree(CreateMultipageDocument(
+  std::unique_ptr<AXTree> new_tree(CreateMultipageDocument(
       root_data, page_1_data, page_1_text_data, page_2_data, page_2_text_data,
       page_3_data, page_3_text_data));
-  AXNodePosition::SetTreeForTesting(new_tree.get());
+  AXNodePosition::SetTree(new_tree.get());
 
   // Test CreateNextPageStartPosition at the start of the document.
   TestPositionType text_position = AXNodePosition::CreateTextPosition(
@@ -2150,18 +2109,18 @@ TEST_F(AXPositionTest, CreatePositionAtPageBoundaryWithTextPosition) {
       AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, null_position);
   EXPECT_TRUE(null_position->IsNullPosition());
-
-  AXNodePosition::SetTreeForTesting(&tree_);
+  AXNodePosition::SetTree(&tree_);
 }
 
 TEST_F(AXPositionTest, CreatePositionAtPageBoundaryWithTreePosition) {
-  AXNodePosition::SetTreeForTesting(nullptr);
-  ui::AXNodeData root_data, page_1_data, page_1_text_data, page_2_data,
+  AXNodePosition::SetTree(nullptr);
+
+  AXNodeData root_data, page_1_data, page_1_text_data, page_2_data,
       page_2_text_data, page_3_data, page_3_text_data;
-  std::unique_ptr<ui::AXTree> new_tree(CreateMultipageDocument(
+  std::unique_ptr<AXTree> new_tree(CreateMultipageDocument(
       root_data, page_1_data, page_1_text_data, page_2_data, page_2_text_data,
       page_3_data, page_3_text_data));
-  AXNodePosition::SetTreeForTesting(new_tree.get());
+  AXNodePosition::SetTree(new_tree.get());
 
   // Test CreateNextPageStartPosition at the start of the document.
   TestPositionType tree_position = AXNodePosition::CreateTreePosition(
@@ -2273,8 +2232,7 @@ TEST_F(AXPositionTest, CreatePositionAtPageBoundaryWithTreePosition) {
       AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, null_position);
   EXPECT_TRUE(null_position->IsNullPosition());
-
-  AXNodePosition::SetTreeForTesting(&tree_);
+  AXNodePosition::SetTree(&tree_);
 }
 
 TEST_F(AXPositionTest, CreatePagePositionWithNullPosition) {
@@ -3711,7 +3669,7 @@ TEST_F(AXPositionTest, OperatorsLessThanAndGreaterThan) {
 TEST_F(AXPositionTest, CreateNextAnchorPosition) {
   // This test updates the tree structure to test a specific edge case -
   // CreateNextAnchorPosition on an empty text field.
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
 
   AXNodeData root_data;
   root_data.id = 1;
@@ -3739,18 +3697,9 @@ TEST_F(AXPositionTest, CreateNextAnchorPosition) {
   root_data.child_ids = {text_data.id, text_field_data.id, more_text_data.id};
   text_field_data.child_ids = {empty_text_data.id};
 
-  AXTreeUpdate update;
-  AXTreeData tree_data;
-  tree_data.tree_id = AXTreeID::CreateNewAXTreeID();
-  update.tree_data = tree_data;
-  update.has_tree_data = true;
-  update.root_id = root_data.id;
-  update.nodes = {root_data, text_data, text_field_data, empty_text_data,
-                  more_text_data};
-
-  std::unique_ptr<AXTree> new_tree;
-  new_tree.reset(new AXTree(update));
-  AXNodePosition::SetTreeForTesting(new_tree.get());
+  std::unique_ptr<AXTree> new_tree = CreateAXTree(
+      {root_data, text_data, text_field_data, empty_text_data, more_text_data});
+  AXNodePosition::SetTree(new_tree.get());
 
   // Test that CreateNextAnchorPosition will successfully navigate past the
   // empty text field.
@@ -3761,8 +3710,140 @@ TEST_F(AXPositionTest, CreateNextAnchorPosition) {
   ASSERT_FALSE(text_position1->CreateNextAnchorPosition()
                    ->CreateNextAnchorPosition()
                    ->IsNullPosition());
+}
 
-  AXNodePosition::SetTreeForTesting(&tree_);
+TEST_F(AXPositionTest, CreateLinePositionsMultipleAnchorsInSingleLine) {
+  // This test updates the tree structure to test a specific edge case -
+  // Create next and previous line start/end positions on a single line composed
+  // by multiple anchors; only two line boundaries should be resolved: either
+  // the start of the "before" text or at the end of "after".
+  // ++1 kRootWebArea
+  // ++++2 kStaticText
+  // ++++++3 kInlineTextBox "before" kNextOnLineId=6
+  // ++++4 kGenericContainer
+  // ++++++5 kStaticText
+  // ++++++++6 kInlineTextBox "inside" kPreviousOnLineId=3 kNextOnLineId=8
+  // ++++7 kStaticText
+  // ++++++8 kInlineTextBox "after" kPreviousOnLineId=6
+  AXNodePosition::SetTree(&tree_);
+
+  AXNodeData root;
+  AXNodeData inline_box1;
+  AXNodeData inline_box2;
+  AXNodeData inline_box3;
+  AXNodeData inline_block;
+  AXNodeData static_text1;
+  AXNodeData static_text2;
+  AXNodeData static_text3;
+
+  root.id = 1;
+  static_text1.id = 2;
+  inline_box1.id = 3;
+  inline_block.id = 4;
+  static_text2.id = 5;
+  inline_box2.id = 6;
+  static_text3.id = 7;
+  inline_box3.id = 8;
+
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {static_text1.id, inline_block.id, static_text3.id};
+
+  static_text1.role = ax::mojom::Role::kStaticText;
+  static_text1.SetName("before");
+  static_text1.child_ids = {inline_box1.id};
+
+  inline_box1.role = ax::mojom::Role::kInlineTextBox;
+  inline_box1.SetName("before");
+  inline_box1.AddIntAttribute(ax::mojom::IntAttribute::kNextOnLineId,
+                              inline_box2.id);
+
+  inline_block.role = ax::mojom::Role::kGenericContainer;
+  inline_block.child_ids = {static_text2.id};
+
+  static_text2.role = ax::mojom::Role::kStaticText;
+  static_text2.SetName("inside");
+  static_text2.child_ids = {inline_box2.id};
+
+  inline_box2.role = ax::mojom::Role::kInlineTextBox;
+  inline_box2.SetName("inside");
+  inline_box2.AddIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
+                              inline_box1.id);
+  inline_box2.AddIntAttribute(ax::mojom::IntAttribute::kNextOnLineId,
+                              inline_box3.id);
+
+  static_text3.role = ax::mojom::Role::kStaticText;
+  static_text3.SetName("after");
+  static_text3.child_ids = {inline_box3.id};
+
+  inline_box3.role = ax::mojom::Role::kInlineTextBox;
+  inline_box3.SetName("after");
+  inline_box3.AddIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
+                              inline_box2.id);
+
+  std::unique_ptr<AXTree> new_tree =
+      CreateAXTree({root, static_text1, inline_box1, inline_block, static_text2,
+                    inline_box2, static_text3, inline_box3});
+
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, inline_block.id, 3 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+
+  TestPositionType next_line_start_position =
+      text_position->CreateNextLineStartPosition(
+          AXBoundaryBehavior::CrossBoundary);
+  ASSERT_NE(nullptr, next_line_start_position);
+  EXPECT_TRUE(next_line_start_position->IsTextPosition());
+  EXPECT_EQ(inline_box3.id, next_line_start_position->anchor_id());
+  EXPECT_EQ(5, next_line_start_position->text_offset());
+
+  next_line_start_position =
+      next_line_start_position->CreateNextLineStartPosition(
+          AXBoundaryBehavior::CrossBoundary);
+  ASSERT_NE(nullptr, next_line_start_position);
+  EXPECT_TRUE(next_line_start_position->IsNullPosition());
+
+  TestPositionType previous_line_start_position =
+      text_position->CreatePreviousLineStartPosition(
+          AXBoundaryBehavior::CrossBoundary);
+  ASSERT_NE(nullptr, previous_line_start_position);
+  EXPECT_TRUE(previous_line_start_position->IsTextPosition());
+  EXPECT_EQ(inline_box1.id, previous_line_start_position->anchor_id());
+  EXPECT_EQ(0, previous_line_start_position->text_offset());
+
+  previous_line_start_position =
+      previous_line_start_position->CreatePreviousLineStartPosition(
+          AXBoundaryBehavior::CrossBoundary);
+  ASSERT_NE(nullptr, previous_line_start_position);
+  EXPECT_TRUE(previous_line_start_position->IsNullPosition());
+
+  TestPositionType next_line_end_position =
+      text_position->CreateNextLineEndPosition(
+          AXBoundaryBehavior::CrossBoundary);
+  ASSERT_NE(nullptr, next_line_end_position);
+  EXPECT_TRUE(next_line_end_position->IsTextPosition());
+  EXPECT_EQ(inline_box3.id, next_line_end_position->anchor_id());
+  EXPECT_EQ(5, next_line_end_position->text_offset());
+
+  next_line_end_position = next_line_end_position->CreateNextLineEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  ASSERT_NE(nullptr, next_line_end_position);
+  EXPECT_TRUE(next_line_end_position->IsNullPosition());
+
+  TestPositionType previous_line_end_position =
+      text_position->CreatePreviousLineEndPosition(
+          AXBoundaryBehavior::CrossBoundary);
+  ASSERT_NE(nullptr, previous_line_end_position);
+  EXPECT_TRUE(previous_line_end_position->IsTextPosition());
+  EXPECT_EQ(inline_box1.id, previous_line_end_position->anchor_id());
+  EXPECT_EQ(0, previous_line_end_position->text_offset());
+
+  previous_line_end_position =
+      previous_line_end_position->CreatePreviousLineEndPosition(
+          AXBoundaryBehavior::CrossBoundary);
+  ASSERT_NE(nullptr, previous_line_end_position);
+  EXPECT_TRUE(previous_line_end_position->IsNullPosition());
 }
 
 //
@@ -4853,7 +4934,7 @@ INSTANTIATE_TEST_SUITE_P(
                   {"TextPosition anchor_id=1 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<\n>Line 2",
                    "TextPosition anchor_id=1 text_offset=0 "
-                   "affinity=downstream annotated_text=<L>ine 1\nLine 2",
+                   "affinity=upstream annotated_text=<L>ine 1\nLine 2",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousLineEndPosition(
@@ -4863,8 +4944,8 @@ INSTANTIATE_TEST_SUITE_P(
                   13 /* text_offset at end of text field */,
                   {"TextPosition anchor_id=4 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<\n>Line 2",
-                   "TextPosition anchor_id=4 text_offset=0 "
-                   "affinity=downstream annotated_text=<L>ine 1\nLine 2",
+                   "TextPosition anchor_id=2 text_offset=0 "
+                   "affinity=downstream annotated_text=<>",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousLineEndPosition(
@@ -4873,7 +4954,7 @@ INSTANTIATE_TEST_SUITE_P(
                   ROOT_ID,
                   5 /* text_offset on the last character of "Line 1". */,
                   {"TextPosition anchor_id=1 text_offset=0 "
-                   "affinity=downstream annotated_text=<L>ine 1\nLine 2",
+                   "affinity=upstream annotated_text=<L>ine 1\nLine 2",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousLineEndPosition(
@@ -4881,8 +4962,8 @@ INSTANTIATE_TEST_SUITE_P(
                   }),
                   TEXT_FIELD_ID,
                   5 /* text_offset on the last character of "Line 1". */,
-                  {"TextPosition anchor_id=4 text_offset=0 "
-                   "affinity=downstream annotated_text=<L>ine 1\nLine 2",
+                  {"TextPosition anchor_id=2 text_offset=0 "
+                   "affinity=downstream annotated_text=<>",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousLineEndPosition(
@@ -4892,8 +4973,8 @@ INSTANTIATE_TEST_SUITE_P(
                   4 /* text_offset */,
                   {"TextPosition anchor_id=6 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<>",
-                   "TextPosition anchor_id=6 text_offset=0 "
-                   "affinity=downstream annotated_text=<L>ine 1",
+                   "TextPosition anchor_id=2 text_offset=0 "
+                   "affinity=downstream annotated_text=<>",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousLineEndPosition(
@@ -4903,8 +4984,8 @@ INSTANTIATE_TEST_SUITE_P(
                   0 /* text_offset */,
                   {"TextPosition anchor_id=6 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<>",
-                   "TextPosition anchor_id=6 text_offset=0 "
-                   "affinity=downstream annotated_text=<L>ine 1",
+                   "TextPosition anchor_id=2 text_offset=0 "
+                   "affinity=downstream annotated_text=<>",
                    "NullPosition"}}));
 
 INSTANTIATE_TEST_SUITE_P(

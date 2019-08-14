@@ -16,10 +16,8 @@
 #include "chrome/browser/profiles/avatar_menu_observer.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
 #include "ui/views/controls/styled_label.h"
 
 namespace views {
@@ -33,13 +31,10 @@ class HoverButton;
 
 // This bubble view is displayed when the user clicks on the avatar button.
 // It displays a list of profiles and allows users to switch between profiles.
-class ProfileMenuView : public ProfileMenuViewBase,
-                           public AvatarMenuObserver,
-                           public signin::IdentityManager::Observer {
+class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
  public:
   ProfileMenuView(views::Button* anchor_button,
                      Browser* browser,
-                     profiles::BubbleViewMode view_mode,
                      signin::GAIAServiceType service_type,
                      signin_metrics::AccessPoint access_point);
   ~ProfileMenuView() override;
@@ -70,10 +65,6 @@ class ProfileMenuView : public ProfileMenuViewBase,
   // AvatarMenuObserver:
   void OnAvatarMenuChanged(AvatarMenu* avatar_menu) override;
 
-  // signin::IdentityManager::Observer overrides.
-  void OnRefreshTokenUpdatedForAccount(
-      const CoreAccountInfo& account_info) override;
-
   // We normally close the bubble any time it becomes inactive but this can lead
   // to flaky tests where unexpected UI events are triggering this behavior.
   // Tests set this to "false" for more consistent operation.
@@ -81,11 +72,8 @@ class ProfileMenuView : public ProfileMenuViewBase,
 
   void Reset();
 
-  // Shows the bubble with the |view_to_display|.
-  void ShowView(profiles::BubbleViewMode view_to_display,
-                AvatarMenu* avatar_menu);
-  // Shows the bubble view or opens a tab based on given |mode|.
-  void ShowViewOrOpenTab(profiles::BubbleViewMode mode);
+  // Shows the bubble view.
+  void ShowView(AvatarMenu* avatar_menu);
 
   // Adds the profile chooser view.
   void AddProfileMenuView(AvatarMenu* avatar_menu);
@@ -177,9 +165,6 @@ class ProfileMenuView : public ProfileMenuViewBase,
 
   // View for the signin/turn-on-sync button in the dice promo.
   DiceSigninButtonView* dice_signin_button_view_;
-
-  // Active view mode.
-  profiles::BubbleViewMode view_mode_;
 
   // The GAIA service type provided in the response header.
   signin::GAIAServiceType gaia_service_type_;

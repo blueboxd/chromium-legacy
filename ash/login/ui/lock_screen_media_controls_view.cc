@@ -19,12 +19,15 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/vector_icons.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -48,6 +51,8 @@ constexpr int kIconSize = 20;
 constexpr int kMinimumArtworkSize = 50;
 constexpr int kDesiredArtworkSize = 80;
 constexpr gfx::Size kArtworkSize = gfx::Size(80, 80);
+constexpr int kArtworkRowSeparator = 10;
+constexpr gfx::Size kArtworkRowPreferredSize = gfx::Size(300, 10);
 constexpr gfx::Size kMediaButtonSize = gfx::Size(38, 38);
 constexpr int kMediaButtonRowSeparator = 24;
 constexpr gfx::Insets kButtonRowInsets = gfx::Insets(10, 0, 0, 0);
@@ -156,11 +161,54 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
       std::make_unique<MediaControlsHeaderView>(base::BindOnce(
           &LockScreenMediaControlsView::Dismiss, base::Unretained(this))));
 
+  // |artwork_row| contains the session artwork, artist and track info.
+  auto artwork_row = std::make_unique<NonAccessibleView>();
+  artwork_row->SetPreferredSize(kArtworkRowPreferredSize);
+  auto* artwork_row_layout =
+      artwork_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+          kArtworkRowSeparator));
+  artwork_row_layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kCenter);
+  artwork_row_layout->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::kStart);
+
   auto session_artwork = std::make_unique<views::ImageView>();
   session_artwork->SetPreferredSize(kArtworkSize);
-  session_artwork->SetHorizontalAlignment(
-      views::ImageView::Alignment::kLeading);
-  session_artwork_ = contents_view_->AddChildView(std::move(session_artwork));
+  session_artwork_ = artwork_row->AddChildView(std::move(session_artwork));
+
+  // |track_column| contains the title and artist labels of the current media
+  // session.
+  auto track_column = std::make_unique<NonAccessibleView>();
+  auto* track_column_layout =
+      track_column->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical));
+  track_column_layout->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::kCenter);
+
+  const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
+
+  auto title_label = std::make_unique<views::Label>();
+  title_label->SetFontList(base_font_list.Derive(
+      2, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::BOLD));
+  title_label->SetEnabledColor(SK_ColorWHITE);
+  title_label->SetAutoColorReadabilityEnabled(false);
+  title_label->SetElideBehavior(gfx::ELIDE_TAIL);
+  title_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+  title_label_ = track_column->AddChildView(std::move(title_label));
+
+  auto artist_label = std::make_unique<views::Label>();
+  artist_label->SetFontList(base_font_list.Derive(
+      0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::LIGHT));
+  artist_label->SetEnabledColor(SK_ColorWHITE);
+  artist_label->SetAutoColorReadabilityEnabled(false);
+  artist_label->SetElideBehavior(gfx::ELIDE_TAIL);
+  artist_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+  artist_label_ = track_column->AddChildView(std::move(artist_label));
+
+  artwork_row->AddChildView(std::move(track_column));
+
+  contents_view_->AddChildView(std::move(artwork_row));
 
   progress_ = contents_view_->AddChildView(
       std::make_unique<media_message_center::MediaControlsProgressView>(
@@ -340,6 +388,9 @@ void LockScreenMediaControlsView::MediaSessionMetadataChanged(
           : session_metadata.source_title;
   header_row_->SetAppName(source_title);
 
+  title_label_->SetText(session_metadata.title);
+  artist_label_->SetText(session_metadata.artist);
+
   accessible_name_ =
       media_message_center::GetAccessibleNameFromMetadata(session_metadata);
 }
@@ -517,16 +568,19 @@ void LockScreenMediaControlsView::UpdateActionButtonsVisibility() {
       media_message_center::GetTopVisibleActions(enabled_actions_,
                                                  ignored_actions, kMaxActions);
 
+  bool should_invalidate = false;
   for (auto* view : button_row_->children()) {
     views::Button* action_button = views::Button::AsButton(view);
     bool should_show = base::Contains(
         visible_actions,
         media_message_center::GetActionFromButtonTag(*action_button));
+    should_invalidate |= should_show != action_button->GetVisible();
 
     action_button->SetVisible(should_show);
   }
 
-  PreferredSizeChanged();
+  if (should_invalidate)
+    button_row_->InvalidateLayout();
 }
 
 void LockScreenMediaControlsView::SetIsPlaying(bool playing) {

@@ -7,13 +7,14 @@
 
 from __future__ import print_function
 
-import StringIO
 import os
 import sys
 import unittest
 
 if __name__ == '__main__':
   sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+
+from six import StringIO
 
 from grit.node import misc
 from grit.node import node_io
@@ -68,14 +69,14 @@ class FileNodeUnittest(unittest.TestCase):
           </messages>
         </release>
       </grit>'''
-    grd = grd_reader.Parse(StringIO.StringIO(xml),
+    grd = grd_reader.Parse(StringIO(xml),
                            util.PathFromRoot('grit/testdata'))
     grd.SetOutputLanguage('en')
     grd.RunGatherers()
     self.VerifyCliquesContainEnglishAndFrenchAndNothingElse(_GetAllCliques(grd))
 
   def testIffyness(self):
-    grd = grd_reader.Parse(StringIO.StringIO('''<?xml version="1.0" encoding="UTF-8"?>
+    grd = grd_reader.Parse(StringIO('''<?xml version="1.0" encoding="UTF-8"?>
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <translations>
           <if expr="lang == 'fr'">
@@ -120,7 +121,7 @@ class FileNodeUnittest(unittest.TestCase):
           </messages>
         </release>
       </grit>'''
-    grd = grd_reader.Parse(StringIO.StringIO(xml),
+    grd = grd_reader.Parse(StringIO(xml),
                            util.PathFromRoot('grit/testdata'))
     grd.SetOutputLanguage('en')
     grd.RunGatherers()
@@ -145,7 +146,7 @@ class FileNodeUnittest(unittest.TestCase):
           </messages>
         </release>
       </grit>'''
-    grd = grd_reader.Parse(StringIO.StringIO(xml),
+    grd = grd_reader.Parse(StringIO(xml),
                            util.PathFromRoot('grit/test/data'),
                            defines={})
     grd.SetOutputLanguage('en')
@@ -162,7 +163,7 @@ class FileNodeUnittest(unittest.TestCase):
   # Verify that 'iw' and 'no' language codes in xtb files are mapped to 'he' and
   # 'nb'.
   def testLangCodeMapping(self):
-    grd = grd_reader.Parse(StringIO.StringIO('''<?xml version="1.0" encoding="UTF-8"?>
+    grd = grd_reader.Parse(StringIO('''<?xml version="1.0" encoding="UTF-8"?>
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <translations>
           <file path="generated_resources_no.xtb" lang="nb" />

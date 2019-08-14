@@ -624,13 +624,7 @@ content::LayerTreeView* LayerTreeViewFactory::Initialize(
   // Use synchronous compositing so that the MessageLoop becomes idle and the
   // test makes progress.
   settings.single_thread_proxy_scheduler = false;
-  // Both BlinkGenPropertyTrees and CompositeAfterPaint should imply layer lists
-  // in the compositor. Some code across the boundaries makes assumptions based
-  // on this so ensure tests run using this configuration as well.
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    settings.use_layer_lists = true;
-  }
+  settings.use_layer_lists = true;
 
   layer_tree_view_ = std::make_unique<content::LayerTreeView>(
       specified_delegate ? specified_delegate : &delegate_,

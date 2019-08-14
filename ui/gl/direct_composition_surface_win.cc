@@ -407,6 +407,43 @@ bool DirectCompositionSurfaceWin::IsHDRSupported() {
   return hdr_monitor_found;
 }
 
+// static
+bool DirectCompositionSurfaceWin::IsSwapChainTearingSupported() {
+  static const bool supported = [] {
+    Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
+        QueryD3D11DeviceObjectFromANGLE();
+    if (!d3d11_device) {
+      DLOG(ERROR) << "Not using swap chain tearing because failed to retrieve "
+                     "D3D11 device from ANGLE";
+      return false;
+    }
+    Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
+    d3d11_device.As(&dxgi_device);
+    DCHECK(dxgi_device);
+    Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
+    dxgi_device->GetAdapter(&dxgi_adapter);
+    DCHECK(dxgi_adapter);
+    Microsoft::WRL::ComPtr<IDXGIFactory5> dxgi_factory;
+    if (FAILED(dxgi_adapter->GetParent(IID_PPV_ARGS(&dxgi_factory)))) {
+      DLOG(ERROR) << "Not using swap chain tearing because failed to retrieve "
+                     "IDXGIFactory5 interface";
+      return false;
+    }
+
+    BOOL present_allow_tearing = FALSE;
+    DCHECK(dxgi_factory);
+    if (FAILED(dxgi_factory->CheckFeatureSupport(
+            DXGI_FEATURE_PRESENT_ALLOW_TEARING, &present_allow_tearing,
+            sizeof(present_allow_tearing)))) {
+      DLOG(ERROR)
+          << "Not using swap chain tearing because CheckFeatureSupport failed";
+      return false;
+    }
+    return !!present_allow_tearing;
+  }();
+  return supported;
+}
+
 bool DirectCompositionSurfaceWin::Initialize(GLSurfaceFormat format) {
   d3d11_device_ = QueryD3D11DeviceObjectFromANGLE();
   if (!d3d11_device_) {

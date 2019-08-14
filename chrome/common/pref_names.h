@@ -725,8 +725,8 @@ extern const char kCipherSuiteBlacklist[];
 extern const char kH2ClientCertCoalescingHosts[];
 
 extern const char kBuiltInDnsClientEnabled[];
-extern const char kDnsOverHttpsServers[];
-extern const char kDnsOverHttpsServerMethods[];
+extern const char kDnsOverHttpsMode[];
+extern const char kDnsOverHttpsTemplates[];
 
 extern const char kRegisteredProtocolHandlers[];
 extern const char kIgnoredProtocolHandlers[];

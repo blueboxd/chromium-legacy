@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/run_loop.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_navigation_util_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_controller_win.h"
@@ -45,7 +46,7 @@ class MockPromptDelegate
 
 // The reboot flow requires loading chrome://settings/cleanup, which only
 // exists on the Google-branded browser.
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 class ChromeCleanerRebootFlowTest : public InProcessBrowserTest {
  public:
@@ -190,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(
   EnsureCompletedExecution();
 }
 
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 class ChromeCleanerRebootDialogResponseTest : public InProcessBrowserTest {
  public:

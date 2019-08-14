@@ -111,6 +111,11 @@ InterpolationValue LengthInterpolationFunctions::MaybeConvertLength(
   if (!length.IsSpecified())
     return nullptr;
 
+  if (length.IsCalculated() && length.GetCalculationValue().IsExpression()) {
+    // TODO(crbug.com/991672): Support interpolation on min/max results.
+    return nullptr;
+  }
+
   PixelsAndPercent pixels_and_percent = length.GetPixelsAndPercent();
   auto values = CreateNeutralInterpolableValue();
   values->Set(

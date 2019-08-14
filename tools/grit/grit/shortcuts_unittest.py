@@ -13,7 +13,8 @@ if __name__ == '__main__':
   sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import unittest
-import StringIO
+
+from six import StringIO
 
 from grit import shortcuts
 from grit import clique
@@ -44,7 +45,7 @@ class ShortcutsUnittest(unittest.TestCase):
     self.failUnless(len(warnings) == 0)
 
   def testDialog(self):
-    dlg = rc.Dialog(StringIO.StringIO('''\
+    dlg = rc.Dialog(StringIO('''\
 IDD_SIDEBAR_RSS_PANEL_PROPPAGE DIALOGEX 0, 0, 239, 221
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x1

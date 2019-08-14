@@ -87,6 +87,7 @@ struct CastMediaSink {
   int32 cast_channel_id;
 };
 
+// TODO(crbug.com/993437): Replace the use of this enum with a boolean field.
 enum RouteControllerType {
   kNone,
   kGeneric,

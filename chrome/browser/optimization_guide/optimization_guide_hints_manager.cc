@@ -10,15 +10,19 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros_local.h"
+#include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
+#include "base/time/default_clock.h"
 #include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hint_cache.h"
 #include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/hints_component_util.h"
+#include "components/optimization_guide/hints_fetcher.h"
 #include "components/optimization_guide/hints_processing_util.h"
 #include "components/optimization_guide/optimization_filter.h"
+#include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
@@ -27,6 +31,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
 
@@ -34,6 +39,24 @@ namespace {
 // component received from the OptimizationGuideService on a subsequent startup
 // will have a newer version than it.
 constexpr char kManualConfigComponentVersion[] = "0.0.0";
+
+// Delay between retries on failed fetch and store of hints from the remote
+// Optimization Guide Service.
+constexpr base::TimeDelta kFetchRetryDelay = base::TimeDelta::FromMinutes(15);
+
+// Delay until successfully fetched hints should be updated by requesting from
+// the remote Optimization Guide Service.
+constexpr base::TimeDelta kUpdateFetchedHintsDelay =
+    base::TimeDelta::FromHours(24);
+
+// Provides a random time delta in seconds between |kFetchRandomMinDelay| and
+// |kFetchRandomMaxDelay|.
+base::TimeDelta RandomFetchDelay() {
+  constexpr int kFetchRandomMinDelaySecs = 30;
+  constexpr int kFetchRandomMaxDelaySecs = 60;
+  return base::TimeDelta::FromSeconds(
+      base::RandInt(kFetchRandomMinDelaySecs, kFetchRandomMaxDelaySecs));
+}
 
 void MaybeRunUpdateClosure(base::OnceClosure update_closure) {
   if (update_closure)
@@ -79,7 +102,8 @@ OptimizationGuideHintsManager::OptimizationGuideHintsManager(
     const base::FilePath& profile_path,
     PrefService* pref_service,
     leveldb_proto::ProtoDatabaseProvider* database_provider,
-    optimization_guide::TopHostProvider* top_host_provider)
+    optimization_guide::TopHostProvider* top_host_provider,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : optimization_guide_service_(optimization_guide_service),
       background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::ThreadPool(), base::MayBlock(),
@@ -91,7 +115,9 @@ OptimizationGuideHintsManager::OptimizationGuideHintsManager(
               profile_path,
               pref_service_,
               background_task_runner_))),
-      top_host_provider_(top_host_provider) {
+      top_host_provider_(top_host_provider),
+      url_loader_factory_(url_loader_factory),
+      clock_(base::DefaultClock::GetInstance()) {
   DCHECK(optimization_guide_service_);
   hint_cache_->Initialize(
       optimization_guide::switches::ShouldPurgeHintCacheStoreOnStartup(),
@@ -312,17 +338,121 @@ void OptimizationGuideHintsManager::ListenForNextUpdateForTesting(
   next_update_closure_ = std::move(next_update_closure);
 }
 
-void OptimizationGuideHintsManager::MaybeScheduleHintsFetch() {
-  bool hints_fetching_allowed =
-      optimization_guide::features::IsHintsFetchingEnabled() &&
-      top_host_provider_;
-  // This local histogram is only used for testing and will be removed when the
-  // actual implementation to schedule hints fetches is in place.
-  LOCAL_HISTOGRAM_BOOLEAN("OptimizationGuide.HintsFetching.Allowed",
-                          hints_fetching_allowed);
+void OptimizationGuideHintsManager::SetClockForTesting(
+    const base::Clock* clock) {
+  clock_ = clock;
+}
 
-  // TODO(crbug/969558): Implement this to actually schedule a hints fetch and
-  // remove above local histogram.
+void OptimizationGuideHintsManager::SetHintsFetcherForTesting(
+    std::unique_ptr<optimization_guide::HintsFetcher> hints_fetcher) {
+  hints_fetcher_ = std::move(hints_fetcher);
+}
+
+void OptimizationGuideHintsManager::MaybeScheduleHintsFetch() {
+  if (!optimization_guide::features::IsHintsFetchingEnabled() ||
+      !top_host_provider_) {
+    return;
+  }
+
+  if (optimization_guide::switches::ShouldOverrideFetchHintsTimer()) {
+    SetLastHintsFetchAttemptTime(clock_->Now());
+    FetchHints();
+  } else {
+    ScheduleHintsFetch();
+  }
+}
+
+void OptimizationGuideHintsManager::ScheduleHintsFetch() {
+  DCHECK(!hints_fetch_timer_.IsRunning());
+
+  const base::TimeDelta time_until_update_time =
+      hint_cache_->FetchedHintsUpdateTime() - clock_->Now();
+  const base::TimeDelta time_until_retry =
+      GetLastHintsFetchAttemptTime() + kFetchRetryDelay - clock_->Now();
+  base::TimeDelta fetcher_delay;
+  if (time_until_update_time <= base::TimeDelta() &&
+      time_until_retry <= base::TimeDelta()) {
+    // Fetched hints in the store should be updated and an attempt has not
+    // been made in last |kFetchRetryDelay|.
+    SetLastHintsFetchAttemptTime(clock_->Now());
+    hints_fetch_timer_.Start(FROM_HERE, RandomFetchDelay(), this,
+                             &OptimizationGuideHintsManager::FetchHints);
+  } else {
+    if (time_until_update_time >= base::TimeDelta()) {
+      // If the fetched hints in the store are still up-to-date, set a timer
+      // for when the hints need to be updated.
+      fetcher_delay = time_until_update_time;
+    } else {
+      // Otherwise, hints need to be updated but an attempt was made in last
+      // |kFetchRetryDelay|. Schedule the timer for after the retry
+      // delay.
+      fetcher_delay = time_until_retry;
+    }
+    hints_fetch_timer_.Start(
+        FROM_HERE, fetcher_delay, this,
+        &OptimizationGuideHintsManager::ScheduleHintsFetch);
+  }
+}
+
+void OptimizationGuideHintsManager::FetchHints() {
+  DCHECK(top_host_provider_);
+
+  size_t max_hints_to_fetch = optimization_guide::features::
+      MaxHostsForOptimizationGuideServiceHintsFetch();
+  std::vector<std::string> top_hosts =
+      top_host_provider_->GetTopHosts(max_hints_to_fetch);
+  if (top_hosts.empty())
+    return;
+  DCHECK_GE(max_hints_to_fetch, top_hosts.size());
+
+  if (!hints_fetcher_) {
+    hints_fetcher_ = std::make_unique<optimization_guide::HintsFetcher>(
+        url_loader_factory_,
+        optimization_guide::features::GetOptimizationGuideServiceURL());
+  }
+  hints_fetcher_->FetchOptimizationGuideServiceHints(
+      top_hosts, base::BindOnce(&OptimizationGuideHintsManager::OnHintsFetched,
+                                ui_weak_ptr_factory_.GetWeakPtr()));
+}
+
+void OptimizationGuideHintsManager::OnHintsFetched(
+    base::Optional<std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
+        get_hints_response) {
+  if (get_hints_response) {
+    hint_cache_->UpdateFetchedHints(
+        std::move(*get_hints_response),
+        clock_->Now() + kUpdateFetchedHintsDelay,
+        base::BindOnce(&OptimizationGuideHintsManager::OnFetchedHintsStored,
+                       ui_weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    // The fetch did not succeed so we will schedule to retry the fetch in
+    // after delaying for |kFetchRetryDelay|
+    // TODO(mcrouse): When the store is refactored from closures, the timer will
+    // be scheduled on failure of the store instead.
+    hints_fetch_timer_.Start(
+        FROM_HERE, kFetchRetryDelay, this,
+        &OptimizationGuideHintsManager::ScheduleHintsFetch);
+  }
+}
+
+void OptimizationGuideHintsManager::OnFetchedHintsStored() {
+  hints_fetch_timer_.Stop();
+  hints_fetch_timer_.Start(
+      FROM_HERE, hint_cache_->FetchedHintsUpdateTime() - clock_->Now(), this,
+      &OptimizationGuideHintsManager::ScheduleHintsFetch);
+}
+
+base::Time OptimizationGuideHintsManager::GetLastHintsFetchAttemptTime() const {
+  return base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(pref_service_->GetInt64(
+          optimization_guide::prefs::kHintsFetcherLastFetchAttempt)));
+}
+
+void OptimizationGuideHintsManager::SetLastHintsFetchAttemptTime(
+    base::Time last_attempt_time) {
+  pref_service_->SetInt64(
+      optimization_guide::prefs::kHintsFetcherLastFetchAttempt,
+      last_attempt_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
 }
 
 void OptimizationGuideHintsManager::LoadHintForNavigation(
@@ -348,7 +478,8 @@ void OptimizationGuideHintsManager::OnHintLoaded(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Record the result of loading a hint. This is used as a signal for testing.
-  LOCAL_HISTOGRAM_BOOLEAN("OptimizationGuide.LoadedHint.Result", loaded_hint);
+  LOCAL_HISTOGRAM_BOOLEAN(optimization_guide::kLoadedHintLocalHistogramString,
+                          loaded_hint);
 
   // Run the callback now that the hint is loaded. This is used as a signal by
   // tests.

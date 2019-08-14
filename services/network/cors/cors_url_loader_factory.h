@@ -77,6 +77,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
   NetworkContext* const context_ = nullptr;
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client_;
 
+  // If false, ResourceRequests cannot have their |trusted_params| fields set.
+  bool is_trusted_;
+
   // Retained from URLLoaderFactoryParams:
   const bool disable_web_security_;
   const uint32_t process_id_ = mojom::kInvalidProcessId;

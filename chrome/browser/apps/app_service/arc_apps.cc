@@ -317,9 +317,6 @@ void ArcApps::Launch(const std::string& app_id,
     case apps::mojom::LaunchSource::kFromAppListRecommendation:
       uit = arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER_SUGGESTED_APP;
       break;
-    case apps::mojom::LaunchSource::kFromKioskNextHome:
-      uit = arc::UserInteractionType::APP_STARTED_FROM_KIOSK_NEXT_HOME;
-      break;
     case apps::mojom::LaunchSource::kFromParentalControls:
       uit = arc::UserInteractionType::APP_STARTED_FROM_SETTINGS;
       break;

@@ -329,8 +329,10 @@ TEST_F(NavigationURLLoaderImplTest, NetworkIsolationKeyOfMainFrameNavigation) {
   delegate.WaitForRequestStarted();
 
   ASSERT_TRUE(most_recent_resource_request_);
-  EXPECT_EQ(net::NetworkIsolationKey(origin, origin),
-            most_recent_resource_request_->trusted_network_isolation_key);
+  ASSERT_TRUE(most_recent_resource_request_->trusted_params);
+  EXPECT_EQ(
+      net::NetworkIsolationKey(origin, origin),
+      most_recent_resource_request_->trusted_params->network_isolation_key);
 }
 
 TEST_F(NavigationURLLoaderImplTest,
@@ -343,8 +345,10 @@ TEST_F(NavigationURLLoaderImplTest,
 
   HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
 
-  EXPECT_EQ(net::NetworkIsolationKey(origin, origin),
-            most_recent_resource_request_->trusted_network_isolation_key);
+  ASSERT_TRUE(most_recent_resource_request_->trusted_params);
+  EXPECT_EQ(
+      net::NetworkIsolationKey(origin, origin),
+      most_recent_resource_request_->trusted_params->network_isolation_key);
 }
 
 TEST_F(NavigationURLLoaderImplTest, Redirect301Tests) {

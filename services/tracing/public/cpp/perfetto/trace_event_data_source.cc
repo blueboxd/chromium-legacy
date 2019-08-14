@@ -33,6 +33,7 @@
 #include "services/tracing/public/cpp/perfetto/traced_value_proto_writer.h"
 #include "services/tracing/public/cpp/perfetto/track_event_thread_local_event_sink.h"
 #include "services/tracing/public/cpp/trace_event_args_whitelist.h"
+#include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/shared_memory_arbiter.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/startup_trace_writer.h"
@@ -287,6 +288,7 @@ void TraceEventDataSource::SetupStartupTracing(bool privacy_filtering_enabled) {
 }
 
 void TraceEventDataSource::OnTaskSchedulerAvailable() {
+  CHECK(IsTracingInitialized());
   {
     base::AutoLock lock(lock_);
     if (!startup_writer_registry_)

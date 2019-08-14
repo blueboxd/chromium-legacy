@@ -174,9 +174,7 @@ bool WaitForDownloadButton() {
 - (void)testDownloadInNewTab {
   // TODO(crbug.com/989550) Disable broken context menu tests on Xc11b5.
   if (@available(iOS 13, *)) {
-    if ([ChromeEarlGrey isIPadIdiom]) {
-      EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-    }
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS13.");
   }
 
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];

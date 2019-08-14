@@ -95,8 +95,7 @@ bool TranslateURLFetcher::Request(const GURL& url,
   // Create and initialize URL loader.
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url_;
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   if (!extra_request_header_.empty())
     resource_request->headers.AddHeaderFromString(extra_request_header_);
 

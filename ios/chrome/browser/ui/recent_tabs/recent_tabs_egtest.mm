@@ -8,6 +8,7 @@
 #import <map>
 #import <string>
 
+#include "base/ios/ios_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/app/main_controller.h"
@@ -239,6 +240,34 @@ id<GREYMatcher> TitleOfTestPage() {
   [self closeRecentTabs];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
       ->RemoveIdentity(identity);
+}
+
+// Tests that the VC can be dismissed by swiping down.
+- (void)DISABLED_testSwipeDownDismiss {
+  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
+  }
+  OpenRecentTabsPanel();
+
+  // Check that the TableView is presented.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_accessibilityID(
+                     kRecentTabsTableViewControllerAccessibilityIdentifier)]
+      assertWithMatcher:grey_notNil()];
+
+  // Swipe TableView down.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_accessibilityID(
+                     kRecentTabsTableViewControllerAccessibilityIdentifier)]
+      performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
+
+  // Check that the TableView has been dismissed.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_accessibilityID(
+                     kRecentTabsTableViewControllerAccessibilityIdentifier)]
+      assertWithMatcher:grey_nil()];
+
+  [ChromeEarlGrey closeCurrentTab];
 }
 
 @end

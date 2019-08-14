@@ -10,7 +10,7 @@
 #import "ios/chrome/browser/voice/text_to_speech_parser.h"
 #import "ios/chrome/browser/voice/voice_search_url_rewriter.h"
 #include "ios/web/public/navigation/navigation_manager.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "url/gurl.h"

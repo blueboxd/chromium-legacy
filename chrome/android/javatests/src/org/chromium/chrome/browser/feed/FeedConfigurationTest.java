@@ -46,6 +46,8 @@ public class FeedConfigurationTest {
                 FeedConfiguration.FEED_UI_ENABLED_DEFAULT, FeedConfiguration.getFeedUiEnabled());
         Assert.assertEquals(FeedConfiguration.INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT,
                 FeedConfiguration.getInitialNonCachedPageSize());
+        Assert.assertEquals(FeedConfiguration.LIMIT_PAGE_UPDATES_IN_HEAD_DEFAULT,
+                FeedConfiguration.getLimitPageUpdatesInHead());
         Assert.assertEquals(FeedConfiguration.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT,
                 FeedConfiguration.getLoggingImmediateContentThresholdMs());
         Assert.assertEquals(FeedConfiguration.MANAGE_INTERESTS_ENABLED_DEFAULT,
@@ -136,6 +138,16 @@ public class FeedConfigurationTest {
     public void
     testInitialNonCachedPageSize() {
         Assert.assertEquals(100, FeedConfiguration.getInitialNonCachedPageSize());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:limit_page_updates_in_head/true"})
+    public void
+    testLimitPageUpdatesInHead() {
+        Assert.assertTrue(FeedConfiguration.getLimitPageUpdatesInHead());
     }
 
     @Test
@@ -294,6 +306,8 @@ public class FeedConfigurationTest {
         Assert.assertFalse(configuration.getValueOrDefault(ConfigKey.FEED_UI_ENABLED, true));
         Assert.assertEquals((long) FeedConfiguration.INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.INITIAL_NON_CACHED_PAGE_SIZE, 0));
+        Assert.assertFalse(
+                configuration.getValueOrDefault(ConfigKey.LIMIT_PAGE_UPDATES_IN_HEAD, true));
         Assert.assertEquals((long) FeedConfiguration.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT,
                 configuration.getValueOrDefault(
                         ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS, 0l));

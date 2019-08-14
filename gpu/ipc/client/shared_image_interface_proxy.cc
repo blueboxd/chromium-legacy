@@ -366,6 +366,7 @@ void SharedImageInterfaceProxy::PresentSwapChain(const SyncToken& sync_token,
     last_flush_id_ = host_->EnqueueDeferredMessage(
         GpuChannelMsg_PresentSwapChain(route_id_, mailbox, release_id),
         std::move(dependencies));
+    host_->EnsureFlush(last_flush_id_);
   }
 #else
   NOTREACHED();

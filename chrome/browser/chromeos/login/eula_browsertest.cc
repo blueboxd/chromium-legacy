@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/test/dialog_window_waiter.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
@@ -54,7 +55,7 @@ namespace {
 
 constexpr char kFakeOnlineEulaPath[] = "/intl/en-US/chrome/eula_text.html";
 constexpr char kFakeOnlineEula[] = "No obligations at all";
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // See IDS_ABOUT_TERMS_OF_SERVICE for the complete text.
 constexpr char kOfflineEULAWarning[] = "Chrome OS Terms";
 #else

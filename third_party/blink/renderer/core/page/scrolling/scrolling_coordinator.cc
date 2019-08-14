@@ -31,7 +31,6 @@
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/input/main_thread_scrolling_reason.h"
-#include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/painted_overlay_scrollbar_layer.h"
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/layers/picture_layer.h"
@@ -177,31 +176,12 @@ void ScrollingCoordinator::UpdateAfterPaint(LocalFrameView* frame_view) {
 
   if (should_scroll_on_main_thread_dirty ||
       frame_view->FrameIsScrollableDidChange()) {
-    // When blink generates property trees, main thread scrolling reasons are
-    // stored on scroll nodes.
-    if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-      // TODO(pdr): This also takes over scroll animations if main thread
-      // reasons are present. This needs to be implemented for
-      // BlinkGenPropertyTrees.
-      // TODO(bokan): Does this work for scrollers other than FrameViews? If
-      // not, this will need to account for root scrollers.
-      SetShouldUpdateScrollLayerPositionOnMainThread(
-          frame, frame_view->GetMainThreadScrollingReasons());
-
-      // Need to update scroll on main thread reasons for subframe because
-      // subframe (e.g. iframe with background-attachment:fixed) should
-      // scroll on main thread while the main frame scrolls on impl.
-      frame_view->UpdateSubFrameScrollOnMainReason(*frame, 0);
-    }
+    // TODO(pdr): Now that BlinkGenPropertyTrees has launched, we should remove
+    // FrameIsScrollableDidChange.
     frame_view->GetScrollingContext()->SetShouldScrollOnMainThreadIsDirty(
         false);
   }
   frame_view->ClearFrameIsScrollableDidChange();
-
-  // When blink generates property trees, the user input scrollable bits are
-  // stored on scroll nodes instead of layers.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    UpdateUserInputScrollable(&page_->GetVisualViewport());
 }
 
 template <typename Function>
@@ -289,70 +269,6 @@ static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
   PaintArtifactCompositor::UpdateTouchActionRects(layer.CcLayer(), layer_offset,
                                                   layer.GetPropertyTreeState(),
                                                   paint_chunks);
-}
-
-static void ClearPositionConstraintExceptForLayer(GraphicsLayer* layer,
-                                                  GraphicsLayer* except) {
-  // When blink generates property trees, the layer position constraints are
-  // not set on cc::Layer because they are only used by the cc property tree
-  // builder.
-  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-         !RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  if (layer && layer != except && GraphicsLayerToCcLayer(layer)) {
-    GraphicsLayerToCcLayer(layer)->SetPositionConstraint(
-        cc::LayerPositionConstraint());
-  }
-}
-
-static cc::LayerPositionConstraint ComputePositionConstraint(
-    const PaintLayer* layer) {
-  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-         !RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  DCHECK(layer->HasCompositedLayerMapping());
-  do {
-    if (layer->GetLayoutObject().Style()->GetPosition() == EPosition::kFixed) {
-      const LayoutObject& fixed_position_object = layer->GetLayoutObject();
-      bool fixed_to_right = !fixed_position_object.Style()->Right().IsAuto();
-      bool fixed_to_bottom = fixed_position_object.Style()->IsFixedToBottom();
-      cc::LayerPositionConstraint constraint;
-      constraint.set_is_fixed_position(true);
-      constraint.set_is_fixed_to_right_edge(fixed_to_right);
-      constraint.set_is_fixed_to_bottom_edge(fixed_to_bottom);
-      return constraint;
-    }
-
-    layer = layer->Parent();
-
-    // Composited layers that inherit a fixed position state will be positioned
-    // with respect to the nearest compositedLayerMapping's GraphicsLayer.
-    // So, once we find a layer that has its own compositedLayerMapping, we can
-    // stop searching for a fixed position LayoutObject.
-  } while (layer && !layer->HasCompositedLayerMapping());
-  return cc::LayerPositionConstraint();
-}
-
-void ScrollingCoordinator::UpdateLayerPositionConstraint(PaintLayer* layer) {
-  // When blink generates property trees, the layer position constraints are
-  // not set on cc::Layer because they are only used by the cc property tree
-  // builder.
-  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-         !RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-
-  DCHECK(layer->HasCompositedLayerMapping());
-  CompositedLayerMapping* composited_layer_mapping =
-      layer->GetCompositedLayerMapping();
-  GraphicsLayer* main_layer = composited_layer_mapping->ChildForSuperlayers();
-
-  // Avoid unnecessary commits
-  ClearPositionConstraintExceptForLayer(
-      composited_layer_mapping->SquashingContainmentLayer(), main_layer);
-  ClearPositionConstraintExceptForLayer(
-      composited_layer_mapping->AncestorClippingLayer(), main_layer);
-  ClearPositionConstraintExceptForLayer(
-      composited_layer_mapping->MainGraphicsLayer(), main_layer);
-
-  if (cc::Layer* scrollable_layer = GraphicsLayerToCcLayer(main_layer))
-    scrollable_layer->SetPositionConstraint(ComputePositionConstraint(layer));
 }
 
 void ScrollingCoordinator::WillDestroyScrollableArea(
@@ -548,26 +464,12 @@ void ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
   if (!page_ || !page_->MainFrame())
     return;
 
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    UpdateUserInputScrollable(scrollable_area);
-
   cc::Layer* cc_layer =
       GraphicsLayerToCcLayer(scrollable_area->LayerForScrolling());
   cc::Layer* container_layer =
       GraphicsLayerToCcLayer(scrollable_area->LayerForContainer());
   if (cc_layer) {
     cc_layer->SetScrollable(container_layer->bounds());
-
-    // The scroll offset is pushed to cc::Layers separately in
-    // UpdateCompositedScrolloffset. This is needed for the visual viewport
-    // scroll offsets which aren't updated as part of a compositing update. In
-    // BlinkGenPropertyTrees, the visual viewport sets scroll offsets directly
-    // into its transform paint property nodes so this becomes unneeded.
-    if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-      FloatPoint scroll_position(scrollable_area->ScrollPosition());
-      cc_layer->SetScrollOffset(
-          static_cast<gfx::ScrollOffset>(scroll_position));
-    }
 
     // TODO(bokan): This method shouldn't be resizing the layer geometry. That
     // happens in CompositedLayerMapping::UpdateScrollingLayerGeometry.
@@ -654,22 +556,6 @@ void ScrollingCoordinator::UpdateTouchEventTargetRectsIfNeeded(
   auto* view_layer = frame->View()->GetLayoutView()->Layer();
   if (auto* root = view_layer->Compositor()->PaintRootGraphicsLayer())
     ForAllPaintingGraphicsLayers(*root, UpdateLayerTouchActionRects);
-}
-
-void ScrollingCoordinator::UpdateUserInputScrollable(
-    ScrollableArea* scrollable_area) {
-  // When blink generates property trees, the user input scrollable bits are
-  // stored on scroll nodes instead of layers so this is not needed.
-  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
-  cc::Layer* cc_layer =
-      GraphicsLayerToCcLayer(scrollable_area->LayerForScrolling());
-  if (cc_layer) {
-    bool can_scroll_x =
-        scrollable_area->UserInputScrollable(kHorizontalScrollbar);
-    bool can_scroll_y =
-        scrollable_area->UserInputScrollable(kVerticalScrollbar);
-    cc_layer->SetUserScrollable(can_scroll_x, can_scroll_y);
-  }
 }
 
 void ScrollingCoordinator::Reset(LocalFrame* frame) {

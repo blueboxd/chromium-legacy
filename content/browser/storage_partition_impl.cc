@@ -1801,6 +1801,9 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal(
       network::mojom::URLLoaderFactoryParams::New();
   params->process_id = network::mojom::kBrowserProcessId;
   params->is_corb_enabled = corb_enabled;
+  // Corb requests are likely made on behalf of untrusted renderers.
+  if (!corb_enabled)
+    params->is_trusted = true;
   params->disable_web_security =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebSecurity);

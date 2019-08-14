@@ -13,15 +13,19 @@
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/waiting.h"
+#include "media/gpu/buildflags.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
 #include "media/gpu/test/video_player/frame_renderer.h"
 #include "media/gpu/test/video_player/test_vda_video_decoder.h"
 #include "media/gpu/test/video_player/video.h"
 
+#if BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
+#include "media/gpu/linux/platform_video_frame_pool.h"
+#endif  // BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
+
 #if defined(OS_CHROMEOS)
 #include "media/gpu/chromeos/chromeos_video_decoder_factory.h"
-#include "media/gpu/linux/platform_video_frame_pool.h"
 #include "media/gpu/video_frame_converter.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -159,7 +163,7 @@ void VideoDecoderClient::CreateDecoderTask(bool* success,
   LOG_ASSERT(!decoder_) << "Can't create decoder: already created";
 
   if (decoder_client_config_.use_vd) {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && (BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC))
     decoder_ = ChromeosVideoDecoderFactory::Create(
         base::ThreadTaskRunnerHandle::Get(),
         std::make_unique<PlatformVideoFramePool>(),

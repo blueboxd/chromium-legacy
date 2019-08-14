@@ -138,7 +138,6 @@ class CORE_EXPORT ScrollingCoordinator final
   void ScrollableAreaScrollLayerDidChange(ScrollableArea*);
   void ScrollableAreaScrollbarLayerDidChange(ScrollableArea*,
                                              ScrollbarOrientation);
-  void UpdateLayerPositionConstraint(PaintLayer*);
   // LocalFrame* must be a local root if non-null.
   void TouchEventTargetRectsDidChange(LocalFrame*);
 
@@ -164,8 +163,6 @@ class CORE_EXPORT ScrollingCoordinator final
 
   void UpdateNonFastScrollableRegions(LocalFrame*);
   void UpdateTouchEventTargetRectsIfNeeded(LocalFrame*);
-
-  void UpdateUserInputScrollable(ScrollableArea*);
 
   cc::AnimationHost* GetCompositorAnimationHost() { return animation_host_; }
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() {

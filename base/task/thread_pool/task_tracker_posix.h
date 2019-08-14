@@ -41,10 +41,9 @@ class BASE_EXPORT TaskTrackerPosix : public TaskTracker {
 
  protected:
   // TaskTracker:
-  void RunOrSkipTask(Task task,
-                     TaskSource* task_source,
-                     const TaskTraits& traits,
-                     bool can_run_task) override;
+  void RunTask(Task task,
+               TaskSource* task_source,
+               const TaskTraits& traits) override;
 
  private:
   scoped_refptr<SingleThreadTaskRunner> io_thread_task_runner_;

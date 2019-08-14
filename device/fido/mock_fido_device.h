@@ -60,6 +60,11 @@ class MockFidoDevice : public ::testing::StrictMock<FidoDevice> {
                  base::Optional<AuthenticatorGetInfoResponse> device_info);
   ~MockFidoDevice() override;
 
+  // TODO(crbug.com/729950): Remove these workarounds once support for move-only
+  // types is added to GMock.
+  MOCK_METHOD1(TryWinkRef, void(base::OnceClosure& cb));
+  void TryWink(base::OnceClosure cb) override;
+
   // GMock cannot mock a method taking a move-only type.
   // TODO(crbug.com/729950): Remove these workarounds once support for move-only
   // types is added to GMock.

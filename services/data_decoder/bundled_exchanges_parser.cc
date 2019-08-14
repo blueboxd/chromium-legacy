@@ -967,18 +967,21 @@ class BundledExchangesParser::ResponseParser
       return;
     }
 
-    // Step 9. "If headers does not contain a Content-Type header, return an
-    // error."
-
-    // TODO(crbug.com/966753): Implement this once
-    // https://github.com/WICG/webpackage/issues/445 is resolved.
-
-    // Step 10. "Let payloadLength be the result of getting the length of a CBOR
+    // Step 9. "Let payloadLength be the result of getting the length of a CBOR
     // bytestring header from stream (Section 3.5.2). If payloadLength is an
     // error, return that error."
     auto payload_length = input.ReadCBORHeader(CBORType::kByteString);
     if (!payload_length) {
       RunErrorCallbackAndDestroy("Cannot parse response payload length.");
+      return;
+    }
+
+    // Step 10. "If payloadLength is greater than 0 and headers does not contain
+    // a Content-Type header, return an error."
+    if (*payload_length > 0 &&
+        !parsed_headers->headers.contains("content-type")) {
+      RunErrorCallbackAndDestroy(
+          "Non-empty response must have a content-type header.");
       return;
     }
 

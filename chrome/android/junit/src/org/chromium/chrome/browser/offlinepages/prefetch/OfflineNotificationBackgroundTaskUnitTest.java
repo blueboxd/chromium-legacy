@@ -195,10 +195,10 @@ public class OfflineNotificationBackgroundTaskUnitTest {
     }
 
     private void setupDeviceOnlineStatus(boolean online) {
-        DeviceConditions deviceConditions =
-                new DeviceConditions(false /* POWER_CONNECTED */, 75 /* BATTERY_LEVEL */,
-                        online ? ConnectionType.CONNECTION_WIFI : ConnectionType.CONNECTION_NONE,
-                        false /* POWER_SAVE */, false /* metered */);
+        DeviceConditions deviceConditions = new DeviceConditions(false /* POWER_CONNECTED */,
+                75 /* BATTERY_LEVEL */,
+                online ? ConnectionType.CONNECTION_WIFI : ConnectionType.CONNECTION_NONE,
+                false /* POWER_SAVE */, false /* metered */, true /* screenOnAndUnlocked */);
         ShadowDeviceConditions.setCurrentConditions(deviceConditions);
     }
 

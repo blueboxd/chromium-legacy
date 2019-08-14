@@ -31,6 +31,6 @@ interface BroadcastChannelProvider {
   // be sent to the channel using |sender|, and messages to the channel will be
   // received by |receiver|.
   ConnectToChannel(url.mojom.Origin origin, string name,
-                   associated BroadcastChannelClient receiver,
-                   associated BroadcastChannelClient& sender);
+                   pending_associated_remote<BroadcastChannelClient> receiver,
+                   pending_associated_receiver<BroadcastChannelClient> sender);
 };

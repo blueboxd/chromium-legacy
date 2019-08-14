@@ -4,6 +4,9 @@
 
 #include "chrome/browser/metrics/perf/perf_events_collector.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
@@ -245,37 +248,32 @@ std::vector<RandomSelector::WeightAndValue> GetDefaultCommandsForCpu(
 }  // namespace internal
 
 PerfCollector::PerfCollector()
-    : MetricCollector(kPerfCollectorName),
-      windowed_incognito_monitor_(std::make_unique<WindowedIncognitoMonitor>()),
-      weak_factory_(this) {
-  // Parsing processor information may be expensive. Compute asynchronously
-  // in a separate thread.
-  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
-  ui_task_runner_ = base::SequencedTaskRunnerHandle::Get();
+    : internal::MetricCollector(kPerfCollectorName, CollectionParams()),
+      weak_factory_(this) {}
+
+PerfCollector::~PerfCollector() = default;
+
+void PerfCollector::SetUp() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  auto task_runner = base::SequencedTaskRunnerHandle::Get();
   base::PostTask(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&PerfCollector::ParseCPUFrequencies, ui_task_runner_,
+      base::BindOnce(&PerfCollector::ParseCPUFrequencies, task_runner,
                      weak_factory_.GetWeakPtr()));
-}
 
-PerfCollector::~PerfCollector() {
-  // Destroy WindowedIncognitoMonitor on the UI thread.
-  ui_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce([](std::unique_ptr<WindowedIncognitoMonitor> ref) {},
-                     std::move(windowed_incognito_monitor_)));
-}
-
-void PerfCollector::Init() {
   CHECK(command_selector_.SetOdds(
       internal::GetDefaultCommandsForCpu(GetCPUIdentity())));
   std::map<std::string, std::string> params;
-  if (variations::GetVariationParams(kCWPFieldTrialName, &params))
+  if (variations::GetVariationParams(kCWPFieldTrialName, &params)) {
     SetCollectionParamsFromVariationParams(params);
+  }
+}
 
-  MetricCollector::Init();
+const char* PerfCollector::ToolName() const {
+  return kPerfCollectorName;
 }
 
 namespace internal {
@@ -333,27 +331,28 @@ std::string FindBestCpuSpecifierFromParams(
 
 void PerfCollector::SetCollectionParamsFromVariationParams(
     const std::map<std::string, std::string>& params) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   int64_t value;
+  CollectionParams& collector_params = collection_params();
   if (GetInt64Param(params, "ProfileCollectionDurationSec", &value)) {
-    collection_params_.collection_duration =
-        base::TimeDelta::FromSeconds(value);
+    collector_params.collection_duration = base::TimeDelta::FromSeconds(value);
   }
   if (GetInt64Param(params, "PeriodicProfilingIntervalMs", &value)) {
-    collection_params_.periodic_interval =
+    collector_params.periodic_interval =
         base::TimeDelta::FromMilliseconds(value);
   }
   if (GetInt64Param(params, "ResumeFromSuspend::SamplingFactor", &value)) {
-    collection_params_.resume_from_suspend.sampling_factor = value;
+    collector_params.resume_from_suspend.sampling_factor = value;
   }
   if (GetInt64Param(params, "ResumeFromSuspend::MaxDelaySec", &value)) {
-    collection_params_.resume_from_suspend.max_collection_delay =
+    collector_params.resume_from_suspend.max_collection_delay =
         base::TimeDelta::FromSeconds(value);
   }
   if (GetInt64Param(params, "RestoreSession::SamplingFactor", &value)) {
-    collection_params_.restore_session.sampling_factor = value;
+    collector_params.restore_session.sampling_factor = value;
   }
   if (GetInt64Param(params, "RestoreSession::MaxDelaySec", &value)) {
-    collection_params_.restore_session.max_collection_delay =
+    collector_params.restore_session.max_collection_delay =
         base::TimeDelta::FromSeconds(value);
   }
 
@@ -388,7 +387,7 @@ void PerfCollector::SetCollectionParamsFromVariationParams(
   command_selector_.SetOdds(commands);
 }
 
-MetricCollector::PerfProtoType PerfCollector::GetPerfProtoType(
+internal::MetricCollector::PerfProtoType PerfCollector::GetPerfProtoType(
     const std::vector<std::string>& args) {
   if (args.size() > 1 && args[0] == "perf") {
     if (args[1] == "record" || args[1] == "mem")
@@ -408,12 +407,12 @@ void PerfCollector::OnPerfOutputComplete(
     std::string perf_stdout) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // We are done using |perf_output_call_| and may destroy it.
+  // We are done using |perf_output_call| and may destroy it.
   perf_output_call_ = nullptr;
 
   ParseOutputProtoIfValid(std::move(incognito_observer),
                           std::move(sampled_profile), type, has_cycles,
-                          perf_stdout);
+                          std::move(perf_stdout));
 }
 
 void PerfCollector::ParseOutputProtoIfValid(
@@ -421,7 +420,7 @@ void PerfCollector::ParseOutputProtoIfValid(
     std::unique_ptr<SampledProfile> sampled_profile,
     PerfProtoType type,
     bool has_cycles,
-    const std::string& perf_stdout) {
+    std::string perf_stdout) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Check whether an incognito window had been opened during profile
@@ -443,15 +442,17 @@ void PerfCollector::ParseOutputProtoIfValid(
       base::BindOnce(&OnCollectProcessTypes, sampled_profile.get()),
       base::BindOnce(&PerfCollector::SaveSerializedPerfProto,
                      weak_factory_.GetWeakPtr(), std::move(sampled_profile),
-                     type, perf_stdout));
+                     type, std::move(perf_stdout)));
   DCHECK(posted);
 }
 
-base::WeakPtr<MetricCollector> PerfCollector::GetWeakPtr() {
+base::WeakPtr<internal::MetricCollector> PerfCollector::GetWeakPtr() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return weak_factory_.GetWeakPtr();
 }
 
 bool PerfCollector::ShouldCollect() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Only allow one active collection.
   if (perf_output_call_) {
     AddToUmaHistogram(CollectionAttemptStatus::ALREADY_COLLECTING);
@@ -460,7 +461,7 @@ bool PerfCollector::ShouldCollect() const {
 
   // Do not collect further data if we've already collected a substantial amount
   // of data, as indicated by |kCachedPerfDataProtobufSizeThreshold|.
-  if (cached_profile_data_size() >= kCachedPerfDataProtobufSizeThreshold) {
+  if (cached_data_size_ >= kCachedPerfDataProtobufSizeThreshold) {
     AddToUmaHistogram(CollectionAttemptStatus::NOT_READY_TO_COLLECT);
     return false;
   }
@@ -486,7 +487,9 @@ bool CommandSamplesCPUCycles(const std::vector<std::string>& args) {
 
 void PerfCollector::CollectProfile(
     std::unique_ptr<SampledProfile> sampled_profile) {
-  auto incognito_observer = windowed_incognito_monitor_->CreateObserver();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  auto incognito_observer = WindowedIncognitoMonitor::CreateObserver();
   // For privacy reasons, Chrome should only collect perf data if there is no
   // incognito session active (or gets spawned during the collection).
   if (incognito_observer->IncognitoActive()) {
@@ -501,7 +504,7 @@ void PerfCollector::CollectProfile(
   bool has_cycles = internal::CommandSamplesCPUCycles(command);
 
   perf_output_call_ = std::make_unique<PerfOutputCall>(
-      collection_params_.collection_duration, command,
+      collection_params().collection_duration, command,
       base::BindOnce(&PerfCollector::OnPerfOutputComplete,
                      weak_factory_.GetWeakPtr(), std::move(incognito_observer),
                      std::move(sampled_profile), type, has_cycles));

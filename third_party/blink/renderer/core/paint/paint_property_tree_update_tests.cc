@@ -1619,10 +1619,6 @@ TEST_P(PaintPropertyTreeUpdateTest, SubpixelAccumulationAcrossIsolation) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -1659,7 +1655,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
   EXPECT_EQ(FloatPoint3D(50, 50, 0), transform_node->Origin());
   // Change of animation status should update PaintArtifactCompositor.
   auto* paint_artifact_compositor =
-      GetDocument().View()->GetPaintArtifactCompositorForTesting();
+      GetDocument().View()->GetPaintArtifactCompositor();
   EXPECT_TRUE(paint_artifact_compositor->NeedsUpdate());
   // PaintArtifactCompositor can't clear the NeedsUpdate flag by itself when
   // there is no cc::LayerTreeHost.

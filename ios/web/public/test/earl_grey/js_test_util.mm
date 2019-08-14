@@ -10,7 +10,7 @@
 #include "base/timer/elapsed_timer.h"
 #import "ios/testing/earl_grey/earl_grey_app.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #import "ios/web/security/web_interstitial_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

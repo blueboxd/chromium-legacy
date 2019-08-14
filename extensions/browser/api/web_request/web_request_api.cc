@@ -68,6 +68,7 @@
 #include "extensions/browser/warning_service.h"
 #include "extensions/browser/warning_set.h"
 #include "extensions/common/api/web_request.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/event_filtering_info.h"
 #include "extensions/common/extension.h"
@@ -474,6 +475,19 @@ scoped_refptr<const net::HttpResponseHeaders> FilterResponseHeaders(
   }
 
   return *headers_filtered ? result : response_headers;
+}
+
+// Helper to record a matched DNR action in RulesetManager's ActionTracker.
+void OnDNRActionMatched(content::BrowserContext* browser_context,
+                        const WebRequestInfo& request) {
+  DCHECK(request.dnr_action.has_value());
+
+  declarative_net_request::ActionTracker& action_tracker =
+      declarative_net_request::RulesMonitorService::Get(browser_context)
+          ->ruleset_manager()
+          ->action_tracker();
+  action_tracker.OnRuleMatched(request.dnr_action->extension_ids,
+                               request.frame_data.tab_id);
 }
 
 }  // namespace
@@ -1013,12 +1027,15 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
     case Action::Type::NONE:
       break;
     case Action::Type::BLOCK:
+      OnDNRActionMatched(browser_context, *request);
       return net::ERR_BLOCKED_BY_CLIENT;
     case Action::Type::COLLAPSE:
+      OnDNRActionMatched(browser_context, *request);
       *should_collapse_initiator = true;
       return net::ERR_BLOCKED_BY_CLIENT;
     case Action::Type::REDIRECT:
       DCHECK(action.redirect_url);
+      OnDNRActionMatched(browser_context, *request);
       *new_url = action.redirect_url.value();
       return net::OK;
     case Action::Type::REMOVE_HEADERS:
@@ -1090,6 +1107,11 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
       headers->RemoveHeader(header);
     } while (headers->HasHeader(header));
   }
+
+  // TODO(crbug.com/991420): This does not properly associate which headers are
+  // removed by which extensions.
+  if (!removed_headers.empty())
+    OnDNRActionMatched(browser_context, *request);
 
   bool initialize_blocked_requests = false;
 
@@ -1184,6 +1206,10 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
     // |override_response_headers| don't point to the same object.
     *override_response_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         filtered_response_headers->raw_headers());
+
+    // TODO(crbug.com/991420): This does not properly associate which headers
+    // are removed by which extensions.
+    OnDNRActionMatched(browser_context, *request);
   }
 
   bool initialize_blocked_requests = false;

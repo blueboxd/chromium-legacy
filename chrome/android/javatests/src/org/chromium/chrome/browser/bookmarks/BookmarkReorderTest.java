@@ -9,6 +9,9 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.chromium.chrome.browser.ViewHighlighterTestUtils.checkHighlightOff;
+import static org.chromium.chrome.browser.ViewHighlighterTestUtils.checkHighlightOn;
+
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
@@ -602,6 +605,144 @@ public class BookmarkReorderTest extends BookmarkTest {
         TestThreadUtils.runOnUiThreadBlocking(adapter::simulateSignInForTests);
         Assert.assertEquals(
                 "Expected \"Other Bookmarks\" folder to appear!", 2, adapter.getItemCount());
+    }
+
+    @Test
+    @MediumTest
+    public void testShowInFolder_NoScroll() throws Exception {
+        addFolder(TEST_FOLDER_TITLE);
+        forceSyncHeaderState();
+        openBookmarkManager();
+
+        // Enter search mode.
+        View searchButton = mManager.getToolbarForTests().findViewById(R.id.search_menu_id);
+        TestThreadUtils.runOnUiThreadBlocking(searchButton::performClick);
+        CriteriaHelper.pollUiThread(
+                () -> mManager.getToolbarForTests().isSearching(), "Expected to enter search mode");
+
+        // Click "Show in folder".
+        View testFolder = mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
+        View more = testFolder.findViewById(R.id.more);
+        Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
+                ((BookmarkFolderRow) testFolder).getTitle());
+        TestThreadUtils.runOnUiThreadBlocking(more::performClick);
+        onView(withText("Show in folder")).perform(click());
+
+        Assert.assertTrue(
+                "Expected bookmark row to be highlighted after clicking \"show in folder\"",
+                checkHighlightOn(testFolder));
+
+        // Enter search mode again.
+        searchButton = mManager.getToolbarForTests().findViewById(R.id.search_menu_id);
+        TestThreadUtils.runOnUiThreadBlocking(searchButton::performClick);
+        CriteriaHelper.pollUiThread(
+                () -> mManager.getToolbarForTests().isSearching(), "Expected to enter search mode");
+
+        Assert.assertTrue("Expected bookmark row to not be highlighted "
+                        + "after entering search mode",
+                checkHighlightOff(testFolder));
+
+        // Click "Show in folder" again.
+        TestThreadUtils.runOnUiThreadBlocking(more::performClick);
+        onView(withText("Show in folder")).perform(click());
+
+        // Check that the highlight is on.
+        Assert.assertTrue("Expected highlight to successfully come back on"
+                        + " after clicking \"show in folder\" a 2nd time",
+                checkHighlightOn(testFolder));
+    }
+
+    @Test
+    @MediumTest
+    public void testShowInFolder_Scroll() throws Exception {
+        addFolder(TEST_FOLDER_TITLE); // Index 8
+        addBookmark(TEST_TITLE_A, TEST_URL_A);
+        addBookmark(TEST_PAGE_TITLE_FOO, "http://foo.com");
+        addFolder(TEST_PAGE_TITLE_GOOGLE2);
+        addFolder("B");
+        addFolder("C");
+        addFolder("D");
+        addFolder("E"); // Index 1
+        forceSyncHeaderState();
+        openBookmarkManager();
+
+        // Enter search mode.
+        View searchButton = mManager.getToolbarForTests().findViewById(R.id.search_menu_id);
+        TestThreadUtils.runOnUiThreadBlocking(searchButton::performClick);
+        CriteriaHelper.pollUiThread(
+                () -> mManager.getToolbarForTests().isSearching(), "Expected to enter search mode");
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mManager.onSearchTextChanged(TEST_FOLDER_TITLE));
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+
+        // This should be the only (& therefore 0-indexed) item.
+        View testFolderInSearch = mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
+        View more = testFolderInSearch.findViewById(R.id.more);
+        Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
+                ((BookmarkFolderRow) testFolderInSearch).getTitle());
+
+        // Show in folder.
+        TestThreadUtils.runOnUiThreadBlocking(more::performClick);
+        onView(withText("Show in folder")).perform(click());
+
+        // This should be in the 8th position now.
+        ViewHolder testFolderInList = mItemsContainer.findViewHolderForAdapterPosition(8);
+        Assert.assertFalse(
+                "Expected list to scroll bookmark item into view", testFolderInList == null);
+        Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
+                ((BookmarkFolderRow) testFolderInList.itemView).getTitle());
+        Assert.assertTrue("Expected bookmark item to be highlighted after scrolling to it.",
+                checkHighlightOn(testFolderInList.itemView));
+    }
+
+    @Test
+    @MediumTest
+    public void testShowInFolder_OpenOtherFolder() throws Exception {
+        BookmarkId testId = addFolder(TEST_FOLDER_TITLE);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mBookmarkModel.addBookmark(testId, 0, TEST_TITLE_A, TEST_URL_A));
+        forceSyncHeaderState();
+        openBookmarkManager();
+
+        // Enter search mode.
+        View searchButton = mManager.getToolbarForTests().findViewById(R.id.search_menu_id);
+        TestThreadUtils.runOnUiThreadBlocking(searchButton::performClick);
+        CriteriaHelper.pollUiThread(
+                () -> mManager.getToolbarForTests().isSearching(), "Expected to enter search mode");
+        TestThreadUtils.runOnUiThreadBlocking(() -> mManager.onSearchTextChanged(TEST_URL_A));
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+
+        // This should be the only (& therefore 0-indexed) item.
+        View itemAInSearch = mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
+        View more = itemAInSearch.findViewById(R.id.more);
+        Assert.assertEquals("Wrong bookmark item selected.", TEST_TITLE_A,
+                ((BookmarkItemRow) itemAInSearch).getTitle());
+
+        // Show in folder.
+        TestThreadUtils.runOnUiThreadBlocking(more::performClick);
+        onView(withText("Show in folder")).perform(click());
+
+        // Make sure that we're in the right folder (index 1 because of promo).
+        View itemA = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        Assert.assertEquals("Wrong bookmark item selected.", TEST_TITLE_A,
+                ((BookmarkItemRow) itemA).getTitle());
+        Assert.assertTrue(
+                "Expected bookmark item to be highlighted after opening it in new folder.",
+                checkHighlightOn(itemA));
+
+        // Open mobile bookmarks folder, then go back to the subfolder.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mManager.openFolder(mBookmarkModel.getMobileFolderId());
+            mManager.openFolder(testId);
+        });
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+
+        itemA = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        Assert.assertEquals("Wrong bookmark item selected.", TEST_TITLE_A,
+                ((BookmarkItemRow) itemA).getTitle());
+        Assert.assertTrue("Expected bookmark item to not be highlighted after "
+                        + "exiting and re-entering folder.",
+                checkHighlightOff(itemA));
     }
 
     @Override

@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/main_menu_builder.h"
 
+#include "build/branding_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
@@ -423,7 +424,7 @@ base::scoped_nsobject<NSMenuItem> BuildHelpMenu(
   base::scoped_nsobject<NSMenuItem> item =
       Item(IDS_HELP_MENU_MAC)
           .submenu({
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
             Item(IDS_FEEDBACK_MAC).command_id(IDC_FEEDBACK),
 #endif
                 Item(IDS_HELP_MAC)

@@ -115,8 +115,8 @@ TEST_F(GCMUnregistrationRequestTest, RequestDataPassedToFetcher) {
   const network::ResourceRequest* pending_request;
   ASSERT_TRUE(
       test_url_loader_factory()->IsPending(kRegistrationURL, &pending_request));
-  EXPECT_TRUE(pending_request->load_flags & net::LOAD_DO_NOT_SEND_COOKIES);
-  EXPECT_TRUE(pending_request->load_flags & net::LOAD_DO_NOT_SAVE_COOKIES);
+  EXPECT_EQ(network::mojom::CredentialsMode::kOmit,
+            pending_request->credentials_mode);
 
   // Verify that authorization header was put together properly.
   const net::HttpRequestHeaders* headers =

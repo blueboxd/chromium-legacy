@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_METRICS_PERF_PERF_EVENTS_COLLECTOR_H_
 
 #include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "chrome/browser/metrics/perf/metric_collector.h"
 #include "chrome/browser/metrics/perf/random_selector.h"
@@ -18,18 +21,18 @@ namespace metrics {
 
 struct CPUIdentity;
 class PerfOutputCall;
-class WindowedIncognitoMonitor;
 class WindowedIncognitoObserver;
 
 // Enables collection of perf events profile data. perf aka "perf events" is a
 // performance profiling infrastructure built into the linux kernel. For more
 // information, see: https://perf.wiki.kernel.org/index.php/Main_Page.
-class PerfCollector : public MetricCollector {
+class PerfCollector : public internal::MetricCollector {
  public:
   PerfCollector();
-  ~PerfCollector() override;
 
-  void Init() override;
+  // MetricCollector:
+  ~PerfCollector() override;
+  const char* ToolName() const override;
 
  protected:
   // Returns the perf proto type associated with the given vector of perf
@@ -53,10 +56,11 @@ class PerfCollector : public MetricCollector {
       std::unique_ptr<SampledProfile> sampled_profile,
       PerfProtoType type,
       bool has_cycles,
-      const std::string& perf_stdout);
+      std::string perf_stdout);
 
   // MetricCollector:
-  base::WeakPtr<MetricCollector> GetWeakPtr() override;
+  void SetUp() override;
+  base::WeakPtr<internal::MetricCollector> GetWeakPtr() override;
   bool ShouldCollect() const override;
   void CollectProfile(std::unique_ptr<SampledProfile> sampled_profile) override;
 
@@ -67,8 +71,12 @@ class PerfCollector : public MetricCollector {
   static void ParseCPUFrequencies(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       base::WeakPtr<PerfCollector> perf_collector);
-  // Executes on the same sequence as the processing of perf data.
+  // Saves the given frequencies to |max_frequencies_mhz_|.
   void SaveCPUFrequencies(const std::vector<uint32_t>& frequencies);
+
+  const std::vector<uint32_t>& max_frequencies_mhz() const {
+    return max_frequencies_mhz_;
+  }
 
   // Enumeration representing success and various failure modes for parsing CPU
   // frequencies. These values are persisted to logs. Entries should not be
@@ -82,16 +90,9 @@ class PerfCollector : public MetricCollector {
     kMaxValue = kAllZeroCPUFrequencies,
   };
 
-  // Vector of max frequencies associated with each logical CPU. Computed
-  // asynchronously at start, but initialized using the same sequence as the
-  // perf data processing code.
-  std::vector<uint32_t> max_frequencies_mhz_;
-
-  std::unique_ptr<WindowedIncognitoMonitor> windowed_incognito_monitor_;
-
  private:
   // Change the values in |collection_params_| and the commands in
-  // |command_selector_| for any keys that are present in |params|.
+  // |command_selector| for any keys that are present in |params|.
   void SetCollectionParamsFromVariationParams(
       const std::map<std::string, std::string>& params);
 
@@ -101,8 +102,9 @@ class PerfCollector : public MetricCollector {
   // An active call to perf/quipper, if set.
   std::unique_ptr<PerfOutputCall> perf_output_call_;
 
-  // For destroying |windowed_incognito_monitor_| on the UI thread.
-  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
+  // Vector of max frequencies associated with each logical CPU. Computed
+  // asynchronously at start.
+  std::vector<uint32_t> max_frequencies_mhz_;
 
   base::WeakPtrFactory<PerfCollector> weak_factory_;
 

@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/tabs/alert_indicator.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_close_button.h"
@@ -487,6 +488,10 @@ TEST_F(TabTest, LayoutAndVisibilityOfElements) {
 // Regression test for http://crbug.com/420313: Confirms that any child Views of
 // Tab do not attempt to provide their own tooltip behavior/text.
 TEST_F(TabTest, TooltipProvidedByTab) {
+  // This test isn't relevant when tab hover cards are enabled since tab
+  // tooltips are then disabled.
+  if (base::FeatureList::IsEnabled(features::kTabHoverCards))
+    return;
   Widget widget;
   InitWidget(&widget);
 
@@ -501,9 +506,9 @@ TEST_F(TabTest, TooltipProvidedByTab) {
   data.favicon = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 
   data.title = base::UTF8ToUTF16(
-      "This is a really long tab title that would case views::Label to provide "
-      "its own tooltip; but Tab should disable that feature so it can provide "
-      "the tooltip instead.");
+      "This is a really long tab title that would cause views::Label to "
+      "provide its own tooltip; but Tab should disable that feature so it can "
+      "provide the tooltip instead.");
 
   // Test both with and without an indicator showing since the tab tooltip text
   // should include a description of the alert state when the indicator is

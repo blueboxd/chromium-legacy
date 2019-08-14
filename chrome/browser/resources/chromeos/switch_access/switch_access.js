@@ -62,6 +62,11 @@ class SwitchAccess {
    * @private
    */
   init_() {
+    chrome.commandLinePrivate.hasSwitch(
+        'enable-experimental-accessibility-switch-access-text', (result) => {
+          this.enableImprovedTextInput_ = result;
+        });
+
     this.commands_ = new Commands(this);
     this.autoScanManager_ = new AutoScanManager(this);
     const onPrefsReady =
@@ -75,11 +80,6 @@ class SwitchAccess {
       if (this.navReadyCallback_)
         this.navReadyCallback_();
     }.bind(this));
-
-    chrome.commandLinePrivate.hasSwitch(
-        'enable-experimental-accessibility-switch-access-text', (result) => {
-          this.enableImprovedTextInput_ = result;
-        });
   }
 
   /**

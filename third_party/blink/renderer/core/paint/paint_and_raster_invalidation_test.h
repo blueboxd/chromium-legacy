@@ -23,7 +23,7 @@ class PaintAndRasterInvalidationTest : public PaintControllerPaintTest {
     DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
     const auto& clients = GetDocument()
                               .View()
-                              ->GetPaintArtifactCompositorForTesting()
+                              ->GetPaintArtifactCompositor()
                               ->ContentLayerClientsForTesting();
     return index < clients.size() ? clients[index].get() : nullptr;
   }
@@ -47,10 +47,7 @@ class PaintAndRasterInvalidationTest : public PaintControllerPaintTest {
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       layer_tree_ = std::make_unique<LayerTreeHostEmbedder>();
       layer_tree_->layer_tree_host()->SetRootLayer(
-          GetDocument()
-              .View()
-              ->GetPaintArtifactCompositorForTesting()
-              ->RootLayer());
+          GetDocument().View()->GetPaintArtifactCompositor()->RootLayer());
     }
   }
 

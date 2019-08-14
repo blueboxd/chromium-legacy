@@ -8,6 +8,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
@@ -57,20 +58,18 @@ class MockNFCReader : public NFCReader {
 
 class FakeNfcService : public device::mojom::blink::NFC {
  public:
-  FakeNfcService() : binding_(this) {}
+  FakeNfcService() : receiver_(this) {}
   ~FakeNfcService() override = default;
 
   void BindRequest(mojo::ScopedMessagePipeHandle handle) {
-    DCHECK(!binding_.is_bound());
-    binding_.Bind(device::mojom::blink::NFCRequest(std::move(handle)));
-    binding_.set_connection_error_handler(
+    DCHECK(!receiver_.is_bound());
+    receiver_.Bind(device::mojom::blink::NFCRequest(std::move(handle)));
+    receiver_.set_disconnect_handler(
         WTF::Bind(&FakeNfcService::OnConnectionError, WTF::Unretained(this)));
   }
 
   void OnConnectionError() {
-    if (binding_.is_bound())
-      binding_.Unbind();
-
+    receiver_.reset();
     client_.reset();
   }
 
@@ -106,8 +105,9 @@ class FakeNfcService : public device::mojom::blink::NFC {
 
  private:
   // Override methods from device::mojom::blink::NFC.
-  void SetClient(device::mojom::blink::NFCClientPtr client) override {
-    client_ = std::move(client);
+  void SetClient(
+      mojo::PendingRemote<device::mojom::blink::NFCClient> client) override {
+    client_.Bind(std::move(client));
   }
   void Push(device::mojom::blink::NDEFMessagePtr message,
             device::mojom::blink::NFCPushOptionsPtr options,
@@ -141,9 +141,9 @@ class FakeNfcService : public device::mojom::blink::NFC {
   void ResumeNFCOperations() override {}
 
   device::mojom::blink::NDEFMessagePtr tag_message_;
-  device::mojom::blink::NFCClientPtr client_;
+  mojo::Remote<device::mojom::blink::NFCClient> client_;
   std::map<uint32_t, device::mojom::blink::NFCReaderOptionsPtr> watches_;
-  mojo::Binding<device::mojom::blink::NFC> binding_;
+  mojo::Receiver<device::mojom::blink::NFC> receiver_;
 };
 
 // Overrides requests for NFC mojo requests with FakeNfcService instances.

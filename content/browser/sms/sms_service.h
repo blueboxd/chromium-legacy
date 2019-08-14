@@ -15,6 +15,7 @@
 #include "content/browser/sms/sms_provider.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/frame_service_base.h"
+#include "content/public/browser/sms_dialog.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom.h"
 #include "url/origin.h"
@@ -60,10 +61,15 @@ class CONTENT_EXPORT SmsService
 
   // Callback when the |timer_| times out.
   void OnTimeout();
-  // Callback when the user manually clicks 'Confirm' button.
+  // Called when the user manually clicks 'Confirm' button.
   void OnConfirm();
-  // Callback when the user manually dismisses the dialog.
+  // Called when the user manually dismisses the dialog.
   void OnCancel();
+  // Callback when the user manually clicks 'Try again' button after a timeout.
+  void OnTryAgain();
+
+  // Handles the user's action.
+  void OnEvent(SmsDialog::Event event_type);
 
   // |sms_provider_| is safe because all instances of SmsProvider are owned
   // by a SmsKeyedService, which is owned by a Profile, which transitively

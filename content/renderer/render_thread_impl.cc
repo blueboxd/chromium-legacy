@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -273,6 +274,35 @@ void* CreateHistogram(
 void AddHistogramSample(void* hist, int sample) {
   base::Histogram* histogram = static_cast<base::Histogram*>(hist);
   histogram->Add(sample);
+}
+
+void AddCrashKey(v8::CrashKeyId id, const std::string& value) {
+  namespace bd = base::debug;
+  switch (id) {
+    case v8::CrashKeyId::kIsolateAddress:
+      static bd::CrashKeyString* isolate_address = bd::AllocateCrashKeyString(
+          "v8_isolate_address", bd::CrashKeySize::Size32);
+      bd::SetCrashKeyString(isolate_address, value);
+      break;
+    case v8::CrashKeyId::kReadonlySpaceFirstPageAddress:
+      static bd::CrashKeyString* ro_space_firstpage_address =
+          bd::AllocateCrashKeyString("v8_ro_space_firstpage_address",
+                                     bd::CrashKeySize::Size32);
+      bd::SetCrashKeyString(ro_space_firstpage_address, value);
+      break;
+    case v8::CrashKeyId::kMapSpaceFirstPageAddress:
+      static bd::CrashKeyString* map_space_firstpage_address =
+          bd::AllocateCrashKeyString("v8_map_space_firstpage_address",
+                                     bd::CrashKeySize::Size32);
+      bd::SetCrashKeyString(map_space_firstpage_address, value);
+      break;
+    case v8::CrashKeyId::kCodeSpaceFirstPageAddress:
+      static bd::CrashKeyString* code_space_firstpage_address =
+          bd::AllocateCrashKeyString("v8_code_space_firstpage_address",
+                                     bd::CrashKeySize::Size32);
+      bd::SetCrashKeyString(code_space_firstpage_address, value);
+      break;
+  }
 }
 
 class FrameFactoryImpl : public mojom::FrameFactory {
@@ -1174,6 +1204,7 @@ void RenderThreadImpl::InitializeWebKit(
   v8::Isolate* isolate = blink::MainThreadIsolate();
   isolate->SetCreateHistogramFunction(CreateHistogram);
   isolate->SetAddHistogramSampleFunction(AddHistogramSample);
+  isolate->SetAddCrashKeyCallback(AddCrashKey);
 
   main_thread_compositor_task_runner_ =
       main_thread_scheduler_->CompositorTaskRunner();

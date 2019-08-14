@@ -10,6 +10,7 @@ include_rules = [
   "+chromeos/services/network_config/public",
   "+components/account_id",
   "+components/certificate_matching",
+  "+components/crx_file",
   "+components/device_event_log",
   "+components/onc",
   "+components/pref_registry",

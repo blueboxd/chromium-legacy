@@ -489,9 +489,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
     state.direct_compositing_reasons =
         full_context_.direct_compositing_reasons &
         CompositingReason::kScrollDependentPosition;
-    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-        RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-      state.rendering_context_id = context_.current.rendering_context_id;
+    state.rendering_context_id = context_.current.rendering_context_id;
     OnUpdate(properties_->UpdatePaintOffsetTranslation(
         *context_.current.transform, std::move(state)));
     context_.current.transform = properties_->PaintOffsetTranslation();
@@ -660,9 +658,7 @@ static bool NeedsTransform(const LayoutObject& object,
   if (object.IsText())
     return false;
 
-  if ((RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-       RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) &&
-      object.StyleRef().BackfaceVisibility() == EBackfaceVisibility::kHidden)
+  if (object.StyleRef().BackfaceVisibility() == EBackfaceVisibility::kHidden)
     return true;
 
   if (direct_compositing_reasons & CompositingReasonsForTransformProperty())
@@ -729,43 +725,36 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
                 matrix, TransformOrigin(box),
                 disable_2d_translation_optimization);
 
-        if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-            RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-          // TODO(trchen): transform-style should only be respected if a
-          // PaintLayer is created. If a node with transform-style: preserve-3d
-          // does not exist in an existing rendering context, it establishes a
-          // new one.
-          state.rendering_context_id = context_.current.rendering_context_id;
-          if (style.Preserves3D() && !state.rendering_context_id) {
-            state.rendering_context_id =
-                PtrHash<const LayoutObject>::GetHash(&object_);
-          }
-          state.direct_compositing_reasons =
-              full_context_.direct_compositing_reasons &
-              CompositingReasonsForTransformProperty();
-          // TODO(flackr): This only needs to consider composited transform
-          // animations. This is currently a cyclic dependency but we could
-          // calculate most of the compositable animation reasons up front to
-          // only consider animations which are candidates for compositing.
-          state.flags.animation_is_axis_aligned =
-              ActiveTransformAnimationIsAxisAligned(
-                  object_, full_context_.direct_compositing_reasons);
+        // TODO(trchen): transform-style should only be respected if a
+        // PaintLayer is created. If a node with transform-style: preserve-3d
+        // does not exist in an existing rendering context, it establishes a
+        // new one.
+        state.rendering_context_id = context_.current.rendering_context_id;
+        if (style.Preserves3D() && !state.rendering_context_id) {
+          state.rendering_context_id =
+              PtrHash<const LayoutObject>::GetHash(&object_);
         }
+        state.direct_compositing_reasons =
+            full_context_.direct_compositing_reasons &
+            CompositingReasonsForTransformProperty();
+        // TODO(flackr): This only needs to consider composited transform
+        // animations. This is currently a cyclic dependency but we could
+        // calculate most of the compositable animation reasons up front to
+        // only consider animations which are candidates for compositing.
+        state.flags.animation_is_axis_aligned =
+            ActiveTransformAnimationIsAxisAligned(
+                object_, full_context_.direct_compositing_reasons);
       }
 
       state.flags.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
 
-      if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-          RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-        state.backface_visibility =
-            object_.HasHiddenBackface()
-                ? TransformPaintPropertyNode::BackfaceVisibility::kHidden
-                : TransformPaintPropertyNode::BackfaceVisibility::kVisible;
-        state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
-            object_.UniqueId(),
-            CompositorElementIdNamespace::kPrimaryTransform);
-      }
+      state.backface_visibility =
+          object_.HasHiddenBackface()
+              ? TransformPaintPropertyNode::BackfaceVisibility::kHidden
+              : TransformPaintPropertyNode::BackfaceVisibility::kVisible;
+      state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
+          object_.UniqueId(), CompositorElementIdNamespace::kPrimaryTransform);
 
       TransformPaintPropertyNode::AnimationState animation_state;
       animation_state.is_running_animation_on_compositor =
@@ -824,18 +813,16 @@ static bool NeedsClipPathClip(const LayoutObject& object) {
 static CompositingReasons CompositingReasonsForEffectProperty() {
   CompositingReasons reasons =
       CompositingReason::kDirectReasonsForEffectProperty;
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    // TODO(crbug.com/900241): Check for nodes for each KeyframeModel target
-    // property instead of creating all nodes and only create a transform/
-    // effect/filter node if needed.
-    reasons |= CompositingReason::kComboActiveAnimation;
-    // We also need to create effect node if the transform node is created for
-    // will-change:transform to avoid raster invalidation (caused by otherwise a
-    // created/deleted effect node) when we start/stop a transform animation.
-    // https://crbug.com/942681
-    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-      reasons |= CompositingReason::kWillChangeTransform;
-  }
+  // TODO(crbug.com/900241): Check for nodes for each KeyframeModel target
+  // property instead of creating all nodes and only create a transform/
+  // effect/filter node if needed.
+  reasons |= CompositingReason::kComboActiveAnimation;
+  // We also need to create effect node if the transform node is created for
+  // will-change:transform to avoid raster invalidation (caused by otherwise a
+  // created/deleted effect node) when we start/stop a transform animation.
+  // https://crbug.com/942681
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    reasons |= CompositingReason::kWillChangeTransform;
   return reasons;
 }
 
@@ -885,8 +872,7 @@ static bool NeedsEffect(const LayoutObject& object,
 
     // An effect node is required by cc if the layer flattens its subtree but it
     // is treated as a 3D object by its parent.
-    if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-        !layer->Preserves3D() && layer->HasSelfPaintingLayerDescendant() &&
+    if (!layer->Preserves3D() && layer->HasSelfPaintingLayerDescendant() &&
         layer->Parent() && layer->Parent()->Preserves3D())
       return true;
   }
@@ -1009,8 +995,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
       }
 
       CompositorElementId mask_compositor_element_id;
-      if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-          (mask_clip || has_spv1_composited_clip_path)) {
+      if (mask_clip || has_spv1_composited_clip_path) {
         mask_compositor_element_id = CompositorElementIdFromUniqueObjectId(
             object_.UniqueId(), CompositorElementIdNamespace::kEffectMask);
       }
@@ -1039,35 +1024,32 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
           }
         }
       }
-      if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-          RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-        // We may begin to composite our subtree prior to an animation starts,
-        // but a compositor element ID is only needed when an animation is
-        // current.
-        //
-        // Currently, we use the existence of this id to check if effect nodes
-        // have been created for animations on this element.
-        state.direct_compositing_reasons =
-            full_context_.direct_compositing_reasons &
-            CompositingReasonsForEffectProperty();
-        if (state.direct_compositing_reasons) {
-          state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
-              object_.UniqueId(), CompositorElementIdNamespace::kPrimaryEffect);
-        } else {
-          // The effect node CompositorElementId is used to uniquely identify
-          // renderpasses so even if we don't need one for animations we still
-          // need to set an id. Using kPrimary avoids confusing cc::Animation
-          // into thinking the element has been composited for animations.
-          state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
-              object_.UniqueId(), CompositorElementIdNamespace::kPrimary);
-        }
 
-        // TODO(crbug.com/900241): Remove these setters when we can use
-        // state.direct_compositing_reasons to check for active animations.
-        state.has_active_opacity_animation = style.HasCurrentOpacityAnimation();
-        state.has_active_backdrop_filter_animation =
-            style.HasCurrentBackdropFilterAnimation();
+      // We may begin to composite our subtree prior to an animation starts, but
+      // a compositor element ID is only needed when an animation is current.
+      //
+      // Currently, we use the existence of this id to check if effect nodes
+      // have been created for animations on this element.
+      state.direct_compositing_reasons =
+          full_context_.direct_compositing_reasons &
+          CompositingReasonsForEffectProperty();
+      if (state.direct_compositing_reasons) {
+        state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
+            object_.UniqueId(), CompositorElementIdNamespace::kPrimaryEffect);
+      } else {
+        // The effect node CompositorElementId is used to uniquely identify
+        // renderpasses so even if we don't need one for animations we still
+        // need to set an id. Using kPrimary avoids confusing cc::Animation
+        // into thinking the element has been composited for animations.
+        state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
+            object_.UniqueId(), CompositorElementIdNamespace::kPrimary);
       }
+
+      // TODO(crbug.com/900241): Remove these setters when we can use
+      // state.direct_compositing_reasons to check for active animations.
+      state.has_active_opacity_animation = style.HasCurrentOpacityAnimation();
+      state.has_active_backdrop_filter_animation =
+          style.HasCurrentBackdropFilterAnimation();
 
       EffectPaintPropertyNode::AnimationState animation_state;
       animation_state.is_running_opacity_animation_on_compositor =
@@ -1103,10 +1085,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         mask_state.output_clip = output_clip;
         mask_state.color_filter = CSSMaskPainter::MaskColorFilter(object_);
         mask_state.blend_mode = SkBlendMode::kDstIn;
-        if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-            RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-          mask_state.compositor_element_id = mask_compositor_element_id;
-        }
+        mask_state.compositor_element_id = mask_compositor_element_id;
         OnUpdate(properties_->UpdateMask(*properties_->Effect(),
                                          std::move(mask_state)));
       } else {
@@ -1121,13 +1100,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         clip_path_state.local_transform_space = context_.current.transform;
         clip_path_state.output_clip = output_clip;
         clip_path_state.blend_mode = SkBlendMode::kDstIn;
-        if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-            RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-          clip_path_state.compositor_element_id =
-              CompositorElementIdFromUniqueObjectId(
-                  object_.UniqueId(),
-                  CompositorElementIdNamespace::kEffectClipPath);
-        }
+        clip_path_state.compositor_element_id =
+            CompositorElementIdFromUniqueObjectId(
+                object_.UniqueId(),
+                CompositorElementIdNamespace::kEffectClipPath);
         OnUpdate(
             properties_->UpdateClipPath(parent, std::move(clip_path_state)));
       } else {
@@ -1160,19 +1136,17 @@ static bool NeedsLinkHighlightEffect(const LayoutObject& object) {
 static CompositingReasons CompositingReasonsForFilterProperty() {
   CompositingReasons reasons =
       CompositingReason::kDirectReasonsForFilterProperty;
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    // TODO(crbug.com/900241): Check for nodes for each KeyframeModel target
-    // property instead of creating all nodes and only create a transform/
-    // effect/filter node if needed.
-    reasons |= CompositingReason::kComboActiveAnimation;
-    // We also need to create filter node if the transform/effect node is
-    // created for will-change:transform/opacity to avoid raster invalidation
-    // (caused by otherwise a created/deleted filter node) when we start/stop a
-    // transform/opacity animation. https://crbug.com/942681
-    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      reasons |= CompositingReason::kWillChangeTransform |
-                 CompositingReason::kWillChangeOpacity;
-    }
+  // TODO(crbug.com/900241): Check for nodes for each KeyframeModel target
+  // property instead of creating all nodes and only create a transform/
+  // effect/filter node if needed.
+  reasons |= CompositingReason::kComboActiveAnimation;
+  // We also need to create filter node if the transform/effect node is
+  // created for will-change:transform/opacity to avoid raster invalidation
+  // (caused by otherwise a created/deleted filter node) when we start/stop a
+  // transform/opacity animation. https://crbug.com/942681
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    reasons |= CompositingReason::kWillChangeTransform |
+               CompositingReason::kWillChangeOpacity;
   }
   return reasons;
 }
@@ -1202,17 +1176,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
 
       if (auto* layer = ToLayoutBoxModelObject(object_).Layer()) {
         // Try to use the cached filter.
-        if (properties_->Filter()) {
+        if (properties_->Filter())
           state.filter = properties_->Filter()->Filter();
-        }
-
-        // With BGPT disabled, UpdateFilterReferenceBox gets called from
-        // CompositedLayerMapping::UpdateGraphicsLayerGeometry, but only
-        // for composited layers.
-        if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-            layer->GetCompositingState() != kPaintsIntoOwnBacking) {
-          layer->UpdateFilterReferenceBox();
-        }
+        layer->UpdateFilterReferenceBox();
         layer->UpdateCompositorFilterOperationsForFilter(state.filter);
         layer->ClearFilterOnEffectNodeDirty();
       }
@@ -1242,22 +1208,19 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
       // output pixel may depend on an input pixel outside of the output clip.
       // We should generate a special clip node to represent this expansion.
 
-      if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-          RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-        // We may begin to composite our subtree prior to an animation starts,
-        // but a compositor element ID is only needed when an animation is
-        // current.
-        state.direct_compositing_reasons =
-            full_context_.direct_compositing_reasons &
-            CompositingReasonsForFilterProperty();
-        state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
-            object_.UniqueId(), CompositorElementIdNamespace::kEffectFilter);
+      // We may begin to composite our subtree prior to an animation starts,
+      // but a compositor element ID is only needed when an animation is
+      // current.
+      state.direct_compositing_reasons =
+          full_context_.direct_compositing_reasons &
+          CompositingReasonsForFilterProperty();
+      state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
+          object_.UniqueId(), CompositorElementIdNamespace::kEffectFilter);
 
-        // TODO(crbug.com/900241): Remove the setter when we can use
-        // state.direct_compositing_reasons to check for active animations.
-        state.has_active_filter_animation =
-            object_.StyleRef().HasCurrentFilterAnimation();
-      }
+      // TODO(crbug.com/900241): Remove the setter when we can use
+      // state.direct_compositing_reasons to check for active animations.
+      state.has_active_filter_animation =
+          object_.StyleRef().HasCurrentFilterAnimation();
 
       EffectPaintPropertyNode::AnimationState animation_state;
       animation_state.is_running_filter_animation_on_compositor =
@@ -1692,9 +1655,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePerspective() {
                   FloatSize(context_.current.paint_offset))};
       state.flags.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
-      if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-          RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-        state.rendering_context_id = context_.current.rendering_context_id;
+      state.rendering_context_id = context_.current.rendering_context_id;
       OnUpdate(properties_->UpdatePerspective(*context_.current.transform,
                                               std::move(state)));
     } else {
@@ -1880,9 +1841,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
         }
       }
 
-      if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-          RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-        state.compositor_element_id = scrollable_area->GetCompositorElementId();
+      state.compositor_element_id = scrollable_area->GetCompositorElementId();
 
       state.overscroll_behavior = cc::OverscrollBehavior(
           static_cast<cc::OverscrollBehavior::OverscrollBehaviorType>(
@@ -1953,10 +1912,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
           full_context_.direct_compositing_reasons &
           (CompositingReason::kRootScroller |
            CompositingReason::kScrollTimelineTarget);
-      if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-          RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-        state.rendering_context_id = context_.current.rendering_context_id;
-      }
+      state.rendering_context_id = context_.current.rendering_context_id;
       state.scroll = properties_->Scroll();
       auto effective_change_type = properties_->UpdateScrollTranslation(
           *context_.current.transform, std::move(state));
@@ -2335,13 +2291,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
 void FragmentPaintPropertyTreeBuilder::SetNeedsPaintPropertyUpdateIfNeeded() {
   if (object_.HasLayer()) {
     PaintLayer* layer = ToLayoutBoxModelObject(object_).Layer();
-    // With BGPT disabled, UpdateFilterReferenceBox gets called from
-    // CompositedLayerMapping::UpdateGraphicsLayerGeometry, but only
-    // for composited layers.
-    if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-        layer->GetCompositingState() != kPaintsIntoOwnBacking) {
-      layer->UpdateFilterReferenceBox();
-    }
+    layer->UpdateFilterReferenceBox();
   }
 
   if (!object_.IsBox())

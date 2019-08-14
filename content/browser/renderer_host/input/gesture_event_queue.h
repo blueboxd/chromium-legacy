@@ -124,6 +124,14 @@ class CONTENT_EXPORT GestureEventQueue {
     debounce_interval_ = base::TimeDelta::FromMilliseconds(interval_ms);
   }
 
+  // TODO(nburris): Wheel event acks shouldn't really go through the gesture
+  // event queue, but this is needed to pass them through to the
+  // FlingController. The FlingController should probably be owned by the
+  // InputRouter instead.
+  void OnWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
+                       InputEventAckSource ack_source,
+                       InputEventAckState ack_result);
+
  private:
   friend class GestureEventQueueTest;
   friend class MockRenderWidgetHost;

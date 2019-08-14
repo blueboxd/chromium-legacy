@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/autofill/payments/local_card_migration_error_dialog_view.h"
 
 #include "base/macros.h"
+#include "build/branding_buildflags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_dialog_factory.h"
 #include "chrome/browser/ui/autofill/payments/payments_ui_constants.h"
@@ -101,7 +102,7 @@ void LocalCardMigrationErrorDialogView::Init() {
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       kMigrationDialogMainContainerChildSpacing));
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   auto* image = new views::ImageView();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   image->SetImage(
@@ -111,7 +112,7 @@ void LocalCardMigrationErrorDialogView::Init() {
   image->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_GOOGLE_PAY_LOGO_ACCESSIBLE_NAME));
   AddChildView(image);
-#endif  // GOOGLE_CHROME_BUILD
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   auto* error_view = new views::View();
   auto* horizontal_layout =

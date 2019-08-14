@@ -63,6 +63,10 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
   service_manager::mojom::InterfaceProviderPtrInfo interface_provider =
       std::move(params->provider_info->interface_provider);
 
+  mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+      browser_interface_broker =
+          std::move(params->provider_info->browser_interface_broker);
+
   service_worker_context_client_ = std::make_unique<ServiceWorkerContextClient>(
       params->service_worker_version_id, params->scope, params->script_url,
       !params->installed_scripts_info.is_null(),
@@ -104,7 +108,7 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       service_worker_context_client_.get(),
       std::move(installed_scripts_manager_params),
       params->content_settings_proxy.PassHandle(), cache_storage.PassHandle(),
-      interface_provider.PassHandle());
+      interface_provider.PassHandle(), browser_interface_broker.PassPipe());
   service_worker_context_client_->StartWorkerContextOnInitiatorThread(
       std::move(worker), start_data);
 }

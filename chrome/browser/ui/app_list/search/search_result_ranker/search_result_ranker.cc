@@ -229,9 +229,21 @@ void SearchResultRanker::InitializeRankers() {
         config, chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
   }
 
-  app_ranker_ = std::make_unique<AppSearchResultRanker>(
-      profile_->GetPath(),
-      chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
+  if (app_list_features::IsAppRankerEnabled() &&
+      GetFieldTrialParamByFeatureAsBool(app_list_features::kEnableAppRanker,
+                                        "use_recurrence_ranker", true)) {
+    RecurrenceRankerConfigProto config;
+    config.set_min_seconds_between_saves(240u);
+    config.set_condition_limit(1u);
+    config.set_condition_decay(0.5f);
+    config.set_target_limit(200);
+    config.set_target_decay(0.8f);
+    config.mutable_predictor()->mutable_default_predictor();
+
+    app_ranker_ = std::make_unique<RecurrenceRanker>(
+        "AppRanker", profile_->GetPath().AppendASCII("app_ranker.pb"), config,
+        chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
+  }
 }
 
 void SearchResultRanker::FetchRankings(const base::string16& query) {
@@ -321,8 +333,8 @@ void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
           NormalizeId(app_launch_data.id, app_launch_data.ranking_item_type),
           app_launch_data.query);
     }
-  } else if (model == Model::APPS) {
-    app_ranker_->Train(NormalizeAppId(app_launch_data.id));
+  } else if (model == Model::APPS && app_ranker_) {
+    app_ranker_->Record(NormalizeAppId(app_launch_data.id));
   }
 }
 

@@ -27,8 +27,6 @@ static_library("router") {
     "media_sink.h",
     "media_source.cc",
     "media_source.h",
-    "media_status.cc",
-    "media_status.h",
     "route_request_result.cc",
     "route_request_result.h",
   ]

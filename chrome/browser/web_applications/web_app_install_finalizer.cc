@@ -71,6 +71,10 @@ void WebAppInstallFinalizer::FinalizeInstall(
   web_app->SetLaunchUrl(web_app_info.app_url);
   web_app->SetScope(web_app_info.scope);
   web_app->SetThemeColor(web_app_info.theme_color);
+  web_app->SetLaunchContainer(web_app_info.open_as_window
+                                  ? LaunchContainer::kWindow
+                                  : LaunchContainer::kTab);
+
   SetIcons(web_app_info, web_app.get());
 
   icon_manager_->WriteData(

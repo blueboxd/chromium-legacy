@@ -27,6 +27,16 @@ HRESULT HRESULTFromUpdaterError(Error error) {
                               static_cast<ULONG>(error));
 }
 
+// Checks whether a process is running with the image |executable|. Returns true
+// if a process is found.
+bool IsProcessRunning(const wchar_t* executable);
+
+// Waits until every running instance of |executable| is stopped.
+// Returns true if every running processes are stopped.
+bool WaitForProcessesStopped(const wchar_t* executable);
+
+bool InitializeCOMSecurity();
+
 }  // namespace updater
 
 #endif  // CHROME_UPDATER_WIN_UTIL_H_

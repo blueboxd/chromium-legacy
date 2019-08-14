@@ -28,7 +28,7 @@
 #import "ios/web/public/test/earl_grey/js_test_util.h"             // nogncheck
 #import "ios/web/public/test/web_view_content_test_util.h"         // nogncheck
 #import "ios/web/public/test/web_view_interaction_test_util.h"     // nogncheck
-#import "ios/web/public/web_state/web_state.h"                     // nogncheck
+#import "ios/web/public/web_state.h"                               // nogncheck
 #endif
 
 using base::test::ios::kWaitForJSCompletionTimeout;

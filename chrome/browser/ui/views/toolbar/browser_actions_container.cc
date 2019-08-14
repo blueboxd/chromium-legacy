@@ -319,8 +319,7 @@ void BrowserActionsContainer::ShowToolbarActionBubble(
   }
 
   ToolbarActionsBarBubbleViews* bubble = new ToolbarActionsBarBubbleViews(
-      anchor_view, gfx::Point(), anchored_to_action_view,
-      std::move(controller));
+      anchor_view, anchored_to_action_view, std::move(controller));
   active_bubble_ = bubble;
   views::BubbleDialogDelegateView::CreateBubble(bubble);
   bubble->GetWidget()->AddObserver(this);

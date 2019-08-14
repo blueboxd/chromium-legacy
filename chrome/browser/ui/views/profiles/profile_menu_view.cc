@@ -64,10 +64,6 @@ namespace {
 // Number of times the Dice sign-in promo illustration should be shown.
 constexpr int kDiceSigninPromoIllustrationShowCountMax = 10;
 
-bool IsProfileChooser(profiles::BubbleViewMode mode) {
-  return mode == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
-}
-
 BadgedProfilePhoto::BadgeType GetProfileBadgeType(Profile* profile) {
   if (profile->IsSupervised()) {
     return profile->IsChild() ? BadgedProfilePhoto::BADGE_TYPE_CHILD
@@ -135,11 +131,9 @@ bool ProfileMenuView::close_on_deactivate_for_testing_ = true;
 
 ProfileMenuView::ProfileMenuView(views::Button* anchor_button,
                                        Browser* browser,
-                                       profiles::BubbleViewMode view_mode,
                                        signin::GAIAServiceType service_type,
                                        signin_metrics::AccessPoint access_point)
     : ProfileMenuViewBase(anchor_button, browser),
-      view_mode_(view_mode),
       gaia_service_type_(service_type),
       access_point_(access_point),
       dice_enabled_(AccountConsistencyModeManager::IsDiceEnabledForProfile(
@@ -181,13 +175,6 @@ void ProfileMenuView::Init() {
       this, browser()));
   avatar_menu_->RebuildMenu();
 
-  Profile* profile = browser()->profile();
-  signin::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile);
-
-  if (identity_manager)
-    identity_manager->AddObserver(this);
-
   if (dice_enabled_) {
     // Fetch DICE accounts. Note: This always includes the primary account if it
     // is set.
@@ -195,66 +182,20 @@ void ProfileMenuView::Init() {
         signin_ui_util::GetAccountsForDicePromos(browser()->profile());
   }
 
-  ShowViewOrOpenTab(view_mode_);
+  ShowView(avatar_menu_.get());
 }
 
 void ProfileMenuView::OnAvatarMenuChanged(
     AvatarMenu* avatar_menu) {
-  if (IsProfileChooser(view_mode_)) {
-    // Refresh the view with the new menu. We can't just update the local copy
-    // as this may have been triggered by a sign out action, in which case
-    // the view is being destroyed.
-    ShowView(view_mode_, avatar_menu);
-  }
+  // Refresh the view with the new menu. We can't just update the local copy
+  // as this may have been triggered by a sign out action, in which case
+  // the view is being destroyed.
+  ShowView(avatar_menu);
 }
 
-void ProfileMenuView::OnRefreshTokenUpdatedForAccount(
-    const CoreAccountInfo& account_info) {
-  if (view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
-      view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH) {
-    ShowViewOrOpenTab(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER);
-  }
-}
-
-void ProfileMenuView::ShowView(profiles::BubbleViewMode view_to_display,
-                                  AvatarMenu* avatar_menu) {
-  if (browser()->profile()->IsSupervised() &&
-      view_to_display == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT) {
-    LOG(WARNING) << "Supervised user attempted to add account";
-    return;
-  }
-
-  view_mode_ = view_to_display;
-  switch (view_mode_) {
-    case profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN:
-    case profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
-    case profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH:
-      // The modal sign-in view is shown in for bubble view modes.
-      // See |SigninViewController::ShouldShowSigninForMode|.
-      NOTREACHED();
-      break;
-    case profiles::BUBBLE_VIEW_MODE_INCOGNITO:
-      // Covered in IncognitoView.
-      NOTREACHED();
-      break;
-    case profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER:
-      AddProfileMenuView(avatar_menu);
-      break;
-  }
+void ProfileMenuView::ShowView(AvatarMenu* avatar_menu) {
+  AddProfileMenuView(avatar_menu);
   RepopulateViewFromMenuItems();
-}
-
-void ProfileMenuView::ShowViewOrOpenTab(profiles::BubbleViewMode mode) {
-  if (SigninViewController::ShouldShowSigninForMode(mode)) {
-    // Hides the user menu if it is currently shown. The user menu automatically
-    // closes when it loses focus; however, on Windows, the signin modals do not
-    // take away focus, thus we need to manually close the bubble.
-    Hide();
-    browser()->signin_view_controller()->ShowSignin(mode, browser(),
-                                                    access_point_);
-  } else {
-    ShowView(mode, avatar_menu_.get());
-  }
 }
 
 void ProfileMenuView::FocusButtonOnKeyboardOpen() {
@@ -266,10 +207,6 @@ void ProfileMenuView::OnWidgetClosing(views::Widget* /*widget*/) {
   // Unsubscribe from everything early so that the updates do not reach the
   // bubble and change its state.
   avatar_menu_.reset();
-  signin::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(browser()->profile());
-  if (identity_manager)
-    identity_manager->RemoveObserver(this);
 }
 
 views::View* ProfileMenuView::GetInitiallyFocusedView() {
@@ -346,11 +283,15 @@ void ProfileMenuView::ButtonPressed(views::Button* sender,
               signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
               signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
               signin_metrics::SignoutDelete::IGNORE_METRIC);
-          ShowViewOrOpenTab(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
+          Hide();
+          browser()->signin_view_controller()->ShowSignin(
+              profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser(), access_point_);
         }
         break;
       case sync_ui_util::AUTH_ERROR:
-        ShowViewOrOpenTab(profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH);
+        Hide();
+        browser()->signin_view_controller()->ShowSignin(
+            profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH, browser(), access_point_);
         break;
       case sync_ui_util::UPGRADE_CLIENT_ERROR:
         chrome::OpenUpdateChromeDialog(browser());
@@ -378,7 +319,9 @@ void ProfileMenuView::ButtonPressed(views::Button* sender,
       PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_NAME);
     }
   } else if (sender == signin_current_profile_button_) {
-    ShowViewOrOpenTab(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
+    Hide();
+    browser()->signin_view_controller()->ShowSignin(
+        profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser(), access_point_);
   } else if (sender == signin_with_gaia_account_button_) {
     DCHECK(dice_signin_button_view_->account());
     Hide();

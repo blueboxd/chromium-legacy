@@ -70,7 +70,7 @@ class AXPlatformNodeTextChildProviderTest : public ui::AXPlatformNodeWinTest {
     Init(update);
 
     AXNode* root_node = GetRootNode();
-    AXNodePosition::SetTreeForTesting(tree_.get());
+    AXNodePosition::SetTree(tree_.get());
     AXNode* nontext_child_of_root_node = root_node->children()[0];
     AXNode* text_child_of_root_node = root_node->children()[1];
     AXNode* nontext_child_of_nontext_node =
@@ -98,7 +98,7 @@ class AXPlatformNodeTextChildProviderTest : public ui::AXPlatformNodeWinTest {
                            text_child_of_text_text_child_provider_);
   }
 
-  void TearDown() override { AXNodePosition::SetTreeForTesting(nullptr); }
+  void TearDown() override { AXNodePosition::SetTree(nullptr); }
 
   void InitITextChildProvider(
       AXNode* node,

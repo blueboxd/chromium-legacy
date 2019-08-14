@@ -5,6 +5,7 @@
 #include "content/browser/payments/payment_app_provider_impl.h"
 
 #include <map>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -15,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/token.h"
 #include "content/browser/payments/payment_app_context_impl.h"
 #include "content/browser/payments/payment_app_installer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -489,6 +491,8 @@ void AddModifiersToMap(
 
 DevToolsBackgroundServicesContext* GetDevTools(BrowserContext* browser_context,
                                                const url::Origin& sw_origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(browser_context);
   auto* storage_partition = BrowserContext::GetStoragePartitionForSite(
       browser_context, sw_origin.GetURL(), /*can_create=*/true);
   if (!storage_partition)
@@ -499,6 +503,75 @@ DevToolsBackgroundServicesContext* GetDevTools(BrowserContext* browser_context,
                           DevToolsBackgroundService::kPaymentHandler)
              ? dev_tools
              : nullptr;
+}
+
+DevToolsBackgroundServicesContext* GetDevToolsForInstanceGroup(
+    const base::Token& instance_group,
+    const url::Origin& sw_origin) {
+  BrowserContext* browser_context =
+      BrowserContext::GetBrowserContextForServiceInstanceGroup(instance_group);
+  return browser_context ? GetDevTools(browser_context, sw_origin) : nullptr;
+}
+
+void OnResponseForCanMakePaymentOnUiThread(
+    const base::Token& instance_group,
+    int64_t registration_id,
+    const url::Origin& sw_origin,
+    const std::string& payment_request_id,
+    PaymentAppProvider::PaymentEventResultCallback callback,
+    bool can_make_payment) {
+  auto* dev_tools = GetDevToolsForInstanceGroup(instance_group, sw_origin);
+  if (dev_tools) {
+    dev_tools->LogBackgroundServiceEvent(
+        registration_id, sw_origin, DevToolsBackgroundService::kPaymentHandler,
+        "Can make payment response",
+        /*instance_id=*/payment_request_id,
+        {{"Can Make Payment", can_make_payment ? "true" : "false"}});
+  }
+
+  std::move(callback).Run(can_make_payment);
+}
+
+void OnResponseForAbortPaymentOnUiThread(
+    const base::Token& instance_group,
+    int64_t registration_id,
+    const url::Origin& sw_origin,
+    const std::string& payment_request_id,
+    PaymentAppProvider::PaymentEventResultCallback callback,
+    bool payment_aborted) {
+  auto* dev_tools = GetDevToolsForInstanceGroup(instance_group, sw_origin);
+  if (dev_tools) {
+    dev_tools->LogBackgroundServiceEvent(
+        registration_id, sw_origin, DevToolsBackgroundService::kPaymentHandler,
+        "Abort payment response",
+        /*instance_id=*/payment_request_id,
+        {{"Payment Aborted", payment_aborted ? "true" : "false"}});
+  }
+
+  std::move(callback).Run(payment_aborted);
+}
+
+void OnResponseForPaymentRequestOnUiThread(
+    const base::Token& instance_group,
+    int64_t registration_id,
+    const url::Origin& sw_origin,
+    const std::string& payment_request_id,
+    PaymentAppProvider::InvokePaymentAppCallback callback,
+    payments::mojom::PaymentHandlerResponsePtr response) {
+  auto* dev_tools = GetDevToolsForInstanceGroup(instance_group, sw_origin);
+  if (dev_tools) {
+    std::stringstream response_type;
+    response_type << response->response_type;
+    dev_tools->LogBackgroundServiceEvent(
+        registration_id, sw_origin, DevToolsBackgroundService::kPaymentHandler,
+        "Payment response",
+        /*instance_id=*/payment_request_id,
+        {{"Method Name", response->method_name},
+         {"Details", response->stringified_details},
+         {"Type", response_type.str()}});
+  }
+
+  std::move(callback).Run(std::move(response));
 }
 
 }  // namespace
@@ -559,8 +632,13 @@ void PaymentAppProviderImpl::InvokePaymentApp(
 
   StartServiceWorkerForDispatch(
       browser_context, registration_id,
-      base::BindOnce(&DispatchPaymentRequestEvent, browser_context,
-                     std::move(event_data), std::move(callback)));
+      base::BindOnce(
+          &DispatchPaymentRequestEvent, browser_context, std::move(event_data),
+          base::BindOnce(
+              &OnResponseForPaymentRequestOnUiThread,
+              BrowserContext::GetServiceInstanceGroupFor(browser_context),
+              registration_id, sw_origin, event_data->payment_request_id,
+              std::move(callback))));
 }
 
 void PaymentAppProviderImpl::InstallAndInvokePaymentApp(
@@ -635,8 +713,13 @@ void PaymentAppProviderImpl::CanMakePayment(
 
   StartServiceWorkerForDispatch(
       browser_context, registration_id,
-      base::BindOnce(&DispatchCanMakePaymentEvent, browser_context,
-                     std::move(event_data), std::move(callback)));
+      base::BindOnce(
+          &DispatchCanMakePaymentEvent, browser_context, std::move(event_data),
+          base::BindOnce(
+              &OnResponseForCanMakePaymentOnUiThread,
+              BrowserContext::GetServiceInstanceGroupFor(browser_context),
+              registration_id, sw_origin, payment_request_id,
+              std::move(callback))));
 }
 
 void PaymentAppProviderImpl::AbortPayment(BrowserContext* browser_context,
@@ -657,7 +740,11 @@ void PaymentAppProviderImpl::AbortPayment(BrowserContext* browser_context,
   StartServiceWorkerForDispatch(
       browser_context, registration_id,
       base::BindOnce(&DispatchAbortPaymentEvent, browser_context,
-                     std::move(callback)));
+                     base::BindOnce(&OnResponseForAbortPaymentOnUiThread,
+                                    BrowserContext::GetServiceInstanceGroupFor(
+                                        browser_context),
+                                    registration_id, sw_origin,
+                                    payment_request_id, std::move(callback))));
 }
 
 void PaymentAppProviderImpl::SetOpenedWindow(WebContents* web_contents) {

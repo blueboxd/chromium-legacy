@@ -20,16 +20,16 @@
     <color name="modern_grey_900">#202124</color>
     <color name="modern_grey_900_alpha_38" tools:ignore="UnusedResources">#61202124</color>
 
-    <color name="modern_grey_900_with_grey_200_alpha_4">#292A2D</color>
-    <color name="modern_grey_900_with_grey_200_alpha_6">#303134</color>
-    <color name="modern_grey_900_with_grey_200_alpha_8">#35363A</color>
-    <color name="modern_grey_900_with_grey_200_alpha_10">#38383C</color>
+    <color name="modern_grey_900_with_grey_200_alpha_5">#292A2D</color>
+    <color name="modern_grey_900_with_grey_200_alpha_8">#303134</color>
+    <color name="modern_grey_900_with_grey_200_alpha_11">#35363A</color>
+    <color name="modern_grey_900_with_grey_200_alpha_12">#38383C</color>
 
     <color name="black_alpha_38" tools:ignore="UnusedResources">#61000000</color>
 
     <color name="white_alpha_10" tools:ignore="UnusedResources">#1AFFFFFF</color>
     <color name="white_alpha_12" tools:ignore="UnusedResources">#1FFFFFFF</color>
-    <color name="white_alpha_20">#33FFFFFF</color>
+    <color name="white_alpha_20" tools:ignore="UnusedResources">#33FFFFFF</color>
     <color name="white_alpha_38" tools:ignore="UnusedResources">#61FFFFFF</color>
     <color name="white_alpha_50" tools:ignore="UnusedResources">#80FFFFFF</color>
     <color name="white_alpha_70">#B3FFFFFF</color>
@@ -48,14 +48,14 @@
         @android:color/white
     </color>
     <color name="default_icon_color_white_disabled" tools:ignore="UnusedResources">
-        @color/white_alpha_20
+        @color/white_alpha_50
     </color>
     <color name="default_icon_color_white_pressed" tools:ignore="UnusedResources">
         @color/white_alpha_50
     </color>
 
     <color name="default_icon_color_secondary_dark">@color/modern_grey_600</color>
-    <color name="default_icon_color_secondary_light">@color/modern_grey_500</color>
+    <color name="default_icon_color_secondary_light">@color/white_alpha_70</color>
 
     <!-- Common text colors -->
     <color name="default_text_color_dark">@color/modern_grey_900</color>
@@ -77,16 +77,16 @@
         @color/modern_grey_900
     </color>
     <color name="default_bg_color_dark_elev_1" tools:ignore="UnusedResources">
-        @color/modern_grey_900_with_grey_200_alpha_4
+        @color/modern_grey_900_with_grey_200_alpha_5
     </color>
     <color name="default_bg_color_dark_elev_2" tools:ignore="UnusedResources">
-        @color/modern_grey_900_with_grey_200_alpha_6
-    </color>
-    <color name="default_bg_color_dark_elev_3" tools:ignore="UnusedResources">
         @color/modern_grey_900_with_grey_200_alpha_8
     </color>
+    <color name="default_bg_color_dark_elev_3" tools:ignore="UnusedResources">
+        @color/modern_grey_900_with_grey_200_alpha_11
+    </color>
     <color name="default_bg_color_dark_elev_4" tools:ignore="UnusedResources">
-        @color/modern_grey_900_with_grey_200_alpha_10
+        @color/modern_grey_900_with_grey_200_alpha_12
     </color>
     <color name="divider_bg_color_dark">@color/modern_grey_300</color>
     <color name="divider_bg_color_light">@color/white_alpha_12</color>

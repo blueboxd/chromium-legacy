@@ -5,6 +5,9 @@
 import("//build/config/win/manifest.gni")
 import("//tools/grit/grit_rule.gni")
 
+# Nothing outside //chrome/chrome_cleaner can depend on these targets.
+visibility = [ "//chrome/chrome_cleaner/*" ]
+
 sample_dll_file = "$root_out_dir/empty_dll.dll"
 
 sample_dll_digest_pb_file = "$target_gen_dir/sample_dll_digest.pb"

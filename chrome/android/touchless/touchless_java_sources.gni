@@ -44,7 +44,7 @@ touchless_java_sources = [
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessPreferences.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessRecyclerView.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessSuggestionsBinder.java",
-  "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessTabDelegate.java",
+  "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessTabCreator.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessTabObserver.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessUiCoordinator.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessUiCoordinatorImpl.java",

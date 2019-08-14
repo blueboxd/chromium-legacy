@@ -163,12 +163,6 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
           squashing_state.next_squashed_layer_index))
     return SquashingDisallowedReason::kClippingContainerMismatch;
 
-  // Composited descendants need to be clipped by a child containment graphics
-  // layer, which would not be available if the layer is squashed (and therefore
-  // has no CLM nor a child containment graphics layer).
-  if (compositor_->ClipsCompositingDescendants(layer))
-    return SquashingDisallowedReason::kSquashedLayerClipsCompositingDescendants;
-
   if (layer->ScrollsWithRespectTo(&squashing_layer))
     return SquashingDisallowedReason::kScrollsWithRespectToSquashingLayer;
 

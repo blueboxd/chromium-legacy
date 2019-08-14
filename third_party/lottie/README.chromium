@@ -16,4 +16,4 @@ The library has been modified to be able to run on javascript worker thread whic
 
 Generating Minified Version:
 To generate the minified version use node's uglify-js-
-$ node uglifyjs --compress --mangle reserved=['onmessage'] lottie_worker.js -o lottie_worker.min.js -b beautify=false,ascii_only=true
+$ node uglifyjs --compress --mangle reserved=['onmessage', 'postMessage'] lottie_worker.js -o lottie_worker.min.js -b beautify=false,ascii_only=true

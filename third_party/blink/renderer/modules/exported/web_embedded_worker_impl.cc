@@ -80,7 +80,8 @@ std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
         installed_scripts_manager_params,
     mojo::ScopedMessagePipeHandle content_settings_handle,
     mojo::ScopedMessagePipeHandle cache_storage,
-    mojo::ScopedMessagePipeHandle interface_provider) {
+    mojo::ScopedMessagePipeHandle interface_provider,
+    mojo::ScopedMessagePipeHandle browser_interface_broker) {
   return std::make_unique<WebEmbeddedWorkerImpl>(
       std::move(client), std::move(installed_scripts_manager_params),
       std::make_unique<ServiceWorkerContentSettingsProxy>(
@@ -92,7 +93,10 @@ std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
                                         mojom::blink::CacheStorage::Version_),
       service_manager::mojom::blink::InterfaceProviderPtrInfo(
           std::move(interface_provider),
-          service_manager::mojom::blink::InterfaceProvider::Version_));
+          service_manager::mojom::blink::InterfaceProvider::Version_),
+      mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>(
+          std::move(browser_interface_broker),
+          mojom::blink::BrowserInterfaceBroker::Version_));
 }
 
 // static
@@ -104,7 +108,8 @@ std::unique_ptr<WebEmbeddedWorkerImpl> WebEmbeddedWorkerImpl::CreateForTesting(
       client, nullptr /* installed_scripts_manager_params */,
       std::make_unique<ServiceWorkerContentSettingsProxy>(
           nullptr /* host_info */),
-      nullptr /* cache_storage_info */, nullptr /* interface_provider_info */);
+      nullptr /* cache_storage_info */, nullptr /* interface_provider_info */,
+      mojo::NullRemote() /* browser_interface_broker */);
   worker_impl->installed_scripts_manager_ =
       std::move(installed_scripts_manager);
   return worker_impl;
@@ -117,12 +122,15 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
     std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_client,
     mojom::blink::CacheStoragePtrInfo cache_storage_info,
     service_manager::mojom::blink::InterfaceProviderPtrInfo
-        interface_provider_info)
+        interface_provider_info,
+    mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
+        browser_interface_broker)
     : worker_context_client_(client),
       content_settings_client_(std::move(content_settings_client)),
       pause_after_download_state_(kDontPauseAfterDownload),
       cache_storage_info_(std::move(cache_storage_info)),
-      interface_provider_info_(std::move(interface_provider_info)) {
+      interface_provider_info_(std::move(interface_provider_info)),
+      browser_interface_broker_(std::move(browser_interface_broker)) {
   if (installed_scripts_manager_params) {
     DCHECK(installed_scripts_manager_params->manager_request.is_valid());
     DCHECK(installed_scripts_manager_params->manager_host_ptr.is_valid());
@@ -289,8 +297,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
       std::move(worker_settings),
       static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
       nullptr /* worklet_module_respones_map */,
-      std::move(interface_provider_info_),
-      mojo::NullRemote() /* TODO(crbug.com/985112) pass a real BIB */,
+      std::move(interface_provider_info_), std::move(browser_interface_broker_),
       BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
       base::UnguessableToken() /* agent_cluster_id */);
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/session_crashed_bubble_view.h"
 
 #include <stddef.h>
+
 #include <string>
 #include <utility>
 #include <vector>
@@ -14,6 +15,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -68,7 +70,7 @@ void RecordBubbleHistogramValue(SessionCrashedBubbleHistogramValue value) {
 }
 
 bool DoesSupportConsentCheck() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return true;
 #else
   return false;

@@ -198,12 +198,8 @@ std::unique_ptr<views::Painter> TrayPopupUtils::CreateFocusPainter() {
 void TrayPopupUtils::ConfigureTrayPopupButton(views::Button* button) {
   button->SetInstallFocusRingOnFocus(true);
   button->SetFocusForPlatform();
-
   button->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
   button->set_has_ink_drop_action_on_click(true);
-  button->set_ink_drop_base_color(kTrayPopupInkDropBaseColor);
-  button->set_ink_drop_visible_opacity(kTrayPopupInkDropRippleOpacity);
-  button->set_ink_drop_highlight_opacity(kTrayPopupInkDropHighlightOpacity);
 }
 
 void TrayPopupUtils::ConfigureAsStickyHeader(views::View* view) {
@@ -251,22 +247,28 @@ std::unique_ptr<views::InkDropRipple> TrayPopupUtils::CreateInkDropRipple(
     TrayPopupInkDropStyle ink_drop_style,
     const views::View* host,
     const gfx::Point& center_point,
-    SkColor color) {
+    SkColor background_color) {
+  const AshColorProvider::RippleAttributes ripple_attributes =
+      AshColorProvider::Get()->GetRippleAttributes(background_color);
   return std::make_unique<views::FloodFillInkDropRipple>(
       host->size(), TrayPopupUtils::GetInkDropInsets(ink_drop_style),
-      center_point, color, kTrayPopupInkDropRippleOpacity);
+      center_point, ripple_attributes.base_color,
+      ripple_attributes.inkdrop_opacity);
 }
 
 std::unique_ptr<views::InkDropHighlight> TrayPopupUtils::CreateInkDropHighlight(
     TrayPopupInkDropStyle ink_drop_style,
     const views::View* host,
-    SkColor color) {
+    SkColor background_color) {
+  const AshColorProvider::RippleAttributes ripple_attributes =
+      AshColorProvider::Get()->GetRippleAttributes(background_color);
   const gfx::Rect bounds =
       TrayPopupUtils::GetInkDropBounds(ink_drop_style, host);
   std::unique_ptr<views::InkDropHighlight> highlight(
       new views::InkDropHighlight(bounds.size(), 0,
-                                  gfx::PointF(bounds.CenterPoint()), color));
-  highlight->set_visible_opacity(kTrayPopupInkDropHighlightOpacity);
+                                  gfx::PointF(bounds.CenterPoint()),
+                                  ripple_attributes.base_color));
+  highlight->set_visible_opacity(ripple_attributes.highlight_opacity);
   return highlight;
 }
 

@@ -54,7 +54,7 @@ class MockVideoCapturerSource : public media::VideoCapturerSource {
   void SetRunning(bool is_running) {
     PostCrossThreadTask(*scheduler::GetSingleThreadTaskRunnerForTesting(),
                         FROM_HERE,
-                        CrossThreadBindRepeating(running_cb_, is_running));
+                        CrossThreadBindOnce(running_cb_, is_running));
   }
   const media::VideoCaptureParams& capture_params() const {
     return capture_params_;
@@ -246,9 +246,9 @@ TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
   const scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::CreateBlackFrame(gfx::Size(2, 2));
   frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE, 30.0);
-  PostCrossThreadTask(*Platform::Current()->GetIOTaskRunner(), FROM_HERE,
-                      CrossThreadBindRepeating(deliver_frame_cb, frame,
-                                               reference_capture_time));
+  PostCrossThreadTask(
+      *Platform::Current()->GetIOTaskRunner(), FROM_HERE,
+      CrossThreadBindOnce(deliver_frame_cb, frame, reference_capture_time));
   run_loop.Run();
   fake_sink.DisconnectFromTrack();
   EXPECT_EQ(reference_capture_time, capture_time);

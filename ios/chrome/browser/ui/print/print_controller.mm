@@ -23,7 +23,7 @@
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/loading_alert_coordinator.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"

@@ -7,8 +7,11 @@
 #include <memory>
 #include <utility>
 
+#include "android_webview/browser/aw_feature_list.h"
 #include "android_webview/browser/gfx/browser_view_renderer_client.h"
 #include "android_webview/browser/gfx/compositor_frame_consumer.h"
+#include "android_webview/browser/gfx/root_frame_sink.h"
+#include "android_webview/browser/gfx/root_frame_sink_proxy.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -110,7 +113,14 @@ BrowserViewRenderer::BrowserViewRenderer(
       on_new_picture_enable_(false),
       clear_view_(false),
       offscreen_pre_raster_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  if (base::FeatureList::IsEnabled(features::kVizForWebView)) {
+    root_frame_sink_proxy_ = std::make_unique<RootFrameSinkProxy>(
+        ui_task_runner_,
+        base::BindRepeating(&BrowserViewRenderer::SetNeedsBeginFrames,
+                            base::Unretained(this)));
+  }
+}
 
 BrowserViewRenderer::~BrowserViewRenderer() {
   DCHECK(compositor_map_.empty());
@@ -550,6 +560,8 @@ void BrowserViewRenderer::DidInitializeCompositor(
   // througout its lifetime.
   DCHECK(compositor_map_.count(frame_sink_id) == 0);
   compositor_map_[frame_sink_id] = compositor;
+  if (root_frame_sink_proxy_)
+    root_frame_sink_proxy_->AddChildFrameSinkId(frame_sink_id);
 
   // At this point, the RVHChanged event for the new RVH that contains the
   // |compositor| might have been fired already, in which case just set the
@@ -570,6 +582,8 @@ void BrowserViewRenderer::DidDestroyCompositor(
     copy_requests_.clear();
   }
 
+  if (root_frame_sink_proxy_)
+    root_frame_sink_proxy_->RemoveChildFrameSinkId(frame_sink_id);
   compositor_map_.erase(frame_sink_id);
 }
 
@@ -819,6 +833,10 @@ void BrowserViewRenderer::CopyOutput(
     return;
   copy_requests_.emplace_back(std::move(copy_request));
   PostInvalidate(compositor_);
+}
+
+void BrowserViewRenderer::SetNeedsBeginFrames(bool needs_begin_frames) {
+  NOTIMPLEMENTED();
 }
 
 void BrowserViewRenderer::PostInvalidate(

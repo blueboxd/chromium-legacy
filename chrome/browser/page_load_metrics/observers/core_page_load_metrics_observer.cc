@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <memory>
 #include <utility>
 
@@ -46,7 +47,8 @@ PageLoadType GetPageLoadType(ui::PageTransition transition) {
 void RecordFirstMeaningfulPaintStatus(
     internal::FirstMeaningfulPaintStatus status) {
   UMA_HISTOGRAM_ENUMERATION(internal::kHistogramFirstMeaningfulPaintStatus,
-      status, internal::FIRST_MEANINGFUL_PAINT_LAST_ENTRY);
+                            status,
+                            internal::FIRST_MEANINGFUL_PAINT_LAST_ENTRY);
 }
 
 void RecordTimeToInteractiveStatus(internal::TimeToInteractiveStatus status) {
@@ -797,41 +799,50 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
                         info.first_foreground_time.value());
   }
 
-  if (WasStartedInForegroundOptionalEventInForeground(
-          main_frame_timing.paint_timing->largest_image_paint, info)) {
-    PAGE_LOAD_HISTOGRAM(
-        internal::kHistogramLargestImagePaint,
-        main_frame_timing.paint_timing->largest_image_paint.value());
-  }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          main_frame_timing.paint_timing->largest_text_paint, info)) {
-    PAGE_LOAD_HISTOGRAM(
-        internal::kHistogramLargestTextPaint,
-        main_frame_timing.paint_timing->largest_text_paint.value());
-  }
-  base::Optional<base::TimeDelta> largest_content_paint_time;
-  uint64_t largest_content_paint_size;
-  PageLoadMetricsObserver::LargestContentType largest_content_type;
-  if (AssignTimeAndSizeForLargestContentfulPaint(
-          main_frame_timing.paint_timing, &largest_content_paint_time,
-          &largest_content_paint_size, &largest_content_type) &&
+  const page_load_metrics::ContentfulPaintTimingInfo&
+      main_frame_largest_image_paint =
+          largest_contentful_paint_handler_.MainFrameLargestImagePaint();
+  if (!main_frame_largest_image_paint.IsEmpty() &&
       WasStartedInForegroundOptionalEventInForeground(
-          largest_content_paint_time, info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestContentfulPaintMainFrame,
-                        largest_content_paint_time.value());
-    UMA_HISTOGRAM_ENUMERATION(
-        internal::kHistogramLargestContentfulPaintMainFrameContentType,
-        largest_content_type);
+          main_frame_largest_image_paint.Time(), info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestImagePaint,
+                        main_frame_largest_image_paint.Time().value());
   }
 
-  const page_load_metrics::ContentfulPaintTimingInfo& paint =
-      largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
-  if (!paint.IsEmpty() &&
-      WasStartedInForegroundOptionalEventInForeground(paint.Time(), info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestContentfulPaint,
-                        paint.Time().value());
+  const page_load_metrics::ContentfulPaintTimingInfo&
+      main_frame_largest_text_paint =
+          largest_contentful_paint_handler_.MainFrameLargestTextPaint();
+  if (!main_frame_largest_text_paint.IsEmpty() &&
+      WasStartedInForegroundOptionalEventInForeground(
+          main_frame_largest_text_paint.Time(), info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestTextPaint,
+                        main_frame_largest_text_paint.Time().value());
+  }
+
+  const page_load_metrics::ContentfulPaintTimingInfo&
+      main_frame_largest_contentful_paint =
+          largest_contentful_paint_handler_.MainFrameLargestContentfulPaint();
+  if (!main_frame_largest_contentful_paint.IsEmpty() &&
+      WasStartedInForegroundOptionalEventInForeground(
+          main_frame_largest_contentful_paint.Time(), info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestContentfulPaintMainFrame,
+                        main_frame_largest_contentful_paint.Time().value());
     UMA_HISTOGRAM_ENUMERATION(
-        internal::kHistogramLargestContentfulPaintContentType, paint.Type());
+        internal::kHistogramLargestContentfulPaintMainFrameContentType,
+        main_frame_largest_contentful_paint.Type());
+  }
+
+  const page_load_metrics::ContentfulPaintTimingInfo&
+      all_frames_largest_contentful_paint =
+          largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
+  if (!all_frames_largest_contentful_paint.IsEmpty() &&
+      WasStartedInForegroundOptionalEventInForeground(
+          all_frames_largest_contentful_paint.Time(), info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestContentfulPaint,
+                        all_frames_largest_contentful_paint.Time().value());
+    UMA_HISTOGRAM_ENUMERATION(
+        internal::kHistogramLargestContentfulPaintContentType,
+        all_frames_largest_contentful_paint.Type());
   }
 
   if (main_frame_timing.paint_timing->first_paint &&

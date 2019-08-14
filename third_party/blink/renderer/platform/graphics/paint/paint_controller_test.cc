@@ -34,10 +34,8 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     PaintControllerTest,
     testing::Values(0,
-                    kBlinkGenPropertyTrees,
                     kCompositeAfterPaint,
                     kUnderInvalidationChecking,
-                    kBlinkGenPropertyTrees | kUnderInvalidationChecking,
                     kCompositeAfterPaint | kUnderInvalidationChecking));
 
 TEST_P(PaintControllerTest, NestedRecorders) {

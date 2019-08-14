@@ -35,7 +35,9 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/language_util.h"
 #include "components/language/core/common/locale_util.h"
+#include "components/spellcheck/browser/spellcheck_platform.h"
 #include "components/spellcheck/common/spellcheck_common.h"
+#include "components/spellcheck/common/spellcheck_features.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
@@ -495,6 +497,12 @@ LanguageSettingsPrivateAddSpellcheckWordFunction::Run() {
       SpellcheckServiceFactory::GetForContext(browser_context());
   bool success = service->GetCustomDictionary()->AddWord(params->word);
 
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+  if (spellcheck::UseBrowserSpellChecker()) {
+    spellcheck_platform::AddWord(base::UTF8ToUTF16(params->word));
+  }
+#endif
+
   return RespondNow(OneArgument(std::make_unique<base::Value>(success)));
 }
 
@@ -513,6 +521,12 @@ LanguageSettingsPrivateRemoveSpellcheckWordFunction::Run() {
   SpellcheckService* service =
       SpellcheckServiceFactory::GetForContext(browser_context());
   bool success = service->GetCustomDictionary()->RemoveWord(params->word);
+
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+  if (spellcheck::UseBrowserSpellChecker()) {
+    spellcheck_platform::RemoveWord(base::UTF8ToUTF16(params->word));
+  }
+#endif
 
   return RespondNow(OneArgument(std::make_unique<base::Value>(success)));
 }

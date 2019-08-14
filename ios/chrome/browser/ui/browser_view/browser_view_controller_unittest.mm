@@ -34,7 +34,7 @@
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"

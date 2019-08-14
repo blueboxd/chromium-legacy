@@ -18,7 +18,7 @@ class EmptyFilter : public InputFilter {
 
   // Filters the position sent to the filter at a specific timestamp.
   // Returns true if the value is filtered, false otherwise.
-  bool Filter(const base::TimeTicks timestamp,
+  bool Filter(const base::TimeTicks& timestamp,
               gfx::PointF* position) const override;
 
   // Returns the name of the filter

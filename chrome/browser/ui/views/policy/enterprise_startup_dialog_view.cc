@@ -10,6 +10,7 @@
 #include "base/i18n/message_formatter.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -44,7 +45,7 @@ constexpr int kIconSize = 24;      // The size of throbber and error icon.
 constexpr int kLineHeight = 22;    // The height of text line.
 constexpr int kFontSizeDelta = 3;  // The font size of text.
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 constexpr int kLogoHeight = 20;  // The height of Chrome enterprise logo.
 #endif
 
@@ -173,7 +174,7 @@ ui::ModalType EnterpriseStartupDialogView::GetModalType() const {
 }
 
 std::unique_ptr<views::View> EnterpriseStartupDialogView::CreateExtraView() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Show Google Chrome Enterprise logo only for official build.
   auto logo_image = std::make_unique<views::ImageView>();
   logo_image->SetImage(ui::ResourceBundle::GetSharedInstance()

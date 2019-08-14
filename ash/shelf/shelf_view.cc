@@ -360,10 +360,6 @@ void ShelfView::Init() {
 
   for (ShelfItems::const_iterator i = items.begin(); i != items.end(); ++i) {
     views::View* child = CreateViewForItem(*i);
-    // TODO(manucornet): Remove this if statement once home and back are not
-    // allowed shelf item types in the model any longer.
-    if (!child)
-      continue;
     child->SetPaintToLayer();
     view_model_->Add(child, static_cast<int>(i - items.begin()));
     AddChildView(child);
@@ -1985,11 +1981,6 @@ void ShelfView::ShelfItemAdded(int model_index) {
   }
   const ShelfItem& item(model_->items()[model_index]);
   views::View* view = CreateViewForItem(item);
-  // Some item types are ignored and yield a null view. Ignore those.
-  // TODO(manucornet): Remove this if statement once home and back are no
-  // longer acceptable shelf item types in the model.
-  if (!view)
-    return;
   AddChildView(view);
   // Hide the view, it'll be made visible when the animation is done. Using
   // opacity 0 here to avoid messing with CalculateIdealBounds which touches

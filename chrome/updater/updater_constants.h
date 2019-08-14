@@ -28,6 +28,10 @@ extern const char kTestSwitch[];
 // https://bugs.chromium.org/p/crashpad/issues/detail?id=23
 extern const char kNoRateLimit[];
 
+// The handle of an event to signal when the initialization of the main process
+// is complete.
+extern const char kInitDoneNotifierSwitch[];
+
 // URLs.
 //
 // Omaha server end point.

@@ -100,9 +100,9 @@ class BASE_EXPORT Sequence : public TaskSource {
 
   // TaskSource:
   Optional<Task> TakeTask() override WARN_UNUSED_RESULT;
-  bool DidProcessTask(RunResult run_result) override;
+  Optional<Task> Clear() override WARN_UNUSED_RESULT;
+  bool DidProcessTask() override;
   SequenceSortKey GetSortKey() const override;
-  void Clear() override;
 
   // Releases reference to TaskRunner. This might cause this object to be
   // deleted; therefore, no member access should be made after this method.

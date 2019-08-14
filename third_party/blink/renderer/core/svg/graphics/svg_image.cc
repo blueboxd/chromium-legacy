@@ -655,18 +655,14 @@ void SVGImage::ServiceAnimations(
   LocalFrameView* frame_view = To<LocalFrame>(page_->MainFrame())->View();
   frame_view->UpdateAllLifecyclePhasesExceptPaint();
 
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    // For CAP/BGPT we run UpdateAnimations after the paint phase, but per the
-    // above comment, we don't want to run lifecycle through to paint for SVG
-    // images. Since we know SVG images never have composited animations we can
-    // update animations directly without worrying about including
-    // PaintArtifactCompositor analysis of whether animations should be
-    // composited.
-    DocumentAnimations::UpdateAnimations(
-        frame_view->GetLayoutView()->GetDocument(),
-        DocumentLifecycle::kLayoutClean, nullptr);
-  }
+  // We run UpdateAnimations after the paint phase, but per the above comment,
+  // we don't want to run lifecycle through to paint for SVG images. Since we
+  // know SVG images never have composited animations, we can update animations
+  // directly without worrying about including PaintArtifactCompositor's
+  // analysis of whether animations should be composited.
+  DocumentAnimations::UpdateAnimations(
+      frame_view->GetLayoutView()->GetDocument(),
+      DocumentLifecycle::kLayoutClean, nullptr);
 }
 
 void SVGImage::AdvanceAnimationForTesting() {

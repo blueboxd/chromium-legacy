@@ -9,8 +9,10 @@
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/ui/badges/badge_consumer.h"
 #import "ios/chrome/browser/ui/badges/badge_item.h"
+#import "ios/chrome/browser/ui/badges/badge_static_item.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
+#include "ios/web/public/browser_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -109,6 +111,11 @@
   NSArray* infobar_badges_array =
       [NSArray arrayWithObjects:&infobar_badges[0] count:infobar_badges.size()];
   [self.consumer setupWithBadges:infobar_badges_array];
+  if (newWebState->GetBrowserState()->IsOffTheRecord()) {
+    BadgeStaticItem* incognitoItem = [[BadgeStaticItem alloc]
+        initWithBadgeType:BadgeType::kBadgeTypeIncognito];
+    [self.consumer addBadge:incognitoItem];
+  }
 }
 
 @end

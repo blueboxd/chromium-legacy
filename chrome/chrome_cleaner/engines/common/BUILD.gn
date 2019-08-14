@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Nothing outside //chrome/chrome_cleaner can depend on these targets.
+visibility = [ "//chrome/chrome_cleaner/*" ]
+
 source_set("common") {
   sources = [
     "engine_digest_verifier.cc",
@@ -57,9 +60,9 @@ source_set("unittest_sources") {
   deps = [
     ":common",
     "//base",
-    "//chrome/chrome_cleaner/mojom:engine_sandbox_interface",
     "//chrome/chrome_cleaner/ipc:ipc_test_util",
     "//chrome/chrome_cleaner/ipc:mojo_task_runner",
+    "//chrome/chrome_cleaner/mojom:engine_sandbox_interface",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/test:test_util",
     "//mojo/core/embedder",

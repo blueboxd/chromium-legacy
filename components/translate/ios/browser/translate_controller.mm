@@ -226,8 +226,7 @@ bool TranslateController::OnTranslateSendRequest(
   auto request = std::make_unique<network::ResourceRequest>();
   request->method = method;
   request->url = GURL(url);
-  request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   auto fetcher = network::SimpleURLLoader::Create(std::move(request),
                                                   NO_TRAFFIC_ANNOTATION_YET);
   fetcher->AttachStringForUpload(body, "application/x-www-form-urlencoded");

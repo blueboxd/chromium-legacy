@@ -1647,6 +1647,11 @@ objects of [Certificate](#Certificate-type) type.
     * If *true*, remove this certificate (only GUID
       should be set).
 
+* **Scope**
+    * (optional, default Scope if missing) - [Scope](#Scope-type)
+    * If this is given, it specifies the scope in which the certificate should
+      be applied.
+
 * **TrustBits**
     * (optional if **Type**
         is *Server*
@@ -1687,6 +1692,21 @@ objects of [Certificate](#Certificate-type) type.
     If a global-scoped network connection refers to a user-scoped certificate,
     results are undefined, so this configuration should be prohibited by the
     configuration editor.
+
+### Scope type
+* **Id**
+    * (required if **Type** is *Extension*, otherwise ignored) - **string**
+    * If *Type* is *Extension*, this is the ID of the chrome extension for which
+      the certificate should be applied.
+* **Type**
+    * (required) - **string**
+    * Allowed values are:
+        * *Extension*
+        * *Default*
+    * *Extension* indicates that the certificate should only be applied in the
+      scope of a chrome extension.
+      *Default* indicates that the scope the certificate applies in should not
+      be restricted.
 
 
 ## Encrypted Configuration

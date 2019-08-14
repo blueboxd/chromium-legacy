@@ -465,7 +465,7 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
   std::string profile;
   service_properties.GetStringWithoutPathExpansion(shill::kProfileProperty,
                                                    &profile);
-  ::onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
+  ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_NONE;
   const base::DictionaryValue* policy =
       managed_configuration_handler_->FindPolicyByGuidAndProfile(guid, profile,
                                                                  &onc_source);
@@ -509,7 +509,7 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
       // kL2tpIpsecClientCertIdProperty here (and also in VPNConfigView).
       if (!vpn_client_cert_id.empty() ||
           cert_config_from_policy.client_cert_type !=
-              onc::client_cert::kClientCertTypeNone) {
+              ::onc::client_cert::kClientCertTypeNone) {
         client_cert_type = client_cert::CONFIG_TYPE_IPSEC;
       }
     }
@@ -541,7 +541,7 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
 
     // Check certificate properties from policy.
     if (cert_config_from_policy.client_cert_type ==
-        onc::client_cert::kPattern) {
+        ::onc::client_cert::kPattern) {
       if (!ClientCertResolver::ResolveClientCertificateSync(
               client_cert_type, cert_config_from_policy, &config_properties)) {
         NET_LOG(ERROR) << "Non matching certificate for: " << service_path;

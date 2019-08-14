@@ -33,10 +33,6 @@ class AnimatedLayersTest : public testing::Test,
   ViewportLayersSetup layers_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         AnimatedLayersTest,
-                         testing::Values(0, kBlinkGenPropertyTrees));
-
 class AnimationForTesting : public CompositorAnimationClient {
  public:
   AnimationForTesting() {
@@ -50,13 +46,11 @@ class AnimationForTesting : public CompositorAnimationClient {
   std::unique_ptr<CompositorAnimation> compositor_animation_;
 };
 
-TEST_P(AnimatedLayersTest, updateLayerShouldFlattenTransformWithAnimations) {
-  // TODO(bokan): This test doesn't yet work in blink-gen-property-trees
-  // because cc::Layers can't set an element id in that mode. We fail at
-  // AttachElement since the element id is invalid. https://crbug.com/836897.
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    return;
-
+// TODO(bokan): This test doesn't yet work because cc::Layers can't set an
+// element id in that mode. We fail at AttachElement since the element id is
+// invalid. https://crbug.com/993386.
+TEST_F(AnimatedLayersTest,
+       DISABLED_updateLayerShouldFlattenTransformWithAnimations) {
   cc::Layer* cc_layer = layers_.graphics_layer().CcLayer();
   cc::MutatorHost* mutator = layers_.layer_tree_host()->mutator_host();
   EXPECT_FALSE(

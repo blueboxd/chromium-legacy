@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
 #include "chrome/browser/extensions/api/declarative_content/default_content_predicate_evaluators.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/api/feedback_private/chrome_feedback_private_delegate.h"
 #include "chrome/browser/extensions/api/file_system/chrome_file_system_delegate.h"
 #include "chrome/browser/extensions/api/management/chrome_management_api_delegate.h"
@@ -25,7 +26,10 @@
 #include "chrome/browser/extensions/api/storage/managed_value_store_cache.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
+#include "chrome/browser/extensions/extension_action.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/system_display/display_info_provider.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/guest_view/app_view/chrome_app_view_guest_delegate.h"
@@ -213,6 +217,30 @@ void ChromeExtensionsAPIClient::NotifyWebRequestWithheld(
   runner->OnWebRequestBlocked(extension);
 }
 
+void ChromeExtensionsAPIClient::UpdateActionCount(
+    content::BrowserContext* context,
+    const ExtensionId& extension_id,
+    int tab_id,
+    int action_count) {
+  const Extension* extension =
+      ExtensionRegistry::Get(context)->enabled_extensions().GetByID(
+          extension_id);
+  DCHECK(extension);
+
+  ExtensionAction* action =
+      ExtensionActionManager::Get(context)->GetExtensionAction(*extension);
+  DCHECK(action);
+
+  action->SetDNRActionCount(tab_id, action_count);
+  content::WebContents* tab_contents = nullptr;
+  if (ExtensionTabUtil::GetTabById(
+          tab_id, context, true /* include_incognito */, &tab_contents) &&
+      tab_contents) {
+    ExtensionActionAPI::Get(context)->NotifyChange(action, tab_contents,
+                                                   context);
+  }
+}
+
 AppViewGuestDelegate* ChromeExtensionsAPIClient::CreateAppViewGuestDelegate()
     const {
   return new ChromeAppViewGuestDelegate();
@@ -241,9 +269,9 @@ WebViewGuestDelegate* ChromeExtensionsAPIClient::CreateWebViewGuestDelegate(
   return new ChromeWebViewGuestDelegate(web_view_guest);
 }
 
-WebViewPermissionHelperDelegate* ChromeExtensionsAPIClient::
-    CreateWebViewPermissionHelperDelegate(
-        WebViewPermissionHelper* web_view_permission_helper) const {
+WebViewPermissionHelperDelegate*
+ChromeExtensionsAPIClient::CreateWebViewPermissionHelperDelegate(
+    WebViewPermissionHelper* web_view_permission_helper) const {
   return new ChromeWebViewPermissionHelperDelegate(web_view_permission_helper);
 }
 
@@ -251,12 +279,10 @@ scoped_refptr<ContentRulesRegistry>
 ChromeExtensionsAPIClient::CreateContentRulesRegistry(
     content::BrowserContext* browser_context,
     RulesCacheDelegate* cache_delegate) const {
-  return scoped_refptr<ContentRulesRegistry>(
-      new ChromeContentRulesRegistry(
-          browser_context,
-          cache_delegate,
-          base::Bind(&CreateDefaultContentPredicateEvaluators,
-                     base::Unretained(browser_context))));
+  return scoped_refptr<ContentRulesRegistry>(new ChromeContentRulesRegistry(
+      browser_context, cache_delegate,
+      base::Bind(&CreateDefaultContentPredicateEvaluators,
+                 base::Unretained(browser_context))));
 }
 
 std::unique_ptr<DevicePermissionsPrompt>

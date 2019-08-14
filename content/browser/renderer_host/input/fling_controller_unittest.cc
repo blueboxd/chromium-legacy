@@ -666,4 +666,30 @@ TEST_P(FlingControllerTest, MiddleClickAutoScrollFling) {
   EXPECT_FALSE(FlingInProgress());
 }
 
+// Ensure that the fling controller does not start a fling if the last touchpad
+// wheel event was consumed.
+TEST_P(FlingControllerTest, NoFlingStartAfterWheelEventConsumed) {
+  // First ensure that a fling can start after a not consumed wheel event.
+  fling_controller_->OnWheelEventAck(MouseWheelEventWithLatencyInfo(),
+                                     InputEventAckSource::COMPOSITOR_THREAD,
+                                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  SimulateFlingStart(blink::WebGestureDevice::kTouchpad,
+                     gfx::Vector2dF(1000, 0));
+  ASSERT_TRUE(FlingInProgress());
+
+  // Cancel the first fling.
+  SimulateFlingCancel(blink::WebGestureDevice::kTouchpad);
+  EXPECT_FALSE(FlingInProgress());
+
+  // Now test that a consumed touchpad wheel event results in no fling.
+  fling_controller_->OnWheelEventAck(MouseWheelEventWithLatencyInfo(),
+                                     InputEventAckSource::COMPOSITOR_THREAD,
+                                     INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  SimulateFlingStart(blink::WebGestureDevice::kTouchpad,
+                     gfx::Vector2dF(1000, 0));
+  EXPECT_FALSE(FlingInProgress());
+}
+
 }  // namespace content

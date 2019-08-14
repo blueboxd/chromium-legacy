@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/media/router/media_router_feature.h"       // nogncheck
 #include "chrome/browser/media/router/mojo/media_router_desktop.h"  // nogncheck
 #include "chrome/common/extensions/extension_constants.h"
@@ -46,7 +47,7 @@ namespace extensions {
 namespace {
 #if defined(OS_CHROMEOS)
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Resolves InputEngineManager request in InputMethodManager.
 void BindInputEngineManager(
     chromeos::ime::mojom::InputEngineManagerRequest request,
@@ -54,7 +55,7 @@ void BindInputEngineManager(
   chromeos::input_method::InputMethodManager::Get()->ConnectInputEngineManager(
       std::move(request));
 }
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 // Translates the renderer-side source ID to video device id.
 void TranslateVideoDeviceId(
@@ -135,12 +136,12 @@ void RegisterChromeInterfacesForExtension(
 
 #if defined(OS_CHROMEOS)
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Registry InputEngineManager for official Google XKB Input only.
   if (extension->id() == chromeos::extension_ime_util::kXkbExtensionId) {
     registry->AddInterface(base::BindRepeating(&BindInputEngineManager));
   }
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   if (extension->permissions_data()->HasAPIPermission(
           APIPermission::kMediaPerceptionPrivate)) {

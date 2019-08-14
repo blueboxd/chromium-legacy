@@ -41,7 +41,7 @@ public class ScreenshotTabObserver extends EmptyTabObserver implements UserData 
      * @return ScreenshotTabObserver to use, or null if the tab was null.
      */
     public static ScreenshotTabObserver from(Tab tab) {
-        if (tab == null) return null;
+        if (tab == null || !tab.isInitialized()) return null;
         // Get the current observer from the tab using UserData, if any.  If not, create a new
         // observer and put it into the UserData for the tab.
         ScreenshotTabObserver observer = get(tab);

@@ -23,11 +23,22 @@ class CORE_EXPORT CSSTransition : public Animation {
                 AnimationEffect*,
                 const PropertyHandle& transition_property);
 
+  bool IsCSSTransition() const final { return true; }
+
   AtomicString transitionProperty() const;
+  const CSSProperty& TransitionCSSProperty() const {
+    return transition_property_.GetCSSProperty();
+  }
 
  private:
   PropertyHandle transition_property_;
 };
+
+DEFINE_TYPE_CASTS(CSSTransition,
+                  Animation,
+                  animation,
+                  animation->IsCSSTransition(),
+                  animation.IsCSSTransition());
 
 }  // namespace blink
 

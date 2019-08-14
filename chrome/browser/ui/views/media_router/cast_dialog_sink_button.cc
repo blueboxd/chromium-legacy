@@ -8,6 +8,7 @@
 
 #include "base/debug/stack_trace.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -27,7 +28,7 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/vector_icons.h"
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chrome/browser/ui/media_router/internal/vector_icons/vector_icons.h"
 #endif
 
@@ -52,14 +53,14 @@ gfx::ImageSkia CreateSinkIcon(SinkIconType icon_type, bool enabled = true) {
       break;
 // Use proprietary icons only in Chrome builds. The default TV icon is used
 // instead for these sink types in Chromium builds.
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     case SinkIconType::MEETING:
       vector_icon = &vector_icons::kMeetIcon;
       break;
     case SinkIconType::HANGOUT:
       vector_icon = &vector_icons::kHangoutIcon;
       break;
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
     case SinkIconType::CAST:
     case SinkIconType::GENERIC:
     default:

@@ -133,7 +133,7 @@ bool VulkanDeviceQueue::Initialize(
     if (desired_layers.find(layer_property.layerName) != desired_layers.end())
       enabled_layer_names.push_back(layer_property.layerName);
   }
-#endif
+#endif  // DCHECK_IS_ON()
 
   std::vector<const char*> enabled_extensions;
   enabled_extensions.insert(std::end(enabled_extensions),
@@ -143,7 +143,8 @@ bool VulkanDeviceQueue::Initialize(
   uint32_t device_api_version =
       std::min(max_api_version, vk_physical_device_properties_.apiVersion);
 
-#if defined(OS_ANDROID)
+  // Android and Fuchsia need YCbCr sampler support.
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
   if (!vkGetPhysicalDeviceFeatures2) {
     DLOG(ERROR) << "Vulkan 1.1 or VK_KHR_get_physical_device_properties2 "
                    "extension is required.";
@@ -151,54 +152,52 @@ bool VulkanDeviceQueue::Initialize(
   }
 
   // Query if VkPhysicalDeviceSamplerYcbcrConversionFeatures is supported by
-  // the implementation. This extension must be supported for android.
-  sampler_ycbcr_conversion_features_.sType =
-      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES;
+  // the implementation. This extension must be supported for Android and
+  // Fuchsia.
   sampler_ycbcr_conversion_features_.pNext = nullptr;
-
-  // Add VkPhysicalDeviceSamplerYcbcrConversionFeatures struct to pNext chain
-  // of VkPhysicalDeviceFeatures2.
-  enabled_device_features_2_.sType =
-      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-  enabled_device_features_2_.pNext = &sampler_ycbcr_conversion_features_;
+  VkPhysicalDeviceFeatures2 supported_device_features_2 = {
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+      &sampler_ycbcr_conversion_features_};
   vkGetPhysicalDeviceFeatures2(vk_physical_device_,
-                               &enabled_device_features_2_);
+                               &supported_device_features_2);
   if (!sampler_ycbcr_conversion_features_.samplerYcbcrConversion) {
-    LOG(ERROR) << "samplerYcbcrConversion is not supported";
+    LOG(ERROR) << "samplerYcbcrConversion is not supported.";
     return false;
   }
 
-  // Disable all physical device features by default.
-  memset(&enabled_device_features_2_.features, 0,
-         sizeof(enabled_device_features_2_.features));
-#elif defined(OS_FUCHSIA)
-  // Used to Query if VkPhysicalDeviceProtectedMemoryFeatures is supported by
-  // the implementation on fuchsia.
-  VkPhysicalDeviceProtectedMemoryFeatures protected_memory_features = {
-      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES};
-  protected_memory_features.protectedMemory = VK_TRUE;
+  // Add VkPhysicalDeviceSamplerYcbcrConversionFeatures struct to pNext chain
+  // of VkPhysicalDeviceFeatures2 to enable YCbCr sampler support.
+  sampler_ycbcr_conversion_features_.pNext = enabled_device_features_2_.pNext;
+  enabled_device_features_2_.pNext = &sampler_ycbcr_conversion_features_;
+#endif  // defined(OS_ANDROID) || defined(OS_FUCHSIA)
 
+#if defined(OS_FUCHSIA)
   if (allow_protected_memory) {
     if (device_api_version < VK_MAKE_VERSION(1, 1, 0)) {
       DLOG(ERROR) << "Vulkan 1.1 is required for protected memory";
       return false;
     }
 
-    enabled_device_features_2_.sType =
-        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-    enabled_device_features_2_.pNext = &protected_memory_features;
+    protected_memory_features_.pNext = nullptr;
+    VkPhysicalDeviceFeatures2 supported_device_features_2 = {
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+        &protected_memory_features_};
     vkGetPhysicalDeviceFeatures2(vk_physical_device_,
-                                 &enabled_device_features_2_);
-    if (!protected_memory_features.protectedMemory) {
+                                 &supported_device_features_2);
+    if (!protected_memory_features_.protectedMemory) {
       DLOG(ERROR) << "Protected memory is not supported";
       return false;
     }
 
-    // Disable all physical device features by default.
-    memset(&enabled_device_features_2_.features, 0,
-           sizeof(enabled_device_features_2_.features));
+    // Add VkPhysicalDeviceProtectedMemoryFeatures struct to pNext chain
+    // of VkPhysicalDeviceFeatures2 to enable YCbCr sampler support.
+    protected_memory_features_.pNext = enabled_device_features_2_.pNext;
+    enabled_device_features_2_.pNext = &protected_memory_features_;
   }
-#endif
+#endif  // defined(OS_FUCHSIA)
+
+  // Disable all physical device features by default.
+  enabled_device_features_2_.features = {};
 
   VkDeviceCreateInfo device_create_info = {};
   device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

@@ -46,7 +46,8 @@ class VulkanImplementationGbm : public gpu::VulkanImplementation {
       VkImage* vk_image,
       VkImageCreateInfo* vk_image_info,
       VkDeviceMemory* vk_device_memory,
-      VkDeviceSize* mem_allocation_size) override;
+      VkDeviceSize* mem_allocation_size,
+      base::Optional<gpu::VulkanYCbCrInfo>* ycbcr_info) override;
 
  private:
   gpu::VulkanInstance vulkan_instance_;

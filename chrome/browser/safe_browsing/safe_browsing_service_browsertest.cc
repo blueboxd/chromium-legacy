@@ -38,6 +38,7 @@
 #include "base/task/post_task.h"
 #include "base/test/thread_test_helper.h"
 #include "base/time/time.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/startup_task_runner_service_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -123,10 +124,10 @@ namespace safe_browsing {
 
 namespace {
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 const char kBlacklistResource[] = "/blacklisted/script.js";
 const char kMaliciousResource[] = "/malware/script.js";
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 const char kEmptyPage[] = "/empty.html";
 const char kMalwareFile[] = "/downloads/dangerous/dangerous.exe";
 const char kMalwarePage[] = "/safe_browsing/malware.html";
@@ -1226,9 +1227,9 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckDownloadUrlRedirects) {
   EXPECT_EQ(SB_THREAT_TYPE_URL_BINARY_MALWARE, client->GetThreatType());
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
-// This test is only enabled when GOOGLE_CHROME_BUILD is true because the store
-// that this test uses is only populated on GOOGLE_CHROME_BUILD builds.
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+// This test is only enabled when GOOGLE_CHROME_BRANDING is true because the
+// store that this test uses is only populated on GOOGLE_CHROME_BRANDING builds.
 IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckResourceUrl) {
   GURL blacklist_url = embedded_test_server()->GetURL(kBlacklistResource);
   GURL malware_url = embedded_test_server()->GetURL(kMaliciousResource);
@@ -1259,7 +1260,7 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckResourceUrl) {
   client->CheckResourceUrl(embedded_test_server()->GetURL(kEmptyPage));
   EXPECT_EQ(SB_THREAT_TYPE_SAFE, client->GetThreatType());
 }
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 ///////////////////////////////////////////////////////////////////////////////
 // END: These tests use SafeBrowsingService::Client to directly interact with
 // SafeBrowsingService.

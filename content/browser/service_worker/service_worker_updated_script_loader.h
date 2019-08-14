@@ -20,7 +20,9 @@
 
 namespace content {
 
+class BrowserContext;
 class ServiceWorkerVersion;
+class ThrottlingURLLoader;
 struct HttpResponseInfoIOBuffer;
 
 // Used only for ServiceWorkerImportedScriptUpdateCheck.
@@ -49,7 +51,7 @@ struct HttpResponseInfoIOBuffer;
 // scheme, e.g., a chrome-extension:// URL. Regardless, that is still called a
 // "network" request in comments and naming. "network" is meant to distinguish
 // from the load this URLLoader does for its client:
-//     "network" <------> SWResumeScriptLoader <------> client
+//     "network" <------> SWUpdatedScriptLoader <------> client
 class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
     : public network::mojom::URLLoader,
       public network::mojom::URLLoaderClient,
@@ -64,6 +66,62 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
   };
 
   enum class WriterState { kNotStarted, kWriting, kCompleted };
+
+  using BrowserContextGetter = base::RepeatingCallback<BrowserContext*(void)>;
+
+  // A wrapper to use ThrottlingURLLoader on the IO thread.
+  // TODO(crbug.com/824858): Remove this once this loader is moved to UI thread.
+  class ThrottlingURLLoaderIOWrapper {
+   public:
+    // Creates a ThrottlingURLLoader and starts the request.
+    // Called on the IO thread.
+    static std::unique_ptr<ThrottlingURLLoaderIOWrapper> CreateLoaderAndStart(
+        std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+            loader_factory_info,
+        BrowserContextGetter browser_context_getter,
+        int32_t routing_id,
+        int32_t request_id,
+        uint32_t options,
+        const network::ResourceRequest& resource_request,
+        network::mojom::URLLoaderClientPtrInfo client,
+        const net::NetworkTrafficAnnotationTag& traffic_annotation);
+
+    // Called on the IO thread.
+    void SetPriority(net::RequestPriority priority,
+                     int32_t intra_priority_value);
+    void PauseReadingBodyFromNet();
+    void ResumeReadingBodyFromNet();
+
+    ~ThrottlingURLLoaderIOWrapper();
+
+   private:
+    ThrottlingURLLoaderIOWrapper();
+
+    // The real loader to be used in ThrottlingURLLoaderIOWrapper.
+    // Created and deleted on the UI thread via BrowserThread::DeleteOnUIThread
+    // to ensure the order of posted tasks and destruction of this instance.
+    struct LoaderOnUI {
+      LoaderOnUI();
+      ~LoaderOnUI();
+
+      std::unique_ptr<ThrottlingURLLoader> loader;
+      network::mojom::URLLoaderClientPtr client;
+    };
+
+    static void StartInternalOnUI(
+        std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+            loader_factory_info,
+        BrowserContextGetter browser_context_getter,
+        int32_t routing_id,
+        int32_t request_id,
+        uint32_t options,
+        network::ResourceRequest resource_request,
+        network::mojom::URLLoaderClientPtrInfo client,
+        net::NetworkTrafficAnnotationTag traffic_annotation,
+        LoaderOnUI* loader_on_ui);
+
+    std::unique_ptr<LoaderOnUI, BrowserThread::DeleteOnUIThread> loader_on_ui_;
+  };
 
   // Creates a loader to continue downloading of a script paused during update
   // check.
@@ -165,7 +223,7 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
 
   // Used for fetching the script from network (or other loaders like extensions
   // sometimes).
-  network::mojom::URLLoaderPtr network_loader_;
+  std::unique_ptr<ThrottlingURLLoaderIOWrapper> network_loader_;
 
   mojo::Binding<network::mojom::URLLoaderClient> network_client_binding_;
   mojo::ScopedDataPipeConsumerHandle network_consumer_;

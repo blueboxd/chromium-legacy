@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
 #import "ios/chrome/browser/ui/page_info/page_info_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -31,8 +30,14 @@
   }
 
   if ([[UIDevice currentDevice] orientation] != UIDeviceOrientationPortrait) {
+#if defined(CHROME_EARL_GREY_1)
     [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
                              errorOrNil:nil];
+#elif defined(CHROME_EARL_GREY_2)
+    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait error:nil];
+#else
+#error Neither CHROME_EARL_GREY_1 nor CHROME_EARL_GREY_2 are defined
+#endif
   }
 
   [ChromeEarlGrey loadURL:GURL("https://invalid")];
@@ -50,8 +55,15 @@
                                           kPageInfoViewAccessibilityIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
+#if defined(CHROME_EARL_GREY_1)
   [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeRight
                            errorOrNil:nil];
+#elif defined(CHROME_EARL_GREY_2)
+  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeRight
+                                error:nil];
+#else
+#error Neither CHROME_EARL_GREY_1 nor CHROME_EARL_GREY_2 are defined
+#endif
 
   // Expect that the page info view has disappeared.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(

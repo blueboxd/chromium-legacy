@@ -443,6 +443,31 @@ TEST_F(BundledExchangeParserTest, InvalidHeaderValue) {
   ASSERT_FALSE(ParseResponse(&data_source, location));
 }
 
+TEST_F(BundledExchangeParserTest, NoContentTypeWithNonEmptyContent) {
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  builder.AddExchange("https://test.example.com/", {{":status", "200"}},
+                      "payload");
+  TestDataSource data_source(builder.CreateBundle());
+
+  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source).first;
+  ASSERT_TRUE(metadata);
+  auto location = FindResponse(metadata, GURL("https://test.example.com/"));
+  ASSERT_TRUE(location);
+  ASSERT_FALSE(ParseResponse(&data_source, location));
+}
+
+TEST_F(BundledExchangeParserTest, NoContentTypeWithEmptyContent) {
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  builder.AddExchange("https://test.example.com/", {{":status", "301"}}, "");
+  TestDataSource data_source(builder.CreateBundle());
+
+  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source).first;
+  ASSERT_TRUE(metadata);
+  auto location = FindResponse(metadata, GURL("https://test.example.com/"));
+  ASSERT_TRUE(location);
+  ASSERT_TRUE(ParseResponse(&data_source, location));
+}
+
 TEST_F(BundledExchangeParserTest, Variants) {
   BundleBuilder builder(kFallbackUrl, kManifestUrl);
   auto location1 = builder.AddResponse(

@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_BROWSER_INTERFACE_BINDERS_H_
 #define CONTENT_BROWSER_BROWSER_INTERFACE_BINDERS_H_
 
+#include "content/public/browser/service_worker_running_info.h"
 #include "services/service_manager/public/cpp/binder_map.h"
 #include "url/origin.h"
 
@@ -14,6 +15,7 @@ class RenderFrameHost;
 class RenderFrameHostImpl;
 class DedicatedWorkerHost;
 class SharedWorkerHost;
+class ServiceWorkerProviderHost;
 
 namespace internal {
 
@@ -27,27 +29,36 @@ namespace internal {
 // handling InterfaceProvider's GetInterface() calls (see crbug.com/718652).
 
 // Registers the handlers for interfaces requested by frames.
-void PopulateBinderMap(RenderFrameHostImpl* rfhi,
+void PopulateBinderMap(RenderFrameHostImpl* host,
                        service_manager::BinderMap* map);
 void PopulateBinderMapWithContext(
-    RenderFrameHostImpl* rfhi,
+    RenderFrameHostImpl* host,
     service_manager::BinderMapWithContext<RenderFrameHost*>* map);
-RenderFrameHost* GetContextForHost(RenderFrameHostImpl* rfhi);
+RenderFrameHost* GetContextForHost(RenderFrameHostImpl* host);
 
 // Registers the handlers for interfaces requested by dedicated workers.
-void PopulateBinderMap(DedicatedWorkerHost* dwh,
+void PopulateBinderMap(DedicatedWorkerHost* host,
                        service_manager::BinderMap* map);
 void PopulateBinderMapWithContext(
-    DedicatedWorkerHost* dwh,
+    DedicatedWorkerHost* host,
     service_manager::BinderMapWithContext<const url::Origin&>* map);
-const url::Origin& GetContextForHost(DedicatedWorkerHost* dwh);
+const url::Origin& GetContextForHost(DedicatedWorkerHost* host);
 
 // Registers the handlers for interfaces requested by shared workers.
-void PopulateBinderMap(SharedWorkerHost* swh, service_manager::BinderMap* map);
+void PopulateBinderMap(SharedWorkerHost* host, service_manager::BinderMap* map);
 void PopulateBinderMapWithContext(
-    SharedWorkerHost* swh,
+    SharedWorkerHost* host,
     service_manager::BinderMapWithContext<const url::Origin&>* map);
-url::Origin GetContextForHost(SharedWorkerHost* swh);
+url::Origin GetContextForHost(SharedWorkerHost* host);
+
+// Registers the handlers for interfaces requested by service workers.
+void PopulateBinderMap(ServiceWorkerProviderHost* host,
+                       service_manager::BinderMap* map);
+void PopulateBinderMapWithContext(
+    ServiceWorkerProviderHost* host,
+    service_manager::BinderMapWithContext<const ServiceWorkerRunningInfo&>*
+        map);
+ServiceWorkerRunningInfo GetContextForHost(ServiceWorkerProviderHost* host);
 
 }  // namespace internal
 }  // namespace content

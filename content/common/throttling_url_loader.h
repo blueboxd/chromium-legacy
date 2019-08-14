@@ -49,12 +49,15 @@ class CONTENT_EXPORT ThrottlingURLLoader
 
   ~ThrottlingURLLoader() override;
 
-  void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers);
   // Follows a redirect, calling CreateLoaderAndStart() on the factory. This
   // is useful if the factory uses different loaders for different URLs.
   void FollowRedirectForcingRestart();
+
+  void FollowRedirect(const std::vector<std::string>& removed_headers,
+                      const net::HttpRequestHeaders& modified_headers);
   void SetPriority(net::RequestPriority priority, int32_t intra_priority_value);
+  void PauseReadingBodyFromNet();
+  void ResumeReadingBodyFromNet();
 
   // Restarts the load immediately with |factory| and |url_loader_options|.
   // It must only be called when the following conditions are met:
@@ -179,6 +182,8 @@ class CONTENT_EXPORT ThrottlingURLLoader
 
   std::vector<ThrottleEntry> throttles_;
   std::set<blink::URLLoaderThrottle*> deferring_throttles_;
+  // nullptr is used when this loader is directly requested to pause reading
+  // body from net by calling PauseReadingBodyFromNet().
   std::set<blink::URLLoaderThrottle*> pausing_reading_body_from_net_throttles_;
 
   // NOTE: This may point to a native implementation (instead of a Mojo proxy

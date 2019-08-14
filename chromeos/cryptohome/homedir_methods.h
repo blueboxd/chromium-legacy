@@ -62,6 +62,13 @@ class COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) HomedirMethods {
                            const RemoveKeyRequest& request,
                            const Callback& callback) = 0;
 
+  // Asks cryptohomed to remove all keys except those whose labels are exempted
+  // in MassRemoveKeysRequest, for the user identified by |id| using |auth|.
+  virtual void MassRemoveKeys(const Identification& id,
+                              const AuthorizationRequest& auth,
+                              const MassRemoveKeysRequest& request,
+                              const Callback& callback) = 0;
+
   // Creates the global HomedirMethods instance.
   static void Initialize();
 

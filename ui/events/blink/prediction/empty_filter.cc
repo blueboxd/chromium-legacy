@@ -10,9 +10,9 @@ namespace ui {
 EmptyFilter::EmptyFilter() {}
 EmptyFilter::~EmptyFilter() {}
 
-bool EmptyFilter::Filter(const base::TimeTicks timestamp,
+bool EmptyFilter::Filter(const base::TimeTicks& timestamp,
                          gfx::PointF* position) const {
-  return true;
+  return position != nullptr;
 }
 
 const char* EmptyFilter::GetName() const {

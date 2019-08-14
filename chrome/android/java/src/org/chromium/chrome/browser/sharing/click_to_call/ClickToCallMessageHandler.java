@@ -13,7 +13,6 @@ import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
@@ -41,9 +40,8 @@ public class ClickToCallMessageHandler {
                 dialIntent = new Intent(Intent.ACTION_DIAL);
             }
             dialIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            ContextUtils.getApplicationContext().startActivity(dialIntent);
-            new CachedMetrics.BooleanHistogramSample("Sharing.ClickToCallDialIntent")
-                    .record(TextUtils.isEmpty(phoneNumber));
+            context.startActivity(dialIntent);
+            ClickToCallUma.recordDialerShown(TextUtils.isEmpty(phoneNumber));
         }
     }
 
@@ -54,6 +52,7 @@ public class ClickToCallMessageHandler {
      */
     @CalledByNative
     private static void showNotification(String phoneNumber) {
+        ClickToCallUma.recordMessageReceived();
         Context context = ContextUtils.getApplicationContext();
         PendingIntentProvider contentIntent = PendingIntentProvider.getBroadcast(context,
                 /*requestCode=*/0,

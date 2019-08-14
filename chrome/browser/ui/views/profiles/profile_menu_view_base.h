@@ -166,8 +166,6 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
 
   Browser* const browser_;
 
-  int menu_width_;
-
   // ProfileMenuViewBase takes ownership of all menu_items and passes it to the
   // underlying view when it is created.
   std::vector<MenuItems> menu_item_groups_;

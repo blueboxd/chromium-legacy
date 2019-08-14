@@ -74,6 +74,7 @@ TEST_F(FidoGetAssertionTaskTest, TestGetAssertionSuccess) {
 
 TEST_F(FidoGetAssertionTaskTest, TestU2fSignSuccess) {
   auto device = MockFidoDevice::MakeU2f();
+  device->ExpectWinkedAtLeastOnce();
   device->ExpectRequestAndRespondWith(
       test_data::kU2fSignCommandApdu,
       test_data::kApduEncodedNoErrorSignResponse);
@@ -166,6 +167,7 @@ TEST_F(FidoGetAssertionTaskTest, TestU2fSignRequestWithEmptyAllowedList) {
                                          test_data::kClientDataJson);
 
   auto device = MockFidoDevice::MakeU2f();
+  device->ExpectWinkedAtLeastOnce();
   device->ExpectRequestAndRespondWith(
       test_data::kU2fFakeRegisterCommand,
       test_data::kApduEncodedNoErrorSignResponse);
@@ -236,11 +238,13 @@ TEST_F(FidoGetAssertionTaskTest, TestU2fFallbackForAppIdExtension) {
                                       error);
   // After falling back to U2F the request will use the alternative app_param,
   // which will be rejected.
+  device->ExpectWinkedAtLeastOnce();
   device->ExpectRequestAndRespondWith(
       test_data::kU2fSignCommandApduWithAlternativeApplicationParameter,
       test_data::kU2fWrongDataApduResponse);
   // After the rejection, the U2F sign request with the primary application
   // parameter should be tried.
+  device->ExpectWinkedAtLeastOnce();
   device->ExpectRequestAndRespondWith(
       test_data::kU2fSignCommandApdu,
       test_data::kApduEncodedNoErrorSignResponse);

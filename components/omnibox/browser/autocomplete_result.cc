@@ -9,6 +9,7 @@
 #include <iterator>
 #include <string>
 #include <unordered_set>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -175,7 +176,7 @@ void AutocompleteResult::SortAndCull(
     MaybeCullTailSuggestions(&matches_);
   }
 #endif
-  SortAndDedupMatches(input.current_page_classification(), &matches_);
+  DeduplicateMatches(input.current_page_classification(), &matches_);
 
   DemoteOnDeviceSearchSuggestions();
 
@@ -565,11 +566,11 @@ GURL AutocompleteResult::ComputeAlternateNavUrl(
              : GURL();
 }
 
-void AutocompleteResult::SortAndDedupMatches(
+void AutocompleteResult::DeduplicateMatches(
     metrics::OmniboxEventProto::PageClassification page_classification,
     ACMatches* matches) {
   // Group matches by stripped URL and whether it's a calculator suggestion.
-  std::unordered_map<std::pair<GURL, bool>, std::list<ACMatches::iterator>,
+  std::unordered_map<std::pair<GURL, bool>, std::vector<ACMatches::iterator>,
                      MatchGURLHash>
       url_to_matches;
   for (auto i = matches->begin(); i != matches->end(); ++i) {
@@ -581,35 +582,39 @@ void AutocompleteResult::SortAndDedupMatches(
   for (auto& group : url_to_matches) {
     const auto& key = group.first;
     const GURL& gurl = key.first;
-    // The list of matches whose URL are equivalent.
-    std::list<ACMatches::iterator>& duplicate_matches = group.second;
+    // The vector of matches whose URL are equivalent.
+    std::vector<ACMatches::iterator>& duplicate_matches = group.second;
     if (gurl.is_empty() || duplicate_matches.size() == 1)
       continue;
 
-    // Find the best match.
-    auto best_match = duplicate_matches.begin();
-    for (auto i = std::next(best_match); i != duplicate_matches.end(); ++i) {
-      best_match = BetterDuplicate(i, best_match);
-    }
+    // Sort the matches best to worst, according to the deduplication criteria.
+    std::sort(duplicate_matches.begin(), duplicate_matches.end(),
+              &AutocompleteMatch::BetterDuplicateByIterator);
+    AutocompleteMatch& best_match = **duplicate_matches.begin();
 
-    // Rotate the chosen match to be first, if necessary, so we know to keep it.
-    if (best_match != duplicate_matches.begin()) {
-      duplicate_matches.splice(duplicate_matches.begin(), duplicate_matches,
-                               best_match);
-    }
+    // Process all the duplicate matches (from second-best to worst).
+    std::vector<AutocompleteMatch> duplicates_of_duplicates;
+    for (auto i = std::next(duplicate_matches.begin());
+         i != duplicate_matches.end(); ++i) {
+      AutocompleteMatch& duplicate_match = **i;
 
-    // For each duplicate match, append its duplicates to that of the best
-    // match, then append it, before we erase it.
-    for (auto i = std::next(best_match); i != duplicate_matches.end(); ++i) {
-      auto& match = **i;
-      for (auto& dup_match : match.duplicate_matches)
-        (*best_match)->duplicate_matches.push_back(std::move(dup_match));
-      // Erase the duplicates before copying it. We don't need them any more.
-      match.duplicate_matches.erase(match.duplicate_matches.begin(),
-                                    match.duplicate_matches.end());
-      // Copy, don't move, because we need these below.
-      (*best_match)->duplicate_matches.push_back(match);
+      // Each duplicate match may also have its own duplicates. Move those to
+      // a temporary list, which will be eventually added to the end of
+      // |best_match.duplicate_matches|. Clear out the original list too.
+      std::move(duplicate_match.duplicate_matches.begin(),
+                duplicate_match.duplicate_matches.end(),
+                std::back_inserter(duplicates_of_duplicates));
+      duplicate_match.duplicate_matches.clear();
+
+      best_match.UpgradeMatchWithPropertiesFrom(duplicate_match);
+
+      // This should be a copy, not a move, since we don't erase duplicate
+      // matches from the master list until the very end.
+      DCHECK(duplicate_match.duplicate_matches.empty());  // Should be cleared.
+      best_match.duplicate_matches.push_back(duplicate_match);
     }
+    std::move(duplicates_of_duplicates.begin(), duplicates_of_duplicates.end(),
+              std::back_inserter(best_match.duplicate_matches));
   }
 
   // Erase duplicate matches.
@@ -648,91 +653,6 @@ size_t AutocompleteResult::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(alternate_nav_url_);
 
   return res;
-}
-
-// static
-std::list<ACMatches::iterator>::iterator AutocompleteResult::BetterDuplicate(
-    std::list<ACMatches::iterator>::iterator first,
-    std::list<ACMatches::iterator>::iterator second) {
-  std::list<ACMatches::iterator>::iterator preferred_match;
-  std::list<ACMatches::iterator>::iterator non_preferred_match;
-  // The following logic enforces constraints we care about regarding the
-  // the characteristics of the candidate matches. In order of priority:
-  //
-  // Entity suggestions:
-  //   Entity suggestions are always preferred over non-entity suggestions,
-  //   assuming both candidates have the same fill_into_edit value. In these
-  //   cases, because the fill_into_edit value is the same in both and the
-  //   selection of the entity suggestion appears to the user as simply a
-  //   "promotion" of an equivalent suggestion by adding additional decoration,
-  //   the entity suggestion is allowed to inherit the
-  //   allowed_to_be_default_match and inline_autocompletion values from the
-  //   other suggestion.
-  //
-  // allowed_to_be_default_match:
-  //   A suggestion that is allowed to be the default match is always preferred
-  //   over one that is not.
-  //
-  // Note that together these two constraints enforce an overall constraint,
-  // that if either candidate has allowed_to_be_default_match = true, the match
-  // which is preferred will always have allowed_to_be_default_match = true.
-  //
-  // Document suggestions:
-  //   The icon and display of document suggestions are preferred over
-  //   history, bookmark, etc. items. The actual URLs may be different, but
-  //   logically dedupe to the same entity to which we'll navigate.
-  if ((*first)->type == ACMatchType::SEARCH_SUGGEST_ENTITY &&
-      (*second)->type != ACMatchType::SEARCH_SUGGEST_ENTITY &&
-      (*first)->fill_into_edit == (*second)->fill_into_edit) {
-    preferred_match = first;
-    non_preferred_match = second;
-    if ((*non_preferred_match)->allowed_to_be_default_match) {
-      (*preferred_match)->allowed_to_be_default_match = true;
-      (*preferred_match)->inline_autocompletion =
-          (*non_preferred_match)->inline_autocompletion;
-    }
-  } else if ((*first)->type != ACMatchType::SEARCH_SUGGEST_ENTITY &&
-             (*second)->type == ACMatchType::SEARCH_SUGGEST_ENTITY &&
-             (*first)->fill_into_edit == (*second)->fill_into_edit) {
-    preferred_match = second;
-    non_preferred_match = first;
-    if ((*non_preferred_match)->allowed_to_be_default_match) {
-      (*preferred_match)->allowed_to_be_default_match = true;
-      (*preferred_match)->inline_autocompletion =
-          (*non_preferred_match)->inline_autocompletion;
-    }
-  } else if ((*first)->allowed_to_be_default_match &&
-             !(*second)->allowed_to_be_default_match) {
-    preferred_match = first;
-    non_preferred_match = second;
-  } else if ((*second)->allowed_to_be_default_match &&
-             !(*first)->allowed_to_be_default_match) {
-    preferred_match = second;
-    non_preferred_match = first;
-  } else if ((*first)->type == ACMatchType::DOCUMENT_SUGGESTION &&
-             (*second)->type != ACMatchType::DOCUMENT_SUGGESTION) {
-    preferred_match = first;
-    non_preferred_match = second;
-  } else if ((*first)->type != ACMatchType::DOCUMENT_SUGGESTION &&
-             (*second)->type == ACMatchType::DOCUMENT_SUGGESTION) {
-    preferred_match = second;
-    non_preferred_match = first;
-  } else {
-    // By default, simply prefer the match with the higher relevance. Note that
-    // we do not apply type-based demotion here (CompareWithDemoteByType)
-    // because we only apply demotion when ordering the final set of matches.
-    return (*first)->relevance >= (*second)->relevance ? first : second;
-  }
-
-  // If a match is preferred despite having a lower score, boost its score
-  // to that of the other match.
-  if ((*non_preferred_match)->relevance > (*preferred_match)->relevance) {
-    (*preferred_match)
-        ->RecordAdditionalInfo(kACMatchPropertyScoreBoostedFrom,
-                               (*preferred_match)->relevance);
-    (*preferred_match)->relevance = (*non_preferred_match)->relevance;
-  }
-  return preferred_match;
 }
 
 // static

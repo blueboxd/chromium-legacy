@@ -103,14 +103,22 @@ class VULKAN_EXPORT VulkanDeviceQueue {
   uint32_t vk_queue_index_ = 0;
   const VkInstance vk_instance_;
   std::unique_ptr<VulkanFenceHelper> cleanup_helper_;
-  VkPhysicalDeviceFeatures2 enabled_device_features_2_ = {};
+  VkPhysicalDeviceFeatures2 enabled_device_features_2_ = {
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+
   const bool enforce_protected_memory_;
   bool allow_protected_memory_ = false;
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
   VkPhysicalDeviceSamplerYcbcrConversionFeatures
-      sampler_ycbcr_conversion_features_ = {};
-#endif
+      sampler_ycbcr_conversion_features_ = {
+          VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES};
+#endif  // defined(OS_ANDROID) || defined(OS_FUCHSIA)
+
+#if defined(OS_FUCHSIA)
+  VkPhysicalDeviceProtectedMemoryFeatures protected_memory_features_ = {
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES};
+#endif  // defined(OS_FUCHSIA)
 
   DISALLOW_COPY_AND_ASSIGN(VulkanDeviceQueue);
 };

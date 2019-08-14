@@ -7,19 +7,27 @@
 
 #include <stdint.h>
 
-#include "gpu/gpu_export.h"
-
 namespace gpu {
 
 // Sampler Ycbcr conversion information.
-struct GPU_EXPORT VulkanYCbCrInfo {
+struct VulkanYCbCrInfo {
   VulkanYCbCrInfo();
-  VulkanYCbCrInfo(uint32_t suggested_ycbcr_model,
+  VulkanYCbCrInfo(uint32_t image_format,
+                  uint64_t external_format,
+                  uint32_t suggested_ycbcr_model,
                   uint32_t suggested_ycbcr_range,
                   uint32_t suggested_xchroma_offset,
                   uint32_t suggested_ychroma_offset,
-                  uint64_t external_format,
                   uint32_t format_features);
+
+  // Source image format.
+  // Corresponds to vulkan type: VkFormat.
+  uint32_t image_format;
+
+  // Implementation-defined external format identifier for use with
+  // VkExternalFormatANDROID.
+  // This property is driver specific.
+  uint64_t external_format;
 
   // Describes the color matrix for conversion between color models.
   // Corresponds to vulkan type: VkSamplerYcbcrModelConversion.
@@ -42,14 +50,9 @@ struct GPU_EXPORT VulkanYCbCrInfo {
   // Corresponds to vulkan type: VkChromaLocation.
   uint32_t suggested_ychroma_offset;
 
-  // Implementation-defined external format identifier for use with
-  // VkExternalFormatANDROID.
-  // This property is driver specific.
-  uint64_t external_format;
-
-  // Describes the capabilities of the external format when used with an image
-  // bound to memory imported from buffer.
-  // Corresponds to vulkan type: VkFormatFeatureFlags.
+  // Describes the capabilities of the format when used with an image bound to
+  // memory imported from buffer. Corresponds to vulkan type:
+  // VkFormatFeatureFlags.
   uint32_t format_features;
 };
 

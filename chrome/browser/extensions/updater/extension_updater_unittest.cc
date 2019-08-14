@@ -31,6 +31,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -1914,7 +1915,7 @@ class ExtensionUpdaterTest : public testing::Test {
     const std::string brand_string = "brand%3D";
     EXPECT_TRUE(url2_query.find(brand_string) == std::string::npos);
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     // Make sure the google query has a brand parameter, but only if the
     // brand is non-organic.
     if (expect_brand_code) {

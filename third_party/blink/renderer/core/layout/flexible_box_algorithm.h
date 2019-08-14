@@ -77,26 +77,24 @@ class FlexItem {
   FlexItem(LayoutBox*,
            LayoutUnit flex_base_content_size,
            MinMaxSize min_max_sizes,
-           LayoutUnit main_axis_border_and_padding,
+           LayoutUnit main_axis_border_padding,
            LayoutUnit main_axis_margin);
 
   LayoutUnit HypotheticalMainAxisMarginBoxSize() const {
-    return hypothetical_main_content_size + main_axis_border_and_padding +
+    return hypothetical_main_content_size + main_axis_border_padding +
            main_axis_margin;
   }
 
   LayoutUnit FlexBaseMarginBoxSize() const {
-    return flex_base_content_size + main_axis_border_and_padding +
-           main_axis_margin;
+    return flex_base_content_size + main_axis_border_padding + main_axis_margin;
   }
 
   LayoutUnit FlexedBorderBoxSize() const {
-    return flexed_content_size + main_axis_border_and_padding;
+    return flexed_content_size + main_axis_border_padding;
   }
 
   LayoutUnit FlexedMarginBoxSize() const {
-    return flexed_content_size + main_axis_border_and_padding +
-           main_axis_margin;
+    return flexed_content_size + main_axis_border_padding + main_axis_margin;
   }
 
   LayoutUnit ClampSizeToMinAndMax(LayoutUnit size) const {
@@ -132,7 +130,7 @@ class FlexItem {
   const LayoutUnit flex_base_content_size;
   const MinMaxSize min_max_sizes;
   const LayoutUnit hypothetical_main_content_size;
-  const LayoutUnit main_axis_border_and_padding;
+  const LayoutUnit main_axis_border_padding;
   const LayoutUnit main_axis_margin;
   LayoutUnit flexed_content_size;
 

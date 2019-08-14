@@ -673,7 +673,7 @@ bool AXPlatformNodeBase::HasCaret() {
   }
 
   // The caret is always at the focus of the selection.
-  int32_t focus_id = delegate_->GetTreeData().sel_focus_object_id;
+  int32_t focus_id = delegate_->GetUnignoredSelection().focus_object_id;
   AXPlatformNodeBase* focus_object =
       static_cast<AXPlatformNodeBase*>(delegate_->GetFromNodeID(focus_id));
 
@@ -1416,25 +1416,30 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
   return -1;
 }
 
-int AXPlatformNodeBase::GetSelectionAnchor() {
-  int32_t anchor_id = GetDelegate()->GetTreeData().sel_anchor_object_id;
+int AXPlatformNodeBase::GetUnignoredSelectionAnchor() {
+  ui::AXTree::Selection unignored_selection =
+      delegate_->GetUnignoredSelection();
+  int32_t anchor_id = unignored_selection.anchor_object_id;
   AXPlatformNodeBase* anchor_object =
-      static_cast<AXPlatformNodeBase*>(GetDelegate()->GetFromNodeID(anchor_id));
+      static_cast<AXPlatformNodeBase*>(delegate_->GetFromNodeID(anchor_id));
+
   if (!anchor_object)
     return -1;
 
-  int anchor_offset = int{GetDelegate()->GetTreeData().sel_anchor_offset};
+  int anchor_offset = int{unignored_selection.anchor_offset};
   return GetHypertextOffsetFromEndpoint(anchor_object, anchor_offset);
 }
 
-int AXPlatformNodeBase::GetSelectionFocus() {
-  int32_t focus_id = GetDelegate()->GetTreeData().sel_focus_object_id;
+int AXPlatformNodeBase::GetUnignoredSelectionFocus() {
+  ui::AXTree::Selection unignored_selection =
+      delegate_->GetUnignoredSelection();
+  int32_t focus_id = unignored_selection.focus_object_id;
   AXPlatformNodeBase* focus_object =
       static_cast<AXPlatformNodeBase*>(GetDelegate()->GetFromNodeID(focus_id));
   if (!focus_object)
     return -1;
 
-  int focus_offset = int{GetDelegate()->GetTreeData().sel_focus_offset};
+  int focus_offset = int{unignored_selection.focus_offset};
   return GetHypertextOffsetFromEndpoint(focus_object, focus_offset);
 }
 
@@ -1449,8 +1454,8 @@ void AXPlatformNodeBase::GetSelectionOffsets(int* selection_start,
     return;
   }
 
-  *selection_start = GetSelectionAnchor();
-  *selection_end = GetSelectionFocus();
+  *selection_start = GetUnignoredSelectionAnchor();
+  *selection_end = GetUnignoredSelectionFocus();
   if (*selection_start < 0 || *selection_end < 0)
     return;
 

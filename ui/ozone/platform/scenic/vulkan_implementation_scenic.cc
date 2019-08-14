@@ -15,6 +15,7 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/macros.h"
 #include "base/native_library.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_instance.h"
@@ -60,6 +61,7 @@ bool VulkanImplementationScenic::InitializeVulkanInstance(bool using_surface) {
   std::vector<const char*> required_extensions = {
       VK_KHR_SURFACE_EXTENSION_NAME,
       VK_FUCHSIA_IMAGEPIPE_SURFACE_EXTENSION_NAME,
+      VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME,
   };
   std::vector<const char*> required_layers = {
       "VK_LAYER_FUCHSIA_imagepipe_swapchain",
@@ -124,8 +126,12 @@ VulkanImplementationScenic::GetRequiredDeviceExtensions() {
       VK_FUCHSIA_BUFFER_COLLECTION_EXTENSION_NAME,
       VK_FUCHSIA_EXTERNAL_MEMORY_EXTENSION_NAME,
       VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
+      VK_KHR_BIND_MEMORY_2_EXTENSION_NAME,
       VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
       VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
+      VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,
+      VK_KHR_MAINTENANCE1_EXTENSION_NAME,
+      VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME,
       VK_KHR_SWAPCHAIN_EXTENSION_NAME,
   };
 }
@@ -227,7 +233,8 @@ bool VulkanImplementationScenic::CreateImageFromGpuMemoryHandle(
     VkImage* vk_image,
     VkImageCreateInfo* vk_image_info,
     VkDeviceMemory* vk_device_memory,
-    VkDeviceSize* mem_allocation_size) {
+    VkDeviceSize* mem_allocation_size,
+    base::Optional<gpu::VulkanYCbCrInfo>* ycbcr_info) {
   if (gmb_handle.type != gfx::NATIVE_PIXMAP)
     return false;
 
@@ -250,6 +257,9 @@ bool VulkanImplementationScenic::CreateImageFromGpuMemoryHandle(
         << "Can't import GpuMemoryBuffer to an image with a different size.";
     return false;
   }
+
+  // TODO(crbug.com/981022): Initialize VulkanYCbCrInfo from the collection.
+  *ycbcr_info = base::nullopt;
 
   return collection->CreateVkImage(gmb_handle.native_pixmap_handle.buffer_index,
                                    vk_device, vk_image, vk_image_info,

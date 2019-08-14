@@ -4,6 +4,9 @@
 
 import("//chrome/chrome_cleaner/chrome_cleaner_args.gni")
 
+# Nothing outside //chrome/chrome_cleaner can depend on these targets.
+visibility = [ "//chrome/chrome_cleaner/*" ]
+
 source_set("common") {
   sources = [
     "cleaner_engine_requests_impl.h",
@@ -34,10 +37,10 @@ source_set("common") {
     "//chrome/chrome_cleaner/constants:quarantine_constants",
     "//chrome/chrome_cleaner/constants:uws_id",
     "//chrome/chrome_cleaner/engines/common",
-    "//chrome/chrome_cleaner/mojom:engine_sandbox_interface",
     "//chrome/chrome_cleaner/ipc:mojo_task_runner",
     "//chrome/chrome_cleaner/ipc:sandbox",
     "//chrome/chrome_cleaner/logging:common",
+    "//chrome/chrome_cleaner/mojom:engine_sandbox_interface",
     "//chrome/chrome_cleaner/os:cleaner_os",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/os:file_remover_api",
@@ -167,9 +170,9 @@ source_set("unittest_sources") {
     "//chrome/chrome_cleaner/engines/common",
     "//chrome/chrome_cleaner/engines/target:common",
     "//chrome/chrome_cleaner/engines/target:test_support",
-    "//chrome/chrome_cleaner/mojom:engine_sandbox_interface",
     "//chrome/chrome_cleaner/ipc:mojo_task_runner",
     "//chrome/chrome_cleaner/logging:mock_logging_service",
+    "//chrome/chrome_cleaner/mojom:engine_sandbox_interface",
     "//chrome/chrome_cleaner/os:cleaner_os",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",

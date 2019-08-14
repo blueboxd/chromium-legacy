@@ -16,10 +16,10 @@ class MockSmsDialog : public SmsDialog {
   MockSmsDialog();
   ~MockSmsDialog() override;
 
-  MOCK_METHOD3(Open,
-               void(RenderFrameHost*, base::OnceClosure, base::OnceClosure));
+  MOCK_METHOD2(Open, void(RenderFrameHost*, EventHandler handler));
   MOCK_METHOD0(Close, void());
   MOCK_METHOD0(SmsReceived, void());
+  MOCK_METHOD0(SmsTimeout, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSmsDialog);

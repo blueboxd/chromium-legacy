@@ -384,8 +384,14 @@ bool MatchCapabilities(const base::DictionaryValue* capabilities) {
       !platform_name_value->is_none()) {
     if (platform_name_value->is_string()) {
       std::string requested_platform_name = platform_name_value->GetString();
+      std::string requested_first_token =
+        requested_platform_name.substr(0, requested_platform_name.find(' '));
+
       std::string actual_platform_name =
-          base::ToLowerASCII(base::SysInfo::OperatingSystemName());
+        base::ToLowerASCII(base::SysInfo::OperatingSystemName());
+      std::string actual_first_token =
+        actual_platform_name.substr(0, actual_platform_name.find(' '));
+
       bool is_android = capabilities->FindPath(
                             "goog:chromeOptions.androidPackage") != nullptr;
       bool is_remote = capabilities->FindPath(
@@ -398,11 +404,10 @@ bool MatchCapabilities(const base::DictionaryValue* capabilities) {
         // If any of the above cases pass, we return true.
       } else if (is_android && requested_platform_name != "android") {
         return false;
-      } else if (requested_platform_name == "mac" ||
-                 requested_platform_name == "windows" ||
-                 requested_platform_name == "linux") {
-        if (!base::StartsWith(actual_platform_name, requested_platform_name,
-                              base::CompareCase::SENSITIVE))
+      } else if (requested_first_token == "mac" ||
+                 requested_first_token == "windows" ||
+                 requested_first_token == "linux") {
+        if (actual_first_token != requested_first_token)
           return false;
       } else if (requested_platform_name != actual_platform_name) {
         return false;

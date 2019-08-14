@@ -8,7 +8,8 @@
 from __future__ import print_function
 
 import re
-import types
+
+import six
 
 from grit import exception
 from grit import lazy_re
@@ -83,7 +84,7 @@ class BaseMessage(object):
     '''
     bits = []
     for item in self.parts:
-      if isinstance(item, types.StringTypes):
+      if isinstance(item, six.string_types):
         bits.append(escaping_function(item))
       else:
         bits.append(item.GetOriginal())
@@ -112,7 +113,7 @@ class BaseMessage(object):
     self.dirty = True
 
   def AppendText(self, text):
-    assert isinstance(text, types.StringTypes)
+    assert isinstance(text, six.string_types)
     assert text != ''
 
     self.parts.append(text)

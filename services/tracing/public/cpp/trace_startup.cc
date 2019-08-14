@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/trace_event/trace_log.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/trace_to_console.h"
@@ -15,11 +16,16 @@
 #include "services/tracing/public/cpp/tracing_features.h"
 
 namespace tracing {
-
 namespace {
 using base::trace_event::TraceConfig;
 using base::trace_event::TraceLog;
 }  // namespace
+
+bool g_tracing_initialized_after_threadpool_and_featurelist = false;
+
+bool IsTracingInitialized() {
+  return g_tracing_initialized_after_threadpool_and_featurelist;
+}
 
 void EnableStartupTracingIfNeeded() {
   const base::CommandLine& command_line =
@@ -66,7 +72,17 @@ void EnableStartupTracingIfNeeded() {
   }
 }
 
-void InitTracingPostThreadPoolStart() {
+void InitTracingPostThreadPoolStartAndFeatureList() {
+  if (g_tracing_initialized_after_threadpool_and_featurelist) {
+    return;
+  }
+  g_tracing_initialized_after_threadpool_and_featurelist = true;
+  // TODO(nuskos): We should switch these to DCHECK once we're reasonably
+  // confident we've ensured this is called properly in all processes. Probably
+  // after M78 release has been cut (since we'll verify in the rollout of M78).
+  CHECK(base::ThreadPoolInstance::Get());
+  CHECK(base::FeatureList::GetInstance());
+  // Below are the things tracing must do once per process.
   TraceEventDataSource::GetInstance()->OnTaskSchedulerAvailable();
   if (base::FeatureList::IsEnabled(features::kEnablePerfettoSystemTracing)) {
     // To ensure System tracing connects we have to initialize the process wide

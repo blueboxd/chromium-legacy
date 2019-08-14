@@ -75,8 +75,6 @@ struct NET_EXPORT SSLConfig {
   // If unsure, do not enable this option.
   bool early_data_enabled;
 
-  bool false_start_enabled;  // True if we'll use TLS False Start.
-
   // If true, causes only ECDHE cipher suites to be enabled.
   bool require_ecdhe;
 

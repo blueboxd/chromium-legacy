@@ -84,7 +84,6 @@ const char* const kBuiltInFirstPartyExtensionIds[] = {
     kZipArchiverExtensionId,
     kChromeCameraAppId,
     kChromeCameraAppDevId,
-    kKioskNextHomeAppId,
 #endif        // defined(OS_CHROMEOS)
     nullptr,  // Null-terminated array.
 };
@@ -119,7 +118,6 @@ const char kZipArchiverExtensionPath[] = "chromeos/zip_archiver";
 const char kChromeCameraAppId[] = "hfhhnacclhffhdffklopdkcgdhifgngh";
 const char kChromeCameraAppDevId[] = "flgnmkgjffmkephdokeeliiopbjaafpm";
 const char kChromeCameraAppPath[] = "chromeos/camera";
-const char kKioskNextHomeAppId[] = "nbaolgedfgoedkjbfmpediclncanmpbc";
 
 #endif  // defined(CHROME_OS)
 

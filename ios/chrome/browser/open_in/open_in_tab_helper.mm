@@ -9,7 +9,7 @@
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "net/base/filename_util.h"
 #include "net/http/http_response_headers.h"
 #include "ui/base/l10n/l10n_util.h"

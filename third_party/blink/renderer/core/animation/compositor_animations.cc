@@ -151,12 +151,6 @@ bool HasIncompatibleAnimations(const Element& target_element,
 
 CompositorElementIdNamespace CompositorElementNamespaceForProperty(
     CSSPropertyID property) {
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // Pre-BlinkGenPropertyTrees, all animations affect the primary
-    // ElementId namespace.
-    return CompositorElementIdNamespace::kPrimary;
-  }
   switch (property) {
     case CSSPropertyID::kOpacity:
     case CSSPropertyID::kBackdropFilter:
@@ -517,16 +511,12 @@ void CompositorAnimations::AttachCompositedLayers(
 
   CompositorElementIdNamespace element_id_namespace =
       CompositorElementIdNamespace::kPrimary;
-  // With BlinkGenPropertyTrees we create an animation namespace element id
-  // when an element has created all property tree nodes which may be required
-  // by the keyframe effects. The animation affects multiple element ids, and
-  // one is pushed each KeyframeModel. See |GetAnimationOnCompositor|.
-  // Currently we use the kPrimaryEffect node to know if nodes have been
-  // created for animations.
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    element_id_namespace = CompositorElementIdNamespace::kPrimaryEffect;
-  }
+  // We create an animation namespace element id when an element has created all
+  // property tree nodes which may be required by the keyframe effects. The
+  // animation affects multiple element ids, and one is pushed each
+  // KeyframeModel. See |GetAnimationOnCompositor|. We use the kPrimaryEffect
+  // node to know if nodes have been created for animations.
+  element_id_namespace = CompositorElementIdNamespace::kPrimaryEffect;
   compositor_animation->AttachElement(CompositorElementIdFromUniqueObjectId(
       element.GetLayoutObject()->UniqueId(), element_id_namespace));
 }

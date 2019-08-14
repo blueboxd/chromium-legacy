@@ -50,11 +50,10 @@ void GetStubResolverConfig(
       insecure_stub_resolver_enabled, secure_dns_mode, dns_over_https_servers);
 }
 
-// Checks the values returned by GetStubResolverConfigForTesting() match
+// Checks that the values returned by GetStubResolverConfigForTesting() match
 // |async_dns_feature_enabled| (With empty DNS over HTTPS prefs). Then sets
-// various DNS over HTTPS servers, and makes sure the settings are respected.
-// TODO(crbug.com/985589): Check that the SecureDnsMode is read correctly from
-// the prefs once it is stored there.
+// various DoH modes and DoH template strings and makes sure the settings are
+// respected.
 void RunStubResolverConfigTests(bool async_dns_feature_enabled) {
   // Check initial state.
   bool insecure_stub_resolver_enabled = !async_dns_feature_enabled;
@@ -67,149 +66,91 @@ void RunStubResolverConfigTests(bool async_dns_feature_enabled) {
   EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF, secure_dns_mode);
   EXPECT_FALSE(dns_over_https_servers.has_value());
 
-  // Check state after setting various DNS over HTTPS preferences.
-
-  // The POST template is only valid for POSTs, though the GET template is
-  // technically valid for both POSTs and GETs.
-  const char kGoodPostTemplate[] = "https://foo.test/";
-  const char kGoodGetTemplate[] = "https://bar.test/dns-query{?dns}";
-  const char kBadTemplate[] = "dns-query{?dns}";
-
-  const char kPost[] = "POST";
-  // The code actually looks for POST and not-POST, but may as well use "GET"
-  // for not-POST.
-  const char kGet[] = "GET";
+  std::string good_post_template = "https://foo.test/";
+  std::string good_get_template = "https://bar.test/dns-query{?dns}";
+  std::string bad_template = "dns-query{?dns}";
+  std::string good_then_bad_template = good_get_template + " " + bad_template;
+  std::string bad_then_good_template = bad_template + " " + good_get_template;
+  std::string multiple_good_templates =
+      "  " + good_get_template + "   " + good_post_template + "  ";
 
   PrefService* local_state = g_browser_process->local_state();
-  base::Value servers(base::Value::Type::LIST);
-  base::Value methods(base::Value::Type::LIST);
-
-  // Test cases with server and method length mismatches. This shouldn't happen
-  // at steady state, but can happen during pref changes.
-
-  servers.GetList().push_back(base::Value(kGoodGetTemplate));
-  local_state->Set(prefs::kDnsOverHttpsServers, servers);
-  local_state->Set(prefs::kDnsOverHttpsServerMethods, methods);
+  local_state->SetString(prefs::kDnsOverHttpsMode, "secure");
+  local_state->SetString(prefs::kDnsOverHttpsTemplates, bad_template);
   GetStubResolverConfig(&insecure_stub_resolver_enabled, &secure_dns_mode,
                         &dns_over_https_servers);
   EXPECT_EQ(async_dns_feature_enabled, insecure_stub_resolver_enabled);
-  EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF, secure_dns_mode);
+  EXPECT_EQ(net::DnsConfig::SecureDnsMode::SECURE, secure_dns_mode);
   EXPECT_FALSE(dns_over_https_servers.has_value());
-  servers.GetList().clear();
-  methods.GetList().clear();
 
-  methods.GetList().push_back(base::Value(kPost));
-  local_state->Set(prefs::kDnsOverHttpsServers, servers);
-  local_state->Set(prefs::kDnsOverHttpsServerMethods, methods);
+  local_state->SetString(prefs::kDnsOverHttpsTemplates, good_post_template);
   GetStubResolverConfig(&insecure_stub_resolver_enabled, &secure_dns_mode,
                         &dns_over_https_servers);
   EXPECT_EQ(async_dns_feature_enabled, insecure_stub_resolver_enabled);
-  EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF, secure_dns_mode);
-  EXPECT_FALSE(dns_over_https_servers.has_value());
-  servers.GetList().clear();
-  methods.GetList().clear();
-
-  // Test case with incorrect server type.
-  servers.GetList().push_back(base::Value(15));
-  methods.GetList().push_back(base::Value(kPost));
-  local_state->Set(prefs::kDnsOverHttpsServers, servers);
-  local_state->Set(prefs::kDnsOverHttpsServerMethods, methods);
-  GetStubResolverConfig(&insecure_stub_resolver_enabled, &secure_dns_mode,
-                        &dns_over_https_servers);
-  EXPECT_EQ(async_dns_feature_enabled, insecure_stub_resolver_enabled);
-  EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF, secure_dns_mode);
-  EXPECT_FALSE(dns_over_https_servers.has_value());
-  servers.GetList().clear();
-  methods.GetList().clear();
-
-  // Test case with incorrect method type.
-  servers.GetList().push_back(base::Value(kGoodGetTemplate));
-  methods.GetList().push_back(base::Value(3.14));
-  local_state->Set(prefs::kDnsOverHttpsServers, servers);
-  local_state->Set(prefs::kDnsOverHttpsServerMethods, methods);
-  GetStubResolverConfig(&insecure_stub_resolver_enabled, &secure_dns_mode,
-                        &dns_over_https_servers);
-  EXPECT_EQ(async_dns_feature_enabled, insecure_stub_resolver_enabled);
-  EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF, secure_dns_mode);
-  EXPECT_FALSE(dns_over_https_servers.has_value());
-  servers.GetList().clear();
-  methods.GetList().clear();
-
-  // Test case with one bad template.
-  servers.GetList().push_back(base::Value(kBadTemplate));
-  methods.GetList().push_back(base::Value(kPost));
-  local_state->Set(prefs::kDnsOverHttpsServers, servers);
-  local_state->Set(prefs::kDnsOverHttpsServerMethods, methods);
-  GetStubResolverConfig(&insecure_stub_resolver_enabled, &secure_dns_mode,
-                        &dns_over_https_servers);
-  EXPECT_EQ(async_dns_feature_enabled, insecure_stub_resolver_enabled);
-  EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF, secure_dns_mode);
-  EXPECT_FALSE(dns_over_https_servers.has_value());
-  servers.GetList().clear();
-  methods.GetList().clear();
-
-  // Test case with one good template.
-  servers.GetList().push_back(base::Value(kGoodPostTemplate));
-  methods.GetList().push_back(base::Value(kPost));
-  local_state->Set(prefs::kDnsOverHttpsServers, servers);
-  local_state->Set(prefs::kDnsOverHttpsServerMethods, methods);
-  GetStubResolverConfig(&insecure_stub_resolver_enabled, &secure_dns_mode,
-                        &dns_over_https_servers);
-  EXPECT_EQ(async_dns_feature_enabled, insecure_stub_resolver_enabled);
-  EXPECT_EQ(net::DnsConfig::SecureDnsMode::AUTOMATIC, secure_dns_mode);
+  EXPECT_EQ(net::DnsConfig::SecureDnsMode::SECURE, secure_dns_mode);
   ASSERT_TRUE(dns_over_https_servers.has_value());
   ASSERT_EQ(1u, dns_over_https_servers->size());
-  EXPECT_EQ(kGoodPostTemplate, dns_over_https_servers->at(0)->server_template);
+  EXPECT_EQ(good_post_template, dns_over_https_servers->at(0)->server_template);
   EXPECT_EQ(true, dns_over_https_servers->at(0)->use_post);
-  servers.GetList().clear();
-  methods.GetList().clear();
 
-  // Test case with one good template, one bad one.
-  servers.GetList().push_back(base::Value(kGoodGetTemplate));
-  methods.GetList().push_back(base::Value(kGet));
-  servers.GetList().push_back(base::Value(kBadTemplate));
-  methods.GetList().push_back(base::Value(kPost));
-  local_state->Set(prefs::kDnsOverHttpsServers, servers);
-  local_state->Set(prefs::kDnsOverHttpsServerMethods, methods);
+  local_state->SetString(prefs::kDnsOverHttpsMode, "automatic");
+  local_state->SetString(prefs::kDnsOverHttpsTemplates, bad_template);
+  GetStubResolverConfig(&insecure_stub_resolver_enabled, &secure_dns_mode,
+                        &dns_over_https_servers);
+  EXPECT_EQ(async_dns_feature_enabled, insecure_stub_resolver_enabled);
+  EXPECT_EQ(net::DnsConfig::SecureDnsMode::AUTOMATIC, secure_dns_mode);
+  EXPECT_FALSE(dns_over_https_servers.has_value());
+
+  local_state->SetString(prefs::kDnsOverHttpsTemplates, good_then_bad_template);
   GetStubResolverConfig(&insecure_stub_resolver_enabled, &secure_dns_mode,
                         &dns_over_https_servers);
   EXPECT_EQ(async_dns_feature_enabled, insecure_stub_resolver_enabled);
   EXPECT_EQ(net::DnsConfig::SecureDnsMode::AUTOMATIC, secure_dns_mode);
   ASSERT_TRUE(dns_over_https_servers.has_value());
   ASSERT_EQ(1u, dns_over_https_servers->size());
-  EXPECT_EQ(kGoodGetTemplate, dns_over_https_servers->at(0)->server_template);
-  EXPECT_EQ(false, dns_over_https_servers->at(0)->use_post);
-  servers.GetList().clear();
-  methods.GetList().clear();
+  EXPECT_EQ(good_get_template, dns_over_https_servers->at(0)->server_template);
+  EXPECT_FALSE(dns_over_https_servers->at(0)->use_post);
 
-  // Test case with two good templates.
-  servers.GetList().push_back(base::Value(kGoodPostTemplate));
-  methods.GetList().push_back(base::Value(kPost));
-  servers.GetList().push_back(base::Value(kGoodGetTemplate));
-  methods.GetList().push_back(base::Value(kGet));
-  local_state->Set(prefs::kDnsOverHttpsServers, servers);
-  local_state->Set(prefs::kDnsOverHttpsServerMethods, methods);
+  local_state->SetString(prefs::kDnsOverHttpsTemplates, bad_then_good_template);
+  GetStubResolverConfig(&insecure_stub_resolver_enabled, &secure_dns_mode,
+                        &dns_over_https_servers);
+  EXPECT_EQ(async_dns_feature_enabled, insecure_stub_resolver_enabled);
+  EXPECT_EQ(net::DnsConfig::SecureDnsMode::AUTOMATIC, secure_dns_mode);
+  ASSERT_TRUE(dns_over_https_servers.has_value());
+  ASSERT_EQ(1u, dns_over_https_servers->size());
+  EXPECT_EQ(good_get_template, dns_over_https_servers->at(0)->server_template);
+  EXPECT_FALSE(dns_over_https_servers->at(0)->use_post);
+
+  local_state->SetString(prefs::kDnsOverHttpsTemplates,
+                         multiple_good_templates);
   GetStubResolverConfig(&insecure_stub_resolver_enabled, &secure_dns_mode,
                         &dns_over_https_servers);
   EXPECT_EQ(async_dns_feature_enabled, insecure_stub_resolver_enabled);
   EXPECT_EQ(net::DnsConfig::SecureDnsMode::AUTOMATIC, secure_dns_mode);
   ASSERT_TRUE(dns_over_https_servers.has_value());
   ASSERT_EQ(2u, dns_over_https_servers->size());
-  EXPECT_EQ(kGoodPostTemplate, dns_over_https_servers->at(0)->server_template);
-  EXPECT_EQ(true, dns_over_https_servers->at(0)->use_post);
-  EXPECT_EQ(kGoodGetTemplate, dns_over_https_servers->at(1)->server_template);
-  EXPECT_EQ(false, dns_over_https_servers->at(1)->use_post);
-  servers.GetList().clear();
-  methods.GetList().clear();
+  EXPECT_EQ(good_get_template, dns_over_https_servers->at(0)->server_template);
+  EXPECT_FALSE(dns_over_https_servers->at(0)->use_post);
+  EXPECT_EQ(good_post_template, dns_over_https_servers->at(1)->server_template);
+  EXPECT_TRUE(dns_over_https_servers->at(1)->use_post);
 
-  // Test case with policy BuiltInDnsClientEnabled enabled.
-  local_state->Set(prefs::kDnsOverHttpsServers, servers);
-  local_state->Set(prefs::kDnsOverHttpsServerMethods, methods);
+  local_state->SetString(prefs::kDnsOverHttpsMode, "off");
+  local_state->SetString(prefs::kDnsOverHttpsTemplates, good_get_template);
   GetStubResolverConfig(&insecure_stub_resolver_enabled, &secure_dns_mode,
                         &dns_over_https_servers);
   EXPECT_EQ(async_dns_feature_enabled, insecure_stub_resolver_enabled);
   EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF, secure_dns_mode);
   EXPECT_FALSE(dns_over_https_servers.has_value());
+
+  local_state->SetString(prefs::kDnsOverHttpsMode, "no_match");
+  GetStubResolverConfig(&insecure_stub_resolver_enabled, &secure_dns_mode,
+                        &dns_over_https_servers);
+  EXPECT_EQ(async_dns_feature_enabled, insecure_stub_resolver_enabled);
+  EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF, secure_dns_mode);
+  EXPECT_FALSE(dns_over_https_servers.has_value());
+
+  // Test case with policy BuiltInDnsClientEnabled enabled. The DoH fields
+  // should be unaffected.
   local_state->Set(prefs::kBuiltInDnsClientEnabled,
                    base::Value(!async_dns_feature_enabled));
   GetStubResolverConfig(&insecure_stub_resolver_enabled, &secure_dns_mode,

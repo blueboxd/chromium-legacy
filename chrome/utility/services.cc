@@ -15,6 +15,7 @@
 #include "components/services/patch/public/mojom/file_patcher.mojom.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
 #include "components/services/unzip/unzipper_impl.h"
+#include "content/public/common/content_features.h"
 #include "content/public/utility/utility_thread.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
@@ -32,6 +33,8 @@
 #if !defined(OS_ANDROID)
 #include "chrome/common/importer/profile_import.mojom.h"
 #include "chrome/utility/importer/profile_import_impl.h"
+#include "components/mirroring/service/features.h"
+#include "components/mirroring/service/mirroring_service.h"
 #include "services/proxy_resolver/proxy_resolver_factory_impl.h"  // nogncheck
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #endif  // !defined(OS_ANDROID)
@@ -109,6 +112,14 @@ auto RunProxyResolver(
 auto RunProfileImporter(
     mojo::PendingReceiver<chrome::mojom::ProfileImport> receiver) {
   return std::make_unique<ProfileImportImpl>(std::move(receiver));
+}
+
+auto RunMirroringService(
+    mojo::PendingReceiver<mirroring::mojom::MirroringService> receiver) {
+  DCHECK(base::FeatureList::IsEnabled(mirroring::features::kMirroringService));
+  DCHECK(base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams));
+  return std::make_unique<mirroring::MirroringService>(
+      std::move(receiver), content::UtilityThread::Get()->GetIOTaskRunner());
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -195,6 +206,7 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
 
 #if !defined(OS_ANDROID)
     RunProfileImporter,
+    RunMirroringService,
 #endif
 
 #if defined(OS_WIN)

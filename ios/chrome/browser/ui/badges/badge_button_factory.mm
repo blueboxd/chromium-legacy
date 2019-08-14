@@ -36,6 +36,8 @@
       break;
     case BadgeType::kBadgeTypePasswordUpdate:
       return [self passwordsUpdateBadgeButton];
+    case BadgeType::kBadgeTypeIncognito:
+      return [self incognitoBadgeButton];
     case BadgeType::kBadgeTypeNone:
       NOTREACHED() << "A badge should not have kBadgeTypeNone";
       return nil;
@@ -64,6 +66,17 @@
   return button;
 }
 
+- (BadgeButton*)incognitoBadgeButton {
+  BadgeButton* button = [self createButtonForType:BadgeType::kBadgeTypeIncognito
+                                       imageNamed:@"incognito_badge"];
+  UIImage* image = [[UIImage imageNamed:@"incognito_badge"]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+  [button setImage:image forState:UIControlStateDisabled];
+  button.accessibilityTraits &= ~UIAccessibilityTraitButton;
+  button.enabled = NO;
+  return button;
+}
+
 - (BadgeButton*)createButtonForType:(BadgeType)badgeType
                          imageNamed:(NSString*)imageName {
   BadgeButton* button = [BadgeButton badgeButtonWithType:badgeType];
@@ -72,6 +85,9 @@
   [button setImage:image forState:UIControlStateNormal];
   button.translatesAutoresizingMaskIntoConstraints = NO;
   button.imageView.contentMode = UIViewContentModeScaleAspectFit;
+  [NSLayoutConstraint
+      activateConstraints:@[ [button.widthAnchor
+                              constraintEqualToAnchor:button.heightAnchor] ]];
   return button;
 }
 

@@ -154,9 +154,8 @@ void WebResourceService::StartFetch() {
   resource_request->url = web_resource_server;
   // Do not let url fetcher affect existing state in system context
   // (by setting cookies, for example).
-  resource_request->load_flags = net::LOAD_DISABLE_CACHE |
-                                 net::LOAD_DO_NOT_SEND_COOKIES |
-                                 net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation_);
   simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(

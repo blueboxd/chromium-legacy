@@ -109,6 +109,12 @@ class ExtensionsAPIClient {
                                         int render_frame_id,
                                         const ExtensionId& extension_id);
 
+  // Updates an extension's matched action count stored in an ExtensionAction.
+  virtual void UpdateActionCount(content::BrowserContext* context,
+                                 const ExtensionId& extension_id,
+                                 int tab_id,
+                                 int action_count);
+
   // Creates the AppViewGuestDelegate.
   virtual AppViewGuestDelegate* CreateAppViewGuestDelegate() const;
 

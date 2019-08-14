@@ -169,7 +169,6 @@ void ExtensionApps::Launch(const std::string& app_id,
 
   switch (launch_source) {
     case apps::mojom::LaunchSource::kUnknown:
-    case apps::mojom::LaunchSource::kFromKioskNextHome:
     case apps::mojom::LaunchSource::kFromParentalControls:
       break;
     case apps::mojom::LaunchSource::kFromAppListGrid:

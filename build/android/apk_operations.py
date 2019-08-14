@@ -231,7 +231,7 @@ def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
     # NOTE: For now, installation requires running 'bundletool install-apks'.
     # TODO(digit): Add proper support for bundles to devil instead, then use it.
     install_cmd_args = [
-        'install-apks', '--apks=' + bundle_apks,
+        'install-apks', '--apks=' + bundle_apks, '--allow-downgrade',
         '--adb=' + adb_wrapper.AdbWrapper.GetAdbPath(),
         '--device-id=' + device.serial
     ]

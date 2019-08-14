@@ -315,8 +315,8 @@ void UrlFetchRequestBase::StartAfterPrepare(
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = url;
   request->method = GetRequestType();
-  request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
-                        net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DISABLE_CACHE;
+  request->load_flags = net::LOAD_DISABLE_CACHE;
+  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   // Add request headers.
   // Note that SetHeader clears the current headers and sets it to the passed-in

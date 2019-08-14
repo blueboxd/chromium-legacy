@@ -68,6 +68,7 @@
 #include "chromeos/login/auth/cryptohome_key_constants.h"
 #include "chromeos/login/auth/saml_password_attributes.h"
 #include "chromeos/login/auth/user_context.h"
+#include "chromeos/network/onc/certificate_scope.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/login/localized_values_builder.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -1320,7 +1321,8 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
             g_browser_process->platform_part()
                 ->browser_policy_connector_chromeos()
                 ->GetDeviceNetworkConfigurationUpdater()
-                ->GetAllAuthorityCertificates());
+                ->GetAllAuthorityCertificates(
+                    chromeos::onc::CertificateScope::Default()));
   }
 
   LoadAuthExtension(!gaia_silent_load_ /* force */, false /* offline */);

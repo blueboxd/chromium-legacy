@@ -3966,8 +3966,8 @@ The site does NOT gain access to the camera. The camera images are only visible 
       <message name="IDS_SMS_DIALOG_STATUS_SMS_RECEIVED" desc="Message shown when Chrome has received an SMS on the user's behalf">
         Text message received
       </message>
-      <message name="IDS_SMS_DIALOG_CONFIRM_BUTTON_TEXT" desc="Label on the button that users can click to confirm SMS verification by passing the incoming SMS to the site.">
-        Confirm
+      <message name="IDS_SMS_DIALOG_STATUS_TIMEOUT" desc="Message shown when SMS verification timed out.">
+        Something went wrong
       </message>
 
       <message name="IDS_TEST_DUMMY_MODULE_TITLE"

@@ -635,15 +635,15 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDups) {
   // Expect 3 unique results after SortAndCull().
   ASSERT_EQ(3U, result.size());
 
-  // Check that 3rd and 4th result got added to the first result as dups
+  // Check that 3rd and 4th result got added to the first result as duplicates
   // and also duplicates of the 4th match got copied.
   ASSERT_EQ(4U, result.match_at(0)->duplicate_matches.size());
   const AutocompleteMatch* first_match = result.match_at(0);
   EXPECT_EQ(matches[2].destination_url,
             first_match->duplicate_matches.at(1).destination_url);
-  EXPECT_EQ(dup_match.destination_url,
-            first_match->duplicate_matches.at(2).destination_url);
   EXPECT_EQ(matches[3].destination_url,
+            first_match->duplicate_matches.at(2).destination_url);
+  EXPECT_EQ(dup_match.destination_url,
             first_match->duplicate_matches.at(3).destination_url);
 
   // Check that 6th result started a new list of dups for the second result.
@@ -1765,8 +1765,8 @@ TEST_F(AutocompleteResultTest, PedalSuggestionsRemainUnique) {
 
   FakeAutocompleteProviderClient client;
   result.AppendDedicatedPedalMatches(&client, input);
-  result.SortAndDedupMatches(metrics::OmniboxEventProto::OTHER,
-                             &result.matches_);
+  result.DeduplicateMatches(metrics::OmniboxEventProto::OTHER,
+                            &result.matches_);
 
   // Exactly 2 (not 3) unique Pedals should be added with relevance close to max
   // of the triggering suggestions.
@@ -1781,8 +1781,8 @@ TEST_F(AutocompleteResultTest, PedalSuggestionsRemainUnique) {
   // no duplicates are added, but the existing Pedal suggestion is updated.
   result.match_at(3)->contents = base::UTF8ToUTF16("open incognito tab");
   result.AppendDedicatedPedalMatches(&client, input);
-  result.SortAndDedupMatches(metrics::OmniboxEventProto::OTHER,
-                             &result.matches_);
+  result.DeduplicateMatches(metrics::OmniboxEventProto::OTHER,
+                            &result.matches_);
   EXPECT_EQ(result.size(), 6u);
   EXPECT_NE(result.match_at(4)->pedal, nullptr);
   EXPECT_NE(result.match_at(5)->pedal, nullptr);

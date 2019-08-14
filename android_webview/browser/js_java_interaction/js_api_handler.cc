@@ -24,7 +24,7 @@ void JsApiHandler::BindPendingReceiver(
 }
 
 void JsApiHandler::PostMessage(
-    const std::string& message,
+    const base::string16& message,
     std::vector<mojo::ScopedMessagePipeHandle> ports) {
   DCHECK(render_frame_host_);
 
@@ -50,7 +50,7 @@ void JsApiHandler::PostMessage(
 
   JNIEnv* env = base::android::AttachCurrentThread();
   aw_contents->OnPostMessage(
-      env, base::android::ConvertUTF8ToJavaString(env, message),
+      env, base::android::ConvertUTF16ToJavaString(env, message),
       base::android::ConvertUTF8ToJavaString(env, source_origin.Serialize()),
       web_contents->GetMainFrame() == render_frame_host_,
       base::android::ToJavaIntArray(env, int_ports.data(), int_ports.size()));

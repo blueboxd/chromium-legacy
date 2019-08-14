@@ -24,6 +24,12 @@ class SimpleURLLoader;
 
 namespace optimization_guide {
 
+// Callback to inform the caller that the remote hints have been fetched and
+// to pass back the fetched hints response from the remote Optimization Guide
+// Service.
+using HintsFetchedCallback = base::OnceCallback<void(
+    base::Optional<std::unique_ptr<proto::GetHintsResponse>>)>;
+
 // A class to handle requests for optimization hints from a remote Optimization
 // Guide Service.
 //
@@ -31,12 +37,6 @@ namespace optimization_guide {
 // Owner must ensure that |hint_cache| remains alive for the lifetime of
 // |HintsFetcher|.
 class HintsFetcher {
-  // Callback to inform the caller that the remote hints have been fetched and
-  // to pass back the fetched hints response from the remote Optimization Guide
-  // Service.
-  using HintsFetchedCallback = base::OnceCallback<void(
-      base::Optional<std::unique_ptr<proto::GetHintsResponse>>)>;
-
  public:
   HintsFetcher(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,

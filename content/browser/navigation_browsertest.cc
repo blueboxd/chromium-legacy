@@ -290,11 +290,14 @@ class NetworkIsolationNavigationBrowserTest
     URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
         [&](URLLoaderInterceptor::RequestParams* params) -> bool {
           base::AutoLock top_frame_origins_lock(lock);
-          (*network_isolation_keys)[params->url_request.url] =
-              params->url_request.trusted_network_isolation_key;
-          (*update_network_isolation_key_on_redirects)[params->url_request
-                                                           .url] =
-              params->url_request.update_network_isolation_key_on_redirect;
+          if (params->url_request.trusted_params) {
+            (*network_isolation_keys)[params->url_request.url] =
+                params->url_request.trusted_params->network_isolation_key;
+            (*update_network_isolation_key_on_redirects)[params->url_request
+                                                             .url] =
+                params->url_request.trusted_params
+                    ->update_network_isolation_key_on_redirect;
+          }
 
           if (params->url_request.url == final_resource)
             run_loop.Quit();

@@ -33,8 +33,8 @@ namespace web_app {
 
 class WebAppIconDownloader;
 
-// Class used by BookmarkAppInstallationTask to retrieve the necessary
-// information to install an app. Should only be called from the UI thread.
+// Class used by WebAppInstallTask to retrieve the necessary information to
+// install an app. Should only be called from the UI thread.
 class WebAppDataRetriever : content::WebContentsObserver {
  public:
   // Returns nullptr for WebApplicationInfo if error.

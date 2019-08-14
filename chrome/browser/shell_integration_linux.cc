@@ -36,6 +36,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/buildflags.h"
@@ -250,7 +251,7 @@ const char kXdgOpenShebang[] = "#!/usr/bin/env xdg-open";
 
 // TODO(loyso): shell_integraion_linux.cc won't compile with app_list disabled?
 #if BUILDFLAG(ENABLE_APP_LIST)
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 const char kAppListDesktopName[] = "chrome-app-list";
 #else  // BUILDFLAG(CHROMIUM_BRANDING)
 const char kAppListDesktopName[] = "chromium-app-list";
@@ -416,7 +417,7 @@ std::string GetProgramClassClass() {
 }
 
 std::string GetDesktopName(base::Environment* env) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   version_info::Channel product_channel(chrome::GetChannel());
   switch (product_channel) {
     case version_info::Channel::DEV:
@@ -438,7 +439,7 @@ std::string GetDesktopName(base::Environment* env) {
 }
 
 std::string GetIconName() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return "google-chrome";
 #else  // BUILDFLAG(CHROMIUM_BRANDING)
   return "chromium-browser";

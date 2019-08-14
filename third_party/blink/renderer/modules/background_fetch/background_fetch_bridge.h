@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom-blink.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -79,7 +80,7 @@ class BackgroundFetchBridge final
       mojom::blink::BackgroundFetchError error,
       mojom::blink::BackgroundFetchRegistrationPtr registration_ptr);
 
-  mojom::blink::BackgroundFetchServicePtr background_fetch_service_;
+  mojo::Remote<mojom::blink::BackgroundFetchService> background_fetch_service_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchBridge);
 };

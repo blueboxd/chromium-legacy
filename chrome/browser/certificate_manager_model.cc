@@ -36,6 +36,7 @@
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
+#include "chromeos/network/onc/certificate_scope.h"
 #include "chromeos/network/policy_certificate_provider.h"
 #endif
 
@@ -308,11 +309,13 @@ class CertsSourcePolicy : public CertificateManagerModel::CertsSource,
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     switch (mode_) {
       case Mode::kPolicyCertsWithoutWebTrust:
-        RefreshImpl(policy_certs_provider_->GetCertificatesWithoutWebTrust(),
+        RefreshImpl(policy_certs_provider_->GetCertificatesWithoutWebTrust(
+                        chromeos::onc::CertificateScope::Default()),
                     false /* policy_web_trusted */);
         break;
       case Mode::kPolicyCertsWithWebTrust:
-        RefreshImpl(policy_certs_provider_->GetWebTrustedCertificates(),
+        RefreshImpl(policy_certs_provider_->GetWebTrustedCertificates(
+                        chromeos::onc::CertificateScope::Default()),
                     true /* policy_web_trusted */);
         break;
       default:

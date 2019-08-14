@@ -8,6 +8,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/welcome/bookmark_item.h"
@@ -45,7 +46,7 @@ const char* kGoogleAppsInteractionHistogram =
 constexpr const int kGoogleAppIconSize = 48;  // Pixels.
 
 GoogleAppsHandler::GoogleAppsHandler() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Do not translate icon name as it is not human visible and needs to
   // match CSS.
 
@@ -86,7 +87,7 @@ GoogleAppsHandler::GoogleAppsHandler() {
       {static_cast<int>(GoogleApps::kTranslate),
        l10n_util::GetStringUTF8(IDS_WELCOME_GOOGLE_APPS_TRANSLATE), "translate",
        "https://translate.google.com", IDS_WELCOME_TRANSLATE});
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 GoogleAppsHandler::~GoogleAppsHandler() {}

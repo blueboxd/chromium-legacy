@@ -5,6 +5,7 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 
 #include "base/macros.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -31,7 +32,7 @@ class ChromeMetricsServiceAccessorTest : public testing::Test {
 };
 
 TEST_F(ChromeMetricsServiceAccessorTest, MetricsReportingEnabled) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   const char* pref = metrics::prefs::kMetricsReportingEnabled;
   GetLocalState()->SetDefaultPrefValue(pref, base::Value(false));
 
@@ -45,7 +46,8 @@ TEST_F(ChromeMetricsServiceAccessorTest, MetricsReportingEnabled) {
   EXPECT_FALSE(
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
 #else
-  // Metrics Reporting is never enabled when GOOGLE_CHROME_BUILD is undefined.
+  // Metrics Reporting is never enabled when GOOGLE_CHROME_BRANDING is
+  // undefined.
   EXPECT_FALSE(
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
 #endif

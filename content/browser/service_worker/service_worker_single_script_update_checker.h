@@ -58,7 +58,9 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   struct CONTENT_EXPORT PausedState {
     PausedState(
         std::unique_ptr<ServiceWorkerCacheWriter> cache_writer,
-        network::mojom::URLLoaderPtr network_loader,
+        std::unique_ptr<
+            ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper>
+            network_loader,
         network::mojom::URLLoaderClientRequest network_client_request,
         mojo::ScopedDataPipeConsumerHandle network_consumer,
         ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state,
@@ -68,7 +70,9 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
     ~PausedState();
 
     std::unique_ptr<ServiceWorkerCacheWriter> cache_writer;
-    network::mojom::URLLoaderPtr network_loader;
+    std::unique_ptr<
+        ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper>
+        network_loader;
     network::mojom::URLLoaderClientRequest network_client_request;
     mojo::ScopedDataPipeConsumerHandle network_consumer;
     ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state;
@@ -100,6 +104,8 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
       blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
       base::TimeDelta time_since_last_check,
       const net::HttpRequestHeaders& default_headers,
+      ServiceWorkerUpdatedScriptLoader::BrowserContextGetter
+          browser_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       std::unique_ptr<ServiceWorkerResponseReader> compare_reader,
       std::unique_ptr<ServiceWorkerResponseReader> copy_reader,
@@ -159,7 +165,9 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   const base::TimeDelta time_since_last_check_;
   bool network_accessed_ = false;
 
-  network::mojom::URLLoaderPtr network_loader_;
+  std::unique_ptr<
+      ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper>
+      network_loader_;
   mojo::Binding<network::mojom::URLLoaderClient> network_client_binding_;
   mojo::ScopedDataPipeConsumerHandle network_consumer_;
   mojo::SimpleWatcher network_watcher_;

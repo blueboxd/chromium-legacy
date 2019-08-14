@@ -52,7 +52,7 @@
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/navigation/referrer.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "url/gurl.h"
 

@@ -358,7 +358,8 @@ bool ThreadPoolImpl::PostTaskWithSequenceNow(Task task,
     if (!task_source)
       return false;
   }
-  task_tracker_->WillPostTaskNow(task, transaction.traits().priority());
+  if (!task_tracker_->WillPostTaskNow(task, transaction.traits().priority()))
+    return false;
   transaction.PushTask(std::move(task));
   if (task_source) {
     const TaskTraits traits = transaction.traits();

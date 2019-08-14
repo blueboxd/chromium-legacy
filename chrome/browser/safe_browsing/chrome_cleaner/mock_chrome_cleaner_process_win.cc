@@ -27,6 +27,7 @@
 #include "base/values.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
@@ -543,7 +544,7 @@ void MockChromeCleanerProcess::Options::SetReportedResults(
           kInstalledExtensionId1, kInstalledExtensionId2, kUnknownExtensionId,
       });
 // Scanner results only fetches extension names on Windows Chrome build.
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
       expected_extension_names_ = base::Optional<std::vector<base::string16>>({
           kInstalledExtensionName1, kInstalledExtensionName2,
           l10n_util::GetStringFUTF16(

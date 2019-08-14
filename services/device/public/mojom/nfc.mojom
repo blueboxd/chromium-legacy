@@ -112,7 +112,7 @@ struct NFCReaderOptions {
 interface NFC {
   // NFCClient interface is used to notify |client| when NDEFMessage matches one
   // or more pending watch operations.
-  SetClient(NFCClient client);
+  SetClient(pending_remote<NFCClient> client);
 
   // Pushes data to NFC device.
   // NFCPushOptions specify timeout and type of device where data should be

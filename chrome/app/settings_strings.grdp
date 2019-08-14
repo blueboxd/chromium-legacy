@@ -3315,7 +3315,7 @@
     Do not allow any sites to access serial ports
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE" desc="Label for native file system write permission, which enables sites to save changes to the original files that were selected by the user.">
-    Files on device
+    File editing
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE_ASK" desc="The ask label for native file system write permission in site settings.">
     Ask when a site wants to save your changes directly to files or folders on your device
@@ -5127,10 +5127,10 @@
   <message name="IDS_SETTINGS_SECURITY_KEYS_RESET_ERROR" desc="A failure message reporting to the user that the attempt to reset their security key (which is an external device for user authentication) failed. This is message is shown in uncommon cases when we don't have a more specific message to show the user and have fallen back to displaying a numerical error code reported by the device.">
     Can’t reset this security key. Error <ph name="ERROR_CODE">$1<ex>22</ex></ph>.
   </message>
-  <message name="IDS_SETTINGS_SECURITY_KEYS_RESET_SUCCESS" desc="A mesasge to the user that they have successfully reset (i.e. erased) their security key (which is an external device for user authentication).">
+  <message name="IDS_SETTINGS_SECURITY_KEYS_RESET_SUCCESS" desc="A message to the user that they have successfully reset (i.e. erased) their security key (which is an external device for user authentication).">
     Your security key has been reset
   </message>
-  <message name="IDS_SETTINGS_SECURITY_KEYS_RESET_NOTALLOWED" desc="A mesasge to the user that an attempt to reset (i.e. erase) their security key (an external device for user authentication) failed because the security key refused to be reset. This is usually caused because a reset is only allowed within the first few seconds after being plugged in, so the user has to perform the operation quickly.">
+  <message name="IDS_SETTINGS_SECURITY_KEYS_RESET_NOTALLOWED" desc="A message to the user that an attempt to reset (i.e. erase) their security key (an external device for user authentication) failed because the security key refused to be reset. This is usually caused because a reset is only allowed within the first few seconds after being plugged in, so the user has to perform the operation quickly.">
     Can’t reset this security key. Try resetting the key immediately after inserting it.
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_PIN_TOUCH" desc="An instruction to a user to physically the activation button on their security key (which is an external device for user authentication).">

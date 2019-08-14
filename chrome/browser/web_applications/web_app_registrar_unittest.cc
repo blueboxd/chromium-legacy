@@ -188,7 +188,7 @@ TEST(WebAppRegistrar, AbstractWebAppDatabase) {
   EXPECT_TRUE(registrar->is_empty());
 }
 
-TEST(WebAppRegistrar, GetAppDetails) {
+TEST(WebAppRegistrar, GetAppDataFields) {
   auto database = std::make_unique<TestWebAppDatabase>();
   auto registrar = std::make_unique<WebAppRegistrar>(nullptr, database.get());
 
@@ -197,21 +197,32 @@ TEST(WebAppRegistrar, GetAppDetails) {
   const std::string name = "Name";
   const std::string description = "Description";
   const base::Optional<SkColor> theme_color = 0xAABBCCDD;
+  const auto launch_container = LaunchContainer::kWindow;
 
   EXPECT_EQ(std::string(), registrar->GetAppShortName(app_id));
   EXPECT_EQ(GURL(), registrar->GetAppLaunchURL(app_id));
 
   auto web_app = std::make_unique<WebApp>(app_id);
+  WebApp* web_app_ptr = web_app.get();
+
   web_app->SetName(name);
   web_app->SetDescription(description);
   web_app->SetThemeColor(theme_color);
   web_app->SetLaunchUrl(launch_url);
+  web_app->SetLaunchContainer(launch_container);
+
   registrar->RegisterApp(std::move(web_app));
 
   EXPECT_EQ(name, registrar->GetAppShortName(app_id));
   EXPECT_EQ(description, registrar->GetAppDescription(app_id));
   EXPECT_EQ(theme_color, registrar->GetAppThemeColor(app_id));
   EXPECT_EQ(launch_url, registrar->GetAppLaunchURL(app_id));
+  EXPECT_EQ(launch_container, registrar->GetAppLaunchContainer(app_id));
+
+  EXPECT_EQ(LaunchContainer::kDefault,
+            registrar->GetAppLaunchContainer("unknown"));
+  web_app_ptr->SetLaunchContainer(LaunchContainer::kTab);
+  EXPECT_EQ(LaunchContainer::kTab, registrar->GetAppLaunchContainer(app_id));
 }
 
 }  // namespace web_app

@@ -14,6 +14,7 @@
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -523,7 +524,7 @@ IN_PROC_BROWSER_TEST_P(ProfileMenuViewExtensionsParamTest,
 // below the threshold.
 // TODO(https://crbug.com/862573): Re-enable when no longer failing when
 // is_chrome_branded is true.
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #define MAYBE_IncrementDiceSigninPromoShowCounter \
   DISABLED_IncrementDiceSigninPromoShowCounter
 #else
@@ -543,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest,
 // ensures that the profile chooser is shown correctly above this threshold.
 // TODO(https://crbug.com/862573): Re-enable when no longer failing when
 // is_chrome_branded is true.
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #define MAYBE_DiceSigninPromoWithoutIllustration \
   DISABLED_DiceSigninPromoWithoutIllustration
 #else

@@ -148,12 +148,6 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
       painting_phases_json->PushString("GraphicsLayerPaintForeground");
     if (painting_phase & kGraphicsLayerPaintMask)
       painting_phases_json->PushString("GraphicsLayerPaintMask");
-    if (painting_phase & kGraphicsLayerPaintChildClippingMask)
-      painting_phases_json->PushString("GraphicsLayerPaintChildClippingMask");
-    if (painting_phase & kGraphicsLayerPaintAncestorClippingMask) {
-      painting_phases_json->PushString(
-          "GraphicsLayerPaintAncestorClippingMask");
-    }
     if (painting_phase & kGraphicsLayerPaintOverflowContents)
       painting_phases_json->PushString("GraphicsLayerPaintOverflowContents");
     if (painting_phase & kGraphicsLayerPaintCompositedScroll)
@@ -203,15 +197,6 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
         GraphicsLayerAsJSON(layer->MaskLayer(), flags, rendering_context_map,
                             FloatPoint(layer->MaskLayer()->GetPosition())));
     json->SetArray("maskLayer", std::move(mask_layer_json));
-  }
-
-  if (layer->ContentsClippingMaskLayer()) {
-    auto contents_clipping_mask_layer_json = std::make_unique<JSONArray>();
-    contents_clipping_mask_layer_json->PushObject(GraphicsLayerAsJSON(
-        layer->ContentsClippingMaskLayer(), flags, rendering_context_map,
-        FloatPoint(layer->ContentsClippingMaskLayer()->GetPosition())));
-    json->SetArray("contentsClippingMaskLayer",
-                   std::move(contents_clipping_mask_layer_json));
   }
 
   if (layer->HasLayerState() && (flags & (kLayerTreeIncludesDebugInfo |

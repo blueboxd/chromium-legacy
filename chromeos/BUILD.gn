@@ -237,12 +237,9 @@ if (is_cros_chrome_sdk) {
   # Tast test sources live in the Chromium OS repository.
   # To diagnose tast failures or disable tests, see go/tast-failures
   tast_test("chrome_all_tast_tests") {
-    # To disable a specific test, add it the following list.
-    tast_disabled_tests = [
-      "security.SELinuxFilesARC",  # crbug.com/968155
-      "ui.MashLogin",
-      "ui.SingleProcessMashLogin",
-    ]
+    # To disable a specific test, add it the following list and cite a bug.
+    # crbug.com/968155
+    tast_disabled_tests = [ "security.SELinuxFilesARC" ]
   }
 
   group("cros_chrome_deploy") {

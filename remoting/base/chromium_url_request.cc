@@ -33,8 +33,7 @@ ChromiumUrlRequest::ChromiumUrlRequest(
   resource_request_ = std::make_unique<network::ResourceRequest>();
   resource_request_->url = GURL(url);
   resource_request_->method = request_type;
-  resource_request_->load_flags =
-      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
+  resource_request_->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request_->referrer = GURL("https://chrome.google.com/remotedesktop");
 }
 

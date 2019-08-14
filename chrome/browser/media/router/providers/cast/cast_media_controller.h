@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_CAST_CAST_MEDIA_CONTROLLER_H_
 
 #include "base/macros.h"
-#include "chrome/common/media_router/media_status.h"
 #include "chrome/common/media_router/mojom/media_controller.mojom.h"
 #include "chrome/common/media_router/mojom/media_status.mojom.h"
 #include "components/cast_channel/cast_message_util.h"
@@ -52,7 +51,7 @@ class CastMediaController : public mojom::MediaController {
 
   const std::string sender_id_;
   ActivityRecord* const activity_;
-  MediaStatus media_status_;
+  mojom::MediaStatus media_status_;
   std::string session_id_;
   int media_session_id_;
 

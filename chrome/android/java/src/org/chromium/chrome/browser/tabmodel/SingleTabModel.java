@@ -77,6 +77,7 @@ public class SingleTabModel implements TabModel {
 
     @Override
     public int indexOf(Tab tab) {
+        if (tab == null) return INVALID_TAB_INDEX;
         return mTab != null && mTab.getId() == tab.getId() ? 0 : INVALID_TAB_INDEX;
     }
 
@@ -190,7 +191,9 @@ public class SingleTabModel implements TabModel {
     }
 
     @Override
-    public void addTab(Tab tab, int index, @TabLaunchType int type) {}
+    public void addTab(Tab tab, int index, @TabLaunchType int type) {
+        setTab(tab);
+    }
 
     @Override
     public void removeTab(Tab tab) {

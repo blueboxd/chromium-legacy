@@ -320,25 +320,26 @@ class ProfileNetworkContextServiceCertVerifierBuiltinDisabledBrowsertest
       ProfileNetworkContextServiceCertVerifierBuiltinDisabledBrowsertest);
 };
 
-// If the built-in cert verifier is disabled, it should be disabled everywhere.
+// If the built-in cert verifier feature is disabled, it should be disabled in
+// user profiles but enabled in the sign-in profile.
 IN_PROC_BROWSER_TEST_F(
     ProfileNetworkContextServiceCertVerifierBuiltinDisabledBrowsertest,
     TurnedOffByFeature) {
   SkipToLoginScreen();
-  EXPECT_FALSE(IsSigninProfileUsingBuiltinCertVerifier());
+  EXPECT_TRUE(IsSigninProfileUsingBuiltinCertVerifier());
 
   LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
   EXPECT_FALSE(IsActiveProfileUsingBuiltinCertVerifier());
 }
 
-// If the built-in cert verifier is disabled, but policy force-enables it for a
-// profile, it should be enabled in the profile.
+// If the built-in cert verifier feature is disabled, but policy force-enables
+// it for a profile, it should be enabled in the profile.
 IN_PROC_BROWSER_TEST_F(
     ProfileNetworkContextServiceCertVerifierBuiltinDisabledBrowsertest,
     TurnedOffByFeatureOverrideByPolicy) {
   SkipToLoginScreen();
-  EXPECT_FALSE(IsSigninProfileUsingBuiltinCertVerifier());
+  EXPECT_TRUE(IsSigninProfileUsingBuiltinCertVerifier());
 
   SetPolicyValue(policy::key::kBuiltinCertificateVerifierEnabled,
                  base::Value(true));

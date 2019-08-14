@@ -23,7 +23,8 @@ bool DropdownBarHost::disable_animations_during_testing_ = false;
 // DropdownBarHost, public:
 
 DropdownBarHost::DropdownBarHost(BrowserView* browser_view)
-    : browser_view_(browser_view),
+    : AnimationDelegateViews(browser_view),
+      browser_view_(browser_view),
       view_(nullptr),
       delegate_(nullptr),
       focus_manager_(nullptr),
@@ -192,7 +193,7 @@ void DropdownBarHost::OnDidChangeFocus(views::View* focused_before,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DropdownBarHost, gfx::AnimationDelegate implementation:
+// DropdownBarHost, views::AnimationDelegateViews implementation:
 
 void DropdownBarHost::AnimationProgressed(const gfx::Animation* animation) {
   // First, we calculate how many pixels to slide the widget.

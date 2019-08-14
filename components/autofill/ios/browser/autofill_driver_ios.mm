@@ -11,7 +11,7 @@
 #import "ios/web/common/origin_util.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "ui/accessibility/ax_tree_id.h"

@@ -27,10 +27,8 @@ import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.PriorityQueue;
-import java.util.Set;
 
 /**
  * This class is responsible for managing the content shown by the {@link BottomSheet}. Features
@@ -57,14 +55,8 @@ public class BottomSheetController implements Destroyable {
     /** A queue for content that is waiting to be shown in the {@link BottomSheet}. */
     private PriorityQueue<BottomSheetContent> mContentQueue;
 
-    /** A set of contents that have requested to be shown, rather than just preloading. */
-    private Set<BottomSheetContent> mFullShowRequestedSet;
-
     /** Whether the controller is already processing a hide request for the tab. */
     private boolean mIsProcessingHideRequest;
-
-    /** Track whether the sheet was shown for the current tab. */
-    private boolean mWasShownForCurrentTab;
 
     /** Whether the bottom sheet is temporarily suppressed. */
     private boolean mIsSuppressed;
@@ -103,7 +95,6 @@ public class BottomSheetController implements Destroyable {
         mSuppressSheetForContextualSearch = suppressSheetForContextualSearch;
         mSnackbarManager = new SnackbarManager(
                 activity, mBottomSheet.findViewById(R.id.bottom_sheet_snackbar_container));
-        mFullShowRequestedSet = new HashSet<>();
 
         // Initialize the queue with a comparator that checks content priority.
         mContentQueue = new PriorityQueue<>(INITIAL_QUEUE_CAPACITY,
@@ -262,8 +253,8 @@ public class BottomSheetController implements Destroyable {
      * the browser (i.e. the tab switcher may be showing).
      */
     private void unsuppressSheet() {
-        if (!mIsSuppressed || mTabProvider.get() == null || !mWasShownForCurrentTab
-                || isOtherUIObscuring() || VrModuleProvider.getDelegate().isInVr()) {
+        if (!mIsSuppressed || mTabProvider.get() == null || isOtherUIObscuring()
+                || VrModuleProvider.getDelegate().isInVr()) {
             return;
         }
         mIsSuppressed = false;
@@ -299,13 +290,11 @@ public class BottomSheetController implements Destroyable {
      *         state, or the browser is in a mode that does not support showing the sheet.
      */
     public boolean requestShowContent(BottomSheetContent content, boolean animate) {
-        // If pre-load failed, do nothing. The content will automatically be queued.
-        mFullShowRequestedSet.add(content);
+        // If load failed, do nothing. The content will automatically be queued.
         if (!loadInternal(content)) return false;
         if (!mBottomSheet.isSheetOpen() && !isOtherUIObscuring()) {
             mBottomSheet.setSheetState(BottomSheet.SheetState.PEEK, animate);
         }
-        mWasShownForCurrentTab = true;
         return true;
     }
 
@@ -345,8 +334,6 @@ public class BottomSheetController implements Destroyable {
      * @param animate Whether the sheet should animate when hiding.
      */
     public void hideContent(BottomSheetContent content, boolean animate) {
-        mFullShowRequestedSet.remove(content);
-
         if (content != mBottomSheet.getCurrentSheetContent()) {
             mContentQueue.remove(content);
             return;
@@ -405,9 +392,7 @@ public class BottomSheetController implements Destroyable {
 
         BottomSheetContent nextContent = mContentQueue.poll();
         mBottomSheet.showContent(nextContent);
-        if (mFullShowRequestedSet.contains(nextContent)) {
-            mBottomSheet.setSheetState(BottomSheet.SheetState.PEEK, true);
-        }
+        mBottomSheet.setSheetState(BottomSheet.SheetState.PEEK, true);
     }
 
     /**
@@ -416,14 +401,10 @@ public class BottomSheetController implements Destroyable {
      */
     private void clearRequestsAndHide() {
         clearRequests(mContentQueue.iterator());
-        clearRequests(mFullShowRequestedSet.iterator());
 
         BottomSheetContent currentContent = mBottomSheet.getCurrentSheetContent();
         if (currentContent != null && !currentContent.hasCustomLifecycle()) {
-            if (mContentQueue.isEmpty() && mFullShowRequestedSet.isEmpty()) {
-                mWasShownForCurrentTab = false;
-                mIsSuppressed = false;
-            }
+            if (mContentQueue.isEmpty()) mIsSuppressed = false;
 
             hideContent(currentContent, /* animate= */ true);
         }

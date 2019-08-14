@@ -1591,19 +1591,21 @@ IFACEMETHODIMP AXPlatformNodeWin::get_selectionRanges(IA2Range** ranges,
                                                       LONG* nRanges) {
   COM_OBJECT_VALIDATE_2_ARGS(ranges, nRanges);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  int32_t anchor_id = GetDelegate()->GetTreeData().sel_anchor_object_id;
+  AXTree::Selection unignored_selection =
+      GetDelegate()->GetUnignoredSelection();
+  int32_t anchor_id = unignored_selection.anchor_object_id;
   auto* anchor_node =
       static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(anchor_id));
   if (!anchor_node)
     return E_FAIL;
-  int anchor_offset = int{GetDelegate()->GetTreeData().sel_anchor_offset};
+  int anchor_offset = int{unignored_selection.anchor_offset};
 
-  int32_t focus_id = GetDelegate()->GetTreeData().sel_focus_object_id;
+  int32_t focus_id = unignored_selection.focus_object_id;
   auto* focus_node =
       static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(focus_id));
   if (!focus_node)
     return E_FAIL;
-  int focus_offset = int{GetDelegate()->GetTreeData().sel_focus_offset};
+  int focus_offset = int{unignored_selection.focus_offset};
 
   if (!IsDescendant(anchor_node) || !IsDescendant(focus_node))
     return S_FALSE;  // No selection within this subtree.
@@ -6824,7 +6826,7 @@ void AXPlatformNodeWin::HandleSpecialTextOffset(LONG* offset) {
     int selection_start, selection_end;
     GetSelectionOffsets(&selection_start, &selection_end);
     // TODO(nektar): Deprecate selection_start and selection_end in favor of
-    // sel_anchor_offset/sel_focus_offset. See https://crbug.com/645596.
+    // anchor_offset/focus_offset. See https://crbug.com/645596.
     if (selection_end < 0)
       *offset = 0;
     else

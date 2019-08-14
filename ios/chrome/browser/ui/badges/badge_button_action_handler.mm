@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/badges/badge_button_action_handler.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/ui/badges/badge_button.h"
 #import "ios/chrome/browser/ui/commands/infobar_commands.h"
@@ -17,11 +19,28 @@
 
 - (void)passwordsBadgeButtonTapped:(id)sender {
   BadgeButton* badgeButton = base::mac::ObjCCastStrict<BadgeButton>(sender);
+  MobileMessagesBadgeState state;
+  if (badgeButton.accepted) {
+    state = MobileMessagesBadgeState::Active;
+    base::RecordAction(
+        base::UserMetricsAction("MobileMessagesBadgeAcceptedTapped"));
+  } else {
+    state = MobileMessagesBadgeState::Inactive;
+    base::RecordAction(
+        base::UserMetricsAction("MobileMessagesBadgeNonAcceptedTapped"));
+  }
+  InfobarMetricsRecorder* metricsRecorder;
   if (badgeButton.badgeType == BadgeType::kBadgeTypePasswordSave) {
+    metricsRecorder = [[InfobarMetricsRecorder alloc]
+        initWithType:InfobarType::kInfobarTypePasswordSave];
     [self.dispatcher displayModalInfobar:InfobarType::kInfobarTypePasswordSave];
   } else if (badgeButton.badgeType == BadgeType::kBadgeTypePasswordUpdate) {
-    [self.dispatcher displayModalInfobar:InfobarType::kInfobarTypePasswordSave];
+    metricsRecorder = [[InfobarMetricsRecorder alloc]
+        initWithType:InfobarType::kInfobarTypePasswordUpdate];
+    [self.dispatcher
+        displayModalInfobar:InfobarType::kInfobarTypePasswordUpdate];
   }
+  [metricsRecorder recordBadgeTappedInState:state];
 }
 
 @end

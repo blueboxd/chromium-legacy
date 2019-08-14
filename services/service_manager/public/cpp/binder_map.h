@@ -51,12 +51,6 @@ class BinderMapWithContext {
   BinderMapWithContext() = default;
   ~BinderMapWithContext() = default;
 
-  // Adds a new generic binder to this map. A generic binder takes an interface
-  // name, a receiver pipe, and (if ContextType is non-void) a context value.
-  void Add(const std::string& interface_name, GenericBinderType binder) {
-    binders_[interface_name] = std::move(binder);
-  }
-
   // Adds a new binder specifically for Interface receivers. This exists for the
   // convenience of being able to register strongly-typed binding methods like:
   //
@@ -64,8 +58,11 @@ class BinderMapWithContext {
   //
   // more easily.
   template <typename Interface>
-  void Add(BinderType<Interface> binder) {
-    binders_[Interface::Name_] = Traits::MakeGenericBinder(std::move(binder));
+  void Add(BinderType<Interface> binder,
+           scoped_refptr<base::SequencedTaskRunner> task_runner = nullptr) {
+    binders_[Interface::Name_] = std::make_unique<
+        internal::GenericCallbackBinderWithContext<ContextType>>(
+        Traits::MakeGenericBinder(std::move(binder)), std::move(task_runner));
   }
 
   // Passes |*receiver_pipe| to a registered binder for |interface_name| if any
@@ -81,7 +78,7 @@ class BinderMapWithContext {
     if (it == binders_.end())
       return false;
 
-    it->second.Run(std::move(*receiver_pipe));
+    it->second->BindInterface(std::move(*receiver_pipe));
     return true;
   }
 
@@ -97,7 +94,7 @@ class BinderMapWithContext {
     if (it == binders_.end())
       return false;
 
-    it->second.Run(std::move(context), std::move(*receiver_pipe));
+    it->second->BindInterface(std::move(context), std::move(*receiver_pipe));
     return true;
   }
 
@@ -105,7 +102,10 @@ class BinderMapWithContext {
   void Clear() { binders_.clear(); }
 
  private:
-  std::map<std::string, GenericBinderType> binders_;
+  std::map<
+      std::string,
+      std::unique_ptr<internal::GenericCallbackBinderWithContext<ContextType>>>
+      binders_;
 
   DISALLOW_COPY_AND_ASSIGN(BinderMapWithContext);
 };

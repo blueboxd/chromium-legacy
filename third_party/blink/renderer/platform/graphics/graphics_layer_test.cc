@@ -71,9 +71,7 @@ class GraphicsLayerTest : public testing::Test, public PaintTestConfigurations {
   ViewportLayersSetup layers_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         GraphicsLayerTest,
-                         testing::Values(0, kBlinkGenPropertyTrees));
+INSTANTIATE_TEST_SUITE_P(All, GraphicsLayerTest, testing::Values(0));
 
 TEST_P(GraphicsLayerTest, Paint) {
   IntRect interest_rect(1, 2, 3, 4);
@@ -134,14 +132,6 @@ TEST_P(GraphicsLayerTest, PaintRecursively) {
                                   transform_root));
   layers_.graphics_layer_client().SetNeedsRepaint(true);
   layers_.graphics_layer().PaintRecursively();
-
-  // With BlinkGenPropertyTrees, these are not cleared until after paint.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    EXPECT_FALSE(transform1->Changed(
-        PaintPropertyChangeType::kChangedOnlyCompositedValues, transform_root));
-    EXPECT_FALSE(transform2->Changed(
-        PaintPropertyChangeType::kChangedOnlyCompositedValues, transform_root));
-  }
 }
 
 TEST_P(GraphicsLayerTest, SetDrawsContentFalse) {

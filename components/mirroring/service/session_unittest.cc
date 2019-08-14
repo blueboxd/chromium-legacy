@@ -112,6 +112,7 @@ class SessionTest : public mojom::ResourceProvider,
   }
 
   // mojom::ResourceProvider implemenation.
+  void BindGpu(mojo::PendingReceiver<viz::mojom::Gpu> receiver) override {}
   void GetVideoCaptureHost(
       media::mojom::VideoCaptureHostRequest request) override {
     video_host_ = std::make_unique<FakeVideoCaptureHost>(std::move(request));

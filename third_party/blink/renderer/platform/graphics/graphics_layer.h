@@ -62,12 +62,10 @@
 namespace cc {
 class PictureImageLayer;
 class PictureLayer;
-struct OverscrollBehavior;
 }  // namespace cc
 
 namespace blink {
 
-class CompositorFilterOperations;
 class Image;
 class LinkHighlight;
 class PaintController;
@@ -118,11 +116,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   GraphicsLayer* MaskLayer() const { return mask_layer_; }
   void SetMaskLayer(GraphicsLayer*);
-
-  GraphicsLayer* ContentsClippingMaskLayer() const {
-    return contents_clipping_mask_layer_;
-  }
-  void SetContentsClippingMaskLayer(GraphicsLayer*);
 
   // The offset is the origin of the layoutObject minus the origin of the
   // graphics layer (so either zero or negative).
@@ -182,7 +175,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetContentsOpaque(bool);
 
   bool BackfaceVisibility() const;
-  void SetBackfaceVisibility(bool visible);
 
   float Opacity() const;
   void SetOpacity(float);
@@ -194,11 +186,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   void SetHitTestable(bool);
   bool GetHitTestable() const { return hit_testable_; }
-
-  void SetFilters(CompositorFilterOperations);
-  void SetBackdropFilters(CompositorFilterOperations, const gfx::RRectF&);
-
-  void SetStickyPositionConstraint(const cc::LayerStickyPositionConstraint&);
 
   void SetFilterQuality(SkFilterQuality);
 
@@ -279,13 +266,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   IntRect VisualRect() const override;
 
   void SetHasWillChangeTransformHint(bool);
-
-  void SetOverscrollBehavior(const cc::OverscrollBehavior&);
-
-  void SetSnapContainerData(base::Optional<cc::SnapContainerData>);
-
-  void SetIsResizedByBrowserControls(bool);
-  void SetIsContainerForFixedPositionLayers(bool);
 
   bool HasLayerState() const { return layer_state_.get(); }
   void SetLayerState(const PropertyTreeState&, const IntPoint& layer_offset);
@@ -391,8 +371,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   // Reference to mask layer. We don't own this.
   GraphicsLayer* mask_layer_;
-  // Reference to clipping mask layer. We don't own this.
-  GraphicsLayer* contents_clipping_mask_layer_;
 
   IntRect contents_rect_;
 

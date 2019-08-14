@@ -22,7 +22,8 @@ enum class UrlLoadStrategy;
 
 // ChromeTableViewController for displaying history items.
 @interface HistoryTableViewController
-    : ChromeTableViewController<HistoryConsumer>
+    : ChromeTableViewController <HistoryConsumer,
+                                 UIAdaptivePresentationControllerDelegate>
 // The ViewController's BrowserState.
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // Abstraction to communicate with HistoryService and WebHistoryService.

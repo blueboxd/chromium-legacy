@@ -209,6 +209,11 @@ class Receiver {
   // acknowledgement from the Remote is received.
   void FlushForTesting() { internal_state_.FlushForTesting(); }
 
+  // Allows test code to swap the interface implementation.
+  ImplPointerType SwapImplForTesting(ImplPointerType new_impl) {
+    return internal_state_.SwapImplForTesting(new_impl);
+  }
+
   // Reports the currently dispatching message as bad and resets this receiver.
   // Note that this is only legal to call from within the stack frame of a
   // message dispatch. If you need to do asynchronous work before determining

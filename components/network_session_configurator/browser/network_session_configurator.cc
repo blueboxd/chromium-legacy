@@ -26,6 +26,7 @@
 #include "net/base/host_mapping_rules.h"
 #include "net/http/http_stream_factory.h"
 #include "net/quic/quic_utils_chromium.h"
+#include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
@@ -107,6 +108,19 @@ bool ConfigureWebsocketOverHttp2(
   return websocket_value == "true";
 }
 
+int ConfigureSpdySessionMaxQueuedCappedFrames(
+    const base::CommandLine& /*command_line*/,
+    const VariationParameters& http2_trial_params) {
+  int value;
+  if (base::StringToInt(
+          GetVariationParam(http2_trial_params,
+                            "spdy_session_max_queued_capped_frames"),
+          &value)) {
+    return value;
+  }
+  return net::kSpdySessionMaxQueuedCappedFrames;
+}
+
 void ConfigureHttp2Params(const base::CommandLine& command_line,
                           base::StringPiece http2_trial_group,
                           const VariationParameters& http2_trial_params,
@@ -147,6 +161,10 @@ void ConfigureHttp2Params(const base::CommandLine& command_line,
 
   params->enable_websocket_over_http2 =
       ConfigureWebsocketOverHttp2(command_line, http2_trial_params);
+
+  params->spdy_session_max_queued_capped_frames =
+      ConfigureSpdySessionMaxQueuedCappedFrames(command_line,
+                                                http2_trial_params);
 }
 
 bool ShouldEnableQuic(base::StringPiece quic_trial_group,

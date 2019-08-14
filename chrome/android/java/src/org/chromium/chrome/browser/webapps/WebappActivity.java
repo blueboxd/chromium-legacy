@@ -49,7 +49,6 @@ import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.tab.TabState;
-import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
@@ -834,7 +833,7 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     @Override
-    protected TabDelegate createTabDelegate(boolean incognito) {
+    protected TabCreator createTabCreator(boolean incognito) {
         return new WebappTabDelegate(incognito, mWebappInfo);
     }
 

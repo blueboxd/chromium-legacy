@@ -1329,16 +1329,16 @@ int BrowserAccessibilityAndroid::GetSelectionStart() const {
       GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart, &sel_start)) {
     return sel_start;
   }
-
-  int32_t anchor_id = manager()->GetTreeData().sel_anchor_object_id;
+  ui::AXTree::Selection unignored_selection =
+      manager()->ax_tree()->GetUnignoredSelection();
+  int32_t anchor_id = unignored_selection.anchor_object_id;
   BrowserAccessibility* anchor_object = manager()->GetFromID(anchor_id);
   if (!anchor_object) {
     return 0;
   }
 
   auto position = anchor_object->CreatePositionAt(
-      manager()->GetTreeData().sel_anchor_offset,
-      manager()->GetTreeData().sel_anchor_affinity);
+      unignored_selection.anchor_offset, unignored_selection.anchor_affinity);
   while (position->GetAnchor() && position->GetAnchor() != this)
     position = position->CreateParentPosition();
 
@@ -1352,14 +1352,15 @@ int BrowserAccessibilityAndroid::GetSelectionEnd() const {
     return sel_end;
   }
 
-  int32_t focus_id = manager()->GetTreeData().sel_focus_object_id;
+  ui::AXTree::Selection unignored_selection =
+      manager()->ax_tree()->GetUnignoredSelection();
+  int32_t focus_id = unignored_selection.focus_object_id;
   BrowserAccessibility* focus_object = manager()->GetFromID(focus_id);
   if (!focus_object)
     return 0;
 
   auto position = focus_object->CreatePositionAt(
-      manager()->GetTreeData().sel_focus_offset,
-      manager()->GetTreeData().sel_focus_affinity);
+      unignored_selection.focus_offset, unignored_selection.focus_affinity);
   while (position->GetAnchor() && position->GetAnchor() != this)
     position = position->CreateParentPosition();
 

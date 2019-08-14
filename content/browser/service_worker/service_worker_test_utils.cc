@@ -22,6 +22,7 @@
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_messages.mojom.h"
+#include "content/common/throttling_url_loader.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -306,7 +307,8 @@ CreateProviderHostForServiceWorkerContext(
           &provider_info);
 
   host->CompleteStartWorkerPreparation(
-      process_id, mojo::MakeRequest(&provider_info->interface_provider));
+      process_id, mojo::MakeRequest(&provider_info->interface_provider),
+      provider_info->browser_interface_broker.InitWithNewPipeAndPassReceiver());
   output_endpoint->BindForServiceWorker(std::move(provider_info));
   return host;
 }
@@ -624,13 +626,11 @@ ServiceWorkerUpdateCheckTestUtils::CreateUpdateCheckerPausedState(
     ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state,
     ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state,
     mojo::ScopedDataPipeConsumerHandle network_consumer) {
-  network::mojom::URLLoaderPtr network_loader;
   network::mojom::URLLoaderClientPtr network_loader_client;
-  mojo::MakeRequest(&network_loader);
   network::mojom::URLLoaderClientRequest network_loader_client_request =
       mojo::MakeRequest(&network_loader_client);
   return std::make_unique<ServiceWorkerSingleScriptUpdateChecker::PausedState>(
-      std::move(cache_writer), std::move(network_loader),
+      std::move(cache_writer), /*network_loader=*/nullptr,
       std::move(network_loader_client_request), std::move(network_consumer),
       network_loader_state, body_writer_state);
 }

@@ -121,11 +121,11 @@ void MediaRouteController::SetVolume(float volume) {
       MediaRouteProviderWakeReason::ROUTE_CONTROLLER_COMMAND);
 }
 
-void MediaRouteController::OnMediaStatusUpdated(const MediaStatus& status) {
+void MediaRouteController::OnMediaStatusUpdated(mojom::MediaStatusPtr status) {
   DCHECK(is_valid_);
-  current_media_status_ = status;
+  current_media_status_ = std::move(status);
   for (Observer& observer : observers_)
-    observer.OnMediaStatusUpdated(status);
+    observer.OnMediaStatusUpdated(*current_media_status_);
 }
 
 void MediaRouteController::Invalidate() {
@@ -156,49 +156,6 @@ void MediaRouteController::AddObserver(Observer* observer) {
 void MediaRouteController::RemoveObserver(Observer* observer) {
   DCHECK(is_valid_);
   observers_.RemoveObserver(observer);
-}
-
-// static
-MirroringMediaRouteController* MirroringMediaRouteController::From(
-    MediaRouteController* controller) {
-  if (!controller || controller->GetType() != RouteControllerType::kMirroring)
-    return nullptr;
-
-  return static_cast<MirroringMediaRouteController*>(controller);
-}
-
-MirroringMediaRouteController::MirroringMediaRouteController(
-    const MediaRoute::Id& route_id,
-    content::BrowserContext* context,
-    MediaRouter* router)
-    : MediaRouteController(route_id, context, router),
-      prefs_(Profile::FromBrowserContext(context)->GetPrefs()) {
-  DCHECK(prefs_);
-  media_remoting_enabled_ =
-      prefs_->GetBoolean(prefs::kMediaRouterMediaRemotingEnabled);
-}
-
-MirroringMediaRouteController::~MirroringMediaRouteController() {}
-
-RouteControllerType MirroringMediaRouteController::GetType() const {
-  return RouteControllerType::kMirroring;
-}
-
-void MirroringMediaRouteController::OnMediaStatusUpdated(
-    const MediaStatus& status) {
-  // The MRP does not set |mirroring_extra_data|. We set it here before sending
-  // it to observers.
-  latest_status_ = status;
-  latest_status_.mirroring_extra_data.emplace(media_remoting_enabled());
-  MediaRouteController::OnMediaStatusUpdated(latest_status_);
-}
-
-void MirroringMediaRouteController::SetMediaRemotingEnabled(bool enabled) {
-  // This method assumes that |latest_status_| is already set to a valid value.
-  media_remoting_enabled_ = enabled;
-  latest_status_.mirroring_extra_data.emplace(enabled);
-  prefs_->SetBoolean(prefs::kMediaRouterMediaRemotingEnabled, enabled);
-  MediaRouteController::OnMediaStatusUpdated(latest_status_);
 }
 
 }  // namespace media_router

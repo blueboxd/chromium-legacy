@@ -4172,15 +4172,16 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
 blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
     const blink::WebMediaPlayerSource& source,
     WebMediaPlayerClient* client,
+    blink::MediaInspectorContext* inspector_context,
     WebMediaPlayerEncryptedMediaClient* encrypted_client,
     WebContentDecryptionModule* initial_cdm,
     const blink::WebString& sink_id,
     blink::WebLayerTreeView* layer_tree_view) {
   const cc::LayerTreeSettings& settings =
       GetLocalRootRenderWidget()->layer_tree_view()->GetLayerTreeSettings();
-  return media_factory_.CreateMediaPlayer(source, client, encrypted_client,
-                                          initial_cdm, sink_id, layer_tree_view,
-                                          settings);
+  return media_factory_.CreateMediaPlayer(source, client, inspector_context,
+                                          encrypted_client, initial_cdm,
+                                          sink_id, layer_tree_view, settings);
 }
 
 std::unique_ptr<blink::WebContentSettingsClient>

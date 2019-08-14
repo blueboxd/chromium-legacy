@@ -114,12 +114,12 @@ void CastMediaController::SetSession(const CastSession& session) {
     media_status_.can_set_volume = volume_type->GetString() != "fixed";
     media_status_.can_mute = media_status_.can_set_volume;
   }
-  observer_->OnMediaStatusUpdated(media_status_);
+  observer_->OnMediaStatusUpdated(media_status_.Clone());
 }
 
 void CastMediaController::SetMediaStatus(const base::Value& status_value) {
   UpdateMediaStatus(status_value);
-  observer_->OnMediaStatusUpdated(media_status_);
+  observer_->OnMediaStatusUpdated(media_status_.Clone());
 }
 
 base::Value CastMediaController::CreateMediaRequest(V2MessageType type) {
@@ -175,11 +175,11 @@ void CastMediaController::UpdateMediaStatus(const base::Value& message_value) {
   if (player_state && player_state->is_string()) {
     const std::string& state = player_state->GetString();
     if (state == "PLAYING") {
-      media_status_.play_state = MediaStatus::PlayState::PLAYING;
+      media_status_.play_state = mojom::MediaStatus::PlayState::PLAYING;
     } else if (state == "PAUSED") {
-      media_status_.play_state = MediaStatus::PlayState::PAUSED;
+      media_status_.play_state = mojom::MediaStatus::PlayState::PAUSED;
     } else if (state == "BUFFERING") {
-      media_status_.play_state = MediaStatus::PlayState::BUFFERING;
+      media_status_.play_state = mojom::MediaStatus::PlayState::BUFFERING;
     }
   }
 }

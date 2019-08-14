@@ -48,7 +48,7 @@ class FeaturePodIconButton : public views::ImageButton {
   DISALLOW_COPY_AND_ASSIGN(FeaturePodIconButton);
 };
 
-// Buton internally used in FeaturePodButton. Should not be used directly.
+// Button internally used in FeaturePodButton. Should not be used directly.
 class FeaturePodLabelButton : public views::Button {
  public:
   explicit FeaturePodLabelButton(views::ButtonListener* listener);

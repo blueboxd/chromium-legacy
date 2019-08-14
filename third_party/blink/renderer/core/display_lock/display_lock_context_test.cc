@@ -1410,12 +1410,6 @@ TEST_F(DisplayLockContextTest, DescendantAllowedTouchAction) {
 
 TEST_F(DisplayLockContextTest,
        CompositedLayerLockCausesGraphicsLayersCollection) {
-  // This test only tests the BGPT path.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    return;
-  }
-
   ResizeAndFocus();
   GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
 

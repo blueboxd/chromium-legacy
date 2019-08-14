@@ -158,11 +158,12 @@ char kResponse3[] = "Test Page 3 content";
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       performAction:grey_tap()];
-  // Swipe over to Recent Tabs
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kTabGridScrollViewIdentifier)]
-      performAction:[GREYActions
-                        actionForSwipeFastInDirection:kGREYDirectionLeft]];
+
+  // Switch over to Recent Tabs.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kTabGridRemoteTabsPageButtonIdentifier)]
+      performAction:grey_tap()];
 
   // Tap on "Show History"
   // Undo is available after close all action.

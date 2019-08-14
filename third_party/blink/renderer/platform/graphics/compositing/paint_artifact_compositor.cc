@@ -47,22 +47,10 @@ PaintArtifactCompositor::PaintArtifactCompositor(
     : scroll_callback_(std::move(scroll_callback)),
       tracks_raster_invalidations_(false),
       needs_update_(true) {
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    return;
   root_layer_ = cc::Layer::Create();
 }
 
-PaintArtifactCompositor::~PaintArtifactCompositor() {
-  // TODO(crbug.com/836897, crbug.com/836912):
-  // In BlinkGenPropertyTrees mode, some of the layers passed from Blink core
-  // have pre-filled element ID. Need to figure out what is the best place to
-  // setup them.
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    return;
-  for (auto child : root_layer_->children())
-    DCHECK(!child->element_id());
-}
+PaintArtifactCompositor::~PaintArtifactCompositor() {}
 
 void PaintArtifactCompositor::EnableExtraDataForTesting() {
   if (extra_data_for_testing_enabled_)
@@ -941,12 +929,6 @@ void PaintArtifactCompositor::Update(
     return;
 
   TRACE_EVENT0("blink", "PaintArtifactCompositor::Update");
-
-  // When using BlinkGenPropertyTrees, the compositor accepts a list of layers
-  // and property trees instead of building property trees. This DCHECK ensures
-  // we have not forgotten to set |use_layer_lists|.
-  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-         host->GetSettings().use_layer_lists);
 
   if (extra_data_for_testing_enabled_)
     extra_data_for_testing_.reset(new ExtraDataForTesting);

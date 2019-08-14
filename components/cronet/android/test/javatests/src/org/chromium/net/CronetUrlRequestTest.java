@@ -1575,7 +1575,7 @@ public class CronetUrlRequestTest {
         };
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
                 NativeTestServer.getEchoBodyURL(), callback, myExecutor);
-        UploadDataProvider dataProvider = UploadDataProviders.create("test".getBytes("UTF-8"));
+        UploadDataProvider dataProvider = UploadDataProviders.create("test".getBytes());
         builder.setUploadDataProvider(dataProvider, myExecutor);
         builder.addHeader("Content-Type", "useless/string");
         builder.allowDirectExecutor();

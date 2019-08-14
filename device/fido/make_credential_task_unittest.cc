@@ -102,6 +102,7 @@ TEST_F(FidoMakeCredentialTaskTest, TestRegisterSuccessWithFake) {
 
 TEST_F(FidoMakeCredentialTaskTest, FallbackToU2fRegisterSuccess) {
   auto device = MockFidoDevice::MakeU2f();
+  device->ExpectWinkedAtLeastOnce();
   device->ExpectRequestAndRespondWith(
       test_data::kU2fRegisterCommandApdu,
       test_data::kApduEncodedNoErrorRegisterResponse);
@@ -123,6 +124,7 @@ TEST_F(FidoMakeCredentialTaskTest, DefaultToU2fWhenClientPinSet) {
   device_info.options = std::move(options);
 
   auto device = MockFidoDevice::MakeCtap(std::move(device_info));
+  device->ExpectWinkedAtLeastOnce();
   device->ExpectRequestAndRespondWith(
       test_data::kU2fRegisterCommandApdu,
       test_data::kApduEncodedNoErrorRegisterResponse);
@@ -168,6 +170,7 @@ TEST_F(FidoMakeCredentialTaskTest, TestU2fOnly) {
   // request, because the task is instantiated in U2F-only mode.
   auto device = MockFidoDevice::MakeCtap();
 
+  device->ExpectWinkedAtLeastOnce();
   device->ExpectRequestAndRespondWith(
       test_data::kU2fRegisterCommandApdu,
       test_data::kApduEncodedNoErrorRegisterResponse);

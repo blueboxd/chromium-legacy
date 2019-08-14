@@ -298,35 +298,41 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     builder.SetExperimental_PaintTiming_NavigationToFirstMeaningfulPaint(
         timing.paint_timing->first_meaningful_paint.value().InMilliseconds());
   }
-  if (timing.paint_timing->largest_image_paint.has_value() &&
+  const page_load_metrics::ContentfulPaintTimingInfo&
+      main_frame_largest_image_paint =
+          largest_contentful_paint_handler_.MainFrameLargestImagePaint();
+  if (!main_frame_largest_image_paint.IsEmpty() &&
       WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->largest_image_paint, info)) {
+          main_frame_largest_image_paint.Time(), info)) {
     builder.SetExperimental_PaintTiming_NavigationToLargestImagePaint(
         timing.paint_timing->largest_image_paint.value().InMilliseconds());
   }
-  if (timing.paint_timing->largest_text_paint.has_value() &&
+  const page_load_metrics::ContentfulPaintTimingInfo&
+      main_frame_largest_text_paint =
+          largest_contentful_paint_handler_.MainFrameLargestTextPaint();
+  if (!main_frame_largest_text_paint.IsEmpty() &&
       WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->largest_text_paint, info)) {
+          main_frame_largest_text_paint.Time(), info)) {
     builder.SetExperimental_PaintTiming_NavigationToLargestTextPaint(
         timing.paint_timing->largest_text_paint.value().InMilliseconds());
   }
-  base::Optional<base::TimeDelta> largest_content_paint_time;
-  uint64_t largest_content_paint_size;
-  PageLoadMetricsObserver::LargestContentType largest_content_type;
-  if (AssignTimeAndSizeForLargestContentfulPaint(
-          timing.paint_timing, &largest_content_paint_time,
-          &largest_content_paint_size, &largest_content_type) &&
+  const page_load_metrics::ContentfulPaintTimingInfo&
+      main_frame_largest_contentful_paint =
+          largest_contentful_paint_handler_.MainFrameLargestContentfulPaint();
+  if (!main_frame_largest_contentful_paint.IsEmpty() &&
       WasStartedInForegroundOptionalEventInForeground(
-          largest_content_paint_time, info)) {
+          main_frame_largest_contentful_paint.Time(), info)) {
     builder.SetPaintTiming_NavigationToLargestContentfulPaint_MainFrame(
-        largest_content_paint_time.value().InMilliseconds());
+        main_frame_largest_contentful_paint.Time().value().InMilliseconds());
   }
-  const page_load_metrics::ContentfulPaintTimingInfo& paint =
-      largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
-  if (!paint.IsEmpty() &&
-      WasStartedInForegroundOptionalEventInForeground(paint.Time(), info)) {
+  const page_load_metrics::ContentfulPaintTimingInfo&
+      all_frames_largest_contentful_paint =
+          largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
+  if (!all_frames_largest_contentful_paint.IsEmpty() &&
+      WasStartedInForegroundOptionalEventInForeground(
+          all_frames_largest_contentful_paint.Time(), info)) {
     builder.SetPaintTiming_NavigationToLargestContentfulPaint(
-        paint.Time().value().InMilliseconds());
+        all_frames_largest_contentful_paint.Time().value().InMilliseconds());
   }
   if (timing.interactive_timing->interactive) {
     base::TimeDelta time_to_interactive =

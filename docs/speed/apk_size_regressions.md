@@ -119,12 +119,26 @@ for a description of binary size tools.**
 
 ### Growth is from Images
 
-  * Would [a VectorDrawable](https://codereview.chromium.org/2857893003/) be better?
-  * If it's lossy, consider [using webp](https://codereview.chromium.org/2615243002/),
-    and including fewer densities (e.g. add only an xxhdpi version).
-  * Ensure you've optimized with
-    [tools/resources/optimize-png-files.sh](https://cs.chromium.org/chromium/src/tools/resources/optimize-png-files.sh).
-  * There is some [Googler-specific guidance](https://goto.google.com/clank/engineering/best-practices/adding-image-assets) as well.
+ * Would [a VectorDrawable](https://codereview.chromium.org/2857893003/) be better?
+   * If so, try optimizing it with [avocado](https://bugs.chromium.org/p/chromium/issues/detail?id=982302).
+ * Would **lossy** compression make sense (often true for large images)?
+   * Then [use lossy webp](https://codereview.chromium.org/2615243002/).
+   * And omit some densities (e.g. add only an xxhdpi version).
+ * Would **near-lossless** compression make sense (try it and see)?
+   * [Use pngquant](https://pngquant.org) to reduce the color depth without a
+     perceptual difference (use one of the GUI tools to compare before/afters).
+ * Are the **lossless** images fully optimized?
+   * Use [tools/resources/optimize-png-files.sh](https://cs.chromium.org/chromium/src/tools/resources/optimize-png-files.sh).
+   * There is some [Googler-specific guidance](https://goto.google.com/clank/engineering/best-practices/adding-image-assets) as well.
+
+#### What Build-Time Image Optimizations are There?
+ * For non-ninepatch images, `drawable-xxxhdpi` are omitted (they are not
+   perceptibly different from xxhdpi in most cases).
+ * For non-ninepatch images within res/ directories (not for .pak file images),
+   they are converted to webp.
+   * Use the `android-binary-size` trybot to see the size of the images as webp,
+     or just build `ChromePublic.apk` and use `unzip -l` to see the size of the
+     images within the built apk.
 
 ### Growth is from Native Code
 

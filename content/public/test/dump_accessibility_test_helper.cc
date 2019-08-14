@@ -26,8 +26,7 @@ DumpAccessibilityTestHelper::DumpAccessibilityTestHelper(
     AccessibilityTreeFormatter* formatter)
     : formatter_(formatter) {}
 
-base::Optional<base::FilePath>
-DumpAccessibilityTestHelper::GetExpectationFilePath(
+base::FilePath DumpAccessibilityTestHelper::GetExpectationFilePath(
     const base::FilePath& test_file_path) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath expected_file_path;
@@ -56,7 +55,7 @@ DumpAccessibilityTestHelper::GetExpectationFilePath(
             << " (it can be empty) and then run this test "
             << "with the switch: --"
             << switches::kGenerateAccessibilityTestExpectations;
-  return base::nullopt;
+  return base::FilePath();
 }
 
 base::Optional<std::vector<std::string>>

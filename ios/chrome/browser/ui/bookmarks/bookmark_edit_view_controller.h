@@ -46,7 +46,8 @@ class ChromeBrowserState;
 // This view controller will also monitor bookmark model change events and react
 // accordingly depending on whether the bookmark and folder it is editing
 // changes underneath it.
-@interface BookmarkEditViewController : ChromeTableViewController
+@interface BookmarkEditViewController
+    : ChromeTableViewController <UIAdaptivePresentationControllerDelegate>
 
 @property(nonatomic, weak) id<BookmarkEditViewControllerDelegate> delegate;
 

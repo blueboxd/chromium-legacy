@@ -337,6 +337,7 @@ SpdySessionDependencies::SpdySessionDependencies(
       enable_quic(false),
       enable_server_push_cancellation(false),
       session_max_recv_window_size(kDefaultInitialWindowSize),
+      session_max_queued_capped_frames(kSpdySessionMaxQueuedCappedFrames),
       time_func(&base::TimeTicks::Now),
       enable_http2_alternative_service(false),
       enable_websocket_over_http2(false),
@@ -387,6 +388,8 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
       session_deps->enable_server_push_cancellation;
   params.spdy_session_max_recv_window_size =
       session_deps->session_max_recv_window_size;
+  params.spdy_session_max_queued_capped_frames =
+      session_deps->session_max_queued_capped_frames;
   params.http2_settings = session_deps->http2_settings;
   params.time_func = session_deps->time_func;
   params.enable_http2_alternative_service =

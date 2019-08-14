@@ -18,7 +18,7 @@ interface DevToolsFrontend {
   // loading. It makes use of DevToolsHost to expose embedder capabilities to
   // DevTools (e.g. connection to the inspected target).
   SetupDevToolsFrontend(string api_script,
-                        associated DevToolsFrontendHost host);
+                        pending_associated_remote<DevToolsFrontendHost> host);
 
   // Sets up a child frame to expose DevTools extension API by executing script
   // |extension_api| on each navigation in the frame. This script provides

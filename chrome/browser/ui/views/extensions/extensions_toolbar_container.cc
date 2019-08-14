@@ -126,8 +126,7 @@ void ExtensionsToolbarContainer::ShowToolbarActionBubble(
   anchor_view->SetVisible(true);
 
   active_bubble_ = new ToolbarActionsBarBubbleViews(
-      anchor_view, gfx::Point(), anchor_view != extensions_button_,
-      std::move(controller));
+      anchor_view, anchor_view != extensions_button_, std::move(controller));
   views::BubbleDialogDelegateView::CreateBubble(active_bubble_)
       ->AddObserver(this);
   active_bubble_->Show();

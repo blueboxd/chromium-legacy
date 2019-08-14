@@ -11,42 +11,59 @@
 
 namespace views {
 
+bool LayoutManagerBase::ChildLayout::operator==(
+    const ChildLayout& other) const {
+  // Note: if the view is not visible, the bounds do not matter as they will not
+  // be set.
+  return child_view == other.child_view && visible == other.visible &&
+         (!visible || bounds == other.bounds);
+}
+
 LayoutManagerBase::ProposedLayout::ProposedLayout() = default;
 LayoutManagerBase::ProposedLayout::ProposedLayout(const ProposedLayout& other) =
     default;
 LayoutManagerBase::ProposedLayout::ProposedLayout(ProposedLayout&& other) =
     default;
+LayoutManagerBase::ProposedLayout::ProposedLayout(
+    const gfx::Size& size,
+    const std::initializer_list<ChildLayout>& children)
+    : host_size(size), child_layouts(children) {}
 LayoutManagerBase::ProposedLayout::~ProposedLayout() = default;
 LayoutManagerBase::ProposedLayout& LayoutManagerBase::ProposedLayout::operator=(
     const ProposedLayout& other) = default;
 LayoutManagerBase::ProposedLayout& LayoutManagerBase::ProposedLayout::operator=(
     ProposedLayout&& other) = default;
 
+bool LayoutManagerBase::ProposedLayout::operator==(
+    const ProposedLayout& other) const {
+  return host_size == other.host_size && child_layouts == other.child_layouts;
+}
+
 LayoutManagerBase::~LayoutManagerBase() = default;
 
 gfx::Size LayoutManagerBase::GetPreferredSize(const View* host) const {
   DCHECK_EQ(host_view_, host);
-  if (!preferred_size_)
-    preferred_size_ = CalculateProposedLayout(SizeBounds()).host_size;
-  return *preferred_size_;
+  if (!cached_preferred_size_)
+    cached_preferred_size_ = CalculateProposedLayout(SizeBounds()).host_size;
+  return *cached_preferred_size_;
 }
 
 gfx::Size LayoutManagerBase::GetMinimumSize(const View* host) const {
   DCHECK_EQ(host_view_, host);
-  if (!minimum_size_)
-    minimum_size_ = CalculateProposedLayout(SizeBounds(0, 0)).host_size;
-  return *minimum_size_;
+  if (!cached_minimum_size_)
+    cached_minimum_size_ = CalculateProposedLayout(SizeBounds(0, 0)).host_size;
+  return *cached_minimum_size_;
 }
 
 int LayoutManagerBase::GetPreferredHeightForWidth(const View* host,
                                                   int width) const {
-  if (!last_height_for_width_ || last_height_for_width_->width() != width) {
+  if (!cached_height_for_width_ || cached_height_for_width_->width() != width) {
     const int height = CalculateProposedLayout(SizeBounds(width, base::nullopt))
                            .host_size.height();
-    last_height_for_width_ = gfx::Size(width, height);
+    cached_height_for_width_ = gfx::Size(width, height);
   }
 
-  return last_height_for_width_->height();
+  return cached_height_for_width_->height();
 }
 
 void LayoutManagerBase::Layout(View* host) {
@@ -56,19 +73,19 @@ void LayoutManagerBase::Layout(View* host) {
 }
 
 void LayoutManagerBase::InvalidateLayout() {
-  minimum_size_.reset();
-  preferred_size_.reset();
-  last_height_for_width_.reset();
-  last_requested_size_.reset();
+  cached_minimum_size_.reset();
+  cached_preferred_size_.reset();
+  cached_height_for_width_.reset();
+  cached_layout_size_.reset();
 }
 
 LayoutManagerBase::ProposedLayout LayoutManagerBase::GetProposedLayout(
     const gfx::Size& host_size) const {
-  if (!last_requested_size_ || *last_requested_size_ != host_size) {
-    last_requested_size_ = host_size;
-    last_layout_ = CalculateProposedLayout(SizeBounds(host_size));
+  if (cached_layout_size_ != host_size) {
+    cached_layout_size_ = host_size;
+    cached_layout_ = CalculateProposedLayout(SizeBounds(host_size));
   }
-  return last_layout_;
+  return cached_layout_;
 }
 
 void LayoutManagerBase::SetChildViewIgnoredByLayout(View* child_view,
@@ -138,7 +155,13 @@ LayoutManagerBase::LayoutManagerBase() = default;
 
 bool LayoutManagerBase::IsChildIncludedInLayout(const View* child) const {
   const auto it = child_infos_.find(child);
-  DCHECK(it != child_infos_.end());
+
+  // During callbacks when a child is removed we can get in a state where a view
+  // in the child list of the host view is not in |child_infos_|. In that case,
+  // the view is being removed and is not part of the layout.
+  if (it == child_infos_.end())
+    return false;
+
   return !it->second.ignored && it->second.can_be_visible;
 }
 

@@ -11,7 +11,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
@@ -26,9 +25,7 @@ class RenderViewContextMenuProxy;
 
 class SharingService;
 
-class ClickToCallContextMenuObserver
-    : public RenderViewContextMenuObserver,
-      public base::SupportsWeakPtr<ClickToCallContextMenuObserver> {
+class ClickToCallContextMenuObserver : public RenderViewContextMenuObserver {
  public:
   class SubMenuDelegate : public ui::SimpleMenuModel::Delegate {
    public:

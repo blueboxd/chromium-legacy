@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_signature.h"
+#include "components/crx_file/id_util.h"
 
 namespace chromeos {
 namespace onc {
@@ -162,6 +163,8 @@ std::unique_ptr<base::DictionaryValue> Validator::MapObject(
       valid = ValidateEAP(repaired.get());
     } else if (&signature == &kCertificateSignature) {
       valid = ValidateCertificate(repaired.get());
+    } else if (&signature == &kScopeSignature) {
+      valid = ValidateScope(repaired.get());
     } else if (&signature == &kTetherWithStateSignature) {
       valid = ValidateTether(repaired.get());
     }
@@ -1113,6 +1116,33 @@ bool Validator::ValidateCertificate(base::DictionaryValue* result) {
     all_required_exist &= RequireField(*result, kPKCS12);
   else if (type == kServer || type == kAuthority)
     all_required_exist &= RequireField(*result, kX509);
+
+  return !error_on_missing_field_ || all_required_exist;
+}
+
+bool Validator::ValidateScope(base::DictionaryValue* result) {
+  using namespace ::onc::scope;
+
+  const char* const kValidTypes[] = {kDefault, kExtension};
+  const std::vector<const char*> valid_types(toVector(kValidTypes));
+  if (FieldExistsAndHasNoValidValue(*result, kType, valid_types) ||
+      FieldExistsAndIsEmpty(*result, kId)) {
+    return false;
+  }
+
+  bool all_required_exist = RequireField(*result, kType);
+  const std::string* type_string = result->FindStringKey(kType);
+  if (type_string && *type_string == kExtension) {
+    all_required_exist &= RequireField(*result, kId);
+    // Check Id validity for type 'Extension'.
+    const std::string* id_string = result->FindStringKey(kId);
+    if (id_string && !crx_file::id_util::IdIsValid(*id_string)) {
+      std::ostringstream msg;
+      msg << "Field '" << kId << "' is not a valid extension id.";
+      AddValidationIssue(false /* is_error */, msg.str());
+      return false;
+    }
+  }
 
   return !error_on_missing_field_ || all_required_exist;
 }

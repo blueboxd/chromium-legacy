@@ -170,47 +170,34 @@ class PaintArtifactCompositorTest : public testing::Test,
                              const TransformPaintPropertyNode& scroll_offset,
                              const ClipPaintPropertyNode& clip,
                              const EffectPaintPropertyNode& effect) {
-    if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-      // Create a foreign layer for scrolling, roughly matching the layer
-      // created by ScrollingCoordinator.
-      const auto* scroll_node = scroll_offset.ScrollNode();
-      scoped_refptr<cc::Layer> layer = cc::Layer::Create();
-      auto rect = scroll_node->ContainerRect();
-      layer->SetScrollable(gfx::Size(rect.Size()));
-      layer->SetBounds(gfx::Size(rect.Size()));
-      layer->SetElementId(scroll_node->GetCompositorElementId());
-      layer->set_did_scroll_callback(
-          paint_artifact_compositor_->scroll_callback_);
-      artifact.Chunk(scroll_offset, clip, effect)
-          .ForeignLayer(layer, FloatPoint(rect.Location()));
-      return;
-    }
-    // Scroll hit test layers are marked as scrollable for hit testing but are
-    // in the unscrolled transform space (scroll offset's parent).
-    artifact.Chunk(*scroll_offset.Parent(), clip, effect)
-        .ScrollHitTest(&scroll_offset,
-                       scroll_offset.ScrollNode()->ContainerRect());
+    // Create a foreign layer for scrolling, roughly matching the layer
+    // created by ScrollingCoordinator.
+    const auto* scroll_node = scroll_offset.ScrollNode();
+    scoped_refptr<cc::Layer> layer = cc::Layer::Create();
+    auto rect = scroll_node->ContainerRect();
+    layer->SetScrollable(gfx::Size(rect.Size()));
+    layer->SetBounds(gfx::Size(rect.Size()));
+    layer->SetElementId(scroll_node->GetCompositorElementId());
+    layer->set_did_scroll_callback(
+        paint_artifact_compositor_->scroll_callback_);
+    artifact.Chunk(scroll_offset, clip, effect)
+        .ForeignLayer(layer, FloatPoint(rect.Location()));
   }
 
   // Returns the |num|th scrollable layer. In CompositeAfterPaint, this will be
   // a scroll hit test layer, whereas in BlinkGenPropertyTrees this will be a
   // content layer.
   cc::Layer* ScrollableLayerAt(size_t num) {
-    if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-      for (size_t content_layer_index = 0;
-           content_layer_index < ContentLayerCount(); content_layer_index++) {
-        auto* content_layer = ContentLayerAt(content_layer_index);
-        if (content_layer->scrollable()) {
-          if (num == 0)
-            return content_layer;
-          num--;
-        }
+    for (size_t content_layer_index = 0;
+         content_layer_index < ContentLayerCount(); content_layer_index++) {
+      auto* content_layer = ContentLayerAt(content_layer_index);
+      if (content_layer->scrollable()) {
+        if (num == 0)
+          return content_layer;
+        num--;
       }
-      return nullptr;
     }
-    return paint_artifact_compositor_->GetExtraDataForTesting()
-        ->scroll_hit_test_layers[num]
-        .get();
+    return nullptr;
   }
 
   // Returns the |num|th non-scrollable layer. In CompositeAfterPaint, content

@@ -4,7 +4,6 @@
 
 #include "android_webview/renderer/js_java_interaction/js_binding.h"
 
-#include <string>
 #include <vector>
 
 #include "base/strings/string_util.h"
@@ -32,7 +31,7 @@ gin::WrapperInfo JsBinding::kWrapperInfo = {gin::kEmbedderNativeGin};
 // static
 std::unique_ptr<JsBinding> JsBinding::Install(
     content::RenderFrame* render_frame,
-    const std::string& js_object_name) {
+    const base::string16& js_object_name) {
   CHECK(!js_object_name.empty())
       << "JavaScript wrapper name shouldn't be empty";
 
@@ -72,7 +71,7 @@ gin::ObjectTemplateBuilder JsBinding::GetObjectTemplateBuilder(
 }
 
 void JsBinding::PostMessage(gin::Arguments* args) {
-  std::string message;
+  base::string16 message;
   if (!args->GetNext(&message)) {
     args->ThrowError();
     return;

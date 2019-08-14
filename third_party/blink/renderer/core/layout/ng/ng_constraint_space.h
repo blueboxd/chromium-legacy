@@ -71,20 +71,6 @@ class CORE_EXPORT NGConstraintSpace final {
   USING_FAST_MALLOC(NGConstraintSpace);
 
  public:
-  enum ConstraintSpaceFlags {
-    kOrthogonalWritingModeRoot = 1 << 0,
-    kIsFixedBlockSizeIndefinite = 1 << 1,
-    kIntermediateLayout = 1 << 2,
-    kSeparateLeadingFragmentainerMargins = 1 << 3,
-    kNewFormattingContext = 1 << 4,
-    kAnonymous = 1 << 5,
-    kUseFirstLineStyle = 1 << 6,
-    kAncestorHasClearancePastAdjoiningFloats = 1 << 7,
-
-    // Size of bitfield used to store the flags.
-    kNumberOfConstraintSpaceFlags = 8
-  };
-
   // To ensure that the bfc_offset_, rare_data_ union doesn't get polluted,
   // always initialize the bfc_offset_.
   NGConstraintSpace() : bfc_offset_() {}
@@ -158,7 +144,7 @@ class CORE_EXPORT NGConstraintSpace final {
   }
 
   bool IsOrthogonalWritingModeRoot() const {
-    return HasFlag(kOrthogonalWritingModeRoot);
+    return bitfields_.is_orthogonal_writing_mode_root;
   }
 
   // The available space size.
@@ -266,7 +252,9 @@ class CORE_EXPORT NGConstraintSpace final {
 
   // Whether the current constraint space is for the newly established
   // Formatting Context.
-  bool IsNewFormattingContext() const { return HasFlag(kNewFormattingContext); }
+  bool IsNewFormattingContext() const {
+    return bitfields_.is_new_formatting_context;
+  }
 
   // Return true if we are to separate (i.e. honor, rather than collapse)
   // block-start margins at the beginning of fragmentainers. This only makes a
@@ -274,20 +262,20 @@ class CORE_EXPORT NGConstraintSpace final {
   // block-start margins at the beginning of a fragmentainers are to be
   // truncated to 0 if they occur after a soft (unforced) break.
   bool HasSeparateLeadingFragmentainerMargins() const {
-    return HasFlag(kSeparateLeadingFragmentainerMargins);
+    return bitfields_.has_separate_leading_fragmentainer_margins;
   }
 
   // Whether the fragment produced from layout should be anonymous, (e.g. it
   // may be a column in a multi-column layout). In such cases it shouldn't have
   // any borders or padding.
-  bool IsAnonymous() const { return HasFlag(kAnonymous); }
+  bool IsAnonymous() const { return bitfields_.is_anonymous; }
 
   // Whether to use the ':first-line' style or not.
   // Note, this is not about the first line of the content to layout, but
   // whether the constraint space itself is on the first line, such as when it's
   // an inline block.
   // Also note this is true only when the document has ':first-line' rules.
-  bool UseFirstLineStyle() const { return HasFlag(kUseFirstLineStyle); }
+  bool UseFirstLineStyle() const { return bitfields_.use_first_line_style; }
 
   // Returns true if an ancestor had clearance past adjoining floats.
   //
@@ -296,7 +284,7 @@ class CORE_EXPORT NGConstraintSpace final {
   // margins are adjoining or not), and without this extra bit of information
   // can get into a bad state.
   bool AncestorHasClearancePastAdjoiningFloats() const {
-    return HasFlag(kAncestorHasClearancePastAdjoiningFloats);
+    return bitfields_.ancestor_has_clearance_past_adjoining_floats;
   }
 
   // Some layout modes “stretch” their children to a fixed size (e.g. flex,
@@ -312,7 +300,7 @@ class CORE_EXPORT NGConstraintSpace final {
 
   // Whether a fixed block-size should be considered indefinite.
   bool IsFixedBlockSizeIndefinite() const {
-    return HasFlag(kIsFixedBlockSizeIndefinite);
+    return bitfields_.is_fixed_block_size_indefinite;
   }
 
   // Whether an auto inline-size should be interpreted as shrink-to-fit
@@ -322,7 +310,9 @@ class CORE_EXPORT NGConstraintSpace final {
   // Whether this constraint space is used for an intermediate layout in a
   // multi-pass layout. In such a case, we should not copy back the resulting
   // layout data to the legacy tree or create a paint fragment from it.
-  bool IsIntermediateLayout() const { return HasFlag(kIntermediateLayout); }
+  bool IsIntermediateLayout() const {
+    return bitfields_.is_intermediate_layout;
+  }
 
   // If specified a layout should produce a Fragment which fragments at the
   // blockSize if possible.
@@ -595,20 +585,40 @@ class CORE_EXPORT NGConstraintSpace final {
           adjoining_object_types(static_cast<unsigned>(kAdjoiningNone)),
           writing_mode(static_cast<unsigned>(writing_mode)),
           direction(static_cast<unsigned>(TextDirection::kLtr)),
+          is_anonymous(false),
+          is_new_formatting_context(false),
+          is_orthogonal_writing_mode_root(false),
+          is_intermediate_layout(false),
+          is_fixed_block_size_indefinite(false),
+          use_first_line_style(false),
+          has_separate_leading_fragmentainer_margins(false),
+          ancestor_has_clearance_past_adjoining_floats(false),
           is_shrink_to_fit(false),
           is_fixed_inline_size(false),
           is_fixed_block_size(false),
           is_in_restricted_block_size_table_cell(false),
           table_cell_child_layout_phase(static_cast<unsigned>(
               NGTableCellChildLayoutPhase::kNotTableCellChild)),
-          flags(),
           percentage_inline_storage(kSameAsAvailable),
           percentage_block_storage(kSameAsAvailable),
           replaced_percentage_block_storage(kSameAsAvailable) {}
 
     bool MaySkipLayout(const Bitfields& other) const {
       return adjoining_object_types == other.adjoining_object_types &&
-             writing_mode == other.writing_mode && flags == other.flags &&
+             writing_mode == other.writing_mode &&
+             direction == other.direction &&
+             is_anonymous == other.is_anonymous &&
+             is_new_formatting_context == other.is_new_formatting_context &&
+             is_orthogonal_writing_mode_root ==
+                 other.is_orthogonal_writing_mode_root &&
+             is_intermediate_layout == other.is_intermediate_layout &&
+             is_fixed_block_size_indefinite ==
+                 other.is_fixed_block_size_indefinite &&
+             use_first_line_style == other.use_first_line_style &&
+             has_separate_leading_fragmentainer_margins ==
+                 other.has_separate_leading_fragmentainer_margins &&
+             ancestor_has_clearance_past_adjoining_floats ==
+                 other.ancestor_has_clearance_past_adjoining_floats &&
              baseline_requests == other.baseline_requests;
     }
 
@@ -627,6 +637,18 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned writing_mode : 3;
     unsigned direction : 1;
 
+    unsigned is_anonymous : 1;
+    unsigned is_new_formatting_context : 1;
+    unsigned is_orthogonal_writing_mode_root : 1;
+    unsigned is_intermediate_layout : 1;
+
+    unsigned is_fixed_block_size_indefinite : 1;
+    unsigned use_first_line_style : 1;
+    unsigned has_separate_leading_fragmentainer_margins : 1;
+    unsigned ancestor_has_clearance_past_adjoining_floats : 1;
+
+    unsigned baseline_requests : NGBaselineRequestList::kSerializedBits;
+
     // Size constraints.
     unsigned is_shrink_to_fit : 1;
     unsigned is_fixed_inline_size : 1;
@@ -634,17 +656,10 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned is_in_restricted_block_size_table_cell : 1;
     unsigned table_cell_child_layout_phase : 2;  // NGTableCellChildLayoutPhase
 
-    unsigned flags : kNumberOfConstraintSpaceFlags;  // ConstraintSpaceFlags
-    unsigned baseline_requests : NGBaselineRequestList::kSerializedBits;
-
     unsigned percentage_inline_storage : 2;           // NGPercentageStorage
     unsigned percentage_block_storage : 2;            // NGPercentageStorage
     unsigned replaced_percentage_block_storage : 2;   // NGPercentageStorage
   };
-
-  inline bool HasFlag(ConstraintSpaceFlags mask) const {
-    return bitfields_.flags & static_cast<unsigned>(mask);
-  }
 
   inline bool HasRareData() const { return bitfields_.has_rare_data; }
 

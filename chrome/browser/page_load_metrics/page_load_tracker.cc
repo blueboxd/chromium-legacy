@@ -81,10 +81,13 @@ PageEndReason EndReasonForPageTransition(ui::PageTransition transition) {
   if (transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT) {
     return END_CLIENT_REDIRECT;
   }
-  if (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD))
-    return END_RELOAD;
+  // Check for forward/back navigations first since there are forward/back
+  // navigations that haved PAGE_TRANSITION_RELOAD but are not user reloads
+  // (pull-to-refresh or preview opt-out).
   if (transition & ui::PAGE_TRANSITION_FORWARD_BACK)
     return END_FORWARD_BACK;
+  if (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD))
+    return END_RELOAD;
   if (ui::PageTransitionIsNewNavigation(transition))
     return END_NEW_NAVIGATION;
   NOTREACHED()

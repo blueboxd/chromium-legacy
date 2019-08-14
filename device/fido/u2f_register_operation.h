@@ -44,9 +44,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRegisterOperation
   using ExcludeListIterator =
       std::vector<PublicKeyCredentialDescriptor>::const_iterator;
 
+  void WinkAndTrySign();
   void TrySign();
   void OnCheckForExcludedKeyHandle(
       base::Optional<std::vector<uint8_t>> device_response);
+  void WinkAndTryRegistration();
   void TryRegistration();
   void OnRegisterResponseReceived(
       base::Optional<std::vector<uint8_t>> device_response);

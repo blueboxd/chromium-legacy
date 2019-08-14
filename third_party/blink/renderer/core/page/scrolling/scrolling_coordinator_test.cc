@@ -68,28 +68,13 @@
 
 namespace blink {
 
-// kScrollingCoordinatorTestNoFlags runs with BlinkGenPropertyTrees and
-// PaintNonFastScrollableRegions disabled. Using
-// (kScrollingCoordinatorTestBlinkGenPropertyTrees |
-// kScrollingCoordinatorTestPaintNonFastScrollableRegions) enables both.
-enum {
-  kScrollingCoordinatorTestNoFlags = 1 << 0,
-  kScrollingCoordinatorTestBlinkGenPropertyTrees = 1 << 1,
-  kScrollingCoordinatorTestPaintNonFastScrollableRegions = 1 << 2,
-};
-
 class ScrollingCoordinatorTest
     : public testing::Test,
-      public testing::WithParamInterface<unsigned>,
-      private ScopedBlinkGenPropertyTreesForTest,
+      public testing::WithParamInterface<bool>,
       private ScopedPaintNonFastScrollableRegionsForTest {
  public:
   ScrollingCoordinatorTest()
-      : ScopedBlinkGenPropertyTreesForTest(
-            GetParam() & kScrollingCoordinatorTestBlinkGenPropertyTrees),
-        ScopedPaintNonFastScrollableRegionsForTest(
-            GetParam() &
-            kScrollingCoordinatorTestPaintNonFastScrollableRegions),
+      : ScopedPaintNonFastScrollableRegionsForTest(GetParam()),
         base_url_("http://www.test.com/") {
     helper_.Initialize(nullptr, nullptr, nullptr, &ConfigureSettings);
     GetWebView()->MainFrameWidget()->Resize(IntSize(320, 240));
@@ -160,15 +145,7 @@ class ScrollingCoordinatorTest
   frame_test_helpers::WebViewHelper helper_;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    ScrollingCoordinatorTest,
-    ::testing::Values(
-        kScrollingCoordinatorTestNoFlags,
-        kScrollingCoordinatorTestBlinkGenPropertyTrees,
-        kScrollingCoordinatorTestPaintNonFastScrollableRegions,
-        (kScrollingCoordinatorTestBlinkGenPropertyTrees |
-         kScrollingCoordinatorTestPaintNonFastScrollableRegions)));
+INSTANTIATE_TEST_SUITE_P(All, ScrollingCoordinatorTest, testing::Bool());
 
 TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
   GetWebView()->MainFrameWidget()->Resize(WebSize(800, 600));
@@ -200,13 +177,10 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
   ASSERT_FALSE(inner_viewport_scroll_layer->GetMainThreadScrollingReasons());
 }
 
-TEST_P(ScrollingCoordinatorTest, fastFractionalScrollingDiv) {
+// TODO(920417): Re-enable this test when main thread scrolling supports
+// fractional scroll offsets.
+TEST_P(ScrollingCoordinatorTest, DISABLED_fastFractionalScrollingDiv) {
   ScopedFractionalScrollOffsetsForTest fractional_scroll_offsets(true);
-
-  // TODO(920417): Re-enable this test when main thread scrolling supports
-  // fractional scroll offsets.
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    return;
 
   RegisterMockedHttpURLLoad("fractional-scroll-div.html");
   NavigateTo(base_url_ + "fractional-scroll-div.html");
@@ -241,25 +215,6 @@ TEST_P(ScrollingCoordinatorTest, fastFractionalScrollingDiv) {
   ASSERT_NEAR(1.2f, cc_scroll_layer->CurrentScrollOffset().y(), 0.01f);
 }
 
-static cc::Layer* CcLayerFromElement(Element* element) {
-  if (!element)
-    return nullptr;
-  LayoutObject* layout_object = element->GetLayoutObject();
-  if (!layout_object || !layout_object->IsBoxModelObject())
-    return nullptr;
-  PaintLayer* layer = ToLayoutBoxModelObject(layout_object)->Layer();
-  if (!layer)
-    return nullptr;
-  if (!layer->HasCompositedLayerMapping())
-    return nullptr;
-  CompositedLayerMapping* composited_layer_mapping =
-      layer->GetCompositedLayerMapping();
-  GraphicsLayer* graphics_layer = composited_layer_mapping->MainGraphicsLayer();
-  if (!graphics_layer)
-    return nullptr;
-  return graphics_layer->CcLayer();
-}
-
 TEST_P(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
   RegisterMockedHttpURLLoad("fixed-position.html");
   NavigateTo(base_url_ + "fixed-position.html");
@@ -269,106 +224,10 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
   cc::Layer* root_scroll_layer = GetRootScrollLayer();
   ASSERT_TRUE(root_scroll_layer);
   ASSERT_FALSE(root_scroll_layer->GetMainThreadScrollingReasons());
-
-  // Layer position constraints are only used by the cc property tree builder
-  // and are not set when blink generates property trees.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    Document* document = GetFrame()->GetDocument();
-    {
-      Element* element = document->getElementById("div-tl");
-      ASSERT_TRUE(element);
-      cc::Layer* layer = CcLayerFromElement(element);
-      ASSERT_TRUE(layer);
-      cc::LayerPositionConstraint constraint = layer->position_constraint();
-      ASSERT_TRUE(constraint.is_fixed_position());
-      ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
-                  !constraint.is_fixed_to_bottom_edge());
-    }
-    {
-      Element* element = document->getElementById("div-tr");
-      ASSERT_TRUE(element);
-      cc::Layer* layer = CcLayerFromElement(element);
-      ASSERT_TRUE(layer);
-      cc::LayerPositionConstraint constraint = layer->position_constraint();
-      ASSERT_TRUE(constraint.is_fixed_position());
-      ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
-                  !constraint.is_fixed_to_bottom_edge());
-    }
-    {
-      Element* element = document->getElementById("div-bl");
-      ASSERT_TRUE(element);
-      cc::Layer* layer = CcLayerFromElement(element);
-      ASSERT_TRUE(layer);
-      cc::LayerPositionConstraint constraint = layer->position_constraint();
-      ASSERT_TRUE(constraint.is_fixed_position());
-      ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
-                  constraint.is_fixed_to_bottom_edge());
-    }
-    {
-      Element* element = document->getElementById("div-br");
-      ASSERT_TRUE(element);
-      cc::Layer* layer = CcLayerFromElement(element);
-      ASSERT_TRUE(layer);
-      cc::LayerPositionConstraint constraint = layer->position_constraint();
-      ASSERT_TRUE(constraint.is_fixed_position());
-      ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
-                  constraint.is_fixed_to_bottom_edge());
-    }
-    {
-      Element* element = document->getElementById("span-tl");
-      ASSERT_TRUE(element);
-      cc::Layer* layer = CcLayerFromElement(element);
-      ASSERT_TRUE(layer);
-      cc::LayerPositionConstraint constraint = layer->position_constraint();
-      ASSERT_TRUE(constraint.is_fixed_position());
-      ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
-                  !constraint.is_fixed_to_bottom_edge());
-    }
-    {
-      Element* element = document->getElementById("span-tr");
-      ASSERT_TRUE(element);
-      cc::Layer* layer = CcLayerFromElement(element);
-      ASSERT_TRUE(layer);
-      cc::LayerPositionConstraint constraint = layer->position_constraint();
-      ASSERT_TRUE(constraint.is_fixed_position());
-      ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
-                  !constraint.is_fixed_to_bottom_edge());
-    }
-    {
-      Element* element = document->getElementById("span-bl");
-      ASSERT_TRUE(element);
-      cc::Layer* layer = CcLayerFromElement(element);
-      ASSERT_TRUE(layer);
-      cc::LayerPositionConstraint constraint = layer->position_constraint();
-      ASSERT_TRUE(constraint.is_fixed_position());
-      ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
-                  constraint.is_fixed_to_bottom_edge());
-    }
-    {
-      Element* element = document->getElementById("span-br");
-      ASSERT_TRUE(element);
-      cc::Layer* layer = CcLayerFromElement(element);
-      ASSERT_TRUE(layer);
-      cc::LayerPositionConstraint constraint = layer->position_constraint();
-      ASSERT_TRUE(constraint.is_fixed_position());
-      ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
-                  constraint.is_fixed_to_bottom_edge());
-    }
-  }
 }
 
-// BlinkGenPropertyTrees (BGPT) changes where the sticky constraints are stored.
-// Without BGPT, sticky constraints are stored on cc::Layer (via
-// GraphicsLayer::SetStickyPositionConstraint). With BGPT, sticky constraints
-// are stored on transform property tree nodes.
+// Sticky constraints are stored on transform property tree nodes.
 static cc::LayerStickyPositionConstraint GetStickyConstraint(Element* element) {
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    cc::Layer* layer = CcLayerFromElement(element);
-    DCHECK(layer);
-    return layer->sticky_position_constraint();
-  }
-
   const auto* properties =
       element->GetLayoutObject()->FirstFragment().PaintProperties();
   DCHECK(properties);
@@ -1745,9 +1604,6 @@ TEST_P(ScrollingCoordinatorTest,
 }
 
 TEST_P(ScrollingCoordinatorTest, ScrollOffsetClobberedBeforeCompositingUpdate) {
-  // This test fails without BGPT enabled. https://crbug.com/930636.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    return;
   LoadHTML(R"HTML(
           <!DOCTYPE html>
           <style>
@@ -1793,9 +1649,6 @@ TEST_P(ScrollingCoordinatorTest, ScrollOffsetClobberedBeforeCompositingUpdate) {
 }
 
 TEST_P(ScrollingCoordinatorTest, UpdateVisualViewportScrollLayer) {
-  // This test fails without BGPT enabled. https://crbug.com/930636.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    return;
   LoadHTML(R"HTML(
           <!DOCTYPE html>
           <style>
@@ -1862,10 +1715,9 @@ TEST_P(ScrollingCoordinatorTest, UpdateUMAMetricUpdated) {
 // PaintNonFastScrollableRegions is launched.
 using PaintNonFastScrollableRegionsScrollingCoordinatorTest =
     ScrollingCoordinatorTest;
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    PaintNonFastScrollableRegionsScrollingCoordinatorTest,
-    ::testing::Values(kScrollingCoordinatorTestPaintNonFastScrollableRegions));
+INSTANTIATE_TEST_SUITE_P(All,
+                         PaintNonFastScrollableRegionsScrollingCoordinatorTest,
+                         ::testing::Values(true));
 
 TEST_P(PaintNonFastScrollableRegionsScrollingCoordinatorTest,
        NonCompositedNonFastScrollableRegion) {
@@ -1997,15 +1849,9 @@ class ScrollingCoordinatorTestWithAcceleratedContext
   FakeGLES2Interface gl_;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    ScrollingCoordinatorTestWithAcceleratedContext,
-    ::testing::Values(
-        kScrollingCoordinatorTestNoFlags,
-        kScrollingCoordinatorTestBlinkGenPropertyTrees,
-        kScrollingCoordinatorTestPaintNonFastScrollableRegions,
-        (kScrollingCoordinatorTestBlinkGenPropertyTrees |
-         kScrollingCoordinatorTestPaintNonFastScrollableRegions)));
+INSTANTIATE_TEST_SUITE_P(All,
+                         ScrollingCoordinatorTestWithAcceleratedContext,
+                         testing::Bool());
 
 TEST_P(ScrollingCoordinatorTestWithAcceleratedContext, CanvasTouchActionRects) {
   LoadHTML(R"HTML(

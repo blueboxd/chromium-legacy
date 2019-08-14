@@ -20,7 +20,6 @@
 namespace content {
 
 class BackgroundFetchContext;
-class RenderProcessHost;
 
 class CONTENT_EXPORT BackgroundFetchServiceImpl
     : public blink::mojom::BackgroundFetchService {
@@ -33,14 +32,12 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
   ~BackgroundFetchServiceImpl() override;
 
   static void CreateForWorker(
-      blink::mojom::BackgroundFetchServiceRequest request,
-      RenderProcessHost* render_process_host,
-      const url::Origin& origin);
+      const ServiceWorkerRunningInfo& info,
+      mojo::PendingReceiver<blink::mojom::BackgroundFetchService> receiver);
 
   static void CreateForFrame(
-      RenderProcessHost* render_process_host,
-      int render_frame_id,
-      blink::mojom::BackgroundFetchServiceRequest request);
+      RenderFrameHost* render_frame_host,
+      mojo::PendingReceiver<blink::mojom::BackgroundFetchService> receiver);
 
   // blink::mojom::BackgroundFetchService implementation.
   void Fetch(int64_t service_worker_registration_id,

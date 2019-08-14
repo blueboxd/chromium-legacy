@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Nothing outside //chrome/chrome_cleaner can depend on these targets.
+visibility = [ "//chrome/chrome_cleaner/*" ]
+
 source_set("unittest_sources") {
   testonly = true
 
@@ -11,10 +14,10 @@ source_set("unittest_sources") {
   ]
 
   deps = [
-    "//chrome/chrome_cleaner/mojom:engine_sandbox_interface",
-    "//chrome/chrome_cleaner/mojom:engine_sandbox_test_interface",
     "//chrome/chrome_cleaner/ipc:ipc_test_util",
     "//chrome/chrome_cleaner/ipc:mojo_task_runner",
+    "//chrome/chrome_cleaner/mojom:engine_sandbox_interface",
+    "//chrome/chrome_cleaner/mojom:engine_sandbox_test_interface",
     "//chrome/chrome_cleaner/strings",
     "//chrome/chrome_cleaner/strings:string_test_helpers",
     "//chrome/chrome_cleaner/test:test_extensions",

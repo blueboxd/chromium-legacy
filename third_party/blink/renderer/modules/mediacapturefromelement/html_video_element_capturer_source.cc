@@ -192,12 +192,9 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
     // Post with CrossThreadBind here, instead of CrossThreadBindOnce,
     // otherwise the |new_frame_callback_| ivar can be nulled out
     // unintentionally.
-    //
-    // TODO(crbug.com/964922): Consider cloning |new_frame_callback_|
-    // and use CrossThreadBind
     PostCrossThreadTask(
         *io_task_runner_, FROM_HERE,
-        CrossThreadBindRepeating(new_frame_callback_, frame, current_time));
+        CrossThreadBindOnce(new_frame_callback_, frame, current_time));
   }
 
   // Calculate the time in the future where the next frame should be created.

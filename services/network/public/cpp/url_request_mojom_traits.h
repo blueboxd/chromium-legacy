@@ -46,6 +46,24 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
 
 template <>
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    StructTraits<network::mojom::TrustedUrlRequestParamsDataView,
+                 network::ResourceRequest::TrustedParams> {
+  static const net::NetworkIsolationKey& network_isolation_key(
+      const network::ResourceRequest::TrustedParams& trusted_params) {
+    return trusted_params.network_isolation_key;
+  }
+  static network::mojom::UpdateNetworkIsolationKeyOnRedirect
+  update_network_isolation_key_on_redirect(
+      const network::ResourceRequest::TrustedParams& trusted_params) {
+    return trusted_params.update_network_isolation_key_on_redirect;
+  }
+
+  static bool Read(network::mojom::TrustedUrlRequestParamsDataView data,
+                   network::ResourceRequest::TrustedParams* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
     StructTraits<network::mojom::URLRequestDataView, network::ResourceRequest> {
   static const std::string& method(const network::ResourceRequest& request) {
     return request.method;
@@ -59,15 +77,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static const base::Optional<url::Origin>& top_frame_origin(
       const network::ResourceRequest& request) {
     return request.top_frame_origin;
-  }
-  static network::mojom::UpdateNetworkIsolationKeyOnRedirect
-  update_network_isolation_key_on_redirect(
-      const network::ResourceRequest& request) {
-    return request.update_network_isolation_key_on_redirect;
-  }
-  static const net::NetworkIsolationKey& trusted_network_isolation_key(
-      const network::ResourceRequest& request) {
-    return request.trusted_network_isolation_key;
   }
   static bool attach_same_site_cookies(
       const network::ResourceRequest& request) {
@@ -223,6 +232,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   }
   static bool obey_origin_policy(const network::ResourceRequest& request) {
     return request.obey_origin_policy;
+  }
+  static const base::Optional<network::ResourceRequest::TrustedParams>&
+  trusted_params(const network::ResourceRequest& request) {
+    return request.trusted_params;
   }
 
   static bool Read(network::mojom::URLRequestDataView data,

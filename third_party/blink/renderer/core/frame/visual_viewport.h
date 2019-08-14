@@ -112,9 +112,6 @@ class CORE_EXPORT VisualViewport final
   }
   GraphicsLayer* ScrollLayer() { return inner_viewport_scroll_layer_.get(); }
   GraphicsLayer* PageScaleLayer() { return page_scale_layer_.get(); }
-  GraphicsLayer* OverscrollElasticityLayer() {
-    return overscroll_elasticity_layer_.get();
-  }
 
   void InitializeScrollbars();
 
@@ -336,7 +333,6 @@ class CORE_EXPORT VisualViewport final
   Member<Page> page_;
   std::unique_ptr<GraphicsLayer> root_transform_layer_;
   std::unique_ptr<GraphicsLayer> inner_viewport_container_layer_;
-  std::unique_ptr<GraphicsLayer> overscroll_elasticity_layer_;
   std::unique_ptr<GraphicsLayer> page_scale_layer_;
   std::unique_ptr<GraphicsLayer> inner_viewport_scroll_layer_;
 

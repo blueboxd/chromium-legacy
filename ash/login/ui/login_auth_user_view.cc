@@ -533,14 +533,14 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
   }
 
   base::string16 GetTextForLabelButton() const {
-    // TODO(crbug.com/983103): Put localized strings after the string review.
     switch (state_) {
       case State::kInitial:
       case State::kAuthenticating:
-        return base::ASCIIToUTF16("Unlock with smart card");
+        return l10n_util::GetStringUTF16(
+            IDS_ASH_LOGIN_SMART_CARD_SIGN_IN_MESSAGE);
       case State::kFailure:
-        return base::UTF8ToUTF16(
-            "Couldn’t recognize your smart card. Try again.");
+        return l10n_util::GetStringUTF16(
+            IDS_ASH_LOGIN_SMART_CARD_SIGN_IN_FAILURE_MESSAGE);
     }
   }
 
@@ -948,8 +948,8 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   // Note: both |security_token_pin_request_| and |has_tap| must have higher
   // priority than |has_pin| when determining the placeholder.
   if (security_token_pin_request_) {
-    // TODO(crbug.com/983103): Put the localized string after the string review.
-    password_view_->SetPlaceholderText(base::UTF8ToUTF16("smart card PIN"));
+    password_view_->SetPlaceholderText(l10n_util::GetStringUTF16(
+        IDS_ASH_LOGIN_POD_PASSWORD_SMART_CARD_PIN_PLACEHOLDER));
   } else if (has_tap) {
     password_view_->SetPlaceholderText(
         l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_TAP_PLACEHOLDER));

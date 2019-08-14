@@ -8,12 +8,13 @@
 from __future__ import print_function
 
 import os
-import StringIO
 import sys
 import unittest
 
 if __name__ == '__main__':
   sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+
+from six import StringIO
 
 from grit import util
 from grit.format import android_xml
@@ -56,7 +57,7 @@ a sledge hammer.
         </messages>
         """)
 
-    buf = StringIO.StringIO()
+    buf = StringIO()
     build.RcBuilder.ProcessNode(root, DummyOutput('android', 'en'), buf)
     output = buf.getvalue()
     expected = r"""
@@ -95,7 +96,7 @@ a sledge hammer."</string>
         </messages>
         """)
 
-    buf = StringIO.StringIO()
+    buf = StringIO()
     build.RcBuilder.ProcessNode(root, DummyOutput('android', 'en'), buf)
     output = buf.getvalue()
     expected = r"""

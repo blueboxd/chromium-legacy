@@ -449,6 +449,10 @@ bool TestRecipeReplayer::StartWebPageReplayServer(
   args.push_back(base::StringPrintf("--http_port=%d", kHostHttpPort));
   args.push_back(base::StringPrintf("--https_port=%d", kHostHttpsPort));
   args.push_back("--serve_response_in_chronological_sequence");
+  // Start WPR in quiet mode, removing the extra verbose ServeHTTP interactions
+  // that are for the the overwhelming majority unhelpful, but for extra
+  // debugging of a test case, this might make sense to comment out.
+  args.push_back("--quiet_mode");
   args.push_back(base::StringPrintf(
       "--inject_scripts=%s,%s",
       FilePathToUTF8(src_dir.AppendASCII("third_party")

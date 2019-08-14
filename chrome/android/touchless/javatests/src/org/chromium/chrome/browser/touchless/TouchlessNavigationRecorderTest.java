@@ -85,8 +85,10 @@ public class TouchlessNavigationRecorderTest {
 
         ChromeTabUtils.waitForTabPageLoaded(mInitialTab, (String) null);
 
-        // This will trigger an intent and use PageTransition.FROM_API.
-        mActivityTestRule.getActivity().getTabCreator(false).launchNTP();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // This will trigger an intent and use PageTransition.FROM_API.
+            mActivityTestRule.getActivity().getTabCreator(false).launchNTP();
+        });
         callback.waitForCallback(0);
     }
 

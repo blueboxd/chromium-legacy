@@ -5,11 +5,16 @@
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_utils.h"
 
 #include "base/strings/string_piece.h"
+#include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_api.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace password_manager {
+
+using ::testing::ElementsAre;
+using ::testing::Field;
 
 TEST(LeakDetectionRequestUtils, MakeLookupSingleLeakRequest) {
   // Derived from test case used by the server-side implementation:
@@ -17,6 +22,21 @@ TEST(LeakDetectionRequestUtils, MakeLookupSingleLeakRequest) {
   auto request = MakeLookupSingleLeakRequest("jonsnow", "");
   EXPECT_THAT(request.username_hash_prefix(),
               ::testing::ElementsAreArray({0x3D, 0x70, 0xD3}));
+}
+
+TEST(LeakDetectionRequestUtils, PrepareSingleLeakRequestData) {
+  base::test::ScopedTaskEnvironment task_env;
+  base::MockCallback<SingleLeakRequestDataCallback> callback;
+
+  PrepareSingleLeakRequestData("jonsnow", "1234", callback.Get());
+  EXPECT_CALL(
+      callback,
+      Run(AllOf(
+          Field(&LookupSingleLeakData::username_hash_prefix,
+                ElementsAre(61, 112, -45)),
+          Field(&LookupSingleLeakData::encrypted_payload, testing::Ne("")),
+          Field(&LookupSingleLeakData::encryption_key, testing::Ne("")))));
+  task_env.RunUntilIdle();
 }
 
 }  // namespace password_manager

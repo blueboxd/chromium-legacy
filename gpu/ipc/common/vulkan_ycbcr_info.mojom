@@ -10,10 +10,11 @@ module gpu.mojom;
 // in chrome.
 // See gpu/ipc/common/vulkan_ycbcr_info.h.
 struct VulkanYCbCrInfo {
+  uint32 image_format;
+  uint64 external_format;
   uint32 suggested_ycbcr_model;
   uint32 suggested_ycbcr_range;
   uint32 suggested_xchroma_offset;
   uint32 suggested_ychroma_offset;
-  uint64 external_format;
   uint32 format_features;
 };

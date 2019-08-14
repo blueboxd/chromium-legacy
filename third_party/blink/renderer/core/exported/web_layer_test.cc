@@ -107,7 +107,7 @@ class WebLayerListTest : public PaintTestConfigurations, public testing::Test {
 
  private:
   PaintArtifactCompositor* paint_artifact_compositor() {
-    return GetLocalFrameView()->GetPaintArtifactCompositorForTesting();
+    return GetLocalFrameView()->GetPaintArtifactCompositor();
   }
 
   frame_test_helpers::TestWebWidgetClient web_widget_client_;
@@ -282,7 +282,7 @@ class WebLayerListSimTest : public PaintTestConfigurations, public SimTest {
   }
 
   PaintArtifactCompositor* paint_artifact_compositor() {
-    return MainFrame().GetFrameView()->GetPaintArtifactCompositorForTesting();
+    return MainFrame().GetFrameView()->GetPaintArtifactCompositor();
   }
 };
 

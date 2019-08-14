@@ -53,7 +53,6 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "net/base/network_isolation_key.h"
@@ -389,13 +388,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
       StoragePartitionServiceRequestHandler handler);
 
   // Allows external code to supply a callback which handles a
-  // BroadcastChannelProviderRequest. Used for supplying test versions of the
-  // service.
-  using BroadcastChannelProviderRequestHandler = base::RepeatingCallback<void(
+  // mojo::PendingReceiver<blink::mojom::BroadcastChannelProvider>. Used for
+  // supplying test versions of the service.
+  using BroadcastChannelProviderReceiverHandler = base::RepeatingCallback<void(
       RenderProcessHostImpl* rph,
-      blink::mojom::BroadcastChannelProviderRequest request)>;
-  static void SetBroadcastChannelProviderRequestHandlerForTesting(
-      BroadcastChannelProviderRequestHandler handler);
+      mojo::PendingReceiver<blink::mojom::BroadcastChannelProvider> receiver)>;
+  static void SetBroadcastChannelProviderReceiverHandlerForTesting(
+      BroadcastChannelProviderReceiverHandler handler);
 
   RenderFrameMessageFilter* render_frame_message_filter_for_testing() const {
     return render_frame_message_filter_.get();

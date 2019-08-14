@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -14,7 +15,7 @@
 
 namespace metrics {
 
-class MetricCollector;
+class MetricProvider;
 class SampledProfile;
 
 // Provides access to ChromeOS profile data using different metric collectors.
@@ -47,7 +48,7 @@ class ProfileProvider : public chromeos::PowerManagerClient::Observer,
   void OnSessionRestoreDone(int num_tabs_restored);
 
   // Vector of registered metric collectors.
-  std::vector<std::unique_ptr<MetricCollector>> collectors_;
+  std::vector<std::unique_ptr<MetricProvider>> collectors_;
 
  private:
   // Points to the on-session-restored callback that was registered with

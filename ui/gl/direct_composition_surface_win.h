@@ -77,6 +77,9 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   // Returns true if there is an HDR capable display connected.
   static bool IsHDRSupported();
 
+  // Returns true if swap chain tearing is supported.
+  static bool IsSwapChainTearingSupported();
+
   static void SetScaledOverlaysSupportedForTesting(bool value);
 
   static void SetOverlayFormatUsedForTesting(DXGI_FORMAT format);

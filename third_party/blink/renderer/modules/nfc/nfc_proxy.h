@@ -5,7 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NFC_PROXY_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NFC_PROXY_H_
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/nfc.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/page/focus_changed_observer.h"
@@ -90,8 +91,8 @@ class MODULES_EXPORT NFCProxy final
   using WriterSet = HeapHashSet<WeakMember<NFCWriter>>;
   WriterSet writers_;
 
-  device::mojom::blink::NFCPtr nfc_;
-  mojo::Binding<device::mojom::blink::NFCClient> client_binding_;
+  mojo::Remote<device::mojom::blink::NFC> nfc_remote_;
+  mojo::Receiver<device::mojom::blink::NFCClient> client_receiver_;
 };
 
 }  // namespace blink

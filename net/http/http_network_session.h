@@ -106,6 +106,8 @@ class NET_EXPORT HttpNetworkSession {
     bool enable_spdy_ping_based_connection_checking;
     bool enable_http2;
     size_t spdy_session_max_recv_window_size;
+    // Maximum number of capped frames that can be queued at any time.
+    int spdy_session_max_queued_capped_frames;
     // HTTP/2 connection settings.
     // Unknown settings will still be sent to the server.
     // Might contain unknown setting identifiers from a predefined set that

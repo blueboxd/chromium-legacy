@@ -119,7 +119,8 @@ void WorkerScriptFetchInitiator::Start(
   resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = script_url;
   resource_request->site_for_cookies = script_url;
-  resource_request->trusted_network_isolation_key =
+  resource_request->trusted_params = network::ResourceRequest::TrustedParams();
+  resource_request->trusted_params->network_isolation_key =
       trusted_network_isolation_key;
   resource_request->request_initiator = request_initiator;
   resource_request->referrer = sanitized_referrer.url,

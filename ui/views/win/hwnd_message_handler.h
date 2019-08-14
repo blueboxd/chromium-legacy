@@ -192,7 +192,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   friend class ::views::test::DesktopWindowTreeHostWinTestApi;
 
   using TouchIDs = std::set<DWORD>;
-  enum class DwmFrameState { OFF, ON };
+  enum class DwmFrameState { kOff, kOn };
 
   // Overridden from WindowImpl:
   HICON GetDefaultWindowIcon() const override;

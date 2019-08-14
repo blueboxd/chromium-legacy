@@ -564,7 +564,7 @@ class CORE_EXPORT Node : public EventTarget {
   }
 
   virtual void SetFocused(bool flag, WebFocusType);
-  virtual void SetHasFocusWithin(bool flag);
+  void SetHasFocusWithin(bool flag);
   virtual void SetDragged(bool flag);
 
   virtual int tabIndex() const;
@@ -832,7 +832,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   // Perform the default action for an event.
   virtual void DefaultEventHandler(Event&);
-  virtual void WillCallDefaultEventHandler(const Event&);
+  void WillCallDefaultEventHandler(const Event&);
   // Should return true if this Node has activation behavior.
   // https://dom.spec.whatwg.org/#eventtarget-activation-behavior
   virtual bool HasActivationBehavior() const;
@@ -983,8 +983,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   Node(TreeScope*, ConstructionType);
 
-  virtual void WillMoveToNewDocument(Document& old_document,
-                                     Document& new_document);
+  void WillMoveToNewDocument(Document& old_document, Document& new_document);
   virtual void DidMoveToNewDocument(Document& old_document);
 
   void AddedEventListener(const AtomicString& event_type,

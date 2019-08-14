@@ -31,11 +31,7 @@
 #include "content/public/browser/browser_context.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
-#include "extensions/browser/deferred_start_render_host.h"
-#include "extensions/browser/deferred_start_render_host_observer.h"
-#include "extensions/browser/extension_host.h"
-#include "extensions/browser/process_manager.h"
-#include "extensions/browser/process_manager_observer.h"
+#include "extensions/test/test_background_page_first_load_observer.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
@@ -55,68 +51,6 @@ std::string GetCertSpki(const net::X509Certificate& certificate) {
   }
   return spki_bytes.as_string();
 }
-
-// Observer that allows to wait until the extension's background page was first
-// loaded.
-// TODO(crbug.com/826417): Extract into a generic helper to be usable in other
-// tests.
-class ExtensionBackgroundPageFirstLoadObserver final
-    : public extensions::ProcessManagerObserver,
-      public extensions::DeferredStartRenderHostObserver {
- public:
-  ExtensionBackgroundPageFirstLoadObserver(
-      content::BrowserContext* browser_context,
-      const std::string& extension_id)
-      : extension_id_(extension_id),
-        process_manager_(extensions::ProcessManager::Get(browser_context)) {
-    process_manager_->AddObserver(this);
-    extension_host_ =
-        process_manager_->GetBackgroundHostForExtension(extension_id_);
-    if (extension_host_)
-      OnObtainedExtensionHost();
-  }
-
-  ~ExtensionBackgroundPageFirstLoadObserver() override {
-    if (extension_host_) {
-      static_cast<extensions::DeferredStartRenderHost*>(extension_host_)
-          ->RemoveDeferredStartRenderHostObserver(this);
-    }
-    process_manager_->RemoveObserver(this);
-  }
-
-  void Wait() {
-    if (!extension_host_ || !extension_host_->has_loaded_once())
-      run_loop_.Run();
-  }
-
- private:
-  // extensions::ProcessManagerObserver:
-  void OnBackgroundHostCreated(extensions::ExtensionHost* host) override {
-    if (host->extension_id() == extension_id_) {
-      DCHECK(!extension_host_);
-      extension_host_ = host;
-      OnObtainedExtensionHost();
-    }
-  }
-
-  // extensions::DeferredStartRenderHostObserver:
-  void OnDeferredStartRenderHostDidStopFirstLoad(
-      const extensions::DeferredStartRenderHost* /* host */) override {
-    run_loop_.Quit();
-  }
-
-  void OnObtainedExtensionHost() {
-    static_cast<extensions::DeferredStartRenderHost*>(extension_host_)
-        ->AddDeferredStartRenderHostObserver(this);
-  }
-
-  const std::string extension_id_;
-  extensions::ProcessManager* const process_manager_;
-  extensions::ExtensionHost* extension_host_ = nullptr;
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionBackgroundPageFirstLoadObserver);
-};
 
 }  // namespace
 
@@ -251,7 +185,7 @@ class CryptohomeKeyDelegateServiceProviderTest
     cert_provider_extension_ =
         std::make_unique<TestCertificateProviderExtension>(profile,
                                                            kExtensionId);
-    ExtensionBackgroundPageFirstLoadObserver bg_page_first_load_observer(
+    extensions::TestBackgroundPageFirstLoadObserver bg_page_first_load_observer(
         profile, kExtensionId);
     AddExtensionForForceInstallation(kExtensionId,
                                      kExtensionUpdateManifestPath);

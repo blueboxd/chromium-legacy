@@ -41,7 +41,8 @@ class ChromeBrowserState;
 // the title and selecting the parent folder of the bookmark.
 // This controller monitors the state of the bookmark model, so changes to the
 // bookmark model can affect this controller's state.
-@interface BookmarkFolderEditorViewController : ChromeTableViewController
+@interface BookmarkFolderEditorViewController
+    : ChromeTableViewController <UIAdaptivePresentationControllerDelegate>
 
 @property(nonatomic, weak) id<BookmarkFolderEditorViewControllerDelegate>
     delegate;

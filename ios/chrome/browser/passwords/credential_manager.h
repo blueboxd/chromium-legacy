@@ -6,7 +6,7 @@
 #define IOS_CHROME_BROWSER_PASSWORDS_CREDENTIAL_MANAGER_H_
 
 #include "components/password_manager/core/browser/credential_manager_impl.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 
 namespace web {
 class WebFrame;

@@ -10,6 +10,7 @@ import "media/mojo/mojom/remoting.mojom";
 import "media/mojo/mojom/audio_data_pipe.mojom";
 import "media/mojo/mojom/audio_input_stream.mojom";
 import "media/mojo/mojom/audio_parameters.mojom";
+import "services/viz/public/mojom/gpu.mojom";
 
 // This interface is used by ResourceProvider to notify that an audio input
 // stream is created as requested. The lifetime of the stream is limited by the
@@ -25,6 +26,8 @@ interface AudioStreamCreatorClient {
 // This interface is used by the Mirroring Service to ask the browser to provide
 // resources.
 interface ResourceProvider {
+  // Acquires an interface to the GPU process.
+  BindGpu(pending_receiver<viz.mojom.Gpu> receiver);
   GetVideoCaptureHost(media.mojom.VideoCaptureHost& request);
   GetNetworkContext(network.mojom.NetworkContext& request);
   CreateAudioStream(AudioStreamCreatorClient client,

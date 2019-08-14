@@ -13,6 +13,8 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/network/onc/certificate_scope.h"
+#include "chromeos/network/policy_certificate_provider.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/scoped_test_nss_db.h"
 #include "net/cert/nss_cert_database_chromeos.h"
@@ -35,26 +37,40 @@ class FakePolicyCertificateProvider : public PolicyCertificateProvider {
     observer_list_.RemoveObserver(observer);
   }
 
-  net::CertificateList GetAllServerAndAuthorityCertificates() const override {
+  net::CertificateList GetAllServerAndAuthorityCertificates(
+      const chromeos::onc::CertificateScope& scope) const override {
     // NetworkCertLoader does not call this.
     NOTREACHED();
     return net::CertificateList();
   }
 
-  net::CertificateList GetAllAuthorityCertificates() const override {
+  net::CertificateList GetAllAuthorityCertificates(
+      const chromeos::onc::CertificateScope& scope) const override {
+    // NetworkCertLoader only retrieves profile-wide certificates.
+    EXPECT_EQ(chromeos::onc::CertificateScope::Default(), scope);
+
     return authority_certificates_;
   }
 
-  net::CertificateList GetWebTrustedCertificates() const override {
+  net::CertificateList GetWebTrustedCertificates(
+      const chromeos::onc::CertificateScope& scope) const override {
     // NetworkCertLoader does not call this.
     NOTREACHED();
     return net::CertificateList();
   }
 
-  net::CertificateList GetCertificatesWithoutWebTrust() const override {
+  net::CertificateList GetCertificatesWithoutWebTrust(
+      const chromeos::onc::CertificateScope& scope) const override {
     // NetworkCertLoader does not call this.
     NOTREACHED();
     return net::CertificateList();
+  }
+
+  const std::set<std::string>& GetExtensionIdsWithPolicyCertificates()
+      const override {
+    // NetworkCertLoader does not call this.
+    NOTREACHED();
+    return kNoExtensions;
   }
 
   void SetAuthorityCertificates(
@@ -71,6 +87,7 @@ class FakePolicyCertificateProvider : public PolicyCertificateProvider {
   base::ObserverList<PolicyCertificateProvider::Observer,
                      true /* check_empty */>::Unchecked observer_list_;
   net::CertificateList authority_certificates_;
+  const std::set<std::string> kNoExtensions = {};
 };
 
 bool IsCertInCertificateList(

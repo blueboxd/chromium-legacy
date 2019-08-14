@@ -167,7 +167,8 @@ std::unique_ptr<base::DictionaryValue> DefaultsToValue(
   dict->SetString(kPopupUrlStorageKey,
                   action->GetPopupUrl(kDefaultTabId).spec());
   dict->SetString(kTitleStorageKey, action->GetTitle(kDefaultTabId));
-  dict->SetString(kBadgeTextStorageKey, action->GetBadgeText(kDefaultTabId));
+  dict->SetString(kBadgeTextStorageKey,
+                  action->GetExplicitlySetBadgeText(kDefaultTabId));
   dict->SetString(
       kBadgeBackgroundColorStorageKey,
       SkColorToRawString(action->GetBadgeBackgroundColor(kDefaultTabId)));

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/chrome_cleanup_handler_win.h"
 
+#include "build/branding_buildflags.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_process_win.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -35,7 +36,7 @@ TEST(ChromeCleanupHandlerTest, GetExtensionsNamesFromIds) {
   };
 
   std::set<base::string16> expected_names = {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     // Extension names are only available in Google-branded builds.
     MockChromeCleanerProcess::kInstalledExtensionName1,
     MockChromeCleanerProcess::kInstalledExtensionName2,

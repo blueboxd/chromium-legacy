@@ -383,8 +383,8 @@ TEST_F(WiredDisplayMediaRouteProviderTest, SendMediaStatusUpdate) {
       std::move(status_observer_ptr), base::BindOnce([](bool success) {}));
 
   EXPECT_CALL(status_observer, OnMediaStatusUpdated(_))
-      .WillOnce(Invoke([&page_title](const MediaStatus& status) {
-        EXPECT_EQ(status.title, page_title);
+      .WillOnce(Invoke([&page_title](mojom::MediaStatusPtr status) {
+        EXPECT_EQ(status->title, page_title);
       }));
   receiver_creator_.receiver()->RunTitleChangeCallback(page_title);
   base::RunLoop().RunUntilIdle();

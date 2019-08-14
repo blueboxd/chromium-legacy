@@ -83,7 +83,6 @@ specific_include_rules = {
   "builtin_service_manifests\.cc": [
     "+chromeos/services/network_config",
     "+chromeos/services/secure_channel",
-    "+components/mirroring/service",
     "+components/startup_metric_utils/common",
     "+extensions/buildflags",
     "+mash/public",

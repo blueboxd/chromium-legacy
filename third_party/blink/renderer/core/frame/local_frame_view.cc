@@ -2425,8 +2425,7 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
       // PrePaintTreeWalk can reach this frame.
       frame_view.SetNeedsPaintPropertyUpdate();
       // We may record more foreign layers under the frame.
-      if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-        frame_view.GraphicsLayersDidChange();
+      frame_view.GraphicsLayersDidChange();
       if (auto* owner = frame_view.GetLayoutEmbeddedContent())
         owner->SetShouldCheckForPaintInvalidation();
     }
@@ -2495,56 +2494,51 @@ void LocalFrameView::RunPaintLifecyclePhase() {
     }
   }
 
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    if (!print_mode_enabled) {
-      bool needed_update = !paint_artifact_compositor_ ||
-                           paint_artifact_compositor_->NeedsUpdate();
-      PushPaintArtifactToCompositor();
-      ForAllNonThrottledLocalFrameViews([this](LocalFrameView& frame_view) {
-        DocumentAnimations::UpdateAnimations(
-            frame_view.GetLayoutView()->GetDocument(),
-            DocumentLifecycle::kPaintClean, paint_artifact_compositor_.get());
-      });
+  if (!print_mode_enabled) {
+    bool needed_update = !paint_artifact_compositor_ ||
+                         paint_artifact_compositor_->NeedsUpdate();
+    PushPaintArtifactToCompositor();
+    ForAllNonThrottledLocalFrameViews([this](LocalFrameView& frame_view) {
+      DocumentAnimations::UpdateAnimations(
+          frame_view.GetLayoutView()->GetDocument(),
+          DocumentLifecycle::kPaintClean, paint_artifact_compositor_.get());
+    });
 
-      // Initialize animation properties in the newly created paint property
-      // nodes according to the current animation state. This is mainly for
-      // the running composited animations which didn't change state during
-      // above UpdateAnimations() but associated with new paint property nodes.
-      if (needed_update) {
-        auto* root_layer = RootCcLayer();
-        if (root_layer && root_layer->layer_tree_host()) {
-          root_layer->layer_tree_host()
-              ->mutator_host()
-              ->InitClientAnimationState();
-        }
+    // Initialize animation properties in the newly created paint property
+    // nodes according to the current animation state. This is mainly for
+    // the running composited animations which didn't change state during
+    // above UpdateAnimations() but associated with new paint property nodes.
+    if (needed_update) {
+      auto* root_layer = RootCcLayer();
+      if (root_layer && root_layer->layer_tree_host()) {
+        root_layer->layer_tree_host()
+            ->mutator_host()
+            ->InitClientAnimationState();
       }
+    }
 
-      // Notify the controller that the artifact has been pushed and some
-      // lifecycle state can be freed (such as raster invalidations).
-      if (paint_controller_)
-        paint_controller_->FinishCycle();
+    // Notify the controller that the artifact has been pushed and some
+    // lifecycle state can be freed (such as raster invalidations).
+    if (paint_controller_)
+      paint_controller_->FinishCycle();
 
-      // PaintController for BlinkGenPropertyTrees is transient.
-      if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-          !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-        // Property tree changed state is typically cleared through
-        // |PaintController::FinishCycle| but that will be a no-op because
-        // the paint controller is transient, so force the changed state to be
-        // cleared here.
-        if (paint_controller_) {
-          paint_controller_->ClearPropertyTreeChangedStateTo(
-              PropertyTreeState::Root());
-        }
-        auto* root = GetLayoutView()->Compositor()->PaintRootGraphicsLayer();
-        if (root) {
-          ForAllGraphicsLayers(*root, [](GraphicsLayer& layer) {
-            if (layer.PaintsContentOrHitTest() && layer.HasLayerState()) {
-              layer.GetPaintController().ClearPropertyTreeChangedStateTo(
-                  layer.GetPropertyTreeState());
-            }
-          });
-        }
+    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      // Property tree changed state is typically cleared through
+      // |PaintController::FinishCycle| but that will be a no-op because
+      // the paint controller is transient, so force the changed state to be
+      // cleared here.
+      if (paint_controller_) {
+        paint_controller_->ClearPropertyTreeChangedStateTo(
+            PropertyTreeState::Root());
+      }
+      auto* root = GetLayoutView()->Compositor()->PaintRootGraphicsLayer();
+      if (root) {
+        ForAllGraphicsLayers(*root, [](GraphicsLayer& layer) {
+          if (layer.PaintsContentOrHitTest() && layer.HasLayerState()) {
+            layer.GetPaintController().ClearPropertyTreeChangedStateTo(
+                layer.GetPropertyTreeState());
+          }
+        });
       }
     }
   }
@@ -2591,7 +2585,6 @@ static void RecordGraphicsLayerAsForeignLayer(
 
 static void CollectViewportLayersForLayerList(GraphicsContext& context,
                                               VisualViewport& visual_viewport) {
-  DCHECK(RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
   RecordGraphicsLayerAsForeignLayer(context, visual_viewport.ContainerLayer());
   RecordGraphicsLayerAsForeignLayer(context, visual_viewport.PageScaleLayer());
   RecordGraphicsLayerAsForeignLayer(context, visual_viewport.ScrollLayer());
@@ -2600,8 +2593,6 @@ static void CollectViewportLayersForLayerList(GraphicsContext& context,
 static void CollectDrawableLayersForLayerListRecursively(
     GraphicsContext& context,
     const GraphicsLayer* layer) {
-  DCHECK(RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
-
   if (!layer || layer->Client().ShouldThrottleRendering() ||
       layer->Client().IsUnderSVGHiddenContainer()) {
     return;
@@ -2629,7 +2620,6 @@ static void CollectDrawableLayersForLayerListRecursively(
                        layer->GetContentsPropertyTreeState());
   }
 
-  DCHECK(!layer->ContentsClippingMaskLayer());
   for (const auto* child : layer->Children())
     CollectDrawableLayersForLayerListRecursively(context, child);
   CollectDrawableLayersForLayerListRecursively(context, layer->MaskLayer());
@@ -2638,8 +2628,6 @@ static void CollectDrawableLayersForLayerListRecursively(
 static void CollectLinkHighlightLayersForLayerListRecursively(
     GraphicsContext& context,
     const GraphicsLayer* layer) {
-  DCHECK(RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
-
   if (!layer || layer->Client().ShouldThrottleRendering())
     return;
 
@@ -2748,25 +2736,12 @@ void LocalFrameView::PaintTree() {
 }
 
 const cc::Layer* LocalFrameView::RootCcLayer() const {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    return paint_artifact_compositor_ ? paint_artifact_compositor_->RootLayer()
-                                      : nullptr;
-  }
-
-  if (const auto* root_graphics_layer =
-          frame_->GetPage()->GetVisualViewport().RootGraphicsLayer()) {
-    return root_graphics_layer->CcLayer();
-  }
-  return nullptr;
+  return paint_artifact_compositor_ ? paint_artifact_compositor_->RootLayer()
+                                    : nullptr;
 }
 
 void LocalFrameView::PushPaintArtifactToCompositor() {
   TRACE_EVENT0("blink", "LocalFrameView::pushPaintArtifactToCompositor");
-
-  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-         RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
-
   if (!frame_->GetSettings()->GetAcceleratedCompositingEnabled())
     return;
 
@@ -2781,8 +2756,7 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
             // The layer being scrolled is destroyed before the
             // ScrollingCoordinator.
             WrapWeakPersistent(page->GetScrollingCoordinator())));
-    if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-      GetLayoutView()->Compositor()->AttachRootLayerViaChromeClient();
+    GetLayoutView()->Compositor()->AttachRootLayerViaChromeClient();
     page->GetChromeClient().AttachRootLayer(
         paint_artifact_compositor_->RootLayer(), &GetFrame());
   }
@@ -2809,8 +2783,7 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
   settings.prefer_compositing_to_lcd_text =
       page->GetSettings().GetPreferCompositingToLCDTextEnabled();
 
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       !paint_controller_) {
     // BlinkGenPropertyTrees just needs a transient PaintController to collect
     // the foreign layers which doesn't need caching. It also shouldn't affect
@@ -4017,8 +3990,7 @@ void LocalFrameView::RenderThrottlingStatusChanged() {
   DCHECK(!frame_->GetDocument() || !frame_->GetDocument()->InStyleRecalc());
 
   // We may record more/less foreign layers under the frame.
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    GraphicsLayersDidChange();
+  GraphicsLayersDidChange();
 
   if (!CanThrottleRendering())
     InvalidateForThrottlingChange();
@@ -4361,21 +4333,10 @@ MainThreadScrollingReasons LocalFrameView::GetMainThreadScrollingReasons()
 
 String LocalFrameView::MainThreadScrollingReasonsAsText() {
   MainThreadScrollingReasons reasons = 0;
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
-    const auto* properties = GetLayoutView()->FirstFragment().PaintProperties();
-    if (properties && properties->Scroll())
-      reasons = properties->Scroll()->GetMainThreadScrollingReasons();
-  } else {
-    DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kCompositingClean);
-    reasons = main_thread_scrolling_reasons_;
-    if (auto* layer_for_scrolling = LayoutViewport()->LayerForScrolling()) {
-      if (cc::Layer* cc_layer = layer_for_scrolling->CcLayer())
-        reasons = cc_layer->GetMainThreadScrollingReasons();
-    }
-  }
-
+  DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
+  const auto* properties = GetLayoutView()->FirstFragment().PaintProperties();
+  if (properties && properties->Scroll())
+    reasons = properties->Scroll()->GetMainThreadScrollingReasons();
   return String(cc::MainThreadScrollingReason::AsText(reasons).c_str());
 }
 

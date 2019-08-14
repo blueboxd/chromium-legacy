@@ -60,6 +60,7 @@ struct AX_EXPORT AXTreeData {
   // (selection end). If the offset could correspond to a position on two
   // different lines, sel_upstream_affinity means the cursor is on the first
   // line, otherwise it's on the second line.
+  // Most use cases will want to use ui::OwnerTree::GetUnignoredSelection.
   bool sel_is_backward = false;
   int32_t sel_anchor_object_id = -1;
   int32_t sel_anchor_offset = -1;

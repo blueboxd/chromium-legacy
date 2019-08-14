@@ -55,16 +55,6 @@ void ExpectCrostiniResult(base::OnceClosure closure,
   std::move(closure).Run();
 }
 
-void ExpectCrostiniExportResult(base::OnceClosure closure,
-                                CrostiniResult expected_result,
-                                uint64_t expected_container_size,
-                                CrostiniResult result,
-                                uint64_t container_size) {
-  EXPECT_EQ(expected_result, result);
-  EXPECT_EQ(expected_container_size, container_size);
-  std::move(closure).Run();
-}
-
 }  // namespace
 
 class CrostiniManagerTest : public testing::Test {
@@ -1113,8 +1103,8 @@ TEST_F(CrostiniManagerEnterpriseReportingTest,
 TEST_F(CrostiniManagerTest, ExportContainerSuccess) {
   crostini_manager()->ExportLxdContainer(
       kVmName, kContainerName, base::FilePath("export_path"),
-      base::BindOnce(&ExpectCrostiniExportResult, run_loop()->QuitClosure(),
-                     CrostiniResult::SUCCESS, 123));
+      base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
+                     CrostiniResult::SUCCESS));
 
   // Send signals, PACK, DOWNLOAD, DONE.
   vm_tools::cicerone::ExportLxdContainerProgressSignal signal;
@@ -1132,7 +1122,6 @@ TEST_F(CrostiniManagerTest, ExportContainerSuccess) {
 
   signal.set_status(
       vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_DONE);
-  signal.set_input_bytes_streamed(123);
   fake_cicerone_client_->NotifyExportLxdContainerProgress(signal);
 
   run_loop()->Run();
@@ -1142,14 +1131,14 @@ TEST_F(CrostiniManagerTest, ExportContainerFailInProgress) {
   // 1st call succeeds.
   crostini_manager()->ExportLxdContainer(
       kVmName, kContainerName, base::FilePath("export_path"),
-      base::BindOnce(&ExpectCrostiniExportResult, run_loop()->QuitClosure(),
-                     CrostiniResult::SUCCESS, 123));
+      base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
+                     CrostiniResult::SUCCESS));
 
   // 2nd call fails since 1st call is in progress.
   crostini_manager()->ExportLxdContainer(
       kVmName, kContainerName, base::FilePath("export_path"),
-      base::BindOnce(&ExpectCrostiniExportResult, base::DoNothing::Once(),
-                     CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED, 0));
+      base::BindOnce(&ExpectCrostiniResult, base::DoNothing::Once(),
+                     CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED));
 
   // Send signal to indicate 1st call is done.
   vm_tools::cicerone::ExportLxdContainerProgressSignal signal;
@@ -1158,7 +1147,6 @@ TEST_F(CrostiniManagerTest, ExportContainerFailInProgress) {
   signal.set_container_name(kContainerName);
   signal.set_status(
       vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_DONE);
-  signal.set_input_bytes_streamed(123);
   fake_cicerone_client_->NotifyExportLxdContainerProgress(signal);
 
   run_loop()->Run();
@@ -1167,8 +1155,8 @@ TEST_F(CrostiniManagerTest, ExportContainerFailInProgress) {
 TEST_F(CrostiniManagerTest, ExportContainerFailFromSignal) {
   crostini_manager()->ExportLxdContainer(
       kVmName, kContainerName, base::FilePath("export_path"),
-      base::BindOnce(&ExpectCrostiniExportResult, run_loop()->QuitClosure(),
-                     CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED, 123));
+      base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
+                     CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED));
 
   // Send signal with FAILED.
   vm_tools::cicerone::ExportLxdContainerProgressSignal signal;
@@ -1177,7 +1165,6 @@ TEST_F(CrostiniManagerTest, ExportContainerFailFromSignal) {
   signal.set_container_name(kContainerName);
   signal.set_status(
       vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_FAILED);
-  signal.set_input_bytes_streamed(123);
   fake_cicerone_client_->NotifyExportLxdContainerProgress(signal);
 
   run_loop()->Run();
@@ -1187,9 +1174,9 @@ TEST_F(CrostiniManagerTest, ExportContainerFailOnVmStop) {
   crostini_manager()->AddRunningVmForTesting(kVmName);
   crostini_manager()->ExportLxdContainer(
       kVmName, kContainerName, base::FilePath("export_path"),
-      base::BindOnce(&ExpectCrostiniExportResult, run_loop()->QuitClosure(),
-                     CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED,
-                     0));
+      base::BindOnce(
+          &ExpectCrostiniResult, run_loop()->QuitClosure(),
+          CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED));
   crostini_manager()->StopVm(kVmName, base::DoNothing());
   run_loop()->Run();
 }

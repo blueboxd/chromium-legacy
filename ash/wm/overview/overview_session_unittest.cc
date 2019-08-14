@@ -1086,29 +1086,6 @@ TEST_F(OverviewSessionTest, LastWindowDestroyed) {
   EXPECT_FALSE(InOverviewSession());
 }
 
-// Regression test for crash when closing the last overview mode window under
-// SingleProcessMash. https://crbug.com/922293.
-TEST_F(OverviewSessionTest, DontRestoreFocusToUnparentedWindow) {
-  const gfx::Rect bounds(400, 400);
-  std::unique_ptr<aura::Window> parent = CreateTestWindow(bounds);
-  std::unique_ptr<aura::Window> child = CreateChildWindow(parent.get(), bounds);
-
-  // Enter overview with a focused child window. This simulates an app window
-  // web contents RenderWidgetHostViewAura.
-  child->Focus();
-  ToggleOverview();
-
-  // Simulate the asynchronous window teardown for used by client widgets.
-  // Hierarchy changes are processed first, so the child is removed from its
-  // parent, then the windows are destroyed.
-  parent->RemoveChild(child.get());
-  parent.reset();
-  child.reset();
-
-  // Overview mode exits without crashing.
-  EXPECT_FALSE(InOverviewSession());
-}
-
 // Tests that entering overview mode restores a window to its original
 // target location.
 TEST_F(OverviewSessionTest, QuickReentryRestoresInitialTransform) {
@@ -2821,9 +2798,23 @@ class OverviewSessionNewLayoutTest : public OverviewSessionTest {
     EnterTabletMode();
   }
 
+  SplitViewController* split_view_controller() {
+    return Shell::Get()->split_view_controller();
+  }
+
   void GenerateScrollSequence(const gfx::Point& start, const gfx::Point& end) {
     GetEventGenerator()->GestureScrollSequence(
         start, end, base::TimeDelta::FromMilliseconds(10), 10);
+  }
+
+ protected:
+  void DispatchLongPress(OverviewItem* item) {
+    ui::TouchEvent long_press(
+        ui::ET_GESTURE_LONG_PRESS,
+        gfx::ToRoundedPoint(item->target_bounds().CenterPoint()),
+        base::TimeTicks::Now(),
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH));
+    GetEventGenerator()->Dispatch(&long_press);
   }
 
  private:
@@ -2986,10 +2977,9 @@ TEST_F(OverviewSessionNewLayoutTest, StackingOrderSplitviewWindow) {
 
   // Snap |window1| to the left and exit overview. |window2| should have higher
   // z-order now, since it is the MRU window.
-  auto* split_view_controller = Shell::Get()->split_view_controller();
-  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   ToggleOverview();
-  ASSERT_EQ(SplitViewState::kBothSnapped, split_view_controller->state());
+  ASSERT_EQ(SplitViewState::kBothSnapped, split_view_controller()->state());
   ASSERT_GT(IndexOf(window2.get(), window2->parent()),
             IndexOf(window1.get(), window1->parent()));
 
@@ -3004,6 +2994,103 @@ TEST_F(OverviewSessionNewLayoutTest, StackingOrderSplitviewWindow) {
   ToggleOverview();
   EXPECT_GT(IndexOf(window2.get(), window2->parent()),
             IndexOf(window1.get(), window1->parent()));
+}
+
+// Test that scrolling occurs if started on top of a window using the window's
+// center-point as a start.
+TEST_F(OverviewSessionNewLayoutTest, CheckScrollingOnWindowItems) {
+  std::vector<std::unique_ptr<aura::Window>> windows(8);
+  for (int i = 7; i >= 0; --i)
+    windows[i] = CreateTestWindow();
+
+  ToggleOverview();
+  ASSERT_TRUE(InOverviewSession());
+
+  OverviewItem* leftmost_window =
+      GetOverviewItemInGridWithWindow(0, windows[0].get());
+  const gfx::Point topleft_window_center =
+      gfx::ToRoundedPoint(leftmost_window->target_bounds().CenterPoint());
+  const gfx::RectF left_bounds = leftmost_window->target_bounds();
+
+  GenerateScrollSequence(topleft_window_center, gfx::Point(-500, 50));
+  EXPECT_LT(leftmost_window->target_bounds(), left_bounds);
+}
+
+// Test that tapping a window in overview closes overview mode.
+TEST_F(OverviewSessionNewLayoutTest, CheckWindowActivateOnTap) {
+  base::UserActionTester user_action_tester;
+  std::vector<std::unique_ptr<aura::Window>> windows(8);
+  for (int i = 7; i >= 0; --i)
+    windows[i] = CreateTestWindow();
+  wm::ActivateWindow(windows[1].get());
+
+  ToggleOverview();
+  ASSERT_TRUE(InOverviewSession());
+
+  // Tap on |windows|1|| to exit overview.
+  GetEventGenerator()->GestureTapAt(
+      GetTransformedTargetBounds(windows[1].get()).CenterPoint());
+  EXPECT_EQ(
+      0, user_action_tester.GetActionCount(kActiveWindowChangedFromOverview));
+
+  // |windows|1|| remains active. Click on it to exit overview.
+  ASSERT_EQ(windows[1].get(), window_util::GetFocusedWindow());
+  ToggleOverview();
+  ClickWindow(windows[1].get());
+  EXPECT_EQ(
+      0, user_action_tester.GetActionCount(kActiveWindowChangedFromOverview));
+}
+
+// Tests that windows snap through long press and drag to left or right side of
+// the screen.
+TEST_F(OverviewSessionNewLayoutTest, DragOverviewWindowToSnap) {
+  const gfx::Rect bounds(400, 400);
+  std::unique_ptr<aura::Window> window1(CreateTestWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateTestWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateTestWindow(bounds));
+
+  ToggleOverview();
+  ASSERT_TRUE(overview_controller()->InOverviewSession());
+  ASSERT_FALSE(split_view_controller()->InSplitViewMode());
+
+  // Dispatches a long press event at the |overview_item1|'s current location to
+  // start dragging in SplitView. Drags |overview_item1| to the left border of
+  // the screen. SplitView should trigger and upon completing drag,
+  // |overview_item1| should snap to the left.
+  OverviewItem* overview_item1 =
+      GetOverviewItemInGridWithWindow(0, window1.get());
+  const gfx::PointF snap_left_location =
+      gfx::PointF(GetGridBounds().left_center());
+
+  DispatchLongPress(overview_item1);
+  overview_session()->Drag(
+      overview_item1,
+      gfx::PointF(overview_item1->target_bounds().left_center()));
+  overview_session()->CompleteDrag(overview_item1, snap_left_location);
+
+  ASSERT_TRUE(split_view_controller()->InSplitViewMode());
+  EXPECT_EQ(split_view_controller()->state(), SplitViewState::kLeftSnapped);
+  EXPECT_EQ(split_view_controller()->left_window(), window1.get());
+
+  // Dispatches a long press event at the |overview_item2|'s current location to
+  // start dragging in SplitView. Drags |overview_item2| to the right border of
+  // the screen. Upon completing drag, |overview_item2| should snap to the
+  // right.
+  OverviewItem* overview_item2 =
+      GetOverviewItemInGridWithWindow(0, window2.get());
+  const gfx::PointF snap_right_location =
+      gfx::PointF(GetGridBounds().right_center());
+
+  DispatchLongPress(overview_item2);
+  overview_session()->Drag(
+      overview_item2,
+      gfx::PointF(overview_item2->target_bounds().right_center()));
+  overview_session()->CompleteDrag(overview_item2, snap_right_location);
+
+  EXPECT_FALSE(InOverviewSession());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  EXPECT_EQ(split_view_controller()->state(), SplitViewState::kBothSnapped);
+  EXPECT_EQ(split_view_controller()->right_window(), window2.get());
 }
 
 // Test the split view and overview functionalities in tablet mode.
@@ -4368,6 +4455,29 @@ TEST_F(SplitViewOverviewSessionTest, NoCrashWhenPressTabKey) {
   EXPECT_TRUE(InOverviewSession());
 }
 
+// Tests closing a snapped window while in overview mode.
+TEST_F(SplitViewOverviewSessionTest, ClosingSplitViewWindow) {
+  const gfx::Rect bounds(400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  ToggleOverview();
+  // Drag |window1| selector item to snap to left.
+  OverviewItem* overview_item1 =
+      GetOverviewItemInGridWithWindow(0, window1.get());
+  DragWindowTo(overview_item1, gfx::PointF(0, 0));
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+
+  // Now close the snapped |window1|. We should remain in overview mode and the
+  // overview focus window should regain focus.
+  window1.reset();
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+  EXPECT_EQ(overview_session()->GetOverviewFocusWindow(),
+            window_util::GetFocusedWindow());
+}
+
 // Test the split view and overview functionalities in clamshell mode. Split
 // view is only active when overview is active in clamshell mode.
 class SplitViewOverviewSessionInClamshellTest
@@ -4489,22 +4599,30 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
             WindowStateType::kLeftSnapped);
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  // End overview, test that we'll not auto-snap a window to the right side of
+  // the screen.
+  EXPECT_EQ(WindowState::Get(window4.get())->GetStateType(),
+            WindowStateType::kDefault);
   ToggleOverview();
   EXPECT_EQ(WindowState::Get(window4.get())->GetStateType(),
-            WindowStateType::kRightSnapped);
+            WindowStateType::kDefault);
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
   // 5. Test if one window is snapped, the other window are showing in overview,
-  // activating an new window will open in splitview, which ends splitview and
-  // overview.
+  // activating an new window will not auto-snap the new window. Overview and
+  // splitview should be ended.
   ToggleOverview();
   overview_item1 = GetOverviewItemInGridWithWindow(grid_index, window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   std::unique_ptr<aura::Window> window5(CreateWindow(bounds));
+  EXPECT_EQ(WindowState::Get(window5.get())->GetStateType(),
+            WindowStateType::kDefault);
   wm::ActivateWindow(window5.get());
+  EXPECT_EQ(WindowState::Get(window5.get())->GetStateType(),
+            WindowStateType::kDefault);
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
@@ -4523,6 +4641,22 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   // Overview bounds will adjust from snapped bounds to fullscreen bounds.
   EXPECT_EQ(GetGridBounds(), overview_bounds);
+
+  // 7. Test if split view mode is active, open the app list will not end
+  // overview and splitview.
+  overview_item3 = GetOverviewItemInGridWithWindow(grid_index, window3.get());
+  DragWindowTo(overview_item3, gfx::PointF(0, 0));
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  // Open app list.
+  AppListControllerImpl* app_list_controller =
+      Shell::Get()->app_list_controller();
+  app_list_controller->ToggleAppList(
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window3.get()).id(),
+      app_list::AppListShowSource::kSearchKey, base::TimeTicks());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 }
 
 // Test that if app list is visible when overview is open, overview should

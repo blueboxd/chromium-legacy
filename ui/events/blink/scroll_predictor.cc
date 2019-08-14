@@ -8,7 +8,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/trace_event/trace_event.h"
-#include "ui/events/blink/prediction/filter_factory.h"
 #include "ui/events/blink/prediction/predictor_factory.h"
 
 using blink::WebInputEvent;
@@ -34,8 +33,12 @@ ScrollPredictor::ScrollPredictor() {
         features::kFilteringScrollPrediction, "filter");
 
     input_prediction::FilterType filter_type =
-        ui::FilterFactory::GetFilterTypeFromName(filter_name);
-    filter_ = ui::FilterFactory::CreateFilter(filter_type);
+        filter_factory_->GetFilterTypeFromName(filter_name);
+
+    filter_factory_ = std::make_unique<FilterFactory>(
+        features::kFilteringScrollPrediction, predictor_type, filter_type);
+
+    filter_ = filter_factory_->CreateFilter(filter_type, predictor_type);
   }
 }
 

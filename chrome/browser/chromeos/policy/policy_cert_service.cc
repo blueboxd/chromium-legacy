@@ -17,6 +17,8 @@
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/network/onc/certificate_scope.h"
+#include "chromeos/network/policy_certificate_provider.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -51,7 +53,8 @@ PolicyCertService::PolicyCertService(
 
   policy_certificate_provider_->AddPolicyProvidedCertsObserver(this);
   profile_wide_all_server_and_authority_certs_ =
-      policy_certificate_provider_->GetAllServerAndAuthorityCertificates();
+      policy_certificate_provider_->GetAllServerAndAuthorityCertificates(
+          chromeos::onc::CertificateScope::Default());
   profile_wide_trust_anchors_ = GetAllowedProfileWideTrustAnchors();
 }
 
@@ -65,7 +68,8 @@ PolicyCertService::PolicyCertService(const std::string& user_id,
 
 void PolicyCertService::OnPolicyProvidedCertsChanged() {
   profile_wide_all_server_and_authority_certs_ =
-      policy_certificate_provider_->GetAllServerAndAuthorityCertificates();
+      policy_certificate_provider_->GetAllServerAndAuthorityCertificates(
+          chromeos::onc::CertificateScope::Default());
   profile_wide_trust_anchors_ = GetAllowedProfileWideTrustAnchors();
 
   // Make all policy-provided server and authority certificates available to NSS
@@ -109,7 +113,8 @@ net::CertificateList PolicyCertService::GetAllowedProfileWideTrustAnchors() {
     return {};
 
   net::CertificateList trust_anchors =
-      policy_certificate_provider_->GetWebTrustedCertificates();
+      policy_certificate_provider_->GetWebTrustedCertificates(
+          chromeos::onc::CertificateScope::Default());
 
   // Do not use certificates installed via ONC policy if the current session has
   // multiple profiles. This is important to make sure that any possibly tainted

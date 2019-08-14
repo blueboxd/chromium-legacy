@@ -225,16 +225,15 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   // We have to check for this in advance in order to avoid waiting on a
   // WAIT-FOR directive in the source file that's looking for something not
   // supported on the current platform.
-  base::Optional<base::FilePath> expected_file =
-      test_helper.GetExpectationFilePath(file_path);
-  if (!expected_file) {
+  base::FilePath expected_file = test_helper.GetExpectationFilePath(file_path);
+  if (expected_file.empty()) {
     LOG(INFO) << "No expectation file present, ignoring test on this "
                  "platform.";
     return;
   }
 
   base::Optional<std::vector<std::string>> expected_lines =
-      test_helper.LoadExpectationFile(*expected_file);
+      test_helper.LoadExpectationFile(expected_file);
   if (!expected_lines) {
     LOG(INFO) << "Skipping this test on this platform.";
     return;
@@ -377,7 +376,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
 
   // Validate against the expectation file.
   bool matches_expectation = test_helper.ValidateAgainstExpectation(
-      file_path, *expected_file, actual_lines, *expected_lines);
+      file_path, expected_file, actual_lines, *expected_lines);
   EXPECT_TRUE(matches_expectation);
   if (!matches_expectation)
     OnDiffFailed();

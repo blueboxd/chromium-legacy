@@ -70,6 +70,62 @@ struct BinderContextTraits<void> {
   }
 };
 
+template <typename ContextType>
+class GenericCallbackBinderWithContext {
+ public:
+  using Traits = BinderContextTraits<ContextType>;
+  using ContextValueType = typename Traits::ValueType;
+  using GenericBinderType = typename Traits::GenericBinderType;
+
+  GenericCallbackBinderWithContext(
+      GenericBinderType callback,
+      scoped_refptr<base::SequencedTaskRunner> task_runner)
+      : callback_(std::move(callback)), task_runner_(std::move(task_runner)) {}
+
+  ~GenericCallbackBinderWithContext() = default;
+
+  void BindInterface(ContextValueType context,
+                     mojo::ScopedMessagePipeHandle receiver_pipe) {
+    if (task_runner_) {
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &GenericCallbackBinderWithContext::RunCallbackWithContext,
+              callback_, std::move(context), std::move(receiver_pipe)));
+      return;
+    }
+    RunCallbackWithContext(callback_, std::move(context),
+                           std::move(receiver_pipe));
+  }
+
+  void BindInterface(mojo::ScopedMessagePipeHandle receiver_pipe) {
+    if (task_runner_) {
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&GenericCallbackBinderWithContext::RunCallback,
+                         callback_, std::move(receiver_pipe)));
+      return;
+    }
+    RunCallback(callback_, std::move(receiver_pipe));
+  }
+
+ private:
+  static void RunCallbackWithContext(const GenericBinderType& callback,
+                                     ContextValueType context,
+                                     mojo::ScopedMessagePipeHandle handle) {
+    callback.Run(std::move(context), std::move(handle));
+  }
+
+  static void RunCallback(const GenericBinderType& callback,
+                          mojo::ScopedMessagePipeHandle handle) {
+    callback.Run(std::move(handle));
+  }
+
+  const GenericBinderType callback_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  DISALLOW_COPY_AND_ASSIGN(GenericCallbackBinderWithContext);
+};
+
 }  // namespace internal
 }  // namespace service_manager
 

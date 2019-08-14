@@ -27,7 +27,7 @@ bool ClearBrowsingHistory() {
                           did_complete = true;
                         }];
   return base::test::ios::WaitUntilConditionOrTimeout(
-      base::test::ios::kWaitForUIElementTimeout, ^{
+      base::test::ios::kWaitForClearBrowsingDataTimeout, ^{
         return did_complete;
       });
 }

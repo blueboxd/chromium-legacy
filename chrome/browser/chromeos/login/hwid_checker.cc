@@ -11,6 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
+#include "build/branding_buildflags.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/system/statistics_provider.h"
@@ -147,7 +148,7 @@ bool IsHWIDCorrect(const std::string& hwid) {
 }
 
 bool IsMachineHWIDCorrect() {
-#if !defined(GOOGLE_CHROME_BUILD)
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return true;
 #endif
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();

@@ -47,9 +47,6 @@ const int kMenuEdgeEffectivePadding =
 const int kHitRegionPadding = 4;
 const int kHitRegionPaddingDense = 2;
 
-const SkColor kTrayPopupInkDropBaseColor = SK_ColorBLACK;
-const float kTrayPopupInkDropRippleOpacity = 0.06f;
-const float kTrayPopupInkDropHighlightOpacity = 0.08f;
 const int kTrayPopupInkDropInset = 4;
 const int kTrayPopupInkDropCornerRadius = 2;
 

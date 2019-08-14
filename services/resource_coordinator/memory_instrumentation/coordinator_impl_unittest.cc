@@ -11,7 +11,6 @@
 #include "base/test/trace_event_analyzer.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
-#include "base/time/time_override.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -148,13 +147,12 @@ class CoordinatorImplTest : public testing::Test {
         base::TimeDelta::FromMilliseconds(5));
   }
 
- private:
+ protected:
   std::unique_ptr<NiceMock<FakeCoordinatorImpl>> coordinator_;
-  // Do not start a ThreadPool as we are overriding global time with
-  // ScopedTimeClockOverrides and that might lead to races (as worker threads
-  // try to access base::TimeTicks::Now())
+
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY};
+      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 };
 
 class MockClientProcess : public mojom::ClientProcess {
@@ -321,16 +319,10 @@ TEST_F(CoordinatorImplTest, SeveralClients) {
 TEST_F(CoordinatorImplTest, QueuedRequest) {
   base::RunLoop run_loop;
 
-  // Override TimeTicks::Now with a timer that has extra_time added.
   // This variable to be static as the lambda below has to convert to a function
   // pointer rather than a functor.
-  static base::TimeDelta extra_time;
-  base::subtle::ScopedTimeClockOverrides time_override(
-      nullptr,
-      []() {
-        return base::subtle::TimeTicksNowIgnoringOverride() + extra_time;
-      },
-      nullptr);
+  static base::test::ScopedTaskEnvironment* task_environment = nullptr;
+  task_environment = &scoped_task_environment_;
 
   NiceMock<MockClientProcess> client_process_1(this, 1,
                                                mojom::ProcessType::BROWSER);
@@ -345,7 +337,8 @@ TEST_F(CoordinatorImplTest, QueuedRequest) {
              MockClientProcess::RequestChromeMemoryDumpCallback& callback) {
             // Skip the wall clock time-ticks forward to make sure start_time
             // is strictly increasing.
-            extra_time += base::TimeDelta::FromMilliseconds(10);
+            task_environment->FastForwardBy(
+                base::TimeDelta::FromMilliseconds(10));
             MemoryDumpArgs dump_args{MemoryDumpLevelOfDetail::DETAILED};
             auto pmd = std::make_unique<ProcessMemoryDump>(dump_args);
             std::move(callback).Run(true, args.dump_guid, std::move(pmd));
@@ -360,7 +353,7 @@ TEST_F(CoordinatorImplTest, QueuedRequest) {
   base::TimeTicks first_dump_time;
   EXPECT_CALL(callback1, OnCall(true, NotNull()))
       .WillOnce(Invoke([&](bool success, GlobalMemoryDump* global_dump) {
-        EXPECT_LT(before, global_dump->start_time);
+        EXPECT_LE(before, global_dump->start_time);
         first_dump_time = global_dump->start_time;
       }));
   EXPECT_CALL(callback2, OnCall(true, NotNull()))

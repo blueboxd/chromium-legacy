@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_test_utils.h"
@@ -272,13 +273,13 @@ TEST_F(TrialComparisonCertVerifierControllerTest,
   CreateController();
 
   EXPECT_FALSE(trial_controller().IsAllowed());
-#if defined(OFFICIAL_BUILD) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OFFICIAL_BUILD) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // In a real official build, expect the trial config to be updated.
   EXPECT_CALL(mock_config_client(), OnTrialConfigUpdated(true)).Times(1);
 #endif
   safe_browsing::SetExtendedReportingPref(pref_service(), true);
 
-#if defined(OFFICIAL_BUILD) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OFFICIAL_BUILD) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // In a real official build, expect the trial to be allowed now.  (Don't
   // need to test sending reports here, since that'll be tested by
   // OfficialBuildTrialEnabled.)

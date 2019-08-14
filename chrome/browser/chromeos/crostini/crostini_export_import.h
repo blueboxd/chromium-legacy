@@ -164,8 +164,7 @@ class CrostiniExportImport : public KeyedService,
   void OnExportComplete(const base::Time& start,
                         const ContainerId& container_id,
                         CrostiniManager::CrostiniResultCallback callback,
-                        CrostiniResult result,
-                        uint64_t container_size);
+                        CrostiniResult result);
 
   void ImportAfterSharing(const ContainerId& container_id,
                           CrostiniManager::CrostiniResultCallback callback,

@@ -1535,8 +1535,7 @@ void WebViewImpl::EndUpdateLayers() {
     MainFrameImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
         LocalFrameUkmAggregator::kUpdateLayers,
         update_layers_start_time_.value(), base::TimeTicks::Now());
-    if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-      probe::LayerTreeDidChange(MainFrameImpl()->GetFrame());
+    probe::LayerTreeDidChange(MainFrameImpl()->GetFrame());
   }
   update_layers_start_time_.reset();
 }

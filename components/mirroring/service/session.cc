@@ -379,7 +379,7 @@ Session::Session(mojom::SessionParametersPtr session_params,
                  mojom::ResourceProviderPtr resource_provider,
                  mojom::CastMessageChannelPtr outbound_channel,
                  mojom::CastMessageChannelRequest inbound_channel,
-                 std::unique_ptr<viz::Gpu> gpu)
+                 scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : session_params_(*session_params),
       state_(MIRRORING),
       observer_(std::move(observer)),
@@ -388,12 +388,18 @@ Session::Session(mojom::SessionParametersPtr session_params,
                           std::move(inbound_channel),
                           base::BindRepeating(&Session::OnResponseParsingError,
                                               base::Unretained(this))),
-      gpu_(std::move(gpu)),
       gpu_channel_host_(nullptr) {
   DCHECK(resource_provider_);
   mirror_settings_.SetResolutionContraints(max_resolution.width(),
                                            max_resolution.height());
   resource_provider_->GetNetworkContext(mojo::MakeRequest(&network_context_));
+
+  if (session_params->type != mojom::SessionType::AUDIO_ONLY &&
+      io_task_runner) {
+    mojo::PendingRemote<viz::mojom::Gpu> remote_gpu;
+    resource_provider_->BindGpu(remote_gpu.InitWithNewPipeAndPassReceiver());
+    gpu_ = viz::Gpu::Create(std::move(remote_gpu), io_task_runner);
+  }
 
   network::mojom::URLLoaderFactoryParamsPtr params =
       network::mojom::URLLoaderFactoryParams::New();

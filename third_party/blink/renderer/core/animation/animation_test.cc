@@ -165,14 +165,8 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
 
   bool SimulateFrame(double time_ms) {
     last_frame_time = time_ms;
-    const PaintArtifactCompositor* paint_artifact_compositor = nullptr;
-    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-        RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-      paint_artifact_compositor = GetDocument()
-                                      .GetFrame()
-                                      ->View()
-                                      ->GetPaintArtifactCompositorForTesting();
-    }
+    const auto* paint_artifact_compositor =
+        GetDocument().GetFrame()->View()->GetPaintArtifactCompositor();
     GetDocument().GetAnimationClock().UpdateTime(
         base::TimeTicks() + base::TimeDelta::FromMillisecondsD(time_ms));
     GetDocument().GetPendingAnimations().Update(paint_artifact_compositor,

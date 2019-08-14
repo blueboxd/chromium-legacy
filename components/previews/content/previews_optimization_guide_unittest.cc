@@ -5,6 +5,7 @@
 #include "components/previews/content/previews_optimization_guide.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -120,11 +121,6 @@ std::unique_ptr<optimization_guide::proto::GetHintsResponse> BuildHintsResponse(
 // A mock class implementation of HintsFetcher for unittesting
 // previews_optimization_guide.
 class TestHintsFetcher : public optimization_guide::HintsFetcher {
-  using HintsFetchedCallback = base::OnceCallback<void(
-      base::Optional<
-          std::unique_ptr<optimization_guide::proto::GetHintsResponse>>)>;
-  using HintsFetcher::FetchOptimizationGuideServiceHints;
-
  public:
   TestHintsFetcher(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -135,7 +131,8 @@ class TestHintsFetcher : public optimization_guide::HintsFetcher {
 
   bool FetchOptimizationGuideServiceHints(
       const std::vector<std::string>& hosts,
-      HintsFetchedCallback hints_fetched_callback) override {
+      optimization_guide::HintsFetchedCallback hints_fetched_callback)
+      override {
     switch (fetch_state_) {
       case HintsFetcherEndState::kFetchFailed:
         std::move(hints_fetched_callback).Run(base::nullopt);

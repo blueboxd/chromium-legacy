@@ -38,6 +38,7 @@ namespace ui {
 struct AXActionData;
 struct AXNodeData;
 struct AXTreeData;
+class AXTree;
 class AXPlatformNode;
 
 // An object that wants to be accessible should derive from this class.
@@ -64,6 +65,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
 
   // Get the accessibility tree data for this node.
   virtual const AXTreeData& GetTreeData() const = 0;
+
+  // Get the unignored selection from the tree
+  virtual const AXTree::Selection GetUnignoredSelection() const = 0;
 
   // Creates a text position rooted at this object.
   virtual AXNodePosition::AXPositionInstance CreateTextPositionAt(

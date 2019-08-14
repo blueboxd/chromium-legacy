@@ -22,6 +22,7 @@ const NSTimeInterval kWaitForUIElementTimeout = 4.0;
 const NSTimeInterval kWaitForDownloadTimeout = 10.0;
 const NSTimeInterval kWaitForPageLoadTimeout = 10.0;
 const NSTimeInterval kWaitForActionTimeout = 10.0;
+const NSTimeInterval kWaitForClearBrowsingDataTimeout = 45.0;
 const NSTimeInterval kWaitForCookiesTimeout = 4.0;
 const NSTimeInterval kWaitForFileOperationTimeout = 2.0;
 

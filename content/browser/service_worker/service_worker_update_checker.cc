@@ -26,13 +26,17 @@ namespace content {
 
 namespace {
 
-base::Optional<net::HttpRequestHeaders> GetDefaultHeadersOnUI(
-    base::WeakPtr<ServiceWorkerProcessManager> process_manager) {
+void SetUpOnUI(
+    base::WeakPtr<ServiceWorkerProcessManager> process_manager,
+    base::OnceCallback<void(
+        net::HttpRequestHeaders,
+        ServiceWorkerUpdatedScriptLoader::BrowserContextGetter)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!process_manager) {
     // If no process manager is found, maybe it's being shut down.
-    // ServiceWorkerUpdateChecker is destroyed after posting this task.
-    return base::nullopt;
+    // ServiceWorkerUpdateChecker is going to be destroyed after this task, so
+    // just do nothing here.
+    return;
   }
 
   net::HttpRequestHeaders headers;
@@ -49,7 +53,20 @@ base::Optional<net::HttpRequestHeaders> GetDefaultHeadersOnUI(
       &headers, browser_context, /*should_update_existing_headers=*/false,
       renderer_preferences);
 
-  return headers;
+  ServiceWorkerUpdatedScriptLoader::BrowserContextGetter
+      browser_context_getter = base::BindRepeating(
+          [](base::WeakPtr<ServiceWorkerProcessManager> process_manager)
+              -> BrowserContext* {
+            DCHECK_CURRENTLY_ON(BrowserThread::UI);
+            if (process_manager)
+              return process_manager->browser_context();
+            return nullptr;
+          },
+          process_manager);
+
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(std::move(callback), std::move(headers),
+                                browser_context_getter));
 }
 
 }  // namespace
@@ -80,25 +97,19 @@ void ServiceWorkerUpdateChecker::Start(UpdateStatusCallback callback) {
   DCHECK(!scripts_to_compare_.empty());
   callback_ = std::move(callback);
 
-  // TODO(shimazu): Add UMA to capture the number of update.
-
-  base::PostTaskAndReplyWithResult(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&GetDefaultHeadersOnUI,
-                     context_->process_manager()->AsWeakPtr()),
-      base::BindOnce(&ServiceWorkerUpdateChecker::OnGetDefaultHeaders,
-                     weak_factory_.GetWeakPtr()));
+      base::BindOnce(&SetUpOnUI, context_->process_manager()->AsWeakPtr(),
+                     base::BindOnce(&ServiceWorkerUpdateChecker::DidSetUpOnUI,
+                                    weak_factory_.GetWeakPtr())));
 }
 
-void ServiceWorkerUpdateChecker::OnGetDefaultHeaders(
-    base::Optional<net::HttpRequestHeaders> header) {
-  // |header| is always valid because it could be base::nullopt when the process
-  // manager is destroyed, but it means that the ServiceWorkerContextCore is
-  // also destroyed. In that case, ServiceWorkerUpdateChecker is destroyed
-  // because it's owned by ServiceWorkerContextCore through
-  // ServiceWorkerJobCoordinator and ServiceWorkerRegisterJob.
-  DCHECK(header);
-  default_headers_ = std::move(header.value());
+void ServiceWorkerUpdateChecker::DidSetUpOnUI(
+    net::HttpRequestHeaders header,
+    ServiceWorkerUpdatedScriptLoader::BrowserContextGetter
+        browser_context_getter) {
+  default_headers_ = std::move(header);
+  browser_context_getter_ = std::move(browser_context_getter);
   CheckOneScript(main_script_url_, main_script_resource_id_);
 }
 
@@ -198,8 +209,8 @@ void ServiceWorkerUpdateChecker::CheckOneScript(const GURL& url,
   running_checker_ = std::make_unique<ServiceWorkerSingleScriptUpdateChecker>(
       url, is_main_script, main_script_url_, version_to_update_->scope(),
       force_bypass_cache_, update_via_cache_, time_since_last_check_,
-      default_headers_, loader_factory_, std::move(compare_reader),
-      std::move(copy_reader), std::move(writer),
+      default_headers_, browser_context_getter_, loader_factory_,
+      std::move(compare_reader), std::move(copy_reader), std::move(writer),
       base::BindOnce(&ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished,
                      weak_factory_.GetWeakPtr(), resource_id));
 }

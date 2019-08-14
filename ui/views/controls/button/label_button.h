@@ -134,13 +134,13 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
 
   // Returns the available area for the label and image. Subclasses can change
   // these bounds if they need room to do manual painting.
-  virtual gfx::Rect GetChildAreaBounds();
+  gfx::Rect GetChildAreaBounds();
 
   // Fills |params| with information about the button.
   virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
 
   // Resets colors from the NativeTheme, explicitly set colors are unchanged.
-  virtual void ResetColorsFromNativeTheme();
+  void ResetColorsFromNativeTheme();
 
   // Changes the visual styling to match changes in the default state.  Returns
   // the PropertyEffects triggered as a result.

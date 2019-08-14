@@ -228,6 +228,7 @@ struct SpdySessionDependencies {
   bool enable_quic;
   bool enable_server_push_cancellation;
   size_t session_max_recv_window_size;
+  int session_max_queued_capped_frames;
   spdy::SettingsMap http2_settings;
   SpdySession::TimeFunc time_func;
   bool enable_http2_alternative_service;

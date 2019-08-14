@@ -104,16 +104,6 @@ extern const int kMenuExtraMarginFromLeftEdge;
 // The visual padding to the left of icons in the system menu.
 extern const int kMenuEdgeEffectivePadding;
 
-// The base color used for all ink drops in the system menu.
-extern const SkColor kTrayPopupInkDropBaseColor;
-
-// The opacity of the ink drop ripples for all ink drops in the system menu.
-extern const float kTrayPopupInkDropRippleOpacity;
-
-// The opacity of the ink drop ripples for all ink highlights in the system
-// menu.
-extern const float kTrayPopupInkDropHighlightOpacity;
-
 // The inset applied to clickable surfaces in the system menu that do not have
 // the ink drop filling the entire bounds.
 extern const int kTrayPopupInkDropInset;
@@ -133,8 +123,6 @@ constexpr SkColor kUnifiedMenuButtonColorActive =
     SkColorSetRGB(0x25, 0x81, 0xdf);
 constexpr SkColor kUnifiedMenuButtonColorDisabled =
     SkColorSetA(kUnifiedMenuButtonColor, 0xa);
-constexpr SkColor kUnifiedFeaturePodHoverColor =
-    SkColorSetRGB(0xff, 0xff, 0xff);
 constexpr SkColor kUnifiedRecordingIconColor = gfx::kGoogleRed300;
 
 constexpr gfx::Insets kUnifiedMenuItemPadding(0, 16, 16, 16);

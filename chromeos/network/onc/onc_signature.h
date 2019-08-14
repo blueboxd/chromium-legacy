@@ -80,6 +80,8 @@ extern const OncValueSignature kWiFiSignature;
 COMPONENT_EXPORT(CHROMEOS_NETWORK)
 extern const OncValueSignature kCertificateSignature;
 COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kScopeSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
 extern const OncValueSignature kNetworkConfigurationSignature;
 COMPONENT_EXPORT(CHROMEOS_NETWORK)
 extern const OncValueSignature kGlobalNetworkConfigurationSignature;

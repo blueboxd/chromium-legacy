@@ -9,6 +9,7 @@
 
 #include "android_webview/common/js_java_interaction/interfaces.mojom.h"
 #include "base/auto_reset.h"
+#include "base/strings/string16.h"
 #include "gin/arguments.h"
 #include "gin/wrappable.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -27,8 +28,9 @@ namespace android_webview {
 class JsBinding : public gin::Wrappable<JsBinding> {
  public:
   static gin::WrapperInfo kWrapperInfo;
-  static std::unique_ptr<JsBinding> Install(content::RenderFrame* render_frame,
-                                            const std::string& js_object_name);
+  static std::unique_ptr<JsBinding> Install(
+      content::RenderFrame* render_frame,
+      const base::string16& js_object_name);
 
   ~JsBinding() final;
 

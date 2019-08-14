@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 
@@ -30,7 +31,7 @@ namespace content {
 
 // Class for handling all the IPC messages between the GPU process and
 // StreamTextureProxy.
-class StreamTextureHost : public IPC::Listener {
+class CONTENT_EXPORT StreamTextureHost : public IPC::Listener {
  public:
   explicit StreamTextureHost(scoped_refptr<gpu::GpuChannelHost> channel,
                              int32_t route_id);

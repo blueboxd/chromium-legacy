@@ -889,7 +889,7 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, GettersAndSetters) {
     ValuePair custom_badge_text2{"custom badge2", "'custom badge2'"};
 
     auto get_badge_text = [](ExtensionAction* action, int tab_id) {
-      return action->GetBadgeText(tab_id);
+      return action->GetExplicitlySetBadgeText(tab_id);
     };
 
     ActionTestHelper badge_text_helper(kApiName, "setBadgeText", "getBadgeText",

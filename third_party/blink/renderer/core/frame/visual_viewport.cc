@@ -547,18 +547,8 @@ bool VisualViewport::DidSetScaleOrLocation(float scale,
 
     // SVG runs with accelerated compositing disabled so no
     // ScrollingCoordinator.
-    if (ScrollingCoordinator* coordinator =
-            GetPage().GetScrollingCoordinator()) {
-      // In BGPT, scroll offsets and related properties are set directly on the
-      // property trees so all we need to do is update the scroll offset on the
-      // corresponding cc::Layer. Pre-BGPT we used ScrollLayerDidChange but
-      // since all we need this for is to update the cc::Layer's offset, we now
-      // use the more purpose-built UpdateCompositedScrollOffset, as in PLSA.
-      if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-        coordinator->ScrollableAreaScrollLayerDidChange(this);
-      else
-        coordinator->UpdateCompositedScrollOffset(this);
-    }
+    if (auto* coordinator = GetPage().GetScrollingCoordinator())
+      coordinator->UpdateCompositedScrollOffset(this);
 
     EnqueueScrollEvent();
 
@@ -593,34 +583,18 @@ void VisualViewport::CreateLayerTree() {
     return;
 
   DCHECK(!overlay_scrollbar_horizontal_ && !overlay_scrollbar_vertical_ &&
-         !overscroll_elasticity_layer_ && !page_scale_layer_ &&
-         !inner_viewport_container_layer_);
+         !page_scale_layer_ && !inner_viewport_container_layer_);
 
   needs_paint_property_update_ = true;
 
   // FIXME: The root transform layer should only be created on demand.
   root_transform_layer_ = std::make_unique<GraphicsLayer>(*this);
   inner_viewport_container_layer_ = std::make_unique<GraphicsLayer>(*this);
-  // TODO(crbug.com/836884) Should remove overscroll_elasticity_layer_ after
-  // BGPT landed.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    overscroll_elasticity_layer_ = std::make_unique<GraphicsLayer>(*this);
-    overscroll_elasticity_layer_->SetElementId(
-        GetCompositorOverscrollElasticityElementId());
-  }
   page_scale_layer_ = std::make_unique<GraphicsLayer>(*this);
   inner_viewport_scroll_layer_ = std::make_unique<GraphicsLayer>(*this);
 
   ScrollingCoordinator* coordinator = GetPage().GetScrollingCoordinator();
   DCHECK(coordinator);
-  // Only used by the cc property tree builder and is not needed when blink
-  // generates property trees.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    inner_viewport_scroll_layer_->SetIsContainerForFixedPositionLayers(true);
-  }
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    coordinator->UpdateUserInputScrollable(this);
 
   // Set masks to bounds so the compositor doesn't clobber a manually
   // set inner viewport container layer size.
@@ -636,17 +610,8 @@ void VisualViewport::CreateLayerTree() {
   page_scale_layer_->SetElementId(GetCompositorElementId());
 
   root_transform_layer_->AddChild(inner_viewport_container_layer_.get());
-  // TODO(crbug.com/836884) Should remove overscroll_elasticity_layer_ after
-  // BGPT landed.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    inner_viewport_container_layer_->AddChild(
-        overscroll_elasticity_layer_.get());
-    overscroll_elasticity_layer_->AddChild(page_scale_layer_.get());
-    page_scale_layer_->AddChild(inner_viewport_scroll_layer_.get());
-  } else {
-    inner_viewport_container_layer_->AddChild(page_scale_layer_.get());
-    page_scale_layer_->AddChild(inner_viewport_scroll_layer_.get());
-  }
+  inner_viewport_container_layer_->AddChild(page_scale_layer_.get());
+  page_scale_layer_->AddChild(inner_viewport_scroll_layer_.get());
 
   // Ensure this class is set as the scroll layer's ScrollableArea.
   coordinator->ScrollableAreaScrollLayerDidChange(this);
@@ -1206,8 +1171,6 @@ String VisualViewport::DebugName(const GraphicsLayer* graphics_layer) const {
   String name;
   if (graphics_layer == inner_viewport_container_layer_.get()) {
     name = "Inner Viewport Container Layer";
-  } else if (graphics_layer == overscroll_elasticity_layer_.get()) {
-    name = "Overscroll Elasticity Layer";
   } else if (graphics_layer == page_scale_layer_.get()) {
     name = "Page Scale Layer";
   } else if (graphics_layer == inner_viewport_scroll_layer_.get()) {
@@ -1247,7 +1210,6 @@ std::unique_ptr<TracedValue> VisualViewport::ViewportToTracedValue() const {
 void VisualViewport::DisposeImpl() {
   root_transform_layer_.reset();
   inner_viewport_container_layer_.reset();
-  overscroll_elasticity_layer_.reset();
   page_scale_layer_.reset();
   inner_viewport_scroll_layer_.reset();
   // scrollbar_layer_group_* are referenced from overlay_scrollbar_*, thus

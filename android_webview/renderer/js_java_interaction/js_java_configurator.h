@@ -5,10 +5,8 @@
 #ifndef ANDROID_WEBVIEW_RENDERER_JS_JAVA_INTERACTION_JS_JAVA_CONFIGURATOR_H_
 #define ANDROID_WEBVIEW_RENDERER_JS_JAVA_INTERACTION_JS_JAVA_CONFIGURATOR_H_
 
-#include <string>
-#include <vector>
-
 #include "android_webview/common/js_java_interaction/interfaces.mojom.h"
+#include "base/strings/string16.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "net/proxy_resolution/proxy_bypass_rules.h"
@@ -30,7 +28,7 @@ class JsJavaConfigurator : public mojom::JsJavaConfigurator,
   // mojom::Configurator implementation
   void SetJsApiService(
       bool inject_js_object,
-      const std::string& js_object_name,
+      const base::string16& js_object_name,
       const net::ProxyBypassRules& allowed_origin_rules) override;
 
   // RenderFrameObserver implementation
@@ -45,7 +43,7 @@ class JsJavaConfigurator : public mojom::JsJavaConfigurator,
   bool IsOriginMatch();
 
   bool need_to_inject_js_object_ = false;
-  std::string js_object_name_;
+  base::string16 js_object_name_;
   // We use ProxyBypassRules because it has the functionality that suitable
   // here, but it is not for proxy bypass.
   net::ProxyBypassRules js_object_allowed_origin_rules_;

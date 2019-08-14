@@ -21,6 +21,7 @@
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/controls/label.h"
 
 namespace ash {
 
@@ -202,6 +203,14 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     return media_controls_view_->session_artwork_;
   }
 
+  views::Label* title_label() const {
+    return media_controls_view_->title_label_;
+  }
+
+  views::Label* artist_label() const {
+    return media_controls_view_->artist_label_;
+  }
+
   media_message_center::MediaControlsProgressView* progress_view() const {
     return media_controls_view_->progress_;
   }
@@ -237,18 +246,26 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
 };
 
 TEST_F(LockScreenMediaControlsViewTest, DoNotUpdateMetadataBetweenSessions) {
-  // Set app name for current session
+  // Set metadata for current session
   media_session::MediaMetadata metadata;
   metadata.source_title = kTestAppName;
+  metadata.title = base::ASCIIToUTF16("title");
+  metadata.artist = base::ASCIIToUTF16("artist");
+
   media_controls_view_->MediaSessionMetadataChanged(metadata);
 
   // Simulate new media session starting.
   metadata.source_title = base::ASCIIToUTF16("AppName2");
+  metadata.title = base::ASCIIToUTF16("title2");
+  metadata.artist = base::ASCIIToUTF16("artist2");
+
   SimulateMediaSessionChanged(
       media_session::mojom::MediaPlaybackState::kPlaying);
   media_controls_view_->MediaSessionMetadataChanged(metadata);
 
   EXPECT_EQ(kTestAppName, GetAppName());
+  EXPECT_EQ(base::ASCIIToUTF16("title"), title_label()->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("artist"), artist_label()->GetText());
 }
 
 TEST_F(LockScreenMediaControlsViewTest, DoNotUpdateArtworkBetweenSessions) {
@@ -533,7 +550,7 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateAppIcon) {
   EXPECT_EQ(kAppIconSize, icon_view()->GetImage().height());
 }
 
-TEST_F(LockScreenMediaControlsViewTest, UpdateAppName) {
+TEST_F(LockScreenMediaControlsViewTest, UpdateMetadata) {
   // Verify that the app name is initialized to the default.
   EXPECT_EQ(
       message_center::MessageCenter::Get()->GetSystemNotificationAppName(),
@@ -542,16 +559,21 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateAppName) {
   media_session::MediaMetadata metadata;
   media_controls_view_->MediaSessionMetadataChanged(metadata);
 
-  // Verify that default name is used if no name is provided.
+  // Verify that default app name is used if no name is provided.
   EXPECT_EQ(
       message_center::MessageCenter::Get()->GetSystemNotificationAppName(),
       GetAppName());
 
   metadata.source_title = kTestAppName;
+  metadata.title = base::ASCIIToUTF16("title");
+  metadata.artist = base::ASCIIToUTF16("artist");
+
   media_controls_view_->MediaSessionMetadataChanged(metadata);
 
-  // Verify that the provided app name is used.
+  // Verify that the provided data is used.
   EXPECT_EQ(kTestAppName, GetAppName());
+  EXPECT_EQ(metadata.title, title_label()->GetText());
+  EXPECT_EQ(metadata.artist, artist_label()->GetText());
 }
 
 TEST_F(LockScreenMediaControlsViewTest, UpdateImagesConvertColors) {

@@ -274,7 +274,8 @@ public class StripLayoutTab implements VirtualView {
         int tint = mIncognito ? R.color.compositor_background_tab_bg_incognito
                               : R.color.compositor_background_tab_bg;
         if (foreground) {
-            tint = mIncognito ? R.color.modern_grey_800 : R.color.default_bg_color_elev_3;
+            tint = mIncognito ? R.color.default_bg_color_dark_elev_3
+                              : R.color.default_bg_color_elev_3;
         }
 
         return mContext.getResources().getColor(tint);
@@ -288,7 +289,8 @@ public class StripLayoutTab implements VirtualView {
         int tint = mIncognito ? R.color.compositor_background_tab_outline_incognito
                               : R.color.compositor_background_tab_outline;
         if (foreground) {
-            tint = mIncognito ? R.color.modern_grey_800 : R.color.default_bg_color_elev_3;
+            tint = mIncognito ? R.color.default_bg_color_dark_elev_3
+                              : R.color.default_bg_color_elev_3;
         }
 
         return mContext.getResources().getColor(tint);

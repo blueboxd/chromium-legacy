@@ -39,6 +39,9 @@ constexpr uint8_t kU2fMockResponseMessage[] = {
     0x5f, 0x44, 0x41, 0x54, 0x41, 0x90, 0x00,
 };
 
+// HID_WINK(0x08), followed by payload length(0).
+constexpr uint8_t kU2fWinkResponseMessage[] = {0x08, 0x00};
+
 // APDU encoded success response with data "MOCK_DATA" followed by a SW_NO_ERROR
 // APDU response code(9000).
 constexpr uint8_t kU2fMockResponseData[] = {0x4d, 0x4f, 0x43, 0x4b, 0x5f, 0x44,
@@ -70,10 +73,12 @@ constexpr uint8_t kMockCancelResponse[] = {
 // Returns HID_INIT request to send to device with mock connection.
 std::vector<uint8_t> CreateMockInitResponse(
     base::span<const uint8_t> nonce,
-    base::span<const uint8_t> channel_id) {
+    base::span<const uint8_t> channel_id,
+    base::span<const uint8_t> payload = base::span<const uint8_t>()) {
   auto init_response = fido_parsing_utils::Materialize(kInitResponsePrefix);
   fido_parsing_utils::Append(&init_response, nonce);
   fido_parsing_utils::Append(&init_response, channel_id);
+  fido_parsing_utils::Append(&init_response, payload);
   init_response.resize(64);
   return init_response;
 }
@@ -222,10 +227,12 @@ TEST_F(FidoHidDeviceTest, TestDeviceError) {
 
   // Add pending transactions manually and ensure they are processed.
   TestDeviceCallbackReceiver receiver_1;
-  device->pending_transactions_.emplace_back(GetMockDeviceRequest(),
+  device->pending_transactions_.emplace_back(FidoHidDeviceCommand::kMsg,
+                                             GetMockDeviceRequest(),
                                              receiver_1.callback(), 0);
   TestDeviceCallbackReceiver receiver_2;
-  device->pending_transactions_.emplace_back(GetMockDeviceRequest(),
+  device->pending_transactions_.emplace_back(FidoHidDeviceCommand::kMsg,
+                                             GetMockDeviceRequest(),
                                              receiver_2.callback(), 0);
   TestDeviceCallbackReceiver receiver_3;
   device->DeviceTransact(GetMockDeviceRequest(), receiver_3.callback());
@@ -724,6 +731,106 @@ TEST_F(FidoHidDeviceTest, TestDeviceMessageError) {
   device->DiscoverSupportedProtocolAndDeviceInfo(get_info_callback.callback());
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(get_info_callback.was_called());
+}
+
+// Test that the wink command does not get sent if the device does not support
+// it.
+TEST_F(FidoHidDeviceTest, TestWinkNotSupported) {
+  constexpr uint8_t kChannelId[] = {0x01, 0x02, 0x03, 0x04};
+  constexpr uint8_t kWinkNotSupportedPayload[] = {0x00, 0x00, 0x00, 0x00, 0x00};
+
+  auto hid_device = TestHidDevice();
+
+  // Replace device HID connection with custom client connection bound to mock
+  // server-side mojo connection.
+  device::mojom::HidConnectionPtr connection_client;
+  MockFidoHidConnection mock_connection(
+      hid_device.Clone(), mojo::MakeRequest(&connection_client),
+      fido_parsing_utils::Materialize(kChannelId));
+
+  // Initial write for establishing a channel ID.
+  mock_connection.ExpectWriteHidInit();
+
+  EXPECT_CALL(mock_connection, ReadPtr(_))
+      // Respond to HID_INIT indicating the device does not support winking.
+      .WillOnce(Invoke([&](device::mojom::HidConnection::ReadCallback* cb) {
+        std::move(*cb).Run(
+            true, 0,
+            CreateMockInitResponse(mock_connection.nonce(),
+                                   mock_connection.connection_channel_id(),
+                                   kWinkNotSupportedPayload));
+      }));
+
+  // Add device and set mock connection to fake hid manager.
+  fake_hid_manager_->AddDeviceAndSetConnection(std::move(hid_device),
+                                               std::move(connection_client));
+  FidoDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
+  hid_manager_->GetDevices(receiver.callback());
+  receiver.WaitForCallback();
+
+  std::vector<std::unique_ptr<FidoHidDevice>> u2f_devices =
+      receiver.TakeReturnedDevicesFiltered();
+  ASSERT_EQ(1u, u2f_devices.size());
+  auto& device = u2f_devices.front();
+
+  device::test::TestCallbackReceiver<> callback_receiver;
+  device->TryWink(callback_receiver.callback());
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(callback_receiver.was_called());
+}
+
+// Test that the wink command is sent to a device that supports it.
+TEST_F(FidoHidDeviceTest, TestSuccessfulWink) {
+  constexpr uint8_t kChannelId[] = {0x01, 0x02, 0x03, 0x04};
+  constexpr uint8_t kWinkSupportedPayload[] = {0x00, 0x00, 0x00, 0x00, 0x01};
+
+  auto hid_device = TestHidDevice();
+
+  // Replace device HID connection with custom client connection bound to mock
+  // server-side mojo connection.
+  device::mojom::HidConnectionPtr connection_client;
+  MockFidoHidConnection mock_connection(
+      hid_device.Clone(), mojo::MakeRequest(&connection_client),
+      fido_parsing_utils::Materialize(kChannelId));
+
+  // Initial write for establishing a channel ID.
+  mock_connection.ExpectWriteHidInit();
+
+  mock_connection.ExpectHidWriteWithCommand(FidoHidDeviceCommand::kWink);
+
+  EXPECT_CALL(mock_connection, ReadPtr(_))
+      // Respond to HID_INIT indicating the device supports winking.
+      .WillOnce(Invoke([&](device::mojom::HidConnection::ReadCallback* cb) {
+        std::move(*cb).Run(
+            true, 0,
+            CreateMockInitResponse(mock_connection.nonce(),
+                                   mock_connection.connection_channel_id(),
+                                   kWinkSupportedPayload));
+      }))
+      // Response to HID_WINK.
+      .WillOnce(Invoke([&](device::mojom::HidConnection::ReadCallback* cb) {
+        std::move(*cb).Run(true, 0,
+                           CreateMockResponseWithChannelId(
+                               mock_connection.connection_channel_id(),
+                               kU2fWinkResponseMessage));
+      }));
+
+  // Add device and set mock connection to fake hid manager.
+  fake_hid_manager_->AddDeviceAndSetConnection(std::move(hid_device),
+                                               std::move(connection_client));
+  FidoDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
+  hid_manager_->GetDevices(receiver.callback());
+  receiver.WaitForCallback();
+
+  std::vector<std::unique_ptr<FidoHidDevice>> u2f_devices =
+      receiver.TakeReturnedDevicesFiltered();
+  ASSERT_EQ(1u, u2f_devices.size());
+  auto& device = u2f_devices.front();
+
+  device::test::TestCallbackReceiver<> callback_receiver;
+  device->TryWink(callback_receiver.callback());
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(callback_receiver.was_called());
 }
 
 }  // namespace device

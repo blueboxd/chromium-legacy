@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "crypto/symmetric_key.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "url/gurl.h"
 

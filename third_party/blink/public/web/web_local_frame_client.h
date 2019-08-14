@@ -69,6 +69,7 @@
 #include "third_party/blink/public/web/web_history_commit_type.h"
 #include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_icon_url.h"
+#include "third_party/blink/public/web/web_media_inspector.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
@@ -145,6 +146,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   // WebContentDecryptionModule* may be null if one has not yet been set.
   virtual WebMediaPlayer* CreateMediaPlayer(const WebMediaPlayerSource&,
                                             WebMediaPlayerClient*,
+                                            blink::MediaInspectorContext*,
                                             WebMediaPlayerEncryptedMediaClient*,
                                             WebContentDecryptionModule*,
                                             const WebString& sink_id,

@@ -1028,7 +1028,9 @@ bool BrowserAccessibility::HasAction(ax::mojom::Action action_enum) const {
 }
 
 bool BrowserAccessibility::HasVisibleCaretOrSelection() const {
-  int32_t focus_id = manager()->GetTreeData().sel_focus_object_id;
+  ui::AXTree::Selection unignored_selection =
+      manager()->ax_tree()->GetUnignoredSelection();
+  int32_t focus_id = unignored_selection.focus_object_id;
   BrowserAccessibility* focus_object = manager()->GetFromID(focus_id);
   if (!focus_object)
     return false;
@@ -1041,9 +1043,9 @@ bool BrowserAccessibility::HasVisibleCaretOrSelection() const {
 
   // The selection will be visible in non-editable content only if it is not
   // collapsed into a caret.
-  return (focus_id != manager()->GetTreeData().sel_anchor_object_id ||
-          manager()->GetTreeData().sel_focus_offset !=
-              manager()->GetTreeData().sel_anchor_offset) &&
+  return (focus_id != unignored_selection.anchor_object_id ||
+          unignored_selection.focus_offset !=
+              unignored_selection.anchor_offset) &&
          focus_object->IsDescendantOf(this);
 }
 
@@ -1422,6 +1424,14 @@ const ui::AXTreeData& BrowserAccessibility::GetTreeData() const {
     return manager()->GetTreeData();
   else
     return *empty_data;
+}
+
+const ui::AXTree::Selection BrowserAccessibility::GetUnignoredSelection()
+    const {
+  if (manager())
+    return manager()->ax_tree()->GetUnignoredSelection();
+  return ui::AXTree::Selection{-1, -1, -1,
+                               ax::mojom::TextAffinity::kDownstream};
 }
 
 ui::AXNodePosition::AXPositionInstance

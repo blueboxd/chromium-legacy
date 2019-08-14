@@ -246,7 +246,7 @@ const base::Feature kUIExperimentSwapTitleAndUrl{
 // are exceptions in this regard and this experiment makes this more consistent.
 const base::Feature kUIExperimentShowPlaceholderWhenCaretShowing{
     "OmniboxUIExperimentShowPlaceholderWhenCaretShowing",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature used to enable speculatively starting a service worker associated
 // with the destination of the default match when the user's input looks like a

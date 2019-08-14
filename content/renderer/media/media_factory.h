@@ -20,6 +20,7 @@
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_media_inspector.h"
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA)
 #include "media/mojo/mojom/interface_factory.mojom.h"  // nogncheck
@@ -104,6 +105,7 @@ class MediaFactory {
   blink::WebMediaPlayer* CreateMediaPlayer(
       const blink::WebMediaPlayerSource& source,
       blink::WebMediaPlayerClient* client,
+      blink::MediaInspectorContext* inspector_context,
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       blink::WebContentDecryptionModule* initial_cdm,
       const blink::WebString& sink_id,
@@ -126,6 +128,7 @@ class MediaFactory {
 
   blink::WebMediaPlayer* CreateWebMediaPlayerForMediaStream(
       blink::WebMediaPlayerClient* client,
+      blink::MediaInspectorContext* inspector_context,
       const blink::WebString& sink_id,
       const blink::WebSecurityOrigin& security_origin,
       blink::WebLocalFrame* frame,

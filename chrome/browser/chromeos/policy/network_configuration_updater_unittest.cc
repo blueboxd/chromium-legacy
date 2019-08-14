@@ -23,6 +23,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/network/fake_network_device_handler.h"
 #include "chromeos/network/mock_managed_network_configuration_handler.h"
+#include "chromeos/network/onc/certificate_scope.h"
 #include "chromeos/network/onc/onc_certificate_importer.h"
 #include "chromeos/network/onc/onc_parsed_certificates.h"
 #include "chromeos/network/onc/onc_test_utils.h"
@@ -249,6 +250,41 @@ const char kFakeONC[] = R"(
       "Type": "UnencryptedConfiguration"
     })";
 
+const char kFakeONCWithExtensionScopedCert[] = R"(
+    { "Certificates": [
+        { "GUID": "{extension-scoped-certificate}",
+          "TrustBits": [
+             "Web"
+          ],
+          "Scope": {
+            "Type": "Extension",
+            "Id": "ngjobkbdodapjbbncmagbccommkggmnj"
+          },
+          "Type": "Authority",
+          "X509": "-----BEGIN CERTIFICATE-----\n
+    MIIC8zCCAdugAwIBAgIJALF9qhLor0+aMA0GCSqGSIb3DQEBBQUAMBcxFTATBgNV\n
+    BAMMDFRlc3QgUm9vdCBDQTAeFw0xNDA4MTQwMzA1MjlaFw0yNDA4MTEwMzA1Mjla\n
+    MBcxFTATBgNVBAMMDFRlc3QgUm9vdCBDQTCCASIwDQYJKoZIhvcNAQEBBQADggEP\n
+    ADCCAQoCggEBALZJQeNCAVGofzx6cdP7zZE1F4QajvY2x9FwHfqG8267dm/oMi43\n
+    /TiSPWjkin1CMxRGG9wE9pFuVEDECgn97C1i4l7huiycwbFgTNrH+CJcgiBlQh5W\n
+    d3VP65AsSupXDiKNbJWsEerM1+72cA0J3aY1YV3Jdm2w8h6/MIbYd1I2lZcO0UbF\n
+    7YE9G7DyYZU8wUA4719dumGf7yucn4WJdHBj1XboNX7OAeHzERGQHA31/Y3OEGyt\n
+    fFUaIW/XLfR4FeovOL2RnjwdB0b1Q8GCi68SU2UZimlpZgay2gv6KgChKhWESfEB\n
+    v5swBtAVoB+dUZFH4VNf717swmF5whSfxOMCAwEAAaNCMEAwDwYDVR0TAQH/BAUw\n
+    AwEB/zAdBgNVHQ4EFgQUvPcw0TzA8nn675/JbFyT84poq4MwDgYDVR0PAQH/BAQD\n
+    AgEGMA0GCSqGSIb3DQEBBQUAA4IBAQBXByn7f+j/sObYWGrDkKE4HLTzaLHs6Ikj\n
+    JNeo8iHDYOSkSVwAv9/HgniAKxj3rd3QYl6nsMzwqrTOcBJZZWd2BQAYmv/EKhfj\n
+    8VXYvlxe68rLU4cQ1QkyNqdeQfRT2n5WYNJ+TpqlCF9ddennMMsi6e8ZSYOlI6H4\n
+    YEzlNtU5eBjxXr/OqgtTgSx4qQpr2xMQIRR/G3A9iRpAigYsXVAZYvnHRYnyPWYF\n
+    PX11W1UegEJyoZp8bQp09u6mIWw6mPt3gl/ya1bm3ZuOUPDGrv3qpgUHqSYGVrOy\n
+    2bI3oCE+eQYfuVG+9LFJTZC1M+UOx15bQMVqBNFDepRqpE9h/ILg\n
+    -----END CERTIFICATE-----" },
+      ],
+      "Type": "UnencryptedConfiguration"
+    })";
+
+const char kExtensionIdWithScopedCert[] = "ngjobkbdodapjbbncmagbccommkggmnj";
+
 std::string ValueToString(const base::Value& value) {
   std::stringstream str;
   str << value;
@@ -391,7 +427,8 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
     return updater;
   }
 
-  void CreateNetworkConfigurationUpdaterForDevicePolicy() {
+  NetworkConfigurationUpdater*
+  CreateNetworkConfigurationUpdaterForDevicePolicy() {
     auto testing_device_asset_id_getter =
         base::BindRepeating([] { return std::string(kFakeAssetId); });
     network_configuration_updater_ =
@@ -399,6 +436,7 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
             policy_service_.get(), &network_config_handler_,
             &network_device_handler_, chromeos::CrosSettings::Get(),
             testing_device_asset_id_getter);
+    return network_configuration_updater_.get();
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -534,9 +572,16 @@ TEST_F(NetworkConfigurationUpdaterTest,
   base::RunLoop().RunUntilIdle();
 
   // Certificates with the "Web" trust flag set will be returned.
-  EXPECT_EQ(1u, updater->GetWebTrustedCertificates().size());
-  EXPECT_EQ(1u, updater->GetCertificatesWithoutWebTrust().size());
-  EXPECT_EQ(2u, updater->GetAllServerAndAuthorityCertificates().size());
+  const auto kDefaultScope = chromeos::onc::CertificateScope::Default();
+  EXPECT_EQ(1u, updater->GetWebTrustedCertificates(kDefaultScope).size());
+  EXPECT_EQ(1u, updater->GetCertificatesWithoutWebTrust(kDefaultScope).size());
+  EXPECT_EQ(
+      2u, updater->GetAllServerAndAuthorityCertificates(kDefaultScope).size());
+  EXPECT_EQ(0u, updater
+                    ->GetAllServerAndAuthorityCertificates(
+                        chromeos::onc::CertificateScope::ForExtension(
+                            kExtensionIdWithScopedCert))
+                    .size());
 
   updater->RemovePolicyProvidedCertsObserver(&observer);
 }
@@ -559,9 +604,11 @@ TEST_F(NetworkConfigurationUpdaterTest,
   base::RunLoop().RunUntilIdle();
 
   // Verify that the returned certificate list is empty.
-  EXPECT_TRUE(updater->GetWebTrustedCertificates().empty());
-  EXPECT_TRUE(updater->GetCertificatesWithoutWebTrust().empty());
-  EXPECT_TRUE(updater->GetAllServerAndAuthorityCertificates().empty());
+  const auto kDefaultScope = chromeos::onc::CertificateScope::Default();
+  EXPECT_TRUE(updater->GetWebTrustedCertificates(kDefaultScope).empty());
+  EXPECT_TRUE(updater->GetCertificatesWithoutWebTrust(kDefaultScope).empty());
+  EXPECT_TRUE(
+      updater->GetAllServerAndAuthorityCertificates(kDefaultScope).empty());
 
   // No call has been made to the policy-provided certificates observer.
   Mock::VerifyAndClearExpectations(&observer);
@@ -575,9 +622,58 @@ TEST_F(NetworkConfigurationUpdaterTest,
   UpdateProviderPolicy(policy);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(1u, updater->GetWebTrustedCertificates().size());
-  EXPECT_EQ(1u, updater->GetCertificatesWithoutWebTrust().size());
-  EXPECT_EQ(2u, updater->GetAllServerAndAuthorityCertificates().size());
+  // Certificates with the "Web" trust flag set will be returned and forwarded
+  // to observers.
+  EXPECT_EQ(1u, updater->GetWebTrustedCertificates(kDefaultScope).size());
+  EXPECT_EQ(1u, updater->GetCertificatesWithoutWebTrust(kDefaultScope).size());
+  EXPECT_EQ(
+      2u, updater->GetAllServerAndAuthorityCertificates(kDefaultScope).size());
+  EXPECT_EQ(0u, updater
+                    ->GetAllServerAndAuthorityCertificates(
+                        chromeos::onc::CertificateScope::ForExtension(
+                            kExtensionIdWithScopedCert))
+                    .size());
+
+  updater->RemovePolicyProvidedCertsObserver(&observer);
+}
+
+TEST_F(NetworkConfigurationUpdaterTest, ExtensionScopedWebTrustedCertificate) {
+  // Ignore network configuration changes.
+  EXPECT_CALL(network_config_handler_, SetPolicy(_, _, _, _))
+      .Times(AnyNumber());
+
+  NetworkConfigurationUpdater* updater =
+      CreateNetworkConfigurationUpdaterForDevicePolicy();
+
+  MockPolicyProvidedCertsObserver observer;
+  EXPECT_CALL(observer, OnPolicyProvidedCertsChanged());
+  updater->AddPolicyProvidedCertsObserver(&observer);
+
+  PolicyMap policy;
+  policy.Set(key::kDeviceOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+             std::make_unique<base::Value>(kFakeONCWithExtensionScopedCert),
+             nullptr);
+  UpdateProviderPolicy(policy);
+  MarkPolicyProviderInitialized();
+  base::RunLoop().RunUntilIdle();
+
+  // Certificates with the "Web" trust flag set will be returned.
+  const auto kDefaultScope = chromeos::onc::CertificateScope::Default();
+  EXPECT_EQ(0u, updater->GetWebTrustedCertificates(kDefaultScope).size());
+  EXPECT_EQ(0u, updater->GetCertificatesWithoutWebTrust(kDefaultScope).size());
+  EXPECT_EQ(
+      0u, updater->GetAllServerAndAuthorityCertificates(kDefaultScope).size());
+  EXPECT_EQ(1u, updater
+                    ->GetAllServerAndAuthorityCertificates(
+                        chromeos::onc::CertificateScope::ForExtension(
+                            kExtensionIdWithScopedCert))
+                    .size());
+  EXPECT_EQ(1u, updater
+                    ->GetWebTrustedCertificates(
+                        chromeos::onc::CertificateScope::ForExtension(
+                            kExtensionIdWithScopedCert))
+                    .size());
 
   updater->RemovePolicyProvidedCertsObserver(&observer);
 }

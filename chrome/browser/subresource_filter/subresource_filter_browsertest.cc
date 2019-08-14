@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_database_helper.h"
@@ -223,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        SubresourceFilterListNeedsBranding) {
   bool has_list = database_helper()->HasListSynced(
       safe_browsing::GetUrlSubresourceFilterId());
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   EXPECT_TRUE(has_list);
 #else
   EXPECT_FALSE(has_list);

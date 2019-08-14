@@ -275,19 +275,6 @@ class DownloadsSetShelfEnabledFunction : public ExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsSetShelfEnabledFunction);
 };
 
-class DownloadsDragFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("downloads.drag", DOWNLOADS_DRAG)
-  DownloadsDragFunction();
-  ResponseAction Run() override;
-
- protected:
-  ~DownloadsDragFunction() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DownloadsDragFunction);
-};
-
 class DownloadsGetFileIconFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.getFileIcon", DOWNLOADS_GETFILEICON)

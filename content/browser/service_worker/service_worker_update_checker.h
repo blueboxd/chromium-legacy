@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_single_script_update_checker.h"
+#include "content/browser/service_worker/service_worker_updated_script_loader.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -106,7 +107,9 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
 
  private:
   void CheckOneScript(const GURL& url, const int64_t resource_id);
-  void OnGetDefaultHeaders(base::Optional<net::HttpRequestHeaders> header);
+  void DidSetUpOnUI(net::HttpRequestHeaders header,
+                    ServiceWorkerUpdatedScriptLoader::BrowserContextGetter
+                        browser_context_getter);
 
   std::vector<ServiceWorkerDatabase::ResourceRecord> scripts_to_compare_;
   size_t next_script_index_to_compare_ = 0;
@@ -129,6 +132,9 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
 
   // Headers that need to be added to network requests for update checking.
   net::HttpRequestHeaders default_headers_;
+
+  ServiceWorkerUpdatedScriptLoader::BrowserContextGetter
+      browser_context_getter_;
 
   // True if any at least one of the scripts is fetched by network.
   bool network_accessed_ = false;

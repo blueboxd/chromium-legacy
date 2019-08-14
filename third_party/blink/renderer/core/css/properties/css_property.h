@@ -72,10 +72,10 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   const CSSValue* CSSValueFromComputedStyle(const ComputedStyle&,
                                             const LayoutObject*,
                                             bool allow_visited_style) const;
-  virtual std::unique_ptr<CrossThreadStyleValue>
-  CrossThreadStyleValueFromComputedStyle(const ComputedStyle& computed_style,
-                                         const LayoutObject* layout_object,
-                                         bool allow_visited_style) const;
+  std::unique_ptr<CrossThreadStyleValue> CrossThreadStyleValueFromComputedStyle(
+      const ComputedStyle& computed_style,
+      const LayoutObject* layout_object,
+      bool allow_visited_style) const;
   virtual const CSSProperty& ResolveDirectionAwareProperty(TextDirection,
                                                            WritingMode) const {
     return *this;

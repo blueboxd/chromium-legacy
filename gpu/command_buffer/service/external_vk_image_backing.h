@@ -10,11 +10,13 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/shared_memory_mapping.h"
+#include "base/optional.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/vulkan/semaphore_handle.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -34,7 +36,8 @@ class ExternalVkImageBacking : public SharedImageBacking {
       const gfx::ColorSpace& color_space,
       uint32_t usage,
       base::span<const uint8_t> pixel_data,
-      bool using_gmb = false);
+      bool using_gmb = false,
+      base::Optional<VulkanYCbCrInfo> ycbcr_info = base::nullopt);
 
   static std::unique_ptr<ExternalVkImageBacking> CreateFromGMB(
       SharedContextState* context_state,
@@ -116,7 +119,8 @@ class ExternalVkImageBacking : public SharedImageBacking {
                          VkDeviceMemory memory,
                          size_t memory_size,
                          VkFormat vk_format,
-                         VulkanCommandPool* command_pool);
+                         VulkanCommandPool* command_pool,
+                         base::Optional<VulkanYCbCrInfo> ycbcr_info);
 
   // Install a shared memory GMB to the backing.
   void InstallSharedMemory(

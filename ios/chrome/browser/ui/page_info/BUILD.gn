@@ -5,8 +5,6 @@
 source_set("page_info") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "page_info_constants.h",
-    "page_info_constants.mm",
     "page_info_model.cc",
     "page_info_model.h",
     "page_info_model_observer.h",
@@ -36,7 +34,18 @@ source_set("page_info") {
     "//ui/gfx",
     "//url",
   ]
+  public_deps = [
+    ":constants",
+  ]
   libs = [ "UIKit.framework" ]
+}
+
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "page_info_constants.h",
+    "page_info_constants.mm",
+  ]
 }
 
 source_set("coordinator") {
@@ -66,6 +75,7 @@ source_set("coordinator") {
 
 source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
+  defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
   sources = [
     "page_info_egtest.mm",
@@ -75,6 +85,31 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/test/earl_grey:test_support",
+    "//ios/testing/earl_grey:earl_grey_support",
+  ]
+  libs = [
+    "UIKit.framework",
+    "XCTest.framework",
+  ]
+}
+
+source_set("eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "page_info_egtest.mm",
+  ]
+  deps = [
+    ":constants",
+    "//ios/chrome/browser/ui/popup_menu:constants",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//ui/base",
   ]
   libs = [
     "UIKit.framework",

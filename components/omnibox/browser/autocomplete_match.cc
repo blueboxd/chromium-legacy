@@ -388,13 +388,57 @@ base::string16 AutocompleteMatch::GetWhyThisSuggestionText() const {
 }
 
 // static
-bool AutocompleteMatch::MoreRelevant(const AutocompleteMatch& elem1,
-                                     const AutocompleteMatch& elem2) {
+bool AutocompleteMatch::MoreRelevant(const AutocompleteMatch& match1,
+                                     const AutocompleteMatch& match2) {
   // For equal-relevance matches, we sort alphabetically, so that providers
   // who return multiple elements at the same priority get a "stable" sort
   // across multiple updates.
-  return (elem1.relevance == elem2.relevance) ?
-      (elem1.contents < elem2.contents) : (elem1.relevance > elem2.relevance);
+  return (match1.relevance == match2.relevance)
+             ? (match1.contents < match2.contents)
+             : (match1.relevance > match2.relevance);
+}
+
+// static
+bool AutocompleteMatch::BetterDuplicate(const AutocompleteMatch& match1,
+                                        const AutocompleteMatch& match2) {
+  // Prefer the Entity Match over the non-entity match, if they have the same
+  // |fill_into_edit| value.
+  if (match1.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY &&
+      match2.type != AutocompleteMatchType::SEARCH_SUGGEST_ENTITY &&
+      match1.fill_into_edit == match2.fill_into_edit) {
+    return true;
+  }
+  if (match1.type != AutocompleteMatchType::SEARCH_SUGGEST_ENTITY &&
+      match2.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY &&
+      match1.fill_into_edit == match2.fill_into_edit) {
+    return false;
+  }
+
+  // Prefer matches allowed to be the default match.
+  if (match1.allowed_to_be_default_match && !match2.allowed_to_be_default_match)
+    return true;
+  if (!match1.allowed_to_be_default_match && match2.allowed_to_be_default_match)
+    return false;
+
+  // Prefer document suggestions.
+  if (match1.type == AutocompleteMatchType::DOCUMENT_SUGGESTION &&
+      match2.type != AutocompleteMatchType::DOCUMENT_SUGGESTION) {
+    return true;
+  }
+  if (match1.type != AutocompleteMatchType::DOCUMENT_SUGGESTION &&
+      match2.type == AutocompleteMatchType::DOCUMENT_SUGGESTION) {
+    return false;
+  }
+
+  // By default, simply prefer the more relevant match.
+  return MoreRelevant(match1, match2);
+}
+
+// static
+bool AutocompleteMatch::BetterDuplicateByIterator(
+    const std::vector<AutocompleteMatch>::const_iterator it1,
+    const std::vector<AutocompleteMatch>::const_iterator it2) {
+  return BetterDuplicate(*it1, *it2);
 }
 
 // static
@@ -993,6 +1037,25 @@ bool AutocompleteMatch::ShouldShowTabMatch() const {
 
 bool AutocompleteMatch::ShouldShowButton() const {
   return ShouldShowTabMatch();
+}
+
+void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(
+    const AutocompleteMatch& duplicate_match) {
+  // For Entity Matches, absorb the duplicate match's |allowed_to_be_default|
+  // and |inline_autocomplete| properties.
+  if (type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY &&
+      fill_into_edit == duplicate_match.fill_into_edit &&
+      duplicate_match.allowed_to_be_default_match) {
+    allowed_to_be_default_match = true;
+    if (inline_autocompletion.empty())
+      inline_autocompletion = duplicate_match.inline_autocompletion;
+  }
+
+  // And always absorb the higher relevance score of duplicates.
+  if (duplicate_match.relevance > relevance) {
+    RecordAdditionalInfo(kACMatchPropertyScoreBoostedFrom, relevance);
+    relevance = duplicate_match.relevance;
+  }
 }
 
 #if DCHECK_IS_ON()

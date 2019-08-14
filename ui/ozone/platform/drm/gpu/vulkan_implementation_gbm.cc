@@ -169,7 +169,8 @@ bool VulkanImplementationGbm::CreateImageFromGpuMemoryHandle(
     VkImage* vk_image,
     VkImageCreateInfo* vk_image_info,
     VkDeviceMemory* vk_device_memory,
-    VkDeviceSize* mem_allocation_size) {
+    VkDeviceSize* mem_allocation_size,
+    base::Optional<gpu::VulkanYCbCrInfo>* ycbcr_info) {
   NOTIMPLEMENTED();
   return false;
 }

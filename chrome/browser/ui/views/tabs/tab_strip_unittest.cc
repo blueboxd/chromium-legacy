@@ -1128,4 +1128,23 @@ TEST_P(TabStripTest, DeleteTabGroupHeaderWhenEmpty) {
   EXPECT_EQ(0u, ListGroupHeaders().size());
 }
 
+TEST_P(TabStripTest, ChangingLayoutTypeResizesTabs) {
+  tab_strip_->SetBounds(0, 0, 1000, 100);
+
+  tab_strip_->AddTabAt(0, TabRendererData(), false);
+  Tab* tab = tab_strip_->tab_at(0);
+  const int initial_height = tab->height();
+
+  ui::test::MaterialDesignControllerTestAPI other_layout(!GetParam());
+
+  CompleteAnimationAndLayout();
+  if (GetParam()) {
+    // Touch -> normal.
+    EXPECT_LT(tab->height(), initial_height);
+  } else {
+    // Normal -> touch.
+    EXPECT_GT(tab->height(), initial_height);
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(, TabStripTest, ::testing::Values(false, true));

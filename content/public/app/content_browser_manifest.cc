@@ -197,7 +197,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:service_worker", "renderer",
               std::set<const char*>{
-                  "blink.mojom.BackgroundFetchService",
                   "blink.mojom.CacheStorage", "blink.mojom.CookieStore",
                   "blink.mojom.ContentIndexService", "blink.mojom.IDBFactory",
                   "blink.mojom.LockManager",
@@ -218,7 +217,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "autofill.mojom.AutofillDriver",
                   "autofill.mojom.PasswordManagerDriver",
                   "blink.mojom.AnchorElementMetricsHost",
-                  "blink.mojom.BackgroundFetchService",
                   "blink.mojom.CacheStorage",
                   "blink.mojom.ColorChooserFactory",
                   "blink.mojom.ContactsManager",

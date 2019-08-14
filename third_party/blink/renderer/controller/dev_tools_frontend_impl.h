@@ -32,7 +32,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CONTROLLER_DEV_TOOLS_FRONTEND_IMPL_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/mojom/devtools/devtools_frontend.mojom-blink.h"
 #include "third_party/blink/renderer/core/inspector/inspector_frontend_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -57,12 +58,14 @@ class DevToolsFrontendImpl final
  public:
   static const char kSupplementName[];
 
-  static void BindMojoRequest(LocalFrame*,
-                              mojom::blink::DevToolsFrontendAssociatedRequest);
+  static void BindMojoRequest(
+      LocalFrame*,
+      mojo::PendingAssociatedReceiver<mojom::blink::DevToolsFrontend>);
   static DevToolsFrontendImpl* From(LocalFrame*);
 
-  DevToolsFrontendImpl(LocalFrame&,
-                       mojom::blink::DevToolsFrontendAssociatedRequest);
+  DevToolsFrontendImpl(
+      LocalFrame&,
+      mojo::PendingAssociatedReceiver<mojom::blink::DevToolsFrontend>);
   ~DevToolsFrontendImpl() override;
   void DidClearWindowObject();
   void Trace(blink::Visitor*) override;
@@ -73,7 +76,8 @@ class DevToolsFrontendImpl final
   // mojom::blink::DevToolsFrontend implementation.
   void SetupDevToolsFrontend(
       const String& api_script,
-      mojom::blink::DevToolsFrontendHostAssociatedPtrInfo) override;
+      mojo::PendingAssociatedRemote<mojom::blink::DevToolsFrontendHost>)
+      override;
   void SetupDevToolsExtensionAPI(const String& extension_api) override;
 
   // InspectorFrontendClient implementation.
@@ -81,8 +85,8 @@ class DevToolsFrontendImpl final
 
   Member<DevToolsHost> devtools_host_;
   String api_script_;
-  mojom::blink::DevToolsFrontendHostAssociatedPtr host_;
-  mojo::AssociatedBinding<mojom::blink::DevToolsFrontend> binding_;
+  mojo::AssociatedRemote<mojom::blink::DevToolsFrontendHost> host_;
+  mojo::AssociatedReceiver<mojom::blink::DevToolsFrontend> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsFrontendImpl);
 };

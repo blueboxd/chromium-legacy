@@ -1889,18 +1889,16 @@ void TabStripModel::MoveTabsIntoGroup(const std::vector<int>& indices,
 void TabStripModel::MoveAndSetGroup(int index,
                                     int new_index,
                                     base::Optional<TabGroupId> new_group) {
+  // Ungroup tab before moving, so that if this is the last tab in the group
+  // observers can delete that group.
   base::Optional<TabGroupId> old_group = UngroupTab(index);
-
-  // TODO(crbug.com/940677): Ideally the delta of type kGroupChanged below would
-  // be batched with the move deltas resulting from MoveWebContentsAt, but that
-  // is not possible right now.
-  if (index != new_index)
-    MoveWebContentsAtImpl(index, new_index, false);
-  contents_data_[new_index]->set_group(new_group);
+  contents_data_[index]->set_group(new_group);
   if (new_group.has_value())
     group_data_.at(new_group.value()).TabAdded();
+  NotifyGroupChange(index, old_group, new_group);
 
-  NotifyGroupChange(new_index, old_group, new_group);
+  if (index != new_index)
+    MoveWebContentsAtImpl(index, new_index, false);
 }
 
 void TabStripModel::NotifyGroupChange(int index,

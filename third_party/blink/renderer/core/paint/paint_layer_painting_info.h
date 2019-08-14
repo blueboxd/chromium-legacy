@@ -71,8 +71,6 @@ enum PaintLayerFlag {
   kPaintLayerPaintingCompositingScrollingPhase = 1 << 7,
   kPaintLayerPaintingOverflowContents = 1 << 8,
   kPaintLayerPaintingSkipRootBackground = 1 << 10,
-  kPaintLayerPaintingChildClippingMaskPhase = 1 << 11,
-  kPaintLayerPaintingAncestorClippingMaskPhase = 1 << 12,
   kPaintLayerPaintingRenderingClipPathAsMask = 1 << 13,
   kPaintLayerPaintingCompositingDecorationPhase = 1 << 14,
   kPaintLayerPaintingRenderingResourceSubtree = 1 << 15,
@@ -149,10 +147,6 @@ inline String PaintLayerFlagsToDebugString(PaintLayerFlags flags) {
     append("kPaintLayerPaintingOverflowContents");
   if (flags & kPaintLayerPaintingSkipRootBackground)
     append("kPaintLayerPaintingSkipRootBackground");
-  if (flags & kPaintLayerPaintingChildClippingMaskPhase)
-    append("kPaintLayerPaintingChildClippingMaskPhase");
-  if (flags & kPaintLayerPaintingAncestorClippingMaskPhase)
-    append("kPaintLayerPaintingAncestorClippingMaskPhase");
   if (flags & kPaintLayerPaintingRenderingClipPathAsMask)
     append("kPaintLayerPaintingRenderingClipPathAsMask");
   if (flags & kPaintLayerPaintingRenderingResourceSubtree)

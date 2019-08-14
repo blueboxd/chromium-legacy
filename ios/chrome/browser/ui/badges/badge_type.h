@@ -15,6 +15,8 @@ enum class BadgeType {
   kBadgeTypePasswordSave = 1,
   // Badge type for the Update Passwords Infobar.
   kBadgeTypePasswordUpdate = 2,
+  // Badge type for the Incognito Badge.
+  kBadgeTypeIncognito = 3,
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_BADGES_BADGE_TYPE_H_

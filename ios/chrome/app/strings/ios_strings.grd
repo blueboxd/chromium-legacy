@@ -2078,6 +2078,18 @@ New Search
        <message name="IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER" desc="Text on the bookmarks context menu to edit selected bookmark folder">
         Edit Folder
       </message>
+      <message name="IDS_IOS_VIEW_CONTROLLER_DISMISS_SAVE_CHANGES" desc="Text displayed on an alert button for Saving changes whenever trying
+      to dismiss a presented view with pending changes.">
+        Save Changes
+      </message>
+      <message name="IDS_IOS_VIEW_CONTROLLER_DISMISS_DISCARD_CHANGES" desc="Text displayed on an alert button for Discarding changes whenever trying
+      to dismiss a presented view with pending changes.">
+        Discard Changes
+      </message>
+      <message name="IDS_IOS_VIEW_CONTROLLER_DISMISS_CANCEL_CHANGES" desc="Text displayed on an alert button for Canceling the alert whenever trying
+      to dismiss a presented view with pending changes.">
+        Cancel
+      </message>
       <message name="IDS_IOS_OPEN_REPEATEDLY_ANOTHER_APP" desc="Alert to let the user know that the website is trying repeatedly to open another application. [iOS only]">
           This website is repeatedly trying to open another application.
       </message>

@@ -15,6 +15,7 @@ import sys
 import tempfile
 from xml.sax import saxutils
 
+from six import StringIO
 from six.moves import html_entities as entities
 
 from grit import lazy_re
@@ -327,7 +328,6 @@ def ParseGrdForUnittest(body, base_dir=None, predetermined_ids_file=None,
     body: XML that goes inside the <release> element.
     base_dir: The base_dir attribute of the <grit> tag.
   '''
-  import StringIO
   from grit import grd_reader
   if isinstance(body, unicode):
     body = body.encode('utf-8')
@@ -344,7 +344,7 @@ def ParseGrdForUnittest(body, base_dir=None, predetermined_ids_file=None,
     lines.append(body)
     lines.append('  </release>')
   lines.append('</grit>')
-  ret = grd_reader.Parse(StringIO.StringIO('\n'.join(lines)), dir=".")
+  ret = grd_reader.Parse(StringIO('\n'.join(lines)), dir=".")
   ret.SetOutputLanguage('en')
   if run_gatherers:
     ret.RunGatherers()

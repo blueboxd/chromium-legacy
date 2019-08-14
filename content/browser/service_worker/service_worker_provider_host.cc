@@ -664,8 +664,9 @@ void ServiceWorkerProviderHost::OnBeginNavigationCommit(int render_process_id,
 
 void ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
     int process_id,
-    service_manager::mojom::InterfaceProviderRequest
-        interface_provider_request) {
+    service_manager::mojom::InterfaceProviderRequest interface_provider_request,
+    mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+        broker_receiver) {
   DCHECK(context_);
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);
@@ -676,6 +677,8 @@ void ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   interface_provider_binding_.Bind(FilterRendererExposedInterfaces(
       blink::mojom::kNavigation_ServiceWorkerSpec, process_id,
       std::move(interface_provider_request)));
+
+  broker_receiver_.Bind(std::move(broker_receiver));
 }
 
 void ServiceWorkerProviderHost::CompleteWebWorkerPreparation() {

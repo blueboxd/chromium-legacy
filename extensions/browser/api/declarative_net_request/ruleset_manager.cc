@@ -223,7 +223,8 @@ RulesetManager::Action& RulesetManager::Action::operator=(Action&&) = default;
 RulesetManager::RulesetManager(content::BrowserContext* browser_context)
     : browser_context_(browser_context),
       prefs_(ExtensionPrefs::Get(browser_context)),
-      permission_helper_(PermissionHelper::Get(browser_context)) {
+      permission_helper_(PermissionHelper::Get(browser_context)),
+      action_tracker_(browser_context) {
   DCHECK(browser_context_);
 
   // RulesetManager can be created on any sequence.
@@ -268,6 +269,7 @@ void RulesetManager::RemoveRuleset(const ExtensionId& extension_id) {
       << "RemoveRuleset called without a corresponding AddRuleset for "
       << extension_id;
 
+  action_tracker_.ClearExtensionData(extension_id);
   base::EraseIf(rulesets_, compare_by_id);
 
   if (test_observer_)
@@ -399,9 +401,11 @@ base::Optional<RulesetManager::Action> RulesetManager::GetBlockOrCollapseAction(
     const RequestParams& params) const {
   for (const ExtensionRulesetData* ruleset : rulesets) {
     if (ruleset->matcher->ShouldBlockRequest(params)) {
-      return ShouldCollapseResourceType(params.element_type)
-                 ? Action(Action::Type::COLLAPSE)
-                 : Action(Action::Type::BLOCK);
+      Action action = ShouldCollapseResourceType(params.element_type)
+                          ? Action(Action::Type::COLLAPSE)
+                          : Action(Action::Type::BLOCK);
+      action.extension_ids.push_back(ruleset->extension_id);
+      return action;
     }
   }
   return base::nullopt;
@@ -447,6 +451,7 @@ RulesetManager::GetRedirectOrUpgradeAction(
 
     Action action(Action::Type::REDIRECT);
     action.redirect_url = std::move(redirect_action.redirect_url);
+    action.extension_ids.push_back(ruleset->extension_id);
     return action;
   }
 
@@ -456,14 +461,19 @@ RulesetManager::GetRedirectOrUpgradeAction(
 base::Optional<RulesetManager::Action> RulesetManager::GetRemoveHeadersAction(
     const std::vector<const ExtensionRulesetData*>& rulesets,
     const RequestParams& params) const {
+  Action action(Action::Type::REMOVE_HEADERS);
   uint8_t mask = 0;
-  for (const ExtensionRulesetData* ruleset : rulesets)
-    mask |= ruleset->matcher->GetRemoveHeadersMask(params, mask);
+  for (const ExtensionRulesetData* ruleset : rulesets) {
+    uint8_t ruleset_mask = ruleset->matcher->GetRemoveHeadersMask(params, mask);
+    if (ruleset_mask)
+      action.extension_ids.push_back(ruleset->extension_id);
+
+    mask |= ruleset_mask;
+  }
 
   if (!mask)
     return base::nullopt;
 
-  Action action(Action::Type::REMOVE_HEADERS);
   PopulateHeadersFromMask(mask, &action.request_headers_to_remove,
                           &action.response_headers_to_remove);
   return action;

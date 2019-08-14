@@ -76,6 +76,30 @@ AXNode* AXNode::GetLastUnignoredChild() const {
   return ComputeLastUnignoredChildRecursive();
 }
 
+AXNode* AXNode::GetDeepestFirstUnignoredChild() const {
+  if (!GetUnignoredChildCount())
+    return nullptr;
+
+  AXNode* deepest_child = GetFirstUnignoredChild();
+  while (deepest_child->GetUnignoredChildCount()) {
+    deepest_child = deepest_child->GetFirstUnignoredChild();
+  }
+
+  return deepest_child;
+}
+
+AXNode* AXNode::GetDeepestLastUnignoredChild() const {
+  if (!GetUnignoredChildCount())
+    return nullptr;
+
+  AXNode* deepest_child = GetLastUnignoredChild();
+  while (deepest_child->GetUnignoredChildCount()) {
+    deepest_child = deepest_child->GetLastUnignoredChild();
+  }
+
+  return deepest_child;
+}
+
 AXNode* AXNode::GetNextUnignoredSibling() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
   AXNode* parent_node = parent();
@@ -133,6 +157,33 @@ AXNode* AXNode::GetPreviousUnignoredSibling() const {
     }
   }
   return nullptr;
+}
+
+AXNode* AXNode::GetNextUnignoredInTreeOrder() const {
+  if (GetUnignoredChildCount())
+    return GetFirstUnignoredChild();
+
+  const AXNode* node = this;
+  while (node) {
+    AXNode* sibling = node->GetNextUnignoredSibling();
+    if (sibling)
+      return sibling;
+
+    node = node->GetUnignoredParent();
+  }
+
+  return nullptr;
+}
+
+AXNode* AXNode::GetPreviousUnignoredInTreeOrder() const {
+  AXNode* sibling = GetPreviousUnignoredSibling();
+  if (!sibling)
+    return GetUnignoredParent();
+
+  if (sibling->GetUnignoredChildCount())
+    return sibling->GetDeepestLastUnignoredChild();
+
+  return sibling;
 }
 
 AXNode::UnignoredChildIterator AXNode::UnignoredChildrenBegin() const {

@@ -380,8 +380,6 @@ class SSLServerSocketTest : public PlatformTest,
     ASSERT_TRUE(key);
     server_ssl_private_key_ = WrapOpenSSLPrivateKey(bssl::UpRef(key->key()));
 
-    client_ssl_config_.false_start_enabled = false;
-
     // Certificate provided by the host doesn't need authority.
     client_ssl_config_.allowed_bad_certs.emplace_back(
         server_cert_, CERT_STATUS_AUTHORITY_INVALID);

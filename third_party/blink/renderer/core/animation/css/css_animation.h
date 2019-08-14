@@ -24,11 +24,19 @@ class CORE_EXPORT CSSAnimation : public Animation {
                AnimationEffect*,
                const String& animation_name);
 
-  const String& animationName() const;
+  bool IsCSSAnimation() const final { return true; }
+
+  const String& animationName() const { return animation_name_; }
 
  private:
   String animation_name_;
 };
+
+DEFINE_TYPE_CASTS(CSSAnimation,
+                  Animation,
+                  animation,
+                  animation->IsCSSAnimation(),
+                  animation.IsCSSAnimation());
 
 }  // namespace blink
 

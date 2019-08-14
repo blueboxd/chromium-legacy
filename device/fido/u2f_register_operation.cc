@@ -37,14 +37,19 @@ void U2fRegisterOperation::Start() {
   if (exclude_list && !exclude_list->empty()) {
     // First try signing with the excluded credentials to see whether this
     // device should be excluded.
-    TrySign();
+    WinkAndTrySign();
   } else {
-    TryRegistration();
+    WinkAndTryRegistration();
   }
 }
 
 void U2fRegisterOperation::Cancel() {
   canceled_ = true;
+}
+
+void U2fRegisterOperation::WinkAndTrySign() {
+  device()->TryWink(base::BindOnce(&U2fRegisterOperation::TrySign,
+                                   weak_factory_.GetWeakPtr()));
 }
 
 void U2fRegisterOperation::TrySign() {
@@ -98,7 +103,7 @@ void U2fRegisterOperation::OnCheckForExcludedKeyHandle(
       // Duplicate registration found. Waiting for user touch.
       base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
-          base::BindOnce(&U2fRegisterOperation::TrySign,
+          base::BindOnce(&U2fRegisterOperation::WinkAndTrySign,
                          weak_factory_.GetWeakPtr()),
           kU2fRetryDelay);
       break;
@@ -116,11 +121,11 @@ void U2fRegisterOperation::OnCheckForExcludedKeyHandle(
         current_key_handle_index_ = 0;
       }
       if (current_key_handle_index_ < request().exclude_list->size()) {
-        TrySign();
+        WinkAndTrySign();
       } else {
         // Reached the end of exclude list with no duplicate credential.
         // Proceed with registration.
-        TryRegistration();
+        WinkAndTryRegistration();
       }
       break;
 
@@ -132,6 +137,11 @@ void U2fRegisterOperation::OnCheckForExcludedKeyHandle(
           .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
       break;
   }
+}
+
+void U2fRegisterOperation::WinkAndTryRegistration() {
+  device()->TryWink(base::BindOnce(&U2fRegisterOperation::TryRegistration,
+                                   weak_factory_.GetWeakPtr()));
 }
 
 void U2fRegisterOperation::TryRegistration() {
@@ -176,7 +186,7 @@ void U2fRegisterOperation::OnRegisterResponseReceived(
       // Waiting for user touch, retry after delay.
       base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
-          base::BindOnce(&U2fRegisterOperation::TryRegistration,
+          base::BindOnce(&U2fRegisterOperation::WinkAndTryRegistration,
                          weak_factory_.GetWeakPtr()),
           kU2fRetryDelay);
       break;

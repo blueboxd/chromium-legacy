@@ -134,12 +134,6 @@ AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const
 // ResizeBehavior values.
 AURA_EXPORT extern const WindowProperty<int>* const kResizeBehaviorKey;
 
-// Reserves a number of dip around the window (i.e. inset from its exterior
-// border) for event routing back to the top level window. This is used for
-// routing events to toplevel window resize handles. It should only be respected
-// for restored windows (maximized and fullscreen can't be drag-resized).
-AURA_EXPORT extern const WindowProperty<int>* const kResizeHandleInset;
-
 // A property key to store the restore bounds in screen coordinates for a
 // window.
 AURA_EXPORT extern const WindowProperty<gfx::Rect*>* const kRestoreBoundsKey;

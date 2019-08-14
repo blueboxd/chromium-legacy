@@ -22,8 +22,8 @@ const gfx::RectF kDefaultViewportRect(0, 0, 560, 1200);
 struct MockDrawableData {
   TouchHandleOrientation orientation = TouchHandleOrientation::UNDEFINED;
   float alpha = 0.f;
-  bool mirror_horizontal;
-  bool mirror_vertical;
+  bool mirror_horizontal = false;
+  bool mirror_vertical = false;
   bool enabled = false;
   bool visible = false;
   gfx::RectF rect{0, 0, kDefaultDrawableSize, kDefaultDrawableSize};

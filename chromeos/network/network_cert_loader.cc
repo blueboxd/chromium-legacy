@@ -18,6 +18,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "chromeos/network/certificate_helper.h"
+#include "chromeos/network/onc/certificate_scope.h"
+#include "chromeos/network/policy_certificate_provider.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
 #include "net/cert/cert_database.h"
@@ -45,8 +47,8 @@ NetworkCertType GetNetworkCertType(CERTCertificate* cert) {
   return NetworkCertType::kOther;
 }
 
-// Returns all authority certificats provided by |policy_certificate_provider|
-// as a list of NetworkCerts.
+// Returns all authority certificates with default (not restricted) scope
+// provided by |policy_certificate_provider| as a list of NetworkCerts.
 NetworkCertLoader::NetworkCertList GetPolicyProvidedAuthorities(
     const PolicyCertificateProvider* policy_certificate_provider,
     bool device_wide) {
@@ -54,7 +56,8 @@ NetworkCertLoader::NetworkCertList GetPolicyProvidedAuthorities(
   if (!policy_certificate_provider)
     return result;
   for (const auto& certificate :
-       policy_certificate_provider->GetAllAuthorityCertificates()) {
+       policy_certificate_provider->GetAllAuthorityCertificates(
+           chromeos::onc::CertificateScope::Default())) {
     net::ScopedCERTCertificate x509_cert =
         net::x509_util::CreateCERTCertificateFromX509Certificate(
             certificate.get());

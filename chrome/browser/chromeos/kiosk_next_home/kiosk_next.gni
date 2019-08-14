@@ -1,4 +1,0 @@
-declare_args() {
-  # Whether Kiosk Next should be enabled.
-  enable_kiosk_next = is_chromeos
-}

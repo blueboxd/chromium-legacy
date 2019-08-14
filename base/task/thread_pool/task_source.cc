@@ -63,21 +63,24 @@ Optional<Task> TaskSource::Transaction::TakeTask(RunIntent* intent) {
   return task_source_->TakeTask();
 }
 
-bool TaskSource::Transaction::DidProcessTask(RunIntent intent,
-                                             RunResult run_result) {
+Optional<Task> TaskSource::Transaction::Clear(RunIntent intent) {
+  DCHECK_EQ(intent.task_source_, task_source());
+  DCHECK_EQ(intent.run_step_, RunIntent::State::kInitial);
+  intent.run_step_ = RunIntent::State::kCompleted;
+  intent.Release();
+  return task_source_->Clear();
+}
+
+bool TaskSource::Transaction::DidProcessTask(RunIntent intent) {
   DCHECK_EQ(intent.task_source_, task_source());
   DCHECK_EQ(intent.run_step_, RunIntent::State::kTaskAcquired);
   intent.run_step_ = RunIntent::State::kCompleted;
   intent.Release();
-  return task_source_->DidProcessTask(run_result);
+  return task_source_->DidProcessTask();
 }
 
 SequenceSortKey TaskSource::Transaction::GetSortKey() const {
   return task_source_->GetSortKey();
-}
-
-void TaskSource::Transaction::Clear() {
-  task_source_->Clear();
 }
 
 void TaskSource::Transaction::UpdatePriority(TaskPriority priority) {

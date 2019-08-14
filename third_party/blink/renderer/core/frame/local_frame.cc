@@ -494,9 +494,7 @@ void LocalFrame::DidChangeVisibilityState() {
 
 void LocalFrame::DidFreeze() {
   if (GetDocument()) {
-    auto* document_resource_coordinator =
-        GetDocument()->GetResourceCoordinator();
-    if (document_resource_coordinator) {
+    if (GetDocument()->GetResourceCoordinator()) {
       // Determine if there is a beforeunload handler by dispatching a
       // beforeunload that will *not* launch a user dialog. If
       // |proceed| is false then there is a non-empty beforeunload
@@ -504,13 +502,21 @@ void LocalFrame::DidFreeze() {
       bool unused_did_allow_navigation = false;
       bool proceed = GetDocument()->DispatchBeforeUnloadEvent(
           nullptr, false /* is_reload */, unused_did_allow_navigation);
-      document_resource_coordinator->SetHasNonEmptyBeforeUnload(!proceed);
+      // Running the beforeunload event may invalidate the
+      // DocumentResourceCoordinator. Because of that, it can't be stored in a
+      // local variable that is reused throughout the method.
+      // https://crbug.com/991380.
+      auto* document_resource_coordinator =
+          GetDocument()->GetResourceCoordinator();
+      if (document_resource_coordinator)
+        document_resource_coordinator->SetHasNonEmptyBeforeUnload(!proceed);
     }
 
     GetDocument()->DispatchFreezeEvent();
     // TODO(fmeawad): Move the following logic to the page once we have a
     // PageResourceCoordinator in Blink. http://crbug.com/838415
-    if (document_resource_coordinator) {
+    if (auto* document_resource_coordinator =
+            GetDocument()->GetResourceCoordinator()) {
       document_resource_coordinator->SetLifecycleState(
           resource_coordinator::mojom::LifecycleState::kFrozen);
     }

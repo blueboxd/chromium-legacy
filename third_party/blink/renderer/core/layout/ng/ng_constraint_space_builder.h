@@ -30,8 +30,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
                                  out_writing_mode,
                                  is_new_fc) {
     // Propagate the intermediate layout bit to the child constraint space.
-    if (parent_space.IsIntermediateLayout())
-      space_.bitfields_.flags |= NGConstraintSpace::kIntermediateLayout;
+    space_.bitfields_.is_intermediate_layout =
+        parent_space.IsIntermediateLayout();
   }
 
   // The setters on this builder are in the writing mode of parent_writing_mode.
@@ -51,11 +51,9 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
         is_new_fc_(is_new_fc),
         force_orthogonal_writing_mode_root_(
             force_orthogonal_writing_mode_root) {
-    if (is_new_fc_)
-      space_.bitfields_.flags |= NGConstraintSpace::kNewFormattingContext;
-
-    if (!is_in_parallel_flow_ || force_orthogonal_writing_mode_root_)
-      space_.bitfields_.flags |= NGConstraintSpace::kOrthogonalWritingModeRoot;
+    space_.bitfields_.is_new_formatting_context = is_new_fc_;
+    space_.bitfields_.is_orthogonal_writing_mode_root =
+        !is_in_parallel_flow_ || force_orthogonal_writing_mode_root_;
   }
 
   // If inline size is indefinite, use the fallback size for available inline
@@ -154,7 +152,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGConstraintSpaceBuilder& SetIsFixedBlockSizeIndefinite(bool b) {
     if (LIKELY(is_in_parallel_flow_ || !force_orthogonal_writing_mode_root_))
-      SetFlag(NGConstraintSpace::kIsFixedBlockSizeIndefinite, b);
+      space_.bitfields_.is_fixed_block_size_indefinite = b;
 
     return *this;
   }
@@ -165,7 +163,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   }
 
   NGConstraintSpaceBuilder& SetIsIntermediateLayout(bool b) {
-    SetFlag(NGConstraintSpace::kIntermediateLayout, b);
+    space_.bitfields_.is_intermediate_layout = b;
     return *this;
   }
 
@@ -183,22 +181,22 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   }
 
   NGConstraintSpaceBuilder& SetSeparateLeadingFragmentainerMargins(bool b) {
-    SetFlag(NGConstraintSpace::kSeparateLeadingFragmentainerMargins, b);
+    space_.bitfields_.has_separate_leading_fragmentainer_margins = b;
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetIsAnonymous(bool b) {
-    SetFlag(NGConstraintSpace::kAnonymous, b);
+    space_.bitfields_.is_anonymous = b;
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetUseFirstLineStyle(bool b) {
-    SetFlag(NGConstraintSpace::kUseFirstLineStyle, b);
+    space_.bitfields_.use_first_line_style = b;
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetAncestorHasClearancePastAdjoiningFloats() {
-    SetFlag(NGConstraintSpace::kAncestorHasClearancePastAdjoiningFloats, true);
+    space_.bitfields_.ancestor_has_clearance_past_adjoining_floats = true;
     return *this;
   }
 
@@ -312,7 +310,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 #endif
 
     DCHECK(!is_new_fc_ || !space_.bitfields_.adjoining_object_types);
-    DCHECK_EQ(space_.HasFlag(NGConstraintSpace::kOrthogonalWritingModeRoot),
+    DCHECK_EQ(space_.bitfields_.is_orthogonal_writing_mode_root,
               !is_in_parallel_flow_ || force_orthogonal_writing_mode_root_);
 
     DCHECK(!force_orthogonal_writing_mode_root_ || is_in_parallel_flow_)
@@ -325,12 +323,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   }
 
  private:
-  void SetFlag(NGConstraintSpace::ConstraintSpaceFlags mask, bool value) {
-    space_.bitfields_.flags =
-        (space_.bitfields_.flags & ~static_cast<unsigned>(mask)) |
-        (-(int32_t)value & static_cast<unsigned>(mask));
-  }
-
   NGConstraintSpace space_;
 
   // Orthogonal writing mode roots may need a fallback, to prevent available

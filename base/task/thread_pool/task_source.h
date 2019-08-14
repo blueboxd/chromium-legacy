@@ -71,14 +71,9 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   };
 
  public:
-  // Indicates if a task was run or skipped as a result of shutdown.
-  enum class RunResult {
-    kDidRun,
-    kSkippedAtShutdown,
-  };
-
   // Result of WillRunTask(). A single task associated with a RunIntent may be
-  // accessed with TakeTask() and run iff this evaluates to true.
+  // accessed with TakeTask() and run, or the task source may be cleared with
+  // Clear() iff this evaluates to true.
   class BASE_EXPORT RunIntent {
    public:
     RunIntent() = default;
@@ -145,11 +140,15 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
     // https://crbug.com/783309
     Optional<Task> TakeTask(RunIntent* intent) WARN_UNUSED_RESULT;
 
-    // Must be called once the task was run or skipped. |run_result| indicates
-    // if the task executed. Cannot be called on an empty TaskSource. Returns
-    // true if the TaskSource should be queued after this operation.
-    bool DidProcessTask(RunIntent intent,
-                        RunResult run_result = RunResult::kDidRun);
+    // Returns a task that clears this TaskSource to make it empty. This should
+    // be called only with a valid |intent|, but may be called for each valid
+    // outstanding RunIntent.
+    Optional<Task> Clear(RunIntent intent) WARN_UNUSED_RESULT;
+
+    // Must be called once the task was run. Cannot be called on an empty
+    // TaskSource. Returns true if the TaskSource should be queued after this
+    // operation.
+    bool DidProcessTask(RunIntent intent);
 
     // Returns a SequenceSortKey representing the priority of the TaskSource.
     // Cannot be called on an empty TaskSource.
@@ -157,9 +156,6 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
 
     // Sets TaskSource priority to |priority|.
     void UpdatePriority(TaskPriority priority);
-
-    // Deletes all tasks contained in this TaskSource.
-    void Clear();
 
     // Returns the traits of all Tasks in the TaskSource.
     TaskTraits traits() const { return task_source_->traits_; }
@@ -194,14 +190,12 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
 
   // Informs this TaskSource that an additional Task could be run. Returns a
   // RunIntent that evaluates to true if this operation is allowed (TakeTask()
-  // can be called), or false otherwise. This function is not thread safe and
-  // must be externally synchronized (e.g. by the lock of the PriorityQueue
-  // holding the TaskSource).
+  // or Clear() can be called), or false otherwise.
   virtual RunIntent WillRunTask() = 0;
 
   // Thread-safe but the returned value may immediately be obsolete. As such
   // this should only be used as a best-effort guess of how many more workers
-  // are needed.
+  // are needed. This may be called on an empty task source.
   virtual size_t GetRemainingConcurrency() const = 0;
 
   // Support for IntrusiveHeap.
@@ -231,11 +225,13 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   // Informs this TaskSource that a task was processed. |was_run| indicates
   // whether the task executed or not. Returns true if the TaskSource
   // should be queued after this operation.
-  virtual bool DidProcessTask(RunResult run_result) = 0;
+  virtual bool DidProcessTask() = 0;
 
   virtual SequenceSortKey GetSortKey() const = 0;
 
-  virtual void Clear() = 0;
+  // This may be called for each outstanding RunIntent. If applicable, the
+  // implementation needs to support this being called multiple times.
+  virtual Optional<Task> Clear() = 0;
 
   // Sets TaskSource priority to |priority|.
   void UpdatePriority(TaskPriority priority);

@@ -15,7 +15,8 @@ if __name__ == '__main__':
   sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
 import unittest
-import StringIO
+
+from six import StringIO
 
 from grit.gather import policy_json
 
@@ -33,7 +34,7 @@ class PolicyJsonUnittest(unittest.TestCase):
       'policy_atomic_group_definitions': [],
       'messages': {}
       }"""
-    gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
+    gatherer = policy_json.PolicyJson(StringIO(original))
     gatherer.Parse()
     self.failUnless(len(gatherer.GetCliques()) == 0)
     self.failUnless(eval(original) == json.loads(gatherer.Translate('en')))
@@ -61,7 +62,7 @@ class PolicyJsonUnittest(unittest.TestCase):
         "    }"
         "  }"
         "}")
-    gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
+    gatherer = policy_json.PolicyJson(StringIO(original))
     gatherer.Parse()
     self.failUnless(len(gatherer.GetCliques()) == 4)
     expected = self.GetExpectedOutput(original)
@@ -84,7 +85,7 @@ class PolicyJsonUnittest(unittest.TestCase):
         "  'policy_atomic_group_definitions': [],"
         "  'messages': {}"
         "}")
-    gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
+    gatherer = policy_json.PolicyJson(StringIO(original))
     gatherer.Parse()
     self.failUnless(len(gatherer.GetCliques()) == 1)
     expected = self.GetExpectedOutput(original)
@@ -120,7 +121,7 @@ class PolicyJsonUnittest(unittest.TestCase):
                 "  'policy_atomic_group_definitions': [],"
                 "  'messages': {}"
                 "}")
-    gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
+    gatherer = policy_json.PolicyJson(StringIO(original))
     gatherer.Parse()
     self.failUnless(len(gatherer.GetCliques()) == 4)
     expected = self.GetExpectedOutput(original)
@@ -143,7 +144,7 @@ class PolicyJsonUnittest(unittest.TestCase):
                 "  'policy_atomic_group_definitions': [],"
                 "  'messages': {}"
                 "}")
-    gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
+    gatherer = policy_json.PolicyJson(StringIO(original))
     gatherer.Parse()
     self.failUnless(len(gatherer.GetCliques()) == 1)
     expected = self.GetExpectedOutput(original)
@@ -166,7 +167,7 @@ class PolicyJsonUnittest(unittest.TestCase):
                 "  'policy_atomic_group_definitions': [],"
                 "  'messages': {}"
                 "}")
-    gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
+    gatherer = policy_json.PolicyJson(StringIO(original))
     gatherer.Parse()
     self.failUnless(len(gatherer.GetCliques()) == 1)
     expected = self.GetExpectedOutput(original)
@@ -190,7 +191,7 @@ class PolicyJsonUnittest(unittest.TestCase):
         "  'policy_atomic_group_definitions': [],"
         "  'messages': {}"
         "}")
-    gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
+    gatherer = policy_json.PolicyJson(StringIO(original))
     gatherer.Parse()
     self.failUnless(len(gatherer.GetCliques()) == 1)
     expected = self.GetExpectedOutput(original)
@@ -212,7 +213,7 @@ class PolicyJsonUnittest(unittest.TestCase):
         "  'policy_atomic_group_definitions': [],"
         "  'messages': {}"
         "}")
-    gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
+    gatherer = policy_json.PolicyJson(StringIO(original))
     gatherer.Parse()
     self.failUnless(len(gatherer.GetCliques()) == 1)
     expected = self.GetExpectedOutput(original)
@@ -256,7 +257,7 @@ with a newline?''',
           }
         }
 }"""
-    gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
+    gatherer = policy_json.PolicyJson(StringIO(original))
     gatherer.Parse()
     self.failUnless(len(gatherer.GetCliques()) == 6)
     expected = self.GetExpectedOutput(original)
@@ -273,7 +274,7 @@ with a newline?''',
         "policy_atomic_group_definitions": [],
         "messages": {}
 }"""
-    gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
+    gatherer = policy_json.PolicyJson(StringIO(original))
     gatherer.SetDefines({'_chromium': True})
     gatherer.Parse()
     self.failUnless(len(gatherer.GetCliques()) == 1)
@@ -298,7 +299,7 @@ with a newline?''',
         "policy_atomic_group_definitions": [],
         "messages": {}
 }"""
-    gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
+    gatherer = policy_json.PolicyJson(StringIO(original))
     gatherer.SetDefines({'_google_chrome': True})
     gatherer.Parse()
     self.failUnless(len(gatherer.GetCliques()) == 1)

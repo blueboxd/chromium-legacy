@@ -1831,7 +1831,7 @@ HitTestLayerRectList* Internals::touchEventTargetLayerRects(
   }
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    auto* pac = document->View()->GetPaintArtifactCompositorForTesting();
+    auto* pac = document->View()->GetPaintArtifactCompositor();
     pac->EnableExtraDataForTesting();
     document->View()->UpdateAllLifecyclePhases(
         DocumentLifecycle::LifecycleUpdateReason::kTest);
@@ -2227,7 +2227,7 @@ DOMRectList* Internals::nonFastScrollableRects(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
 
   if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
-    auto* pac = document->View()->GetPaintArtifactCompositorForTesting();
+    auto* pac = document->View()->GetPaintArtifactCompositor();
     auto* layer_tree_host = pac->RootLayer()->layer_tree_host();
     // Ensure |cc::TransformTree| has updated the correct ToScreen transforms.
     layer_tree_host->UpdateLayers();

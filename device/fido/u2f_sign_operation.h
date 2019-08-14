@@ -41,9 +41,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fSignOperation
   void Cancel() override;
 
  private:
+  void WinkAndTrySign();
   void TrySign();
   void OnSignResponseReceived(
       base::Optional<std::vector<uint8_t>> device_response);
+  void WinkAndTryFakeEnrollment();
   void TryFakeEnrollment();
   void OnEnrollmentResponseReceived(
       base::Optional<std::vector<uint8_t>> device_response);

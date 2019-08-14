@@ -301,9 +301,9 @@ void ServiceWorkerGlobalScopeProxy::SetupNavigationPreload(
 }
 
 void ServiceWorkerGlobalScopeProxy::RequestTermination(
-    base::OnceCallback<void(bool)> callback) {
+    CrossThreadOnceFunction<void(bool)> callback) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  Client().RequestTermination(std::move(callback));
+  Client().RequestTermination(ConvertToBaseOnceCallback(std::move(callback)));
 }
 
 ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(

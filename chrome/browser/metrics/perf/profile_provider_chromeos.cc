@@ -7,11 +7,11 @@
 #include "base/allocator/buildflags.h"
 #include "base/bind.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/rand_util.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "chrome/browser/metrics/perf/heap_collector.h"
-#include "chrome/browser/metrics/perf/metric_collector.h"
+#include "chrome/browser/metrics/perf/metric_provider.h"
 #include "chrome/browser/metrics/perf/perf_events_collector.h"
+#include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
@@ -29,8 +29,11 @@ bool IsNormalUserLoggedIn() {
 }  // namespace
 
 ProfileProvider::ProfileProvider() : weak_factory_(this) {
+  // Initialize the WindowedIncognitoMonitor on the UI thread.
+  WindowedIncognitoMonitor::Init();
   // Register a perf events collector.
-  collectors_.push_back(std::make_unique<PerfCollector>());
+  collectors_.push_back(
+      std::make_unique<MetricProvider>(std::make_unique<PerfCollector>()));
 }
 
 ProfileProvider::~ProfileProvider() {
@@ -46,7 +49,8 @@ void ProfileProvider::Init() {
             heap_profiling::kOOPHeapProfilingFeature,
             heap_profiling::kOOPHeapProfilingFeatureMode));
     if (mode != HeapCollectionMode::kNone) {
-      collectors_.push_back(std::make_unique<HeapCollector>(mode));
+      collectors_.push_back(std::make_unique<MetricProvider>(
+          std::make_unique<HeapCollector>(mode)));
     }
   }
 #endif

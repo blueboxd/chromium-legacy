@@ -373,10 +373,14 @@ void DownloadTargetDeterminer::NotifyExtensionsDone(
     // Downloads/music/music/music/bar.mp3.
     base::FilePath new_path(download_prefs_->DownloadPath().Append(
         suggested_path).NormalizePathSeparators());
-    // Do not pass a mime type to GenerateSafeFileName so that it does not force
-    // the filename to have an extension if the (Chrome) extension does not
-    // suggest it.
-    net::GenerateSafeFileName(std::string(), false, &new_path);
+    // If the (Chrome) extension does not suggest an file extension, do not pass
+    // a mime type to GenerateSafeFileName so that it does not force the
+    // filename to have an extension. Otherwise, correct the file extension in
+    // case it is wrongly given.
+    if (new_path.Extension().empty())
+      net::GenerateSafeFileName(std::string(), false, &new_path);
+    else
+      net::GenerateSafeFileName(download_->GetMimeType(), true, &new_path);
     virtual_path_ = new_path;
     create_target_directory_ = true;
   }

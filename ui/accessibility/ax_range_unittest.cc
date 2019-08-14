@@ -274,13 +274,13 @@ void AXRangeTest::SetUp() {
   initial_state.tree_data.title = "Dialog title";
 
   tree_.reset(new AXTree(initial_state));
-  AXNodePosition::SetTreeForTesting(tree_.get());
+  AXNodePosition::SetTree(tree_.get());
   AXTreeManagerMap::GetInstance().AddTreeManager(
       initial_state.tree_data.tree_id, this);
 }
 
 void AXRangeTest::TearDown() {
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
   AXTreeManagerMap::GetInstance().RemoveTreeManager(tree_->data().tree_id);
 }
 

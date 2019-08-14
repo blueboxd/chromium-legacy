@@ -239,6 +239,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   void OnHighlightedItemClosed(OverviewItem* item);
 
   // display::DisplayObserver:
+  void OnDisplayAdded(const display::Display& display) override;
   void OnDisplayRemoved(const display::Display& display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;

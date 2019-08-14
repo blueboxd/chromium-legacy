@@ -20,16 +20,9 @@
 #include "base/feature_list.h"
 #endif
 
-#if !defined(OS_ANDROID)
-#include "components/mirroring/service/manifest.h"  // nogncheck
-#endif
-
 const std::vector<service_manager::Manifest>&
 GetChromeBuiltinServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{{
-#if !defined(OS_ANDROID)
-      mirroring::GetManifest(),
-#endif
 #if defined(OS_CHROMEOS)
       ash::GetManifest(),
       chromeos::network_config::GetManifest(),

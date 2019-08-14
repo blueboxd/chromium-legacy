@@ -4,6 +4,8 @@
 
 #include "chrome/browser/metrics/perf/heap_collector.h"
 
+#include <inttypes.h>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -15,6 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/process/launch.h"
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
@@ -25,9 +28,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 
@@ -247,22 +248,23 @@ HeapCollectionMode HeapCollector::CollectionModeFromString(std::string mode) {
 }
 
 HeapCollector::HeapCollector(HeapCollectionMode mode)
-    : MetricCollector(kHeapCollectorName),
-      sampling_period_bytes_(kHeapSamplingIntervalBytes),
+    : internal::MetricCollector(kHeapCollectorName, CollectionParams()),
       mode_(mode),
       is_enabled_(false),
+      sampling_period_bytes_(kHeapSamplingIntervalBytes),
       weak_factory_(this) {
-  BrowserList::AddObserver(this);
-
   if (mode_ == HeapCollectionMode::kShimLayer) {
     base::SamplingHeapProfiler::Init();
   }
 }
 
+const char* HeapCollector::ToolName() const {
+  return kHeapCollectorName;
+}
+
 HeapCollector::~HeapCollector() {
   // Disable heap sampling when the collector exits.
   DisableSampling();
-  BrowserList::RemoveObserver(this);
 }
 
 void HeapCollector::EnableSampling() {
@@ -297,9 +299,11 @@ void HeapCollector::DisableSampling() {
   is_enabled_ = false;
 }
 
-void HeapCollector::Init() {
-  if (base::FeatureList::IsEnabled(heap_profiling::kOOPHeapProfilingFeature))
+void HeapCollector::SetUp() {
+  if (base::FeatureList::IsEnabled(heap_profiling::kOOPHeapProfilingFeature)) {
+    sampling_period_bytes_ = kSamplingIntervalBytes.Get();
     SetCollectionParamsFromFeatureParams();
+  }
 
   // For the tcmalloc collector, we set the sampling period every time we enable
   // it. The shim layer sampler has a separate API for starting and stopping, so
@@ -307,53 +311,33 @@ void HeapCollector::Init() {
   if (mode_ == HeapCollectionMode::kShimLayer) {
     SetHeapSamplingPeriod(sampling_period_bytes_, mode_);
   }
-
-  // Enable sampling if no incognito session is active.
-  if (!BrowserList::IsIncognitoSessionActive()) {
-    EnableSampling();
-  } else {
-    DisableSampling();
-  }
-
-  MetricCollector::Init();
-}
-
-void HeapCollector::OnBrowserAdded(Browser* browser) {
-  // Pause heap sampling when an incognito session is opened.
-  if (browser->profile()->IsOffTheRecord()) {
-    DisableSampling();
-  }
-}
-
-void HeapCollector::OnBrowserRemoved(Browser* browser) {
-  // Resume heap sampling if no incognito sessions are active.
-  if (!BrowserList::IsIncognitoSessionActive()) {
-    EnableSampling();
-  }
+  EnableSampling();
 }
 
 void HeapCollector::SetCollectionParamsFromFeatureParams() {
-  sampling_period_bytes_ = kSamplingIntervalBytes.Get();
-  collection_params_.periodic_interval =
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CollectionParams& params = collection_params();
+  params.periodic_interval =
       base::TimeDelta::FromMilliseconds(kPeriodicCollectionIntervalMs.Get());
-  collection_params_.resume_from_suspend.sampling_factor =
+  params.resume_from_suspend.sampling_factor =
       kResumeFromSuspendSamplingFactor.Get();
-  collection_params_.resume_from_suspend.max_collection_delay =
+  params.resume_from_suspend.max_collection_delay =
       base::TimeDelta::FromSeconds(kResumeFromSuspendMaxDelaySec.Get());
-  collection_params_.restore_session.sampling_factor =
-      kRestoreSessionSamplingFactor.Get();
-  collection_params_.restore_session.max_collection_delay =
+  params.restore_session.sampling_factor = kRestoreSessionSamplingFactor.Get();
+  params.restore_session.max_collection_delay =
       base::TimeDelta::FromSeconds(kRestoreSessionMaxDelaySec.Get());
 }
 
-base::WeakPtr<MetricCollector> HeapCollector::GetWeakPtr() {
+base::WeakPtr<internal::MetricCollector> HeapCollector::GetWeakPtr() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return weak_factory_.GetWeakPtr();
 }
 
 bool HeapCollector::ShouldCollect() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Do not collect further data if we've already collected a substantial amount
   // of data, as indicated by |kCachedHeapDataProtobufSizeThreshold|.
-  if (cached_profile_data_size() >= kCachedHeapDataProtobufSizeThreshold) {
+  if (cached_data_size_ >= kCachedHeapDataProtobufSizeThreshold) {
     AddToUmaHistogram(CollectionAttemptStatus::NOT_READY_TO_COLLECT);
     return false;
   }
@@ -362,18 +346,31 @@ bool HeapCollector::ShouldCollect() const {
 
 void HeapCollector::CollectProfile(
     std::unique_ptr<SampledProfile> sampled_profile) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (mode_ == HeapCollectionMode::kNone)
     return;
 
-  base::Optional<base::FilePath> temp_file = DumpProfileToTempFile();
+  auto incognito_observer = WindowedIncognitoMonitor::CreateObserver();
+  // For privacy reasons, Chrome should only collect heap profiles if there is
+  // no incognito session active (or gets spawned while the profile is saved).
+  if (incognito_observer->IncognitoActive()) {
+    AddToUmaHistogram(CollectionAttemptStatus::INCOGNITO_ACTIVE);
+    return;
+  }
+
+  base::Optional<base::FilePath> temp_file =
+      DumpProfileToTempFile(std::move(incognito_observer));
   if (!temp_file)
     return;
 
-  base::CommandLine quipper = MakeQuipperCommand(temp_file.value());
-  ParseAndSaveProfile(quipper, temp_file.value(), std::move(sampled_profile));
+  auto quipper = MakeQuipperCommand(temp_file.value());
+  ParseAndSaveProfile(std::move(quipper), std::move(temp_file.value()),
+                      std::move(sampled_profile));
 }
 
-base::Optional<base::FilePath> HeapCollector::DumpProfileToTempFile() {
+base::Optional<base::FilePath> HeapCollector::DumpProfileToTempFile(
+    std::unique_ptr<WindowedIncognitoObserver> incognito_observer) {
   base::FilePath temp_path;
   if (!base::CreateTemporaryFile(&temp_path)) {
     AddToUmaHistogram(CollectionAttemptStatus::UNABLE_TO_COLLECT);
@@ -393,21 +390,47 @@ base::Optional<base::FilePath> HeapCollector::DumpProfileToTempFile() {
     DeleteFileAsync(temp_path);
     return base::nullopt;
   }
+  if (incognito_observer->IncognitoLaunched()) {
+    AddToUmaHistogram(CollectionAttemptStatus::INCOGNITO_LAUNCHED);
+    DeleteFileAsync(temp_path);
+    return base::nullopt;
+  }
   return base::make_optional<base::FilePath>(temp_path);
 }
 
-base::CommandLine HeapCollector::MakeQuipperCommand(
+// static
+std::unique_ptr<base::CommandLine> HeapCollector::MakeQuipperCommand(
     const base::FilePath& profile_path) {
-  base::CommandLine quipper{base::FilePath(kQuipperLocation)};
-  quipper.AppendSwitchPath(kQuipperHeapProfile, profile_path);
-  quipper.AppendSwitchASCII(kQuipperProcessPid,
-                            std::to_string(base::GetCurrentProcId()));
+  auto quipper =
+      std::make_unique<base::CommandLine>(base::FilePath(kQuipperLocation));
+  quipper->AppendSwitchPath(kQuipperHeapProfile, profile_path);
+  quipper->AppendSwitchASCII(kQuipperProcessPid,
+                             base::NumberToString(base::GetCurrentProcId()));
   return quipper;
 }
 
 void HeapCollector::ParseAndSaveProfile(
-    const base::CommandLine& parser,
-    const base::FilePath& profile_path,
+    std::unique_ptr<base::CommandLine> parser,
+    base::FilePath profile_path,
+    std::unique_ptr<SampledProfile> sampled_profile) {
+  // Parsing processor information may be expensive. Compute asynchronously
+  // in a separate thread.
+  auto task_runner = base::SequencedTaskRunnerHandle::Get();
+  base::PostTask(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&HeapCollector::ParseProfileOnThreadPool, task_runner,
+                     weak_factory_.GetWeakPtr(), std::move(parser),
+                     std::move(profile_path), std::move(sampled_profile)));
+}
+
+// static
+void HeapCollector::ParseProfileOnThreadPool(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    base::WeakPtr<HeapCollector> heap_collector,
+    std::unique_ptr<base::CommandLine> parser,
+    base::FilePath profile_path,
     std::unique_ptr<SampledProfile> sampled_profile) {
   // We may exit due to parsing errors, so use a FileDeleter to remove the
   // temporary profile data on all paths.
@@ -415,13 +438,16 @@ void HeapCollector::ParseAndSaveProfile(
 
   // Run the parser command on the profile file.
   std::string output;
-  if (!base::GetAppOutput(parser, &output)) {
-    AddToUmaHistogram(CollectionAttemptStatus::ILLEGAL_DATA_RETURNED);
+  if (!base::GetAppOutput(*parser, &output)) {
+    heap_collector->AddToUmaHistogram(
+        CollectionAttemptStatus::ILLEGAL_DATA_RETURNED);
     return;
   }
-
-  SaveSerializedPerfProto(std::move(sampled_profile),
-                          PerfProtoType::PERF_TYPE_DATA, output);
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&HeapCollector::SaveSerializedPerfProto, heap_collector,
+                     std::move(sampled_profile), PerfProtoType::PERF_TYPE_DATA,
+                     std::move(output)));
 }
 
 }  // namespace metrics

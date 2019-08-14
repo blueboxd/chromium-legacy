@@ -472,7 +472,6 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .DisableDriveFs(),
         TestCase("checkPasteIntoFolderDisabledForReadOnlyFolder")
             .DisableDriveFs(),
-        TestCase("checkInstallWithLinuxStateForDebianFile").DisableDriveFs(),
         TestCase("checkContextMenusForInputElements"),
         TestCase("checkNewFolderEnabledInsideReadWriteFolder").DisableDriveFs(),
         TestCase("checkNewFolderDisabledInsideReadOnlyFolder").DisableDriveFs(),
@@ -509,7 +508,6 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .EnableDriveFs(),
         TestCase("checkPasteIntoFolderDisabledForReadOnlyFolder")
             .EnableDriveFs(),
-        TestCase("checkInstallWithLinuxStateForDebianFile").EnableDriveFs(),
         TestCase("checkNewFolderEnabledInsideReadWriteFolder").EnableDriveFs(),
         TestCase("checkNewFolderDisabledInsideReadOnlyFolder").EnableDriveFs(),
         TestCase("checkPasteEnabledInsideReadWriteFolder").EnableDriveFs(),

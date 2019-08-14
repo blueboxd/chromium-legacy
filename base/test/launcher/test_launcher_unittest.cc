@@ -689,6 +689,7 @@ TEST_F(UnitTestLauncherDelegateTester, RunMockTests) {
   FilePath path = dir.GetPath().AppendASCII("SaveSummaryResult.json");
   command_line.AppendSwitchPath("test-launcher-summary-output", path);
   command_line.AppendSwitch("gtest_also_run_disabled_tests");
+  command_line.AppendSwitch("--test-launcher-retry-limit=0");
 #if defined(OS_WIN)
   // In Windows versions prior to Windows 8, nested job objects are
   // not allowed and cause this test to fail.

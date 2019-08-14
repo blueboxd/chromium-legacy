@@ -173,6 +173,13 @@ template("chrome_public_common_apk_or_module_tmpl") {
       support_zh_hk = true
     }
 
+    # Android supports webp transparent resources properly since API level 18,
+    # so this can only be activated for modern ones (which target API >= 21).
+    if (!defined(png_to_webp)) {
+      png_to_webp = !is_java_debug
+    }
+
+    # Removes metadata needed for Resources.getIdentifier("resource_name").
     strip_resource_names = !is_java_debug
 
     # TODO(753402): enable once aapt2>=3.6.0 and bundletool>0.9.0 are rolled in.
@@ -449,7 +456,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       if (is_monochrome) {
         proguard_configs += [ "//android_webview/apk/java/proguard.flags" ]
       }
-      png_to_webp = true
     }
 
     if (!defined(deps)) {

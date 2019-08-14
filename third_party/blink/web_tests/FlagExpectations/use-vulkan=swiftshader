@@ -4,31 +4,8 @@ crbug.com/935580 compositing/masks/mask-with-removed-filters.html [ Skip ]
 
 # Flaky BlinkTestController::OnPixelDumpCaptured Crash. We want to still run to
 # detect failures other than the crash.
-crbug.com/963542 animations/svg/animated-filter-svg-element.html [ Failure Pass ]
-crbug.com/963542 compositing/background-color/background-color-outside-document.html [ Failure Pass ]
-crbug.com/963542 compositing/color-matching/image-color-matching.html [ Failure Pass ]
-crbug.com/963542 compositing/culling/filter-occlusion-blur.html [ Failure Pass ]
-crbug.com/963542 compositing/geometry/bounds-ignores-hidden-dynamic.html [ Failure Pass ]
-crbug.com/963542 compositing/geometry/horizontal-scroll-composited.html [ Failure Pass ]
-crbug.com/963542 compositing/opacity-with-mask.html [ Failure Pass ]
-crbug.com/963542 compositing/overflow/border-radius-on-parent-composited-grandchild.html [ Failure Pass ]
-crbug.com/963542 compositing/overflow/nested-border-radius-clipping.html [ Failure Pass ]
-crbug.com/963542 compositing/overflow/scrolling-content-layer-should-not-be-clipped.html [ Failure Pass ]
-crbug.com/963542 compositing/overlap-blending/reflection-opacity-huge.html [ Failure Pass ]
-crbug.com/963542 compositing/squashing/squash-onto-nephew-subpixel-3.html [ Failure Pass ]
-crbug.com/963542 compositing/squashing/squash-with-ancestor-mask.html [ Failure Pass ]
-crbug.com/963542 compositing/squashing/squash-with-ancestor-reflection.html [ Failure Pass ]
-crbug.com/963542 css3/blending/svg-blend-multiply.html [ Failure Pass ]
-crbug.com/963542 css3/filters/backdrop-filter-basic-blur.html [ Failure Pass ]
-crbug.com/963542 css3/flexbox/button.html [ Failure Pass ]
-crbug.com/963542 css3/flexbox/columns-center-with-margins-and-wrap.html [ Failure Pass ]
-crbug.com/963542 images/color-profile-border-radius.html [ Failure Pass ]
-crbug.com/963542 images/feature-policy-oversized-images-forced-layout.html [ Failure Pass ]
 crbug.com/963542 media/alpha-video-playback.html [ Skip ]
 crbug.com/963542 media/video-layer-crash.html [ Skip ]
-
-# Flaky VkImage::Copy Asset Crash
-crbug.com/972087 compositing/layer-creation/overlap-negative-z-index-multiple.html [ Failure Pass ]
 
 # SwiftShader Unimplemented Blend Mode
 crbug.com/972096 compositing/reflections/animation-inside-reflection.html [ Skip ]
@@ -42,9 +19,6 @@ crbug.com/972096 compositing/reflections/nested-reflection.html [ Skip ]
 crbug.com/972096 compositing/reflections/transform-inside-reflection.html [ Skip ]
 crbug.com/972096 css3/filters/composited-reflected.html [ Skip ]
 crbug.com/972096 media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Skip ]
-
-# Flaky SwiftShader Invalid VkFormat
-crbug.com/972109 css3/flexbox/auto-height-column-with-border-and-padding.html [ Failure Pass ]
 
 # Incorrect Blurring
 crbug.com/972621 compositing/culling/filter-occlusion-blur-large.html [ Skip ]
@@ -101,28 +75,11 @@ crbug.com/972621 transforms/svg-vs-css.xhtml [ Skip ]
 crbug.com/972621 transforms/transformed-document-element.html [ Skip ]
 
 # Blurring - Needs Rebaseline for GPU Rasterization
-crbug.com/972637 css3/blending/background-blend-mode-crossfade-image-gradient.html [ Skip ]
-crbug.com/972637 css3/blending/background-blend-mode-default-value.html [ Skip ]
-crbug.com/972637 css3/blending/background-blend-mode-gradient-gradient.html [ Skip ]
-crbug.com/972637 css3/blending/background-blend-mode-gradient-image.html [ Skip ]
-crbug.com/972637 css3/blending/background-blend-mode-image-color.html [ Skip ]
-crbug.com/972637 css3/blending/background-blend-mode-image-image.html [ Skip ]
-crbug.com/972637 css3/blending/background-blend-mode-image-svg.html [ Skip ]
-crbug.com/972637 css3/blending/background-blend-mode-multiple-background-layers.html [ Skip ]
-crbug.com/972637 css3/blending/background-blend-mode-single-layer-no-blending.html [ Skip ]
-crbug.com/972637 css3/blending/background-blend-mode-svg-color.html [ Skip ]
-crbug.com/972637 css3/blending/background-blend-mode-tiled-gradient.html [ Skip ]
-crbug.com/972637 css3/blending/mix-blend-mode-isolated-group-1.html [ Skip ]
-crbug.com/972637 css3/blending/mix-blend-mode-isolated-group-2.html [ Skip ]
-crbug.com/972637 css3/blending/mix-blend-mode-isolated-group-3.html [ Skip ]
 crbug.com/972637 images/rgb-png-with-cmyk-color-profile.html [ Skip ]
 crbug.com/972637 images/ycbcr-with-cmyk-color-profile.html [ Skip ]
 crbug.com/972637 media/video-poster-scale.html [ Skip ]
 
 # Gradients - Needs Rebaseline for GPU Rasterization
-crbug.com/972684 css3/blending/effect-background-blend-mode-stacking.html [ Skip ]
-crbug.com/972684 css3/blending/effect-background-blend-mode-tiled.html [ Skip ]
-crbug.com/972684 css3/blending/effect-background-blend-mode.html [ Skip ]
 crbug.com/972684 css3/filters/crash-filter-change.html [ Skip ]
 crbug.com/972684 css3/filters/effect-blur.html [ Skip ]
 crbug.com/972684 css3/filters/effect-brightness-clamping.html [ Skip ]
@@ -167,19 +124,6 @@ crbug.com/963542 media/controls-after-reload.html [ Skip ]
 crbug.com/963542 media/controls/video-overlay-cast-light-rendering.html [ Skip ]
 crbug.com/963542 media/track/track-cue-rendering-horizontal.html [ Skip ]
 crbug.com/963542 media/video-frame-accurate-seek.html [ Skip ]
-
-# Flaky GPU process crashes with no stack trace. They may be crbug.com/963542
-# We will run them to detect failures other than crashes.
-Bug(none) compositing/gestures/gesture-tapHighlight-2-overflow-div-composited-outer-scroll-outer.html [ Failure Pass ]
-Bug(none) compositing/masks/masked-ancestor.html [ Failure Pass ]
-Bug(none) css3/filters/filter-repaint-shadow-layer-child.html [ Failure Pass ]
-Bug(none) css3/motion-path/offset-anchor-rotation.html [ Failure Pass ]
-Bug(none) media/media-captions-no-controls.html [ Failure Pass ]
-Bug(none) media/media-fragments/TC0014.html [ Failure Pass ]
-Bug(none) media/track/media-element-enqueue-event-crash.html [ Failure Pass ]
-Bug(none) media/video-controls-overflow-menu-fullscreen-button.html [ Failure Pass ]
-Bug(none) media/video-move-to-new-document-srcobject.html [ Failure Pass ]
-Bug(none) transforms/3d/point-mapping/3d-point-mapping-origins.html [ Failure Pass ]
 
 # Test consistently hitting default timeout.
 Bug(none) css3/filters/effect-reference-subregion.html [ Skip ]

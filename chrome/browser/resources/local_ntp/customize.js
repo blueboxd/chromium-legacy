@@ -304,6 +304,13 @@ customize.preselectedOptions = {
  */
 customize.colorsMenuLoaded = false;
 
+
+/**
+ * Custom color picked in hex format.
+ * @type {string}
+ */
+customize.customColorPicked = '#000000';
+
 /**
  * Sets the visibility of the settings menu and individual options depending on
  * their respective features.
@@ -2259,6 +2266,7 @@ customize.loadColorsMenu = function() {
   // Configure custom color picker.
   if (configData.chromeColorsCustomColorPicker) {
     $(customize.IDS.COLOR_PICKER_TILE).onclick = function(event) {
+      $(customize.IDS.COLOR_PICKER).value = customize.customColorPicked;
       $(customize.IDS.COLOR_PICKER).click();
     };
     $(customize.IDS.COLOR_PICKER_TILE).onkeydown =
@@ -2321,8 +2329,7 @@ customize.colorsMenuPreselectTile = function() {
     tile = $(customize.IDS.COLOR_PICKER_TILE);
 
     // Update color picker tile colors.
-    $(customize.IDS.COLOR_PICKER).value =
-        colorArrayToHex(themeInfo.colorPicked);
+    customize.customColorPicked = colorArrayToHex(themeInfo.colorPicked);
     $(customize.IDS.COLORS_MENU)
         .style.setProperty(
             '--custom-color-border', colorArrayToHex(themeInfo.colorDark));

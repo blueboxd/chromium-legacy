@@ -23,6 +23,7 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
+#include "chrome/browser/net/dns_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/ssl_config_service_manager.h"
 #include "chrome/common/channel_info.h"
@@ -51,7 +52,6 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/user_agent.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
-#include "net/dns/public/util.h"
 #include "net/net_buildflags.h"
 #include "net/third_party/uri_template/uri_template.h"
 #include "services/network/network_service.h"
@@ -93,28 +93,23 @@ void GetStubResolverConfig(
   *insecure_stub_resolver_enabled =
       local_state->GetBoolean(prefs::kBuiltInDnsClientEnabled);
 
-  const auto& doh_server_list =
-      local_state->GetList(prefs::kDnsOverHttpsServers)->GetList();
-  const auto& doh_server_method_list =
-      local_state->GetList(prefs::kDnsOverHttpsServerMethods)->GetList();
+  std::string doh_mode = local_state->GetString(prefs::kDnsOverHttpsMode);
+  if (doh_mode == "secure")
+    *secure_dns_mode = net::DnsConfig::SecureDnsMode::SECURE;
+  else if (doh_mode == "automatic")
+    *secure_dns_mode = net::DnsConfig::SecureDnsMode::AUTOMATIC;
+  else
+    *secure_dns_mode = net::DnsConfig::SecureDnsMode::OFF;
 
-  // The two lists may have mismatched lengths during a pref change. Just skip
-  // the DOH server list updates then, as the configuration may be incorrect.
-  //
-  // TODO(mmenke): May need to improve safety here when / if DNS over HTTPS is
-  // exposed via settings, as it's possible for the old and new lengths to be
-  // the same, but the servers not to match. Either a PostTask or merging the
-  // prefs would work around that.
-  if (doh_server_list.size() == doh_server_method_list.size()) {
-    for (size_t i = 0; i < doh_server_list.size(); ++i) {
-      if (!doh_server_list[i].is_string() ||
-          !doh_server_method_list[i].is_string()) {
-        continue;
-      }
-
-      if (!net::dns_util::IsValidDoHTemplate(
-              doh_server_list[i].GetString(),
-              doh_server_method_list[i].GetString())) {
+  std::string doh_templates =
+      local_state->GetString(prefs::kDnsOverHttpsTemplates);
+  std::string server_method;
+  if (!doh_templates.empty() &&
+      *secure_dns_mode != net::DnsConfig::SecureDnsMode::OFF) {
+    for (const std::string& server_template :
+         SplitString(doh_templates, " ", base::TRIM_WHITESPACE,
+                     base::SPLIT_WANT_NONEMPTY)) {
+      if (!IsValidDoHTemplate(server_template, &server_method)) {
         continue;
       }
 
@@ -125,18 +120,11 @@ void GetStubResolverConfig(
 
       network::mojom::DnsOverHttpsServerPtr dns_over_https_server =
           network::mojom::DnsOverHttpsServer::New();
-      dns_over_https_server->server_template = doh_server_list[i].GetString();
-      dns_over_https_server->use_post =
-          (doh_server_method_list[i].GetString() == "POST");
+      dns_over_https_server->server_template = server_template;
+      dns_over_https_server->use_post = (server_method == "POST");
       (*dns_over_https_servers)->emplace_back(std::move(dns_over_https_server));
     }
   }
-
-  // TODO(crbug.com/985589): Read secure dns mode from prefs.
-  if (dns_over_https_servers->has_value())
-    *secure_dns_mode = net::DnsConfig::SecureDnsMode::AUTOMATIC;
-  else
-    *secure_dns_mode = net::DnsConfig::SecureDnsMode::OFF;
 }
 
 void OnStubResolverConfigChanged(PrefService* local_state,
@@ -384,31 +372,28 @@ SystemNetworkContextManager::SystemNetworkContextManager(
   // features before registering change callbacks for these preferences.
   local_state_->SetDefaultPrefValue(prefs::kBuiltInDnsClientEnabled,
                                     base::Value(ShouldEnableAsyncDns()));
-  base::ListValue default_doh_servers;
-  base::ListValue default_doh_server_methods;
+  std::string default_doh_mode = "off";
+  std::string default_doh_templates = "";
   if (base::FeatureList::IsEnabled(features::kDnsOverHttps)) {
-    std::string server(variations::GetVariationParamValueByFeature(
-        features::kDnsOverHttps, "server"));
-    std::string method(variations::GetVariationParamValueByFeature(
-        features::kDnsOverHttps, "method"));
-    if (!server.empty()) {
-      default_doh_servers.AppendString(server);
-      default_doh_server_methods.AppendString(method);
+    if (features::kDnsOverHttpsFallbackParam.Get()) {
+      default_doh_mode = "automatic";
+    } else {
+      default_doh_mode = "secure";
     }
+    default_doh_templates = features::kDnsOverHttpsTemplatesParam.Get();
   }
-  local_state_->SetDefaultPrefValue(prefs::kDnsOverHttpsServers,
-                                    std::move(default_doh_servers));
-  local_state_->SetDefaultPrefValue(prefs::kDnsOverHttpsServerMethods,
-                                    std::move(default_doh_server_methods));
+  local_state_->SetDefaultPrefValue(prefs::kDnsOverHttpsMode,
+                                    base::Value(default_doh_mode));
+  local_state_->SetDefaultPrefValue(prefs::kDnsOverHttpsTemplates,
+                                    base::Value(default_doh_templates));
 
   PrefChangeRegistrar::NamedChangeCallback dns_pref_callback =
       base::BindRepeating(&OnStubResolverConfigChanged,
                           base::Unretained(local_state_));
   pref_change_registrar_.Add(prefs::kBuiltInDnsClientEnabled,
                              dns_pref_callback);
-  pref_change_registrar_.Add(prefs::kDnsOverHttpsServers, dns_pref_callback);
-  pref_change_registrar_.Add(prefs::kDnsOverHttpsServerMethods,
-                             dns_pref_callback);
+  pref_change_registrar_.Add(prefs::kDnsOverHttpsMode, dns_pref_callback);
+  pref_change_registrar_.Add(prefs::kDnsOverHttpsTemplates, dns_pref_callback);
 
   PrefChangeRegistrar::NamedChangeCallback auth_pref_callback =
       base::BindRepeating(&OnAuthPrefsChanged, base::Unretained(local_state_));
@@ -456,8 +441,8 @@ void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
   // captured). Thus, the preference defaults are updated in the constructor
   // for SystemNetworkContextManager, at which point the feature list is ready.
   registry->RegisterBooleanPref(prefs::kBuiltInDnsClientEnabled, false);
-  registry->RegisterListPref(prefs::kDnsOverHttpsServers);
-  registry->RegisterListPref(prefs::kDnsOverHttpsServerMethods);
+  registry->RegisterStringPref(prefs::kDnsOverHttpsMode, std::string());
+  registry->RegisterStringPref(prefs::kDnsOverHttpsTemplates, std::string());
 
   // Static auth params
   registry->RegisterStringPref(prefs::kAuthSchemes,

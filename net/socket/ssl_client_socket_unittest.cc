@@ -1267,6 +1267,32 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
   }
 };
 
+// Sends an HTTP request on the socket and reads the response. This may be used
+// to ensure some data has been consumed from the server.
+int MakeHTTPRequest(StreamSocket* socket) {
+  base::StringPiece request = "GET / HTTP/1.0\r\n\r\n";
+  TestCompletionCallback callback;
+  while (!request.empty()) {
+    auto request_buffer =
+        base::MakeRefCounted<StringIOBuffer>(request.as_string());
+    int rv = callback.GetResult(
+        socket->Write(request_buffer.get(), request_buffer->size(),
+                      callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
+    if (rv < 0) {
+      return rv;
+    }
+    request = request.substr(rv);
+  }
+
+  auto response_buffer = base::MakeRefCounted<IOBuffer>(1024);
+  int rv = callback.GetResult(
+      socket->Read(response_buffer.get(), 1024, callback.callback()));
+  if (rv < 0) {
+    return rv;
+  }
+  return OK;
+}
+
 // Provides a response to the 0RTT request indicating whether it was received
 // as early data.
 class ZeroRTTResponse : public test_server::HttpResponse {
@@ -1384,13 +1410,7 @@ class SSLClientSocketZeroRTTTest : public SSLClientSocketTest {
 
     // Use the socket for an HTTP request to ensure we've processed the
     // post-handshake TLS 1.3 ticket.
-    constexpr base::StringPiece kRequest = "GET / HTTP/1.0\r\n\r\n";
-    if (kRequest.size() != WriteAndWait(kRequest))
-      return false;
-
-    scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(4096);
-    if (ReadAndWait(buf.get(), 4096) <= 0)
-      return false;
+    EXPECT_THAT(MakeHTTPRequest(ssl_socket_.get()), IsOk());
 
     SSLInfo ssl_info;
     EXPECT_TRUE(GetSSLInfo(&ssl_info));
@@ -1745,14 +1765,10 @@ TEST_F(SSLClientSocketTest, Connect_WithSynchronousError) {
   int rv = callback.GetResult(transport->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
 
-  // Disable TLS False Start to avoid handshake non-determinism.
-  SSLConfig ssl_config;
-  ssl_config.false_start_enabled = false;
-
   SynchronousErrorStreamSocket* raw_transport = transport.get();
   std::unique_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
       std::move(transport), spawned_test_server()->host_port_pair(),
-      ssl_config));
+      SSLConfig()));
 
   raw_transport->SetNextWriteError(ERR_CONNECTION_RESET);
 
@@ -1776,14 +1792,10 @@ TEST_P(SSLClientSocketReadTest, Read_WithSynchronousError) {
   int rv = callback.GetResult(transport->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
 
-  // Disable TLS False Start to avoid handshake non-determinism.
-  SSLConfig ssl_config;
-  ssl_config.false_start_enabled = false;
-
   SynchronousErrorStreamSocket* raw_transport = transport.get();
   std::unique_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
       std::move(transport), spawned_test_server()->host_port_pair(),
-      ssl_config));
+      SSLConfig()));
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
@@ -1834,13 +1846,9 @@ TEST_F(SSLClientSocketTest, Write_WithSynchronousError) {
   int rv = callback.GetResult(transport->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
 
-  // Disable TLS False Start to avoid handshake non-determinism.
-  SSLConfig ssl_config;
-  ssl_config.false_start_enabled = false;
-
   std::unique_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
       std::move(transport), spawned_test_server()->host_port_pair(),
-      ssl_config));
+      SSLConfig()));
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
@@ -1903,13 +1911,9 @@ TEST_F(SSLClientSocketTest, Write_WithSynchronousErrorNoRead) {
   int rv = callback.GetResult(counting_socket->Connect(callback.callback()));
   ASSERT_THAT(rv, IsOk());
 
-  // Disable TLS False Start to avoid handshake non-determinism.
-  SSLConfig ssl_config;
-  ssl_config.false_start_enabled = false;
-
   std::unique_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
       std::move(counting_socket), spawned_test_server()->host_port_pair(),
-      ssl_config));
+      SSLConfig()));
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   ASSERT_THAT(rv, IsOk());
@@ -2008,13 +2012,9 @@ TEST_P(SSLClientSocketReadTest, Read_DeleteWhilePendingFullDuplex) {
   int rv = callback.GetResult(transport->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
 
-  // Disable TLS False Start to avoid handshake non-determinism.
-  SSLConfig ssl_config;
-  ssl_config.false_start_enabled = false;
-
   std::unique_ptr<SSLClientSocket> sock = CreateSSLClientSocket(
       std::move(transport), spawned_test_server()->host_port_pair(),
-      ssl_config);
+      SSLConfig());
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
@@ -2094,13 +2094,9 @@ TEST_P(SSLClientSocketReadTest, Read_WithWriteError) {
   int rv = callback.GetResult(transport->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
 
-  // Disable TLS False Start to avoid handshake non-determinism.
-  SSLConfig ssl_config;
-  ssl_config.false_start_enabled = false;
-
   std::unique_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
       std::move(transport), spawned_test_server()->host_port_pair(),
-      ssl_config));
+      SSLConfig()));
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
@@ -2204,14 +2200,10 @@ TEST_P(SSLClientSocketReadTest, Read_WithZeroReturn) {
   int rv = callback.GetResult(transport->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
 
-  // Disable TLS False Start to ensure the handshake has completed.
-  SSLConfig ssl_config;
-  ssl_config.false_start_enabled = false;
-
   SynchronousErrorStreamSocket* raw_transport = transport.get();
   std::unique_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
       std::move(transport), spawned_test_server()->host_port_pair(),
-      ssl_config));
+      SSLConfig()));
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
@@ -2241,13 +2233,9 @@ TEST_P(SSLClientSocketReadTest, Read_WithAsyncZeroReturn) {
   int rv = callback.GetResult(transport->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
 
-  // Disable TLS False Start to ensure the handshake has completed.
-  SSLConfig ssl_config;
-  ssl_config.false_start_enabled = false;
-
   std::unique_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
       std::move(transport), spawned_test_server()->host_port_pair(),
-      ssl_config));
+      SSLConfig()));
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
@@ -3223,8 +3211,6 @@ TEST_F(SSLClientSocketTest, SessionResumptionAlpn) {
 
   // First, perform a full handshake.
   SSLConfig ssl_config;
-  // Disable TLS False Start to ensure the handshake has completed.
-  ssl_config.false_start_enabled = false;
   ssl_config.alpn_protos.push_back(kProtoHTTP2);
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
@@ -3233,6 +3219,10 @@ TEST_F(SSLClientSocketTest, SessionResumptionAlpn) {
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
   EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
   EXPECT_EQ(kProtoHTTP2, sock_->GetNegotiatedProtocol());
+
+  // TLS 1.2 with False Start and TLS 1.3 cause the ticket to arrive later, so
+  // use the socket to ensure the session ticket has been picked up.
+  EXPECT_THAT(MakeHTTPRequest(sock_.get()), IsOk());
 
   // The next connection should resume; ALPN should be renegotiated.
   ssl_config.alpn_protos.clear();
@@ -5766,23 +5756,9 @@ TEST_P(SSLHandshakeDetailsTest, Metrics) {
     histograms.ExpectUniqueSample("Net.SSLHandshakeDetails",
                                   GetParam().expected_initial, 1);
 
-    // Use the socket to ensure the session ticket has been picked up.
-    base::StringPiece request = "GET / HTTP/1.0\r\n\r\n";
-    TestCompletionCallback callback;
-    while (!request.empty()) {
-      auto request_buffer =
-          base::MakeRefCounted<StringIOBuffer>(request.as_string());
-      rv = callback.GetResult(
-          sock_->Write(request_buffer.get(), request_buffer->size(),
-                       callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
-      ASSERT_GT(rv, 0);
-      request = request.substr(rv);
-    }
-
-    auto response_buffer = base::MakeRefCounted<IOBuffer>(1024);
-    rv = callback.GetResult(
-        sock_->Read(response_buffer.get(), 1024, callback.callback()));
-    ASSERT_GT(rv, 0);
+    // TLS 1.2 with False Start and TLS 1.3 cause the ticket to arrive later, so
+    // use the socket to ensure the session ticket has been picked up.
+    EXPECT_THAT(MakeHTTPRequest(sock_.get()), IsOk());
   }
 
   // Make a resumption connection.

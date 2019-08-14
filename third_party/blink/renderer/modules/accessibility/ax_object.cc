@@ -1425,7 +1425,7 @@ bool AXObject::AncestorExposesActiveDescendant() const {
 }
 
 bool AXObject::HasIndirectChildren() const {
-  return IsTableCol() || RoleValue() == ax::mojom::Role::kTableHeaderContainer;
+  return RoleValue() == ax::mojom::Role::kTableHeaderContainer;
 }
 
 bool AXObject::CanSetSelectedAttribute() const {

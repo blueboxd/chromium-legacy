@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
@@ -78,13 +79,13 @@ const struct {
      kResourceNotFoundId},
     {"settings", IDR_ANDROID_AUTOFILL_SETTINGS, kResourceNotFoundId},
     {"create", IDR_ANDROID_AUTOFILL_CREATE, kResourceNotFoundId},
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"googlePay", IDR_ANDROID_AUTOFILL_GOOGLE_PAY, kResourceNotFoundId},
-#endif  // GOOGLE_CHROME_BUILD
-#elif defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#elif BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"googlePay", IDR_AUTOFILL_GOOGLE_PAY, kResourceNotFoundId},
     {"googlePayDark", IDR_AUTOFILL_GOOGLE_PAY_DARK, kResourceNotFoundId},
-#endif  // GOOGLE_CHROME_BUILD
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 };
 
 int GetRowHeightFromId(int identifier) {
@@ -233,7 +234,7 @@ gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
     return gfx::CreateVectorIcon(kGlobeIcon, kIconSize, gfx::kChromeIconGrey);
   }
   if (icon_str == "google") {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     return gfx::CreateVectorIcon(kGoogleGLogoIcon, kIconSize,
                                  gfx::kPlaceholderColor);
 #else
@@ -241,7 +242,7 @@ gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
 #endif
   }
 
-#if !defined(GOOGLE_CHROME_BUILD)
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (icon_str == "googlePay" || icon_str == "googlePayDark") {
     return gfx::ImageSkia();
   }
@@ -283,7 +284,7 @@ gfx::Rect AutofillPopupLayoutModel::GetRowBounds(size_t index) const {
 
 int AutofillPopupLayoutModel::GetIconResourceID(
     const std::string& resource_name) const {
-#if !defined(GOOGLE_CHROME_BUILD)
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (resource_name == "googlePay" || resource_name == "googlePayDark") {
     return 0;
   }

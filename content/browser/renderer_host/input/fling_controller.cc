@@ -143,6 +143,14 @@ bool FlingController::ObserveAndMaybeConsumeGestureEvent(
 
 void FlingController::ProcessGestureFlingStart(
     const GestureEventWithLatencyInfo& gesture_event) {
+  // Don't start a touchpad gesture fling if the previous scroll events were
+  // consumed.
+  if (gesture_event.event.SourceDevice() ==
+          blink::WebGestureDevice::kTouchpad &&
+      last_wheel_event_consumed_) {
+    return;
+  }
+
   if (!UpdateCurrentFlingState(gesture_event.event))
     return;
 
@@ -393,6 +401,13 @@ gfx::Vector2dF FlingController::CurrentFlingVelocity() const {
 TouchpadTapSuppressionController*
 FlingController::GetTouchpadTapSuppressionController() {
   return &touchpad_tap_suppression_controller_;
+}
+
+void FlingController::OnWheelEventAck(
+    const MouseWheelEventWithLatencyInfo& event,
+    InputEventAckSource ack_source,
+    InputEventAckState ack_result) {
+  last_wheel_event_consumed_ = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
 }
 
 }  // namespace content

@@ -4082,6 +4082,7 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="Get upload details RPC failed"/>
   <int value="6" label="All cards are unsupported"/>
   <int value="7" label="Single local card"/>
+  <int value="8" label="User used unsupported local card"/>
 </enum>
 
 <enum name="AutofillLocalCardMigrationDialogOffer">
@@ -8798,6 +8799,13 @@ histogram as enum -->
   <int value="5" label="Cookies and Cache"/>
   <int value="6" label="Storage and Cache"/>
   <int value="7" label="Cookies, Storage, and Cache"/>
+</enum>
+
+<enum name="ClickToCallDeviceState">
+  <int value="0" label="Screen off, in background"/>
+  <int value="1" label="Screen on, in background"/>
+  <int value="2" label="Screen off, in foreground"/>
+  <int value="3" label="Screen on, in foreground"/>
 </enum>
 
 <enum name="ClientAppId">
@@ -19013,7 +19021,7 @@ Called by update_net_error_codes.py.-->
       label="DELETED_EXPERIMENTAL_MEDIAGALLERIES_ASSEMBLEMEDIAFILE"/>
   <int value="150" label="BOOKMARKMANAGERPRIVATE_STARTDRAG"/>
   <int value="151" label="BROWSINGDATA_REMOVEPASSWORDS"/>
-  <int value="152" label="DOWNLOADS_DRAG"/>
+  <int value="152" label="DELETED_DOWNLOADS_DRAG"/>
   <int value="153" label="INPUT_IME_SETCOMPOSITION"/>
   <int value="154" label="METRICSPRIVATE_RECORDUSERACTION"/>
   <int value="155" label="USB_RELEASEINTERFACE"/>

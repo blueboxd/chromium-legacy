@@ -16,6 +16,7 @@
 #include "base/one_shot_event.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -71,11 +72,11 @@ VerifyStatus GetExperimentStatus() {
     return VerifyStatus::ENFORCE_STRICT;
   }
 
-#if defined(GOOGLE_CHROME_BUILD) && (defined(OS_WIN) || defined(OS_MACOSX))
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && (defined(OS_WIN) || defined(OS_MACOSX))
   VerifyStatus default_status = VerifyStatus::ENFORCE;
 #else
   VerifyStatus default_status = VerifyStatus::NONE;
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   if (group == "EnforceStrict")
     return VerifyStatus::ENFORCE_STRICT;

@@ -114,9 +114,10 @@ public class ExploreSitesBackgroundTaskUnitTest {
         boolean powerSaveModeOn = true;
         int highBatteryLevel = 75;
         boolean metered = true;
+        boolean screenOnAndUnlocked = true;
 
-        DeviceConditions deviceConditions = new DeviceConditions(
-                !powerConnected, highBatteryLevel, connectionType, !powerSaveModeOn, !metered);
+        DeviceConditions deviceConditions = new DeviceConditions(!powerConnected, highBatteryLevel,
+                connectionType, !powerSaveModeOn, !metered, screenOnAndUnlocked);
         ShadowDeviceConditions.setCurrentConditions(deviceConditions);
     }
 

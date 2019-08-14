@@ -10,9 +10,10 @@ from __future__ import print_function
 
 import os.path
 import sys
-import types
 import xml.sax
 import xml.sax.handler
+
+import six
 
 from grit import exception
 from grit import util
@@ -187,7 +188,7 @@ def Parse(filename_or_stream, dir=None, stop_after=None, first_ids_file=None,
     grit.exception.Parsing
   '''
 
-  if isinstance(filename_or_stream, types.StringType):
+  if isinstance(filename_or_stream, six.string_types):
     source = filename_or_stream
     if dir is None:
       dir = util.dirname(filename_or_stream)

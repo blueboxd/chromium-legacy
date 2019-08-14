@@ -217,8 +217,6 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/call_stack_profile_collector.h"
 #include "components/metrics/client_info.h"
-#include "components/mirroring/mojom/constants.mojom.h"
-#include "components/mirroring/service/features.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/nacl/common/nacl_constants.h"
 #include "components/net_log/chrome_net_log.h"

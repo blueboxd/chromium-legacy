@@ -85,9 +85,9 @@
 
     <!-- Compositor Tab Colors -->
     <color name="compositor_background_tab_bg">@color/modern_grey_300</color>
-    <color name="compositor_background_tab_bg_incognito">#2A2D2F</color>
+    <color name="compositor_background_tab_bg_incognito">@color/modern_grey_900</color>
     <color name="compositor_background_tab_outline">#ACB1B6</color>
-    <color name="compositor_background_tab_outline_incognito">#0E0F10</color>
+    <color name="compositor_background_tab_outline_incognito">@android:color/black</color>
 
     <!-- Compositor Tab Title Colors -->
     <color name="compositor_tab_title_bar_text">@color/default_text_color</color>
@@ -125,11 +125,11 @@
     <color name="progress_bar_background">#3D4386F7</color>
 
     <!-- Incognito background and branding colors -->
-    <color name="incognito_modern_primary_color">@color/modern_grey_800</color>
+    <color name="incognito_modern_primary_color">@color/default_bg_color_dark_elev_3</color>
 
     <!-- Toolbar colors -->
     <color name="toolbar_background_primary">@color/default_bg_color_elev_3</color>
-    <color name="toolbar_background_primary_incognito">@color/modern_grey_800</color>
+    <color name="toolbar_background_primary_incognito">@color/default_bg_color_dark_elev_3</color>
     <color name="toolbar_text_box_background">@color/modern_grey_100</color>
     <color name="toolbar_text_box_background_incognito">@color/black_alpha_38</color>
     <color name="toolbar_shadow_color">@color/black_alpha_11</color>

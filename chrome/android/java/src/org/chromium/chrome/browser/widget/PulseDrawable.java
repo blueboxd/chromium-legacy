@@ -199,8 +199,7 @@ public class PulseDrawable extends Drawable implements Animatable {
     public void setUseLightPulseColor(Resources resources, boolean useLightPulseColor) {
         @ColorInt
         int color = ApiCompatibilityUtils.getColor(resources,
-                useLightPulseColor ? R.color.modern_secondary_color
-                                   : R.color.default_icon_color_blue);
+                useLightPulseColor ? R.color.modern_blue_300 : R.color.default_icon_color_blue);
         if (mState.color == color) return;
 
         int alpha = getAlpha();

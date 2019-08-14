@@ -16,13 +16,25 @@ class RenderFrameHost;
 // messages.
 class CONTENT_EXPORT SmsDialog {
  public:
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content_public.browser.sms
+  enum Event {
+    // User manually clicked the 'Confirm' button.
+    kConfirm = 0,
+    // User manually dismissed the SMS dialog.
+    kCancel = 1,
+    // User manually clicked 'Try again' button after a timeout.
+    kTimeout = 2,
+  };
+
+  using EventHandler = base::OnceCallback<void(Event)>;
+
   SmsDialog() = default;
   virtual ~SmsDialog() = default;
-  virtual void Open(content::RenderFrameHost* host,
-                    base::OnceClosure on_confirm,
-                    base::OnceClosure on_cancel) = 0;
+  virtual void Open(RenderFrameHost* host, EventHandler handler) = 0;
   virtual void Close() = 0;
   virtual void SmsReceived() = 0;
+  virtual void SmsTimeout() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SmsDialog);

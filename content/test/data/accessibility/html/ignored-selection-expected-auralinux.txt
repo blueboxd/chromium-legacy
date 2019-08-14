@@ -1,0 +1,5 @@
+[document web]
+++[text] name='this text is not ignored'
+++[section]
+++++[text] name='after selection'
+++[text] name='Done'

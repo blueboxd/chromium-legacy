@@ -14,6 +14,7 @@
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/service/external_vk_image_gl_representation.h"
 #include "gpu/command_buffer/service/external_vk_image_skia_representation.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/vulkan/vulkan_command_buffer.h"
 #include "gpu/vulkan/vulkan_command_pool.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
@@ -37,12 +38,28 @@ GrVkImageInfo CreateGrVkImageInfo(VkImage image,
                                   VkFormat vk_format,
                                   VkDeviceMemory memory,
                                   size_t memory_size,
-                                  bool use_protected_memory) {
+                                  bool use_protected_memory,
+                                  base::Optional<VulkanYCbCrInfo> ycbcr_info) {
+  GrVkYcbcrConversionInfo gr_ycbcr_info{};
+  if (ycbcr_info) {
+    gr_ycbcr_info = GrVkYcbcrConversionInfo(
+        static_cast<VkFormat>(ycbcr_info->image_format),
+        ycbcr_info->external_format,
+        static_cast<VkSamplerYcbcrModelConversion>(
+            ycbcr_info->suggested_ycbcr_model),
+        static_cast<VkSamplerYcbcrRange>(ycbcr_info->suggested_ycbcr_range),
+        static_cast<VkChromaLocation>(ycbcr_info->suggested_xchroma_offset),
+        static_cast<VkChromaLocation>(ycbcr_info->suggested_ychroma_offset),
+        static_cast<VkFilter>(VK_FILTER_LINEAR),
+        /*forceExplicitReconstruction=*/false,
+        static_cast<VkFormatFeatureFlags>(ycbcr_info->format_features));
+  }
   GrVkAlloc alloc(memory, 0 /* offset */, memory_size, 0 /* flags */);
   return GrVkImageInfo(
       image, alloc, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_LAYOUT_UNDEFINED,
       vk_format, 1 /* levelCount */, VK_QUEUE_FAMILY_IGNORED,
-      use_protected_memory ? GrProtected::kYes : GrProtected::kNo);
+      use_protected_memory ? GrProtected::kYes : GrProtected::kNo,
+      gr_ycbcr_info);
 }
 
 VkResult CreateVkImage(SharedContextState* context_state,
@@ -140,7 +157,8 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
     const gfx::ColorSpace& color_space,
     uint32_t usage,
     base::span<const uint8_t> pixel_data,
-    bool using_gmb) {
+    bool using_gmb,
+    base::Optional<VulkanYCbCrInfo> ycbcr_info) {
   VkDevice device =
       context_state->vk_context_provider()->GetDeviceQueue()->GetVulkanDevice();
   VkFormat vk_format = ToVkFormat(format);
@@ -206,7 +224,7 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
 
   auto backing = base::WrapUnique(new ExternalVkImageBacking(
       mailbox, format, size, color_space, usage, context_state, image, memory,
-      requirements.size, vk_format, command_pool));
+      requirements.size, vk_format, command_pool, ycbcr_info));
 
   if (!pixel_data.empty()) {
     backing->WritePixels(
@@ -229,11 +247,6 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage) {
-  if (gfx::NumberOfPlanesForLinearBufferFormat(buffer_format) != 1) {
-    DLOG(ERROR) << "Invalid image format.";
-    return nullptr;
-  }
-
   if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(size, buffer_format)) {
     DLOG(ERROR) << "Invalid image size for format.";
     return nullptr;
@@ -250,17 +263,18 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
     VkImageCreateInfo vk_image_info = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
     VkDeviceMemory vk_device_memory = VK_NULL_HANDLE;
     VkDeviceSize memory_size = 0;
+    base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info;
 
     if (!vulkan_implementation->CreateImageFromGpuMemoryHandle(
             vk_device, std::move(handle), size, &vk_image, &vk_image_info,
-            &vk_device_memory, &memory_size)) {
+            &vk_device_memory, &memory_size, &ycbcr_info)) {
       DLOG(ERROR) << "Failed to create VkImage from GpuMemoryHandle.";
       return nullptr;
     }
 
     VkFormat expected_format = ToVkFormat(resource_format);
     if (expected_format != vk_image_info.format) {
-      DLOG(ERROR) << "BufferFormat doesn't match the buffer";
+      DLOG(ERROR) << "BufferFormat doesn't match the buffer ";
       vkFreeMemory(vk_device, vk_device_memory, nullptr);
       vkDestroyImage(vk_device, vk_image, nullptr);
       return nullptr;
@@ -269,7 +283,12 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
     return base::WrapUnique(new ExternalVkImageBacking(
         mailbox, viz::GetResourceFormat(buffer_format), size, color_space,
         usage, context_state, vk_image, vk_device_memory, memory_size,
-        vk_image_info.format, command_pool));
+        vk_image_info.format, command_pool, ycbcr_info));
+  }
+
+  if (gfx::NumberOfPlanesForLinearBufferFormat(buffer_format) != 1) {
+    DLOG(ERROR) << "Invalid image format.";
+    return nullptr;
   }
 
   DCHECK_EQ(handle.type, gfx::SHARED_MEMORY_BUFFER);
@@ -363,7 +382,8 @@ ExternalVkImageBacking::ExternalVkImageBacking(
     VkDeviceMemory memory,
     size_t memory_size,
     VkFormat vk_format,
-    VulkanCommandPool* command_pool)
+    VulkanCommandPool* command_pool,
+    base::Optional<VulkanYCbCrInfo> ycbcr_info)
     : SharedImageBacking(mailbox,
                          format,
                          size,
@@ -372,14 +392,14 @@ ExternalVkImageBacking::ExternalVkImageBacking(
                          memory_size,
                          false /* is_thread_safe */),
       context_state_(context_state),
-      backend_texture_(
-          size.width(),
-          size.height(),
-          CreateGrVkImageInfo(image,
-                              vk_format,
-                              memory,
-                              memory_size,
-                              usage & SHARED_IMAGE_USAGE_PROTECTED)),
+      backend_texture_(size.width(),
+                       size.height(),
+                       CreateGrVkImageInfo(image,
+                                           vk_format,
+                                           memory,
+                                           memory_size,
+                                           usage & SHARED_IMAGE_USAGE_PROTECTED,
+                                           ycbcr_info)),
       command_pool_(command_pool) {}
 
 ExternalVkImageBacking::~ExternalVkImageBacking() {

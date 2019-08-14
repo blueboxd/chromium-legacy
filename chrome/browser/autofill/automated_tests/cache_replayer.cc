@@ -526,6 +526,7 @@ bool ServerCacheReplayer::GetResponseForQuery(
     VLOG(1) << "Did not match any response for " << key;
     return false;
   }
+  VLOG(1) << "Retrieving response for " << key;
   std::string decompressed_http_response;
   // Safe to use at() here since we looked for key's presence and there is no
   // mutation done when there is concurrency.

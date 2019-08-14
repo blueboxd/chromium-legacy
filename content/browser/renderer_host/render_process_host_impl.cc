@@ -188,10 +188,8 @@
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "media/webrtc/webrtc_switches.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -1115,10 +1113,10 @@ GetStoragePartitionServiceRequestHandler() {
   return *instance;
 }
 
-RenderProcessHostImpl::BroadcastChannelProviderRequestHandler&
-GetBroadcastChannelProviderRequestHandler() {
+RenderProcessHostImpl::BroadcastChannelProviderReceiverHandler&
+GetBroadcastChannelProviderReceiverHandler() {
   static base::NoDestructor<
-      RenderProcessHostImpl::BroadcastChannelProviderRequestHandler>
+      RenderProcessHostImpl::BroadcastChannelProviderReceiverHandler>
       instance;
   return *instance;
 }
@@ -1591,9 +1589,10 @@ void RenderProcessHostImpl::SetStoragePartitionServiceRequestHandlerForTesting(
   GetStoragePartitionServiceRequestHandler() = handler;
 }
 
-void RenderProcessHostImpl::SetBroadcastChannelProviderRequestHandlerForTesting(
-    BroadcastChannelProviderRequestHandler handler) {
-  GetBroadcastChannelProviderRequestHandler() = handler;
+void RenderProcessHostImpl::
+    SetBroadcastChannelProviderReceiverHandlerForTesting(
+        BroadcastChannelProviderReceiverHandler handler) {
+  GetBroadcastChannelProviderReceiverHandler() = handler;
 }
 
 RenderProcessHostImpl::~RenderProcessHostImpl() {
@@ -2275,8 +2274,11 @@ void RenderProcessHostImpl::CreateStoragePartitionService(
 
 void RenderProcessHostImpl::CreateBroadcastChannelProvider(
     blink::mojom::BroadcastChannelProviderRequest request) {
-  if (!GetBroadcastChannelProviderRequestHandler().is_null()) {
-    GetBroadcastChannelProviderRequestHandler().Run(this, std::move(request));
+  // |request| is converted into
+  // mojo::PendingReceiver<blink::mojom::BroadcastChannelProvider> while
+  // RenderProcessHostImpl uses service_manager::BinderRegistry.
+  if (!GetBroadcastChannelProviderReceiverHandler().is_null()) {
+    GetBroadcastChannelProviderReceiverHandler().Run(this, std::move(request));
     return;
   }
 

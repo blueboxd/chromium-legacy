@@ -5,6 +5,7 @@
 #include "media/base/simple_watch_timer.h"
 
 #include "base/location.h"
+#include "media/base/timestamp_constants.h"
 
 namespace media {
 
@@ -43,7 +44,11 @@ void SimpleWatchTimer::Stop() {
 
 void SimpleWatchTimer::Tick() {
   base::TimeDelta current_time = get_current_time_cb_.Run();
-  base::TimeDelta duration = current_time - last_current_time_;
+  base::TimeDelta duration;
+  if (last_current_time_ != kNoTimestamp &&
+      last_current_time_ != kInfiniteDuration) {
+    duration = current_time - last_current_time_;
+  }
   last_current_time_ = current_time;
 
   // Accumulate watch time if the duration is reasonable.

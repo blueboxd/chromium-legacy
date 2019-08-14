@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "gpu/vulkan/semaphore_handle.h"
 #include "gpu/vulkan/vulkan_export.h"
@@ -107,7 +108,8 @@ class VULKAN_EXPORT VulkanImplementation {
       VkImage* vk_image,
       VkImageCreateInfo* vk_image_info,
       VkDeviceMemory* vk_device_memory,
-      VkDeviceSize* mem_allocation_size) = 0;
+      VkDeviceSize* mem_allocation_size,
+      base::Optional<VulkanYCbCrInfo>* ycbcr_info) = 0;
 
 #if defined(OS_ANDROID)
   // Create a VkImage, import Android AHardwareBuffer object created outside of

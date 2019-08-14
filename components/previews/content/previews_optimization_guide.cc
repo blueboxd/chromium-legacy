@@ -18,6 +18,7 @@
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/hints_fetcher.h"
+#include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
@@ -27,7 +28,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_user_data.h"
-#include "components/previews/core/previews_constants.h"
 #include "components/previews/core/previews_switches.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
@@ -154,8 +154,8 @@ void PreviewsOptimizationGuide::OnLoadedHint(
 
   // Record that the hint finished loading. This is used as a signal during
   // tests.
-  LOCAL_HISTOGRAM_BOOLEAN(
-      kPreviewsOptimizationGuideOnLoadedHintResultHistogramString, loaded_hint);
+  LOCAL_HISTOGRAM_BOOLEAN(optimization_guide::kLoadedHintLocalHistogramString,
+                          loaded_hint);
 
   // Run the callback now that the hint is loaded. This is used as a signal by
   // tests.

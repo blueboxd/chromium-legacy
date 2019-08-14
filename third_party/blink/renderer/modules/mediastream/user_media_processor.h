@@ -6,9 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_PROCESSOR_H_
 
 #include <memory>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -19,7 +17,6 @@
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
-#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_audio.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -140,7 +137,7 @@ class MODULES_EXPORT UserMediaProcessor {
 
  private:
   class RequestInfo;
-  using LocalStreamSources = std::vector<blink::WebMediaStreamSource>;
+  using LocalStreamSources = Vector<blink::WebMediaStreamSource>;
 
   void OnStreamGenerated(int request_id,
                          blink::mojom::blink::MediaStreamRequestResult result,
@@ -185,13 +182,11 @@ class MODULES_EXPORT UserMediaProcessor {
 
   void StartTracks(const String& label);
 
-  void CreateVideoTracks(
-      const Vector<blink::MediaStreamDevice>& devices,
-      blink::WebVector<blink::WebMediaStreamTrack>* webkit_tracks);
+  void CreateVideoTracks(const Vector<blink::MediaStreamDevice>& devices,
+                         Vector<blink::WebMediaStreamTrack>* webkit_tracks);
 
-  void CreateAudioTracks(
-      const Vector<blink::MediaStreamDevice>& devices,
-      blink::WebVector<blink::WebMediaStreamTrack>* webkit_tracks);
+  void CreateAudioTracks(const Vector<blink::MediaStreamDevice>& devices,
+                         Vector<blink::WebMediaStreamTrack>* webkit_tracks);
 
   // Callback function triggered when all native versions of the
   // underlying media sources and tracks have been created and started.

@@ -507,6 +507,11 @@ struct URLLoaderFactoryParams {
 
   // Key used to isolate shared network resources like the cache.
   NetworkIsolationKey? network_isolation_key;
+
+  // True if this is for exclusive use by a trusted consumer. Only trusted
+  // consumers can issue requests with ResourceRequest::trusted_params
+  // populated.
+  bool is_trusted;
 };
 
 // Callback interface for NetworkContext when routing identifiers aren't

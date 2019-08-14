@@ -90,12 +90,8 @@ EffectPaintPropertyNode::State LinkHighlightEffectNodeState(
 }  // namespace
 
 static CompositorElementId NewElementId() {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    return CompositorElementIdFromUniqueObjectId(
-        NewUniqueObjectId(), CompositorElementIdNamespace::kPrimaryEffect);
-  }
-  return CompositorElementIdFromUniqueObjectId(NewUniqueObjectId());
+  return CompositorElementIdFromUniqueObjectId(
+      NewUniqueObjectId(), CompositorElementIdNamespace::kPrimaryEffect);
 }
 
 LinkHighlightImpl::LinkHighlightImpl(Node* node)
@@ -109,12 +105,6 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node)
       element_id_(NewElementId()) {
   DCHECK(node_);
   fragments_.emplace_back();
-
-  // The layer's element id is required for animating layers in layer trees.
-  // When using layer lists, the element id is set on the effect node.
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    fragments_[0].Layer()->SetElementId(element_id_);
 
   compositor_animation_ = CompositorAnimation::Create();
   DCHECK(compositor_animation_);
@@ -297,12 +287,10 @@ bool LinkHighlightImpl::ComputeHighlightLayerPathAndPosition(
 
   layer->SetPosition(bounding_rect.Location());
 
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    offset_from_transform_node_ =
-        FloatPoint(current_graphics_layer_->GetOffsetFromTransformNode());
-    offset_from_transform_node_.MoveBy(bounding_rect.Location());
-    SetPaintArtifactCompositorNeedsUpdate();
-  }
+  offset_from_transform_node_ =
+      FloatPoint(current_graphics_layer_->GetOffsetFromTransformNode());
+  offset_from_transform_node_.MoveBy(bounding_rect.Location());
+  SetPaintArtifactCompositorNeedsUpdate();
 
   return path_has_changed;
 }

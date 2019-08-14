@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -57,7 +58,7 @@ TrialComparisonCertVerifierController::
 bool TrialComparisonCertVerifierController::MaybeAllowedForProfile(
     Profile* profile) {
   bool is_official_build = g_is_fake_official_build_for_cert_verifier_testing;
-#if defined(OFFICIAL_BUILD) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OFFICIAL_BUILD) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   is_official_build = true;
 #endif
 

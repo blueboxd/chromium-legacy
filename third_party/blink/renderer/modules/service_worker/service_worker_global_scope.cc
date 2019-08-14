@@ -1277,9 +1277,9 @@ void ServiceWorkerGlobalScope::OnIdleTimeout() {
   // We use CrossThreadBindOnce() here because the callback may be destroyed on
   // the main thread if the worker thread has already terminated.
   To<ServiceWorkerGlobalScopeProxy>(ReportingProxy())
-      .RequestTermination(ConvertToBaseOnceCallback(
+      .RequestTermination(
           CrossThreadBindOnce(&ServiceWorkerGlobalScope::OnRequestedTermination,
-                              WrapCrossThreadWeakPersistent(this))));
+                              WrapCrossThreadWeakPersistent(this)));
 }
 
 void ServiceWorkerGlobalScope::OnRequestedTermination(bool will_be_terminated) {

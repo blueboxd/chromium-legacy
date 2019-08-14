@@ -649,7 +649,10 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
     if (!ycbcr_info)
       return GrBackendFormat::MakeVk(ToVkFormat(resource_format));
 
-    GrVkYcbcrConversionInfo fYcbcrConversionInfo(
+    VkFormat format = ycbcr_info->external_format ? VK_FORMAT_UNDEFINED
+                                                  : ToVkFormat(resource_format);
+    GrVkYcbcrConversionInfo gr_ycbcr_info(
+        format, ycbcr_info->external_format,
         static_cast<VkSamplerYcbcrModelConversion>(
             ycbcr_info->suggested_ycbcr_model),
         static_cast<VkSamplerYcbcrRange>(ycbcr_info->suggested_ycbcr_range),
@@ -657,9 +660,8 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
         static_cast<VkChromaLocation>(ycbcr_info->suggested_ychroma_offset),
         VK_FILTER_LINEAR,  // VkFilter
         0,                 // VkBool32 forceExplicitReconstruction,
-        ycbcr_info->external_format,
         static_cast<VkFormatFeatureFlags>(ycbcr_info->format_features));
-    return GrBackendFormat::MakeVk(fYcbcrConversionInfo);
+    return GrBackendFormat::MakeVk(gr_ycbcr_info);
 #else
     NOTREACHED();
     return GrBackendFormat();

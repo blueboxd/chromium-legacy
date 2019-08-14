@@ -52,6 +52,12 @@ crbug.com/736554 [ Linux ] external/wpt/IndexedDB/nested-cloning-large-multiple.
 
 crbug.com/810963 [ Linux ] external/wpt/dom/interfaces.html [ Timeout ]
 
+crbug.com/993468 [ Linux ] external/wpt/html/interaction/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-zero.html [ Timeout ]
+crbug.com/993468 [ Linux ] external/wpt/html/semantics/document-metadata/the-link-element/stylesheet-not-removed-until-next-stylesheet-loads.html [ Timeout ]
+crbug.com/993468 [ Linux ] external/wpt/infrastructure/reftest/reftest_ref_timeout.html [ Timeout ]
+crbug.com/993468 [ Linux ] external/wpt/vibration/idlharness.window.html [ Timeout ]
+crbug.com/993468 [ Linux ] external/wpt/xslt/idlharness.tentative.window.html [ Timeout ]
+
 # Intentionally failed allocations, via partitionAllocGenericFlags()
 crbug.com/577889 [ Linux ] fast/js/typed-array-allocation-failure.html [ Crash ]
 

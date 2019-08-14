@@ -107,13 +107,20 @@ class SearchResultRankerTest : public testing::Test {
 
   std::unique_ptr<SearchResultRanker> MakeRanker(
       bool query_based_mixed_types_enabled,
+      bool app_ranker_enabled,
       const std::map<std::string, std::string>& params = {}) {
     if (query_based_mixed_types_enabled) {
-      scoped_feature_list_.InitAndEnableFeatureWithParameters(
-          app_list_features::kEnableQueryBasedMixedTypesRanker, params);
+      scoped_feature_list_.InitWithFeaturesAndParameters(
+          {{app_list_features::kEnableQueryBasedMixedTypesRanker, params}},
+          {app_list_features::kEnableAppRanker});
+    } else if (app_ranker_enabled) {
+      scoped_feature_list_.InitWithFeaturesAndParameters(
+          {{app_list_features::kEnableAppRanker, params}},
+          {app_list_features::kEnableQueryBasedMixedTypesRanker});
     } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          app_list_features::kEnableQueryBasedMixedTypesRanker);
+      scoped_feature_list_.InitWithFeaturesAndParameters(
+          {}, {app_list_features::kEnableQueryBasedMixedTypesRanker,
+               app_list_features::kEnableAppRanker});
     }
 
     auto ranker = std::make_unique<SearchResultRanker>(
@@ -156,7 +163,7 @@ class SearchResultRankerTest : public testing::Test {
 };
 
 TEST_F(SearchResultRankerTest, MixedTypesRankersAreDisabledWithFlag) {
-  auto ranker = MakeRanker(false);
+  auto ranker = MakeRanker(false, false);
   ranker->InitializeRankers();
   Wait();
 
@@ -183,7 +190,8 @@ TEST_F(SearchResultRankerTest, MixedTypesRankersAreDisabledWithFlag) {
 
 TEST_F(SearchResultRankerTest, CategoryModelImprovesScores) {
   auto ranker = MakeRanker(
-      true, {{"use_category_model", "true"}, {"boost_coefficient", "1.0"}});
+      true, false,
+      {{"use_category_model", "true"}, {"boost_coefficient", "1.0"}});
   ranker->InitializeRankers();
   Wait();
 
@@ -208,7 +216,20 @@ TEST_F(SearchResultRankerTest, CategoryModelImprovesScores) {
 }
 
 TEST_F(SearchResultRankerTest, AppModelImprovesScores) {
-  auto ranker = MakeRanker(false);
+  const std::string json = R"({
+      "min_seconds_between_saves": 250,
+      "target_limit": 100,
+      "target_decay": 0.5,
+      "condition_limit": 50,
+      "condition_decay": 0.7,
+      "predictor": {
+        "predictor_type": "frecency",
+        "decay_coeff": 0.8
+      }
+    })";
+
+  auto ranker = MakeRanker(
+      false, true, {{"use_recurrence_ranker", "true"}, {"config", json}});
   ranker->InitializeRankers();
   Wait();
 
@@ -245,7 +266,7 @@ TEST_F(SearchResultRankerTest, DefaultQueryMixedModelImprovesScores) {
   // model.  With the |config| parameter, the ranker uses the default predictor
   // for the RecurrenceRanker.
   base::RunLoop run_loop;
-  auto ranker = MakeRanker(true, {{"boost_coefficient", "1.0"}});
+  auto ranker = MakeRanker(true, false, {{"boost_coefficient", "1.0"}});
   ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
   ranker->InitializeRankers();
   run_loop.Run();
@@ -291,7 +312,7 @@ TEST_F(SearchResultRankerTest, QueryMixedModelNormalizesUrlIds) {
   const std::string& url_4 = "some.domain.com";
 
   base::RunLoop run_loop;
-  auto ranker = MakeRanker(true, {{"boost_coefficient", "1.0"}});
+  auto ranker = MakeRanker(true, false, {{"boost_coefficient", "1.0"}});
   ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
   ranker->InitializeRankers();
   run_loop.Run();
@@ -344,7 +365,7 @@ TEST_F(SearchResultRankerTest, QueryMixedModelConfigDeployment) {
 
   base::RunLoop run_loop;
   auto ranker =
-      MakeRanker(true, {{"boost_coefficient", "1.0"}, {"config", json}});
+      MakeRanker(true, false, {{"boost_coefficient", "1.0"}, {"config", json}});
   ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
   ranker->InitializeRankers();
   run_loop.Run();
@@ -372,7 +393,7 @@ TEST_F(SearchResultRankerTest, QueryMixedModelDeletesURLCorrectly) {
 
   base::RunLoop run_loop;
   auto ranker =
-      MakeRanker(true, {{"boost_coefficient", "1.0"}, {"config", json}});
+      MakeRanker(true, false, {{"boost_coefficient", "1.0"}, {"config", json}});
   ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
   ranker->InitializeRankers();
   run_loop.Run();

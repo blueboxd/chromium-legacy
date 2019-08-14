@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import StringIO
 import contextlib
 import os
 import sys
@@ -16,6 +15,8 @@ import unittest
 
 if __name__ == '__main__':
   sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+
+from six import StringIO
 
 from grit import grd_reader
 import grit.exception
@@ -87,7 +88,7 @@ class GritNodeUnittest(unittest.TestCase):
         </release>
       </grit>''' % chrome_html_path
 
-    grd = grd_reader.Parse(StringIO.StringIO(xml),
+    grd = grd_reader.Parse(StringIO(xml),
                            util.PathFromRoot('grit/testdata'))
     expected = ['chrome_html.html', 'default_100_percent/a.png',
                 'default_100_percent/b.png', 'included_sample.html',
@@ -116,7 +117,7 @@ class GritNodeUnittest(unittest.TestCase):
         </release>
       </grit>''' % chrome_html_path
 
-    grd = grd_reader.Parse(StringIO.StringIO(xml), util.PathFromRoot('grit/testdata'))
+    grd = grd_reader.Parse(StringIO(xml), util.PathFromRoot('grit/testdata'))
     expected = ['chrome_html.html', 'included_sample.html']
     actual = [os.path.relpath(path, util.PathFromRoot('grit/testdata')) for
               path in grd.GetInputFiles()]
@@ -206,7 +207,7 @@ class GritNodeUnittest(unittest.TestCase):
 
 class IfNodeUnittest(unittest.TestCase):
   def testIffyness(self):
-    grd = grd_reader.Parse(StringIO.StringIO('''
+    grd = grd_reader.Parse(StringIO('''
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <release seq="3">
           <messages>
@@ -314,7 +315,7 @@ class IfNodeUnittest(unittest.TestCase):
     self.assertEqual(['IDS_YES1', 'IDS_YES2', 'IDS_YES3', 'IDS_YES4'], included)
 
   def testIffynessWithOutputNodes(self):
-    grd = grd_reader.Parse(StringIO.StringIO('''
+    grd = grd_reader.Parse(StringIO('''
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <outputs>
           <output filename="uncond1.rc" type="rc_data" />
@@ -378,7 +379,7 @@ class IfNodeUnittest(unittest.TestCase):
     self.assertNotEquals(outputs, ['uncond1.rc', 'uncond2.adm', 'iftest.h'])
 
   def testChildrenAccepted(self):
-    grd = grd_reader.Parse(StringIO.StringIO('''<?xml version="1.0"?>
+    grd_reader.Parse(StringIO('''<?xml version="1.0"?>
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <release seq="3">
           <includes>
@@ -426,7 +427,7 @@ class IfNodeUnittest(unittest.TestCase):
 
   def testIfBadChildrenNesting(self):
     # includes
-    xml = StringIO.StringIO('''<?xml version="1.0"?>
+    xml = StringIO('''<?xml version="1.0"?>
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <release seq="3">
           <includes>
@@ -438,7 +439,7 @@ class IfNodeUnittest(unittest.TestCase):
       </grit>''')
     self.assertRaises(grit.exception.UnexpectedChild, grd_reader.Parse, xml)
     # messages
-    xml = StringIO.StringIO('''<?xml version="1.0"?>
+    xml = StringIO('''<?xml version="1.0"?>
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <release seq="3">
           <messages>
@@ -450,7 +451,7 @@ class IfNodeUnittest(unittest.TestCase):
       </grit>''')
     self.assertRaises(grit.exception.UnexpectedChild, grd_reader.Parse, xml)
     # structures
-    xml = StringIO.StringIO('''<?xml version="1.0"?>
+    xml = StringIO('''<?xml version="1.0"?>
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <release seq="3">
           <structures>
@@ -462,7 +463,7 @@ class IfNodeUnittest(unittest.TestCase):
       </grit>''')
     # translations
     self.assertRaises(grit.exception.UnexpectedChild, grd_reader.Parse, xml)
-    xml = StringIO.StringIO('''<?xml version="1.0"?>
+    xml = StringIO('''<?xml version="1.0"?>
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <translations>
           <if expr="'bingo' in defs">
@@ -472,7 +473,7 @@ class IfNodeUnittest(unittest.TestCase):
       </grit>''')
     self.assertRaises(grit.exception.UnexpectedChild, grd_reader.Parse, xml)
     # same with nesting
-    xml = StringIO.StringIO('''<?xml version="1.0"?>
+    xml = StringIO('''<?xml version="1.0"?>
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <release seq="3">
           <includes>
@@ -485,7 +486,7 @@ class IfNodeUnittest(unittest.TestCase):
         </release>
       </grit>''')
     self.assertRaises(grit.exception.UnexpectedChild, grd_reader.Parse, xml)
-    xml = StringIO.StringIO('''<?xml version="1.0"?>
+    xml = StringIO('''<?xml version="1.0"?>
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <release seq="3">
           <messages>
@@ -498,7 +499,7 @@ class IfNodeUnittest(unittest.TestCase):
         </release>
       </grit>''')
     self.assertRaises(grit.exception.UnexpectedChild, grd_reader.Parse, xml)
-    xml = StringIO.StringIO('''<?xml version="1.0"?>
+    xml = StringIO('''<?xml version="1.0"?>
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <release seq="3">
           <structures>
@@ -511,7 +512,7 @@ class IfNodeUnittest(unittest.TestCase):
         </release>
       </grit>''')
     self.assertRaises(grit.exception.UnexpectedChild, grd_reader.Parse, xml)
-    xml = StringIO.StringIO('''<?xml version="1.0"?>
+    xml = StringIO('''<?xml version="1.0"?>
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <translations>
           <if expr="'bingo' in defs">
@@ -526,7 +527,7 @@ class IfNodeUnittest(unittest.TestCase):
 
 class ReleaseNodeUnittest(unittest.TestCase):
   def testPseudoControl(self):
-    grd = grd_reader.Parse(StringIO.StringIO('''<?xml version="1.0" encoding="UTF-8"?>
+    grd = grd_reader.Parse(StringIO('''<?xml version="1.0" encoding="UTF-8"?>
       <grit latest_public_release="1" source_lang_id="en-US" current_release="2" base_dir=".">
         <release seq="1" allow_pseudo="false">
           <messages>

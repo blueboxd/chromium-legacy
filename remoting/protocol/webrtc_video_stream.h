@@ -75,13 +75,17 @@ class WebrtcVideoStream : public VideoStream,
 
   void OnEncoderCreated(webrtc::VideoCodecType codec_type);
 
+  // Helper functions to create software encoders that run on the encode thread.
+  std::unique_ptr<WebrtcVideoEncoder> CreateVP8Encoder();
+  std::unique_ptr<WebrtcVideoEncoder> CreateVP9Encoder();
+
   // Capturer used to capture the screen.
   std::unique_ptr<webrtc::DesktopCapturer> capturer_;
   // Used to send across encoded frames.
   WebrtcTransport* webrtc_transport_ = nullptr;
-  // Task runner used to run |encoder_|.
+  // Task runner used by software encoders.
   scoped_refptr<base::SequencedTaskRunner> encode_task_runner_;
-  // Used to encode captured frames. Always accessed on the encode thread.
+  // Used to encode captured frames.
   std::unique_ptr<WebrtcVideoEncoder> encoder_;
 
   scoped_refptr<InputEventTimestampsSource> event_timestamps_source_;

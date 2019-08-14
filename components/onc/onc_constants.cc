@@ -271,12 +271,20 @@ const char kAuthority[] = "Authority";
 const char kClient[] = "Client";
 const char kGUID[] = "GUID";
 const char kPKCS12[] = "PKCS12";
+const char kScope[] = "Scope";
 const char kServer[] = "Server";
 const char kTrustBits[] = "TrustBits";
 const char kType[] = "Type";
 const char kWeb[] = "Web";
 const char kX509[] = "X509";
 }  // namespace certificate
+
+namespace scope {
+const char kDefault[] = "Default";
+const char kExtension[] = "Extension";
+const char kId[] = "Id";
+const char kType[] = "Type";
+}  // namespace scope
 
 namespace encrypted {
 const char kAES256[] = "AES256";

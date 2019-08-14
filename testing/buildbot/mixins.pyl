@@ -295,6 +295,20 @@
       },
     },
   },
+  'linux_intel_uhd_630': {
+    'swarming': {
+      'dimensions': {
+        # Defined in bot_config.py in internal infradata/config workspace
+        'gpu': 'intel-uhd-630-ubuntu-stable',
+        'os': 'Ubuntu-19.04',
+        'pool': 'Chrome-GPU',
+      },
+      # Same long expiration as win10_intel_uhd_630_stable due to capacity.
+      # TODO(https://crbug.com/986939): Remove this when more devices
+      # are added.
+      'expiration': 14400,
+    }
+  },
   'linux_nvidia_quadro_p400': {
     'swarming': {
       'dimensions': {

@@ -2045,4 +2045,51 @@ TEST_F(RenderWidgetHostTest, DISABLED_PendingUserActivationTimeout) {
   EXPECT_FALSE(host_->ConsumePendingUserActivationIfAllowed());
 }
 
+// Tests that fling events are not dispatched when the wheel event is consumed.
+TEST_F(RenderWidgetHostTest, NoFlingEventsWhenLastScrollEventConsumed) {
+  // Simulate a consumed wheel event.
+  SimulateWheelEvent(10, 0, 0, true, WebMouseWheelEvent::kPhaseBegan);
+  MockWidgetInputHandler::MessageVector dispatched_events =
+      host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
+  ASSERT_EQ(1u, dispatched_events.size());
+  ASSERT_TRUE(dispatched_events[0]->ToEvent());
+  dispatched_events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // A GestureFlingStart event following a consumed scroll event should not be
+  // dispatched.
+  SimulateGestureEvent(blink::WebInputEvent::kGestureFlingStart,
+                       blink::WebGestureDevice::kTouchpad);
+  dispatched_events =
+      host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
+  EXPECT_EQ(0u, dispatched_events.size());
+}
+
+// Tests that fling events are dispatched when some, but not all, scroll events
+// were consumed.
+TEST_F(RenderWidgetHostTest, FlingEventsWhenSomeScrollEventsConsumed) {
+  // Simulate a consumed wheel event.
+  SimulateWheelEvent(10, 0, 0, true, WebMouseWheelEvent::kPhaseBegan);
+  MockWidgetInputHandler::MessageVector dispatched_events =
+      host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
+  ASSERT_EQ(1u, dispatched_events.size());
+  ASSERT_TRUE(dispatched_events[0]->ToEvent());
+  dispatched_events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Followed by a not consumed wheel event.
+  SimulateWheelEvent(10, 0, 0, true, WebMouseWheelEvent::kPhaseChanged);
+  dispatched_events =
+      host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
+  ASSERT_EQ(1u, dispatched_events.size());
+  ASSERT_TRUE(dispatched_events[0]->ToEvent());
+  dispatched_events[0]->ToEvent()->CallCallback(
+      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  // A GestureFlingStart event following the scroll events should be dispatched.
+  SimulateGestureEvent(blink::WebInputEvent::kGestureFlingStart,
+                       blink::WebGestureDevice::kTouchpad);
+  dispatched_events =
+      host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
+  EXPECT_NE(0u, dispatched_events.size());
+}
+
 }  // namespace content

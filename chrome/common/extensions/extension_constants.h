@@ -243,8 +243,6 @@ extern const char kChromeCameraAppId[];
 extern const char kChromeCameraAppDevId[];
 // Path to preinstalled Chrome camera app.
 extern const char kChromeCameraAppPath[];
-// The app ID of the Kiosk Next Home app.
-extern const char kKioskNextHomeAppId[];
 #endif
 
 // What causes an extension to be installed? Used in histograms, so don't

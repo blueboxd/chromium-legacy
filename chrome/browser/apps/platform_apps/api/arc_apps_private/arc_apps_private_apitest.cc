@@ -7,7 +7,6 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "build/build_config.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -102,13 +101,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppsPrivateApiTest, GetPackageNameAndLaunchApp) {
   EXPECT_TRUE(app_instance->launch_requests()[0]->IsForApp(launchable_app));
 }
 
-// TODO(crbug/992839) Fix flake on linux-chromeos-rel
-#if defined(OS_LINUX)
-#define MAYBE_OnInstalled DISABLED_OnInstalled
-#else
-#define MAYBE_OnInstalled OnInstalled
-#endif
-IN_PROC_BROWSER_TEST_F(ArcAppsPrivateApiTest, MAYBE_OnInstalled) {
+IN_PROC_BROWSER_TEST_F(ArcAppsPrivateApiTest, OnInstalled) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(browser()->profile());
   ASSERT_TRUE(prefs);
   std::unique_ptr<arc::FakeAppInstance> app_instance = CreateAppInstance(prefs);

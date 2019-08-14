@@ -5,10 +5,12 @@
 #include "chrome/browser/ui/views/autofill/payments/local_card_migration_bubble_views.h"
 
 #include <stddef.h>
+
 #include <memory>
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -35,7 +37,7 @@
 namespace autofill {
 
 namespace {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 const int kMigrationBubbleGooglePayLogoWidth = 40;
 #endif
 const int kMigrationBubbleGooglePayLogoHeight = 16;
@@ -105,7 +107,7 @@ void LocalCardMigrationBubbleViews::AddedToWidget() {
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // kGooglePayLogoIcon is square, and CreateTiledImage() will clip it whereas
   // setting the icon size would rescale it incorrectly.
   gfx::ImageSkia image = gfx::ImageSkiaOperations::CreateTiledImage(

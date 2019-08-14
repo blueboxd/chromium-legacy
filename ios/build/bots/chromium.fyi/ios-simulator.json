@@ -2,7 +2,7 @@
   "comments": [
     "Runs tests on FYI on the latest simulators."
   ],
-  "xcode build version": "10b61",
+  "xcode build version": "11m382q",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",
@@ -21,16 +21,8 @@
       ],
       "device type": "iPhone 6s",
       "os": "12.1",
-      "host os": "Mac-10.13.6",
-      "pool":"Chrome",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.4"
-          }],
-          "120": [{
-            "host os": "Mac-10.14.3"
-          }]
-      }
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome"
     },
     {
       "app": "ios_chrome_integration_egtests",
@@ -40,16 +32,8 @@
       "device type": "iPhone 6s",
       "os": "12.1",
       "xctest": true,
-      "host os": "Mac-10.13.6",
-      "pool":"Chrome",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.4"
-          }],
-          "120": [{
-            "host os": "Mac-10.14.3"
-          }]
-      }
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome"
     },
     {
       "app": "ios_chrome_integration_egtests",
@@ -59,16 +43,8 @@
       "device type": "iPad Air 2",
       "os": "12.1",
       "xctest": true,
-      "host os": "Mac-10.13.6",
-      "pool":"Chrome",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.4"
-          }],
-          "120": [{
-            "host os": "Mac-10.14.3"
-          }]
-      }
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome"
     },
     {
       "app": "ios_chrome_integration_egtests",
@@ -78,16 +54,8 @@
       "device type": "iPhone 6s",
       "os": "12.1",
       "xctest": true,
-      "host os": "Mac-10.13.6",
-      "pool":"Chrome",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.4"
-          }],
-          "120": [{
-            "host os": "Mac-10.14.3"
-          }]
-      }
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome"
     },
     {
       "app": "ios_chrome_smoke_egtests",
@@ -97,16 +65,8 @@
       "device type": "iPhone 6s",
       "os": "12.1",
       "xctest": true,
-      "host os": "Mac-10.13.6",
-      "pool":"Chrome",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.4"
-          }],
-          "120": [{
-            "host os": "Mac-10.14.3"
-          }]
-      }
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome"
     },
     {
       "app": "ios_chrome_web_egtests",
@@ -116,16 +76,8 @@
       "device type": "iPhone 6s",
       "os": "12.1",
       "xctest": true,
-      "host os": "Mac-10.13.6",
-      "pool":"Chrome",
-      "optional_dimensions": {
-          "60": [{
-              "host os": "Mac-10.14.4"
-          }],
-          "60": [{
-              "host os": "Mac-10.14.3"
-          }]
-      }
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome"
     },
     {
       "app": "ios_web_shell_egtests",
@@ -135,16 +87,8 @@
       "device type": "iPhone 6s",
       "os": "12.1",
       "xctest": true,
-      "host os": "Mac-10.13.6",
-      "pool":"Chrome",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.4"
-          }],
-          "120": [{
-            "host os": "Mac-10.14.3"
-          }]
-      }
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome"
     },
     {
       "app": "ios_chrome_ui_egtests",
@@ -154,16 +98,8 @@
       "device type": "iPhone 6s",
       "os": "12.1",
       "xctest": true,
-      "host os": "Mac-10.13.6",
-      "pool":"Chrome",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.4"
-          }],
-          "120": [{
-            "host os": "Mac-10.14.3"
-          }]
-      }
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome"
     }
   ]
 }

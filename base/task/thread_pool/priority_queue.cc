@@ -82,8 +82,13 @@ PriorityQueue::~PriorityQueue() {
   if (!is_flush_task_sources_on_destroy_enabled_)
     return;
 
-  while (!container_.empty())
-    PopTaskSource().Unregister()->BeginTransaction().Clear();
+  while (!container_.empty()) {
+    auto task_source = PopTaskSource().Unregister();
+    auto task =
+        task_source->BeginTransaction().Clear(task_source->WillRunTask());
+    if (task)
+      std::move(task->task).Run();
+  }
 }
 
 PriorityQueue& PriorityQueue::operator=(PriorityQueue&& other) = default;

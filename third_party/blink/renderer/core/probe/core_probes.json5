@@ -107,7 +107,6 @@
     },
     InspectorLayerTreeAgent: {
       probes: [
-        "DidPaint",
         "LayerTreeDidChange",
         "LayerTreePainted",
       ]

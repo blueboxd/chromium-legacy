@@ -237,6 +237,18 @@ class ReceiverSetBase {
     }
   }
 
+  // Swaps the interface implementation with a different one, to allow tests
+  // to modify behavior.
+  //
+  // Returns the existing interface implementation to the caller.
+  ImplPointerType SwapImplForTesting(ReceiverId id, ImplPointerType new_impl) {
+    auto it = receivers_.find(id);
+    if (it == receivers_.end())
+      return nullptr;
+
+    return it->second->SwapImplForTesting(new_impl);
+  }
+
  private:
   friend class Entry;
 
@@ -257,6 +269,10 @@ class ReceiverSetBase {
       receiver_.AddFilter(std::make_unique<DispatchFilter>(this));
       receiver_.set_disconnect_with_reason_handler(
           base::BindOnce(&Entry::OnDisconnect, base::Unretained(this)));
+    }
+
+    ImplPointerType SwapImplForTesting(ImplPointerType new_impl) {
+      return receiver_.SwapImplForTesting(new_impl);
     }
 
     void FlushForTesting() { receiver_.FlushForTesting(); }

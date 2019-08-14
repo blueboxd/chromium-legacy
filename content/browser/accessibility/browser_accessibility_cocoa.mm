@@ -2115,12 +2115,14 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (!manager)
     return nil;
 
-  int32_t anchorId = manager->GetTreeData().sel_anchor_object_id;
+  ui::AXTree::Selection unignored_selection =
+      manager->ax_tree()->GetUnignoredSelection();
+  int32_t anchorId = unignored_selection.anchor_object_id;
   const BrowserAccessibility* anchorObject = manager->GetFromID(anchorId);
   if (!anchorObject)
     return nil;
 
-  int32_t focusId = manager->GetTreeData().sel_focus_object_id;
+  int32_t focusId = unignored_selection.focus_object_id;
   const BrowserAccessibility* focusObject = manager->GetFromID(focusId);
   if (!focusObject)
     return nil;
@@ -2128,15 +2130,13 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   // |anchorOffset| and / or |focusOffset| refer to a character offset if
   // |anchorObject| / |focusObject| are text-only objects. Otherwise, they
   // should be treated as child indices.
-  int anchorOffset = manager->GetTreeData().sel_anchor_offset;
-  int focusOffset = manager->GetTreeData().sel_focus_offset;
+  int anchorOffset = unignored_selection.anchor_offset;
+  int focusOffset = unignored_selection.focus_offset;
   if (anchorOffset < 0 || focusOffset < 0)
     return nil;
 
-  ax::mojom::TextAffinity anchorAffinity =
-      manager->GetTreeData().sel_anchor_affinity;
-  ax::mojom::TextAffinity focusAffinity =
-      manager->GetTreeData().sel_focus_affinity;
+  ax::mojom::TextAffinity anchorAffinity = unignored_selection.anchor_affinity;
+  ax::mojom::TextAffinity focusAffinity = unignored_selection.focus_affinity;
 
   return CreateTextMarkerRange(
       CreateAXPlatformRange(*anchorObject, anchorOffset, anchorAffinity,

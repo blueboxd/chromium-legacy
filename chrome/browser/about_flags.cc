@@ -25,6 +25,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "chrome/browser/browser_features.h"
@@ -1096,11 +1097,16 @@ const FeatureEntry::FeatureVariation kResamplingInputEventsFeatureVariations[] =
 
 const FeatureEntry::FeatureParam kFilteringPredictionEmptyFilterEnabled[] = {
     {"filter", ui::input_prediction::kFilterNameEmpty}};
+const FeatureEntry::FeatureParam kFilteringPredictionOneEuroFilterEnabled[] = {
+    {"filter", ui::input_prediction::kFilterNameOneEuro}};
 
 const FeatureEntry::FeatureVariation kFilteringPredictionFeatureVariations[] = {
     {ui::input_prediction::kFilterNameEmpty,
      kFilteringPredictionEmptyFilterEnabled,
-     base::size(kFilteringPredictionEmptyFilterEnabled), nullptr}};
+     base::size(kFilteringPredictionEmptyFilterEnabled), nullptr},
+    {ui::input_prediction::kFilterNameOneEuro,
+     kFilteringPredictionOneEuroFilterEnabled,
+     base::size(kFilteringPredictionOneEuroFilterEnabled), nullptr}};
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kBottomOfflineIndicatorEnabled[] = {
@@ -1202,6 +1208,18 @@ const FeatureEntry::Choice kNotificationSchedulerChoices[] = {
      notifications::switches::kNotificationSchedulerImmediateBackgroundTask,
      ""},
 };
+
+#if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam
+    kOmniboxSearchEngineLogoRoundedEdgesVariationConstant[] = {
+        {"rounded_edges", "true"}};
+const FeatureEntry::FeatureVariation
+    kOmniboxSearchEngineLogoFeatureVariations[] = {
+        {"(rounded edges)",
+         kOmniboxSearchEngineLogoRoundedEdgesVariationConstant,
+         base::size(kOmniboxSearchEngineLogoRoundedEdgesVariationConstant),
+         nullptr}};
+#endif  // OS_ANDROID
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -2379,13 +2397,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kKernelnextVMsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kKernelnextVMs)},
 #endif  // OS_CHROMEOS
-#if !defined(OS_ANDROID) && defined(GOOGLE_CHROME_BUILD)
+#if !defined(OS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"enable-google-branded-context-menu",
      flag_descriptions::kGoogleBrandedContextMenuName,
      flag_descriptions::kGoogleBrandedContextMenuDescription,
      kOsDesktop | kExpireM77,
      FEATURE_VALUE_TYPE(features::kGoogleBrandedContextMenu)},
-#endif  // !OS_ANDROID && GOOGLE_CHROME_BUILD
+#endif  // !OS_ANDROID && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #if defined(OS_MACOSX)
     {"enable-immersive-fullscreen-toolbar",
      flag_descriptions::kImmersiveFullscreenName,
@@ -2634,7 +2652,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"omnibox-search-engine-logo",
      flag_descriptions::kOmniboxSearchEngineLogoName,
      flag_descriptions::kOmniboxSearchEngineLogoDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxSearchEngineLogo)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kOmniboxSearchEngineLogo,
+                                    kOmniboxSearchEngineLogoFeatureVariations,
+                                    "OmniboxSearchEngineLogo")},
 #endif  // defined(OS_ANDROID)
 
     {"omnibox-rich-entity-suggestions",

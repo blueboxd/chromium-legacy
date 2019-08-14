@@ -24,14 +24,9 @@
 
 namespace blink {
 
-class MainThreadScrollingReasonsTest
-    : public testing::Test,
-      public testing::WithParamInterface<bool>,
-      private ScopedBlinkGenPropertyTreesForTest {
+class MainThreadScrollingReasonsTest : public testing::Test {
  public:
-  MainThreadScrollingReasonsTest()
-      : ScopedBlinkGenPropertyTreesForTest(GetParam()),
-        base_url_("http://www.test.com/") {
+  MainThreadScrollingReasonsTest() : base_url_("http://www.test.com/") {
     helper_.InitializeWithSettings(&ConfigureSettings);
     GetWebView()->MainFrameWidget()->Resize(IntSize(320, 240));
 
@@ -77,14 +72,6 @@ class MainThreadScrollingReasonsTest
   }
 
   uint32_t GetViewMainThreadScrollingReasons() const {
-    // Pre-BlinkGenPropertyTrees, main thread scrolling reasons are set on
-    // cc::Layer in ScrollingCoordinator.
-    if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-      auto* layer = GetFrame()->View()->LayoutViewport()->LayerForScrolling();
-      return layer->CcLayer()->GetMainThreadScrollingReasons();
-    }
-    // With BlinkGenPropertyTrees, main thread scrolling reasons are calculated
-    // in the blink property tree builder and set on set on scroll nodes.
     const auto* scroll = GetFrame()
                              ->View()
                              ->GetLayoutView()
@@ -108,9 +95,7 @@ class MainThreadScrollingReasonsTest
   frame_test_helpers::WebViewHelper helper_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All, MainThreadScrollingReasonsTest, testing::Bool());
-
-TEST_P(MainThreadScrollingReasonsTest,
+TEST_F(MainThreadScrollingReasonsTest,
        BackgroundAttachmentFixedShouldTriggerMainThreadScroll) {
   // This test needs the |FastMobileScrolling| feature to be disabled
   // although it is stable on Android.
@@ -201,7 +186,7 @@ TEST_P(MainThreadScrollingReasonsTest,
 
 // Upon resizing the content size, the main thread scrolling reason
 // kHasNonLayerViewportConstrainedObject should be updated on all frames
-TEST_P(MainThreadScrollingReasonsTest,
+TEST_F(MainThreadScrollingReasonsTest,
        RecalculateMainThreadScrollingReasonsUponResize) {
   // This test needs the |FastMobileScrolling| feature to be disabled
   // although it is stable on Android.
@@ -236,7 +221,7 @@ TEST_P(MainThreadScrollingReasonsTest,
   EXPECT_FALSE(GetViewMainThreadScrollingReasons());
 }
 
-TEST_P(MainThreadScrollingReasonsTest, FastScrollingCanBeDisabledWithSetting) {
+TEST_F(MainThreadScrollingReasonsTest, FastScrollingCanBeDisabledWithSetting) {
   GetWebView()->MainFrameWidget()->Resize(WebSize(800, 600));
   LoadHTML("<div id='spacer' style='height: 1000px'></div>");
   GetWebView()->GetSettings()->SetThreadedScrollingEnabled(false);
@@ -253,7 +238,7 @@ TEST_P(MainThreadScrollingReasonsTest, FastScrollingCanBeDisabledWithSetting) {
   EXPECT_TRUE(inner_viewport_scroll_layer->GetMainThreadScrollingReasons());
 }
 
-TEST_P(MainThreadScrollingReasonsTest, FastScrollingForFixedPosition) {
+TEST_F(MainThreadScrollingReasonsTest, FastScrollingForFixedPosition) {
   RegisterMockedHttpURLLoad("fixed-position.html");
   NavigateTo(base_url_ + "fixed-position.html");
   ForceFullCompositingUpdate();
@@ -262,7 +247,7 @@ TEST_P(MainThreadScrollingReasonsTest, FastScrollingForFixedPosition) {
   EXPECT_FALSE(GetViewMainThreadScrollingReasons());
 }
 
-TEST_P(MainThreadScrollingReasonsTest, FastScrollingForStickyPosition) {
+TEST_F(MainThreadScrollingReasonsTest, FastScrollingForStickyPosition) {
   RegisterMockedHttpURLLoad("sticky-position.html");
   NavigateTo(base_url_ + "sticky-position.html");
   ForceFullCompositingUpdate();
@@ -271,7 +256,7 @@ TEST_P(MainThreadScrollingReasonsTest, FastScrollingForStickyPosition) {
   EXPECT_FALSE(GetViewMainThreadScrollingReasons());
 }
 
-TEST_P(MainThreadScrollingReasonsTest, FastScrollingByDefault) {
+TEST_F(MainThreadScrollingReasonsTest, FastScrollingByDefault) {
   GetWebView()->MainFrameWidget()->Resize(WebSize(800, 600));
   LoadHTML("<div id='spacer' style='height: 1000px'></div>");
   ForceFullCompositingUpdate();
@@ -285,7 +270,7 @@ TEST_P(MainThreadScrollingReasonsTest, FastScrollingByDefault) {
   EXPECT_FALSE(inner_viewport_scroll_layer->GetMainThreadScrollingReasons());
 }
 
-TEST_P(MainThreadScrollingReasonsTest,
+TEST_F(MainThreadScrollingReasonsTest,
        ScrollbarsForceMainThreadOrHaveCompositorScrollbarLayer) {
   RegisterMockedHttpURLLoad("trivial-scroller.html");
   NavigateTo(base_url_ + "trivial-scroller.html");
@@ -381,32 +366,28 @@ class NonCompositedMainThreadScrollingReasonsTest
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         NonCompositedMainThreadScrollingReasonsTest,
-                         testing::Bool());
-
-TEST_P(NonCompositedMainThreadScrollingReasonsTest, TransparentTest) {
+TEST_F(NonCompositedMainThreadScrollingReasonsTest, TransparentTest) {
   TestNonCompositedReasons(
       "transparent", cc::MainThreadScrollingReason::kHasOpacityAndLCDText);
 }
 
-TEST_P(NonCompositedMainThreadScrollingReasonsTest, TransformTest) {
+TEST_F(NonCompositedMainThreadScrollingReasonsTest, TransformTest) {
   TestNonCompositedReasons(
       "transform", cc::MainThreadScrollingReason::kHasTransformAndLCDText);
 }
 
-TEST_P(NonCompositedMainThreadScrollingReasonsTest, BackgroundNotOpaqueTest) {
+TEST_F(NonCompositedMainThreadScrollingReasonsTest, BackgroundNotOpaqueTest) {
   TestNonCompositedReasons(
       "background-not-opaque",
       cc::MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText);
 }
 
-TEST_P(NonCompositedMainThreadScrollingReasonsTest, ClipTest) {
+TEST_F(NonCompositedMainThreadScrollingReasonsTest, ClipTest) {
   TestNonCompositedReasons(
       "clip", cc::MainThreadScrollingReason::kHasClipRelatedProperty);
 }
 
-TEST_P(NonCompositedMainThreadScrollingReasonsTest, ClipPathTest) {
+TEST_F(NonCompositedMainThreadScrollingReasonsTest, ClipPathTest) {
   uint32_t clip_reason = cc::MainThreadScrollingReason::kHasClipRelatedProperty;
   GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
   Document* document = GetFrame()->GetDocument();
@@ -451,18 +432,18 @@ TEST_P(NonCompositedMainThreadScrollingReasonsTest, ClipPathTest) {
   EXPECT_FALSE(GetViewMainThreadScrollingReasons() & clip_reason);
 }
 
-TEST_P(NonCompositedMainThreadScrollingReasonsTest, LCDTextEnabledTest) {
+TEST_F(NonCompositedMainThreadScrollingReasonsTest, LCDTextEnabledTest) {
   TestNonCompositedReasons(
       "transparent", cc::MainThreadScrollingReason::kHasOpacityAndLCDText);
 }
 
-TEST_P(NonCompositedMainThreadScrollingReasonsTest, BoxShadowTest) {
+TEST_F(NonCompositedMainThreadScrollingReasonsTest, BoxShadowTest) {
   TestNonCompositedReasons(
       "box-shadow",
       cc::MainThreadScrollingReason::kHasBoxShadowFromNonRootLayer);
 }
 
-TEST_P(NonCompositedMainThreadScrollingReasonsTest, StackingContextTest) {
+TEST_F(NonCompositedMainThreadScrollingReasonsTest, StackingContextTest) {
   GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
 
   Document* document = GetFrame()->GetDocument();
@@ -491,7 +472,7 @@ TEST_P(NonCompositedMainThreadScrollingReasonsTest, StackingContextTest) {
   EXPECT_FALSE(scrollable_area->GetNonCompositedMainThreadScrollingReasons());
 }
 
-TEST_P(NonCompositedMainThreadScrollingReasonsTest,
+TEST_F(NonCompositedMainThreadScrollingReasonsTest,
        CompositedWithLCDTextRelatedReasonsTest) {
   // With "will-change:transform" we composite elements with
   // LCDTextRelatedReasons only. For elements with other

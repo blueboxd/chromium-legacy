@@ -164,7 +164,7 @@ class MockLayoutManagerBase : public LayoutManagerBase {
         layout.host_size.set_height(std::max(
             layout.host_size.height(), bounds.bottom() + kChildViewPadding));
       }
-      layout.child_layouts.push_back({*it, bounds, visible});
+      layout.child_layouts.push_back({*it, visible, bounds});
     }
     ++num_layouts_generated_;
     return layout;
@@ -225,12 +225,9 @@ TEST_F(LayoutManagerBaseManagerTest, ApplyLayout) {
   // Set the child visibility and bounds.
   constexpr gfx::Rect kChild1Bounds(3, 4, 10, 15);
   constexpr gfx::Rect kChild3Bounds(20, 21, 12, 14);
-  layout.child_layouts.push_back(
-      LayoutManagerBase::ChildLayout{child(0), kChild1Bounds, true});
-  layout.child_layouts.push_back(
-      LayoutManagerBase::ChildLayout{child(1), gfx::Rect(), false});
-  layout.child_layouts.push_back(
-      LayoutManagerBase::ChildLayout{child(2), kChild3Bounds, true});
+  layout.child_layouts.push_back({child(0), true, kChild1Bounds});
+  layout.child_layouts.push_back({child(1), false});
+  layout.child_layouts.push_back({child(2), true, kChild3Bounds});
 
   layout_manager()->ApplyLayout(layout);
 
@@ -251,10 +248,8 @@ TEST_F(LayoutManagerBaseManagerTest, ApplyLayout_SkipsOmittedViews) {
   // Set the child visibility and bounds.
   constexpr gfx::Rect kChild1Bounds(3, 4, 10, 15);
   constexpr gfx::Rect kChild2Bounds(1, 2, 3, 4);
-  layout.child_layouts.push_back(
-      LayoutManagerBase::ChildLayout{child(0), kChild1Bounds, true});
-  layout.child_layouts.push_back(
-      LayoutManagerBase::ChildLayout{child(2), gfx::Rect(), false});
+  layout.child_layouts.push_back({child(0), true, kChild1Bounds});
+  layout.child_layouts.push_back({child(2), false});
 
   // We'll set the second child separately.
   child(1)->SetVisible(true);
@@ -474,6 +469,41 @@ TEST_F(LayoutManagerBaseManagerTest, ViewRemoved) {
 
   // Required since we removed it from the parent view.
   delete child_view;
+}
+
+TEST(LayoutManagerBase_ProposedLayoutTest, Equality) {
+  View* ptr0 = nullptr;
+  View* ptr1 = ptr0 + 1;
+  View* ptr2 = ptr0 + 2;
+  using ProposedLayout = LayoutManagerBase::ProposedLayout;
+  ProposedLayout a;
+  ProposedLayout b;
+  EXPECT_TRUE(a == b);
+  a.host_size = {1, 2};
+  EXPECT_FALSE(a == b);
+  b.host_size = {1, 2};
+  EXPECT_TRUE(a == b);
+  a.child_layouts.push_back({ptr0, true, {1, 1, 2, 2}});
+  EXPECT_FALSE(a == b);
+  b.child_layouts.push_back(a.child_layouts[0]);
+  EXPECT_TRUE(a == b);
+  a.child_layouts[0].visible = false;
+  EXPECT_FALSE(a == b);
+  b.child_layouts[0].visible = false;
+  EXPECT_TRUE(a == b);
+  b.child_layouts[0].bounds = {0, 0, 3, 3};
+  // Since |visible| == false, changing bounds doesn't change anything.
+  EXPECT_TRUE(a == b);
+  a.child_layouts[0].visible = true;
+  b.child_layouts[0].visible = true;
+  EXPECT_FALSE(a == b);
+  a.child_layouts[0].visible = false;
+  b.child_layouts[0].visible = false;
+  a.child_layouts.push_back({ptr1, true, {1, 2, 3, 4}});
+  b.child_layouts.push_back({ptr2, true, {1, 2, 3, 4}});
+  EXPECT_FALSE(a == b);
+  b.child_layouts[1].child_view = ptr1;
+  EXPECT_TRUE(a == b);
 }
 
 }  // namespace views

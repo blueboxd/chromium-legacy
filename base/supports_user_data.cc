@@ -66,4 +66,9 @@ SupportsUserData::~SupportsUserData() {
   // examining a being-destroyed object.
 }
 
+void SupportsUserData::ClearAllUserData() {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+  user_data_.clear();
+}
+
 }  // namespace base

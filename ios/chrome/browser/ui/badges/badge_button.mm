@@ -24,6 +24,8 @@ const CGFloat kButtonCircularCornerRadiusDivisor = 2.0;
 
 // Read/Write override.
 @property(nonatomic, assign, readwrite) BadgeType badgeType;
+// Read/Write override.
+@property(nonatomic, assign, readwrite) BOOL accepted;
 
 @end
 
@@ -49,6 +51,7 @@ const CGFloat kButtonCircularCornerRadiusDivisor = 2.0;
 }
 
 - (void)setAccepted:(BOOL)accepted animated:(BOOL)animated {
+  self.accepted = accepted;
   void (^changeTintColor)() = ^{
     self.tintColor = accepted ? [UIColor colorNamed:kBlueColor]
                               : [UIColor colorNamed:kToolbarButtonColor];

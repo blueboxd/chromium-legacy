@@ -22,7 +22,6 @@
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
@@ -185,11 +184,6 @@ void SetChildrenUseExtendedHitRegionForWindow(aura::Window* window) {
                            -kResizeOutsideBoundsSize);
   gfx::Insets touch_extend =
       mouse_extend.Scale(kResizeOutsideBoundsScaleForTouch);
-  // TODO: EasyResizeWindowTargeter makes it so children get events outside
-  // their bounds. This only works in mash when mash is providing the non-client
-  // frame. Mus needs to support an api for the WindowManager that enables
-  // events to be dispatched to windows outside the windows bounds that this
-  // function calls into. http://crbug.com/679056.
   window->SetEventTargeter(std::make_unique<::wm::EasyResizeWindowTargeter>(
       mouse_extend, touch_extend));
 }
@@ -202,10 +196,6 @@ void CloseWidgetForWindow(aura::Window* window) {
 
 void InstallResizeHandleWindowTargeterForWindow(aura::Window* window) {
   window->SetEventTargeter(std::make_unique<InteriorResizeHandleTargeter>());
-  // For Mash, ServerWindows will override the event targeter with a
-  // ServerWindowTargeter, so make sure it knows about the resize insets.
-  window->SetProperty(aura::client::kResizeHandleInset,
-                      kResizeInsideBoundsSize);
 }
 
 bool IsDraggingTabs(const aura::Window* window) {

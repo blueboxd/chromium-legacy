@@ -35,10 +35,14 @@ constexpr size_t kMaxDeveloperIdLength = 1024 * 1024;
 
 // static
 void BackgroundFetchServiceImpl::CreateForWorker(
-    blink::mojom::BackgroundFetchServiceRequest request,
-    RenderProcessHost* render_process_host,
-    const url::Origin& origin) {
+    const ServiceWorkerRunningInfo& info,
+    mojo::PendingReceiver<blink::mojom::BackgroundFetchService> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderProcessHost* render_process_host =
+      RenderProcessHost::FromID(info.process_id);
+
+  if (!render_process_host)
+    return;
 
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
@@ -47,21 +51,19 @@ void BackgroundFetchServiceImpl::CreateForWorker(
           WrapRefCounted(static_cast<StoragePartitionImpl*>(
                              render_process_host->GetStoragePartition())
                              ->GetBackgroundFetchContext()),
-          origin, /* render_frame_tree_node_id= */ 0,
-          /* wc_getter= */ base::NullCallback(), std::move(request)));
+          url::Origin::Create(info.script_url),
+          /* render_frame_tree_node_id= */ 0,
+          /* wc_getter= */ base::NullCallback(), std::move(receiver)));
 }
 
 // static
 void BackgroundFetchServiceImpl::CreateForFrame(
-    RenderProcessHost* render_process_host,
-    int render_frame_id,
-    blink::mojom::BackgroundFetchServiceRequest request) {
+    RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<blink::mojom::BackgroundFetchService> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  DCHECK(render_process_host);
-  auto* render_frame_host =
-      RenderFrameHost::FromID(render_process_host->GetID(), render_frame_id);
   DCHECK(render_frame_host);
+  RenderProcessHost* render_process_host = render_frame_host->GetProcess();
+  DCHECK(render_process_host);
 
   WebContents::Getter wc_getter = base::NullCallback();
 
@@ -81,7 +83,7 @@ void BackgroundFetchServiceImpl::CreateForFrame(
                              ->GetBackgroundFetchContext()),
           render_frame_host->GetLastCommittedOrigin(),
           render_frame_host->GetFrameTreeNodeId(), std::move(wc_getter),
-          std::move(request)));
+          std::move(receiver)));
 }
 
 // static

@@ -19,9 +19,7 @@ CSSTransition::CSSTransition(ExecutionContext* execution_context,
                              AnimationEffect* content,
                              const PropertyHandle& transition_property)
     : Animation(execution_context, timeline, content),
-      transition_property_(transition_property) {
-  setId(transitionProperty());
-}
+      transition_property_(transition_property) {}
 
 AtomicString CSSTransition::transitionProperty() const {
   return transition_property_.GetCSSPropertyName().ToAtomicString();

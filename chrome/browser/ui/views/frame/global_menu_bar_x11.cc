@@ -20,6 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/top_sites_factory.h"
@@ -148,7 +149,7 @@ constexpr GlobalMenuBarCommand kProfilesMenu[] = {
     {kMenuEnd}};
 
 constexpr GlobalMenuBarCommand kHelpMenu[] = {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {IDC_FEEDBACK, IDS_FEEDBACK},
 #endif
     {IDC_HELP_PAGE_VIA_MENU, IDS_HELP_PAGE},

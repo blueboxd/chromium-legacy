@@ -62,6 +62,7 @@
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/tracing/public/cpp/trace_startup.h"
 #include "ui/base/platform_window_defaults.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display_switches.h"
@@ -412,6 +413,7 @@ void BrowserTestBase::SetUp() {
 
     StartBrowserThreadPool();
     BrowserTaskExecutor::PostFeatureListSetup();
+    tracing::InitTracingPostThreadPoolStartAndFeatureList();
     delegate->PostTaskSchedulerStart();
   }
 

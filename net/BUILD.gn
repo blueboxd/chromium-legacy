@@ -5760,7 +5760,6 @@ test("net_unittests") {
     "//crypto:test_support",
     "//net/base/registry_controlled_domains",
     "//net/dns:tests",
-    "//net/dns/public:tests",
     "//net/http:transport_security_state_unittest_data",
     "//net/http:transport_security_state_unittest_data_default",
     "//net/tools/huffman_trie:huffman_trie_generator_sources",

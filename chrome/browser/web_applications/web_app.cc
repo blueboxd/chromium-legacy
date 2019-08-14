@@ -5,6 +5,7 @@
 #include <ios>
 #include <ostream>
 
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app.h"
 
 #include "base/logging.h"
@@ -12,7 +13,8 @@
 
 namespace web_app {
 
-WebApp::WebApp(const AppId& app_id) : app_id_(app_id) {}
+WebApp::WebApp(const AppId& app_id)
+    : app_id_(app_id), launch_container_(LaunchContainer::kDefault) {}
 
 WebApp::~WebApp() = default;
 
@@ -36,6 +38,11 @@ void WebApp::SetScope(const GURL& scope) {
 
 void WebApp::SetThemeColor(base::Optional<SkColor> theme_color) {
   theme_color_ = theme_color;
+}
+
+void WebApp::SetLaunchContainer(LaunchContainer launch_container) {
+  DCHECK_NE(LaunchContainer::kDefault, launch_container);
+  launch_container_ = launch_container;
 }
 
 void WebApp::SetIcons(Icons icons) {

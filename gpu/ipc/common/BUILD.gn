@@ -83,8 +83,6 @@ source_set("ipc_common_sources") {
     "gpu_watchdog_timeout.h",
     "memory_stats.cc",
     "memory_stats.h",
-    "vulkan_ycbcr_info.cc",
-    "vulkan_ycbcr_info.h",
   ]
 
   if (is_mac) {
@@ -122,6 +120,7 @@ source_set("ipc_common_sources") {
   public_deps = [
     ":command_buffer_traits_sources",
     ":surface_handle_type",
+    ":vulkan_ycbcr_info",
     "//ipc",
     "//url/ipc:url_ipc",
   ]
@@ -190,6 +189,16 @@ source_set("surface_handle_type") {
   ]
 }
 
+source_set("vulkan_ycbcr_info") {
+  sources = [
+    "vulkan_ycbcr_info.cc",
+    "vulkan_ycbcr_info.h",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
 mojom("interfaces") {
   sources = [
     "capabilities.mojom",
@@ -254,6 +263,7 @@ source_set("mojom_traits") {
   deps = [
     ":interfaces_shared_cpp_sources",
     ":surface_handle_type",
+    ":vulkan_ycbcr_info",
     "//gpu/command_buffer/common",
     "//gpu/ipc/common",
     "//mojo/public/cpp/bindings:bindings",

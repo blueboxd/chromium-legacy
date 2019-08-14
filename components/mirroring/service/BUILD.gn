@@ -63,7 +63,6 @@ component("mirroring_service") {
     "//net",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
-    "//services/service_manager/public/cpp:cpp",
     "//services/viz/public/cpp/gpu",
     "//ui/base",
     "//ui/gfx",
@@ -112,19 +111,5 @@ source_set("unittests") {
     "//services/viz/public/cpp/gpu",
     "//testing/gmock",
     "//testing/gtest",
-  ]
-}
-
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//components/mirroring/mojom:constants",
-    "//components/mirroring/mojom:service",
-    "//services/service_manager/public/cpp",
   ]
 }

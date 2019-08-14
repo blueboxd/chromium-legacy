@@ -169,9 +169,8 @@ class ReportingUploaderImpl : public ReportingUploader, URLRequest::Delegate {
 
     upload->request->set_method("OPTIONS");
 
-    upload->request->SetLoadFlags(LOAD_DISABLE_CACHE |
-                                  LOAD_DO_NOT_SAVE_COOKIES |
-                                  LOAD_DO_NOT_SEND_COOKIES);
+    upload->request->SetLoadFlags(LOAD_DISABLE_CACHE);
+    upload->request->set_allow_credentials(false);
 
     upload->request->SetExtraRequestHeaderByName(
         HttpRequestHeaders::kOrigin, upload->report_origin.Serialize(), true);
@@ -201,9 +200,8 @@ class ReportingUploaderImpl : public ReportingUploader, URLRequest::Delegate {
 
     upload->request->set_method("POST");
 
-    upload->request->SetLoadFlags(LOAD_DISABLE_CACHE |
-                                  LOAD_DO_NOT_SAVE_COOKIES |
-                                  LOAD_DO_NOT_SEND_COOKIES);
+    upload->request->SetLoadFlags(LOAD_DISABLE_CACHE);
+    upload->request->set_allow_credentials(false);
 
     upload->request->SetExtraRequestHeaderByName(
         HttpRequestHeaders::kContentType, kUploadContentType, true);

@@ -555,6 +555,8 @@ void DownloadFileImpl::Pause() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   is_paused_ = true;
   record_stream_bandwidth_ = false;
+  for (auto& stream : source_streams_)
+    stream.second->ClearDataReadyCallback();
 }
 
 void DownloadFileImpl::Resume() {
@@ -565,7 +567,7 @@ void DownloadFileImpl::Resume() {
   for (auto& stream : source_streams_) {
     SourceStream* source_stream = stream.second.get();
     if (!source_stream->is_finished()) {
-      StreamActive(source_stream, MOJO_RESULT_OK);
+      ActivateStream(source_stream);
     }
   }
 }
@@ -722,15 +724,19 @@ void DownloadFileImpl::RegisterAndActivateStream(SourceStream* source_stream) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   source_stream->Initialize();
-  source_stream->RegisterDataReadyCallback(
-      base::Bind(&DownloadFileImpl::StreamActive, weak_factory_.GetWeakPtr(),
-                 source_stream));
   // Truncate |source_stream|'s length if necessary.
   for (const auto& received_slice : received_slices_) {
     source_stream->TruncateLengthWithWrittenDataBlock(
         received_slice.offset, received_slice.received_bytes);
   }
   num_active_streams_++;
+  ActivateStream(source_stream);
+}
+
+void DownloadFileImpl::ActivateStream(SourceStream* source_stream) {
+  source_stream->RegisterDataReadyCallback(
+      base::Bind(&DownloadFileImpl::StreamActive, weak_factory_.GetWeakPtr(),
+                 source_stream));
   StreamActive(source_stream, MOJO_RESULT_OK);
 }
 

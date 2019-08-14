@@ -21,7 +21,8 @@ class WebStateList;
 @protocol TableViewFaviconDataSource;
 
 @interface RecentTabsTableViewController
-    : ChromeTableViewController<RecentTabsConsumer>
+    : ChromeTableViewController <RecentTabsConsumer,
+                                 UIAdaptivePresentationControllerDelegate>
 // The coordinator's BrowserState.
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // The dispatcher used by this ViewController.

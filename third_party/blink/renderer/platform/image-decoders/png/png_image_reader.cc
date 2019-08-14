@@ -688,8 +688,18 @@ bool PNGImageReader::ParseFrameInfo(const png_byte* data) {
     return false;
   if (!frame_width || !frame_height)
     return false;
-  if (x_offset + frame_width > width_ || y_offset + frame_height > height_)
-    return false;
+  {
+    png_uint_32 frame_right;
+    if (!base::CheckAdd(x_offset, frame_width).AssignIfValid(&frame_right) ||
+        frame_right > width_)
+      return false;
+  }
+  {
+    png_uint_32 frame_bottom;
+    if (!base::CheckAdd(y_offset, frame_height).AssignIfValid(&frame_bottom) ||
+        frame_bottom > height_)
+      return false;
+  }
 
   new_frame_.frame_rect =
       IntRect(x_offset, y_offset, frame_width, frame_height);

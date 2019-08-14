@@ -54,9 +54,6 @@ KeyedService* BrowserStateKeyedServiceFactory::GetServiceForBrowserState(
 
 web::BrowserState* BrowserStateKeyedServiceFactory::GetBrowserStateToUse(
     web::BrowserState* context) const {
-  // TODO(crbug.com/701326): This DCHECK should be moved to GetContextToUse().
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   // Safe default for Incognito mode: no service.
   if (context->IsOffTheRecord())
     return nullptr;
@@ -92,6 +89,7 @@ bool BrowserStateKeyedServiceFactory::IsOffTheRecord(void* context) const {
 }
 
 void* BrowserStateKeyedServiceFactory::GetContextToUse(void* context) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   AssertContextWasntDestroyed(context);
   return GetBrowserStateToUse(static_cast<web::BrowserState*>(context));
 }

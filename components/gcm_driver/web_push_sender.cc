@@ -15,7 +15,6 @@
 #include "components/gcm_driver/crypto/json_web_token_util.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"
 #include "components/gcm_driver/web_push_metrics.h"
-#include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/cors/cors.h"
@@ -102,8 +101,7 @@ std::unique_ptr<network::SimpleURLLoader> BuildURLLoader(
   std::string server_url =
       base::StringPrintf(kFCMServerUrlFormat, fcm_token.c_str());
   resource_request->url = GURL(server_url);
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->method = "POST";
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
                                       auth_header);

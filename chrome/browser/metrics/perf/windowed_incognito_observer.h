@@ -12,6 +12,11 @@
 
 class Browser;
 
+namespace base {
+template <class T>
+class NoDestructor;
+}  // namespace base
+
 namespace metrics {
 
 class WindowedIncognitoMonitor;
@@ -22,21 +27,17 @@ class WindowedIncognitoMonitor;
 //
 // Example:
 //
-// // Create an WindowedIncognitoMonitor on the UI thread:
-// auto windowed_incognito_monitor =
-//     std:::make_unique<WindowedIncognitoMonitor>();
+// // Initialize the WindowedIncognitoMonitor on the UI thread:
+// WindowedIncognitoMonitor::Init();
 //
 // // Use an observer from any sequence:
-// auto observer = windowed_incognito_monitor->CreateObserver();
+// auto observer = WindowedIncognitoMonitor::CreateObserver();
 // bool active = observer->IncognitoActive();
 // // |active| will be true if there is any active incognito window.
 //
 // // An incognito window is opened.
 // bool launched = observer->IncognitoLaunched();
 // EXPECT_TRUE(launched);
-//
-// // Destroy the monitor on the UI thread:
-// windowed_incognito_monitor.reset();
 class WindowedIncognitoObserver {
  public:
   explicit WindowedIncognitoObserver(WindowedIncognitoMonitor* monitor,
@@ -64,14 +65,24 @@ class WindowedIncognitoObserver {
 // for creating and serving WindowedIncognitoObserver are thread-safe.
 class WindowedIncognitoMonitor : public BrowserListObserver {
  public:
-  WindowedIncognitoMonitor();
-  ~WindowedIncognitoMonitor() override;
+  // Must be called on the UI thread before any observers are created.
+  static void Init();
 
   // Returns an instance of WindowedIncognitoObserver that represents the
   // request for monitoring any incognito window launches from now on.
-  std::unique_ptr<WindowedIncognitoObserver> CreateObserver();
+  static std::unique_ptr<WindowedIncognitoObserver> CreateObserver();
 
  protected:
+  static WindowedIncognitoMonitor* Get();
+
+  friend class base::NoDestructor<WindowedIncognitoMonitor>;
+  WindowedIncognitoMonitor();
+  ~WindowedIncognitoMonitor() override;
+
+  void RegisterInstance();
+  void UnregisterInstance();
+  std::unique_ptr<WindowedIncognitoObserver> CreateIncognitoObserver();
+
   // Making IncognitoActive() and IncognitoLaunched() only accessible from
   // WindowedIncognitoObserver;
   friend class WindowedIncognitoObserver;
@@ -97,6 +108,11 @@ class WindowedIncognitoMonitor : public BrowserListObserver {
   }
 
  private:
+  // Number of initialization attempts.
+  int running_sessions_ = 0;
+
+  // Protects access to |num_active_incognito_windows_| and
+  // |num_incognito_window_opened_|.
   mutable base::Lock lock_;
 
   // The number of active incognito window(s).

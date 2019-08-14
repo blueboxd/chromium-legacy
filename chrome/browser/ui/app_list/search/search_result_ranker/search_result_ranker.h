@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_data.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_event_logger.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker_util.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
@@ -123,6 +122,10 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
   // Ranks files and previous queries for launcher zero-state.
   std::unique_ptr<RecurrenceRanker> zero_state_mixed_types_ranker_;
 
+  // Ranks apps.
+  std::unique_ptr<RecurrenceRanker> app_ranker_;
+  std::map<std::string, float> app_ranks_;
+
   // Converts JSON config strings to RecurrenceRankerConfigProtos.
   JsonConfigConverter config_converter_;
 
@@ -134,13 +137,6 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
-
-  // TODO(931149): Move the AppSearchResultRanker instance and associated logic
-  // to here.
-
-  // Ranks apps and arc app shortcuts on-device.
-  std::unique_ptr<AppSearchResultRanker> app_ranker_;
-  base::flat_map<std::string, float> app_ranks_;
 
   Profile* profile_;
 

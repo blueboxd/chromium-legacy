@@ -247,11 +247,10 @@ void PrePaintTreeWalk::UpdateAuxiliaryObjectProperties(
 bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
     const LocalFrameView& frame_view,
     const PrePaintTreeWalkContext& context) {
-  if ((RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-       RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) &&
-      frame_view.GetFrame().IsMainFrame() &&
-      frame_view.GetPage()->GetVisualViewport().NeedsPaintPropertyUpdate())
+  if (frame_view.GetFrame().IsMainFrame() &&
+      frame_view.GetPage()->GetVisualViewport().NeedsPaintPropertyUpdate()) {
     return true;
+  }
 
   return frame_view.GetLayoutView() &&
          (ObjectRequiresTreeBuilderContext(*frame_view.GetLayoutView()) ||

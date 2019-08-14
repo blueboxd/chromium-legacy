@@ -42,9 +42,8 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
   content_box_rect.Move(paint_offset);
 
   // Since we may have changed the location of the replaced content, we need to
-  // notify PAC.
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      layout_video_.GetFrameView())
+  // notify PaintArtifactCompositor.
+  if (layout_video_.GetFrameView())
     layout_video_.GetFrameView()->SetPaintArtifactCompositorNeedsUpdate();
 
   // Video frames are only painted in software for printing or capturing node

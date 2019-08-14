@@ -61,6 +61,10 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   // the given |extension_id|.
   bool HasRegisteredRuleset(const ExtensionId& extension_id) const;
 
+  const std::set<ExtensionId>& extensions_with_rulesets() const {
+    return extensions_with_rulesets_;
+  }
+
   // Updates the dynamic rules for the |extension| and then invokes
   // |callback| with an optional error.
   using DynamicRuleUpdateUICallback =

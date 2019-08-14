@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/hover_button.h"
@@ -37,8 +36,7 @@ ProfileMenuViewBase* g_profile_bubble_ = nullptr;
 
 // Helpers --------------------------------------------------------------------
 
-constexpr int kFixedMenuWidthPreDice = 240;
-constexpr int kFixedMenuWidthDice = 288;
+constexpr int kMenuWidth = 288;
 constexpr int kIconSize = 16;
 
 // If the bubble is too large to fit on the screen, it still needs to be at
@@ -74,17 +72,16 @@ void ProfileMenuViewBase::ShowBubble(
   if (IsShowing())
     return;
 
-  DCHECK_EQ(browser->profile()->IsIncognitoProfile(),
-            view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO);
-
   ProfileMenuViewBase* bubble;
   if (view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO) {
+    DCHECK(browser->profile()->IsIncognitoProfile());
     bubble = new IncognitoMenuView(anchor_button, browser);
   } else {
+    DCHECK_EQ(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, view_mode);
 #if !defined(OS_CHROMEOS)
-    bubble = new ProfileMenuView(anchor_button, browser, view_mode,
-                                    manage_accounts_params.service_type,
-                                    access_point);
+    bubble =
+        new ProfileMenuView(anchor_button, browser,
+                            manage_accounts_params.service_type, access_point);
 #else
     NOTREACHED();
     return;
@@ -116,7 +113,6 @@ ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
                                          Browser* browser)
     : BubbleDialogDelegateView(anchor_button, views::BubbleBorder::TOP_RIGHT),
       browser_(browser),
-      menu_width_(0),
       anchor_button_(anchor_button),
       close_bubble_helper_(this, browser) {
   DCHECK(!g_profile_bubble_);
@@ -130,10 +126,6 @@ ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
 
   EnableUpDownKeyboardAccelerators();
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenu);
-
-  bool dice_enabled = AccountConsistencyModeManager::IsDiceEnabledForProfile(
-      browser->profile());
-  menu_width_ = dice_enabled ? kFixedMenuWidthDice : kFixedMenuWidthPreDice;
 }
 
 ProfileMenuViewBase::~ProfileMenuViewBase() {
@@ -312,7 +304,7 @@ views::Label* ProfileMenuViewBase::CreateAndAddLabel(const base::string16& text,
       std::make_unique<views::Label>(text, text_context);
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetMaximumWidth(menu_width_ - 2 * kMenuEdgeMargin);
+  label->SetMaximumWidth(kMenuWidth - 2 * kMenuEdgeMargin);
   views::Label* pointer = label.get();
 
   // Add margins.
@@ -420,7 +412,7 @@ void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                      views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-                     menu_width_, menu_width_);
+                     kMenuWidth, kMenuWidth);
   layout->StartRow(1.0, 0);
   layout->AddView(std::move(scroll_view));
   if (GetBubbleFrameView()) {

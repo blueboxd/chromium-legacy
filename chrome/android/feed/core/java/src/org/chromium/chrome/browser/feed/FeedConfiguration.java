@@ -46,6 +46,10 @@ public final class FeedConfiguration {
     /** Default value for initial non cached page size. */
     public static final long INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT = 10;
 
+    private static final String LIMIT_PAGE_UPDATES_IN_HEAD = "limit_page_updates_in_head";
+    /** Default value for whether to update HEAD when making a page request. */
+    public static final boolean LIMIT_PAGE_UPDATES_IN_HEAD_DEFAULT = false;
+
     private static final String LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS =
             "logging_immediate_content_threshold_ms";
     /** Default value for logging immediate content threshold. */
@@ -149,6 +153,14 @@ public final class FeedConfiguration {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, INITIAL_NON_CACHED_PAGE_SIZE,
                 (int) INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT);
+    }
+
+    /** @return Whether to update HEAD when making a page request. */
+    @VisibleForTesting
+    static boolean getLimitPageUpdatesInHead() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, LIMIT_PAGE_UPDATES_IN_HEAD,
+                LIMIT_PAGE_UPDATES_IN_HEAD_DEFAULT);
     }
 
     /**
@@ -290,6 +302,8 @@ public final class FeedConfiguration {
                 .put(ConfigKey.FEED_UI_ENABLED, FeedConfiguration.getFeedUiEnabled())
                 .put(ConfigKey.INITIAL_NON_CACHED_PAGE_SIZE,
                         FeedConfiguration.getInitialNonCachedPageSize())
+                .put(ConfigKey.LIMIT_PAGE_UPDATES_IN_HEAD,
+                        FeedConfiguration.getLimitPageUpdatesInHead())
                 .put(ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS,
                         FeedConfiguration.getLoggingImmediateContentThresholdMs())
                 .put(ConfigKey.MANAGE_INTERESTS_ENABLED,

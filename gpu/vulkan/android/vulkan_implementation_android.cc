@@ -52,19 +52,14 @@ bool GetAhbProps(
   return true;
 }
 
-void PopulateYcbcrInfo(
-    const VkAndroidHardwareBufferFormatPropertiesANDROID& ahb_format_props,
-    VulkanYCbCrInfo* ycbcr_info) {
-  DCHECK(ycbcr_info);
-
-  ycbcr_info->suggested_ycbcr_model = ahb_format_props.suggestedYcbcrModel;
-  ycbcr_info->suggested_ycbcr_range = ahb_format_props.suggestedYcbcrRange;
-  ycbcr_info->suggested_xchroma_offset =
-      ahb_format_props.suggestedXChromaOffset;
-  ycbcr_info->suggested_ychroma_offset =
-      ahb_format_props.suggestedYChromaOffset;
-  ycbcr_info->external_format = ahb_format_props.externalFormat;
-  ycbcr_info->format_features = ahb_format_props.formatFeatures;
+VulkanYCbCrInfo GetYcbcrInfoFromBufferProps(
+    const VkAndroidHardwareBufferFormatPropertiesANDROID& ahb_format_props) {
+  return VulkanYCbCrInfo(VK_FORMAT_UNDEFINED, ahb_format_props.externalFormat,
+                         ahb_format_props.suggestedYcbcrModel,
+                         ahb_format_props.suggestedYcbcrRange,
+                         ahb_format_props.suggestedXChromaOffset,
+                         ahb_format_props.suggestedYChromaOffset,
+                         ahb_format_props.formatFeatures);
 }
 
 }  // namespace
@@ -189,7 +184,8 @@ bool VulkanImplementationAndroid::CreateImageFromGpuMemoryHandle(
     VkImage* vk_image,
     VkImageCreateInfo* vk_image_info,
     VkDeviceMemory* vk_device_memory,
-    VkDeviceSize* mem_allocation_size) {
+    VkDeviceSize* mem_allocation_size,
+    base::Optional<VulkanYCbCrInfo>* ycbcr_info) {
   // TODO(sergeyu): Move code from CreateVkImageAndImportAHB() here and remove
   // CreateVkImageAndImportAHB().
   NOTIMPLEMENTED();
@@ -371,7 +367,7 @@ bool VulkanImplementationAndroid::CreateVkImageAndImportAHB(
 
   *mem_allocation_size = mem_alloc_info.allocationSize;
   if (ycbcr_info)
-    PopulateYcbcrInfo(ahb_format_props, ycbcr_info);
+    *ycbcr_info = GetYcbcrInfoFromBufferProps(ahb_format_props);
   return true;
 }
 
@@ -387,7 +383,7 @@ bool VulkanImplementationAndroid::GetSamplerYcbcrConversionInfo(
   if (!GetAhbProps(vk_device, ahb_handle.get(), &ahb_format_props, &ahb_props))
     return false;
 
-  PopulateYcbcrInfo(ahb_format_props, ycbcr_info);
+  *ycbcr_info = GetYcbcrInfoFromBufferProps(ahb_format_props);
   return true;
 }
 

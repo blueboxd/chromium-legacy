@@ -129,7 +129,7 @@ class ServiceWorkerGlobalScopeProxy final : public WebServiceWorkerContextProxy,
       int fetch_event_id,
       const KURL& url,
       mojom::blink::FetchEventPreloadHandlePtr preload_handle);
-  void RequestTermination(base::OnceCallback<void(bool)> callback);
+  void RequestTermination(WTF::CrossThreadOnceFunction<void(bool)> callback);
 
   // Detaches this proxy object entirely from the outside world, clearing out
   // all references.

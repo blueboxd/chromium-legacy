@@ -22,7 +22,7 @@ LayoutThemeTouchless::~LayoutThemeTouchless() {}
 
 String LayoutThemeTouchless::ExtraDefaultStyleSheet() {
   return LayoutThemeMobile::ExtraDefaultStyleSheet() +
-         GetDataResourceAsASCIIString("touchless.css");
+         UncompressResourceAsASCIIString(IDR_UASTYLE_THEME_TOUCHLESS_CSS);
 }
 
 bool LayoutThemeTouchless::IsFocusRingOutset() const {

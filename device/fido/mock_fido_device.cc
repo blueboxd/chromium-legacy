@@ -48,6 +48,7 @@ MockFidoDevice::MakeU2fWithGetInfoExpectation() {
   auto device = std::make_unique<MockFidoDevice>();
   device->StubGetId();
   device->StubGetDisplayName();
+  device->ExpectWinkedAtLeastOnce();
   device->ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand::kAuthenticatorGetInfo, base::nullopt);
   return device;
@@ -108,12 +109,22 @@ FidoDevice::CancelToken MockFidoDevice::DeviceTransact(
   return DeviceTransactPtr(command, cb);
 }
 
+void MockFidoDevice::TryWink(base::OnceClosure cb) {
+  TryWinkRef(cb);
+}
+
 FidoTransportProtocol MockFidoDevice::DeviceTransport() const {
   return transport_protocol_;
 }
 
 base::WeakPtr<FidoDevice> MockFidoDevice::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
+}
+
+void MockFidoDevice::ExpectWinkedAtLeastOnce() {
+  EXPECT_CALL(*this, TryWinkRef(::testing::_))
+      .Times(::testing::AtLeast(1))
+      .WillRepeatedly([](base::OnceClosure& cb) { std::move(cb).Run(); });
 }
 
 void MockFidoDevice::StubGetId() {

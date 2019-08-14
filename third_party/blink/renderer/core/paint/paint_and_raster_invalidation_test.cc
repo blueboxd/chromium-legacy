@@ -70,7 +70,7 @@ TEST_P(PaintAndRasterInvalidationTest, TrackingForTracing) {
         RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
             ? GetDocument()
                   .View()
-                  ->GetPaintArtifactCompositorForTesting()
+                  ->GetPaintArtifactCompositor()
                   ->RootLayer()
                   ->children()[0]
                   .get()

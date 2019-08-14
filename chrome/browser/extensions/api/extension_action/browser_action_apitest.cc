@@ -209,7 +209,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
   // Test that we received the changes.
   ExtensionAction* action = GetBrowserAction(*extension);
   ASSERT_EQ("Modified", action->GetTitle(ExtensionAction::kDefaultTabId));
-  ASSERT_EQ("badge", action->GetBadgeText(ExtensionAction::kDefaultTabId));
+  ASSERT_EQ("badge",
+            action->GetExplicitlySetBadgeText(ExtensionAction::kDefaultTabId));
   ASSERT_EQ(SkColorSetARGB(255, 255, 255, 255),
             action->GetBadgeBackgroundColor(ExtensionAction::kDefaultTabId));
 
@@ -701,7 +702,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_CloseBackgroundPage) {
       extensions::ProcessManager::Get(browser()->profile());
   ASSERT_TRUE(manager->GetBackgroundHostForExtension(extension->id()));
   ExtensionAction* action = GetBrowserAction(*extension);
-  ASSERT_EQ("", action->GetBadgeText(ExtensionAction::kDefaultTabId));
+  ASSERT_EQ("",
+            action->GetExplicitlySetBadgeText(ExtensionAction::kDefaultTabId));
 
   content::WindowedNotificationObserver host_destroyed_observer(
       extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
@@ -715,7 +717,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_CloseBackgroundPage) {
   // and the badge text has been set.
   host_destroyed_observer.Wait();
   ASSERT_FALSE(manager->GetBackgroundHostForExtension(extension->id()));
-  ASSERT_EQ("X", action->GetBadgeText(ExtensionAction::kDefaultTabId));
+  ASSERT_EQ("X",
+            action->GetExplicitlySetBadgeText(ExtensionAction::kDefaultTabId));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BadgeBackgroundColor) {

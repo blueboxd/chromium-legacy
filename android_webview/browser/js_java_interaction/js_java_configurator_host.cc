@@ -28,16 +28,14 @@ JsJavaConfiguratorHost::SetJsApiService(
     bool need_to_inject_js_object,
     const base::android::JavaParamRef<jstring>& js_object_name,
     const base::android::JavaParamRef<jobjectArray>& allowed_origin_rules) {
-  std::string native_js_object_name;
-  base::android::ConvertJavaStringToUTF8(env, js_object_name,
-                                         &native_js_object_name);
+  base::android::ConvertJavaStringToUTF16(env, js_object_name,
+                                          &js_object_name_);
 
   std::vector<std::string> native_allowed_origin_rules;
   AppendJavaStringArrayToStringVector(env, allowed_origin_rules,
                                       &native_allowed_origin_rules);
 
   need_to_inject_js_object_ = need_to_inject_js_object;
-  js_object_name_ = native_js_object_name;
   allowed_origin_rules_ = net::ProxyBypassRules();
   for (auto& rule : native_allowed_origin_rules) {
     if (!allowed_origin_rules_.AddRuleFromString(rule)) {

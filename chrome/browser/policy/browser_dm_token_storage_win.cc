@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/browser_dm_token_storage_win.h"
 
+// Must be first.
 #include <windows.h>
 
 #include <comutil.h>
@@ -30,18 +31,19 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_bstr.h"
+#include "build/branding_buildflags.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/public/browser/browser_thread.h"
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "google_update/google_update_idl.h"
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 namespace policy {
 namespace {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Explicitly allow DMTokenStorage impersonate the client since some COM code
 // elsewhere in the browser process may have previously used
 // CoInitializeSecurity to set the impersonation level to something other than
@@ -53,10 +55,10 @@ void ConfigureProxyBlanket(IUnknown* interface_pointer) {
       COLE_DEFAULT_PRINCIPAL, RPC_C_AUTHN_LEVEL_PKT_PRIVACY,
       RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_DYNAMIC_CLOAKING);
 }
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 bool StoreDMTokenInRegistry(const std::string& token) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (token.empty())
     return false;
 
@@ -122,7 +124,7 @@ bool StoreDMTokenInRegistry(const std::string& token) {
   return true;
 #else
   return false;
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 }  // namespace
 

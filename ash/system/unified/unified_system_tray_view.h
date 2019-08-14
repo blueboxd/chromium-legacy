@@ -60,6 +60,12 @@ class UnifiedSlidersContainerView : public views::View {
 class ASH_EXPORT UnifiedSystemTrayView : public views::View,
                                          public views::FocusTraversable {
  public:
+  // Get the background color of unified system tray.
+  static SkColor GetBackgroundColor();
+
+  // Create background of UnifiedSystemTray with rounded corners.
+  static std::unique_ptr<views::Background> CreateBackground();
+
   UnifiedSystemTrayView(UnifiedSystemTrayController* controller,
                         bool initially_expanded);
   ~UnifiedSystemTrayView() override;
@@ -118,10 +124,6 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
 
   // Returns the number of visible feature pods.
   int GetVisibleFeaturePodCount() const;
-
-  // Create background of UnifiedSystemTray that is semi-transparent and has
-  // rounded corners.
-  static std::unique_ptr<views::Background> CreateBackground();
 
   // views::View:
   void OnGestureEvent(ui::GestureEvent* event) override;

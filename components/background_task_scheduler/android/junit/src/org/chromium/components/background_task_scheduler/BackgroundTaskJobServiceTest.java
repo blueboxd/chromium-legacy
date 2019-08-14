@@ -20,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 
@@ -33,6 +34,8 @@ public class BackgroundTaskJobServiceTest {
     private BackgroundTaskSchedulerDelegate mDelegate;
     @Mock
     private BackgroundTaskSchedulerUma mBackgroundTaskSchedulerUma;
+    @Mock
+    private BackgroundTaskSchedulerImpl mBackgroundTaskSchedulerImpl;
 
     @Before
     public void setUp() {
@@ -41,12 +44,13 @@ public class BackgroundTaskJobServiceTest {
                 new BackgroundTaskSchedulerImpl(mDelegate));
         BackgroundTaskSchedulerUma.setInstanceForTesting(mBackgroundTaskSchedulerUma);
         TestBackgroundTask.reset();
+        BackgroundTaskSchedulerFactory.setBackgroundTaskFactory(new TestBackgroundTaskFactory());
     }
 
     @Test
     @Feature({"BackgroundTaskScheduler"})
     public void testTaskStartsAnytimeWithoutDeadline() {
-        JobParameters jobParameters = buildJobParameters(null);
+        JobParameters jobParameters = buildJobParameters(TaskIds.TEST, null);
 
         BackgroundTaskJobService jobService = new BackgroundTaskJobService();
         assertFalse(jobService.onStartJob(jobParameters));
@@ -58,7 +62,7 @@ public class BackgroundTaskJobServiceTest {
     @Test
     @Feature({"BackgroundTaskScheduler"})
     public void testTaskDoesNotStartExactlyAtDeadline() {
-        JobParameters jobParameters = buildJobParameters(sClock.currentTimeMillis());
+        JobParameters jobParameters = buildJobParameters(TaskIds.TEST, sClock.currentTimeMillis());
 
         BackgroundTaskJobService jobService = new BackgroundTaskJobService();
         jobService.setClockForTesting(sClock);
@@ -71,7 +75,8 @@ public class BackgroundTaskJobServiceTest {
     @Test
     @Feature({"BackgroundTaskScheduler"})
     public void testTaskDoesNotStartAfterDeadline() {
-        JobParameters jobParameters = buildJobParameters(sZeroClock.currentTimeMillis());
+        JobParameters jobParameters =
+                buildJobParameters(TaskIds.TEST, sZeroClock.currentTimeMillis());
 
         BackgroundTaskJobService jobService = new BackgroundTaskJobService();
         jobService.setClockForTesting(sClock);
@@ -84,7 +89,7 @@ public class BackgroundTaskJobServiceTest {
     @Test
     @Feature({"BackgroundTaskScheduler"})
     public void testTaskStartsBeforeDeadline() {
-        JobParameters jobParameters = buildJobParameters(sClock.currentTimeMillis());
+        JobParameters jobParameters = buildJobParameters(TaskIds.TEST, sClock.currentTimeMillis());
 
         BackgroundTaskJobService jobService = new BackgroundTaskJobService();
         jobService.setClockForTesting(sZeroClock);
@@ -94,10 +99,26 @@ public class BackgroundTaskJobServiceTest {
         assertEquals(0, TestBackgroundTask.getRescheduleCalls());
     }
 
-    private static JobParameters buildJobParameters(Long deadlineTime) {
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
+    public void testCancelTaskIfTaskIdNotFound() {
+        BackgroundTaskSchedulerFactory.setSchedulerForTesting(mBackgroundTaskSchedulerImpl);
+
+        JobParameters jobParameters = buildJobParameters(
+                TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID, sClock.currentTimeMillis());
+
+        BackgroundTaskJobService jobService = new BackgroundTaskJobService();
+        jobService.setClockForTesting(sZeroClock);
+        assertFalse(jobService.onStartJob(jobParameters));
+
+        verify(mBackgroundTaskSchedulerImpl, times(1))
+                .cancel(eq(ContextUtils.getApplicationContext()),
+                        eq(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID));
+        assertEquals(0, TestBackgroundTask.getRescheduleCalls());
+    }
+
+    private static JobParameters buildJobParameters(int taskId, Long deadlineTime) {
         PersistableBundle extras = new PersistableBundle();
-        extras.putString(BackgroundTaskSchedulerJobService.BACKGROUND_TASK_CLASS_KEY,
-                TestBackgroundTask.class.getName());
         if (deadlineTime != null) {
             extras.putLong(
                     BackgroundTaskSchedulerJobService.BACKGROUND_TASK_DEADLINE_KEY, deadlineTime);
@@ -106,9 +127,9 @@ public class BackgroundTaskJobServiceTest {
         extras.putPersistableBundle(
                 BackgroundTaskSchedulerJobService.BACKGROUND_TASK_EXTRAS_KEY, taskExtras);
 
-        return new JobParameters(null /* callback */, TaskIds.TEST, extras,
-                null /* transientExtras */, null /* clipData */, 0 /* clipGrantFlags */,
-                false /* overrideDeadlineExpired */, null /* triggeredContentUris */,
-                null /* triggeredContentAuthorities */, null /* network */);
+        return new JobParameters(null /* callback */, taskId, extras, null /* transientExtras */,
+                null /* clipData */, 0 /* clipGrantFlags */, false /* overrideDeadlineExpired */,
+                null /* triggeredContentUris */, null /* triggeredContentAuthorities */,
+                null /* network */);
     }
 }

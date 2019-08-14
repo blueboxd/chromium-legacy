@@ -62,11 +62,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoverySession {
   virtual void Stop(const base::Closure& callback,
                     const ErrorCallback& error_callback);
 
-  virtual void SetDiscoveryFilter(
-      std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback);
-
   virtual const BluetoothDiscoveryFilter* GetDiscoveryFilter() const;
 
   base::WeakPtr<BluetoothDiscoverySession> GetWeakPtr();

@@ -13,7 +13,7 @@
 #include "base/memory/ptr_util.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/ui/blocked_content/popunder_preventer.h"
-#include "chrome/browser/ui/javascript_dialogs/chrome_javascript_native_dialog_factory.h"
+#include "chrome/browser/ui/javascript_dialogs/chrome_javascript_native_app_modal_dialog_factory.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "components/app_modal/javascript_native_dialog_factory.h"
@@ -206,7 +206,7 @@ class ChromeJavaScriptNativeDialogCocoaFactory
 
 }  // namespace
 
-void InstallChromeJavaScriptNativeDialogFactory() {
+void InstallChromeJavaScriptNativeAppModalDialogFactory() {
   app_modal::JavaScriptDialogManager::GetInstance()->SetNativeDialogFactory(
       base::WrapUnique(new ChromeJavaScriptNativeDialogCocoaFactory));
 }

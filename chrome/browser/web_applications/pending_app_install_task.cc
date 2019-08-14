@@ -221,7 +221,10 @@ void PendingAppInstallTask::OnWebAppInstalled(bool is_placeholder,
               std::move(success_closure).Run();
             },
             std::move(success_closure)));
+    return;
   }
+
+  std::move(success_closure).Run();
 }
 
 }  // namespace web_app

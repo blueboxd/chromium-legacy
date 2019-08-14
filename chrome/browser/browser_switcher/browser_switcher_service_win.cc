@@ -144,8 +144,9 @@ base::Optional<std::string>* IeemSitelistUrlForTesting() {
 
 BrowserSwitcherServiceWin::BrowserSwitcherServiceWin(Profile* profile)
     : BrowserSwitcherService(profile),
-      sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      sequenced_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       weak_ptr_factory_(this) {
   if (prefs().IsEnabled())

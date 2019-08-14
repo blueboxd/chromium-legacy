@@ -20286,6 +20286,7 @@ Called by update_net_error_codes.py.-->
   <int value="1372" label="LOGINSCREENSTORAGE_STORECREDENTIALS"/>
   <int value="1373" label="LOGINSCREENSTORAGE_RETRIEVECREDENTIALS"/>
   <int value="1374" label="AUTOTESTPRIVATE_GETARCAPPWINDOWSTATE"/>
+  <int value="1375" label="AUTOTESTPRIVATE_GETARCAPPWINDOWINFO"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -35024,6 +35025,7 @@ from previous Chrome versions.
       label="OmniboxSpeculativeServiceWorkerStartOnQueryInput:disabled"/>
   <int value="-990187062" label="SendTabToSelfShowSendingUI:enabled"/>
   <int value="-989671895" label="OfflineIndicatorAlwaysHttpProbe:enabled"/>
+  <int value="-987470173" label="ClickToCallOpenDialerDirectly:disabled"/>
   <int value="-984052166" label="DoodlesOnLocalNtp:enabled"/>
   <int value="-981237342" label="SyncUSSAutofillWalletMetadata:disabled"/>
   <int value="-980260493" label="NTPSnippets:disabled"/>
@@ -35850,6 +35852,7 @@ from previous Chrome versions.
   <int value="181150000" label="CrosVmCupsProxy:enabled"/>
   <int value="183208826" label="TabGroups:enabled"/>
   <int value="185991204" label="enable-webrtc-srtp-encrypted-headers"/>
+  <int value="186463628" label="DnsOverHttps:disabled"/>
   <int value="188610022" label="NewMessageListView:enabled"/>
   <int value="189728101" label="FasterLocationReload:disabled"/>
   <int value="189777537" label="DisableInitialMostVisitedFadeIn:enabled"/>
@@ -36933,6 +36936,7 @@ from previous Chrome versions.
   <int value="1739456903" label="PWAFullCodeCache:enabled"/>
   <int value="1742398600"
       label="OmniboxUIExperimentBoldUserTextOnSearchSuggestions:enabled"/>
+  <int value="1745053254" label="ClickToCallOpenDialerDirectly:enabled"/>
   <int value="1747279677" label="disable-delegated-renderer"/>
   <int value="1748481830" label="AppManagement:enabled"/>
   <int value="1750822869" label="CrostiniBackup:disabled"/>
@@ -37158,6 +37162,7 @@ from previous Chrome versions.
   <int value="2037756154" label="enable-impl-side-painting"/>
   <int value="2039276757" label="EnableOverviewRoundedCorners:enabled"/>
   <int value="2040316611" label="IPH_ReopenTab:enabled"/>
+  <int value="2043141918" label="DnsOverHttps:enabled"/>
   <int value="2043321329" label="OfflinePagesPrefetchingUI:disabled"/>
   <int value="2047695652" label="DelegateOverscrollSwipes:enabled"/>
   <int value="2047981703" label="IntentPicker:enabled"/>

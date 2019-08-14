@@ -84,6 +84,7 @@ class ArcImeService : public KeyedService,
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override;
+  void OnWindowRemoved(aura::Window* removed_window) override;
 
   // Overridden from aura::client::FocusChangeObserver:
   void OnWindowFocused(aura::Window* gained_focus,

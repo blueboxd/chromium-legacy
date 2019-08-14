@@ -533,9 +533,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   void ShowContextMenu(const gfx::Point& location_in_screen,
                        ui::MenuSourceType source_type);
 
-  // Removes the AppListController.
-  void RemoveAppListController();
-
   void AddShellObserver(ShellObserver* observer);
   void RemoveShellObserver(ShellObserver* observer);
 

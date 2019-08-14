@@ -1,0 +1,12 @@
+This is a testharness.js-based test.
+PASS Relative URL scope keys / should work with no prefix
+PASS Relative URL scope keys / should work with ./, ../, and / prefixes
+PASS Relative URL scope keys / should work with /s, ?s, and #s
+PASS Relative URL scope keys / should work with an empty string scope key
+PASS Relative URL scope keys / should work with / suffixes
+PASS Relative URL scope keys / should deduplicate based on URL parsing rules
+FAIL Absolute URL scope keys / should only accept absolute URL scope keys with fetch schemes assert_object_equals: expected property "0" missing
+FAIL Absolute URL scope keys / should parse absolute URL scope keys, ignoring unparseable ones assert_object_equals: expected property "0" missing
+FAIL Absolute URL scope keys / should ignore relative URL scope keys when the base URL is a data: URL assert_object_equals: expected property "0" missing
+Harness: the test ran to completion.
+

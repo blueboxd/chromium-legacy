@@ -12,6 +12,10 @@
 
 namespace device {
 
+BluetoothDiscoveryFilter::BluetoothDiscoveryFilter() {
+  SetTransport(BluetoothTransport::BLUETOOTH_TRANSPORT_DUAL);
+}
+
 BluetoothDiscoveryFilter::BluetoothDiscoveryFilter(
     BluetoothTransport transport) {
   SetTransport(transport);
@@ -76,11 +80,11 @@ void BluetoothDiscoveryFilter::CopyFrom(
     const BluetoothDiscoveryFilter& filter) {
   transport_ = filter.transport_;
 
+  uuids_.clear();
   if (filter.uuids_.size()) {
     for (const auto& uuid : filter.uuids_)
       AddUUID(*uuid);
-  } else
-    uuids_.clear();
+  }
 
   rssi_ = filter.rssi_;
   pathloss_ = filter.pathloss_;
@@ -140,9 +144,8 @@ BluetoothDiscoveryFilter::Merge(
 bool BluetoothDiscoveryFilter::Equals(
     const BluetoothDiscoveryFilter& other) const {
   if ((rssi_.has_value() != other.rssi_.has_value()) ||
-      (rssi_ && other.rssi_ && *rssi_ != *other.rssi_)) {
+      (rssi_ && other.rssi_ && *rssi_ != *other.rssi_))
     return false;
-  }
 
   if ((pathloss_.has_value() != other.pathloss_.has_value()) ||
       (pathloss_ && other.pathloss_ && *pathloss_ != *other.pathloss_)) {

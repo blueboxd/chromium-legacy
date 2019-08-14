@@ -121,12 +121,14 @@ void AttestationFlow::GetCertificate(
     const AccountId& account_id,
     const std::string& request_origin,
     bool force_new_key,
+    const std::string& key_name,
     const CertificateCallback& callback) {
   // If this device has not enrolled with the Privacy CA, we need to do that
   // first.  Once enrolled we can proceed with the certificate request.
-  const base::Closure do_cert_request = base::Bind(
-      &AttestationFlow::StartCertificateRequest, weak_factory_.GetWeakPtr(),
-      certificate_profile, account_id, request_origin, force_new_key, callback);
+  const base::Closure do_cert_request =
+      base::Bind(&AttestationFlow::StartCertificateRequest,
+                 weak_factory_.GetWeakPtr(), certificate_profile, account_id,
+                 request_origin, force_new_key, key_name, callback);
   const base::RepeatingClosure on_failure =
       base::BindRepeating(callback, ATTESTATION_UNSPECIFIED_FAILURE, "");
   const base::Closure initiate_enroll = base::Bind(
@@ -220,31 +222,35 @@ void AttestationFlow::StartCertificateRequest(
     const AccountId& account_id,
     const std::string& request_origin,
     bool generate_new_key,
+    const std::string& key_name,
     const CertificateCallback& callback) {
   AttestationKeyType key_type = GetKeyTypeForProfile(certificate_profile);
-  std::string key_name =
-      GetKeyNameForProfile(certificate_profile, request_origin);
+  std::string attestation_key_name =
+      !key_name.empty()
+          ? key_name
+          : GetKeyNameForProfile(certificate_profile, request_origin);
   if (generate_new_key) {
     // Get the attestation service to create a Privacy CA certificate request.
     async_caller_->AsyncTpmAttestationCreateCertRequest(
         server_proxy_->GetType(), certificate_profile,
         cryptohome::Identification(account_id), request_origin,
         base::Bind(&AttestationFlow::SendCertificateRequestToPCA,
-                   weak_factory_.GetWeakPtr(), key_type, account_id, key_name,
-                   callback));
+                   weak_factory_.GetWeakPtr(), key_type, account_id,
+                   attestation_key_name, callback));
   } else {
     // If the key already exists, query the existing certificate.
     const base::Closure on_key_exists = base::Bind(
         &AttestationFlow::GetExistingCertificate, weak_factory_.GetWeakPtr(),
-        key_type, account_id, key_name, callback);
+        key_type, account_id, attestation_key_name, callback);
     // If the key does not exist, call this method back with |generate_new_key|
     // set to true.
-    const base::Closure on_key_not_exists = base::Bind(
-        &AttestationFlow::StartCertificateRequest, weak_factory_.GetWeakPtr(),
-        certificate_profile, account_id, request_origin, true, callback);
+    const base::Closure on_key_not_exists =
+        base::Bind(&AttestationFlow::StartCertificateRequest,
+                   weak_factory_.GetWeakPtr(), certificate_profile, account_id,
+                   request_origin, true, attestation_key_name, callback);
     cryptohome_client_->TpmAttestationDoesKeyExist(
         key_type, cryptohome::CreateAccountIdentifierFromAccountId(account_id),
-        key_name,
+        attestation_key_name,
         base::BindOnce(
             &DBusBoolRedirectCallback, on_key_exists, on_key_not_exists,
             base::BindRepeating(callback, ATTESTATION_UNSPECIFIED_FAILURE, ""),

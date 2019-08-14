@@ -197,6 +197,7 @@ public abstract class ChromeFeatureList {
     public static final String CHROME_DUET_LABELED = "ChromeDuetLabeled";
     public static final String CHROME_SMART_SELECTION = "ChromeSmartSelection";
     public static final String CLEAR_OLD_BROWSING_DATA = "ClearOldBrowsingData";
+    public static final String CLICK_TO_CALL_OPEN_DIALER_DIRECTLY = "ClickToCallOpenDialerDirectly";
     public static final String COMMAND_LINE_ON_NON_ROOTED = "CommandLineOnNonRooted";
     public static final String CONTACTS_PICKER_SELECT_ALL = "ContactsPickerSelectAll";
     public static final String CONTENT_SUGGESTIONS_SCROLL_TO_LOAD =

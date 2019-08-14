@@ -39,7 +39,6 @@
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/public/web/web_embedded_worker.h"
 #include "third_party/blink/public/web/web_embedded_worker_start_data.h"
-#include "third_party/blink/renderer/core/exported/worker_shadow_page.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -59,9 +58,7 @@ struct CrossThreadFetchClientSettingsObjectData;
 // start the worker thread off the main thread. This means that
 // WebEmbeddedWorkerImpl shouldn't create garbage-collected objects during
 // worker startup. See https://crbug.com/988335 for details.
-class MODULES_EXPORT WebEmbeddedWorkerImpl final
-    : public WebEmbeddedWorker,
-      public WorkerShadowPage::Client {
+class MODULES_EXPORT WebEmbeddedWorkerImpl final : public WebEmbeddedWorker {
  public:
   WebEmbeddedWorkerImpl(
       WebServiceWorkerContextClient*,
@@ -77,12 +74,6 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   void TerminateWorkerContext() override;
   void ResumeAfterDownload() override;
   void AddMessageToConsole(const WebConsoleMessage&) override;
-
-  // WorkerShadowPage::Client overrides.
-  void OnShadowPageInitialized() override;
-  WebLocalFrameClient::AppCacheType GetAppCacheType() override {
-    return WebLocalFrameClient::AppCacheType::kAppCacheForNone;
-  }
 
   static std::unique_ptr<WebEmbeddedWorkerImpl> CreateForTesting(
       WebServiceWorkerContextClient*,
@@ -110,8 +101,6 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_client_;
 
   std::unique_ptr<ServiceWorkerThread> worker_thread_;
-
-  std::unique_ptr<WorkerShadowPage> shadow_page_;
 
   bool asked_to_terminate_ = false;
 

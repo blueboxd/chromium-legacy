@@ -262,4 +262,39 @@ TEST(PasswordFormFillDataTest, RendererIDs) {
   EXPECT_TRUE(result.username_may_use_prefilled_placeholder);
 }
 
+// Tests that nor username nor password fields are set when password element is
+// not found.
+TEST(PasswordFormFillDataTest, NoPasswordElement) {
+  // Create the current form on the page.
+  PasswordForm form_on_page;
+  form_on_page.origin = GURL("https://foo.com/");
+  form_on_page.has_renderer_ids = true;
+  form_on_page.username_element_renderer_id = 123;
+  // Set no password element.
+  form_on_page.password_element_renderer_id =
+      std::numeric_limits<uint32_t>::max();
+  form_on_page.new_password_element_renderer_id = 456;
+
+  // Create an exact match in the database.
+  PasswordForm preferred_match = form_on_page;
+  preferred_match.username_value = ASCIIToUTF16("test@gmail.com");
+  preferred_match.password_value = ASCIIToUTF16("test");
+  preferred_match.preferred = true;
+
+  FormData form_data;
+  form_data.unique_renderer_id = 42;
+  form_data.is_form_tag = true;
+  form_on_page.form_data = form_data;
+
+  PasswordFormFillData result(form_on_page, {} /* matches */, preferred_match,
+                              true);
+
+  // Check that nor username nor password fields are set.
+  EXPECT_EQ(true, result.has_renderer_ids);
+  EXPECT_EQ(std::numeric_limits<uint32_t>::max(),
+            result.username_field.unique_renderer_id);
+  EXPECT_EQ(std::numeric_limits<uint32_t>::max(),
+            result.password_field.unique_renderer_id);
+}
+
 }  // namespace autofill

@@ -157,10 +157,9 @@ TCPDeviceProvider::~TCPDeviceProvider() {
 }
 
 void TCPDeviceProvider::InitializeHostResolver() {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&TCPDeviceProvider::InitializeHostResolverOnUI, this,
-                     mojo::MakeRequest(&host_resolver_)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&TCPDeviceProvider::InitializeHostResolverOnUI,
+                                this, mojo::MakeRequest(&host_resolver_)));
   host_resolver_.set_connection_error_handler(base::BindOnce(
       &TCPDeviceProvider::InitializeHostResolver, base::Unretained(this)));
 }

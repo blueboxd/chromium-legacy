@@ -265,8 +265,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {
 void ShelfLayoutManager::InitObservers() {
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->overview_controller()->AddObserver(this);
-  if (Shell::Get()->app_list_controller())
-    Shell::Get()->app_list_controller()->AddObserver(this);
+  Shell::Get()->app_list_controller()->AddObserver(this);
   Shell::Get()
       ->home_screen_controller()
       ->home_launcher_gesture_handler()
@@ -1644,8 +1643,6 @@ bool ShelfLayoutManager::StartAppListDrag(
   shelf_background_type_before_drag_ = shelf_background_type_;
   drag_status_ = kDragAppListInProgress;
 
-  // TODO(michaelpg): Simplify gesture drag logic and remove these DCHECKs.
-  DCHECK(Shell::Get()->app_list_controller());
   Shell::Get()->app_list_controller()->Show(
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(shelf_widget_->GetNativeWindow())
@@ -1683,7 +1680,6 @@ void ShelfLayoutManager::UpdateDrag(const ui::LocatedEvent& event_in_screen,
   if (drag_status_ == kDragAppListInProgress) {
     // Dismiss the app list if the shelf changed to vertical alignment during
     // dragging.
-    DCHECK(Shell::Get()->app_list_controller());
     if (!shelf_->IsHorizontalAlignment()) {
       Shell::Get()->app_list_controller()->DismissAppList();
       launcher_above_shelf_bottom_amount_ = 0.f;
@@ -1739,7 +1735,6 @@ void ShelfLayoutManager::CompleteAppListDrag(
     drag_status_ = kDragNone;
     return;
   }
-  DCHECK(Shell::Get()->app_list_controller());
 
   using ash::AppListViewState;
   AppListViewState app_list_state =
@@ -1761,10 +1756,8 @@ void ShelfLayoutManager::CancelDrag() {
     DCHECK(home_launcher_handler);
     if (home_launcher_handler->IsDragInProgress())
       home_launcher_handler->Cancel();
-    else {
-      DCHECK(Shell::Get()->app_list_controller());
+    else
       Shell::Get()->app_list_controller()->DismissAppList();
-    }
   } else {
     // Set |drag_status_| to kDragCancelInProgress to set the
     // auto hide state to |drag_auto_hide_state_|, which is the

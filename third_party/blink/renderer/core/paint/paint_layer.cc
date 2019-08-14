@@ -2014,9 +2014,16 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
                                            z_offset);
   }
 
-  if (layout_object.HasClipPath() &&
-      HitTestClippedOutByClipPath(root_layer, recursion_data.location))
+  // Don't hit test the clip-path area when checking for occlusion. This is
+  // necessary because SVG doesn't support rect-based hit testing, so
+  // HitTestClippedOutByClipPath may erroneously return true for a rect-based
+  // hit test).
+  bool is_occlusion_test = result.GetHitTestRequest().GetType() &
+                           HitTestRequest::kHitTestVisualOverflow;
+  if (!is_occlusion_test && layout_object.HasClipPath() &&
+      HitTestClippedOutByClipPath(root_layer, recursion_data.location)) {
     return nullptr;
+  }
 
   // The natural thing would be to keep HitTestingTransformState on the stack,
   // but it's big, so we heap-allocate.

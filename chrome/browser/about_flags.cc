@@ -3530,8 +3530,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_CHROMEOS)
     {"enable-chromeos-account-manager",
      flag_descriptions::kEnableChromeOsAccountManagerName,
-     flag_descriptions::kEnableChromeOsAccountManagerDescription,
-     kOsCrOS | kExpireM77,
+     flag_descriptions::kEnableChromeOsAccountManagerDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kAccountManager)},
 #endif
 
@@ -3652,6 +3651,11 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
+    {"click-to-call-open-dialer-directly",
+     flag_descriptions::kClickToCallOpenDialerDirectlyName,
+     flag_descriptions::kClickToCallOpenDialerDirectlyDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kClickToCallOpenDialerDirectly)},
+
     {"click-to-call-receiver", flag_descriptions::kClickToCallReceiverName,
      flag_descriptions::kClickToCallReceiverDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(kClickToCallReceiver)},
@@ -4355,6 +4359,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDecodeLossyWebPImagesToYUVName,
      flag_descriptions::kDecodeLossyWebPImagesToYUVDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kDecodeLossyWebPImagesToYUV)},
+
+    {"dns-over-https", flag_descriptions::kDnsOverHttpsName,
+     flag_descriptions::kDnsOverHttpsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kDnsOverHttps)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
@@ -4419,6 +4428,12 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
     return true;
   }
 #endif  // OS_WIN
+
+  // TODO(crbug.com/988078): Make the DoH entry visible for non-enterprise
+  // users.
+  if (!strcmp("dns-over-https", entry.internal_name)) {
+    return true;
+  }
 
   return false;
 }

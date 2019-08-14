@@ -88,6 +88,7 @@ void SignChallengeCallbackTrue(
     const std::string& device_id,
     chromeos::attestation::AttestationChallengeOptions options,
     const std::string& challenge,
+    const std::string& key_name_for_spkac,
     const cryptohome::AsyncMethodCaller::DataCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(callback, true, "response"));
@@ -101,6 +102,7 @@ void SignChallengeCallbackFalse(
     const std::string& device_id,
     chromeos::attestation::AttestationChallengeOptions options,
     const std::string& challenge,
+    const std::string& key_name_for_spkac,
     const cryptohome::AsyncMethodCaller::DataCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(callback, false, ""));
@@ -111,6 +113,7 @@ void GetCertificateCallbackTrue(
     const AccountId& account_id,
     const std::string& request_origin,
     bool force_new_key,
+    const std::string& key_name,
     const chromeos::attestation::AttestationFlow::CertificateCallback&
         callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -124,6 +127,7 @@ void GetCertificateCallbackUnspecifiedFailure(
     const AccountId& account_id,
     const std::string& request_origin,
     bool force_new_key,
+    const std::string& key_name,
     const chromeos::attestation::AttestationFlow::CertificateCallback&
         callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -138,6 +142,7 @@ void GetCertificateCallbackBadRequestFailure(
     const AccountId& account_id,
     const std::string& request_origin,
     bool force_new_key,
+    const std::string& key_name,
     const chromeos::attestation::AttestationFlow::CertificateCallback&
         callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -164,9 +169,9 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
     ON_CALL(mock_async_method_caller_, TpmAttestationRegisterKey(_, _, _, _))
         .WillByDefault(Invoke(RegisterKeyCallbackTrue));
     ON_CALL(mock_async_method_caller_,
-            TpmAttestationSignEnterpriseChallenge(_, _, _, _, _, _, _, _))
+            TpmAttestationSignEnterpriseChallenge(_, _, _, _, _, _, _, _, _))
         .WillByDefault(Invoke(SignChallengeCallbackTrue));
-    ON_CALL(mock_attestation_flow_, GetCertificate(_, _, _, _, _))
+    ON_CALL(mock_attestation_flow_, GetCertificate(_, _, _, _, _, _))
         .WillByDefault(Invoke(GetCertificateCallbackTrue));
 
     stub_install_attributes_.SetCloudManaged("google.com", "device_id");
@@ -301,7 +306,7 @@ TEST_F(EPKPChallengeMachineKeyTest, DoesKeyExistDbusFailed) {
 }
 
 TEST_F(EPKPChallengeMachineKeyTest, GetCertificateFailed) {
-  EXPECT_CALL(mock_attestation_flow_, GetCertificate(_, _, _, _, _))
+  EXPECT_CALL(mock_attestation_flow_, GetCertificate(_, _, _, _, _, _))
       .WillRepeatedly(Invoke(GetCertificateCallbackUnspecifiedFailure));
 
   EXPECT_EQ(GetCertificateError(kGetCertificateFailed),
@@ -310,7 +315,7 @@ TEST_F(EPKPChallengeMachineKeyTest, GetCertificateFailed) {
 
 TEST_F(EPKPChallengeMachineKeyTest, SignChallengeFailed) {
   EXPECT_CALL(mock_async_method_caller_,
-              TpmAttestationSignEnterpriseChallenge(_, _, _, _, _, _, _, _))
+              TpmAttestationSignEnterpriseChallenge(_, _, _, _, _, _, _, _, _))
       .WillRepeatedly(Invoke(SignChallengeCallbackFalse));
 
   EXPECT_EQ(EPKPChallengeKeyBase::kSignChallengeFailedError,
@@ -321,7 +326,7 @@ TEST_F(EPKPChallengeMachineKeyTest, KeyExists) {
   cryptohome_client_.SetTpmAttestationDeviceCertificate("attest-ent-machine",
                                                         std::string());
   // GetCertificate must not be called if the key exists.
-  EXPECT_CALL(mock_attestation_flow_, GetCertificate(_, _, _, _, _))
+  EXPECT_CALL(mock_attestation_flow_, GetCertificate(_, _, _, _, _, _))
       .Times(0);
 
   EXPECT_TRUE(utils::RunFunction(func_.get(), kArgs, browser(),
@@ -366,14 +371,14 @@ TEST_P(EPKPChallengeMachineKeyAllProfilesTest, Success) {
   EXPECT_CALL(mock_attestation_flow_,
               GetCertificate(
                   chromeos::attestation::PROFILE_ENTERPRISE_MACHINE_CERTIFICATE,
-                  _, _, _, _))
+                  _, _, _, _, _))
       .Times(1);
   // SignEnterpriseChallenge must be called exactly once.
-  EXPECT_CALL(
-      mock_async_method_caller_,
-      TpmAttestationSignEnterpriseChallenge(
-          chromeos::attestation::KEY_DEVICE, cryptohome::Identification(),
-          "attest-ent-machine", "google.com", "device_id", _, "challenge", _))
+  EXPECT_CALL(mock_async_method_caller_,
+              TpmAttestationSignEnterpriseChallenge(
+                  chromeos::attestation::KEY_DEVICE,
+                  cryptohome::Identification(), "attest-ent-machine",
+                  "google.com", "device_id", _, "challenge", _, _))
       .Times(1);
 
   std::unique_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
@@ -464,7 +469,7 @@ TEST_F(EPKPChallengeUserKeyTest, DoesKeyExistDbusFailed) {
 }
 
 TEST_F(EPKPChallengeUserKeyTest, GetCertificateFailedWithUnspecifiedFailure) {
-  EXPECT_CALL(mock_attestation_flow_, GetCertificate(_, _, _, _, _))
+  EXPECT_CALL(mock_attestation_flow_, GetCertificate(_, _, _, _, _, _))
       .WillRepeatedly(Invoke(GetCertificateCallbackUnspecifiedFailure));
 
   EXPECT_EQ(GetCertificateError(kGetCertificateFailed),
@@ -472,7 +477,7 @@ TEST_F(EPKPChallengeUserKeyTest, GetCertificateFailedWithUnspecifiedFailure) {
 }
 
 TEST_F(EPKPChallengeUserKeyTest, GetCertificateFailedWithBadRequestFailure) {
-  EXPECT_CALL(mock_attestation_flow_, GetCertificate(_, _, _, _, _))
+  EXPECT_CALL(mock_attestation_flow_, GetCertificate(_, _, _, _, _, _))
       .WillRepeatedly(Invoke(GetCertificateCallbackBadRequestFailure));
 
   EXPECT_EQ(GetCertificateError(kGetCertificateFailed),
@@ -481,7 +486,7 @@ TEST_F(EPKPChallengeUserKeyTest, GetCertificateFailedWithBadRequestFailure) {
 
 TEST_F(EPKPChallengeUserKeyTest, SignChallengeFailed) {
   EXPECT_CALL(mock_async_method_caller_,
-              TpmAttestationSignEnterpriseChallenge(_, _, _, _, _, _, _, _))
+              TpmAttestationSignEnterpriseChallenge(_, _, _, _, _, _, _, _, _))
       .WillRepeatedly(Invoke(SignChallengeCallbackFalse));
 
   EXPECT_EQ(EPKPChallengeKeyBase::kSignChallengeFailedError,
@@ -502,7 +507,7 @@ TEST_F(EPKPChallengeUserKeyTest, KeyExists) {
           AccountId::FromUserEmail(kUserEmail)),
       "attest-ent-user", std::string());
   // GetCertificate must not be called if the key exists.
-  EXPECT_CALL(mock_attestation_flow_, GetCertificate(_, _, _, _, _))
+  EXPECT_CALL(mock_attestation_flow_, GetCertificate(_, _, _, _, _, _))
       .Times(0);
 
   EXPECT_TRUE(utils::RunFunction(func_.get(), kArgs, browser(),
@@ -527,10 +532,10 @@ TEST_F(EPKPChallengeUserKeyTest, PersonalDevice) {
 
 TEST_F(EPKPChallengeUserKeyTest, Success) {
   // GetCertificate must be called exactly once.
-  EXPECT_CALL(mock_attestation_flow_,
-              GetCertificate(
-                  chromeos::attestation::PROFILE_ENTERPRISE_USER_CERTIFICATE,
-                  _, _, _, _))
+  EXPECT_CALL(
+      mock_attestation_flow_,
+      GetCertificate(chromeos::attestation::PROFILE_ENTERPRISE_USER_CERTIFICATE,
+                     _, _, _, _, _))
       .Times(1);
   const AccountId account_id = AccountId::FromUserEmail(kUserEmail);
   // SignEnterpriseChallenge must be called exactly once.
@@ -539,7 +544,7 @@ TEST_F(EPKPChallengeUserKeyTest, Success) {
                   chromeos::attestation::KEY_USER,
                   cryptohome::Identification(account_id), "attest-ent-user",
                   cryptohome::Identification(account_id).id(), "device_id", _,
-                  "challenge", _))
+                  "challenge", _, _))
       .Times(1);
   // RegisterKey must be called exactly once.
   EXPECT_CALL(mock_async_method_caller_,

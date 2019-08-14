@@ -102,6 +102,12 @@ const char kAutomaticPasswordGenerationDescription[] =
     "Allow Chrome to offer to generate passwords when it detects account "
     "creation pages.";
 
+const char kDnsOverHttpsName[] = "Secure DNS lookups";
+const char kDnsOverHttpsDescription[] =
+    "Enables DNS over HTTPS. When this feature is enabled, your browser may "
+    "try to use a secure HTTPS connection to look up the addresses of websites "
+    "and other web resources.";
+
 const char kDrawVerticallyEdgeToEdgeName[] =
     "Draw contents vertically from edge to edge.";
 const char kDrawVerticallyEdgeToEdgeDescription[] =
@@ -2254,6 +2260,12 @@ const char kClearOldBrowsingDataName[] = "Clear older browsing data";
 const char kClearOldBrowsingDataDescription[] =
     "Enables clearing of browsing data which is older than a given time "
     "period.";
+
+const char kClickToCallOpenDialerDirectlyName[] =
+    "Open the dialer directly for Click to Call";
+const char kClickToCallOpenDialerDirectlyDescription[] =
+    "Enables opening the dialer directly instead of displaying a notification. "
+    "Only available on Android P- and when the screen is on and unlocked.";
 
 const char kClickToCallReceiverName[] =
     "Enable receiver device to handle click to call feature";

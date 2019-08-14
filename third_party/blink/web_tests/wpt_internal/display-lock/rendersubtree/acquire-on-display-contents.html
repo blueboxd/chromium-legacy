@@ -13,7 +13,7 @@
 <script>
 async_test(async (t) => {
   let div = document.createElement("div");
-  div.style = "display: contents; contain: style layout;";
+  div.style = "display: contents;";
   document.body.appendChild(div);
   await setInvisible(div).then(() => {
       // TODO(rakina): Change this once we support non-contained locking.
@@ -24,7 +24,6 @@ async_test(async (t) => {
 
 async_test(async (t) => {
   let slot = document.createElement("slot");
-  slot.style = "contain: style layout;";
   document.body.appendChild(slot);
   await setInvisible(slot).then(() => {
       // TODO(rakina): Change this once we support non-contained locking.
@@ -35,7 +34,7 @@ async_test(async (t) => {
 
 async_test(async (t) => {
   let slot = document.createElement("slot");
-  slot.style = "display: block; contain: style layout;";
+  slot.style = "display: block;";
   document.body.appendChild(slot);
   await setInvisible(slot).then(() => {
     // TODO(rakina): Change this once we support non-contained locking.

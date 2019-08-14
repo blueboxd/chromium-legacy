@@ -188,11 +188,13 @@ class PlatformKeysTest : public PlatformKeysTestBase {
     EXPECT_EQ(user_private_slot_db_.slot(), cert_db->GetPrivateSlot().get());
     EXPECT_NE(cert_db->GetPrivateSlot().get(), cert_db->GetPublicSlot().get());
 
-    auto* slot = user_client_cert_slot_ == UserClientCertSlot::kPrivateSlot
-                     ? cert_db->GetPrivateSlot().get()
-                     : cert_db->GetPublicSlot().get();
+    crypto::ScopedPK11Slot slot =
+        user_client_cert_slot_ == UserClientCertSlot::kPrivateSlot
+            ? cert_db->GetPrivateSlot()
+            : cert_db->GetPublicSlot();
     client_cert1_ = net::ImportClientCertAndKeyFromFile(
-        net::GetTestCertsDirectory(), "client_1.pem", "client_1.pk8", slot);
+        net::GetTestCertsDirectory(), "client_1.pem", "client_1.pk8",
+        slot.get());
     ASSERT_TRUE(client_cert1_.get());
 
     // Import a second client cert signed by another CA than client_1 into the

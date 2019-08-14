@@ -27,16 +27,14 @@ class CORE_EXPORT NGFragmentBuilder {
     DCHECK(style_);
     return *style_;
   }
-  NGFragmentBuilder& SetStyleVariant(NGStyleVariant style_variant) {
+  void SetStyleVariant(NGStyleVariant style_variant) {
     style_variant_ = style_variant;
-    return *this;
   }
-  NGFragmentBuilder& SetStyle(scoped_refptr<const ComputedStyle> style,
-                              NGStyleVariant style_variant) {
+  void SetStyle(scoped_refptr<const ComputedStyle> style,
+                NGStyleVariant style_variant) {
     DCHECK(style);
     style_ = std::move(style);
     style_variant_ = style_variant;
-    return *this;
   }
 
   WritingMode GetWritingMode() const { return writing_mode_; }

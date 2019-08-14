@@ -3650,12 +3650,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   OverscrollActionsTabHelper* activeTabHelper =
       OverscrollActionsTabHelper::FromWebState(currentWebState);
   if (controller == activeTabHelper->GetOverscrollActionsController()) {
-    if (!base::ios::IsRunningOnIOS12OrLater() &&
-        self.currentWebState->GetContentsMimeType() == "application/pdf") {
-      return self.headerHeight - self.view.safeAreaInsets.top;
-    } else {
-      return self.headerHeight;
-    }
+    return self.headerHeight;
   } else
     return 0;
 }

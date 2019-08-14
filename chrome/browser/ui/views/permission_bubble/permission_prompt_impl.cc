@@ -17,9 +17,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/bubble_anchor_util_views.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/front_eliding_title_label.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row_observer.h"
-#include "chrome/browser/ui/views/permission_bubble/front_eliding_title_label.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -151,7 +151,7 @@ void PermissionsBubbleDialogDelegateView::AddedToWidget() {
     return;
 
   GetBubbleFrameView()->SetTitleView(
-      ConstructFrontElidingTitleLabel(GetWindowTitle()));
+      CreateFrontElidingTitleLabel(GetWindowTitle()));
 }
 
 bool PermissionsBubbleDialogDelegateView::ShouldShowCloseButton() const {

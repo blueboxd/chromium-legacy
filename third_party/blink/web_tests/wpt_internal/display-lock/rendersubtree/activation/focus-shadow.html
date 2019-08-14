@@ -16,7 +16,6 @@
 <script>
 promise_test((t) => {
   const container = document.createElement("div");
-  container.style = "contain: style layout;";
   container.innerHTML = "<slot></slot>";
 
   const shadowRoot = host.attachShadow({ mode: "open" });

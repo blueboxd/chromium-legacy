@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
@@ -216,7 +217,7 @@ class ProtoDatabase {
 // Return a new instance of Options, but with two additions:
 // 1) create_if_missing = true
 // 2) max_open_files = 0
-leveldb_env::Options CreateSimpleOptions();
+leveldb_env::Options COMPONENT_EXPORT(LEVELDB_PROTO) CreateSimpleOptions();
 
 }  // namespace leveldb_proto
 

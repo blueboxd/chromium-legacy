@@ -11,7 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/android/chrome_jni_headers/JavascriptAppModalDialog_jni.h"
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/ui/javascript_dialogs/chrome_javascript_native_dialog_factory.h"
+#include "chrome/browser/ui/javascript_dialogs/chrome_javascript_native_app_modal_dialog_factory.h"
 #include "components/app_modal/app_modal_dialog_queue.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/javascript_dialog_manager.h"
@@ -194,8 +194,7 @@ class ChromeJavaScriptNativeDialogAndroidFactory
 
 }  // namespace
 
-void InstallChromeJavaScriptNativeDialogFactory() {
+void InstallChromeJavaScriptNativeAppModalDialogFactory() {
   app_modal::JavaScriptDialogManager::GetInstance()->SetNativeDialogFactory(
       base::WrapUnique(new ChromeJavaScriptNativeDialogAndroidFactory));
 }
-

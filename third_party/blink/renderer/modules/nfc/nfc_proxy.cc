@@ -209,7 +209,7 @@ void NFCProxy::OnMojoConnectionError() {
   for (auto& pair : readers) {
     // The reader may call StopReading() to remove itself from |readers_| when
     // handling the error.
-    pair.key->OnError(device::mojom::blink::NFCErrorType::NOT_READABLE);
+    pair.key->OnError(device::mojom::blink::NFCErrorType::NOT_SUPPORTED);
   }
 
   // Each connection maintains its own watch ID numbering, so reset to 1 on

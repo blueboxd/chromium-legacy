@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/android/chrome_jni_headers/JavascriptTabModalDialog_jni.h"
@@ -32,7 +33,8 @@ JavaScriptDialogAndroid::~JavaScriptDialogAndroid() {
   }
 }
 
-base::WeakPtr<JavaScriptDialogAndroid> JavaScriptDialogAndroid::Create(
+// static
+base::WeakPtr<JavaScriptDialog> JavaScriptDialog::CreateNewDialog(
     content::WebContents* parent_web_contents,
     content::WebContents* alerting_web_contents,
     const base::string16& title,

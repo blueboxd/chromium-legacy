@@ -80,9 +80,10 @@ void IdleManager::CreateService(blink::mojom::IdleManagerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void IdleManager::AddMonitor(base::TimeDelta threshold,
-                             blink::mojom::IdleMonitorPtr monitor_ptr,
-                             AddMonitorCallback callback) {
+void IdleManager::AddMonitor(
+    base::TimeDelta threshold,
+    mojo::PendingRemote<blink::mojom::IdleMonitor> monitor_remote,
+    AddMonitorCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (threshold < kMinimumThreshold) {
     bindings_.ReportBadMessage("Minimum threshold is 60 seconds.");
@@ -90,7 +91,7 @@ void IdleManager::AddMonitor(base::TimeDelta threshold,
   }
 
   auto monitor = std::make_unique<IdleMonitor>(
-      std::move(monitor_ptr), CheckIdleState(threshold), threshold);
+      std::move(monitor_remote), CheckIdleState(threshold), threshold);
 
   // This unretained reference is safe because IdleManager owns all IdleMonitor
   // instances.

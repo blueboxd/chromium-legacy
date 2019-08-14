@@ -16,6 +16,7 @@
 #include "base/timer/timer.h"
 #include "content/browser/idle/idle_monitor.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "ui/base/idle/idle.h"
 #include "url/origin.h"
@@ -54,7 +55,7 @@ class CONTENT_EXPORT IdleManager : public blink::mojom::IdleManager {
 
   // blink.mojom.IdleManager:
   void AddMonitor(base::TimeDelta threshold,
-                  blink::mojom::IdleMonitorPtr monitor_ptr,
+                  mojo::PendingRemote<blink::mojom::IdleMonitor> monitor_remote,
                   AddMonitorCallback callback) override;
 
   // Testing helpers.

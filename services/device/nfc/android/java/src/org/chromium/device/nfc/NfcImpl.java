@@ -382,7 +382,9 @@ public class NfcImpl implements Nfc {
     private NfcError checkIfReady() {
         if (!mHasPermission || mActivity == null) {
             return createError(NfcErrorType.NOT_ALLOWED);
-        } else if (mNfcManager == null || mNfcAdapter == null || !mNfcAdapter.isEnabled()) {
+        } else if (mNfcManager == null || mNfcAdapter == null) {
+            return createError(NfcErrorType.NOT_SUPPORTED);
+        } else if (!mNfcAdapter.isEnabled()) {
             return createError(NfcErrorType.NOT_READABLE);
         }
         return null;

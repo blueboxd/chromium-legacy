@@ -60,7 +60,8 @@ class CORE_EXPORT ScrollbarThemeMock : public ScrollbarTheme {
 
   void PaintScrollCorner(GraphicsContext&,
                          const DisplayItemClient&,
-                         const IntRect& corner_rect) override;
+                         const IntRect& corner_rect,
+                         WebColorScheme color_scheme) override;
 
   int MinimumThumbLength(const Scrollbar&) override;
 

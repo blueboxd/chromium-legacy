@@ -108,14 +108,31 @@ bool PasswordForm::IsPossibleChangePasswordFormWithoutUsername() const {
   return IsPossibleChangePasswordForm() && username_element.empty();
 }
 
+bool PasswordForm::HasUsernameElement() const {
+  return has_renderer_ids ? username_element_renderer_id !=
+                                FormFieldData::kNotSetFormControlRendererId
+                          : !username_element.empty();
+}
+
 bool PasswordForm::HasPasswordElement() const {
   return has_renderer_ids ? password_element_renderer_id !=
                                 FormFieldData::kNotSetFormControlRendererId
                           : !password_element.empty();
 }
 
+bool PasswordForm::HasNewPasswordElement() const {
+  return has_renderer_ids ? new_password_element_renderer_id !=
+                                FormFieldData::kNotSetFormControlRendererId
+                          : !new_password_element.empty();
+}
+
 bool PasswordForm::IsFederatedCredential() const {
   return !federation_origin.opaque();
+}
+
+bool PasswordForm::IsSingleUsername() const {
+  return HasUsernameElement() && !HasPasswordElement() &&
+         !HasNewPasswordElement();
 }
 
 bool PasswordForm::operator==(const PasswordForm& form) const {

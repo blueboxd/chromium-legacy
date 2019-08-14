@@ -1115,6 +1115,10 @@ ScrollBehavior PaintLayerScrollableArea::ScrollBehaviorStyle() const {
   return GetLayoutBox()->StyleRef().GetScrollBehavior();
 }
 
+WebColorScheme PaintLayerScrollableArea::UsedColorScheme() const {
+  return GetLayoutBox()->StyleRef().UsedColorScheme();
+}
+
 bool PaintLayerScrollableArea::HasHorizontalOverflow() const {
   // TODO(szager): Make the algorithm for adding/subtracting overflow:auto
   // scrollbars memoryless (crbug.com/625300).  This client_width hack will

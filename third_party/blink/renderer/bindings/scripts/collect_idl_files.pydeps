@@ -27,6 +27,7 @@ web_idl/dictionary.py
 web_idl/enumeration.py
 web_idl/exposure.py
 web_idl/extended_attribute.py
+web_idl/file_io.py
 web_idl/function_like.py
 web_idl/identifier_ir_map.py
 web_idl/idl_compiler.py

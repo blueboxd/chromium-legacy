@@ -96,14 +96,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
   void UpdateFilter(
       std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
       DiscoverySessionResultCallback callback) override;
-  void RemoveDiscoverySession(
-      BluetoothDiscoveryFilter* discovery_filter,
-      const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) override;
-  void SetDiscoveryFilter(
-      std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
-      const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) override;
+  void StopScan(DiscoverySessionResultCallback callback) override;
   void RemovePairingDelegateInternal(
       BluetoothDevice::PairingDelegate* pairing_delegate) override;
 

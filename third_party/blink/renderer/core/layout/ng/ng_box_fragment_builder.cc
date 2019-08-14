@@ -85,8 +85,7 @@ void NGBoxFragmentBuilder::RemoveChildren() {
   children_.resize(0);
 }
 
-NGBoxFragmentBuilder& NGBoxFragmentBuilder::AddBreakBeforeChild(
-    NGLayoutInputNode child) {
+void NGBoxFragmentBuilder::AddBreakBeforeChild(NGLayoutInputNode child) {
   DCHECK(has_block_fragmentation_);
   if (auto* child_inline_node = DynamicTo<NGInlineNode>(child)) {
     if (inline_break_tokens_.IsEmpty()) {
@@ -99,15 +98,13 @@ NGBoxFragmentBuilder& NGBoxFragmentBuilder::AddBreakBeforeChild(
           *child_inline_node, /* style */ nullptr, /* item_index */ 0,
           /* text_offset */ 0, NGInlineBreakToken::kDefault));
     }
-    return *this;
+    return;
   }
   auto token = NGBlockBreakToken::CreateBreakBefore(child);
   child_break_tokens_.push_back(token);
-  return *this;
 }
 
-NGBoxFragmentBuilder& NGBoxFragmentBuilder::AddBreakBeforeLine(
-    int line_number) {
+void NGBoxFragmentBuilder::AddBreakBeforeLine(int line_number) {
   DCHECK(has_block_fragmentation_);
   DCHECK_GT(line_number, 0);
   DCHECK_LE(unsigned(line_number), inline_break_tokens_.size());
@@ -136,18 +133,15 @@ NGBoxFragmentBuilder& NGBoxFragmentBuilder::AddBreakBeforeLine(
   // broken floats, which are resumed and positioned by the parent block layout
   // algorithm, need to be ignored by the inline layout algorithm.
   To<NGInlineBreakToken>(inline_break_tokens_.back().get())->SetIgnoreFloats();
-  return *this;
 }
 
-NGBoxFragmentBuilder& NGBoxFragmentBuilder::AddResult(
-    const NGLayoutResult& child_layout_result,
-    const LogicalOffset offset,
-    const LayoutInline* inline_container) {
+void NGBoxFragmentBuilder::AddResult(const NGLayoutResult& child_layout_result,
+                                     const LogicalOffset offset,
+                                     const LayoutInline* inline_container) {
   const auto& fragment = child_layout_result.PhysicalFragment();
   AddChild(fragment, offset, inline_container);
   if (fragment.IsBox())
     PropagateBreak(child_layout_result);
-  return *this;
 }
 
 void NGBoxFragmentBuilder::AddOutOfFlowLegacyCandidate(

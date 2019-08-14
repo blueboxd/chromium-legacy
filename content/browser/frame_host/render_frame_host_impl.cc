@@ -1096,6 +1096,10 @@ void RenderFrameHostImpl::LeaveBackForwardCache() {
     child->current_frame_host()->LeaveBackForwardCache();
 }
 
+void RenderFrameHostImpl::OnGrantedMediaStreamAccess() {
+  was_granted_media_access_ = true;
+}
+
 void RenderFrameHostImpl::OnPortalActivated(
     const base::UnguessableToken& portal_token,
     mojo::PendingAssociatedRemote<blink::mojom::Portal> portal,

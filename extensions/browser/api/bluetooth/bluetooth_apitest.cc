@@ -87,18 +87,18 @@ class BluetoothApiTest : public extensions::ExtensionApiTest {
         false, device::UMABluetoothDiscoverySessionOutcome::SUCCESS);
   }
 
-  void RemoveDiscoverySessionOverride(
-      device::BluetoothDiscoveryFilter* discovery_filter,
-      const base::RepeatingClosure& callback,
-      base::OnceCallback<void(device::UMABluetoothDiscoverySessionOutcome)>&
-          error_callback) {
+  void StopScanOverride(
+      device::BluetoothAdapter::DiscoverySessionResultCallback callback) {
     if (fail_next_call_) {
-      std::move(error_callback)
-          .Run(device::UMABluetoothDiscoverySessionOutcome::UNKNOWN);
+      std::move(callback).Run(
+          /*is_error=*/true,
+          device::UMABluetoothDiscoverySessionOutcome::UNKNOWN);
       fail_next_call_ = false;
       return;
     }
-    callback.Run();
+    std::move(callback).Run(
+        /*is_error=*/false,
+        device::UMABluetoothDiscoverySessionOutcome::SUCCESS);
   }
 
   void FailNextCall() { fail_next_call_ = true; }
@@ -196,7 +196,6 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
       utils::RunFunctionAndReturnError(start_function.get(), "[]", browser()));
 
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
-
   // Simulate successful start discovery
   EXPECT_CALL(*mock_adapter_, StartScanWithFilter_(_, _))
       .WillOnce(Invoke(this, &BluetoothApiTest::StartScanOverride));
@@ -205,22 +204,11 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
                      extensions::api_test_utils::NONE);
 
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
-
   // Simulate stop discovery with a failure
-  EXPECT_CALL(*mock_adapter_, RemoveDiscoverySession_(_, _, _))
-      .WillOnce(
-          Invoke(this, &BluetoothApiTest::RemoveDiscoverySessionOverride));
+  EXPECT_CALL(*mock_adapter_, StopScan(_))
+      .WillOnce(Invoke(this, &BluetoothApiTest::StopScanOverride));
   FailNextCall();
   scoped_refptr<api::BluetoothStopDiscoveryFunction> stop_function;
-  stop_function = setupFunction(new api::BluetoothStopDiscoveryFunction);
-  error =
-      utils::RunFunctionAndReturnError(stop_function.get(), "[]", browser());
-  ASSERT_FALSE(error.empty());
-
-  //  Simiulate successful stop discovery
-  EXPECT_CALL(*mock_adapter_, RemoveDiscoverySession_(_, _, _))
-      .WillOnce(
-          Invoke(this, &BluetoothApiTest::RemoveDiscoverySessionOverride));
   stop_function = setupFunction(new api::BluetoothStopDiscoveryFunction);
   (void)utils::RunFunctionAndReturnSingleResult(stop_function.get(), "[]",
                                                 browser());
@@ -230,9 +218,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DiscoveryCallback) {
   EXPECT_CALL(*mock_adapter_, StartScanWithFilter_(_, _))
       .WillOnce(Invoke(this, &BluetoothApiTest::StartScanOverride));
-  EXPECT_CALL(*mock_adapter_, RemoveDiscoverySession_(_, _, _))
-      .WillOnce(
-          Invoke(this, &BluetoothApiTest::RemoveDiscoverySessionOverride));
+  EXPECT_CALL(*mock_adapter_, StopScan(_))
+      .WillOnce(Invoke(this, &BluetoothApiTest::StopScanOverride));
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(browser()->profile());
 
@@ -278,9 +265,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DiscoveryInProgress) {
 
   EXPECT_CALL(*mock_adapter_, StartScanWithFilter_(_, _))
       .WillOnce(Invoke(this, &BluetoothApiTest::StartScanOverride));
-  EXPECT_CALL(*mock_adapter_, RemoveDiscoverySession_(_, _, _))
-      .WillOnce(
-          Invoke(this, &BluetoothApiTest::RemoveDiscoverySessionOverride));
+  EXPECT_CALL(*mock_adapter_, StopScan(_))
+      .WillOnce(Invoke(this, &BluetoothApiTest::StopScanOverride));
 
   ExtensionTestMessageListener discovery_started("ready", true);
   ASSERT_TRUE(LoadExtension(

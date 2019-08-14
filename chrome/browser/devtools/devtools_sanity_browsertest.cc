@@ -621,7 +621,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
       if (host->GetType() == DevToolsAgentHost::kTypeSharedWorker &&
           host->GetURL().path().rfind(path_) != std::string::npos) {
         *out_host_ = host;
-        base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, quit_);
+        base::PostTask(FROM_HERE, {BrowserThread::UI}, quit_);
         delete this;
       }
     }

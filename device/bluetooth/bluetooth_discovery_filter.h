@@ -22,6 +22,7 @@ namespace device {
 // Used to keep a discovery filter that can be used to limit reported devices.
 class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoveryFilter {
  public:
+  BluetoothDiscoveryFilter();
   BluetoothDiscoveryFilter(BluetoothTransport transport);
   ~BluetoothDiscoveryFilter();
 

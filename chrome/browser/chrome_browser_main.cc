@@ -102,7 +102,7 @@
 #include "chrome/browser/tracing/navigation_tracing.h"
 #include "chrome/browser/tracing/trace_event_system_stats_monitor.h"
 #include "chrome/browser/translate/translate_service.h"
-#include "chrome/browser/ui/javascript_dialogs/chrome_javascript_native_dialog_factory.h"
+#include "chrome/browser/ui/javascript_dialogs/chrome_javascript_native_app_modal_dialog_factory.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -1221,7 +1221,7 @@ void ChromeBrowserMainParts::PreProfileInit() {
   javascript_dialog_extensions_client::InstallClient();
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-  InstallChromeJavaScriptNativeDialogFactory();
+  InstallChromeJavaScriptNativeAppModalDialogFactory();
 }
 
 void ChromeBrowserMainParts::PostProfileInit() {

@@ -222,138 +222,188 @@ base::string16 ProfileMenuView::GetAccessibleWindowTitle() const {
 void ProfileMenuView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
   if (sender == manage_google_account_button_) {
-    DCHECK(!dice_accounts_.empty());
-    base::RecordAction(
-        base::UserMetricsAction("ProfileChooser_ManageGoogleAccountClicked"));
-    NavigateToGoogleAccountPage(browser()->profile(), dice_accounts_[0].email);
+    OnManageGoogleAccountButtonClicked();
   } else if (sender == passwords_button_) {
-    base::RecordAction(
-        base::UserMetricsAction("ProfileChooser_PasswordsClicked"));
-    NavigateToManagePasswordsPage(
-        browser(), password_manager::ManagePasswordsReferrer::kProfileChooser);
+    OnPasswordsButtonClicked();
   } else if (sender == credit_cards_button_) {
-    base::RecordAction(
-        base::UserMetricsAction("ProfileChooser_PaymentsClicked"));
-    chrome::ShowSettingsSubPage(browser(), chrome::kPaymentsSubPage);
+    OnCreditCardsButtonClicked();
   } else if (sender == addresses_button_) {
-    base::RecordAction(
-        base::UserMetricsAction("ProfileChooser_AddressesClicked"));
-    chrome::ShowSettingsSubPage(browser(), chrome::kAddressesSubPage);
+    OnAddressesButtonClicked();
   } else if (sender == guest_profile_button_) {
-    PrefService* service = g_browser_process->local_state();
-    DCHECK(service);
-    DCHECK(service->GetBoolean(prefs::kBrowserGuestModeEnabled));
-    profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
-    base::RecordAction(base::UserMetricsAction("ProfileChooser_GuestClicked"));
+    OnGuestProfileButtonClicked();
   } else if (sender == users_button_) {
-    // If this is a guest session, close all the guest browser windows.
-    if (browser()->profile()->IsGuestSession()) {
-      profiles::CloseGuestProfileWindows();
-    } else {
-      base::RecordAction(
-          base::UserMetricsAction("ProfileChooser_ManageClicked"));
-      UserManager::Show(base::FilePath(),
-                        profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
-    }
-    PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_OPEN_USER_MANAGER);
+    OnManageProfilesButtonClicked();
   } else if (sender == lock_button_) {
-    profiles::LockProfile(browser()->profile());
-    PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_LOCK);
+    OnLockButtonClicked();
   } else if (sender == close_all_windows_button_) {
-    profiles::CloseProfileWindows(browser()->profile());
-    base::RecordAction(
-        base::UserMetricsAction("ProfileChooser_CloseAllClicked"));
+    OnExitProfileButtonClicked();
   } else if (sender == sync_error_button_) {
     sync_ui_util::AvatarSyncErrorType error =
         static_cast<sync_ui_util::AvatarSyncErrorType>(sender->GetID());
-    switch (error) {
-      case sync_ui_util::MANAGED_USER_UNRECOVERABLE_ERROR:
-        chrome::ShowSettingsSubPage(browser(), chrome::kSignOutSubPage);
-        break;
-      case sync_ui_util::UNRECOVERABLE_ERROR:
-        if (ProfileSyncServiceFactory::GetForProfile(browser()->profile())) {
-          syncer::RecordSyncEvent(syncer::STOP_FROM_OPTIONS);
-        }
-
-        // GetPrimaryAccountMutator() might return nullptr on some platforms.
-        if (auto* account_mutator =
-                IdentityManagerFactory::GetForProfile(browser()->profile())
-                    ->GetPrimaryAccountMutator()) {
-          account_mutator->ClearPrimaryAccount(
-              signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
-              signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
-              signin_metrics::SignoutDelete::IGNORE_METRIC);
-          Hide();
-          browser()->signin_view_controller()->ShowSignin(
-              profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser(), access_point_);
-        }
-        break;
-      case sync_ui_util::AUTH_ERROR:
-        Hide();
-        browser()->signin_view_controller()->ShowSignin(
-            profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH, browser(), access_point_);
-        break;
-      case sync_ui_util::UPGRADE_CLIENT_ERROR:
-        chrome::OpenUpdateChromeDialog(browser());
-        break;
-      case sync_ui_util::PASSPHRASE_ERROR:
-      case sync_ui_util::SETTINGS_UNCONFIRMED_ERROR:
-        chrome::ShowSettingsSubPage(browser(), chrome::kSyncSetupSubPage);
-        break;
-      case sync_ui_util::NO_SYNC_ERROR:
-        NOTREACHED();
-        break;
-    }
-    base::RecordAction(
-        base::UserMetricsAction("ProfileChooser_SignInAgainClicked"));
+    OnSyncErrorButtonClicked(error);
   } else if (sender == current_profile_card_) {
-    if (dice_enabled_ &&
-        IdentityManagerFactory::GetForProfile(browser()->profile())
-            ->HasPrimaryAccount()) {
-      chrome::ShowSettingsSubPage(browser(), chrome::kPeopleSubPage);
-    } else {
-      // Open settings to edit profile name and image. The profile doesn't need
-      // to be authenticated to open this.
-      avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
-      PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_IMAGE);
-      PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_NAME);
-    }
+    OnCurrentProfileCardClicked();
   } else if (sender == signin_current_profile_button_) {
-    Hide();
-    browser()->signin_view_controller()->ShowSignin(
-        profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser(), access_point_);
+    OnSigninButtonClicked();
   } else if (sender == signin_with_gaia_account_button_) {
-    DCHECK(dice_signin_button_view_->account());
-    Hide();
-    signin_ui_util::EnableSyncFromPromo(
-        browser(), dice_signin_button_view_->account().value(), access_point_,
-        true /* is_default_promo_account */);
+    OnSigninAccountButtonClicked();
   } else if (sender == signout_button_) {
-    Hide();
-
-    // Sign out from all accounts.
-    IdentityManagerFactory::GetForProfile(browser()->profile())
-        ->GetAccountsMutator()
-        ->RemoveAllAccounts(signin_metrics::SourceForRefreshTokenOperation::
-                                kUserMenu_SignOutAllAccounts);
-    base::RecordAction(base::UserMetricsAction("Signin_Signout_FromUserMenu"));
+    OnSignoutButtonClicked();
   } else {
     // Either one of the "other profiles", or one of the profile accounts
     // buttons was pressed.
     ButtonIndexes::const_iterator profile_match =
         open_other_profile_indexes_map_.find(sender);
     if (profile_match != open_other_profile_indexes_map_.end()) {
-      avatar_menu_->SwitchToProfile(
-          profile_match->second, ui::DispositionFromEventFlags(event.flags()) ==
-                                     WindowOpenDisposition::NEW_WINDOW,
-          ProfileMetrics::SWITCH_PROFILE_ICON);
-      base::RecordAction(
-          base::UserMetricsAction("ProfileChooser_ProfileClicked"));
-      Hide();
+      OnOtherProfileButtonClicked(profile_match->second);
     } else {
       NOTREACHED();
     }
   }
+}
+
+void ProfileMenuView::OnManageGoogleAccountButtonClicked() {
+  base::RecordAction(
+      base::UserMetricsAction("ProfileChooser_ManageGoogleAccountClicked"));
+  DCHECK(!dice_accounts_.empty());
+  NavigateToGoogleAccountPage(browser()->profile(), dice_accounts_[0].email);
+}
+
+void ProfileMenuView::OnPasswordsButtonClicked() {
+  base::RecordAction(
+      base::UserMetricsAction("ProfileChooser_PasswordsClicked"));
+  NavigateToManagePasswordsPage(
+      browser(), password_manager::ManagePasswordsReferrer::kProfileChooser);
+}
+
+void ProfileMenuView::OnCreditCardsButtonClicked() {
+  base::RecordAction(base::UserMetricsAction("ProfileChooser_PaymentsClicked"));
+  chrome::ShowSettingsSubPage(browser(), chrome::kPaymentsSubPage);
+}
+
+void ProfileMenuView::OnAddressesButtonClicked() {
+  base::RecordAction(
+      base::UserMetricsAction("ProfileChooser_AddressesClicked"));
+  chrome::ShowSettingsSubPage(browser(), chrome::kAddressesSubPage);
+}
+
+void ProfileMenuView::OnGuestProfileButtonClicked() {
+  base::RecordAction(base::UserMetricsAction("ProfileChooser_GuestClicked"));
+  PrefService* service = g_browser_process->local_state();
+  DCHECK(service);
+  DCHECK(service->GetBoolean(prefs::kBrowserGuestModeEnabled));
+  profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
+}
+
+void ProfileMenuView::OnManageProfilesButtonClicked() {
+  // If this is a guest session, close all the guest browser windows.
+  if (browser()->profile()->IsGuestSession()) {
+    profiles::CloseGuestProfileWindows();
+  } else {
+    base::RecordAction(base::UserMetricsAction("ProfileChooser_ManageClicked"));
+    UserManager::Show(base::FilePath(),
+                      profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
+  }
+  PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_OPEN_USER_MANAGER);
+}
+
+void ProfileMenuView::OnLockButtonClicked() {
+  profiles::LockProfile(browser()->profile());
+  PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_LOCK);
+}
+
+void ProfileMenuView::OnExitProfileButtonClicked() {
+  base::RecordAction(base::UserMetricsAction("ProfileChooser_CloseAllClicked"));
+  profiles::CloseProfileWindows(browser()->profile());
+}
+
+void ProfileMenuView::OnSyncErrorButtonClicked(
+    sync_ui_util::AvatarSyncErrorType error) {
+  base::RecordAction(
+      base::UserMetricsAction("ProfileChooser_SignInAgainClicked"));
+  switch (error) {
+    case sync_ui_util::MANAGED_USER_UNRECOVERABLE_ERROR:
+      chrome::ShowSettingsSubPage(browser(), chrome::kSignOutSubPage);
+      break;
+    case sync_ui_util::UNRECOVERABLE_ERROR:
+      if (ProfileSyncServiceFactory::GetForProfile(browser()->profile())) {
+        syncer::RecordSyncEvent(syncer::STOP_FROM_OPTIONS);
+      }
+
+      // GetPrimaryAccountMutator() might return nullptr on some platforms.
+      if (auto* account_mutator =
+              IdentityManagerFactory::GetForProfile(browser()->profile())
+                  ->GetPrimaryAccountMutator()) {
+        account_mutator->ClearPrimaryAccount(
+            signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+            signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
+            signin_metrics::SignoutDelete::IGNORE_METRIC);
+        Hide();
+        browser()->signin_view_controller()->ShowSignin(
+            profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser(), access_point_);
+      }
+      break;
+    case sync_ui_util::AUTH_ERROR:
+      Hide();
+      browser()->signin_view_controller()->ShowSignin(
+          profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH, browser(), access_point_);
+      break;
+    case sync_ui_util::UPGRADE_CLIENT_ERROR:
+      chrome::OpenUpdateChromeDialog(browser());
+      break;
+    case sync_ui_util::PASSPHRASE_ERROR:
+    case sync_ui_util::SETTINGS_UNCONFIRMED_ERROR:
+      chrome::ShowSettingsSubPage(browser(), chrome::kSyncSetupSubPage);
+      break;
+    case sync_ui_util::NO_SYNC_ERROR:
+      NOTREACHED();
+      break;
+  }
+}
+
+void ProfileMenuView::OnCurrentProfileCardClicked() {
+  if (dice_enabled_ &&
+      IdentityManagerFactory::GetForProfile(browser()->profile())
+          ->HasPrimaryAccount()) {
+    chrome::ShowSettingsSubPage(browser(), chrome::kPeopleSubPage);
+  } else {
+    // Open settings to edit profile name and image. The profile doesn't need
+    // to be authenticated to open this.
+    avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
+    PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_IMAGE);
+    PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_NAME);
+  }
+}
+
+void ProfileMenuView::OnSigninButtonClicked() {
+  Hide();
+  browser()->signin_view_controller()->ShowSignin(
+      profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser(), access_point_);
+}
+
+void ProfileMenuView::OnSigninAccountButtonClicked() {
+  DCHECK(dice_signin_button_view_->account());
+  Hide();
+  signin_ui_util::EnableSyncFromPromo(
+      browser(), dice_signin_button_view_->account().value(), access_point_,
+      true /* is_default_promo_account */);
+}
+
+void ProfileMenuView::OnSignoutButtonClicked() {
+  base::RecordAction(base::UserMetricsAction("Signin_Signout_FromUserMenu"));
+  Hide();
+  // Sign out from all accounts.
+  IdentityManagerFactory::GetForProfile(browser()->profile())
+      ->GetAccountsMutator()
+      ->RemoveAllAccounts(signin_metrics::SourceForRefreshTokenOperation::
+                              kUserMenu_SignOutAllAccounts);
+}
+
+void ProfileMenuView::OnOtherProfileButtonClicked(int profile_index) {
+  base::RecordAction(base::UserMetricsAction("ProfileChooser_ProfileClicked"));
+  avatar_menu_->SwitchToProfile(profile_index, /*always_create=*/false,
+                                ProfileMetrics::SWITCH_PROFILE_ICON);
+  Hide();
 }
 
 void ProfileMenuView::StyledLabelLinkClicked(views::StyledLabel* label,

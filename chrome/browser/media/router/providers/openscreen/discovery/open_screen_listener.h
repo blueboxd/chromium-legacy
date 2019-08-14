@@ -35,8 +35,6 @@ class OpenScreenListener
   void AddObserver(ServiceListener::Observer* observer) override;
   void RemoveObserver(ServiceListener::Observer* observer) override;
 
-  void RunTasks() override;
-
   // ServiceDiscoveryDeviceLister::Delegate
   void OnDeviceChanged(
       const std::string& service_type,

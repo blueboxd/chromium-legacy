@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/component_export.h"
 #include "base/containers/queue.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
@@ -22,7 +23,7 @@ namespace leveldb_proto {
 // Controls a single LevelDB database to be used by many clients, and provides
 // a way to get SharedProtoDatabaseClients that allow shared access to the
 // underlying single database.
-class SharedProtoDatabase
+class COMPONENT_EXPORT(LEVELDB_PROTO) SharedProtoDatabase
     : public base::RefCountedThreadSafe<SharedProtoDatabase> {
  public:
   using SharedClientInitCallback =

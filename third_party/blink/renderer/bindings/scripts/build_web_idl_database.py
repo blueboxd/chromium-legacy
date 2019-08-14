@@ -10,8 +10,8 @@ IDL definitions such as IDL interface and IDL attribute.
 """
 
 import optparse
+import sys
 
-import utilities
 import web_idl
 
 
@@ -30,16 +30,25 @@ def parse_options():
 def main():
     options, filepaths = parse_options()
 
-    # Incomplete IDL compiler produces a lot of errors, which break trybots.
-    # So, we ignore all the errors for the time being.
-    # TODO(bindings-team): Replace |report_error| with sys.exit once IDL
-    # compiler completes.
-    report_error = lambda message: None
+    was_error_reported = [False]
+
+    def report_error(message):
+        # Incomplete IDL compiler produces a lot of errors, which break trybots.
+        # So, we ignore all the errors for the time being.
+        # TODO(bindings-team): Remove the following lines and enable the error
+        # report.
+        if True:  # pylint: disable=using-constant-test
+            return
+        was_error_reported[0] = True
+        sys.stderr.writelines([message, '\n'])
 
     database = web_idl.build_database(filepaths=filepaths,
                                       report_error=report_error)
 
-    utilities.write_pickle_file(options.output, database)
+    if was_error_reported[0]:
+        sys.exit('Aborted due to error.')
+
+    database.write_to_file(options.output)
 
 
 if __name__ == '__main__':

@@ -498,7 +498,7 @@ void CertificateManagerModel::Create(
       certificate_provider_service->CreateCertificateProvider();
 #endif
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&CertificateManagerModel::GetCertDBOnIOThread,
                      std::move(params), browser_context->GetResourceContext(),
@@ -700,7 +700,7 @@ void CertificateManagerModel::DidGetCertDBOnIOThread(
 #if defined(OS_CHROMEOS)
   is_tpm_available = crypto::IsTPMTokenEnabledForNSS();
 #endif
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&CertificateManagerModel::DidGetCertDBOnUIThread,
                      std::move(params), observer, callback, cert_db,

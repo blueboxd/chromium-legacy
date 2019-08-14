@@ -18,13 +18,15 @@ jumbo_static_library("common") {
     "content_settings_utils.h",
     "cookie_settings_base.cc",
     "cookie_settings_base.h",
-    "features.cc",
-    "features.h",
     "pref_names.cc",
     "pref_names.h",
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+  public_deps = [
+    ":features",
+  ]
 
   deps = [
     "//base",
@@ -60,5 +62,20 @@ mojom("mojo_bindings") {
 
   public_deps = [
     "//mojo/public/mojom/base",
+  ]
+}
+
+component("features") {
+  output_name = "content_settings_features"
+
+  defines = [ "IS_CONTENT_SETTINGS_FEATURES_IMPL" ]
+
+  sources = [
+    "features.cc",
+    "features.h",
+  ]
+
+  deps = [
+    "//base",
   ]
 }

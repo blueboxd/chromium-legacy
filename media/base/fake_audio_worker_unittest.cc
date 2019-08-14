@@ -4,6 +4,9 @@
 
 #include "media/base/fake_audio_worker.h"
 
+#include <limits>
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -11,7 +14,10 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/test/test_mock_time_task_runner.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "base/time/time_override.h"
 #include "build/build_config.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -167,5 +173,93 @@ TEST_F(FakeAudioWorkerTest, StartStopClearsCallbacks) {
   // EndTest() will ensure the proper number of callbacks have occurred.
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_THAT(callbacks_, SizeIs(3));
+}
+
+class FakeAudioWorkerMockTaskTest : public testing::Test {
+ public:
+  FakeAudioWorkerMockTaskTest()
+      : params_(AudioParameters::AUDIO_FAKE, CHANNEL_LAYOUT_STEREO, 44100, 128),
+        fake_worker_(task_runner_, params_) {
+    DCHECK(!global_clock_);
+    global_clock_ = task_runner_->GetMockTickClock();
+    time_between_callbacks_ = base::TimeDelta::FromMicroseconds(
+        params_.frames_per_buffer() * base::Time::kMicrosecondsPerSecond /
+        static_cast<float>(params_.sample_rate()));
+    clock_overrides_ = std::make_unique<base::subtle::ScopedTimeClockOverrides>(
+        nullptr, TimeTicksOverride, nullptr);
+  }
+
+  ~FakeAudioWorkerMockTaskTest() override { global_clock_ = nullptr; }
+
+  void CalledByFakeWorker(base::TimeTicks ideal_time, base::TimeTicks now) {
+    callbacks_.push_back(base::TimeTicks::Now());
+  }
+
+  void SetUp() override {
+    {
+      base::TestMockTimeTaskRunner::ScopedContext ctx(task_runner_);
+      fake_worker_.Start(
+          base::BindRepeating(&FakeAudioWorkerMockTaskTest::CalledByFakeWorker,
+                              base::Unretained(this)));
+    }
+  }
+
+  void TearDown() override {
+    {
+      base::TestMockTimeTaskRunner::ScopedContext ctx(task_runner_);
+      fake_worker_.Stop();
+    }
+    task_runner_->RunUntilIdle();
+  }
+
+ protected:
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_ =
+      new base::TestMockTimeTaskRunner();
+  std::unique_ptr<base::subtle::ScopedTimeClockOverrides> clock_overrides_;
+  AudioParameters params_;
+  FakeAudioWorker fake_worker_;
+  base::TimeDelta time_between_callbacks_;
+  std::vector<base::TimeTicks> callbacks_;
+
+  static const base::TickClock* global_clock_;
+  static base::TimeTicks TimeTicksOverride() {
+    DCHECK(global_clock_);
+    return global_clock_->NowTicks();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakeAudioWorkerMockTaskTest);
+};
+
+const base::TickClock* FakeAudioWorkerMockTaskTest::global_clock_ = nullptr;
+
+// This test is disabled because when late we skip reading to maintain
+// compatibility for input and output streams.
+TEST_F(FakeAudioWorkerMockTaskTest, DISABLED_LateCallbackProducesCallback) {
+  task_runner_->RunUntilIdle();
+  EXPECT_THAT(callbacks_, SizeIs(1));
+
+  // Advancing 2 periods will trigger the late logic. It should result in one
+  // callback, And one queued item which will run in 0.5 callback periods.
+  task_runner_->AdvanceMockTickClock(time_between_callbacks_ * 2.5);
+  task_runner_->RunUntilIdle();
+  EXPECT_THAT(callbacks_, SizeIs(2));
+  // Fast-forward to trigger the next time. Note that 0.5 does not work due to
+  // rounding in the next frame logic, since 128 does not divide 44100.
+  task_runner_->FastForwardBy(time_between_callbacks_ * 0.501);
+  EXPECT_THAT(callbacks_, SizeIs(3));
+}
+
+TEST_F(FakeAudioWorkerMockTaskTest, CallbackDelay) {
+  // Initial call only
+  task_runner_->RunUntilIdle();
+
+  // Run the clock forward 1.5 periods and then trigger the callback.
+  // This means we are not behind, but the next callback should occur
+  // in 0.5 periods.
+  task_runner_->AdvanceMockTickClock(time_between_callbacks_ * 1.5);
+  task_runner_->RunUntilIdle();
+  EXPECT_THAT(callbacks_, SizeIs(2));
+  EXPECT_EQ(task_runner_->NextPendingTaskDelay(), time_between_callbacks_ / 2);
 }
 }  // namespace media

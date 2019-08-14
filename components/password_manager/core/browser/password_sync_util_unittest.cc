@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/sync_username_test_base.h"
@@ -19,6 +20,7 @@
 #endif  // SYNC_PASSWORD_REUSE_DETECTION_ENABLED
 
 using autofill::PasswordForm;
+using base::ASCIIToUTF16;
 
 namespace password_manager {
 namespace sync_util {
@@ -28,6 +30,13 @@ using PasswordSyncUtilTest = SyncUsernameTestBase;
 PasswordForm SimpleGAIAChangePasswordForm() {
   PasswordForm form;
   form.signon_realm = "https://myaccount.google.com/";
+  return form;
+}
+
+PasswordForm SimpleForm(const char* signon_realm, const char* username) {
+  PasswordForm form;
+  form.signon_realm = signon_realm;
+  form.username_value = ASCIIToUTF16(username);
   return form;
 }
 
@@ -82,6 +91,10 @@ TEST_F(PasswordSyncUtilTest, IsSyncAccountCredential) {
       {SimpleGaiaForm(""), "sync_user@example.org", true},
       {SimpleNonGaiaForm(""), "sync_user@example.org", false},
       {SimpleGAIAChangePasswordForm(), "sync_user@example.org", true},
+      {SimpleForm("https://subdomain.google.com/", "sync_user@example.org"),
+       "sync_user@example.org", true},
+      {SimpleForm("https://subdomain.google.com/", ""), "sync_user@example.org",
+       true},
   };
 
   for (size_t i = 0; i < base::size(kTestCases); ++i) {

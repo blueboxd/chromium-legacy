@@ -78,8 +78,9 @@ int ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {
 void ChromeBrowserMainPartsAndroid::PostBrowserStart() {
   ChromeBrowserMainParts::PostBrowserStart();
 
-  base::PostDelayedTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostDelayedTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ReportSeccompSupport), base::TimeDelta::FromMinutes(1));
 
   RegisterChromeJavaMojoInterfaces();

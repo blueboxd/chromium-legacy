@@ -2000,6 +2000,45 @@ AutotestPrivateShowVirtualKeyboardIfEnabledFunction::Run() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetArcAppWindowInfoFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetArcAppWindowInfoFunction::
+    AutotestPrivateGetArcAppWindowInfoFunction() = default;
+AutotestPrivateGetArcAppWindowInfoFunction::
+    ~AutotestPrivateGetArcAppWindowInfoFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateGetArcAppWindowInfoFunction::Run() {
+  std::unique_ptr<api::autotest_private::GetArcAppWindowInfo::Params> params(
+      api::autotest_private::GetArcAppWindowInfo::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateGetArcAppWindowInfoFunction "
+           << params->package_name;
+
+  aura::Window* arc_window = GetArcAppWindow(params->package_name);
+  if (!arc_window) {
+    return RespondNow(Error(base::StrCat(
+        {"No ARC app window is found for ", params->package_name})));
+  }
+
+  const gfx::Rect bounds = arc_window->GetBoundsInRootWindow();
+  const bool is_animating = arc_window->layer()->GetAnimator()->is_animating();
+
+  auto bounds_dict = std::make_unique<base::DictionaryValue>();
+  bounds_dict->SetInteger("left", bounds.x());
+  bounds_dict->SetInteger("top", bounds.y());
+  bounds_dict->SetInteger("width", bounds.width());
+  bounds_dict->SetInteger("height", bounds.height());
+
+  auto result = std::make_unique<base::DictionaryValue>();
+  result->SetDictionary("bounds", std::move(bounds_dict));
+  result->SetBoolean("is_animating", is_animating);
+
+  return RespondNow(OneArgument(std::move(result)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateSetArcAppWindowStateFunction
 ///////////////////////////////////////////////////////////////////////////////
 

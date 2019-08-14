@@ -254,7 +254,7 @@ class SharedProtoDatabaseClientTest : public testing::Test {
   // Sets the obsolete client list to given list, runs clean up tasks and waits
   // for them to complete.
   void DestroyObsoleteClientsAndWait(const ProtoDbType* client_list) {
-    SetObsoleteClientListForTesting(client_list);
+    SharedProtoDatabaseClient::SetObsoleteClientListForTesting(client_list);
     base::RunLoop wait_loop;
     Callbacks::UpdateCallback wait_callback = base::BindOnce(
         [](base::OnceClosure closure, bool success) {
@@ -263,12 +263,12 @@ class SharedProtoDatabaseClientTest : public testing::Test {
         },
         wait_loop.QuitClosure());
 
-    DestroyObsoleteSharedProtoDatabaseClients(
+    SharedProtoDatabaseClient::DestroyObsoleteSharedProtoDatabaseClients(
         std::make_unique<ProtoLevelDBWrapper>(
             db_->database_task_runner_for_testing(), GetLevelDB()),
         std::move(wait_callback));
     wait_loop.Run();
-    SetObsoleteClientListForTesting(nullptr);
+    SharedProtoDatabaseClient::SetObsoleteClientListForTesting(nullptr);
   }
 
   void UpdateMetadataAsync(
@@ -282,8 +282,9 @@ class SharedProtoDatabaseClientTest : public testing::Test {
         },
         wait_loop.QuitClosure());
     client->set_migration_status(migration_status);
-    UpdateClientMetadataAsync(client->parent_db_, client->prefix_,
-                              migration_status, std::move(wait_callback));
+    SharedProtoDatabaseClient::UpdateClientMetadataAsync(
+        client->parent_db_, client->prefix_, migration_status,
+        std::move(wait_callback));
     wait_loop.Run();
   }
 

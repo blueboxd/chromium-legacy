@@ -7,6 +7,7 @@
 #include <unordered_set>
 
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/page_messages.h"
@@ -95,6 +96,14 @@ bool BackForwardCache::CanStoreDocument(RenderFrameHostImpl* rfh) {
     return false;
 
   if (!IsBackForwardCacheEnabled() || is_disabled_for_testing_)
+    return false;
+
+  // If the rfh has ever granted media access, prevent it from entering cache.
+  // TODO(crbug.com/989379): Consider only blocking when there's an active
+  //                         media stream.
+  // TODO(crbug.com/989379): Consider also checking whether any subframes
+  //                         have requested an media stream.
+  if (rfh->was_granted_media_access())
     return false;
 
   // Note that we check is_loading on the rfh directly, rather than calling

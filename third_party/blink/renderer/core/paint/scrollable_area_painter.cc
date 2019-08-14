@@ -226,7 +226,8 @@ void ScrollableAreaPainter::PaintScrollCorner(GraphicsContext& context,
   }
 
   const auto& client = DisplayItemClientForCorner();
-  theme->PaintScrollCorner(context, client, abs_rect);
+  theme->PaintScrollCorner(context, client, abs_rect,
+                           GetScrollableArea().UsedColorScheme());
 }
 
 PaintLayerScrollableArea& ScrollableAreaPainter::GetScrollableArea() const {

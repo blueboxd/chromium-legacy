@@ -169,6 +169,9 @@ class CookieStore final : public EventTargetWithInlineData,
 
   // The RFC 6265bis "site for cookies" for this store's ExecutionContext.
   const KURL default_site_for_cookies_;
+
+  // The context in which cookies are accessed.
+  const scoped_refptr<SecurityOrigin> default_top_frame_origin_;
 };
 
 }  // namespace blink

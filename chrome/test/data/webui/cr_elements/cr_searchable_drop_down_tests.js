@@ -101,6 +101,19 @@ suite('cr-searchable-drop-down', function() {
     assertEquals('ta', dropDown.value);
   });
 
+  test('click closes dropdown', function() {
+    setItems(['dog', 'cat', 'mouse']);
+
+    dropDown.$.search.click();
+    assertTrue(dropDown.$$('iron-dropdown').opened);
+
+    assertNotEquals('dog', dropDown.value);
+
+    getList()[0].click();
+    assertEquals('dog', dropDown.value);
+    assertFalse(dropDown.$$('iron-dropdown').opened);
+  });
+
   // If the error-message-allowed flag is passed and the |errorMessage| property
   // is set, then the error message should be displayed. If the |errorMessage|
   // property is not set or |errorMessageAllowed| is false, no error message

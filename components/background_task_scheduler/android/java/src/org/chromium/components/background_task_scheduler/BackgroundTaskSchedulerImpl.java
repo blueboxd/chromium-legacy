@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.Build;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
@@ -104,17 +105,23 @@ class BackgroundTaskSchedulerImpl implements BackgroundTaskScheduler {
     public void reschedule(Context context) {
         try (TraceEvent te = TraceEvent.scoped("BackgroundTaskScheduler.reschedule")) {
             ThreadUtils.assertOnUiThread();
-            Set<String> scheduledTasksClassNames = BackgroundTaskSchedulerPrefs.getScheduledTasks();
+            Set<Integer> scheduledTaskIds = BackgroundTaskSchedulerPrefs.getScheduledTaskIds();
             BackgroundTaskSchedulerPrefs.removeAllTasks();
-            for (String className : scheduledTasksClassNames) {
-                BackgroundTask task =
-                        BackgroundTaskReflection.getBackgroundTaskFromClassName(className);
-                if (task == null) {
-                    Log.w(TAG, "Cannot reschedule task for: " + className);
+            for (int taskId : scheduledTaskIds) {
+                final BackgroundTask backgroundTask =
+                        BackgroundTaskSchedulerFactory.getBackgroundTaskFromTaskId(taskId);
+                if (backgroundTask == null) {
+                    Log.w(TAG,
+                            "Cannot reschedule task for task id " + taskId + ". Could not "
+                                    + "instantiate BackgroundTask class.");
+                    // Cancel task if the BackgroundTask class is not found anymore. We assume this
+                    // means that the task has been deprecated.
+                    BackgroundTaskSchedulerFactory.getScheduler().cancel(
+                            ContextUtils.getApplicationContext(), taskId);
                     continue;
                 }
 
-                task.reschedule(context);
+                backgroundTask.reschedule(context);
             }
         }
     }

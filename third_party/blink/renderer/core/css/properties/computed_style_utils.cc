@@ -2208,6 +2208,22 @@ CSSValueList* ComputedStyleUtils::ValuesForShorthandProperty(
   return list;
 }
 
+CSSValuePair* ComputedStyleUtils::ValuesForGapShorthand(
+    const StylePropertyShorthand& shorthand,
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) {
+  const CSSValue* row_gap_value =
+      shorthand.properties()[0]->CSSValueFromComputedStyle(style, layout_object,
+                                                           allow_visited_style);
+  const CSSValue* column_gap_value =
+      shorthand.properties()[1]->CSSValueFromComputedStyle(style, layout_object,
+                                                           allow_visited_style);
+
+  return MakeGarbageCollected<CSSValuePair>(row_gap_value, column_gap_value,
+                                            CSSValuePair::kDropIdenticalValues);
+}
+
 CSSValueList* ComputedStyleUtils::ValuesForGridShorthand(
     const StylePropertyShorthand& shorthand,
     const ComputedStyle& style,

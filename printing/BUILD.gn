@@ -82,6 +82,7 @@ component("printing") {
     "units.h",
   ]
 
+  configs += [ "//build/config/compiler:noshadowing" ]
   cflags = []
   defines = [ "PRINTING_IMPLEMENTATION" ]
 
@@ -274,6 +275,7 @@ static_library("test_support") {
     sources += [ "image_fuchsia.cc" ]
   }
 
+  configs += [ "//build/config/compiler:noshadowing" ]
   public_deps = [
     "//printing",
     "//ui/gfx/geometry",
@@ -301,6 +303,7 @@ test("printing_unittests") {
     "units_unittest.cc",
   ]
 
+  configs += [ "//build/config/compiler:noshadowing" ]
   deps = [
     ":printing",
     "//base/test:run_all_unittests",

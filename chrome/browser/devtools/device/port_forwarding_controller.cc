@@ -231,9 +231,9 @@ class SocketTunnel {
         adb_thread_runner_(base::ThreadTaskRunnerHandle::Get()) {
     ResolveHostCallback resolve_host_callback = base::BindOnce(
         &SocketTunnel::OnResolveHostComplete, base::Unretained(this));
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindOnce(&ResolveHost, profile, host, port,
-                                            std::move(resolve_host_callback)));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&ResolveHost, profile, host, port,
+                                  std::move(resolve_host_callback)));
   }
 
   void OnResolveHostComplete(net::AddressList resolved_addresses) {

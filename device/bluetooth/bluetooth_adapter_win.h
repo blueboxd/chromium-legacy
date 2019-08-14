@@ -122,14 +122,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
   void StartScanWithFilter(
       std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
       DiscoverySessionResultCallback callback) override;
-  void RemoveDiscoverySession(
-      BluetoothDiscoveryFilter* discovery_filter,
-      const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) override;
-  void SetDiscoveryFilter(
-      std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
-      const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) override;
+  void StopScan(DiscoverySessionResultCallback callback) override;
 
   void Init();
   void InitForTest(
@@ -149,10 +142,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
   DiscoveryStatus discovery_status_;
   std::unordered_set<std::string> discovered_devices_;
 
-  std::vector<std::pair<base::Closure, DiscoverySessionErrorCallback>>
-      on_start_discovery_callbacks_;
-  std::vector<base::Closure> on_stop_discovery_callbacks_;
-  size_t num_discovery_listeners_;
+  DiscoverySessionResultCallback discovery_changed_callback_;
 
   scoped_refptr<BluetoothSocketThread> socket_thread_;
   scoped_refptr<BluetoothTaskManagerWin> task_manager_;

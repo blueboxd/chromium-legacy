@@ -210,8 +210,6 @@ def MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64):
 
 
 def main():
-  # TODO(cjgrant): Remove obsolete arguments once the build scripts stop
-  # specifying them.
   parser = argparse.ArgumentParser(
       description='Merge a 32-bit APK into a 64-bit APK')
   # Using type=os.path.abspath converts file paths to absolute paths so that
@@ -223,22 +221,13 @@ def main():
   parser.add_argument('--keystore_path', required=True, type=os.path.abspath)
   parser.add_argument('--key_name', required=True)
   parser.add_argument('--key_password', required=True)
-  parser.add_argument('--component-build', action='store_true')
-  parser.add_argument('--shared_library')
-  parser.add_argument('--page-align-shared-libraries', action='store_true',
-                      help='Obsolete, but remains for backwards compatibility')
   parser.add_argument('--uncompress-shared-libraries', action='store_true')
   parser.add_argument('--bundle', action='store_true')
   parser.add_argument('--debug', action='store_true')
+  # This option shall only used in debug build, see http://crbug.com/631494.
   parser.add_argument('--ignore-classes-dex', action='store_true')
   parser.add_argument('--has-unwind-cfi', action='store_true',
                       help='Specifies if the 32-bit apk has unwind_cfi file')
-  parser.add_argument('--loadable_module_32', action='append', default=[],
-                      help='Use for each 32-bit library added via '
-                      'loadable_modules')
-  parser.add_argument('--loadable_module_64', action='append', default=[],
-                      help='Use for each 64-bit library added via '
-                      'loadable_modules')
   args = parser.parse_args()
 
   if (args.zipalign_path is not None and

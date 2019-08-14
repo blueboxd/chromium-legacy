@@ -157,8 +157,7 @@ void MediaStreamUIProxy::Core::ProcessAccessRequestResponse(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   blink::MediaStreamDevices filtered_devices;
-  RenderFrameHost* host =
-      RenderFrameHost::FromID(render_process_id, render_frame_id);
+  auto* host = RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
   for (const blink::MediaStreamDevice& device : devices) {
     if (device.type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE &&
         !IsFeatureEnabled(host, tests_use_fake_render_frame_hosts_,
@@ -180,6 +179,9 @@ void MediaStreamUIProxy::Core::ProcessAccessRequestResponse(
 
   if (stream_ui)
     ui_ = std::move(stream_ui);
+
+  if (host && result == blink::mojom::MediaStreamRequestResult::OK)
+    host->OnGrantedMediaStreamAccess();
 
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},

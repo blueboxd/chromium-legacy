@@ -22,7 +22,6 @@ function runTest() {
   let shadowRoot = host.attachShadow({ mode: "open" });
   let locked = document.createElement("div");
   shadowRoot.appendChild(locked);
-  locked.style = "contain: style layout";
   locked.innerHTML = "<slot></slot>";
   locked.getBoundingClientRect();
   setInvisible(locked);

@@ -115,11 +115,8 @@ public class AssistantPaymentRequestPaymentMethodSection
         hideIfEmpty(cardExpirationView);
 
         TextView methodIncompleteView = summaryView.findViewById(R.id.incomplete_error);
-        if (!isComplete(method)) {
-            setIncompleteErrorMessage(methodIncompleteView, method);
-        } else {
-            methodIncompleteView.setVisibility(View.GONE);
-        }
+        setIncompleteErrorMessage(methodIncompleteView, method);
+        hideIfEmpty(methodIncompleteView);
     }
 
     void onProfilesChanged(List<PersonalDataManager.AutofillProfile> profiles) {
@@ -167,7 +164,7 @@ public class AssistantPaymentRequestPaymentMethodSection
         mEditor.updateBillingAddressIfComplete(new AutofillAddress(mContext, profile));
     }
 
-    private boolean isComplete(AutofillPaymentInstrument method) {
+    private boolean hasAllRequiredFields(AutofillPaymentInstrument method) {
         if (!method.isComplete()) {
             return false;
         }
@@ -190,6 +187,11 @@ public class AssistantPaymentRequestPaymentMethodSection
 
     private void setIncompleteErrorMessage(
             TextView methodIncompleteView, AutofillPaymentInstrument method) {
+        if (hasAllRequiredFields(method)) {
+            methodIncompleteView.setText("");
+            return;
+        }
+
         // we have to show an error message either because the payment method is incomplete (missing
         // information), or because a postcode is required and the billing address does not have
         // one.
@@ -198,7 +200,5 @@ public class AssistantPaymentRequestPaymentMethodSection
         } else {
             methodIncompleteView.setText(R.string.autofill_assistant_payment_information_missing);
         }
-
-        methodIncompleteView.setVisibility(View.VISIBLE);
     }
 }

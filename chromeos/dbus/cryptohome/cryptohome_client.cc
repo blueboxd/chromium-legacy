@@ -673,10 +673,11 @@ class CryptohomeClientImpl : public CryptohomeClient {
       const std::string& device_id,
       attestation::AttestationChallengeOptions options,
       const std::string& challenge,
+      const std::string& key_name_for_spkac,
       AsyncMethodCallback callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
-        cryptohome::kCryptohomeTpmAttestationSignEnterpriseVaChallenge);
+        cryptohome::kCryptohomeTpmAttestationSignEnterpriseVaChallengeV2);
     dbus::MessageWriter writer(&method_call);
     writer.AppendInt32(GetVerifiedAccessType());
     bool is_user_specific = (key_type == attestation::KEY_USER);
@@ -691,6 +692,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(include_signed_public_key);
     writer.AppendArrayOfBytes(
         reinterpret_cast<const uint8_t*>(challenge.data()), challenge.size());
+    writer.AppendString(key_name_for_spkac);
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,

@@ -77,7 +77,7 @@ cvox.BrailleBackground.prototype.write = function(params) {
 
   if (localStorage['enableBrailleLogging'] == 'true') {
     var logStr = 'Braille "' + params.text.toString() + '"';
-    LogStore.getInstance().writeTextLog(logStr, TextLog.LogType.BRAILLE);
+    LogStore.getInstance().writeTextLog(logStr, LogStore.LogType.BRAILLE);
     console.log(logStr);
   }
 

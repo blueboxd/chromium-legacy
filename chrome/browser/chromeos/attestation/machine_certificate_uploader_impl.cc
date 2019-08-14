@@ -204,6 +204,7 @@ void MachineCertificateUploaderImpl::GetNewCertificate() {
       EmptyAccountId(),  // Not used.
       std::string(),     // Not used.
       true,              // Force a new key to be generated.
+      std::string(),     // Leave key name empty to generate a default name.
       base::BindRepeating(
           [](const base::RepeatingCallback<void(const std::string&)> on_success,
              const base::RepeatingCallback<void(AttestationStatus)> on_failure,

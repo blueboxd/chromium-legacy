@@ -181,26 +181,14 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
     pause_after_download_state_ = kDoPauseAfterDownload;
 
   devtools_worker_token_ = data.devtools_worker_token;
-  // |loader_factory| is null since all loads for new scripts go through
-  // ServiceWorkerNetworkProviderForServiceWorker::script_loader_factory()
-  // rather than the shadow page's loader.
-  shadow_page_ = std::make_unique<WorkerShadowPage>(
-      this, nullptr /* loader_factory */,
-      std::move(worker_start_data_.privacy_preferences));
-
   wait_for_debugger_mode_ = worker_start_data_.wait_for_debugger_mode;
-  shadow_page_->Initialize(worker_start_data_.script_url);
+  StartWorkerThread();
 }
 
 void WebEmbeddedWorkerImpl::TerminateWorkerContext() {
   if (asked_to_terminate_)
     return;
   asked_to_terminate_ = true;
-  if (!shadow_page_->WasInitialized()) {
-    // This deletes 'this'.
-    worker_context_client_->WorkerContextFailedToStartOnInitiatorThread();
-    return;
-  }
   if (!worker_thread_) {
     // The worker thread has not been created yet if the worker is asked to
     // terminate during waiting for debugger or paused after download.
@@ -221,21 +209,12 @@ void WebEmbeddedWorkerImpl::ResumeAfterDownload() {
 
 void WebEmbeddedWorkerImpl::AddMessageToConsole(
     const WebConsoleMessage& message) {
-  shadow_page_->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-      mojom::ConsoleMessageSource::kOther, message.level, message.text,
-      std::make_unique<SourceLocation>(message.url, message.line_number,
-                                       message.column_number, nullptr)));
-}
-
-void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
-  DCHECK(!asked_to_terminate_);
-
-  // This shadow page's address space will be used for creating outside
-  // FetchClientSettingsObject.
-  shadow_page_->GetDocument()->SetAddressSpace(
-      worker_start_data_.address_space);
-
-  StartWorkerThread();
+  // TODO(bashi): Remove this method, or consider to have alternative.
+  // This method was used to show messages (e.g. reporting force update) on the
+  // "parent" DevTools console. The parent was a DevTools session which is
+  // associated with a shadow page. However, we removed shadow page
+  // dependency from service workers. Unlike dedicated workers there is no
+  // parent context so there is no drop-in replacement.
 }
 
 void WebEmbeddedWorkerImpl::StartWorkerThread() {

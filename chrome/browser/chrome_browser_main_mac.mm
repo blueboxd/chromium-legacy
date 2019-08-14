@@ -65,9 +65,9 @@ void EnsureMetadataNeverIndexFileOnFileThread(
 }
 
 void EnsureMetadataNeverIndexFile(const base::FilePath& user_data_dir) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindOnce(&EnsureMetadataNeverIndexFileOnFileThread, user_data_dir));
 }

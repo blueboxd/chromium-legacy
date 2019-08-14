@@ -109,8 +109,6 @@ void OpenScreenListener::RemoveObserver(ServiceListener::Observer* observer) {
                    observers_.end());
 }
 
-void OpenScreenListener::RunTasks() {}
-
 void OpenScreenListener::OnDeviceChanged(
     const std::string& service_type,
     bool added,

@@ -115,6 +115,7 @@ class CORE_EXPORT RootFrameViewport final
   void UpdateCompositorScrollAnimations() override;
   void CancelProgrammaticScrollAnimation() override;
   ScrollBehavior ScrollBehaviorStyle() const override;
+  WebColorScheme UsedColorScheme() const override;
   void ClearScrollableArea() override;
   LayoutBox* GetLayoutBox() const override;
   FloatQuad LocalToVisibleContentQuad(const FloatQuad&,

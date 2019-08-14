@@ -31,6 +31,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/certificate_transparency/ct_known_logs.h"
+#include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/net_log/net_export_file_writer.h"
 #include "components/network_session_configurator/common/network_features.h"
 #include "components/os_crypt/os_crypt.h"
@@ -386,6 +387,24 @@ SystemNetworkContextManager::SystemNetworkContextManager(
                                     base::Value(default_doh_mode));
   local_state_->SetDefaultPrefValue(prefs::kDnsOverHttpsTemplates,
                                     base::Value(default_doh_templates));
+
+  // If the user has explicitly enabled or disabled the DoH experiment in
+  // chrome://flags, store that choice in the user prefs so that it can be
+  // persisted after the experiment ends. Also make sure to remove the stored
+  // prefs value if the user has changed their chrome://flags selection to the
+  // default.
+  flags_ui::PrefServiceFlagsStorage flags_storage(local_state_);
+  std::set<std::string> entries = flags_storage.GetFlags();
+  if (entries.count("dns-over-https@1")) {
+    // The user has "Enabled" selected.
+    local_state_->SetString(prefs::kDnsOverHttpsMode, "automatic");
+  } else if (entries.count("dns-over-https@2")) {
+    // The user has "Disabled" selected.
+    local_state_->SetString(prefs::kDnsOverHttpsMode, "off");
+  } else {
+    // The user has "Default" selected.
+    local_state_->ClearPref(prefs::kDnsOverHttpsMode);
+  }
 
   PrefChangeRegistrar::NamedChangeCallback dns_pref_callback =
       base::BindRepeating(&OnStubResolverConfigChanged,

@@ -398,6 +398,11 @@
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 80
   },
+  {
+    "name": "click-to-call-open-dialer-directly",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 81
+  },
 	{
     "name": "click-to-call-receiver",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
@@ -677,6 +682,11 @@
     "name": "discover-app",
     "owners": [ "alemate" ],
     "expiry_milestone": 80
+  },
+  {
+    "name": "dns-over-https",
+    "owners": [ "dalyk", "doh-core@google.com" ],
+    "expiry_milestone": 81
   },
   {
     "name": "document-passive-event-listeners",
@@ -999,7 +1009,7 @@
   {
     "name": "enable-chromeos-account-manager",
     "owners": [ "sinhak@chromium.org" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 79
   },
   {
     "name": "enable-cloud-print-xps",

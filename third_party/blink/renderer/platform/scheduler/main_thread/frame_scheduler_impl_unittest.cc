@@ -1944,7 +1944,8 @@ TEST_F(FrameSchedulerImplDatabaseAccessWithoutHighPriority, QueueTraits) {
                                 base::Unretained(&counter)));
 
   auto da_queue = GetTaskQueue(TaskType::kDatabaseAccess);
-  EXPECT_EQ(da_queue->GetQueueTraits().is_high_priority, false);
+  EXPECT_EQ(da_queue->GetQueueTraits().prioritisation_type,
+            MainThreadTaskQueue::QueueTraits::PrioritisationType::kRegular);
   EXPECT_EQ(da_queue->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
   da_queue->task_runner()->PostTask(
@@ -1984,7 +1985,8 @@ TEST_F(FrameSchedulerImplDatabaseAccessWithHighPriority, QueueTraits) {
                                 base::Unretained(&counter)));
 
   auto da_queue = GetTaskQueue(TaskType::kDatabaseAccess);
-  EXPECT_EQ(da_queue->GetQueueTraits().is_high_priority, true);
+  EXPECT_EQ(da_queue->GetQueueTraits().prioritisation_type,
+            MainThreadTaskQueue::QueueTraits::PrioritisationType::kHigh);
   EXPECT_EQ(da_queue->GetQueuePriority(),
             TaskQueue::QueuePriority::kHighPriority);
   da_queue->task_runner()->PostTask(

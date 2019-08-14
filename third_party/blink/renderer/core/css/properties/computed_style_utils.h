@@ -178,6 +178,10 @@ class ComputedStyleUtils {
                                                   const ComputedStyle&,
                                                   const LayoutObject*,
                                                   bool allow_visited_style);
+  static CSSValuePair* ValuesForGapShorthand(const StylePropertyShorthand&,
+                                             const ComputedStyle&,
+                                             const LayoutObject*,
+                                             bool allow_visited_style);
   static CSSValueList* ValuesForGridShorthand(const StylePropertyShorthand&,
                                               const ComputedStyle&,
                                               const LayoutObject*,

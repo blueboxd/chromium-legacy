@@ -395,10 +395,12 @@ void ArcApps::OnConnectionReady() {
     return;
   }
   AppConnectionHolder* app_connection_holder = prefs->app_connection_holder();
-  for (auto& pending : pending_load_icon_calls_) {
-    std::move(pending).Run(app_connection_holder);
+  if (app_connection_holder && app_connection_holder->IsConnected()) {
+    for (auto& pending : pending_load_icon_calls_) {
+      std::move(pending).Run(app_connection_holder);
+    }
+    pending_load_icon_calls_.clear();
   }
-  pending_load_icon_calls_.clear();
 }
 
 void ArcApps::OnAppRegistered(const std::string& app_id,
@@ -516,22 +518,23 @@ void ArcApps::LoadIconFromVM(const std::string app_id,
   if (prefs) {
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
     if (app_info) {
+      constexpr bool quantize_to_supported_scale_factor = false;
       base::OnceCallback<void(apps::ArcApps::AppConnectionHolder*)> pending =
-          base::BindOnce(&LoadIcon0, icon_compression,
-                         apps_util::ConvertDipToPx(size_hint_in_dip),
-                         app_info->package_name, app_info->activity,
-                         app_info->icon_resource_id, std::move(callback));
+          base::BindOnce(
+              &LoadIcon0, icon_compression,
+              apps_util::ConvertDipToPx(size_hint_in_dip,
+                                        quantize_to_supported_scale_factor),
+              app_info->package_name, app_info->activity,
+              app_info->icon_resource_id, std::move(callback));
 
       AppConnectionHolder* app_connection_holder =
           prefs->app_connection_holder();
-      if (app_connection_holder) {
-        if (app_connection_holder->IsConnected()) {
-          std::move(pending).Run(app_connection_holder);
-        } else {
-          pending_load_icon_calls_.push_back(std::move(pending));
-        }
-        return;
+      if (app_connection_holder && app_connection_holder->IsConnected()) {
+        std::move(pending).Run(app_connection_holder);
+      } else {
+        pending_load_icon_calls_.push_back(std::move(pending));
       }
+      return;
     }
   }
 
@@ -544,7 +547,9 @@ void ArcApps::LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
                                 IconEffects icon_effects,
                                 LoadIconCallback callback) {
   // Use overloaded Chrome icon for Play Store that is adapted to Chrome style.
-  int size_hint_in_px = apps_util::ConvertDipToPx(size_hint_in_dip);
+  constexpr bool quantize_to_supported_scale_factor = false;
+  int size_hint_in_px = apps_util::ConvertDipToPx(
+      size_hint_in_dip, quantize_to_supported_scale_factor);
   int resource_id = (size_hint_in_px <= 32) ? IDR_ARC_SUPPORT_ICON_32
                                             : IDR_ARC_SUPPORT_ICON_192;
   constexpr bool is_placeholder_icon = false;

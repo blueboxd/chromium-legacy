@@ -196,15 +196,16 @@ void DocumentTimeline::ScheduleNextService() {
   if (time_to_next_effect < kMinimumDelay) {
     timing_->ServiceOnNextFrame();
   } else if (time_to_next_effect != std::numeric_limits<double>::infinity()) {
-    timing_->WakeAfter(time_to_next_effect - kMinimumDelay);
+    timing_->WakeAfter(
+        base::TimeDelta::FromSecondsD(time_to_next_effect - kMinimumDelay));
   }
 }
 
-void DocumentTimeline::DocumentTimelineTiming::WakeAfter(double duration) {
-  base::TimeDelta duration_delta = base::TimeDelta::FromSecondsD(duration);
-  if (timer_.IsActive() && timer_.NextFireInterval() < duration_delta)
+void DocumentTimeline::DocumentTimelineTiming::WakeAfter(
+    base::TimeDelta duration) {
+  if (timer_.IsActive() && timer_.NextFireInterval() < duration)
     return;
-  timer_.StartOneShot(duration_delta, FROM_HERE);
+  timer_.StartOneShot(duration, FROM_HERE);
 }
 
 void DocumentTimeline::DocumentTimelineTiming::ServiceOnNextFrame() {

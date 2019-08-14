@@ -303,7 +303,9 @@ TEST_F(MenuControllerTest, Submenus) {
   EXPECT_EQ(3, [[menu menu] numberOfItems]);
 
   // Inspect the submenu to ensure it has correct properties.
-  NSMenu* submenu = [[[menu menu] itemAtIndex:1] submenu];
+  NSMenuItem* menuItem = [[menu menu] itemAtIndex:1];
+  EXPECT_TRUE([menuItem isEnabled]);
+  NSMenu* submenu = [menuItem submenu];
   EXPECT_TRUE(submenu);
   EXPECT_EQ(3, [submenu numberOfItems]);
 
@@ -429,11 +431,14 @@ TEST_F(MenuControllerTest, DisabledSubmenu) {
   Delegate delegate;
   SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("one"));
-  SimpleMenuModel submodel(&delegate);
-  submodel.AddItem(2, ASCIIToUTF16("sub"));
-  model.AddSubMenuWithStringId(3, kTestLabelResourceId, &submodel);
+  SimpleMenuModel disabled_submodel(&delegate);
+  disabled_submodel.AddItem(2, ASCIIToUTF16("disabled_submodel"));
+  model.AddSubMenuWithStringId(3, kTestLabelResourceId, &disabled_submodel);
+  SimpleMenuModel enabled_submodel(&delegate);
+  enabled_submodel.AddItem(4, ASCIIToUTF16("enabled_submodel"));
+  model.AddSubMenuWithStringId(5, kTestLabelResourceId, &enabled_submodel);
 
-  // Disable the submenu entry.
+  // Disable the first submenu entry.
   model.SetEnabledAt(1, false);
 
   // Create the controller.
@@ -445,9 +450,14 @@ TEST_F(MenuControllerTest, DisabledSubmenu) {
   // Show the menu.
   CFRunLoopPerformBlock(CFRunLoopGetCurrent(), NSEventTrackingRunLoopMode, ^{
     EXPECT_TRUE([menu_controller isMenuOpen]);
-    // Ensure that the submenu is disabled.
-    NSMenuItem* item = [[menu_controller menu] itemAtIndex:1];
-    EXPECT_FALSE([item isEnabled]);
+
+    // Ensure that the disabled submenu is disabled.
+    NSMenuItem* disabled_item = [[menu_controller menu] itemAtIndex:1];
+    EXPECT_FALSE([disabled_item isEnabled]);
+
+    // Ensure that the enabled submenu is enabled.
+    NSMenuItem* enabled_item = [[menu_controller menu] itemAtIndex:2];
+    EXPECT_TRUE([enabled_item isEnabled]);
   });
 
   // Pop open the menu, which will spin an event-tracking run loop.

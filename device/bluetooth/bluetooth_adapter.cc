@@ -9,6 +9,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -108,27 +110,81 @@ void BluetoothAdapter::StartDiscoverySessionWithFilter(
   std::unique_ptr<BluetoothDiscoverySession> new_session(
       new BluetoothDiscoverySession(this, std::move(discovery_filter)));
   discovery_sessions_.insert(new_session.get());
-  auto result_callback =
-      base::BindOnce(&BluetoothAdapter::OnStartDiscoverySessionCallback,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(new_session),
-                     callback, error_callback);
-  auto current_filter = GetMergedDiscoveryFilter();
-  if (discovery_sessions_.size() > 1) {
-    UpdateFilter(std::move(current_filter), std::move(result_callback));
-  } else {
-    StartScanWithFilter(std::move(current_filter), std::move(result_callback));
+
+  auto new_session_callbacks =
+      base::WrapUnique(new StartOrStopDiscoveryCallback(
+          base::BindOnce(callback, std::move(new_session)), error_callback));
+
+  // Queue up the callbacks to be handled when we process the discovery queue.
+  discovery_callback_queue_.push(std::move(new_session_callbacks));
+
+  // If OS is already working on a discovery request we must wait to process the
+  // queue until that request is complete.
+  if (discovery_request_pending_) {
+    return;
   }
+
+  // The OS is ready to start a request so process the queue now.
+  ProcessDiscoveryQueue();
+}
+
+void BluetoothAdapter::MaybeUpdateFilter(
+    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    DiscoverySessionResultCallback callback) {
+  if (discovery_filter->Equals(current_discovery_filter_)) {
+    std::move(callback).Run(/*is_error=*/false,
+                            UMABluetoothDiscoverySessionOutcome::SUCCESS);
+    return;
+  }
+
+  UpdateFilter(std::move(discovery_filter), std::move(callback));
+}
+
+void BluetoothAdapter::RemoveDiscoverySession(
+    BluetoothDiscoverySession* discovery_session,
+    const base::Closure& callback,
+    DiscoverySessionErrorCallback error_callback) {
+  size_t erased = discovery_sessions_.erase(discovery_session);
+  DCHECK_EQ(1u, erased);
+
+  std::unique_ptr<StartOrStopDiscoveryCallback> removal_callbacks(
+      new StartOrStopDiscoveryCallback(callback, std::move(error_callback)));
+
+  // Queue up the callbacks to be handled when we process the discovery queue.
+  discovery_callback_queue_.push(std::move(removal_callbacks));
+
+  // If OS is already working on a discovery request we must wait to process the
+  // queue until that request is complete.
+  if (discovery_request_pending_) {
+    return;
+  }
+
+  // The OS is ready to start a request so process the queue now.
+  ProcessDiscoveryQueue();
 }
 
 std::unique_ptr<BluetoothDiscoveryFilter>
 BluetoothAdapter::GetMergedDiscoveryFilter() const {
-  return GetMergedDiscoveryFilterHelper(nullptr, false);
-}
+  auto result =
+      std::make_unique<BluetoothDiscoveryFilter>(BLUETOOTH_TRANSPORT_DUAL);
+  bool first_merge = true;
 
-std::unique_ptr<BluetoothDiscoveryFilter>
-BluetoothAdapter::GetMergedDiscoveryFilterMasked(
-    BluetoothDiscoveryFilter* masked_filter) const {
-  return GetMergedDiscoveryFilterHelper(masked_filter, true);
+  for (auto* iter : discovery_sessions_) {
+    if (!iter->IsActive())
+      continue;
+
+    const BluetoothDiscoveryFilter* curr_filter = iter->GetDiscoveryFilter();
+
+    if (first_merge) {
+      first_merge = false;
+      if (curr_filter) {
+        result->CopyFrom(*curr_filter);
+      }
+      continue;
+    }
+    result = BluetoothDiscoveryFilter::Merge(result.get(), curr_filter);
+  }
+  return result;
 }
 
 BluetoothAdapter::DeviceList BluetoothAdapter::GetDevices() {
@@ -346,13 +402,27 @@ void BluetoothAdapter::NotifyGattDescriptorValueChanged(
 BluetoothAdapter::SetPoweredCallbacks::SetPoweredCallbacks() = default;
 BluetoothAdapter::SetPoweredCallbacks::~SetPoweredCallbacks() = default;
 
-BluetoothAdapter::BluetoothAdapter() {}
+BluetoothAdapter::StartOrStopDiscoveryCallback::StartOrStopDiscoveryCallback(
+    base::OnceClosure start_callback,
+    ErrorCallback start_error_callback) {
+  this->start_callback = std::move(start_callback);
+  this->start_error_callback = start_error_callback;
+}
+BluetoothAdapter::StartOrStopDiscoveryCallback::StartOrStopDiscoveryCallback(
+    base::Closure stop_callback,
+    DiscoverySessionErrorCallback stop_error_callback) {
+  this->stop_callback = stop_callback;
+  this->stop_error_callback = std::move(stop_error_callback);
+}
+BluetoothAdapter::StartOrStopDiscoveryCallback::
+    ~StartOrStopDiscoveryCallback() = default;
+
+BluetoothAdapter::BluetoothAdapter() : weak_ptr_factory_(this) {}
 
 BluetoothAdapter::~BluetoothAdapter() {
   // If there's a pending powered request, run its error callback.
-  if (set_powered_callbacks_) {
+  if (set_powered_callbacks_)
     set_powered_callbacks_->error_callback.Run();
-  }
 }
 
 void BluetoothAdapter::RunPendingPowerCallbacks() {
@@ -366,40 +436,105 @@ void BluetoothAdapter::RunPendingPowerCallbacks() {
   }
 }
 
-void BluetoothAdapter::OnStartDiscoverySessionCallback(
-    std::unique_ptr<BluetoothDiscoverySession> discovery_session,
-    const DiscoverySessionCallback& callback,
-    const ErrorCallback& error_callback,
+void BluetoothAdapter::OnDiscoveryChangeComplete(
     bool is_error,
     UMABluetoothDiscoverySessionOutcome outcome) {
+  UpdateDiscoveryState(is_error);
+
   if (is_error) {
-    OnStartDiscoverySessionError(std::move(discovery_session), error_callback,
-                                 outcome);
-  } else {
-    OnStartDiscoverySession(std::move(discovery_session), callback);
+    NotifyDiscoveryError(std::move(callbacks_awaiting_response_));
+    discovery_request_pending_ = false;
+    ProcessDiscoveryQueue();
+    return;
+  }
+
+  current_discovery_filter_.CopyFrom(filter_being_set_);
+
+  while (!callbacks_awaiting_response_.empty()) {
+    std::unique_ptr<StartOrStopDiscoveryCallback> callbacks =
+        std::move(callbacks_awaiting_response_.front());
+    callbacks_awaiting_response_.pop();
+    if (callbacks->start_callback)
+      std::move(callbacks->start_callback).Run();
+
+    if (callbacks->stop_callback)
+      std::move(callbacks->stop_callback).Run();
+  }
+  discovery_request_pending_ = false;
+  ProcessDiscoveryQueue();
+}
+
+void BluetoothAdapter::UpdateDiscoveryState(bool is_error) {
+  if (is_error) {
+    if (internal_discovery_state_ == DiscoveryState::kStarting)
+      internal_discovery_state_ = DiscoveryState::kIdle;
+    // If there was an error stopping we still assume it worked as there is not
+    // much we can do about the device messing up.
+    if (internal_discovery_state_ == DiscoveryState::kStopping)
+      internal_discovery_state_ = DiscoveryState::kIdle;
+    return;
+  }
+
+  if (internal_discovery_state_ == DiscoveryState::kStarting)
+    internal_discovery_state_ = DiscoveryState::kDiscovering;
+  if (internal_discovery_state_ == DiscoveryState::kStopping)
+    internal_discovery_state_ = DiscoveryState::kIdle;
+}
+
+void BluetoothAdapter::ProcessDiscoveryQueue() {
+  if (discovery_callback_queue_.empty())
+    return;
+  DCHECK(callbacks_awaiting_response_.empty());
+  callbacks_awaiting_response_.swap(discovery_callback_queue_);
+
+  if (NumDiscoverySessions() == 0) {
+    if (internal_discovery_state_ == DiscoveryState::kIdle) {
+      OnDiscoveryChangeComplete(false,
+                                UMABluetoothDiscoverySessionOutcome::SUCCESS);
+      return;
+    }
+    internal_discovery_state_ = DiscoveryState::kStopping;
+    discovery_request_pending_ = true;
+    StopScan(base::BindOnce(&BluetoothAdapter::OnDiscoveryChangeComplete,
+                            weak_ptr_factory_.GetWeakPtr()));
+
+    return;
+  }
+
+  auto result_callback =
+      base::BindOnce(&BluetoothAdapter::OnDiscoveryChangeComplete,
+                     weak_ptr_factory_.GetWeakPtr());
+  auto new_desired_filter = GetMergedDiscoveryFilter();
+  discovery_request_pending_ = true;
+  filter_being_set_.CopyFrom(*new_desired_filter.get());
+  if (internal_discovery_state_ == DiscoveryState::kDiscovering) {
+    MaybeUpdateFilter(std::move(new_desired_filter),
+                      std::move(result_callback));
+    return;
+  }
+  internal_discovery_state_ = DiscoveryState::kStarting;
+  StartScanWithFilter(std::move(new_desired_filter),
+                      std::move(result_callback));
+}
+
+void BluetoothAdapter::NotifyDiscoveryError(CallbackQueue callback_queue) {
+  while (!callback_queue.empty()) {
+    std::unique_ptr<StartOrStopDiscoveryCallback> callbacks =
+        std::move(callback_queue.front());
+    callback_queue.pop();
+    if (callbacks->start_error_callback)
+      callbacks->start_error_callback.Run();
+    // We never return error when stopping. If the physical adapter is messing
+    // up and not stopping we are still just going to continue like it did stop.
+    if (callbacks->stop_callback)
+      std::move(callbacks->stop_callback).Run();
   }
 }
 
-void BluetoothAdapter::OnStartDiscoverySession(
-    std::unique_ptr<BluetoothDiscoverySession> discovery_session,
-    const DiscoverySessionCallback& callback) {
-  VLOG(1) << "BluetoothAdapter::OnStartDiscoverySession";
-  RecordBluetoothDiscoverySessionStartOutcome(
-      UMABluetoothDiscoverySessionOutcome::SUCCESS);
-  callback.Run(std::move(discovery_session));
-}
-
-void BluetoothAdapter::OnStartDiscoverySessionError(
-    std::unique_ptr<BluetoothDiscoverySession> discovery_session,
-    const ErrorCallback& callback,
-    UMABluetoothDiscoverySessionOutcome outcome) {
-  VLOG(1) << "OnStartDiscoverySessionError: " << static_cast<int>(outcome);
-  discovery_session->MarkAsInactive();
-  RecordBluetoothDiscoverySessionStartOutcome(outcome);
-  callback.Run();
-}
-
 void BluetoothAdapter::MarkDiscoverySessionsAsInactive() {
+  // All sessions are becoming inactive so any pending requests should now fail
+  if (!discovery_callback_queue_.empty())
+    NotifyDiscoveryError(std::move(discovery_callback_queue_));
   // As sessions are marked as inactive they will notify the adapter that they
   // have become inactive, upon which the adapter will remove them from
   // |discovery_sessions_|. To avoid invalidating the iterator, make a copy
@@ -407,53 +542,12 @@ void BluetoothAdapter::MarkDiscoverySessionsAsInactive() {
   std::set<BluetoothDiscoverySession*> temp(discovery_sessions_);
   for (auto iter = temp.begin(); iter != temp.end(); ++iter) {
     (*iter)->MarkAsInactive();
+    RemoveDiscoverySession(*iter, base::DoNothing(), base::DoNothing());
   }
-}
-
-void BluetoothAdapter::DiscoverySessionBecameInactive(
-    BluetoothDiscoverySession* discovery_session) {
-  DCHECK(!discovery_session->IsActive());
-  size_t erased = discovery_sessions_.erase(discovery_session);
-  DCHECK_EQ(1u, erased);
 }
 
 void BluetoothAdapter::DeleteDeviceForTesting(const std::string& address) {
   devices_.erase(address);
-}
-
-std::unique_ptr<BluetoothDiscoveryFilter>
-BluetoothAdapter::GetMergedDiscoveryFilterHelper(
-    const BluetoothDiscoveryFilter* masked_filter,
-    bool omit) const {
-  std::unique_ptr<BluetoothDiscoveryFilter> result;
-  bool first_merge = true;
-
-  std::set<BluetoothDiscoverySession*> temp(discovery_sessions_);
-  for (auto* iter : temp) {
-    const BluetoothDiscoveryFilter* curr_filter = iter->GetDiscoveryFilter();
-
-    if (!iter->IsActive())
-      continue;
-
-    if (omit && curr_filter == masked_filter) {
-      // if masked_filter is pointing to empty filter, and there are
-      // multiple empty filters in discovery_sessions_, make sure we'll
-      // process next empty sessions.
-      omit = false;
-      continue;
-    }
-
-    if (first_merge) {
-      first_merge = false;
-      if (curr_filter) {
-        result.reset(new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_DUAL));
-        result->CopyFrom(*curr_filter);
-      }
-      continue;
-    }
-    result = BluetoothDiscoveryFilter::Merge(result.get(), curr_filter);
-  }
-  return result;
 }
 
 void BluetoothAdapter::RemoveTimedOutDevices() {

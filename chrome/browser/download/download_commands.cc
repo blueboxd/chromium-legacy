@@ -199,8 +199,8 @@ void DownloadCommands::CopyFileAsImageToClipboard() {
   base::FilePath file_path = model_->GetFullPath();
 
   if (!task_runner_) {
-    task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+    task_runner_ = base::CreateSequencedTaskRunner(
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   }
   ImageClipboardCopyManager::Start(file_path, task_runner_.get());

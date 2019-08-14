@@ -716,6 +716,18 @@ class AutotestPrivateGetArcAppWindowStateFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+// Gets various window properties of an ARC window.
+class AutotestPrivateGetArcAppWindowInfoFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateGetArcAppWindowInfoFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getArcAppWindowInfo",
+                             AUTOTESTPRIVATE_GETARCAPPWINDOWINFO)
+
+ private:
+  ~AutotestPrivateGetArcAppWindowInfoFunction() override;
+  ResponseAction Run() override;
+};
+
 template <>
 KeyedService*
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(

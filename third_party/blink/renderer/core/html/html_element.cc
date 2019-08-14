@@ -30,9 +30,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_treat_null_as_empty_string_or_trusted_script.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_markup.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
@@ -244,7 +246,9 @@ bool HTMLElement::IsPresentationAttribute(const QualifiedName& name) const {
   if (name == kAlignAttr || name == kContenteditableAttr ||
       name == kHiddenAttr || name == kLangAttr ||
       name.Matches(xml_names::kLangAttr) || name == kDraggableAttr ||
-      name == kDirAttr)
+      name == kDirAttr ||
+      (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
+       name == kRendersubtreeAttr))
     return true;
   return Element::IsPresentationAttribute(name);
 }
@@ -333,6 +337,18 @@ void HTMLElement::CollectStyleForPresentationAttribute(
     // xml:lang has a higher priority than lang.
     if (!FastHasAttribute(xml_names::kLangAttr))
       MapLanguageAttributeToLocale(value, style);
+  } else if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
+             name == kRendersubtreeAttr) {
+    // Add contain: style layout size.
+    CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kStyle));
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kLayout));
+    if (EqualIgnoringASCIICase(value, "invisible") ||
+        EqualIgnoringASCIICase(value, "invisible-activatable")) {
+      list->Append(*CSSIdentifierValue::Create(CSSValueID::kSize));
+    }
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kContain,
+                                            *list);
   } else {
     Element::CollectStyleForPresentationAttribute(name, value, style);
   }

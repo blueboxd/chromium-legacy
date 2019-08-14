@@ -66,13 +66,15 @@ AwProxyingRestrictedCookieManager::~AwProxyingRestrictedCookieManager() {
 void AwProxyingRestrictedCookieManager::GetAllForUrl(
     const GURL& url,
     const GURL& site_for_cookies,
+    const url::Origin& top_frame_origin,
     network::mojom::CookieManagerGetOptionsPtr options,
     GetAllForUrlCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (AllowCookies(url, site_for_cookies)) {
     underlying_restricted_cookie_manager_->GetAllForUrl(
-        url, site_for_cookies, std::move(options), std::move(callback));
+        url, site_for_cookies, top_frame_origin, std::move(options),
+        std::move(callback));
   } else {
     std::move(callback).Run(std::vector<net::CanonicalCookie>());
   }
@@ -82,12 +84,13 @@ void AwProxyingRestrictedCookieManager::SetCanonicalCookie(
     const net::CanonicalCookie& cookie,
     const GURL& url,
     const GURL& site_for_cookies,
+    const url::Origin& top_frame_origin,
     SetCanonicalCookieCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (AllowCookies(url, site_for_cookies)) {
     underlying_restricted_cookie_manager_->SetCanonicalCookie(
-        cookie, url, site_for_cookies, std::move(callback));
+        cookie, url, site_for_cookies, top_frame_origin, std::move(callback));
   } else {
     std::move(callback).Run(false);
   }
@@ -96,6 +99,7 @@ void AwProxyingRestrictedCookieManager::SetCanonicalCookie(
 void AwProxyingRestrictedCookieManager::AddChangeListener(
     const GURL& url,
     const GURL& site_for_cookies,
+    const url::Origin& top_frame_origin,
     network::mojom::CookieChangeListenerPtr listener,
     AddChangeListenerCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -110,20 +114,21 @@ void AwProxyingRestrictedCookieManager::AddChangeListener(
                           mojo::MakeRequest(&proxy_listener_ptr));
 
   underlying_restricted_cookie_manager_->AddChangeListener(
-      url, site_for_cookies, std::move(proxy_listener_ptr),
+      url, site_for_cookies, top_frame_origin, std::move(proxy_listener_ptr),
       std::move(callback));
 }
 
 void AwProxyingRestrictedCookieManager::SetCookieFromString(
     const GURL& url,
     const GURL& site_for_cookies,
+    const url::Origin& top_frame_origin,
     const std::string& cookie,
     SetCookieFromStringCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (AllowCookies(url, site_for_cookies)) {
     underlying_restricted_cookie_manager_->SetCookieFromString(
-        url, site_for_cookies, cookie, std::move(callback));
+        url, site_for_cookies, top_frame_origin, cookie, std::move(callback));
   } else {
     std::move(callback).Run();
   }
@@ -132,12 +137,13 @@ void AwProxyingRestrictedCookieManager::SetCookieFromString(
 void AwProxyingRestrictedCookieManager::GetCookiesString(
     const GURL& url,
     const GURL& site_for_cookies,
+    const url::Origin& top_frame_origin,
     GetCookiesStringCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (AllowCookies(url, site_for_cookies)) {
     underlying_restricted_cookie_manager_->GetCookiesString(
-        url, site_for_cookies, std::move(callback));
+        url, site_for_cookies, top_frame_origin, std::move(callback));
   } else {
     std::move(callback).Run("");
   }
@@ -146,6 +152,7 @@ void AwProxyingRestrictedCookieManager::GetCookiesString(
 void AwProxyingRestrictedCookieManager::CookiesEnabledFor(
     const GURL& url,
     const GURL& site_for_cookies,
+    const url::Origin& top_frame_origin,
     CookiesEnabledForCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   std::move(callback).Run(AllowCookies(url, site_for_cookies));

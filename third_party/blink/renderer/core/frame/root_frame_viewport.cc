@@ -271,6 +271,10 @@ ScrollBehavior RootFrameViewport::ScrollBehaviorStyle() const {
   return LayoutViewport().ScrollBehaviorStyle();
 }
 
+WebColorScheme RootFrameViewport::UsedColorScheme() const {
+  return LayoutViewport().UsedColorScheme();
+}
+
 ScrollOffset RootFrameViewport::ClampToUserScrollableOffset(
     const ScrollOffset& offset) const {
   ScrollOffset scroll_offset = offset;

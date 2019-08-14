@@ -110,8 +110,8 @@ class MachineCertificateUploaderTest : public ::testing::TestWithParam<bool> {
     // another costly operation and if it gets triggered more than once during
     // a single pass this indicates a logical problem in the observer.
     if (new_key) {
-      EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _))
-          .WillOnce(WithArgs<4>(Invoke(CertCallbackSuccess)));
+      EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _, _))
+          .WillOnce(WithArgs<5>(Invoke(CertCallbackSuccess)));
     }
   }
 
@@ -149,14 +149,14 @@ TEST_P(MachineCertificateUploaderTest, UnregisteredPolicyClient) {
 }
 
 TEST_P(MachineCertificateUploaderTest, GetCertificateUnspecifiedFailure) {
-  EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _))
-      .WillRepeatedly(WithArgs<4>(Invoke(CertCallbackUnspecifiedFailure)));
+  EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _, _))
+      .WillRepeatedly(WithArgs<5>(Invoke(CertCallbackUnspecifiedFailure)));
   Run();
 }
 
 TEST_P(MachineCertificateUploaderTest, GetCertificateBadRequestFailure) {
-  EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _))
-      .WillOnce(WithArgs<4>(Invoke(CertCallbackBadRequestFailure)));
+  EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _, _))
+      .WillOnce(WithArgs<5>(Invoke(CertCallbackBadRequestFailure)));
   Run();
 }
 

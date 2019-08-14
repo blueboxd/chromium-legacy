@@ -123,8 +123,8 @@ interface ServiceWorkerRegistration : EventTarget
 # support_webgl2_compute_context not supported on android, crbug.com/865569
 interface WebGL2ComputeRenderingContext
 
-# Viz-dependent interfaces (OffscreenCanvas) are not supported on Webview yet.
-interfaces: interface OffscreenCanvasRenderingContext2D
+# Viz-dependent interfaces (OffscreenCanvas) are not supported on WebView yet.
+interface OffscreenCanvasRenderingContext2D
 interface OffscreenCanvas : EventTarget
 interface HTMLCanvasElement : HTMLElement
     method transferControlToOffscreen

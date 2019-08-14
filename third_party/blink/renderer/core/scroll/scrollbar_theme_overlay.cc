@@ -196,8 +196,8 @@ void ScrollbarThemeOverlay::PaintThumb(GraphicsContext& context,
     canvas->scale(-1, 1);
   }
 
-  Platform::Current()->ThemeEngine()->Paint(canvas, part, state, WebRect(rect),
-                                            &params, WebColorScheme::kLight);
+  Platform::Current()->ThemeEngine()->Paint(
+      canvas, part, state, WebRect(rect), &params, scrollbar.UsedColorScheme());
 
   if (scrollbar.IsLeftSideVerticalScrollbar())
     canvas->restore();

@@ -57,6 +57,22 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // Button actions.
+  void OnManageGoogleAccountButtonClicked();
+  void OnPasswordsButtonClicked();
+  void OnCreditCardsButtonClicked();
+  void OnAddressesButtonClicked();
+  void OnGuestProfileButtonClicked();
+  void OnManageProfilesButtonClicked();
+  void OnLockButtonClicked();
+  void OnExitProfileButtonClicked();
+  void OnSyncErrorButtonClicked(sync_ui_util::AvatarSyncErrorType error);
+  void OnCurrentProfileCardClicked();
+  void OnSigninButtonClicked();
+  void OnSigninAccountButtonClicked();
+  void OnSignoutButtonClicked();
+  void OnOtherProfileButtonClicked(int profile_index);
+
   // views::StyledLabelListener
   void StyledLabelLinkClicked(views::StyledLabel* label,
                               const gfx::Range& range,

@@ -78,7 +78,9 @@ void AppIconSource::StartDataRequest(
     LoadDefaultImage(callback);
     return;
   }
-  int size_in_dip = apps_util::ConvertPxToDip(size);
+  constexpr bool quantize_to_supported_scale_factor = false;
+  int size_in_dip =
+      apps_util::ConvertPxToDip(size, quantize_to_supported_scale_factor);
 
   apps::AppServiceProxy* app_service_proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);

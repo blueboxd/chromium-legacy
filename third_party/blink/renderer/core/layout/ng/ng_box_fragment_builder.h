@@ -56,17 +56,15 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     layout_object_ = layout_object;
   }
 
-  NGBoxFragmentBuilder& SetInitialFragmentGeometry(
+  void SetInitialFragmentGeometry(
       const NGFragmentGeometry& initial_fragment_geometry) {
     initial_fragment_geometry_ = &initial_fragment_geometry;
     size_ = initial_fragment_geometry_->border_box_size;
     is_initial_block_size_indefinite_ = size_.block_size == kIndefiniteSize;
-    return *this;
   }
 
-  NGBoxFragmentBuilder& SetIntrinsicBlockSize(LayoutUnit intrinsic_block_size) {
+  void SetIntrinsicBlockSize(LayoutUnit intrinsic_block_size) {
     intrinsic_block_size_ = intrinsic_block_size;
-    return *this;
   }
   const NGBoxStrut& Borders() const {
     DCHECK(initial_fragment_geometry_);
@@ -91,17 +89,17 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // Add a break token for a child that doesn't yet have any fragments, because
   // its first fragment is to be produced in the next fragmentainer. This will
   // add a break token for the child, but no fragment.
-  NGBoxFragmentBuilder& AddBreakBeforeChild(NGLayoutInputNode child);
+  void AddBreakBeforeChild(NGLayoutInputNode child);
 
   // Prepare for a break token before the specified line.
-  NGBoxFragmentBuilder& AddBreakBeforeLine(int line_number);
+  void AddBreakBeforeLine(int line_number);
 
   // Add a layout result. This involves appending the fragment and its relative
   // offset to the builder, but also keeping track of out-of-flow positioned
   // descendants, propagating fragmentainer breaks, and more.
-  NGBoxFragmentBuilder& AddResult(const NGLayoutResult&,
-                                  const LogicalOffset,
-                                  const LayoutInline* = nullptr);
+  void AddResult(const NGLayoutResult&,
+                 const LogicalOffset,
+                 const LayoutInline* = nullptr);
 
   void AddOutOfFlowLegacyCandidate(NGBlockNode,
                                    const NGLogicalStaticPosition&,
@@ -110,33 +108,25 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // Set how much of the block-size we've used so far for this box. This will be
   // the sum of the block-size of all previous fragments PLUS the one we're
   // building now.
-  NGBoxFragmentBuilder& SetConsumedBlockSize(LayoutUnit size) {
-    consumed_block_size_ = size;
-    return *this;
-  }
+  void SetConsumedBlockSize(LayoutUnit size) { consumed_block_size_ = size; }
 
   // Specify that we broke.
   //
   // This will result in a fragment which has an unfinished break token.
-  NGBoxFragmentBuilder& SetDidBreak() {
-    did_break_ = true;
-    return *this;
-  }
+  void SetDidBreak() { did_break_ = true; }
 
-  NGBoxFragmentBuilder& SetHasForcedBreak() {
+  void SetHasForcedBreak() {
     has_forced_break_ = true;
     minimal_space_shortage_ = LayoutUnit();
-    return *this;
   }
 
   // Report space shortage, i.e. how much more space would have been sufficient
   // to prevent some piece of content from breaking. This information may be
   // used by the column balancer to stretch columns.
-  NGBoxFragmentBuilder& PropagateSpaceShortage(LayoutUnit space_shortage) {
+  void PropagateSpaceShortage(LayoutUnit space_shortage) {
     DCHECK_GT(space_shortage, LayoutUnit());
     if (minimal_space_shortage_ > space_shortage)
       minimal_space_shortage_ = space_shortage;
-    return *this;
   }
 
   void SetInitialBreakBefore(EBreakBetween break_before) {
@@ -184,31 +174,20 @@ class CORE_EXPORT NGBoxFragmentBuilder final
       NGLayoutResult::NGLayoutResultStatus);
 
   NGPhysicalFragment::NGBoxType BoxType() const;
-  NGBoxFragmentBuilder& SetBoxType(NGPhysicalFragment::NGBoxType box_type) {
+  void SetBoxType(NGPhysicalFragment::NGBoxType box_type) {
     box_type_ = box_type;
-    return *this;
   }
-  NGBoxFragmentBuilder& SetIsFieldsetContainer() {
-    is_fieldset_container_ = true;
-    return *this;
-  }
-  NGBoxFragmentBuilder& SetIsLegacyLayoutRoot() {
-    is_legacy_layout_root_ = true;
-    return *this;
-  }
+  void SetIsFieldsetContainer() { is_fieldset_container_ = true; }
+  void SetIsLegacyLayoutRoot() { is_legacy_layout_root_ = true; }
 
   bool DidBreak() const { return did_break_; }
 
-  NGBoxFragmentBuilder& SetBorderEdges(NGBorderEdges border_edges) {
+  void SetBorderEdges(NGBorderEdges border_edges) {
     border_edges_ = border_edges;
-    return *this;
   }
 
   // Either this function or SetBoxType must be called before ToBoxFragment().
-  NGBoxFragmentBuilder& SetIsNewFormattingContext(bool is_new_fc) {
-    is_new_fc_ = is_new_fc;
-    return *this;
-  }
+  void SetIsNewFormattingContext(bool is_new_fc) { is_new_fc_ = is_new_fc; }
 
   // Layout algorithms should call this function for each baseline request in
   // the constraint space.

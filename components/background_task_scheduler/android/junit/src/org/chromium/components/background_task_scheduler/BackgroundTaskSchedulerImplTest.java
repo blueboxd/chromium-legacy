@@ -72,6 +72,7 @@ public class BackgroundTaskSchedulerImplTest {
                                           TimeUnit.DAYS.toMillis(1))
                                   .setExpiresAfterWindowEndTime(true)
                                   .build();
+        BackgroundTaskSchedulerFactory.setBackgroundTaskFactory(new TestBackgroundTaskFactory());
     }
 
     @Test

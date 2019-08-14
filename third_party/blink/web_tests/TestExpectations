@@ -259,7 +259,6 @@ crbug.com/882663 inspector-protocol/css [ Skip ]
 # Display locking failures
 crbug.com/955533 wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
 # Skip some tests for rendersubtree
-crbug.com/991095 wpt_internal/display-lock/rendersubtree/containment [ Skip ]
 crbug.com/991095 wpt_internal/display-lock/rendersubtree/sizing [ Skip ]
 
 # virtual-scroller failures
@@ -6216,7 +6215,6 @@ crbug.com/963141 [ Mac ] virtual/audio-service/media/video-aspect-ratio.html [ P
 # Sheriff 2019-05-16
 crbug.com/963141 [ Linux ] media/video-object-fit.html [ Pass Failure ]
 crbug.com/963141 [ Linux ] virtual/audio-service/media/video-object-fit.html [ Pass Failure ]
-crbug.com/963740 compositing/video-frame-size-change.html [ Pass Failure ]
 
 # Sheriff 2019-05-17
 crbug.com/964239 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-margin.html [ Pass Failure ]
@@ -6376,9 +6374,6 @@ crbug.com/987138 [ Linux Win ] virtual/audio-service/media/controls/doubletap-to
 # Sheriff 2019-07-26
 crbug.com/835943 [ Debug ] http/tests/appcache/non-html.xhtml [ Crash Pass ]
 crbug.com/874866 [ Linux Debug ] media/controls/doubletap-to-jump-backwards.html [ Failure ]
-crbug.com/987915 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/observe-after-untrusted-scroll.html [ Pass Failure ]
-crbug.com/987915 virtual/scalefactor200/external/wpt/largest-contentful-paint/observe-after-untrusted-scroll.html [ Pass Failure ]
-crbug.com/987915 external/wpt/largest-contentful-paint/observe-after-untrusted-scroll.html [ Pass Failure ]
 crbug.com/988231 external/wpt/event-timing/observethenonload.html [ Pass Timeout ]
 crbug.com/988232 virtual/controls-refresh/fast/forms/controls-new-ui/password/password-alt-f8-twice.html [ Pass Failure ]
 crbug.com/988232 virtual/controls-refresh/fast/forms/controls-new-ui/password/password-alt-f8.html [ Pass Failure ]
@@ -6458,6 +6453,13 @@ crbug.com/992615 [ Linux ] external/wpt/import-maps/data.sub.tentative.html [ Pa
 crbug.com/856601 [ Linux ] external/wpt/generic-sensor/idlharness.https.window.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/secure-contexts/idlharness.any.html [ Pass Timeout ]
 
+# Sheriff 2019-08-14
+crbug.com/993671 [ Win ] virtual/audio-service/http/tests/media/video-frame-size-change.html [ Pass Failure ]
+
 #Sheriff 2019-08-12
 crbug.com/783154 [ Linux Debug ] virtual/audio-service/media/controls/doubletap-to-jump-backwards.html [ Failure ]
 crbug.com/993238 fast/frames/frame-name-reset.html [ Pass Failure ]
+
+# Sheriff 2019-08-14
+crbug.com/993328 [ Mac ] virtual/audio-service/media/video-currentTime.html [ Pass Failure ]
+crbug.com/993669 [ Mac ] virtual/audio-service/media/video-zoom.html [ Pass Failure ]

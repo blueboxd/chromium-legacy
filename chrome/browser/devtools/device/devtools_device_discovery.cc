@@ -46,9 +46,8 @@ const char kPageReloadCommand[] = "{'method': 'Page.reload', id: 1}";
 const char kWebViewSocketPrefix[] = "webview_devtools_remote";
 
 static void ScheduleTaskDefault(const base::Closure& task) {
-  base::PostDelayedTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI}, task,
-      base::TimeDelta::FromMilliseconds(kPollingIntervalMs));
+  base::PostDelayedTask(FROM_HERE, {BrowserThread::UI}, task,
+                        base::TimeDelta::FromMilliseconds(kPollingIntervalMs));
 }
 
 // ProtocolCommand ------------------------------------------------------------

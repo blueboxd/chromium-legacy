@@ -73,13 +73,6 @@ class PLATFORM_EXPORT FrameTaskQueueController {
   // Return the loading control task queue and create it if it doesn't exist.
   scoped_refptr<MainThreadTaskQueue> LoadingControlTaskQueue();
 
-  // Return the best effort task queue and create it if it doesn't exist.
-  scoped_refptr<MainThreadTaskQueue> BestEffortTaskQueue();
-
-  // Return the continue script loading task queue and create it if it doesn't
-  // exist.
-  scoped_refptr<MainThreadTaskQueue> VeryHighPriorityTaskQueue();
-
   // Return the non-loading task queue associated with the given queue traits,
   // and created it if it doesn't exist.
   scoped_refptr<MainThreadTaskQueue> NonLoadingTaskQueue(
@@ -114,7 +107,9 @@ class PLATFORM_EXPORT FrameTaskQueueController {
   friend class FrameTaskQueueControllerTest;
 
   void CreateLoadingTaskQueue();
+
   void CreateLoadingControlTaskQueue();
+
   void CreateNonLoadingTaskQueue(MainThreadTaskQueue::QueueTraits);
 
   void TaskQueueCreated(const scoped_refptr<MainThreadTaskQueue>&);
@@ -134,11 +129,8 @@ class PLATFORM_EXPORT FrameTaskQueueController {
   // those queue traits can be the same as non-loading queues. This prevents us
   // from being able to the find right task queue by queue traits alone.
   scoped_refptr<MainThreadTaskQueue> loading_task_queue_;
+
   scoped_refptr<MainThreadTaskQueue> loading_control_task_queue_;
-
-  scoped_refptr<MainThreadTaskQueue> best_effort_task_queue_;
-
-  scoped_refptr<MainThreadTaskQueue> very_high_priority_task_queue_;
 
   using NonLoadingTaskQueueMap =
       WTF::HashMap<MainThreadTaskQueue::QueueTraitsKeyType,

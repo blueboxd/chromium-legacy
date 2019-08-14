@@ -325,8 +325,9 @@ ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
       next_download_id_(download::DownloadItem::kInvalidId),
       next_id_retrieved_(false),
       download_prefs_(new DownloadPrefs(profile)),
-      disk_access_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      disk_access_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       is_file_picker_showing_(false) {
 #if defined(OS_ANDROID)
@@ -532,8 +533,8 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
             download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
             download::DOWNLOAD_INTERRUPT_REASON_NONE);
       }
-      base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                               internal_complete_callback);
+      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                     internal_complete_callback);
       return false;
     }
   } else if (!state->is_complete()) {
@@ -1132,8 +1133,9 @@ void ChromeDownloadManagerDelegate::GetFileMimeType(
     const base::FilePath& path,
     const GetFileMimeTypeCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()}, base::Bind(&GetMimeType, path), callback);
+  base::PostTaskAndReplyWithResult(FROM_HERE,
+                                   {base::ThreadPool(), base::MayBlock()},
+                                   base::Bind(&GetMimeType, path), callback);
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)

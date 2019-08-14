@@ -26,8 +26,9 @@ void CaptionSettingsDialogCallback() {
 namespace captions {
 
 void CaptionSettingsDialog::ShowCaptionSettingsDialog() {
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(CaptionSettingsDialogCallback));
 }
 

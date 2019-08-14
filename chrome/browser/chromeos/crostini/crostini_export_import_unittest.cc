@@ -289,8 +289,8 @@ TEST_F(CrostiniExportImportTest, TestExportCancelled) {
   // CANCELLED:
   SendExportProgress(
       vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_CANCELLED);
-  EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::CANCELLED);
+  EXPECT_FALSE(
+      crostini_export_import_->GetNotificationForTesting(container_id_));
   thread_bundle_.RunUntilIdle();
   EXPECT_FALSE(base::PathExists(tarball_));
 }
@@ -317,8 +317,8 @@ TEST_F(CrostiniExportImportTest, TestExportDoneBeforeCancelled) {
   // DONE: Completed before cancel processed, file should be deleted.
   SendExportProgress(
       vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_DONE);
-  EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::CANCELLED);
+  EXPECT_FALSE(
+      crostini_export_import_->GetNotificationForTesting(container_id_));
   thread_bundle_.RunUntilIdle();
   EXPECT_FALSE(base::PathExists(tarball_));
 }
@@ -416,8 +416,8 @@ TEST_F(CrostiniExportImportTest, TestImportCancelled) {
   // CANCELLED:
   SendImportProgress(
       vm_tools::cicerone::ImportLxdContainerProgressSignal_Status_CANCELLED);
-  EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::CANCELLED);
+  EXPECT_FALSE(
+      crostini_export_import_->GetNotificationForTesting(container_id_));
 }
 
 TEST_F(CrostiniExportImportTest, TestImportDoneBeforeCancelled) {

@@ -656,12 +656,10 @@ void ShelfView::ButtonPressed(views::Button* sender,
   // Record the current AppListViewState to be used later for metrics. The
   // AppListViewState will change on app launch, so this will record the
   // AppListViewState before the app was launched.
-  if (Shell::Get()->app_list_controller()) {
-    recorded_app_list_view_state_ =
-        Shell::Get()->app_list_controller()->GetAppListViewState();
-    recorded_home_launcher_shown_ =
-        Shell::Get()->app_list_controller()->presenter()->home_launcher_shown();
-  }
+  recorded_app_list_view_state_ =
+      Shell::Get()->app_list_controller()->GetAppListViewState();
+  recorded_home_launcher_shown_ =
+      Shell::Get()->app_list_controller()->presenter()->home_launcher_shown();
 
   // Run AfterItemSelected directly if the item has no delegate (ie. in tests).
   const ShelfItem& item = model_->items()[last_pressed_index_];
@@ -2162,9 +2160,8 @@ void ShelfView::AfterItemSelected(const ShelfItem& item,
   shelf_button_pressed_metric_tracker_.ButtonPressed(*event, sender, action);
 
   // Record AppList metric for any action considered an app launch.
-  if ((action == SHELF_ACTION_NEW_WINDOW_CREATED ||
-       action == SHELF_ACTION_WINDOW_ACTIVATED) &&
-      Shell::Get()->app_list_controller()) {
+  if (action == SHELF_ACTION_NEW_WINDOW_CREATED ||
+      action == SHELF_ACTION_WINDOW_ACTIVATED) {
     Shell::Get()->app_list_controller()->RecordShelfAppLaunched(
         recorded_app_list_view_state_, recorded_home_launcher_shown_);
   }

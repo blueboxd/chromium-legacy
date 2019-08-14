@@ -444,7 +444,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void SynchronizeStyleAttributeInternal() const;
 
   const CSSPropertyValueSet* PresentationAttributeStyle();
-  virtual bool IsPresentationAttribute(const QualifiedName&) const {
+  virtual bool IsPresentationAttribute(const QualifiedName& attr) const {
     return false;
   }
   virtual void CollectStyleForPresentationAttribute(

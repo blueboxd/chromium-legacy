@@ -225,7 +225,7 @@ class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
       const GURL& url) {
     double score = 0;
     base::RunLoop run_loop;
-    base::CreateSingleThreadTaskRunnerWithTraits({thread_id})
+    base::CreateSingleThreadTaskRunner({thread_id})
         ->PostTaskAndReply(
             FROM_HERE,
             base::BindOnce(&SiteEngagementServiceTest::CheckScoreFromSettings,

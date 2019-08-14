@@ -158,7 +158,7 @@ FunctionType FindFunctionInImports(const char* function_name) {
   base::win::PEImage image(CURRENT_MODULE());
 
   FunctionSearchContext ctx = { function_name, NULL };
-  image.EnumImportChunks(FindResolutionFunctionInImports, &ctx);
+  image.EnumImportChunks(FindResolutionFunctionInImports, &ctx, nullptr);
 
   return reinterpret_cast<FunctionType>(ctx.function);
 }

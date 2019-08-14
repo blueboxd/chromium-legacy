@@ -628,7 +628,15 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       break;
     case ItemTypeShowFullHistory:
       [tableView deselectRowAtIndexPath:indexPath animated:NO];
-      [self.presentationDelegate showHistoryFromRecentTabs];
+
+      // Tapping "show full history" attempts to dismiss recent tabs to show the
+      // history UI. It is reasonable to ignore this if a modal UI is already
+      // showing above recent tabs. This can happen when a user simultaneously
+      // taps "show full history" and "enable sync". The sync settings UI
+      // appears first and we should not dismiss it to display history.
+      if (!self.presentedViewController) {
+        [self.presentationDelegate showHistoryFromRecentTabs];
+      }
       break;
     case ItemTypeOtherDevicesSyncOff:
     case ItemTypeOtherDevicesNoSessions:
@@ -861,6 +869,13 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 
 - (void)openTabWithContentOfDistantTab:
     (synced_sessions::DistantTab const*)distantTab {
+  // It is reasonable to ignore this request if a modal UI is already showing
+  // above recent tabs. This can happen when a user simultaneously taps a
+  // distant tab and "enable sync". The sync settings UI appears first and we
+  // should not dismiss it to show a distant tab.
+  if (self.presentedViewController)
+    return;
+
   sync_sessions::OpenTabsUIDelegate* openTabs =
       SessionSyncServiceFactory::GetForBrowserState(self.browserState)
           ->GetOpenTabsUIDelegate();
@@ -896,6 +911,13 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 
 - (void)openTabWithTabRestoreEntry:
     (const sessions::TabRestoreService::Entry*)entry {
+  // It is reasonable to ignore this request if a modal UI is already showing
+  // above recent tabs. This can happen when a user simultaneously taps a
+  // recently closed tab and "enable sync". The sync settings UI appears first
+  // and we should not dismiss it to restore a recently closed tab.
+  if (self.presentedViewController)
+    return;
+
   // Only TAB type is handled.
   DCHECK_EQ(entry->type, sessions::TabRestoreService::TAB);
   base::RecordAction(

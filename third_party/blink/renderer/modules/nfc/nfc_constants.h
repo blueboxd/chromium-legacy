@@ -24,9 +24,9 @@ extern const char kNfcProtocolHttps[];
 extern const char kNfcCharSetUTF8[];
 
 // Error messages.
+extern const char kNfcNotAllowed[];
 extern const char kNfcNotSupported[];
 extern const char kNfcNotReadable[];
-extern const char kNfcNotAllowed[];
 extern const char kNfcTextRecordTypeError[];
 extern const char kNfcSetIdError[];
 extern const char kNfcTextRecordMediaTypeError[];

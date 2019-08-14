@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -21,7 +22,7 @@ class SharedProtoDatabase;
 
 // Class that provides instances of ProtoDatabase tied to the current
 // profile directory.
-class ProtoDatabaseProvider {
+class COMPONENT_EXPORT(LEVELDB_PROTO) ProtoDatabaseProvider {
  public:
   using GetSharedDBInstanceCallback =
       base::OnceCallback<void(scoped_refptr<SharedProtoDatabase>)>;

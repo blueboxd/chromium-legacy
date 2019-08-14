@@ -102,6 +102,7 @@ MEDIA_EXPORT extern const base::Feature kBackgroundVideoPauseOptimization;
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoder;
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderIgnoreWorkarounds;
 MEDIA_EXPORT extern const base::Feature kExternalClearKeyForTesting;
+MEDIA_EXPORT extern const base::Feature kFFmpegDecodeOpaqueVP8;
 MEDIA_EXPORT extern const base::Feature kFailUrlProvisionFetcherForTesting;
 MEDIA_EXPORT extern const base::Feature kFallbackAfterDecodeError;
 MEDIA_EXPORT extern const base::Feature kGlobalMediaControls;

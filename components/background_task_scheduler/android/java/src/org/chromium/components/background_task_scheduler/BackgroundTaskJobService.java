@@ -75,9 +75,13 @@ public class BackgroundTaskJobService extends JobService {
     public boolean onStartJob(JobParameters params) {
         ThreadUtils.assertOnUiThread();
         BackgroundTask backgroundTask =
-                BackgroundTaskSchedulerJobService.getBackgroundTaskFromJobParameters(params);
+                BackgroundTaskSchedulerFactory.getBackgroundTaskFromTaskId(params.getJobId());
         if (backgroundTask == null) {
-            Log.w(TAG, "Failed to start task. Could not instantiate class.");
+            Log.w(TAG, "Failed to start task. Could not instantiate BackgroundTask class.");
+            // Cancel task if the BackgroundTask class is not found anymore. We assume this means
+            // that the task has been deprecated.
+            BackgroundTaskSchedulerFactory.getScheduler().cancel(
+                    ContextUtils.getApplicationContext(), params.getJobId());
             return false;
         }
 

@@ -40,17 +40,6 @@ class BackgroundTaskSchedulerJobService implements BackgroundTaskSchedulerDelega
         sClock = clock;
     }
 
-    static BackgroundTask getBackgroundTaskFromJobParameters(JobParameters jobParameters) {
-        String backgroundTaskClassName = getBackgroundTaskClassFromJobParameters(jobParameters);
-        return BackgroundTaskReflection.getBackgroundTaskFromClassName(backgroundTaskClassName);
-    }
-
-    private static String getBackgroundTaskClassFromJobParameters(JobParameters jobParameters) {
-        PersistableBundle extras = jobParameters.getExtras();
-        if (extras == null) return null;
-        return extras.getString(BACKGROUND_TASK_CLASS_KEY);
-    }
-
     static Long getDeadlineTimeFromJobParameters(JobParameters jobParameters) {
         PersistableBundle extras = jobParameters.getExtras();
         if (extras == null || !extras.containsKey(BACKGROUND_TASK_DEADLINE_KEY)) {
@@ -89,7 +78,6 @@ class BackgroundTaskSchedulerJobService implements BackgroundTaskSchedulerDelega
     @VisibleForTesting
     static JobInfo createJobInfoFromTaskInfo(Context context, TaskInfo taskInfo) {
         PersistableBundle jobExtras = new PersistableBundle();
-        jobExtras.putString(BACKGROUND_TASK_CLASS_KEY, taskInfo.getBackgroundTaskClass().getName());
 
         if (!taskInfo.isPeriodic() && taskInfo.getOneOffInfo().expiresAfterWindowEndTime()) {
             jobExtras.putLong(BACKGROUND_TASK_DEADLINE_KEY, getDeadlineTime(taskInfo));
@@ -160,12 +148,6 @@ class BackgroundTaskSchedulerJobService implements BackgroundTaskSchedulerDelega
     @Override
     public boolean schedule(Context context, TaskInfo taskInfo) {
         ThreadUtils.assertOnUiThread();
-        if (!BackgroundTaskReflection.hasParameterlessPublicConstructor(
-                    taskInfo.getBackgroundTaskClass())) {
-            Log.e(TAG, "BackgroundTask " + taskInfo.getBackgroundTaskClass()
-                            + " has no parameterless public constructor.");
-            return false;
-        }
 
         JobInfo jobInfo = createJobInfoFromTaskInfo(context, taskInfo);
 

@@ -280,7 +280,7 @@ class DownloadNotificationTestBase : public InProcessBrowserTest {
     if (!content::IsInProcessNetworkService()) {
       interceptor_ = std::make_unique<SlowDownloadInterceptor>();
     } else {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {content::BrowserThread::IO},
           base::BindOnce(&net::URLRequestSlowDownloadJob::AddUrlHandler));
     }

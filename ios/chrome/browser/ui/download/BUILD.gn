@@ -120,7 +120,6 @@ source_set("eg_tests") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser:browser",
     "//ios/chrome/browser/download",
-    "//ios/chrome/browser/download:features",
     "//ios/chrome/browser/download:test_support",
     "//ios/chrome/browser/ui/browser_view",
     "//ios/chrome/browser/ui/util",
@@ -156,7 +155,6 @@ source_set("eg2_tests") {
   deps = [
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser:chrome_url_constants",
-    "//ios/chrome/browser/download:features",
     "//ios/chrome/browser/download:mime_types",
     "//ios/chrome/browser/download:test_support",
     "//ios/chrome/test:eg_test_support+eg2",

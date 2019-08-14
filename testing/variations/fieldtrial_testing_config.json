@@ -1868,6 +1868,9 @@
                     "enable_features": [
                         "DirectCompositionGpuVSync",
                         "DirectCompositionPresentationFeedback"
+                    ],
+                    "disable_features": [
+                        "DirectCompositionLowLatencyPresentation"
                     ]
                 }
             ]

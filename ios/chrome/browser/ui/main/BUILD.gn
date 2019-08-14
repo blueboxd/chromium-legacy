@@ -23,7 +23,6 @@ source_set("main") {
     "//ios/chrome/browser/crash_report:crash_report_internal",
     "//ios/chrome/browser/device_sharing",
     "//ios/chrome/browser/download",
-    "//ios/chrome/browser/download:features",
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/sessions",

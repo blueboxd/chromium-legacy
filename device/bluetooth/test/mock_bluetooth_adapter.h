@@ -75,13 +75,16 @@ class MockBluetoothAdapter : public BluetoothAdapter {
   MOCK_METHOD2(
       StartScanWithFilter_,
       void(const BluetoothDiscoveryFilter*,
-           base::OnceCallback<void(/*is_error*/ bool,
+           base::OnceCallback<void(/*is_error=*/bool,
                                    UMABluetoothDiscoverySessionOutcome)>&
                callback));
-  MOCK_METHOD3(RemoveDiscoverySession_,
-               void(BluetoothDiscoveryFilter* discovery_filter,
-                    const base::RepeatingClosure& callback,
-                    DiscoverySessionErrorCallback& error_callback));
+  MOCK_METHOD2(
+      UpdateFilter_,
+      void(const BluetoothDiscoveryFilter*,
+           base::OnceCallback<void(/*is_error=*/bool,
+                                   UMABluetoothDiscoverySessionOutcome)>&
+               callback));
+  MOCK_METHOD1(StopScan, void(DiscoverySessionResultCallback callback));
   MOCK_METHOD3(SetDiscoveryFilterRaw,
                void(const BluetoothDiscoveryFilter*,
                     const base::RepeatingClosure& callback,
@@ -135,14 +138,6 @@ class MockBluetoothAdapter : public BluetoothAdapter {
       DiscoverySessionResultCallback callback) override;
   void UpdateFilter(std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
                     DiscoverySessionResultCallback callback) override;
-  void RemoveDiscoverySession(
-      BluetoothDiscoveryFilter* discovery_filter,
-      const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) override;
-  void SetDiscoveryFilter(
-      std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
-      const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) override;
   void RegisterAdvertisement(
       std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
       const CreateAdvertisementCallback& callback,

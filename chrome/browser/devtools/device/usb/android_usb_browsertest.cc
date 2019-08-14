@@ -518,7 +518,7 @@ class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
   void ScheduleDeviceCountRequest(const base::Closure& request) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     scheduler_invoked_++;
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, request);
+    base::PostTask(FROM_HERE, {BrowserThread::UI}, request);
   }
 
   virtual std::unique_ptr<FakeUsbDeviceManager> CreateFakeUsbManager() {

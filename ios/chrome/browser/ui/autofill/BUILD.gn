@@ -84,6 +84,7 @@ source_set("bridges") {
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/colors",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web",

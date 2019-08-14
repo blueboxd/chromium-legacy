@@ -109,17 +109,17 @@ void ConfirmInfoBar::ButtonPressed(views::Button* sender,
   }
 }
 
-int ConfirmInfoBar::ContentMinimumWidth() const {
-  return label_->GetMinimumSize().width() + link_->GetMinimumSize().width() +
-      NonLabelWidth();
-}
-
 void ConfirmInfoBar::LinkClicked(views::Link* source, int event_flags) {
   if (!owner())
     return;  // We're closing; don't call anything, it might access the owner.
   DCHECK_EQ(link_, source);
   if (GetDelegate()->LinkClicked(ui::DispositionFromEventFlags(event_flags)))
     RemoveSelf();
+}
+
+int ConfirmInfoBar::ContentMinimumWidth() const {
+  return label_->GetMinimumSize().width() + link_->GetMinimumSize().width() +
+         NonLabelWidth();
 }
 
 ConfirmInfoBarDelegate* ConfirmInfoBar::GetDelegate() {

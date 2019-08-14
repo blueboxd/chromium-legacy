@@ -655,8 +655,8 @@ void IsHandledBySafePlugin(int render_process_id,
       (plugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS ||
        plugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS ||
        plugin_info.type == WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN);
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, is_handled_safely));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(callback, is_handled_safely));
 }
 
 }  // namespace
@@ -727,7 +727,8 @@ DownloadTargetDeterminer::Result
   // IsAdobeReaderUpToDate() needs to be run with COM as it makes COM calls via
   // AssocQueryString() in IsAdobeReaderDefaultPDFViewer().
   base::PostTaskAndReplyWithResult(
-      base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()}).get(),
+      base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
+          .get(),
       FROM_HERE, base::Bind(&::IsAdobeReaderUpToDate),
       base::Bind(&DownloadTargetDeterminer::DetermineIfAdobeReaderUpToDateDone,
                  weak_ptr_factory_.GetWeakPtr()));

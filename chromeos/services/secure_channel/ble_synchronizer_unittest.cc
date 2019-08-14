@@ -180,10 +180,9 @@ class SecureChannelBleSynchronizerTest : public testing::Test {
     ON_CALL(*mock_adapter_, StartScanWithFilter_(_, _))
         .WillByDefault(Invoke(
             this, &SecureChannelBleSynchronizerTest::OnAdapterStartScan));
-    ON_CALL(*mock_adapter_, RemoveDiscoverySession_(_, _, _))
-        .WillByDefault(Invoke(
-            this,
-            &SecureChannelBleSynchronizerTest::OnDiscoverySessionRemoved));
+    ON_CALL(*mock_adapter_, StopScan(_))
+        .WillByDefault(
+            Invoke(this, &SecureChannelBleSynchronizerTest::OnStopScan));
 
     mock_timer_ = new base::MockOneShotTimer();
 
@@ -377,18 +376,14 @@ class SecureChannelBleSynchronizerTest : public testing::Test {
   }
 
   void InvokeStopDiscoveryCallback(
-      bool success,
       size_t stop_arg_index,
       size_t expected_stop_discovery_result_count) {
     EXPECT_TRUE(stop_discovery_args_list_.size() >= stop_arg_index);
 
-    if (success)
-      stop_discovery_args_list_[stop_arg_index]->callback.Run();
-    else
-      stop_discovery_args_list_[stop_arg_index]->error_callback.Run();
+    stop_discovery_args_list_[stop_arg_index]->callback.Run();
 
     histogram_tester_.ExpectUniqueSample(
-        "InstantTethering.BluetoothDiscoverySessionStopped", success ? 1 : 0,
+        "InstantTethering.BluetoothDiscoverySessionStopped", 1,
         expected_stop_discovery_result_count);
 
     // Reset to make sure that this callback is never double-invoked.
@@ -396,7 +391,10 @@ class SecureChannelBleSynchronizerTest : public testing::Test {
     test_task_runner_->RunUntilIdle();
   }
 
-  void OnDiscoverySessionStopped() { ++num_stop_success_; }
+  void OnDiscoverySessionStopped() {
+    discovery_session_.reset();
+    ++num_stop_success_;
+  }
 
   void OnErrorStoppingDiscoverySession() { ++num_stop_error_; }
 
@@ -412,17 +410,18 @@ class SecureChannelBleSynchronizerTest : public testing::Test {
         new UnregisterAdvertisementArgs(callback, error_callback)));
   }
 
-  void OnDiscoverySessionRemoved(
-      device::BluetoothDiscoveryFilter* discovery_filter,
-      const base::RepeatingClosure& callback,
-      device::BluetoothAdapter::DiscoverySessionErrorCallback& error_callback) {
-    auto repeating_error_callback =
-        base::AdaptCallbackForRepeating(std::move(error_callback));
+  void OnStopScan(
+      device::BluetoothAdapter::DiscoverySessionResultCallback callback) {
+    auto repeating_callback =
+        base::AdaptCallbackForRepeating(std::move(callback));
     stop_discovery_args_list_.emplace_back(
         base::WrapUnique(new StopDiscoverySessionArgs(
-            callback,
             base::BindRepeating(
-                repeating_error_callback,
+                repeating_callback, /*is_error=*/false,
+                device::UMABluetoothDiscoverySessionOutcome::SUCCESS),
+            base::BindRepeating(
+                repeating_callback,
+                /*is_error=*/true,
                 device::UMABluetoothDiscoverySessionOutcome::UNKNOWN))));
   }
 
@@ -532,27 +531,9 @@ TEST_F(SecureChannelBleSynchronizerTest, TestStopSuccess) {
   test_clock_.Advance(TimeDeltaMillis(kTimeBetweenEachCommandMs));
   mock_timer_->Fire();
 
-  InvokeStopDiscoveryCallback(true /* success */, 0u /* unreg_arg_index */,
+  InvokeStopDiscoveryCallback(0u /* unreg_arg_index */,
                               1 /* expected_stop_discovery_result_count */);
   EXPECT_EQ(1, num_stop_success_);
-}
-
-TEST_F(SecureChannelBleSynchronizerTest, TestStopError) {
-  StartDiscoverySession();
-  InvokeStartDiscoveryCallback(true /* success */, 0u /* reg_arg_index */,
-                               1 /* expected_start_discovery_result_count */);
-  EXPECT_EQ(1, num_start_success_);
-
-  StopDiscoverySession(discovery_session_weak_ptr_factory_->GetWeakPtr());
-
-  // Advance the clock and fire the timer. This should result in the next
-  // command being executed.
-  test_clock_.Advance(TimeDeltaMillis(kTimeBetweenEachCommandMs));
-  mock_timer_->Fire();
-
-  InvokeStopDiscoveryCallback(false /* success */, 0u /* unreg_arg_index */,
-                              1 /* expected_stop_discovery_result_count */);
-  EXPECT_EQ(1, num_stop_error_);
 }
 
 TEST_F(SecureChannelBleSynchronizerTest, TestStop_DeletedDiscoverySession) {

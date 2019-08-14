@@ -16,7 +16,7 @@ d1ba5f08cdbcc39ee24d99acaf9477ea
 82c979d493a00ee2188f7259230a8de9
 # ARM - Tegra
 b55cda7d10c37104d8c49d27c2699e40
-# ARM - MediaTek
+# ARM - Mediatek MT8173
 af21b8aa5ea63c4e88f0472ee948d01a
 # ARM - Cheza
 e0ae5fbb0ef06922ae13b84e001f263c
@@ -24,3 +24,5 @@ e0ae5fbb0ef06922ae13b84e001f263c
 7ad287d048d6bdee63fbe37a3cd2c760
 # ARM - AMLogic - T931
 4c183194e3596b579af75f8a04b9eaa9
+# ARM - Mediatek MT8183
+583c8a95ebd13337bd2e5c59510e5d15

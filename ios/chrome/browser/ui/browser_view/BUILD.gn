@@ -44,7 +44,6 @@ source_set("browser_view") {
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/download",
-    "//ios/chrome/browser/download:features",
     "//ios/chrome/browser/feature_engagement",
     "//ios/chrome/browser/find_in_page",
     "//ios/chrome/browser/first_run",

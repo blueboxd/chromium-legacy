@@ -122,13 +122,10 @@ void AssertURLIs(const GURL& expectedURL) {
   // TODO(crbug.com/618887) Replace use of specific values when API which
   // generates these values is exposed.
   CGFloat yOffset = [ChromeEarlGrey isIPadIdiom] ? -89.0 : -48.0;
-  if (@available(iOS 12, *)) {
-    // The safe area is included in the top inset as well as the toolbar
-    // heights.  Due to crbug.com/903635, however, this only occurs on iOS 12;
-    // pdf rendering does not correctly account for the safe area on iOS 11.
-    yOffset -=
-        chrome_test_util::GetCurrentWebState()->GetView().safeAreaInsets.top;
-  }
+  // The safe area is included in the top inset as well as the toolbar
+  // heights.
+  yOffset -=
+      chrome_test_util::GetCurrentWebState()->GetView().safeAreaInsets.top;
   DCHECK_LT(yOffset, 0);
   [[EarlGrey selectElementWithMatcher:WebStateScrollViewMatcher()]
       assertWithMatcher:grey_scrollViewContentOffset(CGPointMake(0, yOffset))];
@@ -143,15 +140,11 @@ void AssertURLIs(const GURL& expectedURL) {
   [ChromeEarlGrey loadURL:URL];
 
   {
-    std::unique_ptr<ScopedSynchronizationDisabler> disabler =
-        std::make_unique<ScopedSynchronizationDisabler>();
     // TODO(crbug.com/852393): Investigate why synchronization isn't working. Is
     // an animation going on forever?
-    if (@available(iOS 12, *)) {
-      // Disabled synchonization needs only for iOS 12.
-    } else {
-      disabler.reset();
-    }
+    // Disabled synchonization needs only for iOS 12.
+    std::unique_ptr<ScopedSynchronizationDisabler> disabler =
+        std::make_unique<ScopedSynchronizationDisabler>();
 
     // Test that the toolbar is still visible after a user swipes down.
     [[EarlGrey
@@ -170,10 +163,6 @@ void AssertURLIs(const GURL& expectedURL) {
 // Verifies that the toolbar properly appears/disappears when scrolling up/down
 // on a PDF that is long in length and wide in width.
 - (void)testLongPDFScroll {
-  // TODO(crbug.com/904694): This test is failing on iOS11.
-  if (!base::ios::IsRunningOnIOS12OrLater())
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
-
 // TODO(crbug.com/714329): Re-enable this test on devices.
 #if !TARGET_IPHONE_SIMULATOR
   EARL_GREY_TEST_DISABLED(@"Test disabled on device.");

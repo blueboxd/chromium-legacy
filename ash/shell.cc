@@ -481,12 +481,6 @@ void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
                                                          source_type);
 }
 
-void Shell::RemoveAppListController() {
-  // AppListController must no longer be the HomeScreenController delegate.
-  DCHECK_NE(home_screen_controller_->delegate(), app_list_controller_.get());
-  app_list_controller_.reset();
-}
-
 void Shell::AddShellObserver(ShellObserver* observer) {
   shell_observers_.AddObserver(observer);
 }

@@ -42,17 +42,6 @@ class BackgroundTaskSchedulerGcmNetworkManager implements BackgroundTaskSchedule
         sClock = clock;
     }
 
-    static BackgroundTask getBackgroundTaskFromTaskParams(@NonNull TaskParams taskParams) {
-        String backgroundTaskClassName = getBackgroundTaskClassFromTaskParams(taskParams);
-        return BackgroundTaskReflection.getBackgroundTaskFromClassName(backgroundTaskClassName);
-    }
-
-    private static String getBackgroundTaskClassFromTaskParams(@NonNull TaskParams taskParams) {
-        Bundle extras = taskParams.getExtras();
-        if (extras == null) return null;
-        return extras.getString(BACKGROUND_TASK_CLASS_KEY);
-    }
-
     static Long getDeadlineTimeFromTaskParams(@NonNull TaskParams taskParams) {
         Bundle extras = taskParams.getExtras();
         if (extras == null || !extras.containsKey(BACKGROUND_TASK_DEADLINE_KEY)) {
@@ -95,8 +84,6 @@ class BackgroundTaskSchedulerGcmNetworkManager implements BackgroundTaskSchedule
     @VisibleForTesting
     static Task createTaskFromTaskInfo(@NonNull TaskInfo taskInfo) {
         Bundle taskExtras = new Bundle();
-        taskExtras.putString(
-                BACKGROUND_TASK_CLASS_KEY, taskInfo.getBackgroundTaskClass().getName());
         if (!taskInfo.isPeriodic() && taskInfo.getOneOffInfo().expiresAfterWindowEndTime()) {
             taskExtras.putLong(BACKGROUND_TASK_DEADLINE_KEY, getDeadlineTime(taskInfo));
         }
@@ -163,13 +150,6 @@ class BackgroundTaskSchedulerGcmNetworkManager implements BackgroundTaskSchedule
     @Override
     public boolean schedule(Context context, @NonNull TaskInfo taskInfo) {
         ThreadUtils.assertOnUiThread();
-        if (!BackgroundTaskReflection.hasParameterlessPublicConstructor(
-                    taskInfo.getBackgroundTaskClass())) {
-            Log.e(TAG,
-                    "BackgroundTask " + taskInfo.getBackgroundTaskClass()
-                            + " has no parameterless public constructor.");
-            return false;
-        }
 
         GcmNetworkManager gcmNetworkManager = getGcmNetworkManager(context);
         if (gcmNetworkManager == null) {

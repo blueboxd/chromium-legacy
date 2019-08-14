@@ -9,6 +9,8 @@
 
 #include <string>
 
+#include "base/component_export.h"
+
 namespace leveldb_proto {
 
 const char* const kFeatureEngagementName = "FeatureEngagement";
@@ -57,7 +59,7 @@ constexpr ProtoDbType kObsoleteSharedProtoDbTypeClients[] = {
     ProtoDbType::LAST,  // Marks the end of list.
 };
 
-class SharedProtoDatabaseClientList {
+class COMPONENT_EXPORT(LEVELDB_PROTO) SharedProtoDatabaseClientList {
  public:
   // Determines if the given |db_type| should use a unique or shared DB.
   static bool ShouldUseSharedDB(ProtoDbType db_type);

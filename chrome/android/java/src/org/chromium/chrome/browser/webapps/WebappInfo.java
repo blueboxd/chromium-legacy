@@ -55,7 +55,6 @@ public class WebappInfo {
         }
     }
 
-    private boolean mIsInitialized;
     private String mId;
     private Icon mIcon;
     private Uri mUri;
@@ -203,14 +202,9 @@ public class WebappInfo {
         mIsIconGenerated = isIconGenerated;
         mIsIconAdaptive = isIconAdaptive;
         mForceNavigation = forceNavigation;
-        mIsInitialized = mUri != null;
     }
 
     protected WebappInfo() {
-    }
-
-    public boolean isInitialized() {
-        return mIsInitialized;
     }
 
     public String id() {

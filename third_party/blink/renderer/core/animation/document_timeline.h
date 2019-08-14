@@ -62,7 +62,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   class PlatformTiming : public GarbageCollectedFinalized<PlatformTiming> {
    public:
     // Calls DocumentTimeline's wake() method after duration seconds.
-    virtual void WakeAfter(double duration) = 0;
+    virtual void WakeAfter(base::TimeDelta duration) = 0;
     virtual void ServiceOnNextFrame() = 0;
     virtual ~PlatformTiming() = default;
     virtual void Trace(blink::Visitor* visitor) {}
@@ -166,7 +166,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
       DCHECK(timeline_);
     }
 
-    void WakeAfter(double duration) override;
+    void WakeAfter(base::TimeDelta duration) override;
     void ServiceOnNextFrame() override;
 
     void TimerFired(TimerBase*) { timeline_->Wake(); }

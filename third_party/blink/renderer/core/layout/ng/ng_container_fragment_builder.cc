@@ -24,7 +24,7 @@ bool IsInlineContainerForNode(const NGBlockNode& node,
 
 }  // namespace
 
-NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
+void NGContainerFragmentBuilder::AddChild(
     const NGPhysicalContainerFragment& child,
     const LogicalOffset& child_offset,
     const LayoutInline* inline_container) {
@@ -129,7 +129,6 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
   }
 
   AddChildInternal(&child, child_offset);
-  return *this;
 }
 
 void NGContainerFragmentBuilder::AddChildInternal(
@@ -172,8 +171,7 @@ LogicalOffset NGContainerFragmentBuilder::GetChildOffset(
   return LogicalOffset();
 }
 
-NGContainerFragmentBuilder&
-NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
+void NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
     NGBlockNode child,
     const LogicalOffset& child_offset,
     base::Optional<TextDirection> container_direction) {
@@ -194,14 +192,11 @@ NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
           IsLtr(direction) ? NGLogicalStaticPosition::InlineEdge::kInlineStart
                            : NGLogicalStaticPosition::InlineEdge::kInlineEnd,
           NGLogicalStaticPosition::BlockEdge::kBlockStart});
-
-  return *this;
 }
 
-NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddOutOfFlowDescendant(
+void NGContainerFragmentBuilder::AddOutOfFlowDescendant(
     const NGLogicalOutOfFlowPositionedNode& descendant) {
   oof_positioned_descendants_.push_back(descendant);
-  return *this;
 }
 
 void NGContainerFragmentBuilder::SwapOutOfFlowPositionedCandidates(

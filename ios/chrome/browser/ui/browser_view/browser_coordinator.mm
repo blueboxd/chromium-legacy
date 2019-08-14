@@ -11,7 +11,6 @@
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/download/features.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
@@ -240,13 +239,11 @@
   self.appLauncherCoordinator = [[AppLauncherCoordinator alloc]
       initWithBaseViewController:self.viewController];
 
-  if (download::IsUsdzPreviewEnabled()) {
-    self.ARQuickLookCoordinator = [[ARQuickLookCoordinator alloc]
-        initWithBaseViewController:self.viewController
-                      browserState:self.browserState
-                      webStateList:self.tabModel.webStateList];
-    [self.ARQuickLookCoordinator start];
-  }
+  self.ARQuickLookCoordinator = [[ARQuickLookCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                    browserState:self.browserState
+                    webStateList:self.tabModel.webStateList];
+  [self.ARQuickLookCoordinator start];
 
   self.formInputAccessoryCoordinator = [[FormInputAccessoryCoordinator alloc]
       initWithBaseViewController:self.viewController

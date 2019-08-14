@@ -141,7 +141,8 @@ LikelyFormFilling SendFillInformationToRenderer(
   // current password field, no filling attempt will be made. In this case the
   // renderer won't treat this as the "first filling" and won't record metrics
   // accordingly. The browser should not do that either.
-  const bool no_sign_in_form = !observed_form.HasPasswordElement();
+  const bool no_sign_in_form =
+      !observed_form.HasPasswordElement() && !observed_form.IsSingleUsername();
 
   // Wait for the username before filling passwords in case the
   // FillOnAccountSelectHttp feature is active and the main frame is

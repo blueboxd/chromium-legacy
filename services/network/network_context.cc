@@ -61,6 +61,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/report_sender.h"
 #include "net/url_request/static_http_user_agent_settings.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/cookie_manager.h"
@@ -441,8 +442,9 @@ class NetworkContext::ContextNetworkDelegate
     return allowed_from_caller &&
            network_context_->cookie_manager()
                ->cookie_settings()
-               .IsCookieAccessAllowed(request.url(),
-                                      request.site_for_cookies());
+               .IsCookieAccessAllowed(
+                   request.url(), request.site_for_cookies(),
+                   request.network_isolation_key().GetTopFrameOrigin());
   }
 
   bool OnCanSetCookieInternal(const net::URLRequest& request,
@@ -452,15 +454,18 @@ class NetworkContext::ContextNetworkDelegate
     return allowed_from_caller &&
            network_context_->cookie_manager()
                ->cookie_settings()
-               .IsCookieAccessAllowed(request.url(),
-                                      request.site_for_cookies());
+               .IsCookieAccessAllowed(
+                   request.url(), request.site_for_cookies(),
+                   request.network_isolation_key().GetTopFrameOrigin());
   }
 
-  bool OnForcePrivacyModeInternal(const GURL& url,
-                                  const GURL& site_for_cookies) const override {
+  bool OnForcePrivacyModeInternal(
+      const GURL& url,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin) const override {
     return !network_context_->cookie_manager()
                 ->cookie_settings()
-                .IsCookieAccessAllowed(url, site_for_cookies);
+                .IsCookieAccessAllowed(url, site_for_cookies, top_frame_origin);
   }
 
   void OnResponseStartedInternal(net::URLRequest* request,

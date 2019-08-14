@@ -51,7 +51,8 @@ class DelayloadsTest : public testing::Test {
     ASSERT_TRUE(module_mmap.Initialize(module_path));
     base::win::PEImageAsData pe_image_data(
         reinterpret_cast<HMODULE>(const_cast<uint8_t*>(module_mmap.data())));
-    pe_image_data.EnumImportChunks(DelayloadsTest::ImportsCallback, imports);
+    pe_image_data.EnumImportChunks(DelayloadsTest::ImportsCallback, imports,
+                                   nullptr);
   }
 };
 
@@ -324,9 +325,9 @@ TEST_F(DelayloadsTest, DISABLED_ChromeElfDllLoadSanityTestImpl) {
   ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &dll));
   dll = dll.Append(L"chrome_elf.dll");
 
-  // We don't expect user32 to be loaded in chrome_elf_import_unittests. If this
+  // We don't expect user32 to be loaded in delayloads_unittests. If this
   // test case fails, then it means that a dependency on user32 has crept into
-  // the chrome_elf_imports_unittests executable, which needs to be removed.
+  // the delayloads_unittests executable, which needs to be removed.
   // NOTE: it may be a secondary dependency of another system DLL.  If so,
   // try adding a "/DELAYLOAD:<blah>.dll" to the build.gn file.
   ASSERT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));

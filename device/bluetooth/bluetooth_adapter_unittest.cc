@@ -11,10 +11,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -136,20 +140,110 @@ class TestBluetoothAdapter : public BluetoothAdapter {
 
   void TestOnStartDiscoverySession(
       std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
-    discovery_sessions_holder_.push_back(std::move(discovery_session));
+    ++callback_count_;
+    discovery_sessions_holder_.push(std::move(discovery_session));
   }
 
-  void CleanupSessions() { discovery_sessions_.clear(); }
+  void OnStartDiscoverySessionQuitLoop(
+      base::Closure run_loop_quit,
+      std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
+    ++callback_count_;
+    run_loop_quit.Run();
+    discovery_sessions_holder_.push(std::move(discovery_session));
+  }
+
+  void OnRemoveDiscoverySession(base::Closure run_loop_quit) {
+    ++callback_count_;
+    run_loop_quit.Run();
+  }
+
+  void OnRemoveDiscoverySessionError(base::Closure run_loop_quit) {
+    ++callback_count_;
+    run_loop_quit.Run();
+  }
+
+  void StopDiscoverySession(base::Closure run_loop_quit) {
+    discovery_sessions_holder_.front()->Stop(
+        base::BindRepeating(&TestBluetoothAdapter::OnRemoveDiscoverySession,
+                            this, run_loop_quit),
+        base::BindRepeating(
+            &TestBluetoothAdapter::OnRemoveDiscoverySessionError, this,
+            run_loop_quit));
+    discovery_sessions_holder_.pop();
+  }
+
+  void StopAllDiscoverySessions(base::Closure run_loop_quit) {
+    int num_stop_requests = discovery_sessions_holder_.size();
+    while (!discovery_sessions_holder_.empty()) {
+      discovery_sessions_holder_.front()->Stop(
+          base::BindLambdaForTesting(
+              [run_loop_quit, num_stop_requests, this]() {
+                num_requests_returned_++;
+                ++callback_count_;
+                if (num_requests_returned_ == num_stop_requests) {
+                  num_requests_returned_ = 0;
+                  run_loop_quit.Run();
+                }
+              }),
+          base::BindRepeating(
+              &TestBluetoothAdapter::OnRemoveDiscoverySessionError, this,
+              run_loop_quit));
+      discovery_sessions_holder_.pop();
+    }
+  }
+
+  void CleanupSessions() {
+    // clear discovery_sessions_holder_
+    base::queue<std::unique_ptr<BluetoothDiscoverySession>> empty_queue;
+    std::swap(discovery_sessions_holder_, empty_queue);
+  }
 
   void InjectFilteredSession(
       std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter) {
     StartDiscoverySessionWithFilter(
         std::move(discovery_filter),
-        base::Bind(&TestBluetoothAdapter::TestOnStartDiscoverySession,
-                   base::Unretained(this)),
-        base::Bind(&TestBluetoothAdapter::TestErrorCallback,
-                   base::Unretained(this)));
+        base::Bind(&TestBluetoothAdapter::TestOnStartDiscoverySession, this),
+        base::Bind(&TestBluetoothAdapter::TestErrorCallback, this));
   }
+
+  void QueueStartRequests(base::Closure run_loop_quit, int num_requests) {
+    for (int i = 0; i < num_requests; ++i) {
+      StartDiscoverySession(
+          base::BindLambdaForTesting(
+              [run_loop_quit, num_requests,
+               this](std::unique_ptr<device::BluetoothDiscoverySession>
+                         discovery_session) {
+                ++callback_count_;
+                num_requests_returned_++;
+                discovery_sessions_holder_.push(std::move(discovery_session));
+                if (num_requests_returned_ == num_requests) {
+                  num_requests_returned_ = 0;
+                  run_loop_quit.Run();
+                }
+              }),
+          base::Bind(&TestBluetoothAdapter::TestErrorCallback, this));
+    };
+  }
+
+  void StartSessionWithFilter(
+      std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
+      base::RepeatingClosure run_loop_quit) {
+    StartDiscoverySessionWithFilter(
+        std::move(discovery_filter),
+        base::Bind(&TestBluetoothAdapter::OnStartDiscoverySessionQuitLoop, this,
+                   run_loop_quit),
+        base::DoNothing());
+  }
+
+  // |discovery_sessions_holder_| is used to hold unique pointers of Discovery
+  // Sessions so that the destructors don't get called and so we can test
+  // removing them
+  base::queue<std::unique_ptr<BluetoothDiscoverySession>>
+      discovery_sessions_holder_;
+  std::unique_ptr<BluetoothDiscoveryFilter> current_filter =
+      std::make_unique<BluetoothDiscoveryFilter>();
+  int callback_count_ = 0;
+  bool is_discovering_ = false;
 
  protected:
   ~TestBluetoothAdapter() override = default;
@@ -159,33 +253,50 @@ class TestBluetoothAdapter : public BluetoothAdapter {
   void StartScanWithFilter(
       std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
       DiscoverySessionResultCallback callback) override {
-    std::move(callback).Run(false,
-                            UMABluetoothDiscoverySessionOutcome::SUCCESS);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&TestBluetoothAdapter::SetFilter, this,
+                       std::move(discovery_filter), std::move(callback)));
   }
 
   void UpdateFilter(std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
                     DiscoverySessionResultCallback callback) override {
-    std::move(callback).Run(false,
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&TestBluetoothAdapter::SetFilter, this,
+                       std::move(discovery_filter), std::move(callback)));
+  }
+
+  void SetFilter(std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
+                 DiscoverySessionResultCallback callback) {
+    is_discovering_ = true;
+    current_filter->CopyFrom(*discovery_filter.get());
+    std::move(callback).Run(/*is_error=*/false,
                             UMABluetoothDiscoverySessionOutcome::SUCCESS);
   }
 
-  void RemoveDiscoverySession(
-      BluetoothDiscoveryFilter* discovery_filter,
-      const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) override {}
+  void StopScan(DiscoverySessionResultCallback callback) override {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&TestBluetoothAdapter::FakeOSStopScan, this,
+                                  std::move(callback)));
+  }
 
-  void SetDiscoveryFilter(
-      std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
-      const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) override {}
+  void FakeOSStopScan(DiscoverySessionResultCallback callback) {
+    is_discovering_ = false;
+    std::move(callback).Run(/*is_error=*/false,
+                            UMABluetoothDiscoverySessionOutcome::SUCCESS);
+  }
 
   void RemovePairingDelegateInternal(
       BluetoothDevice::PairingDelegate* pairing_delegate) override {}
 
-  // |discovery_sessions_holder_| is used to hold unique pointers of Discovery
-  // Sessions so that the destructors don't get called.
-  std::vector<std::unique_ptr<BluetoothDiscoverySession>>
-      discovery_sessions_holder_;
+  int num_requests_returned_ = 0;
+
+ private:
+  void PostDelayedTask(base::OnceClosure callback) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
+  }
 };
 
 class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
@@ -202,104 +313,223 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
 
 }  // namespace
 
-TEST(BluetoothAdapterTest, NoDefaultPairingDelegate) {
-  scoped_refptr<BluetoothAdapter> adapter = new TestBluetoothAdapter();
+class BluetoothAdapterTest : public testing::Test {
+ public:
+  void SetUp() override { adapter_ = new TestBluetoothAdapter(); }
 
+ protected:
+  scoped_refptr<TestBluetoothAdapter> adapter_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+};
+
+TEST_F(BluetoothAdapterTest, NoDefaultPairingDelegate) {
   // Verify that when there is no registered pairing delegate, NULL is returned.
-  EXPECT_TRUE(adapter->DefaultPairingDelegate() == NULL);
+  EXPECT_TRUE(adapter_->DefaultPairingDelegate() == nullptr);
 }
 
-TEST(BluetoothAdapterTest, OneDefaultPairingDelegate) {
-  scoped_refptr<BluetoothAdapter> adapter = new TestBluetoothAdapter();
-
+TEST_F(BluetoothAdapterTest, OneDefaultPairingDelegate) {
   // Verify that when there is one registered pairing delegate, it is returned.
   TestPairingDelegate delegate;
 
-  adapter->AddPairingDelegate(&delegate,
-                              BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_LOW);
+  adapter_->AddPairingDelegate(&delegate,
+                               BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_LOW);
 
-  EXPECT_EQ(&delegate, adapter->DefaultPairingDelegate());
+  EXPECT_EQ(&delegate, adapter_->DefaultPairingDelegate());
 }
 
-TEST(BluetoothAdapterTest, SamePriorityDelegates) {
-  scoped_refptr<BluetoothAdapter> adapter = new TestBluetoothAdapter();
-
+TEST_F(BluetoothAdapterTest, SamePriorityDelegates) {
   // Verify that when there are two registered pairing delegates of the same
   // priority, the first one registered is returned.
   TestPairingDelegate delegate1, delegate2;
 
-  adapter->AddPairingDelegate(&delegate1,
-                              BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_LOW);
-  adapter->AddPairingDelegate(&delegate2,
-                              BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_LOW);
+  adapter_->AddPairingDelegate(&delegate1,
+                               BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_LOW);
+  adapter_->AddPairingDelegate(&delegate2,
+                               BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_LOW);
 
-  EXPECT_EQ(&delegate1, adapter->DefaultPairingDelegate());
+  EXPECT_EQ(&delegate1, adapter_->DefaultPairingDelegate());
 
   // After unregistering the first, the second can be returned.
-  adapter->RemovePairingDelegate(&delegate1);
+  adapter_->RemovePairingDelegate(&delegate1);
 
-  EXPECT_EQ(&delegate2, adapter->DefaultPairingDelegate());
+  EXPECT_EQ(&delegate2, adapter_->DefaultPairingDelegate());
 }
 
-TEST(BluetoothAdapterTest, HighestPriorityDelegate) {
-  scoped_refptr<BluetoothAdapter> adapter = new TestBluetoothAdapter();
-
+TEST_F(BluetoothAdapterTest, HighestPriorityDelegate) {
   // Verify that when there are two registered pairing delegates, the one with
   // the highest priority is returned.
   TestPairingDelegate delegate1, delegate2;
 
-  adapter->AddPairingDelegate(&delegate1,
-                              BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_LOW);
-  adapter->AddPairingDelegate(&delegate2,
-                              BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
+  adapter_->AddPairingDelegate(&delegate1,
+                               BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_LOW);
+  adapter_->AddPairingDelegate(
+      &delegate2, BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
 
-  EXPECT_EQ(&delegate2, adapter->DefaultPairingDelegate());
+  EXPECT_EQ(&delegate2, adapter_->DefaultPairingDelegate());
 }
 
-TEST(BluetoothAdapterTest, UnregisterDelegate) {
-  scoped_refptr<BluetoothAdapter> adapter = new TestBluetoothAdapter();
-
+TEST_F(BluetoothAdapterTest, UnregisterDelegate) {
   // Verify that after unregistering a delegate, NULL is returned.
   TestPairingDelegate delegate;
 
-  adapter->AddPairingDelegate(&delegate,
-                              BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_LOW);
-  adapter->RemovePairingDelegate(&delegate);
+  adapter_->AddPairingDelegate(&delegate,
+                               BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_LOW);
+  adapter_->RemovePairingDelegate(&delegate);
 
-  EXPECT_TRUE(adapter->DefaultPairingDelegate() == NULL);
+  EXPECT_TRUE(adapter_->DefaultPairingDelegate() == nullptr);
 }
 
-TEST(BluetoothAdapterTest, GetMergedDiscoveryFilterEmpty) {
-  scoped_refptr<BluetoothAdapter> adapter = new TestBluetoothAdapter();
+TEST_F(BluetoothAdapterTest, GetMergedDiscoveryFilterEmpty) {
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter;
 
-  discovery_filter = adapter->GetMergedDiscoveryFilter();
-  EXPECT_TRUE(discovery_filter.get() == nullptr);
-
-  discovery_filter = adapter->GetMergedDiscoveryFilterMasked(nullptr);
-  EXPECT_TRUE(discovery_filter.get() == nullptr);
+  discovery_filter = adapter_->GetMergedDiscoveryFilter();
+  EXPECT_TRUE(discovery_filter->IsDefault());
 }
 
-TEST(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterRegular) {
+TEST_F(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterRegular) {
   scoped_refptr<TestBluetoothAdapter> adapter = new TestBluetoothAdapter();
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter;
 
-  // make sure adapter have one session wihout filtering.
-  adapter->InjectFilteredSession(std::move(discovery_filter));
-
   // having one reglar session should result in no filter
   std::unique_ptr<BluetoothDiscoveryFilter> resulting_filter =
-      adapter->GetMergedDiscoveryFilter();
-  EXPECT_TRUE(resulting_filter.get() == nullptr);
+      adapter_->GetMergedDiscoveryFilter();
+  EXPECT_TRUE(resulting_filter->IsDefault());
 
-  // omiting no filter when having one reglar session should result in no filter
-  resulting_filter = adapter->GetMergedDiscoveryFilterMasked(nullptr);
-  EXPECT_TRUE(resulting_filter.get() == nullptr);
-
-  adapter->CleanupSessions();
+  adapter_->CleanupSessions();
 }
 
-TEST(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterRssi) {
+TEST_F(BluetoothAdapterTest, TestQueueingLogic) {
+  BluetoothDiscoveryFilter* df =
+      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
+  df->AddUUID(device::BluetoothUUID("1001"));
+  std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(df);
+
+  BluetoothDiscoveryFilter* df2 =
+      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
+  df->AddUUID(device::BluetoothUUID("1002"));
+  std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter2(df2);
+
+  // Start a discovery session
+  base::RunLoop run_loop1;
+  adapter_->StartSessionWithFilter(std::move(discovery_filter),
+                                   run_loop1.QuitClosure());
+
+  // Since the first request is still running we have not hit a single callback
+  EXPECT_EQ(0, adapter_->callback_count_);
+
+  // While our first Discovery Session is starting queue up another one with a
+  // different filter.
+  base::RunLoop run_loop2;
+  adapter_->StartSessionWithFilter(std::move(discovery_filter2),
+                                   run_loop2.QuitClosure());
+
+  // Finish the first request.  This should automatically start the queued
+  // request when completed.
+  run_loop1.Run();
+  EXPECT_EQ(1, adapter_->callback_count_);
+  EXPECT_TRUE(adapter_->is_discovering_);
+  adapter_->callback_count_ = 0;
+
+  // While our second discovery session is starting queue up 4 start requests
+  // with default filters.
+  base::RunLoop run_loop3;
+  adapter_->QueueStartRequests(run_loop3.QuitClosure(), 4);
+
+  // Finish the second request.  This should start the 4 queued requests.
+  run_loop2.Run();
+  EXPECT_EQ(1, adapter_->callback_count_);
+  adapter_->callback_count_ = 0;
+
+  // Queue up stop requests for the 2 started sessions.
+  base::RunLoop run_loop4;
+  adapter_->StopAllDiscoverySessions(base::DoNothing());
+  // Confirm that no callbacks were hit and the filter has not changed.
+  EXPECT_EQ(0, adapter_->callback_count_);
+  EXPECT_FALSE(adapter_->current_filter->IsDefault());
+
+  // Run the 4 queued default requests. This should call all 4 callbacks from
+  // the start requests and automatically call the start the queue stop
+  // requests.  These will short circuit and return immediately because the
+  // filter remains the default filter.
+  run_loop3.Run();
+  EXPECT_EQ(6, adapter_->callback_count_);
+  EXPECT_TRUE(adapter_->current_filter->IsDefault());
+
+  adapter_->CleanupSessions();
+}
+
+TEST_F(BluetoothAdapterTest, ShortCircuitUpdateTest) {
+  auto discovery_filter_default1 = std::make_unique<BluetoothDiscoveryFilter>();
+  BluetoothDiscoveryFilter* df =
+      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
+  df->SetRSSI(-30);
+  std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(df);
+
+  base::RunLoop run_loop;
+  adapter_->StartSessionWithFilter(std::move(discovery_filter_default1),
+                                   run_loop.QuitClosure());
+  run_loop.Run();
+  EXPECT_TRUE(adapter_->current_filter->IsDefault());
+  EXPECT_EQ(1, adapter_->callback_count_);
+
+  // This time since there is no actual change being made the adapter should
+  // short circuit the callback immediately with success
+  auto discovery_filter_default2 = std::make_unique<BluetoothDiscoveryFilter>();
+  adapter_->StartSessionWithFilter(std::move(discovery_filter_default2),
+                                   base::DoNothing());
+  EXPECT_TRUE(adapter_->current_filter->IsDefault());
+  EXPECT_EQ(2, adapter_->callback_count_);
+
+  // This filter is different but is already covered under the default filter so
+  // it should still short circuit
+  adapter_->StartSessionWithFilter(std::move(discovery_filter),
+                                   base::DoNothing());
+  EXPECT_TRUE(adapter_->current_filter->IsDefault());
+  EXPECT_EQ(3, adapter_->callback_count_);
+
+  // End the first discovery session which still short circuits because there is
+  // still a default session active
+  adapter_->StopDiscoverySession(base::DoNothing());
+  EXPECT_TRUE(adapter_->current_filter->IsDefault());
+  EXPECT_EQ(4, adapter_->callback_count_);
+
+  // When removing the second default filter we should now actually update
+  // because discovery_filter is the only filter left
+  base::RunLoop run_loop2;
+  adapter_->StopDiscoverySession(run_loop2.QuitClosure());
+  EXPECT_TRUE(adapter_->current_filter->IsDefault());
+  EXPECT_EQ(4, adapter_->callback_count_);
+  run_loop2.Run();
+  EXPECT_FALSE(adapter_->current_filter->IsDefault());
+  EXPECT_EQ(5, adapter_->callback_count_);
+
+  //  Adding another default but not finishing the update
+  base::RunLoop run_loop3;
+  auto discovery_filter_default3 = std::make_unique<BluetoothDiscoveryFilter>();
+  adapter_->StartSessionWithFilter(std::move(discovery_filter_default3),
+                                   run_loop3.QuitClosure());
+  EXPECT_FALSE(adapter_->current_filter->IsDefault());
+  EXPECT_EQ(5, adapter_->callback_count_);
+
+  // Queue up another request that should short circuit and return success when
+  // default filter 3 updates
+  auto discovery_filter_default4 = std::make_unique<BluetoothDiscoveryFilter>();
+  adapter_->StartSessionWithFilter(std::move(discovery_filter_default4),
+                                   base::DoNothing());
+  EXPECT_FALSE(adapter_->current_filter->IsDefault());
+  EXPECT_EQ(5, adapter_->callback_count_);
+
+  // Running the loop default filter 3 will update the the OS filter then then
+  // start processing the queued request.  The queued request does not change
+  // the filter so it should automatically short circuit and return success.
+  run_loop3.Run();
+  EXPECT_TRUE(adapter_->current_filter->IsDefault());
+  EXPECT_EQ(7, adapter_->callback_count_);
+
+  adapter_->CleanupSessions();
+}
+
+TEST_F(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterRssi) {
   scoped_refptr<TestBluetoothAdapter> adapter = new TestBluetoothAdapter();
   int16_t resulting_rssi;
   uint16_t resulting_pathloss;
@@ -316,34 +546,19 @@ TEST(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterRssi) {
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter2(df2);
 
   // Make sure adapter has one session without filtering.
-  adapter->InjectFilteredSession(std::move(discovery_filter));
+  adapter_->InjectFilteredSession(std::move(discovery_filter));
 
   // DO_NOTHING should have no impact
-  resulting_filter = adapter->GetMergedDiscoveryFilter();
+  resulting_filter = adapter_->GetMergedDiscoveryFilter();
   resulting_filter->GetRSSI(&resulting_rssi);
   EXPECT_EQ(-30, resulting_rssi);
 
-  // should not use df2 at all, as it's not associated with adapter yet
-  resulting_filter = adapter->GetMergedDiscoveryFilterMasked(df2);
-  resulting_filter->GetRSSI(&resulting_rssi);
-  EXPECT_EQ(-30, resulting_rssi);
-
-  adapter->InjectFilteredSession(std::move(discovery_filter2));
+  adapter_->InjectFilteredSession(std::move(discovery_filter2));
 
   // result of merging two rssi values should be lower one
-  resulting_filter = adapter->GetMergedDiscoveryFilter();
+  resulting_filter = adapter_->GetMergedDiscoveryFilter();
   resulting_filter->GetRSSI(&resulting_rssi);
   EXPECT_EQ(-65, resulting_rssi);
-
-  // ommit bigger value, result should stay same
-  resulting_filter = adapter->GetMergedDiscoveryFilterMasked(df);
-  resulting_filter->GetRSSI(&resulting_rssi);
-  EXPECT_EQ(-65, resulting_rssi);
-
-  // ommit lower value, result should change
-  resulting_filter = adapter->GetMergedDiscoveryFilterMasked(df2);
-  resulting_filter->GetRSSI(&resulting_rssi);
-  EXPECT_EQ(-30, resulting_rssi);
 
   BluetoothDiscoveryFilter* df3 =
       new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
@@ -352,15 +567,15 @@ TEST(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterRssi) {
 
   // when rssi and pathloss are merged, both should be cleared, because there is
   // no way to tell which filter will be more generic
-  adapter->InjectFilteredSession(std::move(discovery_filter3));
-  resulting_filter = adapter->GetMergedDiscoveryFilter();
+  adapter_->InjectFilteredSession(std::move(discovery_filter3));
+  resulting_filter = adapter_->GetMergedDiscoveryFilter();
   EXPECT_FALSE(resulting_filter->GetRSSI(&resulting_rssi));
   EXPECT_FALSE(resulting_filter->GetPathloss(&resulting_pathloss));
 
-  adapter->CleanupSessions();
+  adapter_->CleanupSessions();
 }
 
-TEST(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterTransport) {
+TEST_F(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterTransport) {
   scoped_refptr<TestBluetoothAdapter> adapter = new TestBluetoothAdapter();
   std::unique_ptr<BluetoothDiscoveryFilter> resulting_filter;
 
@@ -372,25 +587,17 @@ TEST(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterTransport) {
       new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter2(df2);
 
-  adapter->InjectFilteredSession(std::move(discovery_filter));
+  adapter_->InjectFilteredSession(std::move(discovery_filter));
 
   // Just one filter, make sure transport was properly rewritten
-  resulting_filter = adapter->GetMergedDiscoveryFilter();
+  resulting_filter = adapter_->GetMergedDiscoveryFilter();
   EXPECT_EQ(BLUETOOTH_TRANSPORT_CLASSIC, resulting_filter->GetTransport());
 
-  adapter->InjectFilteredSession(std::move(discovery_filter2));
+  adapter_->InjectFilteredSession(std::move(discovery_filter2));
 
   // Two filters, should have OR of both transport's
-  resulting_filter = adapter->GetMergedDiscoveryFilter();
+  resulting_filter = adapter_->GetMergedDiscoveryFilter();
   EXPECT_EQ(BLUETOOTH_TRANSPORT_DUAL, resulting_filter->GetTransport());
-
-  // When 1st filter is masked, 2nd filter transport should be returned.
-  resulting_filter = adapter->GetMergedDiscoveryFilterMasked(df);
-  EXPECT_EQ(BLUETOOTH_TRANSPORT_LE, resulting_filter->GetTransport());
-
-  // When 2nd filter is masked, 1st filter transport should be returned.
-  resulting_filter = adapter->GetMergedDiscoveryFilterMasked(df2);
-  EXPECT_EQ(BLUETOOTH_TRANSPORT_CLASSIC, resulting_filter->GetTransport());
 
   BluetoothDiscoveryFilter* df3 =
       new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
@@ -398,14 +605,14 @@ TEST(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterTransport) {
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter3(df3);
 
   // Merging empty filter in should result in empty filter
-  adapter->InjectFilteredSession(std::move(discovery_filter3));
-  resulting_filter = adapter->GetMergedDiscoveryFilter();
+  adapter_->InjectFilteredSession(std::move(discovery_filter3));
+  resulting_filter = adapter_->GetMergedDiscoveryFilter();
   EXPECT_TRUE(resulting_filter->IsDefault());
 
-  adapter->CleanupSessions();
+  adapter_->CleanupSessions();
 }
 
-TEST(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterAllFields) {
+TEST_F(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterAllFields) {
   scoped_refptr<TestBluetoothAdapter> adapter = new TestBluetoothAdapter();
   int16_t resulting_rssi;
   std::set<device::BluetoothUUID> resulting_uuids;
@@ -432,11 +639,11 @@ TEST(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterAllFields) {
   df3->AddUUID(device::BluetoothUUID("1003"));
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter3(df3);
 
-  adapter->InjectFilteredSession(std::move(discovery_filter));
-  adapter->InjectFilteredSession(std::move(discovery_filter2));
-  adapter->InjectFilteredSession(std::move(discovery_filter3));
+  adapter_->InjectFilteredSession(std::move(discovery_filter));
+  adapter_->InjectFilteredSession(std::move(discovery_filter2));
+  adapter_->InjectFilteredSession(std::move(discovery_filter3));
   std::unique_ptr<BluetoothDiscoveryFilter> resulting_filter =
-      adapter->GetMergedDiscoveryFilter();
+      adapter_->GetMergedDiscoveryFilter();
   resulting_filter->GetRSSI(&resulting_rssi);
   resulting_filter->GetUUIDs(resulting_uuids);
   EXPECT_TRUE(resulting_filter->GetTransport());
@@ -452,10 +659,7 @@ TEST(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterAllFields) {
   EXPECT_TRUE(resulting_uuids.find(device::BluetoothUUID("1020")) !=
               resulting_uuids.end());
 
-  resulting_filter = adapter->GetMergedDiscoveryFilterMasked(df);
-  EXPECT_EQ(BLUETOOTH_TRANSPORT_DUAL, resulting_filter->GetTransport());
-
-  adapter->CleanupSessions();
+  adapter_->CleanupSessions();
 }
 
 // TODO(scheib): Enable BluetoothTest fixture tests on all platforms.
@@ -1075,9 +1279,9 @@ TEST_F(BluetoothTest, MAYBE_TogglePowerFakeAdapter_DestroyWithPending) {
       base::BindLambdaForTesting(
           // Note that we explicitly need to capture a pointer to the
           // underlying adapter, even though we pass |this| implicitly. This is
-          // because by the time this callback is invoked, |adapter_| is already
+          // because by the time this callback is invoked, |adapter| is already
           // set to null, but the pointed to adapter instance is still alive. So
-          // using the pointer is safe, but dereferencing |adapter_| crashes.
+          // using the pointer is safe, but dereferencing |adapter| crashes.
           [&] {
             error_callback_called = true;
             adapter->SetPowered(false, GetCallback(Call::NOT_EXPECTED),

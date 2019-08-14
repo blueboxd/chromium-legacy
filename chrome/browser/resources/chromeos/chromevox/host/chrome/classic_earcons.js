@@ -57,7 +57,7 @@ cvox.ClassicEarcons.prototype.playEarcon = function(earcon, opt_location) {
     return;
   }
   if (localStorage['enableEarconLogging'] == 'true') {
-    LogStore.getInstance().writeTextLog(earcon, TextLog.LogType.EARCON);
+    LogStore.getInstance().writeTextLog(earcon, LogStore.LogType.EARCON);
     console.log('Earcon ' + earcon);
   }
 

@@ -1374,7 +1374,7 @@ const CSSValue* Gap::CSSValueFromComputedStyleInternal(
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValuesForShorthandProperty(
+  return ComputedStyleUtils::ValuesForGapShorthand(
       gapShorthand(), style, layout_object, allow_visited_style);
 }
 

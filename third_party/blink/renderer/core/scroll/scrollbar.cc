@@ -807,6 +807,10 @@ bool Scrollbar::ContainerIsRightToLeft() const {
   return false;
 }
 
+WebColorScheme Scrollbar::UsedColorScheme() const {
+  return scrollable_area_->UsedColorScheme();
+}
+
 STATIC_ASSERT_ENUM(kWebScrollbarOverlayColorThemeDark,
                    kScrollbarOverlayColorThemeDark);
 STATIC_ASSERT_ENUM(kWebScrollbarOverlayColorThemeLight,

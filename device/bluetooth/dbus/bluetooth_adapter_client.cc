@@ -25,6 +25,9 @@
 
 namespace bluez {
 
+// Automatically determine transport mode.
+constexpr char kBluezAutoTransport[] = "auto";
+
 namespace {
 
 // TODO(rkc) Find better way to do this.
@@ -143,7 +146,7 @@ void BluetoothAdapterClient::DiscoveryFilter::CopyFrom(
   if (filter.transport.get())
     transport.reset(new std::string(*filter.transport));
   else
-    transport.reset();
+    transport.reset(new std::string(kBluezAutoTransport));
 
   if (filter.uuids.get())
     uuids.reset(new std::vector<std::string>(*filter.uuids));

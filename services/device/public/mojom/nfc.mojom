@@ -7,10 +7,10 @@ module device.mojom;
 enum NFCErrorType {
   // No permssion.
   NOT_ALLOWED,
-  // Operation is not supported by the NFC Adapter
+  // No hardware support, no NFC adapter, the connection cannot be established,
+  // or operation is not supported by the NFC Adapter.
   NOT_SUPPORTED,
-  // No hardware support, no NFC adapter or the adapter is disabled,
-  // or the connection cannot be established.
+  // NFC adapter is disabled.
   NOT_READABLE,
   NOT_FOUND,
   INVALID_MESSAGE,

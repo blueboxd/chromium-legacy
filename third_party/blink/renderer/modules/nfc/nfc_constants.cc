@@ -16,9 +16,10 @@ const char kNfcProtocolHttps[] = "https";
 const char kNfcCharSetUTF8[] = ";charset=UTF-8";
 
 // Error messages.
-const char kNfcNotSupported[] = "NFC operation not supported.";
-const char kNfcNotReadable[] = "No NFC adapter or cannot establish connection.";
 const char kNfcNotAllowed[] = "NFC operation not allowed.";
+const char kNfcNotSupported[] =
+    "No NFC adapter or cannot establish connection.";
+const char kNfcNotReadable[] = "NFC is not enabled.";
 const char kNfcTextRecordTypeError[] =
     "The data for 'text' NDEFRecords must be of String or UnrestrctedDouble.";
 const char kNfcSetIdError[] = "Cannot set WebNFC Id.";

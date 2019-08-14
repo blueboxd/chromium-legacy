@@ -41,21 +41,21 @@ void GetSharedDBInstance(
 
 // Update transactions happen on background task runner and callback runs on the
 // client task runner.
-void RunUpdateCallback(
+void COMPONENT_EXPORT(LEVELDB_PROTO) RunUpdateCallback(
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
     Callbacks::UpdateCallback callback,
     bool success);
 
 // Load transactions happen on background task runner. The loaded keys need to
 // be given to clients on client task runner.
-void RunLoadKeysCallback(
+void COMPONENT_EXPORT(LEVELDB_PROTO) RunLoadKeysCallback(
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
     Callbacks::LoadKeysCallback callback,
     bool success,
     std::unique_ptr<KeyVector> keys);
 
 // Helper to run destroy callback on the client task runner.
-void RunDestroyCallback(
+void COMPONENT_EXPORT(LEVELDB_PROTO) RunDestroyCallback(
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
     Callbacks::DestroyCallback callback,
     bool success);

@@ -126,9 +126,9 @@ class FidoBleDiscoveryTest : public ::testing::Test {
       base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 
  private:
-  FidoBleDiscovery discovery_;
-  MockFidoDiscoveryObserver observer_;
   scoped_refptr<MockBluetoothAdapter> adapter_;
+  MockFidoDiscoveryObserver observer_;
+  FidoBleDiscovery discovery_;
 };
 
 TEST_F(FidoBleDiscoveryTest,
@@ -147,8 +147,17 @@ TEST_F(FidoBleDiscoveryTest, FidoBleDiscoveryResumeScanningAfterPoweredOn) {
   EXPECT_CALL(*adapter(), IsPowered()).WillOnce(Return(false));
 
   // After BluetoothAdapter is powered on, we expect that discovery session
-  // starts again.
-  EXPECT_CALL(*adapter(), StartScanWithFilter_);
+  // starts again. Immediately calling the callback so that it does not hold a
+  // reference to the adapter.
+  EXPECT_CALL(*adapter(), StartScanWithFilter_)
+      .WillOnce(testing::Invoke(
+          [](const device::BluetoothDiscoveryFilter* discovery_filter,
+             device::BluetoothAdapter::DiscoverySessionResultCallback&
+                 callback) {
+            std::move(callback).Run(
+                /*is_error=*/false,
+                device::UMABluetoothDiscoverySessionOutcome::SUCCESS);
+          }));
   discovery()->Start();
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
   adapter()->NotifyAdapterPoweredChanged(true);

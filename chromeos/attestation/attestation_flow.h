@@ -119,6 +119,8 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   //   force_new_key - If set to true, a new key will be generated even if a key
   //                   already exists for the profile.  The new key will replace
   //                   the existing key on success.
+  //   key_name - The name of the key. If left empty, a default name derived
+  //              from the |certiifcate_profile| and |account_id| will be used.
   //   callback - A callback which will be called when the operation completes.
   //              On success |result| will be true and |data| will contain the
   //              PCA-issued certificate chain in PEM format.
@@ -126,6 +128,7 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
                               const AccountId& account_id,
                               const std::string& request_origin,
                               bool force_new_key,
+                              const std::string& key_name,
                               const CertificateCallback& callback);
 
  private:
@@ -199,12 +202,15 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   //   account_id - Identifies the active user.
   //   request_origin - An identifier for the origin of this request.
   //   generate_new_key - If set to true a new key is generated.
+  //   key_name - The name of the key. If left empty, a default name derived
+  //              from the |certiifcate_profile| and |account_id| will be used.
   //   callback - Called when the operation completes.
   void StartCertificateRequest(
       const AttestationCertificateProfile certificate_profile,
       const AccountId& account_id,
       const std::string& request_origin,
       bool generate_new_key,
+      const std::string& key_name,
       const CertificateCallback& callback);
 
   // Called when the attestation daemon has finished creating a certificate

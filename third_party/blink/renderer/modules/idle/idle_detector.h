@@ -6,7 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_IDLE_IDLE_DETECTOR_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -69,12 +70,12 @@ class IdleDetector final : public EventTargetWithInlineData,
 
   // Holds a pipe which the service uses to notify this object
   // when the idle state has changed.
-  mojo::Binding<mojom::blink::IdleMonitor> binding_;
+  mojo::Receiver<mojom::blink::IdleMonitor> receiver_;
 
   void StartMonitoring();
   void StopMonitoring();
 
-  mojom::blink::IdleManagerPtr service_;
+  mojo::Remote<mojom::blink::IdleManager> service_;
 
   DISALLOW_COPY_AND_ASSIGN(IdleDetector);
 };

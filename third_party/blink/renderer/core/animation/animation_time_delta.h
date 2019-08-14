@@ -5,15 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATION_TIME_DELTA_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATION_TIME_DELTA_H_
 
+#include "third_party/blink/renderer/core/animation/buildflags.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 #include <limits>
 #include <ostream>
-
-#if defined(BLINK_ANIMATION_USE_TIME_DELTA)
-
-#endif
 
 namespace blink {
 
@@ -27,7 +24,7 @@ namespace blink {
 // double-precision. The second mode uses base::TimeDelta to represent time
 // instead.
 
-#if !defined(BLINK_ANIMATION_USE_TIME_DELTA)
+#if !BUILDFLAG(BLINK_ANIMATION_USE_TIME_DELTA)
 
 // The double-based version of AnimationTimeDelta. Internally, time is stored as
 // double-precision seconds.
@@ -105,7 +102,7 @@ bool CORE_EXPORT operator<=(const AnimationTimeDelta& lhs,
 CORE_EXPORT std::ostream& operator<<(std::ostream& os,
                                      const AnimationTimeDelta& time);
 
-#else  // !defined(BLINK_ANIMATION_USE_TIME_DELTA)
+#else  // !BUILDFLAG(BLINK_ANIMATION_USE_TIME_DELTA)
 
 // When compiling in TimeDelta-based mode, AnimationTimeDelta is equivalent to
 // base::TimeDelta.

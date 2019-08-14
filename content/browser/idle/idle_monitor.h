@@ -17,6 +17,7 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "ui/base/idle/idle.h"
 #include "url/origin.h"
@@ -25,7 +26,7 @@ namespace content {
 
 class CONTENT_EXPORT IdleMonitor : public base::LinkNode<IdleMonitor> {
  public:
-  IdleMonitor(blink::mojom::IdleMonitorPtr monitor,
+  IdleMonitor(mojo::PendingRemote<blink::mojom::IdleMonitor> monitor,
               blink::mojom::IdleStatePtr last_state,
               base::TimeDelta threshold);
   ~IdleMonitor();

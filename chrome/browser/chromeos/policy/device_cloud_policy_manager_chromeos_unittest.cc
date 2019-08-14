@@ -216,8 +216,8 @@ class DeviceCloudPolicyManagerChromeOSTest
   CreateAttestationFlow() {
     mock_ = new StrictMock<chromeos::attestation::MockAttestationFlow>();
     if (ShouldRegisterWithCert()) {
-      EXPECT_CALL(*mock_, GetCertificate(_, _, _, _, _))
-          .WillOnce(WithArgs<4>(Invoke(CertCallbackSuccess)));
+      EXPECT_CALL(*mock_, GetCertificate(_, _, _, _, _, _))
+          .WillOnce(WithArgs<5>(Invoke(CertCallbackSuccess)));
     }
     return mock_;
   }
@@ -876,7 +876,7 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, DisableMachineCertReq) {
   EXPECT_CALL(*mock_, GetCertificate(
                           chromeos::attestation::AttestationCertificateProfile::
                               PROFILE_ENTERPRISE_MACHINE_CERTIFICATE,
-                          _, _, _, _))
+                          _, _, _, _, _))
       .Times(0);
 
   RunTest();

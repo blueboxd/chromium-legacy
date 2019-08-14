@@ -253,6 +253,13 @@ void ArcImeService::OnWindowPropertyChanged(aura::Window* window,
   }
 }
 
+void ArcImeService::OnWindowRemoved(aura::Window* removed_window) {
+  // |this| can lose the IME focus because |focused_arc_window_| may have
+  // children other than ExoSurface e.g. WebContentsViewAura for CustomTabs.
+  // Restore the IME focus when such a window is removed.
+  ReattachInputMethod(nullptr, focused_arc_window_);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Overridden from exo::WMHelper::FocusChangeObserver:
 

@@ -14,6 +14,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/apps/app_service/dip_px_util.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
 #include "chrome/browser/extensions/chrome_app_icon_loader.h"
@@ -28,6 +29,7 @@
 #include "extensions/grit/extensions_browser_resources.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -84,6 +86,36 @@ std::vector<uint8_t> CompressedDataFromResource(
   return ReadFileAsCompressedData(path);
 }
 
+// Encode the ImageSkia to the compressed PNG data with the image's 1.0f scale
+// factor representation. Return the encoded PNG data.
+//
+// This function should not be called on the UI thread.
+std::vector<uint8_t> EncodeImage(const gfx::ImageSkia image) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+
+  std::vector<uint8_t> image_data;
+
+  const gfx::ImageSkiaRep& image_skia_rep = image.GetRepresentation(1.0f);
+  if (image_skia_rep.scale() != 1.0f) {
+    return image_data;
+  }
+
+  const SkBitmap& bitmap = image_skia_rep.GetBitmap();
+  if (bitmap.drawsNothing()) {
+    return image_data;
+  }
+
+  base::AssertLongCPUWorkAllowed();
+  constexpr bool discard_transparency = false;
+  bool success = gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, discard_transparency,
+                                                   &image_data);
+  if (!success) {
+    return std::vector<uint8_t>();
+  }
+  return image_data;
+}
+
 // Runs |callback| passing an IconValuePtr with a compressed image: a
 // std::vector<uint8_t>.
 //
@@ -95,15 +127,6 @@ void RunCallbackWithCompressedData(
     apps::IconEffects icon_effects,
     apps::mojom::Publisher::LoadIconCallback callback,
     std::vector<uint8_t> data) {
-  // TODO(crbug.com/826982): if icon_effects is non-zero, we should arguably
-  // decompress the image, apply the icon_effects, and recompress the
-  // post-processed image.
-  //
-  // Even if there are no icon_effects, we might also want to do this if the
-  // size_hint_in_dip doesn't match the compressed image's pixel size. This
-  // isn't trivial, though, as determining the compressed image's pixel size
-  // might involve a sandboxed decoder process.
-
   if (!data.empty()) {
     apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
     iv->icon_compression = apps::mojom::IconCompression::kCompressed;
@@ -127,7 +150,6 @@ void RunCallbackWithCompressedDataFromExtension(
     int size_hint_in_dip,
     int default_icon_resource,
     bool is_placeholder_icon,
-    apps::IconEffects icon_effects,
     apps::mojom::Publisher::LoadIconCallback callback) {
   // Load some component extensions' icons from statically compiled
   // resources (built into the Chrome binary), and other extensions'
@@ -141,11 +163,9 @@ void RunCallbackWithCompressedDataFromExtension(
   // compressed icons (i.e. PNG-formatted data), not uncompressed
   // (i.e. a gfx::ImageSkia).
 
-  const gfx::Size dip_size = gfx::Size(size_hint_in_dip, size_hint_in_dip);
-  float scale =
-      ui::GetScaleForScaleFactor(apps_util::GetPrimaryDisplayUIScaleFactor());
-  int size_hint_in_px = gfx::ScaleToFlooredSize(dip_size, scale).width();
-
+  constexpr bool quantize_to_supported_scale_factor = true;
+  int size_hint_in_px = apps_util::ConvertDipToPx(
+      size_hint_in_dip, quantize_to_supported_scale_factor);
   extensions::ExtensionResource ext_resource =
       extensions::IconsInfo::GetIconResource(extension, size_hint_in_px,
                                              ExtensionIconSet::MATCH_BIGGER);
@@ -163,7 +183,7 @@ void RunCallbackWithCompressedDataFromExtension(
               resource_id);
       RunCallbackWithCompressedData(
           size_hint_in_dip, default_icon_resource, is_placeholder_icon,
-          icon_effects, std::move(callback),
+          apps::IconEffects::kNone, std::move(callback),
           std::vector<uint8_t>(data.begin(), data.end()));
       return;
     }
@@ -174,69 +194,85 @@ void RunCallbackWithCompressedDataFromExtension(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&CompressedDataFromResource, std::move(ext_resource)),
       base::BindOnce(&RunCallbackWithCompressedData, size_hint_in_dip,
-                     default_icon_resource, is_placeholder_icon, icon_effects,
-                     std::move(callback)));
+                     default_icon_resource, is_placeholder_icon,
+                     apps::IconEffects::kNone, std::move(callback)));
 }
 
 // Runs |callback| passing an IconValuePtr with an uncompressed image: an
 // ImageSkia.
 //
 // It will fall back to the |default_icon_resource| if the image is null.
-void RunCallbackWithUncompressedImageSkia(
-    int size_hint_in_dip,
-    int default_icon_resource,
-    bool is_placeholder_icon,
-    apps::IconEffects icon_effects,
-    apps::mojom::Publisher::LoadIconCallback callback,
-    const gfx::ImageSkia image) {
+void RunCallbackWithImageSkia(int size_hint_in_dip,
+                              int default_icon_resource,
+                              bool is_placeholder_icon,
+                              apps::IconEffects icon_effects,
+                              apps::mojom::IconCompression icon_compression,
+                              apps::mojom::Publisher::LoadIconCallback callback,
+                              const gfx::ImageSkia image) {
   if (!image.isNull()) {
-    apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
-    iv->icon_compression = apps::mojom::IconCompression::kUncompressed;
-    iv->uncompressed = image;
-    iv->is_placeholder_icon = is_placeholder_icon;
-    if (icon_effects && !iv->uncompressed.isNull()) {
-      ApplyIconEffects(icon_effects, size_hint_in_dip, &iv->uncompressed);
+    gfx::ImageSkia processed_image = image;
+
+    // Apply the icon effects on the uncompressed data. If the caller requests
+    // an uncompressed icon, return the uncompressed result; otherwise, encode
+    // the icon to a compressed icon, return the compressed result.
+    if (icon_effects) {
+      ApplyIconEffects(icon_effects, size_hint_in_dip, &processed_image);
     }
-    std::move(callback).Run(std::move(iv));
+
+    if (icon_compression == apps::mojom::IconCompression::kUncompressed) {
+      apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
+      iv->icon_compression = apps::mojom::IconCompression::kUncompressed;
+      iv->uncompressed = processed_image;
+      iv->is_placeholder_icon = is_placeholder_icon;
+      std::move(callback).Run(std::move(iv));
+      return;
+    }
+
+    processed_image.MakeThreadSafe();
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(&EncodeImage, processed_image),
+        base::BindOnce(&RunCallbackWithCompressedData, size_hint_in_dip,
+                       default_icon_resource, is_placeholder_icon, icon_effects,
+                       std::move(callback)));
     return;
   }
+
   if (default_icon_resource) {
-    LoadIconFromResource(apps::mojom::IconCompression::kUncompressed,
-                         size_hint_in_dip, default_icon_resource,
-                         is_placeholder_icon, icon_effects,
-                         std::move(callback));
+    LoadIconFromResource(icon_compression, size_hint_in_dip,
+                         default_icon_resource, is_placeholder_icon,
+                         icon_effects, std::move(callback));
     return;
   }
   std::move(callback).Run(apps::mojom::IconValue::New());
 }
 
-// Runs |callback| passing an IconValuePtr with an uncompressed image: an
-// Image.
-void RunCallbackWithUncompressedImage(
-    int size_hint_in_dip,
-    int default_icon_resource,
-    bool is_placeholder_icon,
-    apps::IconEffects icon_effects,
-    apps::mojom::Publisher::LoadIconCallback callback,
-    const gfx::Image& image) {
-  RunCallbackWithUncompressedImageSkia(
-      size_hint_in_dip, default_icon_resource, is_placeholder_icon,
-      icon_effects, std::move(callback), image.AsImageSkia());
+// Given a gfx::Image |image|, runs |callback| passing image.AsImageSkia().
+void RunCallbackWithImage(int size_hint_in_dip,
+                          int default_icon_resource,
+                          bool is_placeholder_icon,
+                          apps::IconEffects icon_effects,
+                          apps::mojom::IconCompression icon_compression,
+                          apps::mojom::Publisher::LoadIconCallback callback,
+                          const gfx::Image& image) {
+  RunCallbackWithImageSkia(size_hint_in_dip, default_icon_resource,
+                           is_placeholder_icon, icon_effects, icon_compression,
+                           std::move(callback), image.AsImageSkia());
 }
 
 // Runs |callback| passing an IconValuePtr with an uncompressed image: a
 // SkBitmap.
-void RunCallbackWithUncompressedSkBitmap(
-    int size_hint_in_dip,
-    bool is_placeholder_icon,
-    apps::IconEffects icon_effects,
-    apps::mojom::Publisher::LoadIconCallback callback,
-    const SkBitmap& bitmap) {
+void RunCallbackWithSkBitmap(int size_hint_in_dip,
+                             bool is_placeholder_icon,
+                             apps::IconEffects icon_effects,
+                             apps::mojom::IconCompression icon_compression,
+                             apps::mojom::Publisher::LoadIconCallback callback,
+                             const SkBitmap& bitmap) {
   constexpr int default_icon_resource = 0;
   gfx::ImageSkia image = gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, 0.0f));
-  RunCallbackWithUncompressedImageSkia(size_hint_in_dip, default_icon_resource,
-                                       is_placeholder_icon, icon_effects,
-                                       std::move(callback), image);
+  RunCallbackWithImageSkia(size_hint_in_dip, default_icon_resource,
+                           is_placeholder_icon, icon_effects, icon_compression,
+                           std::move(callback), image);
 }
 
 // Runs |callback| after converting (in a separate sandboxed process) from a
@@ -267,8 +303,9 @@ void RunCallbackWithFallback(
       content::GetSystemConnector(), data,
       data_decoder::mojom::ImageCodec::DEFAULT, false,
       data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
-      base::BindOnce(&RunCallbackWithUncompressedSkBitmap, size_hint_in_dip,
-                     is_placeholder_icon, icon_effects, std::move(callback)));
+      base::BindOnce(&RunCallbackWithSkBitmap, size_hint_in_dip,
+                     is_placeholder_icon, icon_effects, icon_compression,
+                     std::move(callback)));
 }
 
 }  // namespace
@@ -296,19 +333,25 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
       case apps::mojom::IconCompression::kUnknown:
         break;
 
-      case apps::mojom::IconCompression::kUncompressed: {
+      case apps::mojom::IconCompression::kUncompressed:
+      case apps::mojom::IconCompression::kCompressed: {
+        if (icon_compression == apps::mojom::IconCompression::kCompressed &&
+            icon_effects == IconEffects::kNone) {
+          RunCallbackWithCompressedDataFromExtension(
+              extension, size_hint_in_dip, default_icon_resource,
+              is_placeholder_icon, std::move(callback));
+          return;
+        }
+
+        // If |icon_effects| are requested, we must always load the
+        // uncompressed image to apply the icon effects, and then re-encode the
+        // image if the compressed icon is requested.
         extensions::ImageLoader::Get(context)->LoadImageAtEveryScaleFactorAsync(
             extension, gfx::Size(size_hint_in_dip, size_hint_in_dip),
-            base::BindOnce(&RunCallbackWithUncompressedImage, size_hint_in_dip,
+            base::BindOnce(&RunCallbackWithImage, size_hint_in_dip,
                            default_icon_resource, is_placeholder_icon,
-                           icon_effects, std::move(callback)));
-        return;
-      }
-
-      case apps::mojom::IconCompression::kCompressed: {
-        RunCallbackWithCompressedDataFromExtension(
-            extension, size_hint_in_dip, default_icon_resource,
-            is_placeholder_icon, icon_effects, std::move(callback));
+                           icon_effects, icon_compression,
+                           std::move(callback)));
         return;
       }
     }
@@ -366,27 +409,32 @@ void LoadIconFromResource(apps::mojom::IconCompression icon_compression,
       case apps::mojom::IconCompression::kUnknown:
         break;
 
-      case apps::mojom::IconCompression::kUncompressed: {
+      case apps::mojom::IconCompression::kUncompressed:
+      case apps::mojom::IconCompression::kCompressed: {
+        if (icon_compression == apps::mojom::IconCompression::kCompressed &&
+            icon_effects == IconEffects::kNone) {
+          base::StringPiece data =
+              ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+                  resource_id);
+          RunCallbackWithCompressedData(
+              size_hint_in_dip, default_icon_resource, is_placeholder_icon,
+              icon_effects, std::move(callback),
+              std::vector<uint8_t>(data.begin(), data.end()));
+          return;
+        }
+
+        // If |icon_effects| are requested, we must always load the
+        // uncompressed image to apply the icon effects, and then re-encode the
+        // image if the compressed icon is requested.
         gfx::ImageSkia* unscaled =
             ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                 resource_id);
-        RunCallbackWithUncompressedImageSkia(
+        RunCallbackWithImageSkia(
             size_hint_in_dip, default_icon_resource, is_placeholder_icon,
-            icon_effects, std::move(callback),
+            icon_effects, icon_compression, std::move(callback),
             gfx::ImageSkiaOperations::CreateResizedImage(
                 *unscaled, skia::ImageOperations::RESIZE_BEST,
                 gfx::Size(size_hint_in_dip, size_hint_in_dip)));
-        return;
-      }
-
-      case apps::mojom::IconCompression::kCompressed: {
-        base::StringPiece data =
-            ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-                resource_id);
-        RunCallbackWithCompressedData(
-            size_hint_in_dip, default_icon_resource, is_placeholder_icon,
-            icon_effects, std::move(callback),
-            std::vector<uint8_t>(data.begin(), data.end()));
         return;
       }
     }

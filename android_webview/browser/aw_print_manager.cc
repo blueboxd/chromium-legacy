@@ -64,7 +64,7 @@ AwPrintManager::~AwPrintManager() = default;
 
 void AwPrintManager::PdfWritingDone(int page_count) {
   if (pdf_writing_done_callback_)
-    pdf_writing_done_callback_.Run(page_count);
+    std::move(pdf_writing_done_callback_).Run(page_count);
   // Invalidate the file descriptor so it doesn't get reused.
   fd_ = -1;
 }
@@ -123,13 +123,14 @@ void AwPrintManager::OnDidPrintDocument(
     return;
   }
 
+  DCHECK(pdf_writing_done_callback_);
   base::PostTaskAndReplyWithResult(
       base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
                               base::TaskPriority::BEST_EFFORT,
                               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})
           .get(),
-      FROM_HERE, base::BindRepeating(&SaveDataToFd, fd_, number_pages_, data),
-      pdf_writing_done_callback_);
+      FROM_HERE, base::BindOnce(&SaveDataToFd, fd_, number_pages_, data),
+      std::move(pdf_writing_done_callback_));
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(AwPrintManager)

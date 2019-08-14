@@ -393,7 +393,7 @@ void LocalFileWriter::OnGetTargetDirectoryResult(
   PostTaskAndReplyWithResult(
       file_task_runner_.get(), FROM_HERE,
       base::BindOnce(&base::GetUniquePathNumber, temp_filepath,
-                     base::FilePath::StringType()),
+                     base::FilePath::StringPieceType()),
       base::BindOnce(&LocalFileWriter::CreateTempFile,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      temp_filepath));
@@ -492,7 +492,7 @@ void LocalFileWriter::OnCloseResult(Callback callback,
   base::PostTaskAndReplyWithResult(
       file_task_runner_.get(), FROM_HERE,
       base::BindOnce(&base::GetUniquePathNumber, destination_filepath_,
-                     base::FilePath::StringType()),
+                     base::FilePath::StringPieceType()),
       base::BindOnce(&LocalFileWriter::MoveToDestination,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

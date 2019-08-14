@@ -134,6 +134,8 @@ namespace {
 
 const GURL kURL("http://foo.com");
 const GURL kOtherURL("http://other.com");
+const url::Origin kOrigin = url::Origin::Create(kURL);
+const url::Origin kOtherOrigin = url::Origin::Create(kOtherURL);
 constexpr char kMockHost[] = "mock.host";
 constexpr char kCustomProxyResponse[] = "CustomProxyResponse";
 constexpr int kProcessId = 11;
@@ -3233,7 +3235,7 @@ TEST_F(NetworkContextTest, PrivacyModeDisabledByDefault) {
 
   EXPECT_FALSE(network_context->url_request_context()
                    ->network_delegate()
-                   ->ForcePrivacyMode(kURL, kOtherURL));
+                   ->ForcePrivacyMode(kURL, kOtherURL, kOtherOrigin));
 }
 
 TEST_F(NetworkContextTest, PrivacyModeEnabledIfCookiesBlocked) {
@@ -3244,10 +3246,10 @@ TEST_F(NetworkContextTest, PrivacyModeEnabledIfCookiesBlocked) {
                     network_context.get());
   EXPECT_TRUE(network_context->url_request_context()
                   ->network_delegate()
-                  ->ForcePrivacyMode(kURL, kOtherURL));
+                  ->ForcePrivacyMode(kURL, kOtherURL, kOtherOrigin));
   EXPECT_FALSE(network_context->url_request_context()
                    ->network_delegate()
-                   ->ForcePrivacyMode(kOtherURL, kURL));
+                   ->ForcePrivacyMode(kOtherURL, kURL, kOrigin));
 }
 
 TEST_F(NetworkContextTest, PrivacyModeDisabledIfCookiesAllowed) {
@@ -3258,7 +3260,7 @@ TEST_F(NetworkContextTest, PrivacyModeDisabledIfCookiesAllowed) {
                     network_context.get());
   EXPECT_FALSE(network_context->url_request_context()
                    ->network_delegate()
-                   ->ForcePrivacyMode(kURL, kOtherURL));
+                   ->ForcePrivacyMode(kURL, kOtherURL, kOtherOrigin));
 }
 
 TEST_F(NetworkContextTest, PrivacyModeDisabledIfCookiesSettingForOtherURL) {
@@ -3270,7 +3272,7 @@ TEST_F(NetworkContextTest, PrivacyModeDisabledIfCookiesSettingForOtherURL) {
                     network_context.get());
   EXPECT_FALSE(network_context->url_request_context()
                    ->network_delegate()
-                   ->ForcePrivacyMode(kURL, kOtherURL));
+                   ->ForcePrivacyMode(kURL, kOtherURL, kOtherOrigin));
 }
 
 TEST_F(NetworkContextTest, PrivacyModeEnabledIfThirdPartyCookiesBlocked) {
@@ -3280,12 +3282,12 @@ TEST_F(NetworkContextTest, PrivacyModeEnabledIfThirdPartyCookiesBlocked) {
       network_context->url_request_context()->network_delegate();
 
   network_context->cookie_manager()->BlockThirdPartyCookies(true);
-  EXPECT_TRUE(delegate->ForcePrivacyMode(kURL, kOtherURL));
-  EXPECT_FALSE(delegate->ForcePrivacyMode(kURL, kURL));
+  EXPECT_TRUE(delegate->ForcePrivacyMode(kURL, kOtherURL, kOtherOrigin));
+  EXPECT_FALSE(delegate->ForcePrivacyMode(kURL, kURL, kOrigin));
 
   network_context->cookie_manager()->BlockThirdPartyCookies(false);
-  EXPECT_FALSE(delegate->ForcePrivacyMode(kURL, kOtherURL));
-  EXPECT_FALSE(delegate->ForcePrivacyMode(kURL, kURL));
+  EXPECT_FALSE(delegate->ForcePrivacyMode(kURL, kOtherURL, kOtherOrigin));
+  EXPECT_FALSE(delegate->ForcePrivacyMode(kURL, kURL, kOrigin));
 }
 
 TEST_F(NetworkContextTest, CanSetCookieFalseIfCookiesBlocked) {
@@ -5564,6 +5566,7 @@ TEST_F(NetworkContextTest, AllowAllCookies) {
   ResourceRequest first_party_request;
   first_party_request.url = server_url;
   first_party_request.site_for_cookies = first_party_url;
+  first_party_request.top_frame_origin = url::Origin::Create(first_party_url);
 
   std::unique_ptr<TestURLLoaderClient> client = FetchRequest(
       first_party_request, network_context.get(), url_loader_options);
@@ -5577,6 +5580,7 @@ TEST_F(NetworkContextTest, AllowAllCookies) {
   ResourceRequest third_party_request;
   third_party_request.url = server_url;
   third_party_request.site_for_cookies = third_party_url;
+  third_party_request.top_frame_origin = url::Origin::Create(third_party_url);
 
   client = FetchRequest(third_party_request, network_context.get(),
                         url_loader_options);
@@ -5608,6 +5612,7 @@ TEST_F(NetworkContextTest, BlockThirdPartyCookies) {
   ResourceRequest first_party_request;
   first_party_request.url = server_url;
   first_party_request.site_for_cookies = first_party_url;
+  first_party_request.top_frame_origin = url::Origin::Create(first_party_url);
 
   std::unique_ptr<TestURLLoaderClient> client = FetchRequest(
       first_party_request, network_context.get(), url_loader_options);
@@ -5621,6 +5626,7 @@ TEST_F(NetworkContextTest, BlockThirdPartyCookies) {
   ResourceRequest third_party_request;
   third_party_request.url = server_url;
   third_party_request.site_for_cookies = third_party_url;
+  third_party_request.top_frame_origin = url::Origin::Create(third_party_url);
 
   client = FetchRequest(third_party_request, network_context.get(),
                         url_loader_options);
@@ -5652,6 +5658,7 @@ TEST_F(NetworkContextTest, BlockAllCookies) {
   ResourceRequest first_party_request;
   first_party_request.url = server_url;
   first_party_request.site_for_cookies = first_party_url;
+  first_party_request.top_frame_origin = url::Origin::Create(first_party_url);
 
   std::unique_ptr<TestURLLoaderClient> client = FetchRequest(
       first_party_request, network_context.get(), url_loader_options);
@@ -5665,6 +5672,7 @@ TEST_F(NetworkContextTest, BlockAllCookies) {
   ResourceRequest third_party_request;
   third_party_request.url = server_url;
   third_party_request.site_for_cookies = third_party_url;
+  third_party_request.top_frame_origin = url::Origin::Create(third_party_url);
 
   client = FetchRequest(third_party_request, network_context.get(),
                         url_loader_options);

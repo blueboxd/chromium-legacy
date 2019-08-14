@@ -167,7 +167,7 @@ void AppShortcutManager::UpdateShortcutsForAllAppsIfNeeded() {
   if (last_version >= kCurrentAppShortcutsVersion)
     return;
 
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&AppShortcutManager::UpdateShortcutsForAllAppsNow,
                      weak_ptr_factory_.GetWeakPtr()),

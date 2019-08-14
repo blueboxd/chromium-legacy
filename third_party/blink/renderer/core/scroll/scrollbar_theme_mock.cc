@@ -75,7 +75,8 @@ void ScrollbarThemeMock::PaintThumb(GraphicsContext& context,
 
 void ScrollbarThemeMock::PaintScrollCorner(GraphicsContext& context,
                                            const DisplayItemClient& scrollbar,
-                                           const IntRect& corner_rect) {
+                                           const IntRect& corner_rect,
+                                           WebColorScheme color_scheme) {
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           context, scrollbar, DisplayItem::kScrollbarCorner))
     return;

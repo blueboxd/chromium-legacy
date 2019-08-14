@@ -173,16 +173,19 @@ void V4L2RequestDecodeSurface::PrepareQueueBuffer(
 
   buffer->request_fd = request_fd_;
   buffer->flags |= V4L2_BUF_FLAG_REQUEST_FD;
-  // Copy the buffer index as the timestamp.
+  // Use the output buffer index as the timestamp.
+  // Since the client is supposed to keep the output buffer out of the V4L2
+  // queue for as long as it is used as a reference frame, this ensures that
+  // all the requests we submit have unique IDs at any point in time.
   DCHECK_EQ(static_cast<int>(buffer->index), input_record());
   buffer->timestamp.tv_sec = 0;
-  buffer->timestamp.tv_usec = buffer->index;
+  buffer->timestamp.tv_usec = output_record();
 }
 
 uint64_t V4L2RequestDecodeSurface::GetReferenceID() const {
   // Convert the input buffer ID to what the internal representation of
   // the timestamp we submitted will be (tv_usec * 1000).
-  return input_record() * 1000;
+  return output_record() * 1000;
 }
 
 bool V4L2RequestDecodeSurface::Submit() const {

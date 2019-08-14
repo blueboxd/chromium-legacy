@@ -184,8 +184,7 @@ void WebRtcLocalEventLogManager::StartLogFile(const PeerConnectionKey& key) {
 
   // In the unlikely case that this filename is already taken, find a unique
   // number to append to the filename, if possible.
-  int unique_number =
-      base::GetUniquePathNumber(file_path, base::FilePath::StringType());
+  int unique_number = base::GetUniquePathNumber(file_path);
   if (unique_number < 0) {
     return;  // No available file path was found.
   } else if (unique_number != 0) {

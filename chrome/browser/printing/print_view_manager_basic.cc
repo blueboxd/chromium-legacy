@@ -26,7 +26,7 @@ PrintViewManagerBasic::~PrintViewManagerBasic() = default;
 #if defined(OS_ANDROID)
 void PrintViewManagerBasic::PdfWritingDone(int page_count) {
   if (pdf_writing_done_callback_)
-    pdf_writing_done_callback_.Run(page_count);
+    std::move(pdf_writing_done_callback_).Run(page_count);
 }
 #endif
 

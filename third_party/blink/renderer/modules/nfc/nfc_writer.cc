@@ -116,7 +116,7 @@ void NFCWriter::OnMojoConnectionError() {
   // default error.
   for (ScriptPromiseResolver* resolver : requests_) {
     resolver->Reject(NFCErrorTypeToDOMException(
-        device::mojom::blink::NFCErrorType::NOT_READABLE));
+        device::mojom::blink::NFCErrorType::NOT_SUPPORTED));
   }
   requests_.clear();
 }

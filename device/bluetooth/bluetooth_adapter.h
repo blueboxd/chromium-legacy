@@ -16,12 +16,14 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_discovery_filter.h"
 #include "device/bluetooth/bluetooth_export.h"
 
 namespace base {
@@ -342,6 +344,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       base::OnceCallback<void(/*is_error*/ bool,
                               UMABluetoothDiscoverySessionOutcome)>;
 
+  enum class DiscoveryState {
+    kStarting = 0,
+    kStopping,
+    kDiscovering,
+    kIdle,
+  };
+
   // Returns a weak pointer to a new adapter.  For platforms with asynchronous
   // initialization, the returned adapter will run the |init_callback| once
   // asynchronous initialization is complete.
@@ -467,12 +476,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 
   // Return all discovery filters assigned to this adapter merged together.
   std::unique_ptr<BluetoothDiscoveryFilter> GetMergedDiscoveryFilter() const;
-
-  // Works like GetMergedDiscoveryFilter, but doesn't take |masked_filter| into
-  // account. |masked_filter| is compared by pointer, and must be a member of
-  // active session.
-  std::unique_ptr<BluetoothDiscoveryFilter> GetMergedDiscoveryFilterMasked(
-      BluetoothDiscoveryFilter* masked_filter) const;
 
   // Requests the list of devices from the adapter. All devices are returned,
   // including those currently connected, those paired and all devices returned
@@ -616,6 +619,28 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // The timeout in seconds used by RemoveTimedOutDevices.
   static const base::TimeDelta timeoutSec;
 
+  // This struct is meant to hold any possible callback from a discovery
+  // request. The purpose of this is to consolidate all discovery request
+  // callbacks into one array that can be handled all at once when the state
+  // desired from all requests is achieved or an error is thrown.
+  struct StartOrStopDiscoveryCallback {
+    StartOrStopDiscoveryCallback(base::OnceClosure start_callback,
+                                 ErrorCallback start_error_callback);
+    StartOrStopDiscoveryCallback(
+        base::Closure stop_callback,
+        DiscoverySessionErrorCallback stop_error_callback);
+    ~StartOrStopDiscoveryCallback();
+
+    // The success callback for a start discovery request
+    base::OnceClosure start_callback;
+    // The success callback for a stop discovery request
+    base::Closure stop_callback;
+    // The error callback for a start discovery request
+    ErrorCallback start_error_callback;
+    // The error callback for a stop discovery request
+    DiscoverySessionErrorCallback stop_error_callback;
+  };
+
  protected:
   friend class base::RefCounted<BluetoothAdapter>;
   friend class BluetoothDiscoverySession;
@@ -625,6 +650,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       std::unordered_map<std::string, std::unique_ptr<BluetoothDevice>>;
   using PairingDelegatePair =
       std::pair<BluetoothDevice::PairingDelegate*, PairingDelegatePriority>;
+
+  using CallbackQueue =
+      base::queue<std::unique_ptr<StartOrStopDiscoveryCallback>>;
 
   // Implementations on Android and macOS need to store pending SetPowered()
   // callbacks until an appropriate event is received, due to a lack of blocking
@@ -670,40 +698,31 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   //    - When finished it should call the callback with success or the
   //      appropriate output for an error
   //
-  // On a call to RemoveDiscoverySession:
-  //    - If there is a pending request to the subsystem, queue this request to
-  //      execute once the pending requests are done.
-  //    - If the count is 0, return failure, as there is no active discovery
-  //      session.
-  //    - If the count is 1, issue a request to the subsystem to stop device
-  //      discovery and decrement the count to 0 on success.
-  //    - If the count is greater than 1, decrement the count and return
-  //      success.
-  //
-  // |discovery_filter| passed to AddDiscoverySession and RemoveDiscoverySession
-  // is owned by other objects and shall not be freed.  When the count is
-  // greater than 0 and AddDiscoverySession or RemoveDiscoverySession is called
-  // the filter being used by the underlying controller must be updated.
-  //
-  // These methods invoke |callback| for success and |error_callback| for
-  // failures.
+  // On a call to StopScan:
+  //    - Make a request to the physical adapter that we no longer needs to
+  //      be scanning
+  //    - When finished it should callback with success.  If an error is thrown
+  //      we still return success to the user and update our internal state to
+  //      say that we are not discovering.
+
   virtual void StartScanWithFilter(
       std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
       DiscoverySessionResultCallback callback) = 0;
   virtual void UpdateFilter(
       std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
       DiscoverySessionResultCallback callback) = 0;
-  virtual void RemoveDiscoverySession(
-      BluetoothDiscoveryFilter* discovery_filter,
-      const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) = 0;
+  virtual void StopScan(DiscoverySessionResultCallback callback) = 0;
 
-  // Used to set and update the discovery filter used by the underlying
-  // Bluetooth controller.
-  virtual void SetDiscoveryFilter(
+  // Removes the |discovery_session| from |discovery_sessions_| and updates
+  // accordingly
+  void RemoveDiscoverySession(BluetoothDiscoverySession* discovery_session,
+                              const base::Closure& callback,
+                              DiscoverySessionErrorCallback error_callback);
+  // Helper function that short circuits a successful callback if the filter is
+  // the same as the current filter.
+  void MaybeUpdateFilter(
       std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
-      const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) = 0;
+      DiscoverySessionResultCallback callback);
 
   // Called by RemovePairingDelegate() in order to perform any class-specific
   // internal functionality necessary to remove the pairing delegate, such as
@@ -711,27 +730,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   virtual void RemovePairingDelegateInternal(
       BluetoothDevice::PairingDelegate* pairing_delegate) = 0;
 
-  // Success callback passed to AddDiscoverySession by StartDiscoverySession.
-  void OnStartDiscoverySession(
-      std::unique_ptr<BluetoothDiscoverySession> discovery_session,
-      const DiscoverySessionCallback& callback);
-
-  // Error callback passed to AddDiscoverySession by StartDiscoverySession.
-  void OnStartDiscoverySessionError(
-      std::unique_ptr<BluetoothDiscoverySession> discovery_session,
-      const ErrorCallback& callback,
-      UMABluetoothDiscoverySessionOutcome outcome);
-
   // Marks all known DiscoverySession instances as inactive. Called by
   // BluetoothAdapter in the event that the adapter unexpectedly stops
   // discovering. This should be called by all platform implementations.
   void MarkDiscoverySessionsAsInactive();
-
-  // Removes |discovery_session| from |discovery_sessions_|, if its in there.
-  // Called by DiscoverySession when an instance is destroyed or becomes
-  // inactive.
-  void DiscoverySessionBecameInactive(
-      BluetoothDiscoverySession* discovery_session);
 
   void DeleteDeviceForTesting(const std::string& address);
 
@@ -778,22 +780,43 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   static void RecordBluetoothDiscoverySessionStopOutcome(
       UMABluetoothDiscoverySessionOutcome outcome);
 
-  // An adapter between DiscoverySessionResultCallback and
-  // DiscoverySessionCallback that calls either OnStartDiscoverySession() or
-  // OnStartDiscoverySessionError() based on the outcome of starting
-  // |discovery_session|.
-  void OnStartDiscoverySessionCallback(
-      std::unique_ptr<BluetoothDiscoverySession> discovery_session,
-      const DiscoverySessionCallback& callback,
-      const ErrorCallback& error_callback,
-      bool is_error,
-      UMABluetoothDiscoverySessionOutcome outcome);
+  // This is the callback for all OS level calls to StartScanWithFilter,
+  // UpdateFilter, and StopScan.  It updates the state accordingly, calls all
+  // appropriate callbacks, and calls ProcessDiscoveryQueue().
+  void OnDiscoveryChangeComplete(bool is_error,
+                                 UMABluetoothDiscoverySessionOutcome outcome);
 
-  // Return all discovery filters assigned to this adapter merged together.
-  // If |omit| is true, |discovery_filter| will not be processed.
-  std::unique_ptr<BluetoothDiscoveryFilter> GetMergedDiscoveryFilterHelper(
-      const BluetoothDiscoveryFilter* discovery_filter,
-      bool omit) const;
+  // This method processes all queued requests that have been waiting for a
+  // process to finish.
+  void ProcessDiscoveryQueue();
+
+  // Utility method used to call all callbacks in the case of an error in a
+  // process
+  void NotifyDiscoveryError(CallbackQueue queue);
+
+  // Utility function to update our internal state after a process has
+  // completed(example: kStarting -> kDiscovering)
+  void UpdateDiscoveryState(bool is_error);
+
+  // List of callbacks for requests that have been queued up and are awaiting a
+  // process to finish before they can begin the request
+  CallbackQueue discovery_callback_queue_;
+  // List of callbacks whose requests are currently being processed by the OS
+  // level adapter
+  CallbackQueue callbacks_awaiting_response_;
+
+  // Discovery filter currently being used by the adapter
+  device::BluetoothDiscoveryFilter current_discovery_filter_;
+  // Discovery filter that is about to be set in the OS level adapter.  After
+  // the process that is implementing this feature is finished this will become
+  // the |current_discovery_filter_|.
+  device::BluetoothDiscoveryFilter filter_being_set_;
+
+  // True, if there is a pending request to start or stop discovery.
+  bool discovery_request_pending_ = false;
+
+  // enum used to track our internal discovery state.
+  DiscoveryState internal_discovery_state_ = DiscoveryState::kIdle;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

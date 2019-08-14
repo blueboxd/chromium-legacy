@@ -162,12 +162,6 @@ TEST_F(FrameTaskQueueControllerTest, CreateAllTaskQueues) {
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
 
-  // Add best effort task queue.
-  task_queue = frame_task_queue_controller_->BestEffortTaskQueue();
-  EXPECT_FALSE(all_task_queues.Contains(task_queue));
-  all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
-  EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
-
   // Verify that we get all of the queues that we added, and only those queues.
   EXPECT_EQ(all_task_queues.size(),
             frame_task_queue_controller_->GetAllTaskQueuesAndVoters().size());
@@ -245,36 +239,6 @@ TEST_F(FrameTaskQueueControllerTest, CannotRemoveNonResourceLoadingTaskQueues) {
             frame_task_queue_controller_->GetAllTaskQueuesAndVoters().size());
 }
 
-TEST_F(FrameTaskQueueControllerTest, AddAndRetrieveAllNonLoadingTaskQueues) {
-  // Create queues for all combination of queue traits for all combinations of
-  // the 4 QueueTraits bits.
-  WTF::HashSet<scoped_refptr<MainThreadTaskQueue>> all_task_queues;
-  constexpr size_t kTotalUniqueQueueTraits = 1 << 4;
-  for (size_t i = 0; i < kTotalUniqueQueueTraits; i++) {
-    MainThreadTaskQueue::QueueTraits queue_traits =
-        QueueTraits()
-            .SetCanBeThrottled(!!(i & 1 << 0))
-            .SetCanBeDeferred(!!(i & 1 << 1))
-            .SetCanBeFrozen(!!(i & 1 << 2))
-            .SetCanBePaused(!!(i & 1 << 3));
-    scoped_refptr<MainThreadTaskQueue> task_queue =
-        frame_task_queue_controller_->NonLoadingTaskQueue(queue_traits);
-    EXPECT_FALSE(all_task_queues.Contains(task_queue));
-    all_task_queues.insert(task_queue);
-    EXPECT_EQ(task_queue->GetQueueTraits(), queue_traits);
-  }
-  // Make sure we get the same queues back, with matching QueueTraits.
-  EXPECT_EQ(all_task_queues.size(), kTotalUniqueQueueTraits);
-  for (const auto& task_queue : all_task_queues) {
-    scoped_refptr<MainThreadTaskQueue> returned_task_queue =
-        frame_task_queue_controller_->NonLoadingTaskQueue(
-            task_queue->GetQueueTraits());
-    EXPECT_EQ(task_queue->GetQueueTraits(),
-              returned_task_queue->GetQueueTraits());
-    EXPECT_TRUE(task_queue == returned_task_queue);
-  }
-}
-
 TEST_F(FrameTaskQueueControllerTest,
        NonWebSchedulingTaskQueueWebSchedulingPriorityNullopt) {
   scoped_refptr<MainThreadTaskQueue> task_queue =
@@ -340,6 +304,55 @@ TEST_F(FrameTaskQueueControllerTest,
             task_queue2->web_scheduling_priority().value());
 
   EXPECT_NE(task_queue1.get(), task_queue2.get());
+}
+
+class TaskQueueCreationFromQueueTraitsTest :
+    public FrameTaskQueueControllerTest,
+    public testing::WithParamInterface<QueueTraits::PrioritisationType> {};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         TaskQueueCreationFromQueueTraitsTest,
+                         ::testing::Values(
+                            QueueTraits::PrioritisationType::kVeryHigh,
+                            QueueTraits::PrioritisationType::kHigh,
+                            QueueTraits::PrioritisationType::kBestEffort,
+                            QueueTraits::PrioritisationType::kRegular));
+
+TEST_P(TaskQueueCreationFromQueueTraitsTest,
+        AddAndRetrieveAllNonLoadingTaskQueues) {
+  // Create queues for all combination of queue traits for all combinations of
+  // the 6 QueueTraits bits with different PrioritisationTypes.
+  WTF::HashSet<scoped_refptr<MainThreadTaskQueue>> all_task_queues;
+  constexpr size_t kTotalUniqueQueueTraits = 1 << 6;
+  for (size_t i = 0; i < kTotalUniqueQueueTraits; i++) {
+    QueueTraits::PrioritisationType prioritisation_type = GetParam();
+    MainThreadTaskQueue::QueueTraits queue_traits =
+        QueueTraits()
+            .SetCanBeThrottled(!!(i & 1 << 0))
+            .SetCanBeDeferred(!!(i & 1 << 1))
+            .SetCanBeFrozen(!!(i & 1 << 2))
+            .SetCanBePaused(!!(i & 1 << 3))
+            .SetCanRunInBackground(!!(i & 1 << 4))
+            .SetShouldUseVirtualTime(!!(i & 1 << 5))
+            .SetPrioritisationType(prioritisation_type);
+    scoped_refptr<MainThreadTaskQueue> task_queue =
+        frame_task_queue_controller_->NonLoadingTaskQueue(queue_traits);
+    EXPECT_FALSE(all_task_queues.Contains(task_queue));
+    all_task_queues.insert(task_queue);
+    EXPECT_EQ(task_queue->GetQueueTraits(), queue_traits);
+    EXPECT_EQ(task_queue->GetQueueTraits().prioritisation_type,
+              prioritisation_type);
+  }
+  // Make sure we get the same queues back, with matching QueueTraits.
+  EXPECT_EQ(all_task_queues.size(), kTotalUniqueQueueTraits);
+  for (const auto& task_queue : all_task_queues) {
+    scoped_refptr<MainThreadTaskQueue> returned_task_queue =
+        frame_task_queue_controller_->NonLoadingTaskQueue(
+            task_queue->GetQueueTraits());
+    EXPECT_EQ(task_queue->GetQueueTraits(),
+              returned_task_queue->GetQueueTraits());
+    EXPECT_TRUE(task_queue == returned_task_queue);
+  }
 }
 
 }  // namespace scheduler

@@ -80,8 +80,8 @@ class EnrollmentCertificateUploaderTest : public ::testing::Test {
     // Setup expected cert generations. Again use WillOnce(). Cert generation
     // is another costly operation and if it gets triggered more than once
     // during a single pass this indicates a logical problem in the uploader.
-    EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _))
-        .WillOnce(WithArgs<4>(Invoke(CertCallbackSuccess)));
+    EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _, _))
+        .WillOnce(WithArgs<5>(Invoke(CertCallbackSuccess)));
   }
 
   void Run(bool expected_status) {
@@ -111,14 +111,14 @@ TEST_F(EnrollmentCertificateUploaderTest, UnregisteredPolicyClient) {
 }
 
 TEST_F(EnrollmentCertificateUploaderTest, GetCertificateUnspecifiedFailure) {
-  EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _))
-      .WillRepeatedly(WithArgs<4>(Invoke(CertCallbackUnspecifiedFailure)));
+  EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _, _))
+      .WillRepeatedly(WithArgs<5>(Invoke(CertCallbackUnspecifiedFailure)));
   Run(false /* expected_status */);
 }
 
 TEST_F(EnrollmentCertificateUploaderTest, GetCertificateBadRequestFailure) {
-  EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _))
-      .WillOnce(WithArgs<4>(Invoke(CertCallbackBadRequestFailure)));
+  EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _, _))
+      .WillOnce(WithArgs<5>(Invoke(CertCallbackBadRequestFailure)));
   Run(false /* expected_status */);
 }
 

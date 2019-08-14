@@ -118,8 +118,28 @@ class PLATFORM_EXPORT MainThreadTaskQueue
           can_be_paused(false),
           can_be_frozen(false),
           can_run_in_background(true),
-          should_use_virtual_time(false),
-          is_high_priority(false) {}
+          should_use_virtual_time(false) {}
+
+    // Separate enum class for handling prioritisation decisions in task queues.
+    enum class PrioritisationType {
+      kVeryHigh = 0,
+      kHigh = 1,
+      kBestEffort = 2,
+      kRegular = 3,
+
+      kCount = 4
+    };
+
+    // kPrioritisationTypeWidthBits is the number of bits required
+    // for PrioritisationType::kCount - 1, which is the number of bits needed
+    // to represent |prioritisation_type| in QueueTraitKeyType.
+    // We need to update it whenever there is a change in
+    // PrioritisationType::kCount.
+    // TODO(sreejakshetty) make the number of bits calculation automated.
+    static constexpr int kPrioritisationTypeWidthBits = 2;
+    static_assert(static_cast<int>(PrioritisationType::kCount) <=
+                    (1 << kPrioritisationTypeWidthBits),
+                    "Wrong Instanstiation for kPrioritisationTypeWidthBits");
 
     QueueTraits(const QueueTraits&) = default;
 
@@ -153,8 +173,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue
       return *this;
     }
 
-    QueueTraits SetIsHighPriority(bool value) {
-      is_high_priority = value;
+    QueueTraits SetPrioritisationType(PrioritisationType type) {
+      prioritisation_type = type;
       return *this;
     }
 
@@ -165,20 +185,23 @@ class PLATFORM_EXPORT MainThreadTaskQueue
              can_be_frozen == other.can_be_frozen &&
              can_run_in_background == other.can_run_in_background &&
              should_use_virtual_time == other.should_use_virtual_time &&
-             is_high_priority == other.is_high_priority;
+             prioritisation_type == other.prioritisation_type;
     }
 
     // Return a key suitable for WTF::HashMap.
     QueueTraitsKeyType Key() const {
-      // Start at 1; 0 and -1 are used for empty/deleted values.
-      int key = 1 << 0;
-      key |= can_be_deferred << 1;
-      key |= can_be_throttled << 2;
-      key |= can_be_paused << 3;
-      key |= can_be_frozen << 4;
-      key |= can_run_in_background << 5;
-      key |= should_use_virtual_time << 6;
-      key |= is_high_priority << 7;
+      // offset for shifting bits to compute |key|.
+      // |key| starts at 1 since 0 and -1 are used for empty/deleted values.
+      int offset = 0;
+      int key = 1 << (offset++);
+      key |= can_be_deferred << (offset++);
+      key |= can_be_throttled << (offset++);
+      key |= can_be_paused << (offset++);
+      key |= can_be_frozen << (offset++);
+      key |= can_run_in_background << (offset++);
+      key |= should_use_virtual_time << (offset++);
+      key |= static_cast<int>(prioritisation_type) << offset;
+      offset += kPrioritisationTypeWidthBits;
       return key;
     }
 
@@ -188,7 +211,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     bool can_be_frozen : 1;
     bool can_run_in_background : 1;
     bool should_use_virtual_time : 1;
-    bool is_high_priority : 1;
+    PrioritisationType prioritisation_type = PrioritisationType::kRegular;
   };
 
   struct QueueCreationParams {

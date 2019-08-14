@@ -170,7 +170,7 @@ class IdlCompiler(object):
             if obj.inherited is None:
                 return [obj]
             return [obj] + create_inheritance_stack(
-                table.get(obj.inherited.identifier, None), table)
+                table[obj.inherited.identifier], table)
 
         old_interfaces = self._ir_map.find_by_kind(
             IdentifierIRMap.IR.Kind.INTERFACE)

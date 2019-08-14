@@ -58,8 +58,8 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::TaskPriority::BEST_EFFORT});
 
   base::FilePath database_dir(
       context->GetPath().Append(FILE_PATH_LITERAL("Articles")));

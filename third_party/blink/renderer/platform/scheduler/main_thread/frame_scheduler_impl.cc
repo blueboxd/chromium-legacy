@@ -401,10 +401,12 @@ void FrameSchedulerImpl::InitializeTaskTypeQueueTraitsMap(
 base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     TaskType type) {
   // TODO(haraken): Optimize the mapping from TaskTypes to task runners.
+  // TODO(sreejakshetty): Clean up the PrioritisationType QueueTrait and
+  // QueueType for kInternalContinueScriptLoading and kInternalContentCapture.
   switch (type) {
-    // kInternalContentCapture uses BestEffortTaskQueue and is handled
-    // separately.
     case TaskType::kInternalContentCapture:
+      return ThrottleableTaskQueueTraits().SetPrioritisationType(
+            QueueTraits::PrioritisationType::kBestEffort);
     case TaskType::kJavascriptTimer:
       return ThrottleableTaskQueueTraits();
     case TaskType::kInternalLoading:
@@ -455,13 +457,17 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     case TaskType::kInternalMediaRealTime:
     case TaskType::kInternalUserInteraction:
     case TaskType::kInternalIntersectionObserver:
-    case TaskType::kInternalContinueScriptLoading:
       return PausableTaskQueueTraits();
+    case TaskType::kInternalContinueScriptLoading:
+      return PausableTaskQueueTraits().SetPrioritisationType(
+            QueueTraits::PrioritisationType::kVeryHigh);
     case TaskType::kDatabaseAccess:
-      if (base::FeatureList::IsEnabled(kHighPriorityDatabaseTaskType))
-        return PausableTaskQueueTraits().SetIsHighPriority(true);
-      else
+      if (base::FeatureList::IsEnabled(kHighPriorityDatabaseTaskType)) {
+        return PausableTaskQueueTraits().SetPrioritisationType(
+            QueueTraits::PrioritisationType::kHigh);
+      } else {
         return PausableTaskQueueTraits();
+      }
     case TaskType::kInternalFreezableIPC:
       return FreezableTaskQueueTraits();
     case TaskType::kInternalIPC:
@@ -520,16 +526,12 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
 scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::GetTaskQueue(
     TaskType type) {
   switch (type) {
-    case TaskType::kInternalContinueScriptLoading:
-      return frame_task_queue_controller_->VeryHighPriorityTaskQueue();
     case TaskType::kInternalLoading:
     case TaskType::kNetworking:
     case TaskType::kNetworkingWithURLLoaderAnnotation:
       return frame_task_queue_controller_->LoadingTaskQueue();
     case TaskType::kNetworkingControl:
       return frame_task_queue_controller_->LoadingControlTaskQueue();
-    case TaskType::kInternalContentCapture:
-      return frame_task_queue_controller_->BestEffortTaskQueue();
     default:
       // Non-loading task queue.
       DCHECK_LT(static_cast<size_t>(type),

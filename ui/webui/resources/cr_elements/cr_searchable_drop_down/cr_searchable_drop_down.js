@@ -106,10 +106,18 @@ Polymer({
   },
 
   /** @private */
-  onClick_: function() {
-    if (!this.readonly) {
-      this.$$('iron-dropdown').open();
+  onClick_: function(event) {
+    if (this.readonly) {
+      return;
     }
+
+    const dropdown = this.$$('iron-dropdown');
+    if (event.composedPath().includes(dropdown)) {
+      // Ignore clicks on the dropdown element.
+      return;
+    }
+
+    dropdown.open();
   },
 
   /** @private */

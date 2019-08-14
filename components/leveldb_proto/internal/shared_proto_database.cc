@@ -413,7 +413,8 @@ void SharedProtoDatabase::OnDatabaseInit(Enums::InitStatus status) {
     Callbacks::UpdateCallback obsolete_cleared_callback = base::DoNothing();
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(&DestroyObsoleteSharedProtoDatabaseClients,
+        base::BindOnce(&SharedProtoDatabaseClient::
+                           DestroyObsoleteSharedProtoDatabaseClients,
                        std::move(db_wrapper),
                        std::move(obsolete_cleared_callback)),
         kDelayToClearObsoleteDatabase);

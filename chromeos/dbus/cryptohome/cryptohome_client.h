@@ -423,7 +423,10 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) CryptohomeClient {
   // The |callback| will be called when the dbus call completes.  When the
   // operation completes, the AsyncCallStatusWithDataHandler signal handler is
   // called.  If |key_type| is KEY_USER, a |id| must be provided.
-  // Otherwise |id| is ignored.
+  // Otherwise |id| is ignored. If |key_name_for_spkac| is not empty, then the
+  // corresponding key will be used for SignedPublicKeyAndChallenge, but the
+  // challenge response will still be signed by the key specified by |key_name|
+  // (EMK or EUK).
   virtual void TpmAttestationSignEnterpriseChallenge(
       attestation::AttestationKeyType key_type,
       const cryptohome::AccountIdentifier& id,
@@ -432,6 +435,7 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) CryptohomeClient {
       const std::string& device_id,
       attestation::AttestationChallengeOptions options,
       const std::string& challenge,
+      const std::string& key_name_for_spkac,
       AsyncMethodCallback callback) = 0;
 
   // Asynchronously signs a simple challenge with the key specified by

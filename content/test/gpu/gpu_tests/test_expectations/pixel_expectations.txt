@@ -59,6 +59,8 @@ crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasWebGLD
 crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Skip ]
 crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasWebglResizeOnWorker [ Skip ]
 crbug.com/805739 [ android android-webview-instrumentation ] Pixel_CanvasLowLatencyWebGL [ Skip ]
+crbug.com/992599 [ android android-webview-instrumentation ] Pixel_OffscreenCanvasTransferToImageBitmapWorker [ Skip ]
+crbug.com/992599 [ android android-webview-instrumentation ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
 
 # Fails on Android WebView due to requiring embedding viz clients. crbug.com/805739
 # Produces black images on Nexus 5Xs in Android Webview (qualcomm-adreno-(tm)-418) crbug.com/984352
@@ -204,8 +206,8 @@ crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_Off
 crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasAccelerated2DWorker [ Skip ]
 crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasTransferAfterStyleResize [ Skip ]
 crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasTransferBeforeStyleResize [ Skip ]
-crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
-crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_OffscreenCanvasTransferToImageBitmapWorker [ Skip ]
+crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
+crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasTransferToImageBitmapWorker [ Skip ]
 crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasWebGLDefault [ Skip ]
 crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasWebGLDefaultWorker [ Skip ]
 crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasWebglResizeOnWorker [ Skip ]

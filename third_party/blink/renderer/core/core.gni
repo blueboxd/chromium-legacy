@@ -151,9 +151,3 @@ set_defaults("blink_core_tests") {
     "//third_party/blink/renderer:inside_blink",
   ]
 }
-
-declare_args() {
-  # Use base::TimeDelta to represent time in renderer/core/animations. See
-  # http://crbug.com/737867
-  blink_animation_use_time_delta = false
-}

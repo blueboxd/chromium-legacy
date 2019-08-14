@@ -57,7 +57,7 @@ namespace blink {
 
 class MockPlatformTiming : public DocumentTimeline::PlatformTiming {
  public:
-  MOCK_METHOD1(WakeAfter, void(double));
+  MOCK_METHOD1(WakeAfter, void(base::TimeDelta));
   MOCK_METHOD0(ServiceOnNextFrame, void());
 
   void Trace(blink::Visitor* visitor) override {
@@ -356,11 +356,13 @@ TEST_F(AnimationDocumentTimelineTest, DelayBeforeAnimationStart) {
 
   // TODO: Put the animation startTime in the future when we add the capability
   // to change animation startTime
-  EXPECT_CALL(*platform_timing, WakeAfter(timing.start_delay - MinimumDelay()));
+  EXPECT_CALL(*platform_timing, WakeAfter(base::TimeDelta::FromSecondsD(
+                                    timing.start_delay - MinimumDelay())));
   UpdateClockAndService(0);
 
   EXPECT_CALL(*platform_timing,
-              WakeAfter(timing.start_delay - MinimumDelay() - 1.5));
+              WakeAfter(base::TimeDelta::FromSecondsD(timing.start_delay -
+                                                      MinimumDelay() - 1.5)));
   UpdateClockAndService(1500);
 
   EXPECT_CALL(*platform_timing, ServiceOnNextFrame());

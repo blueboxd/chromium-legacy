@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
@@ -38,7 +39,7 @@ using ValueVector = std::vector<std::string>;
 // When the ProtoDatabase instance is deleted, in-progress asynchronous
 // operations will be completed and the corresponding callbacks will be called.
 // Construction/calls/destruction should all happen on the same thread.
-class ProtoLevelDBWrapper {
+class COMPONENT_EXPORT(LEVELDB_PROTO) ProtoLevelDBWrapper {
  public:
   // Used to destroy database when initialization fails.
   static void Destroy(

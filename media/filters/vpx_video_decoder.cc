@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -203,9 +204,11 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
     return false;
 
 #if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
-  // When FFmpegVideoDecoder is available it handles VP8 that doesn't have
-  // alpha, and VpxVideoDecoder will handle VP8 with alpha.
-  if (config.codec() == kCodecVP8 &&
+  // When enabled, ffmpeg handles VP8 that doesn't have alpha, and
+  // VpxVideoDecoder will handle VP8 with alpha. FFvp8 is being deprecated.
+  // See http://crbug.com/992235.
+  if (base::FeatureList::IsEnabled(kFFmpegDecodeOpaqueVP8) &&
+      config.codec() == kCodecVP8 &&
       config.alpha_mode() == VideoDecoderConfig::AlphaMode::kIsOpaque) {
     return false;
   }

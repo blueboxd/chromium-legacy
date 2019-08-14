@@ -150,6 +150,7 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
       const std::string& device_id,
       attestation::AttestationChallengeOptions options,
       const std::string& challenge,
+      const std::string& key_name_for_spkac,
       AsyncMethodCallback callback) override;
   void TpmAttestationSignSimpleChallenge(
       attestation::AttestationKeyType key_type,

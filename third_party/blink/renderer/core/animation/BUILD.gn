@@ -2,11 +2,24 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//third_party/blink/renderer/core/core.gni")
+
+declare_args() {
+  # Use base::TimeDelta to represent time in renderer/core/animations. See
+  # http://crbug.com/737867
+  blink_animation_use_time_delta = false
+}
+
+buildflag_header("buildflags") {
+  header = "buildflags.h"
+  header_dir = "third_party/blink/renderer/core/animation"
+
+  flags = [ "BLINK_ANIMATION_USE_TIME_DELTA=$blink_animation_use_time_delta" ]
+}
 
 blink_core_sources("animation") {
   split_count = 5
-
   sources = [
     "animatable.cc",
     "animatable.h",
@@ -247,6 +260,10 @@ blink_core_sources("animation") {
     "worklet_animation_base.h",
     "worklet_animation_controller.cc",
     "worklet_animation_controller.h",
+  ]
+
+  deps = [
+    ":buildflags",
   ]
 }
 

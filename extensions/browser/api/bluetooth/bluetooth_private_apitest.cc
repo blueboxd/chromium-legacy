@@ -131,7 +131,15 @@ class BluetoothPrivateApiTest : public ExtensionApiTest {
   }
 
   void StartScanOverride(
-      base::OnceCallback<void(/*is_error*/ bool,
+      base::OnceCallback<void(/*is_error=*/bool,
+                              device::UMABluetoothDiscoverySessionOutcome)>&
+          callback) {
+    std::move(callback).Run(
+        false, device::UMABluetoothDiscoverySessionOutcome::SUCCESS);
+  }
+
+  void UpdateFilterOverride(
+      base::OnceCallback<void(/*is_error=*/bool,
                               device::UMABluetoothDiscoverySessionOutcome)>&
           callback) {
     std::move(callback).Run(
@@ -247,6 +255,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, ForgetDevice) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, DiscoveryFilter) {
+  BluetoothDiscoveryFilter discovery_filter_default(
+      device::BLUETOOTH_TRANSPORT_DUAL);
   BluetoothDiscoveryFilter discovery_filter(device::BLUETOOTH_TRANSPORT_LE);
   discovery_filter.SetPathloss(50);
   discovery_filter.AddUUID(BluetoothUUID("cafe"));
@@ -258,9 +268,11 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, DiscoveryFilter) {
       .Times(1)
       .WillOnce(WithArgs<1>(
           Invoke(this, &BluetoothPrivateApiTest::StartScanOverride)));
-  EXPECT_CALL(*mock_adapter_, SetDiscoveryFilterRaw(Eq(nullptr), _, _))
+  EXPECT_CALL(*mock_adapter_,
+              UpdateFilter_(IsFilterEqual(&discovery_filter_default), _))
       .Times(1)
-      .WillOnce(InvokeCallbackArgument<1>());
+      .WillOnce(WithArgs<1>(
+          Invoke(this, &BluetoothPrivateApiTest::UpdateFilterOverride)));
   ASSERT_TRUE(RunComponentExtensionTest("bluetooth_private/discovery_filter"))
       << message_;
 }

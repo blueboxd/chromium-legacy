@@ -166,33 +166,44 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
   ui::MenuModel::ItemType type = model->GetTypeAt(index);
   if (type == ui::MenuModel::TYPE_SUBMENU && model->IsVisibleAt(index)) {
     ui::MenuModel* submenuModel = model->GetSubmenuModelAt(index);
+
     // If there are visible items, recursively build the submenu.
     NSMenu* submenu = MenuHasVisibleItems(submenuModel)
                           ? [self menuFromModel:submenuModel]
                           : MakeEmptySubmenu();
-    [item setSubmenu:submenu];
-  }
 
-  // The MenuModel works on indexes so we can't just set the command id as the
-  // tag like we do in other menus. Also set the represented object to be
-  // the model so hierarchical menus check the correct index in the correct
-  // model. Setting the target to |self| allows this class to participate
-  // in validation of the menu items.
-  [item setTag:index];
-  [item setTarget:self];
-  NSValue* modelObject = [NSValue valueWithPointer:model];
-  [item setRepresentedObject:modelObject];  // Retains |modelObject|.
-  // On the Mac, context menus never have accelerators. Menus constructed
-  // for context use have useWithPopUpButtonCell_ set to NO.
-  if (useWithPopUpButtonCell_) {
-    ui::Accelerator accelerator;
-    if (model->GetAcceleratorAt(index, &accelerator)) {
-      NSString* key_equivalent;
-      NSUInteger modifier_mask;
-      GetKeyEquivalentAndModifierMaskFromAccelerator(
-          accelerator, &key_equivalent, &modifier_mask);
-      [item setKeyEquivalent:key_equivalent];
-      [item setKeyEquivalentModifierMask:modifier_mask];
+    [item setTarget:nil];
+    [item setAction:nil];
+    [item setSubmenu:submenu];
+    // [item setSubmenu] updates target and action which means clicking on a
+    // submenu entry will not call [self validateUserInterfaceItem].
+    DCHECK_EQ([item action], @selector(submenuAction:));
+    DCHECK_EQ([item target], submenu);
+    // Set the enabled state here as submenu entries do not call into
+    // validateUserInterfaceItem. See crbug.com/981294 and crbug.com/991472.
+    [item setEnabled:model->IsEnabledAt(index)];
+  } else {
+    // The MenuModel works on indexes so we can't just set the command id as the
+    // tag like we do in other menus. Also set the represented object to be
+    // the model so hierarchical menus check the correct index in the correct
+    // model. Setting the target to |self| allows this class to participate
+    // in validation of the menu items.
+    [item setTag:index];
+    [item setTarget:self];
+    NSValue* modelObject = [NSValue valueWithPointer:model];
+    [item setRepresentedObject:modelObject];  // Retains |modelObject|.
+    // On the Mac, context menus never have accelerators. Menus constructed
+    // for context use have useWithPopUpButtonCell_ set to NO.
+    if (useWithPopUpButtonCell_) {
+      ui::Accelerator accelerator;
+      if (model->GetAcceleratorAt(index, &accelerator)) {
+        NSString* key_equivalent;
+        NSUInteger modifier_mask;
+        GetKeyEquivalentAndModifierMaskFromAccelerator(
+            accelerator, &key_equivalent, &modifier_mask);
+        [item setKeyEquivalent:key_equivalent];
+        [item setKeyEquivalentModifierMask:modifier_mask];
+      }
     }
   }
   [menu insertItem:item atIndex:index];

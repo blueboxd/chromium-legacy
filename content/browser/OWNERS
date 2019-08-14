@@ -38,3 +38,6 @@ per-file builtin_service_manifests.cc=set noparent
 per-file builtin_service_manifests.cc=file://ipc/SECURITY_OWNERS
 per-file builtin_service_manifests.h=set noparent
 per-file builtin_service_manifests.h=file://ipc/SECURITY_OWNERS
+
+# BackForwardCache
+per-file back_forward_cache_browsertest.cc=arthursonzogni@chromium.org

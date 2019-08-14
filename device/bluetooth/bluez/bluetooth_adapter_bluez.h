@@ -377,14 +377,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   void UpdateFilter(
       std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
       DiscoverySessionResultCallback callback) override;
-  void RemoveDiscoverySession(
-      device::BluetoothDiscoveryFilter* discovery_filter,
-      const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) override;
+  void StopScan(DiscoverySessionResultCallback callback) override;
   void SetDiscoveryFilter(
       std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
       const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) override;
+      DiscoverySessionErrorCallback error_callback);
 
   // Called by dbus:: on completion of the D-Bus method call to start discovery.
   void OnStartDiscovery(const base::Closure& callback,
@@ -430,12 +427,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   // Called by BluetoothAdapterProfileBlueZ when no users of a profile
   // remain.
   void RemoveProfile(const device::BluetoothUUID& uuid);
-
-  // Processes the queued discovery requests. For each DiscoveryParamTuple in
-  // the queue, this method will try to add a new discovery session. This method
-  // is called whenever a pending D-Bus call to start or stop discovery has
-  // ended (with either success or failure).
-  void ProcessQueuedDiscoveryRequests();
 
   // Make the call to GattManager1 to unregister then re-register the GATT
   // application. If the ignore_unregister_failure flag is set, we attempt to
@@ -484,13 +475,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   // Set in |Shutdown()|, makes IsPresent()| return false.
   bool dbus_is_shutdown_;
 
-  // True, if there is a pending request to start or stop discovery.
-  bool discovery_request_pending_;
-
-  // If true that means the last pending stop discovery operation should assume
-  // that the discovery sessions have been deactivated even though it failed.
-  bool force_deactivate_discovery_;
-
   // List of queued requests to add new discovery sessions. While there is a
   // pending request to BlueZ to start or stop discovery, many requests from
   // within Chrome to start or stop discovery sessions may occur. We only
@@ -522,8 +506,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   // Queue of delegates waiting for a profile to register.
   std::map<device::BluetoothUUID, std::vector<RegisterProfileCompletionPair>*>
       profile_queues_;
-
-  std::unique_ptr<device::BluetoothDiscoveryFilter> current_filter_;
 
   // List of GATT services that are owned by this adapter.
   std::map<dbus::ObjectPath, std::unique_ptr<BluetoothLocalGattServiceBlueZ>>

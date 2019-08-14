@@ -494,7 +494,7 @@ String StylePropertySerializer::SerializeShorthand(
     case CSSPropertyID::kGridArea:
       return GetShorthandValue(gridAreaShorthand(), " / ");
     case CSSPropertyID::kGap:
-      return GetShorthandValue(gapShorthand());
+      return Get2Values(gapShorthand());
     case CSSPropertyID::kInset:
       return Get4Values(insetShorthand());
     case CSSPropertyID::kInsetBlock:

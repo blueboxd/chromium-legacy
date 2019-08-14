@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/permission_bubble/chooser_bubble_delegate.h"
 #include "chrome/browser/ui/views/bubble_anchor_util_views.h"
 #include "chrome/browser/ui/views/device_chooser_content_view.h"
-#include "chrome/browser/ui/views/permission_bubble/front_eliding_title_label.h"
+#include "chrome/browser/ui/views/front_eliding_title_label.h"
 #include "components/bubble/bubble_controller.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -108,7 +108,7 @@ ChooserBubbleUiViewDelegate::~ChooserBubbleUiViewDelegate() {}
 
 void ChooserBubbleUiViewDelegate::AddedToWidget() {
   GetBubbleFrameView()->SetTitleView(
-      ConstructFrontElidingTitleLabel(GetWindowTitle()));
+      CreateFrontElidingTitleLabel(GetWindowTitle()));
 }
 
 base::string16 ChooserBubbleUiViewDelegate::GetWindowTitle() const {

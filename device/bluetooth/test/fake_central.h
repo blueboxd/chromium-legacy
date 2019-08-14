@@ -187,14 +187,7 @@ class FakeCentral : public mojom::FakeCentral, public device::BluetoothAdapter {
   void StartScanWithFilter(
       std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
       DiscoverySessionResultCallback callback) override;
-  void RemoveDiscoverySession(
-      device::BluetoothDiscoveryFilter* discovery_filter,
-      const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) override;
-  void SetDiscoveryFilter(
-      std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
-      const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) override;
+  void StopScan(DiscoverySessionResultCallback callback) override;
   void RemovePairingDelegateInternal(
       device::BluetoothDevice::PairingDelegate* pairing_delegate) override;
 

@@ -1306,11 +1306,6 @@
   {
     'name': 'chromium.fyi',
     'machines': {
-      'Android Builder (dbg) Goma Canary': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
       'Jumbo Linux x64': {
         'additional_compile_targets': [
           'all',
@@ -1349,28 +1344,6 @@
           'isolated_scripts': 'skia_renderer_isolated_scripts',
         },
       },
-      'Linux x64 Goma Canary (clobber)': {
-        'mixins': [
-          'linux-xenial',
-        ],
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'gtest_tests': 'goma_gtests',
-        },
-      },
-      'Linux x64 Goma Canary LocalOutputCache': {
-        'mixins': [
-          'linux-xenial',
-        ],
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'gtest_tests': 'goma_gtests',
-        },
-      },
       'Mac Builder (dbg) Goma Canary': {
         'additional_compile_targets': [
           'all',
@@ -1391,26 +1364,6 @@
         'additional_compile_targets': [
           'all',
           'pdf_fuzzers',
-        ],
-        'test_suites': {
-          'gtest_tests': 'goma_mac_gtests',
-        },
-      },
-      'Mac Goma Canary (clobber)': {
-        'additional_compile_targets': [
-          # Due to disk shortage, we build 'chrome' instead of 'all'.
-          # See crbug.com/899425
-          'chrome',
-        ],
-        'test_suites': {
-          'gtest_tests': 'goma_mac_gtests',
-        },
-      },
-      'Mac Goma Canary LocalOutputCache': {
-        'additional_compile_targets': [
-          # Due to disk shortage, we build 'chrome' instead of 'all'.
-          # See crbug.com/825536
-          'chrome',
         ],
         'test_suites': {
           'gtest_tests': 'goma_mac_gtests',
@@ -1522,14 +1475,6 @@
           'gtest_tests': 'goma_gtests',
         },
       },
-      'Win Goma Canary LocalOutputCache': {
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'gtest_tests': 'goma_gtests',
-        },
-      },
       'Win cl.exe Goma Canary LocalOutputCache': {
         # Build only chromium's subproject using cl.exe.
         'additional_compile_targets': [
@@ -1569,6 +1514,11 @@
         # Build only chromium's subproject using cl.exe.
         'additional_compile_targets': [
           'libANGLE',
+        ],
+      },
+      'android-archive-dbg-goma-canary': {
+        'additional_compile_targets': [
+          'all',
         ],
       },
       'android-code-coverage': {
@@ -1721,6 +1671,28 @@
           'scripts': 'test_traffic_annotation_auditor_script',
         }
       },
+      'linux-archive-rel-goma-canary': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_gtests',
+        },
+      },
+      'linux-archive-rel-goma-canary-localoutputcache': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_gtests',
+        },
+      },
       'linux-bfcache-rel': {
         'mixins': [
           'linux-xenial',
@@ -1835,6 +1807,26 @@
         ],
         'test_suites': {
           'isolated_scripts': 'wpt_web_tests',
+        },
+      },
+      'mac-archive-rel-goma-canary': {
+        'additional_compile_targets': [
+          # Due to disk shortage, we build 'chrome' instead of 'all'.
+          # See crbug.com/899425
+          'chrome',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_mac_gtests',
+        },
+      },
+      'mac-archive-rel-goma-canary-localoutputcache': {
+        'additional_compile_targets': [
+          # Due to disk shortage, we build 'chrome' instead of 'all'.
+          # See crbug.com/825536
+          'chrome',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_mac_gtests',
         },
       },
       'mac-hermetic-upgrade-rel': {
@@ -1957,6 +1949,14 @@
         },
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
+      'win32-archive-rel-goma-canary-localoutputcache': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_gtests',
         },
       },
       'win7-blink-rel-dummy': {
@@ -4316,15 +4316,20 @@
   {
     'name': 'tryserver.chromium.android',
     'machines': {
-      'android-kitkat-arm-coverage-dbg': {
+      'android-kitkat-arm-coverage-rel': {
         'mixins': [
           'code-coverage',
           'kitkat',
           'hammerhead',
         ],
+        'additional_compile_targets': [
+          'cronet_test_instrumentation_apk',
+          'monochrome_static_initializers',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
           'junit_tests': 'chromium_junit_tests',
+          'isolated_scripts': 'monochrome_apk_checker_isolated_script',
         },
         'os_type': 'android',
       },

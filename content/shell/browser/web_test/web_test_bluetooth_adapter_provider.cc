@@ -343,7 +343,7 @@ WebTestBluetoothAdapterProvider::GetScanFilterCheckingAdapter() {
   // Any unexpected call results in the failure callback.
   ON_CALL(*adapter, StartScanWithFilter_(_, _))
       .WillByDefault(RunCallbackWithResult<1 /* result_callback */>(
-          true /*is_error*/,
+          /*is_error=*/true,
           device::UMABluetoothDiscoverySessionOutcome::UNKNOWN));
 
   // We need to add a device otherwise requestDevice would reject.
@@ -359,7 +359,7 @@ WebTestBluetoothAdapterProvider::GetFailStartDiscoveryAdapter() {
 
   ON_CALL(*adapter, StartScanWithFilter_(_, _))
       .WillByDefault(RunCallbackWithResult<1 /* result_callback */>(
-          true /*is_error*/,
+          /*is_error=*/true,
           device::UMABluetoothDiscoverySessionOutcome::UNKNOWN));
 
   return adapter;
@@ -374,12 +374,21 @@ WebTestBluetoothAdapterProvider::GetEmptyAdapter() {
 
   ON_CALL(*adapter, StartScanWithFilter_(_, _))
       .WillByDefault(RunCallbackWithResultFunction<1 /* result_callback */>(
-          false /*is_error*/, [adapter_ptr]() {
+          /*is_error=*/false, [adapter_ptr]() {
             base::ThreadTaskRunnerHandle::Get()->PostTask(
                 FROM_HERE, base::BindOnce(&NotifyDevicesAdded,
                                           base::RetainedRef(adapter_ptr)));
 
             return device::UMABluetoothDiscoverySessionOutcome::SUCCESS;
+          }));
+
+  ON_CALL(*adapter, StopScan(_))
+      .WillByDefault(
+          Invoke([](device::BluetoothAdapter::DiscoverySessionResultCallback
+                        callback) {
+            std::move(callback).Run(
+                /*is_error=*/false,
+                device::UMABluetoothDiscoverySessionOutcome::SUCCESS);
           }));
 
   return adapter;
@@ -421,10 +430,10 @@ WebTestBluetoothAdapterProvider::GetSecondDiscoveryFindsHeartRateAdapter() {
 
   EXPECT_CALL(*adapter, StartScanWithFilter_(_, _))
       .WillOnce(RunCallbackWithResult<1 /* result_callback */>(
-          false /*is_error*/,
+          /*is_error=*/false,
           device::UMABluetoothDiscoverySessionOutcome::SUCCESS))
       .WillOnce(RunCallbackWithResultFunction<1 /* result_callback */>(
-          false /*is_error*/, [adapter_ptr]() {
+          /*is_error=*/false, [adapter_ptr]() {
             // In the second discovery session, have the adapter discover a new
             // device, shortly after the session starts.
             base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -432,6 +441,17 @@ WebTestBluetoothAdapterProvider::GetSecondDiscoveryFindsHeartRateAdapter() {
                 base::BindOnce(&AddDevice, base::WrapRefCounted(adapter_ptr),
                                GetHeartRateDevice(adapter_ptr)));
             return device::UMABluetoothDiscoverySessionOutcome::SUCCESS;
+          }));
+
+  EXPECT_CALL(*adapter, StopScan(_)).Times(2);
+
+  ON_CALL(*adapter, StopScan(_))
+      .WillByDefault(
+          Invoke([](device::BluetoothAdapter::DiscoverySessionResultCallback
+                        callback) {
+            std::move(callback).Run(
+                /*is_error=*/false,
+                device::UMABluetoothDiscoverySessionOutcome::SUCCESS);
           }));
 
   return adapter;
@@ -478,7 +498,7 @@ WebTestBluetoothAdapterProvider::GetDeviceEventAdapter() {
 
   ON_CALL(*adapter, StartScanWithFilter_(_, _))
       .WillByDefault(RunCallbackWithResultFunction<1 /* result_callback */>(
-          false /*is_error*/,
+          /*is_error=*/false,
           [adapter_ptr, changing_battery_ptr, discovery_generic_access_ptr]() {
             if (adapter_ptr->GetDevices().size() == 4) {
               // Post task to add NewGlucoseDevice.
@@ -509,6 +529,15 @@ WebTestBluetoothAdapterProvider::GetDeviceEventAdapter() {
             return device::UMABluetoothDiscoverySessionOutcome::SUCCESS;
           }));
 
+  ON_CALL(*adapter, StopScan(_))
+      .WillByDefault(
+          Invoke([](device::BluetoothAdapter::DiscoverySessionResultCallback
+                        callback) {
+            std::move(callback).Run(
+                /*is_error=*/false,
+                device::UMABluetoothDiscoverySessionOutcome::SUCCESS);
+          }));
+
   return adapter;
 }
 
@@ -528,7 +557,7 @@ WebTestBluetoothAdapterProvider::GetDevicesRemovedAdapter() {
 
   ON_CALL(*adapter, StartScanWithFilter_(_, _))
       .WillByDefault(RunCallbackWithResultFunction<1 /* result_callback */>(
-          false /*is_error*/, [adapter_ptr, connected_hr_address]() {
+          /*is_error=*/false, [adapter_ptr, connected_hr_address]() {
             if (adapter_ptr->GetDevices().size() == 1) {
               // Post task to add NewGlucoseDevice.
               auto glucose_device(GetBaseDevice(

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_LEVELDB_PROTO_INTERNAL_SHARED_PROTO_DATABASE_PROVIDER_H_
 #define COMPONENTS_LEVELDB_PROTO_INTERNAL_SHARED_PROTO_DATABASE_PROVIDER_H_
 
+#include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 
@@ -17,7 +18,7 @@ class ProtoDatabaseProvider;
 // provider to be used in the wrapper. |client_task_runner| is the
 // SequencedTaskRunner provided by the main provider so its WeakPtrs are
 // always checked on the right sequence.
-class SharedProtoDatabaseProvider {
+class COMPONENT_EXPORT(LEVELDB_PROTO) SharedProtoDatabaseProvider {
  public:
   using GetSharedDBInstanceCallback =
       base::OnceCallback<void(scoped_refptr<SharedProtoDatabase>)>;

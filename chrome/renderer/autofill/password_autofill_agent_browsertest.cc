@@ -746,6 +746,11 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
         ->DidCommitProvisionalLoad(true, ui::PAGE_TRANSITION_LINK);
   }
 
+  void ClearField(FormFieldData* field) {
+    field->unique_renderer_id = std::numeric_limits<uint32_t>::max();
+    field->value.clear();
+  }
+
   FakeMojoPasswordManagerDriver fake_driver_;
   testing::NiceMock<FakePasswordGenerationDriver> fake_pw_client_;
 
@@ -901,9 +906,9 @@ TEST_F(PasswordAutofillAgentTest,
 }
 
 // Credentials are sent to the renderer even for sign-up forms as these may be
-// eligible for filling via manual fall back. In this case, the password_field
-// is not set. This test verifies that no failures are recorded in
-// PasswordManager.FirstRendererFillingResult.
+// eligible for filling via manual fall back. In this case, the username_field
+// and password_field are not set. This test verifies that no failures are
+// recorded in PasswordManager.FirstRendererFillingResult.
 TEST_F(PasswordAutofillAgentTest, NoFillingOnSignupForm_NoMetrics) {
   LoadHTML(kSignupFormHTML);
 
@@ -915,11 +920,8 @@ TEST_F(PasswordAutofillAgentTest, NoFillingOnSignupForm_NoMetrics) {
 
   fill_data_.has_renderer_ids = true;
 
-  fill_data_.username_field.name = ASCIIToUTF16("random_info");
   fill_data_.username_field.unique_renderer_id =
-      username_element_.UniqueRendererFormControlId();
-
-  fill_data_.password_field.name = base::string16();
+      FormFieldData::kNotSetFormControlRendererId;
   fill_data_.password_field.unique_renderer_id =
       FormFieldData::kNotSetFormControlRendererId;
 
@@ -3897,6 +3899,104 @@ TEST_F(PasswordAutofillAgentTest, DoNotRestoreWhenFormStructureWasChanged) {
 
   password_autofill_agent_->OnDynamicFormsSeen();
   CheckTextFieldsSuggestedState("", false, kAlicePassword, true);
+}
+
+// Tests that a single username is filled and is exposed to JavaScript only
+// after user gesture.
+TEST_F(PasswordAutofillAgentTest, FillOnLoadSingleUsername) {
+  UpdateRendererIDs();
+  // Simulate filling single username by clearing password fill data.
+  ClearField(&fill_data_.password_field);
+
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // The username should have been autofilled.
+  CheckTextFieldsSuggestedState(kAliceUsername, true, std::string(), false);
+
+  // However, it should have filled with the suggested value, it should not have
+  // filled with DOM accessible value.
+  CheckTextFieldsDOMState(std::string(), true, std::string(), false);
+
+  // Simulate a user click so that the username field's real value is filled.
+  SimulateElementClick(kUsernameName);
+  CheckTextFieldsDOMState(kAliceUsername, true, std::string(), false);
+}
+
+// Tests that |PreviewSuggestion| properly previews the single username.
+TEST_F(PasswordAutofillAgentTest, SingleUsernamePreviewSuggestion) {
+  UpdateRendererIDs();
+  ClearField(&fill_data_.password_field);
+  // Simulate the browser sending the login info, but set |wait_for_username| to
+  // prevent the form from being immediately filled.
+  fill_data_.wait_for_username = true;
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Neither field should be autocompleted.
+  CheckTextFieldsDOMState(std::string(), false, std::string(), false);
+
+  EXPECT_TRUE(password_autofill_agent_->PreviewSuggestion(
+      username_element_, kAliceUsername, kAlicePassword));
+  CheckTextFieldsSuggestedState(kAliceUsername, true, std::string(), false);
+
+  // Try previewing with a username different from the one that was initially
+  // sent to the renderer.
+  EXPECT_TRUE(password_autofill_agent_->PreviewSuggestion(
+      username_element_, kBobUsername, kCarolPassword));
+  CheckTextFieldsSuggestedState(kBobUsername, true, std::string(), false);
+}
+
+// Tests that |FillSuggestion| properly fills the single username.
+TEST_F(PasswordAutofillAgentTest, SingleUsernameFillSuggestion) {
+  UpdateRendererIDs();
+  ClearField(&fill_data_.password_field);
+  // Simulate the browser sending the login info, but set |wait_for_username|
+  // to prevent the form from being immediately filled.
+  fill_data_.wait_for_username = true;
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Neither field should be autocompleted.
+  CheckTextFieldsDOMState(std::string(), false, std::string(), false);
+
+  // After filling with the suggestion, the username field should be filled.
+  EXPECT_TRUE(password_autofill_agent_->FillSuggestion(
+      username_element_, ASCIIToUTF16(kAliceUsername),
+      ASCIIToUTF16(kAlicePassword)));
+  CheckTextFieldsDOMState(kAliceUsername, true, std::string(), false);
+  int username_length = strlen(kAliceUsername);
+  CheckUsernameSelection(username_length, username_length);
+
+  // Try Filling with a suggestion with a username different from the one that
+  // was initially sent to the renderer.
+  EXPECT_TRUE(password_autofill_agent_->FillSuggestion(
+      username_element_, ASCIIToUTF16(kBobUsername),
+      ASCIIToUTF16(kCarolPassword)));
+  CheckTextFieldsDOMState(kBobUsername, true, std::string(), false);
+  username_length = strlen(kBobUsername);
+  CheckUsernameSelection(username_length, username_length);
+}
+
+// Tests that |ClearPreview| properly clears previewed single username.
+TEST_F(PasswordAutofillAgentTest, SingleUsernameClearPreview) {
+  UpdateRendererIDs();
+  ClearField(&fill_data_.password_field);
+  ResetFieldState(&username_element_, "ali", WebAutofillState::kPreviewed);
+  username_element_.SetSelectionRange(3, 3);
+
+  // Simulate the browser sending the login info, but set |wait_for_username|
+  // to prevent the form from being immediately filled.
+  fill_data_.wait_for_username = true;
+  SimulateOnFillPasswordForm(fill_data_);
+
+  CheckTextFieldsDOMState("ali", true, std::string(), false);
+
+  EXPECT_TRUE(password_autofill_agent_->PreviewSuggestion(
+      username_element_, kAliceUsername, kAlicePassword));
+  EXPECT_TRUE(
+      password_autofill_agent_->DidClearAutofillSelection(username_element_));
+
+  EXPECT_TRUE(username_element_.SuggestedValue().IsEmpty());
+  CheckTextFieldsDOMState("ali", true, std::string(), false);
+  CheckUsernameSelection(3, 3);
 }
 
 }  // namespace autofill

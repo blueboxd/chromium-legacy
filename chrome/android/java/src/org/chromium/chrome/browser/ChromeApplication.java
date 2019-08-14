@@ -32,6 +32,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.build.BuildHooks;
 import org.chromium.build.BuildHooksAndroid;
 import org.chromium.build.BuildHooksConfig;
+import org.chromium.chrome.browser.background_task_scheduler.ChromeBackgroundTaskFactory;
 import org.chromium.chrome.browser.crash.ApplicationStatusTracker;
 import org.chromium.chrome.browser.crash.FirebaseConfig;
 import org.chromium.chrome.browser.crash.PureJavaExceptionHandler;
@@ -47,6 +48,7 @@ import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.vr.OnExitVrRequestListener;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.embedder_support.application.FontPreloadingWorkaround;
 import org.chromium.components.module_installer.ModuleInstaller;
 import org.chromium.ui.base.ResourceBundle;
@@ -122,6 +124,10 @@ public class ChromeApplication extends Application {
             // Record via UMA all modules that have been requested and are currently installed. This
             // will tell us the install penetration of each module over time.
             ModuleInstaller.getInstance().recordModuleAvailability();
+
+            // Set Chrome factory for mapping BackgroundTask classes to TaskIds.
+            BackgroundTaskSchedulerFactory.setBackgroundTaskFactory(
+                    new ChromeBackgroundTaskFactory());
         }
 
         // Write installed modules to crash keys. This needs to be done as early as possible so that

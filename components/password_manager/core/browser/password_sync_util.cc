@@ -50,7 +50,7 @@ std::string GetSyncUsernameIfSyncingPasswords(
 bool IsSyncAccountCredential(const autofill::PasswordForm& form,
                              const syncer::SyncService* sync_service,
                              const signin::IdentityManager* identity_manager) {
-  if (!IsGaiaCredentialPage(form.signon_realm))
+  if (!GURL(form.signon_realm).DomainIs("google.com"))
     return false;
 
   // The empty username can mean that Chrome did not detect it correctly. For

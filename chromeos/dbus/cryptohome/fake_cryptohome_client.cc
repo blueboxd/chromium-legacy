@@ -472,6 +472,7 @@ void FakeCryptohomeClient::TpmAttestationSignEnterpriseChallenge(
     const std::string& device_id,
     attestation::AttestationChallengeOptions options,
     const std::string& challenge,
+    const std::string& key_name_for_spkac,
     AsyncMethodCallback callback) {
   ReturnAsyncMethodData(std::move(callback), std::string());
 }

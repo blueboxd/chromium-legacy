@@ -45,9 +45,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   typedef Vector<ChildWithOffset, 4> ChildrenVector;
 
   LayoutUnit BfcLineOffset() const { return bfc_line_offset_; }
-  NGContainerFragmentBuilder& SetBfcLineOffset(LayoutUnit bfc_line_offset) {
+  void SetBfcLineOffset(LayoutUnit bfc_line_offset) {
     bfc_line_offset_ = bfc_line_offset;
-    return *this;
   }
 
   // The BFC block-offset is where this fragment was positioned within the BFC.
@@ -55,47 +54,34 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   const base::Optional<LayoutUnit>& BfcBlockOffset() const {
     return bfc_block_offset_;
   }
-  NGContainerFragmentBuilder& SetBfcBlockOffset(LayoutUnit bfc_block_offset) {
+  void SetBfcBlockOffset(LayoutUnit bfc_block_offset) {
     bfc_block_offset_ = bfc_block_offset;
-    return *this;
   }
-  NGContainerFragmentBuilder& ResetBfcBlockOffset() {
-    bfc_block_offset_.reset();
-    return *this;
-  }
+  void ResetBfcBlockOffset() { bfc_block_offset_.reset(); }
 
-  NGContainerFragmentBuilder& SetEndMarginStrut(
-      const NGMarginStrut& end_margin_strut) {
+  void SetEndMarginStrut(const NGMarginStrut& end_margin_strut) {
     end_margin_strut_ = end_margin_strut;
-    return *this;
   }
 
-  NGContainerFragmentBuilder& SetExclusionSpace(
-      NGExclusionSpace&& exclusion_space) {
+  void SetExclusionSpace(NGExclusionSpace&& exclusion_space) {
     exclusion_space_ = std::move(exclusion_space);
-    return *this;
   }
 
   const NGUnpositionedListMarker& UnpositionedListMarker() const {
     return unpositioned_list_marker_;
   }
-  NGContainerFragmentBuilder& SetUnpositionedListMarker(
-      const NGUnpositionedListMarker& marker) {
+  void SetUnpositionedListMarker(const NGUnpositionedListMarker& marker) {
     DCHECK(!unpositioned_list_marker_ || !marker);
     unpositioned_list_marker_ = marker;
-    return *this;
   }
 
-  NGContainerFragmentBuilder& AddChild(
-      const NGPhysicalContainerFragment&,
-      const LogicalOffset&,
-      const LayoutInline* inline_container = nullptr);
+  void AddChild(const NGPhysicalContainerFragment&,
+                const LogicalOffset&,
+                const LayoutInline* inline_container = nullptr);
 
-  NGContainerFragmentBuilder& AddChild(
-      scoped_refptr<const NGPhysicalTextFragment> child,
-      const LogicalOffset& offset) {
+  void AddChild(scoped_refptr<const NGPhysicalTextFragment> child,
+                const LogicalOffset& offset) {
     AddChildInternal(child, offset);
-    return *this;
   }
 
   const ChildrenVector& Children() const { return children_; }
@@ -129,12 +115,12 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   //
   // @param direction: default candidate direction is builder's direction.
   // Pass in direction if candidates direction does not match.
-  NGContainerFragmentBuilder& AddOutOfFlowChildCandidate(
+  void AddOutOfFlowChildCandidate(
       NGBlockNode,
       const LogicalOffset& child_offset,
       base::Optional<TextDirection> container_direction = base::nullopt);
 
-  NGContainerFragmentBuilder& AddOutOfFlowDescendant(
+  void AddOutOfFlowDescendant(
       const NGLogicalOutOfFlowPositionedNode& descendant);
 
   void SwapOutOfFlowPositionedCandidates(
@@ -156,39 +142,23 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     SwapOutOfFlowPositionedCandidates(&oof_positioned_descendants_, nullptr);
   }
 
-  NGContainerFragmentBuilder& SetIsSelfCollapsing() {
-    is_self_collapsing_ = true;
-    return *this;
-  }
+  void SetIsSelfCollapsing() { is_self_collapsing_ = true; }
 
-  NGContainerFragmentBuilder& SetIsPushedByFloats() {
-    is_pushed_by_floats_ = true;
-    return *this;
-  }
+  void SetIsPushedByFloats() { is_pushed_by_floats_ = true; }
   bool IsPushedByFloats() const { return is_pushed_by_floats_; }
 
-  NGContainerFragmentBuilder& ResetAdjoiningObjectTypes() {
-    adjoining_object_types_ = kAdjoiningNone;
-    return *this;
-  }
-  NGContainerFragmentBuilder& AddAdjoiningObjectTypes(
-      NGAdjoiningObjectTypes adjoining_object_types) {
+  void ResetAdjoiningObjectTypes() { adjoining_object_types_ = kAdjoiningNone; }
+  void AddAdjoiningObjectTypes(NGAdjoiningObjectTypes adjoining_object_types) {
     adjoining_object_types_ |= adjoining_object_types;
-    return *this;
   }
-  NGContainerFragmentBuilder& SetAdjoiningObjectTypes(
-      NGAdjoiningObjectTypes adjoining_object_types) {
+  void SetAdjoiningObjectTypes(NGAdjoiningObjectTypes adjoining_object_types) {
     adjoining_object_types_ = adjoining_object_types;
-    return *this;
   }
   NGAdjoiningObjectTypes AdjoiningObjectTypes() const {
     return adjoining_object_types_;
   }
 
-  NGContainerFragmentBuilder& SetHasBlockFragmentation() {
-    has_block_fragmentation_ = true;
-    return *this;
-  }
+  void SetHasBlockFragmentation() { has_block_fragmentation_ = true; }
 
   const NGConstraintSpace* ConstraintSpace() const { return space_; }
 

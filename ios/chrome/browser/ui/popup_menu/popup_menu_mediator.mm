@@ -874,14 +874,16 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   }
 
   // Recent Tabs.
-  TableViewItem* recentTabs = CreateTableViewItem(
+  PopupMenuToolsItem* recentTabs = CreateTableViewItem(
       IDS_IOS_TOOLS_MENU_RECENT_TABS, PopupMenuActionRecentTabs,
       @"popup_menu_recent_tabs", kToolsMenuOtherDevicesId);
+  recentTabs.enabled = !self.isIncognito;
 
   // History.
-  TableViewItem* history =
+  PopupMenuToolsItem* history =
       CreateTableViewItem(IDS_IOS_TOOLS_MENU_HISTORY, PopupMenuActionHistory,
                           @"popup_menu_history", kToolsMenuHistoryId);
+  history.enabled = !self.isIncognito;
 
   // Settings.
   TableViewItem* settings =

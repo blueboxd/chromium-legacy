@@ -268,6 +268,15 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
       autocomplete_controller_->result().match_at(selected_index);
   SuggestionAnswer::LogAnswerUsed(match.answer);
 
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  if (template_url_service &&
+      template_url_service->IsSearchResultsPageFromDefaultSearchProvider(
+          match.destination_url)) {
+    UMA_HISTOGRAM_BOOLEAN("Omnibox.Search.OffTheRecord",
+                          profile_->IsOffTheRecord());
+  }
+
   UMA_HISTOGRAM_BOOLEAN(
       "Omnibox.SuggestionUsed.RichEntity",
       match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY);

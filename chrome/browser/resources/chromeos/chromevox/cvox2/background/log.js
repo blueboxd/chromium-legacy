@@ -43,7 +43,7 @@ LogPage.init = function() {
   LogPage.LogStore = LogPage.backgroundWindow.LogStore.getInstance();
 
   /** Create filter checkboxes. */
-  for (var type of LogStore.logTypes()) {
+  for (var type of Object.values(LogStore.LogType)) {
     var label = document.createElement('label');
     var input = document.createElement('input');
     input.id = type + 'Filter';
@@ -65,7 +65,7 @@ LogPage.init = function() {
   };
 
   var params = new URLSearchParams(location.search);
-  for (var type of LogStore.logTypes()) {
+  for (var type of Object.values(LogStore.LogType)) {
     var typeFilter = type + 'Filter';
     LogPage.setFilterTypeEnabled(typeFilter, params.get(typeFilter));
   }
@@ -117,7 +117,7 @@ LogPage.saveLogEvent = function(event) {
  * update logs.
  */
 LogPage.update = function() {
-  for (var type of LogStore.logTypes()) {
+  for (var type of Object.values(LogStore.LogType)) {
     var typeFilter = type + 'Filter';
     var element = document.getElementById(typeFilter);
     element.checked = LogPage.urlPrefs_[typeFilter];
@@ -153,7 +153,7 @@ LogPage.updateLog = function(log, div) {
     p.appendChild(timeStamp);
 
     /** Add hide tree button when logType is tree. */
-    if (log[i].logType == TreeLog.LogType.TREE) {
+    if (log[i].logType == LogStore.LogType.TREE) {
       var toggle = document.createElement('label');
       var toggleCheckbox = document.createElement('input');
       toggleCheckbox.type = 'checkbox';
@@ -191,7 +191,7 @@ LogPage.setFilterTypeEnabled = function(typeFilter, checked) {
  */
 LogPage.createUrlParams = function() {
   var urlParams = [];
-  for (var type of LogStore.logTypes()) {
+  for (var type of Object.values(LogStore.LogType)) {
     var typeFilter = type + 'Filter';
     urlParams.push(typeFilter + '=' + LogPage.urlPrefs_[typeFilter]);
   }

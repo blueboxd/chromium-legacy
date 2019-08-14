@@ -38,10 +38,11 @@ PasswordFormFillData::PasswordFormFillData(
   // by the password autocomplete code.
   username_field.value = preferred_match.username_value;
   password_field.value = preferred_match.password_value;
-  if (!form_on_page.only_for_fallback) {
-    // Fill fields identifying information only for non-fallback case. In
-    // fallback case, a fill popup is shown on clicking on each password
-    // field so no need in any field identifiers.
+  if (!form_on_page.only_for_fallback &&
+      (form_on_page.HasPasswordElement() || form_on_page.IsSingleUsername())) {
+    // Fill fields identifying information only for non-fallback case when
+    // password element is found. In other cases a fill popup is shown on
+    // clicking on each password field so no need in any field identifiers.
     username_field.name = form_on_page.username_element;
     username_field.unique_renderer_id =
         form_on_page.username_element_renderer_id;

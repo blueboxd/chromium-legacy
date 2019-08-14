@@ -185,6 +185,10 @@ const char kUserGestureRequiredPolicy[] = "user-gesture-required";
 
 namespace media {
 
+// Prefer FFmpeg to LibVPX for Vp8 decoding with opaque alpha mode.
+const base::Feature kFFmpegDecodeOpaqueVP8{"FFmpegDecodeOpaqueVP8",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Only used for disabling overlay fullscreen (aka SurfaceView) in Clank.
 const base::Feature kOverlayFullscreenVideo{"overlay-fullscreen-video",
                                             base::FEATURE_ENABLED_BY_DEFAULT};

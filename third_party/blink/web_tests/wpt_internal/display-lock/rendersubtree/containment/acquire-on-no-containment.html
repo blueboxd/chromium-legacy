@@ -4,8 +4,9 @@
 <title>Display Locking: acquire, no containment</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<link rel="match" href="pass-no-containment-ref.html">
+<link rel="match" href="pass-containment-added-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="../resources/utils.js"></script>
 
 <style>
 #container {
@@ -27,9 +28,9 @@ function finishTest(status_string) {
 
 function runTest() {
   const container = document.getElementById("container");
-  container.displayLock.acquire({ timeout: Infinity }).then(
-    () => { finishTest("FAIL"); },
-    (e) => { finishTest("PASS " + e.message); });
+  setInvisible(container).then(() => {
+    finishTest("PASS, contain: " + getComputedStyle(container).contain);
+  });
 }
 
 window.onload = runTest;

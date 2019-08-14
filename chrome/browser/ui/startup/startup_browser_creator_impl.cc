@@ -708,51 +708,52 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
   // may be shown alongside command-line tabs.
   StartupTabs tabs = provider.GetResetTriggerTabs(profile_);
 
-  // Maybe add any tabs which the user has previously pinned.
-  AppendTabs(provider.GetPinnedTabs(command_line_, profile_), &tabs);
-
-  // URLs passed on the command line supersede all others.
+  // URLs passed on the command line supersede all others, except pinned tabs.
   AppendTabs(cmd_line_tabs, &tabs);
-  if (!cmd_line_tabs.empty())
-    return tabs;
+  if (cmd_line_tabs.empty()) {
+    // A Master Preferences file provided with this distribution may specify
+    // tabs to be displayed on first run, overriding all non-command-line tabs,
+    // including the profile reset tab.
+    StartupTabs distribution_tabs =
+        provider.GetDistributionFirstRunTabs(browser_creator_);
+    if (!distribution_tabs.empty())
+      return distribution_tabs;
 
-  // A Master Preferences file provided with this distribution may specify
-  // tabs to be displayed on first run, overriding all non-command-line tabs,
-  // including the profile reset tab.
-  StartupTabs distribution_tabs =
-      provider.GetDistributionFirstRunTabs(browser_creator_);
-  if (!distribution_tabs.empty())
-    return distribution_tabs;
+    StartupTabs onboarding_tabs;
+    if (promotional_tabs_enabled) {
+      // This is a launch from a prompt presented to an inactive user who chose
+      // to open Chrome and is being brought to a specific URL for this one
+      // launch. Launch the browser with the desired welcome back URL in the
+      // foreground and the other ordinary URLs (e.g., a restored session) in
+      // the background.
+      StartupTabs welcome_back_tabs = provider.GetWelcomeBackTabs(
+          profile_, browser_creator_, process_startup);
+      AppendTabs(welcome_back_tabs, &tabs);
 
-  StartupTabs onboarding_tabs;
-  if (promotional_tabs_enabled) {
-    // This is a launch from a prompt presented to an inactive user who chose to
-    // open Chrome and is being brought to a specific URL for this one launch.
-    // Launch the browser with the desired welcome back URL in the foreground
-    // and the other ordinary URLs (e.g., a restored session) in the background.
-    StartupTabs welcome_back_tabs = provider.GetWelcomeBackTabs(
-        profile_, browser_creator_, process_startup);
-    AppendTabs(welcome_back_tabs, &tabs);
-
-    if (welcome_enabled) {
-      // Policies for welcome (e.g., first run) may show promotional and
-      // introductory content depending on a number of system status factors,
-      // including OS and whether or not this is First Run.
-      onboarding_tabs = provider.GetOnboardingTabs(profile_);
-      AppendTabs(onboarding_tabs, &tabs);
+      if (welcome_enabled) {
+        // Policies for welcome (e.g., first run) may show promotional and
+        // introductory content depending on a number of system status factors,
+        // including OS and whether or not this is First Run.
+        onboarding_tabs = provider.GetOnboardingTabs(profile_);
+        AppendTabs(onboarding_tabs, &tabs);
+      }
     }
+
+    // If the user has set the preference indicating URLs to show on opening,
+    // read and add those.
+    StartupTabs prefs_tabs =
+        provider.GetPreferencesTabs(command_line_, profile_);
+    AppendTabs(prefs_tabs, &tabs);
+
+    // Potentially add the New Tab Page. Onboarding content is designed to
+    // replace (and eventually funnel the user to) the NTP. Likewise, URLs
+    // from preferences are explicitly meant to override showing the NTP.
+    if (onboarding_tabs.empty() && prefs_tabs.empty())
+      AppendTabs(provider.GetNewTabPageTabs(command_line_, profile_), &tabs);
   }
 
-  // If the user has set the preference indicating URLs to show on opening,
-  // read and add those.
-  StartupTabs prefs_tabs = provider.GetPreferencesTabs(command_line_, profile_);
-  AppendTabs(prefs_tabs, &tabs);
-
-  // Potentially add the New Tab Page. Onboarding content is designed to
-  // replace (and eventually funnel the user to) the NTP. Likewise, URLs
-  // from preferences are explicitly meant to override showing the NTP.
-  if (onboarding_tabs.empty() && prefs_tabs.empty())
-    AppendTabs(provider.GetNewTabPageTabs(command_line_, profile_), &tabs);
+  // Maybe add any tabs which the user has previously pinned.
+  AppendTabs(provider.GetPinnedTabs(command_line_, profile_), &tabs);
 
   return tabs;
 }

@@ -234,48 +234,11 @@ void BluetoothAdapterCast::UpdateFilter(
                           UMABluetoothDiscoverySessionOutcome::SUCCESS);
 }
 
-void BluetoothAdapterCast::RemoveDiscoverySession(
-    BluetoothDiscoveryFilter* discovery_filter,
-    const base::Closure& callback,
-    DiscoverySessionErrorCallback error_callback) {
-  // The discovery filter is unused for now, as the Cast bluetooth stack does
-  // not expose scan filters yet. However, implementation of filtering would
-  // save numerous UI<->IO threadhops by eliminating uneccessary calls to
-  // GetDevice().
-  // TODO(b/77663782): Wire this up once scan filters are implemented.
-  (void)discovery_filter;
-
-  // If there are pending requests, run the error call immediately.
-  if (pending_discovery_requests_.size() > 0u) {
-    std::move(error_callback)
-        .Run(UMABluetoothDiscoverySessionOutcome::REMOVE_WITH_PENDING_REQUEST);
-    return;
-  }
-
-  // If the count is greater than 1, decrement the count and return success.
-  if (num_discovery_sessions_ > 1) {
-    num_discovery_sessions_--;
-    callback.Run();
-    return;
-  }
-
-  // This was the last active discovery session. Disable scanning.
-  num_discovery_sessions_--;
+void BluetoothAdapterCast::StopScan(DiscoverySessionResultCallback callback) {
   DCHECK(scan_handle_);
   scan_handle_.reset();
-  callback.Run();
-}
-
-void BluetoothAdapterCast::SetDiscoveryFilter(
-    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
-    const base::Closure& callback,
-    DiscoverySessionErrorCallback error_callback) {
-  // The discovery filter is unused for now, as the Cast bluetooth stack does
-  // not expose scan filters yet. However, implementation of filtering would
-  // save numerous UI<->IO threadhops by eliminating unnecessary calls to
-  // GetDevice().
-  NOTIMPLEMENTED();
-  callback.Run();
+  std::move(callback).Run(/*is_error*/ false,
+                          UMABluetoothDiscoverySessionOutcome::SUCCESS);
 }
 
 void BluetoothAdapterCast::RemovePairingDelegateInternal(

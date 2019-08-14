@@ -9,6 +9,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -34,11 +35,15 @@ namespace {
 class BackForwardCacheBrowserTest : public ContentBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kUseFakeUIForMediaStream);
     feature_list_.InitAndEnableFeature(features::kBackForwardCache);
+    ContentBrowserTest::SetUpCommandLine(command_line);
   }
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
+    ContentBrowserTest::SetUpOnMainThread();
   }
 
   WebContentsImpl* web_contents() const {
@@ -719,6 +724,33 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       DoesNotCacheIfRecordingAudio) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to an empty page.
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // Request for audio recording.
+  EXPECT_EQ("success", EvalJs(current_frame_host(), R"(
+    new Promise(resolve => {
+      navigator.mediaDevices.getUserMedia({audio: true})
+        .then(m => { resolve("success"); })
+        .catch(() => { resolve("error"); });
+    });
+  )"));
+
+  RenderFrameDeletedObserver deleted(current_frame_host());
+
+  // 2) Navigate away.
+  shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // The page was still recording audio when we navigated away, so it shouldn't
+  // have been cached.
+  deleted.WaitUntilDeleted();
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        DoesNotCacheIfMainFrameStillLoading) {
   net::test_server::ControllableHttpResponse response(embedded_test_server(),
                                                       "/main_document");
@@ -995,6 +1027,53 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // RenderFrameHost A is evicted from the BackForwardCache:
   delete_observer_rfh_a.WaitUntilDeleted();
+}
+
+// Tests the events are fired when going back from the cache.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Events) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  EXPECT_TRUE(ExecJs(shell(), R"(
+    window.testObservedEvents = [];
+    let event_list = [
+      'visibilitychange',
+      'pagehide',
+      'pageshow',
+      'freeze',
+      'resume',
+    ];
+    for (event of event_list) {
+      let event2 = event;
+      document.addEventListener(event,
+                                () => window.testObservedEvents.push(event2));
+    }
+  )"));
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
+
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_FALSE(delete_observer_rfh_b.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+
+  // 3) Go back to A. Confirm that expected events are fired.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_FALSE(delete_observer_rfh_b.deleted());
+  EXPECT_EQ(rfh_a, current_frame_host());
+  EXPECT_EQ(
+      ListValueOf("visibilitychange", "freeze", "resume", "visibilitychange"),
+      EvalJs(shell(), "window.testObservedEvents"));
 }
 
 }  // namespace content

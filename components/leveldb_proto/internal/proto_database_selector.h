@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/containers/queue.h"
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
@@ -25,7 +26,7 @@ class UniqueProtoDatabase;
 // A wrapper around unique and shared database client. Handles initialization of
 // underlying database as unique or shared as requested.
 // TODO: Discuss the init flow/migration path for unique/shared DB here.
-class ProtoDatabaseSelector
+class COMPONENT_EXPORT(LEVELDB_PROTO) ProtoDatabaseSelector
     : public base::RefCountedThreadSafe<ProtoDatabaseSelector> {
  public:
   ProtoDatabaseSelector(

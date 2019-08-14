@@ -517,10 +517,9 @@ void DownloadHistory::ScheduleRemoveDownload(uint32_t download_id) {
   // For database efficiency, batch removals together if they happen all at
   // once.
   if (removing_ids_.empty()) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&DownloadHistory::RemoveDownloadsBatch,
-                       weak_ptr_factory_.GetWeakPtr()));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&DownloadHistory::RemoveDownloadsBatch,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
   removing_ids_.insert(download_id);
 }

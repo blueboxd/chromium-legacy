@@ -27,7 +27,8 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
     case UserSelectableType::kPreferences:
       return {"preferences",
               PREFERENCES,
-              {PREFERENCES, DICTIONARY, PRIORITY_PREFERENCES, SEARCH_ENGINES}};
+              {PREFERENCES, DICTIONARY, PRIORITY_PREFERENCES, SEARCH_ENGINES,
+               PRINTERS}};
     case UserSelectableType::kPasswords:
       return {"passwords", PASSWORDS, {PASSWORDS}};
     case UserSelectableType::kAutofill:

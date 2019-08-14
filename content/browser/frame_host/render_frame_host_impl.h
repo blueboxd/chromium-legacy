@@ -902,6 +902,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void LeaveBackForwardCache();  // The document leaves the BackForwardCache.
   bool is_in_back_forward_cache() { return is_in_back_forward_cache_; }
 
+  // Called to taint |this| so the pages which have requested MediaStream
+  // (audio/video/etc capture stream) access would not enter BackForwardCache.
+  void OnGrantedMediaStreamAccess();
+  bool was_granted_media_access() { return was_granted_media_access_; }
+
   // Request a new NavigationClient interface from the renderer and returns the
   // ownership of the AssociatedPtr. This is intended for use by the
   // NavigationRequest. Only used with PerNavigationMojoInterface enabled.
@@ -2305,6 +2310,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // The factory to load resources from the BundledExchanges source bound to
   // this file.
   std::unique_ptr<BundledExchangesHandle> bundled_exchanges_handle_;
+
+  // Tainted once MediaStream access was granted.
+  bool was_granted_media_access_ = false;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};

@@ -5,11 +5,6 @@
 <link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
 <script src="resources/utils.js"></script>
-<style>
-#container {
-  contain: style layout;
-}
-</style>
 
 <div id="container">
   <div id="child">
@@ -36,9 +31,10 @@ async_test((t) => {
     t.step(() => assert_equals(getComputedStyle(child).color, "rgb(0, 128, 0)", "child color changed to green"));
     t.step(() => assert_equals(getComputedStyle(grandchild).color, "rgb(0, 128, 0)", "grandchild inherits green color"));
 
+    child.style = "";
+
     // Commit container, lock child.
     await setVisible(container);
-    child.style = "contain: style layout";
     await setInvisible(child);
 
     // Update style outside of the locked subtree.

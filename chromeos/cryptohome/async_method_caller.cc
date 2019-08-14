@@ -104,10 +104,11 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
       const std::string& device_id,
       chromeos::attestation::AttestationChallengeOptions options,
       const std::string& challenge,
+      const std::string& key_name_for_spkac,
       const DataCallback& callback) override {
     CryptohomeClient::Get()->TpmAttestationSignEnterpriseChallenge(
         key_type, CreateAccountIdentifierFromIdentification(cryptohome_id),
-        key_name, domain, device_id, options, challenge,
+        key_name, domain, device_id, options, challenge, key_name_for_spkac,
         base::BindOnce(
             &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
             weak_ptr_factory_.GetWeakPtr(), callback,

@@ -242,20 +242,6 @@
       'ios-device-goma-canary-clobber': 'ios_error',
       'ios-device-goma-latest-clobber': 'ios_error',
 
-      # TODO(yyanagisawa): remove when rename finishes.
-      'Linux x64 Goma Canary (clobber)': 'release_bot',
-      'Linux x64 Goma Canary LocalOutputCache': 'release_bot',
-      'Linux x64 Goma Latest Client (clobber)': 'release_bot',
-      'Linux x64 Goma Latest Client LocalOutputCache': 'release_bot',
-      'Win Goma Canary LocalOutputCache': 'release_bot_x86_minimal_symbols_enable_archive_compression',
-      'Win Goma Latest Client LocalOutputCache': 'release_bot_x86_minimal_symbols_enable_archive_compression',
-      'Mac Goma Canary (clobber)': 'release_bot_mac_strip_minimal_symbols',
-      'Mac Goma Latest Client (clobber)': 'release_bot_mac_strip_minimal_symbols',
-      'Mac Goma Canary LocalOutputCache': 'release_bot_mac_strip_minimal_symbols',
-      'Mac Goma Latest Client LocalOutputCache': 'release_bot_mac_strip_minimal_symbols',
-      'Android Builder (dbg) Goma Canary': 'android_without_codecs_debug_bot',
-      'Android Builder (dbg) Goma Latest Client': 'android_without_codecs_debug_bot',
-
       # TODO(yyanagisawa): deprecate cl.exe.
       'Win cl.exe Goma Canary LocalOutputCache': 'release_bot_x86_minimal_symbols_enable_archive_compression_no_clang',
       'Win cl.exe Goma Latest Client LocalOutputCache': 'release_bot_x86_minimal_symbols_enable_archive_compression_no_clang',
@@ -633,7 +619,7 @@
       # TODO(crbug/597596): Switch this back to debug_trybot when cronet's
       # shared library loading is fixed.
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon',
-      'android-kitkat-arm-coverage-dbg': 'android_debug_static_trybot_java_coverage',
+      'android-kitkat-arm-coverage-rel': 'android_release_trybot_java_coverage',
       'android-kitkat-arm-rel': 'android_release_trybot',
       'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
@@ -1035,10 +1021,6 @@
       'android', 'debug_static_bot', 'x86',
     ],
 
-    'android_debug_static_trybot_java_coverage': [
-      'android', 'debug_static_trybot', 'strip_debug_info', 'java_coverage',
-    ],
-
     'android_debug_trybot': [
       'android', 'debug_trybot',
     ],
@@ -1110,6 +1092,10 @@
     'android_release_trybot_arm64_webview_google': [
       'android', 'release_trybot', 'arm64', 'strip_debug_info',
       'webview_google',
+    ],
+
+    'android_release_trybot_java_coverage': [
+      'android', 'release_trybot', 'strip_debug_info', 'java_coverage',
     ],
 
     'android_release_trybot_x86': [
@@ -2109,10 +2095,6 @@
 
     'debug_static_bot': {
       'mixins': ['debug', 'static', 'minimal_symbols', 'goma'],
-    },
-
-    'debug_static_trybot': {
-      'mixins': ['debug_static_bot'],
     },
 
     'debug_trybot': {

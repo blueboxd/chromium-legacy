@@ -457,7 +457,8 @@ void EnrollmentHandlerChromeOS::StartAttestationBasedEnrollmentFlow() {
           weak_ptr_factory_.GetWeakPtr());
   attestation_flow_->GetCertificate(
       chromeos::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE,
-      EmptyAccountId(), "" /* request_origin */, false /* force_new_key */,
+      EmptyAccountId(), std::string() /* request_origin */,
+      false /* force_new_key */, std::string(), /* key_name */
       callback);
 }
 

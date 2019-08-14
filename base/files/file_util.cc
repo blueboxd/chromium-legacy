@@ -281,20 +281,34 @@ bool TruncateFile(FILE* file) {
 }
 
 int GetUniquePathNumber(const FilePath& path,
-                        const FilePath::StringType& suffix) {
-  bool have_suffix = !suffix.empty();
-  if (!PathExists(path) &&
-      (!have_suffix || !PathExists(FilePath(path.value() + suffix)))) {
-    return 0;
-  }
+                        FilePath::StringPieceType suffix) {
+  // Storage for use by is_unique to reduce heap churn when looping.
+  FilePath::StringType path_with_suffix;
 
-  FilePath new_path;
-  for (int count = 1; count <= kMaxUniqueFiles; ++count) {
-    new_path = path.InsertBeforeExtensionASCII(StringPrintf(" (%d)", count));
-    if (!PathExists(new_path) &&
-        (!have_suffix || !PathExists(FilePath(new_path.value() + suffix)))) {
-      return count;
+  // A function that returns true if |candidate| is unique with and without an
+  // optional suffix.
+  const auto is_unique = [suffix,
+                          &path_with_suffix](const base::FilePath& candidate) {
+    if (!PathExists(candidate)) {
+      if (suffix.empty())
+        return true;
+      path_with_suffix = candidate.value();
+      suffix.AppendToString(&path_with_suffix);
+      if (!PathExists(FilePath(path_with_suffix)))
+        return true;
     }
+    return false;
+  };
+
+  if (is_unique(path))
+    return 0;
+
+  std::string number;
+  for (int count = 1; count <= kMaxUniqueFiles; ++count) {
+    StringAppendF(&number, " (%d)", count);
+    if (is_unique(path.InsertBeforeExtensionASCII(number)))
+      return count;
+    number.clear();
   }
 
   return -1;
@@ -302,7 +316,7 @@ int GetUniquePathNumber(const FilePath& path,
 
 FilePath GetUniquePath(const FilePath& path) {
   FilePath unique_path = path;
-  int uniquifier = GetUniquePathNumber(path, FilePath::StringType());
+  int uniquifier = GetUniquePathNumber(path);
   if (uniquifier > 0) {
     unique_path = unique_path.InsertBeforeExtensionASCII(
         StringPrintf(" (%d)", uniquifier));

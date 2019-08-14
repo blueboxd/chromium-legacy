@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLABLE_AREA_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLABLE_AREA_H_
 
+#include "third_party/blink/public/platform/web_color_scheme.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
@@ -362,6 +363,10 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // specified in CSS.
   virtual ScrollBehavior ScrollBehaviorStyle() const {
     return kScrollBehaviorInstant;
+  }
+
+  virtual WebColorScheme UsedColorScheme() const {
+    return WebColorScheme::kLight;
   }
 
   // Subtracts space occupied by this ScrollableArea's scrollbars.

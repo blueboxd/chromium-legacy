@@ -357,45 +357,21 @@ void BluetoothAdapterAndroid::StartScanWithFilter(
   }
 }
 
-void BluetoothAdapterAndroid::RemoveDiscoverySession(
-    BluetoothDiscoveryFilter* discovery_filter,
-    const base::Closure& callback,
-    DiscoverySessionErrorCallback error_callback) {
-  bool session_removed = false;
-  if (NumDiscoverySessions() == 0) {
-    VLOG(1) << "RemoveDiscoverySession: No scan in progress.";
-    NOTREACHED();
-  } else {
-    session_removed = true;
-    if (NumDiscoverySessions() == 1) {
-      VLOG(1) << "RemoveDiscoverySession: Now 0 sessions. Stopping scan.";
-      session_removed = Java_ChromeBluetoothAdapter_stopScan(
-          AttachCurrentThread(), j_adapter_);
-      for (const auto& device_id_object_pair : devices_) {
-        device_id_object_pair.second->ClearAdvertisementData();
-      }
-    } else {
-      VLOG(1) << "RemoveDiscoverySession: Now "
-              << unsigned(NumDiscoverySessions()) << " sessions.";
-    }
-  }
+void BluetoothAdapterAndroid::StopScan(
+    DiscoverySessionResultCallback callback) {
+  DCHECK(NumDiscoverySessions() == 0);
 
-  if (session_removed) {
-    callback.Run();
+  VLOG(1) << "Stopping scan.";
+  if (Java_ChromeBluetoothAdapter_stopScan(AttachCurrentThread(), j_adapter_)) {
+    std::move(callback).Run(/*is_error=*/false,
+                            UMABluetoothDiscoverySessionOutcome::SUCCESS);
   } else {
     // TODO(scheib): Eventually wire the SCAN_FAILED result through to here.
-    std::move(error_callback).Run(UMABluetoothDiscoverySessionOutcome::UNKNOWN);
+    std::move(callback).Run(/*is_error=*/true,
+                            UMABluetoothDiscoverySessionOutcome::UNKNOWN);
   }
-}
-
-void BluetoothAdapterAndroid::SetDiscoveryFilter(
-    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
-    const base::Closure& callback,
-    DiscoverySessionErrorCallback error_callback) {
-  // TODO(scheib): Support filters crbug.com/490401
-  NOTIMPLEMENTED();
-  std::move(error_callback)
-      .Run(UMABluetoothDiscoverySessionOutcome::NOT_IMPLEMENTED);
+  for (const auto& device_id_object_pair : devices_)
+    device_id_object_pair.second->ClearAdvertisementData();
 }
 
 void BluetoothAdapterAndroid::RemovePairingDelegateInternal(

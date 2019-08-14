@@ -163,7 +163,7 @@ public class NFCTest {
     }
 
     /**
-     * Test that error with type NOT_READABLE is returned if NFC is not supported.
+     * Test that error with type NOT_SUPPORTED is returned if NFC is not supported.
      */
     @Test
     @Feature({"NFCTest"})
@@ -174,7 +174,7 @@ public class NFCTest {
         CancelAllWatchesResponse mockCallback = mock(CancelAllWatchesResponse.class);
         nfc.cancelAllWatches(mockCallback);
         verify(mockCallback).call(mErrorCaptor.capture());
-        assertEquals(NfcErrorType.NOT_READABLE, mErrorCaptor.getValue().errorType);
+        assertEquals(NfcErrorType.NOT_SUPPORTED, mErrorCaptor.getValue().errorType);
     }
 
     /**

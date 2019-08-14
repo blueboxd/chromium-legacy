@@ -12,15 +12,15 @@
 // This source code *cannot* depend on anything from base/ or the C++
 // STL, to keep the final library small, and avoid ugly dependency issues.
 
-#include "linker_jni.h"
+#include "base/android/linker/linker_jni.h"
 
 #include <jni.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
 
-#include "legacy_linker_jni.h"
-#include "modern_linker_jni.h"
+#include "base/android/linker/legacy_linker_jni.h"
+#include "base/android/linker/modern_linker_jni.h"
 
 namespace chromium_android_linker {
 

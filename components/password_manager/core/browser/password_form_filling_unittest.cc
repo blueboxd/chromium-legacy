@@ -63,7 +63,9 @@ class PasswordFormFillingTest : public testing::Test {
     observed_form_.origin = GURL("http://accounts.google.com/a/LoginAuth");
     observed_form_.action = GURL("http://accounts.google.com/a/Login");
     observed_form_.username_element = ASCIIToUTF16("Email");
+    observed_form_.username_element_renderer_id = 100;
     observed_form_.password_element = ASCIIToUTF16("Passwd");
+    observed_form_.password_element_renderer_id = 101;
     observed_form_.submit_element = ASCIIToUTF16("signIn");
     observed_form_.signon_realm = "http://accounts.google.com";
     observed_form_.form_data.name = ASCIIToUTF16("the-form-name");
@@ -180,9 +182,10 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
     best_matches[saved_match_.username_value] = &saved_match_;
 
     PasswordForm observed_form = observed_form_;
-    observed_form.password_element_renderer_id = 123;
-    if (!test_case.new_password_present)
+    if (test_case.new_password_present) {
       observed_form.new_password_element = ASCIIToUTF16("New Passwd");
+      observed_form.new_password_element_renderer_id = 125;
+    }
     if (!test_case.current_password_present) {
       observed_form.password_element.clear();
       observed_form.password_element_renderer_id =

@@ -117,7 +117,8 @@ IntRect LayoutScrollbarTheme::ConstrainTrackRectToTrackPieces(
 void LayoutScrollbarTheme::PaintScrollCorner(
     GraphicsContext& context,
     const DisplayItemClient& display_item_client,
-    const IntRect& corner_rect) {
+    const IntRect& corner_rect,
+    WebColorScheme color_scheme) {
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           context, display_item_client, DisplayItem::kScrollbarCorner))
     return;

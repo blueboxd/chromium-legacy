@@ -93,10 +93,10 @@ void ImeServiceConnector::DownloadImeFileTo(
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;
-  // Disable cookies for this request.
   resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
       net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE;
+  // Disable cookies for this request.
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);

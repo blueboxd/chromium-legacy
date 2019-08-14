@@ -112,6 +112,14 @@ class SecureChannelBleScannerImplTest : public testing::Test {
                   /*is_error=*/false,
                   device::UMABluetoothDiscoverySessionOutcome::SUCCESS);
             }));
+    ON_CALL(*mock_adapter_, StopScan(testing::_))
+        .WillByDefault(testing::Invoke(
+            [](device::BluetoothAdapter::DiscoverySessionResultCallback
+                   callback) {
+              std::move(callback).Run(
+                  /*is_error=*/false,
+                  device::UMABluetoothDiscoverySessionOutcome::SUCCESS);
+            }));
   }
 
   void AddScanFilter(const BleScanner::ScanFilter& scan_filter) {

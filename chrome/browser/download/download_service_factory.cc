@@ -154,8 +154,7 @@ std::unique_ptr<KeyedService> DownloadServiceFactory::BuildServiceInstanceFor(
     auto blob_context_getter_factory =
         std::make_unique<DownloadBlobContextGetterFactory>(key);
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-        base::CreateSingleThreadTaskRunnerWithTraits(
-            {content::BrowserThread::IO});
+        base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
         SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory();
 
@@ -171,8 +170,8 @@ std::unique_ptr<KeyedService> DownloadServiceFactory::BuildServiceInstanceFor(
           key->GetPath().Append(chrome::kDownloadServiceStorageDirname);
     }
     scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                         base::TaskPriority::BEST_EFFORT});
 
     std::unique_ptr<download::TaskScheduler> task_scheduler;
 #if defined(OS_ANDROID)

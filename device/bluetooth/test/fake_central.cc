@@ -553,7 +553,7 @@ void FakeCentral::UpdateFilter(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(
-            std::move(callback), /*is_error*/ true,
+            std::move(callback), /*is_error=*/true,
             device::UMABluetoothDiscoverySessionOutcome::ADAPTER_NOT_PRESENT));
     return;
   }
@@ -571,7 +571,7 @@ void FakeCentral::StartScanWithFilter(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(
-            std::move(callback), /*is_error*/ true,
+            std::move(callback), /*is_error=*/true,
             device::UMABluetoothDiscoverySessionOutcome::ADAPTER_NOT_PRESENT));
     return;
   }
@@ -582,36 +582,21 @@ void FakeCentral::StartScanWithFilter(
                      device::UMABluetoothDiscoverySessionOutcome::SUCCESS));
 }
 
-void FakeCentral::RemoveDiscoverySession(
-    device::BluetoothDiscoveryFilter* discovery_filter,
-    const base::Closure& callback,
-    DiscoverySessionErrorCallback error_callback) {
+void FakeCentral::StopScan(DiscoverySessionResultCallback callback) {
   if (!IsPresent()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(
-            std::move(error_callback),
+            std::move(callback), /*is_error=*/false,
             device::UMABluetoothDiscoverySessionOutcome::ADAPTER_NOT_PRESENT));
     return;
   }
 
-  if (NumDiscoverySessions() == 1) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(error_callback),
-                       device::UMABluetoothDiscoverySessionOutcome::UNKNOWN));
-    return;
-  }
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::BindOnce(callback));
-}
-
-void FakeCentral::SetDiscoveryFilter(
-    std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
-    const base::Closure& callback,
-    DiscoverySessionErrorCallback error_callback) {
-  NOTREACHED();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          std::move(callback), /*is_error=*/false,
+          device::UMABluetoothDiscoverySessionOutcome::ADAPTER_NOT_PRESENT));
 }
 
 void FakeCentral::RemovePairingDelegateInternal(

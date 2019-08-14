@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import pickle
-
+from . import file_io
 from .composition_parts import Component
 
 
@@ -20,14 +19,12 @@ class AstGroup(object):
 
     @staticmethod
     def read_from_file(filepath):
-        with open(filepath, 'r') as pickle_file:
-            ast_group = pickle.load(pickle_file)
+        ast_group = file_io.read_pickle_file(filepath)
         assert isinstance(ast_group, AstGroup)
         return ast_group
 
     def write_to_file(self, filepath):
-        with open(filepath, 'w') as pickle_file:
-            pickle.dump(self, pickle_file)
+        return file_io.write_pickle_file_if_changed(filepath, self)
 
     def add_ast_node(self, node):
         assert node.GetClass() == 'File', (

@@ -46,9 +46,7 @@ HomeButtonController::HomeButtonController(HomeButton* button)
     : button_(button) {
   DCHECK(button_);
   Shell* shell = Shell::Get();
-  // AppListController is only available in non-KioskNext sessions.
-  if (shell->app_list_controller())
-    shell->app_list_controller()->AddObserver(this);
+  shell->app_list_controller()->AddObserver(this);
   shell->session_controller()->AddObserver(this);
   shell->tablet_mode_controller()->AddObserver(this);
   VoiceInteractionController::Get()->AddLocalObserver(this);

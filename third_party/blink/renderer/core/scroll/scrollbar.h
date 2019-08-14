@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLBAR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLBAR_H_
 
+#include "third_party/blink/public/platform/web_color_scheme.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
@@ -198,6 +199,8 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   // for a document, this is either the <body> or <html> element. Otherwise, it
   // is the element that owns our PaintLayerScrollableArea.
   Element* StyleSource() const { return style_source_.Get(); }
+
+  WebColorScheme UsedColorScheme() const;
 
   virtual void Trace(blink::Visitor*);
 

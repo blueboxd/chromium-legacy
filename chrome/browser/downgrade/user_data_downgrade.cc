@@ -152,8 +152,9 @@ void DeleteMovedUserDataSoon() {
   base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   content::BrowserThread::PostBestEffortTask(
       FROM_HERE,
-      base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::CreateTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
       base::Bind(&DeleteMovedUserData, user_data_dir, GetDiskCacheDir()));
 }

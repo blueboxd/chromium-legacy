@@ -381,8 +381,8 @@ class DevicesRequest : public base::RefCountedThreadSafe<DevicesRequest> {
 
 void OnCountDevices(const base::Callback<void(int)>& callback,
                     int device_count) {
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, device_count));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(callback, device_count));
 }
 
 }  // namespace
@@ -540,10 +540,10 @@ AndroidDeviceManager::HandlerThread::~HandlerThread() {
   if (!thread_)
     return;
   // Shut down thread on a thread other than UI so it can join a thread.
-  base::PostTaskWithTraits(
-      FROM_HERE,
-      {base::WithBaseSyncPrimitives(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&HandlerThread::StopThread, thread_));
+  base::PostTask(FROM_HERE,
+                 {base::ThreadPool(), base::WithBaseSyncPrimitives(),
+                  base::TaskPriority::BEST_EFFORT},
+                 base::BindOnce(&HandlerThread::StopThread, thread_));
 }
 
 // static

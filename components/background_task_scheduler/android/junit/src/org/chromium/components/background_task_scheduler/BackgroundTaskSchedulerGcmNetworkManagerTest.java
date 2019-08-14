@@ -39,10 +39,6 @@ import java.util.concurrent.TimeUnit;
 @Config(manifest = Config.NONE,
         shadows = {ShadowGcmNetworkManager.class, ShadowGoogleApiAvailability.class})
 public class BackgroundTaskSchedulerGcmNetworkManagerTest {
-    private static class TestBackgroundTaskNoPublicConstructor extends TestBackgroundTask {
-        protected TestBackgroundTaskNoPublicConstructor() {}
-    }
-
     ShadowGcmNetworkManager mGcmNetworkManager;
 
     private static final long CLOCK_TIME_MS = 1415926535000L;
@@ -225,13 +221,11 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
     @Test
     @Feature({"BackgroundTaskScheduler"})
     public void testGetBackgroundTaskFromTaskParams() {
-        Bundle extras = new Bundle();
-        extras.putString(BackgroundTaskSchedulerGcmNetworkManager.BACKGROUND_TASK_CLASS_KEY,
-                TestBackgroundTask.class.getName());
+        BackgroundTaskSchedulerFactory.setBackgroundTaskFactory(new TestBackgroundTaskFactory());
 
-        TaskParams params = new TaskParams(Integer.toString(TaskIds.TEST), extras);
-        BackgroundTask backgroundTask =
-                BackgroundTaskSchedulerGcmNetworkManager.getBackgroundTaskFromTaskParams(params);
+        TaskParams params = new TaskParams(Integer.toString(TaskIds.TEST), new Bundle());
+        BackgroundTask backgroundTask = BackgroundTaskSchedulerFactory.getBackgroundTaskFromTaskId(
+                Integer.valueOf(params.getTag()));
 
         assertNotNull(backgroundTask);
         assertTrue(backgroundTask instanceof TestBackgroundTask);
@@ -261,18 +255,6 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
         assertEquals(Integer.toString(TaskIds.TEST), scheduledTask.getTag());
         assertEquals(TimeUnit.HOURS.toSeconds(1), oneOffTask.getWindowEnd());
         assertEquals(0, oneOffTask.getWindowStart());
-    }
-
-    @Test
-    @Feature("BackgroundTaskScheduler")
-    public void testScheduleNoPublicConstructor() {
-        TaskInfo oneOffTaskInfo =
-                TaskInfo.createOneOffTask(TaskIds.TEST, TestBackgroundTaskNoPublicConstructor.class,
-                                TIME_24_H_TO_MS)
-                        .build();
-
-        assertFalse(new BackgroundTaskSchedulerGcmNetworkManager().schedule(
-                ContextUtils.getApplicationContext(), oneOffTaskInfo));
     }
 
     @Test

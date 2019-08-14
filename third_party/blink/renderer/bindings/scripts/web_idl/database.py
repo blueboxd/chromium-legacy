@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from . import file_io
 from .typedef import Typedef
 from .union import Union
 from .user_defined_type import UserDefinedType
@@ -86,6 +87,15 @@ class Database(object):
     def __init__(self, database_body):
         assert isinstance(database_body, DatabaseBody)
         self._impl = database_body
+
+    @staticmethod
+    def read_from_file(filepath):
+        database = file_io.read_pickle_file(filepath)
+        assert isinstance(database, Database)
+        return database
+
+    def write_to_file(self, filepath):
+        return file_io.write_pickle_file_if_changed(filepath, self)
 
     def find(self, identifier):
         """

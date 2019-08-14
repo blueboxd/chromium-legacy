@@ -1180,9 +1180,8 @@ void ChromeContentBrowserClient::SetApplicationLocale(
   // the IO thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&SetApplicationLocaleOnIOThread, locale));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&SetApplicationLocaleOnIOThread, locale));
 }
 
 std::unique_ptr<content::BrowserMainParts>
@@ -2356,7 +2355,7 @@ bool ChromeContentBrowserClient::AllowServiceWorker(
   // Record access to database for potential display in UI.
   // Only post the task if this is for a specific tab.
   if (!wc_getter.is_null()) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&TabSpecificContentSettings::ServiceWorkerAccessed,
                        std::move(wc_getter), scope, !allow_javascript,
@@ -3628,8 +3627,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
       base::Bind(&CacheStatsRecorder::Create, render_process_host->GetID()));
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::UI});
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
   registry->AddInterface(
       base::Bind(&rappor::RapporRecorderImpl::Create,
                  g_browser_process->rappor_service()),
@@ -3661,7 +3659,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
             base::Bind(
                 &ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
                 base::Unretained(this), resource_context)),
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+        base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
   }
 #endif
 
@@ -3697,7 +3695,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
   registry->AddInterface(
       base::BindRepeating(&android::AvailableOfflineContentProvider::Create,
                           profile),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
+      base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
 #endif
 
   for (auto* ep : extra_parts_) {
@@ -4363,7 +4361,7 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
 #if defined(OS_ANDROID)
   frame_interfaces_parameterized_->AddInterface(
       base::BindRepeating(&offline_pages::OfflinePageAutoFetcher::Create),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
+      base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
 #endif
 }
 
@@ -4497,7 +4495,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
         chrome_navigation_ui_data->prerender_mode(),
         chrome_navigation_ui_data->prerender_histogram_prefix(),
         base::BindOnce(GetPrerenderCanceller, wc_getter),
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
+        base::CreateSingleThreadTaskRunner({BrowserThread::UI})));
   }
 
   bool is_off_the_record = profile->IsOffTheRecord();
@@ -5023,9 +5021,9 @@ bool ChromeContentBrowserClient::HandleExternalProtocol(
     return false;
 #endif  // defined(ANDROID)
 
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(&LaunchURL, url, web_contents_getter,
-                                          page_transition, has_user_gesture));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&LaunchURL, url, web_contents_getter,
+                                page_transition, has_user_gesture));
   return true;
 }
 

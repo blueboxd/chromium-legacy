@@ -43,6 +43,12 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+namespace {
+// Prefix for naming machine keys used for SignedPublicKeyAndChallenge when
+// challenging the EMK with register=true.
+const char kEnterpriseMachineKeyForSpkacPrefix[] = "attest-ent-machine-";
+}  // namespace
+
 namespace extensions {
 
 namespace api_epkp = api::enterprise_platform_keys_private;
@@ -68,12 +74,14 @@ EPKPChallengeKeyBase::PrepareKeyContext::PrepareKeyContext(
     const std::string& key_name,
     chromeos::attestation::AttestationCertificateProfile certificate_profile,
     bool require_user_consent,
+    const std::string& key_name_for_spkac,
     const base::Callback<void(PrepareKeyResult)>& callback)
     : key_type(key_type),
       account_id(account_id),
       key_name(key_name),
       certificate_profile(certificate_profile),
       require_user_consent(require_user_consent),
+      key_name_for_spkac(key_name_for_spkac),
       callback(callback) {}
 
 EPKPChallengeKeyBase::PrepareKeyContext::PrepareKeyContext(
@@ -199,13 +207,11 @@ void EPKPChallengeKeyBase::PrepareKey(
     const std::string& key_name,
     chromeos::attestation::AttestationCertificateProfile certificate_profile,
     bool require_user_consent,
+    const std::string& key_name_for_spkac,
     const base::Callback<void(PrepareKeyResult)>& callback) {
-  const PrepareKeyContext context = PrepareKeyContext(key_type,
-                                                      account_id,
-                                                      key_name,
-                                                      certificate_profile,
-                                                      require_user_consent,
-                                                      callback);
+  const PrepareKeyContext context =
+      PrepareKeyContext(key_type, account_id, key_name, certificate_profile,
+                        require_user_consent, key_name_for_spkac, callback);
   cryptohome_client_->TpmAttestationIsPrepared(
       base::BindOnce(&EPKPChallengeKeyBase::IsAttestationPreparedCallback,
                      base::Unretained(this), context));
@@ -222,6 +228,18 @@ void EPKPChallengeKeyBase::IsAttestationPreparedCallback(
     cryptohome_client_->TpmIsEnabled(
         base::BindOnce(&EPKPChallengeKeyBase::PrepareKeyErrorHandlerCallback,
                        base::Unretained(this), context));
+    return;
+  }
+
+  if (!context.key_name_for_spkac.empty()) {
+    // Generate a new key and have it signed by PCA.
+    attestation_flow_->GetCertificate(
+        context.certificate_profile, context.account_id,
+        std::string(),  // Not used.
+        true,           // Force a new key to be generated.
+        context.key_name_for_spkac,
+        base::Bind(&EPKPChallengeKeyBase::GetCertificateCallback,
+                   base::Unretained(this), context.callback));
     return;
   }
   // Attestation is available, see if the key we need already exists.
@@ -295,6 +313,7 @@ void EPKPChallengeKeyBase::AskForUserConsentCallback(
       context.certificate_profile, context.account_id,
       std::string(),  // Not used.
       true,           // Force a new key to be generated.
+      std::string(),  // Leave key name empty to generate a default name.
       base::Bind(&EPKPChallengeKeyBase::GetCertificateCallback,
                  base::Unretained(this), context.callback));
 }
@@ -392,18 +411,31 @@ void EPKPChallengeMachineKey::GetDeviceAttestationEnabledCallback(
     return;
   }
 
+  // The EMK cannot be registered as that would relinquish it and the DMServer
+  // relies on it to remain stable. If register_key = true, generate a new
+  // machine key to side-load into the system-wide token. This key will be
+  // used for SignedPublicKeyAndChallenge but the challenge response will still
+  // be singed using the stable EMK.
+  std::string key_name_for_spkac;
+  if (register_key) {
+    key_name_for_spkac = kEnterpriseMachineKeyForSpkacPrefix + extension_->id();
+  }
   PrepareKey(chromeos::attestation::KEY_DEVICE,
              EmptyAccountId(),  // Not used.
              chromeos::attestation::kEnterpriseMachineKey,
              chromeos::attestation::PROFILE_ENTERPRISE_MACHINE_CERTIFICATE,
              false,  // user consent is not required.
+             key_name_for_spkac,
              base::Bind(&EPKPChallengeMachineKey::PrepareKeyCallback,
-                        base::Unretained(this), challenge, register_key));
+                        base::Unretained(this), challenge, register_key,
+                        key_name_for_spkac));
 }
 
-void EPKPChallengeMachineKey::PrepareKeyCallback(const std::string& challenge,
-                                                 bool register_key,
-                                                 PrepareKeyResult result) {
+void EPKPChallengeMachineKey::PrepareKeyCallback(
+    const std::string& challenge,
+    bool register_key,
+    const std::string& key_name_for_spkac,
+    PrepareKeyResult result) {
   if (result != PREPARE_KEY_OK) {
     callback_.Run(false,
                   base::StringPrintf(kGetCertificateFailedError, result));
@@ -418,7 +450,7 @@ void EPKPChallengeMachineKey::PrepareKeyCallback(const std::string& challenge,
       GetDeviceId(),
       register_key ? chromeos::attestation::CHALLENGE_INCLUDE_SIGNED_PUBLIC_KEY
                    : chromeos::attestation::CHALLENGE_OPTION_NONE,
-      challenge,
+      challenge, key_name_for_spkac,
       base::Bind(&EPKPChallengeMachineKey::SignChallengeCallback,
                  base::Unretained(this), register_key));
 }
@@ -432,10 +464,12 @@ void EPKPChallengeMachineKey::SignChallengeCallback(
     return;
   }
   if (register_key) {
+    std::string key_name_for_spkac =
+        kEnterpriseMachineKeyForSpkacPrefix + extension_->id();
     async_caller_->TpmAttestationRegisterKey(
         chromeos::attestation::KEY_DEVICE,
         cryptohome::Identification(),  // Not used.
-        chromeos::attestation::kEnterpriseMachineKey,
+        key_name_for_spkac,
         base::Bind(&EPKPChallengeMachineKey::RegisterKeyCallback,
                    base::Unretained(this), response));
   } else {
@@ -559,7 +593,7 @@ void EPKPChallengeUserKey::GetDeviceAttestationEnabledCallback(
   PrepareKey(chromeos::attestation::KEY_USER, GetAccountId(),
              chromeos::attestation::kEnterpriseUserKey,
              chromeos::attestation::PROFILE_ENTERPRISE_USER_CERTIFICATE,
-             require_user_consent,
+             require_user_consent, std::string() /* key_name_for_spkac */,
              base::Bind(&EPKPChallengeUserKey::PrepareKeyCallback,
                         base::Unretained(this), challenge, register_key));
 }
@@ -580,7 +614,7 @@ void EPKPChallengeUserKey::PrepareKeyCallback(const std::string& challenge,
       chromeos::attestation::kEnterpriseUserKey, GetUserEmail(), GetDeviceId(),
       register_key ? chromeos::attestation::CHALLENGE_INCLUDE_SIGNED_PUBLIC_KEY
                    : chromeos::attestation::CHALLENGE_OPTION_NONE,
-      challenge,
+      challenge, std::string() /* key_name_for_spkac */,
       base::Bind(&EPKPChallengeUserKey::SignChallengeCallback,
                  base::Unretained(this), register_key));
 }

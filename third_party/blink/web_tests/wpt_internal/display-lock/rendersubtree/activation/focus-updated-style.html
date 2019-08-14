@@ -9,7 +9,7 @@
 Focus on a div that has updated style/layout.
 -->
 
-<div id="container" style ="contain:style layout">
+<div id="container">
   <div id="focusable" tabIndex="0">
     focusable thing
   </div>
@@ -17,10 +17,11 @@ Focus on a div that has updated style/layout.
 
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
+<script src="../resources/utils.js"></script>
 
 <script>
 promise_test((t) => {
-  const acquirePromise = container.displayLock.acquire({ timeout: Infinity, activatable: true });
+  const acquirePromise = setInvisibleActivatable(container);
   return new Promise((resolve, reject) => {
     acquirePromise.then(() => {
       container.onbeforeactivate = reject;

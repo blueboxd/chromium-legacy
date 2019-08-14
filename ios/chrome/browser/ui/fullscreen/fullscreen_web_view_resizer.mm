@@ -101,9 +101,6 @@
   CRWWebViewScrollViewProxy* scrollViewProxy = webViewProxy.scrollViewProxy;
 
   if (self.webState->GetContentsMimeType() == "application/pdf") {
-    if (!base::ios::IsRunningOnIOS12OrLater()) {
-      insets.top -= webView.safeAreaInsets.top;
-    }
     scrollViewProxy.contentInset = insets;
     if (!CGRectEqualToRect(webView.frame, webView.superview.bounds)) {
       webView.frame = webView.superview.bounds;

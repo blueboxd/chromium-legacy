@@ -79,8 +79,9 @@ ImageThumbnailRequest::~ImageThumbnailRequest() {
 
 void ImageThumbnailRequest::Start(const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&LoadImageData, path),
       base::BindOnce(&ImageThumbnailRequest::OnLoadComplete,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -111,8 +112,7 @@ void ImageThumbnailRequest::OnLoadComplete(const std::string& data) {
 
 void ImageThumbnailRequest::FinishRequest(SkBitmap thumbnail) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(std::move(callback_), std::move(thumbnail)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(std::move(callback_), std::move(thumbnail)));
   delete this;
 }

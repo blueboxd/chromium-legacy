@@ -755,7 +755,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
     if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       SetNumJobsToWaitForOnInterceptorThread(num_jobs);
     } else {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(
               &CaptivePortalBrowserTest::SetNumJobsToWaitForOnInterceptorThread,
@@ -774,10 +774,9 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
 
     int num_ongoing_jobs = static_cast<int>(ongoing_mock_requests_.size());
     if (num_ongoing_jobs == num_jobs) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(&CaptivePortalBrowserTest::QuitRunLoop,
-                         base::Unretained(this)));
+      base::PostTask(FROM_HERE, {BrowserThread::UI},
+                     base::BindOnce(&CaptivePortalBrowserTest::QuitRunLoop,
+                                    base::Unretained(this)));
       return;
     }
 
@@ -791,10 +790,9 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // WaitForJobs, so makes sure there has been a matching WaitForJobs call.
   void FailJobs(int expected_num_jobs) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(&CaptivePortalBrowserTest::FailJobs,
-                         base::Unretained(this), expected_num_jobs));
+      base::PostTask(FROM_HERE, {BrowserThread::UI},
+                     base::BindOnce(&CaptivePortalBrowserTest::FailJobs,
+                                    base::Unretained(this), expected_num_jobs));
       return;
     }
 
@@ -812,7 +810,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   void FailJobsWithCertError(int expected_num_jobs,
                              const net::SSLInfo& ssl_info) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&CaptivePortalBrowserTest::FailJobsWithCertError,
                          base::Unretained(this), expected_num_jobs, ssl_info));
@@ -832,10 +830,9 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
     EXPECT_EQ(expected_num_jobs,
               static_cast<int>(ongoing_mock_requests_.size()));
     for (auto& job : ongoing_mock_requests_) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(&CaptivePortalBrowserTest::CreateLoader,
-                         base::Unretained(this), std::move(job)));
+      base::PostTask(FROM_HERE, {BrowserThread::UI},
+                     base::BindOnce(&CaptivePortalBrowserTest::CreateLoader,
+                                    base::Unretained(this), std::move(job)));
     }
     ongoing_mock_requests_.clear();
   }
@@ -854,10 +851,9 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // behaves just as in FailJobs.
   void AbandonJobs(int expected_num_jobs) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(&CaptivePortalBrowserTest::AbandonJobs,
-                         base::Unretained(this), expected_num_jobs));
+      base::PostTask(FROM_HERE, {BrowserThread::UI},
+                     base::BindOnce(&CaptivePortalBrowserTest::AbandonJobs,
+                                    base::Unretained(this), expected_num_jobs));
       return;
     }
 
@@ -987,10 +983,9 @@ bool CaptivePortalBrowserTest::OnIntercept(
         if (num_jobs_to_wait_for_ ==
             static_cast<int>(ongoing_mock_requests_.size())) {
           num_jobs_to_wait_for_ = 0;
-          base::PostTaskWithTraits(
-              FROM_HERE, {BrowserThread::UI},
-              base::BindOnce(&CaptivePortalBrowserTest::QuitRunLoop,
-                             base::Unretained(this)));
+          base::PostTask(FROM_HERE, {BrowserThread::UI},
+                         base::BindOnce(&CaptivePortalBrowserTest::QuitRunLoop,
+                                        base::Unretained(this)));
         }
       }
     } else {

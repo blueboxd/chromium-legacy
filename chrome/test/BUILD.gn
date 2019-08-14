@@ -4923,6 +4923,12 @@ test("unit_tests") {
       "../browser/ui/views/toolbar/toolbar_button_unittest.cc",
       "../browser/ui/views/translate/translate_bubble_view_unittest.cc",
     ]
+    if (enable_native_window_nav_buttons) {
+      sources += [ "../browser/ui/views/frame/desktop_linux_browser_frame_view_layout_unittest.cc" ]
+    }
+    if (enable_plugins) {
+      sources += [ "../browser/ui/views/hung_plugin_tab_helper_unittest.cc" ]
+    }
     if (is_mac) {
       sources += [ "../browser/ui/views/frame/browser_non_client_frame_view_mac_unittest.mm" ]
     }
@@ -4932,9 +4938,6 @@ test("unit_tests") {
         "../browser/ui/views/sync/bubble_sync_promo_view_unittest.cc",
         "../browser/ui/views/sync/one_click_signin_dialog_view_unittest.cc",
       ]
-    }
-    if (enable_native_window_nav_buttons) {
-      sources += [ "../browser/ui/views/frame/desktop_linux_browser_frame_view_layout_unittest.cc" ]
     }
     if ((is_linux && !is_chromeos) || is_win) {
       sources += [ "../browser/ui/views/message_center/popups_only_ui_delegate_unittest.cc" ]

@@ -288,6 +288,26 @@ const char* const SmartSessionRestoreTest::kUrls[] = {
     "http://google.com/5",
     "http://google.com/6"};
 
+// Restore session with url passed in command line.
+class SessionRestoreWithURLInCommandLineTest : public SessionRestoreTest {
+ public:
+  SessionRestoreWithURLInCommandLineTest() = default;
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SessionRestoreTest::SetUpCommandLine(command_line);
+    command_line_url_ = ui_test_utils::GetTestUrl(
+        base::FilePath(base::FilePath::kCurrentDirectory),
+        base::FilePath(FILE_PATH_LITERAL("title1.html")));
+    command_line->AppendArg(command_line_url_.spec());
+  }
+
+  GURL command_line_url_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SessionRestoreWithURLInCommandLineTest);
+};
+
 // Verifies that restored tabs have a root window. This is important
 // otherwise the wrong information is communicated to the renderer.
 // (http://crbug.com/342672).
@@ -1826,4 +1846,35 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, MAYBE_CorrectLoadingOrder) {
                 web_contents()[i]->GetLastActiveTime());
     }
   }
+}
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreWithURLInCommandLineTest,
+                       PRE_TabWithURLFromCommandLineIsActive) {
+  SessionStartupPref pref(SessionStartupPref::DEFAULT);
+  SessionStartupPref::SetStartupPref(browser()->profile(), pref);
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  // Add 3 pinned tabs.
+  for (const auto& url : {url1_, url2_, url3_}) {
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+    tab_strip_model->SetTabPinned(tab_strip_model->active_index(), true);
+  }
+  EXPECT_EQ(4, tab_strip_model->count());
+  EXPECT_EQ(3, tab_strip_model->IndexOfFirstNonPinnedTab());
+}
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreWithURLInCommandLineTest,
+                       TabWithURLFromCommandLineIsActive) {
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  EXPECT_EQ(4, tab_strip_model->count());
+  EXPECT_EQ(3, tab_strip_model->active_index());
+  EXPECT_EQ(command_line_url_,
+            tab_strip_model->GetActiveWebContents()->GetURL());
+
+  // Check that the all pinned tabs have been restored.
+  EXPECT_EQ(3, tab_strip_model->IndexOfFirstNonPinnedTab());
+  EXPECT_EQ(url1_, tab_strip_model->GetWebContentsAt(0)->GetURL());
+  EXPECT_EQ(url2_, tab_strip_model->GetWebContentsAt(1)->GetURL());
+  EXPECT_EQ(url3_, tab_strip_model->GetWebContentsAt(2)->GetURL());
 }

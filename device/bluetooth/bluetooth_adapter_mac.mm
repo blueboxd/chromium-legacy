@@ -429,54 +429,24 @@ void BluetoothAdapterMac::StartScanWithFilter(
                                 UMABluetoothDiscoverySessionOutcome::SUCCESS));
 }
 
-void BluetoothAdapterMac::RemoveDiscoverySession(
-    BluetoothDiscoveryFilter* discovery_filter,
-    const base::Closure& callback,
-    DiscoverySessionErrorCallback error_callback) {
-  // Logic to soon be moved into parent adapter class
-  DVLOG(1) << __func__;
+void BluetoothAdapterMac::StopScan(DiscoverySessionResultCallback callback) {
+  low_energy_discovery_manager_->StopDiscovery();
+  for (const auto& device_id_object_pair : devices_) {
+    device_id_object_pair.second->ClearAdvertisementData();
+  }
 
-  if (NumDiscoverySessions() > 1) {
-    // There are active sessions other than the one currently being removed.
-    DCHECK(IsDiscovering());
-    callback.Run();
+  if (classic_discovery_manager_->IsDiscovering() &&
+      !classic_discovery_manager_->StopDiscovery()) {
+    DVLOG(1) << "Failed to stop classic discovery";
+    // TODO: Provide a more precise error here.
+    std::move(callback).Run(/*is_error=*/true,
+                            UMABluetoothDiscoverySessionOutcome::UNKNOWN);
     return;
   }
 
-  DCHECK_EQ(NumDiscoverySessions(), 1);
-
-  // Default to dual discovery if |discovery_filter| is NULL.
-  BluetoothTransport transport = BLUETOOTH_TRANSPORT_DUAL;
-  if (discovery_filter)
-    transport = discovery_filter->GetTransport();
-
-  if (transport & BLUETOOTH_TRANSPORT_CLASSIC) {
-    if (!classic_discovery_manager_->StopDiscovery()) {
-      DVLOG(1) << "Failed to stop classic discovery";
-      // TODO: Provide a more precise error here.
-      std::move(error_callback)
-          .Run(UMABluetoothDiscoverySessionOutcome::UNKNOWN);
-      return;
-    }
-  }
-  if (transport & BLUETOOTH_TRANSPORT_LE) {
-    low_energy_discovery_manager_->StopDiscovery();
-    for (const auto& device_id_object_pair : devices_) {
-      device_id_object_pair.second->ClearAdvertisementData();
-    }
-  }
-
   DVLOG(1) << "Discovery stopped";
-  callback.Run();
-}
-
-void BluetoothAdapterMac::SetDiscoveryFilter(
-    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
-    const base::Closure& callback,
-    DiscoverySessionErrorCallback error_callback) {
-  NOTIMPLEMENTED();
-  std::move(error_callback)
-      .Run(UMABluetoothDiscoverySessionOutcome::NOT_IMPLEMENTED);
+  std::move(callback).Run(/*is_error=*/false,
+                          UMABluetoothDiscoverySessionOutcome::SUCCESS);
 }
 
 bool BluetoothAdapterMac::StartDiscovery(

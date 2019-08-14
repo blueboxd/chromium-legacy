@@ -34,6 +34,7 @@ interface IdleManager {
   // initial state. It will be notified by calls to Update() per the threshold
   // registered for this instance. It can be unregistered by simply closing
   // the pipe.
-  AddMonitor(mojo_base.mojom.TimeDelta threshold, IdleMonitor monitor)
+  AddMonitor(mojo_base.mojom.TimeDelta threshold,
+             pending_remote<IdleMonitor> monitor)
       => (IdleState state);
 };

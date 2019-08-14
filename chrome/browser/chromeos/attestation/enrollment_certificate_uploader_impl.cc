@@ -119,6 +119,7 @@ void EnrollmentCertificateUploaderImpl::GetCertificate() {
       EmptyAccountId(),  // Not used.
       std::string(),     // Not used.
       false,             // Do not force a new key to be generated.
+      std::string(),     // Leave key name empty to generate a default name.
       base::BindRepeating(
           [](const base::RepeatingCallback<void(const std::string&)> on_success,
              const base::RepeatingCallback<void(AttestationStatus)> on_failure,

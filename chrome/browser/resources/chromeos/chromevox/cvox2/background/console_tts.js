@@ -44,7 +44,7 @@ ConsoleTts.prototype = {
         logStr += ' category=' + properties.category;
       }
       logStr += ' "' + textString + '"';
-      LogStore.getInstance().writeTextLog(logStr, TextLog.LogType.SPEECH);
+      LogStore.getInstance().writeTextLog(logStr, LogStore.LogType.SPEECH);
       console.log(logStr);
     }
     return this;

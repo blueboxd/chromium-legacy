@@ -618,7 +618,10 @@ CrSettingsPeoplePageAccountManagerTest.prototype = {
   browsePreload: 'chrome://settings/people_page/account_manager.html',
 
   /** @override */
-  featureList: {enabled: ['chromeos::features::kAccountManager']},
+  featureList: {
+    enabled: ['chromeos::features::kAccountManager'],
+    disabled: ['chromeos::features::kSplitSettings']
+  },
 
   /** @override */
   extraLibraries: CrSettingsBrowserTestCrOS.prototype.extraLibraries.concat([
@@ -1926,10 +1929,6 @@ TEST_F('CrSettingsLanguagesPageTest', 'LanguageMenu', function() {
   mocha.grep(assert(languages_page_tests.TestNames.LanguageMenu)).run();
 });
 
-TEST_F('CrSettingsLanguagesPageTest', 'InputMethods', function() {
-  mocha.grep(assert(languages_page_tests.TestNames.InputMethods)).run();
-});
-
 TEST_F('CrSettingsLanguagesPageTest', 'Spellcheck', function() {
   mocha.grep(assert(languages_page_tests.TestNames.Spellcheck)).run();
 });
@@ -1940,6 +1939,35 @@ TEST_F('CrSettingsLanguagesPageTest', 'SpellcheckOfficialBuild', function() {
       .run();
 });
 GEN('#endif');
+
+GEN('#if defined(OS_CHROMEOS)');
+// eslint-disable-next-line no-var
+var CrSettingsLanguagesPageTestCrOS = class extends CrSettingsBrowserTestCrOS {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/languages_page/languages_page.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../fake_chrome_event.js',
+      '../test_util.js',
+      '../test_browser_proxy.js',
+      'fake_settings_private.js',
+      'fake_language_settings_private.js',
+      'chromeos/fake_input_method_private.js',
+      'test_languages_browser_proxy.js',
+      'languages_page_tests.js',
+    ]);
+  }
+};
+
+TEST_F('CrSettingsLanguagesPageTestCrOS', 'InputMethods', function() {
+  mocha.grep(assert(languages_page_tests.TestNames.InputMethods)).run();
+});
+
+GEN('#endif  // defined(OS_CHROMEOS)');
 
 /**
  * @constructor

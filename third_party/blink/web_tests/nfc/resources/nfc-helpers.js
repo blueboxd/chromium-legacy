@@ -380,7 +380,7 @@ class MockNFC {
     if (this.hw_status_ === NFCHWStatus.DISABLED)
       return createNFCError(device.mojom.NFCErrorType.NOT_READABLE);
     if (this.hw_status_ === NFCHWStatus.NOT_SUPPORTED)
-      return createNFCError(device.mojom.NFCErrorType.NOT_READABLE);
+      return createNFCError(device.mojom.NFCErrorType.NOT_SUPPORTED);
     return null;
   }
 

@@ -26,12 +26,7 @@ AppListTestHelper::AppListTestHelper() {
 }
 
 AppListTestHelper::~AppListTestHelper() {
-  // |app_list_controller_| could be released before Shell in KioskNextShell
-  // tests.
-  if (app_list_controller_ &&
-      app_list_controller_ == Shell::Get()->app_list_controller()) {
-    app_list_controller_->SetClient(nullptr);
-  }
+  app_list_controller_->SetClient(nullptr);
 }
 
 void AppListTestHelper::WaitUntilIdle() {

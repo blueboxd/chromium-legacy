@@ -24,8 +24,11 @@ class CSSTransformNonInterpolableValue : public NonInterpolableValue {
  public:
   static scoped_refptr<CSSTransformNonInterpolableValue> Create(
       TransformOperations&& transform) {
+    const bool is_single = true;
+    const bool is_additive = false;
     return base::AdoptRef(new CSSTransformNonInterpolableValue(
-        true, std::move(transform), EmptyTransformOperations(), false, false));
+        is_single, std::move(transform), EmptyTransformOperations(),
+        is_additive, is_additive));
   }
 
   static scoped_refptr<CSSTransformNonInterpolableValue> CreateAdditive(
@@ -52,7 +55,10 @@ class CSSTransformNonInterpolableValue : public NonInterpolableValue {
   scoped_refptr<CSSTransformNonInterpolableValue> Composite(
       const CSSTransformNonInterpolableValue& other,
       double other_progress) const {
+    DCHECK(is_single_);
     DCHECK(!IsAdditive());
+
+    // This is the case where we have no B, so the equation is U + A.
     if (other.is_single_) {
       DCHECK_EQ(other_progress, 0);
       DCHECK(other.IsAdditive());
@@ -61,6 +67,10 @@ class CSSTransformNonInterpolableValue : public NonInterpolableValue {
       return Create(std::move(result));
     }
 
+    // Otherwise, we must compute (U + A)(1 - f) + (U + B)f - where U is only
+    // included if the keyframe is additive. This requires pre-pending the
+    // underlying ops to the necessary sides and then performing the
+    // interpolation.
     DCHECK(other.is_start_additive_ || other.is_end_additive_);
     TransformOperations start;
     start.Operations() = other.is_start_additive_
@@ -80,6 +90,8 @@ class CSSTransformNonInterpolableValue : public NonInterpolableValue {
     DCHECK(!IsAdditive());
     return end_.Blend(start_, progress);
   }
+
+  bool IsSingle() const { return is_single_; }
 
   DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 
@@ -151,6 +163,34 @@ class InheritedTransformChecker
  private:
   const TransformOperations inherited_transform_;
 };
+
+// Performs interpolation for the UnderlyingValueOwner, if necessary. This
+// requires us to:
+//
+//   i. Compute the interpolation for the CSSTransformNonInterpolableValue.
+//   ii. Reset the underlying_value_owner's interpolable_value (which is the
+//       progress) to 0. This is necessary to avoid double-interpolating in
+//       ApplyStandardPropertyValue.
+void InterpolateUnderlyingValueOwnerIfNecessary(
+    UnderlyingValueOwner& underlying_value_owner) {
+  const CSSTransformNonInterpolableValue& underlying_non_interpolable_value =
+      ToCSSTransformNonInterpolableValue(
+          *underlying_value_owner.Value().non_interpolable_value);
+  // If the UnderlyingValueOwner is already single, it is either based on the
+  // underlying CSS style itself, or has already been interpolated.
+  if (underlying_non_interpolable_value.IsSingle())
+    return;
+
+  double underlying_progress =
+      ToInterpolableNumber(*underlying_value_owner.Value().interpolable_value)
+          .Value();
+  underlying_value_owner.SetInterpolableValue(
+      std::make_unique<InterpolableNumber>(0));
+  underlying_value_owner.SetNonInterpolableValue(
+      CSSTransformNonInterpolableValue::Create(
+          underlying_non_interpolable_value.GetInterpolatedTransform(
+              underlying_progress)));
+}
 
 }  // namespace
 
@@ -251,15 +291,23 @@ void CSSTransformInterpolationType::Composite(
     double underlying_fraction,
     const InterpolationValue& value,
     double interpolation_fraction) const {
+  // If the first InvalidatableInterpolation in the stack doesn't depend on an
+  // underlying value, it becomes the underlying value, U. However at this point
+  // U has not yet been interpolated (as interpolation for
+  // CSSTransformInterpolationType only happens in either Composite or
+  // ApplyStandardPropertyValue), and so we have to do it here.
+  InterpolateUnderlyingValueOwnerIfNecessary(underlying_value_owner);
+
+  // Now that U has been resolved, do the actual compositing.
   const CSSTransformNonInterpolableValue& underlying_non_interpolable_value =
       ToCSSTransformNonInterpolableValue(
-          *underlying_value_owner.Value().non_interpolable_value);
+          *underlying_value_owner.GetNonInterpolableValue());
   const CSSTransformNonInterpolableValue& non_interpolable_value =
       ToCSSTransformNonInterpolableValue(*value.non_interpolable_value);
   double progress = ToInterpolableNumber(*value.interpolable_value).Value();
-  underlying_value_owner.MutableValue().non_interpolable_value =
+  underlying_value_owner.SetNonInterpolableValue(
       underlying_non_interpolable_value.Composite(non_interpolable_value,
-                                                  progress);
+                                                  progress));
 }
 
 void CSSTransformInterpolationType::ApplyStandardPropertyValue(

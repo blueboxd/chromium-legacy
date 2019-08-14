@@ -305,10 +305,20 @@ struct PasswordForm {
   bool IsPossibleChangePasswordFormWithoutUsername() const;
 
   // Returns true if current password element is set.
+  bool HasUsernameElement() const;
+
+  // Returns true if current password element is set.
   bool HasPasswordElement() const;
+
+  // Returns true if current password element is set.
+  bool HasNewPasswordElement() const;
 
   // True iff |federation_origin| isn't empty.
   bool IsFederatedCredential() const;
+
+  // True if username element is set and password and new password elements are
+  // not set.
+  bool IsSingleUsername() const;
 
   // Equality operators for testing.
   bool operator==(const PasswordForm& form) const;

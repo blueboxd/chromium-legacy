@@ -99,8 +99,8 @@ class BookmarkFaviconFetcher: public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
 
   scoped_refptr<base::SequencedTaskRunner> background_io_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::TaskPriority::BEST_EFFORT});
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkFaviconFetcher);
 };

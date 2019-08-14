@@ -182,16 +182,6 @@ suite('route', function() {
     assertEquals(
         settings.routes.SITE_SETTINGS_COOKIES,
         settings.getRouteForPath('/content/cookies/'));
-
-    if (cr.isChromeOS) {
-      // Path with a dash.
-      assertEquals(
-          settings.routes.KEYBOARD,
-          settings.getRouteForPath('/keyboard-overlay'));
-      assertEquals(
-          settings.routes.KEYBOARD,
-          settings.getRouteForPath('/keyboard-overlay/'));
-    }
   });
 
   test('isNavigableDialog', function() {

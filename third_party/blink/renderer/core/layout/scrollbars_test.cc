@@ -1450,6 +1450,8 @@ class ScrollbarAppearanceTest
 
 class StubWebThemeEngine : public WebThemeEngine {
  public:
+  StubWebThemeEngine() { painted_color_scheme_.fill(WebColorScheme::kLight); }
+
   WebSize GetSize(Part part) override {
     switch (part) {
       case kPartScrollbarHorizontalThumb:
@@ -1469,6 +1471,24 @@ class StubWebThemeEngine : public WebThemeEngine {
   }
   static constexpr int kMinimumHorizontalLength = 51;
   static constexpr int kMinimumVerticalLength = 52;
+
+  void Paint(cc::PaintCanvas*,
+             Part part,
+             State,
+             const WebRect&,
+             const ExtraParams*,
+             blink::WebColorScheme color_scheme) override {
+    // Make  sure we don't overflow the array.
+    DCHECK(part <= kPartProgressBar);
+    painted_color_scheme_[part] = color_scheme;
+  }
+
+  WebColorScheme GetPaintedPartColorScheme(Part part) const {
+    return painted_color_scheme_[part];
+  }
+
+ private:
+  std::array<WebColorScheme, kPartProgressBar + 1> painted_color_scheme_;
 };
 
 constexpr int StubWebThemeEngine::kMinimumHorizontalLength;
@@ -2645,6 +2665,63 @@ TEST_F(ScrollbarTrackMarginsTest,
   EXPECT_EQ(39, horizontal_track_->MarginRight());
   EXPECT_EQ(26, vertical_track_->MarginTop());
   EXPECT_EQ(51, vertical_track_->MarginBottom());
+}
+
+class ScrollbarColorSchemeTest : public ScrollbarAppearanceTest {};
+
+INSTANTIATE_TEST_SUITE_P(NonOverlay,
+                         ScrollbarColorSchemeTest,
+                         testing::Values(false));
+
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+// Not able to paint non-overlay scrollbars through ThemeEngine on Android or
+// Mac.
+#define MAYBE_ThemeEnginePaint DISABLED_ThemeEnginePaint
+#else
+#define MAYBE_ThemeEnginePaint ThemeEnginePaint
+#endif
+
+TEST_P(ScrollbarColorSchemeTest, MAYBE_ThemeEnginePaint) {
+  ScopedTestingPlatformSupport<ScrollbarTestingPlatformSupport> platform;
+  ScopedCSSColorSchemeForTest css_feature_scope(true);
+
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      #scrollable {
+        width: 100px;
+        height: 100px;
+        overflow: scroll;
+        color-scheme: dark;
+      }
+      #filler {
+        width: 200px;
+        height: 200px;
+      }
+    </style>
+    <div id="scrollable">
+      <div id="filler"></div>
+    </div>
+  )HTML");
+
+  GetDocument().GetSettings()->SetPreferredColorScheme(
+      PreferredColorScheme::kDark);
+
+  Compositor().BeginFrame();
+
+  auto* theme_engine =
+      static_cast<StubWebThemeEngine*>(Platform::Current()->ThemeEngine());
+  EXPECT_EQ(WebColorScheme::kDark,
+            theme_engine->GetPaintedPartColorScheme(
+                WebThemeEngine::kPartScrollbarHorizontalThumb));
+  EXPECT_EQ(WebColorScheme::kDark,
+            theme_engine->GetPaintedPartColorScheme(
+                WebThemeEngine::kPartScrollbarVerticalThumb));
+  EXPECT_EQ(WebColorScheme::kDark, theme_engine->GetPaintedPartColorScheme(
+                                       WebThemeEngine::kPartScrollbarCorner));
 }
 
 }  // namespace

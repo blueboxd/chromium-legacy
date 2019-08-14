@@ -3910,16 +3910,20 @@ TEST_F(PasswordManagerTest, FillSingleUsername) {
   FormStructure form_structure(form_data);
   form_structure.field(0)->set_server_type(autofill::SINGLE_USERNAME);
 
+#if !defined(OS_IOS)
   PasswordFormFillData fill_data;
   EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
   manager()->ProcessAutofillPredictions(&driver_, {&form_structure});
   EXPECT_EQ(form_id, fill_data.form_renderer_id);
   EXPECT_EQ(saved_match.username_value, fill_data.username_field.value);
-  EXPECT_EQ(saved_match.username_value, fill_data.username_field.value);
+  EXPECT_EQ(saved_match.password_value, fill_data.password_field.value);
   EXPECT_EQ(field_id, fill_data.username_field.unique_renderer_id);
   EXPECT_EQ(saved_match.password_value, fill_data.password_field.value);
   EXPECT_EQ(std::numeric_limits<uint32_t>::max(),
             fill_data.password_field.unique_renderer_id);
+#else   // defined(OS_IOS)
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
+#endif  // !defined(OS_IOS)
 }
 
 }  // namespace password_manager

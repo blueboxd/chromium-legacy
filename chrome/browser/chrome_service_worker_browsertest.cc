@@ -237,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
   msg.owned_encoded_message = blink::EncodeStringMessage(message_data);
   msg.encoded_message = msg.owned_encoded_message;
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &content::ServiceWorkerContext::StartServiceWorkerAndDispatchMessage,
@@ -262,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
   msg.owned_encoded_message = blink::EncodeStringMessage(message_data);
   msg.encoded_message = msg.owned_encoded_message;
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&content::ServiceWorkerContext::
                          StartServiceWorkerAndDispatchLongRunningMessage,

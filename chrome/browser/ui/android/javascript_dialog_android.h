@@ -50,6 +50,8 @@ class JavaScriptDialogAndroid : public JavaScriptDialog {
               jboolean button_clicked);
 
  private:
+  friend class JavaScriptDialog;
+
   JavaScriptDialogAndroid(content::WebContents* parent_web_contents,
                           content::WebContents* alerting_web_contents,
                           const base::string16& title,

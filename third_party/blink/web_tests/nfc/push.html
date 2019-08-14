@@ -96,7 +96,7 @@ nfc_test(() => {
 nfc_test(() => {
   mockNFC.setHWStatus(NFCHWStatus.NOT_SUPPORTED);
   return assertRejectsWithError(navigator.nfc.push(test_text_data),
-                                'NotReadableError');
+                                'NotSupportedError');
 }, 'nfc.push should fail when NFC HW is not supported.');
 
 nfc_test(() => {

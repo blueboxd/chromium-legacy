@@ -100,16 +100,18 @@ class EPKPChallengeKeyBase {
   // Returns the enterprise virtual device ID.
   std::string GetDeviceId() const;
 
-  // Prepares the key for signing. It will first check if the key exists. If
-  // the key does not exist, it will call AttestationFlow::GetCertificate() to
-  // get a new one. If require_user_consent is true, it will explicitly ask for
-  // user consent before calling GetCertificate().
+  // Prepares the key for signing. It will first check if a new key should be
+  // generated, i.e. |key_name_for_spkac| is not empty or the key doesn't
+  // exist and, if necessary, call AttestationFlow::GetCertificate() to get a
+  // new one. If require_user_consent is true, it will explicitly ask for user
+  // consent before calling GetCertificate().
   void PrepareKey(
       chromeos::attestation::AttestationKeyType key_type,
       const AccountId& account_id,
       const std::string& key_name,
       chromeos::attestation::AttestationCertificateProfile certificate_profile,
       bool require_user_consent,
+      const std::string& key_name_for_spkac,
       const base::Callback<void(PrepareKeyResult)>& callback);
 
   chromeos::CryptohomeClient* cryptohome_client_;
@@ -130,6 +132,7 @@ class EPKPChallengeKeyBase {
                       chromeos::attestation::AttestationCertificateProfile
                           certificate_profile,
                       bool require_user_consent,
+                      const std::string& key_name_for_spkac,
                       const base::Callback<void(PrepareKeyResult)>& callback);
     PrepareKeyContext(const PrepareKeyContext& other);
     ~PrepareKeyContext();
@@ -139,6 +142,7 @@ class EPKPChallengeKeyBase {
     const std::string key_name;
     chromeos::attestation::AttestationCertificateProfile certificate_profile;
     bool require_user_consent;
+    std::string key_name_for_spkac;
     const base::Callback<void(PrepareKeyResult)> callback;
   };
 
@@ -195,6 +199,7 @@ class EPKPChallengeMachineKey : public EPKPChallengeKeyBase {
                                            bool enabled);
   void PrepareKeyCallback(const std::string& challenge,
                           bool register_key,
+                          const std::string& key_name_for_spkac,
                           PrepareKeyResult result);
   void SignChallengeCallback(bool register_key,
                              bool success,

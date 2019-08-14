@@ -186,8 +186,8 @@ void SetupStabilityDebugging() {
         browser_watcher::kStabilityDebuggingFeature,
         browser_watcher::kInitFlushParam, false);
     if (should_flush) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {base::MayBlock()},
+      base::PostTask(
+          FROM_HERE, {base::ThreadPool(), base::MayBlock()},
           base::BindOnce(&base::PersistentMemoryAllocator::Flush,
                          base::Unretained(global_tracker->allocator()), true));
     }

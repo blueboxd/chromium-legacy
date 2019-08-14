@@ -265,9 +265,9 @@ void PlatformVerificationFlow::GetCertificate(const ChallengeContext& context,
   AttestationFlow::CertificateCallback certificate_callback =
       base::Bind(&PlatformVerificationFlow::OnCertificateReady, this, context,
                  account_id, base::Passed(&timer));
-  attestation_flow_->GetCertificate(PROFILE_CONTENT_PROTECTION_CERTIFICATE,
-                                    account_id, context.service_id,
-                                    force_new_key, certificate_callback);
+  attestation_flow_->GetCertificate(
+      PROFILE_CONTENT_PROTECTION_CERTIFICATE, account_id, context.service_id,
+      force_new_key, std::string() /*key_name*/, certificate_callback);
 }
 
 void PlatformVerificationFlow::OnCertificateReady(
@@ -341,10 +341,12 @@ void PlatformVerificationFlow::OnChallengeReady(
     AttestationFlow::CertificateCallback renew_callback =
         base::Bind(&PlatformVerificationFlow::RenewCertificateCallback, this,
                    certificate_chain);
-    attestation_flow_->GetCertificate(PROFILE_CONTENT_PROTECTION_CERTIFICATE,
-                                      account_id, context.service_id,
-                                      true,  // force_new_key
-                                      renew_callback);
+    attestation_flow_->GetCertificate(
+        PROFILE_CONTENT_PROTECTION_CERTIFICATE, account_id, context.service_id,
+        true,           // force_new_key
+        std::string(),  // key_name, empty means a default one will be
+                        // generated.
+        renew_callback);
   }
 }
 

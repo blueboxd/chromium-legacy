@@ -105,12 +105,6 @@ bool IATFindHookFuncCallback(const base::win::PEImage& image,
   if (hook_func_info == nullptr)
     return false;
 
-  // Check for the right module.
-  if (module == nullptr ||
-      ::strnicmp(module, hook_func_info->imported_from_module,
-                 ::strlen(module)) != 0)
-    return true;
-
   // Check for the right function.
   if (import_name == nullptr ||
       ::strnicmp(import_name, hook_func_info->function_name,
@@ -178,9 +172,11 @@ DWORD ApplyIATHook(HMODULE module_handle,
 
   // First go through the IAT. If we don't find the import we are looking
   // for in IAT, search delay import table.
-  target_image.EnumAllImports(IATFindHookFuncCallback, &hook_info);
+  target_image.EnumAllImports(IATFindHookFuncCallback, &hook_info,
+                              imported_from_module);
   if (!hook_info.finished_operation) {
-    target_image.EnumAllDelayImports(IATFindHookFuncCallback, &hook_info);
+    target_image.EnumAllDelayImports(IATFindHookFuncCallback, &hook_info,
+                                     imported_from_module);
   }
 
   return hook_info.return_code;

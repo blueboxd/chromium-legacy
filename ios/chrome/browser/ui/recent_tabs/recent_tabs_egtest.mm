@@ -137,7 +137,8 @@ id<GREYMatcher> TitleOfTestPage() {
 }
 
 // Tests restoring a tab from incognito when the normal WebStateList is empty.
-- (void)testRestoreTabFromIncognitoWithNoNormalTabsOpen {
+// TODO(crbug.com/989487): Test DISABLED, to be deleted.
+- (void)DISABLED_testRestoreTabFromIncognitoWithNoNormalTabsOpen {
   const GURL testPageURL = web::test::HttpServer::MakeUrl(kURLOfTestPage);
 
   // Open the test page in a new tab.

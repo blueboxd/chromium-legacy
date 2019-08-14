@@ -17,7 +17,7 @@ class BluetoothAdapterCastTest : public testing::Test {
   BluetoothAdapterCastTest() = default;
   ~BluetoothAdapterCastTest() override {
     BluetoothAdapterCast::ResetFactoryForTest();
-  };
+  }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;

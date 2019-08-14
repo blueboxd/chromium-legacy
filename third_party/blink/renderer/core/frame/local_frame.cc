@@ -527,7 +527,7 @@ void LocalFrame::DidFreeze() {
     // frame must be evicted in such cases.
     if (RuntimeEnabledFeatures::BackForwardCacheEnabled()) {
       // TODO(hajimehoshi): Set the callback only when the frame is frozen by
-      // BackForwardCache (crbug.com/990718).
+      // BackForwardCache. See https://crbug.com/990718.
       Vector<scoped_refptr<DOMWrapperWorld>> worlds;
       DOMWrapperWorld::AllWorldsInCurrentThread(worlds);
       for (const auto& world : worlds) {
@@ -549,6 +549,16 @@ void LocalFrame::DidFreeze() {
 
 void LocalFrame::DidResume() {
   if (GetDocument()) {
+    // TODO(hajimehoshi): Unset the callback only when the frame is unfrozen by
+    // BackForwardCache. See https://crbug.com/990718.
+    Vector<scoped_refptr<DOMWrapperWorld>> worlds;
+    DOMWrapperWorld::AllWorldsInCurrentThread(worlds);
+    for (const auto& world : worlds) {
+      ScriptState* script_state = ToScriptState(this, *world);
+      ScriptState::Scope scope(script_state);
+      script_state->GetContext()->SetAbortScriptExecution(nullptr);
+    }
+
     const base::TimeTicks resume_event_start = base::TimeTicks::Now();
     GetDocument()->DispatchEvent(*Event::Create(event_type_names::kResume));
     const base::TimeTicks resume_event_end = base::TimeTicks::Now();
@@ -562,14 +572,6 @@ void LocalFrame::DidResume() {
             GetDocument()->GetResourceCoordinator()) {
       document_resource_coordinator->SetLifecycleState(
           resource_coordinator::mojom::LifecycleState::kRunning);
-    }
-
-    Vector<scoped_refptr<DOMWrapperWorld>> worlds;
-    DOMWrapperWorld::AllWorldsInCurrentThread(worlds);
-    for (const auto& world : worlds) {
-      ScriptState* script_state = ToScriptState(this, *world);
-      ScriptState::Scope scope(script_state);
-      script_state->GetContext()->SetAbortScriptExecution(nullptr);
     }
   }
 }
@@ -995,7 +997,7 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
     return true;
 
   // Navigating window.opener cross origin, without user activation. See
-  // crbug.com/813643.
+  // https://crbug.com/813643.
   if (Client()->Opener() == target_frame &&
       !HasTransientUserActivation(this, false /* check_if_main_thread */) &&
       !target_frame.GetSecurityContext()->GetSecurityOrigin()->CanAccess(

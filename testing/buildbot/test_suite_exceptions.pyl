@@ -19,7 +19,7 @@
   'android_webview_unittests': {
     'remove_from': [
       # On chromium.android, these do not need to run prior to M.
-      'android-kitkat-arm-coverage-dbg',
+      'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Tablet Tester',
@@ -294,7 +294,7 @@
     ],
     'modifications': {
       # chromium.android
-      'android-kitkat-arm-coverage-dbg': {
+      'android-kitkat-arm-coverage-rel': {
         'swarming': {
           'shards': 12,
         }
@@ -1051,7 +1051,7 @@
       # chromium.android
       'android-asan',
       # Don't run on trybots; waterfall is enough.
-      'android-kitkat-arm-coverage-dbg',
+      'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-rel',
       # No capacity for tablet testers.
@@ -1065,7 +1065,7 @@
       # chromium.android
       'android-asan',
       # Don't run on trybots; waterfall is enough.
-      'android-kitkat-arm-coverage-dbg',
+      'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-rel',
       # No capacity for tablet testers.
@@ -1079,7 +1079,7 @@
       # chromium.android
       'android-asan',
       # Don't run on trybots; waterfall is enough.
-      'android-kitkat-arm-coverage-dbg',
+      'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-rel',
       # No capacity for tablet testers.
@@ -1100,7 +1100,7 @@
       # chromium.android
       'android-asan',
       # Don't run on trybots; waterfall is enough.
-      'android-kitkat-arm-coverage-dbg',
+      'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-rel',
       # No capacity for tablet testers.
@@ -1113,7 +1113,7 @@
     # Only run these on the phone testers for now due to capacity.
     'remove_from': [
       # chromium.android
-      'android-kitkat-arm-coverage-dbg',
+      'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-rel',
       'KitKat Tablet Tester',
@@ -1261,7 +1261,7 @@
     'remove_from': [
       'android-asan',
       'android-code-coverage',
-      'android-kitkat-arm-coverage-dbg',
+      'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-rel',
       'Android CFI',
@@ -1463,7 +1463,7 @@
   'telemetry_perf_unittests': {
     'modifications': {
       # chromium.android
-      'android-kitkat-arm-coverage-dbg': {
+      'android-kitkat-arm-coverage-rel': {
         'args': [
           '--browser=android-chromium',
           '--device=android',
@@ -2087,7 +2087,7 @@
     'remove_from': [
       # This test frequently fails on Android, https://crbug.com/824959
       # chromium.android
-      'android-kitkat-arm-coverage-dbg',
+      'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Tablet Tester',

@@ -830,7 +830,6 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
   // overview + applist case.
   Shell* shell = Shell::Get();
   if (!shell->tablet_mode_controller()->InTabletMode() &&
-      shell->app_list_controller() &&
       shell->app_list_controller()->IsVisible()) {
     return;
   }

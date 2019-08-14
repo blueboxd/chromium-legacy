@@ -188,10 +188,10 @@ SiteEngagementService::GetAllDetailsInBackground(
 
 SiteEngagementService::SiteEngagementService(Profile* profile)
     : SiteEngagementService(profile, base::DefaultClock::GetInstance()) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&SiteEngagementService::AfterStartupTask,
-                     weak_factory_.GetWeakPtr()));
+  base::PostTask(FROM_HERE,
+                 {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
+                 base::BindOnce(&SiteEngagementService::AfterStartupTask,
+                                weak_factory_.GetWeakPtr()));
 
   if (!g_updated_from_variations) {
     SiteEngagementScore::UpdateFromVariations(kEngagementParams);
@@ -479,9 +479,9 @@ void SiteEngagementService::MaybeRecordMetrics() {
   // strong reference to HostContentSettingsMap (which supports outliving the
   // profile), and needs to avoid using any members of SiteEngagementService
   // (which does not). See https://crbug.com/900022.
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
           &GetAllDetailsInBackground, clock_->Now(),

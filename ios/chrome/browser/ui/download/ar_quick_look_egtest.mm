@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #import "base/test/ios/wait_util.h"
 #include "ios/chrome/browser/download/download_test_util.h"
-#include "ios/chrome/browser/download/features.h"
 #include "ios/chrome/browser/download/usdz_mime_type.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -85,12 +84,6 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
 
 // Tests that QLPreviewController is shown for sucessfully downloaded USDZ file.
 - (void)testDownloadUsdz {
-  if (!download::IsUsdzPreviewEnabled()) {
-    EARL_GREY_TEST_SKIPPED(
-        @"Disabled if 'USDZPreview' feature is disabled or on iOS versions "
-         "below 12 because QLPreviewController is not available.");
-  }
-
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
   [ChromeEarlGrey waitForWebStateContainingText:"Good"];
   [ChromeEarlGrey tapWebStateElementWithID:@"good"];
@@ -122,12 +115,6 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
 }
 
 - (void)testDownloadUnauthorized {
-  if (!download::IsUsdzPreviewEnabled()) {
-    EARL_GREY_TEST_SKIPPED(
-        @"Disabled if 'USDZPreview' feature is disabled or on iOS versions "
-         "below 12 because QLPreviewController is not available.");
-  }
-
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
   [ChromeEarlGrey waitForWebStateContainingText:"Unauthorized"];
   [ChromeEarlGrey tapWebStateElementWithID:@"unauthorized"];
@@ -160,12 +147,6 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
 }
 
 - (void)testDownloadForbidden {
-  if (!download::IsUsdzPreviewEnabled()) {
-    EARL_GREY_TEST_SKIPPED(
-        @"Disabled if 'USDZPreview' feature is disabled or on iOS versions "
-         "below 12 because QLPreviewController is not available.");
-  }
-
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
   [ChromeEarlGrey waitForWebStateContainingText:"Forbidden"];
   [ChromeEarlGrey tapWebStateElementWithID:@"forbidden"];
@@ -198,12 +179,6 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
 }
 
 - (void)testDownloadChangingMimeType {
-  if (!download::IsUsdzPreviewEnabled()) {
-    EARL_GREY_TEST_SKIPPED(
-        @"Disabled if 'USDZPreview' feature is disabled or on iOS versions "
-         "below 12 because QLPreviewController is not available.");
-  }
-
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
   [ChromeEarlGrey waitForWebStateContainingText:"Changing Mime Type"];
   [ChromeEarlGrey tapWebStateElementWithID:@"changing-mime-type"];

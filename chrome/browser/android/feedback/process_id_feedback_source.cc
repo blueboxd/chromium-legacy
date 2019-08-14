@@ -54,7 +54,7 @@ void ProcessIdFeedbackSource::PrepareProcessIds() {
     process_ids_[content::PROCESS_TYPE_RENDERER].push_back(
         host->GetProcess().Pid());
   }
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&ProcessIdFeedbackSource::PrepareProcessIdsOnIOThread,
                      this));
@@ -67,7 +67,7 @@ void ProcessIdFeedbackSource::PrepareProcessIdsOnIOThread() {
     process_ids_[iter.GetData().process_type].push_back(
         iter.GetData().GetProcess().Handle());
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&ProcessIdFeedbackSource::PrepareCompleted, this));
 }

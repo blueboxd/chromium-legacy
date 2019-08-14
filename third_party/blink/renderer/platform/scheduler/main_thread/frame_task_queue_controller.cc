@@ -55,30 +55,6 @@ FrameTaskQueueController::LoadingControlTaskQueue() {
 }
 
 scoped_refptr<MainThreadTaskQueue>
-FrameTaskQueueController::BestEffortTaskQueue() {
-  if (!best_effort_task_queue_) {
-    best_effort_task_queue_ = main_thread_scheduler_impl_->NewTaskQueue(
-        MainThreadTaskQueue::QueueCreationParams(
-            MainThreadTaskQueue::QueueType::kIdle)
-            .SetFrameScheduler(frame_scheduler_impl_)
-            .SetFixedPriority(TaskQueue::QueuePriority::kBestEffortPriority));
-    TaskQueueCreated(best_effort_task_queue_);
-  }
-  return best_effort_task_queue_;
-}
-
-scoped_refptr<MainThreadTaskQueue>
-FrameTaskQueueController::VeryHighPriorityTaskQueue() {
-  if (!very_high_priority_task_queue_) {
-    very_high_priority_task_queue_ = main_thread_scheduler_impl_->NewTaskQueue(
-        MainThreadTaskQueue::QueueCreationParams(
-            MainThreadTaskQueue::QueueType::kDefault)
-            .SetFixedPriority(TaskQueue::QueuePriority::kVeryHighPriority));
-  }
-  return very_high_priority_task_queue_;
-}
-
-scoped_refptr<MainThreadTaskQueue>
 FrameTaskQueueController::NonLoadingTaskQueue(
     MainThreadTaskQueue::QueueTraits queue_traits) {
   if (!non_loading_task_queues_.Contains(queue_traits.Key()))
@@ -164,9 +140,21 @@ void FrameTaskQueueController::CreateNonLoadingTaskQueue(
           .SetFreezeWhenKeepActive(queue_traits.can_be_throttled)
           .SetFrameScheduler(frame_scheduler_impl_);
 
-  if (queue_traits.is_high_priority) {
-    queue_creation_params = queue_creation_params.SetFixedPriority(
+  switch (queue_traits.prioritisation_type) {
+    case QueueTraits::PrioritisationType::kVeryHigh:
+      queue_creation_params = queue_creation_params.SetFixedPriority(
+        TaskQueue::QueuePriority::kVeryHighPriority);
+      break;
+    case QueueTraits::PrioritisationType::kHigh:
+      queue_creation_params = queue_creation_params.SetFixedPriority(
         TaskQueue::QueuePriority::kHighPriority);
+      break;
+    case QueueTraits::PrioritisationType::kBestEffort:
+      queue_creation_params = queue_creation_params.SetFixedPriority(
+        TaskQueue::QueuePriority::kBestEffortPriority);
+      break;
+    default:
+      break;
   }
 
   scoped_refptr<MainThreadTaskQueue> task_queue =

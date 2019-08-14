@@ -29,9 +29,6 @@ rel_blink_core_gen_dir = rebase_path(blink_core_output_dir, root_build_dir)
 # Config for code that builds as part of core.
 config("config") {
   defines = [ "BLINK_CORE_IMPLEMENTATION=1" ]
-  if (blink_animation_use_time_delta) {
-    defines += [ "BLINK_ANIMATION_USE_TIME_DELTA" ]
-  }
   if (is_android && notouch_build) {
     defines += [ "ENABLE_TOUCHLESS_UASTYLE_THEME" ]
   }
@@ -105,6 +102,7 @@ source_set("prerequisites") {
     "//skia",
     "//third_party/angle:translator",
     "//third_party/blink/public/mojom:mojom_broadcastchannel_bindings_blink",
+    "//third_party/blink/renderer/core/animation:buildflags",
     "//third_party/blink/renderer/core/inspector:generated",
     "//third_party/blink/renderer/core/probe:generated",
     "//third_party/blink/renderer/platform",
@@ -1322,6 +1320,7 @@ jumbo_source_set("unit_tests") {
     "layout/geometry/physical_rect_test.cc",
     "layout/geometry/physical_size_test.cc",
     "layout/grid_test.cc",
+    "layout/hit_testing_test.cc",
     "layout/layout_block_test.cc",
     "layout/layout_box_model_object_test.cc",
     "layout/layout_box_test.cc",
@@ -1613,10 +1612,6 @@ jumbo_source_set("unit_tests") {
 
   if (use_aura) {
     sources += [ "scroll/scrollbar_theme_aura_test.cc" ]
-  }
-
-  if (blink_animation_use_time_delta) {
-    defines = [ "BLINK_ANIMATION_USE_TIME_DELTA" ]
   }
 }
 

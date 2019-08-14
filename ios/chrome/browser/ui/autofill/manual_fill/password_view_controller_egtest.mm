@@ -328,12 +328,6 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // password.
 // TODO(crbug.com/981922): Re-enable this test due to failing DB call.
 - (void)DISABLED_testPasswordControllerResumes {
-  if (([UIDevice currentDevice].systemVersion.doubleValue < 12)) {
-    // TODO(crbug.com/976348): iOS 11 support is being deprecated, disable this
-    // failing test for now.
-    return;
-  }
-
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
@@ -373,10 +367,6 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // Tests that the Password View Controller is resumed after dismissing "Other
 // Passwords".
 - (void)testPasswordControllerResumesWhenOtherPasswordsDismiss {
-  if (([UIDevice currentDevice].systemVersion.doubleValue < 11.3)) {
-    // TODO(crbug.com/908776): OtherPasswordsMatcher is disabled in <11.3.
-    return;
-  }
   if (base::ios::IsRunningOnIOS13OrLater() && [ChromeEarlGrey isIPadIdiom]) {
     // TODO(crbug.com/984977): Support this behavior in iPads again.
     return;
@@ -510,11 +500,6 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // Tests that after switching fields the content size of the table view didn't
 // grow.
 - (void)testPasswordControllerKeepsRightSize {
-  if (([UIDevice currentDevice].systemVersion.doubleValue < 11.3)) {
-    // TODO(crbug.com/908776): OtherPasswordsMatcher is disabled in <11.3.
-    return;
-  }
-
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementUsername)];

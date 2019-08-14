@@ -174,6 +174,9 @@ extern const char kCloudPrinterHandlerDescription[];
 extern const char kDecodeLossyWebPImagesToYUVName[];
 extern const char kDecodeLossyWebPImagesToYUVDescription[];
 
+extern const char kDnsOverHttpsName[];
+extern const char kDnsOverHttpsDescription[];
+
 extern const char kDrawVerticallyEdgeToEdgeName[];
 extern const char kDrawVerticallyEdgeToEdgeDescription[];
 
@@ -1338,6 +1341,9 @@ extern const char kChromeDuetLabelsDescription[];
 
 extern const char kClearOldBrowsingDataName[];
 extern const char kClearOldBrowsingDataDescription[];
+
+extern const char kClickToCallOpenDialerDirectlyName[];
+extern const char kClickToCallOpenDialerDirectlyDescription[];
 
 extern const char kClickToCallReceiverName[];
 extern const char kClickToCallReceiverDescription[];

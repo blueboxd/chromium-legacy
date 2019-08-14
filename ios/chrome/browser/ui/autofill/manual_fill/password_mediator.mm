@@ -197,21 +197,18 @@ BOOL AreCredentialsAtIndexesConnected(
         [[NSMutableArray alloc] init];
     __weak __typeof(self) weakSelf = self;
 
-    // TODO(crbug.com/908776): fix or wait until iOS 11.2- is deprecated.
-    if (@available(iOS 11.3, *)) {
-      NSString* otherPasswordsTitleString = l10n_util::GetNSString(
-          IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD_WITH_DOTS);
-      auto otherPasswordsItem = [[ManualFillActionItem alloc]
-          initWithTitle:otherPasswordsTitleString
-                 action:^{
-                   base::RecordAction(base::UserMetricsAction(
-                       "ManualFallback_Password_OpenOtherPassword"));
-                   [weakSelf.navigator openAllPasswordsList];
-                 }];
-      otherPasswordsItem.accessibilityIdentifier =
-          manual_fill::OtherPasswordsAccessibilityIdentifier;
-      [actions addObject:otherPasswordsItem];
-    }
+    NSString* otherPasswordsTitleString = l10n_util::GetNSString(
+        IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD_WITH_DOTS);
+    auto otherPasswordsItem = [[ManualFillActionItem alloc]
+        initWithTitle:otherPasswordsTitleString
+               action:^{
+                 base::RecordAction(base::UserMetricsAction(
+                     "ManualFallback_Password_OpenOtherPassword"));
+                 [weakSelf.navigator openAllPasswordsList];
+               }];
+    otherPasswordsItem.accessibilityIdentifier =
+        manual_fill::OtherPasswordsAccessibilityIdentifier;
+    [actions addObject:otherPasswordsItem];
 
     NSString* managePasswordsTitle =
         l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_MANAGE_PASSWORDS);

@@ -44,8 +44,8 @@ KeyedService* TrackerFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::TaskPriority::BEST_EFFORT});
 
   base::FilePath storage_dir = profile->GetPath().Append(
       chrome::kFeatureEngagementTrackerStorageDirname);

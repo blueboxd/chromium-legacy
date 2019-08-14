@@ -140,11 +140,7 @@ void CrostiniExportImportNotification::SetStatusDone() {
       type_ == ExportImportType::EXPORT
           ? IDS_CROSTINI_EXPORT_NOTIFICATION_MESSAGE_DONE
           : IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_DONE));
-  notification_->set_buttons(
-      type_ == ExportImportType::EXPORT
-          ? std::vector<message_center::ButtonInfo>{message_center::ButtonInfo(
-                l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_SHOW))}
-          : std::vector<message_center::ButtonInfo>{});
+  notification_->set_buttons({});
   notification_->set_never_timeout(false);
 
   ForceRedisplay();
@@ -155,17 +151,8 @@ void CrostiniExportImportNotification::SetStatusCancelled() {
 
   status_ = Status::CANCELLED;
 
-  notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
-  notification_->set_accent_color(ash::kSystemNotificationColorNormal);
-  notification_->set_title(l10n_util::GetStringUTF16(
-      type_ == ExportImportType::EXPORT
-          ? IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_CANCELLED
-          : IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_CANCELLED));
-  notification_->set_message({});
-  notification_->set_buttons({});
-  notification_->set_never_timeout(false);
-
-  ForceRedisplay();
+  NotificationDisplayService::GetForProfile(profile_)->Close(
+      NotificationHandler::Type::TRANSIENT, notification_->id());
 }
 
 void CrostiniExportImportNotification::SetStatusFailed() {
@@ -238,26 +225,22 @@ void CrostiniExportImportNotification::Close(bool by_user) {
 void CrostiniExportImportNotification::Click(
     const base::Optional<int>& button_index,
     const base::Optional<base::string16>&) {
-  if (!button_index) {
-    return;
-  }
-
   switch (status_) {
     case Status::RUNNING:
-      DCHECK(*button_index == 1);
-      CrostiniExportImport::GetForProfile(profile_)->CancelOperation(
-          type_, container_id_);
+      if (button_index) {
+        DCHECK(*button_index == 1);
+        CrostiniExportImport::GetForProfile(profile_)->CancelOperation(
+            type_, container_id_);
+      }
       return;
     case Status::DONE:
+      DCHECK(!button_index);
       if (type_ == ExportImportType::EXPORT) {
-        DCHECK(*button_index == 1);
         platform_util::ShowItemInFolder(profile_, path_);
-      } else {
-        NOTREACHED();
       }
       return;
     default:
-      NOTREACHED();
+      DCHECK(!button_index);
   }
 }
 

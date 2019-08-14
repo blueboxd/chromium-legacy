@@ -156,10 +156,9 @@ void CastDeviceProvider::QueryDevices(const SerialsCallback& callback) {
   if (!lister_delegate_) {
     lister_delegate_.reset(new DeviceListerDelegate(
         weak_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get()));
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&DeviceListerDelegate::StartDiscovery,
-                       lister_delegate_->AsWeakPtr()));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&DeviceListerDelegate::StartDiscovery,
+                                  lister_delegate_->AsWeakPtr()));
   }
   std::set<net::HostPortPair> targets;
   for (const auto& device_entry : device_info_map_)

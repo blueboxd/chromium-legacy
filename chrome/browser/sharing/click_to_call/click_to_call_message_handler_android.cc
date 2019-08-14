@@ -20,6 +20,6 @@ void ClickToCallMessageHandler::OnMessage(
   std::string phone_number = message.click_to_call_message().phone_number();
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  Java_ClickToCallMessageHandler_showNotification(
+  Java_ClickToCallMessageHandler_handleMessage(
       env, base::android::ConvertUTF8ToJavaString(env, phone_number));
 }

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file_util.h"
+
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -23,7 +25,6 @@
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
@@ -37,6 +38,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
@@ -3870,6 +3872,48 @@ TEST_F(FileUtilTest, NonExistentContentUriTest) {
   EXPECT_FALSE(file.IsValid());
 }
 #endif
+
+#if !defined(OS_NACL_NONSFI)
+TEST_F(FileUtilTest, GetUniquePathNumber) {
+  static constexpr FilePath::StringPieceType kSomeFile(FPL("SomeFile.txt"));
+  static constexpr FilePath::StringPieceType kSomeFileOne(
+      FPL("SomeFile (1).txt"));
+  static constexpr FilePath::StringPieceType kSomeSuffix(FPL(".SUFFIX"));
+
+  const FilePath& temp_dir = temp_dir_.GetPath();
+
+  // The dir is empty to start with.
+  EXPECT_EQ(GetUniquePathNumber(temp_dir.Append(kSomeFile)), 0);
+  EXPECT_EQ(GetUniquePathNumber(temp_dir.Append(kSomeFile), kSomeSuffix), 0);
+
+  // Manufacture a collision with the suffixed file.
+  FilePath::StringType path = kSomeFile.as_string();
+  kSomeSuffix.AppendToString(&path);
+  ASSERT_EQ(WriteFile(temp_dir.Append(path), "hi", 2), 2);
+  // No collision unsuffixed.
+  EXPECT_EQ(GetUniquePathNumber(temp_dir.Append(kSomeFile)), 0);
+  // But there is with the suffix.
+  EXPECT_EQ(GetUniquePathNumber(temp_dir.Append(kSomeFile), kSomeSuffix), 1);
+  ASSERT_TRUE(DeleteFile(temp_dir.Append(path), false));
+
+  // Manufacture a collision with the unsuffixed file.
+  ASSERT_EQ(WriteFile(temp_dir.Append(kSomeFile), "hi", 2), 2);
+  // Both collide.
+  EXPECT_EQ(GetUniquePathNumber(temp_dir.Append(kSomeFile)), 1);
+  EXPECT_EQ(GetUniquePathNumber(temp_dir.Append(kSomeFile), kSomeSuffix), 1);
+
+  // Now with the unsuffixed collision, manufacture a suffixed collision with
+  // the number '1'.
+  path = kSomeFileOne.as_string();
+  kSomeSuffix.AppendToString(&path);
+  ASSERT_EQ(WriteFile(temp_dir.Append(path), "hi", 2), 2);
+  EXPECT_EQ(GetUniquePathNumber(temp_dir.Append(kSomeFile), kSomeSuffix), 2);
+
+  // Clean up.
+  ASSERT_TRUE(DeleteFile(temp_dir.Append(path), false));
+  ASSERT_TRUE(DeleteFile(temp_dir.Append(kSomeFile), false));
+}
+#endif  // !defined(OS_NACL_NONSFI)
 
 // Test that temp files obtained racily are all unique (no interference between
 // threads). Mimics file operations in DoLaunchChildTestProcess() to rule out

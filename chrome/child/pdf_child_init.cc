@@ -7,34 +7,20 @@
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
+#include "base/command_line.h"
 #include "base/no_destructor.h"
 #include "base/win/current_module.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/windows_version.h"
 #include "content/public/child/child_thread.h"
+#include "content/public/common/content_switches.h"
+#include "services/service_manager/sandbox/switches.h"
 #endif
 
 namespace {
 
 #if defined(OS_WIN)
-HDC WINAPI CreateDCAPatch(LPCSTR driver_name,
-                          LPCSTR device_name,
-                          LPCSTR output,
-                          const void* init_data) {
-  DCHECK(std::string("DISPLAY") == std::string(driver_name));
-  DCHECK(!device_name);
-  DCHECK(!output);
-  DCHECK(!init_data);
-
-  // CreateDC fails behind the sandbox, but not CreateCompatibleDC.
-  return CreateCompatibleDC(NULL);
-}
-
-typedef DWORD (WINAPI* GetFontDataPtr) (HDC hdc,
-                                        DWORD table,
-                                        DWORD offset,
-                                        LPVOID buffer,
-                                        DWORD length);
+typedef decltype(::GetFontData)* GetFontDataPtr;
 GetFontDataPtr g_original_get_font_data = nullptr;
 
 
@@ -64,39 +50,41 @@ DWORD WINAPI GetFontDataPatch(HDC hdc,
 
 void InitializePDF() {
 #if defined(OS_WIN)
-  // Need to patch a few functions for font loading to work correctly. This can
-  // be removed once we switch PDF to use Skia
-  // (https://bugs.chromium.org/p/pdfium/issues/detail?id=11).
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+  bool is_pdf_utility_process = false;
+  if (command_line.HasSwitch(service_manager::switches::kServiceSandboxType)) {
+    std::string service_sandbox_type = command_line.GetSwitchValueASCII(
+        service_manager::switches::kServiceSandboxType);
+    if (service_sandbox_type ==
+        service_manager::switches::kPdfCompositorSandbox) {
+      is_pdf_utility_process = true;
+    }
+  }
+  // On Win10, pdf does not use GDI fonts and does not need to run this
+  // initialization for the ppapi process. Printing does still use GDI for
+  // fonts on Win10 though.
+  if (is_pdf_utility_process ||
+      (process_type == switches::kPpapiPluginProcess &&
+       base::win::GetVersion() < base::win::Version::WIN10)) {
+    // Need to patch a few functions for font loading to work correctly. This
+    // can be removed once we switch PDF to use Skia
+    // (https://bugs.chromium.org/p/pdfium/issues/detail?id=11).
 #if defined(COMPONENT_BUILD)
-  HMODULE module = ::GetModuleHandleA("pdfium.dll");
-  DCHECK(module);
+    HMODULE module = ::GetModuleHandleA("pdfium.dll");
+    DCHECK(module);
 #else
-  HMODULE module = CURRENT_MODULE();
+    HMODULE module = CURRENT_MODULE();
 #endif  // defined(COMPONENT_BUILD)
 
-  // When GDI is delayloaded, calls into real GDI after these patches are
-  // created result in the delayload handler overwriting the patches when it
-  // resolves the delayed imports with the full import information. To
-  // workaround this, we first call into GDI so that the delayed imports get
-  // resolved, THEN we apply the patches.
-  // On Win10 this isn't necessary because these methods are not used.
-  // TODO(crbug.com/988164): Implement a generic IATPatchFunction fix to handle
-  // these situations.
-  // TODO(crbug.com/988169): This workaround shouldn't be necessary on Win8
-  // either, but is because the win32k process mitigations aren't working
-  // properly.
-  if (base::win::GetVersion() < base::win::Version::WIN10)
-    GetFontData(nullptr, 0, 0, nullptr, 0);
-
-  static base::NoDestructor<base::win::IATPatchFunction> patch_createdca;
-  patch_createdca->PatchFromModule(module, "gdi32.dll", "CreateDCA",
-                                   reinterpret_cast<void*>(CreateDCAPatch));
-
-  static base::NoDestructor<base::win::IATPatchFunction> patch_get_font_data;
-  patch_get_font_data->PatchFromModule(
-      module, "gdi32.dll", "GetFontData",
-      reinterpret_cast<void*>(GetFontDataPatch));
-  g_original_get_font_data = reinterpret_cast<GetFontDataPtr>(
-      patch_get_font_data->original_function());
+    static base::NoDestructor<base::win::IATPatchFunction> patch_get_font_data;
+    patch_get_font_data->PatchFromModule(
+        module, "gdi32.dll", "GetFontData",
+        reinterpret_cast<void*>(GetFontDataPatch));
+    g_original_get_font_data = reinterpret_cast<GetFontDataPtr>(
+        patch_get_font_data->original_function());
+  }
 #endif  // defined(OS_WIN)
 }

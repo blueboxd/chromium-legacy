@@ -200,7 +200,7 @@ void UsbDeviceManagerHelper::EnsureUsbDeviceManagerConnection() {
       base::BindOnce(&UsbDeviceManagerHelper::OnDeviceManagerConnectionError,
                      weak_factory_.GetWeakPtr()));
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&BindDeviceServiceOnUIThread, std::move(request)));
 }

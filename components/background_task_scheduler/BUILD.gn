@@ -30,9 +30,9 @@ if (is_android) {
   android_library("background_task_scheduler_java") {
     java_files = [
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTask.java",
+      "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskFactory.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskGcmTaskService.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskJobService.java",
-      "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskReflection.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskScheduler.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerDelegate.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerExternalUma.java",
@@ -96,6 +96,7 @@ if (is_android) {
       "android/junit/src/org/chromium/components/background_task_scheduler/ShadowGcmNetworkManager.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/TaskInfoTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/TestBackgroundTask.java",
+      "android/junit/src/org/chromium/components/background_task_scheduler/TestBackgroundTaskFactory.java",
     ]
 
     deps = [

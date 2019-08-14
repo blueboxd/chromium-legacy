@@ -106,7 +106,10 @@ class NET_EXPORT NetworkDelegate {
   bool CanAccessFile(const URLRequest& request,
                      const base::FilePath& original_path,
                      const base::FilePath& absolute_path) const;
-  bool ForcePrivacyMode(const GURL& url, const GURL& site_for_cookies) const;
+  bool ForcePrivacyMode(
+      const GURL& url,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin) const;
 
   bool CancelURLRequestWithPolicyViolatingReferrerHeader(
       const URLRequest& request,
@@ -316,8 +319,10 @@ class NET_EXPORT NetworkDelegate {
   // Returns true if the given |url| has to be requested over connection that
   // is not tracked by the server. Usually is false, unless user privacy
   // settings block cookies from being get or set.
-  virtual bool OnForcePrivacyMode(const GURL& url,
-                                  const GURL& site_for_cookies) const = 0;
+  virtual bool OnForcePrivacyMode(
+      const GURL& url,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin) const = 0;
 
   // Called when the |referrer_url| for requesting |target_url| during handling
   // of the |request| is does not comply with the referrer policy (e.g. a

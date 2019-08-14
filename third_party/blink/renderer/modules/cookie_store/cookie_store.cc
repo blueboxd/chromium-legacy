@@ -227,6 +227,20 @@ KURL DefaultSiteForCookies(ExecutionContext* execution_context) {
   return scope->Url();
 }
 
+scoped_refptr<SecurityOrigin> DefaultTopFrameOrigin(
+    ExecutionContext* execution_context) {
+  DCHECK(execution_context);
+
+  if (auto* document = DynamicTo<Document>(execution_context)) {
+    // Can we avoid the copy? TopFrameOrigin is returned as const& but we need
+    // a scoped_refptr.
+    return document->TopFrameOrigin()->IsolatedCopy();
+  }
+
+  auto* scope = To<ServiceWorkerGlobalScope>(execution_context);
+  return scope->GetSecurityOrigin()->IsolatedCopy();
+}
+
 }  // namespace
 
 CookieStore::~CookieStore() = default;
@@ -449,7 +463,8 @@ CookieStore::CookieStore(
       subscription_backend_(std::move(subscription_backend)),
       change_listener_binding_(this),
       default_cookie_url_(DefaultCookieURL(execution_context)),
-      default_site_for_cookies_(DefaultSiteForCookies(execution_context)) {
+      default_site_for_cookies_(DefaultSiteForCookies(execution_context)),
+      default_top_frame_origin_(DefaultTopFrameOrigin(execution_context)) {
   DCHECK(backend_);
 }
 
@@ -473,7 +488,7 @@ ScriptPromise CookieStore::DoRead(
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   backend_->GetAllForUrl(
-      default_cookie_url_, default_site_for_cookies_,
+      default_cookie_url_, default_site_for_cookies_, default_top_frame_origin_,
       std::move(backend_options),
       WTF::Bind(backend_result_converter, WrapPersistent(resolver)));
   return resolver->Promise();
@@ -535,7 +550,7 @@ ScriptPromise CookieStore::DoWrite(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   backend_->SetCanonicalCookie(
       std::move(canonical_cookie.value()), default_cookie_url_,
-      default_site_for_cookies_,
+      default_site_for_cookies_, default_top_frame_origin_,
       WTF::Bind(&CookieStore::OnSetCanonicalCookieResult,
                 WrapPersistent(resolver)));
   return resolver->Promise();
@@ -612,6 +627,7 @@ void CookieStore::StartObserving() {
   change_listener_binding_.Bind(
       mojo::MakeRequest(&change_listener, task_runner), task_runner);
   backend_->AddChangeListener(default_cookie_url_, default_site_for_cookies_,
+                              default_top_frame_origin_,
                               std::move(change_listener), {});
 }
 

@@ -59,13 +59,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
   SessionCleanupCookieStore::DeleteCookiePredicate
   CreateDeleteCookieOnExitPredicate() const;
 
-  // content_settings::CookieSettingsBase:
-  void GetCookieSetting(const GURL& url,
-                        const GURL& first_party_url,
-                        content_settings::SettingSource* source,
-                        ContentSetting* cookie_setting) const override;
-
  private:
+  // content_settings::CookieSettingsBase:
+  void GetCookieSettingInternal(const GURL& url,
+                                const GURL& first_party_url,
+                                bool is_third_party_request,
+                                content_settings::SettingSource* source,
+                                ContentSetting* cookie_setting) const override;
+
   // Returns true if at least one content settings is session only.
   bool HasSessionOnlyOrigins() const;
 

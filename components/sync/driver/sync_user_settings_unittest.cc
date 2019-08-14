@@ -136,6 +136,7 @@ TEST_F(SyncUserSettingsTest, PreferredTypesNotKeepEverythingSynced) {
       expected_preferred_types.Put(DICTIONARY);
       expected_preferred_types.Put(PRIORITY_PREFERENCES);
       expected_preferred_types.Put(SEARCH_ENGINES);
+      expected_preferred_types.Put(PRINTERS);
     }
     if (type == UserSelectableType::kApps) {
       expected_preferred_types.Put(APP_LIST);

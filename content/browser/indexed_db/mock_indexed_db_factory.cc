@@ -4,6 +4,8 @@
 
 #include "content/browser/indexed_db/mock_indexed_db_factory.h"
 
+#include <vector>
+
 namespace content {
 
 MockIndexedDBFactory::MockIndexedDBFactory() {

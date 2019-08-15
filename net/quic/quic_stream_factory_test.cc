@@ -579,7 +579,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
         server2, alternative_service_info_vector2);
     // Verify that the properties of both QUIC servers are stored in the
     // HTTP properties map.
-    EXPECT_EQ(2U, http_server_properties_.alternative_service_map().size());
+    EXPECT_EQ(2U, http_server_properties_.server_info_map_for_testing().size());
 
     http_server_properties_.SetMaxServerConfigsStoredInProperties(
         kDefaultMaxQuicServerEntries);

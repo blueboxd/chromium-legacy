@@ -12,7 +12,6 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
 #include "ash/system/network/network_info.h"
@@ -75,8 +74,7 @@ bool IsSecondaryUser() {
 
 NetworkListView::NetworkListView(DetailedViewDelegate* delegate,
                                  LoginStatus login)
-    : NetworkStateListDetailedView(delegate, LIST_TYPE_NETWORK, login),
-      model_(Shell::Get()->system_tray_model()->network_state_model()) {}
+    : NetworkStateListDetailedView(delegate, LIST_TYPE_NETWORK, login) {}
 
 NetworkListView::~NetworkListView() {
   network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
@@ -84,7 +82,7 @@ NetworkListView::~NetworkListView() {
 
 void NetworkListView::UpdateNetworkList() {
   CHECK(scroll_content());
-  model_->cros_network_config()->GetNetworkStateList(
+  model()->cros_network_config()->GetNetworkStateList(
       NetworkFilter::New(FilterType::kVisible, NetworkType::kAll,
                          chromeos::network_config::mojom::kNoLimit),
       base::BindOnce(&NetworkListView::OnGetNetworkStateList,
@@ -131,7 +129,7 @@ void NetworkListView::OnGetNetworkStateList(
         network->cellular ? network->cellular->activation_state
                           : ActivationStateType::kUnknown;
     if (network->type == NetworkType::kCellular &&
-        model_->GetDeviceState(NetworkType::kCellular) !=
+        model()->GetDeviceState(NetworkType::kCellular) !=
             DeviceStateType::kEnabled &&
         activation_state == ActivationStateType::kNoService) {
       continue;
@@ -223,7 +221,7 @@ NetworkListView::UpdateNetworkListEntries() {
   // Keep an index where the next child should be inserted.
   int index = 0;
 
-  const NetworkStateProperties* default_network = model_->default_network();
+  const NetworkStateProperties* default_network = model()->default_network();
   bool using_proxy = default_network &&
                      default_network->proxy_mode == ProxyMode::kFixedServers;
   // Show a warning that the connection might be monitored if connected to a VPN
@@ -270,7 +268,7 @@ NetworkListView::UpdateNetworkListEntries() {
     wifi_header_view_ = new WifiSectionHeaderView();
 
   bool wifi_enabled =
-      model_->GetDeviceState(NetworkType::kWiFi) == DeviceStateType::kEnabled;
+      model()->GetDeviceState(NetworkType::kWiFi) == DeviceStateType::kEnabled;
   index = UpdateNetworkSectionHeader(NetworkType::kWiFi, wifi_enabled, index,
                                      wifi_header_view_, &wifi_separator_view_);
 
@@ -308,12 +306,12 @@ NetworkListView::UpdateNetworkListEntries() {
 
 bool NetworkListView::ShouldMobileDataSectionBeShown() {
   // The section should always be shown if Cellular networks are available.
-  if (model_->GetDeviceState(NetworkType::kCellular) !=
+  if (model()->GetDeviceState(NetworkType::kCellular) !=
       DeviceStateType::kUnavailable) {
     return true;
   }
 
-  DeviceStateType tether_state = model_->GetDeviceState(NetworkType::kTether);
+  DeviceStateType tether_state = model()->GetDeviceState(NetworkType::kTether);
   // Hide the section if both Cellular and Tether are UNAVAILABLE.
   if (tether_state == DeviceStateType::kUnavailable)
     return false;

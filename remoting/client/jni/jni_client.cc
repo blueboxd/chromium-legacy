@@ -26,7 +26,7 @@ using base::android::ScopedJavaLocalRef;
 namespace remoting {
 
 JniClient::JniClient(base::android::ScopedJavaGlobalRef<jobject> java_client)
-    : java_client_(java_client), weak_factory_(this) {
+    : java_client_(java_client) {
   runtime_ = ChromotingClientRuntime::GetInstance();
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }

@@ -55,7 +55,7 @@
     { "site_name": "harbor_freight" },
     { "site_name": "home_depot" },
     { "site_name": "hotels" },
-    { "site_name": "indigo" },
+    { "site_name": "indigo", "disabled":true, "bug_number":951847 },
     { "site_name": "jet" },
     { "site_name": "jetstar" },
     { "site_name": "joann" },

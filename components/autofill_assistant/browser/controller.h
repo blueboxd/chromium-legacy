@@ -388,7 +388,7 @@ class Controller : public ScriptExecutorDelegate,
   // taken.
   base::Optional<Metrics::DropOutReason> delayed_shutdown_reason_;
 
-  base::WeakPtrFactory<Controller> weak_ptr_factory_;
+  base::WeakPtrFactory<Controller> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Controller);
 };

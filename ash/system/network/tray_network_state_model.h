@@ -82,7 +82,10 @@ class ASH_EXPORT TrayNetworkStateModel
 
   // CrosNetworkConfigObserver
   void OnActiveNetworksChanged(
-      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>)
+      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
+          networks) override;
+  void OnNetworkStateChanged(
+      chromeos::network_config::mojom::NetworkStatePropertiesPtr network)
       override;
   void OnNetworkStateListChanged() override;
   void OnDeviceStateListChanged() override;

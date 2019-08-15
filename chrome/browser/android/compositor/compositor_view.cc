@@ -83,8 +83,7 @@ CompositorView::CompositorView(JNIEnv* env,
       current_surface_format_(0),
       content_width_(0),
       content_height_(0),
-      overlay_video_mode_(false),
-      weak_factory_(this) {
+      overlay_video_mode_(false) {
   content::BrowserChildProcessObserver::Add(this);
   obj_.Reset(env, obj);
   compositor_.reset(content::Compositor::Create(this, window_android));

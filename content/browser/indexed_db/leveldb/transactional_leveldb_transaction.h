@@ -43,6 +43,10 @@ class DefaultLevelDBFactory;
 //   All changes in this transaction will be either fully written or fully
 //   reverted. It uses the LevelDBScopes system to guarantee this. If this class
 //   is destructed before Commit() is called, then it will be rolled back.
+// Destruction:
+//   On destruction, if the transaction is not committed, it will be rolled
+//   back. In a single-sequence scopes setup, this can actually tear down the
+//   whole IndexedDBOriginState! So be careful when destroying this object.
 class CONTENT_EXPORT TransactionalLevelDBTransaction
     : public base::RefCounted<TransactionalLevelDBTransaction> {
  public:
@@ -61,7 +65,10 @@ class CONTENT_EXPORT TransactionalLevelDBTransaction
                               bool* found) WARN_UNUSED_RESULT;
   virtual leveldb::Status Commit() WARN_UNUSED_RESULT;
 
-  void Rollback();
+  // In the right circumstances (system failing too much, and the revert fails
+  // as well), a rollback can cause the entire IndexedDBOriginState to be torn
+  // down.
+  void RollbackAndMaybeTearDown();
 
   // The returned iterator must be destroyed before the destruction of this
   // transaction.

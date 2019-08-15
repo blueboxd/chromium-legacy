@@ -159,7 +159,8 @@ SecurityOrigin::SecurityOrigin(const url::Origin::Nonce& nonce,
                                const SecurityOrigin* precursor)
     : nonce_if_opaque_(nonce), precursor_origin_(precursor) {}
 
-SecurityOrigin::SecurityOrigin(const SecurityOrigin* other)
+SecurityOrigin::SecurityOrigin(const SecurityOrigin* other,
+                               ConstructIsolatedCopy)
     : protocol_(other->protocol_.IsolatedCopy()),
       host_(other->host_.IsolatedCopy()),
       domain_(other->domain_.IsolatedCopy()),
@@ -174,9 +175,29 @@ SecurityOrigin::SecurityOrigin(const SecurityOrigin* other)
       is_opaque_origin_potentially_trustworthy_(
           other->is_opaque_origin_potentially_trustworthy_),
       cross_agent_cluster_access_(other->cross_agent_cluster_access_),
+      agent_cluster_id_(other->agent_cluster_id_),
       precursor_origin_(other->precursor_origin_
                             ? other->precursor_origin_->IsolatedCopy()
                             : nullptr) {}
+
+SecurityOrigin::SecurityOrigin(const SecurityOrigin* other,
+                               ConstructSameThreadCopy)
+    : protocol_(other->protocol_),
+      host_(other->host_),
+      domain_(other->domain_),
+      port_(other->port_),
+      effective_port_(other->effective_port_),
+      nonce_if_opaque_(other->nonce_if_opaque_),
+      universal_access_(other->universal_access_),
+      domain_was_set_in_dom_(other->domain_was_set_in_dom_),
+      can_load_local_resources_(other->can_load_local_resources_),
+      block_local_access_from_local_origin_(
+          other->block_local_access_from_local_origin_),
+      is_opaque_origin_potentially_trustworthy_(
+          other->is_opaque_origin_potentially_trustworthy_),
+      cross_agent_cluster_access_(other->cross_agent_cluster_access_),
+      agent_cluster_id_(other->agent_cluster_id_),
+      precursor_origin_(other->precursor_origin_) {}
 
 scoped_refptr<SecurityOrigin> SecurityOrigin::CreateWithReferenceOrigin(
     const KURL& url,
@@ -263,7 +284,8 @@ url::Origin SecurityOrigin::ToUrlOrigin() const {
 }
 
 scoped_refptr<SecurityOrigin> SecurityOrigin::IsolatedCopy() const {
-  return base::AdoptRef(new SecurityOrigin(this));
+  return base::AdoptRef(new SecurityOrigin(
+      this, ConstructIsolatedCopy::kConstructIsolatedCopyBit));
 }
 
 void SecurityOrigin::SetDomainFromDOM(const String& new_domain) {
@@ -546,11 +568,16 @@ void SecurityOrigin::BuildRawString(StringBuilder& builder) const {
 }
 
 String SecurityOrigin::ToTokenForFastCheck() const {
+  CHECK(!agent_cluster_id_.is_empty());
   if (SerializesAsNull())
     return String();
 
   StringBuilder result;
   BuildRawString(result);
+  // Append the agent cluster id to the generated token to prevent
+  // access from two contexts that have the same origin but are
+  // in different agent clusters.
+  result.Append(agent_cluster_id_.ToString().c_str());
   return result.ToString();
 }
 
@@ -660,6 +687,16 @@ String SecurityOrigin::CanonicalizeHost(const String& host, bool* success) {
                                      &canon_output, &out_host);
   }
   return String::FromUTF8(canon_output.data(), canon_output.length());
+}
+
+scoped_refptr<SecurityOrigin> SecurityOrigin::GetOriginForAgentCluster(
+    const base::UnguessableToken& agent_cluster_id) {
+  if (agent_cluster_id_ == agent_cluster_id)
+    return this;
+  auto result = base::AdoptRef(new SecurityOrigin(
+      this, ConstructSameThreadCopy::kConstructSameThreadCopyBit));
+  result->agent_cluster_id_ = agent_cluster_id;
+  return result;
 }
 
 }  // namespace blink

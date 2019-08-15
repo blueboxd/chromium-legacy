@@ -56,7 +56,7 @@ class ParentOutputSurface : public viz::OutputSurface {
   // This is really a layering violation but needed for hooking up presentation
   // feedbacks properly.
   scoped_refptr<AwGLSurface> gl_surface_;
-  base::WeakPtrFactory<ParentOutputSurface> weak_ptr_factory_;
+  base::WeakPtrFactory<ParentOutputSurface> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ParentOutputSurface);
 };
 

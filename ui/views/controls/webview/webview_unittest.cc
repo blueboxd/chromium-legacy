@@ -126,7 +126,9 @@ class WebViewTestWebContentsDelegate : public content::WebContentsDelegate {
 // Provides functionality to test a WebView.
 class WebViewUnitTest : public views::test::WidgetTest {
  public:
-  WebViewUnitTest() = default;
+  WebViewUnitTest()
+      : views::test::WidgetTest(
+            views::ViewsTestBase::SubclassManagesTaskEnvironment()) {}
   ~WebViewUnitTest() override = default;
 
   std::unique_ptr<content::WebContents> CreateWebContentsForWebView(
@@ -136,8 +138,6 @@ class WebViewUnitTest : public views::test::WidgetTest {
   }
 
   void SetUp() override {
-    set_scoped_task_environment(
-        std::make_unique<content::TestBrowserThreadBundle>());
     rvh_enabler_ = std::make_unique<content::RenderViewHostTestEnabler>();
 
     views::WebView::WebContentsCreator creator = base::BindRepeating(
@@ -193,6 +193,8 @@ class WebViewUnitTest : public views::test::WidgetTest {
   void SetFullscreenNativeView(WebView* web_view, gfx::NativeView native_view) {
     web_view->fullscreen_native_view_for_testing_ = native_view;
   }
+
+  content::TestBrowserThreadBundle thread_bundle_;
 
  private:
   std::unique_ptr<content::RenderViewHostTestEnabler> rvh_enabler_;

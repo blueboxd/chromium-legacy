@@ -134,7 +134,7 @@ class CC_ANIMATION_EXPORT ElementAnimations
   // that have changed since the last update.
   void UpdateClientAnimationState();
 
-  void NotifyClientFloatAnimated(float opacity,
+  void NotifyClientFloatAnimated(float value,
                                  int target_property_id,
                                  KeyframeModel* keyframe_model) override;
   void NotifyClientFilterAnimated(const FilterOperations& filter,
@@ -186,6 +186,8 @@ class CC_ANIMATION_EXPORT ElementAnimations
   void OnOpacityAnimated(ElementListType list_type,
                          float opacity,
                          KeyframeModel* keyframe_model);
+  void OnCustomPropertyAnimated(float custom_prop_value,
+                                KeyframeModel* keyframe_model);
   void OnTransformAnimated(ElementListType list_type,
                            const gfx::Transform& transform,
                            KeyframeModel* keyframe_model);

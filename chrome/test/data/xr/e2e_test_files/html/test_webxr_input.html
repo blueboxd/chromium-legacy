@@ -19,8 +19,14 @@ that Daydream controller input is registered when using Daydream View.
       var iterations;
       var currentIteration = 0;
       var finishAfterEachInput = true;
+      var expectedInputSourceIndex = 0;
 
-      function onSelectStart() {
+      function getExpectedInputSource(ev) {
+        return ev.frame.session.inputSources[expectedInputSourceIndex];
+      }
+
+      function onSelectStart(ev) {
+        assert_equals(ev.inputSource, getExpectedInputSource(ev));
         // selectstart should always be fired first, so check that.
         assert_true(selectStartCount == selectEndCount,
                     'selectstart fired before selectend');
@@ -29,7 +35,8 @@ that Daydream controller input is registered when using Daydream View.
         selectStartCount++;
       }
 
-      function onSelect() {
+      function onSelect(ev) {
+        assert_equals(ev.inputSource, getExpectedInputSource(ev));
         // select should always be fired between selectstart and selectend.
         assert_true(selectCount + 1 == selectStartCount,
                     'select fired after selectstart');
@@ -38,7 +45,8 @@ that Daydream controller input is registered when using Daydream View.
         selectCount++;
       }
 
-      function onSelectEnd() {
+      function onSelectEnd(ev) {
+        assert_equals(ev.inputSource, getExpectedInputSource(ev));
         // selectend should always be fired last.
         selectEndCount++;
         assert_true(selectEndCount == selectStartCount,

@@ -31,7 +31,7 @@ std::string GetVersionSync(sql::Database* db) {
 
 GetVersionTask::GetVersionTask(ExploreSitesStore* store,
                                base::OnceCallback<void(std::string)> callback)
-    : store_(store), callback_(std::move(callback)), weak_ptr_factory_(this) {}
+    : store_(store), callback_(std::move(callback)) {}
 
 GetVersionTask::~GetVersionTask() = default;
 

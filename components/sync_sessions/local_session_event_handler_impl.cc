@@ -55,7 +55,7 @@ bool ScanForTabbedWindow(SyncedWindowDelegatesGetter* delegates_getter) {
   for (const auto& window_iter_pair :
        delegates_getter->GetSyncedWindowDelegates()) {
     const SyncedWindowDelegate* window_delegate = window_iter_pair.second;
-    if (window_delegate->IsTypeTabbed() && IsWindowSyncable(*window_delegate)) {
+    if (window_delegate->IsTypeNormal() && IsWindowSyncable(*window_delegate)) {
       return true;
     }
   }
@@ -219,7 +219,7 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
     if (found_tabs) {
       SyncedSessionWindow* synced_session_window =
           current_session->windows[window_id].get();
-      if (window_delegate->IsTypeTabbed()) {
+      if (window_delegate->IsTypeNormal()) {
         synced_session_window->window_type =
             sync_pb::SessionWindow_BrowserType_TYPE_TABBED;
       } else if (window_delegate->IsTypePopup()) {

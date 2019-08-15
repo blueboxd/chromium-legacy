@@ -113,6 +113,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
           vm_tools::concierge::GetVmEnterpriseReportingInfoResponse> callback)
       override;
 
+  void SetVmCpuRestriction(
+      const vm_tools::concierge::SetVmCpuRestrictionRequest& request,
+      DBusMethodCallback<vm_tools::concierge::SetVmCpuRestrictionResponse>
+          callback) override;
+
   // Fake version of the method that waits for the Concierge service to be
   // availble.  |callback| is called after the method call finishes.
   void WaitForServiceToBeAvailable(
@@ -248,6 +253,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
     get_vm_enterprise_reporting_info_response_ =
         get_vm_enterprise_reporting_info_response;
   }
+  void set_set_vm_cpu_restriction_response(
+      const vm_tools::concierge::SetVmCpuRestrictionResponse&
+          set_vm_cpu_restriction_response) {
+    set_vm_cpu_restriction_response_ = set_vm_cpu_restriction_response;
+  }
   void set_container_ssh_keys_response(
       const vm_tools::concierge::ContainerSshKeysResponse&
           container_ssh_keys_response) {
@@ -302,6 +312,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   bool stop_vm_called_ = false;
   bool get_vm_info_called_ = false;
   bool get_vm_enterprise_reporting_info_called_ = false;
+  bool set_vm_cpu_restriction_called_ = false;
   bool get_container_ssh_keys_called_ = false;
   bool attach_usb_device_called_ = false;
   bool detach_usb_device_called_ = false;
@@ -322,6 +333,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   vm_tools::concierge::GetVmInfoResponse get_vm_info_response_;
   vm_tools::concierge::GetVmEnterpriseReportingInfoResponse
       get_vm_enterprise_reporting_info_response_;
+  vm_tools::concierge::SetVmCpuRestrictionResponse
+      set_vm_cpu_restriction_response_;
   vm_tools::concierge::ContainerSshKeysResponse container_ssh_keys_response_;
   vm_tools::concierge::AttachUsbDeviceResponse attach_usb_device_response_;
   vm_tools::concierge::DetachUsbDeviceResponse detach_usb_device_response_;

@@ -132,9 +132,6 @@ class CORE_EXPORT PaintLayerCompositor {
   // swapped out for an overlay video layer.
   GraphicsLayer* PaintRootGraphicsLayer() const;
 
-  // The LayoutView's scroll layer.
-  GraphicsLayer* ScrollLayer() const;
-
   static PaintLayerCompositor* FrameContentsCompositor(LayoutEmbeddedContent&);
   // Return true if the layers changed.
   static bool AttachFrameContentLayersToIframeLayer(LayoutEmbeddedContent&);
@@ -154,8 +151,6 @@ class CORE_EXPORT PaintLayerCompositor {
   bool AllocateOrClearCompositedLayerMapping(
       PaintLayer*,
       CompositingStateTransitionType composited_layer_update);
-
-  bool IsRootScrollerAncestor() const;
 
   void AttachRootLayerViaChromeClient();
 

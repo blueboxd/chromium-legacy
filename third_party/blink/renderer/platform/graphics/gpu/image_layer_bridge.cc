@@ -53,6 +53,11 @@ void ImageLayerBridge::SetImage(scoped_refptr<StaticBitmapImage> image) {
       layer_->SetContentsOpaque(image_->CurrentFrameKnownToBeOpaque());
       layer_->SetBlendBackgroundColor(!image_->CurrentFrameKnownToBeOpaque());
     }
+    if (opacity_mode_ == kOpaque) {
+      // If we in opaque mode but image might have transparency we need to
+      // ensure its opacity is not used.
+      layer_->SetForceTextureToOpaque(!image_->CurrentFrameKnownToBeOpaque());
+    }
   }
   if (!has_presented_since_last_set_image_ && image_ &&
       image_->IsTextureBacked()) {

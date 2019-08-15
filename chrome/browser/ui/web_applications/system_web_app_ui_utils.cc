@@ -94,7 +94,7 @@ Browser* FindSystemWebAppBrowser(Profile* profile, SystemAppType app_type) {
   DCHECK(extension);
 
   for (auto* browser : *BrowserList::GetInstance()) {
-    if (browser->profile() != profile || !browser->is_app())
+    if (browser->profile() != profile || !browser->deprecated_is_app())
       continue;
 
     const extensions::Extension* browser_extension =

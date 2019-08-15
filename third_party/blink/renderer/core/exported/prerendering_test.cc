@@ -208,7 +208,7 @@ class PrerenderingTest : public testing::Test {
     Node* item = NodeTraversal::ChildAt(Console(), 1 + i);
 
     DCHECK(item);
-    DCHECK(IsHTMLLIElement(item));
+    DCHECK(IsA<HTMLLIElement>(item));
     DCHECK(item->hasChildren());
 
     return item->textContent();

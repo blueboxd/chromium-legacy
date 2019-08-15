@@ -193,6 +193,7 @@ class ChromiumDepGraph {
                 url: pomContent.url?.text(),
                 displayName: pomContent.name?.text(),
                 exclude: false,
+                cipdSuffix: "cr0",
         ))
     }
 
@@ -223,6 +224,9 @@ class ChromiumDepGraph {
                 }
                 if (fallbackProperties.url != null) {
                     dep.url = fallbackProperties.url
+                }
+                if (fallbackProperties.cipdSuffix != null) {
+                  dep.cipdSuffix = fallbackProperties.cipdSuffix
                 }
                 dep.licenseAndroidCompatible = fallbackProperties.licenseAndroidCompatible
             }
@@ -268,5 +272,6 @@ class ChromiumDepGraph {
         boolean licenseAndroidCompatible
         ComponentIdentifier componentId
         List<String> children
+        String cipdSuffix
     }
 }

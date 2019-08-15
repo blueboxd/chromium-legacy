@@ -82,9 +82,8 @@ class TestStreamFactory : public audio::FakeStreamFactory {
                void(const base::UnguessableToken& input_stream_id,
                     const std::string& output_device_id));
 
-  void Bind(mojo::ScopedMessagePipeHandle handle) {
-    receiver_.Bind(
-        mojo::PendingReceiver<audio::mojom::StreamFactory>(std::move(handle)));
+  mojo::PendingRemote<audio::mojom::StreamFactory> MakeRemote() {
+    return receiver_.BindNewPipeAndPassRemote();
   }
 
   StrictMock<MockStream> stream_;
@@ -131,17 +130,8 @@ class InputIPCTest : public ::testing::Test {
   std::unique_ptr<StrictMock<TestStreamFactory>> factory_;
 
   void SetUp() override {
-    service_manager::mojom::ConnectorRequest request;
-    std::unique_ptr<service_manager::Connector> connector =
-        service_manager::Connector::Create(&request);
-
     factory_ = std::make_unique<StrictMock<TestStreamFactory>>();
-    connector->OverrideBinderForTesting(
-        service_manager::ServiceFilter::ByName(audio::mojom::kServiceName),
-        audio::mojom::StreamFactory::Name_,
-        base::BindRepeating(&TestStreamFactory::Bind,
-                            base::Unretained(factory_.get())));
-    ipc = std::make_unique<InputIPC>(std::move(connector), kDeviceId,
+    ipc = std::make_unique<InputIPC>(factory_->MakeRemote(), kDeviceId,
                                      mojo::NullRemote());
   }
 };

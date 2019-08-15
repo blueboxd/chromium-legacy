@@ -36,13 +36,13 @@ class AndroidGranularityMovementBrowserTest : public ContentBrowserTest {
   ~AndroidGranularityMovementBrowserTest() override {}
 
   BrowserAccessibility* LoadUrlAndGetAccessibilityRoot(const GURL& url) {
-    NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+    EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
     // Load the page.
     AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                            ui::kAXModeComplete,
                                            ax::mojom::Event::kLoadComplete);
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     waiter.WaitForNotification();
 
     // Get the BrowserAccessibilityManager.

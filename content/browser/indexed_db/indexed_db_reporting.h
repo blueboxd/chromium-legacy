@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_REPORTING_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_REPORTING_H_
 
+#include <string>
+
 #include "base/logging.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 

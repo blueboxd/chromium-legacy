@@ -79,7 +79,7 @@ void OverrideWebkitPrefsForTabletMode(content::WebContents* contents,
   // Do this only for webcontents displayed in browsers and are not of hosted
   // apps.
   auto* browser = chrome::FindBrowserWithWebContents(contents);
-  if (!browser || browser->is_app())
+  if (!browser || browser->deprecated_is_app())
     return;
 
   // Also exclude internal pages and NTPs.

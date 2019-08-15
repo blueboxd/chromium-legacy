@@ -22,31 +22,14 @@
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment.h"
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_scope.h"
 #include "third_party/blink/renderer/core/layout/custom/fragment_result_options.h"
-#include "third_party/blink/renderer/core/layout/custom/layout_custom.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 
 namespace blink {
-
-namespace {
-
-bool IsLogicalHeightDefinite(const LayoutCustom& layout_custom) {
-  if (layout_custom.HasOverrideLogicalHeight())
-    return true;
-
-  // In quirks mode the document and body element stretch to the viewport.
-  if (layout_custom.StretchesToViewport())
-    return true;
-
-  if (layout_custom.HasDefiniteLogicalHeight())
-    return true;
-
-  return false;
-}
-
-}  // namespace
 
 CSSLayoutDefinition::CSSLayoutDefinition(
     ScriptState* script_state,
@@ -76,7 +59,10 @@ CSSLayoutDefinition::Instance::Instance(CSSLayoutDefinition* definition,
       instance_(definition->GetScriptState()->GetIsolate(), instance) {}
 
 bool CSSLayoutDefinition::Instance::Layout(
-    const LayoutCustom& layout_custom,
+    const NGConstraintSpace& space,
+    const Document& document,
+    const NGBlockNode& node,
+    const LogicalSize& border_box_size,
     CustomLayoutScope* custom_layout_scope,
     FragmentResultOptions* fragment_result_options,
     scoped_refptr<SerializedScriptValue>* fragment_result_data) {
@@ -89,14 +75,14 @@ bool CSSLayoutDefinition::Instance::Layout(
   ScriptState::Scope scope(script_state);
 
   // TODO(ikilpatrick): Determine if knowing the size of the array ahead of
-  // time improves performance in any noticable way.
+  // time improves performance in any noticeable way.
   HeapVector<Member<CustomLayoutChild>> children;
-  for (LayoutBox* child = layout_custom.FirstChildBox(); child;
-       child = child->NextSiblingBox()) {
-    if (child->IsOutOfFlowPositioned())
+  for (NGLayoutInputNode child = node.FirstChild(); child;
+       child = child.NextSibling()) {
+    if (child.IsOutOfFlowPositioned())
       continue;
 
-    CustomLayoutChild* layout_child = child->GetCustomLayoutChild();
+    CustomLayoutChild* layout_child = child.GetCustomLayoutChild();
     layout_child->SetCustomLayoutToken(custom_layout_scope->Token());
     DCHECK(layout_child);
     children.push_back(layout_child);
@@ -105,26 +91,16 @@ bool CSSLayoutDefinition::Instance::Layout(
   // TODO(ikilpatrick): Fill in layout edges.
   ScriptValue edges(script_state, v8::Undefined(isolate));
 
-  LayoutUnit fixed_block_size(-1);
-  if (IsLogicalHeightDefinite(layout_custom)) {
-    LayoutBox::LogicalExtentComputedValues computed_values;
-    layout_custom.ComputeLogicalHeight(LayoutUnit(-1), LayoutUnit(),
-                                       computed_values);
-    fixed_block_size = computed_values.extent_;
-  }
-
-  // TODO(ikilpatrick): Fill in layout constraints.
+  // TODO(crbug.com/992950): Pass constraint data through a constraint space.
   CustomLayoutConstraints* constraints =
       MakeGarbageCollected<CustomLayoutConstraints>(
-          layout_custom.LogicalWidth(), fixed_block_size,
-          layout_custom.GetConstraintData(), isolate);
+          border_box_size, nullptr /* constraint_data */, isolate);
 
   // TODO(ikilpatrick): Instead of creating a new style_map each time here,
   // store on LayoutCustom, and update when the style changes.
   StylePropertyMapReadOnly* style_map =
       MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
-          layout_custom.GetDocument(), layout_custom.StyleRef(),
-          definition_->native_invalidation_properties_,
+          document, node.Style(), definition_->native_invalidation_properties_,
           definition_->custom_invalidation_properties_);
 
   ScriptValue return_value;
@@ -157,7 +133,7 @@ bool CSSLayoutDefinition::Instance::Layout(
       v8::MicrotasksScope microtasks_scope(isolate, microtask_queue,
                                            v8::MicrotasksScope::kRunMicrotasks);
       for (auto& task : *custom_layout_scope->Queue())
-        task.Run();
+        task.Run(space, node.Style());
       custom_layout_scope->Queue()->clear();
     }
   }

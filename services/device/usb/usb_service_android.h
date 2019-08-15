@@ -53,7 +53,7 @@ class UsbServiceAndroid final : public UsbService {
   // Java object org.chromium.device.usb.ChromeUsbService.
   base::android::ScopedJavaGlobalRef<jobject> j_object_;
 
-  base::WeakPtrFactory<UsbServiceAndroid> weak_factory_;
+  base::WeakPtrFactory<UsbServiceAndroid> weak_factory_{this};
 };
 
 }  // namespace device

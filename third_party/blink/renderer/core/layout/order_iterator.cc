@@ -35,9 +35,7 @@
 namespace blink {
 
 OrderIterator::OrderIterator(const LayoutBox* container_box)
-    : container_box_(container_box),
-      current_child_(nullptr),
-      is_reset_(false) {}
+    : container_box_(container_box) {}
 
 LayoutBox* OrderIterator::First() {
   Reset();

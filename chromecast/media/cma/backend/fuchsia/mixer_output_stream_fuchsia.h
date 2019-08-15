@@ -22,6 +22,7 @@ class MixerOutputStreamFuchsia : public MixerOutputStream {
 
   // MixerOutputStream implementation:
   bool Start(int requested_sample_rate, int channels) override;
+  int GetNumChannels() override;
   int GetSampleRate() override;
   MediaPipelineBackend::AudioDecoder::RenderingDelay GetRenderingDelay()
       override;

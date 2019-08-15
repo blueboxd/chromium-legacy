@@ -472,6 +472,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool IsFullscreenForCurrentTab() override;
   bool ShouldShowStaleContentOnEviction() override;
   void ExitFullscreen(bool will_cause_resize) override;
+  void ForSecurityDropFullscreen() override;
   void ResumeLoadingCreatedWebContents() override;
   void SetIsOverlayContent(bool is_overlay_content) override;
   bool IsFocusedElementEditable() override;
@@ -1003,11 +1004,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Picture-in-Picture.
   // |IsFullscreen| must return |true| when this method is called.
   bool IsPictureInPictureAllowedForFullscreenVideo() const;
-
-  // The WebContents is trying to take some action that would cause user
-  // confusion if taken while in fullscreen. If this WebContents or any outer
-  // WebContents is in fullscreen, drop it.
-  void ForSecurityDropFullscreen();
 
   // When inner or outer WebContents are present, become the focused
   // WebContentsImpl. This will activate this content's main frame RenderWidget

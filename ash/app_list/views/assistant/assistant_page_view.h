@@ -63,8 +63,10 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
       base::Optional<ash::AssistantEntryPoint> entry_point,
       base::Optional<ash::AssistantExitPoint> exit_point) override;
 
+  const AssistantMainView* GetMainViewForTest() const;
+
  private:
-  int GetChildViewPreferredHeight() const;
+  int GetChildViewHeightForWidth(int width) const;
   void MaybeUpdateAppListState(int child_height);
   gfx::Rect AddShadowBorderToBounds(const gfx::Rect& bounds) const;
 

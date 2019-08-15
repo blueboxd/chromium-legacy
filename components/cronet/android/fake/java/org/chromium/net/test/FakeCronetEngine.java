@@ -28,6 +28,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Fake {@link CronetEngine}. This implements CronetEngine.
@@ -59,6 +65,7 @@ final class FakeCronetEngine extends CronetEngineBase {
     }
 
     private final FakeCronetController mController;
+    private final ExecutorService mExecutorService;
 
     private final Object mLock = new Object();
 
@@ -81,6 +88,22 @@ final class FakeCronetEngine extends CronetEngineBase {
         } else {
             mController = new FakeCronetController();
         }
+        mExecutorService = new ThreadPoolExecutor(
+                /* corePoolSize= */ 1,
+                /* maximumPoolSize= */ 5,
+                /* keepAliveTime= */ 50, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
+                new ThreadFactory() {
+                    @Override
+                    public Thread newThread(final Runnable r) {
+                        return Executors.defaultThreadFactory().newThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Thread.currentThread().setName("FakeCronetEngine");
+                                r.run();
+                            }
+                        });
+                    }
+                });
         FakeCronetController.addFakeCronetEngine(this);
     }
 
@@ -123,6 +146,7 @@ final class FakeCronetEngine extends CronetEngineBase {
                 mIsShutdown = true;
             }
         }
+        mExecutorService.shutdown();
         FakeCronetController.removeFakeCronetEngine(this);
     }
 
@@ -207,7 +231,7 @@ final class FakeCronetEngine extends CronetEngineBase {
 
     @Override
     protected UrlRequestBase createRequest(String url, UrlRequest.Callback callback,
-            Executor executor, int priority, Collection<Object> connectionAnnotations,
+            Executor userExecutor, int priority, Collection<Object> connectionAnnotations,
             boolean disableCache, boolean disableConnectionMigration, boolean allowDirectExecutor,
             boolean trafficStatsTagSet, int trafficStatsTag, boolean trafficStatsUidSet,
             int trafficStatsUid, RequestFinishedInfo.Listener requestFinishedListener) {
@@ -217,10 +241,9 @@ final class FakeCronetEngine extends CronetEngineBase {
                         "This instance of CronetEngine has been shutdown and can no longer be "
                         + "used.");
             }
-            // TODO(kirchman): Implement FakeUrlRequest.
-            throw new UnsupportedOperationException(
-                    "The UrlRequest API is not supported by the Fake implementation of "
-                    + "CronetEngine.");
+            return new FakeUrlRequest(callback, userExecutor, mExecutorService, url,
+                    allowDirectExecutor, trafficStatsTagSet, trafficStatsTag, trafficStatsUidSet,
+                    trafficStatsUid, mController, this);
         }
     }
 

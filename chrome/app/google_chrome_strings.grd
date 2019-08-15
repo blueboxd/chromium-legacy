@@ -852,16 +852,6 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
 
       <!-- Material Design User Manager -->
       <if expr="not is_android and not chromeos">
-        <!-- Supervised user create confirmation page -->
-        <message name="IDS_SUPERVISED_USER_CREATED_TEXT" desc="Informative text for the confirmation dialog that appears after a supervised user has been created.">
-          To set which websites <ph name="NEW_PROFILE_NAME">$1<ex>New User</ex></ph> can view, you can configure restrictions and settings by visiting <ph name="BEGIN_LINK_1">&lt;a target="_blank" href="$3"&gt;</ph><ph name="DISPLAY_LINK">$4</ph><ph name="END_LINK_1">&lt;/a&gt;</ph>. If you do not change the default settings, <ph name="NEW_PROFILE_NAME">$1<ex>New User</ex></ph> can browse everything on the web.
-
-To prevent <ph name="NEW_PROFILE_NAME">$1<ex>New User</ex></ph> from accessing your account, make sure you lock your profile when you're not using Chrome. To do this, click your profile name in the upper-right corner of the browser, and select "Exit and childlock."
-<ph name="BEGIN_LINK_2">&lt;a target="_blank" href="https://support.google.com/chrome/?p=ui_supervised_users&amp;hl=[GRITLANGCODE]"&gt;</ph>Learn more<ph name="END_LINK_2">&lt;/a&gt;</ph>
-
-Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</ex></ph> for further instructions.
-        </message>
-
         <!-- User pod remove sync warning text -->
         <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC" desc="Main text shown as a warning when attempting to remove an user.">
           This person's browsing data will be deleted from this device. To recover the data, sign in to Chrome as <ph name="USER_EMAIL">$2<ex>foo@example.com</ex></ph>.

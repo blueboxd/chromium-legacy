@@ -16,17 +16,23 @@ function clampZoom(factor) {
 }
 
 /**
- * Returns the height of the intersection of two rectangles.
+ * Returns the area of the intersection of two rectangles.
  *
  * @param {!ViewportRect} rect1 the first rect
  * @param {!ViewportRect} rect2 the second rect
- * @return {number} the height of the intersection of the rects
+ * @return {number} the area of the intersection of the rects
  */
-function getIntersectionHeight(rect1, rect2) {
-  return Math.max(
-      0,
-      Math.min(rect1.y + rect1.height, rect2.y + rect2.height) -
-          Math.max(rect1.y, rect2.y));
+function getIntersectionArea(rect1, rect2) {
+  const left = Math.max(rect1.x, rect2.x);
+  const top = Math.max(rect1.y, rect2.y);
+  const right = Math.min(rect1.x + rect1.width, rect2.x + rect2.width);
+  const bottom = Math.min(rect1.y + rect1.height, rect2.y + rect2.height);
+
+  if (left >= right || top >= bottom) {
+    return 0;
+  }
+
+  return (right - left) * (bottom - top);
 }
 
 /**
@@ -487,7 +493,9 @@ class ViewportImpl {
   }
 
   /**
-   * Get the which page is at a given y position.
+   * Get the page at a given y position. If there are multiple pages
+   * overlapping the given y-coordinate, return the page with the smallest
+   * index.
    *
    * @param {number} y the y-coordinate to get the page at.
    * @return {number} the index of a page overlapping the given y-coordinate.
@@ -521,6 +529,39 @@ class ViewportImpl {
     return 0;
   }
 
+  /**
+   * Assuming there are at most two pages overlapping |y| in the current layout,
+   * return the highest index of the pages at a given y position. Returns the
+   * last index of the document if the |y| is greater than the total height of
+   * the document.
+   *
+   * @param {number} y the y-coordinate to get the page at.
+   * @return {number} the highest index of the pages overlapping the given
+   *     y-coordinate.
+   * @private
+   */
+  getLastPageAtY_(y) {
+    const firstPage = this.getPageAtY_(y);
+
+    if (firstPage == 0 && this.pageDimensions_[firstPage].y < y) {
+      return this.pageDimensions_.length - 1;
+    }
+
+    if (firstPage % 2 != 0 || firstPage + 1 >= this.pageDimensions_.length) {
+      return firstPage;
+    }
+
+    // If the next page overlaps |y| then the next page is located to the
+    // right of |firstPage|, implying the document is in two-up view. Check
+    // the next page to see if it has this property, returning
+    // |firstPage| + 1 if true.
+    const nextPageY = this.pageDimensions_[firstPage + 1].y;
+    const nextPageBottom =
+        this.pageDimensions_[firstPage + 1].height + nextPageY;
+
+    return (nextPageY <= y && nextPageBottom > y) ? firstPage + 1 : firstPage;
+  }
+
   /** @override */
   isPointInsidePage(point) {
     const zoom = this.zoom;
@@ -544,35 +585,48 @@ class ViewportImpl {
   }
 
   /**
-   * Returns the page with the greatest proportion of its height in the current
+   * Returns the page with the greatest proportion of its area in the current
    * viewport.
    *
    * @return {number} the index of the most visible page.
    */
   getMostVisiblePage() {
-    const firstVisiblePage = this.getPageAtY_(this.position.y / this.zoom);
-    if (firstVisiblePage == this.pageDimensions_.length - 1) {
-      return firstVisiblePage;
-    }
-
     const viewportRect = {
       x: this.position.x / this.zoom,
       y: this.position.y / this.zoom,
       width: this.size.width / this.zoom,
       height: this.size.height / this.zoom
     };
-    const firstVisiblePageVisibility =
-        getIntersectionHeight(
-            this.pageDimensions_[firstVisiblePage], viewportRect) /
-        this.pageDimensions_[firstVisiblePage].height;
-    const nextPageVisibility =
-        getIntersectionHeight(
-            this.pageDimensions_[firstVisiblePage + 1], viewportRect) /
-        this.pageDimensions_[firstVisiblePage + 1].height;
-    if (nextPageVisibility > firstVisiblePageVisibility) {
-      return firstVisiblePage + 1;
+
+    const firstVisiblePage = this.getPageAtY_(viewportRect.y);
+    const lastPossibleVisiblePage =
+        this.getLastPageAtY_(viewportRect.y + viewportRect.height);
+    if (firstVisiblePage === lastPossibleVisiblePage) {
+      return firstVisiblePage;
     }
-    return firstVisiblePage;
+
+    let mostVisiblePage = firstVisiblePage;
+    let largestIntersection = 0;
+
+    for (let i = firstVisiblePage; i < lastPossibleVisiblePage + 1; i++) {
+      const pageArea =
+          this.pageDimensions_[i].width * this.pageDimensions_[i].height;
+
+      // TODO(thestig): check whether we can remove this check.
+      if (pageArea <= 0) {
+        continue;
+      }
+
+      const pageIntersectionArea =
+          getIntersectionArea(this.pageDimensions_[i], viewportRect) / pageArea;
+
+      if (pageIntersectionArea > largestIntersection) {
+        mostVisiblePage = i;
+        largestIntersection = pageIntersectionArea;
+      }
+    }
+
+    return mostVisiblePage;
   }
 
   /**

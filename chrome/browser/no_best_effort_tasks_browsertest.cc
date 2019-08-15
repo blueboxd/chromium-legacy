@@ -225,3 +225,25 @@ IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTest, LoadExtensionAndSendMessages) {
   }
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+// Verify that Blob XMLHttpRequest finishes without running BEST_EFFORT tasks.
+// Regression test for https://crbug.com/989868.
+IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTest, BlobXMLHttpRequest) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/empty.html"));
+  const char kScript[] = R"(
+      new Promise(function (resolve, reject) {
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", "./empty.html?", true);
+        xhr.responseType = "blob";
+        xhr.onload = () => {
+          resolve('DONE');
+        };
+        xhr.send();
+      })
+  )";
+  EXPECT_EQ("DONE",
+            content::EvalJs(
+                browser()->tab_strip_model()->GetActiveWebContents(), kScript));
+}

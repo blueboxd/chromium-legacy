@@ -173,3 +173,21 @@ export function removeWebUIListener(listener) {
   }
   return false;
 }
+
+/** Whether we are using a Mac or not. */
+export const isMac = /Mac/.test(navigator.platform);
+
+/** Whether this is on the Windows platform or not. */
+export const isWindows = /Win/.test(navigator.platform);
+
+/** Whether this is on chromeOS or not. */
+export const isChromeOS = /CrOS/.test(navigator.userAgent);
+
+/** Whether this is on vanilla Linux (not chromeOS). */
+export const isLinux = /Linux/.test(navigator.userAgent);
+
+/** Whether this is on Android. */
+export const isAndroid = /Android/.test(navigator.userAgent);
+
+/** Whether this is on iOS. */
+export const isIOS = /iPad|iPhone|iPod/.test(navigator.platform);

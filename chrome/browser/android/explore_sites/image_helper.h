@@ -56,7 +56,7 @@ class ImageHelper {
   std::map<int, std::unique_ptr<Job>> id_to_job_;
   int last_used_job_id_;
 
-  base::WeakPtrFactory<ImageHelper> weak_factory_;
+  base::WeakPtrFactory<ImageHelper> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImageHelper);
 };

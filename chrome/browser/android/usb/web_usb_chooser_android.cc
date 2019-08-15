@@ -12,7 +12,7 @@
 
 WebUsbChooserAndroid::WebUsbChooserAndroid(
     content::RenderFrameHost* render_frame_host)
-    : WebUsbChooser(render_frame_host), weak_factory_(this) {}
+    : WebUsbChooser(render_frame_host) {}
 
 WebUsbChooserAndroid::~WebUsbChooserAndroid() {}
 

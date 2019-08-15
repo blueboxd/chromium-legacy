@@ -34,8 +34,7 @@ SpellingRequest::SpellingRequest(SpellingServiceClient* client,
     : remote_success_(false),
       text_(text),
       callback_(std::move(callback)),
-      destruction_callback_(std::move(destruction_callback)),
-      weak_factory_(this) {
+      destruction_callback_(std::move(destruction_callback)) {
   DCHECK(!text_.empty());
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

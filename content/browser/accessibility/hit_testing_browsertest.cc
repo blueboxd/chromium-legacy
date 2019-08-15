@@ -123,7 +123,7 @@ class AccessibilityHitTestingCrossProcessBrowserTest
 
 IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
                        HitTestOutsideDocumentBoundsReturnsRoot) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   // Load the page.
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
       "</a>"
       "</body></html>";
   GURL url(url_str);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   waiter.WaitForNotification();
 
   BrowserAccessibility* hit_node = HitTestAndWaitForResult(gfx::Point(-1, -1));
@@ -151,14 +151,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
                        HitTestingInIframes) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kLoadComplete);
   GURL url(embedded_test_server()->GetURL(
       "/accessibility/html/iframe-coordinates.html"));
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   waiter.WaitForNotification();
 
   WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
@@ -366,14 +366,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
                        CachingAsyncHitTestingInIframes) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kLoadComplete);
   GURL url(embedded_test_server()->GetURL(
       "/accessibility/hit_testing/hit_testing.html"));
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   waiter.WaitForNotification();
 
   WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
@@ -435,7 +435,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
                        HitTestingWithPinchZoom) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                          ui::kAXModeComplete,
@@ -455,7 +455,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
       "</body></html>";
 
   GURL url(url_str);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   SynchronizeThreads();
   waiter.WaitForNotification();
 
@@ -533,7 +533,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
                        HitTestingWithPinchZoomAndIframes) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                          ui::kAXModeComplete,
@@ -541,7 +541,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
 
   GURL url(embedded_test_server()->GetURL(
       "/accessibility/html/iframe-coordinates.html"));
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   SynchronizeThreads();
   waiter.WaitForNotification();
 

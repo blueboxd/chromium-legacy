@@ -5,6 +5,7 @@
 #include "content/browser/indexed_db/indexed_db_tombstone_sweeper.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/files/scoped_temp_dir.h"

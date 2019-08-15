@@ -2,8 +2,6 @@
 # WPT WebDriver tests are a part of layout tests, but are run by a
 # separate runner, run_webdriver_tests.py. Thus this is a separate
 # expectation file from TestExpectations.
-crbug.com/992524 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer_origin.py>>test_element_in_view_center_point_partly_visible [ Failure Pass ]
-crbug.com/992524 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer_origin.py>>test_element_larger_than_viewport [ Failure Pass ]
 crbug.com/977228 [ Linux ] external/wpt/webdriver/tests/add_cookie/user_prompts.py>>test_dismiss_and_notify[capabilities0-alert-None] [ Failure Pass ]
 crbug.com/977228 [ Linux ] external/wpt/webdriver/tests/back/user_prompts.py>>test_default[alert-None] [ Failure Pass ]
 crbug.com/977228 [ Linux ] external/wpt/webdriver/tests/close_window/user_prompts.py>>test_ignore[capabilities0-alert] [ Failure Pass ]

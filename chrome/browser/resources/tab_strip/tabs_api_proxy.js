@@ -8,10 +8,21 @@ export class TabsApiProxy {
   constructor() {
     /** @type {!Object<string, !ChromeEvent>} */
     this.callbackRouter = {
+      onActivated: chrome.tabs.onActivated,
       onCreated: chrome.tabs.onCreated,
       onRemoved: chrome.tabs.onRemoved,
       onUpdated: chrome.tabs.onUpdated,
     };
+  }
+
+  /**
+   * @param {number} tabId
+   * @return {!Promise<!Tab>}
+   */
+  activateTab(tabId) {
+    return new Promise(resolve => {
+      chrome.tabs.update(tabId, {active: true}, resolve);
+    });
   }
 
   /**

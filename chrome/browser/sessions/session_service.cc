@@ -266,9 +266,8 @@ void SessionService::WindowOpened(Browser* browser) {
     return;
 
   RestoreIfNecessary(std::vector<GURL>(), browser);
-  SetWindowType(browser->session_id(),
-                browser->type(),
-                browser->is_app() ? TYPE_APP : TYPE_NORMAL);
+  SetWindowType(browser->session_id(), browser->type(),
+                browser->deprecated_is_app() ? TYPE_APP : TYPE_NORMAL);
   SetWindowAppName(browser->session_id(), browser->app_name());
 }
 
@@ -584,6 +583,8 @@ void SessionService::Init() {
   BrowserList::AddObserver(this);
 }
 
+// TODO(crbug.com/990158): Remove AppType.  WindowType will be sufficient once
+// it matches Browser::Type with APP and DEVTOOLS.
 bool SessionService::ShouldRestoreWindowOfType(
     sessions::SessionWindow::WindowType window_type,
     AppType app_type) const {
@@ -594,7 +595,7 @@ bool SessionService::ShouldRestoreWindowOfType(
     return true;
 #endif
 
-  return window_type == sessions::SessionWindow::TYPE_TABBED;
+  return window_type == sessions::SessionWindow::TYPE_NORMAL;
 }
 
 void SessionService::RemoveUnusedRestoreWindows(
@@ -922,12 +923,12 @@ bool SessionService::ShouldTrackBrowser(Browser* browser) const {
   // Never track app popup windows that do not have a trusted source (i.e.
   // popup windows spawned by an app). If this logic changes, be sure to also
   // change SessionRestoreImpl::CreateRestoredBrowser().
-  if (browser->is_app() && browser->is_type_popup() &&
-      !browser->is_trusted_source()) {
+  if (browser->deprecated_is_app() && !browser->is_trusted_source()) {
     return false;
   }
-  return ShouldRestoreWindowOfType(WindowTypeForBrowserType(browser->type()),
-                                   browser->is_app() ? TYPE_APP : TYPE_NORMAL);
+  return ShouldRestoreWindowOfType(
+      WindowTypeForBrowserType(browser->type()),
+      browser->deprecated_is_app() ? TYPE_APP : TYPE_NORMAL);
 }
 
 void SessionService::MaybeDeleteSessionOnlyData() {

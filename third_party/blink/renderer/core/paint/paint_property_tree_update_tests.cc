@@ -836,6 +836,61 @@ TEST_P(PaintPropertyTreeUpdateTest,
   EXPECT_EQ(IntSize(800, 600), visual_viewport.GetScrollNode()->ContentsSize());
 }
 
+TEST_P(PaintPropertyTreeUpdateTest, ViewportAddRemoveDeviceEmulationNode) {
+  SetBodyInnerHTML(
+      "<style>body {height: 10000px; width: 10000px; margin: 0;}</style>");
+
+  auto& visual_viewport = GetDocument().GetPage()->GetVisualViewport();
+  EXPECT_FALSE(visual_viewport.GetDeviceEmulationTransformNode());
+  // The LayoutView (instead of VisualViewport) creates scrollbars because
+  // viewport is disabled.
+  ASSERT_FALSE(GetDocument().GetPage()->GetSettings().GetViewportEnabled());
+  EXPECT_FALSE(visual_viewport.LayerForHorizontalScrollbar());
+  EXPECT_FALSE(visual_viewport.LayerForVerticalScrollbar());
+  ASSERT_TRUE(GetLayoutView().GetScrollableArea());
+  auto* scrollbar_layer =
+      GetLayoutView().GetScrollableArea()->LayerForHorizontalScrollbar();
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    ASSERT_TRUE(scrollbar_layer);
+    EXPECT_EQ(&TransformPaintPropertyNode::Root(),
+              &scrollbar_layer->GetPropertyTreeState().Transform());
+  } else {
+    // TODO(wangxianzhu): Test for CompositeAfterPaint.
+    EXPECT_FALSE(scrollbar_layer);
+  }
+
+  // These emulate WebViewImpl::SetDeviceEmulationTransform().
+  GetChromeClient().SetDeviceEmulationTransform(
+      TransformationMatrix().Scale(2));
+  visual_viewport.SetNeedsPaintPropertyUpdate();
+
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(visual_viewport.GetDeviceEmulationTransformNode());
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    ASSERT_TRUE(scrollbar_layer);
+    EXPECT_EQ(visual_viewport.GetDeviceEmulationTransformNode(),
+              &scrollbar_layer->GetPropertyTreeState().Transform());
+  } else {
+    // TODO(wangxianzhu): Test for CompositeAfterPaint.
+    EXPECT_FALSE(scrollbar_layer);
+  }
+
+  // These emulate WebViewImpl::SetDeviceEmulationTransform().
+  GetChromeClient().SetDeviceEmulationTransform(TransformationMatrix());
+  visual_viewport.SetNeedsPaintPropertyUpdate();
+
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(visual_viewport.GetDeviceEmulationTransformNode());
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    ASSERT_TRUE(scrollbar_layer);
+    EXPECT_EQ(&TransformPaintPropertyNode::Root(),
+              &scrollbar_layer->GetPropertyTreeState().Transform());
+  } else {
+    // TODO(wangxianzhu): Test for CompositeAfterPaint.
+    EXPECT_FALSE(scrollbar_layer);
+  }
+}
+
 TEST_P(PaintPropertyTreeUpdateTest, ScrollbarWidthChange) {
   SetBodyInnerHTML(R"HTML(
     <style>::-webkit-scrollbar {width: 20px; height: 20px}</style>

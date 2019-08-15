@@ -9,8 +9,7 @@
 
 namespace autofill_assistant {
 
-RetryTimer::RetryTimer(base::TimeDelta period)
-    : period_(period), weak_ptr_factory_(this) {}
+RetryTimer::RetryTimer(base::TimeDelta period) : period_(period) {}
 RetryTimer::~RetryTimer() = default;
 
 void RetryTimer::Start(

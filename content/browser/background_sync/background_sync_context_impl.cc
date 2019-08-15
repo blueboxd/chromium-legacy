@@ -85,24 +85,40 @@ void BackgroundSyncContextImpl::Shutdown() {
       base::BindOnce(&BackgroundSyncContextImpl::ShutdownOnIO, this));
 }
 
-void BackgroundSyncContextImpl::CreateOneShotSyncService(
+void BackgroundSyncContextImpl::CreateOneShotSyncServiceForRequest(
     blink::mojom::OneShotBackgroundSyncServiceRequest request) {
+  // Implicit conversion from OneShotBackgroundSyncServiceRequest to
+  // mojo::PendingReceiver<blink::mojom::OneShotBackgroundSyncService>.
+  CreateOneShotSyncService(std::move(request));
+}
+
+void BackgroundSyncContextImpl::CreatePeriodicSyncServiceForRequest(
+    blink::mojom::PeriodicBackgroundSyncServiceRequest request) {
+  // Implicit conversion from PeriodicBackgroundSyncServiceRequest to
+  // mojo::PendingReceiver<blink::mojom::PeriodicBackgroundSyncService>.
+  CreatePeriodicSyncService(std::move(request));
+}
+
+void BackgroundSyncContextImpl::CreateOneShotSyncService(
+    mojo::PendingReceiver<blink::mojom::OneShotBackgroundSyncService>
+        receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &BackgroundSyncContextImpl::CreateOneShotSyncServiceOnIOThread, this,
-          std::move(request)));
+          std::move(receiver)));
 }
 
 void BackgroundSyncContextImpl::CreatePeriodicSyncService(
-    blink::mojom::PeriodicBackgroundSyncServiceRequest request) {
+    mojo::PendingReceiver<blink::mojom::PeriodicBackgroundSyncService>
+        receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &BackgroundSyncContextImpl::CreatePeriodicSyncServiceOnIOThread, this,
-          std::move(request)));
+          std::move(receiver)));
 }
 
 void BackgroundSyncContextImpl::OneShotSyncServiceHadConnectionError(
@@ -249,23 +265,23 @@ void BackgroundSyncContextImpl::CreateBackgroundSyncManager(
 }
 
 void BackgroundSyncContextImpl::CreateOneShotSyncServiceOnIOThread(
-    mojo::InterfaceRequest<blink::mojom::OneShotBackgroundSyncService>
-        request) {
+    mojo::PendingReceiver<blink::mojom::OneShotBackgroundSyncService>
+        receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(background_sync_manager_);
   one_shot_sync_services_.insert(
       std::make_unique<OneShotBackgroundSyncServiceImpl>(this,
-                                                         std::move(request)));
+                                                         std::move(receiver)));
 }
 
 void BackgroundSyncContextImpl::CreatePeriodicSyncServiceOnIOThread(
-    mojo::InterfaceRequest<blink::mojom::PeriodicBackgroundSyncService>
-        request) {
+    mojo::PendingReceiver<blink::mojom::PeriodicBackgroundSyncService>
+        receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(background_sync_manager_);
   periodic_sync_services_.insert(
       std::make_unique<PeriodicBackgroundSyncServiceImpl>(this,
-                                                          std::move(request)));
+                                                          std::move(receiver)));
 }
 
 void BackgroundSyncContextImpl::ShutdownOnIO() {

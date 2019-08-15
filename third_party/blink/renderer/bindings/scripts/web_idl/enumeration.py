@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import exceptions
-
 from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
@@ -25,6 +23,9 @@ class Enumeration(UserDefinedType, WithExtendedAttributes,
                      code_generator_info=None,
                      component=None,
                      debug_info=None):
+            assert isinstance(values, (list, tuple))
+            assert all(isinstance(value, str) for value in values)
+
             IdentifierIRMap.IR.__init__(
                 self,
                 identifier=identifier,
@@ -34,16 +35,25 @@ class Enumeration(UserDefinedType, WithExtendedAttributes,
             WithComponent.__init__(self, component)
             WithDebugInfo.__init__(self, debug_info)
 
-            assert isinstance(values, (list, tuple))
-            self.values = tuple(values)
+            self.values = list(values)
+
+    def __init__(self, ir):
+        assert isinstance(ir, Enumeration.IR)
+
+        UserDefinedType.__init__(self, ir.identifier)
+        WithExtendedAttributes.__init__(self,
+                                        ir.extended_attributes.make_copy())
+        WithCodeGeneratorInfo.__init__(self,
+                                       ir.code_generator_info.make_copy())
+        WithComponent.__init__(self, components=ir.components)
+        WithDebugInfo.__init__(self, ir.debug_info.make_copy())
+
+        self._values = tuple(ir.values)
 
     @property
     def values(self):
-        """
-        Returns a list of values listed in this enumeration.
-        @return tuple(str)
-        """
-        raise exceptions.NotImplementedError()
+        """Returns the list of enum values."""
+        return self._values
 
     # UserDefinedType overrides
     @property

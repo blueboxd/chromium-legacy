@@ -107,7 +107,7 @@ TEST_F(AudioDeviceOwnerTest, BufferFilling) {
       base::SequencedTaskRunnerHandle::Get(),
       base::SequencedTaskRunnerHandle::Get(), "test device");
   // Upon start, it will start to fill the buffer.
-  owner->StartOnMainThread(&delegate, nullptr, format);
+  owner->StartOnMainThread(&delegate, mojo::NullRemote(), format);
   delegate.Wait();
 
   delegate.Reset();

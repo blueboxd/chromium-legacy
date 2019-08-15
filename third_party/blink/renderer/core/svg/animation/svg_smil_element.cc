@@ -153,8 +153,11 @@ void SVGSMILElement::Condition::Trace(blink::Visitor* visitor) {
 void SVGSMILElement::Condition::ConnectSyncBase(SVGSMILElement& timed_element) {
   DCHECK(!base_id_.IsEmpty());
   DCHECK_EQ(type_, kSyncbase);
-  Element* element = timed_element.GetTreeScope().getElementById(base_id_);
-  auto* svg_smil_element = DynamicTo<SVGSMILElement>(element);
+  auto* svg_smil_element =
+      DynamicTo<SVGSMILElement>(SVGURIReference::ObserveTarget(
+          base_id_observer_, timed_element.GetTreeScope(), base_id_,
+          WTF::BindRepeating(&SVGSMILElement::BuildPendingResource,
+                             WrapWeakPersistent(&timed_element))));
   if (!svg_smil_element) {
     base_element_ = nullptr;
     return;
@@ -166,6 +169,7 @@ void SVGSMILElement::Condition::ConnectSyncBase(SVGSMILElement& timed_element) {
 void SVGSMILElement::Condition::DisconnectSyncBase(
     SVGSMILElement& timed_element) {
   DCHECK_EQ(type_, kSyncbase);
+  SVGURIReference::UnobserveTarget(base_id_observer_);
   if (!base_element_)
     return;
   To<SVGSMILElement>(*base_element_).RemoveSyncBaseDependent(timed_element);
@@ -251,6 +255,7 @@ void SVGSMILElement::ClearConditions() {
 void SVGSMILElement::BuildPendingResource() {
   ClearResourceAndEventBaseReferences();
   DisconnectEventBaseConditions();
+  DisconnectSyncBaseConditions();
 
   if (!isConnected()) {
     // Reset the target element if we are no longer in the document.
@@ -279,6 +284,7 @@ void SVGSMILElement::BuildPendingResource() {
     // react to it.
     AddReferenceTo(svg_target);
   }
+  ConnectSyncBaseConditions();
   ConnectEventBaseConditions();
 }
 

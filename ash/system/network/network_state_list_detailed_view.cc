@@ -12,7 +12,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
-#include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/tri_view.h"
 #include "base/strings/utf_string_conversions.h"
@@ -202,16 +201,10 @@ NetworkStateListDetailedView::NetworkStateListDetailedView(
       info_bubble_(nullptr) {}
 
 NetworkStateListDetailedView::~NetworkStateListDetailedView() {
+  model_->RemoveObserver(this);
   if (info_bubble_)
     info_bubble_->OnNetworkStateListDetailedViewIsDeleting();
   ResetInfoBubble();
-}
-
-void NetworkStateListDetailedView::Update() {
-  UpdateNetworkList();
-  UpdateHeaderButtons();
-  UpdateScanningBar();
-  Layout();
 }
 
 void NetworkStateListDetailedView::ToggleInfoBubbleForTesting() {
@@ -228,10 +221,26 @@ void NetworkStateListDetailedView::Init() {
                      ? IDS_ASH_STATUS_TRAY_NETWORK
                      : IDS_ASH_STATUS_TRAY_VPN);
 
+  model_->AddObserver(this);
   Update();
 
   if (list_type_ == LIST_TYPE_NETWORK && IsWifiEnabled())
     ScanAndStartTimer();
+}
+
+void NetworkStateListDetailedView::Update() {
+  UpdateNetworkList();
+  UpdateHeaderButtons();
+  UpdateScanningBar();
+  Layout();
+}
+
+void NetworkStateListDetailedView::ActiveNetworkStateChanged() {
+  Update();
+}
+
+void NetworkStateListDetailedView::NetworkListChanged() {
+  Update();
 }
 
 void NetworkStateListDetailedView::HandleButtonPressed(views::Button* sender,
@@ -308,7 +317,8 @@ void NetworkStateListDetailedView::ShowSettings() {
                                   : UMA_STATUS_AREA_NETWORK_SETTINGS_OPENED);
   CloseBubble();  // Deletes |this|.
   Shell::Get()->system_tray_model()->client()->ShowNetworkSettings(
-      std::string());
+      model_->default_network() ? model_->default_network()->guid
+                                : std::string());
 }
 
 void NetworkStateListDetailedView::UpdateHeaderButtons() {

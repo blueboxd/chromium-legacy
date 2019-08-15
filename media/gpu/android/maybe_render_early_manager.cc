@@ -18,7 +18,7 @@ namespace media {
 // the actual rendering.
 class GpuMaybeRenderEarlyImpl {
  public:
-  GpuMaybeRenderEarlyImpl() : weak_factory_(this) {}
+  GpuMaybeRenderEarlyImpl() {}
   ~GpuMaybeRenderEarlyImpl() = default;
 
   void SetCodecImageGroup(scoped_refptr<CodecImageGroup> image_group) {
@@ -63,7 +63,7 @@ class GpuMaybeRenderEarlyImpl {
   // replace this when SetImageGroup() is called.
   scoped_refptr<CodecImageGroup> image_group_;
 
-  base::WeakPtrFactory<GpuMaybeRenderEarlyImpl> weak_factory_;
+  base::WeakPtrFactory<GpuMaybeRenderEarlyImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GpuMaybeRenderEarlyImpl);
 };

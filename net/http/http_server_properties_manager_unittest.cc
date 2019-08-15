@@ -1080,7 +1080,7 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
   EXPECT_EQ(expected_json, preferences_json);
 }
 
-TEST_F(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
+TEST_F(HttpServerPropertiesManagerTest, ParseAlternativeServiceInfo) {
   InitializePrefs();
 
   std::unique_ptr<base::Value> server_value = base::JSONReader::ReadDeprecated(
@@ -1094,14 +1094,13 @@ TEST_F(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
   ASSERT_TRUE(server_value->GetAsDictionary(&server_dict));
 
   const url::SchemeHostPort server("https", "example.com", 443);
-  AlternativeServiceMap alternative_service_map;
-  EXPECT_TRUE(http_server_props_->properties_manager_for_testing()
-                  ->AddToAlternativeServiceMap(server, *server_dict,
-                                               &alternative_service_map));
+  HttpServerProperties::ServerInfo server_info;
+  EXPECT_TRUE(HttpServerPropertiesManager::ParseAlternativeServiceInfo(
+      server, *server_dict, &server_info));
 
-  auto it = alternative_service_map.Get(server);
-  ASSERT_NE(alternative_service_map.end(), it);
-  AlternativeServiceInfoVector alternative_service_info_vector = it->second;
+  ASSERT_TRUE(server_info.alternative_services.has_value());
+  AlternativeServiceInfoVector alternative_service_info_vector =
+      server_info.alternative_services.value();
   ASSERT_EQ(3u, alternative_service_info_vector.size());
 
   EXPECT_EQ(kProtoHTTP2,
@@ -1132,6 +1131,10 @@ TEST_F(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
       base::Time::FromUTCString("2036-12-31 10:00:00", &expected_expiration));
   EXPECT_EQ(expected_expiration,
             alternative_service_info_vector[2].expiration());
+
+  // No other fields should have been populated.
+  server_info.alternative_services.reset();
+  EXPECT_TRUE(server_info.empty());
 }
 
 // Regression test for https://crbug.com/615497.
@@ -1146,13 +1149,10 @@ TEST_F(HttpServerPropertiesManagerTest, DoNotLoadAltSvcForInsecureOrigins) {
   ASSERT_TRUE(server_value->GetAsDictionary(&server_dict));
 
   const url::SchemeHostPort server("http", "example.com", 80);
-  AlternativeServiceMap alternative_service_map;
-  EXPECT_FALSE(http_server_props_->properties_manager_for_testing()
-                   ->AddToAlternativeServiceMap(server, *server_dict,
-                                                &alternative_service_map));
-
-  auto it = alternative_service_map.Get(server);
-  EXPECT_EQ(alternative_service_map.end(), it);
+  HttpServerProperties::ServerInfo server_info;
+  EXPECT_FALSE(HttpServerPropertiesManager::ParseAlternativeServiceInfo(
+      server, *server_dict, &server_info));
+  EXPECT_TRUE(server_info.empty());
 }
 
 // Do not persist expired alternative service entries to disk.
@@ -1259,14 +1259,13 @@ TEST_F(HttpServerPropertiesManagerTest, DoNotLoadExpiredAlternativeService) {
                                            std::move(alternative_service_list));
 
   const url::SchemeHostPort server("https", "example.com", 443);
-  AlternativeServiceMap alternative_service_map;
-  ASSERT_TRUE(http_server_props_->properties_manager_for_testing()
-                  ->AddToAlternativeServiceMap(server, server_pref_dict,
-                                               &alternative_service_map));
+  HttpServerProperties::ServerInfo server_info;
+  ASSERT_TRUE(HttpServerPropertiesManager::ParseAlternativeServiceInfo(
+      server, server_pref_dict, &server_info));
 
-  auto it = alternative_service_map.Get(server);
-  ASSERT_NE(alternative_service_map.end(), it);
-  AlternativeServiceInfoVector alternative_service_info_vector = it->second;
+  ASSERT_TRUE(server_info.alternative_services.has_value());
+  AlternativeServiceInfoVector alternative_service_info_vector =
+      server_info.alternative_services.value();
   ASSERT_EQ(1u, alternative_service_info_vector.size());
 
   EXPECT_EQ(kProtoHTTP2,
@@ -1275,6 +1274,10 @@ TEST_F(HttpServerPropertiesManagerTest, DoNotLoadExpiredAlternativeService) {
             alternative_service_info_vector[0].alternative_service().host);
   EXPECT_EQ(443, alternative_service_info_vector[0].alternative_service().port);
   EXPECT_EQ(one_day_from_now_, alternative_service_info_vector[0].expiration());
+
+  // No other fields should have been populated.
+  server_info.alternative_services.reset();
+  EXPECT_TRUE(server_info.empty());
 }
 
 // Make sure prefs are updated on destruction.
@@ -1382,14 +1385,13 @@ TEST_F(HttpServerPropertiesManagerTest, ReadAdvertisedVersionsFromPref) {
   ASSERT_TRUE(server_value->GetAsDictionary(&server_dict));
 
   const url::SchemeHostPort server("https", "example.com", 443);
-  AlternativeServiceMap alternative_service_map;
-  EXPECT_TRUE(http_server_props_->properties_manager_for_testing()
-                  ->AddToAlternativeServiceMap(server, *server_dict,
-                                               &alternative_service_map));
+  HttpServerProperties::ServerInfo server_info;
+  EXPECT_TRUE(HttpServerPropertiesManager::ParseAlternativeServiceInfo(
+      server, *server_dict, &server_info));
 
-  auto it = alternative_service_map.Get(server);
-  ASSERT_NE(alternative_service_map.end(), it);
-  AlternativeServiceInfoVector alternative_service_info_vector = it->second;
+  ASSERT_TRUE(server_info.alternative_services.has_value());
+  AlternativeServiceInfoVector alternative_service_info_vector =
+      server_info.alternative_services.value();
   ASSERT_EQ(2u, alternative_service_info_vector.size());
 
   // Verify the first alternative service with no advertised version listed.
@@ -1420,6 +1422,10 @@ TEST_F(HttpServerPropertiesManagerTest, ReadAdvertisedVersionsFromPref) {
   EXPECT_EQ(quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
                                     quic::QUIC_VERSION_46),
             loaded_advertised_versions[1]);
+
+  // No other fields should have been populated.
+  server_info.alternative_services.reset();
+  EXPECT_TRUE(server_info.empty());
 }
 
 TEST_F(HttpServerPropertiesManagerTest,

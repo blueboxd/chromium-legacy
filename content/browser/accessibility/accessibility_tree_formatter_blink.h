@@ -24,7 +24,7 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBlink
   static std::unique_ptr<AccessibilityTreeFormatter> CreateBlink();
 
  private:
-  const base::FilePath::StringType GetExpectedFileSuffix() override;
+  base::FilePath::StringType GetExpectedFileSuffix() override;
   const std::string GetAllowEmptyString() override;
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;

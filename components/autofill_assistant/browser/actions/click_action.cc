@@ -14,7 +14,7 @@
 namespace autofill_assistant {
 
 ClickAction::ClickAction(ActionDelegate* delegate, const ActionProto& proto)
-    : Action(delegate, proto), weak_ptr_factory_(this) {
+    : Action(delegate, proto) {
   DCHECK(proto_.has_click());
   switch (proto.click().click_type()) {
     case ClickProto_ClickType_NOT_SET:  // default: TAP

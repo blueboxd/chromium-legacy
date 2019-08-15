@@ -8,12 +8,14 @@
 #include <memory>
 
 #include "cc/paint/paint_record.h"
+#include "cc/paint/paint_worklet_job.h"
 #include "cc/paint/paint_worklet_layer_painter.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
 using CompositorPaintWorkletInput = cc::PaintWorkletInput;
+using CompositorPaintWorkletJob = cc::PaintWorkletJob;
 
 class PaintWorkletPaintDispatcher;
 

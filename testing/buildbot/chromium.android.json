@@ -13096,7 +13096,8 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--test-filter=-org.chromium.chrome.browser.metrics.StartupLoadingMetricsTest#testStartWithURLRecorded"
         ],
         "experiment_percentage": 100,
         "merge": {
@@ -13144,7 +13145,8 @@
           "--disable-features=NetworkServiceInProcess",
           "--gtest_filter=-org.chromium.chrome.browser.FeaturesAnnotationsTest#testFeaturesSetExistingFlags",
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--test-filter=-org.chromium.chrome.browser.metrics.StartupLoadingMetricsTest#testStartWithURLRecorded"
         ],
         "merge": {
           "args": [

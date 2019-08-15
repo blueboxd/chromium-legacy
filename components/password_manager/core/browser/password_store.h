@@ -262,9 +262,9 @@ class PasswordStore : protected PasswordStoreSync,
                           const std::string& domain,
                           PasswordReuseDetectorConsumer* consumer);
 
-  // Saves |username| and a hash of |password| for Gaia password reuse checking.
+  // Saves |username| and a hash of |password| for GAIA password reuse checking.
   // |event| is used for metric logging and for distinguishing sync password
-  // hash change event and other non-sync Gaia password change event.
+  // hash change event and other non-sync GAIA password change event.
   virtual void SaveGaiaPasswordHash(const std::string& username,
                                     const base::string16& password,
                                     metrics_util::GaiaPasswordHashChange event);
@@ -279,14 +279,17 @@ class PasswordStore : protected PasswordStoreSync,
   virtual void SaveSyncPasswordHash(const PasswordHashData& sync_password_data,
                                     metrics_util::GaiaPasswordHashChange event);
 
-  // Clears the saved Gaia password hash for |username|.
+  // Clears the saved GAIA password hash for |username|.
   virtual void ClearGaiaPasswordHash(const std::string& username);
 
-  // Clears all the Gaia password hash.
+  // Clears all the GAIA password hash.
   virtual void ClearAllGaiaPasswordHash();
 
-  // Clears all (non-Gaia) enterprise password hash.
+  // Clears all (non-GAIA) enterprise password hash.
   virtual void ClearAllEnterprisePasswordHash();
+
+  // Clear all GAIA password hash that is not associated with a Gmail account.
+  virtual void ClearAllNonGmailPasswordHash();
 
   // Adds a listener on |hash_password_manager_| for when |kHashPasswordData|
   // list might have changed. Should only be called on the UI thread.
@@ -459,11 +462,14 @@ class PasswordStore : protected PasswordStoreSync,
   // Synchronous implementation of ClearGaiaPasswordHash(...).
   void ClearGaiaPasswordHashImpl(const std::string& username);
 
-  // Synchronous implementation of ClearAllGaiaPasswordHashImpl().
+  // Synchronous implementation of ClearAllGaiaPasswordHash().
   void ClearAllGaiaPasswordHashImpl();
 
-  // Synchronous implementation of ClearAllEnterprisePasswordHashImpl().
+  // Synchronous implementation of ClearAllEnterprisePasswordHash().
   void ClearAllEnterprisePasswordHashImpl();
+
+  // Synchronous implementation of ClearAllNonGmailPasswordHash().
+  void ClearAllNonGmailPasswordHashImpl();
 #endif
 
   scoped_refptr<base::SequencedTaskRunner> main_task_runner() const {

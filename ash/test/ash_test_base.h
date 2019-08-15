@@ -14,6 +14,7 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/wm/desks/desks_util.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/template_util.h"
@@ -75,8 +76,8 @@ class AshTestBase : public testing::Test {
   // Constructs an AshTestBase with |traits| being forwarded to its
   // ScopedTaskEnvironment. MainThreadType always defaults to UI and must not be
   // specified.
-  template <typename... ScopedTaskEnvironmentTraits>
-  explicit AshTestBase(ScopedTaskEnvironmentTraits... traits)
+  template <typename... TaskEnvironmentTraits>
+  NOINLINE explicit AshTestBase(TaskEnvironmentTraits... traits)
       : scoped_task_environment_(
             base::in_place,
             base::test::ScopedTaskEnvironment::MainThreadType::UI,
@@ -86,7 +87,7 @@ class AshTestBase : public testing::Test {
   // instantiate a ScopedTaskEnvironment. The subclass is then responsible to
   // instantiate one before AshTestBase::SetUp().
   struct SubclassManagesTaskEnvironment {};
-  AshTestBase(SubclassManagesTaskEnvironment tag);
+  explicit AshTestBase(SubclassManagesTaskEnvironment tag);
 
   ~AshTestBase() override;
 

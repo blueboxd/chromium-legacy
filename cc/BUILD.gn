@@ -275,6 +275,8 @@ cc_component("cc") {
     "tiles/tiling_set_raster_queue_all.h",
     "tiles/tiling_set_raster_queue_required.cc",
     "tiles/tiling_set_raster_queue_required.h",
+    "trees/animated_paint_worklet_tracker.cc",
+    "trees/animated_paint_worklet_tracker.h",
     "trees/animation_effect_timings.h",
     "trees/animation_options.h",
     "trees/clip_expander.cc",

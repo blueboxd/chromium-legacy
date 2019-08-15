@@ -951,9 +951,10 @@ char* GetTextWithBoundaryType(AtkText* atk_text,
   // need to convert this input value.
   offset = obj->UnicodeToUTF16OffsetInText(offset);
 
-  int start_offset =
-      obj->FindTextBoundary(boundary, offset, BACKWARDS_DIRECTION);
-  int end_offset = obj->FindTextBoundary(boundary, offset, FORWARDS_DIRECTION);
+  int start_offset = obj->FindTextBoundary(boundary, offset,
+                                           AXTextBoundaryDirection::kBackwards);
+  int end_offset = obj->FindTextBoundary(boundary, offset,
+                                         AXTextBoundaryDirection::kForwards);
   if (start_offset < 0 || end_offset < 0)
     return nullptr;
 
@@ -4212,19 +4213,19 @@ void AXPlatformNodeAuraLinux::MergeSpellingIntoAtkTextAttributesAtOffset(
 
 int AXPlatformNodeAuraLinux::FindStartOfStyle(
     int start_offset,
-    ui::TextBoundaryDirection direction) {
+    AXTextBoundaryDirection direction) {
   int text_length = GetHypertext().length();
   DCHECK_GE(start_offset, 0);
   DCHECK_LE(start_offset, text_length);
   DCHECK(!offset_to_text_attributes_.empty());
 
   switch (direction) {
-    case ui::BACKWARDS_DIRECTION: {
+    case AXTextBoundaryDirection::kBackwards: {
       auto iterator = offset_to_text_attributes_.upper_bound(start_offset);
       --iterator;
       return iterator->first;
     }
-    case ui::FORWARDS_DIRECTION: {
+    case AXTextBoundaryDirection::kForwards: {
       const auto iterator =
           offset_to_text_attributes_.upper_bound(start_offset);
       if (iterator == offset_to_text_attributes_.end())
@@ -4244,8 +4245,10 @@ AtkAttributeSet* AXPlatformNodeAuraLinux::GetTextAttributes(int offset,
   DCHECK(!offset_to_text_attributes_.empty());
 
   int utf16_offset = UnicodeToUTF16OffsetInText(offset);
-  int style_start = FindStartOfStyle(utf16_offset, ui::BACKWARDS_DIRECTION);
-  int style_end = FindStartOfStyle(utf16_offset, ui::FORWARDS_DIRECTION);
+  int style_start =
+      FindStartOfStyle(utf16_offset, AXTextBoundaryDirection::kBackwards);
+  int style_end =
+      FindStartOfStyle(utf16_offset, AXTextBoundaryDirection::kForwards);
 
   auto iterator = offset_to_text_attributes_.find(style_start);
   DCHECK(iterator != offset_to_text_attributes_.end());

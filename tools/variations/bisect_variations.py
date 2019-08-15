@@ -52,12 +52,21 @@ _CHROME_PATH_MAC = {
              r"Google Chrome Canary"),
 }
 
+_CHROME_PATH_LINUX = {
+  "stable": r"/usr/bin/google-chrome",
+  "beta": r"/usr/bin/google-chrome-beta",
+  "dev": r"/usr/bin/google-chrome-unstable",
+  "chromium": r"/usr/bin/chromium",
+}
+
 def _GetSupportedBrowserTypes():
   """Returns the supported browser types on this platform."""
   if sys.platform.startswith('win'):
     return _CHROME_PATH_WIN.keys()
   if sys.platform == 'darwin':
     return _CHROME_PATH_MAC.keys();
+  if sys.platform.startswith('linux'):
+    return _CHROME_PATH_LINUX.keys();
   raise NotImplementedError('Unsupported platform')
 
 
@@ -91,6 +100,18 @@ def _LocateBrowser_Mac(browser_type):
   return _CHROME_PATH_MAC[browser_type]
 
 
+def _LocateBrowser_Linux(browser_type):
+  """Locates browser executable path based on input browser type.
+
+  Args:
+      browser_type: A supported browser type on Linux.
+
+  Returns:
+      Browser executable path.
+  """
+  return _CHROME_PATH_LINUX[browser_type]
+
+
 def _LocateBrowser(browser_type):
   """Locates browser executable path based on input browser type.
 
@@ -108,6 +129,8 @@ def _LocateBrowser(browser_type):
     return _LocateBrowser_Win(browser_type)
   elif sys.platform == 'darwin':
     return _LocateBrowser_Mac(browser_type)
+  elif sys.platform.startswith('linux'):
+    return _LocateBrowser_Linux(browser_type)
   else:
     raise NotImplementedError('Unsupported platform')
 

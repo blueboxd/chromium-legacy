@@ -154,6 +154,7 @@ js2gtest("browser_tests_js_webui") {
     "//skia",
   ]
   data = [
+    "$root_gen_dir/chrome/test/data/webui/mock_timer.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
   ]
@@ -235,6 +236,7 @@ js2gtest("unit_tests_js") {
 
 js_modulizer("modulize") {
   input_files = [
+    "mock_timer.js",
     "test_browser_proxy.js",
     "test_util.js",
   ]

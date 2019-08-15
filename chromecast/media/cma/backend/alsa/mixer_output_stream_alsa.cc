@@ -4,6 +4,10 @@
 
 #include "chromecast/media/cma/backend/alsa/mixer_output_stream_alsa.h"
 
+#include <algorithm>
+#include <limits>
+#include <string>
+
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
@@ -185,6 +189,10 @@ bool MixerOutputStreamAlsa::Start(int sample_rate, int channels) {
   rendering_delay_.delay_microseconds = 0;
 
   return true;
+}
+
+int MixerOutputStreamAlsa::GetNumChannels() {
+  return num_output_channels_;
 }
 
 int MixerOutputStreamAlsa::GetSampleRate() {

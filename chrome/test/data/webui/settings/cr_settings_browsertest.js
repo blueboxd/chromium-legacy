@@ -2349,7 +2349,10 @@ CrSettingsCrostiniPageTest.prototype = {
   browsePreload: 'chrome://settings/crostini_page/crostini_page.html',
 
   /** @override */
-  featureList: {enabled: ['features::kCrostini']},
+  featureList: {
+    enabled: ['features::kCrostini'],
+    disabled: ['chromeos::features::kSplitSettings']
+  },
 
   extraLibraries: CrSettingsBrowserTestCrOS.prototype.extraLibraries.concat([
     '//ui/webui/resources/js/promise_resolver.js',

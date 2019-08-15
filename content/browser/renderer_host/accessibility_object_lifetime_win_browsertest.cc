@@ -48,7 +48,7 @@ class AccessibilityObjectLifetimeWinBrowserTest
 
 IN_PROC_BROWSER_TEST_F(AccessibilityObjectLifetimeWinBrowserTest,
                        RootDoesNotLeak) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   // Cache a pointer to the root node we return to Windows.
   CacheRootNode();
@@ -71,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityObjectLifetimeWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityObjectLifetimeWinBrowserTest,
                        CaretDoesNotLeak) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   // Cache a pointer to the object we return to Windows.
   CacheCaretNode();
@@ -129,7 +129,7 @@ class AccessibilityTeardownTestMessageFilter : public ui::HWNDMessageFilter {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityObjectLifetimeWinBrowserTest,
                        DoNotReturnObjectDuringTeardown) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   AccessibilityTeardownTestMessageFilter test_message_filter(GetView());
 
@@ -153,7 +153,7 @@ class AccessibilityObjectLifetimeUiaWinBrowserTest
 
 IN_PROC_BROWSER_TEST_F(AccessibilityObjectLifetimeUiaWinBrowserTest,
                        RootDoesNotLeak) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   // Cache a pointer to the root node we return to Windows.
   CacheRootNode();

@@ -86,7 +86,7 @@ class WebApkUpdateDataFetcher : public content::WebContentsObserver {
 
   SkBitmap badge_icon_;
 
-  base::WeakPtrFactory<WebApkUpdateDataFetcher> weak_ptr_factory_;
+  base::WeakPtrFactory<WebApkUpdateDataFetcher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebApkUpdateDataFetcher);
 };

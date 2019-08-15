@@ -25,6 +25,7 @@ class CupsPrintJob {
     STATE_RESUMED,
     STATE_DOCUMENT_DONE,
     STATE_FAILED,
+    STATE_ERROR,
   };
 
   enum class ErrorCode {

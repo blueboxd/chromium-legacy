@@ -59,16 +59,7 @@ std::unique_ptr<metrics::ClientInfo> LoadClientInfo() {
 // - WebView uses the low-entropy source for all studies, so there would be
 //   crosstalk between the metrics sampling study and all other studies.
 bool IsInSample(const std::string& client_id) {
-  // TODO(ntfschr): remove these CHECK()s when we rule this out as the culprit
-  // for https://crbug.com/992250.
-  CHECK_EQ(36u, client_id.length()) << "client ID should be 36 chars exactly";
-  for (const char& c : client_id) {
-    bool char_is_digit = (c >= '0' && c <= '9');
-    bool char_is_a_through_f = (c >= 'a' && c <= 'f');
-    bool char_is_hyphen = (c == '-');
-    CHECK(char_is_digit || char_is_a_through_f || char_is_hyphen)
-        << "client_id should be composed of [0-9a-f] or '-'.";
-  }
+  DCHECK(!client_id.empty());
 
   // client_id comes from base::GenerateGUID(), so its value is random/uniform,
   // except for a few bit positions with fixed values, and some hyphens. Rather

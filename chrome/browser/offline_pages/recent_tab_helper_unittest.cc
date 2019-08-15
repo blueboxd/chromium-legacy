@@ -175,7 +175,7 @@ class RecentTabHelperTest
   std::unique_ptr<base::ScopedMockTimeMessageLoopTaskRunner>
       mocked_main_runner_;
 
-  base::WeakPtrFactory<RecentTabHelperTest> weak_ptr_factory_;
+  base::WeakPtrFactory<RecentTabHelperTest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RecentTabHelperTest);
 };
@@ -210,8 +210,7 @@ RecentTabHelperTest::RecentTabHelperTest()
       default_test_delegate_(nullptr),
       page_added_count_(0),
       model_removed_count_(0),
-      all_pages_needs_updating_(true),
-      weak_ptr_factory_(this) {}
+      all_pages_needs_updating_(true) {}
 
 void RecentTabHelperTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();

@@ -59,8 +59,8 @@ class MultiResolutionImageResourceFetcher {
   // HTTP status code upon fetch completion.
   int http_status_code() const { return http_status_code_; }
 
-  // Called when associated LocalFrame is destructed.
-  void OnRenderFrameDestruct();
+  // Called when ImageDownloaderImpl::ContextDestroyed is called.
+  void Dispose();
 
  private:
   class ClientImpl;

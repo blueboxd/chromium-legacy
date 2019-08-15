@@ -23,20 +23,23 @@
 
 namespace web_app {
 
-bool operator==(const WebApp::IconInfo& icon_info,
+bool operator==(const WebApp::IconInfo& icon_info1,
                 const WebApp::IconInfo& icon_info2) {
-  return std::tie(icon_info.url, icon_info.size_in_px) ==
-         std::tie(icon_info2.url, icon_info2.size_in_px);
+  return std::make_tuple(icon_info1.url, icon_info1.size_in_px) ==
+         std::make_tuple(icon_info2.url, icon_info2.size_in_px);
 }
 
-bool operator==(const WebApp& web_app, const WebApp& web_app2) {
-  return std::tie(web_app.app_id(), web_app.name(), web_app.launch_url(),
-                  web_app.description(), web_app.scope(), web_app.theme_color(),
-                  web_app.icons(), web_app.launch_container()) ==
-         std::tie(web_app2.app_id(), web_app2.name(), web_app2.launch_url(),
-                  web_app2.description(), web_app2.scope(),
-                  web_app2.theme_color(), web_app2.icons(),
-                  web_app2.launch_container());
+bool operator==(const WebApp& web_app1, const WebApp& web_app2) {
+  return std::make_tuple(web_app1.app_id(), web_app1.name(),
+                         web_app1.launch_url(), web_app1.description(),
+                         web_app1.scope(), web_app1.theme_color(),
+                         web_app1.icons(), web_app1.launch_container(),
+                         web_app1.is_locally_installed()) ==
+         std::make_tuple(web_app2.app_id(), web_app2.name(),
+                         web_app2.launch_url(), web_app2.description(),
+                         web_app2.scope(), web_app2.theme_color(),
+                         web_app2.icons(), web_app2.launch_container(),
+                         web_app2.is_locally_installed());
 }
 
 bool operator!=(const WebApp& web_app, const WebApp& web_app2) {
@@ -95,6 +98,8 @@ class WebAppDatabaseTest : public testing::Test {
     app->SetLaunchUrl(GURL(launch_url));
     app->SetScope(GURL(scope));
     app->SetThemeColor(theme_color);
+    // Generate all possible permutations of field values in a random way:
+    app->SetIsLocallyInstalled(!(suffix & 2));
     app->SetLaunchContainer((suffix & 1) ? LaunchContainer::kTab
                                          : LaunchContainer::kWindow);
 
@@ -217,6 +222,8 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   app->SetLaunchUrl(launch_url);
   app->SetName(name);
   app->SetLaunchContainer(launch_container);
+  app->SetIsLocallyInstalled(false);
+
   // Let optional fields be empty:
   EXPECT_TRUE(app->description().empty());
   EXPECT_TRUE(app->scope().is_empty());
@@ -234,6 +241,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_EQ(launch_url, app_copy->launch_url());
   EXPECT_EQ(name, app_copy->name());
   EXPECT_EQ(launch_container, app_copy->launch_container());
+  EXPECT_FALSE(app_copy->is_locally_installed());
   // No optional fields.
   EXPECT_TRUE(app_copy->description().empty());
   EXPECT_TRUE(app_copy->scope().is_empty());

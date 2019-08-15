@@ -195,8 +195,7 @@ ScopedJavaLocalRef<jobject> JNI_WebContentsImpl_FromNativePtr(
 
 WebContentsAndroid::WebContentsAndroid(WebContentsImpl* web_contents)
     : web_contents_(web_contents),
-      navigation_controller_(&(web_contents->GetController())),
-      weak_factory_(this) {
+      navigation_controller_(&(web_contents->GetController())) {
   g_allocated_web_contents_androids.Get().insert(this);
   JNIEnv* env = AttachCurrentThread();
   obj_.Reset(env,

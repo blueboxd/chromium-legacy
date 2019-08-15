@@ -150,7 +150,7 @@ class ArCoreImpl : public ArCore {
   void ForEachArCorePlane(FunctionType fn);
 
   // Must be last.
-  base::WeakPtrFactory<ArCoreImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ArCoreImpl> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ArCoreImpl);
 };
 

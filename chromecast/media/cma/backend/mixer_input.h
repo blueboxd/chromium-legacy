@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/sequence_checker.h"
@@ -16,6 +17,7 @@
 
 namespace media {
 class AudioBus;
+class ChannelMixer;
 class MultiChannelResampler;
 }  // namespace media
 
@@ -44,6 +46,7 @@ class MixerInput {
       kInternalError,
     };
 
+    // TODO(b/139311908) Track channel layout.
     virtual int num_channels() = 0;
     virtual int input_samples_per_second() = 0;
     virtual bool primary() = 0;
@@ -156,6 +159,8 @@ class MixerInput {
   const AudioContentType content_type_;
 
   FilterGroup* filter_group_ = nullptr;
+  std::unique_ptr<::media::AudioBus> fill_buffer_;
+  std::unique_ptr<::media::ChannelMixer> channel_mixer_;
 
   float stream_volume_multiplier_;
   float type_volume_multiplier_;

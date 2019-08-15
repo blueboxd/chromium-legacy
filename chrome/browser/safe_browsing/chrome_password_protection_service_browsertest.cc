@@ -27,6 +27,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/features.h"
+#include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/security_state/core/security_state.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -194,7 +195,10 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   account_type.set_account_type(ReusedPasswordAccountType::GSUITE);
   account_type.set_is_account_syncing(true);
   // Shows modal dialog on current web_contents.
-  service->ShowModalWarning(web_contents, "unused_token", account_type);
+  service->ShowModalWarning(
+      web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
@@ -205,7 +209,9 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
       GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Simulates clicking "Change Password" button on the modal dialog.
-  service->OnUserAction(web_contents, account_type, WarningUIType::MODAL_DIALOG,
+  service->OnUserAction(web_contents, account_type, RequestOutcome::UNKNOWN,
+                        LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+                        "unused_token", WarningUIType::MODAL_DIALOG,
                         WarningAction::CHANGE_PASSWORD);
   content::WebContents* new_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -255,7 +261,10 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   account_type.set_account_type(ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
 
   // Shows modal dialog on current web_contents.
-  service->ShowModalWarning(web_contents, "unused_token", account_type);
+  service->ShowModalWarning(
+      web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   base::RunLoop().RunUntilIdle();
 
   // Change password card on chrome settings page should NOT show.
@@ -286,7 +295,10 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   ReusedPasswordAccountType account_type;
   account_type.set_account_type(ReusedPasswordAccountType::GSUITE);
   account_type.set_is_account_syncing(true);
-  service->ShowModalWarning(web_contents, "unused_token", account_type);
+  service->ShowModalWarning(
+      web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(
       ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
@@ -297,7 +309,9 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
       GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Simulates clicking "Ignore" button on the modal dialog.
-  service->OnUserAction(web_contents, account_type, WarningUIType::MODAL_DIALOG,
+  service->OnUserAction(web_contents, account_type, RequestOutcome::UNKNOWN,
+                        LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+                        "unused_token", WarningUIType::MODAL_DIALOG,
                         WarningAction::IGNORE_WARNING);
   base::RunLoop().RunUntilIdle();
   // No new tab opens. Security info doesn't change.
@@ -311,7 +325,9 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
       GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Simulates clicking on "Mark site legitimate". Site is no longer dangerous.
-  service->OnUserAction(web_contents, account_type, WarningUIType::PAGE_INFO,
+  service->OnUserAction(web_contents, account_type, RequestOutcome::UNKNOWN,
+                        LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+                        "unused_token", WarningUIType::PAGE_INFO,
                         WarningAction::MARK_AS_LEGITIMATE);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(
@@ -334,10 +350,15 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   account_type.set_account_type(ReusedPasswordAccountType::GSUITE);
   account_type.set_is_account_syncing(true);
   // Shows modal dialog on current web_contents.
-  service->ShowModalWarning(web_contents, "unused_token", account_type);
+  service->ShowModalWarning(
+      web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   base::RunLoop().RunUntilIdle();
   // Simulates clicking "Ignore" to close dialog.
-  service->OnUserAction(web_contents, account_type, WarningUIType::MODAL_DIALOG,
+  service->OnUserAction(web_contents, account_type, RequestOutcome::UNKNOWN,
+                        LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+                        "unused_token", WarningUIType::MODAL_DIALOG,
                         WarningAction::IGNORE_WARNING);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(
@@ -352,7 +373,9 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
       GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Simulates clicking on "Change Password" in the page info bubble.
-  service->OnUserAction(web_contents, account_type, WarningUIType::PAGE_INFO,
+  service->OnUserAction(web_contents, account_type, RequestOutcome::UNKNOWN,
+                        LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+                        "unused_token", WarningUIType::PAGE_INFO,
                         WarningAction::CHANGE_PASSWORD);
   content::WebContents* new_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -393,7 +416,10 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   ReusedPasswordAccountType account_type;
   account_type.set_account_type(ReusedPasswordAccountType::GSUITE);
   account_type.set_is_account_syncing(true);
-  service->ShowModalWarning(web_contents, "unused_token", account_type);
+  service->ShowModalWarning(
+      web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u,
             profile->GetPrefs()
@@ -409,7 +435,10 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   content::WebContents* new_web_contents =
       browser2->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(browser2, GURL("data:text/html,<html></html>"));
-  service->ShowModalWarning(new_web_contents, "unused_token", account_type);
+  service->ShowModalWarning(
+      new_web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2u,
             profile->GetPrefs()
@@ -457,7 +486,10 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   // Shows modal dialog on current web_contents.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  service->ShowModalWarning(web_contents, "unused_token", account_type);
+  service->ShowModalWarning(
+      web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u,
             profile->GetPrefs()
@@ -593,7 +625,10 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   account_type.set_account_type(ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
 
   // Shows modal dialog on current web_contents.
-  service->ShowModalWarning(web_contents, "unused_token", account_type);
+  service->ShowModalWarning(
+      web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   base::RunLoop().RunUntilIdle();
   // Enterprise password reuse should not trigger warning in Chrome settings UI.
   ASSERT_TRUE(
@@ -608,7 +643,9 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
             GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Simulates clicking "Change Password" button on the modal dialog.
-  service->OnUserAction(web_contents, account_type, WarningUIType::MODAL_DIALOG,
+  service->OnUserAction(web_contents, account_type, RequestOutcome::UNKNOWN,
+                        LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+                        "unused_token", WarningUIType::MODAL_DIALOG,
                         WarningAction::CHANGE_PASSWORD);
   base::RunLoop().RunUntilIdle();
   content::WebContents* new_web_contents =
@@ -633,14 +670,19 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   account_type.set_account_type(ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
 
   // Shows modal dialog on current web_contents.
-  service->ShowModalWarning(web_contents, "unused_token", account_type);
+  service->ShowModalWarning(
+      web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(security_state::DANGEROUS, GetSecurityLevel(web_contents));
   ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE,
             GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Simulates clicking on "Mark site legitimate". Site is no longer dangerous.
-  service->OnUserAction(web_contents, account_type, WarningUIType::PAGE_INFO,
+  service->OnUserAction(web_contents, account_type, RequestOutcome::UNKNOWN,
+                        LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+                        "unused_token", WarningUIType::PAGE_INFO,
                         WarningAction::MARK_AS_LEGITIMATE);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(
@@ -665,11 +707,16 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   ReusedPasswordAccountType account_type;
   account_type.set_account_type(ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
   // Shows modal dialog on current web_contents.
-  service->ShowModalWarning(web_contents, "unused_token", account_type);
+  service->ShowModalWarning(
+      web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   base::RunLoop().RunUntilIdle();
 
   // Simulates clicking on "Change Password" in the page info bubble.
-  service->OnUserAction(web_contents, account_type, WarningUIType::PAGE_INFO,
+  service->OnUserAction(web_contents, account_type, RequestOutcome::UNKNOWN,
+                        LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+                        "unused_token", WarningUIType::PAGE_INFO,
                         WarningAction::CHANGE_PASSWORD);
   base::RunLoop().RunUntilIdle();
   content::WebContents* new_web_contents =
@@ -744,10 +791,10 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   hash_password_manager.set_prefs(profile->GetPrefs());
   EXPECT_FALSE(hash_password_manager.HasPasswordHash(
       "username@domain.com", /*is_gaia_password=*/false));
-  EXPECT_TRUE(
+  EXPECT_FALSE(
       hash_password_manager.HasPasswordHash(user_manager::kStubUserEmail,
                                             /*is_gaia_password=*/true));
-  EXPECT_EQ(1u, profile->GetPrefs()
+  EXPECT_EQ(0u, profile->GetPrefs()
                     ->GetList(password_manager::prefs::kPasswordHashDataList)
                     ->GetList()
                     .size());

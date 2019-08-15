@@ -242,15 +242,20 @@ class OptimizationGuideHintsManagerTest
     hint1->set_version("someversion");
     optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
     page_hint1->set_page_pattern("/news/");
-    optimization_guide::proto::Optimization* optimization1 =
+    optimization_guide::proto::Optimization* experimental_opt =
         page_hint1->add_whitelisted_optimizations();
-    optimization1->set_optimization_type(
-        optimization_guide::proto::RESOURCE_LOADING);
-    optimization_guide::proto::ResourceLoadingHint* resource_loading_hint1 =
-        optimization1->add_resource_loading_hints();
-    resource_loading_hint1->set_loading_optimization_type(
-        optimization_guide::proto::LOADING_BLOCK_RESOURCE);
-    resource_loading_hint1->set_resource_pattern("news_cruft.js");
+    experimental_opt->set_optimization_type(
+        optimization_guide::proto::NOSCRIPT);
+    experimental_opt->set_experiment_name("experiment");
+    optimization_guide::proto::PreviewsMetadata* experimental_opt_metadata =
+        experimental_opt->mutable_previews_metadata();
+    experimental_opt_metadata->set_inflation_percent(12345);
+    optimization_guide::proto::Optimization* default_opt =
+        page_hint1->add_whitelisted_optimizations();
+    default_opt->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+    optimization_guide::proto::PreviewsMetadata* default_opt_metadata =
+        default_opt->mutable_previews_metadata();
+    default_opt_metadata->set_inflation_percent(1234);
 
     ProcessHints(config, version);
   }
@@ -969,4 +974,264 @@ TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherTimerFetchSucceeds) {
 
   MoveClockForwardBy(base::TimeDelta::FromSeconds(kUpdateFetchHintsTimeSecs));
   EXPECT_TRUE(hints_fetcher()->hints_fetched());
+}
+
+TEST_F(OptimizationGuideHintsManagerTest, CanApplyOptimizationUrlWithNoHost) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::LITE_PAGE_REDIRECT});
+
+  optimization_guide::proto::Configuration config;
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions,
+      kBlackBlacklistBloomFilterNumBits);
+  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
+  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
+                                  blacklist_bloom_filter,
+                                  kBlackBlacklistBloomFilterNumHashFunctions,
+                                  kBlackBlacklistBloomFilterNumBits, &config);
+  ProcessHints(config, "1.0.0.0");
+
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(GURL("urlwithnohost"));
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            hints_manager()->CanApplyOptimization(
+                &navigation_handle,
+                optimization_guide::OptimizationTarget::kPainfulPageLoad,
+                optimization_guide::proto::LITE_PAGE_REDIRECT,
+                /*optimization_metadata=*/nullptr));
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       CanApplyOptimizationHasFilterForTypeButNotLoadedYet) {
+  optimization_guide::proto::Configuration config;
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions,
+      kBlackBlacklistBloomFilterNumBits);
+  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
+  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
+                                  blacklist_bloom_filter,
+                                  kBlackBlacklistBloomFilterNumHashFunctions,
+                                  kBlackBlacklistBloomFilterNumBits, &config);
+  ProcessHints(config, "1.0.0.0");
+
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(GURL("https://whatever.com/123"));
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kUnknown,
+            hints_manager()->CanApplyOptimization(
+                &navigation_handle,
+                optimization_guide::OptimizationTarget::kPainfulPageLoad,
+                optimization_guide::proto::LITE_PAGE_REDIRECT,
+                /*optimization_metadata=*/nullptr));
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       CanApplyOptimizationHasLoadedFilterForTypeUrlInBlacklistFilter) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::LITE_PAGE_REDIRECT});
+
+  optimization_guide::proto::Configuration config;
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions,
+      kBlackBlacklistBloomFilterNumBits);
+  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
+  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
+                                  blacklist_bloom_filter,
+                                  kBlackBlacklistBloomFilterNumHashFunctions,
+                                  kBlackBlacklistBloomFilterNumBits, &config);
+  ProcessHints(config, "1.0.0.0");
+
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(GURL("https://m.black.com/123"));
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            hints_manager()->CanApplyOptimization(
+                &navigation_handle,
+                optimization_guide::OptimizationTarget::kPainfulPageLoad,
+                optimization_guide::proto::LITE_PAGE_REDIRECT,
+                /*optimization_metadata=*/nullptr));
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       CanApplyOptimizationHasLoadedFilterForTypeUrlNotInBlacklistFilter) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::LITE_PAGE_REDIRECT});
+
+  optimization_guide::proto::Configuration config;
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions,
+      kBlackBlacklistBloomFilterNumBits);
+  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
+  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
+                                  blacklist_bloom_filter,
+                                  kBlackBlacklistBloomFilterNumHashFunctions,
+                                  kBlackBlacklistBloomFilterNumBits, &config);
+  ProcessHints(config, "1.0.0.0");
+
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(GURL("https://whatever.com/123"));
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            hints_manager()->CanApplyOptimization(
+                &navigation_handle,
+                optimization_guide::OptimizationTarget::kPainfulPageLoad,
+                optimization_guide::proto::LITE_PAGE_REDIRECT,
+                /*optimization_metadata=*/nullptr));
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesWithExp) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeatureWithParameters(
+      optimization_guide::features::kOptimizationHintsExperiments,
+      {{"experiment_name", "experiment"}});
+
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(url_with_hints());
+  base::RunLoop run_loop;
+  hints_manager()->LoadHintForNavigation(&navigation_handle,
+                                         run_loop.QuitClosure());
+  run_loop.Run();
+
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            hints_manager()->CanApplyOptimization(
+                &navigation_handle,
+                optimization_guide::OptimizationTarget::kPainfulPageLoad,
+                optimization_guide::proto::NOSCRIPT, &optimization_metadata));
+  EXPECT_EQ(12345, optimization_metadata.previews_metadata.inflation_percent());
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesNoExp) {
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(url_with_hints());
+  base::RunLoop run_loop;
+  hints_manager()->LoadHintForNavigation(&navigation_handle,
+                                         run_loop.QuitClosure());
+  run_loop.Run();
+
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            hints_manager()->CanApplyOptimization(
+                &navigation_handle,
+                optimization_guide::OptimizationTarget::kPainfulPageLoad,
+                optimization_guide::proto::NOSCRIPT, &optimization_metadata));
+  EXPECT_EQ(1234, optimization_metadata.previews_metadata.inflation_percent());
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       CanApplyOptimizationWithNonPainfulPageLoadTarget) {
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(url_with_hints());
+  base::RunLoop run_loop;
+  hints_manager()->LoadHintForNavigation(&navigation_handle,
+                                         run_loop.QuitClosure());
+  run_loop.Run();
+
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  EXPECT_EQ(
+      optimization_guide::OptimizationGuideDecision::kUnknown,
+      hints_manager()->CanApplyOptimization(
+          &navigation_handle, optimization_guide::OptimizationTarget::kUnknown,
+          optimization_guide::proto::NOSCRIPT, &optimization_metadata));
+  // Make sure metadata is cleared.
+  EXPECT_EQ(0, optimization_metadata.previews_metadata.inflation_percent());
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       CanApplyOptimizationHasPageHintButNoMatchingOptType) {
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(url_with_hints());
+  base::RunLoop run_loop;
+  hints_manager()->LoadHintForNavigation(&navigation_handle,
+                                         run_loop.QuitClosure());
+  run_loop.Run();
+
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            hints_manager()->CanApplyOptimization(
+                &navigation_handle,
+                optimization_guide::OptimizationTarget::kPainfulPageLoad,
+                optimization_guide::proto::DEFER_ALL_SCRIPT,
+                /*optimization_metadata=*/nullptr));
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       CanApplyOptimizationNoHintForNavigationMetadataClearedAnyway) {
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(GURL("https://nohint.com"));
+
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  optimization_metadata.previews_metadata.set_inflation_percent(12345);
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            hints_manager()->CanApplyOptimization(
+                &navigation_handle,
+                optimization_guide::OptimizationTarget::kPainfulPageLoad,
+                optimization_guide::proto::NOSCRIPT, &optimization_metadata));
+  EXPECT_EQ(0, optimization_metadata.previews_metadata.inflation_percent());
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       CanApplyOptimizationHasHintInCacheButNotLoaded) {
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(url_with_hints());
+
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kUnknown,
+            hints_manager()->CanApplyOptimization(
+                &navigation_handle,
+                optimization_guide::OptimizationTarget::kPainfulPageLoad,
+                optimization_guide::proto::NOSCRIPT, &optimization_metadata));
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       CanApplyOptimizationFilterTakesPrecedence) {
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(GURL("https://m.black.com/urlinfilterandhints"));
+
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::LITE_PAGE_REDIRECT});
+
+  optimization_guide::proto::Configuration config;
+  optimization_guide::proto::Hint* hint1 = config.add_hints();
+  hint1->set_key("black.com");
+  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint1->set_version("someversion");
+  optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
+  page_hint1->set_page_pattern("https://m.black.com");
+  optimization_guide::proto::Optimization* optimization1 =
+      page_hint1->add_whitelisted_optimizations();
+  optimization1->set_optimization_type(
+      optimization_guide::proto::LITE_PAGE_REDIRECT);
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions,
+      kBlackBlacklistBloomFilterNumBits);
+  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
+  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
+                                  blacklist_bloom_filter,
+                                  kBlackBlacklistBloomFilterNumHashFunctions,
+                                  kBlackBlacklistBloomFilterNumBits, &config);
+  ProcessHints(config, "1.0.0.0");
+
+  base::RunLoop run_loop;
+  hints_manager()->LoadHintForNavigation(&navigation_handle,
+                                         run_loop.QuitClosure());
+  run_loop.Run();
+
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            hints_manager()->CanApplyOptimization(
+                &navigation_handle,
+                optimization_guide::OptimizationTarget::kPainfulPageLoad,
+                optimization_guide::proto::LITE_PAGE_REDIRECT,
+                /*optimization_metadata=*/nullptr));
 }

@@ -4,67 +4,37 @@
 
 #include "gpu/config/gpu_info_collector.h"
 
+// C system before C++ system.
+#include <stddef.h>
+#include <stdint.h>
+
 // This has to be included before windows.h.
 #include "third_party/re2/src/re2/re2.h"
 
 #include <windows.h>
 
-#include <cfgmgr32.h>
 #include <d3d11.h>
 #include <d3d12.h>
-#include <d3d9.h>
 #include <dxgi.h>
-#include <setupapi.h>
-#include <stddef.h>
-#include <stdint.h>
-
-// Initguid.h must come before Devpkey.h for DEFINE_DEVPROPKEY macros
-// to resolve without giving unresolved external externals linker errors.
-#include <initguid.h>
-
-#include <Devpkey.h>
+#include <wrl/client.h>
 
 #include "base/file_version_info_win.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/scoped_native_library.h"
-#include "base/strings/string16.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_com_initializer.h"
 #include "build/branding_buildflags.h"
-#include "gpu/config/nvml_info.h"
 #include "third_party/vulkan/include/vulkan/vulkan.h"
 
 namespace gpu {
 
 namespace {
-
-void DeviceIDToVendorAndDevice(const std::wstring& id,
-                               uint32_t* vendor_id,
-                               uint32_t* device_id) {
-  *vendor_id = 0;
-  *device_id = 0;
-  if (id.length() < 21)
-    return;
-  base::string16 vendor_id_string = id.substr(8, 4);
-  base::string16 device_id_string = id.substr(17, 4);
-  int vendor = 0;
-  int device = 0;
-  base::HexStringToInt(base::UTF16ToASCII(vendor_id_string), &vendor);
-  base::HexStringToInt(base::UTF16ToASCII(device_id_string), &device);
-  *vendor_id = vendor;
-  *device_id = device;
-}
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -115,28 +85,6 @@ inline VulkanVersion ConvertToHistogramVulkanVersion(uint32_t vulkan_version) {
   }
 }
 
-std::string GetDeviceStringProperty(DEVINST dev_inst,
-                                    const DEVPROPKEY* prop_key) {
-  ULONG buffer_size = 0;
-  DEVPROPTYPE prop_type;
-  // To find out how big to make the buffer that receives the string, we must
-  // first call CM_Get_DevNode_PropertyW with a nullptr buffer and zero buffer
-  // size. buffer_size will receive the number of bytes to make the buffer.
-  CONFIGRET config_ret = CM_Get_DevNode_PropertyW(
-      dev_inst, prop_key, &prop_type, nullptr, &buffer_size, 0);
-  if (config_ret != CR_BUFFER_SMALL)
-    return std::string();
-  std::vector<WCHAR> property_value;
-  property_value.resize(buffer_size / sizeof(WCHAR));
-  config_ret = CM_Get_DevNode_PropertyW(
-      dev_inst, prop_key, &prop_type,
-      reinterpret_cast<PBYTE>(property_value.data()), &buffer_size, 0);
-  if (config_ret != CR_SUCCESS)
-    return std::string();
-  DCHECK(prop_type == DEVPROP_TYPE_STRING);
-  return base::UTF16ToASCII(property_value.data());
-}
-
 }  // namespace
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OFFICIAL_BUILD)
@@ -153,104 +101,47 @@ bool GetAMDSwitchableInfo(bool* is_switchable,
 }
 #endif
 
-std::string ParseNVIDIARegistryDriverVersion(std::string registry_version) {
-  // The NVIDIA driver version in the registry is most commonly in the format:
-  // XX.XX.XD.DDDD
-  // Where "X" corresponds to an OS-specific digit and "D" corresponds to a
-  // digit of the actual driver version. We convert it to the following format:
-  // DDD.DD
-  // This matches with the actual driver version that NVML also returns.
-  std::string second_to_last_digits;
-  std::string last_digits;
-  if (!RE2::FullMatch(registry_version, "\\d+\\.\\d+\\.(\\d+)\\.(\\d+)",
-                      &second_to_last_digits, &last_digits)) {
-    return registry_version;
-  }
-  std::string digits = second_to_last_digits + last_digits;
-  if (digits.length() < 5u) {
-    return registry_version;
-  }
-  digits.erase(0, digits.length() - 5u);
-  DCHECK(digits.length() == 5u);
-  return digits.substr(0u, 3u) + "." + digits.substr(3u);
-}
-
-bool CollectDriverInfoD3D(const std::wstring& device_id, GPUInfo* gpu_info) {
+bool CollectDriverInfoD3D(GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectDriverInfoD3D");
 
-  // Display adapter class GUID from
-  // https://msdn.microsoft.com/en-us/library/windows/hardware/ff553426%28v=vs.85%29.aspx
-  const GUID display_class = {0x4d36e968,
-                              0xe325,
-                              0x11ce,
-                              {0xbf, 0xc1, 0x08, 0x00, 0x2b, 0xe1, 0x03, 0x18}};
-
-  // create device info for the display device
-  const HDEVINFO device_info =
-      ::SetupDiGetClassDevs(&display_class, nullptr, nullptr, DIGCF_PRESENT);
-  if (device_info == INVALID_HANDLE_VALUE) {
-    LOG(ERROR) << "Creating device info failed";
+  Microsoft::WRL::ComPtr<IDXGIFactory> dxgi_factory;
+  const HRESULT hr = ::CreateDXGIFactory(IID_PPV_ARGS(&dxgi_factory));
+  if (FAILED(hr))
     return false;
-  }
 
-  std::vector<GPUInfo::GPUDevice> devices;
-
-  size_t primary_device = std::numeric_limits<size_t>::max();
   bool found_amd = false;
   bool found_intel = false;
   bool amd_is_primary = false;
 
-  DWORD index = 0;
-  SP_DEVINFO_DATA device_info_data;
-  device_info_data.cbSize = sizeof(device_info_data);
-  while (SetupDiEnumDeviceInfo(device_info, index++, &device_info_data)) {
+  UINT i;
+  Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
+  for (i = 0; SUCCEEDED(dxgi_factory->EnumAdapters(i, &dxgi_adapter)); i++) {
+    DXGI_ADAPTER_DESC desc;
+    dxgi_adapter->GetDesc(&desc);
+
     GPUInfo::GPUDevice device;
-    device.driver_version = GetDeviceStringProperty(
-        device_info_data.DevInst, &DEVPKEY_Device_DriverVersion);
-    device.driver_vendor = GetDeviceStringProperty(
-        device_info_data.DevInst, &DEVPKEY_Device_DriverProvider);
+    device.vendor_id = desc.VendorId;
+    device.device_id = desc.DeviceId;
 
-    wchar_t new_device_id[MAX_DEVICE_ID_LEN];
-    const CONFIGRET status = CM_Get_Device_ID(
-        device_info_data.DevInst, new_device_id, MAX_DEVICE_ID_LEN, 0);
+    LARGE_INTEGER umd_version;
+    const HRESULT hr = dxgi_adapter->CheckInterfaceSupport(
+        __uuidof(IDXGIDevice), &umd_version);
+    if (SUCCEEDED(hr)) {
+      device.driver_version = base::StringPrintf(
+          "%d.%d.%d.%d", HIWORD(umd_version.HighPart),
+          LOWORD(umd_version.HighPart), HIWORD(umd_version.LowPart),
+          LOWORD(umd_version.LowPart));
+    } else {
+      DLOG(ERROR) << "Unable to retrieve the umd version of adapter: "
+                  << desc.Description << " HR: " << std::hex << hr;
+    }
 
-    if (status == CR_SUCCESS) {
-      std::wstring id = new_device_id;
-      DeviceIDToVendorAndDevice(id, &(device.vendor_id), &(device.device_id));
-      if (id.compare(0, device_id.size(), device_id) == 0) {
-        primary_device = devices.size();
-        if (device.vendor_id == 0x1002)
-          amd_is_primary = true;
-      }
-      if (device.vendor_id == 0x8086)
-        found_intel = true;
-      if (device.vendor_id == 0x1002)
-        found_amd = true;
-      if (device.vendor_id == 0x10de) {
-        std::string nvml_driver_version;
-        int major_cuda_compute_capability = 0;
-        int minor_cuda_compute_capability = 0;
-        bool nvml_success = GetNvmlDeviceInfo(
-            device.device_id, &nvml_driver_version,
-            &major_cuda_compute_capability, &minor_cuda_compute_capability);
-        if (nvml_success) {
-          // We use the NVML driver version instead of the registry version,
-          // since the registry version includes OS-specific digits that are
-          // not part of the actual driver version.
-          device.driver_version = nvml_driver_version;
-          device.cuda_compute_capability_major = major_cuda_compute_capability;
-        } else {
-          // If we can't get the actual driver version from NVML, do
-          // best-effort parsing of the actual driver version from the
-          // registry driver version.
-          device.driver_version =
-              ParseNVIDIARegistryDriverVersion(device.driver_version);
-        }
-      }
-      devices.push_back(device);
+    if (i == 0) {
+      gpu_info->gpu = device;
+    } else {
+      gpu_info->secondary_gpus.push_back(device);
     }
   }
-  SetupDiDestroyDeviceInfoList(device_info);
 
   if (found_amd && found_intel) {
     // Potential AMD Switchable system found.
@@ -267,17 +158,8 @@ bool CollectDriverInfoD3D(const std::wstring& device_id, GPUInfo* gpu_info) {
       gpu_info->amd_switchable = is_amd_switchable;
     }
   }
-  bool found = false;
-  for (size_t i = 0; i < devices.size(); ++i) {
-    const GPUInfo::GPUDevice& device = devices[i];
-    if (i == primary_device) {
-      found = true;
-      gpu_info->gpu = device;
-    } else {
-      gpu_info->secondary_gpus.push_back(device);
-    }
-  }
-  return found;
+
+  return i > 0;
 }
 
 // DirectX 12 are included with Windows 10 and Server 2016.
@@ -636,37 +518,8 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   HMODULE nvd3d9wrap = GetModuleHandleW(L"nvd3d9wrap.dll");
   gpu_info->optimus = nvd3d9wrap != nullptr;
 
-  // Taken from http://www.nvidia.com/object/device_ids.html
-  DISPLAY_DEVICE dd;
-  dd.cb = sizeof(DISPLAY_DEVICE);
-  std::wstring id;
-  for (int i = 0; EnumDisplayDevices(nullptr, i, &dd, 0); ++i) {
-    if (dd.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) {
-      id = dd.DeviceID;
-      break;
-    }
-  }
-
-  if (id.length() <= 20) {
-    // EnumDisplayDevices returns an empty id when called inside a remote
-    // session (unless that session happens to be attached to the console). In
-    // that case, we do not want to fail, as we should be able to grab the
-    // device/vendor ids from the D3D context, below. Therefore, only fail if
-    // the device string is not one of either the RDP mirror driver "RDPUDD
-    // Chained DD" or the citrix display driver.
-    if (wcscmp(dd.DeviceString, L"RDPUDD Chained DD") != 0 &&
-        wcscmp(dd.DeviceString, L"Citrix Systems Inc. Display Driver") != 0) {
-      // Set vendor_id/device_id for blacklisting purpose.
-      gpu_info->gpu.vendor_id = 0xffff;
-      gpu_info->gpu.device_id = 0xfffe;
-      return false;
-    }
-  }
-
-  DeviceIDToVendorAndDevice(id, &gpu_info->gpu.vendor_id,
-                            &gpu_info->gpu.device_id);
   // TODO(zmo): we only need to call CollectDriverInfoD3D() if we use ANGLE.
-  return CollectDriverInfoD3D(id, gpu_info);
+  return CollectDriverInfoD3D(gpu_info);
 }
 
 }  // namespace gpu

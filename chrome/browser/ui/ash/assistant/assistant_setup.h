@@ -9,17 +9,15 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 // AssistantSetup is the class responsible for start Assistant OptIn flow.
 class AssistantSetup : public ash::AssistantSetup,
                        public arc::VoiceInteractionControllerClient::Observer {
  public:
-  explicit AssistantSetup(service_manager::Connector* connector);
+  explicit AssistantSetup(
+      chromeos::assistant::mojom::AssistantService* service);
   ~AssistantSetup() override;
 
   // ash::AssistantSetup:
@@ -39,10 +37,10 @@ class AssistantSetup : public ash::AssistantSetup,
   void SyncSettingsState();
   void OnGetSettingsResponse(const std::string& settings);
 
-  service_manager::Connector* connector_;
+  chromeos::assistant::mojom::AssistantService* const service_;
   chromeos::assistant::mojom::AssistantSettingsManagerPtr settings_manager_;
 
-  base::WeakPtrFactory<AssistantSetup> weak_factory_;
+  base::WeakPtrFactory<AssistantSetup> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantSetup);
 };

@@ -239,7 +239,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual base::Optional<int> FindTextBoundary(
       AXTextBoundary boundary,
       int offset,
-      TextBoundaryDirection direction,
+      AXTextBoundaryDirection direction,
       ax::mojom::TextAffinity affinity) const = 0;
 
   // Return a vector of all the descendants of this delegate's node.

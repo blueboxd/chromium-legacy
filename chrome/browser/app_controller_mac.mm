@@ -601,7 +601,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   if (!browser)
     return;
 
-  if (browser->is_type_tabbed()) {
+  if (browser->is_type_normal()) {
     tabMenuBridge_ = std::make_unique<TabMenuBridge>(
         browser->tab_strip_model(),
         [[NSApp mainMenu] itemWithTag:IDC_TAB_MENU]);
@@ -1182,7 +1182,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
     for (auto* browser : *BrowserList::GetInstance()) {
       // When focusing Chrome, don't focus any browser windows associated with
       // a currently running app shim, so ignore them.
-      if (browser && browser->is_app()) {
+      if (browser && browser->deprecated_is_app()) {
         extensions::ExtensionRegistry* registry =
             extensions::ExtensionRegistry::Get(browser->profile());
         const extensions::Extension* extension = registry->GetExtensionById(
@@ -1630,7 +1630,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
       window = mainWindow;
     }
     Browser* browser = chrome::FindBrowserWithWindow(window);
-    enableCloseTabShortcut = browser && browser->is_type_tabbed();
+    enableCloseTabShortcut = browser && browser->is_type_normal();
   }
 
   [self adjustCloseWindowMenuItemKeyEquivalent:enableCloseTabShortcut];

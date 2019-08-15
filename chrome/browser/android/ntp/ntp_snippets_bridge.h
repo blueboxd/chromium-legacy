@@ -136,7 +136,7 @@ class NTPSnippetsBridge
   // The Java SnippetsBridge.
   base::android::ScopedJavaGlobalRef<jobject> bridge_;
 
-  base::WeakPtrFactory<NTPSnippetsBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<NTPSnippetsBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsBridge);
 };

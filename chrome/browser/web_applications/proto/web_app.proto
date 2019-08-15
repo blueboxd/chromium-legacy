@@ -36,6 +36,7 @@ message WebAppProto {
   // Local data members, not to be synced:
   optional string description = 6;
   optional string scope = 7;
+  required bool is_locally_installed = 8;
   // List of icon infos.
-  repeated WebAppIconInfoProto icons = 8;
+  repeated WebAppIconInfoProto icons = 9;
 }

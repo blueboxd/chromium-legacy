@@ -50,16 +50,6 @@ XRInputSource::InternalState::InternalState(const InternalState& other) =
 
 XRInputSource::InternalState::~InternalState() = default;
 
-void XRInputSource::SetProfiles(
-    const device::mojom::blink::XRInputSourceStatePtr& state) {
-  if (state->description) {
-    profiles_.clear();
-    for (const auto& name : state->description->profiles) {
-      profiles_.push_back(name);
-    }
-  }
-}
-
 XRInputSource* XRInputSource::CreateOrUpdateFrom(
     XRInputSource* other,
     XRSession* session,
@@ -73,14 +63,11 @@ XRInputSource* XRInputSource::CreateOrUpdateFrom(
   if (!other) {
     auto source_id = state->source_id;
     updated_source = MakeGarbageCollected<XRInputSource>(session, source_id);
-    updated_source->SetProfiles(state);
   } else if (other->InvalidatesSameObject(state)) {
     // Something in the state has changed which requires us to re-create the
     // object.  Create a copy now, and we will blindly update any state later,
-    // knowing that we now have a new object if needed.  The one exception is
-    // the profiles array, which we make sure to only copy when necessary.
+    // knowing that we now have a new object if needed.
     updated_source = MakeGarbageCollected<XRInputSource>(*other);
-    updated_source->SetProfiles(state);
   }
 
   updated_source->UpdateGamepad(state->gamepad);
@@ -96,6 +83,11 @@ XRInputSource* XRInputSource::CreateOrUpdateFrom(
 
     updated_source->pointer_transform_matrix_ =
         TryGetTransformationMatrix(desc->pointer_offset);
+
+    updated_source->state_.profiles.clear();
+    for (const auto& name : state->description->profiles) {
+      updated_source->state_.profiles.push_back(name);
+    }
   }
 
   updated_source->base_pose_matrix_ = TryGetTransformationMatrix(state->grip);
@@ -180,12 +172,12 @@ bool XRInputSource::InvalidatesSameObject(
       return true;
     }
 
-    if (state->description->profiles.size() != profiles_.size()) {
+    if (state->description->profiles.size() != state_.profiles.size()) {
       return true;
     }
 
-    for (wtf_size_t i = 0; i < profiles_.size(); ++i) {
-      if (state->description->profiles[i] != profiles_[i]) {
+    for (wtf_size_t i = 0; i < state_.profiles.size(); ++i) {
+      if (state->description->profiles[i] != state_.profiles[i]) {
         return true;
       }
     }

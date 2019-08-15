@@ -13,7 +13,9 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
+#include "base/no_destructor.h"
 #include "base/numerics/checked_math.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -32,6 +34,9 @@
 namespace content {
 
 namespace {
+
+// Set by SetNetworkTestCertsDirectoryForTesting().
+base::NoDestructor<base::Optional<base::FilePath>> g_network_test_certs_dir;
 
 // Produce the OS version as an integer "1010", etc. and pass that to the
 // profile. The profile converts the string back to a number and can do
@@ -114,7 +119,7 @@ void SetupCommonSandboxParameters(sandbox::SeatbeltExecClient* client) {
 
   CHECK(client->SetBooleanParameter(
       "FILTER_SYSCALLS",
-      base::FeatureList::IsEnabled(features::kMacV2GPUSandbox)));
+      base::FeatureList::IsEnabled(features::kMacSyscallSandbox)));
 }
 
 void SetupNetworkSandboxParameters(sandbox::SeatbeltExecClient* client) {
@@ -133,6 +138,13 @@ void SetupNetworkSandboxParameters(sandbox::SeatbeltExecClient* client) {
     std::string param_name =
         base::StringPrintf("NETWORK_SERVICE_STORAGE_PATH_%zu", i);
     CHECK(client->SetParameter(param_name, path.value())) << param_name;
+  }
+
+  if (g_network_test_certs_dir->has_value()) {
+    CHECK(client->SetParameter("NETWORK_SERVICE_TEST_CERTS_DIR",
+                               service_manager::SandboxMac::GetCanonicalPath(
+                                   **g_network_test_certs_dir)
+                                   .value()));
   }
 }
 
@@ -210,6 +222,10 @@ void SetupSandboxParameters(service_manager::SandboxType sandbox_type,
     default:
       CHECK(false) << "Unhandled parameters for sandbox_type " << sandbox_type;
   }
+}
+
+void SetNetworkTestCertsDirectoryForTesting(const base::FilePath& path) {
+  g_network_test_certs_dir->emplace(path);
 }
 
 }  // namespace content

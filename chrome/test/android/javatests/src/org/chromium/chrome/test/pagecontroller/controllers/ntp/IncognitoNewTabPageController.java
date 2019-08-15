@@ -24,7 +24,8 @@ public class IncognitoNewTabPageController extends PageController {
     }
 
     @Override
-    public boolean isCurrentPageThis() {
-        return mLocatorHelper.isOnScreen(LOCATOR_INCOGNITO_PAGE);
+    public IncognitoNewTabPageController verifyActive() {
+        mLocatorHelper.verifyOnScreen(LOCATOR_INCOGNITO_PAGE);
+        return this;
     }
 }

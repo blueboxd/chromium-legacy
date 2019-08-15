@@ -68,7 +68,7 @@ class MEDIA_GPU_EXPORT CodecImageGroup
   // All the images that use |surface_bundle_|.
   std::unordered_set<CodecImage*> images_;
 
-  base::WeakPtrFactory<CodecImageGroup> weak_this_factory_;
+  base::WeakPtrFactory<CodecImageGroup> weak_this_factory_{this};
 };
 
 }  // namespace media

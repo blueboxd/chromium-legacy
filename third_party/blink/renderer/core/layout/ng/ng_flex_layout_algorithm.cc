@@ -162,10 +162,9 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
 
     // TODO(dgrogan): Change SetPercentageResolutionSize everywhere in this file
     // to use CalculateChildPercentageSize.
-    NGConstraintSpace child_space =
-        space_builder.SetAvailableSize(content_box_size_)
-            .SetPercentageResolutionSize(content_box_size_)
-            .ToConstraintSpace();
+    space_builder.SetAvailableSize(content_box_size_);
+    space_builder.SetPercentageResolutionSize(content_box_size_);
+    NGConstraintSpace child_space = space_builder.ToConstraintSpace();
 
     NGBoxStrut border_padding_in_child_writing_mode =
         ComputeBorders(child_space, child) +

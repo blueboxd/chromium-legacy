@@ -6,10 +6,12 @@
 #define CONTENT_BROWSER_INDEXED_DB_DATABASE_IMPL_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
+#include "base/strings/string16.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"

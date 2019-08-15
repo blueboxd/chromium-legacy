@@ -118,7 +118,7 @@ static jlong JNI_LogoBridge_Init(JNIEnv* env,
 }
 
 LogoBridge::LogoBridge(const JavaRef<jobject>& j_profile)
-    : logo_service_(nullptr), weak_ptr_factory_(this) {
+    : logo_service_(nullptr) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   DCHECK(profile);
 

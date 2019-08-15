@@ -33,6 +33,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_host_observer.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -40,6 +41,7 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "extensions/test/test_background_page_first_load_observer.h"
 #include "net/url_request/test_url_request_interceptor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -58,6 +60,50 @@ std::string BuildForceInstallPolicyValue(const char* extension_id,
                                          const char* update_url) {
   return base::StringPrintf("%s;%s", extension_id, update_url);
 }
+
+// Observes destruction of an extension's ExtensionHost if it is currently
+// there.
+class ExtensionHostDestructionObserver
+    : public extensions::ExtensionHostObserver {
+ public:
+  ExtensionHostDestructionObserver(Profile* profile,
+                                   const extensions::ExtensionId& extension_id)
+      : profile_(profile),
+        extension_id_(extension_id),
+        host_(extensions::ProcessManager::Get(profile)
+                  ->GetBackgroundHostForExtension(extension_id_)),
+        extension_host_observer_(this) {
+    DCHECK(host_);
+    extension_host_observer_.Add(host_);
+  }
+
+  void WaitForDestructionThenWaitForFirstLoad() {
+    run_loop_.Run();
+
+    extensions::TestBackgroundPageFirstLoadObserver first_load_observer(
+        profile_, extension_id_);
+    first_load_observer.Wait();
+  }
+
+  // ExtensionHostObserver:
+  void OnExtensionHostDestroyed(
+      const extensions::ExtensionHost* host) override {
+    if (host == host_) {
+      extension_host_observer_.Remove(host_);
+      run_loop_.Quit();
+    }
+  }
+
+ private:
+  Profile* const profile_ = nullptr;
+  const extensions::ExtensionId extension_id_;
+  extensions::ExtensionHost* const host_ = nullptr;
+  base::RunLoop run_loop_;
+  ScopedObserver<extensions::ExtensionHost, extensions::ExtensionHostObserver>
+      extension_host_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionHostDestructionObserver);
+};
 
 }  // namespace
 
@@ -115,15 +161,8 @@ class ExtensionManagementTest : public extensions::ExtensionBrowserTest {
   extensions::ScopedInstallVerifierBypassForTest install_verifier_bypass_;
 };
 
-#if defined(OS_LINUX) || defined(OS_WIN)
-// Times out sometimes on Linux and Win XP. http://crbug.com/89727
-#define MAYBE_InstallSameVersion DISABLED_InstallSameVersion
-#else
-#define MAYBE_InstallSameVersion InstallSameVersion
-#endif
-
 // Tests that installing the same version overwrites.
-IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_InstallSameVersion) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallSameVersion) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -143,10 +182,22 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_InstallSameVersion) {
   ASSERT_TRUE(extension);
   base::FilePath old_path = extension->path();
 
-  // Install an extension with the same version. The previous install should be
-  // overwritten.
-  extension = InstallExtension(second_path, 0);
-  ASSERT_TRUE(extension);
+  const extensions::ExtensionId extension_id = extension->id();
+  {
+    ExtensionHostDestructionObserver host_destruction_observer(profile(),
+                                                               extension_id);
+
+    // Install an extension with the same version. The previous install should
+    // be overwritten.
+    extension = InstallExtension(second_path, 0);
+    ASSERT_TRUE(extension);
+
+    // Wait for the old ExtensionHost destruction first before waiting for the
+    // new one to load.
+    // Note that this is needed to ensure that |IsExtensionAtVersion| below can
+    // successfully execute JS, otherwise this test becomes flaky.
+    host_destruction_observer.WaitForDestructionThenWaitForFirstLoad();
+  }
   base::FilePath new_path = extension->path();
 
   EXPECT_FALSE(IsExtensionAtVersion(extension, "1.0"));

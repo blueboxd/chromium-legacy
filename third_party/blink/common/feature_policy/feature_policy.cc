@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
+#include "third_party/blink/public/common/frame/sandbox_flags.h"
 
 namespace blink {
 namespace {
@@ -311,6 +312,47 @@ void FeaturePolicy::AddContainerPolicy(
 
 const FeaturePolicy::FeatureList& FeaturePolicy::GetFeatureList() const {
   return feature_list_;
+}
+
+// static
+mojom::FeaturePolicyFeature FeaturePolicy::FeatureForSandboxFlag(
+    WebSandboxFlags flag) {
+  switch (flag) {
+    case WebSandboxFlags::kAll:
+      NOTREACHED();
+      break;
+    case WebSandboxFlags::kTopNavigation:
+      return mojom::FeaturePolicyFeature::kTopNavigation;
+    case WebSandboxFlags::kForms:
+      return mojom::FeaturePolicyFeature::kFormSubmission;
+    case WebSandboxFlags::kAutomaticFeatures:
+    case WebSandboxFlags::kScripts:
+      return mojom::FeaturePolicyFeature::kScript;
+    case WebSandboxFlags::kPopups:
+      return mojom::FeaturePolicyFeature::kPopups;
+    case WebSandboxFlags::kPointerLock:
+      return mojom::FeaturePolicyFeature::kPointerLock;
+    case WebSandboxFlags::kOrientationLock:
+      return mojom::FeaturePolicyFeature::kOrientationLock;
+    case WebSandboxFlags::kModals:
+      return mojom::FeaturePolicyFeature::kModals;
+    case WebSandboxFlags::kPresentationController:
+      return mojom::FeaturePolicyFeature::kPresentation;
+    case WebSandboxFlags::kDownloads:
+      return mojom::FeaturePolicyFeature::kDownloadsWithoutUserActivation;
+    // Other flags fall through to the bitmask test below. They are named
+    // specifically here so that authors introducing new flags must consider
+    // this method when adding them.
+    case WebSandboxFlags::kDocumentDomain:
+    case WebSandboxFlags::kNavigation:
+    case WebSandboxFlags::kNone:
+    case WebSandboxFlags::kOrigin:
+    case WebSandboxFlags::kPlugins:
+    case WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts:
+    case WebSandboxFlags::kTopNavigationByUserActivation:
+      break;
+  }
+  return mojom::FeaturePolicyFeature::kNotFound;
 }
 
 // static

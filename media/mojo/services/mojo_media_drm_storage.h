@@ -40,7 +40,7 @@ class MEDIA_MOJO_EXPORT MojoMediaDrmStorage : public MediaDrmStorage {
       mojom::SessionDataPtr session_data);
 
   mojom::MediaDrmStoragePtr media_drm_storage_ptr_;
-  base::WeakPtrFactory<MojoMediaDrmStorage> weak_factory_;
+  base::WeakPtrFactory<MojoMediaDrmStorage> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MojoMediaDrmStorage);
 };

@@ -71,7 +71,7 @@ void SystemMenuModelBuilder::Init() {
 void SystemMenuModelBuilder::BuildMenu(ui::SimpleMenuModel* model) {
   // We add the menu items in reverse order so that insertion_index never needs
   // to change.
-  if (browser()->is_type_tabbed())
+  if (browser()->is_type_normal())
     BuildSystemMenuForBrowserWindow(model);
   else
     BuildSystemMenuForAppOrPopupWindow(model);
@@ -111,7 +111,7 @@ void SystemMenuModelBuilder::BuildSystemMenuForAppOrPopupWindow(
   model->AddItemWithStringId(IDC_RELOAD, IDS_APP_MENU_RELOAD);
   if (!web_app::AppBrowserController::IsForWebAppBrowser(browser())) {
     model->AddSeparator(ui::NORMAL_SEPARATOR);
-    if (browser()->is_app())
+    if (browser()->deprecated_is_app())
       model->AddItemWithStringId(IDC_NEW_TAB, IDS_APP_MENU_NEW_WEB_PAGE);
     else
       model->AddItemWithStringId(IDC_SHOW_AS_TAB, IDS_SHOW_AS_TAB);
@@ -126,7 +126,7 @@ void SystemMenuModelBuilder::BuildSystemMenuForAppOrPopupWindow(
     model->AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_ZOOM_MENU,
                                   zoom_menu_contents_.get());
   }
-  if (browser()->is_app() && chrome::CanOpenTaskManager()) {
+  if (browser()->deprecated_is_app() && chrome::CanOpenTaskManager()) {
     model->AddSeparator(ui::NORMAL_SEPARATOR);
     model->AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
   }

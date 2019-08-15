@@ -122,8 +122,7 @@ ExploreSitesFetcher::ExploreSitesFetcher(
       url_(url),
       device_delegate_(std::make_unique<DeviceDelegate>()),
       callback_(std::move(callback)),
-      url_loader_factory_(loader_factory),
-      weak_factory_(this) {
+      url_loader_factory_(loader_factory) {
   base::Version version = version_info::GetVersion();
   std::string channel_name = chrome::GetChannelName();
   client_version_ = base::StringPrintf("%d.%d.%d.%s.chrome",

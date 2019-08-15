@@ -1024,7 +1024,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, RestoreAppWindow) {
   ASSERT_TRUE(https_server()->Start());
 
   InstallSecurePWA();
-  ASSERT_TRUE(app_browser_->is_app());
+  ASSERT_TRUE(app_browser_->is_type_app());
   app_browser_->window()->Close();
 
   content::WebContentsAddedObserver new_contents_observer;
@@ -1038,7 +1038,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, RestoreAppWindow) {
   Browser* restored_browser =
       chrome::FindBrowserWithWebContents(restored_web_contents);
 
-  EXPECT_TRUE(restored_browser->is_app());
+  EXPECT_TRUE(restored_browser->is_type_app());
 }
 
 // Tests that app windows are restored in a tab if the app is uninstalled.
@@ -1047,8 +1047,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
   ASSERT_TRUE(https_server()->Start());
 
   InstallSecurePWA();
-  ASSERT_TRUE(app_browser_->is_app());
-  ASSERT_FALSE(app_browser_->is_type_tabbed());
+  ASSERT_TRUE(app_browser_->is_type_app());
+  ASSERT_FALSE(app_browser_->is_type_normal());
   app_browser_->window()->Close();
 
   extensions::TestExtensionRegistryObserver test_observer(
@@ -1067,8 +1067,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
   Browser* restored_browser =
       chrome::FindBrowserWithWebContents(restored_web_contents);
 
-  EXPECT_FALSE(restored_browser->is_app());
-  EXPECT_TRUE(restored_browser->is_type_tabbed());
+  EXPECT_FALSE(restored_browser->is_type_app());
+  EXPECT_TRUE(restored_browser->is_type_normal());
 }
 
 // Test navigating to an out of scope url on the same origin causes the url

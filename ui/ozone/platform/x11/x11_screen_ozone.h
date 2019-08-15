@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/base/x/x11_display_manager.h"
-#include "ui/events/platform/x11/x11_event_source_libevent.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/ozone/public/platform_screen.h"
 

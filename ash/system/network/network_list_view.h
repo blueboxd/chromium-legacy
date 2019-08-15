@@ -28,7 +28,6 @@ namespace ash {
 class HoverHighlightView;
 class TrayInfoLabel;
 class TriView;
-class TrayNetworkStateModel;
 
 namespace tray {
 class NetworkSectionHeaderView;
@@ -128,8 +127,6 @@ class NetworkListView : public NetworkStateListDetailedView,
   // Returns true if the info should be updated to the view for network,
   // otherwise false.
   bool NeedUpdateViewForNetwork(const NetworkInfo& info) const;
-
-  TrayNetworkStateModel* model_;
 
   bool needs_relayout_ = false;
 

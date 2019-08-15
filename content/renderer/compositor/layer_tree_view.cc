@@ -176,10 +176,6 @@ void LayerTreeView::SetViewportVisibleRect(const gfx::Rect& visible_rect) {
   layer_tree_host_->SetViewportVisibleRect(visible_rect);
 }
 
-viz::FrameSinkId LayerTreeView::GetFrameSinkId() {
-  return frame_sink_id_;
-}
-
 void LayerTreeView::SetNonBlinkManagedRootLayer(
     scoped_refptr<cc::Layer> layer) {
   layer_tree_host_->SetNonBlinkManagedRootLayer(std::move(layer));
@@ -346,10 +342,6 @@ void LayerTreeView::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
 void LayerTreeView::DidSubmitCompositorFrame() {}
 
 void LayerTreeView::DidLoseLayerTreeFrameSink() {}
-
-void LayerTreeView::SetFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
-  frame_sink_id_ = frame_sink_id;
-}
 
 void LayerTreeView::SetRasterColorSpace(const gfx::ColorSpace& color_space) {
   layer_tree_host_->SetRasterColorSpace(color_space);

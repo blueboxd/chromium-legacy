@@ -195,8 +195,8 @@ class PaintPropertyNode : public RefCounted<NodeType> {
 
   // Indicates that the paint property value changed in the last update in the
   // prepaint lifecycle step. This is used for raster invalidation and damage
-  // in the compositor. This value is cleared through |ClearChangedTo*|. With
-  // BlinkGenPropertyTrees, this is cleared explicitly at the end of paint (see:
+  // in the compositor. This value is cleared through |ClearChangedTo*|. Before
+  // CompositeAfterPaint, this is cleared explicitly at the end of paint (see:
   // LocalFrameView::RunPaintLifecyclePhase), otherwise this is cleared through
   // PaintController::FinishCycle.
   mutable PaintPropertyChangeType changed_;

@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/accessibility/platform/ax_platform_text_boundary.h"
 #include "ui/base/buildflags.h"
@@ -254,7 +253,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // produce appropriate results.
   virtual int FindTextBoundary(AXTextBoundary boundary,
                                int offset,
-                               TextBoundaryDirection direction,
+                               AXTextBoundaryDirection direction,
                                ax::mojom::TextAffinity affinity =
                                    ax::mojom::TextAffinity::kDownstream) const;
 

@@ -38,17 +38,16 @@ public class ChromeSmokeTest {
 
     @Before
     public void setUp() {
-        // TODO (aluo): Adjust this as needed according to cl 1585142
-        mPackageName = InstrumentationRegistry.getArguments().getString(PACKAGE_NAME_ARG);
-        if (mPackageName == null) {
-            mPackageName = InstrumentationRegistry.getTargetContext().getPackageName();
-        }
+        // TODO (aluo): Adjust this as needed according to https://crrev.com/c/1585142
+        mPackageName = InstrumentationRegistry.getArguments().getString(
+                PACKAGE_NAME_ARG, "org.chromium.chrome");
     }
 
     @Test
     public void testHello() {
         Context context = InstrumentationRegistry.getContext();
         final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(DATA_URL));
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.setComponent(new ComponentName(mPackageName, ACTIVITY_NAME));
         context.startActivity(intent);
 

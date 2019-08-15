@@ -39,7 +39,7 @@ const GUID GUID_IAccessibleContentDocument = {
 
 namespace ui {
 
-enum TextBoundaryDirection;
+enum class AXTextBoundaryDirection;
 
 }  // namespace ui
 
@@ -472,12 +472,13 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // text boundary is found, and return the offset of that boundary.
   LONG FindIA2Boundary(IA2TextBoundaryType ia2_boundary,
                        LONG start_offset,
-                       ui::TextBoundaryDirection direction);
+                       ui::AXTextBoundaryDirection direction);
 
   // Searches forward from the given offset until the start of the next style
   // is found, or searches backward from the given offset until the start of the
   // current style is found.
-  LONG FindStartOfStyle(LONG start_offset, ui::TextBoundaryDirection direction);
+  LONG FindStartOfStyle(LONG start_offset,
+                        ui::AXTextBoundaryDirection direction);
 
   // ID refers to the node ID in the current tree, not the globally unique ID.
   // TODO(nektar): Could we use globally unique IDs everywhere?

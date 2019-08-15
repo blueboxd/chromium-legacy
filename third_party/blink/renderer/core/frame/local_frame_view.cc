@@ -1320,21 +1320,6 @@ void LocalFrameView::InvalidateBackgroundAttachmentFixedDescendantsOnScroll(
   }
 }
 
-bool LocalFrameView::HasBackgroundAttachmentFixedDescendants(
-    const LayoutObject& object) const {
-  if (object == GetLayoutView())
-    return !background_attachment_fixed_objects_.IsEmpty();
-
-  for (const auto* potential_descendant :
-       background_attachment_fixed_objects_) {
-    if (potential_descendant == &object)
-      continue;
-    if (potential_descendant->IsDescendantOf(&object))
-      return true;
-  }
-  return false;
-}
-
 bool LocalFrameView::InvalidateViewportConstrainedObjects() {
   bool fast_path_allowed = true;
   for (auto* const viewport_constrained_object :
@@ -2475,10 +2460,9 @@ static void ForAllGraphicsLayers(GraphicsLayer& layer,
 
 void LocalFrameView::RunPaintLifecyclePhase() {
   TRACE_EVENT0("blink,benchmark", "LocalFrameView::RunPaintLifecyclePhase");
-  // While printing a document, the paint walk is done by the printing
-  // component into a special canvas. There is no point doing a normal paint
-  // step (or animations update for BlinkGenPropertyTrees/CAP) when in this
-  // mode.
+  // While printing a document, the paint walk is done by the printing component
+  // into a special canvas. There is no point doing a normal paint step (or
+  // animations update) when in this mode.
   //
   // RuntimeEnabledFeatures::PrintBrowserEnabled is a mode which runs the
   // browser normally, but renders every page as if it were being printed.
@@ -2785,11 +2769,11 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
 
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       !paint_controller_) {
-    // BlinkGenPropertyTrees just needs a transient PaintController to collect
-    // the foreign layers which doesn't need caching. It also shouldn't affect
-    // caching status of DisplayItemClients because it's FinishCycle() is not
-    // synchronized with other PaintControllers. It may live across frame update
-    // until GraphicsLayersDidChange() is called.
+    // Before CompositeAfterPaint, we need a transient PaintController to
+    // collect the foreign layers, and this doesn't need caching. This shouldn't
+    // affect caching status of DisplayItemClients because FinishCycle() is
+    // not synchronized with other PaintControllers. This may live across frame
+    // updates until GraphicsLayersDidChange() is called.
     paint_controller_ =
         std::make_unique<PaintController>(PaintController::kTransient);
 
@@ -2805,7 +2789,7 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
       CollectViewportLayersForLayerList(context,
                                         frame_->GetPage()->GetVisualViewport());
     }
-    // With BlinkGenPropertyTrees, |PaintRootGraphicsLayer| is the ancestor of
+    // Before CompositeAfterPaint, |PaintRootGraphicsLayer| is the ancestor of
     // all drawable layers (see: PaintLayerCompositor::PaintRootGraphicsLayer)
     // so we do not need to collect scrollbars separately.
     auto* root = GetLayoutView()->Compositor()->PaintRootGraphicsLayer();
@@ -4222,53 +4206,6 @@ bool LocalFrameView::HasVisibleSlowRepaintViewportConstrainedObjects() const {
       return true;
   }
   return false;
-}
-
-void LocalFrameView::UpdateSubFrameScrollOnMainReason(
-    const Frame& frame,
-    MainThreadScrollingReasons parent_reason) {
-  MainThreadScrollingReasons reasons = parent_reason;
-
-  if (!GetPage()->GetSettings().GetThreadedScrollingEnabled())
-    reasons |= cc::MainThreadScrollingReason::kThreadedScrollingDisabled;
-
-  auto* local_frame = DynamicTo<LocalFrame>(&frame);
-  if (!local_frame)
-    return;
-
-  LocalFrameView& frame_view = *local_frame->View();
-  if (frame_view.ShouldThrottleRendering())
-    return;
-
-  if (!frame_view.LayoutViewport())
-    return;
-
-  reasons |= frame_view.MainThreadScrollingReasonsPerFrame();
-  if (GraphicsLayer* layer_for_scrolling =
-          local_frame->View()->LayoutViewport()->LayerForScrolling()) {
-    if (cc::Layer* platform_layer_for_scrolling =
-            layer_for_scrolling->CcLayer()) {
-      if (reasons) {
-        platform_layer_for_scrolling->AddMainThreadScrollingReasons(reasons);
-      } else {
-        // Clear all main thread scrolling reasons except the one that's set
-        // if there is a running scroll animation.
-        platform_layer_for_scrolling->ClearMainThreadScrollingReasons(
-            ~cc::MainThreadScrollingReason::kHandlingScrollFromMainThread);
-      }
-    }
-  }
-
-  Frame* child = frame.Tree().FirstChild();
-  while (child) {
-    UpdateSubFrameScrollOnMainReason(*child, reasons);
-    child = child->Tree().NextSibling();
-  }
-
-  if (frame.IsMainFrame())
-    main_thread_scrolling_reasons_ = reasons;
-  DCHECK(!cc::MainThreadScrollingReason::HasNonCompositedScrollReasons(
-      main_thread_scrolling_reasons_));
 }
 
 MainThreadScrollingReasons LocalFrameView::MainThreadScrollingReasonsPerFrame()

@@ -118,9 +118,7 @@ static void JNI_SnippetsBridge_RemoteSuggestionsSchedulerOnBrowserUpgraded(
 NTPSnippetsBridge::NTPSnippetsBridge(JNIEnv* env,
                                      const JavaParamRef<jobject>& j_bridge,
                                      const JavaParamRef<jobject>& j_profile)
-    : content_suggestions_service_observer_(this),
-      bridge_(env, j_bridge),
-      weak_ptr_factory_(this) {
+    : content_suggestions_service_observer_(this), bridge_(env, j_bridge) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   content_suggestions_service_ =
       ContentSuggestionsServiceFactory::GetForProfile(profile);

@@ -35,8 +35,9 @@ public class TabSwitcherMenuController extends PageController {
     }
 
     @Override
-    public boolean isCurrentPageThis() {
-        return mLocatorHelper.isOnScreen(LOCATOR_MENU);
+    public TabSwitcherMenuController verifyActive() {
+        mLocatorHelper.verifyOnScreen(LOCATOR_MENU);
+        return this;
     }
 
     public void clickNewTab() {
@@ -57,8 +58,6 @@ public class TabSwitcherMenuController extends PageController {
 
     public TabSwitcherController dismiss() {
         mUtils.clickOutsideOf(LOCATOR_MENU_BOX);
-        TabSwitcherController inst = TabSwitcherController.getInstance();
-        inst.verify();
-        return inst;
+        return TabSwitcherController.getInstance().verifyActive();
     }
 }

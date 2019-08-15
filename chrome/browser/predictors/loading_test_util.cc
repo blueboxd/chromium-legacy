@@ -33,10 +33,14 @@ void InitializeRedirectStat(RedirectStat* redirect,
                             const GURL& url,
                             int number_of_hits,
                             int number_of_misses,
-                            int consecutive_misses) {
+                            int consecutive_misses,
+                            bool include_scheme,
+                            bool include_port) {
   redirect->set_url(url.host());
-  redirect->set_url_scheme(url.scheme());
-  redirect->set_url_port(url.EffectiveIntPort());
+  if (include_scheme)
+    redirect->set_url_scheme(url.scheme());
+  if (include_port)
+    redirect->set_url_port(url.EffectiveIntPort());
   redirect->set_number_of_hits(number_of_hits);
   redirect->set_number_of_misses(number_of_misses);
   redirect->set_consecutive_misses(consecutive_misses);

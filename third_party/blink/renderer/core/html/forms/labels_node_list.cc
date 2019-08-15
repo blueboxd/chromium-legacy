@@ -44,8 +44,8 @@ LabelsNodeList::LabelsNodeList(ContainerNode& owner_node, CollectionType type)
 LabelsNodeList::~LabelsNodeList() = default;
 
 bool LabelsNodeList::ElementMatches(const Element& element) const {
-  return IsHTMLLabelElement(element) &&
-         ToHTMLLabelElement(element).control() == ownerNode();
+  auto* html_label_element = DynamicTo<HTMLLabelElement>(element);
+  return html_label_element && html_label_element->control() == ownerNode();
 }
 
 }  // namespace blink

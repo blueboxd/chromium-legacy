@@ -301,7 +301,7 @@ class ScriptExecutor : public ActionDelegate,
 
     RetryTimer retry_timer_;
 
-    base::WeakPtrFactory<WaitForDomOperation> weak_ptr_factory_;
+    base::WeakPtrFactory<WaitForDomOperation> weak_ptr_factory_{this};
 
     DISALLOW_COPY_AND_ASSIGN(WaitForDomOperation);
   };

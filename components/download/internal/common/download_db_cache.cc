@@ -73,6 +73,9 @@ void CleanUpInProgressEntry(DownloadDBEntry* entry) {
     in_progress_info->state = DownloadItem::DownloadState::INTERRUPTED;
     in_progress_info->interrupt_reason =
         download::DOWNLOAD_INTERRUPT_REASON_CRASH;
+    // We should not trust the hash value for crashed in-progress download, as
+    // hash is not calculated for when download is in progress.
+    in_progress_info->hash = std::string();
   }
 }
 

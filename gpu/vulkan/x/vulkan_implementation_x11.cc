@@ -65,7 +65,7 @@ bool VulkanImplementationX11::InitializeVulkanInstance(bool using_surface) {
   if (use_swiftshader()) {
     if (!base::PathService::Get(base::DIR_MODULE, &path))
       return false;
-    path = path.Append("swiftshader/libvulkan.so");
+    path = path.Append("swiftshader/libvk_swiftshader.so");
   } else {
     path = base::FilePath("libvulkan.so.1");
   }

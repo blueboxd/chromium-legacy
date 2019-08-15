@@ -75,7 +75,7 @@ cr.define('extension_shortcut_tests', function() {
       const isVisibleOnCard = function(e, s) {
         // We check the light DOM in the card because it's a regular old div,
         // rather than a fancy-schmancy custom element.
-        return extension_test_util.isVisible(e, s, true);
+        return test_util.isVisible(e, s, true);
       };
       const cards =
           keyboardShortcuts.$$('#container').querySelectorAll('.shortcut-card');

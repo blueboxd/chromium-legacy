@@ -68,11 +68,8 @@ class TestDataReductionProxyPingbackClientImpl
     : public DataReductionProxyPingbackClientImpl {
  public:
   TestDataReductionProxyPingbackClientImpl(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner)
-      : DataReductionProxyPingbackClientImpl(url_loader_factory,
-                                             std::move(thread_task_runner),
-                                             kChannel),
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      : DataReductionProxyPingbackClientImpl(url_loader_factory, kChannel),
         should_override_random_(false),
         override_value_(0.0f),
         current_time_(base::Time::Now()) {}
@@ -135,8 +132,7 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
             &test_url_loader_factory_);
     pingback_client_ =
         std::make_unique<TestDataReductionProxyPingbackClientImpl>(
-            test_shared_loader_factory_,
-            scoped_task_environment_.GetMainThreadTaskRunner());
+            test_shared_loader_factory_);
     page_id_ = 0u;
   }
 

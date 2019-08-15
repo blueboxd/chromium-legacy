@@ -5,6 +5,7 @@
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 
 #include <algorithm>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"

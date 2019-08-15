@@ -473,8 +473,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MaximizedApps) {
   app_browser->window()->Maximize();
   app_browser->window()->Show();
   EXPECT_TRUE(app_browser->window()->IsMaximized());
-  EXPECT_TRUE(app_browser->is_app());
-  EXPECT_TRUE(app_browser->is_type_popup());
+  EXPECT_TRUE(app_browser->is_type_app());
 
   // Close the normal browser. After this we only have the app_browser window.
   CloseBrowserSynchronously(browser());
@@ -485,8 +484,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MaximizedApps) {
 
   ASSERT_TRUE(new_browser);
   EXPECT_TRUE(app_browser->window()->IsMaximized());
-  EXPECT_TRUE(app_browser->is_app());
-  EXPECT_TRUE(app_browser->is_type_popup());
+  EXPECT_TRUE(app_browser->is_type_app());
 }
 #endif  // OS_CHROMEOS
 
@@ -1683,7 +1681,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, SessionStorageAfterTabReplace) {
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabWithDownloadDoesNotGetRestored) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  ASSERT_EQ(Browser::TYPE_TABBED, browser()->type());
+  ASSERT_TRUE(browser()->is_type_normal());
 
   GURL first_download_url =
       embedded_test_server()->GetURL("/downloads/a_zip_file.zip");

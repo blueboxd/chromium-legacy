@@ -67,7 +67,8 @@ class IndexedDBFactoryTest : public testing::Test {
         quota_manager_proxy_(
             base::MakeRefCounted<MockQuotaManagerProxy>(nullptr, nullptr)) {}
 
-  IndexedDBFactoryTest(std::unique_ptr<TestBrowserThreadBundle> thread_bundle)
+  explicit IndexedDBFactoryTest(
+      std::unique_ptr<TestBrowserThreadBundle> thread_bundle)
       : thread_bundle_(std::move(thread_bundle)),
         quota_manager_proxy_(
             base::MakeRefCounted<MockQuotaManagerProxy>(nullptr, nullptr)) {}

@@ -20,6 +20,8 @@
 #include "media/base/channel_layout.h"
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "services/audio/public/cpp/output_device.h"
+#include "services/audio/public/mojom/constants.mojom.h"
+#include "services/audio/public/mojom/stream_factory.mojom.h"
 
 namespace audio {
 
@@ -69,8 +71,11 @@ class AudioStreamHandler::AudioStreamContainer
       if (g_observer_for_testing) {
         g_observer_for_testing->Initialize(this, params);
       } else {
+        mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory;
+        connector_->Connect(audio::mojom::kServiceName,
+                            stream_factory.InitWithNewPipeAndPassReceiver());
         device_ = std::make_unique<audio::OutputDevice>(
-            connector_->Clone(), params, this, std::string());
+            std::move(stream_factory), params, this, std::string());
       }
     }
 

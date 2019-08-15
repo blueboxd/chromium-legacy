@@ -399,8 +399,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
   // Find the app's browser.  Check that it is a popup.
   ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
   Browser* app_browser = FindOtherBrowser(browser());
-  ASSERT_TRUE(app_browser->is_type_popup());
-  ASSERT_TRUE(app_browser->is_app());
+  ASSERT_TRUE(app_browser->is_type_app());
 
   // Close the app panel.
   CloseBrowserSynchronously(app_browser);
@@ -430,8 +429,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
   // prefs, so we should still see the launch in a popup.
   ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
   app_browser = FindOtherBrowser(browser());
-  ASSERT_TRUE(app_browser->is_type_popup());
-  ASSERT_TRUE(app_browser->is_app());
+  ASSERT_TRUE(app_browser->is_type_app());
 }
 
 // Disabled: crbug.com/230165, crbug.com/915339, crbug.com/979399
@@ -487,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, MAYBE_LaunchTabApp) {
   // a new browser.
   ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
   Browser* app_browser = FindOtherBrowser(browser());
-  ASSERT_TRUE(app_browser->is_app());
+  ASSERT_TRUE(app_browser->is_type_app());
 }
 
 // Flaky on MacOS: crbug.com/915339

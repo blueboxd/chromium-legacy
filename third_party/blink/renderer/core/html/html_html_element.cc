@@ -30,7 +30,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_frame.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -86,7 +86,8 @@ void HTMLHtmlElement::MaybeSetupApplicationCache() {
     return;
   }
 
-  ApplicationCacheHost* host = document_loader->GetApplicationCacheHost();
+  ApplicationCacheHostForFrame* host =
+      document_loader->GetApplicationCacheHost();
   DCHECK(host);
 
   if (manifest.IsEmpty())

@@ -10,6 +10,7 @@
 
 #include <bitset>
 #include <set>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/stl_util.h"

@@ -300,12 +300,13 @@ void ScrollableArea::ProgrammaticScrollHelper(const ScrollOffset& offset,
   CancelScrollAnimation();
 
   ScrollCallback callback = std::move(on_finish);
-  if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
+  if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled() ||
+      RuntimeEnabledFeatures::OverscrollCustomizationEnabled()) {
     callback = ScrollCallback(WTF::Bind(
         [](ScrollCallback original_callback,
            WeakPersistent<ScrollableArea> area) {
           if (area)
-            area->MarkHoverStateDirty();
+            area->OnScrollFinished();
           if (original_callback)
             std::move(original_callback).Run();
         },
@@ -817,13 +818,19 @@ CompositorElementId ScrollableArea::GetScrollbarElementId(
       scrollable_element_id.GetInternalValue(), element_id_namespace);
 }
 
-void ScrollableArea::MarkHoverStateDirty() {
+void ScrollableArea::OnScrollFinished() {
   if (GetLayoutBox()) {
-    GetLayoutBox()
-        ->GetFrame()
-        ->LocalFrameRoot()
-        .GetEventHandler()
-        .MarkHoverStateDirty();
+    if (RuntimeEnabledFeatures::OverscrollCustomizationEnabled()) {
+      if (Node* node = GetLayoutBox()->GetNode())
+        node->GetDocument().EnqueueScrollEndEventForNode(node);
+    }
+    if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
+      GetLayoutBox()
+          ->GetFrame()
+          ->LocalFrameRoot()
+          .GetEventHandler()
+          .MarkHoverStateDirty();
+    }
   }
 }
 

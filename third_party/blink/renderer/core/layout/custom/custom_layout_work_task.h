@@ -11,8 +11,10 @@
 
 namespace blink {
 
+class ComputedStyle;
 class CustomLayoutChild;
 class CustomLayoutToken;
+class NGConstraintSpace;
 class SerializedScriptValue;
 class ScriptPromiseResolver;
 
@@ -28,7 +30,8 @@ class CustomLayoutWorkTask {
   ~CustomLayoutWorkTask();
 
   // Runs this work task.
-  void Run();
+  void Run(const NGConstraintSpace& parent_space,
+           const ComputedStyle& parent_style);
 
  private:
   Persistent<CustomLayoutChild> child_;

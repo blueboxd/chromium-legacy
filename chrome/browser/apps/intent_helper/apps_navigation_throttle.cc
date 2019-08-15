@@ -272,7 +272,7 @@ bool AppsNavigationThrottle::CanCreate(content::WebContents* web_contents) {
   // are already in an app browser. The former can happen if an initial
   // navigation is reparented into a new app browser instance.
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (!browser || browser->is_app())
+  if (!browser || browser->deprecated_is_app())
     return false;
 
   return true;

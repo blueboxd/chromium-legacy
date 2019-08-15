@@ -53,13 +53,11 @@ struct DataUsageForHost {
 
 }  // namespace
 
-DataReductionProxySettingsAndroid::DataReductionProxySettingsAndroid()
-    : weak_factory_(this) {}
+DataReductionProxySettingsAndroid::DataReductionProxySettingsAndroid() {}
 
 DataReductionProxySettingsAndroid::DataReductionProxySettingsAndroid(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj)
-    : weak_factory_(this) {}
+    const base::android::JavaParamRef<jobject>& obj) {}
 
 DataReductionProxySettingsAndroid::~DataReductionProxySettingsAndroid() {}
 

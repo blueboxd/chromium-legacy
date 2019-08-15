@@ -47,8 +47,8 @@ class WPTMetadataBuilder(object):
     def _build_metadata_and_write(self):
         """Build the metadata files and write them to disk."""
         if os.path.exists(self.metadata_output_dir):
-            _log.warning("Output dir exists, deleting: %s",
-                         self.metadata_output_dir)
+            _log.debug("Output dir exists, deleting: %s",
+                       self.metadata_output_dir)
             import shutil
             shutil.rmtree(self.metadata_output_dir)
 

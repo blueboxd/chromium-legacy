@@ -21,7 +21,7 @@ mojom("mojom") {
 
   public_deps = [
     "//chromeos/components/proximity_auth/public/mojom",
-    "//chromeos/services/assistant/public/mojom",
+    "//chromeos/services/assistant/public/mojom:notification",
     "//components/account_id/mojom",
     "//components/sync/mojom",
     "//mojo/public/mojom/base",

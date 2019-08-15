@@ -114,7 +114,8 @@ class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
   // controller_. It is used to determine the offset suggestions.
   base::Optional<int> front_element_;
 
-  base::WeakPtrFactory<AutofillKeyboardAccessoryAdapter> weak_ptr_factory_;
+  base::WeakPtrFactory<AutofillKeyboardAccessoryAdapter> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(AutofillKeyboardAccessoryAdapter);
 };

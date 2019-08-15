@@ -136,8 +136,7 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(gvr::GvrApi* gvr_api,
 
 GvrDevice::GvrDevice()
     : VRDeviceBase(mojom::XRDeviceId::GVR_DEVICE_ID),
-      exclusive_controller_binding_(this),
-      weak_ptr_factory_(this) {
+      exclusive_controller_binding_(this) {
   GvrDelegateProviderFactory::SetDevice(this);
 }
 

@@ -66,11 +66,13 @@ bool DrmThreadMessageProxy::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void DrmThreadMessageProxy::OnCreateWindow(gfx::AcceleratedWidget widget) {
+void DrmThreadMessageProxy::OnCreateWindow(gfx::AcceleratedWidget widget,
+                                           const gfx::Rect& initial_bounds) {
   DCHECK(drm_thread_->IsRunning());
   drm_thread_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&DrmThread::CreateWindow,
-                                base::Unretained(drm_thread_), widget));
+      FROM_HERE,
+      base::BindOnce(&DrmThread::CreateWindow, base::Unretained(drm_thread_),
+                     widget, initial_bounds));
 }
 
 void DrmThreadMessageProxy::OnDestroyWindow(gfx::AcceleratedWidget widget) {

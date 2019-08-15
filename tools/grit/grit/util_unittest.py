@@ -15,6 +15,8 @@ if __name__ == '__main__':
 
 import unittest
 
+import six
+
 from grit import util
 
 
@@ -54,8 +56,8 @@ class UtilUnittest(unittest.TestCase):
     self.failUnless(util.CanonicalLanguage('no_no_bokmal') == 'no-NO-BOKMAL')
 
   def testUnescapeHtml(self):
-    self.failUnless(util.UnescapeHtml('&#1010;') == unichr(1010))
-    self.failUnless(util.UnescapeHtml('&#xABcd;') == unichr(43981))
+    self.failUnless(util.UnescapeHtml('&#1010;') == six.unichr(1010))
+    self.failUnless(util.UnescapeHtml('&#xABcd;') == six.unichr(43981))
 
   def testRelativePath(self):
     """ Verify that MakeRelativePath works in some tricky cases."""

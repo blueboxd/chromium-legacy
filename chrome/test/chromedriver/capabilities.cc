@@ -262,6 +262,9 @@ Status ParseSwitches(const base::Value& option,
     std::string arg_string;
     if (!switches_list->GetString(i, &arg_string))
       return Status(kInvalidArgument, "each argument must be a string");
+    base::TrimWhitespaceASCII(arg_string, base::TRIM_ALL, &arg_string);
+    if (arg_string.empty() || arg_string == "--")
+      return Status(kInvalidArgument, "argument is empty");
     capabilities->switches.SetUnparsedSwitch(arg_string);
   }
   return Status(kOk);

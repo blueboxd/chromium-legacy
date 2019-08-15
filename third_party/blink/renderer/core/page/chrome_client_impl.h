@@ -246,7 +246,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void UnregisterPopupOpeningObserver(PopupOpeningObserver*) override;
   void NotifyPopupOpeningObservers() const override;
 
-  WebLayerTreeView* GetWebLayerTreeView(LocalFrame*) override;
+  viz::FrameSinkId GetFrameSinkId(LocalFrame*) override;
 
   void RequestDecode(LocalFrame*,
                      const PaintImage&,

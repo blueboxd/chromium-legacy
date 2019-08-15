@@ -30,6 +30,8 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -100,17 +102,17 @@ scoped_refptr<CachedStorageArea> StorageNamespace::GetCachedArea(
   controller_->ClearAreasIfNeeded();
   if (IsSessionStorage()) {
     EnsureConnected();
-    mojom::blink::StorageAreaAssociatedPtr area_ptr;
+    mojo::PendingAssociatedRemote<mojom::blink::StorageArea> area_remote;
     namespace_->OpenArea(origin,
-                         MakeRequest(&area_ptr, controller_->IPCTaskRunner()));
+                         area_remote.InitWithNewEndpointAndPassReceiver());
     result = CachedStorageArea::CreateForSessionStorage(
-        origin, std::move(area_ptr), controller_->IPCTaskRunner(), this);
+        origin, std::move(area_remote), controller_->IPCTaskRunner(), this);
   } else {
-    mojom::blink::StorageAreaPtr area_ptr;
+    mojo::PendingRemote<mojom::blink::StorageArea> area_remote;
     controller_->storage_partition_service()->OpenLocalStorage(
-        origin, MakeRequest(&area_ptr, controller_->IPCTaskRunner()));
+        origin, area_remote.InitWithNewPipeAndPassReceiver());
     result = CachedStorageArea::CreateForLocalStorage(
-        origin, std::move(area_ptr), controller_->IPCTaskRunner(), this);
+        origin, std::move(area_remote), controller_->IPCTaskRunner(), this);
   }
   cached_areas_.insert(std::move(origin), result);
   return result;
@@ -169,9 +171,9 @@ void StorageNamespace::EnsureConnected() {
   DCHECK(IsSessionStorage());
   if (namespace_)
     return;
-  auto request = MakeRequest(&namespace_, controller_->IPCTaskRunner());
   controller_->storage_partition_service()->OpenSessionStorage(
-      namespace_id_, std::move(request));
+      namespace_id_,
+      namespace_.BindNewPipeAndPassReceiver(controller_->IPCTaskRunner()));
 }
 
 }  // namespace blink

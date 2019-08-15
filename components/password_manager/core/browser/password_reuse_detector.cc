@@ -260,6 +260,18 @@ void PasswordReuseDetector::ClearAllEnterprisePasswordHash() {
   enterprise_password_hash_data_list_.reset();
 }
 
+void PasswordReuseDetector::ClearAllNonGmailPasswordHash() {
+  if (!gaia_password_hash_data_list_)
+    return;
+
+  base::EraseIf(
+      *gaia_password_hash_data_list_, [](const PasswordHashData& data) {
+        std::string email =
+            CanonicalizeUsername(data.username, data.is_gaia_password);
+        return email.find("@gmail.com") == std::string::npos;
+      });
+}
+
 void PasswordReuseDetector::AddPassword(const autofill::PasswordForm& form) {
   if (form.password_value.size() < kMinPasswordLengthToCheck)
     return;

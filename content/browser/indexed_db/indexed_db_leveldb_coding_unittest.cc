@@ -705,7 +705,6 @@ TEST(IndexedDBLevelDBCodingTest, EncodeDecodeBlobJournal) {
   }
 
   {  // A bunch of items
-
     journals.push_back(
         {{4, 7}, {5, 6}, {4, 5}, {4, 4}, {1, 12}, {4, 3}, {15, 14}});
   }
@@ -773,7 +772,6 @@ TEST(IndexedDBLevelDBCodingTest, DecodeLegacyIDBKeyPath) {
 
 TEST(IndexedDBLevelDBCodingTest, ExtractAndCompareIDBKeys) {
   std::vector<IndexedDBKey> keys = {
-
       IndexedDBKey(-10, blink::mojom::IDBKeyType::Number),
       IndexedDBKey(0, blink::mojom::IDBKeyType::Number),
       IndexedDBKey(3.14, blink::mojom::IDBKeyType::Number),

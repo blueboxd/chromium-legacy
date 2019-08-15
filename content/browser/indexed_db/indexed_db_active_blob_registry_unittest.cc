@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 
 #include "base/macros.h"

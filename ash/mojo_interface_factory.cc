@@ -7,11 +7,6 @@
 #include <utility>
 
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/assistant/assistant_alarm_timer_controller.h"
-#include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/assistant_notification_controller.h"
-#include "ash/assistant/assistant_screen_context_controller.h"
-#include "ash/assistant/assistant_setup_controller.h"
 #include "ash/display/cros_display_config.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/login/login_screen_controller.h"
@@ -34,46 +29,6 @@ namespace {
 base::LazyInstance<RegisterInterfacesCallback>::Leaky
     g_register_interfaces_callback = LAZY_INSTANCE_INITIALIZER;
 
-void BindAssistantAlarmTimerControllerRequestOnMainThread(
-    mojom::AssistantAlarmTimerControllerRequest request) {
-  if (Shell::HasInstance()) {
-    Shell::Get()->assistant_controller()->alarm_timer_controller()->BindRequest(
-        std::move(request));
-  }
-}
-
-void BindAssistantControllerRequestOnMainThread(
-    mojom::AssistantControllerRequest request) {
-  if (Shell::HasInstance())
-    Shell::Get()->assistant_controller()->BindRequest(std::move(request));
-}
-
-void BindAssistantNotificationControllerRequestOnMainThread(
-    mojom::AssistantNotificationControllerRequest request) {
-  if (Shell::HasInstance()) {
-    Shell::Get()
-        ->assistant_controller()
-        ->notification_controller()
-        ->BindRequest(std::move(request));
-  }
-}
-
-void BindAssistantScreenContextControllerRequestOnMainThread(
-    mojom::AssistantScreenContextControllerRequest request) {
-  if (Shell::HasInstance()) {
-    Shell::Get()
-        ->assistant_controller()
-        ->screen_context_controller()
-        ->BindRequest(std::move(request));
-  }
-}
-
-void BindAssistantVolumeControlRequestOnMainThread(
-    mojom::AssistantVolumeControlRequest request) {
-  if (Shell::HasInstance())
-    Shell::Get()->assistant_controller()->BindRequest(std::move(request));
-}
-
 void BindCrosDisplayConfigControllerRequestOnMainThread(
     mojom::CrosDisplayConfigControllerRequest request) {
   if (Shell::HasInstance())
@@ -90,12 +45,6 @@ void BindTrayActionRequestOnMainThread(mojom::TrayActionRequest request) {
     Shell::Get()->tray_action()->BindRequest(std::move(request));
 }
 
-void BindVoiceInteractionControllerRequestOnMainThread(
-    mojom::VoiceInteractionControllerRequest request) {
-  if (Shell::HasInstance())
-    VoiceInteractionController::Get()->BindRequest(std::move(request));
-}
-
 void BindVpnListRequestOnMainThread(mojom::VpnListRequest request) {
   if (Shell::HasInstance())
     Shell::Get()->vpn_list()->BindRequest(std::move(request));
@@ -106,26 +55,6 @@ void BindVpnListRequestOnMainThread(mojom::VpnListRequest request) {
 void RegisterInterfaces(
     service_manager::BinderRegistry* registry,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
-  if (chromeos::features::IsAssistantEnabled()) {
-    registry->AddInterface(
-        base::BindRepeating(
-            &BindAssistantAlarmTimerControllerRequestOnMainThread),
-        main_thread_task_runner);
-    registry->AddInterface(
-        base::BindRepeating(&BindAssistantControllerRequestOnMainThread),
-        main_thread_task_runner);
-    registry->AddInterface(
-        base::BindRepeating(
-            &BindAssistantNotificationControllerRequestOnMainThread),
-        main_thread_task_runner);
-    registry->AddInterface(
-        base::BindRepeating(
-            &BindAssistantScreenContextControllerRequestOnMainThread),
-        main_thread_task_runner);
-    registry->AddInterface(
-        base::BindRepeating(&BindAssistantVolumeControlRequestOnMainThread),
-        main_thread_task_runner);
-  }
   registry->AddInterface(
       base::BindRepeating(&BindCrosDisplayConfigControllerRequestOnMainThread),
       main_thread_task_runner);
@@ -134,9 +63,6 @@ void RegisterInterfaces(
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindTrayActionRequestOnMainThread),
-      main_thread_task_runner);
-  registry->AddInterface(
-      base::BindRepeating(&BindVoiceInteractionControllerRequestOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(base::BindRepeating(&BindVpnListRequestOnMainThread),
                          main_thread_task_runner);

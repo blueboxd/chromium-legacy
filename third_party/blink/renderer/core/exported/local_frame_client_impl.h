@@ -196,8 +196,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
-      WebMediaPlayerClient*,
-      WebLayerTreeView*) override;
+      WebMediaPlayerClient*) override;
   WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
       HTMLMediaElement&) override;
   void DidChangeScrollOffset() override;
@@ -330,7 +329,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void UpdateSubresourceFactory(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) override;
-  WebLocalFrameClient::AppCacheType GetAppCacheType() override;
 
   void EvictFromBackForwardCache() override;
 

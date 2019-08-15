@@ -124,7 +124,7 @@ struct ContextualSearchContext {
   // Member variables should appear before the WeakPtrFactory, to ensure
   // that any WeakPtrs to this instance are invalidated before its members
   // variable's destructors are executed, rendering them invalid.
-  base::WeakPtrFactory<ContextualSearchContext> weak_factory_;
+  base::WeakPtrFactory<ContextualSearchContext> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ContextualSearchContext);
 };

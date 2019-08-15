@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 namespace crostini {
 
@@ -53,7 +54,7 @@ class CrostiniPackageService : public KeyedService,
   void GetLinuxPackageInfo(
       const std::string& vm_name,
       const std::string& container_name,
-      const std::string& package_path,
+      const storage::FileSystemURL& package_url,
       CrostiniManager::GetLinuxPackageInfoCallback callback);
 
   // Install a Linux package. If successfully started, a system notification
@@ -61,7 +62,7 @@ class CrostiniPackageService : public KeyedService,
   void InstallLinuxPackage(
       const std::string& vm_name,
       const std::string& container_name,
-      const std::string& package_path,
+      const storage::FileSystemURL& package_url,
       CrostiniManager::InstallLinuxPackageCallback callback);
 
   // LinuxPackageOperationProgressObserver:
@@ -118,6 +119,16 @@ class CrostiniPackageService : public KeyedService,
   void UpdatePackageOperationStatus(const ContainerId& container_id,
                                     PackageOperationStatus status,
                                     int progress_percent);
+
+  // Callback between sharing and invoking GetLinuxPackageInfo().
+  void OnSharePathForGetLinuxPackageInfo(
+      const std::string& vm_name,
+      const std::string& container_name,
+      const storage::FileSystemURL& package_url,
+      const base::FilePath& package_path,
+      CrostiniManager::GetLinuxPackageInfoCallback callback,
+      bool share_success,
+      std::string share_failure_reason);
 
   // Wraps the callback provided in GetLinuxPackageInfo().
   void OnGetLinuxPackageInfo(

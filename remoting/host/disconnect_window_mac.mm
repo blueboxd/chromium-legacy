@@ -29,6 +29,21 @@
 
 const int kMaximumConnectedNameWidthInPixels = 600;
 
+namespace {
+
+bool IsDarkMode() {
+  if (@available(macOS 10.14, *)) {
+    NSAppearanceName appearance =
+        [[NSApp effectiveAppearance] bestMatchFromAppearancesWithNames:@[
+          NSAppearanceNameAqua, NSAppearanceNameDarkAqua
+        ]];
+    return [appearance isEqual:NSAppearanceNameDarkAqua];
+  }
+  return false;
+}
+
+}  // namespace
+
 namespace remoting {
 
 class DisconnectWindowMac : public HostWindow {
@@ -264,15 +279,28 @@ std::unique_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
   NSBezierPath *path = [NSBezierPath bezierPathWithRoundedRect:bounds
                                                        xRadius:5
                                                        yRadius:5];
-  NSColor *gray = [NSColor colorWithCalibratedWhite:0.91 alpha:1.0];
-  [gray setFill];
+  NSColor* bgColor;
+  NSColor* frameColor;
+  NSColor* lineColor;
+  NSColor* lineShadowColor;
+  if (IsDarkMode()) {
+    bgColor = [NSColor colorWithCalibratedWhite:0.2 alpha:1.0];
+    frameColor = [NSColor colorWithCalibratedWhite:0.91 alpha:1.0];
+    lineColor = [NSColor colorWithCalibratedWhite:0.91 alpha:1.0];
+    lineShadowColor = [NSColor colorWithCalibratedWhite:0.32 alpha:1.0];
+  } else {
+    bgColor = [NSColor colorWithCalibratedWhite:0.91 alpha:1.0];
+    frameColor = [NSColor colorWithCalibratedRed:0.13
+                                           green:0.69
+                                            blue:0.11
+                                           alpha:1.0];
+    lineColor = [NSColor colorWithCalibratedWhite:0.70 alpha:1.0];
+    lineShadowColor = [NSColor colorWithCalibratedWhite:0.97 alpha:1.0];
+  }
+  [bgColor setFill];
   [path fill];
   [path setLineWidth:4];
-  NSColor *green = [NSColor colorWithCalibratedRed:0.13
-                                             green:0.69
-                                              blue:0.11
-                                             alpha:1.0];
-  [green setStroke];
+  [frameColor setStroke];
   [path stroke];
 
 
@@ -280,9 +308,6 @@ std::unique_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
   const CGFloat kHeight = 21.0;
   const CGFloat kBaseInset = 12.0;
   const CGFloat kDragHandleWidth = 5.0;
-
-  NSColor *dark = [NSColor colorWithCalibratedWhite:0.70 alpha:1.0];
-  NSColor *light = [NSColor colorWithCalibratedWhite:0.97 alpha:1.0];
 
   // Turn off aliasing so it's nice and crisp.
   NSGraphicsContext *context = [NSGraphicsContext currentContext];
@@ -299,7 +324,7 @@ std::unique_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
   path = [NSBezierPath bezierPath];
   [path moveToPoint:top];
   [path lineToPoint:bottom];
-  [dark setStroke];
+  [lineColor setStroke];
   [path stroke];
 
   top.x += 1;
@@ -307,7 +332,7 @@ std::unique_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
   path = [NSBezierPath bezierPath];
   [path moveToPoint:top];
   [path lineToPoint:bottom];
-  [light setStroke];
+  [lineShadowColor setStroke];
   [path stroke];
 
   top.x += 2;
@@ -315,7 +340,7 @@ std::unique_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
   path = [NSBezierPath bezierPath];
   [path moveToPoint:top];
   [path lineToPoint:bottom];
-  [dark setStroke];
+  [lineColor setStroke];
   [path stroke];
 
   top.x += 1;
@@ -323,7 +348,7 @@ std::unique_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
   path = [NSBezierPath bezierPath];
   [path moveToPoint:top];
   [path lineToPoint:bottom];
-  [light setStroke];
+  [lineShadowColor setStroke];
   [path stroke];
 
   [context setShouldAntialias:alias];

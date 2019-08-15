@@ -57,7 +57,7 @@ class MEDIA_GPU_EXPORT CodecSurfaceBundle
   // The last updated layout rect position for the |overlay|.
   gfx::Rect layout_rect_;
 
-  base::WeakPtrFactory<CodecSurfaceBundle> weak_factory_;
+  base::WeakPtrFactory<CodecSurfaceBundle> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CodecSurfaceBundle);
 };

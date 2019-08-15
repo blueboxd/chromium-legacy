@@ -235,11 +235,17 @@ tab_ranker::WindowFeatures TabMetricsLogger::CreateWindowFeatures(
 
   WindowMetricsEvent::Type window_type = WindowMetricsEvent::TYPE_UNKNOWN;
   switch (browser->type()) {
-    case Browser::TYPE_TABBED:
+    case Browser::TYPE_NORMAL:
       window_type = WindowMetricsEvent::TYPE_TABBED;
       break;
     case Browser::TYPE_POPUP:
       window_type = WindowMetricsEvent::TYPE_POPUP;
+      break;
+    case Browser::TYPE_APP:
+      window_type = WindowMetricsEvent::TYPE_APP;
+      break;
+    case Browser::TYPE_DEVTOOLS:
+      window_type = WindowMetricsEvent::TYPE_APP;
       break;
     default:
       NOTREACHED();

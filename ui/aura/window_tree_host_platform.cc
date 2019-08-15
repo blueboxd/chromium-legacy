@@ -242,12 +242,7 @@ void WindowTreeHostPlatform::DispatchEvent(ui::Event* event) {
 }
 
 void WindowTreeHostPlatform::OnCloseRequest() {
-#if defined(OS_WIN)
-  // TODO: this obviously shouldn't be here.
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
-#else
   OnHostCloseRequested();
-#endif
 }
 
 void WindowTreeHostPlatform::OnClosed() {}

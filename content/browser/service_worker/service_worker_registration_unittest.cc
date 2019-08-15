@@ -173,8 +173,7 @@ class MockServiceWorkerRegistrationObject
 class ServiceWorkerRegistrationTest : public testing::Test {
  public:
   ServiceWorkerRegistrationTest()
-      : thread_bundle_(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
-                       TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void SetUp() override {
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
@@ -571,6 +570,8 @@ TEST_P(ServiceWorkerActivationTest, NoInflightRequest) {
   scoped_refptr<ServiceWorkerRegistration> reg = registration();
   scoped_refptr<ServiceWorkerVersion> version_1 = reg->active_version();
   scoped_refptr<ServiceWorkerVersion> version_2 = reg->waiting_version();
+  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+  reg->SetTaskRunnerForTest(runner);
 
   // Remove the controllee. Since there is an in-flight request,
   // activation should not yet happen.
@@ -587,9 +588,7 @@ TEST_P(ServiceWorkerActivationTest, NoInflightRequest) {
   RequestTermination(&version_1_client()->host());
 
   TestServiceWorkerObserver observer(helper_->context_wrapper());
-  observer.RunUntilStatusChange(version_2.get(),
-                                ServiceWorkerVersion::ACTIVATED);
-  EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, version_2->status());
+  observer.RunUntilActivated(version_2.get(), runner);
   EXPECT_EQ(version_2.get(), reg->active_version());
 }
 

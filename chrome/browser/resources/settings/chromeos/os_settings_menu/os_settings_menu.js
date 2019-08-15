@@ -27,6 +27,15 @@ Polymer({
       value: loadTimeData.getBoolean('isGuest'),
       readOnly: true,
     },
+
+    showApps: Boolean,
+
+    showAndroidApps: Boolean,
+
+    showCrostini: Boolean,
+
+    showReset: Boolean,
+
   },
 
   /** @param {!settings.Route} newRoute */

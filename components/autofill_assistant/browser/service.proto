@@ -833,6 +833,11 @@ message UseAddressProto {
 
     // Delay between two key presses when simlulating.
     optional int32 delay_in_millisecond = 4 [default = 20];
+
+    // Fill in the fill even if it's non-empty. This is useful to work around
+    // cases where the way autofill sets the field doesn't work on the website.
+    // Usually used together with simulate_key_presses.
+    optional bool forced = 5;
   }
 
   // An optional name to allow to handle multiple addresses selection (for
@@ -852,12 +857,42 @@ message UseAddressProto {
 
 // Fill a form with a credit card if there is, otherwise fail this action.
 message UseCreditCardProto {
+  // Message used to indicate what form fields should be filled with what
+  // information.
+  message RequiredField {
+    enum CardField {
+      UNDEFINED = 0;
+      CREDIT_CARD_VERIFICATION_CODE = 1;
+      CREDIT_CARD_EXP_MONTH = 2;
+      CREDIT_CARD_EXP_2_DIGIT_YEAR = 3;
+      CREDIT_CARD_EXP_4_DIGIT_YEAR = 4;
+    }
+
+    optional CardField card_field = 1;
+
+    optional ElementReferenceProto element = 2;
+
+    // Whether we should simulate actual key presses when filling |element| with
+    // its corresponding value.
+    optional bool simulate_key_presses = 3;
+
+    // Delay between two key presses when simlulating.
+    optional int32 delay_in_millisecond = 4 [default = 20];
+
+    // Fill in the fill even if it's non-empty. This is useful to work around
+    // cases where the way autofill sets the field doesn't work on the website.
+    // Usually used together with simulate_key_presses.
+    optional bool forced = 5;
+  }
+
   // An optional message to show to the user when asking to select a card.
   // TODO(crbug.com/806868): Make the prompt a required field.
   optional string prompt = 1;
 
   // A reference to the card number field in the form that should be filled.
   optional ElementReferenceProto form_field_element = 3;
+
+  repeated RequiredField required_fields = 7;
 }
 
 // Ask Chrome to wait for an element in the DOM. This can be used to only

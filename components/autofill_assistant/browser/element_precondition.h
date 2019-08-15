@@ -49,7 +49,7 @@ class ElementPrecondition {
 
   base::OnceCallback<void(bool)> callback_;
 
-  base::WeakPtrFactory<ElementPrecondition> weak_ptr_factory_;
+  base::WeakPtrFactory<ElementPrecondition> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ElementPrecondition);
 };

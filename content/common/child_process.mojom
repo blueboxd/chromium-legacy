@@ -5,6 +5,7 @@
 module content.mojom;
 
 import "components/tracing/common/background_tracing_agent.mojom";
+import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/generic_pending_receiver.mojom";
 import "services/service_manager/public/mojom/service.mojom";
 
@@ -85,4 +86,8 @@ interface ChildProcess {
   // Whether or not the interface type encapsulated by |receiver| is supported
   // depends on the process type and potentially on the Content embedder.
   BindReceiver(mojo_base.mojom.GenericPendingReceiver receiver);
+
+  // Sets the coverage file for the child process.
+  [EnableIf=clang_coverage]
+  SetCoverageFile(mojo_base.mojom.File file);
 };

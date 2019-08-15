@@ -77,8 +77,8 @@ class WindowPlacementPrefUpdate : public DictionaryPrefUpdate {
 
 std::string GetWindowName(const Browser* browser) {
   if (browser->app_name().empty()) {
-    return browser->is_type_popup() ? prefs::kBrowserWindowPlacementPopup
-                                    : prefs::kBrowserWindowPlacement;
+    return browser->is_type_normal() ? prefs::kBrowserWindowPlacement
+                                     : prefs::kBrowserWindowPlacementPopup;
   }
   return browser->app_name();
 }
@@ -114,9 +114,7 @@ const base::DictionaryValue* GetWindowPlacementDictionaryReadOnly(
 bool ShouldSaveWindowPlacement(const Browser* browser) {
   // Only save the window placement of popups if the window is from a trusted
   // source (v1 app, devtools, or system window).
-  return (browser->type() == Browser::TYPE_TABBED) ||
-         ((browser->type() == Browser::TYPE_POPUP) &&
-          browser->is_trusted_source());
+  return (browser->is_type_normal() || browser->is_trusted_source());
 }
 
 bool SavedBoundsAreContentBounds(const Browser* browser) {
@@ -124,12 +122,12 @@ bool SavedBoundsAreContentBounds(const Browser* browser) {
   // Web apps, on the other hand, have the same behavior as popups, and save
   // their content bounds.
   bool is_app_with_window_bounds =
-      browser->is_app() &&
+      browser->deprecated_is_app() &&
       !web_app::AppBrowserController::IsForWebAppBrowser(browser);
 
   // Pop ups such as devtools should behave as per other windows with persisted
   // sizes - treating the saved bounds as window bounds.
-  return browser->is_type_popup() && !is_app_with_window_bounds &&
+  return !browser->is_type_normal() && !is_app_with_window_bounds &&
          !browser->is_trusted_source();
 }
 

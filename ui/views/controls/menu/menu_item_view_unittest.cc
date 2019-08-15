@@ -324,7 +324,7 @@ TEST_F(MenuItemViewPaintUnitTest, MinorTextAndIconAssertionCoverage) {
   auto AddItem = [this](auto label, auto minor_label, auto minor_icon) {
     menu_item_view()->AddMenuItemAt(
         0, 1000, base::ASCIIToUTF16(label), base::string16(), minor_label,
-        minor_icon, gfx::ImageSkia(), views::MenuItemView::NORMAL,
+        minor_icon, gfx::ImageSkia(), nullptr, views::MenuItemView::NORMAL,
         ui::NORMAL_SEPARATOR);
   };
   AddItem("No minor content", base::string16(), nullptr);

@@ -26,6 +26,8 @@
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_sample_types.h"
+#include "media/base/channel_layout.h"
+#include "media/base/channel_mixer.h"
 #include "media/base/vector_math.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -102,27 +104,32 @@ const char kTestPipelineJsonTemplate[] = R"json(
   "postprocessors": {
     "output_streams": [{
       "streams": [ "default" ],
+      "num_input_channels": 2,
       "processors": [{
         "processor": "%s",
         "config": { "delay": %d }
       }]
     }, {
       "streams": [ "assistant-tts" ],
+      "num_input_channels": 2,
       "processors": [{
         "processor": "%s",
         "config": { "delay": %d }
       }]
     }, {
       "streams": [ "communications" ],
+      "num_input_channels": 2,
       "processors": []
     }],
     "mix": {
+      "num_input_channels": 2,
       "processors": [{
         "processor": "%s",
         "config": { "delay": %d }
        }]
     },
     "linearize": {
+      "num_input_channels": 2,
       "processors": [{
         "processor": "%s",
         "config": { "delay": %d }
@@ -155,6 +162,9 @@ class MockMixerOutput : public MixerOutputStream {
     ON_CALL(*this, GetSampleRate())
         .WillByDefault(
             testing::Invoke(this, &MockMixerOutput::GetSampleRateImpl));
+    ON_CALL(*this, GetNumChannels())
+        .WillByDefault(
+            testing::Invoke(this, &MockMixerOutput::GetNumChannelsImpl));
     ON_CALL(*this, GetRenderingDelay())
         .WillByDefault(
             testing::Invoke(this, &MockMixerOutput::GetRenderingDelayImpl));
@@ -166,6 +176,7 @@ class MockMixerOutput : public MixerOutputStream {
   }
 
   MOCK_METHOD2(Start, bool(int, int));
+  MOCK_METHOD0(GetNumChannels, int());
   MOCK_METHOD0(GetSampleRate, int());
   MOCK_METHOD0(GetRenderingDelay,
                MediaPipelineBackend::AudioDecoder::RenderingDelay());
@@ -180,10 +191,12 @@ class MockMixerOutput : public MixerOutputStream {
 
  private:
   bool StartImpl(int requested_sample_rate, int channels) {
+    channels_ = channels;
     sample_rate_ = requested_sample_rate;
     return true;
   }
 
+  int GetNumChannelsImpl() { return channels_; }
   int GetSampleRateImpl() { return sample_rate_; }
 
   MediaPipelineBackend::AudioDecoder::RenderingDelay GetRenderingDelayImpl() {
@@ -200,6 +213,7 @@ class MockMixerOutput : public MixerOutputStream {
     return true;
   }
 
+  int channels_ = 0;
   int sample_rate_ = 0;
   std::vector<float> data_;
 };
@@ -302,6 +316,7 @@ void CompareAudioData(const ::media::AudioBus& expected,
                       const ::media::AudioBus& actual) {
   ASSERT_EQ(expected.channels(), actual.channels());
   ASSERT_EQ(expected.frames(), actual.frames());
+
   for (int c = 0; c < expected.channels(); ++c) {
     const float* expected_data = expected.channel(c);
     const float* actual_data = actual.channel(c);
@@ -546,6 +561,145 @@ TEST_F(StreamMixerTest, OneStreamMixesProperly) {
   auto actual = ::media::AudioBus::Create(kNumChannels, kNumFrames);
   ASSERT_GE(mock_output_->data().size(), static_cast<size_t>(kNumFrames));
   ToPlanar(mock_output_->data().data(), kNumFrames, actual.get());
+  auto expected = GetMixedAudioData(&input);
+  CompareAudioData(*expected, *actual);
+
+  mixer_.reset();
+}
+
+TEST_F(StreamMixerTest, OneStreamStereoInput6ChannelOutput) {
+  mixer_->SetNumOutputChannelsForTest(6);
+
+  MockMixerSource input(kTestSamplesPerSecond);
+
+  EXPECT_CALL(input, InitializeAudioPlayback(_, _)).Times(1);
+  EXPECT_CALL(*mock_output_, Start(kTestSamplesPerSecond, 6)).Times(1);
+  EXPECT_CALL(*mock_output_, Stop()).Times(0);
+  mixer_->AddInput(&input);
+  WaitForMixer();
+  mock_output_->ClearData();
+
+  // Populate the stream with data.
+  const int kNumFrames = 32;
+  input.SetData(GetTestData(0));
+
+  EXPECT_CALL(input, FillAudioPlaybackFrames(_, _, _)).Times(1);
+  PlaybackOnce();
+
+  // Get the actual mixed output, and compare it against the expected stream.
+  // The stream should match exactly.
+  auto actual = ::media::AudioBus::Create(6, kNumFrames);
+  ASSERT_GE(mock_output_->data().size(), static_cast<size_t>(kNumFrames * 6));
+  ToPlanar(mock_output_->data().data(), kNumFrames, actual.get());
+
+  auto expected = GetMixedAudioData(&input);
+
+  // Upmix stereo input to 5.1 before comparing.
+  ::media::ChannelMixer channel_mixer(
+      ::media::ChannelLayout::CHANNEL_LAYOUT_STEREO,
+      ::media::ChannelLayout::CHANNEL_LAYOUT_5_1);
+  auto expected_5_1 = ::media::AudioBus::Create(6, expected->frames());
+  channel_mixer.Transform(expected.get(), expected_5_1.get());
+  CompareAudioData(*expected_5_1, *actual);
+
+  mixer_.reset();
+}
+
+TEST_F(StreamMixerTest, OneStreamStereoInput6ChannelFilters) {
+  const char k6ChannelPostprocessorJson[] = R"json(
+{
+  "postprocessors": {
+    "mix": {
+      "streams": [ "default" ],
+      "num_input_channels": 6,
+      "processors": []
+    }
+  }
+}
+)json";
+
+  mixer_->EnableDynamicChannelCountForTest(true);
+  mixer_->SetNumOutputChannelsForTest(6);
+  auto factory = std::make_unique<MockPostProcessorFactory>();
+  mixer_->ResetPostProcessorsForTest(std::move(factory),
+                                     k6ChannelPostprocessorJson);
+
+  MockMixerSource input(kTestSamplesPerSecond);
+
+  EXPECT_CALL(input, InitializeAudioPlayback(_, _)).Times(1);
+  EXPECT_CALL(*mock_output_, Start(kTestSamplesPerSecond, 6)).Times(1);
+  EXPECT_CALL(*mock_output_, Stop()).Times(0);
+  mixer_->AddInput(&input);
+  WaitForMixer();
+  mock_output_->ClearData();
+
+  // Populate the stream with data.
+  const int kNumFrames = 32;
+  input.SetData(GetTestData(0));
+
+  EXPECT_CALL(input, FillAudioPlaybackFrames(_, _, _)).Times(1);
+  PlaybackOnce();
+
+  // Get the actual mixed output, and compare it against the expected stream.
+  // The stream should match exactly.
+  auto actual = ::media::AudioBus::Create(6, kNumFrames);
+  ASSERT_GE(mock_output_->data().size(), static_cast<size_t>(kNumFrames * 6));
+  ToPlanar(mock_output_->data().data(), kNumFrames, actual.get());
+
+  auto expected = GetMixedAudioData(&input);
+
+  // Upmix stereo input to 5.1 before comparing.
+  ::media::ChannelMixer channel_mixer(
+      ::media::ChannelLayout::CHANNEL_LAYOUT_STEREO,
+      ::media::ChannelLayout::CHANNEL_LAYOUT_5_1);
+  auto expected_5_1 = ::media::AudioBus::Create(6, expected->frames());
+  channel_mixer.Transform(expected.get(), expected_5_1.get());
+  CompareAudioData(*expected_5_1, *actual);
+
+  mixer_.reset();
+}
+
+TEST_F(StreamMixerTest, OneStreamStereoInput6ChannelFiltersStereoOutput) {
+  const char k6ChannelPostprocessorJson[] = R"json(
+{
+  "postprocessors": {
+    "mix": {
+      "streams": [ "default" ],
+      "num_input_channels": 6,
+      "processors": []
+    }
+  }
+}
+)json";
+
+  mixer_->EnableDynamicChannelCountForTest(true);
+  mixer_->SetNumOutputChannelsForTest(2);
+  auto factory = std::make_unique<MockPostProcessorFactory>();
+  mixer_->ResetPostProcessorsForTest(std::move(factory),
+                                     k6ChannelPostprocessorJson);
+
+  MockMixerSource input(kTestSamplesPerSecond);
+
+  EXPECT_CALL(input, InitializeAudioPlayback(_, _)).Times(1);
+  EXPECT_CALL(*mock_output_, Start(kTestSamplesPerSecond, 2)).Times(1);
+  EXPECT_CALL(*mock_output_, Stop()).Times(0);
+  mixer_->AddInput(&input);
+  WaitForMixer();
+  mock_output_->ClearData();
+
+  // Populate the stream with data.
+  const int kNumFrames = 32;
+  input.SetData(GetTestData(0));
+
+  EXPECT_CALL(input, FillAudioPlaybackFrames(_, _, _)).Times(1);
+  PlaybackOnce();
+
+  // Get the actual mixed output, and compare it against the expected stream.
+  // The stream should match exactly.
+  auto actual = ::media::AudioBus::Create(2, kNumFrames);
+  ASSERT_GE(mock_output_->data().size(), static_cast<size_t>(kNumFrames * 2));
+  ToPlanar(mock_output_->data().data(), kNumFrames, actual.get());
+
   auto expected = GetMixedAudioData(&input);
   CompareAudioData(*expected, *actual);
 

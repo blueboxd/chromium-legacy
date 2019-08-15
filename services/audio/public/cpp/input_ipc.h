@@ -20,7 +20,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace audio {
 
@@ -30,7 +29,7 @@ namespace audio {
 class InputIPC : public media::AudioInputIPC,
                  public media::mojom::AudioInputStreamClient {
  public:
-  InputIPC(std::unique_ptr<service_manager::Connector> connector,
+  InputIPC(mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory,
            const std::string& device_id,
            mojo::PendingRemote<media::mojom::AudioLog> log);
   ~InputIPC() override;

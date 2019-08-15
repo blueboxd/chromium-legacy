@@ -72,7 +72,7 @@ void ImmersiveModeControllerAsh::Init(BrowserView* browser_view) {
   browser_view_->GetNativeWindow()->SetProperty(
       ash::kImmersiveWindowType,
       static_cast<int>(
-          browser_view_->browser()->is_app()
+          browser_view_->browser()->deprecated_is_app()
               ? ash::ImmersiveFullscreenController::WINDOW_TYPE_HOSTED_APP
               : ash::ImmersiveFullscreenController::WINDOW_TYPE_BROWSER));
 }

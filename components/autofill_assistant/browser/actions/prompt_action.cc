@@ -19,7 +19,7 @@
 namespace autofill_assistant {
 
 PromptAction::PromptAction(ActionDelegate* delegate, const ActionProto& proto)
-    : Action(delegate, proto), weak_ptr_factory_(this) {
+    : Action(delegate, proto) {
   DCHECK(proto_.has_prompt());
 }
 

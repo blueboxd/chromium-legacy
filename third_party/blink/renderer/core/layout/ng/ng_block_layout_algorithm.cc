@@ -2152,13 +2152,12 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
   // properties to calculate the line-left offset, we also need to calculate its
   // inline size first.
   if (!is_new_fc && needs_inline_size) {
-    NGConstraintSpace space =
-        NGConstraintSpaceBuilder(ConstraintSpace(),
-                                 child_style.GetWritingMode(),
-                                 /* is_new_fc */ false)
-            .SetAvailableSize(child_available_size_)
-            .SetPercentageResolutionSize(child_percentage_size_)
-            .ToConstraintSpace();
+    NGConstraintSpaceBuilder builder(ConstraintSpace(),
+                                     child_style.GetWritingMode(),
+                                     /* is_new_fc */ false);
+    builder.SetAvailableSize(child_available_size_);
+    builder.SetPercentageResolutionSize(child_percentage_size_);
+    NGConstraintSpace space = builder.ToConstraintSpace();
 
     NGBoxStrut child_border_padding =
         ComputeBorders(space, child) + ComputePadding(space, child.Style());
@@ -2193,9 +2192,9 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
                              child_writing_mode))
     builder.SetIsShrinkToFit(child_style.LogicalWidth().IsAuto());
 
-  builder.SetAvailableSize(child_available_size)
-      .SetPercentageResolutionSize(child_percentage_size_)
-      .SetReplacedPercentageResolutionSize(replaced_child_percentage_size_);
+  builder.SetAvailableSize(child_available_size);
+  builder.SetPercentageResolutionSize(child_percentage_size_);
+  builder.SetReplacedPercentageResolutionSize(replaced_child_percentage_size_);
 
   if (Node().IsTableCell()) {
     // If we have a fixed block-size we are in the "layout" phase.
@@ -2211,8 +2210,8 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   if (NGBaseline::ShouldPropagateBaselines(child))
     builder.AddBaselineRequests(ConstraintSpace().BaselineRequests());
 
-  builder.SetBfcOffset(child_data.bfc_offset_estimate)
-      .SetMarginStrut(child_data.margin_strut);
+  builder.SetBfcOffset(child_data.bfc_offset_estimate);
+  builder.SetMarginStrut(child_data.margin_strut);
 
   bool has_bfc_block_offset = container_builder_.BfcBlockOffset().has_value();
 

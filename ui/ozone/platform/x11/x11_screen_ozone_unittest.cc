@@ -12,7 +12,7 @@
 #include "ui/base/x/x11_display_manager.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
-#include "ui/events/platform/x11/x11_event_source_libevent.h"
+#include "ui/events/platform/x11/x11_event_source_default.h"
 #include "ui/ozone/platform/x11/x11_window_manager_ozone.h"
 #include "ui/ozone/platform/x11/x11_window_ozone.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
@@ -56,7 +56,7 @@ class X11ScreenOzoneTest : public testing::Test {
 
   void SetUp() override {
     XDisplay* display = gfx::GetXDisplay();
-    event_source_ = std::make_unique<X11EventSourceLibevent>(display);
+    event_source_ = std::make_unique<X11EventSourceDefault>(display);
     window_manager_ = std::make_unique<X11WindowManagerOzone>();
     primary_display_ = std::make_unique<display::Display>(
         NextDisplayId(), kPrimaryDisplayBounds);
@@ -113,7 +113,7 @@ class X11ScreenOzoneTest : public testing::Test {
   std::unique_ptr<X11WindowManagerOzone> window_manager_;
   std::unique_ptr<display::Display> primary_display_;
   std::unique_ptr<X11ScreenOzone> screen_;
-  std::unique_ptr<X11EventSourceLibevent> event_source_;
+  std::unique_ptr<X11EventSourceDefault> event_source_;
   std::unique_ptr<base::test::ScopedTaskEnvironment> task_env_;
 
   DISALLOW_COPY_AND_ASSIGN(X11ScreenOzoneTest);

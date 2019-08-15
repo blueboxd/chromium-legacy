@@ -571,8 +571,7 @@ class TestRunner {
                       size_t batch_size = 1u)
       : launcher_(launcher),
         runner_count_(runner_count),
-        batch_size_(batch_size),
-        weak_ptr_factory_(this) {}
+        batch_size_(batch_size) {}
 
   // Sets |test_names| to be run, with |batch_size| tests per process.
   // Posts LaunchNextTask |runner_count| number of times, each with a separate
@@ -616,7 +615,7 @@ class TestRunner {
   const size_t batch_size_;
   RunLoop run_loop_;
 
-  base::WeakPtrFactory<TestRunner> weak_ptr_factory_;
+  base::WeakPtrFactory<TestRunner> weak_ptr_factory_{this};
 };
 
 void TestRunner::Run(const std::vector<std::string>& test_names) {

@@ -25,11 +25,28 @@ function getInViewPoint(element) {
   while (element.parentElement != null &&
          element.parentElement != document.body &&
          element.parentElement.getClientRects().length > 0) {
+    var parentStyle = window.getComputedStyle(element.parentElement);
+    var overflow = parentStyle.getPropertyValue("overflow");
+    var overflowX = parentStyle.getPropertyValue("overflow-x");
+    var overflowY = parentStyle.getPropertyValue("overflow-y");
     var parentRect = getParentRect(element);
-    left = Math.max(left, parentRect.left);
-    right = Math.min(right, parentRect.right);
-    top = Math.max(top, parentRect.top);
-    bottom = Math.min(bottom, parentRect.bottom);
+    if (overflow == "auto" || overflow == "scroll" || overflow == "hidden") {
+      left = Math.max(left, parentRect.left);
+      right = Math.min(right, parentRect.right);
+      top = Math.max(top, parentRect.top);
+      bottom = Math.min(bottom, parentRect.bottom);
+    } else {
+      if (overflowX == "auto" || overflowX == "scroll" ||
+          overflowX == "hidden") {
+        left = Math.max(left, parentRect.left);
+        right = Math.min(right, parentRect.right);
+      }
+      if (overflowY == "auto" || overflowY == "scroll" ||
+          overflowY == "hidden") {
+        top = Math.max(top, parentRect.top);
+        bottom = Math.min(bottom, parentRect.bottom);
+      }
+    }
     element = element.parentElement;
   }
 

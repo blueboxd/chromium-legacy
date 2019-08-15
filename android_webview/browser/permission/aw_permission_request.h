@@ -75,7 +75,7 @@ class AwPermissionRequest {
   JavaObjectWeakGlobalRef java_ref_;
 
   bool processed_;
-  base::WeakPtrFactory<AwPermissionRequest> weak_factory_;
+  base::WeakPtrFactory<AwPermissionRequest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AwPermissionRequest);
 };

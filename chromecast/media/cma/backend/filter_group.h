@@ -25,6 +25,7 @@ class AudioBus;
 
 namespace chromecast {
 namespace media {
+class InterleavedChannelMixer;
 class MixerInput;
 class PostProcessingPipeline;
 
@@ -45,6 +46,13 @@ class FilterGroup {
               std::unique_ptr<PostProcessingPipeline> pipeline);
 
   ~FilterGroup();
+
+  int num_channels() const { return num_channels_; }
+  float last_volume() const { return last_volume_; }
+  std::string name() const { return name_; }
+  AudioContentType content_type() const { return content_type_; }
+  int input_frames_per_write() const { return input_frames_per_write_; }
+  int input_samples_per_second() const { return input_samples_per_second_; }
 
   // |input| will be recursively mixed into this FilterGroup's input buffer when
   // MixAndFilter() is called. Registering a FilterGroup as an input to more
@@ -85,11 +93,6 @@ class FilterGroup {
   // MixAndFilter() is called.
   float* GetOutputBuffer();
 
-  // Get the last used volume.
-  float last_volume() const { return last_volume_; }
-
-  std::string name() const { return name_; }
-
   // Returns number of audio output channels from the filter group.
   int GetOutputChannelCount() const;
 
@@ -104,8 +107,9 @@ class FilterGroup {
   // Sets the active channel for post processors.
   void UpdatePlayoutChannel(int playout_channel);
 
-  // Get content type
-  AudioContentType content_type() const { return content_type_; }
+  // Determines whether this group is still ringing out after all input streams
+  // have stopped playing.
+  bool IsRinging() const;
 
   // Recursively print the layout of the pipeline.
   void PrintTopology() const;
@@ -113,21 +117,25 @@ class FilterGroup {
   // Add |stream_type| to the list of streams this processor handles.
   void AddStreamType(const std::string& stream_type);
 
-  int input_frames_per_write() const { return input_frames_per_write_; }
-  int input_samples_per_second() const { return input_samples_per_second_; }
-
  private:
-  // Resizes temp_buffers_ and mixed_.
+  struct GroupInput {
+    GroupInput(FilterGroup* group,
+               std::unique_ptr<InterleavedChannelMixer> channel_mixer);
+    GroupInput(GroupInput&& other);
+    ~GroupInput();
+
+    FilterGroup* group;
+    std::unique_ptr<InterleavedChannelMixer> channel_mixer;
+  };
+
   void ResizeBuffers();
-  void AddTempBuffer(int num_channels, int num_frames);
 
   const int num_channels_;
   const std::string name_;
-  std::vector<FilterGroup*> mixed_inputs_;
+  std::vector<GroupInput> mixed_inputs_;
   std::vector<std::string> stream_types_;
   base::flat_set<MixerInput*> active_inputs_;
 
-  int playout_channel_selection_ = kChannelAll;
   AudioPostProcessor2::Config output_config_;
   int input_samples_per_second_ = 0;
   int input_frames_per_write_ = 0;
@@ -140,7 +148,7 @@ class FilterGroup {
   // Buffers that hold audio data while it is mixed.
   // These are kept as members of this class to minimize copies and
   // allocations.
-  std::vector<std::unique_ptr<::media::AudioBus>> temp_buffers_;
+  std::unique_ptr<::media::AudioBus> temp_buffer_;
   std::unique_ptr<::media::AudioBus> mixed_;
 
   // Interleaved data must be aligned to 16 bytes.

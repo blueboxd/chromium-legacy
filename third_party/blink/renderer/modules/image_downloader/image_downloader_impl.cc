@@ -187,6 +187,7 @@ void ImageDownloaderImpl::DidDownloadImage(
 }
 
 void ImageDownloaderImpl::Dispose() {
+  image_fetchers_.clear();
   receiver_.reset();
 }
 
@@ -235,9 +236,9 @@ void ImageDownloaderImpl::Trace(Visitor* visitor) {
 void ImageDownloaderImpl::ContextDestroyed(ExecutionContext*) {
   for (const auto& fetchers : image_fetchers_) {
     // Will run callbacks with an empty image vector.
-    fetchers->OnRenderFrameDestruct();
+    fetchers->Dispose();
   }
-  image_fetchers_.clear();
+  Dispose();
 }
 
 }  // namespace blink

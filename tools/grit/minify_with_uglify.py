@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import os
 import sys
 import tempfile
@@ -26,7 +28,8 @@ def Minify(source):
     result = outfile.read()
     return result
 
-if __name__ == '__main__':
+
+def main():
   orig_stdout = sys.stdout
   result = ''
   try:
@@ -34,4 +37,8 @@ if __name__ == '__main__':
     result = Minify(sys.stdin.read())
   finally:
     sys.stdout = orig_stdout
-    print result
+    print(result)
+
+
+if __name__ == '__main__':
+  main()

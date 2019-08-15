@@ -986,7 +986,7 @@ if (enable_java_templates) {
         }
       }
 
-      if (!defined(invoker.proguard_jar_path) || use_r8) {
+      if (!defined(invoker.proguard_jar_path)) {
         if (defined(invoker.proguard_jar_path)) {
           not_needed(invoker, [ "proguard_jar_path" ])
         }
@@ -1083,7 +1083,7 @@ if (enable_java_templates) {
     _proguard_enabled =
         defined(invoker.proguard_enabled) && invoker.proguard_enabled
     _proguarding_with_r8 =
-        _proguard_enabled && (!defined(invoker.proguard_jar_path) || use_r8)
+        _proguard_enabled && !defined(invoker.proguard_jar_path)
     _enable_multidex =
         !defined(invoker.enable_multidex) || invoker.enable_multidex
     _enable_main_dex_list =

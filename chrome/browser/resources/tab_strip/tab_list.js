@@ -51,6 +51,8 @@ class TabListElement extends CustomElement {
       }
       this.tabsContainerElement_.appendChild(fragment);
 
+      this.tabsApiHandler_.onActivated.addListener(
+          this.onTabActivated_.bind(this));
       this.tabsApiHandler_.onCreated.addListener(this.onTabCreated_.bind(this));
       this.tabsApiHandler_.onRemoved.addListener(this.onTabRemoved_.bind(this));
       this.tabsApiHandler_.onUpdated.addListener(this.onTabUpdated_.bind(this));
@@ -87,6 +89,27 @@ class TabListElement extends CustomElement {
   insertTabAt_(tabElement, index, opt_parent) {
     (opt_parent || this.tabsContainerElement_)
         .insertBefore(tabElement, this.tabsContainerElement_.children[index]);
+  }
+
+  /**
+   * @param {!TabActivatedInfo} activeInfo
+   * @private
+   */
+  onTabActivated_(activeInfo) {
+    if (activeInfo.windowId !== this.windowId_) {
+      return;
+    }
+
+    const previouslyActiveTab =
+        this.tabsContainerElement_.querySelector('tabstrip-tab[active]');
+    if (previouslyActiveTab) {
+      previouslyActiveTab.tab = /** @type {!Tab} */ (
+          Object.assign({}, previouslyActiveTab.tab, {active: false}));
+    }
+
+    const newlyActiveTab = this.findTabElement_(activeInfo.tabId);
+    newlyActiveTab.tab = /** @type {!Tab} */ (
+        Object.assign({}, newlyActiveTab.tab, {active: true}));
   }
 
   /**

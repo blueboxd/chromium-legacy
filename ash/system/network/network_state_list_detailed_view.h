@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/login_status.h"
+#include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/tray/tray_detailed_view.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -19,21 +20,16 @@ class Button;
 }
 
 namespace ash {
-
-class TrayNetworkStateModel;
-
 namespace tray {
 
 // Exported for tests.
-class ASH_EXPORT NetworkStateListDetailedView : public TrayDetailedView {
+class ASH_EXPORT NetworkStateListDetailedView
+    : public TrayDetailedView,
+      public TrayNetworkStateModel::Observer {
  public:
   ~NetworkStateListDetailedView() override;
 
   void Init();
-
-  // Called when the contents of the network list have changed or when any
-  // Manager properties (e.g. technology state) have changed.
-  void Update();
 
   void ToggleInfoBubbleForTesting();
 
@@ -55,8 +51,17 @@ class ASH_EXPORT NetworkStateListDetailedView : public TrayDetailedView {
   // leaves |guid| unchanged and returns |false|.
   virtual bool IsNetworkEntry(views::View* view, std::string* guid) const = 0;
 
+  // Called when the network model changes or when a network icon changes.
+  void Update();
+
+  TrayNetworkStateModel* model() { return model_; }
+
  private:
   class InfoBubble;
+
+  // TrayNetworkStateModel::Observer:
+  void ActiveNetworkStateChanged() override;
+  void NetworkListChanged() override;
 
   // TrayDetailedView:
   void HandleViewClicked(views::View* view) override;

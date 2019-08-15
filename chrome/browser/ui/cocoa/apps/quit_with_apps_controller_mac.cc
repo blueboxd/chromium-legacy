@@ -135,7 +135,7 @@ bool QuitWithAppsController::ShouldQuit() {
   if (hosted_app_quit_notification_) {
     bool hosted_apps_open = false;
     for (Browser* browser : *BrowserList::GetInstance()) {
-      if (!browser->is_app())
+      if (!browser->deprecated_is_app())
         continue;
 
       ExtensionRegistry* registry = ExtensionRegistry::Get(browser->profile());

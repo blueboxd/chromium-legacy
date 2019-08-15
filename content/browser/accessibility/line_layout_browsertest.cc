@@ -68,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityLineLayoutBrowserTest,
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kLoadComplete);
   GURL url(embedded_test_server()->GetURL("/accessibility/lines/lines.html"));
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   waiter.WaitForNotification();
 
   WebContentsImpl* web_contents =

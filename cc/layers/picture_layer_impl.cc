@@ -106,11 +106,20 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl,
 PictureLayerImpl::~PictureLayerImpl() {
   if (twin_layer_)
     twin_layer_->twin_layer_ = nullptr;
+
   // We only track PaintWorklet-containing PictureLayerImpls on the pending
   // tree. However this deletion may happen outside the commit flow when we are
   // on the recycle tree instead, so just check !IsActiveTree().
   if (!paint_worklet_records_.empty() && !layer_tree_impl()->IsActiveTree())
     layer_tree_impl()->NotifyLayerHasPaintWorkletsChanged(this, false);
+
+  // Similarly, AnimatedPaintWorkletTracker is only valid on the pending tree.
+  if (!layer_tree_impl()->IsActiveTree()) {
+    layer_tree_impl()
+        ->paint_worklet_tracker()
+        .UpdatePaintWorkletInputProperties({}, this);
+  }
+
   layer_tree_impl()->UnregisterPictureLayerImpl(this);
 
   // Unregister for all images on the current raster source.
@@ -673,10 +682,17 @@ void PictureLayerImpl::UpdateRasterSource(
     UnregisterAnimatedImages();
 
     // When the display list changes, the set of PaintWorklets may also change.
-    if (pending_paint_worklet_records)
+    if (pending_paint_worklet_records) {
       paint_worklet_records_ = *pending_paint_worklet_records;
-    else
-      SetPaintWorkletInputs(raster_source->GetPaintWorkletInputs());
+    } else {
+      if (raster_source->GetDisplayItemList()) {
+        SetPaintWorkletInputs(raster_source->GetDisplayItemList()
+                                  ->discardable_image_map()
+                                  .paint_worklet_inputs());
+      } else {
+        SetPaintWorkletInputs({});
+      }
+    }
   }
 
   // The |raster_source_| is initially null, so have to check for that for the
@@ -1584,10 +1600,10 @@ PictureLayerImpl::InvalidateRegionForImages(
 }
 
 void PictureLayerImpl::SetPaintWorkletRecord(
-    scoped_refptr<PaintWorkletInput> input,
+    scoped_refptr<const PaintWorkletInput> input,
     sk_sp<PaintRecord> record) {
   DCHECK(paint_worklet_records_.find(input) != paint_worklet_records_.end());
-  paint_worklet_records_[input] = std::move(record);
+  paint_worklet_records_[input].second = std::move(record);
 }
 
 void PictureLayerImpl::RegisterAnimatedImages() {
@@ -1619,12 +1635,23 @@ void PictureLayerImpl::UnregisterAnimatedImages() {
 }
 
 void PictureLayerImpl::SetPaintWorkletInputs(
-    const std::vector<scoped_refptr<PaintWorkletInput>>& inputs) {
+    const std::vector<DiscardableImageMap::PaintWorkletInputWithImageId>&
+        inputs) {
+  // PaintWorklets are not supported when committing directly to the active
+  // tree, so in that case the |inputs| should always be empty.
+  DCHECK(layer_tree_impl()->IsPendingTree() || inputs.empty());
+
   bool had_paint_worklets = !paint_worklet_records_.empty();
   PaintWorkletRecordMap new_records;
-  for (const auto& input : inputs) {
+  for (const auto& input_with_id : inputs) {
+    const auto& input = input_with_id.first;
+    const auto& paint_image_id = input_with_id.second;
+    auto it = new_records.find(input);
+    // We should never have multiple PaintImages sharing the same paint worklet.
+    DCHECK(it == new_records.end() || it->second.first == paint_image_id);
     // Attempt to re-use an existing PaintRecord if possible.
-    new_records[input] = std::move(paint_worklet_records_[input]);
+    new_records[input] = std::make_pair(
+        paint_image_id, std::move(paint_worklet_records_[input].second));
   }
   paint_worklet_records_.swap(new_records);
 
@@ -1633,8 +1660,28 @@ void PictureLayerImpl::SetPaintWorkletInputs(
   bool has_paint_worklets = !paint_worklet_records_.empty();
   if ((has_paint_worklets != had_paint_worklets) &&
       layer_tree_impl()->IsPendingTree()) {
+    // TODO(xidachen): We don't need additional tracking on LayerTreeImpl. The
+    // tracking in AnimatedPaintWorkletTracker should be enough.
     layer_tree_impl()->NotifyLayerHasPaintWorkletsChanged(this,
                                                           has_paint_worklets);
+  }
+  if (layer_tree_impl()->IsPendingTree()) {
+    layer_tree_impl()
+        ->paint_worklet_tracker()
+        .UpdatePaintWorkletInputProperties(inputs, this);
+  }
+}
+
+void PictureLayerImpl::InvalidatePaintWorklets(
+    const PaintWorkletInput::PropertyKey& key) {
+  for (auto& entry : paint_worklet_records_) {
+    const std::vector<PaintWorkletInput::PropertyKey>& prop_ids =
+        entry.first->GetPropertyKeys();
+    // If the PaintWorklet depends on the property whose value was changed by
+    // the animation system, then invalidate its associated PaintRecord so that
+    // we can repaint the PaintWorklet during impl side invalidation.
+    if (base::Contains(prop_ids, key))
+      entry.second.second = nullptr;
   }
 }
 

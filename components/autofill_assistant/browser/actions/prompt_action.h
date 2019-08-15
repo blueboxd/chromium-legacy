@@ -69,7 +69,7 @@ class PromptAction : public Action {
 
   std::unique_ptr<base::RepeatingTimer> timer_;
 
-  base::WeakPtrFactory<PromptAction> weak_ptr_factory_;
+  base::WeakPtrFactory<PromptAction> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PromptAction);
 };

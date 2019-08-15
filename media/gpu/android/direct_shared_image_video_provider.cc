@@ -89,8 +89,7 @@ void DirectSharedImageVideoProvider::RequestImage(
 }
 
 GpuSharedImageVideoFactory::GpuSharedImageVideoFactory(
-    SharedImageVideoProvider::GetStubCB get_stub_cb)
-    : weak_factory_(this) {
+    SharedImageVideoProvider::GetStubCB get_stub_cb) {
   DETACH_FROM_THREAD(thread_checker_);
   stub_ = get_stub_cb.Run();
   if (stub_)

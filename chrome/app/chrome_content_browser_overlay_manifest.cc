@@ -49,7 +49,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom.h"
-#include "chromeos/assistant/buildflags.h"  // nogncheck
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
 #include "chromeos/services/device_sync/public/cpp/manifest.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
@@ -59,9 +58,6 @@
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"  // nogncheck
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
 #include "media/capture/video/chromeos/mojom/cros_image_capture.mojom.h"
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-#include "chromeos/services/assistant/public/cpp/manifest.h"  // nogncheck
-#endif
 #endif
 
 #if defined(OS_WIN)
@@ -117,6 +113,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability("ash", "test")
         .RequireCapability("ash", "display")
         .RequireCapability("assistant", "assistant")
+        .RequireCapability("assistant_audio_decoder", "assistant:audio_decoder")
         // Only used in the classic Ash case
         .RequireCapability("chrome", "input_device_controller")
         .RequireCapability("chrome_printing", "converter")
@@ -236,9 +233,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
 #if defined(OS_CHROMEOS)
         .PackageService(chromeos::device_sync::GetManifest())
         .PackageService(chromeos::multidevice_setup::GetManifest())
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-        .PackageService(chromeos::assistant::GetManifest())
-#endif
 #endif  // defined(OS_CHROMEOS)
 #if !defined(OS_ANDROID)
         .PackageService(apps::GetManifest())

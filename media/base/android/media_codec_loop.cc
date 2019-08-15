@@ -47,8 +47,7 @@ MediaCodecLoop::MediaCodecLoop(
       media_codec_(std::move(media_codec)),
       pending_input_buf_index_(kInvalidBufferIndex),
       sdk_int_(sdk_int),
-      disable_timer_(disable_timer),
-      weak_factory_(this) {
+      disable_timer_(disable_timer) {
   if (timer_task_runner)
     io_timer_.SetTaskRunner(timer_task_runner);
   // TODO(liberato): should this DCHECK?

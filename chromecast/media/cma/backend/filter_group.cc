@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chromecast/media/cma/backend/interleaved_channel_mixer.h"
 #include "chromecast/media/cma/backend/mixer_input.h"
 #include "chromecast/media/cma/backend/post_processing_pipeline.h"
 #include "media/base/audio_bus.h"
@@ -17,6 +18,14 @@
 
 namespace chromecast {
 namespace media {
+
+FilterGroup::GroupInput::GroupInput(
+    FilterGroup* group,
+    std::unique_ptr<InterleavedChannelMixer> channel_mixer)
+    : group(group), channel_mixer(std::move(channel_mixer)) {}
+
+FilterGroup::GroupInput::GroupInput(GroupInput&& other) = default;
+FilterGroup::GroupInput::~GroupInput() = default;
 
 FilterGroup::FilterGroup(int num_channels,
                          const std::string& name,
@@ -28,7 +37,8 @@ FilterGroup::FilterGroup(int num_channels,
 FilterGroup::~FilterGroup() = default;
 
 void FilterGroup::AddMixedInput(FilterGroup* input) {
-  mixed_inputs_.push_back(input);
+  // Channel mixers are created in Initialize().
+  mixed_inputs_.emplace_back(input, std::unique_ptr<InterleavedChannelMixer>());
   DCHECK_EQ(input->GetOutputChannelCount(), num_channels_);
 }
 
@@ -54,8 +64,11 @@ void FilterGroup::Initialize(const AudioPostProcessor2::Config& output_config) {
   input_config.output_sample_rate = input_samples_per_second_;
   input_config.output_frames_per_write = input_frames_per_write_;
 
-  for (FilterGroup* input : mixed_inputs_) {
-    input->Initialize(input_config);
+  for (auto& input : mixed_inputs_) {
+    input.group->Initialize(input_config);
+    input.channel_mixer = std::make_unique<InterleavedChannelMixer>(
+        ::media::GuessChannelLayout(input.group->GetOutputChannelCount()),
+        ::media::GuessChannelLayout(num_channels_), input_frames_per_write_);
   }
   post_processing_pipeline_->SetContentType(content_type_);
   active_inputs_.clear();
@@ -70,9 +83,6 @@ void FilterGroup::Initialize(const AudioPostProcessor2::Config& output_config) {
 
 void FilterGroup::AddInput(MixerInput* input) {
   active_inputs_.insert(input);
-  if (mixed_) {
-    AddTempBuffer(input->num_channels(), mixed_->frames());
-  }
 }
 
 void FilterGroup::RemoveInput(MixerInput* input) {
@@ -92,10 +102,10 @@ float FilterGroup::MixAndFilter(
   rendering_delay_to_output_ = rendering_delay;
 
   // Recursively mix inputs.
-  for (auto* filter_group : mixed_inputs_) {
-    volume = std::max(volume, filter_group->MixAndFilter(
+  for (const auto& filter_group : mixed_inputs_) {
+    volume = std::max(volume, filter_group.group->MixAndFilter(
                                   input_frames_per_write_, rendering_delay));
-    content_type = std::max(content_type, filter_group->content_type());
+    content_type = std::max(content_type, filter_group.group->content_type());
   }
 
   // |volume| can only be 0 if no |mixed_inputs_| have data.
@@ -120,20 +130,13 @@ float FilterGroup::MixAndFilter(
   // Mix InputQueues
   mixed_->ZeroFramesPartial(0, input_frames_per_write_);
   for (MixerInput* input : active_inputs_) {
-    DCHECK_LT(input->num_channels(), static_cast<int>(temp_buffers_.size()));
-    DCHECK(temp_buffers_[input->num_channels()]);
-    ::media::AudioBus* temp = temp_buffers_[input->num_channels()].get();
+    ::media::AudioBus* temp = temp_buffer_.get();
     int filled =
         input->FillAudioData(input_frames_per_write_, rendering_delay, temp);
     if (filled > 0) {
-      int in_c = 0;
-      for (int out_c = 0; out_c < num_channels_; ++out_c) {
-        input->VolumeScaleAccumulate(temp->channel(in_c), filled,
-                                     mixed_->channel(out_c));
-        ++in_c;
-        if (in_c >= input->num_channels()) {
-          in_c = 0;
-        }
+      for (int c = 0; c < num_channels_; ++c) {
+        input->VolumeScaleAccumulate(temp->channel(c), filled,
+                                     mixed_->channel(c));
       }
 
       volume = std::max(volume, input->InstantaneousVolume());
@@ -145,21 +148,13 @@ float FilterGroup::MixAndFilter(
       input_frames_per_write_, interleaved_.data());
 
   // Mix FilterGroups
-  for (FilterGroup* group : mixed_inputs_) {
-    if (group->last_volume() > 0.0f) {
-      ::media::vector_math::FMAC(group->GetOutputBuffer(), 1.0f,
-                                 input_frames_per_write_ * num_channels_,
-                                 interleaved_.data());
-    }
-  }
-
-  if (playout_channel_selection_ != kChannelAll) {
-    // Duplicate selected channel to all channels.
-    float* data = interleaved_.data();
-    for (int f = 0; f < input_frames_per_write_; ++f) {
-      float selected = data[f * num_channels_ + playout_channel_selection_];
-      for (int c = 0; c < num_channels_; ++c)
-        data[f * num_channels_ + c] = selected;
+  for (const auto& input : mixed_inputs_) {
+    if (input.group->last_volume() > 0.0f) {
+      float* buffer = input.channel_mixer->Transform(
+          input.group->GetOutputBuffer(), input_frames_per_write_);
+      for (int i = 0; i < input_frames_per_write_ * num_channels_; ++i) {
+        interleaved_[i] += buffer[i];
+      }
     }
   }
 
@@ -205,22 +200,10 @@ int FilterGroup::GetOutputChannelCount() const {
 void FilterGroup::ResizeBuffers() {
   mixed_ = ::media::AudioBus::Create(num_channels_, input_frames_per_write_);
   mixed_->Zero();
-  temp_buffers_.clear();
-  for (MixerInput* input : active_inputs_) {
-    AddTempBuffer(input->num_channels(), input_frames_per_write_);
-  }
+  temp_buffer_ =
+      ::media::AudioBus::Create(num_channels_, input_frames_per_write_);
+  temp_buffer_->Zero();
   interleaved_.assign(input_frames_per_write_ * num_channels_, 0.0f);
-}
-
-void FilterGroup::AddTempBuffer(int num_channels, int num_frames) {
-  if (static_cast<int>(temp_buffers_.size()) <= num_channels) {
-    temp_buffers_.resize(num_channels + 1);
-  }
-  if (!temp_buffers_[num_channels]) {
-    temp_buffers_[num_channels] =
-        ::media::AudioBus::Create(num_channels, num_frames);
-    temp_buffers_[num_channels]->Zero();
-  }
 }
 
 void FilterGroup::SetPostProcessorConfig(const std::string& name,
@@ -234,18 +217,18 @@ void FilterGroup::UpdatePlayoutChannel(int playout_channel) {
                << playout_channel;
     return;
   }
-  if (name_ == "linearize") {
-    // We only do playout channel selection in the "linearize" group.
-    playout_channel_selection_ = playout_channel;
-  }
   post_processing_pipeline_->UpdatePlayoutChannel(playout_channel);
+}
+
+bool FilterGroup::IsRinging() const {
+  return post_processing_pipeline_->IsRinging();
 }
 
 void FilterGroup::PrintTopology() const {
   std::string filter_groups;
-  for (const FilterGroup* mixed_input : mixed_inputs_) {
-    mixed_input->PrintTopology();
-    filter_groups += "[GROUP]" + mixed_input->name() + ", ";
+  for (const auto& mixed_input : mixed_inputs_) {
+    mixed_input.group->PrintTopology();
+    filter_groups += "[GROUP]" + mixed_input.group->name() + ", ";
   }
 
   std::string input_groups;

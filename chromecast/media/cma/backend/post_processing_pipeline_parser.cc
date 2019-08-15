@@ -4,6 +4,8 @@
 
 #include "chromecast/media/cma/backend/post_processing_pipeline_parser.h"
 
+#include <utility>
+
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/values.h"
@@ -22,19 +24,25 @@ const char kMixPipelineKey[] = "mix";
 const char kLinearizePipelineKey[] = "linearize";
 const char kProcessorsKey[] = "processors";
 const char kStreamsKey[] = "streams";
+const char kNumInputChannelsKey[] = "num_input_channels";
 
 }  // namespace
 
 StreamPipelineDescriptor::StreamPipelineDescriptor(
     const base::Value* pipeline_in,
-    const base::Value* stream_types_in)
-    : pipeline(pipeline_in), stream_types(stream_types_in) {}
+    const base::Value* stream_types_in,
+    const base::Optional<int> num_input_channels_in)
+    : pipeline(pipeline_in),
+      stream_types(stream_types_in),
+      num_input_channels(std::move(num_input_channels_in)) {}
 
 StreamPipelineDescriptor::~StreamPipelineDescriptor() = default;
 
 StreamPipelineDescriptor::StreamPipelineDescriptor(
     const StreamPipelineDescriptor& other)
-    : StreamPipelineDescriptor(other.pipeline, other.stream_types) {}
+    : StreamPipelineDescriptor(other.pipeline,
+                               other.stream_types,
+                               other.num_input_channels) {}
 
 PostProcessingPipelineParser::PostProcessingPipelineParser(
     std::unique_ptr<base::DictionaryValue> config_dict)
@@ -93,7 +101,11 @@ PostProcessingPipelineParser::GetStreamPipelines() {
         kStreamsKey, base::Value::Type::LIST);
     CHECK(streams_list);
 
-    descriptors.emplace_back(processors_list, streams_list);
+    auto num_input_channels =
+        pipeline_description_dict.FindIntKey(kNumInputChannelsKey);
+
+    descriptors.emplace_back(processors_list, streams_list,
+                             std::move(num_input_channels));
   }
   return descriptors;
 }
@@ -113,7 +125,7 @@ StreamPipelineDescriptor PostProcessingPipelineParser::GetPipelineByKey(
       !postprocessor_config_->GetDictionary(key, &stream_dict)) {
     LOG(WARNING) << "No post-processor description found for \"" << key
                  << "\" in " << file_path_ << ". Using passthrough.";
-    return StreamPipelineDescriptor(nullptr, nullptr);
+    return StreamPipelineDescriptor(nullptr, nullptr, base::nullopt);
   }
   const base::Value* processors_list =
       stream_dict->FindKeyOfType(kProcessorsKey, base::Value::Type::LIST);
@@ -122,7 +134,9 @@ StreamPipelineDescriptor PostProcessingPipelineParser::GetPipelineByKey(
   const base::Value* streams_list =
       stream_dict->FindKeyOfType(kStreamsKey, base::Value::Type::LIST);
 
-  return StreamPipelineDescriptor(processors_list, streams_list);
+  return StreamPipelineDescriptor(
+      processors_list, streams_list,
+      stream_dict->FindIntKey(kNumInputChannelsKey));
 }
 
 base::FilePath PostProcessingPipelineParser::GetFilePath() const {

@@ -35,11 +35,11 @@ NGConstraintSpace CreateIndefiniteConstraintSpaceForChild(
                                    child.CreatesNewFormattingContext());
   SetOrthogonalFallbackInlineSizeIfNeeded(container_style, child, &builder);
 
-  return builder.SetAvailableSize(indefinite_size)
-      .SetPercentageResolutionSize(indefinite_size)
-      .SetReplacedPercentageResolutionSize(indefinite_size)
-      .SetIsIntermediateLayout(true)
-      .ToConstraintSpace();
+  builder.SetAvailableSize(indefinite_size);
+  builder.SetPercentageResolutionSize(indefinite_size);
+  builder.SetReplacedPercentageResolutionSize(indefinite_size);
+  builder.SetIsIntermediateLayout(true);
+  return builder.ToConstraintSpace();
 }
 
 void SetOrthogonalFallbackInlineSizeIfNeeded(

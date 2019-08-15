@@ -1709,7 +1709,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_V1AppNavigation) {
   for (BrowserList::const_reverse_iterator it =
            browser_list->begin_last_active();
        it != browser_list->end_last_active() && !app_browser; ++it) {
-    if ((*it)->is_app()) {
+    if ((*it)->deprecated_is_app()) {
       app_browser = *it;
       break;
     }

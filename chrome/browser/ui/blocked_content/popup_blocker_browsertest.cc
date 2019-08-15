@@ -235,7 +235,7 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
       EXPECT_NE(browser, new_browser);
       web_contents = new_browser->tab_strip_model()->GetActiveWebContents();
       if (what_to_expect == kExpectNewWindow)
-        EXPECT_TRUE(new_browser->is_type_tabbed());
+        EXPECT_TRUE(new_browser->is_type_normal());
     } else {
       tab_add.Wait();
       new_browser = browser;

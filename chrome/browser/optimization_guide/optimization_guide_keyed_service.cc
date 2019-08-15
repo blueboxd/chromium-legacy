@@ -66,6 +66,12 @@ void OptimizationGuideKeyedService::Initialize(
           ->GetURLLoaderFactoryForBrowserProcess());
 }
 
+void OptimizationGuideKeyedService::MaybeLoadHintForNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (hints_manager_ && hints_manager_->HasRegisteredOptimizationTypes())
+    hints_manager_->LoadHintForNavigation(navigation_handle, base::DoNothing());
+}
+
 void OptimizationGuideKeyedService::RegisterOptimizationTypes(
     std::vector<optimization_guide::proto::OptimizationType>
         optimization_types) {
@@ -74,10 +80,17 @@ void OptimizationGuideKeyedService::RegisterOptimizationTypes(
   hints_manager_->RegisterOptimizationTypes(optimization_types);
 }
 
-void OptimizationGuideKeyedService::MaybeLoadHintForNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (hints_manager_ && hints_manager_->HasRegisteredOptimizationTypes())
-    hints_manager_->LoadHintForNavigation(navigation_handle, base::DoNothing());
+optimization_guide::OptimizationGuideDecision
+OptimizationGuideKeyedService::CanApplyOptimization(
+    content::NavigationHandle* navigation_handle,
+    optimization_guide::OptimizationTarget optimization_target,
+    optimization_guide::proto::OptimizationType optimization_type,
+    optimization_guide::OptimizationMetadata* optimization_metadata) {
+  DCHECK(hints_manager_);
+
+  return hints_manager_->CanApplyOptimization(
+      navigation_handle, optimization_target, optimization_type,
+      optimization_metadata);
 }
 
 void OptimizationGuideKeyedService::Shutdown() {

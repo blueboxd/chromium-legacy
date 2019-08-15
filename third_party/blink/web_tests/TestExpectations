@@ -241,20 +241,7 @@ crbug.com/857490 virtual/scroll_customization/fast/events/touch/gesture/pad-gest
 crbug.com/857490 virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Skip ]
 crbug.com/857490 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Skip ]
 
-# Currently on main thread scrolling path, scrollend gets fired without waiting for scroll/fling snap animation. (The virtual/threaded version of the test passes.)
-crbug.com/907601 fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
-crbug.com/907601 virtual/scroll_customization/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
-crbug.com/907601 external/wpt/dom/events/scrolling/scrollend-event-fired-after-snap.html [ Skip ]
-
 crbug.com/980969 [ Mac ] http/tests/input/discard-events-to-unstable-iframe.html [ Pass Failure ]
-
-# Display locking, run highlight-display-locked.js only with display locking.
-crbug.com/882663 http/tests/devtools/elements/highlight/highlight-display-locked.js [ Skip ]
-crbug.com/882663 http/tests/devtools/elements/highlight [ Skip ]
-
-# Display locking, run css-get-platform-fonts-display-locked.js only with display locking.
-crbug.com/882663 inspector-protocol/css/css-get-platform-fonts-display-locked.js [ Skip ]
-crbug.com/882663 inspector-protocol/css [ Skip ]
 
 # Display locking failures
 crbug.com/955533 wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
@@ -353,6 +340,10 @@ crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrol
 crbug.com/922249 virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure Pass ]
 
 # ====== Layout team owned tests from here ======
+
+crbug.com/992950 external/wpt/css/css-layout-api/constraints-data.https.html [ Failure ]
+crbug.com/992950 external/wpt/css/css-layout-api/fragment-data-immutable.https.html [ Failure ]
+crbug.com/992950 external/wpt/css/css-layout-api/fragment-data.https.html [ Failure ]
 
 crbug.com/711704 external/wpt/css/CSS2/floats/floats-rule3-outside-left-002.xht [ Failure ]
 crbug.com/711704 external/wpt/css/CSS2/floats/floats-rule3-outside-right-002.xht [ Failure ]
@@ -2308,9 +2299,6 @@ crbug.com/567837 virtual/scalefactor200withzoom/fast/hidpi/static/popup-menu-wit
 crbug.com/389648 crbug.com/517123 crbug.com/410145 fast/text-autosizing/table-inflation-crash.html [ Pass Crash Timeout ]
 
 crbug.com/876732 [ Win ] fast/dom/HTMLImageElement/image-srcset-w-onerror.html [ Failure Pass ]
-
-# This test needs the mock nfc service to be ready for wpt tests.
-crbug.com/520391 external/wpt/web-nfc/NFCReader-manual.https.html [ Skip ]
 
 # These tests only pass with --enable-threaded-compositing.
 crbug.com/770028 external/wpt/dom/events/document-level-wheel-event-listener-passive-by-default-manual.html [ Skip ]
@@ -5201,6 +5189,10 @@ crbug.com/766404 [ Mac ] plugins/keyboard-events.html [ Pass Failure ]
 # This was previously skipped on Windows in the section for crbug.com/757165
 crbug.com/775957 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Skip ]
 
+# Canvas tests that are affected by change to Skia GPU rect shadow rendering.
+crbug.com/990918 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Pass Failure ]
+crbug.com/990918 virtual/gpu/fast/canvas/canvas-composite-shadow.html [ Pass Failure ]
+
 # Sheriff failures 2017-09-21
 crbug.com/767469 http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
 crbug.com/767469 virtual/blink-cors/http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
@@ -6365,8 +6357,6 @@ crbug.com/986477 [ Win ] virtual/samesite-by-default-cookies/external/wpt/cookie
 crbug.com/987269 [ Linux ] virtual/audio-service/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Pass Failure ]
 crbug.com/987269 [ Linux ] virtual/audio-service/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Pass Failure ]
 # Sheriff 2019-07-24
-crbug.com/987108 [ Mac ] fast/forms/select/disabled-select-change-index.html [ Failure ]
-crbug.com/987132 [ Mac ] fast/forms/select/option-strip-whitespace.html [ Failure ]
 crbug.com/986282 external/wpt/client-hints/accept-ch-lifetime.tentative.https.html [ Pass Failure ]
 crbug.com/987138 [ Linux Win ] media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
 crbug.com/987138 [ Linux Win ] virtual/audio-service/media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
@@ -6454,6 +6444,7 @@ crbug.com/856601 [ Linux ] external/wpt/generic-sensor/idlharness.https.window.h
 crbug.com/856601 [ Linux ] external/wpt/secure-contexts/idlharness.any.html [ Pass Timeout ]
 
 # Sheriff 2019-08-14
+crbug.com/993671 [ Win ] http/tests/media/video-frame-size-change.html [ Pass Failure ]
 crbug.com/993671 [ Win ] virtual/audio-service/http/tests/media/video-frame-size-change.html [ Pass Failure ]
 
 #Sheriff 2019-08-12

@@ -88,7 +88,7 @@ class AwProxyingRestrictedCookieManager
   int process_id_;
   int frame_id_;
 
-  base::WeakPtrFactory<AwProxyingRestrictedCookieManager> weak_factory_;
+  base::WeakPtrFactory<AwProxyingRestrictedCookieManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AwProxyingRestrictedCookieManager);
 };

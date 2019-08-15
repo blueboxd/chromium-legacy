@@ -16,7 +16,7 @@ namespace autofill_assistant {
 
 FocusElementAction::FocusElementAction(ActionDelegate* delegate,
                                        const ActionProto& proto)
-    : Action(delegate, proto), weak_ptr_factory_(this) {
+    : Action(delegate, proto) {
   DCHECK(proto_.has_focus_element());
 }
 

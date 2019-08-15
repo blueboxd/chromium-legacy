@@ -51,7 +51,7 @@ class AwHttpAuthHandler : public content::LoginDelegate,
   std::string host_;
   std::string realm_;
   LoginAuthRequiredCallback callback_;
-  base::WeakPtrFactory<AwHttpAuthHandler> weak_factory_;
+  base::WeakPtrFactory<AwHttpAuthHandler> weak_factory_{this};
 };
 
 }  // namespace android_webview

@@ -92,7 +92,6 @@ class PagePopup;
 class PagePopupClient;
 class PopupOpeningObserver;
 class WebDragData;
-class WebLayerTreeView;
 class WebViewImpl;
 
 struct DateTimeChooserParameters;
@@ -446,7 +445,9 @@ class CORE_EXPORT ChromeClient
 
   virtual void InstallSupplements(LocalFrame&);
 
-  virtual WebLayerTreeView* GetWebLayerTreeView(LocalFrame*) { return nullptr; }
+  virtual viz::FrameSinkId GetFrameSinkId(LocalFrame*) {
+    return viz::FrameSinkId();
+  }
 
   virtual void RequestDecode(LocalFrame*,
                              const PaintImage& image,

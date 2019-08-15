@@ -745,7 +745,8 @@ void CupsPrintersHandler::OnAddedOrEditedPrinterCommon(
       UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.PrinterAdded",
                                 printer.GetProtocol(), Printer::kProtocolMax);
       PRINTER_LOG(USER) << "Performing printer setup";
-      printers_manager_->PrinterInstalled(printer, is_automatic);
+      printers_manager_->PrinterInstalled(printer, is_automatic,
+                                          PrinterSetupSource::kSettings);
       printers_manager_->SavePrinter(printer);
       if (printer.IsUsbProtocol()) {
         // Record UMA for USB printer setup source.

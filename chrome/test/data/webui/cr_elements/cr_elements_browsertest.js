@@ -651,7 +651,7 @@ var CrElementsViewManagerTest = class extends CrElementsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../extensions/test_util.js',
+      '../test_util.js',
       'cr_view_manager_test.js',
     ]);
   }

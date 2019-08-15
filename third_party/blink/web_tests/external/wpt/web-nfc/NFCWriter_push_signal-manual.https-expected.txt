@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Synchronously signaled abort. assert_throws: function "function() { throw e }" threw object "NotSupportedError: No NFC adapter or cannot establish connection." that is not a DOMException AbortError: property "code" is equal to 9, expected 20
-Harness: the test ran to completion.
-

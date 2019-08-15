@@ -45,7 +45,7 @@ class SetFormFieldValueAction : public Action {
                                        int next,
                                        const ClientStatus& status);
 
-  base::WeakPtrFactory<SetFormFieldValueAction> weak_ptr_factory_;
+  base::WeakPtrFactory<SetFormFieldValueAction> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SetFormFieldValueAction);
 };

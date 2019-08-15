@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/public/mojom/constants.mojom.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -34,10 +33,8 @@
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
 #include "libassistant/shared/public/media_manager.h"
 #include "mojo/public/mojom/base/time.mojom.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -128,12 +125,13 @@ ash::mojom::AssistantTimerState GetTimerState(
 }  // namespace
 
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
-    service_manager::Connector* connector,
+    mojom::Client* client,
     device::mojom::BatteryMonitorPtr battery_monitor,
     Service* service,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info)
-    : media_session_(std::make_unique<AssistantMediaSession>(connector, this)),
+    : client_(client),
+      media_session_(std::make_unique<AssistantMediaSession>(client_, this)),
       action_module_(std::make_unique<action::CrosActionModule>(
           this,
           assistant::features::IsAppSupportEnabled(),
@@ -147,14 +145,15 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       weak_factory_(this) {
   background_thread_.Start();
   platform_api_ = std::make_unique<PlatformApiImpl>(
-      connector, media_session_.get(), std::move(battery_monitor),
+      client_, media_session_.get(), std::move(battery_monitor),
       service_->main_task_runner(), background_thread_.task_runner(),
       service->assistant_state()->locale().value());
 
-  media_session::mojom::MediaControllerManagerPtr controller_manager_ptr;
-  connector->BindInterface(media_session::mojom::kServiceName,
-                           mojo::MakeRequest(&controller_manager_ptr));
-  controller_manager_ptr->CreateActiveMediaController(
+  mojo::Remote<media_session::mojom::MediaControllerManager>
+      media_controller_manager;
+  client->RequestMediaControllerManager(
+      media_controller_manager.BindNewPipeAndPassReceiver());
+  media_controller_manager->CreateActiveMediaController(
       mojo::MakeRequest(&media_controller_));
 }
 

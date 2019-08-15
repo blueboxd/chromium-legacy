@@ -247,9 +247,7 @@ class BrowserView : public BrowserWindow,
 
   // Returns true if the Browser object associated with this BrowserView is a
   // tabbed-type window (i.e. a browser window, not an app or popup).
-  bool IsBrowserTypeNormal() const {
-    return browser_->is_type_tabbed();
-  }
+  bool IsBrowserTypeNormal() const { return browser_->is_type_normal(); }
 
   // Returns true if the Browser object associated with this BrowserView is a
   // for an installed hosted app.

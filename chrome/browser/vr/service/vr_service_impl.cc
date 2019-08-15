@@ -299,6 +299,20 @@ void VRServiceImpl::RequestSession(
     return;
   }
 
+  // Check if there is the user has already granted consent earlier for this
+  // device. If they did, skip the prompt.
+  auto opt_device_id = runtime_manager_->GetRuntimeIdForOptions(options.get());
+  if (!opt_device_id) {
+    std::move(callback).Run(
+        device::mojom::RequestSessionResult::NewFailureReason(
+            device::mojom::RequestSessionError::NO_RUNTIME_FOUND));
+    return;
+  }
+  if (IsConsentGrantedForDevice(opt_device_id.value())) {
+    DoRequestSession(std::move(options), std::move(callback));
+    return;
+  }
+
   // TODO(crbug.com/968233): Unify the below consent flow.
 #if defined(OS_ANDROID)
 
@@ -378,6 +392,15 @@ void VRServiceImpl::OnConsentResult(
             device::mojom::RequestSessionError::USER_DENIED_CONSENT));
     return;
   }
+
+  auto opt_device_id = runtime_manager_->GetRuntimeIdForOptions(options.get());
+  if (!opt_device_id) {
+    std::move(callback).Run(
+        device::mojom::RequestSessionResult::NewFailureReason(
+            device::mojom::RequestSessionError::NO_RUNTIME_FOUND));
+    return;
+  }
+  AddConsentGrantedDevice(opt_device_id.value());
 
   // Re-check for another client instance after a potential user consent.
   if (runtime_manager_->IsOtherClientPresenting(this)) {
@@ -557,6 +580,18 @@ bool VRServiceImpl::IsSecureContextRequirementSatisfied() {
   if (!requires_secure_context)
     return true;
   return IsSecureContext(render_frame_host_);
+}
+
+bool VRServiceImpl::IsConsentGrantedForDevice(
+    device::mojom::XRDeviceId device_id) {
+  return consent_granted_devices_.find(device_id) !=
+         consent_granted_devices_.end();
+}
+
+void VRServiceImpl::AddConsentGrantedDevice(
+    device::mojom::XRDeviceId device_id) {
+  DCHECK(!IsConsentGrantedForDevice(device_id));
+  consent_granted_devices_.insert(device_id);
 }
 
 }  // namespace vr

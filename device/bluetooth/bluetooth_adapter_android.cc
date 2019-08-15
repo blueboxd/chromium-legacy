@@ -271,8 +271,7 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
   }
 }
 
-BluetoothAdapterAndroid::BluetoothAdapterAndroid() : weak_ptr_factory_(this) {
-}
+BluetoothAdapterAndroid::BluetoothAdapterAndroid() {}
 
 BluetoothAdapterAndroid::~BluetoothAdapterAndroid() {
   Java_ChromeBluetoothAdapter_onBluetoothAdapterAndroidDestruction(

@@ -53,7 +53,7 @@ class OfflinePageShareHelper {
   ResultCallback result_cb_;
   ContentId content_id_;
 
-  base::WeakPtrFactory<OfflinePageShareHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<OfflinePageShareHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageShareHelper);
 };

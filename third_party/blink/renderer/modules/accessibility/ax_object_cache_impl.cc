@@ -1250,7 +1250,7 @@ bool AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
   if (attr_name != kRoleAttr && attr_name != kTypeAttr &&
       attr_name != kSizeAttr && attr_name != kAltAttr &&
       attr_name != kTitleAttr &&
-      (attr_name != kForAttr && !IsHTMLLabelElement(*element)) &&
+      (attr_name != kForAttr && !IsA<HTMLLabelElement>(*element)) &&
       attr_name != kIdAttr && attr_name != kTabindexAttr &&
       attr_name != kDisabledAttr &&
       !attr_name.LocalName().StartsWith("aria-")) {
@@ -1288,7 +1288,7 @@ void AXObjectCacheImpl::HandleAttributeChangedWithCleanLayout(
     HandleRoleChangeIfNotEditableWithCleanLayout(element);
   } else if (attr_name == kAltAttr || attr_name == kTitleAttr) {
     TextChangedWithCleanLayout(element);
-  } else if (attr_name == kForAttr && IsHTMLLabelElement(*element)) {
+  } else if (attr_name == kForAttr && IsA<HTMLLabelElement>(*element)) {
     LabelChangedWithCleanLayout(element);
   } else if (attr_name == kIdAttr) {
     MaybeNewRelationTarget(element, Get(element));

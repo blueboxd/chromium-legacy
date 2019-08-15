@@ -20,7 +20,7 @@ using base::android::ScopedJavaLocalRef;
 
 namespace device {
 
-UsbServiceAndroid::UsbServiceAndroid() : UsbService(), weak_factory_(this) {
+UsbServiceAndroid::UsbServiceAndroid() : UsbService() {
   JNIEnv* env = AttachCurrentThread();
   j_object_.Reset(
       Java_ChromeUsbService_create(env, reinterpret_cast<jlong>(this)));

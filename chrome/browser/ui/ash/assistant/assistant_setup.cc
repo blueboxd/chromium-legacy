@@ -21,12 +21,12 @@
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 using chromeos::assistant::ConsentFlowUi;
 
-AssistantSetup::AssistantSetup(service_manager::Connector* connector)
-    : connector_(connector), weak_factory_(this) {
+AssistantSetup::AssistantSetup(
+    chromeos::assistant::mojom::AssistantService* service)
+    : service_(service) {
   arc::VoiceInteractionControllerClient::Get()->AddObserver(this);
 }
 
@@ -55,8 +55,7 @@ void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
 
 void AssistantSetup::SyncSettingsState() {
   // Set up settings mojom.
-  connector_->BindInterface(chromeos::assistant::mojom::kServiceName,
-                            mojo::MakeRequest(&settings_manager_));
+  service_->BindSettingsManager(mojo::MakeRequest(&settings_manager_));
 
   chromeos::assistant::SettingsUiSelector selector;
   chromeos::assistant::ConsentFlowUiSelector* consent_flow_ui =

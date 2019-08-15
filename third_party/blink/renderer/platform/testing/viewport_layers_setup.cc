@@ -35,7 +35,7 @@ ViewportLayersSetup::ViewportLayersSetup() {
 
   cc::ViewportLayers viewport_layers;
   viewport_layers.overscroll_elasticity_element_id =
-      scroll_elasticity_layer_->GetElementId();
+      scroll_elasticity_layer_->CcLayer()->element_id();
   viewport_layers.page_scale = page_scale_layer_->CcLayer();
   viewport_layers.inner_viewport_container = clip_layer_->CcLayer();
   viewport_layers.inner_viewport_scroll = graphics_layer_->CcLayer();

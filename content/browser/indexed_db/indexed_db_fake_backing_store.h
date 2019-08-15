@@ -119,7 +119,7 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
     leveldb::Status CommitPhaseOne(BlobWriteCallback) override;
     leveldb::Status CommitPhaseTwo() override;
     uint64_t GetTransactionSize() override;
-    void Rollback() override;
+    void RollbackAndMaybeTearDown() override;
 
    private:
     leveldb::Status result_;

@@ -222,6 +222,7 @@ class TestRebaseline(BaseTestCase):
                 ]],
                 [[
                     'python', 'echo', 'optimize-baselines',
+                    '--no-manifest-update',
                     '--verbose',
                     '--suffixes', 'txt,png',
                     'userscripts/first-test.html',
@@ -255,6 +256,7 @@ class TestRebaseline(BaseTestCase):
                 ]],
                 [[
                     'python', 'echo', 'optimize-baselines',
+                    '--no-manifest-update',
                     '--verbose',
                     '--suffixes', 'txt,png',
                     'userscripts/first-test.html',
@@ -342,6 +344,7 @@ class TestRebaseline(BaseTestCase):
                 ]],
                 [[
                     'python', 'echo', 'optimize-baselines',
+                    '--no-manifest-update',
                     '--verbose',
                     '--suffixes', 'txt,png',
                     'userscripts/first-test.html',

@@ -146,9 +146,9 @@ public class WebApkInfoTest {
         WebApkInfo info = WebApkInfo.create(intent);
 
         Assert.assertEquals(WebApkConstants.WEBAPK_ID_PREFIX + WEBAPK_PACKAGE_NAME, info.id());
-        Assert.assertEquals(START_URL, info.uri().toString());
+        Assert.assertEquals(START_URL, info.url());
         Assert.assertTrue(info.shouldForceNavigation());
-        Assert.assertEquals(SCOPE, info.scopeUri().toString());
+        Assert.assertEquals(SCOPE, info.scopeUrl());
         Assert.assertEquals(NAME, info.name());
         Assert.assertEquals(SHORT_NAME, info.shortName());
         Assert.assertEquals(WebDisplayMode.MINIMAL_UI, info.displayMode());
@@ -184,7 +184,7 @@ public class WebApkInfoTest {
     }
 
     /**
-     * Test that {@link WebApkInfo#create()} populates {@link WebApkInfo#uri()} with the start URL
+     * Test that {@link WebApkInfo#create()} populates {@link WebApkInfo#url()} with the start URL
      * from the intent not the start URL in the WebAPK's meta data. When a WebAPK is launched via a
      * deep link from a URL within the WebAPK's scope, the WebAPK should open at the URL it was deep
      * linked from not the WebAPK's start URL.
@@ -203,7 +203,7 @@ public class WebApkInfoTest {
         intent.putExtra(ShortcutHelper.EXTRA_URL, intentStartUrl);
 
         WebApkInfo info = WebApkInfo.create(intent);
-        Assert.assertEquals(intentStartUrl, info.uri().toString());
+        Assert.assertEquals(intentStartUrl, info.url());
 
         // {@link WebApkInfo#manifestStartUrl()} should contain the start URL from the Android
         // Manifest.
@@ -235,7 +235,7 @@ public class WebApkInfoTest {
         intent.putExtra(ShortcutHelper.EXTRA_URL, intentStartUrl);
 
         WebApkInfo info = WebApkInfo.create(intent);
-        Assert.assertEquals(scopeFromManifestStartUrl, info.scopeUri().toString());
+        Assert.assertEquals(scopeFromManifestStartUrl, info.scopeUrl());
     }
 
     /**

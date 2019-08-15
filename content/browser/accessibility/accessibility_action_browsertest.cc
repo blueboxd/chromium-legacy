@@ -61,7 +61,7 @@ class AccessibilityActionBrowserTest : public ContentBrowserTest {
                                            ui::kAXModeComplete,
                                            ax::mojom::Event::kLoadComplete);
     GURL html_data_url("data:text/html," + html);
-    NavigateToURL(shell(), html_data_url);
+    EXPECT_TRUE(NavigateToURL(shell(), html_data_url));
     waiter.WaitForNotification();
   }
 
@@ -314,7 +314,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityCanvasActionBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ImgElementGetImage) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                          ui::kAXModeComplete,
@@ -326,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ImgElementGetImage) {
       "8AAAD/AP///ywAAAAAAgADAAACBEwkAAUAOw=='>"
       "</body>");
 
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   waiter.WaitForNotification();
 
   BrowserAccessibility* target = FindNode(ax::mojom::Role::kImage, "");
@@ -489,7 +489,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ShowContextMenu) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
                        AriaGridSelectedChangedEvent) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                          ui::kAXModeComplete,
@@ -513,7 +513,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
       "</tr>"
       "</tbody></table>"
       "</body>");
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   waiter.WaitForNotification();
 
   BrowserAccessibility* cell1 = FindNode(ax::mojom::Role::kCell, "A");
@@ -565,7 +565,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
                        AriaControlsChangedEvent) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                          ui::kAXModeComplete,
@@ -584,7 +584,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
       "<div id='radio2' role='radio'>radio2</div>"
       "</div>"
       "</body>");
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   waiter.WaitForNotification();
 
   BrowserAccessibility* target =
@@ -616,7 +616,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, FocusLostOnDeletedNode) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   GURL url(
       "data:text/html,"
@@ -625,7 +625,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, FocusLostOnDeletedNode) {
       "<button id='2'>2</button>"
       "\"></iframe>");
 
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   EnableAccessibilityForWebContents(shell()->web_contents());
 
   auto FocusNodeAndReload = [this, &url](const std::string& node_name,
@@ -647,7 +647,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, FocusLostOnDeletedNode) {
     AccessibilityNotificationWaiter load_waiter(
         shell()->web_contents(), ui::kAXModeComplete,
         ax::mojom::Event::kLoadComplete);
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     load_waiter.WaitForNotification();
   };
 

@@ -180,6 +180,10 @@ class MetricsService : public base::HistogramFlattener {
     return reporting_service_.metrics_log_store();
   }
 
+  // Sets the persistent system profile. Virtual for tests.
+  virtual void SetPersistentSystemProfile(const std::string& serialized_proto,
+                                          bool complete);
+
   // Records the current environment (system profile) in |log|, and persists
   // the results in prefs.
   // Exposed for testing.
@@ -291,8 +295,7 @@ class MetricsService : public base::HistogramFlattener {
 
   // Records the current environment (system profile) in |log|, and persists
   // the results in prefs and GlobalPersistentSystemProfile.
-  // Exposed for testing.
-  void RecordCurrentEnvironment(MetricsLog* log);
+  void RecordCurrentEnvironment(MetricsLog* log, bool complete);
 
   // Record complete list of histograms into the current log.
   // Called when we close a log.

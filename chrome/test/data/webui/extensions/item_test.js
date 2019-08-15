@@ -240,7 +240,7 @@ cr.define('extension_item_tests', function() {
       const kRuntime = 1 << 3;
 
       function assertWarnings(mask) {
-        const isVisible = extension_test_util.isVisible;
+        const isVisible = test_util.isVisible;
         assertEquals(
             !!(mask & kCorrupt), isVisible(item, '#corrupted-warning'));
         assertEquals(
@@ -280,10 +280,10 @@ cr.define('extension_item_tests', function() {
     });
 
     test(assert(TestNames.SourceIndicator), function() {
-      expectFalse(extension_test_util.isVisible(item, '#source-indicator'));
+      expectFalse(test_util.isVisible(item, '#source-indicator'));
       item.set('data.location', 'UNPACKED');
       Polymer.dom.flush();
-      expectTrue(extension_test_util.isVisible(item, '#source-indicator'));
+      expectTrue(test_util.isVisible(item, '#source-indicator'));
       const icon = item.$$('#source-indicator iron-icon');
       assertTrue(!!icon);
       expectEquals('extensions-icons:unpacked', icon.icon);
@@ -291,26 +291,26 @@ cr.define('extension_item_tests', function() {
 
       item.set('data.location', 'THIRD_PARTY');
       Polymer.dom.flush();
-      expectTrue(extension_test_util.isVisible(item, '#source-indicator'));
+      expectTrue(test_util.isVisible(item, '#source-indicator'));
       expectEquals('extensions-icons:input', icon.icon);
       extension_test_util.testIcons(item);
 
       item.set('data.location', 'UNKNOWN');
       Polymer.dom.flush();
-      expectTrue(extension_test_util.isVisible(item, '#source-indicator'));
+      expectTrue(test_util.isVisible(item, '#source-indicator'));
       expectEquals('extensions-icons:input', icon.icon);
       extension_test_util.testIcons(item);
 
       item.set('data.location', 'FROM_STORE');
       item.set('data.controlledInfo', {type: 'POLICY', text: 'policy'});
       Polymer.dom.flush();
-      expectTrue(extension_test_util.isVisible(item, '#source-indicator'));
+      expectTrue(test_util.isVisible(item, '#source-indicator'));
       expectEquals('extensions-icons:business', icon.icon);
       extension_test_util.testIcons(item);
 
       item.set('data.controlledInfo', null);
       Polymer.dom.flush();
-      expectFalse(extension_test_util.isVisible(item, '#source-indicator'));
+      expectFalse(test_util.isVisible(item, '#source-indicator'));
     });
 
     test(assert(TestNames.EnableToggle), function() {

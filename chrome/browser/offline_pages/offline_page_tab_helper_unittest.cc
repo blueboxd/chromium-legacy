@@ -106,12 +106,11 @@ class OfflinePageTabHelperTest : public content::RenderViewHostTestHarness {
   PrefetchService* prefetch_service_;  // Keyed Service.
   std::unique_ptr<content::NavigationSimulator> navigation_simulator_;
 
-  base::WeakPtrFactory<OfflinePageTabHelperTest> weak_ptr_factory_;
+  base::WeakPtrFactory<OfflinePageTabHelperTest> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(OfflinePageTabHelperTest);
 };
 
-OfflinePageTabHelperTest::OfflinePageTabHelperTest()
-    : tab_helper_(nullptr), weak_ptr_factory_(this) {}
+OfflinePageTabHelperTest::OfflinePageTabHelperTest() : tab_helper_(nullptr) {}
 
 void OfflinePageTabHelperTest::SetUp() {
   content::RenderViewHostTestHarness::SetUp();

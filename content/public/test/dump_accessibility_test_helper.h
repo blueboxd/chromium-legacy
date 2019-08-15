@@ -13,12 +13,13 @@ class FilePath;
 
 namespace content {
 
-class AccessibilityTreeFormatter;
+class AccessibilityTestExpectationsLocator;
 
 // A helper class for writing accessibility tree dump tests.
 class DumpAccessibilityTestHelper {
  public:
-  explicit DumpAccessibilityTestHelper(AccessibilityTreeFormatter* formatter);
+  explicit DumpAccessibilityTestHelper(
+      AccessibilityTestExpectationsLocator* test_locator);
   ~DumpAccessibilityTestHelper() = default;
 
   // Returns a path to an expectation file for the current platform. If no
@@ -48,7 +49,7 @@ class DumpAccessibilityTestHelper {
       const std::vector<std::string>& expected_lines,
       const std::vector<std::string>& actual_lines);
 
-  AccessibilityTreeFormatter* formatter_;
+  AccessibilityTestExpectationsLocator* const test_locator_;
 };
 
 }  // namespace content

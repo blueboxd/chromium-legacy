@@ -32,6 +32,10 @@ namespace service_manager {
 class Connector;
 }  // namespace service_manager
 
+namespace leveldb_proto {
+class ProtoDatabaseProvider;
+}  // namespace leveldb_proto
+
 namespace download {
 
 class DownloadDBCache;
@@ -77,8 +81,12 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   };
 
   using IsOriginSecureCallback = base::RepeatingCallback<bool(const GURL&)>;
+  // Creates a new InProgressDownloadManager instance. If |in_progress_db_dir|
+  // is empty then it will use an empty database and no history will be saved.
+  // |db_provider| can be nullptr if |in_progress_db_dir| is empty.
   InProgressDownloadManager(Delegate* delegate,
                             const base::FilePath& in_progress_db_dir,
+                            leveldb_proto::ProtoDatabaseProvider* db_provider,
                             const IsOriginSecureCallback& is_origin_secure_cb,
                             const URLSecurityPolicy& url_security_policy,
                             service_manager::Connector* connector);
@@ -195,7 +203,8 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       std::unique_ptr<download::DownloadItemImpl> download);
 
  private:
-  void Initialize(const base::FilePath& in_progress_db_dir);
+  void Initialize(const base::FilePath& in_progress_db_dir,
+                  leveldb_proto::ProtoDatabaseProvider* db_provider);
 
   // UrlDownloadHandler::Delegate implementations.
   void OnUrlDownloadStarted(

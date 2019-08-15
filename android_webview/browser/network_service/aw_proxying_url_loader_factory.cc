@@ -144,7 +144,7 @@ class InterceptedRequest : public network::mojom::URLLoader,
   network::mojom::URLLoaderPtr target_loader_;
   network::mojom::URLLoaderFactoryPtr target_factory_;
 
-  base::WeakPtrFactory<InterceptedRequest> weak_factory_;
+  base::WeakPtrFactory<InterceptedRequest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InterceptedRequest);
 };
@@ -271,8 +271,7 @@ InterceptedRequest::InterceptedRequest(
       proxied_loader_binding_(this, std::move(loader_request)),
       target_client_(std::move(client)),
       proxied_client_binding_(this),
-      target_factory_(std::move(target_factory)),
-      weak_factory_(this) {
+      target_factory_(std::move(target_factory)) {
   // If there is a client error, clean up the request.
   target_client_.set_connection_error_handler(base::BindOnce(
       &InterceptedRequest::OnURLLoaderClientError, base::Unretained(this)));
@@ -710,9 +709,7 @@ AwProxyingURLLoaderFactory::AwProxyingURLLoaderFactory(
     network::mojom::URLLoaderFactoryRequest loader_request,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
     bool intercept_only)
-    : process_id_(process_id),
-      intercept_only_(intercept_only),
-      weak_factory_(this) {
+    : process_id_(process_id), intercept_only_(intercept_only) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!(intercept_only_ && target_factory_info));
   if (target_factory_info) {

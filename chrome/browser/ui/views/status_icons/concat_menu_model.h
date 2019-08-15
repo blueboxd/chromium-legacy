@@ -30,7 +30,7 @@ class ConcatMenuModel : public ui::MenuModel {
   bool GetAcceleratorAt(int index, ui::Accelerator* accelerator) const override;
   bool IsItemCheckedAt(int index) const override;
   int GetGroupIdAt(int index) const override;
-  bool GetIconAt(int index, gfx::Image* icon) override;
+  bool GetIconAt(int index, gfx::Image* icon) const override;
   ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const override;
   bool IsEnabledAt(int index) const override;
   bool IsVisibleAt(int index) const override;

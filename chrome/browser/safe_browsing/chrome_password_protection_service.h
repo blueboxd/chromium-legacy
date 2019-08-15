@@ -13,6 +13,8 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/security_events/security_event_recorder.h"
+#include "chrome/browser/security_events/security_event_recorder_factory.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -105,6 +107,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       PasswordType password_type);
 
   void ShowModalWarning(content::WebContents* web_contents,
+                        RequestOutcome outcome,
+                        LoginReputationClientResponse::VerdictType verdict_type,
                         const std::string& verdict_token,
                         ReusedPasswordAccountType password_type) override;
 
@@ -114,6 +118,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // Called when user interacts with password protection UIs.
   void OnUserAction(content::WebContents* web_contents,
                     ReusedPasswordAccountType password_type,
+                    RequestOutcome outcome,
+                    LoginReputationClientResponse::VerdictType verdict_type,
+                    const std::string& verdict_token,
                     WarningUIType ui_type,
                     WarningAction action);
 
@@ -281,6 +288,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   void MaybeLogPasswordReuseLookupEvent(
       content::WebContents* web_contents,
       RequestOutcome outcome,
+      PasswordType password_type,
       const LoginReputationClientResponse* response) override;
 
   // Updates security state for the current |web_contents| based on
@@ -294,9 +302,13 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       bool all_history,
       const history::URLRows& deleted_rows) override;
 
-  void HandleUserActionOnModalWarning(content::WebContents* web_contents,
-                                      ReusedPasswordAccountType password_type,
-                                      WarningAction action);
+  void HandleUserActionOnModalWarning(
+      content::WebContents* web_contents,
+      ReusedPasswordAccountType password_type,
+      RequestOutcome outcome,
+      LoginReputationClientResponse::VerdictType verdict_type,
+      const std::string& verdict_token,
+      WarningAction action);
 
   void HandleUserActionOnPageInfo(content::WebContents* web_contents,
                                   ReusedPasswordAccountType password_type,
@@ -335,7 +347,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       VerifyPasswordReuseUserEventNotRecordedDueToIncognito);
   FRIEND_TEST_ALL_PREFIXES(
       ChromePasswordProtectionServiceTest,
-      VerifyPasswordReuseUserEventNotRecordedDueToNotSignedIn);
+      VerifyPasswordReuseUserEventRecordedForOtherGaiaPassword);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyPasswordReuseDetectedUserEventRecorded);
   FRIEND_TEST_ALL_PREFIXES(
@@ -364,7 +376,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
                            VerifyPasswordCaptureEventReschedules);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyPasswordCaptureEventRecorded);
-
+  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
+                           VerifyPasswordReuseDetectedSecurityEventRecorded);
   // Browser tests
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceBrowserTest,
                            VerifyCheckGaiaPasswordChange);
@@ -393,6 +406,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   void MaybeLogPasswordReuseLookupResultWithVerdict(
       content::WebContents* web_contents,
+      PasswordType password_type,
       sync_pb::GaiaPasswordReuse::PasswordReuseLookup::LookupResult result,
       sync_pb::GaiaPasswordReuse::PasswordReuseLookup::ReputationVerdict
           verdict,

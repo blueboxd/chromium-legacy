@@ -184,7 +184,7 @@ bool CanBookmarkCurrentPageInternal(const Browser* browser,
   return browser_defaults::bookmarks_enabled &&
          browser->profile()->GetPrefs()->GetBoolean(
              bookmarks::prefs::kEditBookmarksEnabled) &&
-         model && model->loaded() && browser->is_type_tabbed() &&
+         model && model->loaded() && browser->is_type_normal() &&
          (!check_remove_bookmark_ui ||
           !chrome::ShouldRemoveBookmarkThisPageUI(browser->profile()));
 }
@@ -421,7 +421,7 @@ void NewEmptyWindow(Profile* profile) {
 
 Browser* OpenEmptyWindow(Profile* profile) {
   Browser* browser =
-      new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile, true));
+      new Browser(Browser::CreateParams(Browser::TYPE_NORMAL, profile, true));
   AddTabAt(browser, GURL(), -1, true);
   browser->window()->Show();
   return browser;
@@ -497,7 +497,7 @@ void ReloadBypassingCache(Browser* browser, WindowOpenDisposition disposition) {
 }
 
 bool CanReload(const Browser* browser) {
-  return !browser->is_devtools();
+  return !browser->is_type_devtools();
 }
 
 void Home(Browser* browser, WindowOpenDisposition disposition) {
@@ -521,7 +521,7 @@ void Home(Browser* browser, WindowOpenDisposition disposition) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // With bookmark apps enabled, hosted apps should return to their launch page
   // when the home button is pressed.
-  if (browser->is_app()) {
+  if (browser->deprecated_is_app()) {
     const extensions::Extension* extension = GetExtensionForBrowser(browser);
     if (!extension)
       return;
@@ -749,7 +749,7 @@ WebContents* DuplicateTabAt(Browser* browser, int index) {
         index + 1, std::move(contents_dupe), add_types, old_group);
   } else {
     Browser* new_browser = NULL;
-    if (browser->is_app() && !browser->is_type_popup()) {
+    if (browser->deprecated_is_app()) {
       new_browser = new Browser(Browser::CreateParams::CreateForApp(
           browser->app_name(), browser->is_trusted_source(), gfx::Rect(),
           browser->profile(), true));
@@ -975,7 +975,7 @@ bool CanSavePage(const Browser* browser) {
           prefs::kAllowFileSelectionDialogs)) {
     return false;
   }
-  return !browser->is_devtools() &&
+  return !browser->is_type_devtools() &&
          !(GetContentRestrictions(browser) & CONTENT_RESTRICTION_SAVE);
 }
 
@@ -1315,10 +1315,10 @@ Browser* OpenInChrome(Browser* hosted_app_browser) {
 }
 
 bool CanViewSource(const Browser* browser) {
-  return !browser->is_devtools() && browser->tab_strip_model()
-                                        ->GetActiveWebContents()
-                                        ->GetController()
-                                        .CanViewSource();
+  return !browser->is_type_devtools() && browser->tab_strip_model()
+                                             ->GetActiveWebContents()
+                                             ->GetController()
+                                             .CanViewSource();
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

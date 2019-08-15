@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
+#import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/util/transparent_link_button.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -405,9 +406,12 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
 }
 
 // Tests that the VC can be dismissed by swiping down.
-- (void)DISABLED_testSwipeDownDismiss {
+- (void)testSwipeDownDismiss {
   if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
     EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
+  }
+  if (!IsCollectionsCardPresentationStyleEnabled()) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on when feature flag is off.");
   }
   [self loadTestURLs];
   [self openHistoryPanel];
@@ -429,9 +433,12 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
 }
 
 // Tests that the VC can be dismissed by swiping down while its searching.
-- (void)DISABLED_testSwipeDownDismissWhileSearching {
+- (void)testSwipeDownDismissWhileSearching {
   if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
     EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
+  }
+  if (!IsCollectionsCardPresentationStyleEnabled()) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on when feature flag is off.");
   }
   [self loadTestURLs];
   [self openHistoryPanel];

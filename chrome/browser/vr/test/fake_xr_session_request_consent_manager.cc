@@ -28,6 +28,8 @@ TabModalConfirmDialog*
 FakeXRSessionRequestConsentManager::ShowDialogAndGetConsent(
     content::WebContents* web_contents,
     base::OnceCallback<void(bool)> response_callback) {
+  DCHECK(UserResponse::kUnexpected != user_response_);
+
   auto* confirm_dialog = consent_manager_->ShowDialogAndGetConsent(
       web_contents, std::move(response_callback));
 
@@ -46,6 +48,7 @@ FakeXRSessionRequestConsentManager::ShowDialogAndGetConsent(
       confirm_dialog->CancelTabModalDialog();
       break;
     case UserResponse::kCloseDialog:
+    case UserResponse::kUnexpected:
       confirm_dialog->CloseDialog();
       break;
   }

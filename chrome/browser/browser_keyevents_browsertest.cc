@@ -657,9 +657,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, ReservedAccelerators) {
 #endif
   };
 
-  content::WindowedNotificationObserver wait_for_new_tab(
-      chrome::NOTIFICATION_TAB_PARENTED,
-      content::NotificationService::AllSources());
+  ui_test_utils::TabAddedWaiter wait_for_new_tab(browser());
 
   // Press Ctrl/Cmd+T, which will open a new tab. It cannot be suppressed.
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(0, kTestCtrlOrCmdT));

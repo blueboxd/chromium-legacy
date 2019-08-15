@@ -56,7 +56,7 @@ class GetImagesTask : public Task {
 
   EncodedImageListCallback callback_;
 
-  base::WeakPtrFactory<GetImagesTask> weak_ptr_factory_;
+  base::WeakPtrFactory<GetImagesTask> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GetImagesTask);
 };

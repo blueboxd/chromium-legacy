@@ -300,7 +300,9 @@ class PrinterDiscoverySessionHostImpl
       RemovePrinter(printer.id());
       return;
     }
-    printers_manager_->PrinterInstalled(printer, true /*is_automatic*/);
+    printers_manager_->PrinterInstalled(
+        printer, /*is_automatic=*/true,
+        chromeos::PrinterSetupSource::kArcPrintService);
     FetchCapabilities(printer);
   }
 

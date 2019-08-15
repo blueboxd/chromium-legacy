@@ -374,6 +374,10 @@ used when committed.
 *   [Mojo “Style” Guide](security/mojo.md) - Recommendations for best practices
     from Mojo and IPC reviewers
 
+### WebXR
+*   [Running OpenVR Without Headset](xr/run_openvr_without_headset.md) -
+    Instructions for running OpenVR on Windows without a headset
+
 ### Probably Obsolete
 *   [TPM Quick Reference](tpm_quick_ref.md) - Trusted Platform Module notes.
 *   [System Hardening Features](system_hardening_features.md) - A list of

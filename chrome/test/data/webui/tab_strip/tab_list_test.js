@@ -16,18 +16,21 @@ suite('TabList', () => {
     id: 1001,
     tabs: [
       {
+        active: true,
         id: 0,
         index: 0,
         title: 'Tab 1',
         windowId: 1001,
       },
       {
+        active: false,
         id: 1,
         index: 1,
         title: 'Tab 2',
         windowId: 1001,
       },
       {
+        active: false,
         id: 2,
         index: 2,
         title: 'Tab 3',
@@ -105,7 +108,7 @@ suite('TabList', () => {
     assertEquals(currentWindow.tabs.length - 1, tabElements.length);
   });
 
-  test('updated a tab with new tab data when a tab is updated', () => {
+  test('updates a tab with new tab data when a tab is updated', () => {
     const tabToUpdate = currentWindow.tabs[0];
     const changeInfo = {title: 'A new title'};
     const updatedTab = Object.assign({}, tabToUpdate, changeInfo);
@@ -114,5 +117,18 @@ suite('TabList', () => {
 
     const tabElements = tabList.shadowRoot.querySelectorAll('tabstrip-tab');
     assertEquals(tabElements[0].tab, updatedTab);
+  });
+
+  test('updates tabs when a new tab is activated', () => {
+    const tabElements = tabList.shadowRoot.querySelectorAll('tabstrip-tab');
+
+    // Mock activating the 2nd tab
+    callbackRouter.onActivated.dispatchEvent({
+      tabId: currentWindow.tabs[1].id,
+      windowId: currentWindow.id,
+    });
+    assertFalse(tabElements[0].tab.active);
+    assertTrue(tabElements[1].tab.active);
+    assertFalse(tabElements[2].tab.active);
   });
 });

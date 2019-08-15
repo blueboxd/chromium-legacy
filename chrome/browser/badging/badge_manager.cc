@@ -53,11 +53,20 @@ void BadgeManager::SetDelegate(std::unique_ptr<BadgeManagerDelegate> delegate) {
   delegate_ = std::move(delegate);
 }
 
-void BadgeManager::BindRequest(blink::mojom::BadgeServiceRequest request,
-                               content::RenderFrameHost* frame) {
+void BadgeManager::BindBadgeForRequest(
+    blink::mojom::BadgeServiceRequest request,
+    content::RenderFrameHost* frame) {
+  // Implicit conversion from BadgeServiceRequest to
+  // mojo::PendingReceiver<blink::mojom::BadgeService>.
+  BindRequest(std::move(request), frame);
+}
+
+void BadgeManager::BindRequest(
+    mojo::PendingReceiver<blink::mojom::BadgeService> receiver,
+    content::RenderFrameHost* frame) {
   // TODO(crbug.com/983929): Remove these CHECKs once the cause of the bug has
   // been determined.
-  CHECK(request);
+  CHECK(receiver);
   CHECK(frame);
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(frame);
@@ -77,8 +86,8 @@ void BadgeManager::BindRequest(blink::mojom::BadgeServiceRequest request,
   CHECK(frame->GetRoutingID());
   BindingContext context(frame->GetProcess()->GetID(), frame->GetRoutingID());
 
-  badge_manager->bindings_.AddBinding(badge_manager, std::move(request),
-                                      std::move(context));
+  badge_manager->receivers_.Add(badge_manager, std::move(receiver),
+                                std::move(context));
 }
 
 void BadgeManager::UpdateAppBadge(const base::Optional<std::string>& app_id,
@@ -120,15 +129,15 @@ void BadgeManager::BadgeChangeIgnored() {
 }
 
 void BadgeManager::SetInteger(uint64_t content) {
-  UpdateAppBadge(GetAppIdToBadge(bindings_.dispatch_context()), content);
+  UpdateAppBadge(GetAppIdToBadge(receivers_.current_context()), content);
 }
 
 void BadgeManager::SetFlag() {
-  UpdateAppBadge(GetAppIdToBadge(bindings_.dispatch_context()), base::nullopt);
+  UpdateAppBadge(GetAppIdToBadge(receivers_.current_context()), base::nullopt);
 }
 
 void BadgeManager::ClearBadge() {
-  ClearAppBadge(GetAppIdToBadge(bindings_.dispatch_context()));
+  ClearAppBadge(GetAppIdToBadge(receivers_.current_context()));
 }
 
 base::Optional<std::string> BadgeManager::GetAppIdToBadge(

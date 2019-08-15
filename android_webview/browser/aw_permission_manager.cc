@@ -228,7 +228,7 @@ class AwPermissionManager::PendingRequest {
 };
 
 AwPermissionManager::AwPermissionManager()
-    : result_cache_(new LastRequestResultCache), weak_ptr_factory_(this) {}
+    : result_cache_(new LastRequestResultCache) {}
 
 AwPermissionManager::~AwPermissionManager() {
   CancelPermissionRequests();

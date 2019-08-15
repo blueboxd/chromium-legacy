@@ -31,8 +31,7 @@ AwHttpAuthHandler::AwHttpAuthHandler(const net::AuthChallengeInfo& auth_info,
     : WebContentsObserver(web_contents),
       host_(auth_info.challenger.host()),
       realm_(auth_info.realm),
-      callback_(std::move(callback)),
-      weak_factory_(this) {
+      callback_(std::move(callback)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = base::android::AttachCurrentThread();
   http_auth_handler_.Reset(Java_AwHttpAuthHandler_create(

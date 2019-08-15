@@ -1055,16 +1055,15 @@ static LayoutUnit ComputeContentSize(
   LayoutUnit available_inline_size =
       mode == NGLineBreakerMode::kMaxContent ? LayoutUnit::Max() : LayoutUnit();
 
-  NGConstraintSpace space =
-      NGConstraintSpaceBuilder(/* parent_writing_mode */ writing_mode,
-                               /* out_writing_mode */ writing_mode,
-                               /* is_new_fc */ false)
-          .SetTextDirection(style.Direction())
-          .SetAvailableSize({available_inline_size, kIndefiniteSize})
-          .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
-          .SetReplacedPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
-          .SetIsIntermediateLayout(true)
-          .ToConstraintSpace();
+  NGConstraintSpaceBuilder builder(/* parent_writing_mode */ writing_mode,
+                                   /* out_writing_mode */ writing_mode,
+                                   /* is_new_fc */ false);
+  builder.SetTextDirection(style.Direction());
+  builder.SetAvailableSize({available_inline_size, kIndefiniteSize});
+  builder.SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()});
+  builder.SetReplacedPercentageResolutionSize({LayoutUnit(), LayoutUnit()});
+  builder.SetIsIntermediateLayout(true);
+  NGConstraintSpace space = builder.ToConstraintSpace();
 
   NGExclusionSpace empty_exclusion_space;
   NGPositionedFloatVector empty_leading_floats;

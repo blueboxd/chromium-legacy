@@ -12,11 +12,13 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/win/conflicts/module_info.h"
 #include "chrome/browser/win/conflicts/module_list_filter.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/common/process_type.h"
@@ -124,6 +126,9 @@ class IncompatibleApplicationsUpdaterTest : public testing::Test,
   void SetUp() override {
     ASSERT_NO_FATAL_FAILURE(
         registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
+
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kIncompatibleApplicationsWarning);
   }
 
   enum class Option {
@@ -169,6 +174,7 @@ class IncompatibleApplicationsUpdaterTest : public testing::Test,
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   ScopedTestingLocalState scoped_testing_local_state_;
   registry_util::RegistryOverrideManager registry_override_manager_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   CertificateInfo exe_certificate_info_;
   scoped_refptr<MockModuleListFilter> module_list_filter_;

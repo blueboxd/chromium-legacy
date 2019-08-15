@@ -68,7 +68,7 @@ class MenuModelBase : public ui::MenuModel {
 
   int GetGroupIdAt(int index) const override { return 0; }
 
-  bool GetIconAt(int index, gfx::Image* icon) override { return false; }
+  bool GetIconAt(int index, gfx::Image* icon) const override { return false; }
 
   ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const override {
     return nullptr;

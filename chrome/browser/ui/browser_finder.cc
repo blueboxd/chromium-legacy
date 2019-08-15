@@ -43,7 +43,7 @@ const int kMatchAny = 0;
 // See BrowserMatches for details.
 const int kMatchOriginalProfile = 1 << 0;
 const int kMatchCanSupportWindowFeature = 1 << 1;
-const int kMatchTabbed = 1 << 2;
+const int kMatchNormal = 1 << 2;
 const int kMatchDisplayId = 1 << 3;
 #if defined(OS_WIN)
 const int kMatchCurrentWorkspace = 1 << 4;
@@ -98,7 +98,7 @@ bool IsOnOtherVirtualDesktop(Browser* browser) {
 //   incognito windows.
 // . If it contains kMatchCanSupportWindowFeature
 //   |CanSupportWindowFeature(window_feature)| must return true.
-// . If it contains kMatchTabbed, the browser must be a tabbed browser.
+// . If it contains kMatchNormal, the browser must be a normal tabbed browser.
 bool BrowserMatches(Browser* browser,
                     Profile* profile,
                     Browser::WindowFeature window_feature,
@@ -145,7 +145,7 @@ bool BrowserMatches(Browser* browser,
 #endif
   }
 
-  if ((match_types & kMatchTabbed) && !browser->is_type_tabbed())
+  if ((match_types & kMatchNormal) && !browser->is_type_normal())
     return false;
 
 #if defined(OS_WIN)
@@ -192,7 +192,7 @@ Browser* FindBrowserWithTabbedOrAnyType(
     return NULL;
   uint32_t match_types = kMatchAny;
   if (match_tabbed)
-    match_types |= kMatchTabbed;
+    match_types |= kMatchNormal;
   if (match_original_profiles)
     match_types |= kMatchOriginalProfile;
   if (display_id != display::kInvalidDisplayId)
@@ -305,7 +305,7 @@ size_t GetBrowserCount(Profile* profile) {
 }
 
 size_t GetTabbedBrowserCount(Profile* profile) {
-  return GetBrowserCountImpl(profile, kMatchTabbed);
+  return GetBrowserCountImpl(profile, kMatchNormal);
 }
 
 }  // namespace chrome

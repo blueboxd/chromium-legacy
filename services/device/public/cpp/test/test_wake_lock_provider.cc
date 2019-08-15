@@ -135,9 +135,7 @@ struct TestWakeLockProvider::WakeLockDataPerType {
   DISALLOW_COPY_AND_ASSIGN(WakeLockDataPerType);
 };
 
-TestWakeLockProvider::TestWakeLockProvider(
-    service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)) {
+TestWakeLockProvider::TestWakeLockProvider() {
   // Populates |wake_lock_store_| with entries for all types of wake locks.
   wake_lock_store_[mojom::WakeLockType::kPreventAppSuspension] =
       std::make_unique<WakeLockDataPerType>();
@@ -147,7 +145,18 @@ TestWakeLockProvider::TestWakeLockProvider(
       std::make_unique<WakeLockDataPerType>();
 }
 
+TestWakeLockProvider::TestWakeLockProvider(
+    service_manager::mojom::ServiceRequest request)
+    : TestWakeLockProvider() {
+  service_binding_.Bind(std::move(request));
+}
+
 TestWakeLockProvider::~TestWakeLockProvider() = default;
+
+void TestWakeLockProvider::BindReceiver(
+    mojo::PendingReceiver<mojom::WakeLockProvider> receiver) {
+  bindings_.AddBinding(this, std::move(receiver));
+}
 
 void TestWakeLockProvider::GetWakeLockContextForID(
     int context_id,

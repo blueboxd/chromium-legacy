@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"

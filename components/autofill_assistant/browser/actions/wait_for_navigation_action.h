@@ -34,7 +34,7 @@ class WaitForNavigationAction : public Action {
 
   ProcessActionCallback callback_;
   base::OneShotTimer timer_;
-  base::WeakPtrFactory<WaitForNavigationAction> weak_ptr_factory_;
+  base::WeakPtrFactory<WaitForNavigationAction> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WaitForNavigationAction);
 };

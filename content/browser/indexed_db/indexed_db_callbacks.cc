@@ -52,7 +52,8 @@ namespace {
 // while the current transaction task queue is being processed.
 class SafeConnectionWrapper {
  public:
-  SafeConnectionWrapper(std::unique_ptr<IndexedDBConnection> connection)
+  explicit SafeConnectionWrapper(
+      std::unique_ptr<IndexedDBConnection> connection)
       : connection_(std::move(connection)),
         idb_runner_(base::SequencedTaskRunnerHandle::Get()) {}
   ~SafeConnectionWrapper() {
@@ -76,7 +77,7 @@ class SafeConnectionWrapper {
 
 class SafeCursorWrapper {
  public:
-  SafeCursorWrapper(std::unique_ptr<IndexedDBCursor> cursor)
+  explicit SafeCursorWrapper(std::unique_ptr<IndexedDBCursor> cursor)
       : cursor_(std::move(cursor)),
         idb_runner_(base::SequencedTaskRunnerHandle::Get()) {}
   ~SafeCursorWrapper() {

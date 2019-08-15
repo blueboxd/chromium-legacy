@@ -231,17 +231,17 @@ TEST_F(NGBlockLayoutAlgorithmTest, PercentageBlockSizeQuirkDescendantsCaching) {
   )HTML");
 
   auto create_space = [&](auto size) -> NGConstraintSpace {
-    return NGConstraintSpaceBuilder(WritingMode::kHorizontalTb,
-                                    WritingMode::kHorizontalTb,
-                                    /* is_new_formatting_context */ false)
-        .SetAvailableSize(size)
-        .SetPercentageResolutionSize(size)
-        .SetTextDirection(TextDirection::kLtr)
-        .AddBaselineRequest({NGBaselineAlgorithmType::kAtomicInline,
-                             FontBaseline::kAlphabeticBaseline})
-        .AddBaselineRequest({NGBaselineAlgorithmType::kFirstLine,
-                             FontBaseline::kAlphabeticBaseline})
-        .ToConstraintSpace();
+    NGConstraintSpaceBuilder builder(WritingMode::kHorizontalTb,
+                                     WritingMode::kHorizontalTb,
+                                     /* is_new_formatting_context */ false);
+    builder.SetAvailableSize(size);
+    builder.SetPercentageResolutionSize(size);
+    builder.SetTextDirection(TextDirection::kLtr);
+    builder.AddBaselineRequest({NGBaselineAlgorithmType::kAtomicInline,
+                                FontBaseline::kAlphabeticBaseline});
+    builder.AddBaselineRequest({NGBaselineAlgorithmType::kFirstLine,
+                                FontBaseline::kAlphabeticBaseline});
+    return builder.ToConstraintSpace();
   };
 
   NGConstraintSpace space100 =
@@ -398,18 +398,18 @@ TEST_F(NGBlockLayoutAlgorithmTest, LineOffsetCaching) {
   )HTML");
 
   auto create_space = [&](auto size, auto bfc_offset) -> NGConstraintSpace {
-    return NGConstraintSpaceBuilder(WritingMode::kHorizontalTb,
-                                    WritingMode::kHorizontalTb,
-                                    /* is_new_formatting_context */ false)
-        .SetAvailableSize(size)
-        .SetPercentageResolutionSize(size)
-        .SetTextDirection(TextDirection::kLtr)
-        .AddBaselineRequest({NGBaselineAlgorithmType::kAtomicInline,
-                             FontBaseline::kAlphabeticBaseline})
-        .AddBaselineRequest({NGBaselineAlgorithmType::kFirstLine,
-                             FontBaseline::kAlphabeticBaseline})
-        .SetBfcOffset(bfc_offset)
-        .ToConstraintSpace();
+    NGConstraintSpaceBuilder builder(WritingMode::kHorizontalTb,
+                                     WritingMode::kHorizontalTb,
+                                     /* is_new_formatting_context */ false);
+    builder.SetAvailableSize(size);
+    builder.SetPercentageResolutionSize(size);
+    builder.SetTextDirection(TextDirection::kLtr);
+    builder.AddBaselineRequest({NGBaselineAlgorithmType::kAtomicInline,
+                                FontBaseline::kAlphabeticBaseline});
+    builder.AddBaselineRequest({NGBaselineAlgorithmType::kFirstLine,
+                                FontBaseline::kAlphabeticBaseline});
+    builder.SetBfcOffset(bfc_offset);
+    return builder.ToConstraintSpace();
   };
 
   NGConstraintSpace space200 =

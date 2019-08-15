@@ -27,6 +27,7 @@ static_library("optimization_guide") {
     "optimization_filter.h",
     "optimization_guide_constants.cc",
     "optimization_guide_constants.h",
+    "optimization_guide_decider.h",
     "optimization_guide_features.cc",
     "optimization_guide_features.h",
     "optimization_guide_prefs.cc",

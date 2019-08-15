@@ -31,8 +31,7 @@ static jlong JNI_TracingControllerAndroidImpl_Init(
 }
 
 TracingControllerAndroid::TracingControllerAndroid(JNIEnv* env, jobject obj)
-    : weak_java_object_(env, obj),
-      weak_factory_(this) {}
+    : weak_java_object_(env, obj) {}
 
 TracingControllerAndroid::~TracingControllerAndroid() {}
 

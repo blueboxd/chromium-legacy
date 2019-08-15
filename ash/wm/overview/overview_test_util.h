@@ -20,8 +20,6 @@ bool HighlightOverviewWindow(const aura::Window* window);
 
 // Gets the current highlighted window. Returns nullptr if no window is
 // highlighted.
-// TODO(sammiequon): Combine this with the one in
-// overview_gesture_handler_unittest.cc.
 const aura::Window* GetOverviewHighlightedWindow();
 
 void ToggleOverview(OverviewSession::EnterExitOverviewType type =
@@ -32,11 +30,8 @@ OverviewSession* GetOverviewSession();
 const std::vector<std::unique_ptr<OverviewItem>>& GetOverviewItemsForRoot(
     int index);
 
-// Returns the OverviewItem associated with |window| that is part of the grid
-// with |grid_index| if it exists.
-// TODO(sammiequon): Investiage if we can deprecate |grid_index|.
-OverviewItem* GetOverviewItemInGridWithWindow(int grid_index,
-                                              aura::Window* window);
+// Returns the OverviewItem associated with |window| if it exists.
+OverviewItem* GetOverviewItemForWindow(aura::Window* window);
 
 }  // namespace ash
 

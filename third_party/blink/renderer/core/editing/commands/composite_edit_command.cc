@@ -1668,7 +1668,7 @@ bool CompositeEditCommand::BreakOutOfEmptyListItem(
 
   HTMLElement* new_block = nullptr;
   if (ContainerNode* block_enclosing_list = list_node->parentNode()) {
-    if (IsHTMLLIElement(
+    if (IsA<HTMLLIElement>(
             *block_enclosing_list)) {  // listNode is inside another list item
       if (CreateVisiblePosition(PositionAfterNode(*block_enclosing_list))
               .DeepEquivalent() ==

@@ -19,6 +19,6 @@
     </application>
 
     <instrumentation android:name="org.chromium.base.test.BaseChromiumAndroidJUnitRunner"
-        android:targetPackage="org.chromium.chrome"
+        android:targetPackage="org.chromium.chrome.test.smoke"
         android:label="Runner for org.chromium.chrome.test.smoke"/>
 </manifest>

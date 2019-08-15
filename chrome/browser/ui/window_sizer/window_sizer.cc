@@ -101,7 +101,7 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
       for (auto it = browser_list->begin_last_active();
            it != browser_list->end_last_active(); ++it) {
         Browser* last_active = *it;
-        if (last_active && last_active->is_type_tabbed()) {
+        if (last_active && last_active->is_type_normal()) {
           window = last_active->window();
           DCHECK(window);
           break;
@@ -350,11 +350,12 @@ ui::WindowShowState WindowSizer::GetWindowDefaultShowState() const {
     return ui::SHOW_STATE_DEFAULT;
 
   // Only tabbed browsers and dev tools use the command line.
-  bool use_command_line = browser_->is_type_tabbed() || browser_->is_devtools();
+  bool use_command_line =
+      browser_->is_type_normal() || browser_->is_type_devtools();
 
 #if defined(USE_AURA)
   // We use the apps save state as well on aura.
-  use_command_line = use_command_line || browser_->is_app();
+  use_command_line = use_command_line || browser_->deprecated_is_app();
 #endif
 
   if (use_command_line && base::CommandLine::ForCurrentProcess()->HasSwitch(

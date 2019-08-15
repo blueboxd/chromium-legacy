@@ -38,8 +38,7 @@ HistoryStatisticsReporter::HistoryStatisticsReporter(
     : history_service_(history_service),
       prefs_(prefs),
       clock_(clock),
-      history_service_observer_(this),
-      weak_ptr_factory_(this) {}
+      history_service_observer_(this) {}
 
 HistoryStatisticsReporter::~HistoryStatisticsReporter() {
   history_service_observer_.RemoveAll();

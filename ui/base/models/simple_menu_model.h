@@ -16,6 +16,10 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/image/image.h"
 
+namespace gfx {
+struct VectorIcon;
+}
+
 namespace ui {
 
 class ButtonMenuItemModel;
@@ -83,6 +87,9 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
   void AddItemWithIcon(int command_id,
                        const base::string16& label,
                        const gfx::ImageSkia& icon);
+  void AddItemWithIcon(int command_id,
+                       const base::string16& label,
+                       const gfx::VectorIcon& icon);
   void AddItemWithStringIdAndIcon(int command_id,
                                   int string_id,
                                   const gfx::ImageSkia& icon);
@@ -112,6 +119,10 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
                                      int string_id,
                                      MenuModel* model,
                                      const gfx::ImageSkia& icon);
+  void AddSubMenuWithStringIdAndIcon(int command_id,
+                                     int string_id,
+                                     MenuModel* model,
+                                     const gfx::VectorIcon& icon);
   void AddActionableSubMenu(int command_id,
                             const base::string16& label,
                             MenuModel* model);
@@ -186,7 +197,8 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
   bool GetAcceleratorAt(int index, ui::Accelerator* accelerator) const override;
   bool IsItemCheckedAt(int index) const override;
   int GetGroupIdAt(int index) const override;
-  bool GetIconAt(int index, gfx::Image* icon) override;
+  bool GetIconAt(int index, gfx::Image* icon) const override;
+  const gfx::VectorIcon* GetVectorIconAt(int index) const override;
   ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const override;
   bool IsEnabledAt(int index) const override;
   bool IsVisibleAt(int index) const override;
@@ -218,6 +230,7 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
     base::string16 minor_text;
     const gfx::VectorIcon* minor_icon = nullptr;
     gfx::Image icon;
+    const gfx::VectorIcon* vector_icon = nullptr;
     int group_id = -1;
     MenuModel* submenu = nullptr;
     ButtonMenuItemModel* button_model = nullptr;

@@ -44,7 +44,7 @@ base::android::ScopedJavaLocalRef<jobject> GetTabFromRenderer(
 
 }  // namespace
 
-GvrConsentHelperImpl::GvrConsentHelperImpl() : weak_ptr_(this) {}
+GvrConsentHelperImpl::GvrConsentHelperImpl() {}
 
 GvrConsentHelperImpl::~GvrConsentHelperImpl() = default;
 

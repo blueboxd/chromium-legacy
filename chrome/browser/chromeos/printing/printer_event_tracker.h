@@ -18,6 +18,8 @@ namespace chromeos {
 
 class Printer;
 
+enum class PrinterSetupSource;
+
 // Aggregates printer events for logging.  This class is thread-safe.
 class PrinterEventTracker : public KeyedService {
  public:
@@ -41,11 +43,14 @@ class PrinterEventTracker : public KeyedService {
   // the PPD was selected automatically or chosen by the user.
   void RecordUsbPrinterInstalled(
       const PrinterDetector::DetectedPrinter& printer,
-      SetupMode mode);
+      SetupMode mode,
+      PrinterSetupSource source);
 
   // Store a succesful network printer installation. |mode| indicates if
   // the PPD was selected automatically or chosen by the user.
-  void RecordIppPrinterInstalled(const Printer& printer, SetupMode mode);
+  void RecordIppPrinterInstalled(const Printer& printer,
+                                 SetupMode mode,
+                                 PrinterSetupSource source);
 
   // Record an abandoned setup.
   void RecordSetupAbandoned(const Printer& printer);

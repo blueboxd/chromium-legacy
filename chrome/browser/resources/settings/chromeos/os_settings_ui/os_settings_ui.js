@@ -83,6 +83,9 @@ Polymer({
     showPluginVm_: Boolean,
 
     /** @private */
+    showReset_: Boolean,
+
+    /** @private */
     havePlayStoreApp_: Boolean,
 
     /** @private */
@@ -168,6 +171,7 @@ Polymer({
 
     this.showCrostini_ = loadTimeData.getBoolean('showCrostini');
     this.showPluginVm_ = loadTimeData.getBoolean('showPluginVm');
+    this.showReset_ = loadTimeData.getBoolean('allowPowerwash');
     this.havePlayStoreApp_ = loadTimeData.getBoolean('havePlayStoreApp');
 
     this.addEventListener('show-container', () => {

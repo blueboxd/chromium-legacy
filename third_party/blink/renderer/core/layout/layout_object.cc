@@ -59,7 +59,6 @@
 #include "third_party/blink/renderer/core/html/html_table_cell_element.h"
 #include "third_party/blink/renderer/core/html/html_table_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
-#include "third_party/blink/renderer/core/layout/custom/layout_custom.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
@@ -83,6 +82,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/layout_ng_custom.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
@@ -265,7 +265,8 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
       return new LayoutGrid(element);
     case EDisplay::kLayoutCustom:
     case EDisplay::kInlineLayoutCustom:
-      return new LayoutCustom(element);
+      DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
+      return new LayoutNGCustom(element);
   }
 
   NOTREACHED();

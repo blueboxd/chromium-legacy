@@ -132,4 +132,11 @@ crbug.com/972637 images/webp-color-profile-lossy.html [ Skip ]
 crbug.com/972637 media/video-poster-scale.html [ Skip ]
 
 # Need a Vulkan native specific baseline.
+crbug.com/993384 css3/blending/background-blend-mode-crossfade-image-gradient.html [ Skip ]
+crbug.com/993384 css3/blending/background-blend-mode-gradient-image.html [ Skip ]
+crbug.com/993384 css3/blending/background-blend-mode-image-color.html [ Skip ]
+crbug.com/993384 css3/blending/background-blend-mode-image-image.html [ Skip ]
 crbug.com/993384 css3/blending/background-blend-mode-image-svg.html [ Skip ]
+crbug.com/993384 css3/blending/background-blend-mode-tiled-gradient.html [ Skip ]
+crbug.com/993384 css3/blending/effect-background-blend-mode-tiled.html [ Skip ]
+crbug.com/993384 css3/blending/effect-background-blend-mode.html [ Skip ]

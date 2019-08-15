@@ -36,8 +36,7 @@ static jlong JNI_FeedSchedulerBridge_Init(
 FeedSchedulerBridge::FeedSchedulerBridge(const JavaRef<jobject>& j_this,
                                          FeedSchedulerHost* scheduler_host)
     : j_this_(ScopedJavaGlobalRef<jobject>(j_this)),
-      scheduler_host_(scheduler_host),
-      weak_factory_(this) {
+      scheduler_host_(scheduler_host) {
   DCHECK(scheduler_host_);
   scheduler_host_->Initialize(
       base::BindRepeating(&FeedSchedulerBridge::TriggerRefresh,

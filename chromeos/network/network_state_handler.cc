@@ -1934,6 +1934,9 @@ void NetworkStateHandler::NotifyIfActiveNetworksChanged() {
 
 void NetworkStateHandler::NotifyNetworkPropertiesUpdated(
     const NetworkState* network) {
+  // Skip property updates before NetworkState::InitialPropertiesReceived.
+  if (network->type().empty())
+    return;
   SCOPED_NET_LOG_IF_SLOW();
   NET_LOG_EVENT("NOTIFY:NetworkPropertiesUpdated", GetLogName(network));
   notifying_network_observers_ = true;

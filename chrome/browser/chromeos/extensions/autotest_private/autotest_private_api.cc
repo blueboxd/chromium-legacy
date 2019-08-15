@@ -17,6 +17,7 @@
 #include "ash/public/cpp/split_view.h"
 #include "ash/public/cpp/split_view_test_api.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/mojom/constants.mojom.h"
 #include "ash/shell.h"
@@ -59,6 +60,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/ash/assistant/assistant_client.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/browser/ui/views/crostini/crostini_installer_view.h"
@@ -76,7 +78,6 @@
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/histogram_fetcher.h"
-#include "content/public/browser/system_connector.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -88,7 +89,6 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/base/filename_util.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ime/ime_bridge.h"
@@ -1498,7 +1498,10 @@ void AutotestPrivateBootstrapMachineLearningServiceFunction::ConnectionError() {
 
 AutotestPrivateSetAssistantEnabledFunction::
     AutotestPrivateSetAssistantEnabledFunction() {
-  assistant_state_.Init(content::GetSystemConnector());
+  mojo::PendingRemote<ash::mojom::VoiceInteractionController> remote;
+  ash::VoiceInteractionController::Get()->BindRequest(
+      remote.InitWithNewPipeAndPassReceiver());
+  assistant_state_.Init(std::move(remote));
   assistant_state_.AddObserver(this);
 }
 
@@ -1589,10 +1592,7 @@ AutotestPrivateSendAssistantTextQueryFunction::Run() {
   }
 
   // Bind to Assistant service interface.
-  service_manager::Connector* connector =
-      content::BrowserContext::GetConnectorFor(profile);
-  connector->BindInterface(chromeos::assistant::mojom::kServiceName,
-                           &assistant_);
+  AssistantClient::Get()->BindAssistant(mojo::MakeRequest(&assistant_));
 
   // Subscribe to Assistant interaction events.
   chromeos::assistant::mojom::AssistantInteractionSubscriberPtr ptr;

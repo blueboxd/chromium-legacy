@@ -17,6 +17,7 @@
 #include "chromecast/media/cma/backend/media_pipeline_backend_for_mixer.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
+#include "chromecast/media/cma/base/decoder_config_adapter.h"
 #include "chromecast/public/media/cast_decoder_buffer.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -43,7 +44,6 @@ int64_t SamplesToMicroseconds(int64_t samples, int sample_rate) {
       .InMicroseconds();
 }
 
-const int kNumChannels = 2;
 const int kDefaultFramesPerBuffer = 1024;
 const int kSilenceBufferFrames = 2048;
 const int kMaxOutputMs = 20;
@@ -90,8 +90,6 @@ AudioDecoderForMixer::AudioDecoderForMixer(
     MediaPipelineBackendForMixer* backend)
     : backend_(backend),
       task_runner_(backend->GetTaskRunner()),
-      rate_shifter_output_(
-          ::media::AudioBus::Create(kNumChannels, kDefaultFramesPerBuffer)),
       pending_output_frames_(kNoPendingOutput),
       pool_(new ::media::AudioBufferMemoryPool()),
       weak_factory_(this) {
@@ -133,8 +131,8 @@ bool AudioDecoderForMixer::Start(int64_t playback_start_pts,
   TRACE_FUNCTION_ENTRY0();
   DCHECK(IsValidConfig(config_));
   mixer_input_.reset(new BufferingMixerSource(
-      this, config_.samples_per_second, backend_->Primary(),
-      backend_->DeviceId(), backend_->ContentType(),
+      this, config_.channel_number, config_.samples_per_second,
+      backend_->Primary(), backend_->DeviceId(), backend_->ContentType(),
       ToPlayoutChannel(backend_->AudioChannel()), playback_start_pts,
       start_playback_asap));
 
@@ -145,7 +143,7 @@ bool AudioDecoderForMixer::Start(int64_t playback_start_pts,
     CreateDecoder();
   }
   if (!rate_shifter_) {
-    CreateRateShifter(config_.samples_per_second);
+    CreateRateShifter(config_);
   }
   playback_start_pts_ = playback_start_pts;
   start_playback_asap_ = start_playback_asap;
@@ -313,36 +311,39 @@ bool AudioDecoderForMixer::SetConfig(const AudioConfig& config) {
     return false;
   }
 
-  bool changed_sample_rate =
-      (config.samples_per_second != config_.samples_per_second);
+  bool changed_config =
+      (config.samples_per_second != config_.samples_per_second ||
+       config.channel_number != config_.channel_number);
 
-  if (!rate_shifter_ || changed_sample_rate) {
-    CreateRateShifter(config.samples_per_second);
+  if (!rate_shifter_ || changed_config) {
+    CreateRateShifter(config);
   }
 
-  if (mixer_input_ && changed_sample_rate) {
-    ResetMixerInputForNewSampleRate(config.samples_per_second);
+  if (mixer_input_ && changed_config) {
+    ResetMixerInputForNewConfig(config);
   }
 
   config_ = config;
   decoder_.reset();
   CreateDecoder();
 
-  if (pending_buffer_complete_ && changed_sample_rate) {
+  if (pending_buffer_complete_ && changed_config) {
     pending_buffer_complete_ = false;
     delegate_->OnPushBufferComplete(MediaPipelineBackend::kBufferSuccess);
   }
   return true;
 }
 
-void AudioDecoderForMixer::ResetMixerInputForNewSampleRate(int sample_rate) {
+void AudioDecoderForMixer::ResetMixerInputForNewConfig(
+    const AudioConfig& config) {
   // Destroy the old input first to ensure that the mixer output sample rate
   // is updated.
   mixer_input_.reset();
   mixer_input_.reset(new BufferingMixerSource(
-      this, sample_rate, backend_->Primary(), backend_->DeviceId(),
-      backend_->ContentType(), ToPlayoutChannel(backend_->AudioChannel()),
-      playback_start_pts_, start_playback_asap_));
+      this, config.channel_number, config.samples_per_second,
+      backend_->Primary(), backend_->DeviceId(), backend_->ContentType(),
+      ToPlayoutChannel(backend_->AudioChannel()), playback_start_pts_,
+      start_playback_asap_));
   mixer_input_->SetVolumeMultiplier(volume_multiplier_);
   pending_output_frames_ = kNoPendingOutput;
   last_mixer_delay_ = AudioDecoderForMixer::RenderingDelay();
@@ -362,21 +363,22 @@ void AudioDecoderForMixer::CreateDecoder() {
   // Create a decoder.
   decoder_ = CastAudioDecoder::Create(
       task_runner_, config_, kDecoderSampleFormat,
-      ::media::CHANNEL_LAYOUT_STEREO,
       base::BindOnce(&AudioDecoderForMixer::OnDecoderInitialized,
                      base::Unretained(this)));
 }
 
-void AudioDecoderForMixer::CreateRateShifter(int samples_per_second) {
+void AudioDecoderForMixer::CreateRateShifter(const AudioConfig& config) {
   rate_shifter_info_.clear();
   rate_shifter_info_.push_back(RateShifterInfo(1.0f));
 
+  rate_shifter_output_.reset();
   rate_shifter_.reset(new ::media::AudioRendererAlgorithm());
   bool is_encrypted = false;
   rate_shifter_->Initialize(
-      ::media::AudioParameters(::media::AudioParameters::AUDIO_PCM_LINEAR,
-                               ::media::CHANNEL_LAYOUT_STEREO,
-                               samples_per_second, kDefaultFramesPerBuffer),
+      ::media::AudioParameters(
+          ::media::AudioParameters::AUDIO_PCM_LINEAR,
+          DecoderConfigAdapter::ToMediaChannelLayout(config.channel_layout),
+          config.samples_per_second, kDefaultFramesPerBuffer),
       is_encrypted);
 }
 
@@ -455,23 +457,37 @@ void AudioDecoderForMixer::OnBufferDecoded(
   delta.decoded_bytes = input_bytes;
   UpdateStatistics(delta);
 
-  if (has_config && config.samples_per_second != config_.samples_per_second) {
-    LOG(INFO) << "Input sample rate changed from " << config_.samples_per_second
-              << " to " << config.samples_per_second;
-    // Sample rate from actual stream doesn't match supposed sample rate from
-    // the container. Update the mixer and rate shifter. Note that for now we
-    // assume that this can only happen at start of stream (ie, on the first
-    // decoded buffer).
-    config_.samples_per_second = config.samples_per_second;
-    CreateRateShifter(config.samples_per_second);
-    ResetMixerInputForNewSampleRate(config.samples_per_second);
+  if (has_config) {
+    bool changed_config = false;
+    if (config.samples_per_second != config_.samples_per_second) {
+      LOG(INFO) << "Input sample rate changed from "
+                << config_.samples_per_second << " to "
+                << config.samples_per_second;
+      config_.samples_per_second = config.samples_per_second;
+      changed_config = true;
+    }
+    if (config.channel_number != config_.channel_number) {
+      LOG(INFO) << "Input channel count changed from " << config_.channel_number
+                << " to " << config.channel_number;
+      config_.channel_number = config.channel_number;
+      changed_config = true;
+    }
+    if (changed_config) {
+      // Config from actual stream doesn't match supposed config from the
+      // container. Update the mixer and rate shifter. Note that for now we
+      // assume that this can only happen at start of stream (ie, on the first
+      // decoded buffer).
+      CreateRateShifter(config_);
+      ResetMixerInputForNewConfig(config_);
+    }
   }
 
   pending_buffer_complete_ = true;
   if (decoded->end_of_stream()) {
     got_eos_ = true;
   } else {
-    int input_frames = decoded->data_size() / (kNumChannels * sizeof(float));
+    int input_frames =
+        decoded->data_size() / (config_.channel_number * sizeof(float));
 
     DCHECK(!rate_shifter_info_.empty());
     RateShifterInfo* rate_info = &rate_shifter_info_.front();
@@ -498,12 +514,18 @@ void AudioDecoderForMixer::OnBufferDecoded(
 
     // Otherwise, queue data into the rate shifter, and then try to push the
     // rate-shifted data.
-    const uint8_t* channels[kNumChannels] = {
-        decoded->data(), decoded->data() + input_frames * sizeof(float)};
-    scoped_refptr<::media::AudioBuffer> buffer = ::media::AudioBuffer::CopyFrom(
-        ::media::kSampleFormatPlanarF32, ::media::CHANNEL_LAYOUT_STEREO,
-        kNumChannels, config_.samples_per_second, input_frames, channels,
-        base::TimeDelta(), pool_);
+    scoped_refptr<::media::AudioBuffer> buffer =
+        ::media::AudioBuffer::CreateBuffer(
+            ::media::kSampleFormatPlanarF32,
+            DecoderConfigAdapter::ToMediaChannelLayout(config_.channel_layout),
+            config_.channel_number, config_.samples_per_second, input_frames,
+            pool_);
+    buffer->set_timestamp(base::TimeDelta());
+    const int channel_data_size = input_frames * sizeof(float);
+    for (int c = 0; c < config_.channel_number; ++c) {
+      memcpy(buffer->channel_data()[c], decoded->data() + c * channel_data_size,
+             channel_data_size);
+    }
     rate_shifter_->EnqueueBuffer(buffer);
     rate_shifter_info_.back().input_frames += input_frames;
     rate_shifter_info_.back().end_pts =
@@ -548,8 +570,9 @@ void AudioDecoderForMixer::PushRateShifted() {
     // Push some silence into the rate shifter so we can get out any remaining
     // rate-shifted data.
     rate_shifter_->EnqueueBuffer(::media::AudioBuffer::CreateEmptyBuffer(
-        ::media::CHANNEL_LAYOUT_STEREO, kNumChannels,
-        config_.samples_per_second, kSilenceBufferFrames, base::TimeDelta()));
+        DecoderConfigAdapter::ToMediaChannelLayout(config_.channel_layout),
+        config_.channel_number, config_.samples_per_second,
+        kSilenceBufferFrames, base::TimeDelta()));
   }
 
   DCHECK(!rate_shifter_info_.empty());
@@ -576,9 +599,10 @@ void AudioDecoderForMixer::PushRateShifted() {
       available_output_frames,
       config_.samples_per_second * kMaxOutputMs / kMillisecondsPerSecond);
 
-  if (desired_output_frames > rate_shifter_output_->frames()) {
-    rate_shifter_output_ =
-        ::media::AudioBus::Create(kNumChannels, desired_output_frames);
+  if (!rate_shifter_output_ ||
+      desired_output_frames > rate_shifter_output_->frames()) {
+    rate_shifter_output_ = ::media::AudioBus::Create(config_.channel_number,
+                                                     desired_output_frames);
   }
 
   int out_frames = rate_shifter_->FillBuffer(
@@ -592,8 +616,8 @@ void AudioDecoderForMixer::PushRateShifted() {
 
   int channel_data_size = out_frames * sizeof(float);
   scoped_refptr<DecoderBufferBase> output_buffer(new DecoderBufferAdapter(
-      new ::media::DecoderBuffer(channel_data_size * kNumChannels)));
-  for (int c = 0; c < kNumChannels; ++c) {
+      new ::media::DecoderBuffer(channel_data_size * config_.channel_number)));
+  for (int c = 0; c < config_.channel_number; ++c) {
     memcpy(output_buffer->writable_data() + c * channel_data_size,
            rate_shifter_output_->channel(c), channel_data_size);
   }
@@ -638,7 +662,7 @@ void AudioDecoderForMixer::PushRateShifted() {
       if (extra_frames > 0) {
         // Clear out extra buffered data.
         std::unique_ptr<::media::AudioBus> dropped =
-            ::media::AudioBus::Create(kNumChannels, extra_frames);
+            ::media::AudioBus::Create(config_.channel_number, extra_frames);
         int cleared_frames =
             rate_shifter_->FillBuffer(dropped.get(), 0, extra_frames, 1.0f);
         DCHECK_EQ(extra_frames, cleared_frames);

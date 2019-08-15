@@ -35,11 +35,15 @@ class MockResourcePrefetchPredictor : public ResourcePrefetchPredictor {
   MOCK_METHOD1(RecordPageRequestSummaryProxy, void(PageRequestSummary*));
 };
 
+// |include_scheme| and |include_port| can be set to false to simulate legacy
+// data, which doesn't have new fields.
 void InitializeRedirectStat(RedirectStat* redirect,
                             const GURL& url,
                             int number_of_hits,
                             int number_of_misses,
-                            int consecutive_misses);
+                            int consecutive_misses,
+                            bool include_scheme = true,
+                            bool include_port = true);
 
 void InitializeOriginStat(OriginStat* origin_stat,
                           const std::string& origin,

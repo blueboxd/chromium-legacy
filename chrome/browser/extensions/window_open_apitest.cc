@@ -76,15 +76,16 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, DISABLED_WindowOpen) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-bool WaitForTabsAndPopups(Browser* browser,
-                          int num_tabs,
-                          int num_popups) {
+bool WaitForTabsPopupsApps(Browser* browser,
+                           int num_tabs,
+                           int num_popups,
+                           int num_apps) {
   SCOPED_TRACE(
-      base::StringPrintf("WaitForTabsAndPopups tabs:%d, popups:%d",
-                         num_tabs, num_popups));
+      base::StringPrintf("WaitForTabsPopupsApps tabs:%d, popups:%d, apps:%d",
+                         num_tabs, num_popups, num_apps));
   // We start with one tab and one browser already open.
   ++num_tabs;
-  size_t num_browsers = static_cast<size_t>(num_popups) + 1;
+  size_t num_browsers = static_cast<size_t>(num_popups + num_apps) + 1;
 
   const base::TimeDelta kWaitTime = base::TimeDelta::FromSeconds(10);
   base::TimeTicks end_time = base::TimeTicks::Now() + kWaitTime;
@@ -100,18 +101,23 @@ bool WaitForTabsAndPopups(Browser* browser,
   EXPECT_EQ(num_tabs, browser->tab_strip_model()->count());
 
   int num_popups_seen = 0;
+  int num_apps_seen = 0;
   for (auto* b : *BrowserList::GetInstance()) {
     if (b == browser)
       continue;
 
-    EXPECT_TRUE(b->is_type_popup());
-    ++num_popups_seen;
+    EXPECT_TRUE(b->is_type_popup() || b->is_type_app());
+    if (b->is_type_popup())
+      ++num_popups_seen;
+    else if (b->is_type_app())
+      ++num_apps_seen;
   }
   EXPECT_EQ(num_popups, num_popups_seen);
+  EXPECT_EQ(num_apps, num_apps_seen);
 
   return ((num_browsers == chrome::GetBrowserCount(browser->profile())) &&
           (num_tabs == browser->tab_strip_model()->count()) &&
-          (num_popups == num_popups_seen));
+          (num_popups == num_popups_seen) && (num_apps == num_apps_seen));
 }
 
 IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, BrowserIsApp) {
@@ -119,13 +125,13 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, BrowserIsApp) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("window_open").AppendASCII("browser_is_app")));
 
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), 0, 2));
+  EXPECT_TRUE(WaitForTabsPopupsApps(browser(), 0, 0, 2));
 
   for (auto* b : *BrowserList::GetInstance()) {
     if (b == browser())
-      ASSERT_FALSE(b->is_app());
+      ASSERT_FALSE(b->is_type_app());
     else
-      ASSERT_TRUE(b->is_app());
+      ASSERT_TRUE(b->is_type_app());
   }
 }
 
@@ -134,9 +140,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, WindowOpenPopupDefault) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("window_open").AppendASCII("popup")));
 
-  const int num_tabs = 1;
-  const int num_popups = 0;
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), num_tabs, num_popups));
+  EXPECT_TRUE(WaitForTabsPopupsApps(browser(), 1, 0, 0));
 }
 
 IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, WindowOpenPopupIframe) {
@@ -147,9 +151,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, WindowOpenPopupIframe) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("window_open").AppendASCII("popup_iframe")));
 
-  const int num_tabs = 1;
-  const int num_popups = 0;
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), num_tabs, num_popups));
+  EXPECT_TRUE(WaitForTabsPopupsApps(browser(), 1, 0, 0));
 }
 
 IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, WindowOpenPopupLarge) {
@@ -158,9 +160,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, WindowOpenPopupLarge) {
       test_data_dir_.AppendASCII("window_open").AppendASCII("popup_large")));
 
   // On other systems this should open a new popup window.
-  const int num_tabs = 0;
-  const int num_popups = 1;
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), num_tabs, num_popups));
+  EXPECT_TRUE(WaitForTabsPopupsApps(browser(), 0, 0, 1));
 }
 
 IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, WindowOpenPopupSmall) {
@@ -170,9 +170,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, WindowOpenPopupSmall) {
 
   // On ChromeOS this should open a new panel (acts like a new popup window).
   // On other systems this should open a new popup window.
-  const int num_tabs = 0;
-  const int num_popups = 1;
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), num_tabs, num_popups));
+  EXPECT_TRUE(WaitForTabsPopupsApps(browser(), 0, 0, 1));
 }
 
 // Disabled on Windows. Often times out or fails: crbug.com/177530
@@ -188,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, MAYBE_PopupBlockingExtension) {
       test_data_dir_.AppendASCII("window_open").AppendASCII("popup_blocking")
       .AppendASCII("extension")));
 
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), 5, 3));
+  EXPECT_TRUE(WaitForTabsPopupsApps(browser(), 5, 2, 1));
 }
 
 IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, PopupBlockingHostedApp) {
@@ -221,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, PopupBlockingHostedApp) {
                                    WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                    ui::PAGE_TRANSITION_TYPED, false));
 
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), 3, 1));
+  EXPECT_TRUE(WaitForTabsPopupsApps(browser(), 3, 1, 0));
 }
 
 IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, WindowArgumentsOverflow) {
@@ -242,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, DISABLED_WindowOpener) {
 // chrome.windows.create match the creation parameters. See crbug.com/173831.
 IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, MAYBE_WindowOpenSized) {
   ASSERT_TRUE(RunExtensionTest("window_open/window_size")) << message_;
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), 0, 1));
+  EXPECT_TRUE(WaitForTabsPopupsApps(browser(), 0, 0, 1));
 }
 
 // Tests that an extension page can call window.open to an extension URL and

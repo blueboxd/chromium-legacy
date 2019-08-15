@@ -312,7 +312,7 @@ void ProfileResetter::ResetStartupPages() {
 void ProfileResetter::ResetPinnedTabs() {
   // Unpin all the tabs.
   for (auto* browser : *BrowserList::GetInstance()) {
-    if (browser->is_type_tabbed() && browser->profile() == profile_) {
+    if (browser->is_type_normal() && browser->profile() == profile_) {
       TabStripModel* tab_model = browser->tab_strip_model();
       // Here we assume that indexof(any mini tab) < indexof(any normal tab).
       // If we unpin the tab, it can be moved to the right. Thus traversing in

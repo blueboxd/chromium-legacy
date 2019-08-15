@@ -738,9 +738,16 @@ void WebLocalFrameImpl::SetIsolatedWorldInfo(int32_t world_id,
   CHECK_GT(world_id, DOMWrapperWorld::kMainWorldId);
   CHECK_LT(world_id, DOMWrapperWorld::kDOMWrapperWorldEmbedderWorldIdLimit);
 
+  // The security origin received via IPC doesn't contain the agent cluster
+  // ID so we need to make sure it contains the cluster agent ID from
+  // the current document.
   scoped_refptr<SecurityOrigin> security_origin =
-      info.security_origin.Get() ? info.security_origin.Get()->IsolatedCopy()
-                                 : nullptr;
+      info.security_origin.Get()
+          ? info.security_origin.Get()
+                ->IsolatedCopy()
+                ->GetOriginForAgentCluster(
+                    GetFrame()->GetDocument()->GetAgentClusterID())
+          : nullptr;
 
   CHECK(info.content_security_policy.IsNull() || security_origin);
 

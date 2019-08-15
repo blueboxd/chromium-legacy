@@ -463,7 +463,7 @@
       "vendor_id": "0x10de",
       "driver_version": {
         "op": "<=",
-        "value": "269.73"
+        "value": "8.17.12.6973"
       },
       "features": [
         "disable_d3d11"
@@ -623,7 +623,7 @@
       "vendor_id": "0x1002",
       "driver_version": {
         "op": "<",
-        "value": "8.830.0.0000"
+        "value": "8.17.10.1070"
       },
       "features": [
         "disable_d3d11"
@@ -683,7 +683,7 @@
       "vendor_id": "0x8086",
       "driver_version": {
         "op": "<=",
-        "value": "9.18"
+        "value": "9.18.0.0"
       },
       "features": [
         "disable_d3d11"
@@ -1791,7 +1791,7 @@
       },
       "driver_version": {
         "op": "<",
-        "value": "375.76"
+        "value": "21.21.13.7576"
       },
       "vendor_id": "0x10de",
       "features": [
@@ -2938,7 +2938,7 @@
       "vendor_id": "0x1002",
       "driver_version": {
         "op": "=",
-        "value": "8.970.100.9001"
+        "value": "8.17.10.1129"
       },
       "features": [
         "disable_direct_composition"
@@ -3249,7 +3249,7 @@
       "vendor_id": "0x8086",
       "driver_version": {
         "op": "<",
-        "value": "24"
+        "value": "24.0.0.0"
       },
       "features": [
           "disable_nv12_dynamic_textures"
@@ -3265,7 +3265,7 @@
       "vendor_id": "0x10de",
       "driver_version": {
         "op": "<",
-        "value": "419"
+        "value": "25.21.14.1900"
       },
       "features": [
         "disable_direct_composition_layers"

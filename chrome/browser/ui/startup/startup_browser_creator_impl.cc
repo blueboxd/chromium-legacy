@@ -460,7 +460,7 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
   if (!profile_ && browser)
     profile_ = browser->profile();
 
-  if (!browser || !browser->is_type_tabbed()) {
+  if (!browser || !browser->is_type_normal()) {
     // Startup browsers are not counted as being created by a user_gesture
     // because of historical accident, even though the startup browser was
     // created in response to the user clicking on chrome. There was an

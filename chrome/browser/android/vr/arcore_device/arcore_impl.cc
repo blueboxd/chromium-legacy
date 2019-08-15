@@ -42,8 +42,7 @@ device::mojom::VRPosePtr GetMojomPoseFromArPose(
 namespace device {
 
 ArCoreImpl::ArCoreImpl()
-    : gl_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this) {}
+    : gl_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 ArCoreImpl::~ArCoreImpl() = default;
 

@@ -22,12 +22,11 @@ class PeriodicBackgroundSyncServiceImplTest
   void CreatePeriodicBackgroundSyncServiceImpl() {
     // Create a dummy mojo channel so that the PeriodicBackgroundSyncServiceImpl
     // can be instantiated.
-    mojo::InterfaceRequest<blink::mojom::PeriodicBackgroundSyncService>
-        service_request = mojo::MakeRequest(&periodic_sync_service_ptr_);
+    mojo::PendingReceiver<blink::mojom::PeriodicBackgroundSyncService>
+        receiver = periodic_sync_service_remote_.BindNewPipeAndPassReceiver();
     // Create a new PeriodicBackgroundSyncServiceImpl bound to the dummy
     // channel.
-    background_sync_context_->CreatePeriodicSyncService(
-        std::move(service_request));
+    background_sync_context_->CreatePeriodicSyncService(std::move(receiver));
     base::RunLoop().RunUntilIdle();
 
     // Since |background_sync_context_| is deleted after
@@ -63,7 +62,8 @@ class PeriodicBackgroundSyncServiceImplTest
     base::RunLoop().RunUntilIdle();
   }
 
-  blink::mojom::PeriodicBackgroundSyncServicePtr periodic_sync_service_ptr_;
+  mojo::Remote<blink::mojom::PeriodicBackgroundSyncService>
+      periodic_sync_service_remote_;
 
   // Owned by |background_sync_context_|
   PeriodicBackgroundSyncServiceImpl* periodic_sync_service_impl_;

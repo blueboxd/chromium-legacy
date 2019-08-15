@@ -53,8 +53,7 @@ FeedInternalsPageHandler::FeedInternalsPageHandler(
     : binding_(this, std::move(request)),
       feed_scheduler_host_(feed_host_service->GetSchedulerHost()),
       feed_offline_host_(feed_host_service->GetOfflineHost()),
-      pref_service_(pref_service),
-      weak_ptr_factory_(this) {}
+      pref_service_(pref_service) {}
 
 FeedInternalsPageHandler::~FeedInternalsPageHandler() = default;
 

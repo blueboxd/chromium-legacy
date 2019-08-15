@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserve
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
+import org.chromium.chrome.browser.widget.dragreorder.DragReorderableListAdapter;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -30,7 +31,8 @@ import java.util.List;
  * associated with the current context.
  */
 public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
-        implements BookmarkUIObserver, OnMenuItemClickListener, OnClickListener {
+        implements BookmarkUIObserver, OnMenuItemClickListener, OnClickListener,
+                   DragReorderableListAdapter.DragListener {
     private BookmarkItem mCurrentFolder;
     private BookmarkDelegate mDelegate;
 
@@ -235,5 +237,19 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
             tabDelegate.createNewTab(new LoadUrlParams(model.getBookmarkById(id).getUrl()),
                     TabLaunchType.FROM_LONGPRESS_BACKGROUND, null);
         }
+    }
+
+    // DragListener implementation.
+
+    /**
+     * Called when there is a drag in the bookmarks list.
+     *
+     * @param drag Whether drag is currently on.
+     */
+    @Override
+    public void onDragStateChange(boolean drag) {
+        getMenu().setGroupEnabled(R.id.selection_mode_menu_group, !drag);
+        setNavigationOnClickListener(drag ? null : this);
+        setOnMenuItemClickListener(drag ? null : this);
     }
 }

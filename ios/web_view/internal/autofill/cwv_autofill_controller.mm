@@ -259,12 +259,11 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
       }
       completionHandler([autofillSuggestions copy]);
     };
-    // Set |typedValue| to " " to bypass the filtering logic in |AutofillAgent|.
     [strongSelf->_autofillAgent retrieveSuggestionsForForm:formName
                                            fieldIdentifier:fieldIdentifier
                                                  fieldType:fieldType
                                                       type:nil
-                                                typedValue:@" "
+                                                typedValue:nil
                                                    frameID:frameID
                                                   webState:strongSelf->_webState
                                          completionHandler:retrieveHandler];
@@ -272,12 +271,11 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
   // It is necessary to call |checkIfSuggestionsAvailableForForm| before
   // |retrieveSuggestionsForForm| because the former actually queries the db,
   // while the latter merely returns them.
-  // Set |typedValue| to " " to bypass the filtering logic in |AutofillAgent|.
   [_autofillAgent checkIfSuggestionsAvailableForForm:formName
                                      fieldIdentifier:fieldIdentifier
                                            fieldType:fieldType
                                                 type:nil
-                                          typedValue:@" "
+                                          typedValue:nil
                                              frameID:frameID
                                          isMainFrame:YES
                                       hasUserGesture:YES

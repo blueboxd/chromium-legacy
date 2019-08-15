@@ -360,7 +360,7 @@ GURL GetSettingsUrl(const std::string& sub_page) {
 
 bool IsTrustedPopupWindowWithScheme(const Browser* browser,
                                     const std::string& scheme) {
-  if (!browser->is_type_popup() || !browser->is_trusted_source())
+  if (browser->is_type_normal() || !browser->is_trusted_source())
     return false;
   if (scheme.empty())  // Any trusted popup window
     return true;

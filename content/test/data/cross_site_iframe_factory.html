@@ -131,6 +131,7 @@ function canonicalizeSiteAndPort(siteString, defaultPort) {
  * Parses the list of iframe options and applies them to the provided element.
  */
 function applyIFrameOptions(element, options) {
+  var sandbox = false;
   var sandboxArguments = [];
   var allowFeatures = [];
   for (var option of options) {
@@ -140,14 +141,18 @@ function applyIFrameOptions(element, options) {
     if (option == "allowpaymentrequest") {
       element.allowPaymentRequest = true;
     }
+    if (option == "sandbox") {
+      sandbox = true;
+    }
     if (option.startsWith("sandbox-")) {
+      sandbox = true;
       sandboxArguments.push(option.slice(8));
     }
     if (option.startsWith("allow-")) {
       allowFeatures.push(option.slice(6))
     }
   }
-  if (sandboxArguments.length) {
+  if (sandbox) {
     element.sandbox = sandboxArguments.join(" ");
   }
   if (allowFeatures.length) {

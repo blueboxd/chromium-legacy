@@ -403,8 +403,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, ExcludeOrigin) {
 
 TEST_F(AlternateProtocolServerPropertiesTest, Set) {
   // |test_server1| has an alternative service, which will not be
-  // affected by OnAlternativeServiceServersLoadedForTesting(), because
-  // |alternative_service_map| does not have an entry for
+  // affected by OnServerInfoLoadedForTesting(), because
+  // |server_info_map| does not have an entry for
   // |test_server1|.
   url::SchemeHostPort test_server1("http", "foo1", 80);
   const AlternativeService alternative_service1(kProtoHTTP2, "bar1", 443);
@@ -415,9 +415,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, Set) {
                                    expiration1);
 
   // |test_server2| has an alternative service, which will be
-  // overwritten by OnAlternativeServiceServersLoadedForTesting(), because
-  // |alternative_service_map| has an entry for
-  // |test_server2|.
+  // overwritten by OnServerInfoLoadedForTesting(), because
+  // |server_info_map| has an entry for |test_server2|.
   AlternativeServiceInfoVector alternative_service_info_vector;
   const AlternativeService alternative_service2(kProtoHTTP2, "bar2", 443);
   base::Time expiration2 = now + base::TimeDelta::FromDays(2);
@@ -428,19 +427,17 @@ TEST_F(AlternateProtocolServerPropertiesTest, Set) {
   // 0th entry in the memory.
   impl_.SetAlternativeServices(test_server2, alternative_service_info_vector);
 
-  // Prepare |alternative_service_map| to be loaded by
-  // OnAlternativeServiceServersLoadedForTesting().
-  std::unique_ptr<AlternativeServiceMap> alternative_service_map =
-      std::make_unique<AlternativeServiceMap>();
+  // Prepare |server_info_map| to be loaded by OnServerInfoLoadedForTesting().
+  std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map =
+      std::make_unique<HttpServerProperties::ServerInfoMap>();
   const AlternativeService alternative_service3(kProtoHTTP2, "bar3", 123);
   base::Time expiration3 = now + base::TimeDelta::FromDays(3);
   const AlternativeServiceInfo alternative_service_info1 =
       AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
           alternative_service3, expiration3);
   // Simulate updating data for 0th entry with data from Preferences.
-  alternative_service_map->Put(
-      test_server2,
-      AlternativeServiceInfoVector(/*size=*/1, alternative_service_info1));
+  server_info_map->GetOrPut(test_server2)->second.alternative_services =
+      AlternativeServiceInfoVector(/*size=*/1, alternative_service_info1);
 
   url::SchemeHostPort test_server3("http", "foo3", 80);
   const AlternativeService alternative_service4(kProtoHTTP2, "bar4", 1234);
@@ -450,37 +447,43 @@ TEST_F(AlternateProtocolServerPropertiesTest, Set) {
           alternative_service4, expiration4);
   // Add an old entry from Preferences, this will be added to end of recency
   // list.
-  alternative_service_map->Put(
-      test_server3,
-      AlternativeServiceInfoVector(/*size=*/1, alternative_service_info2));
+  server_info_map->GetOrPut(test_server3)->second.alternative_services =
+      AlternativeServiceInfoVector(/*size=*/1, alternative_service_info2);
 
   // MRU list will be test_server2, test_server1, test_server3.
-  impl_.OnAlternativeServiceServersLoadedForTesting(
-      std::move(alternative_service_map));
+  impl_.OnServerInfoLoadedForTesting(std::move(server_info_map));
 
-  // Verify alternative_service_map.
-  const AlternativeServiceMap& map = impl_.alternative_service_map();
+  // Verify server_info_map.
+  const HttpServerProperties::ServerInfoMap& map =
+      impl_.server_info_map_for_testing();
   ASSERT_EQ(3u, map.size());
   auto map_it = map.begin();
 
   EXPECT_EQ(map_it->first, test_server2);
-  ASSERT_EQ(1u, map_it->second.size());
-  EXPECT_EQ(alternative_service3, map_it->second[0].alternative_service());
-  EXPECT_EQ(expiration3, map_it->second[0].expiration());
+  ASSERT_TRUE(map_it->second.alternative_services.has_value());
+  const AlternativeServiceInfoVector* service_info =
+      &map_it->second.alternative_services.value();
+  ASSERT_EQ(1u, service_info->size());
+  EXPECT_EQ(alternative_service3, (*service_info)[0].alternative_service());
+  EXPECT_EQ(expiration3, (*service_info)[0].expiration());
   ++map_it;
   EXPECT_EQ(map_it->first, test_server1);
-  ASSERT_EQ(1u, map_it->second.size());
-  EXPECT_EQ(alternative_service1, map_it->second[0].alternative_service());
-  EXPECT_EQ(expiration1, map_it->second[0].expiration());
+  ASSERT_TRUE(map_it->second.alternative_services.has_value());
+  service_info = &map_it->second.alternative_services.value();
+  ASSERT_EQ(1u, service_info->size());
+  EXPECT_EQ(alternative_service1, (*service_info)[0].alternative_service());
+  EXPECT_EQ(expiration1, (*service_info)[0].expiration());
   ++map_it;
   EXPECT_EQ(map_it->first, test_server3);
-  ASSERT_EQ(1u, map_it->second.size());
-  EXPECT_EQ(alternative_service4, map_it->second[0].alternative_service());
-  EXPECT_EQ(expiration4, map_it->second[0].expiration());
+  ASSERT_TRUE(map_it->second.alternative_services.has_value());
+  service_info = &map_it->second.alternative_services.value();
+  ASSERT_EQ(1u, service_info->size());
+  EXPECT_EQ(alternative_service4, (*service_info)[0].alternative_service());
+  EXPECT_EQ(expiration4, (*service_info)[0].expiration());
 }
 
 // Regression test for https://crbug.com/504032:
-// OnAlternativeServiceServersLoadedForTesting() should not crash if there is an
+// OnServerInfoLoadedForTesting() should not crash if there is an
 // empty hostname is the mapping.
 TEST_F(AlternateProtocolServerPropertiesTest, SetWithEmptyHostname) {
   url::SchemeHostPort server("https", "foo", 443);
@@ -491,10 +494,9 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetWithEmptyHostname) {
   SetAlternativeService(server, alternative_service_with_empty_hostname);
   impl_.MarkAlternativeServiceBroken(alternative_service_with_foo_hostname);
 
-  std::unique_ptr<AlternativeServiceMap> alternative_service_map =
-      std::make_unique<AlternativeServiceMap>();
-  impl_.OnAlternativeServiceServersLoadedForTesting(
-      std::move(alternative_service_map));
+  std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map =
+      std::make_unique<HttpServerProperties::ServerInfoMap>();
+  impl_.OnServerInfoLoadedForTesting(std::move(server_info_map));
 
   EXPECT_TRUE(
       impl_.IsAlternativeServiceBroken(alternative_service_with_foo_hostname));
@@ -506,7 +508,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetWithEmptyHostname) {
 }
 
 // Regression test for https://crbug.com/516486:
-// GetAlternativeServiceInfos() should remove |alternative_service_map_|
+// GetAlternativeServiceInfos() should remove |server_info_map_|
 // elements with empty value.
 TEST_F(AlternateProtocolServerPropertiesTest, EmptyVector) {
   url::SchemeHostPort server("https", "foo", 443);
@@ -515,24 +517,23 @@ TEST_F(AlternateProtocolServerPropertiesTest, EmptyVector) {
   const AlternativeServiceInfo alternative_service_info =
       AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
           alternative_service, expiration);
-  std::unique_ptr<AlternativeServiceMap> alternative_service_map =
-      std::make_unique<AlternativeServiceMap>();
-  alternative_service_map->Put(
-      server,
-      AlternativeServiceInfoVector(/*size=*/1, alternative_service_info));
+  std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map =
+      std::make_unique<HttpServerProperties::ServerInfoMap>();
+  server_info_map->GetOrPut(server)->second.alternative_services =
+      AlternativeServiceInfoVector(
+          /*size=*/1, alternative_service_info);
 
-  // Prepare |alternative_service_map_| with a single key that has a single
+  // Prepare |server_info_map_| with a single key that has a single
   // AlternativeServiceInfo with identical hostname and port.
-  impl_.OnAlternativeServiceServersLoadedForTesting(
-      std::move(alternative_service_map));
+  impl_.OnServerInfoLoadedForTesting(std::move(server_info_map));
 
   // GetAlternativeServiceInfos() should remove such AlternativeServiceInfo from
-  // |alternative_service_map_|, emptying the AlternativeServiceInfoVector
+  // |server_info_map_|, emptying the AlternativeServiceInfoVector
   // corresponding to |server|.
   ASSERT_TRUE(impl_.GetAlternativeServiceInfos(server).empty());
 
   // GetAlternativeServiceInfos() should remove this key from
-  // |alternative_service_map_|, and SetAlternativeServices() should not crash.
+  // |server_info_map_|, and SetAlternativeServices() should not crash.
   impl_.SetAlternativeServices(
       server,
       AlternativeServiceInfoVector(/*size=*/1, alternative_service_info));
@@ -550,25 +551,23 @@ TEST_F(AlternateProtocolServerPropertiesTest, EmptyVectorForCanonical) {
   const AlternativeServiceInfo alternative_service_info =
       AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
           alternative_service, expiration);
-  std::unique_ptr<AlternativeServiceMap> alternative_service_map =
-      std::make_unique<AlternativeServiceMap>();
-  alternative_service_map->Put(
-      canonical_server,
-      AlternativeServiceInfoVector(/*size=*/1, alternative_service_info));
+  std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map =
+      std::make_unique<HttpServerProperties::ServerInfoMap>();
+  server_info_map->GetOrPut(canonical_server)->second.alternative_services =
+      AlternativeServiceInfoVector(/*size=*/1, alternative_service_info);
 
-  // Prepare |alternative_service_map_| with a single key that has a single
+  // Prepare |server_info_map_| with a single key that has a single
   // AlternativeServiceInfo with identical hostname and port.
-  impl_.OnAlternativeServiceServersLoadedForTesting(
-      std::move(alternative_service_map));
+  impl_.OnServerInfoLoadedForTesting(std::move(server_info_map));
 
   // GetAlternativeServiceInfos() should remove such AlternativeServiceInfo from
-  // |alternative_service_map_|, emptying the AlternativeServiceInfoVector
+  // |server_info_map_|, emptying the AlternativeServiceInfoVector
   // corresponding to |canonical_server|, even when looking up
   // alternative services for |server|.
   ASSERT_TRUE(impl_.GetAlternativeServiceInfos(server).empty());
 
   // GetAlternativeServiceInfos() should remove this key from
-  // |alternative_service_map_|, and SetAlternativeServices() should not crash.
+  // |server_info_map_|, and SetAlternativeServices() should not crash.
   impl_.SetAlternativeServices(
       canonical_server,
       AlternativeServiceInfoVector(/*size=*/1, alternative_service_info));
@@ -603,7 +602,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearServerWithCanonical) {
   // Now clear the alternatives for the other server and make sure it stays
   // cleared.
   // GetAlternativeServices() should remove this key from
-  // |alternative_service_map_|, and SetAlternativeServices() should not crash.
+  // |server_info_map_|, and SetAlternativeServices() should not crash.
   impl_.SetAlternativeServices(server, AlternativeServiceInfoVector());
 
   ASSERT_TRUE(impl_.GetAlternativeServiceInfos(server).empty());
@@ -617,11 +616,14 @@ TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternativeServiceInfos) {
   const AlternativeService alternative_service2(kProtoHTTP2, "foo2", 1234);
   SetAlternativeService(test_server2, alternative_service2);
 
-  const AlternativeServiceMap& map = impl_.alternative_service_map();
+  const HttpServerProperties::ServerInfoMap& map =
+      impl_.server_info_map_for_testing();
   auto it = map.begin();
   EXPECT_EQ(it->first, test_server2);
-  ASSERT_EQ(1u, it->second.size());
-  EXPECT_EQ(alternative_service2, it->second[0].alternative_service());
+  ASSERT_TRUE(it->second.alternative_services.has_value());
+  ASSERT_EQ(1u, it->second.alternative_services->size());
+  EXPECT_EQ(alternative_service2,
+            it->second.alternative_services.value()[0].alternative_service());
 
   const AlternativeServiceInfoVector alternative_service_info_vector =
       impl_.GetAlternativeServiceInfos(test_server1);
@@ -632,8 +634,10 @@ TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternativeServiceInfos) {
   // GetAlternativeServices should reorder the AlternateProtocol map.
   it = map.begin();
   EXPECT_EQ(it->first, test_server1);
-  ASSERT_EQ(1u, it->second.size());
-  EXPECT_EQ(alternative_service1, it->second[0].alternative_service());
+  ASSERT_TRUE(it->second.alternative_services.has_value());
+  ASSERT_EQ(1u, it->second.alternative_services->size());
+  EXPECT_EQ(alternative_service1,
+            it->second.alternative_services.value()[0].alternative_service());
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
@@ -816,12 +820,16 @@ TEST_F(AlternateProtocolServerPropertiesTest, AlternativeServiceWithScheme) {
   url::SchemeHostPort http_server("http", "foo", 80);
   impl_.SetAlternativeServices(http_server, alternative_service_info_vector);
 
-  const net::AlternativeServiceMap& map = impl_.alternative_service_map();
+  const net::HttpServerProperties::ServerInfoMap& map =
+      impl_.server_info_map_for_testing();
   auto it = map.begin();
   EXPECT_EQ(it->first, http_server);
-  ASSERT_EQ(2u, it->second.size());
-  EXPECT_EQ(alternative_service1, it->second[0].alternative_service());
-  EXPECT_EQ(alternative_service2, it->second[1].alternative_service());
+  ASSERT_TRUE(it->second.alternative_services.has_value());
+  ASSERT_EQ(2u, it->second.alternative_services->size());
+  EXPECT_EQ(alternative_service1,
+            it->second.alternative_services.value()[0].alternative_service());
+  EXPECT_EQ(alternative_service2,
+            it->second.alternative_services.value()[1].alternative_service());
 
   // Check Alt-Svc list should not be set for |https_server|.
   url::SchemeHostPort https_server("https", "foo", 80);
@@ -853,12 +861,16 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearAlternativeServices) {
   url::SchemeHostPort test_server("http", "foo", 80);
   impl_.SetAlternativeServices(test_server, alternative_service_info_vector);
 
-  const net::AlternativeServiceMap& map = impl_.alternative_service_map();
+  const net::HttpServerProperties::ServerInfoMap& map =
+      impl_.server_info_map_for_testing();
   auto it = map.begin();
   EXPECT_EQ(it->first, test_server);
-  ASSERT_EQ(2u, it->second.size());
-  EXPECT_EQ(alternative_service1, it->second[0].alternative_service());
-  EXPECT_EQ(alternative_service2, it->second[1].alternative_service());
+  ASSERT_TRUE(it->second.alternative_services.has_value());
+  ASSERT_EQ(2u, it->second.alternative_services->size());
+  EXPECT_EQ(alternative_service1,
+            it->second.alternative_services.value()[0].alternative_service());
+  EXPECT_EQ(alternative_service2,
+            it->second.alternative_services.value()[1].alternative_service());
 
   impl_.SetAlternativeServices(test_server, AlternativeServiceInfoVector());
   EXPECT_TRUE(map.empty());
@@ -1337,16 +1349,13 @@ TEST_F(SupportsQuicServerPropertiesTest, SetSupportsQuic) {
   EXPECT_FALSE(impl_.GetSupportsQuic(&address));
 }
 
-typedef HttpServerPropertiesTest ServerNetworkStatsServerPropertiesTest;
-
-TEST_F(ServerNetworkStatsServerPropertiesTest, Set) {
+TEST_F(HttpServerPropertiesTest, LoadServerNetworkStats) {
   url::SchemeHostPort google_server("https", "www.google.com", 443);
 
   // Check by initializing empty ServerNetworkStats.
-  std::unique_ptr<ServerNetworkStatsMap> init_server_network_stats_map =
-      std::make_unique<ServerNetworkStatsMap>();
-  impl_.OnServerNetworkStatsLoadedForTesting(
-      std::move(init_server_network_stats_map));
+  std::unique_ptr<HttpServerProperties::ServerInfoMap> load_server_info_map =
+      std::make_unique<HttpServerProperties::ServerInfoMap>();
+  impl_.OnServerInfoLoadedForTesting(std::move(load_server_info_map));
   const ServerNetworkStats* stats = impl_.GetServerNetworkStats(google_server);
   EXPECT_EQ(nullptr, stats);
 
@@ -1354,19 +1363,20 @@ TEST_F(ServerNetworkStatsServerPropertiesTest, Set) {
   ServerNetworkStats stats_google;
   stats_google.srtt = base::TimeDelta::FromMicroseconds(10);
   stats_google.bandwidth_estimate = quic::QuicBandwidth::FromBitsPerSecond(100);
-  init_server_network_stats_map = std::make_unique<ServerNetworkStatsMap>();
-  init_server_network_stats_map->Put(google_server, stats_google);
-  impl_.OnServerNetworkStatsLoadedForTesting(
-      std::move(init_server_network_stats_map));
+  load_server_info_map =
+      std::make_unique<HttpServerProperties::ServerInfoMap>();
+  load_server_info_map->GetOrPut(google_server)->second.server_network_stats =
+      stats_google;
+  impl_.OnServerInfoLoadedForTesting(std::move(load_server_info_map));
 
   // Verify data for www.google.com:443.
-  ASSERT_EQ(1u, impl_.server_network_stats_map().size());
+  ASSERT_EQ(1u, impl_.server_info_map_for_testing().size());
   EXPECT_EQ(stats_google, *(impl_.GetServerNetworkStats(google_server)));
 
   // Test recency order and overwriting of data.
   //
   // |docs_server| has a ServerNetworkStats, which will be overwritten by
-  // SetServerNetworkStats(), because |server_network_stats_map| has an
+  // OnServerInfoLoadedForTesting(), because |server_network_stats_map| has an
   // entry for |docs_server|.
   url::SchemeHostPort docs_server("https", "docs.google.com", 443);
   ServerNetworkStats stats_docs;
@@ -1375,43 +1385,47 @@ TEST_F(ServerNetworkStatsServerPropertiesTest, Set) {
   // Recency order will be |docs_server| and |google_server|.
   impl_.SetServerNetworkStats(docs_server, stats_docs);
 
-  // Prepare |server_network_stats_map| to be loaded by
-  // SetServerNetworkStats().
-  std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map =
-      std::make_unique<ServerNetworkStatsMap>();
+  // Prepare |server_info_map| to be loaded by OnServerInfoLoadedForTesting().
+  std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map =
+      std::make_unique<HttpServerProperties::ServerInfoMap>();
 
   // Change the values for |docs_server|.
   ServerNetworkStats new_stats_docs;
   new_stats_docs.srtt = base::TimeDelta::FromMicroseconds(25);
   new_stats_docs.bandwidth_estimate =
       quic::QuicBandwidth::FromBitsPerSecond(250);
-  server_network_stats_map->Put(docs_server, new_stats_docs);
+  server_info_map->GetOrPut(docs_server)->second.server_network_stats =
+      new_stats_docs;
   // Add data for mail.google.com:443.
   url::SchemeHostPort mail_server("https", "mail.google.com", 443);
   ServerNetworkStats stats_mail;
   stats_mail.srtt = base::TimeDelta::FromMicroseconds(30);
   stats_mail.bandwidth_estimate = quic::QuicBandwidth::FromBitsPerSecond(300);
-  server_network_stats_map->Put(mail_server, stats_mail);
+  server_info_map->GetOrPut(mail_server)->second.server_network_stats =
+      stats_mail;
 
   // Recency order will be |docs_server|, |google_server| and |mail_server|.
-  impl_.OnServerNetworkStatsLoadedForTesting(
-      std::move(server_network_stats_map));
+  impl_.OnServerInfoLoadedForTesting(std::move(server_info_map));
 
-  const ServerNetworkStatsMap& map = impl_.server_network_stats_map();
+  const HttpServerProperties::ServerInfoMap& map =
+      impl_.server_info_map_for_testing();
   ASSERT_EQ(3u, map.size());
   auto map_it = map.begin();
 
   EXPECT_EQ(map_it->first, docs_server);
-  EXPECT_EQ(new_stats_docs, map_it->second);
+  ASSERT_TRUE(map_it->second.server_network_stats.has_value());
+  EXPECT_EQ(new_stats_docs, *map_it->second.server_network_stats);
   ++map_it;
   EXPECT_EQ(map_it->first, google_server);
-  EXPECT_EQ(stats_google, map_it->second);
+  ASSERT_TRUE(map_it->second.server_network_stats.has_value());
+  EXPECT_EQ(stats_google, *map_it->second.server_network_stats);
   ++map_it;
   EXPECT_EQ(map_it->first, mail_server);
-  EXPECT_EQ(stats_mail, map_it->second);
+  ASSERT_TRUE(map_it->second.server_network_stats.has_value());
+  EXPECT_EQ(stats_mail, *map_it->second.server_network_stats);
 }
 
-TEST_F(ServerNetworkStatsServerPropertiesTest, SetServerNetworkStats) {
+TEST_F(HttpServerPropertiesTest, SetServerNetworkStats) {
   url::SchemeHostPort foo_http_server("http", "foo", 443);
   url::SchemeHostPort foo_https_server("https", "foo", 443);
   EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_http_server));
@@ -1434,7 +1448,7 @@ TEST_F(ServerNetworkStatsServerPropertiesTest, SetServerNetworkStats) {
   EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server));
 }
 
-TEST_F(ServerNetworkStatsServerPropertiesTest, ClearServerNetworkStats) {
+TEST_F(HttpServerPropertiesTest, ClearServerNetworkStats) {
   ServerNetworkStats stats;
   stats.srtt = base::TimeDelta::FromMicroseconds(10);
   stats.bandwidth_estimate = quic::QuicBandwidth::FromBitsPerSecond(100);

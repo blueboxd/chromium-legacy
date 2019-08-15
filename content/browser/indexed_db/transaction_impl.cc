@@ -4,12 +4,14 @@
 
 #include "content/browser/indexed_db/transaction_impl.h"
 
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/indexed_db/indexed_db_callback_helpers.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
@@ -110,10 +112,22 @@ void TransactionImpl::CreateObjectStore(int64_t object_store_id,
   if (!connection->IsConnected())
     return;
 
+  if (base::Contains(connection->database()->metadata().object_stores,
+                     object_store_id)) {
+    DLOG(ERROR) << "Invalid object_store_id";
+    return;
+  }
+
+  // TODO(dmurph): Fix this to be a preemptive task and handle the error
+  // correctly.
   // Note: This doesn't schedule a task on the transaction because the
   // SetIndexKeys call path isn't asynchronous.
-  connection->database()->CreateObjectStore(transaction_.get(), object_store_id,
-                                            name, key_path, auto_increment);
+  leveldb::Status status = connection->database()->CreateObjectStoreOperation(
+      object_store_id, name, key_path, auto_increment, transaction_.get());
+  if (!status.ok()) {
+    connection->database()->error_callback().Run(
+        status, "Internal error creating object store.");
+  }
 }
 
 void TransactionImpl::DeleteObjectStore(int64_t object_store_id) {
@@ -131,8 +145,12 @@ void TransactionImpl::DeleteObjectStore(int64_t object_store_id) {
   if (!connection->IsConnected())
     return;
 
-  connection->database()->DeleteObjectStore(transaction_.get(),
-                                            object_store_id);
+  if (!connection->database()->IsObjectStoreIdInMetadata(object_store_id))
+    return;
+
+  transaction_->ScheduleTask(
+      BindWeakOperation(&IndexedDBDatabase::DeleteObjectStoreOperation,
+                        connection->database()->AsWeakPtr(), object_store_id));
 }
 
 void TransactionImpl::Put(
@@ -237,9 +255,27 @@ void TransactionImpl::Put(
       // Release result.value->bits std::vector.
       result.value->bits.clear();
       swap(value.blob_info, result.blob_info);
-      connection->database()->Put(transaction_.get(), object_store_id, &value,
-                                  std::make_unique<blink::IndexedDBKey>(key),
-                                  mode, std::move(callback), index_keys);
+
+      blink::mojom::IDBTransaction::PutCallback aborting_callback =
+          CreateCallbackAbortOnDestruct<
+              blink::mojom::IDBTransaction::PutCallback,
+              blink::mojom::IDBTransactionPutResultPtr>(
+              std::move(callback), transaction_->AsWeakPtr());
+
+      if (!connection->database()->IsObjectStoreIdInMetadata(object_store_id))
+        return;
+
+      std::unique_ptr<IndexedDBDatabase::PutOperationParams> params(
+          std::make_unique<IndexedDBDatabase::PutOperationParams>());
+      params->object_store_id = object_store_id;
+      params->value.swap(value);
+      params->key = std::make_unique<blink::IndexedDBKey>(key);
+      params->put_mode = mode;
+      params->callback = std::move(aborting_callback);
+      params->index_keys = index_keys;
+      transaction_->ScheduleTask(BindWeakOperation(
+          &IndexedDBDatabase::PutOperation, connection->database()->AsWeakPtr(),
+          std::move(params)));
 
       // Size can't be big enough to overflow because it represents the
       // actual bytes passed through IPC.

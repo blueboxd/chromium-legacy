@@ -170,7 +170,7 @@ scoped_refptr<AwQuotaManagerBridge> AwQuotaManagerBridge::Create(
 }
 
 AwQuotaManagerBridge::AwQuotaManagerBridge(AwBrowserContext* browser_context)
-    : browser_context_(browser_context), weak_factory_(this) {}
+    : browser_context_(browser_context) {}
 
 AwQuotaManagerBridge::~AwQuotaManagerBridge() {}
 

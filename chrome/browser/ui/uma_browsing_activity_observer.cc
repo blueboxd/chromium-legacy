@@ -123,11 +123,11 @@ void UMABrowsingActivityObserver::LogBrowserTabCount() const {
                                   50);
     }
 
-    if (browser->is_app())
+    if (browser->deprecated_is_app())
       app_window_count++;
     else if (browser->is_type_popup())
       popup_window_count++;
-    else if (browser->is_type_tabbed())
+    else if (browser->is_type_normal())
       tabbed_window_count++;
   }
   // Record how many tabs total are open (across all windows).

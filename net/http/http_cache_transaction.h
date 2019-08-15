@@ -554,6 +554,9 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   // Saves network transaction info using |transaction|.
   void SaveNetworkTransactionInfo(const HttpTransaction& transaction);
 
+  // Disables caching for media content when running on battery.
+  bool ShouldDisableMediaCaching(const HttpResponseHeaders* headers) const;
+
   State next_state_;
 
   // Initial request with which Start() was invoked.

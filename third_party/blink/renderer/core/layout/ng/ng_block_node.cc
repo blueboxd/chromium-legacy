@@ -17,6 +17,8 @@
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/layout_ng_custom.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/ng_custom_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
@@ -88,6 +90,8 @@ NOINLINE void DetermineAlgorithmAndRun(const NGLayoutAlgorithmParams& params,
       CreateAlgorithmAndRun<NGColumnLayoutAlgorithm>(params, callback);
     else
       CreateAlgorithmAndRun<NGPageLayoutAlgorithm>(params, callback);
+  } else if (box.IsLayoutNGCustom()) {
+    CreateAlgorithmAndRun<NGCustomLayoutAlgorithm>(params, callback);
   } else {
     CreateAlgorithmAndRun<NGBlockLayoutAlgorithm>(params, callback);
   }
@@ -167,11 +171,12 @@ void UpdateLegacyMultiColumnFlowThread(
 
 NGConstraintSpaceBuilder CreateConstraintSpaceBuilderForMinMax(
     NGBlockNode node) {
-  return NGConstraintSpaceBuilder(node.Style().GetWritingMode(),
-                                  node.Style().GetWritingMode(),
-                                  node.CreatesNewFormattingContext())
-      .SetTextDirection(node.Style().Direction())
-      .SetIsIntermediateLayout(true);
+  NGConstraintSpaceBuilder builder(node.Style().GetWritingMode(),
+                                   node.Style().GetWritingMode(),
+                                   node.CreatesNewFormattingContext());
+  builder.SetTextDirection(node.Style().Direction());
+  builder.SetIsIntermediateLayout(true);
+  return builder;
 }
 
 LayoutUnit CalculateAvailableInlineSizeForLegacy(
@@ -256,8 +261,10 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
                                  To<NGBlockBreakToken>(break_token));
 
   // Try to perform "simplified" layout.
+  // TODO(crbug.com/992953): Add a simplified layout pass for custom layout.
   if (cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout &&
-      block_flow && !GetFlowThread(block_flow)) {
+      block_flow && !GetFlowThread(block_flow) &&
+      !block_flow->IsLayoutNGCustom()) {
     // A child may have changed size while performing "simplified" layout (it
     // may have gained or removed scrollbars, changing its size). In these
     // cases "simplified" layout will return a null layout-result, indicating
@@ -548,11 +555,11 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
           .InlineSize();
 
   // Now, redo with infinite space for max_content
-  NGConstraintSpace infinite_constraint_space =
-      CreateConstraintSpaceBuilderForMinMax(*this)
-          .SetAvailableSize({LayoutUnit::Max(), LayoutUnit()})
-          .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
-          .ToConstraintSpace();
+  NGConstraintSpaceBuilder builder =
+      CreateConstraintSpaceBuilderForMinMax(*this);
+  builder.SetAvailableSize({LayoutUnit::Max(), LayoutUnit()});
+  builder.SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()});
+  NGConstraintSpace infinite_constraint_space = builder.ToConstraintSpace();
 
   layout_result = Layout(infinite_constraint_space);
   NGBoxFragment max_fragment(
@@ -964,6 +971,11 @@ bool NGBlockNode::IsRestrictedBlockSizeTableCell() const {
          !cell->Table()->StyleRef().LogicalHeight().IsAuto();
 }
 
+bool NGBlockNode::IsCustomLayoutLoaded() const {
+  DCHECK(box_->IsLayoutNGCustom());
+  return To<LayoutNGCustom>(box_)->IsLoaded();
+}
+
 scoped_refptr<const NGLayoutResult> NGBlockNode::LayoutAtomicInline(
     const NGConstraintSpace& parent_constraint_space,
     const ComputedStyle& parent_style,
@@ -983,15 +995,14 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::LayoutAtomicInline(
         {NGBaselineAlgorithmType::kAtomicInline, baseline_type});
   }
 
-  NGConstraintSpace constraint_space =
-      builder.SetIsShrinkToFit(Style().LogicalWidth().IsAuto())
-          .SetAvailableSize(parent_constraint_space.AvailableSize())
-          .SetPercentageResolutionSize(
-              parent_constraint_space.PercentageResolutionSize())
-          .SetReplacedPercentageResolutionSize(
-              parent_constraint_space.ReplacedPercentageResolutionSize())
-          .SetTextDirection(Style().Direction())
-          .ToConstraintSpace();
+  builder.SetIsShrinkToFit(Style().LogicalWidth().IsAuto());
+  builder.SetAvailableSize(parent_constraint_space.AvailableSize());
+  builder.SetPercentageResolutionSize(
+      parent_constraint_space.PercentageResolutionSize());
+  builder.SetReplacedPercentageResolutionSize(
+      parent_constraint_space.ReplacedPercentageResolutionSize());
+  builder.SetTextDirection(Style().Direction());
+  NGConstraintSpace constraint_space = builder.ToConstraintSpace();
   scoped_refptr<const NGLayoutResult> result = Layout(constraint_space);
   // TODO(kojii): Investigate why ClearNeedsLayout() isn't called automatically
   // when it's being laid out.

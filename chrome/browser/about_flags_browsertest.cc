@@ -105,7 +105,7 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
                               public testing::WithParamInterface<bool> {
  public:
   AboutFlagsBrowserTest() {
-    feature_list_.InitWithFeatures({flags_ui::kUnexpireFlagsM77}, {});
+    feature_list_.InitWithFeatures({flags_ui::kUnexpireFlagsM78}, {});
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

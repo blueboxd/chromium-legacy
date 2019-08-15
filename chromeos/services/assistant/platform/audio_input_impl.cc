@@ -20,7 +20,7 @@
 #include "media/base/audio_sample_types.h"
 #include "media/base/channel_layout.h"
 #include "services/audio/public/cpp/device_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/audio/public/mojom/stream_factory.mojom.h"
 
 namespace chromeos {
 namespace assistant {
@@ -185,10 +185,10 @@ void AudioInputImpl::HotwordStateManager::RecreateAudioInputStream() {
   input_->RecreateAudioInputStream(/*use_dsp=*/false);
 }
 
-AudioInputImpl::AudioInputImpl(service_manager::Connector* connector,
+AudioInputImpl::AudioInputImpl(mojom::Client* client,
                                const std::string& device_id,
                                const std::string& hotword_device_id)
-    : connector_(connector),
+    : client_(client),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
       device_id_(device_id),
       hotword_device_id_(hotword_device_id),
@@ -432,7 +432,11 @@ void AudioInputImpl::RecreateAudioInputStream(bool use_dsp) {
     param.set_effects(media::AudioParameters::PlatformEffectsMask::HOTWORD);
     device_id = &hotword_device_id_;
   }
-  source_ = audio::CreateInputDevice(connector_->Clone(), *device_id);
+
+  mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory;
+  client_->RequestAudioStreamFactory(
+      stream_factory.InitWithNewPipeAndPassReceiver());
+  source_ = audio::CreateInputDevice(std::move(stream_factory), *device_id);
 
   source_->Initialize(param, this);
   source_->Start();

@@ -123,6 +123,9 @@ class BrowserViewLayout : public views::LayoutManager {
   // control, for laying out the previous control.
   int LayoutDownloadShelf(int bottom);
 
+  // Returns the y coordinate of the client area.
+  int GetClientAreaTop();
+
   // The delegate interface. May be a mock in tests.
   const std::unique_ptr<BrowserViewLayoutDelegate> delegate_;
 

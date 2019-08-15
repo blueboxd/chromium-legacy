@@ -140,8 +140,7 @@ GvrGraphicsDelegate::GvrGraphicsDelegate(
       browser_(browser),
       textures_initialized_callback_(std::move(textures_initialized_callback)),
       webvr_acquire_time_(sliding_time_size),
-      webvr_submit_time_(sliding_time_size),
-      weak_ptr_factory_(this) {}
+      webvr_submit_time_(sliding_time_size) {}
 
 GvrGraphicsDelegate::~GvrGraphicsDelegate() = default;
 

@@ -3537,44 +3537,51 @@ if (enable_java_templates) {
     }
   }
 
-  # Declare an Android instrumentation test apk
+  # Declare an Android instrumentation test runner.
   #
-  # This target creates an Android instrumentation test apk.
+  # This target creates a wrapper script to run Android instrumentation tests.
   #
-  # Supports all variables of android_apk(), plus:
-  #   apk_under_test: The apk being tested (optional).
+  # Arguments:
+  #   android_test_apk: The target containing the tests.
+  #   android_test_apk_name: The apk_name in android_test_apk
+  #
+  #   The following args are optional:
+  #   apk_under_test: The target being tested.
+  #   additional_apks: Additional targets to install on device.
+  #   data: List of runtime data file dependencies.
+  #   data_deps: List of non-linked dependencies.
+  #   deps: List of private dependencies.
+  #   ignore_all_data_deps: Don't build data_deps and additional_apks.
+  #   never_incremental: Disable incremental builds.
+  #   proguard_enabled: Enable proguard
+  #   public_deps: List of public dependencies
   #
   # Example
-  #   instrumentation_test_apk("foo_test_apk") {
-  #     android_manifest = "AndroidManifest.xml"
-  #     apk_name = "FooTest"
-  #     apk_under_test = "Foo"
-  #     java_files = [
-  #       "android/org/chromium/foo/FooTestCase.java",
-  #       "android/org/chromium/foo/FooExampleTest.java",
-  #     ]
-  #     deps = [
-  #       ":foo_test_support_java"
-  #     ]
+  #   instrumentation_test_runner("foo_test_for_bar") {
+  #     android_test_apk: ":foo"
+  #     android_test_apk_name: "Foo"
+  #     apk_under_test: ":bar"
   #   }
-  template("instrumentation_test_apk") {
-    assert(defined(invoker.apk_name))
+  template("instrumentation_test_runner") {
     testonly = true
+    assert(defined(invoker.android_test_apk))
+    assert(defined(invoker.android_test_apk_name))
     _incremental_allowed =
         !defined(invoker.never_incremental) || !invoker.never_incremental
-    _apk_target_name = "${target_name}__apk"
+    _apk_target_name =
+        get_label_info(invoker.android_test_apk, "name") + "__apk"
     _test_runner_target_name = "${target_name}__test_runner_script"
-    _dist_ijar_path =
-        "$root_build_dir/test.lib.java/" + invoker.apk_name + ".jar"
+    _dist_ijar_path = "$root_build_dir/test.lib.java/" +
+                      invoker.android_test_apk_name + ".jar"
     if (_incremental_allowed) {
       _incremental_test_runner_target_name =
           "${_test_runner_target_name}_incremental"
-      _incremental_test_name = "${invoker.target_name}_incremental"
+      _incremental_test_name = "${target_name}_incremental"
     }
 
     if (incremental_apk_by_default && _incremental_allowed) {
       _incremental_test_runner_target_name = _test_runner_target_name
-      _incremental_test_name = invoker.target_name
+      _incremental_test_name = "${target_name}"
     }
 
     if (!incremental_apk_by_default ||
@@ -3598,6 +3605,9 @@ if (enable_java_templates) {
       }
     }
     if (_incremental_allowed) {
+      if (defined(invoker.proguard_enabled)) {
+        not_needed(invoker, [ "proguard_enabled" ])
+      }
       test_runner_script(_incremental_test_runner_target_name) {
         forward_variables_from(invoker,
                                [
@@ -3616,7 +3626,68 @@ if (enable_java_templates) {
         incremental_install = true
       }
     }
+    group(target_name) {
+      if (incremental_apk_by_default && _incremental_allowed) {
+        public_deps = [
+          ":${target_name}_incremental",
+        ]
+      } else {
+        public_deps = [
+          ":$_apk_target_name",
+          ":$_test_runner_target_name",
 
+          # Required by test runner to enumerate test list.
+          ":${_apk_target_name}_dist_ijar",
+        ]
+        if (defined(invoker.apk_under_test)) {
+          public_deps += [ invoker.apk_under_test ]
+        }
+      }
+    }
+    if (_incremental_allowed) {
+      group("${target_name}_incremental") {
+        public_deps = [
+          ":$_incremental_test_runner_target_name",
+          ":${_apk_target_name}_incremental",
+
+          # Required by test runner to enumerate test list.
+          ":${_apk_target_name}_dist_ijar",
+        ]
+        if (defined(invoker.apk_under_test)) {
+          public_deps += [ "${invoker.apk_under_test}_incremental" ]
+        }
+      }
+    }
+  }
+
+  # Declare an Android instrumentation test apk
+  #
+  # This target creates an Android instrumentation test apk.
+  #
+  # Supports all variables of android_apk(), plus:
+  #   apk_under_test: The apk being tested (optional).
+  #
+  # Example
+  #   android_test_apk("foo_test_apk") {
+  #     android_manifest = "AndroidManifest.xml"
+  #     apk_name = "FooTest"
+  #     apk_under_test = "Foo"
+  #     java_files = [
+  #       "android/org/chromium/foo/FooTestCase.java",
+  #       "android/org/chromium/foo/FooExampleTest.java",
+  #     ]
+  #     deps = [
+  #       ":foo_test_support_java"
+  #     ]
+  #   }
+  template("android_test_apk") {
+    assert(defined(invoker.apk_name))
+    testonly = true
+    _incremental_allowed =
+        !defined(invoker.never_incremental) || !invoker.never_incremental
+    _apk_target_name = "${target_name}__apk"
+    _dist_ijar_path =
+        "$root_build_dir/test.lib.java/" + invoker.apk_name + ".jar"
     android_apk(_apk_target_name) {
       deps = []
       data_deps = []
@@ -3632,8 +3703,9 @@ if (enable_java_templates) {
       } else {
         enable_native_mocks = true
       }
-      if (defined(invoker.additional_apks)) {
-        data_deps += invoker.additional_apks
+
+      if (defined(additional_apks)) {
+        data_deps += additional_apks
       }
       if (defined(invoker.apk_under_test)) {
         # Prevent a build_hooks_android_impl exising in both the test apks as
@@ -3674,10 +3746,6 @@ if (enable_java_templates) {
       } else {
         public_deps = [
           ":$_apk_target_name",
-          ":$_test_runner_target_name",
-
-          # Required by test runner to enumerate test list.
-          ":${_apk_target_name}_dist_ijar",
         ]
         if (defined(invoker.apk_under_test)) {
           public_deps += [ invoker.apk_under_test ]
@@ -3703,14 +3771,41 @@ if (enable_java_templates) {
     if (_incremental_allowed) {
       group("${target_name}_incremental") {
         public_deps = [
-          ":$_incremental_test_runner_target_name",
-          ":${_apk_target_name}_dist_ijar",
           ":${_apk_target_name}_incremental",
         ]
         if (defined(invoker.apk_under_test)) {
           public_deps += [ "${invoker.apk_under_test}_incremental" ]
         }
       }
+    }
+  }
+
+  # Declare an Android instrumentation test apk with wrapper script.
+  #
+  # This target creates an Android instrumentation test apk with wrapper script to run the test.
+  #
+  # Supports all variables of android_test_apk.
+  template("instrumentation_test_apk") {
+    assert(defined(invoker.apk_name))
+    _apk_target_name = "${target_name}__test_apk"
+    android_test_apk(_apk_target_name) {
+      forward_variables_from(invoker, "*")
+    }
+    instrumentation_test_runner(target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "additional_apks",
+                               "apk_under_test",
+                               "data",
+                               "data_deps",
+                               "deps",
+                               "ignore_all_data_deps",
+                               "never_incremental",
+                               "proguard_enabled",
+                               "public_deps",
+                             ])
+      android_test_apk = ":${_apk_target_name}"
+      android_test_apk_name = invoker.apk_name
     }
   }
 

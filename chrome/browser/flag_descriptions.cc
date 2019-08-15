@@ -678,11 +678,6 @@ const char kDragToPinTabsDescription[] =
     "Allows users to drag tabs between pinned and unpinned tabs to modify the "
     "pinned state of the tab.";
 
-const char kEnableBlinkGenPropertyTreesName[] = "Enable BlinkGenPropertyTrees";
-const char kEnableBlinkGenPropertyTreesDescription[] =
-    "Enable a new compositing mode where Blink generates the compositor "
-    "property trees.";
-
 const char kEnableCSSBackdropFilterName[] = "Enable backdrop-filter";
 const char kEnableCSSBackdropFilterDescription[] =
     "Enable a new CSS property called backdrop-filter.";
@@ -916,12 +911,6 @@ const char kEnableWebAuthenticationCableSupportName[] =
 const char kEnableWebAuthenticationCableSupportDescription[] =
     "Enable the cloud-assisted pairingless BLE protocol for use with "
     "the Web Authentication API.";
-
-const char kEnableWebAuthenticationPINSupportName[] =
-    "Web Authentication PIN support";
-const char kEnableWebAuthenticationPINSupportDescription[] =
-    "Enable the use of PINs with the Web Authentication API and compatible "
-    "security keys.";
 
 const char kEnableWasmBaselineName[] = "WebAssembly baseline compiler";
 const char kEnableWasmBaselineDescription[] =
@@ -1601,6 +1590,11 @@ const char kReorderBookmarksDescription[] =
     "Allows the user to reorder their bookmarks from their Android device. "
     "The bookmark ordering will be synced across devices.";
 
+const char kRequestUnbufferedDispatchName[] = "Use RequestUnbufferedDispatch";
+const char kRequestUnbufferedDispatchDescription[] =
+    "Calls RequestUnbufferedDispatch in the Android API to disable buffering "
+    "of input by the OS.";
+
 const char kRequestTabletSiteName[] =
     "Request tablet site option in the settings menu";
 const char kRequestTabletSiteDescription[] =
@@ -1995,9 +1989,15 @@ const char kTrySupportedChannelLayoutsDescription[] =
     "to do stereo to surround expansion if supported. May expose third party "
     "driver bugs, use with caution.";
 
-const char kUnexpireFlagsM77Name[] = "Temporarily unexpire M77 flags.";
-const char kUnexpireFlagsM77Description[] =
-    "Temporarily unexpire flags that are expired as of M77. These flags will "
+const char kTurnOffStreamingMediaCachingName[] =
+    "Turn off caching of streaming media to disk.";
+const char kTurnOffStreamingMediaCachingDescription[] =
+    "Reduces disk activity during media playback, which can result in "
+    "power savings.";
+
+const char kUnexpireFlagsM78Name[] = "Temporarily unexpire M78 flags.";
+const char kUnexpireFlagsM78Description[] =
+    "Temporarily unexpire flags that are expired as of M78. These flags will "
     "be removed soon.";
 
 const char kUnifiedConsentName[] = "Unified Consent";

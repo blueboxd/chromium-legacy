@@ -28,14 +28,31 @@ namespace content {
 class BrowserAccessibility;
 class BrowserAccessibilityManager;
 
+class AccessibilityTestExpectationsLocator {
+ public:
+  // Suffix of the expectation file corresponding to html file.
+  // Overridden by each platform subclass.
+  // Example:
+  // HTML test:      test-file.html
+  // Expected:       test-file-expected-mac.txt.
+  virtual base::FilePath::StringType GetExpectedFileSuffix() = 0;
+
+  // Some Platforms expect different outputs depending on the version.
+  // Most test outputs are identical but this allows a version specific
+  // expected file to be used.
+  virtual base::FilePath::StringType GetVersionSpecificExpectedFileSuffix() = 0;
+
+ protected:
+  virtual ~AccessibilityTestExpectationsLocator() = default;
+};
+
 // A utility class for formatting platform-specific accessibility information,
 // for use in testing, debugging, and developer tools.
 // This is extended by a subclass for each platform where accessibility is
 // implemented.
-class CONTENT_EXPORT AccessibilityTreeFormatter {
+class CONTENT_EXPORT AccessibilityTreeFormatter
+    : public AccessibilityTestExpectationsLocator {
  public:
-  virtual ~AccessibilityTreeFormatter() = default;
-
   // A single property filter specification. See GetAllowString() and
   // GetDenyString() for more information.
   struct PropertyFilter {
@@ -154,18 +171,6 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   // If true, the internal accessibility id of each node will be included
   // in its output.
   virtual void set_show_ids(bool show_ids) = 0;
-
-  // Suffix of the expectation file corresponding to html file.
-  // Overridden by each platform subclass.
-  // Example:
-  // HTML test:      test-file.html
-  // Expected:       test-file-expected-mac.txt.
-  virtual const base::FilePath::StringType GetExpectedFileSuffix() = 0;
-  // Some Platforms expect different outputs depending on the version.
-  // Most test outputs are identical but this allows a version specific
-  // expected file to be used.
-  virtual const base::FilePath::StringType
-  GetVersionSpecificExpectedFileSuffix() = 0;
 
   // A string that indicates a given line in a file is an allow-empty,
   // allow or deny filter. Overridden by each platform subclass. Example:

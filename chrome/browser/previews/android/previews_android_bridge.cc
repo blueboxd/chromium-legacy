@@ -22,8 +22,7 @@ static jlong JNI_PreviewsAndroidBridge_Init(
 
 PreviewsAndroidBridge::PreviewsAndroidBridge(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj)
-    : weak_factory_(this) {}
+    const base::android::JavaParamRef<jobject>& obj) {}
 
 PreviewsAndroidBridge::~PreviewsAndroidBridge() {}
 

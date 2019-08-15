@@ -28,6 +28,7 @@ NSString* const kToolbarShadowColor = @"toolbar_shadow_color";
 
 #pragma mark - Standard Colors
 NSString* const kBlueColor = @"blue_color";
+NSString* const kBlueHaloColor = @"blue_halo_color";
 NSString* const kGreenColor = @"green_color";
 NSString* const kRedColor = @"red_color";
 

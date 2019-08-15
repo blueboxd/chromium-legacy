@@ -61,6 +61,10 @@ class CORE_EXPORT IdlenessDetector
                       base::TimeTicks end_time) override;
 
   void Stop();
+
+  // This method and the associated timer appear to have no effect, but they
+  // have the side effect of triggering a task, which will send WillProcessTask
+  // and DidProcessTask observer notifications.
   void NetworkQuietTimerFired(TimerBase*);
 
   Member<LocalFrame> local_frame_;

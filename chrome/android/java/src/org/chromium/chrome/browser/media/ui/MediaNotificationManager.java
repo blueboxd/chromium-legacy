@@ -264,6 +264,11 @@ public class MediaNotificationManager {
                     MediaNotificationManager.this.onMediaSessionAction(
                             MediaSessionAction.SEEK_BACKWARD);
                 }
+
+                @Override
+                public void onSeekTo(long pos) {
+                    MediaNotificationManager.this.onMediaSessionSeekTo(pos);
+                }
             };
 
     @VisibleForTesting
@@ -834,6 +839,16 @@ public class MediaNotificationManager {
     }
 
     @VisibleForTesting
+    void onMediaSessionSeekTo(long pos) {
+        // MediaSessionCompat calls this sometimes when `mMediaNotificationInfo`
+        // is no longer available. It's unclear if it is a Support Library issue
+        // or something that isn't properly cleaned up but given that the
+        // crashes are rare and the fix is simple, null check was enough.
+        if (mMediaNotificationInfo == null) return;
+        mMediaNotificationInfo.listener.onMediaSessionSeekTo(pos);
+    }
+
+    @VisibleForTesting
     void showNotification(MediaNotificationInfo mediaNotificationInfo) {
         if (shouldIgnoreMediaNotificationInfo(mMediaNotificationInfo, mediaNotificationInfo)) {
             return;
@@ -1055,6 +1070,9 @@ public class MediaNotificationManager {
         }
         if (mMediaNotificationInfo.mediaSessionActions.contains(MediaSessionAction.SEEK_BACKWARD)) {
             actions |= PlaybackStateCompat.ACTION_REWIND;
+        }
+        if (mMediaNotificationInfo.mediaSessionActions.contains(MediaSessionAction.SEEK_TO)) {
+            actions |= PlaybackStateCompat.ACTION_SEEK_TO;
         }
         return actions;
     }

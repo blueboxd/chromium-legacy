@@ -52,12 +52,15 @@ class AbstractRebaseliningCommand(Command):
     """Base class for rebaseline-related commands."""
     # Not overriding execute() - pylint: disable=abstract-method
 
+    # Generic option groups (list of options):
+    platform_options = factory.platform_options(use_globs=True)
+    wpt_options = factory.wpt_options()
+
     no_optimize_option = optparse.make_option(
         '--no-optimize', dest='optimize', action='store_false', default=True,
         help=('Do not optimize (de-duplicate) the expectations after rebaselining '
               '(default is to de-dupe automatically). You can use "blink_tool.py '
               'optimize-baselines" to optimize separately.'))
-    platform_options = factory.platform_options(use_globs=True)
     results_directory_option = optparse.make_option(
         '--results-directory', help='Local results directory to use.')
     suffixes_option = optparse.make_option(
@@ -351,7 +354,9 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             if not suffixes:
                 continue
             # FIXME: We should propagate the platform options as well.
-            args = []
+            # Prevent multiple baseline optimizer to race updating the manifest.
+            # The manifest has already been updated when listing tests.
+            args = ['--no-manifest-update']
             if verbose:
                 args.append('--verbose')
             args.extend(['--suffixes', ','.join(suffixes), test])

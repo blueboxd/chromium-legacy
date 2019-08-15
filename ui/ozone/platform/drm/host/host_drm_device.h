@@ -96,7 +96,8 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
 
   // Services needed by DrmWindowHost
   bool GpuDestroyWindow(gfx::AcceleratedWidget widget) override;
-  bool GpuCreateWindow(gfx::AcceleratedWidget widget) override;
+  bool GpuCreateWindow(gfx::AcceleratedWidget widget,
+                       const gfx::Rect& initial_bounds) override;
   bool GpuWindowBoundsChanged(gfx::AcceleratedWidget widget,
                               const gfx::Rect& bounds) override;
 

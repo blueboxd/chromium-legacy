@@ -46,7 +46,6 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/cookie_config/cookie_store_util.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
@@ -440,12 +439,6 @@ std::unique_ptr<net::ClientCertStore> ProfileIOData::CreateClientCertStore() {
 #else
 #error Unknown platform.
 #endif
-}
-
-void ProfileIOData::set_data_reduction_proxy_io_data(
-    std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
-        data_reduction_proxy_io_data) const {
-  data_reduction_proxy_io_data_ = std::move(data_reduction_proxy_io_data);
 }
 
 ProfileIOData::ResourceContext::ResourceContext(ProfileIOData* io_data)

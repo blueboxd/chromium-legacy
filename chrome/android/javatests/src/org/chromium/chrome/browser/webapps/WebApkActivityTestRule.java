@@ -48,8 +48,7 @@ public class WebApkActivityTestRule extends ChromeActivityTestRule<WebApkActivit
             }
         }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
-        ChromeTabUtils.waitForTabPageLoaded(
-                webApkActivity.getActivityTab(), webApkInfo.uri().toString());
+        ChromeTabUtils.waitForTabPageLoaded(webApkActivity.getActivityTab(), webApkInfo.url());
         WebappActivityTestRule.waitUntilSplashHides(webApkActivity);
 
         // Launching the WebAPK should have popped the WebApkInfo.
@@ -63,7 +62,7 @@ public class WebApkActivityTestRule extends ChromeActivityTestRule<WebApkActivit
                 new Intent(InstrumentationRegistry.getTargetContext(), WebApkActivity0.class);
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, webApkInfo.webApkPackageName());
         intent.putExtra(ShortcutHelper.EXTRA_ID, webApkInfo.id());
-        intent.putExtra(ShortcutHelper.EXTRA_URL, webApkInfo.uri().toString());
+        intent.putExtra(ShortcutHelper.EXTRA_URL, webApkInfo.url());
         intent.addFlags(
                 Intent.FLAG_ACTIVITY_NEW_TASK | ApiCompatibilityUtils.getActivityNewDocumentFlag());
         return intent;

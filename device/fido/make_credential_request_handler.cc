@@ -204,16 +204,6 @@ void MakeCredentialRequestHandler::DispatchRequest(
     }
 #endif  // defined(OS_WIN)
 
-    if (!base::FeatureList::IsEnabled(device::kWebAuthPINSupport)) {
-      // Don't flash authenticator without PIN support. This maintains previous
-      // behaviour and avoids adding UI unprotected by a feature flag without
-      // increasing the number of feature flags.
-      FIDO_LOG(DEBUG) << "Dropping " << authenticator->GetDisplayName()
-                      << " because it does not meet selection criteria and PIN "
-                         "support is not enabled";
-      return;
-    }
-
     if (authenticator->Options() &&
         authenticator->Options()->is_platform_device) {
       HandleInapplicableAuthenticator(authenticator);
@@ -229,25 +219,23 @@ void MakeCredentialRequestHandler::DispatchRequest(
     return;
   }
 
-  if (base::FeatureList::IsEnabled(device::kWebAuthPINSupport)) {
-    switch (authenticator->WillNeedPINToMakeCredential(request_, observer())) {
-      case MakeCredentialPINDisposition::kUsePIN:
-      case MakeCredentialPINDisposition::kSetPIN:
-        // A PIN will be needed. Just request a touch to let the user select
-        // this authenticator if they wish.
-        authenticator->GetTouch(
-            base::BindOnce(&MakeCredentialRequestHandler::HandleTouch,
-                           weak_factory_.GetWeakPtr(), authenticator));
-        return;
+  switch (authenticator->WillNeedPINToMakeCredential(request_, observer())) {
+    case MakeCredentialPINDisposition::kUsePIN:
+    case MakeCredentialPINDisposition::kSetPIN:
+      // A PIN will be needed. Just request a touch to let the user select
+      // this authenticator if they wish.
+      authenticator->GetTouch(
+          base::BindOnce(&MakeCredentialRequestHandler::HandleTouch,
+                         weak_factory_.GetWeakPtr(), authenticator));
+      return;
 
-      case MakeCredentialPINDisposition::kNoPIN:
-        break;
+    case MakeCredentialPINDisposition::kNoPIN:
+      break;
 
-      case MakeCredentialPINDisposition::kUnsatisfiable:
-        // |IsCandidateAuthenticatorPostTouch| should have handled this case.
-        NOTREACHED();
-        return;
-    }
+    case MakeCredentialPINDisposition::kUnsatisfiable:
+      // |IsCandidateAuthenticatorPostTouch| should have handled this case.
+      NOTREACHED();
+      return;
   }
 
   CtapMakeCredentialRequest request(request_);
@@ -312,7 +300,6 @@ void MakeCredentialRequestHandler::HandleResponse(
 
   // Requests that require a PIN should follow the |GetTouch| path initially.
   DCHECK(state_ == State::kWaitingForSecondTouch ||
-         !base::FeatureList::IsEnabled(device::kWebAuthPINSupport) ||
          authenticator->WillNeedPINToMakeCredential(request_, observer()) ==
              MakeCredentialPINDisposition::kNoPIN);
 
@@ -367,8 +354,6 @@ void MakeCredentialRequestHandler::HandleTouch(
   if (state_ != State::kWaitingForTouch) {
     return;
   }
-
-  DCHECK(base::FeatureList::IsEnabled(device::kWebAuthPINSupport));
 
   switch (authenticator->WillNeedPINToMakeCredential(request_, observer())) {
     case MakeCredentialPINDisposition::kUsePIN:

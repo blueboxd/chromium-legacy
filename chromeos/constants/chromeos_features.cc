@@ -178,7 +178,7 @@ const base::Feature kSmartDimModelV3{"SmartDimModelV3",
 // Splits OS settings (display, mouse, keyboard, etc.) out from browser settings
 // into a separate window.
 const base::Feature kSplitSettings{"SplitSettings",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the updated cellular activation UI; see go/cros-cellular-design.
 const base::Feature kUpdatedCellularActivationUi{

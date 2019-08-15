@@ -40,7 +40,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/browsertest_util.h"
@@ -114,6 +113,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -5530,14 +5530,12 @@ void SetupRestoredTabWithNavigation(
   WebContents* blank_tab = browser->tab_strip_model()->GetActiveWebContents();
 
   // Restore the tab.
-  content::WindowedNotificationObserver tab_added_observer(
-      chrome::NOTIFICATION_TAB_PARENTED,
-      content::NotificationService::AllSources());
+  ui_test_utils::TabAddedWaiter tab_added_waiter(browser);
   content::WindowedNotificationObserver tab_loaded_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   chrome::RestoreTab(browser);
-  tab_added_observer.Wait();
+  tab_added_waiter.Wait();
   tab_loaded_observer.Wait();
 
   tab = browser->tab_strip_model()->GetActiveWebContents();
@@ -5663,11 +5661,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_RestoreThenNavigateHasSSLState) {
   ui_test_utils::NavigateToURL(browser(), url2);
   chrome::CloseTab(browser());
 
-  content::WindowedNotificationObserver tab_added_observer(
-      chrome::NOTIFICATION_TAB_PARENTED,
-      content::NotificationService::AllSources());
+  ui_test_utils::TabAddedWaiter tab_added_waiter(browser());
   chrome::RestoreTab(browser());
-  tab_added_observer.Wait();
+  tab_added_waiter.Wait();
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationManager observer(tab, url1);

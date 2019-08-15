@@ -98,6 +98,7 @@
 
       <!-- Resources used for file type icon in launcher search result. -->
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_AUDIO" file="file_manager/foreground/images/launcher_filetypes/launcher_filetype_audio.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_ARCHIVE" file="file_manager/foreground/images/launcher_filetypes/launcher_filetype_archive.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_CHART" file="file_manager/foreground/images/launcher_filetypes/launcher_filetype_chart.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_EXCEL" file="file_manager/foreground/images/launcher_filetypes/launcher_filetype_excel.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_FOLDER" file="file_manager/foreground/images/launcher_filetypes/launcher_filetype_folder.png" type="BINDATA" />
@@ -106,6 +107,7 @@
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_GDRAW" file="file_manager/foreground/images/launcher_filetypes/launcher_filetype_gdraw.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_GENERIC" file="file_manager/foreground/images/launcher_filetypes/launcher_filetype_generic.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_GSHEET" file="file_manager/foreground/images/launcher_filetypes/launcher_filetype_gsheet.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_GSITE" file="file_manager/foreground/images/launcher_filetypes/launcher_filetype_gsite.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_GSLIDES" file="file_manager/foreground/images/launcher_filetypes/launcher_filetype_gslides.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_GTABLE" file="file_manager/foreground/images/launcher_filetypes/launcher_filetype_gtable.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_IMAGE" file="file_manager/foreground/images/launcher_filetypes/launcher_filetype_image.png" type="BINDATA" />
@@ -114,9 +116,11 @@
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_PPT" file="file_manager/foreground/images/launcher_filetypes/launcher_filetype_ppt.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_SCRIPT" file="file_manager/foreground/images/launcher_filetypes/launcher_filetype_script.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_SITES" file="file_manager/foreground/images/launcher_filetypes/launcher_filetype_sites.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_TINI" file="file_manager/foreground/images/launcher_filetypes/launcher_filetype_tini.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_VIDEO" file="file_manager/foreground/images/launcher_filetypes/launcher_filetype_video.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_WORD" file="file_manager/foreground/images/launcher_filetypes/launcher_filetype_word.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_AUDIO" file="file_manager/foreground/images/launcher_filetypes/2x/launcher_filetype_audio.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_ARCHIVE" file="file_manager/foreground/images/launcher_filetypes/2x/launcher_filetype_archive.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_CHART" file="file_manager/foreground/images/launcher_filetypes/2x/launcher_filetype_chart.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_EXCEL" file="file_manager/foreground/images/launcher_filetypes/2x/launcher_filetype_excel.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_FOLDER" file="file_manager/foreground/images/launcher_filetypes/2x/launcher_filetype_folder.png" type="BINDATA" />
@@ -125,6 +129,7 @@
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GDRAW" file="file_manager/foreground/images/launcher_filetypes/2x/launcher_filetype_gdraw.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GENERIC" file="file_manager/foreground/images/launcher_filetypes/2x/launcher_filetype_generic.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GSHEET" file="file_manager/foreground/images/launcher_filetypes/2x/launcher_filetype_gsheet.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GSITE" file="file_manager/foreground/images/launcher_filetypes/2x/launcher_filetype_gsite.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GSLIDES" file="file_manager/foreground/images/launcher_filetypes/2x/launcher_filetype_gslides.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GTABLE" file="file_manager/foreground/images/launcher_filetypes/2x/launcher_filetype_gtable.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_IMAGE" file="file_manager/foreground/images/launcher_filetypes/2x/launcher_filetype_image.png" type="BINDATA" />
@@ -133,6 +138,7 @@
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_PPT" file="file_manager/foreground/images/launcher_filetypes/2x/launcher_filetype_ppt.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_SCRIPT" file="file_manager/foreground/images/launcher_filetypes/2x/launcher_filetype_script.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_SITES" file="file_manager/foreground/images/launcher_filetypes/2x/launcher_filetype_sites.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_TINI" file="file_manager/foreground/images/launcher_filetypes/2x/launcher_filetype_tini.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_VIDEO" file="file_manager/foreground/images/launcher_filetypes/2x/launcher_filetype_video.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_WORD" file="file_manager/foreground/images/launcher_filetypes/2x/launcher_filetype_word.png" type="BINDATA" />
 

@@ -85,7 +85,7 @@ class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
 
   CreateArchiveCallback callback_;
 
-  base::WeakPtrFactory<OfflinePageMHTMLArchiver> weak_ptr_factory_;
+  base::WeakPtrFactory<OfflinePageMHTMLArchiver> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageMHTMLArchiver);
 };

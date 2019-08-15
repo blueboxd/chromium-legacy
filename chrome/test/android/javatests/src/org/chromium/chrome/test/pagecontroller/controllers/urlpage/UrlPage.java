@@ -32,10 +32,11 @@ public class UrlPage extends PageController {
     }
 
     @Override
-    public boolean isCurrentPageThis() {
+    public UrlPage verifyActive() {
         long savedTimeout = mUtils.getTimeout();
         UiLocatorHelper helper = mUtils.getLocatorHelper(PAGE_LOAD_TIMEOUT);
-        return helper.isOnScreen(LOCATOR_WEB_VIEW);
+        helper.verifyOnScreen(LOCATOR_WEB_VIEW);
+        return this;
     }
 
     public String getUrl() {
@@ -50,8 +51,6 @@ public class UrlPage extends PageController {
 
     public TabSwitcherController openTabSwitcher() {
         mUtils.click(LOCATOR_TAB_SWITCHER);
-        TabSwitcherController inst = TabSwitcherController.getInstance();
-        inst.verify();
-        return inst;
+        return TabSwitcherController.getInstance().verifyActive();
     }
 }

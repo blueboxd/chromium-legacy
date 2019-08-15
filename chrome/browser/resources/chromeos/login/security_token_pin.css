@@ -3,16 +3,17 @@
  * found in the LICENSE file. */
 
 #pinKeyboardContainer {
-  padding-top: 30px;
+  padding-top: 60px;
 }
 
 #pinKeyboard {
   --pin-keyboard-pin-input-style: {
-    padding-bottom: 30px;
+    width: 244px;
+    padding-bottom: 24px;
   };
   --pin-keyboard-backspace-paper-ripple-offset: 9px;
   --pin-keyboard-digit-button: {
-    margin: 0 15px;
+    margin: 0 6px;
     width: 48px;
   };
   --pin-keyboard-number-color: var(--google-grey-900);
@@ -25,4 +26,7 @@
     top: -6px;
     width: 60px;
   };
+  --pin-button-width: 20px;
+  --pin-button-height: 32px;
+  --cr-icon-button-margin-start: 5px;
 }

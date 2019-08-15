@@ -41,6 +41,8 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/features.h"
+#include "components/safe_browsing/password_protection/metrics_util.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_state/content/ssl_status_input_event_data.h"
 #include "components/security_state/core/features.h"
@@ -97,6 +99,8 @@
 namespace {
 
 using password_manager::metrics_util::PasswordType;
+using safe_browsing::LoginReputationClientResponse;
+using safe_browsing::RequestOutcome;
 
 const char kCreateFilesystemUrlJavascript[] =
     "window.webkitRequestFileSystem(window.TEMPORARY, 4096, function(fs) {"
@@ -1057,7 +1061,10 @@ IN_PROC_BROWSER_TEST_F(
   account_type.set_account_type(
       safe_browsing::ReusedPasswordAccountType::GSUITE);
   account_type.set_is_account_syncing(true);
-  service->ShowModalWarning(contents, "unused-token", account_type);
+  service->ShowModalWarning(
+      contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   observer.WaitForDidChangeVisibleSecurityState();
 
   std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
@@ -1103,7 +1110,8 @@ IN_PROC_BROWSER_TEST_F(
       safe_browsing::ChromePasswordProtectionService::
           GetPasswordProtectionService(browser()->profile());
   service->ShowModalWarning(
-      contents, "unused-token",
+      contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
       service->GetPasswordProtectionReusedPasswordAccountType(
           PasswordType::ENTERPRISE_PASSWORD, /*username=*/""));
   observer.WaitForDidChangeVisibleSecurityState();

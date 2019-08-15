@@ -37,7 +37,7 @@ from blinkpy.common import exit_codes
 from blinkpy.common.host import Host
 from blinkpy.web_tests.controllers.manager import Manager
 from blinkpy.web_tests.models import test_run_results
-from blinkpy.web_tests.port.factory import configuration_options, platform_options
+from blinkpy.web_tests.port.factory import configuration_options, platform_options, wpt_options
 from blinkpy.web_tests.views import printing
 
 _log = logging.getLogger(__name__)
@@ -106,6 +106,9 @@ def parse_args(args):
 
     option_group_definitions.append(
         ('Printing Options', printing.print_options()))
+
+    option_group_definitions.append(
+        ('web-platform-tests (WPT) Options', wpt_options()))
 
     option_group_definitions.append(
         ('Android-specific Options', [
@@ -477,17 +480,6 @@ def parse_args(args):
                 action='store_true',
                 help='If set, exit with a success code when no tests are run.'
                 ' Used on trybots when web tests are retried without patch.')
-        ]))
-
-    option_group_definitions.append(
-        ('web-platform-tests (WPT) Options', [
-            optparse.make_option(
-                '--no-manifest-update',
-                dest='manifest_update',
-                action='store_false',
-                default=True,
-                help=('Do not update the web-platform-tests MANIFEST.json'
-                      ' (unless it does not exist).')),
         ]))
 
     # FIXME: Move these into json_results_generator.py.

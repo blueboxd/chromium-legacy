@@ -41,8 +41,6 @@ class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
 
     // Called when Initialize() is completed.
     virtual void OnShadowPageInitialized() = 0;
-
-    virtual WebLocalFrameClient::AppCacheType GetAppCacheType() = 0;
   };
 
   // If |loader_factory| is non-null, the shadow page will use it when making
@@ -67,9 +65,6 @@ class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
   void WillSendRequest(WebURLRequest&) override;
   void BeginNavigation(std::unique_ptr<WebNavigationInfo> info) override;
-  WebLocalFrameClient::AppCacheType GetAppCacheType() override {
-    return client_->GetAppCacheType();
-  }
 
   Document* GetDocument() { return main_frame_->GetFrame()->GetDocument(); }
   WebSettings* GetSettings() { return web_view_->GetSettings(); }

@@ -120,7 +120,7 @@ CPUFreqMonitor::CPUFreqMonitor()
     : CPUFreqMonitor(std::make_unique<CPUFreqMonitorDelegate>()) {}
 
 CPUFreqMonitor::CPUFreqMonitor(std::unique_ptr<CPUFreqMonitorDelegate> delegate)
-    : delegate_(std::move(delegate)), weak_ptr_factory_(this) {}
+    : delegate_(std::move(delegate)) {}
 
 CPUFreqMonitor::~CPUFreqMonitor() {
   Stop();

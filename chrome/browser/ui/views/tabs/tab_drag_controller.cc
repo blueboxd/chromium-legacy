@@ -1945,7 +1945,7 @@ Browser* TabDragController::CreateBrowserForDrag(
 
   Profile* profile =
       Profile::FromBrowserContext(drag_data_[0].contents->GetBrowserContext());
-  Browser::CreateParams create_params(Browser::TYPE_TABBED, profile,
+  Browser::CreateParams create_params(Browser::TYPE_NORMAL, profile,
                                       /*user_gesture=*/true,
                                       /*in_tab_dragging=*/true);
   create_params.initial_bounds = new_bounds;

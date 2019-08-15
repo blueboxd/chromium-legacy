@@ -29,7 +29,6 @@
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_text_boundary.h"
-#include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 
@@ -478,7 +477,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   base::Optional<int> FindTextBoundary(
       ui::AXTextBoundary boundary,
       int offset,
-      ui::TextBoundaryDirection direction,
+      ui::AXTextBoundaryDirection direction,
       ax::mojom::TextAffinity affinity) const override;
 
   const std::vector<gfx::NativeViewAccessible> GetDescendants() const override;

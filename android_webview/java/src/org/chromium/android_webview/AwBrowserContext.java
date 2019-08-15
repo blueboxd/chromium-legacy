@@ -25,7 +25,7 @@ import org.chromium.content_public.browser.ContentViewStatics;
  */
 @JNINamespace("android_webview")
 public class AwBrowserContext {
-    private static final String CHROMIUM_PREFS_NAME = "WebViewChromiumPrefs";
+    private static final String CHROMIUM_PREFS_NAME = "WebViewProfilePrefsDefault";
 
     private static final String TAG = "AwBrowserContext";
     private final SharedPreferences mSharedPreferences;
@@ -37,10 +37,17 @@ public class AwBrowserContext {
 
     /** Pointer to the Native-side AwBrowserContext. */
     private long mNativeAwBrowserContext;
+    private final boolean mIsDefault;
 
-    public AwBrowserContext(SharedPreferences sharedPreferences, long nativeAwBrowserContext) {
+    public AwBrowserContext(
+            SharedPreferences sharedPreferences, long nativeAwBrowserContext, boolean isDefault) {
         mNativeAwBrowserContext = nativeAwBrowserContext;
         mSharedPreferences = sharedPreferences;
+
+        mIsDefault = isDefault;
+        if (isDefaultAwBrowserContext()) {
+            migrateGeolocationPreferences();
+        }
 
         PlatformServiceBridge.getInstance().setSafeBrowsingHandler();
 
@@ -94,6 +101,14 @@ public class AwBrowserContext {
         return mQuotaManagerBridge;
     }
 
+    private void migrateGeolocationPreferences() {
+        final String oldGlobalPrefsName = "WebViewChromiumPrefs";
+        SharedPreferences oldGlobalPrefs =
+                ContextUtils.getApplicationContext().getSharedPreferences(
+                        oldGlobalPrefsName, Context.MODE_PRIVATE);
+        AwGeolocationPermissions.migrateGeolocationPreferences(oldGlobalPrefs, mSharedPreferences);
+    }
+
     /**
      * @see android.webkit.WebView#pauseTimers()
      */
@@ -112,6 +127,10 @@ public class AwBrowserContext {
         return mNativeAwBrowserContext;
     }
 
+    public boolean isDefaultAwBrowserContext() {
+        return mIsDefault;
+    }
+
     private static AwBrowserContext sInstance;
     public static AwBrowserContext getDefault() {
         if (sInstance == null) {
@@ -121,12 +140,12 @@ public class AwBrowserContext {
     }
 
     @CalledByNative
-    public static AwBrowserContext create(long nativeAwBrowserContext) {
+    public static AwBrowserContext create(long nativeAwBrowserContext, boolean isDefault) {
         SharedPreferences sharedPreferences =
                 ContextUtils.getApplicationContext().getSharedPreferences(
                         CHROMIUM_PREFS_NAME, Context.MODE_PRIVATE);
 
-        return new AwBrowserContext(sharedPreferences, nativeAwBrowserContext);
+        return new AwBrowserContext(sharedPreferences, nativeAwBrowserContext, isDefault);
     }
 
     private static native AwBrowserContext nativeGetDefaultJava();

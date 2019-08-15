@@ -67,7 +67,7 @@ class WindowedIncognitoMonitorTest : public testing::Test {
     Profile* browser_profile =
         incognito ? profile_->GetOffTheRecordProfile() : profile_.get();
     Browser::CreateParams params(browser_profile, true);
-    params.type = Browser::TYPE_TABBED;
+    params.type = Browser::TYPE_NORMAL;
     params.window = browser_window.get();
     auto browser = std::make_unique<Browser>(params);
 

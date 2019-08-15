@@ -122,7 +122,7 @@ class StreamTexture : public gpu::gles2::GLStreamTextureImage,
   SequenceId sequence_;
   scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
 
-  base::WeakPtrFactory<StreamTexture> weak_factory_;
+  base::WeakPtrFactory<StreamTexture> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(StreamTexture);
 };
 

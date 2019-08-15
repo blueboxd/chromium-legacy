@@ -16,7 +16,7 @@ namespace autofill_assistant {
 
 SetFormFieldValueAction::SetFormFieldValueAction(ActionDelegate* delegate,
                                                  const ActionProto& proto)
-    : Action(delegate, proto), weak_ptr_factory_(this) {
+    : Action(delegate, proto) {
   DCHECK(proto_.has_set_form_value());
   DCHECK_GT(proto_.set_form_value().element().selectors_size(), 0);
   DCHECK_GT(proto_.set_form_value().value_size(), 0);

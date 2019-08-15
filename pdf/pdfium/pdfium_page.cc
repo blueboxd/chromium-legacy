@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/numerics/math_constants.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -19,6 +20,7 @@
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/pdfium/pdfium_unsupported_features.h"
+#include "ppapi/c/private/ppb_pdf.h"
 #include "printing/units.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
@@ -87,9 +89,50 @@ pp::FloatRect GetFloatCharRectInPixels(FPDF_PAGE page,
   return FloatPageRectToPixelRect(page, page_coords);
 }
 
-bool OverlapsOnYAxis(const pp::FloatRect& a, const pp::FloatRect& b) {
-  return !(a.IsEmpty() || b.IsEmpty() || a.bottom() < b.y() ||
-           b.bottom() < a.y());
+int GetFirstNonUnicodeWhiteSpaceCharIndex(FPDF_TEXTPAGE text_page,
+                                          int start_char_index,
+                                          int chars_count) {
+  int i = start_char_index;
+  while (i < chars_count &&
+         base::IsUnicodeWhitespace(FPDFText_GetUnicode(text_page, i))) {
+    i++;
+  }
+  return i;
+}
+
+PP_PrivateDirection GetDirectionFromAngle(double angle) {
+  angle = fmod(angle + base::kPiDouble / 4.0, 2 * base::kPiDouble);
+  if (angle >= 0 && angle <= base::kPiDouble / 2.0)
+    return PP_PRIVATEDIRECTION_LTR;
+  if (angle > base::kPiDouble / 2.0 && angle <= base::kPiDouble / 2.0)
+    return PP_PRIVATEDIRECTION_TTB;
+  if (angle > base::kPiDouble && angle <= 3 * base::kPiDouble / 2.0)
+    return PP_PRIVATEDIRECTION_RTL;
+  return PP_PRIVATEDIRECTION_BTT;
+}
+
+double GetDistanceBetweenPoints(const pp::FloatPoint& p1,
+                                const pp::FloatPoint& p2) {
+  pp::FloatPoint dist_vector = p1 - p2;
+  return sqrt(pow(dist_vector.x(), 2) + pow(dist_vector.y(), 2));
+}
+
+void AddCharSizeToAverageCharSize(pp::FloatSize new_size,
+                                  pp::FloatSize* avg_size,
+                                  int* count) {
+  // Some characters sometimes have a bogus empty bounding box. We don't want
+  // them to impact the average.
+  if (!new_size.IsEmpty()) {
+    avg_size->set_width((avg_size->width() * *count + new_size.width()) /
+                        (*count + 1));
+    avg_size->set_height((avg_size->height() * *count + new_size.height()) /
+                         (*count + 1));
+    (*count)++;
+  }
+}
+
+double GetRotatedCharWidth(double angle, const pp::FloatSize& size) {
+  return abs(cos(angle) * size.width()) + abs(sin(angle) * size.height());
 }
 
 }  // namespace
@@ -167,51 +210,93 @@ void PDFiumPage::GetTextRunInfo(int start_char_index,
   FPDF_PAGE page = GetPage();
   FPDF_TEXTPAGE text_page = GetTextPage();
   int chars_count = FPDFText_CountChars(text_page);
-  int char_index = start_char_index;
-  while (
-      char_index < chars_count &&
-      base::IsUnicodeWhitespace(FPDFText_GetUnicode(text_page, char_index))) {
-    char_index++;
-  }
-  int text_run_font_size = FPDFText_GetFontSize(text_page, char_index);
-  pp::FloatRect text_run_bounds =
+
+  int char_index = GetFirstNonUnicodeWhiteSpaceCharIndex(
+      text_page, start_char_index, chars_count);
+
+  pp::FloatRect start_char_rect =
       GetFloatCharRectInPixels(page, text_page, char_index);
+  int text_run_font_size = FPDFText_GetFontSize(text_page, char_index);
+
+  // Heuristic: Initialize the average character size to one-third of the font
+  // size to avoid having the first few characters misrepresent the average.
+  // Without it, if a text run starts with a '.', its small bounding box could
+  // lead to a break in the text run after only one space. Ex: ". Hello World"
+  // would be split in two runs: "." and "Hello World".
+  int font_size_minimum = FPDFText_GetFontSize(text_page, char_index) / 3.0;
+  pp::FloatSize avg_char_size =
+      pp::FloatSize(font_size_minimum, font_size_minimum);
+  int non_whitespace_chars_count = 1;
+  AddCharSizeToAverageCharSize(start_char_rect.Floatsize(), &avg_char_size,
+                               &non_whitespace_chars_count);
+
+  // Add first char to text run.
+  pp::FloatRect text_run_bounds = start_char_rect;
+  PP_PrivateDirection char_direction =
+      GetDirectionFromAngle(FPDFText_GetCharAngle(text_page, char_index));
   if (char_index < chars_count)
     char_index++;
+
+  pp::FloatRect prev_char_rect = start_char_rect;
+  float estimated_font_size =
+      std::max(start_char_rect.width(), start_char_rect.height());
+
+  // Continue adding characters until heuristics indicate we should end the text
+  // run.
   while (char_index < chars_count) {
     unsigned int character = FPDFText_GetUnicode(text_page, char_index);
+    pp::FloatRect char_rect =
+        GetFloatCharRectInPixels(page, text_page, char_index);
 
     if (!base::IsUnicodeWhitespace(character)) {
-      // TODO(dmazzoni): this assumes horizontal text.
-      // https://crbug.com/580311
-      pp::FloatRect char_rect =
-          GetFloatCharRectInPixels(page, text_page, char_index);
-      if (!char_rect.IsEmpty() && !OverlapsOnYAxis(text_run_bounds, char_rect))
-        break;
-
+      // Heuristic: End the text run if different font size is encountered.
       int font_size = FPDFText_GetFontSize(text_page, char_index);
       if (font_size != text_run_font_size)
         break;
 
-      // Heuristic: split a text run after a space longer than 3 average
-      // characters.
-      double avg_char_width =
-          text_run_bounds.width() / (char_index - start_char_index);
-      if (char_rect.x() - text_run_bounds.right() > avg_char_width * 3)
+      // Heuristic: End text run if character isn't going in the same direction.
+      if (char_direction !=
+          GetDirectionFromAngle(FPDFText_GetCharAngle(text_page, char_index)))
+        break;
+
+      // Heuristic: End the text run if the center-point distance to the
+      // previous character is less than 2.5x the average character size.
+      AddCharSizeToAverageCharSize(char_rect.Floatsize(), &avg_char_size,
+                                   &non_whitespace_chars_count);
+
+      pp::FloatPoint current_prev_diff =
+          char_rect.CenterPoint() - prev_char_rect.CenterPoint();
+      double angle = atan2(current_prev_diff.y(), current_prev_diff.x());
+      double avg_char_width = GetRotatedCharWidth(angle, avg_char_size);
+
+      double distance =
+          GetDistanceBetweenPoints(char_rect.CenterPoint(),
+                                   prev_char_rect.CenterPoint()) -
+          GetRotatedCharWidth(angle, char_rect.Floatsize()) / 2 -
+          GetRotatedCharWidth(angle, prev_char_rect.Floatsize()) / 2;
+
+      if (distance > 2.5 * avg_char_width)
         break;
 
       text_run_bounds = text_run_bounds.Union(char_rect);
+      prev_char_rect = char_rect;
+    }
+
+    if (!char_rect.IsEmpty()) {
+      // Update the estimated font size if needed.
+      float char_largest_side = std::max(char_rect.height(), char_rect.width());
+      estimated_font_size = std::max(char_largest_side, estimated_font_size);
     }
 
     char_index++;
   }
 
   // Some PDFs have missing or obviously bogus font sizes; substitute the
-  // height of the bounding box in those cases.
-  if (text_run_font_size <= 1 ||
-      text_run_font_size < text_run_bounds.height() / 2 ||
-      text_run_font_size > text_run_bounds.height() * 2) {
-    text_run_font_size = text_run_bounds.height();
+  // font size by the width or height (whichever's the largest) of the bigger
+  // character in the current text run.
+  if (text_run_font_size <= 1 || text_run_font_size < estimated_font_size / 2 ||
+      text_run_font_size > estimated_font_size * 2) {
+    text_run_font_size = estimated_font_size;
   }
 
   *out_len = char_index - start_char_index;

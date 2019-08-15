@@ -347,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppUrlShortcut) {
   ASSERT_TRUE(new_browser);
 
   // The new window should be an app window.
-  EXPECT_TRUE(new_browser->is_app());
+  EXPECT_TRUE(new_browser->is_type_app());
 
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
@@ -389,8 +389,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutNoPref) {
   EXPECT_EQ(tab_strip->GetActiveWebContents(), tab_strip->GetWebContentsAt(1));
 
   // It should be a standard tabbed window, not an app window.
-  EXPECT_FALSE(browser()->is_app());
-  EXPECT_TRUE(browser()->is_type_tabbed());
+  EXPECT_FALSE(browser()->is_type_app());
+  EXPECT_TRUE(browser()->is_type_normal());
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutWindowPref) {
@@ -414,7 +414,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutWindowPref) {
   ASSERT_TRUE(new_browser);
 
   // Expect an app window.
-  EXPECT_TRUE(new_browser->is_app());
+  EXPECT_TRUE(new_browser->is_type_app());
 
   // The browser's app_name should include the app's ID.
   EXPECT_NE(
@@ -651,14 +651,14 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, PRE_UpdateWithTwoProfiles) {
 
   // Open some urls with the browsers, and close them.
   Browser* browser1 =
-      new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile1, true));
+      new Browser(Browser::CreateParams(Browser::TYPE_NORMAL, profile1, true));
   chrome::NewTab(browser1);
   ui_test_utils::NavigateToURL(browser1,
                                embedded_test_server()->GetURL("/empty.html"));
   CloseBrowserSynchronously(browser1);
 
   Browser* browser2 =
-      new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile2, true));
+      new Browser(Browser::CreateParams(Browser::TYPE_NORMAL, profile2, true));
   chrome::NewTab(browser2);
   ui_test_utils::NavigateToURL(browser2,
                                embedded_test_server()->GetURL("/form.html"));
@@ -795,7 +795,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   // Open a page with profile_last.
   Browser* browser_last = new Browser(
-      Browser::CreateParams(Browser::TYPE_TABBED, profile_last, true));
+      Browser::CreateParams(Browser::TYPE_NORMAL, profile_last, true));
   chrome::NewTab(browser_last);
   ui_test_utils::NavigateToURL(browser_last,
                                embedded_test_server()->GetURL("/empty.html"));

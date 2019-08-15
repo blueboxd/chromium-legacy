@@ -87,7 +87,7 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
   // The PrefService associated with the profile.
   PrefService* profile_prefs_;
 
-  base::WeakPtrFactory<UserPolicySigninService> weak_factory_;
+  base::WeakPtrFactory<UserPolicySigninService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicySigninService);
 };

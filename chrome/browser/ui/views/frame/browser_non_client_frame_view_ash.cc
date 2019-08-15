@@ -102,8 +102,8 @@ bool IsSnappedInSplitView(const aura::Window* window) {
 // the header used for packaged apps.
 bool UsePackagedAppHeaderStyle(const Browser* browser) {
   // Use for non tabbed trusted source windows, e.g. Settings, as well as apps.
-  return (!browser->is_type_tabbed() && browser->is_trusted_source()) ||
-         browser->is_app();
+  return (!browser->is_type_normal() && browser->is_trusted_source()) ||
+         browser->deprecated_is_app();
 }
 
 }  // namespace
@@ -152,8 +152,8 @@ void BrowserNonClientFrameViewAsh::Init() {
   aura::Window* window = frame()->GetNativeWindow();
   window->SetProperty(
       aura::client::kAppType,
-      static_cast<int>(browser->is_app() ? ash::AppType::CHROME_APP
-                                         : ash::AppType::BROWSER));
+      static_cast<int>(browser->deprecated_is_app() ? ash::AppType::CHROME_APP
+                                                    : ash::AppType::BROWSER));
 
   window_observer_.Add(GetFrameWindow());
 
@@ -164,7 +164,7 @@ void BrowserNonClientFrameViewAsh::Init() {
 
   ash::TabletMode::Get()->AddObserver(this);
 
-  if (browser->is_app() && IsV1AppBackButtonEnabled()) {
+  if (browser->deprecated_is_app() && IsV1AppBackButtonEnabled()) {
     browser->command_controller()->AddCommandObserver(IDC_BACK, this);
     back_button_ = new ash::FrameBackButton();
     AddChildView(back_button_);
@@ -247,7 +247,7 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColor() {
     inactive_color = GetFrameColor(kInactive);
   } else if (browser_view()->IsBrowserTypeHostedApp()) {
     active_color = browser_view()->browser()->app_controller()->GetThemeColor();
-  } else if (!browser_view()->browser()->is_app()) {
+  } else if (!browser_view()->browser()->deprecated_is_app()) {
     // TODO(crbug.com/836128): Remove when System Web Apps flag is removed, as
     // the above Hosted App branch will render the theme color.
     active_color =
@@ -564,7 +564,7 @@ gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFaviconForTabIconView() {
 void BrowserNonClientFrameViewAsh::EnabledStateChangedForCommand(int id,
                                                                  bool enabled) {
   DCHECK_EQ(IDC_BACK, id);
-  DCHECK(browser_view()->browser()->is_app());
+  DCHECK(browser_view()->browser()->deprecated_is_app());
 
   if (back_button_)
     back_button_->SetEnabled(enabled);
@@ -750,7 +750,7 @@ bool BrowserNonClientFrameViewAsh::ShouldShowProfileIndicatorIcon() const {
   if (browser->profile()->IsIncognitoProfile())
     return false;
 
-  if (!browser->is_type_tabbed() && !browser->is_app())
+  if (browser->is_type_popup())
     return false;
 
   return MultiUserWindowManagerHelper::ShouldShowAvatar(

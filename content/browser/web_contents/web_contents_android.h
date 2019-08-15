@@ -280,7 +280,7 @@ class CONTENT_EXPORT WebContentsAndroid {
 
   base::ObserverList<DestructionObserver> destruction_observers_;
 
-  base::WeakPtrFactory<WebContentsAndroid> weak_factory_;
+  base::WeakPtrFactory<WebContentsAndroid> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsAndroid);
 };

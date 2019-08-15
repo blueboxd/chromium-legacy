@@ -142,8 +142,7 @@ class TestSyncedWindowDelegate : public SyncedWindowDelegate {
   SessionID GetSessionId() const override;
   int GetTabCount() const override;
   int GetActiveIndex() const override;
-  bool IsApp() const override;
-  bool IsTypeTabbed() const override;
+  bool IsTypeNormal() const override;
   bool IsTypePopup() const override;
   bool IsTabPinned(const SyncedTabDelegate* tab) const override;
   SyncedTabDelegate* GetTabAt(int index) const override;

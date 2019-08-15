@@ -15,6 +15,7 @@ import sys
 import tempfile
 from xml.sax import saxutils
 
+import six
 from six import StringIO
 from six.moves import html_entities as entities
 
@@ -252,16 +253,16 @@ def UnescapeHtml(text, replace_nbsp=True):
   def Replace(match):
     groups = match.groupdict()
     if groups['hex']:
-      return unichr(int(groups['hex'], 16))
+      return six.unichr(int(groups['hex'], 16))
     elif groups['decimal']:
-      return unichr(int(groups['decimal'], 10))
+      return six.unichr(int(groups['decimal'], 10))
     else:
       name = groups['named']
       if name == 'nbsp' and not replace_nbsp:
         return match.group()  # Don't replace &nbsp;
       assert name != None
       if name in entities.name2codepoint.keys():
-        return unichr(entities.name2codepoint[name])
+        return six.unichr(entities.name2codepoint[name])
       else:
         return match.group()  # Unknown HTML character entity - don't replace
 
@@ -329,7 +330,7 @@ def ParseGrdForUnittest(body, base_dir=None, predetermined_ids_file=None,
     base_dir: The base_dir attribute of the <grit> tag.
   '''
   from grit import grd_reader
-  if isinstance(body, unicode):
+  if isinstance(body, six.text_type):
     body = body.encode('utf-8')
   if base_dir is None:
     base_dir = PathFromRoot('.')

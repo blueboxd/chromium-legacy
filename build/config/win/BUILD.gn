@@ -39,12 +39,6 @@ declare_args() {
   #  and with this switch, clang emits it like this:
   #    foo/bar.cc:12:34: error: something went wrong
   use_clang_diagnostics_format = false
-
-  # Use absolute file paths in the compiler diagnostics and (for non-clang)
-  # __FILE__ macro if needed. Note that enabling this makes your build
-  # dependent your checkout's path, which means you won't get to use goma's
-  # global cache, and without clang your builds won't be deterministic.
-  msvc_use_absolute_paths = false
 }
 
 # This is included by reference in the //build/config/compiler config that
@@ -80,23 +74,6 @@ config("compiler") {
     # Work around crbug.com/526851, bug in VS 2015 RTM compiler.
     "/Zc:sizedDealloc-",
   ]
-
-  if (msvc_use_absolute_paths) {
-    # MSVC used to require absolute paths in its diagnostics to be able to
-    # click them. cl.exe only has "/FC" for this, which also affects __FILE__
-    # and other things, which is bad for build determinism.
-    # clang-cl has a more targeted flag (and silently ignores /FC because it's
-    # bad for build determinism), so use the better flag there.
-    # TODO(thakis): This comment no longer really make sense after
-    # https://chromium-review.googlesource.com/c/chromium/src/+/558871/
-    # See if we can remove msvc_use_absolute_paths. See also discussion in
-    # https://reviews.llvm.org/D23816
-    if (is_clang) {
-      cflags += [ "-fdiagnostics-absolute-paths" ]
-    } else {
-      cflags += [ "/FC" ]
-    }
-  }
 
   if (is_clang) {
     # Don't look for includes in %INCLUDE%.

@@ -115,8 +115,8 @@ GraphicsLayer::~GraphicsLayer() {
   DCHECK(!parent_);
 
   // This ensures we clean-up the ElementId to cc::Layer mapping in
-  // LayerTreeHost before a new layer with the same ElementId is added.
-  // Regression from BGPT: https://crbug.com/979002
+  // LayerTreeHost before a new layer with the same ElementId is added. See
+  // https://crbug.com/979002 for more information.
   SetElementId(CompositorElementId());
 }
 
@@ -196,28 +196,6 @@ void GraphicsLayer::AddChild(GraphicsLayer* child_layer) {
   UpdateChildList();
 }
 
-void GraphicsLayer::AddChildBelow(GraphicsLayer* child_layer,
-                                  GraphicsLayer* sibling) {
-  DCHECK_NE(child_layer, this);
-  child_layer->RemoveFromParent();
-
-  bool found = false;
-  for (unsigned i = 0; i < children_.size(); i++) {
-    if (sibling == children_[i]) {
-      children_.insert(i, child_layer);
-      found = true;
-      break;
-    }
-  }
-
-  child_layer->SetParent(this);
-
-  if (!found)
-    children_.push_back(child_layer);
-
-  UpdateChildList();
-}
-
 void GraphicsLayer::RemoveAllChildren() {
   while (!children_.IsEmpty()) {
     GraphicsLayer* cur_layer = children_.back();
@@ -248,11 +226,6 @@ void GraphicsLayer::SetOffsetFromLayoutObject(const IntSize& offset) {
 
   // If the compositing layer offset changes, we need to repaint.
   SetNeedsDisplay();
-}
-
-LayoutSize GraphicsLayer::OffsetFromLayoutObjectWithSubpixelAccumulation()
-    const {
-  return LayoutSize(OffsetFromLayoutObject()) + client_.SubpixelAccumulation();
 }
 
 IntRect GraphicsLayer::InterestRect() {
@@ -921,12 +894,6 @@ PaintController& GraphicsLayer::GetPaintController() const {
 void GraphicsLayer::SetElementId(const CompositorElementId& id) {
   if (cc::Layer* layer = CcLayer())
     layer->SetElementId(id);
-}
-
-CompositorElementId GraphicsLayer::GetElementId() const {
-  if (cc::Layer* layer = CcLayer())
-    return layer->element_id();
-  return CompositorElementId();
 }
 
 sk_sp<PaintRecord> GraphicsLayer::CapturePaintRecord() const {

@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "build/buildflag.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "media/base/renderer_factory_selector.h"
 #include "media/base/routing_token_callback.h"
 #include "media/blink/url_index.h"
@@ -29,7 +30,6 @@
 namespace blink {
 class WebContentDecryptionModule;
 class WebEncryptedMediaClient;
-class WebLayerTreeView;
 class WebLocalFrame;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
@@ -100,8 +100,7 @@ class MediaFactory {
   // to a ContentDecryptionModule if MediaKeys have been provided to the
   // |encrypted_client| (otherwise null). |sink_id|, when not empty, identifies
   // the audio sink to use for this player (see HTMLMediaElement.sinkId).
-  // The |layer_tree_view| will be used to generate the correct FrameSinkId for
-  // the Surface containing the corresponding HTMLMediaElement.
+  // |parent_frame_sink_id| identifies the local root widget's FrameSinkId.
   blink::WebMediaPlayer* CreateMediaPlayer(
       const blink::WebMediaPlayerSource& source,
       blink::WebMediaPlayerClient* client,
@@ -109,7 +108,7 @@ class MediaFactory {
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       blink::WebContentDecryptionModule* initial_cdm,
       const blink::WebString& sink_id,
-      blink::WebLayerTreeView* layer_tree_view,
+      viz::FrameSinkId parent_frame_sink_id,
       const cc::LayerTreeSettings& settings);
 
   // Provides an EncryptedMediaClient to connect blink's EME layer to media's
@@ -132,7 +131,7 @@ class MediaFactory {
       const blink::WebString& sink_id,
       const blink::WebSecurityOrigin& security_origin,
       blink::WebLocalFrame* frame,
-      blink::WebLayerTreeView* layer_tree_view,
+      viz::FrameSinkId parent_frame_sink_id,
       const cc::LayerTreeSettings& settings);
 
   // Returns the media delegate for WebMediaPlayer usage.  If

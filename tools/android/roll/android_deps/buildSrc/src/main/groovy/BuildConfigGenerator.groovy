@@ -31,9 +31,6 @@ class BuildConfigGenerator extends DefaultTask {
             "${DEPS_TOKEN_START}(.*)${DEPS_TOKEN_END}",
             Pattern.DOTALL)
     private static final DOWNLOAD_DIRECTORY_NAME = "libs"
-    // This must be unique, so better be safe and increment the suffix rather than resetting
-    // to cr0.
-    private static final CIPD_SUFFIX = "cr0"
 
     // Some libraries are hosted in Chromium's //third_party directory. This is a mapping between
     // them so they can be used instead of android_deps pulling in its own copy.
@@ -231,7 +228,8 @@ class BuildConfigGenerator extends DefaultTask {
     private static void addSpecialTreatment(StringBuilder sb, String dependencyId) {
         if (isPlayServicesTarget(dependencyId)) {
             if (Pattern.matches(".*cast_framework.*", dependencyId)) {
-                sb.append('  # Cannot get rid of cast framework resources: crbug.com/985139.\n')
+                sb.append('  # Removing all resources from cast framework as they are unused bloat.\n')
+                sb.append('  strip_resources = true\n')
             } else {
                 sb.append('  # Removing drawables from GMS .aars as they are unused bloat.\n')
                 sb.append('  strip_drawables = true\n')
@@ -315,7 +313,7 @@ class BuildConfigGenerator extends DefaultTask {
             |      'packages': [
             |          {
             |              'package': '${cipdPath}',
-            |              'version': 'version:${dependency.version}-${CIPD_SUFFIX}',
+            |              'version': 'version:${dependency.version}-${dependency.cipdSuffix}',
             |          },
             |      ],
             |      'condition': 'checkout_android',
@@ -385,7 +383,7 @@ class BuildConfigGenerator extends DefaultTask {
         if (!stripFromCipdPath) {
             stripFromCipdPath = ''
         }
-        def cipdVersion = "${dependency.version}-${CIPD_SUFFIX}"
+        def cipdVersion = "${dependency.version}-${dependency.cipdSuffix}"
         def cipdPath = "${cipdBucket}/"
         if (stripFromCipdPath) {
             assert repoPath.startsWith(stripFromCipdPath)

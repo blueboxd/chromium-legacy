@@ -18,7 +18,7 @@ class ShelfView;
 // OverflowBubbleView hosts a ShelfView to display overflown items.
 // Exports to access this class from OverflowBubbleViewTestAPI.
 class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
-                                      views::ButtonListener {
+                                      public views::ButtonListener {
  public:
   enum LayoutStrategy {
     // The arrow buttons are not shown. It means that there is enough space to
@@ -82,7 +82,6 @@ class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
  private:
   friend class OverflowBubbleViewTestAPI;
 
-  class ScrollArrowView;
   class OverflowShelfContainerView;
 
   // Returns the maximum scroll distance.

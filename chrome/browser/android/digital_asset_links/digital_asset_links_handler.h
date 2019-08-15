@@ -79,7 +79,7 @@ class DigitalAssetLinksHandler {
   // reset every time we get a new CheckDigitalAssetLinkRelationship call.
   RelationshipCheckResultCallback callback_;
 
-  base::WeakPtrFactory<DigitalAssetLinksHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<DigitalAssetLinksHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DigitalAssetLinksHandler);
 };

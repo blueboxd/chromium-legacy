@@ -57,8 +57,7 @@ UsageStatsBridge::UsageStatsBridge(
     const JavaRef<jobject>& j_this)
     : usage_stats_database_(std::move(usage_stats_database)),
       profile_(profile),
-      j_this_(ScopedJavaGlobalRef<jobject>(j_this)),
-      weak_ptr_factory_(this) {
+      j_this_(ScopedJavaGlobalRef<jobject>(j_this)) {
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile_,
                                            ServiceAccessType::IMPLICIT_ACCESS);

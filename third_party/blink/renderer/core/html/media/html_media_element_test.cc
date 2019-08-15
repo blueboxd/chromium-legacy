@@ -55,8 +55,7 @@ class WebMediaStubLocalFrameClient : public EmptyLocalFrameClient {
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
-      WebMediaPlayerClient* client,
-      WebLayerTreeView*) override {
+      WebMediaPlayerClient* client) override {
     DCHECK(player_) << " Empty injected player - already used?";
     return std::move(player_);
   }

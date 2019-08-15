@@ -38,7 +38,7 @@ AwRenderProcess* AwRenderProcess::GetInstanceForRenderProcessHost(
 }
 
 AwRenderProcess::AwRenderProcess(RenderProcessHost* render_process_host)
-    : render_process_host_(render_process_host), weak_factory_(this) {
+    : render_process_host_(render_process_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   java_obj_.Reset(Java_AwRenderProcess_create(AttachCurrentThread()));

@@ -943,7 +943,7 @@ TEST_F(PasswordStoreTest, SavingClearingProtectedPassword) {
   store->ClearAllGaiaPasswordHash();
   EXPECT_EQ(0u, prefs.GetList(prefs::kPasswordHashDataList)->GetList().size());
   EXPECT_CALL(mock_consumer, OnReuseFound(_, _, _, _)).Times(0);
-  store->CheckReuse(input, "https://facebook.com", &mock_consumer);
+  store->CheckReuse(input, "https://example.com", &mock_consumer);
   WaitForPasswordStore();
   testing::Mock::VerifyAndClearExpectations(&mock_consumer);
 
@@ -969,6 +969,53 @@ TEST_F(PasswordStoreTest, SavingClearingProtectedPassword) {
   EXPECT_EQ(0u, prefs.GetList(prefs::kPasswordHashDataList)->GetList().size());
   EXPECT_CALL(mock_consumer, OnReuseFound(_, _, _, _)).Times(0);
   store->CheckReuse(input, "https://example.com", &mock_consumer);
+  WaitForPasswordStore();
+  testing::Mock::VerifyAndClearExpectations(&mock_consumer);
+
+  // Save a Gmail password this time.
+  const base::string16 gmail_password = base::ASCIIToUTF16("gmailpass");
+  store->SaveGaiaPasswordHash(
+      "username@gmail.com", gmail_password,
+      metrics_util::GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
+  WaitForPasswordStore();
+  EXPECT_TRUE(prefs.HasPrefPath(prefs::kPasswordHashDataList));
+  base::Optional<PasswordHashData> gmail_password_hash = GetPasswordFromPref(
+      "username@gmail.com", /*is_gaia_password=*/true, &prefs);
+  ASSERT_TRUE(gmail_password_hash.has_value());
+
+  // Check that gmail password reuse is found.
+  EXPECT_CALL(mock_consumer,
+              OnReuseFound(gmail_password.size(), Matches(gmail_password_hash),
+                           std::vector<std::string>(), 0));
+  store->CheckReuse(gmail_password, "https://example.com", &mock_consumer);
+  WaitForPasswordStore();
+  testing::Mock::VerifyAndClearExpectations(&mock_consumer);
+
+  // Also save another non-sync Gaia password this time.
+  const base::string16 non_sync_gaia_password = base::ASCIIToUTF16("3password");
+  store->SaveGaiaPasswordHash(
+      "non_sync_gaia_password@gsuite.com", non_sync_gaia_password,
+      metrics_util::GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
+  base::Optional<PasswordHashData> non_sync_gaia_password_hash =
+      GetPasswordFromPref("non_sync_gaia_password@gsuite.com",
+                          /*is_gaia_password=*/true, &prefs);
+  ASSERT_TRUE(non_sync_gaia_password_hash.has_value());
+  EXPECT_EQ(2u, prefs.GetList(prefs::kPasswordHashDataList)->GetList().size());
+
+  // Check that no non-gmail password reuse is found after clearing the
+  // password hash.
+  store->ClearAllNonGmailPasswordHash();
+  EXPECT_EQ(1u, prefs.GetList(prefs::kPasswordHashDataList)->GetList().size());
+  EXPECT_CALL(mock_consumer, OnReuseFound(_, _, _, _)).Times(0);
+  store->CheckReuse(non_sync_gaia_password, "https://example.com",
+                    &mock_consumer);
+  WaitForPasswordStore();
+  testing::Mock::VerifyAndClearExpectations(&mock_consumer);
+  EXPECT_CALL(mock_consumer,
+              OnReuseFound(gmail_password.size(), Matches(gmail_password_hash),
+                           std::vector<std::string>(), 0))
+      .Times(1);
+  store->CheckReuse(gmail_password, "https://example.com", &mock_consumer);
   WaitForPasswordStore();
   testing::Mock::VerifyAndClearExpectations(&mock_consumer);
 

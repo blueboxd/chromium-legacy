@@ -116,8 +116,6 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
     return display_list_;
   }
 
-  std::vector<scoped_refptr<PaintWorkletInput>> GetPaintWorkletInputs() const;
-
   float recording_scale_factor() const { return recording_scale_factor_; }
 
   SkColor background_color() const { return background_color_; }

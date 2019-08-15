@@ -123,6 +123,14 @@ Polymer({
     },
 
     /**
+     * Enables letters to be displayed on the pin keyboard buttons.
+     */
+    enableLetters: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Turns on "incognito mode". (FIXME after https://crbug.com/900351 is
      * fixed).
      */

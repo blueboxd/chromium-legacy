@@ -96,6 +96,9 @@ void TrayNetworkStateModel::OnActiveNetworksChanged(
   SendActiveNetworkStateChanged();
 }
 
+void TrayNetworkStateModel::OnNetworkStateChanged(
+    chromeos::network_config::mojom::NetworkStatePropertiesPtr /* network */) {}
+
 void TrayNetworkStateModel::OnNetworkStateListChanged() {
   NotifyNetworkListChanged();
 }

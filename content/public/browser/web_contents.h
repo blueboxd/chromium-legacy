@@ -898,6 +898,11 @@ class WebContents : public PageNavigator,
   // browser fullscreen.
   virtual void ExitFullscreen(bool will_cause_resize) = 0;
 
+  // The WebContents is trying to take some action that would cause user
+  // confusion if taken while in fullscreen. If this WebContents or any outer
+  // WebContents is in fullscreen, drop it.
+  virtual void ForSecurityDropFullscreen() = 0;
+
   // Unblocks requests from renderer for a newly created window. This is
   // used in showCreatedWindow() or sometimes later in cases where
   // delegate->ShouldResumeRequestsForCreatedWindow() indicated the requests

@@ -30,6 +30,19 @@ function waitFor(condition, error_message = 'Reaches the maximum frames.') {
   });
 }
 
+// Returns a promise that only gets resolved when the condition is met.
+function waitUntil(condition) {
+  return new Promise((resolve, reject) => {
+    function tick() {
+      if (condition())
+        resolve();
+      else
+        requestAnimationFrame(tick.bind(this));
+    }
+    tick();
+  });
+}
+
 // Returns a promise that resolves when the given condition holds for 10
 // animation frames or rejects if the condition changes to false within 10
 // animation frames.

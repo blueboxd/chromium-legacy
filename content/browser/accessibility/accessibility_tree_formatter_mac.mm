@@ -229,7 +229,7 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBrowser {
       std::vector<PropertyFilter>* property_filters) override;
 
  private:
-  const base::FilePath::StringType GetExpectedFileSuffix() override;
+  base::FilePath::StringType GetExpectedFileSuffix() override;
   const std::string GetAllowEmptyString() override;
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;
@@ -363,7 +363,7 @@ base::string16 AccessibilityTreeFormatterMac::ProcessTreeForOutput(
   return line;
 }
 
-const base::FilePath::StringType
+base::FilePath::StringType
 AccessibilityTreeFormatterMac::GetExpectedFileSuffix() {
   return FILE_PATH_LITERAL("-expected-mac.txt");
 }

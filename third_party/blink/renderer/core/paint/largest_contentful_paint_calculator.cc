@@ -81,8 +81,15 @@ void LargestContentfulPaintCalculator::UpdateLargestContentPaintIfNeeded(
       (!largest_text.has_value() || !text_has_changed))
     return;
 
-  if (!largest_text_ && !largest_image_)
+  if (!largest_text_ && !largest_image_) {
+    if (LocalFrame* frame = window_performance_->GetFrame()) {
+      TRACE_EVENT_INSTANT2(
+          "loading,rail,devtools.timeline",
+          "largestContentfulPaint::Invalidate", TRACE_EVENT_SCOPE_THREAD,
+          "data", InvalidationTraceData(), "frame", ToTraceValue(frame));
+    }
     return;
+  }
   if (LargestTextSize() > LargestImageSize()) {
     if (largest_text_->paint_time > base::TimeTicks())
       UpdateLargestContentfulPaint(LargestContentType::kText);
@@ -136,6 +143,13 @@ void LargestContentfulPaintCalculator::UpdateLargestContentfulPaint(
                                  : base::TimeTicks(),
         largest_image_->first_size, largest_image_->load_time, image_id,
         image_url, image_element);
+
+    if (LocalFrame* frame = window_performance_->GetFrame()) {
+      TRACE_EVENT_MARK_WITH_TIMESTAMP2(
+          "loading,rail,devtools.timeline", "largestContentfulPaint::Candidate",
+          largest_image_->paint_time, "data", ImageCandidateTraceData(),
+          "frame", ToTraceValue(frame));
+    }
   } else {
     DCHECK(largest_text_);
     Node* text_node = DOMNodeIds::NodeForId(largest_text_->node_id);
@@ -152,11 +166,51 @@ void LargestContentfulPaintCalculator::UpdateLargestContentfulPaint(
     window_performance_->OnLargestContentfulPaintUpdated(
         largest_text_->paint_time, largest_text_->first_size, base::TimeTicks(),
         text_id, g_empty_string, text_element);
+
+    if (LocalFrame* frame = window_performance_->GetFrame()) {
+      TRACE_EVENT_MARK_WITH_TIMESTAMP2(
+          "loading,rail,devtools.timeline", "largestContentfulPaint::Candidate",
+          largest_text_->paint_time, "data", TextCandidateTraceData(), "frame",
+          ToTraceValue(frame));
+    }
   }
 }
 
 void LargestContentfulPaintCalculator::Trace(Visitor* visitor) {
   visitor->Trace(window_performance_);
+}
+
+std::unique_ptr<TracedValue>
+LargestContentfulPaintCalculator::TextCandidateTraceData() {
+  auto value = std::make_unique<TracedValue>();
+  value->SetString("type", "text");
+  value->SetInteger("nodeId", static_cast<int>(largest_text_->node_id));
+  value->SetInteger("size", static_cast<int>(largest_text_->first_size));
+  value->SetInteger("candidateIndex", ++count_candidates_);
+  value->SetBoolean("isMainFrame",
+                    window_performance_->GetFrame()->IsMainFrame());
+  return value;
+}
+
+std::unique_ptr<TracedValue>
+LargestContentfulPaintCalculator::ImageCandidateTraceData() {
+  auto value = std::make_unique<TracedValue>();
+  value->SetString("type", "image");
+  value->SetInteger("nodeId", static_cast<int>(largest_image_->node_id));
+  value->SetInteger("size", static_cast<int>(largest_image_->first_size));
+  value->SetInteger("candidateIndex", ++count_candidates_);
+  value->SetBoolean("isMainFrame",
+                    window_performance_->GetFrame()->IsMainFrame());
+  return value;
+}
+
+std::unique_ptr<TracedValue>
+LargestContentfulPaintCalculator::InvalidationTraceData() {
+  auto value = std::make_unique<TracedValue>();
+  value->SetInteger("candidateIndex", ++count_candidates_);
+  value->SetBoolean("isMainFrame",
+                    window_performance_->GetFrame()->IsMainFrame());
+  return value;
 }
 
 }  // namespace blink

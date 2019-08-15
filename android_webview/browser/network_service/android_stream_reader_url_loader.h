@@ -118,7 +118,7 @@ class AndroidStreamReaderURLLoader : public network::mojom::URLLoader {
   mojo::SimpleWatcher writable_handle_watcher_;
   base::ThreadChecker thread_checker_;
 
-  base::WeakPtrFactory<AndroidStreamReaderURLLoader> weak_factory_;
+  base::WeakPtrFactory<AndroidStreamReaderURLLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AndroidStreamReaderURLLoader);
 };

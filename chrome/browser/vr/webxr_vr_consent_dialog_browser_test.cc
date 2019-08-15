@@ -91,6 +91,44 @@ IN_PROC_BROWSER_TEST_F(WebXrVrConsentDialogBrowserTest,
   EndTest();
 }
 
+IN_PROC_BROWSER_TEST_F(
+    WebXrVrConsentDialogBrowserTest,
+    TestWebXrVrPersistsGrantedConsentWhenUserClicksAllowButton) {
+  SetupFakeConsentManager(
+      FakeXRSessionRequestConsentManager::UserResponse::kClickAllowButton);
+
+  LoadUrlAndAwaitInitialization(
+      GetFileUrlForHtmlTestFile("generic_webxr_page"));
+
+  // These two functions below are exactly the same as
+  // WebXrVrBrowserTestBase::EnterSessionWithUserGesture, except that the base
+  // class' implementation replaces the FakeXRSessionRequestConsentManager
+  // set in the SetupFakeConsentManager call above, which should be avoided.
+  RunJavaScriptOrFail("onRequestSession()", GetCurrentWebContents());
+  PollJavaScriptBooleanOrFail(
+      "sessionInfos[sessionTypes.IMMERSIVE].currentSession != null",
+      kPollTimeoutLong, GetCurrentWebContents());
+
+  RunJavaScriptOrFail(
+      "sessionInfos[sessionTypes.IMMERSIVE].currentSession.end()",
+      GetCurrentWebContents());
+
+  // Now, reset the fake consent dialog manager to reject consent if prompted
+  // again. However, since the earlier prompt is persisted, requesting for
+  // an XR session a second time should not prompt the user, but should create
+  // a valid session.
+  SetupFakeConsentManager(
+      FakeXRSessionRequestConsentManager::UserResponse::kUnexpected);
+  RunJavaScriptOrFail("onRequestSession()", GetCurrentWebContents());
+  PollJavaScriptBooleanOrFail(
+      "sessionInfos[sessionTypes.IMMERSIVE].currentSession != null",
+      kPollTimeoutLong, GetCurrentWebContents());
+
+  RunJavaScriptOrFail(
+      "sessionInfos[sessionTypes.IMMERSIVE].currentSession.end()",
+      GetCurrentWebContents());
+}
+
 #endif
 
 }  // namespace vr

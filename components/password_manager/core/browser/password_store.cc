@@ -465,6 +465,12 @@ void PasswordStore::ClearAllEnterprisePasswordHash() {
       &PasswordStore::ClearAllEnterprisePasswordHashImpl, this));
 }
 
+void PasswordStore::ClearAllNonGmailPasswordHash() {
+  hash_password_manager_.ClearAllNonGmailPasswordHash();
+  ScheduleTask(base::BindRepeating(
+      &PasswordStore::ClearAllNonGmailPasswordHashImpl, this));
+}
+
 std::unique_ptr<StateSubscription>
 PasswordStore::RegisterStateCallbackOnHashPasswordManager(
     const base::Callback<void(const std::string& username)>& callback) {
@@ -644,6 +650,12 @@ void PasswordStore::ClearAllEnterprisePasswordHashImpl() {
   if (reuse_detector_)
     reuse_detector_->ClearAllEnterprisePasswordHash();
 }
+
+void PasswordStore::ClearAllNonGmailPasswordHashImpl() {
+  if (reuse_detector_)
+    reuse_detector_->ClearAllNonGmailPasswordHash();
+}
+
 #endif
 
 void PasswordStore::OnInitCompleted(bool success) {

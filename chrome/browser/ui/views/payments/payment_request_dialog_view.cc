@@ -118,6 +118,9 @@ bool PaymentRequestDialogView::Cancel() {
   // all the controllers, because they may have pointers to PaymentRequestSpec/
   // PaymentRequestState. Then send the signal to PaymentRequest to destroy.
   being_closed_ = true;
+  for (const auto& controller : controller_map_) {
+    controller.second->Stop();
+  }
   view_stack_.reset();
   controller_map_.clear();
   request_->UserCancelled();

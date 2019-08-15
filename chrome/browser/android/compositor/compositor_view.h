@@ -125,7 +125,7 @@ class CompositorView : public content::CompositorClient,
   int content_height_;
   bool overlay_video_mode_;
 
-  base::WeakPtrFactory<CompositorView> weak_factory_;
+  base::WeakPtrFactory<CompositorView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CompositorView);
 };

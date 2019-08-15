@@ -8,6 +8,14 @@
 
 /**
  * @typedef {{
+ *    tabId: number,
+ *    windowId: number,
+ * }}
+ */
+let TabActivatedInfo;
+
+/**
+ * @typedef {{
  *    isWindowClosing: boolean,
  *    windowId: number,
  * }}

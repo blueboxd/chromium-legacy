@@ -39,7 +39,7 @@ ScriptPromise PeriodicSyncManager::registerPeriodicSync(
   mojom::blink::SyncRegistrationOptionsPtr sync_registration =
       mojom::blink::SyncRegistrationOptions::New(tag, options->minInterval());
 
-  GetBackgroundSyncServicePtr()->Register(
+  GetBackgroundSyncServiceRemote()->Register(
       std::move(sync_registration), registration_->RegistrationId(),
       WTF::Bind(&PeriodicSyncManager::RegisterCallback, WrapPersistent(this),
                 WrapPersistent(resolver)));
@@ -61,7 +61,7 @@ ScriptPromise PeriodicSyncManager::getTags(ScriptState* script_state) {
 
   // TODO(crbug.com/932591): Optimize this to only get the tags from the browser
   // process instead of the registrations themselves.
-  GetBackgroundSyncServicePtr()->GetRegistrations(
+  GetBackgroundSyncServiceRemote()->GetRegistrations(
       registration_->RegistrationId(),
       WTF::Bind(&PeriodicSyncManager::GetRegistrationsCallback,
                 WrapPersistent(this), WrapPersistent(resolver)));
@@ -81,18 +81,18 @@ ScriptPromise PeriodicSyncManager::unregister(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  GetBackgroundSyncServicePtr()->Unregister(
+  GetBackgroundSyncServiceRemote()->Unregister(
       registration_->RegistrationId(), tag,
       WTF::Bind(&PeriodicSyncManager::UnregisterCallback, WrapPersistent(this),
                 WrapPersistent(resolver)));
   return promise;
 }
 
-const mojom::blink::PeriodicBackgroundSyncServicePtr&
-PeriodicSyncManager::GetBackgroundSyncServicePtr() {
-  if (!background_sync_service_.get()) {
+const mojo::Remote<mojom::blink::PeriodicBackgroundSyncService>&
+PeriodicSyncManager::GetBackgroundSyncServiceRemote() {
+  if (!background_sync_service_.is_bound()) {
     Platform::Current()->GetInterfaceProvider()->GetInterface(
-        mojo::MakeRequest(&background_sync_service_));
+        background_sync_service_.BindNewPipeAndPassReceiver());
   }
   return background_sync_service_;
 }

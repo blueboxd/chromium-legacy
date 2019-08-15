@@ -46,8 +46,8 @@ const int kClickSuppressionInMS = 1000;
 
 // Returns true if this app matches the given |web_contents|. To accelerate
 // the matching, the app managing |extension| as well as the parsed
-// |refocus_pattern| get passed. If |is_app| is true, the application gets
-// first checked against its original URL since a windowed app might have
+// |refocus_pattern| get passed. If |deprecated_is_app| is true, the application
+// gets first checked against its original URL since a windowed app might have
 // navigated away from its app domain.
 bool WebContentMatchesApp(const std::string& app_id,
                           const extensions::Extension* extension,
@@ -56,7 +56,7 @@ bool WebContentMatchesApp(const std::string& app_id,
                           Browser* browser) {
   // If the browser is an app window, and the app name matches the extension,
   // then the contents match the app.
-  if (browser->is_app()) {
+  if (browser->deprecated_is_app()) {
     const extensions::Extension* browser_extension =
         ExtensionRegistry::Get(browser->profile())
             ->GetExtensionById(

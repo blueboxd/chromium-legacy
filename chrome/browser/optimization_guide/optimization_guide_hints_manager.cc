@@ -227,12 +227,12 @@ void OptimizationGuideHintsManager::ProcessOptimizationFilters(
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   base::AutoLock lock(optimization_filters_lock_);
 
-  available_optimization_filters_.clear();
+  optimization_types_with_filter_.clear();
   blacklist_optimization_filters_.clear();
   for (const auto& filter : blacklist_optimization_filters) {
     if (filter.optimization_type() !=
         optimization_guide::proto::TYPE_UNSPECIFIED) {
-      available_optimization_filters_.insert(filter.optimization_type());
+      optimization_types_with_filter_.insert(filter.optimization_type());
     }
 
     // Do not put anything in memory that we don't have registered.
@@ -502,8 +502,8 @@ void OptimizationGuideHintsManager::RegisterOptimizationTypes(
 
     if (!should_load_new_optimization_filter) {
       base::AutoLock lock(optimization_filters_lock_);
-      if (available_optimization_filters_.find(optimization_type) !=
-          available_optimization_filters_.end()) {
+      if (optimization_types_with_filter_.find(optimization_type) !=
+          optimization_types_with_filter_.end()) {
         should_load_new_optimization_filter = true;
       }
     }
@@ -524,4 +524,101 @@ bool OptimizationGuideHintsManager::HasLoadedOptimizationFilter(
 
   return blacklist_optimization_filters_.find(optimization_type) !=
          blacklist_optimization_filters_.end();
+}
+
+optimization_guide::OptimizationGuideDecision
+OptimizationGuideHintsManager::CanApplyOptimization(
+    content::NavigationHandle* navigation_handle,
+    optimization_guide::OptimizationTarget optimization_target,
+    optimization_guide::proto::OptimizationType optimization_type,
+    optimization_guide::OptimizationMetadata* optimization_metadata) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Clear out optimization metadata if provided.
+  if (optimization_metadata)
+    (*optimization_metadata).previews_metadata.Clear();
+
+  // We only support the optimization target |kPainfulPageLoad|, so just return
+  // that we don't know if the target doesn't match that.
+  if (optimization_target !=
+      optimization_guide::OptimizationTarget::kPainfulPageLoad) {
+    return optimization_guide::OptimizationGuideDecision::kUnknown;
+  }
+
+  const auto& url = navigation_handle->GetURL();
+  // If the URL doesn't have a host, we cannot query the hint for it, so just
+  // return early.
+  if (!url.has_host()) {
+    return optimization_guide::OptimizationGuideDecision::kFalse;
+  }
+  const auto& host = url.host();
+
+  // Check if the URL should be filtered out if we have an optimization filter
+  // for the type.
+  {
+    base::AutoLock lock(optimization_filters_lock_);
+
+    // Check if we have a filter loaded into memory for it, and if we do, see
+    // if the URL matches anything in the filter.
+    if (blacklist_optimization_filters_.find(optimization_type) !=
+        blacklist_optimization_filters_.end()) {
+      return blacklist_optimization_filters_[optimization_type]->Matches(url)
+                 ? optimization_guide::OptimizationGuideDecision::kFalse
+                 : optimization_guide::OptimizationGuideDecision::kTrue;
+    }
+
+    // Check if we had an optimization filter for it, but it was not loaded into
+    // memory.
+    if (optimization_types_with_filter_.find(optimization_type) !=
+        optimization_types_with_filter_.end()) {
+      return optimization_guide::OptimizationGuideDecision::kUnknown;
+    }
+  }
+
+  // Now check if we have a hint already loaded for this navigation.
+  const optimization_guide::proto::Hint* loaded_hint =
+      hint_cache_->GetHintIfLoaded(host);
+  if (!loaded_hint) {
+    // If we do not have a hint already loaded and we do not have one in the
+    // cache, we don't know what to do with the URL so just return false.
+    // Otherwise, we do have information, but we just don't know it yet.
+    return hint_cache_->HasHint(host)
+               ? optimization_guide::OptimizationGuideDecision::kUnknown
+               : optimization_guide::OptimizationGuideDecision::kFalse;
+  }
+
+  // Check if we have a page hint that matches the URL within the hint.
+  // TODO(sophiechang): Maybe cache the page hint for a navigation ID so we
+  // don't have to iterate through all page hints every time this is called.
+  const optimization_guide::proto::PageHint* matched_page_hint =
+      optimization_guide::FindPageHintForURL(url, loaded_hint);
+  if (!matched_page_hint) {
+    return optimization_guide::OptimizationGuideDecision::kFalse;
+  }
+
+  // TODO(sophiechang): Check whether ECT matches max ECT if targeting painful
+  // page loads.
+
+  // Now check if we have any optimizations for it.
+  for (const auto& optimization :
+       matched_page_hint->whitelisted_optimizations()) {
+    if (optimization_type != optimization.optimization_type())
+      continue;
+
+    if (optimization_guide::IsDisabledPerOptimizationHintExperiment(
+            optimization)) {
+      continue;
+    }
+
+    // We found an optimization that can be applied. Populate optimization
+    // metadata if applicable and return true.
+    if (optimization_metadata && optimization.has_previews_metadata()) {
+      (*optimization_metadata).previews_metadata =
+          optimization.previews_metadata();
+    }
+    return optimization_guide::OptimizationGuideDecision::kTrue;
+  }
+
+  // We didn't find anything, return false.
+  return optimization_guide::OptimizationGuideDecision::kFalse;
 }

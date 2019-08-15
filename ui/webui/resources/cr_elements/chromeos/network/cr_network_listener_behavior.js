@@ -31,6 +31,12 @@ const CrNetworkListenerBehavior = {
    */
   onActiveNetworksChanged: function(activeNetworks) {},
 
+  /**
+   * CrosNetworkConfigObserver impl
+   * @param {!chromeos.networkConfig.mojom.NetworkStateProperties} network
+   */
+  onNetworkStateChanged: function(network) {},
+
   /** CrosNetworkConfigObserver impl */
   onNetworkStateListChanged: function() {},
 

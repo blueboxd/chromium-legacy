@@ -455,6 +455,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   void FinishedLoading(FrameLoader::NavigationFinishState);
 
+  using IsCapturingMediaCallback = base::RepeatingCallback<bool()>;
+  void SetIsCapturingMediaCallback(IsCapturingMediaCallback callback);
+  bool IsCapturingMedia() const;
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -583,6 +587,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // state that get updated whenever the network state changes. That way, this
   // field would be no longer necessary.
   const bool is_save_data_enabled_;
+
+  IsCapturingMediaCallback is_capturing_media_callback_;
 
   std::unique_ptr<FrameOverlay> frame_color_overlay_;
 

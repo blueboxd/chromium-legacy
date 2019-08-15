@@ -109,7 +109,7 @@ class MediaDrmOriginIdManager : public KeyedService {
   THREAD_CHECKER(thread_checker_);
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<MediaDrmOriginIdManager> weak_factory_;
+  base::WeakPtrFactory<MediaDrmOriginIdManager> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_MEDIA_ANDROID_CDM_MEDIA_DRM_ORIGIN_ID_MANAGER_H_

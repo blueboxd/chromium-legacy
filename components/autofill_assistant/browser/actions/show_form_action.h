@@ -37,7 +37,7 @@ class ShowFormAction : public Action {
                              const SelectionInputProto::Result& result);
 
   ProcessActionCallback callback_;
-  base::WeakPtrFactory<ShowFormAction> weak_ptr_factory_;
+  base::WeakPtrFactory<ShowFormAction> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ShowFormAction);
 };

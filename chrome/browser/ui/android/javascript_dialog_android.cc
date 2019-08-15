@@ -98,8 +98,7 @@ JavaScriptDialogAndroid::JavaScriptDialogAndroid(
         callback_on_button_clicked,
     base::OnceClosure callback_on_cancelled)
     : callback_on_button_clicked_(std::move(callback_on_button_clicked)),
-      callback_on_cancelled_(std::move(callback_on_cancelled)),
-      weak_factory_(this) {
+      callback_on_cancelled_(std::move(callback_on_cancelled)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   JNIEnv* env = AttachCurrentThread();

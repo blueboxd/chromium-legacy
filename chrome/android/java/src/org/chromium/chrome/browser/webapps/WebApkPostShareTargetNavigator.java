@@ -27,7 +27,7 @@ public class WebApkPostShareTargetNavigator {
         nativeLoadViewForShareTargetPost(postData.isMultipartEncoding,
                 postData.names.toArray(new String[0]), postData.values.toArray(new String[0]),
                 isValueFileUris, postData.filenames.toArray(new String[0]),
-                postData.types.toArray(new String[0]), webApkInfo.uri().toString(), webContents);
+                postData.types.toArray(new String[0]), webApkInfo.url(), webContents);
         return true;
     }
 

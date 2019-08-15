@@ -121,14 +121,16 @@ class Browser : public TabStripModelObserver,
   // enum, look at SessionService::WindowType to see if it needs to be
   // updated.
   enum Type {
+    // Normal tabbed non-app browser (previously TYPE_TABBED).
+    TYPE_NORMAL,
+    // Popup browser.
+    TYPE_POPUP,
+    // App browser.
+    TYPE_APP,
+    // Devtools browser.
+    TYPE_DEVTOOLS,
     // If you add a new type, consider updating the test
     // BrowserTest.StartMaximized.
-    // TODO(crbug.com/990158): It is now possible that even TYPE_POPUP can have
-    // tabs.  Rename TYPE_TABBED to TYPE_DEFAULT, and replace calls to
-    // |is_type_tabbed()| with SupportsWindowFeature(Browser::FEATURE_TABSTRIP)
-    // where the client needs to know if tabs are supported in the browser.
-    TYPE_TABBED = 1,
-    TYPE_POPUP = 2
   };
 
   // Possible elements of the Browser window.
@@ -576,11 +578,17 @@ class Browser : public TabStripModelObserver,
       bool did_finish_load) override;
   bool ShouldShowStaleContentOnEviction(content::WebContents* source) override;
 
-  bool is_type_tabbed() const { return type_ == TYPE_TABBED; }
+  bool is_type_normal() const { return type_ == TYPE_NORMAL; }
   bool is_type_popup() const { return type_ == TYPE_POPUP; }
-
-  bool is_app() const;
-  bool is_devtools() const;
+  bool is_type_app() const { return type_ == TYPE_APP; }
+  bool is_type_devtools() const { return type_ == TYPE_DEVTOOLS; }
+  // TODO(crbug.com/990158): |deprecated_is_app()| is added for backwards
+  // compatibility for previous callers to |is_app()| which returned true when
+  // |app_name_| is non-empty.  This includes TYPE_APP and TYPE_DEVTOOLS.
+  // Existing callers should change to use the appropriate is_type_* functions.
+  bool deprecated_is_app() const {
+    return type_ == TYPE_APP || type_ == TYPE_DEVTOOLS;
+  }
 
   // True when the mouse cursor is locked.
   bool IsMouseLocked() const;
@@ -935,7 +943,7 @@ class Browser : public TabStripModelObserver,
   // Shared code between Reload() and ReloadBypassingCache().
   void ReloadInternal(WindowOpenDisposition disposition, bool bypass_cache);
 
-  bool TabbedBrowserSupportsWindowFeature(WindowFeature feature,
+  bool NormalBrowserSupportsWindowFeature(WindowFeature feature,
                                           bool check_can_support) const;
 
   bool PopupBrowserSupportsWindowFeature(WindowFeature feature,
@@ -1008,7 +1016,7 @@ class Browser : public TabStripModelObserver,
   // This name should be set when:
   // 1) we launch an application via an application shortcut or extension API.
   // 2) we launch an undocked devtool window.
-  std::string app_name_;
+  const std::string app_name_;
 
   // True if the source is trusted (i.e. we do not need to show the URL in a
   // a popup window). Also used to determine which app windows to save and

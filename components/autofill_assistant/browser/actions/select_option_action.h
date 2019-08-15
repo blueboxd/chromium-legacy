@@ -31,7 +31,7 @@ class SelectOptionAction : public Action {
   void OnSelectOption(ProcessActionCallback callback,
                       const ClientStatus& status);
 
-  base::WeakPtrFactory<SelectOptionAction> weak_ptr_factory_;
+  base::WeakPtrFactory<SelectOptionAction> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SelectOptionAction);
 };

@@ -112,7 +112,7 @@ class OfflinePageURLLoader : public network::mojom::URLLoader,
   OfflinePageRequestHandler::Delegate::TabIdGetter tab_id_getter_;
   bool is_offline_preview_allowed_;
 
-  base::WeakPtrFactory<OfflinePageURLLoader> weak_ptr_factory_;
+  base::WeakPtrFactory<OfflinePageURLLoader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageURLLoader);
 };

@@ -46,7 +46,7 @@ class PermissionPromptAndroid : public PermissionPrompt {
   // |delegate_| is the PermissionRequestManager, which owns this object.
   Delegate* delegate_;
 
-  base::WeakPtrFactory<PermissionPromptAndroid> weak_factory_;
+  base::WeakPtrFactory<PermissionPromptAndroid> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PermissionPromptAndroid);
 };

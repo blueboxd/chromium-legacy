@@ -424,12 +424,17 @@ void BoxLayout::SetCrossAxisPosition(int position, gfx::Rect* rect) const {
 
 int BoxLayout::MainAxisSizeForView(const ViewWrapper& view,
                                    int child_area_width) const {
-  return orientation_ == Orientation::kHorizontal
-             ? view.GetPreferredSize().width()
-             : view.GetHeightForWidth(cross_axis_alignment_ ==
-                                              CrossAxisAlignment::kStretch
-                                          ? child_area_width
-                                          : view.GetPreferredSize().width());
+  if (orientation_ == Orientation::kHorizontal) {
+    return view.GetPreferredSize().width();
+  } else {
+    // To calculate the height we use the preferred width of the child
+    // unless we're asked to stretch or the preferred width exceeds the
+    // available width.
+    return view.GetHeightForWidth(
+        cross_axis_alignment_ == CrossAxisAlignment::kStretch
+            ? child_area_width
+            : std::min(child_area_width, view.GetPreferredSize().width()));
+  }
 }
 
 int BoxLayout::MainAxisLeadingInset(const gfx::Insets& insets) const {

@@ -60,8 +60,9 @@ class MODULES_EXPORT UserMediaClientImpl : public blink::WebUserMediaClient {
   void ApplyConstraints(
       const blink::WebApplyConstraintsRequest& web_request) override;
   void StopTrack(const blink::WebMediaStreamTrack& web_track) override;
-  bool IsCapturing() override;
   void ContextDestroyed() override;
+
+  bool IsCapturing();
 
   void SetMediaDevicesDispatcherForTesting(
       blink::mojom::blink::MediaDevicesDispatcherHostPtr

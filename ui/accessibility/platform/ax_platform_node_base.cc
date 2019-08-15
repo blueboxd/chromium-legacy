@@ -1620,7 +1620,7 @@ void AXPlatformNodeBase::ComputeHypertextRemovedAndInserted(
 int AXPlatformNodeBase::FindTextBoundary(
     AXTextBoundary boundary,
     int offset,
-    TextBoundaryDirection direction,
+    AXTextBoundaryDirection direction,
     ax::mojom::TextAffinity affinity) const {
   base::Optional<int> boundary_offset =
       GetDelegate()->FindTextBoundary(boundary, offset, direction, affinity);

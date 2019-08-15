@@ -180,7 +180,7 @@ ax::mojom::Role AXLayoutObject::NativeRoleIgnoringAria() const {
   Node* node = layout_object_->GetNode();
   LayoutBoxModelObject* css_box = GetLayoutBoxModelObject();
 
-  if ((css_box && css_box->IsListItem()) || IsHTMLLIElement(node))
+  if ((css_box && css_box->IsListItem()) || IsA<HTMLLIElement>(node))
     return ax::mojom::Role::kListItem;
   if (layout_object_->IsListMarkerIncludingNGInside())
     return ax::mojom::Role::kListMarker;

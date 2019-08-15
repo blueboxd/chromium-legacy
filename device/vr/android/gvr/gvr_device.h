@@ -67,7 +67,7 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase,
 
   mojom::XRRuntime::RequestSessionCallback pending_request_session_callback_;
 
-  base::WeakPtrFactory<GvrDevice> weak_ptr_factory_;
+  base::WeakPtrFactory<GvrDevice> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GvrDevice);
 };

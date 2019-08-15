@@ -213,8 +213,7 @@ uint32_t DrmWindowHost::DispatchEvent(const PlatformEvent& event) {
 void DrmWindowHost::OnGpuProcessLaunched() {}
 
 void DrmWindowHost::OnGpuThreadReady() {
-  sender_->GpuCreateWindow(widget_);
-  SendBoundsChange();
+  sender_->GpuCreateWindow(widget_, bounds_);
 }
 
 void DrmWindowHost::OnGpuThreadRetired() {}

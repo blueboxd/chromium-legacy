@@ -4,6 +4,10 @@
 
 #include "content/browser/indexed_db/indexed_db_connection_coordinator.h"
 
+#include <set>
+#include <utility>
+#include <vector>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_callback_helpers.h"
@@ -363,6 +367,10 @@ class IndexedDBConnectionCoordinator::DeleteRequest
 
   void DoDelete() {
     Status s;
+    // This is used to check if this class is still alive after the destruction
+    // of the TransactionalLevelDBTransaction, which can synchronously cause the
+    // system to be shut down if the disk is really bad.
+    base::WeakPtr<DeleteRequest> weak_ptr = weak_factory_.GetWeakPtr();
     if (db_->backing_store_) {
       scoped_refptr<TransactionalLevelDBTransaction> txn;
       TransactionalLevelDBDatabase* db = db_->backing_store_->db();
@@ -374,6 +382,9 @@ class IndexedDBConnectionCoordinator::DeleteRequest
       }
       s = db_->backing_store_->DeleteDatabase(db_->metadata_.name, txn.get());
     }
+    if (!weak_ptr)
+      return;
+
     if (!s.ok()) {
       // TODO(jsbell): Consider including sanitized leveldb status message.
       IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
@@ -501,9 +512,11 @@ void IndexedDBConnectionCoordinator::OnConnectionClosed(
     database->ProcessRequestQueueAndMaybeRelease();
 }
 
+// TODO(dmurph): Attach an ID to the connection change events to prevent
+// mis-propogation to the wrong connection request.
 void IndexedDBConnectionCoordinator::OnVersionChangeIgnored() {
-  DCHECK(active_request_);
-  active_request_->OnVersionChangeIgnored();
+  if (active_request_)
+    active_request_->OnVersionChangeIgnored();
 }
 
 void IndexedDBConnectionCoordinator::OnUpgradeTransactionStarted(

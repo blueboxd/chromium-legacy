@@ -117,10 +117,6 @@ class DataReductionProxyConfigTest : public testing::Test {
       test_config()->ResetParamFlagsForTest();
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
-    return task_environment_.GetMainThreadTaskRunner();
-  }
-
   class TestResponder {
    public:
     void ExecuteCallback(SecureProxyCheckerCallback callback) {
@@ -173,7 +169,6 @@ class DataReductionProxyConfigTest : public testing::Test {
   std::unique_ptr<DataReductionProxyConfig> BuildConfig(
       std::unique_ptr<DataReductionProxyParams> params) {
     return std::make_unique<DataReductionProxyConfig>(
-        task_runner(), task_runner(),
         network::TestNetworkConnectionTracker::GetInstance(), std::move(params),
         test_context_->configurator());
   }
@@ -420,13 +415,11 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
     base::FieldTrialList::CreateFieldTrial(params::GetQuicFieldTrialName(),
                                            "Enabled");
 
-    TestDataReductionProxyConfig config(task_runner(), task_runner(),
-                                        configurator());
+    TestDataReductionProxyConfig config(configurator());
 
     NetworkPropertiesManager network_properties_manager(
-        base::DefaultClock::GetInstance(), test_context_->pref_service(),
-        test_context_->task_runner());
-    config.InitializeOnIOThread(
+        base::DefaultClock::GetInstance(), test_context_->pref_service());
+    config.Initialize(
         test_context_->url_loader_factory(),
         base::BindRepeating([](const std::vector<DataReductionProxyServer>&) {
           return network::mojom::CustomProxyConfig::New();
@@ -764,7 +757,6 @@ TEST_F(DataReductionProxyConfigTest,
   ASSERT_LT(0U, expected_proxies.size());
 
   DataReductionProxyConfig config(
-      task_runner(), task_runner(),
       network::TestNetworkConnectionTracker::GetInstance(), std::move(params),
       configurator());
 
@@ -824,7 +816,6 @@ TEST_F(DataReductionProxyConfigTest,
 
   config_values->UpdateValues(proxies_for_http);
   std::unique_ptr<DataReductionProxyConfig> config(new DataReductionProxyConfig(
-      task_runner(), task_runner(),
       network::TestNetworkConnectionTracker::GetInstance(),
       std::move(config_values), configurator()));
   for (const auto& test : tests) {

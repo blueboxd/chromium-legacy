@@ -104,6 +104,12 @@ class PasswordProtectionRequest
     is_modal_warning_showing_ = is_warning_showing;
   }
 
+  RequestOutcome request_outcome() const { return request_outcome_; }
+
+  void set_request_outcome(RequestOutcome request_outcome) {
+    request_outcome_ = request_outcome;
+  }
+
   // Keeps track of created navigation throttle.
   void AddThrottle(PasswordProtectionNavigationThrottle* throttle) {
     throttles_.insert(throttle);
@@ -207,6 +213,9 @@ class PasswordProtectionRequest
   // The PasswordProtectionService instance owns |this|.
   // Can only be accessed on UI thread.
   PasswordProtectionService* password_protection_service_;
+
+  // The outcome of the password protection request.
+  RequestOutcome request_outcome_;
 
   // If we haven't receive response after this period of time, we cancel this
   // request.

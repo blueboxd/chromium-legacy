@@ -7,6 +7,8 @@
 
 #include <map>
 #include <memory>
+#include <set>
+#include <vector>
 
 #include "base/macros.h"
 
@@ -129,6 +131,9 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
       device::mojom::VRService::RequestSessionCallback callback,
       bool is_consent_granted);
 
+  bool IsConsentGrantedForDevice(device::mojom::XRDeviceId device_id);
+  void AddConsentGrantedDevice(device::mojom::XRDeviceId device_id);
+
   scoped_refptr<XRRuntimeManager> runtime_manager_;
   mojo::InterfacePtrSet<device::mojom::XRSessionClient> session_clients_;
   device::mojom::VRServiceClientPtr service_client_;
@@ -144,6 +149,8 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
 
   bool initialization_complete_ = false;
   bool in_focused_frame_ = false;
+
+  std::set<device::mojom::XRDeviceId> consent_granted_devices_;
 
   base::WeakPtrFactory<VRServiceImpl> weak_ptr_factory_{this};
 

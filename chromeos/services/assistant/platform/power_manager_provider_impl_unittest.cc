@@ -8,9 +8,9 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/services/assistant/fake_client.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
 #include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -22,6 +22,26 @@ namespace {
 const uint64_t kAlarmRelativeTimeMs = 1000;
 const uint64_t kAlarmMaxDelayMs = 0;
 
+class PowerManagerProviderTestClient : public FakeClient {
+ public:
+  explicit PowerManagerProviderTestClient(
+      device::TestWakeLockProvider* wake_lock_provider)
+      : wake_lock_provider_(wake_lock_provider) {}
+  ~PowerManagerProviderTestClient() override = default;
+
+ private:
+  // FakeClient overrides:
+  void RequestWakeLockProvider(
+      mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver)
+      override {
+    wake_lock_provider_->BindReceiver(std::move(receiver));
+  }
+
+  device::TestWakeLockProvider* const wake_lock_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(PowerManagerProviderTestClient);
+};
+
 }  // namespace
 
 class PowerManagerProviderImplTest : public testing::Test {
@@ -29,9 +49,7 @@ class PowerManagerProviderImplTest : public testing::Test {
   PowerManagerProviderImplTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO,
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
-        wake_lock_provider_(
-            connector_factory_.RegisterInstance(device::mojom::kServiceName)) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
   ~PowerManagerProviderImplTest() override = default;
 
   void SetUp() override {
@@ -39,8 +57,7 @@ class PowerManagerProviderImplTest : public testing::Test {
     FakePowerManagerClient::Get()->set_tick_clock(
         scoped_task_environment_.GetMockTickClock());
     power_manager_provider_impl_ = std::make_unique<PowerManagerProviderImpl>(
-        connector_factory_.GetDefaultConnector(),
-        scoped_task_environment_.GetMainThreadTaskRunner());
+        &test_client_, scoped_task_environment_.GetMainThreadTaskRunner());
     power_manager_provider_impl_->set_tick_clock_for_testing(
         scoped_task_environment_.GetMockTickClock());
   }
@@ -112,9 +129,8 @@ class PowerManagerProviderImplTest : public testing::Test {
   // Needs to be of type |MainThreadType::IO| to use |NativeTimer|.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  service_manager::TestConnectorFactory connector_factory_;
-
   device::TestWakeLockProvider wake_lock_provider_;
+  PowerManagerProviderTestClient test_client_{&wake_lock_provider_};
 
   std::unique_ptr<PowerManagerProviderImpl> power_manager_provider_impl_;
 

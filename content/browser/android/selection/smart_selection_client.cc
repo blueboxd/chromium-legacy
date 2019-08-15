@@ -50,9 +50,7 @@ SmartSelectionClient::SmartSelectionClient(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& obj,
     WebContents* web_contents)
-    : java_ref_(env, obj),
-      web_contents_(web_contents),
-      weak_ptr_factory_(this) {
+    : java_ref_(env, obj), web_contents_(web_contents) {
   DCHECK(!web_contents_->GetUserData(kSmartSelectionClientUDKey));
   web_contents_->SetUserData(kSmartSelectionClientUDKey,
                              std::make_unique<UserData>(this));

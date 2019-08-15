@@ -274,6 +274,29 @@ class ConciergeClientImpl : public ConciergeClient {
             weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void SetVmCpuRestriction(
+      const vm_tools::concierge::SetVmCpuRestrictionRequest& request,
+      DBusMethodCallback<vm_tools::concierge::SetVmCpuRestrictionResponse>
+          callback) override {
+    dbus::MethodCall method_call(
+        vm_tools::concierge::kVmConciergeInterface,
+        vm_tools::concierge::kSetVmCpuRestrictionMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode SetVmCpuRestrictionRequest protobuf";
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      return;
+    }
+
+    concierge_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
+                           vm_tools::concierge::SetVmCpuRestrictionResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void WaitForServiceToBeAvailable(
       dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback)
       override {

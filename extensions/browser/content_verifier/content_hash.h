@@ -114,7 +114,8 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
   const std::set<base::FilePath>& hash_mismatch_unix_paths() const {
     return hash_mismatch_unix_paths_;
   }
-  const ExtensionKey extension_key() const { return key_; }
+  const ExtensionId& extension_id() const { return extension_id_; }
+  const base::FilePath& extension_root() const { return extension_root_; }
 
   // Returns whether or not computed_hashes.json re-creation might be required
   // for |this| to succeed.
@@ -138,7 +139,8 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
     kSucceeded,
   };
 
-  ContentHash(const ExtensionKey& key,
+  ContentHash(const ExtensionId& id,
+              const base::FilePath& root,
               std::unique_ptr<VerifiedContents> verified_contents,
               std::unique_ptr<ComputedHashes::Reader> computed_hashes);
   ~ContentHash();
@@ -177,7 +179,8 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
                            bool force_build,
                            const IsCancelledCallback& is_cancelled);
 
-  ExtensionKey key_;
+  const ExtensionId extension_id_;
+  const base::FilePath extension_root_;
 
   Status status_ = Status::kInvalid;
 

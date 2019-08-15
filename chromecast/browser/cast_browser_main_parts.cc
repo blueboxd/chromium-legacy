@@ -274,6 +274,7 @@ const DefaultCommandLineSwitch kDefaultSwitches[] = {
 #endif
 #if BUILDFLAG(IS_CAST_AUDIO_ONLY)
     {switches::kDisableGpu, ""},
+    {switches::kDisableSoftwareRasterizer, ""},
 #if defined(OS_ANDROID)
     {switches::kDisableFrameRateLimit, ""},
     {switches::kDisableGLDrawingForTests, ""},

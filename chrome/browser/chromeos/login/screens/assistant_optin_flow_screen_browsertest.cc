@@ -29,11 +29,12 @@
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/services/assistant/assistant_settings_manager.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
-#include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
+#include "chromeos/services/assistant/service.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -42,8 +43,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service_filter.h"
 
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
@@ -64,7 +63,7 @@ chromeos::OobeUI* GetOobeUI() {
 }
 
 class FakeAssistantSettings
-    : public chromeos::assistant::mojom::AssistantSettingsManager {
+    : public chromeos::assistant::AssistantSettingsManager {
  public:
   // Flags to configure GetSettings response.
   static constexpr int CONSENT_UI_FLAGS_NONE = 0;
@@ -90,24 +89,11 @@ class FakeAssistantSettings
   };
 
   FakeAssistantSettings() {
-    service_manager::Connector* connector =
-        content::BrowserContext::GetConnectorFor(
-            ProfileManager::GetActiveUserProfile());
-    connector->OverrideBinderForTesting(
-        service_manager::ServiceFilter::ByName(
-            chromeos::assistant::mojom::kServiceName),
-        chromeos::assistant::mojom::AssistantSettingsManager::Name_,
-        base::BindRepeating(&FakeAssistantSettings::Bind,
-                            base::Unretained(this)));
+    chromeos::assistant::Service::OverrideSettingsManagerForTesting(this);
   }
+
   ~FakeAssistantSettings() override {
-    service_manager::Connector* connector =
-        content::BrowserContext::GetConnectorFor(
-            ProfileManager::GetActiveUserProfile());
-    connector->ClearBinderOverrideForTesting(
-        service_manager::ServiceFilter::ByName(
-            chromeos::assistant::mojom::kServiceName),
-        chromeos::assistant::mojom::AssistantSettingsManager::Name_);
+    chromeos::assistant::Service::OverrideSettingsManagerForTesting(nullptr);
   }
 
   void set_consent_ui_flags(int flags) { consent_ui_flags_ = flags; }
@@ -160,10 +146,10 @@ class FakeAssistantSettings
 
   void Flush() { bindings_.FlushForTesting(); }
 
-  void Bind(mojo::ScopedMessagePipeHandle handle) {
-    bindings_.AddBinding(
-        this, chromeos::assistant::mojom::AssistantSettingsManagerRequest(
-                  std::move(handle)));
+  // chromeos::assistant::AssistantSettingsManager:
+  void BindRequest(chromeos::assistant::mojom::AssistantSettingsManagerRequest
+                       request) override {
+    bindings_.AddBinding(this, std::move(request));
   }
 
   // chromeos::assistant::mojom::AssistantSettingsManager:

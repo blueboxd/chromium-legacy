@@ -15,10 +15,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/binding.h"
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace ash {
 
@@ -33,7 +30,8 @@ class ASH_PUBLIC_EXPORT AssistantStateProxy
   AssistantStateProxy();
   ~AssistantStateProxy() override;
 
-  void Init(service_manager::Connector* connector);
+  void Init(mojo::PendingRemote<mojom::VoiceInteractionController>
+                voice_interaction_controller);
   void AddObserver(DefaultVoiceInteractionObserver* observer);
   void RemoveObserver(DefaultVoiceInteractionObserver* observer);
 

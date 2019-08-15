@@ -44,6 +44,8 @@ using AtkAttributes = std::unique_ptr<AtkAttributeSet, AtkAttributeSetDeleter>;
 
 namespace ui {
 
+enum class AXTextBoundaryDirection;
+
 struct FindInPageResultInfo {
   AtkObject* node;
   int start_offset;
@@ -274,7 +276,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
       int offset,
       std::map<int, AtkAttributes>* text_attributes);
   AtkAttributes ComputeTextAttributes() const;
-  int FindStartOfStyle(int start_offset, ui::TextBoundaryDirection direction);
+  int FindStartOfStyle(int start_offset, AXTextBoundaryDirection direction);
 
   // Reset any find in page operations for the toplevel document of this node.
   void ForgetCurrentFindInPageResult();

@@ -176,7 +176,7 @@ class ScriptTracker : public ScriptExecutor::Listener {
   // only occurse when |scripts_update| is not nullptr.
   std::unique_ptr<std::vector<std::unique_ptr<Script>>> scripts_update_;
 
-  base::WeakPtrFactory<ScriptTracker> weak_ptr_factory_;
+  base::WeakPtrFactory<ScriptTracker> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ScriptTracker);
 };

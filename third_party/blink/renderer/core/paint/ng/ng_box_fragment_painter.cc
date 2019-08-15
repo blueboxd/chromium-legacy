@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/hit_test_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
 
 namespace blink {
 
@@ -202,6 +203,47 @@ void NGBoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
   if (box_fragment_.HasOverflowClip()) {
     ScrollableAreaPainter(*PhysicalFragment().Layer()->GetScrollableArea())
         .PaintOverflowControls(info, RoundedIntPoint(paint_offset));
+  }
+}
+
+void NGBoxFragmentPainter::RecordScrollHitTestData(
+    const PaintInfo& paint_info,
+    const DisplayItemClient& background_client) {
+  DCHECK(RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled());
+
+  // Hit test display items are only needed for compositing. This flag is used
+  // for for printing and drag images which do not need hit testing.
+  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
+    return;
+
+  // If an object is not visible, it does not scroll.
+  if (!IsVisibleToPaint(PhysicalFragment(), box_fragment_.Style()))
+    return;
+
+  // Only create scroll hit test data for objects that scroll.
+  const auto* layer = PhysicalFragment().Layer();
+  if (!layer || !layer->GetScrollableArea() ||
+      !layer->GetScrollableArea()->ScrollsOverflow()) {
+    return;
+  }
+
+  // TODO(pdr): Break dependency on LayoutObject functionality.
+  const LayoutObject& layout_object = *box_fragment_.GetLayoutObject();
+  const auto* fragment = paint_info.FragmentToPaint(layout_object);
+  const auto* properties = fragment ? fragment->PaintProperties() : nullptr;
+
+  // If there is an associated scroll node, emit a scroll hit test display item.
+  if (properties && properties->Scroll()) {
+    DCHECK(properties->ScrollTranslation());
+    // The local border box properties are used instead of the contents
+    // properties so that the scroll hit test is not clipped or scrolled.
+    ScopedPaintChunkProperties scroll_hit_test_properties(
+        paint_info.context.GetPaintController(),
+        fragment->LocalBorderBoxProperties(), background_client,
+        DisplayItem::kScrollHitTest);
+    ScrollHitTestDisplayItem::Record(
+        paint_info.context, background_client, DisplayItem::kScrollHitTest,
+        properties->ScrollTranslation(), fragment->VisualRect());
   }
 }
 
@@ -479,13 +521,28 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
                     PhysicalFragment().EffectiveAllowedTouchAction()));
   }
 
-  // Record the scroll hit test after the background so background squashing
-  // is not affected. Hit test order would be equivalent if this were
-  // immediately before the background.
-  // TODO(pdr): Uncomment this and support non-fast scrollable regions for
-  // NGBoxFragments (see: https://crbug.com/864567).
-  // if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
-  //  PaintScrollHitTestDisplayItem(paint_info);
+  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
+    bool needs_scroll_hit_test = true;
+    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      // Pre-CompositeAfterPaint, there is no need to emit scroll hit test
+      // display items for composited scrollers because these display items are
+      // only used to create non-fast scrollable regions for non-composited
+      // scrollers. With CompositeAfterPaint, we always paint the scroll hit
+      // test display items but ignore the non-fast region if the scroll was
+      // composited in PaintArtifactCompositor::UpdateNonFastScrollableRegions.
+      const auto* layer = PhysicalFragment().Layer();
+      if (layer && layer->GetCompositedLayerMapping() &&
+          layer->GetCompositedLayerMapping()->HasScrollingLayer()) {
+        needs_scroll_hit_test = false;
+      }
+    }
+
+    // Record the scroll hit test after the non-scrolling background so
+    // background squashing is not affected. Hit test order would be equivalent
+    // if this were immediately before the non-scrolling background.
+    if (!painting_scrolling_background && needs_scroll_hit_test)
+      RecordScrollHitTestData(paint_info, *background_client);
+  }
 }
 
 // TODO(kojii): This logic is kept in sync with BoxPainter. Not much efforts to

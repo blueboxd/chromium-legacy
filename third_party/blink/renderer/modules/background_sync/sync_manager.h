@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_SYNC_SYNC_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_SYNC_SYNC_MANAGER_H_
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom-blink.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -39,11 +40,12 @@ class SyncManager final : public ScriptWrappable {
   enum { kUnregisteredSyncID = -1 };
 
  private:
-  // Returns an initialized OneShotBackgroundSyncServicePtr. A connection with
+  // Returns an initialized
+  // mojo::Remote<mojom::blink::OneShotBackgroundSyncService>. A connection with
   // the browser's OneShotBackgroundSyncService is created the first time this
   // method is called.
-  const mojom::blink::OneShotBackgroundSyncServicePtr&
-  GetBackgroundSyncServicePtr();
+  const mojo::Remote<mojom::blink::OneShotBackgroundSyncService>&
+  GetBackgroundSyncServiceRemote();
 
   // Callbacks
   void RegisterCallback(ScriptPromiseResolver*,
@@ -56,7 +58,8 @@ class SyncManager final : public ScriptWrappable {
 
   Member<ServiceWorkerRegistration> registration_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  mojom::blink::OneShotBackgroundSyncServicePtr background_sync_service_;
+  mojo::Remote<mojom::blink::OneShotBackgroundSyncService>
+      background_sync_service_;
 };
 
 }  // namespace blink

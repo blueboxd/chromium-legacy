@@ -1477,6 +1477,19 @@ void BackgroundSyncManager::UpdateNumFiringRegistrationsBy(
     num_firing_registrations_periodic_ += to_add;
 }
 
+bool BackgroundSyncManager::AllRegistrationsWaitingToBeResolved() const {
+  for (const auto& active_registration : active_registrations_) {
+    for (const auto& key_and_registration :
+         active_registration.second.registration_map) {
+      const BackgroundSyncRegistration& registration =
+          key_and_registration.second;
+      if (registration.resolved())
+        return false;
+    }
+  }
+  return true;
+}
+
 base::TimeDelta BackgroundSyncManager::GetSoonestWakeupDelta(
     BackgroundSyncType sync_type,
     base::Time last_browser_wakeup_time) {
@@ -1512,6 +1525,14 @@ base::TimeDelta BackgroundSyncManager::GetSoonestWakeupDelta(
   // wake it back up and try again.
   if (GetNumFiringRegistrations(sync_type) > 0 &&
       soonest_wakeup_delta > parameters_->min_sync_recovery_time) {
+    soonest_wakeup_delta = parameters_->min_sync_recovery_time;
+  }
+
+  // If we're still waiting for registrations to be resolved, don't schedule
+  // a wake up task eagerly.
+  if (sync_type == BackgroundSyncType::ONE_SHOT &&
+      AllRegistrationsWaitingToBeResolved() &&
+      soonest_wakeup_delta < parameters_->min_sync_recovery_time) {
     soonest_wakeup_delta = parameters_->min_sync_recovery_time;
   }
 
@@ -1961,8 +1982,6 @@ void BackgroundSyncManager::EventCompleteImpl(
     return;
   }
 
-  UpdateNumFiringRegistrationsBy(registration_info->sync_type, -1);
-
   BackgroundSyncRegistration* registration =
       LookupActiveRegistration(*registration_info);
   if (!registration) {
@@ -2006,6 +2025,8 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
     base::OnceClosure callback,
     base::TimeDelta delay) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  UpdateNumFiringRegistrationsBy(registration_info->sync_type, -1);
 
   BackgroundSyncRegistration* registration =
       LookupActiveRegistration(*registration_info);

@@ -45,8 +45,7 @@ MediaPlayerRenderer::MediaPlayerRenderer(
       routing_id_(routing_id),
       has_error_(false),
       volume_(kDefaultVolume),
-      renderer_extension_binding_(this, std::move(renderer_extension_request)),
-      weak_factory_(this) {
+      renderer_extension_binding_(this, std::move(renderer_extension_request)) {
   DCHECK_EQ(static_cast<RenderFrameHostImpl*>(
                 RenderFrameHost::FromID(process_id, routing_id))
                 ->delegate()

@@ -2812,12 +2812,11 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       return nil;
 
     BrowserAccessibilityPositionInstance startPosition =
-        position->CreatePositionAtFormatBoundary(
-            ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary,
-            /*forwards*/ false);
+        position->CreatePreviousFormatStartPosition(
+            ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
     BrowserAccessibilityPositionInstance endPosition =
-        position->CreatePositionAtFormatBoundary(
-            ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary, /*forwards*/ true);
+        position->CreateNextFormatEndPosition(
+            ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
     AXPlatformRange range(std::move(startPosition), std::move(endPosition));
     return CreateTextMarkerRange(std::move(range));
   }

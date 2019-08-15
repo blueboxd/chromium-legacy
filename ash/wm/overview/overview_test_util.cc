@@ -59,11 +59,8 @@ const std::vector<std::unique_ptr<OverviewItem>>& GetOverviewItemsForRoot(
   return GetOverviewSession()->grid_list()[index]->window_list();
 }
 
-OverviewItem* GetOverviewItemInGridWithWindow(int grid_index,
-                                              aura::Window* window) {
-  auto& grids = GetOverviewSession()->grid_list();
-  DCHECK_LT(grid_index, int{grids.size()});
-  return grids[grid_index]->GetOverviewItemContaining(window);
+OverviewItem* GetOverviewItemForWindow(aura::Window* window) {
+  return GetOverviewSession()->GetOverviewItemForWindow(window);
 }
 
 }  // namespace ash

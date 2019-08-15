@@ -44,7 +44,7 @@ void OnThumbnailScaled(base::OnceCallback<void(SkBitmap)> java_callback,
 }  // namespace
 
 ThumbnailGenerator::ThumbnailGenerator(const JavaParamRef<jobject>& jobj)
-    : java_delegate_(jobj), weak_factory_(this) {
+    : java_delegate_(jobj) {
   DCHECK(!jobj.is_null());
 }
 

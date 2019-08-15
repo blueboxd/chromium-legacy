@@ -36,7 +36,8 @@ class GpuBrowserCompositorOutputSurface
     : public BrowserCompositorOutputSurface {
  public:
   GpuBrowserCompositorOutputSurface(
-      scoped_refptr<viz::ContextProviderCommandBuffer> context);
+      scoped_refptr<viz::ContextProviderCommandBuffer> context,
+      gpu::SurfaceHandle surface_handle);
 
   ~GpuBrowserCompositorOutputSurface() override;
 
@@ -67,6 +68,8 @@ class GpuBrowserCompositorOutputSurface
 
   void SetDrawRectangle(const gfx::Rect& rect) override;
 
+  gpu::SurfaceHandle GetSurfaceHandle() const override;
+
  protected:
   void OnPresentation(const gfx::PresentationFeedback& feedback);
   void OnUpdateVSyncParameters(base::TimeTicks timebase,
@@ -83,6 +86,7 @@ class GpuBrowserCompositorOutputSurface
   ui::LatencyTracker latency_tracker_;
 
  private:
+  const gpu::SurfaceHandle surface_handle_;
   base::WeakPtrFactory<GpuBrowserCompositorOutputSurface> weak_ptr_factory_{
       this};
 

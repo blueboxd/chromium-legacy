@@ -119,8 +119,7 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
       shortcut_info_(GetShortcutUrl(web_contents)),
       has_maskable_primary_icon_(false),
       data_timeout_ms_(base::TimeDelta::FromMilliseconds(data_timeout_ms)),
-      is_waiting_for_manifest_(true),
-      weak_ptr_factory_(this) {
+      is_waiting_for_manifest_(true) {
   DCHECK(shortcut_info_.url.is_valid());
 
   // Send a message to the renderer to retrieve information about the page.

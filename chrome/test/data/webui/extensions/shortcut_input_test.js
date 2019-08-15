@@ -28,7 +28,7 @@ cr.define('extension_shortcut_input_tests', function() {
       const field = input.$['input'];
       expectEquals('', field.value);
       const isClearVisible =
-          extension_test_util.isVisible.bind(null, input, '#clear', false);
+          test_util.isVisible.bind(null, input, '#clear', false);
       expectFalse(isClearVisible());
 
       // Click the input. Capture should start.

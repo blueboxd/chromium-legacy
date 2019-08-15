@@ -150,23 +150,6 @@ cr.define('extension_test_util', function() {
   }
 
   /**
-   * Returns whether or not the element specified is visible. This is different
-   * from isElementVisible in that this function attempts to search for the
-   * element within a parent element, which means you can use it to check if
-   * the element exists at all.
-   * @param {!HTMLElement} parentEl
-   * @param {string} selector
-   * @param {boolean=} checkLightDom
-   * @return {boolean}
-   */
-  function isVisible(parentEl, selector, checkLightDom) {
-    const element = (checkLightDom ? parentEl.querySelector : parentEl.$$)
-                        .call(parentEl, selector);
-    const rect = element ? element.getBoundingClientRect() : null;
-    return !!rect && rect.width * rect.height > 0;
-  }
-
-  /**
    * Tests that the element's visibility matches |expectedVisible| and,
    * optionally, has specific content if it is visible.
    * @param {!HTMLElement} parentEl The parent element to query for the element.
@@ -176,7 +159,7 @@ cr.define('extension_test_util', function() {
    * @param {string=} opt_expectedText The expected textContent value.
    */
   function testVisible(parentEl, selector, expectedVisible, opt_expectedText) {
-    const visible = isVisible(parentEl, selector);
+    const visible = test_util.isVisible(parentEl, selector);
     expectEquals(expectedVisible, visible, selector);
     if (expectedVisible && visible && opt_expectedText) {
       const element = parentEl.$$(selector);
@@ -276,7 +259,6 @@ cr.define('extension_test_util', function() {
     ListenerMock: ListenerMock,
     MockItemDelegate: MockItemDelegate,
     isElementVisible: isElementVisible,
-    isVisible: isVisible,
     testVisible: testVisible,
     createExtensionInfo: createExtensionInfo,
     testIcons: testIcons,

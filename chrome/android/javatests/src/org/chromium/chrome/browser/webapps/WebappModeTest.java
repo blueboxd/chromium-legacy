@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.View;
@@ -288,7 +287,7 @@ public class WebappModeTest {
         WebappActivity lastWebappActivity = (WebappActivity) lastActivity;
 
         Assert.assertEquals(webappInfo, lastWebappActivity.getWebappInfo());
-        Assert.assertTrue(lastWebappActivity.getWebappInfo().uri().equals(Uri.parse(WEBAPP_2_URL)));
+        Assert.assertTrue(lastWebappActivity.getWebappInfo().url().equals(WEBAPP_2_URL));
     }
 
     /** Test that on first launch {@link WebappDataStorage#hasBeenLaunched()} is set. */

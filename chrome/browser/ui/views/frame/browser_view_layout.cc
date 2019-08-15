@@ -199,9 +199,9 @@ gfx::Size BrowserViewLayout::GetMinimumSize(const views::View* host) const {
   // TODO(pkotwicz): Adjust the minimum height for the find bar.
 
   gfx::Size contents_size(contents_container_->GetMinimumSize());
-  contents_size.SetToMax(browser()->is_type_popup()
-                             ? kContentsMinimumSize
-                             : kMainBrowserContentsMinimumSize);
+  contents_size.SetToMax(browser()->is_type_normal()
+                             ? kMainBrowserContentsMinimumSize
+                             : kContentsMinimumSize);
 
   const int min_height =
       delegate_->GetTopInsetInBrowserView() + tabstrip_size.height() +
@@ -295,11 +295,11 @@ int BrowserViewLayout::NonClientHitTest(const gfx::Point& point) {
     }
   }
 
-  // If the point's y coordinate is below the top of the toolbar and otherwise
-  // within the bounds of this view, the point is considered to be within the
-  // client area.
+  // If the point's y coordinate is below the top of the topmost view and
+  // otherwise within the bounds of this view, the point is considered to be
+  // within the client area.
   gfx::Rect bounds_from_toolbar_top = browser_view_->bounds();
-  bounds_from_toolbar_top.Inset(0, toolbar_->y(), 0, 0);
+  bounds_from_toolbar_top.Inset(0, GetClientAreaTop(), 0, 0);
   if (bounds_from_toolbar_top.Contains(point))
     return HTCLIENT;
 
@@ -543,6 +543,14 @@ int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
     bottom -= height;
   }
   return bottom;
+}
+
+int BrowserViewLayout::GetClientAreaTop() {
+  // If webui_tab_strip is displayed, the client area starts at its top,
+  // otherwise at the top of the toolbar.
+  return webui_tab_strip_ && webui_tab_strip_->GetVisible()
+             ? webui_tab_strip_->y()
+             : toolbar_->y();
 }
 
 bool BrowserViewLayout::IsInfobarVisible() const {

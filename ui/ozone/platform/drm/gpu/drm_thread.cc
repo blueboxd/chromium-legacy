@@ -254,7 +254,8 @@ void DrmThread::IsDeviceAtomic(gfx::AcceleratedWidget widget, bool* is_atomic) {
   *is_atomic = drm_device && drm_device->is_atomic();
 }
 
-void DrmThread::CreateWindow(gfx::AcceleratedWidget widget) {
+void DrmThread::CreateWindow(gfx::AcceleratedWidget widget,
+                             const gfx::Rect& initial_bounds) {
   DCHECK_GT(widget, last_created_window_);
   last_created_window_ = widget;
 
@@ -262,6 +263,7 @@ void DrmThread::CreateWindow(gfx::AcceleratedWidget widget) {
       new DrmWindow(widget, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
   screen_manager_->AddWindow(widget, std::move(window));
+  screen_manager_->GetWindow(widget)->SetBounds(initial_bounds);
 
   // There might be tasks that were waiting for |widget| to become available.
   ProcessPendingTasks();

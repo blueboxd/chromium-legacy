@@ -33,7 +33,9 @@
 //    "secondary", and "active". If unspecified, the default value is "active".
 //    See gpu_control_list.h for more details on the meanings of the strings.
 // 7. "driver_vendor" is a string pattern. (Not available on Windows)
-// 8. "driver_version" is a VERSION structure (defined below).
+// 8. "driver_version" is a VERSION structure (defined below). On Windows
+//    this value can be retrieved by searching for the "Driver File Version" in
+//    dxdiag.txt
 // 9. "gl_type" is a string, valid values include "gl", "gles", and "angle".
 //    If "gl_version" is specified and "gl_type" is not, use the default value.
 //    The default value on Android is "gles", on Windows is "angle", on other

@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom-blink.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -43,11 +44,12 @@ class PeriodicSyncManager final : public ScriptWrappable {
   void Trace(blink::Visitor* visitor) override;
 
  private:
-  // Returns an initialized PeriodicBackgroundSyncServicePtr. A connection with
-  // the the browser's BackgroundSyncService is created the first time this
+  // Returns an initialized
+  // mojo::Remote<mojom::blink::PeriodicBackgroundSyncService>. A connection
+  // with the the browser's BackgroundSyncService is created the first time this
   // method is called.
-  const mojom::blink::PeriodicBackgroundSyncServicePtr&
-  GetBackgroundSyncServicePtr();
+  const mojo::Remote<mojom::blink::PeriodicBackgroundSyncService>&
+  GetBackgroundSyncServiceRemote();
 
   // Callbacks
   void RegisterCallback(ScriptPromiseResolver* resolver,
@@ -62,7 +64,8 @@ class PeriodicSyncManager final : public ScriptWrappable {
 
   Member<ServiceWorkerRegistration> registration_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  mojom::blink::PeriodicBackgroundSyncServicePtr background_sync_service_;
+  mojo::Remote<mojom::blink::PeriodicBackgroundSyncService>
+      background_sync_service_;
 };
 
 }  // namespace blink

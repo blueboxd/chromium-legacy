@@ -107,6 +107,10 @@ bool OnDeviceHeadProvider::IsOnDeviceHeadProviderAllowed(
   if (client()->IsOffTheRecord() || !client()->SearchSuggestEnabled())
     return false;
 
+  // Reject on focus request.
+  if (input.from_omnibox_focus())
+    return false;
+
   // Do not proceed if default search provider is not Google.
   return IsDefaultSearchProviderGoogle(client()->GetTemplateURLService());
 }

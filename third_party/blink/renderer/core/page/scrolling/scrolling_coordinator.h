@@ -194,10 +194,6 @@ class CORE_EXPORT ScrollingCoordinator final
   bool should_scroll_on_main_thread_dirty_;
 
  private:
-  void SetShouldUpdateScrollLayerPositionOnMainThread(
-      LocalFrame*,
-      MainThreadScrollingReasons);
-
   void SetShouldHandleScrollGestureOnMainThreadRegion(const Region&,
                                                       GraphicsLayer*);
 

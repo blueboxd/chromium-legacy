@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin_hash.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_operators.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
@@ -816,6 +817,7 @@ TEST_F(SecurityOriginTest, EffectiveDomainSetFromDom) {
 }
 
 TEST_F(SecurityOriginTest, ToTokenForFastCheck) {
+  base::UnguessableToken agent_cluster_id = base::UnguessableToken::Create();
   constexpr struct {
     const char* url;
     const char* token;
@@ -839,9 +841,13 @@ TEST_F(SecurityOriginTest, ToTokenForFastCheck) {
 
   for (const auto& test : kTestCases) {
     SCOPED_TRACE(test.url);
-    scoped_refptr<const SecurityOrigin> origin =
-        SecurityOrigin::CreateFromString(test.url);
-    EXPECT_EQ(test.token, origin->ToTokenForFastCheck()) << test.token;
+    scoped_refptr<SecurityOrigin> origin =
+        SecurityOrigin::CreateFromString(test.url)->GetOriginForAgentCluster(
+            agent_cluster_id);
+    String expected_token;
+    if (test.token)
+      expected_token = test.token + String(agent_cluster_id.ToString().c_str());
+    EXPECT_EQ(expected_token, origin->ToTokenForFastCheck()) << expected_token;
   }
 }
 

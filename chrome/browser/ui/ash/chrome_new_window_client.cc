@@ -13,9 +13,8 @@
 #include "ash/public/cpp/keyboard_shortcut_viewer.h"
 #include "ash/public/mojom/constants.mojom.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/chromeos/arc/intent_helper/custom_tab_session_impl.h"
@@ -27,7 +26,6 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -51,10 +49,8 @@
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "components/version_info/version_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
-#include "content/public/common/user_agent.h"
 #include "content/public/common/was_activated_option.mojom.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -154,50 +150,6 @@ std::string GetPathAndQuery(const GURL& url) {
   return result;
 }
 
-// Creates a web contents for an ARC Custom Tab using the given profile and url.
-std::unique_ptr<content::WebContents> CreateArcCustomTabWebContents(
-    Profile* profile,
-    const GURL& url) {
-  scoped_refptr<content::SiteInstance> site_instance =
-      tab_util::GetSiteInstanceForNewTab(profile, url);
-  content::WebContents::CreateParams create_params(profile, site_instance);
-  std::unique_ptr<content::WebContents> web_contents =
-      content::WebContents::Create(create_params);
-
-  // Use the same version number as browser_commands.cc
-  // TODO(hashimoto): Get the actual Android version from the container.
-  constexpr char kOsOverrideForTabletSite[] = "Linux; Android 9; Chrome tablet";
-  // Override the user agent to request mobile version web sites.
-  const std::string product =
-      version_info::GetProductNameAndVersionForUserAgent();
-  const std::string user_agent = content::BuildUserAgentFromOSAndProduct(
-      kOsOverrideForTabletSite, product);
-  web_contents->SetUserAgentOverride(user_agent,
-                                     false /*override_in_new_tabs=*/);
-
-  content::NavigationController::LoadURLParams load_url_params(url);
-  load_url_params.source_site_instance = site_instance;
-  load_url_params.override_user_agent =
-      content::NavigationController::UA_OVERRIDE_TRUE;
-  web_contents->GetController().LoadURLWithParams(load_url_params);
-
-  // Add a flag to remember this tab originated in the ARC context.
-  web_contents->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
-                            std::make_unique<arc::ArcWebContentsData>());
-
-  return web_contents;
-}
-
-// Returns an ARC window with the given task ID.
-aura::Window* GetArcWindow(int32_t task_id) {
-  for (auto* window : ChromeLauncherController::instance()->GetArcWindows()) {
-    if (arc::GetWindowTaskId(window) == task_id)
-      return window;
-  }
-
-  return nullptr;
-}
-
 }  // namespace
 
 ChromeNewWindowClient::ChromeNewWindowClient()
@@ -265,7 +217,7 @@ class ChromeNewWindowClient::TabRestoreHelper
 
 void ChromeNewWindowClient::NewTab() {
   Browser* browser = chrome::FindBrowserWithActiveWindow();
-  if (browser && browser->is_type_tabbed()) {
+  if (browser && browser->is_type_normal()) {
     chrome::NewTab(browser);
     return;
   }
@@ -457,7 +409,7 @@ void ChromeNewWindowClient::OpenArcCustomTab(
   GURL url_to_open = ConvertArcUrlToExternalFileUrlIfNeeded(url);
   Profile* profile = ProfileManager::GetActiveUserProfile();
 
-  aura::Window* arc_window = GetArcWindow(task_id);
+  aura::Window* arc_window = arc::GetArcWindow(task_id);
   if (!arc_window) {
     LOG(ERROR) << "No ARC window with the specified task ID " << task_id;
     std::move(callback).Run(nullptr);
@@ -466,7 +418,7 @@ void ChromeNewWindowClient::OpenArcCustomTab(
 
   auto custom_tab =
       ash::ArcCustomTab::Create(arc_window, surface_id, top_margin);
-  auto web_contents = CreateArcCustomTabWebContents(profile, url);
+  auto web_contents = arc::CreateArcCustomTabWebContents(profile, url);
   std::move(callback).Run(CustomTabSessionImpl::Create(std::move(web_contents),
                                                        std::move(custom_tab)));
 }

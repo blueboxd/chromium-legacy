@@ -49,7 +49,6 @@ class DataReductionProxyPingbackClientImpl
  public:
   DataReductionProxyPingbackClientImpl(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       const std::string& channel);
   ~DataReductionProxyPingbackClientImpl() override;
 
@@ -121,8 +120,6 @@ class DataReductionProxyPingbackClientImpl
 
   // The number of pageload crash messages in the current loader.
   size_t current_loader_crash_count_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   // The release channel of this Chrome instance.
   std::string channel_;

@@ -25,6 +25,7 @@ source_set("components") {
     "policy/web_app_policy_manager.h",
     "web_app_audio_focus_id_map.cc",
     "web_app_audio_focus_id_map.h",
+    "web_app_constants.cc",
     "web_app_constants.h",
     "web_app_data_retriever.cc",
     "web_app_data_retriever.h",

@@ -72,7 +72,7 @@ class MediaClientTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::SetUp();
 
     alt_window_ = CreateBrowserWindow();
-    alt_browser_ = CreateBrowser(alt_profile(), Browser::TYPE_TABBED, false,
+    alt_browser_ = CreateBrowser(alt_profile(), Browser::TYPE_NORMAL, false,
                                  alt_window_.get());
 
     extensions::MediaPlayerAPI::Get(profile());

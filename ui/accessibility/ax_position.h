@@ -23,6 +23,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_text_styles.h"
 #include "ui/accessibility/ax_role_properties.h"
+#include "ui/accessibility/ax_text_boundary.h"
 #include "ui/accessibility/ax_tree_id.h"
 
 namespace ui {
@@ -749,6 +750,190 @@ class AXPosition {
     return child_position->AsLeafTextPosition();
   }
 
+  // Starting from this position, moves in the given direction until it finds
+  // the given text boundary, and creates a new position at that location.
+  //
+  // When a boundary has the "StartOrEnd" suffix, it means that this method will
+  // find the start boundary when moving in the backwards direction, and the end
+  // boundary when moving in the forwards direction.
+  AXPositionInstance CreatePositionAtTextBoundary(
+      AXTextBoundary boundary,
+      AXTextBoundaryDirection direction,
+      AXBoundaryBehavior boundary_behavior) const {
+    AXPositionInstance resulting_position = CreateNullPosition();
+    switch (boundary) {
+      case AXTextBoundary::kCharacter:
+        switch (direction) {
+          case AXTextBoundaryDirection::kBackwards:
+            resulting_position =
+                CreatePreviousCharacterPosition(boundary_behavior);
+            break;
+          case AXTextBoundaryDirection::kForwards:
+            resulting_position = CreateNextCharacterPosition(boundary_behavior);
+            break;
+        }
+        break;
+
+      case AXTextBoundary::kFormatChange:
+        switch (direction) {
+          case AXTextBoundaryDirection::kBackwards:
+            resulting_position =
+                CreatePreviousFormatStartPosition(boundary_behavior);
+            break;
+          case AXTextBoundaryDirection::kForwards:
+            resulting_position = CreateNextFormatEndPosition(boundary_behavior);
+            break;
+        }
+        break;
+
+      case AXTextBoundary::kLineEnd:
+        switch (direction) {
+          case AXTextBoundaryDirection::kBackwards:
+            resulting_position =
+                CreatePreviousLineEndPosition(boundary_behavior);
+            break;
+          case AXTextBoundaryDirection::kForwards:
+            resulting_position = CreateNextLineEndPosition(boundary_behavior);
+            break;
+        }
+        break;
+
+      case AXTextBoundary::kLineStart:
+        switch (direction) {
+          case AXTextBoundaryDirection::kBackwards:
+            resulting_position =
+                CreatePreviousLineStartPosition(boundary_behavior);
+            break;
+          case AXTextBoundaryDirection::kForwards:
+            resulting_position = CreateNextLineStartPosition(boundary_behavior);
+            break;
+        }
+        break;
+
+      case AXTextBoundary::kLineStartOrEnd:
+        switch (direction) {
+          case AXTextBoundaryDirection::kBackwards:
+            resulting_position =
+                CreatePreviousLineStartPosition(boundary_behavior);
+            break;
+          case AXTextBoundaryDirection::kForwards:
+            resulting_position = CreateNextLineEndPosition(boundary_behavior);
+            break;
+        }
+        break;
+
+      case AXTextBoundary::kObject:
+        switch (direction) {
+          case AXTextBoundaryDirection::kBackwards:
+            resulting_position = CreatePositionAtStartOfAnchor();
+            break;
+          case AXTextBoundaryDirection::kForwards:
+            resulting_position = CreatePositionAtEndOfAnchor();
+            break;
+        }
+        break;
+
+      case AXTextBoundary::kParagraphEnd:
+        switch (direction) {
+          case AXTextBoundaryDirection::kBackwards:
+            resulting_position =
+                CreatePreviousParagraphEndPosition(boundary_behavior);
+            break;
+          case AXTextBoundaryDirection::kForwards:
+            resulting_position =
+                CreateNextParagraphEndPosition(boundary_behavior);
+            break;
+        }
+        break;
+
+      case AXTextBoundary::kParagraphStart:
+        switch (direction) {
+          case AXTextBoundaryDirection::kBackwards:
+            resulting_position =
+                CreatePreviousParagraphStartPosition(boundary_behavior);
+            break;
+          case AXTextBoundaryDirection::kForwards:
+            resulting_position =
+                CreateNextParagraphStartPosition(boundary_behavior);
+            break;
+        }
+        break;
+
+      case AXTextBoundary::kParagraphStartOrEnd:
+        switch (direction) {
+          case AXTextBoundaryDirection::kBackwards:
+            resulting_position =
+                CreatePreviousParagraphStartPosition(boundary_behavior);
+            break;
+          case AXTextBoundaryDirection::kForwards:
+            resulting_position =
+                CreateNextParagraphEndPosition(boundary_behavior);
+            break;
+        }
+        break;
+
+      case AXTextBoundary::kSentenceEnd:
+        NOTREACHED() << "Sentence boundaries are not yet supported.";
+        return CreateNullPosition();
+
+      case AXTextBoundary::kSentenceStart:
+        NOTREACHED() << "Sentence boundaries are not yet supported.";
+        return CreateNullPosition();
+
+      case AXTextBoundary::kSentenceStartOrEnd:
+        NOTREACHED() << "Sentence boundaries are not yet supported.";
+        return CreateNullPosition();
+
+      case AXTextBoundary::kWebPage:
+        switch (direction) {
+          case AXTextBoundaryDirection::kBackwards:
+            resulting_position = CreatePositionAtStartOfDocument();
+            break;
+          case AXTextBoundaryDirection::kForwards:
+            resulting_position = CreatePositionAtEndOfDocument();
+            break;
+        }
+        break;
+
+      case AXTextBoundary::kWordEnd:
+        switch (direction) {
+          case AXTextBoundaryDirection::kBackwards:
+            resulting_position =
+                CreatePreviousWordEndPosition(boundary_behavior);
+            break;
+          case AXTextBoundaryDirection::kForwards:
+            resulting_position = CreateNextWordEndPosition(boundary_behavior);
+            break;
+        }
+        break;
+
+      case AXTextBoundary::kWordStart:
+        switch (direction) {
+          case AXTextBoundaryDirection::kBackwards:
+            resulting_position =
+                CreatePreviousWordStartPosition(boundary_behavior);
+            break;
+          case AXTextBoundaryDirection::kForwards:
+            resulting_position = CreateNextWordStartPosition(boundary_behavior);
+            break;
+        }
+        break;
+
+      case AXTextBoundary::kWordStartOrEnd:
+        switch (direction) {
+          case AXTextBoundaryDirection::kBackwards:
+            resulting_position =
+                CreatePreviousWordStartPosition(boundary_behavior);
+            break;
+          case AXTextBoundaryDirection::kForwards:
+            resulting_position = CreateNextWordEndPosition(boundary_behavior);
+            break;
+        }
+        break;
+    }
+    return resulting_position;
+  }
+
   AXPositionInstance CreatePositionAtStartOfAnchor() const {
     switch (kind_) {
       case AXPositionKind::NULL_POSITION:
@@ -779,19 +964,20 @@ class AXPosition {
   }
 
   AXPositionInstance CreatePreviousFormatStartPosition(
-      ui::AXBoundaryBehavior boundary_behavior) const {
-    return CreatePositionAtFormatBoundary(boundary_behavior,
-                                          /*forwards*/ false);
+      AXBoundaryBehavior boundary_behavior) const {
+    return CreatePositionAtFormatBoundary(AXTextBoundaryDirection::kBackwards,
+                                          boundary_behavior);
   }
 
   AXPositionInstance CreateNextFormatEndPosition(
-      ui::AXBoundaryBehavior boundary_behavior) const {
-    return CreatePositionAtFormatBoundary(boundary_behavior, /*forwards*/ true);
+      AXBoundaryBehavior boundary_behavior) const {
+    return CreatePositionAtFormatBoundary(AXTextBoundaryDirection::kForwards,
+                                          boundary_behavior);
   }
 
   AXPositionInstance CreatePositionAtFormatBoundary(
-      AXBoundaryBehavior boundary_behavior,
-      bool forwards) const {
+      AXTextBoundaryDirection direction,
+      AXBoundaryBehavior boundary_behavior) const {
     // Disallow AXBoundaryBehavior::StopAtAnchorBoundary, as it would be no
     // different than moving by anchor
     DCHECK_NE(boundary_behavior, AXBoundaryBehavior::StopAtAnchorBoundary);
@@ -801,21 +987,37 @@ class AXPosition {
 
     bool was_tree_position = IsTreePosition();
     AXPositionInstance initial_endpoint = AsLeafTextPosition();
-    AXPositionInstance current_endpoint =
-        forwards ? initial_endpoint->CreateNextLeafTextPosition()
-                 : initial_endpoint->CreatePreviousLeafTextPosition();
+    AXPositionInstance current_endpoint = CreateNullPosition();
+    switch (direction) {
+      case AXTextBoundaryDirection::kBackwards:
+        current_endpoint = initial_endpoint->CreatePreviousLeafTextPosition();
+        break;
+      case AXTextBoundaryDirection::kForwards:
+        current_endpoint = initial_endpoint->CreateNextLeafTextPosition();
+        break;
+    }
 
     // Start or end of document
     if (current_endpoint->IsNullPosition()) {
       if (boundary_behavior == AXBoundaryBehavior::CrossBoundary &&
-          ((forwards && AtEndOfAnchor()) || (!forwards && AtStartOfAnchor()))) {
+          ((direction == AXTextBoundaryDirection::kForwards &&
+            AtEndOfAnchor()) ||
+           (direction == AXTextBoundaryDirection::kBackwards &&
+            AtStartOfAnchor()))) {
         // Expected behavior is to return a null position for cross-boundary
         // moves that hit the beginning or end of the document
         return std::move(current_endpoint);
       }
-      current_endpoint =
-          forwards ? initial_endpoint->CreatePositionAtEndOfAnchor()
-                   : initial_endpoint->CreatePositionAtStartOfAnchor();
+
+      switch (direction) {
+        case AXTextBoundaryDirection::kBackwards:
+          current_endpoint = initial_endpoint->CreatePositionAtStartOfAnchor();
+          break;
+        case AXTextBoundaryDirection::kForwards:
+          current_endpoint = initial_endpoint->CreatePositionAtEndOfAnchor();
+          break;
+      }
+
       return was_tree_position ? current_endpoint->AsTreePosition()
                                : std::move(current_endpoint);
     }
@@ -826,10 +1028,13 @@ class AXPosition {
       // not at the start or end of the current anchor, move to the start or
       // end, depending on direction.
       if (!was_tree_position) {
-        if (forwards && !initial_endpoint->AtEndOfAnchor())
+        if (direction == AXTextBoundaryDirection::kForwards &&
+            !initial_endpoint->AtEndOfAnchor()) {
           return initial_endpoint->CreatePositionAtEndOfAnchor();
-        else if (!forwards && !initial_endpoint->AtStartOfAnchor())
+        } else if (direction == AXTextBoundaryDirection::kBackwards &&
+                   !initial_endpoint->AtStartOfAnchor()) {
           return initial_endpoint->CreatePositionAtStartOfAnchor();
+        }
       }
 
       // We were already at the start or end of a node on a format boundary.
@@ -847,10 +1052,14 @@ class AXPosition {
 
     auto next_endpoint = current_endpoint->Clone();
     do {
-      if (forwards)
-        next_endpoint = next_endpoint->CreateNextLeafTextPosition();
-      else
-        next_endpoint = next_endpoint->CreatePreviousLeafTextPosition();
+      switch (direction) {
+        case AXTextBoundaryDirection::kBackwards:
+          next_endpoint = next_endpoint->CreatePreviousLeafTextPosition();
+          break;
+        case AXTextBoundaryDirection::kForwards:
+          next_endpoint = next_endpoint->CreateNextLeafTextPosition();
+          break;
+      }
 
       if (next_endpoint->IsNullPosition() ||
           next_endpoint->GetTextStyles() != initial_styles)
@@ -862,10 +1071,14 @@ class AXPosition {
     // Moving forwards should leave the position at the end of an anchor.
     // Backwards moves are already at the start of the anchor from
     // CreatePreviousLeafTextPosition, so there's no need to move again.
-    if (forwards)
-      current_endpoint = current_endpoint->CreatePositionAtEndOfAnchor();
-    else
-      DCHECK(current_endpoint->AtStartOfAnchor());
+    switch (direction) {
+      case AXTextBoundaryDirection::kBackwards:
+        DCHECK(current_endpoint->AtStartOfAnchor());
+        break;
+      case AXTextBoundaryDirection::kForwards:
+        current_endpoint = current_endpoint->CreatePositionAtEndOfAnchor();
+        break;
+    }
 
     if (was_tree_position)
       return current_endpoint->AsTreePosition();
@@ -1079,8 +1292,9 @@ class AXPosition {
     DCHECK_NE(boundary_behavior, AXBoundaryBehavior::StopIfAlreadyAtBoundary)
         << "StopIfAlreadyAtBoundary is unreasonable for character boundaries.";
     if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary &&
-        AtEndOfAnchor())
+        AtEndOfAnchor()) {
       return Clone();
+    }
 
     const bool was_tree_position = IsTreePosition();
     AXPositionInstance text_position = AsPositionBeforeCharacter();
@@ -1104,8 +1318,9 @@ class AXPosition {
     DCHECK_NE(boundary_behavior, AXBoundaryBehavior::StopIfAlreadyAtBoundary)
         << "StopIfAlreadyAtBoundary is unreasonable for character boundaries.";
     if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary &&
-        AtStartOfAnchor())
+        AtStartOfAnchor()) {
       return Clone();
+    }
 
     const bool was_tree_position = IsTreePosition();
     AXPositionInstance text_position = AsPositionAfterCharacter();

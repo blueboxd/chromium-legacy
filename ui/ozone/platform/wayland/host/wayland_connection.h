@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/files/file.h"
-#include "base/message_loop/message_pump_libevent.h"
+#include "base/message_loop/message_pump_for_ui.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/native_widget_types.h"
@@ -36,7 +36,7 @@ class WaylandZwpLinuxDmabuf;
 class WaylandShm;
 
 class WaylandConnection : public PlatformEventSource,
-                          public base::MessagePumpLibevent::FdWatcher {
+                          public base::MessagePumpForUI::FdWatcher {
  public:
   WaylandConnection();
   ~WaylandConnection() override;
@@ -139,7 +139,7 @@ class WaylandConnection : public PlatformEventSource,
   // PlatformEventSource
   void OnDispatcherListChanged() override;
 
-  // base::MessagePumpLibevent::FdWatcher
+  // base::MessagePumpForUI::FdWatcher
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
@@ -196,7 +196,7 @@ class WaylandConnection : public PlatformEventSource,
   bool scheduled_flush_ = false;
   bool watching_ = false;
   bool prepared_ = false;
-  base::MessagePumpLibevent::FdWatchController controller_;
+  base::MessagePumpForUI::FdWatchController controller_;
 
   uint32_t serial_ = 0;
 

@@ -315,10 +315,14 @@ Still reading?
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-zh-rCN/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-zh-rTW/android_chrome_strings.xml"/>
 
+    <!-- This is needed for suppressing warnings on upstream and downstream build bots -->
+    <ignore regexp="chrome/android/features/tab_ui/java_strings_grd.resources.zip/values-cs/android_chrome_tab_ui_strings.xml"/>
     <ignore regexp="chrome/android/features/tab_ui/java_strings_grd.resources.zip/values-in/android_chrome_tab_ui_strings.xml"/>
     <ignore regexp="chrome/android/features/tab_ui/java_strings_grd.resources.zip/values-ja/android_chrome_tab_ui_strings.xml"/>
     <ignore regexp="chrome/android/features/tab_ui/java_strings_grd.resources.zip/values-ko/android_chrome_tab_ui_strings.xml"/>
+    <ignore regexp="chrome/android/features/tab_ui/java_strings_grd.resources.zip/values-lt/android_chrome_tab_ui_strings.xml"/>
     <ignore regexp="chrome/android/features/tab_ui/java_strings_grd.resources.zip/values-ms/android_chrome_tab_ui_strings.xml"/>
+    <ignore regexp="chrome/android/features/tab_ui/java_strings_grd.resources.zip/values-sk/android_chrome_tab_ui_strings.xml"/>
     <ignore regexp="chrome/android/features/tab_ui/java_strings_grd.resources.zip/values-th/android_chrome_tab_ui_strings.xml"/>
     <ignore regexp="chrome/android/features/tab_ui/java_strings_grd.resources.zip/values-vi/android_chrome_tab_ui_strings.xml"/>
     <ignore regexp="chrome/android/features/tab_ui/java_strings_grd.resources.zip/values-zh-rCN/android_chrome_tab_ui_strings.xml"/>

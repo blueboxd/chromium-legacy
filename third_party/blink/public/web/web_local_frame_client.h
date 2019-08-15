@@ -99,7 +99,6 @@ class WebDocumentLoader;
 class WebEncryptedMediaClient;
 class WebExternalPopupMenu;
 class WebExternalPopupMenuClient;
-class WebLayerTreeView;
 class WebLocalFrame;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
@@ -149,8 +148,7 @@ class BLINK_EXPORT WebLocalFrameClient {
                                             blink::MediaInspectorContext*,
                                             WebMediaPlayerEncryptedMediaClient*,
                                             WebContentDecryptionModule*,
-                                            const WebString& sink_id,
-                                            WebLayerTreeView*) {
+                                            const WebString& sink_id) {
     return nullptr;
   }
 
@@ -880,14 +878,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // AppCache ------------------------------------------------------------
   virtual void UpdateSubresourceFactory(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {}
-  enum class AppCacheType {
-    kAppCacheForNone = 0,
-    kAppCacheForFrame,
-    kAppCacheForSharedWorker,
-  };
-  virtual WebLocalFrameClient::AppCacheType GetAppCacheType() {
-    return WebLocalFrameClient::AppCacheType::kAppCacheForNone;
-  }
 
   // Evicts the page from the back forward cache due to e.g., JavaScript
   // execution.

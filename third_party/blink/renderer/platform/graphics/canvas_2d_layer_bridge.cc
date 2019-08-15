@@ -439,6 +439,17 @@ bool Canvas2DLayerBridge::WritePixels(const SkImageInfo& orig_info,
       return false;
   }
 
+  // WritePixels is not supported by deferral. Since we are directly rendering,
+  // we can't do deferral on top of the canvas. Disable deferral completely.
+  last_recording_ = nullptr;
+  is_deferral_enabled_ = false;
+  have_recorded_draw_commands_ = false;
+  recorder_.reset();
+  // install the current matrix/clip stack onto the immediate canvas
+  if (GetOrCreateResourceProvider()) {
+    resource_host_->RestoreCanvasMatrixClipStack(ResourceProvider()->Canvas());
+  }
+
   ResourceProvider()->WritePixels(orig_info, pixels, row_bytes, x, y);
   DidDraw(FloatRect(x, y, orig_info.width(), orig_info.height()));
   return true;
@@ -558,7 +569,8 @@ void Canvas2DLayerBridge::FlushRecording() {
     cc::PaintCanvas* canvas = ResourceProvider()->Canvas();
     last_recording_ = recorder_->finishRecordingAsPicture();
     canvas->drawPicture(last_recording_);
-    if (!resource_host_ || !resource_host_->IsPrinting()) {
+    if (!resource_host_ || !resource_host_->IsPrinting() ||
+        !is_deferral_enabled_) {
       last_recording_ = nullptr;
     }
     ResourceProvider()->FlushSkia();

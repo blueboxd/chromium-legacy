@@ -106,8 +106,7 @@ ArCoreGl::ArCoreGl(std::unique_ptr<ArImageTransport> ar_image_transport)
       frame_data_binding_(this),
       session_controller_binding_(this),
       environment_binding_(this),
-      presentation_binding_(this),
-      weak_ptr_factory_(this) {
+      presentation_binding_(this) {
   DVLOG(1) << __func__;
   webxr_transform_ = WebXRImageTransformMatrix();
 }

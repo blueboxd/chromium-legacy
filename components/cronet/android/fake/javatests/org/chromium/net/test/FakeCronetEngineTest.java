@@ -111,19 +111,6 @@ public class FakeCronetEngineTest {
 
     @Test
     @SmallTest
-    public void testExceptionForNewUrlRequestBuilderApi() {
-        try {
-            mFakeCronetEngine.newUrlRequestBuilder("", mCallback, mExecutor).build();
-            fail("newUrlRequestBuilder API should not be available.");
-        } catch (UnsupportedOperationException e) {
-            assertEquals("The UrlRequest API is not supported by the Fake implementation "
-                            + "of CronetEngine.",
-                    e.getMessage());
-        }
-    }
-
-    @Test
-    @SmallTest
     public void testExceptionForOpenConnectionApi() {
         try {
             mFakeCronetEngine.openConnection(null);

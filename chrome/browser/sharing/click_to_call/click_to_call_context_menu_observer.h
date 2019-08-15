@@ -17,10 +17,6 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "url/gurl.h"
 
-namespace gfx {
-class ImageSkia;
-}
-
 class RenderViewContextMenuProxy;
 
 class SharingService;
@@ -61,8 +57,6 @@ class ClickToCallContextMenuObserver : public RenderViewContextMenuObserver {
   void BuildSubMenu();
 
   void SendClickToCallMessage(int chosen_device_index);
-
-  gfx::ImageSkia GetContextMenuIcon() const;
 
   RenderViewContextMenuProxy* proxy_ = nullptr;
 

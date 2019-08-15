@@ -323,6 +323,9 @@ void PaymentHandlerWebFlowViewController::AddNewContents(
 
 void PaymentHandlerWebFlowViewController::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (!is_active())
+    return;
+
   if (navigation_handle->IsSameDocument())
     return;
 

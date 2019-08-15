@@ -5837,4 +5837,74 @@ TEST_F(AXPlatformNodeWinTest, TestIValueProvider_IsReadOnly) {
   EXPECT_TRUE(is_readonly);
 }
 
+TEST_F(AXPlatformNodeWinTest, IScrollProviderSetScrollPercent) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kGenericContainer;
+  root.AddIntAttribute(ax::mojom::IntAttribute::kScrollX, 0);
+  root.AddIntAttribute(ax::mojom::IntAttribute::kScrollXMin, 0);
+  root.AddIntAttribute(ax::mojom::IntAttribute::kScrollXMax, 100);
+
+  root.AddIntAttribute(ax::mojom::IntAttribute::kScrollY, 60);
+  root.AddIntAttribute(ax::mojom::IntAttribute::kScrollYMin, 10);
+  root.AddIntAttribute(ax::mojom::IntAttribute::kScrollYMax, 60);
+
+  Init(root);
+
+  ComPtr<IScrollProvider> scroll_provider =
+      QueryInterfaceFromNode<IScrollProvider>(GetRootNode());
+  double x_scroll_percent;
+  double y_scroll_percent;
+
+  // Set x scroll percent: 0%, y scroll percent: 0%.
+  // Expected x scroll percent: 0%, y scroll percent: 0%.
+  EXPECT_HRESULT_SUCCEEDED(scroll_provider->SetScrollPercent(0, 0));
+  EXPECT_HRESULT_SUCCEEDED(
+      scroll_provider->get_HorizontalScrollPercent(&x_scroll_percent));
+  EXPECT_EQ(x_scroll_percent, 0);
+  EXPECT_HRESULT_SUCCEEDED(
+      scroll_provider->get_VerticalScrollPercent(&y_scroll_percent));
+  EXPECT_EQ(y_scroll_percent, 0);
+
+  // Set x scroll percent: 100%, y scroll percent: 100%.
+  // Expected x scroll percent: 100%, y scroll percent: 100%.
+  EXPECT_HRESULT_SUCCEEDED(scroll_provider->SetScrollPercent(100, 100));
+  EXPECT_HRESULT_SUCCEEDED(
+      scroll_provider->get_HorizontalScrollPercent(&x_scroll_percent));
+  EXPECT_EQ(x_scroll_percent, 100);
+  EXPECT_HRESULT_SUCCEEDED(
+      scroll_provider->get_VerticalScrollPercent(&y_scroll_percent));
+  EXPECT_EQ(y_scroll_percent, 100);
+
+  // Set x scroll percent: 500%, y scroll percent: 600%.
+  // Expected x scroll percent: 100%, y scroll percent: 100%.
+  EXPECT_HRESULT_SUCCEEDED(scroll_provider->SetScrollPercent(500, 600));
+  EXPECT_HRESULT_SUCCEEDED(
+      scroll_provider->get_HorizontalScrollPercent(&x_scroll_percent));
+  EXPECT_EQ(x_scroll_percent, 100);
+  EXPECT_HRESULT_SUCCEEDED(
+      scroll_provider->get_VerticalScrollPercent(&y_scroll_percent));
+  EXPECT_EQ(y_scroll_percent, 100);
+
+  // Set x scroll percent: -100%, y scroll percent: -200%.
+  // Expected x scroll percent: 0%, y scroll percent: 0%.
+  EXPECT_HRESULT_SUCCEEDED(scroll_provider->SetScrollPercent(-100, -200));
+  EXPECT_HRESULT_SUCCEEDED(
+      scroll_provider->get_HorizontalScrollPercent(&x_scroll_percent));
+  EXPECT_EQ(x_scroll_percent, 0);
+  EXPECT_HRESULT_SUCCEEDED(
+      scroll_provider->get_VerticalScrollPercent(&y_scroll_percent));
+  EXPECT_EQ(y_scroll_percent, 0);
+
+  // Set x scroll percent: 12%, y scroll percent: 34%.
+  // Expected x scroll percent: 12%, y scroll percent: 34%.
+  EXPECT_HRESULT_SUCCEEDED(scroll_provider->SetScrollPercent(12, 34));
+  EXPECT_HRESULT_SUCCEEDED(
+      scroll_provider->get_HorizontalScrollPercent(&x_scroll_percent));
+  EXPECT_EQ(x_scroll_percent, 12);
+  EXPECT_HRESULT_SUCCEEDED(
+      scroll_provider->get_VerticalScrollPercent(&y_scroll_percent));
+  EXPECT_EQ(y_scroll_percent, 34);
+}
+
 }  // namespace ui

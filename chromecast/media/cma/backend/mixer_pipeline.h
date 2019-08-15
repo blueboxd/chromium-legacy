@@ -36,7 +36,8 @@ class MixerPipeline {
   // Returns nullptr if config fails to parse.
   static std::unique_ptr<MixerPipeline> CreateMixerPipeline(
       PostProcessingPipelineParser* parser,
-      PostProcessingPipelineFactory* factory);
+      PostProcessingPipelineFactory* factory,
+      int expected_input_channels);
 
   ~MixerPipeline();
 
@@ -79,13 +80,18 @@ class MixerPipeline {
   // |playout_channel| may be |-1| to signal all channels will be played out.
   void SetPlayoutChannel(int playout_channel);
 
+  // Determines whether the pipeline is still ringing out after all input
+  // streams have stopped playing.
+  bool IsRinging() const;
+
  private:
   // External classes should call CreateMixerPipeline.
   MixerPipeline();
 
   // Attempts to build a pipeline using |config|. Returns |true| IFF successful.
   bool BuildPipeline(PostProcessingPipelineParser* config,
-                     PostProcessingPipelineFactory* factory);
+                     PostProcessingPipelineFactory* factory,
+                     int expected_input_channels);
 
   // Adds |ids| to the list of DeviceIds |filter_group| can process.
   bool SetGroupDeviceIds(const base::Value* ids, FilterGroup* filter_group);

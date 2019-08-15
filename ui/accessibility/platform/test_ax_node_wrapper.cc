@@ -476,7 +476,26 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
     case ax::mojom::Action::kScrollToPoint:
       g_offset = gfx::Vector2d(data.target_point.x(), data.target_point.y());
       return true;
+    case ax::mojom::Action::kSetScrollOffset: {
+      int scroll_x_min =
+          GetData().GetIntAttribute(ax::mojom::IntAttribute::kScrollXMin);
+      int scroll_x_max =
+          GetData().GetIntAttribute(ax::mojom::IntAttribute::kScrollXMax);
+      int scroll_y_min =
+          GetData().GetIntAttribute(ax::mojom::IntAttribute::kScrollYMin);
+      int scroll_y_max =
+          GetData().GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
+      int scroll_x =
+          std::max(scroll_x_min, std::min(data.target_point.x(), scroll_x_max));
+      int scroll_y =
+          std::max(scroll_y_min, std::min(data.target_point.y(), scroll_y_max));
 
+      ReplaceIntAttribute(node_->id(), ax::mojom::IntAttribute::kScrollX,
+                          scroll_x);
+      ReplaceIntAttribute(node_->id(), ax::mojom::IntAttribute::kScrollY,
+                          scroll_y);
+      return true;
+    }
     case ax::mojom::Action::kScrollToMakeVisible: {
       auto offset = node_->data().relative_bounds.bounds.OffsetFromOrigin();
       g_offset = gfx::Vector2d(-offset.x(), -offset.y());

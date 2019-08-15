@@ -35,6 +35,10 @@ extern NSString* const kToolbarShadowColor;
 // Standard blue color. This is most commonly used for the tint color on
 // standard buttons and controls.
 extern NSString* const kBlueColor;
+// Lighter blue color sometimes used as background for buttons or views where
+// the main content is |kBlueColor| (e.g the background of the collections
+// shortcuts on the NTP).
+extern NSString* const kBlueHaloColor;
 // Standard green color.
 extern NSString* const kGreenColor;
 // Standard red color. This is most commonly used for the tint color on

@@ -411,8 +411,9 @@
       },
       "vendor_id": "0x10de",
       "driver_version": {
+        "comment": "INF_version: 8.15.11.8593; date: 05/14/2009",
         "op": "=",
-        "value": "185.93"
+        "value": "8.15.11.8593"
       },
       "features": [
         "accelerated_video_decode"
@@ -462,8 +463,9 @@
       },
       "vendor_id": "0x10de",
       "driver_version": {
+        "comment": "INF_version: 8.17.11.9621; date: 01/11/2010",
         "op": "=",
-        "value": "196.21"
+        "value": "8.17.11.9621"
       },
       "features": [
         "flash_stage3d_baseline"
@@ -478,8 +480,9 @@
       },
       "vendor_id": "0x10de",
       "driver_version": {
+        "comment": "INF_version: 7.15.11.8267; date: 05/12/2009",
         "op": "=",
-        "value": "182.67"
+        "value": "7.15.11.8267"
       },
       "features": [
         "flash_stage3d_baseline"
@@ -494,6 +497,7 @@
       },
       "vendor_id": "0x8086",
       "driver_version": {
+        "comment": "INF_version: 8.15.10.2021; date: 12/14/2009",
         "op": "<",
         "value": "8.15.10.2021"
       },
@@ -521,10 +525,9 @@
       "os": {
         "type": "win"
       },
-      "driver_vendor": "Microsoft",
+      "vendor_id": "0x1414",
       "exceptions": [
         {
-          "vendor_id": "0x1414",
           "device_id": ["0x02c1"]
         }
       ],
@@ -561,6 +564,7 @@
       },
       "vendor_id": "0x8086",
       "driver_version": {
+        "comment": "INF_version: 8.15.10.2702; date: 03/11/2013",
         "op": "<=",
         "value": "8.15.10.2702"
       },
@@ -605,6 +609,7 @@
       },
       "vendor_id": "0x8086",
       "driver_version": {
+        "comment": "INF_version: 10.18.10.3308; date: 09/16/2013",
         "op": "=",
         "value": "10.18.10.3308"
       },
@@ -621,8 +626,9 @@
       },
       "vendor_id": "0x1002",
       "driver_version": {
+        "comment": "INF_version: 13.152.1.8000; date: 10/08/2013",
         "op": "=",
-        "value": "13.152.1.8000"
+        "value": "8.17.10.1230"
       },
       "features": [
         "accelerated_video_decode"
@@ -637,9 +643,10 @@
       },
       "vendor_id": "0x1002",
       "driver_version": {
+        "comment": "INF_version: 8.810.4.5000, 8.970.100.1100; date: 4/7/2011, 04/29/2013",
         "op": "between",
-        "value": "8.810.4.5000",
-        "value2": "8.970.100.1100"
+        "value": "8.17.10.1060",
+        "value2": "8.17.10.1129"
       },
       "features": [
         "accelerated_video_decode"
@@ -654,9 +661,10 @@
       },
       "vendor_id": "0x10de",
       "driver_version": {
+        "comment": "INF_version: 8.17.12.5729, 8.17.12.8026; date: 05/22/2010, 08/03/2011",
         "op": "between",
-        "value": "257.29",
-        "value2": "280.26"
+        "value": "8.17.12.5729",
+        "value2": "8.17.12.8026"
       },
       "features": [
         "accelerated_video_decode"
@@ -671,9 +679,10 @@
       },
       "vendor_id": "0x10de",
       "driver_version": {
+        "comment": "INF_version: 9.18.13.0783, 9.18.13.1090; date: 1/31/2013, 12/29/2012",
         "op": "between",
-        "value": "307.83",
-        "value2": "310.90"
+        "value": "9.18.13.0783",
+        "value2": "9.18.13.1090"
       },
       "features": [
         "accelerated_video_decode"
@@ -1144,8 +1153,9 @@
             "value": "5.0"
           },
           "driver_version": {
+            "comment": "INF_version: 15.20.1006.0001; date: 02/20/2015",
             "op": ">=",
-            "value": "15.201"
+            "value": "8.17.10.1366"
           },
           "gl_renderer": ".*Direct3D11.*"
         },
@@ -1163,14 +1173,16 @@
       },
       "vendor_id": "0x1002",
       "driver_version": {
+        "comment": "INF_version: 16.200.1035.1001; date: 07/05/2016",
         "op": ">",
-        "value": "16.200.1035.1001"
+        "value": "8.17.10.1460"
       },
       "exceptions": [
         {
           "driver_version": {
+            "comment": "INF_version: 21.19.384.0; date: 12/04/2016",
             "op": ">=",
-            "value": "21.19.384.0"
+            "value": "8.17.10.1507"
           }
         }
       ],
@@ -1354,8 +1366,12 @@
       "vendor_id": "0x1002",
       "driver_version": {
         "op": "between",
-        "value": "15.301",
-        "value2": "15.302"
+
+        "comment": "INF_version: 15.301.1101.0000; date: 12/01/2015",
+        "value": "8.17.10.1429",
+
+        "comment2": "INF_version: 15.301.2601.1002; date: 07/08/2016",
+        "value2": "8.17.10.1433"
       },
       "features": [
         "gpu_rasterization"
@@ -1394,8 +1410,9 @@
       },
       "vendor_id": "0x10de",
       "driver_version": {
+        "comment": "INF_version: 8.17.12.6973",
         "op": "<=",
-        "value": "269.73"
+        "value": "8.17.12.6973"
       },
       "features": [
         "accelerated_webgl2"
@@ -1423,7 +1440,7 @@
       "vendor_id": "0x1002",
       "driver_version": {
         "op": "<",
-        "value": "8.830.0.0000"
+        "value": "8.17.10.1070"
       },
       "features": [
         "accelerated_webgl2"
@@ -1438,8 +1455,9 @@
       },
       "vendor_id": "0x8086",
       "driver_version": {
+        "comment": "INF_version: 8.16.0.0",
         "op": "<",
-        "value": "8.16"
+        "value": "8.16.0.0"
       },
       "features": [
         "accelerated_webgl2"
@@ -1723,7 +1741,7 @@
       "vendor_id": "0x8086",
       "driver_version": {
         "op": "<",
-        "value": "8.15.10.2279"
+        "value": "8.15.10.2262"
       },
       "features": [
         "accelerated_webgl",
@@ -1742,7 +1760,7 @@
       "vendor_id": "0x10de",
       "driver_version": {
         "op": "<",
-        "value": "196.21"
+        "value": "8.17.11.9621"
       },
       "features": [
         "accelerated_webgl",

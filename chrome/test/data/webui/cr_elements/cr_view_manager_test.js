@@ -36,7 +36,7 @@ cr.define('cr_view_manager_test', function() {
     test(assert(TestNames.Visibility), function() {
       function assertViewVisible(id, isVisible) {
         const expectFunc = isVisible ? expectTrue : expectFalse;
-        expectFunc(extension_test_util.isVisible(viewManager, '#' + id, true));
+        expectFunc(test_util.isVisible(viewManager, '#' + id, true));
       }
 
       assertViewVisible('viewOne', false);

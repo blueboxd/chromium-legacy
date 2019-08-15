@@ -29,10 +29,6 @@
 #include "net/proxy_resolution/proxy_retry_info.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace net {
 class ProxyServer;
 }  // namespace net
@@ -85,8 +81,6 @@ class DataReductionProxyConfig
   // Reduction Proxy configuration values. |configurator| is the target for a
   // configuration update.
   DataReductionProxyConfig(
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       network::NetworkConnectionTracker* network_connection_tracker,
       std::unique_ptr<DataReductionProxyConfigValues> config_values,
       DataReductionProxyConfigurator* configurator);
@@ -95,7 +89,7 @@ class DataReductionProxyConfig
   // Performs initialization on the IO thread.
   // |url_loader_factory| is the network::URLLoaderFactory instance used for
   // making URL requests. The requests disable the use of proxies.
-  void InitializeOnIOThread(
+  void Initialize(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       WarmupURLFetcher::CreateCustomProxyConfigCallback
           create_custom_proxy_config_callback,
@@ -284,9 +278,6 @@ class DataReductionProxyConfig
 
   // Contains the configuration data being used.
   std::unique_ptr<DataReductionProxyConfigValues> config_values_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
 #if defined(OS_CHROMEOS)
   // Whether the network id should be obtained on a worker thread.

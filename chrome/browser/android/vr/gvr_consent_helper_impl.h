@@ -40,7 +40,7 @@ class GvrConsentHelperImpl : public GvrConsentHelper {
   OnUserConsentCallback on_user_consent_callback_;
   base::android::ScopedJavaGlobalRef<jobject> jdelegate_;
 
-  base::WeakPtrFactory<GvrConsentHelperImpl> weak_ptr_;
+  base::WeakPtrFactory<GvrConsentHelperImpl> weak_ptr_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GvrConsentHelperImpl);
 };

@@ -14903,13 +14903,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(second_url, web_contents()->GetMainFrame()->GetLastCommittedURL());
 }
 
-class FeaturePolicyPropagationToAuxiliaryBrowsingContextTest
-    : public SitePerProcessFeaturePolicyJavaScriptBrowserTest,
-      public testing::WithParamInterface<std::tuple<
-          const char* /* Whether or not <iframe> is sandbox or can escape it */,
-          bool /* <iframe> same origin? */,
-          bool /* opened window same origin? */,
-          const char* /* window feature in window.open() */>> {
+class SitePerProcessFeaturePolicySandboxTest
+    : public SitePerProcessFeaturePolicyJavaScriptBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     SitePerProcessFeaturePolicyJavaScriptBrowserTest::SetUpCommandLine(
@@ -14920,6 +14915,66 @@ class FeaturePolicyPropagationToAuxiliaryBrowsingContextTest
  private:
   base::test::ScopedFeatureList feature_list_;
 };
+
+// Check that sandbox flags are correctly propagated to the browser from a
+// renderer which sets them via feature policy.
+IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicySandboxTest,
+                       SandboxFlagsCorrectlySentFromRenderer) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      embedded_test_server()->GetURL(
+          "a.com",
+          "/cross_site_iframe_factory.html?a(b{sandbox-allow-scripts})")));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  blink::WebSandboxFlags expected_flags =
+      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
+      ~blink::WebSandboxFlags::kAutomaticFeatures;
+  // Validate sandbox flags bit-by-bit. This is equivalent to an equality check
+  // when FeaturePolicyForSandbox is disabled, but when that feature is enabled,
+  // this will check the appropriate policy-controlled feature for each expected
+  // sandbox flag.
+  for (unsigned bit = 0; bit < sizeof(blink::WebSandboxFlags) * 8; bit++) {
+    blink::WebSandboxFlags flag = static_cast<blink::WebSandboxFlags>(1 << bit);
+    if (static_cast<unsigned>(expected_flags) & (1 << bit)) {
+      EXPECT_TRUE(root->child_at(0)->current_frame_host()->IsSandboxed(flag));
+    } else {
+      EXPECT_FALSE(root->child_at(0)->current_frame_host()->IsSandboxed(flag));
+    }
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicySandboxTest,
+                       SandboxFlagsCorrectlySetByFeaturePolicy) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      embedded_test_server()->GetURL(
+          "a.com",
+          "/cross_site_iframe_factory.html?a(b{sandbox,allow-scripts})")));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  blink::WebSandboxFlags expected_flags =
+      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
+      ~blink::WebSandboxFlags::kAutomaticFeatures;
+  // Validate sandbox flags bit-by-bit. This is equivalent to an equality check
+  // when FeaturePolicyForSandbox is disabled, but when that feature is enabled,
+  // this will check the appropriate policy-controlled feature for each expected
+  // sandbox flag.
+  for (int bit = 0; bit < 32; bit++) {
+    blink::WebSandboxFlags flag = static_cast<blink::WebSandboxFlags>(1 << bit);
+    if (static_cast<unsigned>(expected_flags) & (1 << bit)) {
+      EXPECT_TRUE(root->child_at(0)->current_frame_host()->IsSandboxed(flag));
+    } else {
+      EXPECT_FALSE(root->child_at(0)->current_frame_host()->IsSandboxed(flag));
+    }
+  }
+}
+
+class FeaturePolicyPropagationToAuxiliaryBrowsingContextTest
+    : public SitePerProcessFeaturePolicySandboxTest,
+      public testing::WithParamInterface<std::tuple<
+          const char* /* Whether or not <iframe> is sandbox or can escape it */,
+          bool /* <iframe> same origin? */,
+          bool /* opened window same origin? */,
+          const char* /* window feature in window.open() */>> {};
 
 // This test verifies the correct propagation of FeaturePolicy from an *opener*
 // to the opened auxiliary browsing context. This test runs for both cross and

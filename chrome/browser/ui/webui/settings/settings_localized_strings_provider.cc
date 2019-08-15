@@ -2299,6 +2299,8 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_DONE_MESSAGE},
     {"printerEditedSuccessfulMessage",
      IDS_SETTINGS_PRINTING_CUPS_PRINTER_EDITED_PRINTER_DONE_MESSAGE},
+    {"printerUnavailableMessage",
+     IDS_SETTINGS_PRINTING_CUPS_PRINTER_UNAVAILABLE_MESSAGE},
     {"noPrinterNearbyMessage",
      IDS_SETTINGS_PRINTING_CUPS_PRINTER_NO_PRINTER_NEARBY},
     {"searchingNearbyPrinters",
@@ -3253,14 +3255,11 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
       base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) &&
       device::WinWebAuthnApi::GetDefault()->IsAvailable();
 #endif
-  html_source->AddBoolean(
-      "enableSecurityKeysSubpage",
-      base::FeatureList::IsEnabled(device::kWebAuthPINSupport) &&
-          !win_native_api_available);
+  html_source->AddBoolean("enableSecurityKeysSubpage",
+                          !win_native_api_available);
   html_source->AddBoolean(
       "enableSecurityKeysCredentialManagement",
-      base::FeatureList::IsEnabled(device::kWebAuthPINSupport) &&
-          base::FeatureList::IsEnabled(device::kWebAuthCredentialManagement) &&
+      base::FeatureList::IsEnabled(device::kWebAuthCredentialManagement) &&
           !win_native_api_available);
   html_source->AddBoolean(
       "enableSecurityKeysBioEnrollment",

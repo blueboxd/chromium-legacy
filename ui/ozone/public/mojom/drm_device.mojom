@@ -21,8 +21,11 @@ import "ui/ozone/public/mojom/overlay_surface_candidate.mojom";
 // All functions in DrmDevice are implemented by the lower privilege viz
 // process.
 interface DrmDevice {
-  // Creates scanout capable DRM buffers to back |widget|.
-  CreateWindow(gfx.mojom.AcceleratedWidget widget);
+  // Creates scanout capable DRM buffers to back |widget|. |initial_bounds| is
+  // used to calculate the initial size of the DRM bufffer backing |widget| and
+  // it can be modified later by calling SetWindowBounds().
+  CreateWindow(gfx.mojom.AcceleratedWidget widget,
+               gfx.mojom.Rect initial_bounds);
 
   // Destroys the DRM buffers backing |widget|.
   DestroyWindow(gfx.mojom.AcceleratedWidget widget);

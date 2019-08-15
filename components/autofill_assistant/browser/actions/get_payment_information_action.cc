@@ -30,7 +30,7 @@ namespace autofill_assistant {
 GetPaymentInformationAction::GetPaymentInformationAction(
     ActionDelegate* delegate,
     const ActionProto& proto)
-    : Action(delegate, proto), weak_ptr_factory_(this) {
+    : Action(delegate, proto) {
   DCHECK(proto_.has_get_payment_information());
 }
 

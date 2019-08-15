@@ -88,16 +88,16 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
         {NGBaselineAlgorithmType::kFirstLine, baseline_type});
   }
 
-  return builder.SetAvailableSize(available_size)
-      .SetPercentageResolutionSize(percentage_size)
-      .SetIsFixedInlineSize(fixed_inline)
-      .SetIsFixedBlockSize(fixed_block)
-      .SetIsFixedBlockSizeIndefinite(!fixed_block_is_definite)
-      .SetIsShrinkToFit(
-          style.LogicalWidth().IsAuto() &&
-          block.SizesLogicalWidthToFitContent(style.LogicalWidth()))
-      .SetTextDirection(style.Direction())
-      .ToConstraintSpace();
+  builder.SetAvailableSize(available_size);
+  builder.SetPercentageResolutionSize(percentage_size);
+  builder.SetIsFixedInlineSize(fixed_inline);
+  builder.SetIsFixedBlockSize(fixed_block);
+  builder.SetIsFixedBlockSizeIndefinite(!fixed_block_is_definite);
+  builder.SetIsShrinkToFit(
+      style.LogicalWidth().IsAuto() &&
+      block.SizesLogicalWidthToFitContent(style.LogicalWidth()));
+  builder.SetTextDirection(style.Direction());
+  return builder.ToConstraintSpace();
 }
 
 String NGConstraintSpace::ToString() const {

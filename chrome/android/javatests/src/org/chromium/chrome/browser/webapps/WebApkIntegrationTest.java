@@ -81,6 +81,6 @@ public class WebApkIntegrationTest {
         mActivityTestRule.startActivityCompletely(intent);
 
         WebApkActivity lastActivity = mActivityTestRule.getActivity();
-        Assert.assertEquals(pwaRocksUrl, lastActivity.getWebappInfo().uri().toString());
+        Assert.assertEquals(pwaRocksUrl, lastActivity.getWebappInfo().url());
     }
 }

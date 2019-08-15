@@ -35,8 +35,7 @@ const char kUnixTimeFormat[] = "%011d";
 UsageStatsDatabase::UsageStatsDatabase(Profile* profile)
     : website_event_db_initialized_(false),
       suspension_db_initialized_(false),
-      token_mapping_db_initialized_(false),
-      weak_ptr_factory_(this) {
+      token_mapping_db_initialized_(false) {
   ProtoDatabaseProvider* db_provider =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetProtoDatabaseProvider();
@@ -72,8 +71,7 @@ UsageStatsDatabase::UsageStatsDatabase(
       token_mapping_db_(std::move(token_mapping_db)),
       website_event_db_initialized_(false),
       suspension_db_initialized_(false),
-      token_mapping_db_initialized_(false),
-      weak_ptr_factory_(this) {
+      token_mapping_db_initialized_(false) {
   InitializeDBs();
 }
 

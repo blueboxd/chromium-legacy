@@ -27,7 +27,7 @@ ImageProvider::ScopedResult PaintWorkletImageProvider::GetPaintRecordResult(
   // painted or not, so |input| should always exist in it.
   auto it = records_.find(input);
   DCHECK(it != records_.end());
-  return ImageProvider::ScopedResult(it->second);
+  return ImageProvider::ScopedResult(it->second.second);
 }
 
 }  // namespace cc

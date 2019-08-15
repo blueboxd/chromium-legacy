@@ -77,6 +77,8 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
 
   void ClearAllEnterprisePasswordHash();
 
+  void ClearAllNonGmailPasswordHash();
+
  private:
   using passwords_iterator = std::map<base::string16,
                                       std::set<std::string>,

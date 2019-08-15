@@ -118,7 +118,7 @@ class AndroidTelemetryService : public download::DownloadItem::Observer,
   // Unowned.
   SafeBrowsingService* sb_service_;
 
-  base::WeakPtrFactory<AndroidTelemetryService> weak_ptr_factory_;
+  base::WeakPtrFactory<AndroidTelemetryService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AndroidTelemetryService);
 };

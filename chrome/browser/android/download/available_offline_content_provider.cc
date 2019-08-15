@@ -215,7 +215,7 @@ chrome::mojom::AvailableOfflineContentPtr CreateAvailableOfflineContent(
 
 AvailableOfflineContentProvider::AvailableOfflineContentProvider(
     Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {}
+    : profile_(profile) {}
 
 AvailableOfflineContentProvider::~AvailableOfflineContentProvider() = default;
 

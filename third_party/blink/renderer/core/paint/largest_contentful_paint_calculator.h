@@ -45,6 +45,10 @@ class CORE_EXPORT LargestContentfulPaintCalculator final
     return largest_image_ ? largest_image_->first_size : 0u;
   }
 
+  std::unique_ptr<TracedValue> TextCandidateTraceData();
+  std::unique_ptr<TracedValue> ImageCandidateTraceData();
+  std::unique_ptr<TracedValue> InvalidationTraceData();
+
   Member<WindowPerformance> window_performance_;
 
   // Largest image information. Stores its own copy of the information so that
@@ -54,6 +58,8 @@ class CORE_EXPORT LargestContentfulPaintCalculator final
   // the lifetime is not dependent on that of TextPaintTimingDetector.
   std::unique_ptr<TextRecord> largest_text_;
   LargestContentType last_type_ = LargestContentType::kUnknown;
+
+  unsigned count_candidates_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(LargestContentfulPaintCalculator);
 };

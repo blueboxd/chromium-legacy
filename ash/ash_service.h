@@ -15,8 +15,7 @@
 namespace ash {
 
 // Used to export Ash's mojo services, specifically the interfaces defined in
-// Ash's manifest.json. Also responsible for creating the
-// UI-Service/WindowService when ash runs out of process.
+// Ash's manifest.
 class ASH_EXPORT AshService : public service_manager::Service {
  public:
   explicit AshService(service_manager::mojom::ServiceRequest request);

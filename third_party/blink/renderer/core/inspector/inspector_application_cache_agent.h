@@ -30,7 +30,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/ApplicationCache.h"
-#include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_frame.h"
 
 namespace blink {
 

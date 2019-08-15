@@ -337,11 +337,7 @@ int TestSyncedWindowDelegate::GetActiveIndex() const {
   return 0;
 }
 
-bool TestSyncedWindowDelegate::IsApp() const {
-  return false;
-}
-
-bool TestSyncedWindowDelegate::IsTypeTabbed() const {
+bool TestSyncedWindowDelegate::IsTypeNormal() const {
   return window_type_ == sync_pb::SessionWindow_BrowserType_TYPE_TABBED;
 }
 

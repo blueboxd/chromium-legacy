@@ -292,8 +292,6 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
 
   base::RepeatingClosure connection_lost_callback_;
 
-  base::RepeatingClosure bad_message_received_from_gpu_callback_;
-
   DisplayHitTestQueryMap display_hit_test_query_;
 
   // TODO(jonross): Separate out all hit testing work into its own separate

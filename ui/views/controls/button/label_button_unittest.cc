@@ -72,6 +72,9 @@ class LabelButtonTest : public test::WidgetTest {
     // used (which could be derived from the Widget's NativeTheme).
     test_widget_ = CreateTopLevelPlatformWidget();
 
+    // The test code below is not prepared to handle dark mode.
+    test_widget_->GetNativeTheme()->set_use_dark_colors(false);
+
     button_ = new TestLabelButton;
     test_widget_->GetContentsView()->AddChildView(button_);
 

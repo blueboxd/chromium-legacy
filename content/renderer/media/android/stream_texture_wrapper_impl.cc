@@ -30,8 +30,7 @@ StreamTextureWrapperImpl::StreamTextureWrapperImpl(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
     : enable_texture_copy_(enable_texture_copy),
       factory_(factory),
-      main_task_runner_(main_task_runner),
-      weak_factory_(this) {}
+      main_task_runner_(main_task_runner) {}
 
 StreamTextureWrapperImpl::~StreamTextureWrapperImpl() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());

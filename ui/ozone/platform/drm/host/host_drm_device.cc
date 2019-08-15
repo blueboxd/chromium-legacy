@@ -100,12 +100,13 @@ void HostDrmDevice::UnRegisterHandlerForDrmDisplayHostManager() {
   display_manager_ = nullptr;
 }
 
-bool HostDrmDevice::GpuCreateWindow(gfx::AcceleratedWidget widget) {
+bool HostDrmDevice::GpuCreateWindow(gfx::AcceleratedWidget widget,
+                                    const gfx::Rect& initial_bounds) {
   DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
 
-  drm_device_ptr_->CreateWindow(widget);
+  drm_device_ptr_->CreateWindow(widget, initial_bounds);
   return true;
 }
 

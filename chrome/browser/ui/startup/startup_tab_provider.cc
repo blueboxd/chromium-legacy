@@ -35,7 +35,7 @@ bool ProfileHasOtherTabbedBrowser(Profile* profile) {
   BrowserList* browser_list = BrowserList::GetInstance();
   auto other_tabbed_browser = std::find_if(
       browser_list->begin(), browser_list->end(), [profile](Browser* browser) {
-        return browser->profile() == profile && browser->is_type_tabbed() &&
+        return browser->profile() == profile && browser->is_type_normal() &&
                !browser->tab_strip_model()->empty();
       });
   return other_tabbed_browser != browser_list->end();

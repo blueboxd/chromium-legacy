@@ -378,7 +378,7 @@ leveldb::Status IndexedDBCursor::PrefetchReset(int used_prefetches,
   if (closed_)
     return s;
   // First prefetched result is always used.
-  if (cursor_){
+  if (cursor_) {
     DCHECK_GT(used_prefetches, 0);
     for (int i = 0; i < used_prefetches - 1; ++i) {
       bool ok = cursor_->Continue(&s);

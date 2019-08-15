@@ -131,10 +131,9 @@ struct SESSIONS_EXPORT SessionWindow {
 
   // Possible window types which can be stored here. Note that these values will
   // be written out to disc via session commands.
-  enum WindowType {
-    TYPE_TABBED = 0,
-    TYPE_POPUP = 1
-  };
+  // TODO(crbug.com/990158): Add types for TYPE_APP and TYPE_DEVTOOLS to match
+  // updated Browser::Type.
+  enum WindowType { TYPE_NORMAL = 0, TYPE_POPUP = 1 };
 
   // Identifier of the window.
   SessionID window_id;

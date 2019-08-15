@@ -88,8 +88,8 @@ class LinkHighlightImplTest : public testing::Test,
         ->UnregisterAllURLsAndClearMemoryCache();
 
     // Ensure we fully clean up while scoped settings are enabled. Without this,
-    // garbage collection would occur after ScopedBlinkGenPropertyTreesForTest
-    // is out of scope, so the settings would not apply in some destructors.
+    // garbage collection would occur after Scoped[setting]ForTest is out of
+    // scope, so the settings would not apply in some destructors.
     web_view_helper_.Reset();
     ThreadState::Current()->CollectAllGarbageForTesting();
   }

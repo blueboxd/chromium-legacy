@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_style_property_map.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 
 namespace blink {
 
@@ -43,7 +44,8 @@ class CORE_EXPORT PaintWorkletInput : public cc::PaintWorkletInput {
       float device_scale_factor,
       int worklet_id,
       PaintWorkletStylePropertyMap::CrossThreadData values,
-      Vector<std::unique_ptr<CrossThreadStyleValue>> parsed_input_args);
+      Vector<std::unique_ptr<CrossThreadStyleValue>> parsed_input_args,
+      cc::PaintWorkletInput::PropertyKeys property_keys);
 
   ~PaintWorkletInput() override = default;
 
@@ -52,6 +54,9 @@ class CORE_EXPORT PaintWorkletInput : public cc::PaintWorkletInput {
     return gfx::SizeF(container_size_.Width(), container_size_.Height());
   }
   int WorkletId() const override { return worklet_id_; }
+  const cc::PaintWorkletInput::PropertyKeys& GetPropertyKeys() const override {
+    return property_keys_;
+  }
 
   // These accessors are safe on any thread.
   const FloatSize& ContainerSize() const { return container_size_; }
@@ -76,6 +81,20 @@ class CORE_EXPORT PaintWorkletInput : public cc::PaintWorkletInput {
   const int worklet_id_;
   PaintWorkletStylePropertyMap::CrossThreadData style_map_data_;
   Vector<std::unique_ptr<CrossThreadStyleValue>> parsed_input_arguments_;
+
+  // List of properties associated with this PaintWorkletInput.
+  // Kept and initialized here, but used in CC, so using C++ std library types.
+  // TODO(xidachen): make this structure account for native property.
+  // Instead of pair<string, CompositorElementId>, define
+  // struct PropertyKey {
+  //   std::string custom_property_name;
+  //   enum native_property_type;
+  //   CompositorElementId element_id;
+  // }
+  // PropId uniquely identifies a property value, potentially being animated by
+  // the compositor, used by this PaintWorklet as an input at paint time. The
+  // worklet provides a list of the properties that it uses as inputs.
+  cc::PaintWorkletInput::PropertyKeys property_keys_;
 };
 
 }  // namespace blink

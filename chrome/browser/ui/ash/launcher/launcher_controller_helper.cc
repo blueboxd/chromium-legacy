@@ -61,7 +61,7 @@ const extensions::Extension* GetExtensionForTab(Profile* profile,
 
   // Use the Browser's app name to determine the extension for app windows and
   // use the tab's url for app tabs.
-  if (browser && browser->is_app()) {
+  if (browser && browser->deprecated_is_app()) {
     return registry->GetExtensionById(
         web_app::GetAppIdFromApplicationName(browser->app_name()),
         extensions::ExtensionRegistry::EVERYTHING);

@@ -61,7 +61,7 @@ class ImageHelper::Job {
 
   std::unique_ptr<service_manager::Connector> connector_;
 
-  base::WeakPtrFactory<Job> weak_ptr_factory_;
+  base::WeakPtrFactory<Job> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
@@ -77,8 +77,7 @@ ImageHelper::Job::Job(ImageJobType job_type,
       bitmap_callback_(std::move(bitmap_callback)),
       images_(std::move(images)),
       pixel_size_(pixel_size),
-      connector_(std::move(connector)),
-      weak_ptr_factory_(this) {
+      connector_(std::move(connector)) {
   num_icons_ = (images_.size() < kFaviconsPerCategoryImage)
                    ? images_.size()
                    : kFaviconsPerCategoryImage;
@@ -276,7 +275,7 @@ std::unique_ptr<SkBitmap> ImageHelper::Job::CombineImages() {
   return std::make_unique<SkBitmap>(composite_bitmap);
 }
 
-ImageHelper::ImageHelper() : last_used_job_id_(0), weak_factory_(this) {}
+ImageHelper::ImageHelper() : last_used_job_id_(0) {}
 
 ImageHelper::~ImageHelper() {}
 

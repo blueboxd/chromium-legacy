@@ -1790,8 +1790,6 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
     StartStopCompositor();
 
   DCHECK_NE(MSG_ROUTING_NONE, routing_id_);
-  layer_tree_view_->SetFrameSinkId(
-      viz::FrameSinkId(RenderThread::Get()->GetClientId(), routing_id_));
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   if (render_thread) {
@@ -2964,11 +2962,8 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
       settings.top_controls_hide_threshold = hide_threshold;
   }
 
-  // Blink sends cc a layer list and property trees when either
-  // BlinkGenPropertyTrees or CompositeAfterPaint are enabled.
-  settings.use_layer_lists =
-      blink::WebRuntimeFeatures::IsBlinkGenPropertyTreesEnabled() ||
-      blink::WebRuntimeFeatures::IsCompositeAfterPaintEnabled();
+  // Blink sends cc a layer list and property trees.
+  settings.use_layer_lists = true;
 
   // Blink currently doesn't support setting fractional scroll offsets so CC
   // must send integer values. We plan to eventually make Blink use fractional
@@ -3570,6 +3565,10 @@ void RenderWidget::SetBrowserControlsHeight(float top_height,
                                             bool shrink_viewport) {
   layer_tree_view_->layer_tree_host()->SetBrowserControlsHeight(
       top_height, bottom_height, shrink_viewport);
+}
+
+viz::FrameSinkId RenderWidget::GetFrameSinkId() {
+  return viz::FrameSinkId(RenderThread::Get()->GetClientId(), routing_id());
 }
 
 void RenderWidget::NotifySwapAndPresentationTime(

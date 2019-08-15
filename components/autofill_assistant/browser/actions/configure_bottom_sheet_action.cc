@@ -14,7 +14,7 @@ namespace autofill_assistant {
 
 ConfigureBottomSheetAction::ConfigureBottomSheetAction(ActionDelegate* delegate,
                                                        const ActionProto& proto)
-    : Action(delegate, proto), weak_ptr_factory_(this) {}
+    : Action(delegate, proto) {}
 
 ConfigureBottomSheetAction::~ConfigureBottomSheetAction() {}
 

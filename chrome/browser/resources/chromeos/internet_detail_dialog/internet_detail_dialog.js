@@ -138,6 +138,19 @@ Polymer({
   },
 
   /**
+   * CrosNetworkConfigObserver impl
+   * @param {!chromeos.networkConfig.mojom.NetworkStateProperties} network
+   */
+  onNetworkStateChanged: function(network) {
+    if (!this.guid || !this.networkProperties) {
+      return;
+    }
+    if (network.guid == this.guid) {
+      this.getNetworkDetails_();
+    }
+  },
+
+  /**
    * Calls networkingPrivate.getProperties for this.guid.
    * @private
    */

@@ -52,7 +52,7 @@ class ActiveNetworkIconTest : public testing::Test {
   void SetupEthernet() {
     if (eth_path_.empty()) {
       network_state_helper().device_test()->AddDevice(
-          "/device/stub_eth_device", shill::kTypeWifi, "stub_eth_device");
+          "/device/stub_eth_device", shill::kTypeEthernet, "stub_eth_device");
       eth_path_ = ConfigureService(
           R"({"GUID": "eth_guid", "Type": "ethernet", "State": "online"})");
     }

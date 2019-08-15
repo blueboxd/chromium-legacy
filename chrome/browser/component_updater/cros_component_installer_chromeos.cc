@@ -77,16 +77,6 @@ std::string GenerateId(const std::string& sha2hashstr) {
       sha2hashstr.substr(0, crx_file::id_util::kIdSize * 2));
 }
 
-void CleanUpOldInstalls(const std::string& name) {
-  // Clean up components installed at old path.
-  base::FilePath path;
-  if (!base::PathService::Get(DIR_COMPONENT_USER, &path))
-    return;
-  path = path.Append(name);
-  if (base::PathExists(path))
-    base::DeleteFile(path, true);
-}
-
 // Returns all installed components.
 std::vector<ComponentConfig> GetInstalled() {
   std::vector<ComponentConfig> configs;
@@ -141,9 +131,6 @@ update_client::CrxInstaller::Result
 CrOSComponentInstallerPolicy::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
-  // TODO(xiaochu): remove after M66 ships to stable. https://crbug.com/792203
-  CleanUpOldInstalls(name_);
-
   cros_component_installer_->EmitInstalledSignal(GetName());
 
   return update_client::CrxInstaller::Result(update_client::InstallError::NONE);

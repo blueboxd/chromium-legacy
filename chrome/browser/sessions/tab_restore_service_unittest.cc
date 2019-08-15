@@ -148,7 +148,7 @@ class TabRestoreServiceImplTest : public ChromeRenderViewHostTestHarness {
 
     SessionService* session_service =
         SessionServiceFactory::GetForProfile(profile());
-    session_service->SetWindowType(window_id(), Browser::TYPE_TABBED,
+    session_service->SetWindowType(window_id(), Browser::TYPE_NORMAL,
                                    SessionService::TYPE_NORMAL);
     session_service->SetTabWindow(window_id(), tab_id());
     session_service->SetTabIndexInWindow(window_id(), tab_id(), 0);

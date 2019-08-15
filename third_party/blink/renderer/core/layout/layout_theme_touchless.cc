@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_theme_touchless.h"
 
+#include "third_party/blink/public/resources/grit/blink_resources.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 
 namespace blink {

@@ -5,28 +5,28 @@
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
-#include "third_party/blink/renderer/core/layout/custom/layout_custom.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 
 namespace blink {
 
-CustomLayoutFragment::CustomLayoutFragment(CustomLayoutChild* child,
-                                           CustomLayoutToken* token,
-                                           const LayoutUnit inline_size,
-                                           const LayoutUnit block_size,
-                                           v8::Isolate* isolate)
+CustomLayoutFragment::CustomLayoutFragment(
+    CustomLayoutChild* child,
+    CustomLayoutToken* token,
+    scoped_refptr<const NGLayoutResult> layout_result,
+    const LogicalSize& size,
+    v8::Isolate* isolate)
     : child_(child),
       token_(token),
-      inline_size_(inline_size.ToDouble()),
-      block_size_(block_size.ToDouble()) {
-  // Immediately store the result data, so that it remains immutable between
-  // layout calls to the child.
-  auto* layout_custom = DynamicTo<LayoutCustom>(GetLayoutBox());
-  if (layout_custom) {
-    SerializedScriptValue* data = layout_custom->GetFragmentResultData();
-    if (data)
-      layout_worklet_world_v8_data_.Set(isolate, data->Deserialize(isolate));
-  }
+      layout_result_(std::move(layout_result)),
+      inline_size_(size.inline_size.ToDouble()),
+      block_size_(size.block_size.ToDouble()) {
+  // TODO(crbug.com/992950): Pass constraint data through layout result.
+}
+
+const NGLayoutResult& CustomLayoutFragment::GetLayoutResult() const {
+  DCHECK(layout_result_);
+  return *layout_result_;
 }
 
 LayoutBox* CustomLayoutFragment::GetLayoutBox() const {

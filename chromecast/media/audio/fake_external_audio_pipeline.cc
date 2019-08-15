@@ -181,6 +181,7 @@ class FakeMixerOutputStream : public MixerOutputStream {
 
   void Stop() override {}
 
+  int GetNumChannels() override { return channels_; }
   int GetSampleRate() override { return sample_rate_; }
 
   MediaPipelineBackend::AudioDecoder::RenderingDelay GetRenderingDelay()

@@ -75,7 +75,7 @@ class ImageFetcherBridge {
   ImageFetcherService* image_fetcher_service_;
   base::FilePath base_file_path_;
 
-  base::WeakPtrFactory<ImageFetcherBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<ImageFetcherBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImageFetcherBridge);
 };

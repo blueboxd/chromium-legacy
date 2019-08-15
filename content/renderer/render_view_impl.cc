@@ -536,9 +536,6 @@ void RenderViewImpl::Initialize(
                                        opener_frame, MSG_ROUTING_NONE,
                                        params->replicated_frame_state,
                                        params->devtools_main_frame_token);
-    // TODO(danakj): Make WebViewImpl not need a WebWidgetClient when there is a
-    // remote main frame (when the RenderWidget is frozen).
-    webview_->DidAttachRemoteMainFrame(render_widget_.get());
   }
 
   // TODO(davidben): Move this state from Blink into content.

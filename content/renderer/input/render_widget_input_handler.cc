@@ -243,8 +243,7 @@ viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
   // call the hit-testing API. Either way it might be better to have
   // a DCHECK for the node rather than a null check here.
   if (result_node.IsNull()) {
-    return viz::FrameSinkId(RenderThread::Get()->GetClientId(),
-                            widget_->routing_id());
+    return widget_->GetFrameSinkId();
   }
 
   viz::FrameSinkId frame_sink_id = GetRemoteFrameSinkId(result);
@@ -260,8 +259,7 @@ viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
   // Return the FrameSinkId for the current widget if the point did not hit
   // test to a remote frame, or the point is outside of the remote frame's
   // content box, or the remote frame doesn't have a valid FrameSinkId yet.
-  return viz::FrameSinkId(RenderThread::Get()->GetClientId(),
-                          widget_->routing_id());
+  return widget_->GetFrameSinkId();
 }
 
 WebInputEventResult RenderWidgetInputHandler::HandleTouchEvent(

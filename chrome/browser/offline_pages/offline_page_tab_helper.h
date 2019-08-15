@@ -216,7 +216,7 @@ class OfflinePageTabHelper
   content::WebContentsFrameBindingSet<mojom::MhtmlPageNotifier>
       mhtml_page_notifier_bindings_;
 
-  base::WeakPtrFactory<OfflinePageTabHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<OfflinePageTabHelper> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

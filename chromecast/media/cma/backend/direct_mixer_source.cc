@@ -69,7 +69,8 @@ DirectMixerSource::DirectMixerSource(DirectAudioSource* direct_source,
       mixer_(StreamMixer::Get()),
       channel_vector_(num_channels_) {
   LOG(INFO) << "Create " << device_id_ << " (" << this
-            << "), content type = " << AudioContentTypeToString(content_type_);
+            << "), content type = " << AudioContentTypeToString(content_type_)
+            << ", num_channels = " << num_channels_;
   DCHECK(source_);
   DCHECK(mixer_);
 

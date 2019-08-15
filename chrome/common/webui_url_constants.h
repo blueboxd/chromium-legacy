@@ -351,7 +351,7 @@ extern const char kNativePrintingSettingsSubPage[];
 extern const char kNetworkDetailSubPage[];
 extern const char kNetworksSubPage[];
 extern const char kPluginVmDetailsSubPage[];
-extern const char kPluginVmSharedPathSubPage[];
+extern const char kPluginVmSharedPathsSubPage[];
 extern const char kPointerOverlaySubPage[];
 extern const char kPowerSubPage[];
 extern const char kResetSubPage[];

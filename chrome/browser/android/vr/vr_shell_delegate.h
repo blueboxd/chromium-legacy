@@ -122,7 +122,7 @@ class VrShellDelegate : public device::GvrDelegateProvider,
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  base::WeakPtrFactory<VrShellDelegate> weak_ptr_factory_;
+  base::WeakPtrFactory<VrShellDelegate> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VrShellDelegate);
 };

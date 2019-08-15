@@ -711,6 +711,12 @@ PerformanceMeasure* Performance::MeasureInternal(
       }
       const PerformanceMeasureOptions* options =
           start_or_options.GetAsPerformanceMeasureOptions();
+      if (!options->hasStart() && !options->hasEnd()) {
+        exception_state.ThrowTypeError(
+            "If a non-empty PerformanceMeasureOptions object was passed, at "
+            "least one of its 'start' or 'end' properties must be present.");
+        return nullptr;
+      }
       return MeasureWithDetail(script_state, measure_name, options->start(),
                                options->end(), options->detail(),
                                exception_state);

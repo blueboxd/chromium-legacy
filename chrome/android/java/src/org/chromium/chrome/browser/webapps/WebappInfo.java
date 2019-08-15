@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
@@ -57,8 +56,8 @@ public class WebappInfo {
 
     private String mId;
     private Icon mIcon;
-    private Uri mUri;
-    private Uri mScopeUri;
+    private String mUrl;
+    private String mScopeUrl;
     private String mName;
     private String mShortName;
     private @WebDisplayMode int mDisplayMode;
@@ -181,18 +180,16 @@ public class WebappInfo {
             String shortName, @WebDisplayMode int displayMode, int orientation, int source,
             long themeColor, long backgroundColor, int defaultBackgroundColor,
             boolean isIconGenerated, boolean isIconAdaptive, boolean forceNavigation) {
-        Uri uri = Uri.parse(url);
         if (TextUtils.isEmpty(scope)) {
             scope = ShortcutHelper.getScopeFromUrl(url);
         }
-        Uri scopeUri = Uri.parse(scope);
 
         mIcon = icon;
         mId = id;
         mName = name;
         mShortName = shortName;
-        mUri = uri;
-        mScopeUri = scopeUri;
+        mUrl = url;
+        mScopeUrl = scope;
         mDisplayMode = displayMode;
         mOrientation = orientation;
         mSource = source;
@@ -211,12 +208,12 @@ public class WebappInfo {
         return mId;
     }
 
-    public Uri uri() {
-        return mUri;
+    public String url() {
+        return mUrl;
     }
 
     /**
-     * Whether the webapp should be navigated to {@link uri()} if the webapp is already open when
+     * Whether the webapp should be navigated to {@link url()} if the webapp is already open when
      * Chrome receives a ACTION_START_WEBAPP intent.
      */
     public boolean shouldForceNavigation() {
@@ -225,8 +222,8 @@ public class WebappInfo {
 
     // TODO(yusufo) : Plumb the scope for the Webapp through the support library/client Android
     // manifest for TrustedWebActivity.
-    public Uri scopeUri() {
-        return mScopeUri;
+    public String scopeUrl() {
+        return mScopeUrl;
     }
 
     public String name() {
@@ -341,9 +338,9 @@ public class WebappInfo {
      */
     public void setWebappIntentExtras(Intent intent) {
         intent.putExtra(ShortcutHelper.EXTRA_ID, id());
-        intent.putExtra(ShortcutHelper.EXTRA_URL, uri().toString());
+        intent.putExtra(ShortcutHelper.EXTRA_URL, url());
         intent.putExtra(ShortcutHelper.EXTRA_FORCE_NAVIGATION, shouldForceNavigation());
-        intent.putExtra(ShortcutHelper.EXTRA_SCOPE, scopeUri().toString());
+        intent.putExtra(ShortcutHelper.EXTRA_SCOPE, scopeUrl());
         intent.putExtra(ShortcutHelper.EXTRA_ICON, encodedIcon());
         intent.putExtra(ShortcutHelper.EXTRA_VERSION, ShortcutHelper.WEBAPP_SHORTCUT_VERSION);
         intent.putExtra(ShortcutHelper.EXTRA_NAME, name());

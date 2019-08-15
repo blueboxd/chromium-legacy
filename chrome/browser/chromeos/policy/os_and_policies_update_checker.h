@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/policy/task_executor_with_retries.h"
-#include "chromeos/dbus/power/native_timer.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -29,7 +28,7 @@ constexpr int kMaxOsAndPoliciesUpdateCheckerRetryIterations = 2;
 // Interval at which |os_and_policies_update_checker_| retries checking for and
 // downloading updates.
 constexpr base::TimeDelta kOsAndPoliciesUpdateCheckerRetryTime =
-    base::TimeDelta::FromMinutes(30);
+    base::TimeDelta::FromMinutes(10);
 
 // Time for which |OsAndPoliciesUpdateChecker| will wait for a valid network
 // before querying the update server for updates. After this time it will return
@@ -46,8 +45,7 @@ class OsAndPoliciesUpdateChecker
       public chromeos::NetworkStateHandlerObserver {
  public:
   OsAndPoliciesUpdateChecker(
-      chromeos::NetworkStateHandler* network_state_handler,
-      TaskExecutorWithRetries::GetTicksSinceBootFn get_ticks_since_boot_fn);
+      chromeos::NetworkStateHandler* network_state_handler);
   ~OsAndPoliciesUpdateChecker() override;
 
   using UpdateCheckCompletionCallback = base::OnceCallback<void(bool result)>;
@@ -63,6 +61,9 @@ class OsAndPoliciesUpdateChecker
   // this.
   void Stop();
 
+  // Returns true if |Start| has been called and not been |Stop|ped.
+  bool IsRunning() const;
+
   // chromeos::NetworkStateHandlerObserver overrides.
   void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
 
@@ -72,6 +73,10 @@ class OsAndPoliciesUpdateChecker
 
   // Runs |update_check_completion_cb_| with |result| and runs |ResetState|.
   void RunCompletionCallbackAndResetState(bool result);
+
+  // Runs when |wait_for_network_timer_| expires i.e. a network hasn't been
+  // detected after the maximum time out.
+  void OnNetworkWaitTimeout();
 
   // Runs when |update_check_task_executor_::Start| has failed after retries.
   void OnUpdateCheckFailure();
@@ -87,6 +92,10 @@ class OsAndPoliciesUpdateChecker
   void OnUpdateCheckStarted(
       chromeos::UpdateEngineClient::UpdateCheckResult result);
 
+  // Refreshes policies. |update_check_result| represents the status of the
+  // previous stage i.e. an OS update check and download.
+  void RefreshPolicies(bool update_check_result);
+
   // Called when the API call to refresh policies is completed.
   // |update_check_result| represents the result of the update check which
   // triggered this policy refresh.
@@ -95,14 +104,11 @@ class OsAndPoliciesUpdateChecker
   // Resets all state and cancels any pending update checks.
   void ResetState();
 
-  // If present, removes observer from update engine client.
-  void MaybeRemoveUpdateEngineClientObserver();
-
-  // If present, removes observer from |network_state_handler_|.
-  void MaybeRemoveNetworkStateHandlerObserver();
-
   // Ignore fist IDLE status that is sent when the update check is initiated.
   bool ignore_idle_status_ = true;
+
+  // Set to true when |Start| is called and false when |Stop| is called.
+  bool is_running_ = false;
 
   // Callback passed to |Start|. Called if |StartUpdateCheck| is unsuccessful
   // after retries or when an update check finishes successfully.
@@ -116,6 +122,9 @@ class OsAndPoliciesUpdateChecker
 
   // Timer to wait for a valid network after |Start| is called.
   base::OneShotTimer wait_for_network_timer_;
+
+  // Not owned.
+  chromeos::UpdateEngineClient* const update_engine_client_;
 
   base::WeakPtrFactory<OsAndPoliciesUpdateChecker> weak_factory_{this};
 

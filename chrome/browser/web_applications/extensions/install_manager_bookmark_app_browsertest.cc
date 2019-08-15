@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(InstallManagerBookmarkAppDialogTest,
 
   // Ensure the tab is reparented into dedicated app window.
   Browser* app_browser = chrome::FindBrowserWithWebContents(web_contents());
-  EXPECT_TRUE(app_browser->is_app());
+  EXPECT_TRUE(app_browser->is_type_app());
   EXPECT_NE(app_browser, browser());
 }
 

@@ -5,7 +5,6 @@
 #include "chrome/browser/sharing/click_to_call/click_to_call_context_menu_observer.h"
 
 #include "base/bind.h"
-#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
@@ -20,8 +19,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/native_theme/native_theme.h"
-#include "ui/views/controls/menu/menu_config.h"
 #include "url/url_constants.h"
 
 ClickToCallContextMenuObserver::SubMenuDelegate::SubMenuDelegate(
@@ -78,7 +75,7 @@ void ClickToCallContextMenuObserver::InitMenu(
         l10n_util::GetStringFUTF16(
             IDS_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
             devices_[0].human_readable_name()),
-        GetContextMenuIcon());
+        vector_icons::kCallIcon);
 #endif
   } else {
     BuildSubMenu();
@@ -92,7 +89,7 @@ void ClickToCallContextMenuObserver::InitMenu(
     proxy_->AddSubMenuWithStringIdAndIcon(
         IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES,
         IDS_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES,
-        sub_menu_model_.get(), GetContextMenuIcon());
+        sub_menu_model_.get(), vector_icons::kCallIcon);
 #endif
   }
 }
@@ -143,12 +140,4 @@ void ClickToCallContextMenuObserver::SendClickToCallMessage(
 
   ClickToCallUiController::DeviceSelected(proxy_->GetWebContents(), url_,
                                           devices_[chosen_device_index]);
-}
-
-gfx::ImageSkia ClickToCallContextMenuObserver::GetContextMenuIcon() const {
-  const views::MenuConfig& menu_config = views::MenuConfig::instance();
-  return gfx::CreateVectorIcon(
-      vector_icons::kCallIcon, menu_config.touchable_icon_size,
-      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-          ui::NativeTheme::kColorId_DefaultIconColor));
 }

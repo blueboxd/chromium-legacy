@@ -36,6 +36,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -175,11 +176,13 @@ class CONTENT_EXPORT StoragePartitionImpl
   NativeFileSystemManagerImpl* GetNativeFileSystemManager();
 
   // blink::mojom::StoragePartitionService interface.
-  void OpenLocalStorage(const url::Origin& origin,
-                        blink::mojom::StorageAreaRequest request) override;
+  void OpenLocalStorage(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::StorageArea> receiver) override;
   void OpenSessionStorage(
       const std::string& namespace_id,
-      blink::mojom::SessionStorageNamespaceRequest request) override;
+      mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver)
+      override;
 
   // network::mojom::NetworkContextClient interface.
   void OnCanSendReportingReports(

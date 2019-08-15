@@ -41,7 +41,7 @@ ScriptPromise SyncManager::registerFunction(ScriptState* script_state,
       mojom::blink::SyncRegistrationOptions::New();
   sync_registration->tag = tag;
 
-  GetBackgroundSyncServicePtr()->Register(
+  GetBackgroundSyncServiceRemote()->Register(
       std::move(sync_registration), registration_->RegistrationId(),
       WTF::Bind(&SyncManager::RegisterCallback, WrapPersistent(this),
                 WrapPersistent(resolver)));
@@ -53,7 +53,7 @@ ScriptPromise SyncManager::getTags(ScriptState* script_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  GetBackgroundSyncServicePtr()->GetRegistrations(
+  GetBackgroundSyncServiceRemote()->GetRegistrations(
       registration_->RegistrationId(),
       WTF::Bind(&SyncManager::GetRegistrationsCallback,
                 WrapPersistent(resolver)));
@@ -61,11 +61,11 @@ ScriptPromise SyncManager::getTags(ScriptState* script_state) {
   return promise;
 }
 
-const mojom::blink::OneShotBackgroundSyncServicePtr&
-SyncManager::GetBackgroundSyncServicePtr() {
-  if (!background_sync_service_.get()) {
+const mojo::Remote<mojom::blink::OneShotBackgroundSyncService>&
+SyncManager::GetBackgroundSyncServiceRemote() {
+  if (!background_sync_service_.is_bound()) {
     Platform::Current()->GetInterfaceProvider()->GetInterface(
-        mojo::MakeRequest(&background_sync_service_, task_runner_));
+        background_sync_service_.BindNewPipeAndPassReceiver(task_runner_));
   }
   return background_sync_service_;
 }
@@ -85,7 +85,7 @@ void SyncManager::RegisterCallback(
       // Let the service know that the registration promise is resolved so that
       // it can fire the event.
 
-      GetBackgroundSyncServicePtr()->DidResolveRegistration(
+      GetBackgroundSyncServiceRemote()->DidResolveRegistration(
           mojom::blink::BackgroundSyncRegistrationInfo::New(
               registration_->RegistrationId(), options->tag,
               mojom::blink::BackgroundSyncType::ONE_SHOT));

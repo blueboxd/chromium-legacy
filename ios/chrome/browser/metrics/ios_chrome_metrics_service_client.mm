@@ -14,11 +14,14 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/path_service.h"
 #include "base/process/process_metrics.h"
 #include "base/rand_util.h"
 #include "base/strings/string16.h"
+#include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "components/history/core/browser/history_service.h"
@@ -33,6 +36,7 @@
 #include "components/metrics/net/cellular_logic_helper.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/net/network_metrics_provider.h"
+#include "components/metrics/persistent_histograms.h"
 #include "components/metrics/stability_metrics_helper.h"
 #include "components/metrics/ui/screen_info_metrics_provider.h"
 #include "components/metrics/url_constants.h"
@@ -75,6 +79,24 @@ void GetNetworkConnectionTrackerAsync(
     base::OnceCallback<void(network::NetworkConnectionTracker*)> callback) {
   std::move(callback).Run(
       GetApplicationContext()->GetNetworkConnectionTracker());
+}
+
+void CleanupBrowserMetricsDataFiles() {
+  base::FilePath user_data_dir;
+  if (!base::PathService::Get(ios::DIR_USER_DATA, &user_data_dir))
+    return;
+  base::FilePath browser_metrics_upload_dir =
+      user_data_dir.AppendASCII(kBrowserMetricsName);
+  if (base::IsDirectoryEmpty(browser_metrics_upload_dir))
+    return;
+  // Delete accumulated metrics files due to http://crbug/992946
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                     std::move(browser_metrics_upload_dir),
+                     /*recursive=*/true));
 }
 
 }  // namespace
@@ -244,6 +266,10 @@ void IOSChromeMetricsServiceClient::Initialize() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::DemographicMetricsProvider>(
           std::make_unique<metrics::ChromeBrowserStateClient>()));
+
+  // TODO(crbug.com/992946): This is an interim fix to stop logging of
+  // persistent histograms and delete any accumulated metrics files.
+  CleanupBrowserMetricsDataFiles();
 }
 
 void IOSChromeMetricsServiceClient::CollectFinalHistograms() {

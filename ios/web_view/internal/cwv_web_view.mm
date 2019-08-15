@@ -735,11 +735,18 @@ static NSString* gUserAgentProduct = nil;
 #pragma mark - Internal Methods
 
 - (void)shutDown {
-  // To handle the case where -[CWVWebView encodeRestorableStateWithCoder:] is
-  // called after this method, precompute the session storage so it may be used
-  // during encoding later.
-  _cachedSessionStorage = _webState->BuildSessionStorage();
-  _webState.reset();
+  if (_webState) {
+    // To handle the case where -[CWVWebView encodeRestorableStateWithCoder:] is
+    // called after this method, precompute the session storage so it may be
+    // used during encoding later.
+    _cachedSessionStorage = _webState->BuildSessionStorage();
+    if (_webStateObserver) {
+      _webState->RemoveObserver(_webStateObserver.get());
+      _webStateObserver.reset();
+    }
+    WebViewHolder::RemoveFromWebState(_webState.get());
+    _webState.reset();
+  }
 }
 
 @end

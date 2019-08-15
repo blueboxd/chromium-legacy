@@ -141,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(TabletModePageBehaviorTest, ExcludeHostedApps) {
   Browser* browser = new Browser(params);
   AddBlankTabAndShow(browser);
 
-  ASSERT_TRUE(browser->is_app());
+  ASSERT_TRUE(browser->is_type_app());
   auto* web_contents = GetActiveWebContents(browser);
   ASSERT_TRUE(web_contents);
 

@@ -92,7 +92,7 @@ class SnippetsInternalsPageHandler
   // Handle back to the page by which we can update.
   snippets_internals::mojom::PagePtr page_;
 
-  base::WeakPtrFactory<SnippetsInternalsPageHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<SnippetsInternalsPageHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SnippetsInternalsPageHandler);
 };

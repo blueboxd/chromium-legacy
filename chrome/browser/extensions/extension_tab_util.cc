@@ -87,7 +87,7 @@ Browser* CreateBrowser(Profile* profile,
                        int window_id,
                        bool user_gesture,
                        std::string* error) {
-  Browser::CreateParams params(Browser::TYPE_TABBED, profile, user_gesture);
+  Browser::CreateParams params(Browser::TYPE_NORMAL, profile, user_gesture);
   Browser* browser = Browser::Create(params);
   if (!browser) {
     *error = tabs_constants::kBrowserWindowNotAllowed;
@@ -150,8 +150,8 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(ExtensionFunction* function,
       return nullptr;
   }
 
-  // Ensure the selected browser is tabbed.
-  if (!browser->is_type_tabbed() && browser->IsAttemptingToCloseBrowser())
+  // Ensure the selected browser is normal.
+  if (!browser->is_type_normal() && browser->IsAttemptingToCloseBrowser())
     browser = chrome::FindTabbedBrowser(
         profile, function->include_incognito_information());
   if (!browser || !browser->window()) {
@@ -225,7 +225,7 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(ExtensionFunction* function,
     browser = chrome::FindTabbedBrowser(profile, false);
     if (!browser) {
       Browser::CreateParams params =
-          Browser::CreateParams(Browser::TYPE_TABBED, profile, user_gesture);
+          Browser::CreateParams(Browser::TYPE_NORMAL, profile, user_gesture);
       browser = Browser::Create(params);
       if (!browser) {
         *error = tabs_constants::kBrowserWindowNotAllowed;
@@ -334,16 +334,13 @@ int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
 
 // static
 std::string ExtensionTabUtil::GetBrowserWindowTypeText(const Browser& browser) {
-  if (browser.is_devtools())
+  if (browser.is_type_devtools())
     return tabs_constants::kWindowTypeValueDevTools;
-  if (browser.is_type_popup())
+  // TODO(crbug.com/990158): We return 'popup' for both popup and app since
+  // chrome.tabs.create({type: 'popup'}) uses
+  // Browser::CreateParams::CreateForApp.
+  if (browser.is_type_popup() || browser.is_type_app())
     return tabs_constants::kWindowTypeValuePopup;
-  // TODO(devlin): Browser::is_app() returns true whenever Browser::app_name_
-  // is non-empty (and includes instances such as devtools). Platform apps
-  // should no longer be returned here; are there any other cases (that aren't
-  // captured by is_devtools() or is_type_popup() for an app-type browser?
-  if (browser.is_app())
-    return tabs_constants::kWindowTypeValueApp;
   return tabs_constants::kWindowTypeValueNormal;
 }
 
@@ -779,7 +776,7 @@ bool ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
 
 // static
 bool ExtensionTabUtil::BrowserSupportsTabs(Browser* browser) {
-  return browser && !browser->is_devtools();
+  return browser && !browser->is_type_devtools();
 }
 
 }  // namespace extensions

@@ -20,13 +20,24 @@ const char kX[] = "x";
 const char kY[] = "y";
 const char kVisibility[] = "visibility";
 
-std::unique_ptr<CSS::SourceRange> BuildDefaultSourceRange() {
+std::unique_ptr<CSS::SourceRange> BuildDefaultPropertySourceRange() {
   // These tell the frontend where in the stylesheet a certain style
   // is located. Since we don't have stylesheets, this is all 0.
   // We need this because CSS fields are not editable unless
   // the range is provided.
   return CSS::SourceRange::create()
       .setStartLine(0)
+      .setEndLine(0)
+      .setStartColumn(0)
+      .setEndColumn(0)
+      .build();
+}
+
+std::unique_ptr<CSS::SourceRange> BuildDefaultSelectorSourceRange() {
+  // This is a different source range from BuildDefaultPropertySourceRange()
+  // used for the Selectors, so the frontend correctly handles property edits.
+  return CSS::SourceRange::create()
+      .setStartLine(1)
       .setEndLine(0)
       .setStartColumn(0)
       .setEndColumn(0)
@@ -45,7 +56,7 @@ std::unique_ptr<protocol::Array<int>> BuildDefaultMatchingSelectors() {
 std::unique_ptr<CSS::CSSProperty> BuildCSSProperty(const std::string& name,
                                                    const std::string& value) {
   return CSS::CSSProperty::create()
-      .setRange(BuildDefaultSourceRange())
+      .setRange(BuildDefaultPropertySourceRange())
       .setName(name)
       .setValue(value)
       .build();
@@ -65,7 +76,7 @@ std::unique_ptr<CSS::CSSStyle> BuildCSSStyle(
     std::string stylesheet_uid,
     const std::vector<UIElement::UIProperty>& properties) {
   return protocol::CSS::CSSStyle::create()
-      .setRange(BuildDefaultSourceRange())
+      .setRange(BuildDefaultPropertySourceRange())
       .setCssProperties(BuildCSSProperties(properties))
       .setShorthandEntries(
           std::make_unique<Array<protocol::CSS::ShorthandEntry>>())
@@ -76,7 +87,10 @@ std::unique_ptr<CSS::CSSStyle> BuildCSSStyle(
 std::unique_ptr<protocol::Array<protocol::CSS::Value>> BuildSelectors(
     const std::string& name) {
   auto selectors = std::make_unique<protocol::Array<protocol::CSS::Value>>();
-  selectors->emplace_back(protocol::CSS::Value::create().setText(name).build());
+  selectors->emplace_back(protocol::CSS::Value::create()
+                              .setText(name)
+                              .setRange(BuildDefaultSelectorSourceRange())
+                              .build());
   return selectors;
 }
 

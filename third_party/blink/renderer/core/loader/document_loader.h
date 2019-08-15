@@ -75,7 +75,7 @@ class TickClock;
 
 namespace blink {
 
-class ApplicationCacheHost;
+class ApplicationCacheHostForFrame;
 class ContentSecurityPolicy;
 class Document;
 class DocumentParser;
@@ -207,7 +207,7 @@ class CORE_EXPORT DocumentLoader
 
   DocumentLoadTiming& GetTiming() { return document_load_timing_; }
 
-  ApplicationCacheHost* GetApplicationCacheHost() const {
+  ApplicationCacheHostForFrame* GetApplicationCacheHost() const {
     return application_cache_host_.Get();
   }
 
@@ -279,7 +279,7 @@ class CORE_EXPORT DocumentLoader
 
   // The caller owns the |clock| which must outlive the DocumentLoader.
   void SetTickClockForTesting(const base::TickClock* clock) { clock_ = clock; }
-  void SetApplicationCacheHostForTesting(ApplicationCacheHost* host) {
+  void SetApplicationCacheHostForTesting(ApplicationCacheHostForFrame* host) {
     application_cache_host_ = host;
   }
 
@@ -456,7 +456,7 @@ class CORE_EXPORT DocumentLoader
 
   base::TimeTicks time_of_last_data_received_;
 
-  Member<ApplicationCacheHost> application_cache_host_;
+  Member<ApplicationCacheHostForFrame> application_cache_host_;
 
   std::unique_ptr<WebServiceWorkerNetworkProvider>
       service_worker_network_provider_;

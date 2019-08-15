@@ -128,7 +128,9 @@ class PagePopupChromeClient final : public EmptyChromeClient {
       // (provided by WebViewTestProxy or WebWidgetTestProxy) runs the composite
       // step for the current popup. We don't run popup tests with a compositor
       // thread.
-      popup_->web_view_->WidgetClient()->ScheduleAnimation();
+      WebWidgetClient* widget_client =
+          popup_->web_view_->MainFrameImpl()->FrameWidgetImpl()->Client();
+      widget_client->ScheduleAnimation();
       return;
     }
     popup_->WidgetClient()->ScheduleAnimation();

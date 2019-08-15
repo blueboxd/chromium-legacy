@@ -4,12 +4,12 @@
 
 #import "chrome/browser/global_keyboard_shortcuts_mac.h"
 
+#include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -19,9 +19,9 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/omnibox/browser/omnibox_view.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "ui/events/event_constants.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
 using cocoa_test_event_utils::SynthesizeKeyEvent;
@@ -169,8 +169,6 @@ IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, CopyPasteOmnibox) {
 
 // Tests that the shortcut to reopen a previous tab works.
 IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, ReopenPreviousTab) {
-  NSWindow* ns_window =
-      browser()->window()->GetNativeWindow().GetNativeNSWindow();
   TabStripModel* tab_strip = browser()->tab_strip_model();
 
   // Set up window with 2 tabs.
@@ -186,22 +184,13 @@ IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, ReopenPreviousTab) {
   ASSERT_EQ(tab_strip->GetActiveWebContents()->GetLastCommittedURL(), test_url);
 
   // Close a tab.
-  content::WindowedNotificationObserver wait_for_closed_tab(
-      chrome::NOTIFICATION_TAB_CLOSING,
-      content::NotificationService::AllSources());
-  SendEvent(SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_W,
-                               NSCommandKeyMask));
-  wait_for_closed_tab.Wait();
+  ui_test_utils::SendGlobalKeyEventsAndWait(kVK_ANSI_W, ui::EF_COMMAND_DOWN);
   EXPECT_EQ(1, tab_strip->count());
   ASSERT_NE(tab_strip->GetActiveWebContents()->GetLastCommittedURL(), test_url);
 
   // Reopen a tab.
-  content::WindowedNotificationObserver wait_for_added_tab(
-      chrome::NOTIFICATION_TAB_PARENTED,
-      content::NotificationService::AllSources());
-  SendEvent(SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_T,
-                               NSCommandKeyMask | NSShiftKeyMask));
-  wait_for_added_tab.Wait();
+  ui_test_utils::SendGlobalKeyEventsAndWait(
+      kVK_ANSI_T, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN);
   EXPECT_EQ(2, tab_strip->count());
   ASSERT_EQ(tab_strip->GetActiveWebContents()->GetLastCommittedURL(), test_url);
 }

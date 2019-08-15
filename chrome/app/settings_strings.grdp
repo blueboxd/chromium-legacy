@@ -1563,7 +1563,7 @@
       IPP over USB (IPPUSB)
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_CONFIGURING_MESSAGE" desc="The configuring-in-progress message shown in the configuring printer dialog.">
-      Configuring <ph name="PRINTER_NAME">$1<ex>printer</ex></ph> ...
+      Configuring <ph name="PRINTER_NAME">$1<ex>Acme Printer</ex></ph> ...
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_MANUFACTURER" desc="Label for the dropdown menu to select a manufacturer for the printer.">
       Manufacturer
@@ -1578,10 +1578,13 @@
       Invalid file selected. Try again.
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_DONE_MESSAGE" desc="The message shown when a new printer is set up successfully.">
-      Added <ph name="PRINTER_NAME">$1<ex>printer</ex></ph>
+      Added <ph name="PRINTER_NAME">$1<ex>Acme Printer</ex></ph>
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_EDITED_PRINTER_DONE_MESSAGE" desc="The message shown when a printer is updated successfully.">
-      Updated <ph name="PRINTER_NAME">$1<ex>printer</ex></ph>
+      Updated <ph name="PRINTER_NAME">$1<ex>Acme Printer</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_UNAVAILABLE_MESSAGE" desc="The message shown when a printer can no longer be contacted while being added.">
+      <ph name="PRINTER_NAME">$1<ex>Acme Printer</ex></ph> is no longer available
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_NO_PRINTER_NEARBY" desc="The no-printer-found message shown in the auto discovery dialog.">
       No printers nearby

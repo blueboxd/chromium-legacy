@@ -15,7 +15,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/incognito_color_util.h"
+#import "ios/chrome/common/colors/dynamic_color_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -67,8 +67,8 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
     self.selectedBackgroundView = [[UIView alloc] initWithFrame:CGRectZero];
-    self.selectedBackgroundView.backgroundColor = color::IncognitoDynamicColor(
-        _incognito, [UIColor colorNamed:kTableViewRowHighlightColor],
+    self.selectedBackgroundView.backgroundColor = color::DarkModeDynamicColor(
+        [UIColor colorNamed:kTableViewRowHighlightColor], _incognito,
         [UIColor colorNamed:kTableViewRowHighlightDarkColor]);
 
     _textTruncatingLabel =
@@ -370,8 +370,8 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 
   [self.trailingButton setImage:trailingButtonImage
                        forState:UIControlStateNormal];
-  self.trailingButton.tintColor = color::IncognitoDynamicColor(
-      self.incognito, [UIColor colorNamed:kBlueColor],
+  self.trailingButton.tintColor = color::DarkModeDynamicColor(
+      [UIColor colorNamed:kBlueColor], self.incognito,
       [UIColor colorNamed:kBlueDarkColor]);
 }
 

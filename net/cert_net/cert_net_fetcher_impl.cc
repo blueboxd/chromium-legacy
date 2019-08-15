@@ -496,8 +496,7 @@ void Job::StartURLRequest(URLRequestContext* context) {
                                         this, traffic_annotation);
   if (request_params_->http_method == HTTP_METHOD_POST)
     url_request_->set_method("POST");
-  url_request_->SetLoadFlags(LOAD_DO_NOT_SAVE_COOKIES |
-                             LOAD_DO_NOT_SEND_COOKIES);
+  url_request_->set_allow_credentials(false);
   url_request_->Start();
 
   // Start a timer to limit how long the job runs for.

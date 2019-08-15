@@ -304,6 +304,7 @@ enum {
   *arg = {};
 
 namespace ui {
+
 class AXPlatformNodeWin;
 class AXPlatformRelationWin;
 
@@ -1212,7 +1213,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   LONG FindBoundary(const base::string16& text,
                     IA2TextBoundaryType ia2_boundary,
                     LONG start_offset,
-                    TextBoundaryDirection direction);
+                    AXTextBoundaryDirection direction);
 
   // Many MSAA methods take a var_id parameter indicating that the operation
   // should be performed on a particular child ID, rather than this object.

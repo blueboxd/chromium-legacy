@@ -19,6 +19,8 @@ class MixerOutputStreamDummy : public MixerOutputStream {
   // MixerOutputStream implementation:
   bool Start(int requested_sample_rate, int channels) override { return true; }
 
+  int GetNumChannels() override { return 2; }
+
   int GetSampleRate() override { return 48000; }
 
   MediaPipelineBackend::AudioDecoder::RenderingDelay GetRenderingDelay()

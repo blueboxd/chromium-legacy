@@ -264,7 +264,7 @@ class CONTENT_EXPORT CompositorImpl
 
   size_t num_of_consecutive_surface_failures_ = 0u;
 
-  base::WeakPtrFactory<CompositorImpl> weak_factory_;
+  base::WeakPtrFactory<CompositorImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CompositorImpl);
 };

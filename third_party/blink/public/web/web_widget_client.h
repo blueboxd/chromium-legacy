@@ -36,6 +36,7 @@
 #include "cc/input/event_listener_properties.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/input/overscroll_behavior.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
@@ -369,6 +370,11 @@ class WebWidgetClient {
   virtual void SetBrowserControlsHeight(float top_height,
                                         float bottom_height,
                                         bool shrink_viewport) {}
+
+  virtual viz::FrameSinkId GetFrameSinkId() {
+    NOTREACHED();
+    return viz::FrameSinkId();
+  }
 };
 
 }  // namespace blink

@@ -50,7 +50,7 @@ class SmartSelectionClient {
   // the request for the text.
   WebContents* web_contents_;
 
-  base::WeakPtrFactory<SmartSelectionClient> weak_ptr_factory_;
+  base::WeakPtrFactory<SmartSelectionClient> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SmartSelectionClient);
 };

@@ -21,10 +21,6 @@
 #include "libassistant/shared/public/platform_auth.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace chromeos {
 namespace assistant {
 
@@ -35,7 +31,7 @@ class PlatformApiImpl : public assistant_client::PlatformApi,
                         chromeos::CrasAudioHandler::AudioObserver {
  public:
   PlatformApiImpl(
-      service_manager::Connector* connector,
+      mojom::Client* client,
       AssistantMediaSession* media_session,
       device::mojom::BatteryMonitorPtr battery_monitor,
       scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner,

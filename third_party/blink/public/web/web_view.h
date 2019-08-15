@@ -60,7 +60,6 @@ class WebSettings;
 class WebString;
 class WebViewClient;
 class WebWidget;
-class WebWidgetClient;
 struct WebDeviceEmulationParams;
 struct WebFloatPoint;
 struct WebFloatSize;
@@ -102,24 +101,8 @@ class WebView {
 
   // Called to inform WebViewImpl that a local main frame has been attached.
   // After this call MainFrameImpl() will return a valid frame until it is
-  // detached. It receives the WebWidgetClient* that provides input/compositing
-  // services for the attached main frame.
-  // This must be called for composited WebViews. Non-composited WebViews do not
-  // require a WebWidgetClient, but must call this in order to establish one.
-  virtual void DidAttachLocalMainFrame(WebWidgetClient*) = 0;
-
-  // Called to inform WebViewImpl that it has an initial remote main frame. This
-  // is a hack to just get a WebWidgetClient to WebViewImpl since it expects to
-  // always have one at this time.
-  // This does *NOT* need to be called every time a remote main frame exists,
-  // but is meant to be called when WebViewImpl is initialized with a remote
-  // main frame, since it will not receive a WebWidgetClient otherwise.
-  // TODO(danakj): Remove this method when WebViewImpl does not need a
-  // WebWidgetClient without a local main frame. At that point it should
-  // also drop the WebWidgetClient when a local main frame is detached.
-  // This must only be called for composited WebViews. Non-composited WebViews
-  // do not require a WebWidgetClient.
-  virtual void DidAttachRemoteMainFrame(WebWidgetClient*) = 0;
+  // detached.
+  virtual void DidAttachLocalMainFrame() = 0;
 
   // Initializes the various client interfaces.
   virtual void SetPrerendererClient(WebPrerendererClient*) = 0;

@@ -5,7 +5,9 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_TOMBSTONE_SWEEPER_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_TOMBSTONE_SWEEPER_H_
 
+#include <map>
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/feature_list.h"
@@ -76,7 +78,6 @@ class WrappingIterator {
 class CONTENT_EXPORT IndexedDBTombstoneSweeper
     : public IndexedDBPreCloseTaskQueue::PreCloseTask {
  public:
-
   // The |database| must outlive this instance.
   IndexedDBTombstoneSweeper(int round_iterations,
                             int max_iterations,

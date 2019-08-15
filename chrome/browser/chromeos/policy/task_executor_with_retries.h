@@ -12,19 +12,19 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/power/native_timer.h"
+#include "base/timer/timer.h"
 
 namespace policy {
 
-// This class runs a task that can fail. In case of failure it retries the task
-// using NativeTimer i.e. the retry can wake the device up from suspend and is
-// suspend aware. Any callbacks passed to its API will not be invoked if an
-// object of this class is destroyed.
+// This class runs a task that can fail. In case of failure it allows the caller
+// to retry the task using a OneShotTimer i.e. the retry timer is not suspend
+// aware. The caller must hold a wake lock if it wants the task to run till
+// success or retry failure without the device suspending. Any callbacks passed
+// to its API will not be invoked if an object of this class is destroyed.
 class TaskExecutorWithRetries {
  public:
-  using AsyncTask = base::RepeatingClosure;
-  using RetryFailureCb = base::OnceClosure;
-  using GetTicksSinceBootFn = base::RepeatingCallback<base::TimeTicks(void)>;
+  using AsyncTask = base::OnceClosure;
+  using RetryFailureCb = base::OnceCallback<void()>;
 
   // |description| - String identifying this object.
   // |get_ticks_since_boot_fn| - Callback that returns current ticks from boot.
@@ -32,24 +32,22 @@ class TaskExecutorWithRetries {
   // |max_retries| - Maximum number of retries after which trying the task is
   // given up.
   // |retry_time| - Time between each retry.
-  TaskExecutorWithRetries(const std::string& description,
-                          GetTicksSinceBootFn get_ticks_since_boot_fn,
-                          int max_retries,
-                          base::TimeDelta retry_time);
+  TaskExecutorWithRetries(int max_retries, base::TimeDelta retry_time);
   ~TaskExecutorWithRetries();
 
   // Runs |task| and caches |retry_failure_cb| which will be called when
-  // |max_retries_| is reached and |task_| couldn't be run successfully.
+  // |max_retries_| is reached and |task| couldn't be run successfully.
   // Consecutive calls override any state and pending callbacks associated with
-  // the previous call.
+  // the previous call. |retry_failure_cb| will return the task that was last
+  // scheduled using |ScheduleRetry|.
   void Start(AsyncTask task, RetryFailureCb retry_failure_cb);
 
   // Resets state and stops all pending callbacks.
   void Stop();
 
   // Cancels all outstanding |RetryTask| calls and schedules a new |RetryTask|
-  // call on the calling sequence.
-  void ScheduleRetry();
+  // call on the calling sequence to run |task|.
+  void ScheduleRetry(AsyncTask task);
 
  private:
   // Called upon starting |retry_timer_|. Indicates whether or not the timer was
@@ -58,15 +56,6 @@ class TaskExecutorWithRetries {
 
   // Resets state including stopping all pending callbacks.
   void ResetState();
-
-  // Starts |retry_timer_| to schedule |task_| at |retry_time_| interval.
-  void RetryTask();
-
-  // String identifying this object. Used with the |retry_timer_| API.
-  const std::string description_;
-
-  // Used to get current time ticks from boot.
-  const GetTicksSinceBootFn get_ticks_since_boot_fn_;
 
   // Maximum number of retries after which trying the task is given up.
   const int max_retries_;
@@ -77,17 +66,12 @@ class TaskExecutorWithRetries {
   // Current retry iteration. Capped at |max_retries_|.
   int num_retries_ = 0;
 
-  // The task to run.
-  AsyncTask task_;
-
-  // Callback to call after |max_retries_| have been reached and |task_| wasn't
+  // Callback to call after |max_retries_| have been reached and |task| wasn't
   // successfully scheduled.
   RetryFailureCb retry_failure_cb_;
 
-  // Timer used to retry |task_|.
-  std::unique_ptr<chromeos::NativeTimer> retry_timer_;
-
-  base::WeakPtrFactory<TaskExecutorWithRetries> weak_factory_{this};
+  // Timer used to retry |task| passed in |ScheduleRetry|.
+  base::OneShotTimer retry_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskExecutorWithRetries);
 };

@@ -39,6 +39,9 @@ class HashPasswordManager {
   // clears all enterprise password hashes.
   void ClearAllPasswordHash(bool is_gaia_password);
 
+  // Clears all non-Gmail Gaia password hashes.
+  void ClearAllNonGmailPasswordHash();
+
   // Returns empty array if no hash is available.
   std::vector<PasswordHashData> RetrieveAllPasswordHashes();
 

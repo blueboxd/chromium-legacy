@@ -54,6 +54,16 @@ enum class UsbPrinterSetupSource {
   kMaxValue = kAutoconfigured,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PrinterSetupSource {
+  kPrintPreview = 0,       // Printer was setup from Print Preview.
+  kSettings = 1,           // Printer was setup from Settings.
+  kAutoUsbConfigurer = 2,  // Printer was setup by automatic USB configurer.
+  kArcPrintService = 3,    // Printer was setup by arc print service.
+  kMaxValue = kArcPrintService,
+};
+
 using PrinterSetupCallback = base::OnceCallback<void(PrinterSetupResult)>;
 
 // Configures printers by retrieving PPDs and registering the printer with CUPS.

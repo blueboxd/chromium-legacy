@@ -29,7 +29,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_utils.h"
-#include "ui/native_theme/common_theme.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/image_view.h"
@@ -279,6 +279,7 @@ MenuItemView* MenuItemView::AddMenuItemAt(
     const base::string16& minor_text,
     const gfx::VectorIcon* minor_icon,
     const gfx::ImageSkia& icon,
+    const gfx::VectorIcon* vector_icon,
     Type type,
     ui::MenuSeparatorType separator_style) {
   DCHECK_NE(type, EMPTY);
@@ -298,6 +299,10 @@ MenuItemView* MenuItemView::AddMenuItemAt(
   item->SetSubtitle(sublabel);
   item->SetMinorText(minor_text);
   item->SetMinorIcon(minor_icon);
+  if (vector_icon) {
+    DCHECK(icon.isNull());
+    item->SetIcon(vector_icon);
+  }
   if (!icon.isNull())
     item->SetIcon(icon);
   if (type == SUBMENU || type == ACTIONABLE_SUBMENU)
@@ -372,7 +377,8 @@ void MenuItemView::AddSeparatorAt(int index) {
   AddMenuItemAt(index, /*item_id=*/0, /*label=*/base::string16(),
                 /*sub_label=*/base::string16(),
                 /*minor_text=*/base::string16(), /*minor_icon=*/nullptr,
-                /*icon=*/gfx::ImageSkia(), /*type=*/SEPARATOR,
+                /*icon=*/gfx::ImageSkia(), /*vector_icon=*/nullptr,
+                /*type=*/SEPARATOR,
                 /*separator_style=*/ui::NORMAL_SEPARATOR);
 }
 
@@ -394,7 +400,7 @@ MenuItemView* MenuItemView::AppendMenuItemImpl(
     ui::MenuSeparatorType separator_style) {
   const int index = submenu_ ? int{submenu_->children().size()} : 0;
   return AddMenuItemAt(index, item_id, label, sublabel, minor_text, minor_icon,
-                       icon, type, separator_style);
+                       icon, nullptr, type, separator_style);
 }
 
 SubmenuView* MenuItemView::CreateSubmenu() {
@@ -472,6 +478,8 @@ void MenuItemView::SetIcon(const gfx::ImageSkia& icon, int item_id) {
 }
 
 void MenuItemView::SetIcon(const gfx::ImageSkia& icon) {
+  vector_icon_ = nullptr;
+
   if (icon.isNull()) {
     SetIconView(nullptr);
     return;
@@ -482,7 +490,27 @@ void MenuItemView::SetIcon(const gfx::ImageSkia& icon) {
   SetIconView(icon_view);
 }
 
-void MenuItemView::SetIconView(View* icon_view) {
+void MenuItemView::SetIcon(const gfx::VectorIcon* icon) {
+  vector_icon_ = icon;
+}
+
+void MenuItemView::UpdateIconViewFromVectorIconAndTheme() {
+  if (!vector_icon_)
+    return;
+
+  if (!icon_view_)
+    SetIconView(new ImageView());
+
+  const bool use_touchable_layout =
+      GetMenuController() && GetMenuController()->use_touchable_layout();
+  const int icon_size = use_touchable_layout ? 20 : 16;
+  icon_view_->SetImage(
+      gfx::CreateVectorIcon(*vector_icon_, icon_size,
+                            GetNativeTheme()->GetSystemColor(
+                                ui::NativeTheme::kColorId_DefaultIconColor)));
+}
+
+void MenuItemView::SetIconView(ImageView* icon_view) {
   if (icon_view_) {
     RemoveChildView(icon_view_);
     delete icon_view_;
@@ -519,6 +547,11 @@ int MenuItemView::GetHeightForWidth(int width) const {
   height += margins.height();
 
   return height;
+}
+
+void MenuItemView::OnThemeChanged() {
+  View::OnThemeChanged();
+  UpdateIconViewFromVectorIconAndTheme();
 }
 
 gfx::Rect MenuItemView::GetSubmenuAreaOfActionableSubmenu() const {
@@ -797,6 +830,8 @@ void MenuItemView::UpdateMenuPartSizes() {
   EmptyMenuMenuItem menu_item(this);
   menu_item.set_controller(GetMenuController());
   pref_menu_height_ = menu_item.GetPreferredSize().height();
+
+  UpdateIconViewFromVectorIconAndTheme();
 }
 
 void MenuItemView::Init(MenuItemView* parent,
@@ -1385,8 +1420,8 @@ int MenuItemView::GetMaxIconViewWidth() const {
     }
     if (item->HasSubmenu())
       return item->GetMaxIconViewWidth();
-    return (item->icon_view() && !MenuConfig::instance().icons_in_label)
-               ? item->icon_view()->GetPreferredSize().width()
+    return (item->icon_view_ && !MenuConfig::instance().icons_in_label)
+               ? item->icon_view_->GetPreferredSize().width()
                : 0;
   };
   std::transform(menu_items.cbegin(), menu_items.cend(), widths.begin(),

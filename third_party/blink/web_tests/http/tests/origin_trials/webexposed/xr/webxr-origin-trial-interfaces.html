@@ -55,6 +55,15 @@ test(t => {
 
 test(t => {
   let hittest_properties = {
+    'XRSession': ['environmentBlendMode']
+  };
+  // TODO: Update AR support to use it's own runtime flag
+  OriginTrialsHelper.check_properties_missing_unless_runtime_flag(
+    this, hittest_properties, 'webXRHitTestEnabled');
+}, "AR properties are not available with a WebXR token.");
+
+test(t => {
+  let hittest_properties = {
     'XRSession': ['requestHitTest']
   };
   OriginTrialsHelper.check_properties_missing_unless_runtime_flag(

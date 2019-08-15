@@ -29,7 +29,8 @@ public class SyncController extends PageController {
     }
 
     @Override
-    public boolean isCurrentPageThis() {
-        return mLocatorHelper.isOnScreen(LOCATOR_SYNC_CONTROLLER);
+    public SyncController verifyActive() {
+        mLocatorHelper.verifyOnScreen(LOCATOR_SYNC_CONTROLLER);
+        return this;
     }
 }

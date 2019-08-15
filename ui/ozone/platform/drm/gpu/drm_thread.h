@@ -107,7 +107,8 @@ class DrmThread : public base::Thread,
   void IsDeviceAtomic(gfx::AcceleratedWidget widget, bool* is_atomic);
 
   // ozone::mojom::DrmDevice
-  void CreateWindow(gfx::AcceleratedWidget widget) override;
+  void CreateWindow(gfx::AcceleratedWidget widget,
+                    const gfx::Rect& initial_bounds) override;
   void DestroyWindow(gfx::AcceleratedWidget widget) override;
   void SetWindowBounds(gfx::AcceleratedWidget widget,
                        const gfx::Rect& bounds) override;

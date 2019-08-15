@@ -100,7 +100,11 @@ class UI_BASE_EXPORT MenuModel {
 
   // Gets the icon for the item at the specified index, returning true if there
   // is an icon, false otherwise.
-  virtual bool GetIconAt(int index, gfx::Image* icon) = 0;
+  virtual bool GetIconAt(int index, gfx::Image* icon) const = 0;
+
+  // Gets the vector icon for the item at the specified index. At most one of
+  // GetIconAt() and GetVectorIconAt() should be used for a single menu index.
+  virtual const gfx::VectorIcon* GetVectorIconAt(int index) const;
 
   // Returns the model for a menu item with a line of buttons at |index|.
   virtual ButtonMenuItemModel* GetButtonMenuItemAt(int index) const = 0;
@@ -135,6 +139,9 @@ class UI_BASE_EXPORT MenuModel {
 
   // Gets the MenuModelDelegate.
   MenuModelDelegate* menu_model_delegate() { return menu_model_delegate_; }
+  const MenuModelDelegate* menu_model_delegate() const {
+    return menu_model_delegate_;
+  }
 
   // Retrieves the model and index that contains a specific command id. Returns
   // true if an item with the specified command id is found. |model| is inout,

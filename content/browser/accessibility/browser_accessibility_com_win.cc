@@ -25,7 +25,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_role_properties.h"
-#include "ui/accessibility/ax_text_utils.h"
 #include "ui/base/win/accessibility_ids_win.h"
 #include "ui/base/win/accessibility_misc_utils.h"
 #include "ui/base/win/atl_module.h"
@@ -356,8 +355,10 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_textAtOffset(
   if (offset == text_len && boundary_type != IA2_TEXT_BOUNDARY_LINE)
     return S_FALSE;
 
-  LONG start = FindIA2Boundary(boundary_type, offset, ui::BACKWARDS_DIRECTION);
-  LONG end = FindIA2Boundary(boundary_type, start, ui::FORWARDS_DIRECTION);
+  LONG start = FindIA2Boundary(boundary_type, offset,
+                               ui::AXTextBoundaryDirection::kBackwards);
+  LONG end = FindIA2Boundary(boundary_type, start,
+                             ui::AXTextBoundaryDirection::kForwards);
   if (end < offset)
     return S_FALSE;
 
@@ -395,8 +396,8 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_textBeforeOffset(
   if (boundary_type == IA2_TEXT_BOUNDARY_SENTENCE)
     return S_FALSE;
 
-  *start_offset =
-      FindIA2Boundary(boundary_type, offset, ui::BACKWARDS_DIRECTION);
+  *start_offset = FindIA2Boundary(boundary_type, offset,
+                                  ui::AXTextBoundaryDirection::kBackwards);
   *end_offset = offset;
   return get_text(*start_offset, *end_offset, text);
 }
@@ -431,7 +432,8 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_textAfterOffset(
     return S_FALSE;
 
   *start_offset = offset;
-  *end_offset = FindIA2Boundary(boundary_type, offset, ui::FORWARDS_DIRECTION);
+  *end_offset = FindIA2Boundary(boundary_type, offset,
+                                ui::AXTextBoundaryDirection::kForwards);
   return get_text(*start_offset, *end_offset, text);
 }
 
@@ -600,8 +602,10 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_attributes(
     return E_INVALIDARG;
 
   ComputeStylesIfNeeded();
-  *start_offset = FindStartOfStyle(offset, ui::BACKWARDS_DIRECTION);
-  *end_offset = FindStartOfStyle(offset, ui::FORWARDS_DIRECTION);
+  *start_offset =
+      FindStartOfStyle(offset, ui::AXTextBoundaryDirection::kBackwards);
+  *end_offset =
+      FindStartOfStyle(offset, ui::AXTextBoundaryDirection::kForwards);
 
   base::string16 attributes_str;
   const std::vector<base::string16>& attributes =
@@ -2110,7 +2114,7 @@ void BrowserAccessibilityComWin::SetIA2HypertextSelection(LONG start_offset,
 LONG BrowserAccessibilityComWin::FindIA2Boundary(
     IA2TextBoundaryType ia2_boundary,
     LONG start_offset,
-    ui::TextBoundaryDirection direction) {
+    ui::AXTextBoundaryDirection direction) {
   HandleSpecialTextOffset(&start_offset);
 
   // If the |start_offset| is equal to the location of the caret, then use the
@@ -2128,13 +2132,13 @@ LONG BrowserAccessibilityComWin::FindIA2Boundary(
 
 LONG BrowserAccessibilityComWin::FindStartOfStyle(
     LONG start_offset,
-    ui::TextBoundaryDirection direction) {
+    ui::AXTextBoundaryDirection direction) {
   LONG text_length = static_cast<LONG>(GetHypertext().length());
   DCHECK_GE(start_offset, 0);
   DCHECK_LE(start_offset, text_length);
 
   switch (direction) {
-    case ui::BACKWARDS_DIRECTION: {
+    case ui::AXTextBoundaryDirection::kBackwards: {
       if (offset_to_text_attributes().empty())
         return 0;
 
@@ -2142,7 +2146,7 @@ LONG BrowserAccessibilityComWin::FindStartOfStyle(
       --iterator;
       return static_cast<LONG>(iterator->first);
     }
-    case ui::FORWARDS_DIRECTION: {
+    case ui::AXTextBoundaryDirection::kForwards: {
       const auto iterator =
           offset_to_text_attributes().upper_bound(start_offset);
       if (iterator == offset_to_text_attributes().end())

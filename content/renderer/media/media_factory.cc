@@ -273,7 +273,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
     blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
     blink::WebContentDecryptionModule* initial_cdm,
     const blink::WebString& sink_id,
-    blink::WebLayerTreeView* layer_tree_view,
+    viz::FrameSinkId parent_frame_sink_id,
     const cc::LayerTreeSettings& settings) {
   blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
   blink::WebSecurityOrigin security_origin =
@@ -283,7 +283,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   if (!web_stream.IsNull())
     return CreateWebMediaPlayerForMediaStream(
         client, inspector_context, sink_id, security_origin, web_frame,
-        layer_tree_view, settings);
+        parent_frame_sink_id, settings);
 
   // If |source| was not a MediaStream, it must be a URL.
   // TODO(guidou): Fix this when support for other srcObject types is added.
@@ -366,7 +366,6 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter =
       CreateSubmitter(&video_frame_compositor_task_runner, settings);
 
-  DCHECK(layer_tree_view);
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner =
       render_thread->GetMediaThreadTaskRunner();
 
@@ -394,7 +393,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
           enable_instant_source_buffer_gc, embedded_media_experience_enabled,
           std::move(metrics_provider),
           base::BindOnce(&blink::WebSurfaceLayerBridge::Create,
-                         layer_tree_view),
+                         parent_frame_sink_id),
           RenderThreadImpl::current()->SharedMainThreadContextProvider(),
           GetVideoSurfaceLayerMode(),
           render_frame_->GetRenderFrameMediaPlaybackOptions()
@@ -552,7 +551,7 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
     const blink::WebString& sink_id,
     const blink::WebSecurityOrigin& security_origin,
     blink::WebLocalFrame* frame,
-    blink::WebLayerTreeView* layer_tree_view,
+    viz::FrameSinkId parent_frame_sink_id,
     const cc::LayerTreeSettings& settings) {
   RenderThreadImpl* const render_thread = RenderThreadImpl::current();
 
@@ -560,8 +559,6 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
       video_frame_compositor_task_runner;
   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter =
       CreateSubmitter(&video_frame_compositor_task_runner, settings);
-
-  DCHECK(layer_tree_view);
 
   std::unique_ptr<BatchingMediaLog::EventHandler> event_handler;
   if (base::FeatureList::IsEnabled(media::kMediaInspectorLogging)) {
@@ -586,7 +583,8 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
       render_thread->GetMediaThreadTaskRunner(),
       render_thread->GetWorkerTaskRunner(), render_thread->GetGpuFactories(),
       sink_id,
-      base::BindOnce(&blink::WebSurfaceLayerBridge::Create, layer_tree_view),
+      base::BindOnce(&blink::WebSurfaceLayerBridge::Create,
+                     parent_frame_sink_id),
       std::move(submitter), GetVideoSurfaceLayerMode());
 }
 

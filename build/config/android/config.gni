@@ -207,10 +207,6 @@ if (is_android || is_chromeos) {
     android_sdk_tools_bundle_aapt2_dir =
         "//third_party/android_build_tools/aapt2"
 
-    # Use R8 for Java optimization rather than any progaurd_jar_path provided
-    # for all targets. Proguard support may be dropped in the near future.
-    use_r8 = true
-
     # Checks that proguard flags have not changed (!is_java_debug only).
     check_android_configuration = false
 

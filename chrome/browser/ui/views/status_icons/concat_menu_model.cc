@@ -62,7 +62,7 @@ int ConcatMenuModel::GetGroupIdAt(int index) const {
   return GetterImpl(&ui::MenuModel::GetGroupIdAt, index);
 }
 
-bool ConcatMenuModel::GetIconAt(int index, gfx::Image* icon) {
+bool ConcatMenuModel::GetIconAt(int index, gfx::Image* icon) const {
   return GetterImpl(&ui::MenuModel::GetGroupIdAt, index);
 }
 

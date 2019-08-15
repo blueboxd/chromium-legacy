@@ -178,7 +178,7 @@ class JniClient : public ChromotingSession::Delegate {
 
   // Holds pointer for the UI thread.
   base::WeakPtr<JniClient> weak_ptr_;
-  base::WeakPtrFactory<JniClient> weak_factory_;
+  base::WeakPtrFactory<JniClient> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(JniClient);
 };

@@ -72,6 +72,10 @@ class MutatorHostClient {
   virtual void NotifyAnimationWorkletStateChange(
       AnimationWorkletMutationState state,
       ElementListType tree_type) = 0;
+
+  virtual void OnCustomPropertyMutated(ElementId element_id,
+                                       const std::string& custom_property_name,
+                                       float custom_property_value) = 0;
 };
 
 }  // namespace cc

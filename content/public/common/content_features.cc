@@ -435,6 +435,9 @@ const base::Feature kRenderDocumentForSubframe{
 const base::Feature kRenderingPipelineThrottling{
     "RenderingPipelineThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kRequestUnbufferedDispatch{
+    "RequestUnbufferedDispatch", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables resampling input events on main thread.
 const base::Feature kResamplingInputEvents{"ResamplingInputEvents",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

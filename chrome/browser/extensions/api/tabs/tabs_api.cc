@@ -507,7 +507,7 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
   if (!IsValidStateForWindowsCreateFunction(create_data))
     return RespondNow(Error(tabs_constants::kInvalidWindowStateError));
 
-  Browser::Type window_type = Browser::TYPE_TABBED;
+  Browser::Type window_type = Browser::TYPE_NORMAL;
 
   gfx::Rect window_bounds;
   bool focused = true;
@@ -531,13 +531,10 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
     }
 
     // Initialize default window bounds according to window type.
-    if (window_type == Browser::TYPE_TABBED ||
-        window_type == Browser::TYPE_POPUP) {
-      ui::WindowShowState ignored_show_state = ui::SHOW_STATE_DEFAULT;
-      WindowSizer::GetBrowserWindowBoundsAndShowState(
-          std::string(), gfx::Rect(), nullptr, &window_bounds,
-          &ignored_show_state);
-    }
+    ui::WindowShowState ignored_show_state = ui::SHOW_STATE_DEFAULT;
+    WindowSizer::GetBrowserWindowBoundsAndShowState(std::string(), gfx::Rect(),
+                                                    nullptr, &window_bounds,
+                                                    &ignored_show_state);
 
     // Any part of the bounds can optionally be set by the caller.
     if (create_data->left)
@@ -611,8 +608,7 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
   WebContents* contents = NULL;
   // Move the tab into the created window only if it's an empty popup or it's
   // a tabbed window.
-  if ((window_type == Browser::TYPE_POPUP && urls.empty()) ||
-      window_type == Browser::TYPE_TABBED) {
+  if (window_type == Browser::TYPE_NORMAL || urls.empty()) {
     if (source_tab_strip) {
       std::unique_ptr<content::WebContents> detached_tab =
           source_tab_strip->DetachWebContentsAt(tab_index);
@@ -624,7 +620,7 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
   }
   // Create a new tab if the created window is still empty. Don't create a new
   // tab when it is intended to create an empty popup.
-  if (!contents && urls.empty() && window_type != Browser::TYPE_POPUP) {
+  if (!contents && urls.empty() && window_type == Browser::TYPE_NORMAL) {
     chrome::NewTab(new_window);
   }
   chrome::SelectNumberedTab(new_window, 0, {TabStripModel::GestureType::kNone});
@@ -1467,7 +1463,9 @@ bool TabsMoveFunction::MoveTab(int tab_id,
       return false;
     }
 
-    if (!target_browser->is_type_tabbed()) {
+    // TODO(crbug.com/990158): Rather than calling is_type_normal(), should
+    // this call SupportsWindowFeature(Browser::FEATURE_TABSTRIP)?
+    if (!target_browser->is_type_normal()) {
       *error = tabs_constants::kCanOnlyMoveTabsWithinNormalWindowsError;
       return false;
     }

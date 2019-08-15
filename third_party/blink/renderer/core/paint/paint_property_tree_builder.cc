@@ -101,6 +101,13 @@ PaintPropertyChangeType VisualViewportPaintPropertyTreeBuilder::Update(
   context.absolute_position.scroll = visual_viewport.GetScrollNode();
   context.fixed_position.scroll = visual_viewport.GetScrollNode();
 
+  if (property_changed >= PaintPropertyChangeType::kNodeAddedOrRemoved) {
+    // Force piercing subtree update for the worst case (scroll node added/
+    // removed). Not a big deal for performance because this is rare.
+    full_context.force_subtree_update_reasons |=
+        PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationPiercing;
+  }
+
 #if DCHECK_IS_ON()
   paint_property_tree_printer::UpdateDebugNames(visual_viewport);
 #endif
@@ -3165,9 +3172,9 @@ bool PaintPropertyTreeBuilder::UpdateFragments() {
        NeedsStickyTranslation(object_) ||
        NeedsTransform(object_, context_.direct_compositing_reasons) ||
        // Note: It is important to use MayNeedClipPathClip() instead of
-       // NeedsClipPathClip() which requires the clip path cache to be resolved,
-       // but the clip path cache invalidation must delayed until the paint
-       // offset and border box has been computed.
+       // NeedsClipPathClip() which requires the clip path cache to be
+       // resolved, but the clip path cache invalidation must delayed until
+       // the paint offset and border box has been computed.
        MayNeedClipPathClip(object_) ||
        NeedsEffect(object_, context_.direct_compositing_reasons) ||
        NeedsTransformForNonRootSVG(object_) ||

@@ -72,7 +72,8 @@ void InspectorApplicationCacheAgent::UpdateApplicationCacheStatus(
   if (!document_loader)
     return;
 
-  ApplicationCacheHost* host = document_loader->GetApplicationCacheHost();
+  ApplicationCacheHostForFrame* host =
+      document_loader->GetApplicationCacheHost();
   mojom::AppCacheStatus status = host->GetStatus();
   ApplicationCacheHost::CacheInfo info = host->ApplicationCacheInfo();
 
@@ -100,7 +101,8 @@ Response InspectorApplicationCacheAgent::getFramesWithManifests(
     if (!document_loader)
       continue;
 
-    ApplicationCacheHost* host = document_loader->GetApplicationCacheHost();
+    ApplicationCacheHostForFrame* host =
+        document_loader->GetApplicationCacheHost();
     ApplicationCacheHost::CacheInfo info = host->ApplicationCacheInfo();
     String manifest_url = info.manifest_.GetString();
     if (!manifest_url.IsEmpty()) {
@@ -153,7 +155,8 @@ Response InspectorApplicationCacheAgent::getApplicationCacheForFrame(
   if (!response.isSuccess())
     return response;
 
-  ApplicationCacheHost* host = document_loader->GetApplicationCacheHost();
+  ApplicationCacheHostForFrame* host =
+      document_loader->GetApplicationCacheHost();
   ApplicationCacheHost::CacheInfo info = host->ApplicationCacheInfo();
 
   Vector<mojom::blink::AppCacheResourceInfo> resources;

@@ -14,7 +14,7 @@ import "url/mojom/origin.mojom";
 // should probably move to some other directory.
 interface StoragePartitionService {
   OpenLocalStorage(url.mojom.Origin origin,
-                   StorageArea& area);
+                   pending_receiver<StorageArea> area);
   OpenSessionStorage(string namespace_id,
-                     SessionStorageNamespace& session_namespace);
+                     pending_receiver<SessionStorageNamespace> session_namespace);
 };

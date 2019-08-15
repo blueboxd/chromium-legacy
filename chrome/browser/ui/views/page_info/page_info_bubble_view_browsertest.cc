@@ -468,7 +468,11 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   safe_browsing::ReusedPasswordAccountType reused_password_account_type;
   reused_password_account_type.set_account_type(
       safe_browsing::ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
-  service->ShowModalWarning(contents, "token", reused_password_account_type);
+
+  service->ShowModalWarning(
+      contents, safe_browsing::RequestOutcome::UNKNOWN,
+      safe_browsing::LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+      "unused_token", reused_password_account_type);
 
   OpenPageInfoBubble(browser());
   views::View* change_password_button = GetView(

@@ -50,6 +50,7 @@ class AudioOutputRedirector : public AudioOutputRedirectorToken {
   ~AudioOutputRedirector();
 
   int order() const { return config_.order; }
+  int num_output_channels() const { return config_.num_output_channels; }
 
   int64_t extra_delay_microseconds() const {
     return config_.extra_delay_microseconds;

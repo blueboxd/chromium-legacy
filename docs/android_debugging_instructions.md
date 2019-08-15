@@ -205,7 +205,10 @@ file as follows:
    `tools/swarming_client/isolateserver.py` script to download the mapping
    file if it's too big. The viewer will provide instructions for this.
 
-Build the `java_deobfuscate` tool:
+**Googlers Only**: For official build mapping files, see
+[go/chromejavadeobfuscation](https://goto.google.com/chromejavadeobfuscation).
+
+Once you have a .mapping file, build the `java_deobfuscate` tool:
 
 ```shell
 ninja -C out/Default java_deobfuscate

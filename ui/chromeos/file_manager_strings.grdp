@@ -1166,12 +1166,6 @@
   <message name="IDS_FILE_BROWSER_NO_TASK_FOR_CRX" desc="Message shown when a user tries to open a *.crx file, which we don't handle in the Files app.">
     We're constantly looking for ways to make your browsing safer. Previously, any website could prompt you to add an extension into your browser. In the latest versions of Google Chrome, you must explicitly tell Chrome that you want to install these extensions by adding them through the Extensions page. <ph name="BEGIN_LINK">&lt;a target='_blank' href='https://support.google.com/chrome_webstore/answer/2664769?p=crx_warning&amp;rd=1'&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
-  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_CROSTINI_TITLE" desc="Message title shown when a user tries to use a crostini app to open a file which cannot be shared with the crostini container (e.g. in Play or USB).  This message will be removed once we support this action.">
-    Unable to open with <ph name="APP_NAME">$1<ex>Visual Studio Code</ex></ph>
-  </message>
-  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_CROSTINI" desc="Message shown when a user tries to use a crostini app to open a file which cannot be shared with the crostini container (e.g. in Play or USB).  This message will be removed once we support this action.">
-    To open files with <ph name="APP_NAME">$1<ex>Visual Studio Code</ex></ph>, first copy to Linux files folder.
-  </message>
   <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_CROSTINI_TITLE" desc="Message title shown when a user shares the root of a volume such as 'My files' with the crostini container.">
     Share folder with Linux
   </message>

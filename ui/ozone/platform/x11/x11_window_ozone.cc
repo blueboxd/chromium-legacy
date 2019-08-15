@@ -242,8 +242,8 @@ gfx::Rect X11WindowOzone::GetOutterBounds() const {
 }
 
 void X11WindowOzone::PrepareForShutdown() {
-  DCHECK(X11EventSourceLibevent::GetInstance());
-  X11EventSourceLibevent::GetInstance()->RemoveXEventDispatcher(this);
+  DCHECK(X11EventSource::GetInstance());
+  X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
 }
 
 void X11WindowOzone::SetCursor(PlatformCursor cursor) {
@@ -330,8 +330,8 @@ void X11WindowOzone::OnXWindowCreated() {
 
   window_manager_->AddWindow(this);
 
-  DCHECK(X11EventSourceLibevent::GetInstance());
-  X11EventSourceLibevent::GetInstance()->AddXEventDispatcher(this);
+  DCHECK(X11EventSource::GetInstance());
+  X11EventSource::GetInstance()->AddXEventDispatcher(this);
 }
 
 void X11WindowOzone::OnXWindowStateChanged() {

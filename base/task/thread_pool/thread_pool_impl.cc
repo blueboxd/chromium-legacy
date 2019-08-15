@@ -27,7 +27,6 @@
 #include "base/task/thread_pool/task_source.h"
 #include "base/task/thread_pool/thread_group_impl.h"
 #include "base/threading/platform_thread.h"
-#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 
 #if defined(OS_WIN)
@@ -64,14 +63,11 @@ bool HasDisableBestEffortTasksSwitch() {
 
 ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label)
     : ThreadPoolImpl(histogram_label,
-                     std::make_unique<TaskTrackerImpl>(histogram_label),
-                     DefaultTickClock::GetInstance()) {}
+                     std::make_unique<TaskTrackerImpl>(histogram_label)) {}
 
 ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label,
-                               std::unique_ptr<TaskTrackerImpl> task_tracker,
-                               const TickClock* tick_clock)
-    : thread_pool_clock_(tick_clock),
-      task_tracker_(std::move(task_tracker)),
+                               std::unique_ptr<TaskTrackerImpl> task_tracker)
+    : task_tracker_(std::move(task_tracker)),
       service_thread_(std::make_unique<ServiceThread>(
           task_tracker_.get(),
           BindRepeating(&ThreadPoolImpl::ReportHeartbeatMetrics,
@@ -269,7 +265,7 @@ ThreadPoolImpl::CreateUpdateableSequencedTaskRunner(const TaskTraits& traits) {
 
 Optional<TimeTicks> ThreadPoolImpl::NextScheduledRunTimeForTesting() const {
   if (task_tracker_->HasIncompleteTaskSourcesForTesting())
-    return ThreadPoolClock::Now();
+    return TimeTicks::Now();
   return delayed_task_manager_.NextScheduledRunTime();
 }
 

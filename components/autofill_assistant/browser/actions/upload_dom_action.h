@@ -29,7 +29,7 @@ class UploadDomAction : public Action {
                       const ClientStatus& status,
                       const std::string& outer_html);
 
-  base::WeakPtrFactory<UploadDomAction> weak_ptr_factory_;
+  base::WeakPtrFactory<UploadDomAction> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UploadDomAction);
 };

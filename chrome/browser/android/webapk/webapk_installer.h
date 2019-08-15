@@ -243,7 +243,7 @@ class WebApkInstaller {
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
   // Used to get |weak_ptr_|.
-  base::WeakPtrFactory<WebApkInstaller> weak_ptr_factory_;
+  base::WeakPtrFactory<WebApkInstaller> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebApkInstaller);
 };

@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "content/browser/indexed_db/fake_indexed_db_metadata_coding.h"
+
+#include <utility>
+
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
 

@@ -18,8 +18,7 @@ ParentOutputSurface::ParentOutputSurface(
     scoped_refptr<AwGLSurface> gl_surface,
     scoped_refptr<AwRenderThreadContextProvider> context_provider)
     : viz::OutputSurface(std::move(context_provider)),
-      gl_surface_(std::move(gl_surface)),
-      weak_ptr_factory_(this) {}
+      gl_surface_(std::move(gl_surface)) {}
 
 ParentOutputSurface::~ParentOutputSurface() {
 }

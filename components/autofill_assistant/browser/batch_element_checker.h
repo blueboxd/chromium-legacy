@@ -90,7 +90,7 @@ class BatchElementChecker {
 
   std::vector<base::OnceCallback<void()>> all_done_;
 
-  base::WeakPtrFactory<BatchElementChecker> weak_ptr_factory_;
+  base::WeakPtrFactory<BatchElementChecker> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BatchElementChecker);
 };

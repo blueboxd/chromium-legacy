@@ -104,7 +104,7 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
   std::unique_ptr<ExploreSitesFetcher> explore_sites_fetcher_;
   std::unique_ptr<HistoryStatisticsReporter> history_statistics_reporter_;
   std::vector<BooleanCallback> update_catalog_callbacks_;
-  base::WeakPtrFactory<ExploreSitesServiceImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ExploreSitesServiceImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExploreSitesServiceImpl);
 };

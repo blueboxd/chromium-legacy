@@ -159,6 +159,7 @@ class VIEWS_EXPORT MenuItemView : public View {
                               const base::string16& minor_text,
                               const gfx::VectorIcon* minor_icon,
                               const gfx::ImageSkia& icon,
+                              const gfx::VectorIcon* vector_icon,
                               Type type,
                               ui::MenuSeparatorType separator_style);
 
@@ -283,10 +284,14 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Sets the icon of this menu item.
   void SetIcon(const gfx::ImageSkia& icon);
 
+  // Sets the icon as a vector icon which gets its color from the NativeTheme.
+  void SetIcon(const gfx::VectorIcon* icon);
+
   // Sets the view used to render the icon. This clobbers any icon set via
   // SetIcon(). MenuItemView takes ownership of |icon_view|.
-  void SetIconView(View* icon_view);
-  View* icon_view() { return icon_view_; }
+  void SetIconView(ImageView* icon_view);
+
+  void UpdateIconViewFromVectorIconAndTheme();
 
   // Sets the command id of this menu item.
   void SetCommand(int command) { command_ = command; }
@@ -304,6 +309,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   // from GetPreferredSize().width() if the item has a child view with flexible
   // dimensions.
   int GetHeightForWidth(int width) const override;
+
+  void OnThemeChanged() override;
 
   // Returns the bounds of the submenu part of the ACTIONABLE_SUBMENU.
   gfx::Rect GetSubmenuAreaOfActionableSubmenu() const;
@@ -553,6 +560,10 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Minor icon.
   const gfx::VectorIcon* minor_icon_ = nullptr;
 
+  // The icon used for |icon_view_| when a vector icon has been set instead of a
+  // gfx::Image.
+  const gfx::VectorIcon* vector_icon_ = nullptr;
+
   // Does the title have a mnemonic? Only useful on the root menu item.
   bool has_mnemonics_;
 
@@ -564,7 +575,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   bool has_icons_;
 
   // Pointer to a view with a menu icon.
-  View* icon_view_;
+  ImageView* icon_view_;
 
   // The tooltip to show on hover for this menu item.
   base::string16 tooltip_;

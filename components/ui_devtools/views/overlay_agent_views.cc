@@ -410,14 +410,15 @@ protocol::Response OverlayAgentViews::hideHighlight() {
 
 void OverlayAgentViews::ShowDistancesInHighlightOverlay(int pinned_id,
                                                         int element_id) {
+  UIElement* element_r1 = dom_agent()->GetElementFromNodeId(pinned_id);
+  UIElement* element_r2 = dom_agent()->GetElementFromNodeId(element_id);
+  if (!element_r1 || !element_r2)
+    return;
+
   const std::pair<gfx::NativeWindow, gfx::Rect> pair_r2(
-      dom_agent()
-          ->GetElementFromNodeId(element_id)
-          ->GetNodeWindowAndScreenBounds());
+      element_r2->GetNodeWindowAndScreenBounds());
   const std::pair<gfx::NativeWindow, gfx::Rect> pair_r1(
-      dom_agent()
-          ->GetElementFromNodeId(pinned_id)
-          ->GetNodeWindowAndScreenBounds());
+      element_r1->GetNodeWindowAndScreenBounds());
 #if defined(OS_MACOSX)
   // TODO(lgrey): Explain this
   if (pair_r1.first != pair_r2.first) {

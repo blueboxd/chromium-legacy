@@ -17,17 +17,13 @@ namespace media_message_center {
 
 class MediaControlsProgressViewTest : public views::ViewsTestBase {
  public:
-  MediaControlsProgressViewTest() = default;
+  MediaControlsProgressViewTest()
+      : views::ViewsTestBase(
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
   ~MediaControlsProgressViewTest() override = default;
 
   // ViewsTestBase:
   void SetUp() override {
-    // Setup a mocked time environment.
-    scoped_task_environment_ =
-        new ScopedTaskEnvironment(ScopedTaskEnvironment::MainThreadType::UI,
-                                  ScopedTaskEnvironment::TimeSource::MOCK_TIME);
-    set_scoped_task_environment(base::WrapUnique(scoped_task_environment_));
-
     ViewsTestBase::SetUp();
 
     views::Widget::InitParams params =
@@ -51,7 +47,6 @@ class MediaControlsProgressViewTest : public views::ViewsTestBase {
 
  protected:
   MediaControlsProgressView* progress_view_ = nullptr;
-  ScopedTaskEnvironment* scoped_task_environment_ = nullptr;
 
  private:
   views::Widget widget_;

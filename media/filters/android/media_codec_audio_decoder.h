@@ -210,7 +210,7 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder,
   // an encrypted stream.
   JavaObjectPtr media_crypto_;
 
-  base::WeakPtrFactory<MediaCodecAudioDecoder> weak_factory_;
+  base::WeakPtrFactory<MediaCodecAudioDecoder> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaCodecAudioDecoder);
 };

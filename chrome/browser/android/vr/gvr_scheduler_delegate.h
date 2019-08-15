@@ -244,7 +244,7 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
   // rendering, as reported from the Renderer via mojo.
   device::SlidingTimeDeltaAverage webvr_js_wait_time_;
 
-  base::WeakPtrFactory<GvrSchedulerDelegate> weak_ptr_factory_;
+  base::WeakPtrFactory<GvrSchedulerDelegate> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GvrSchedulerDelegate);
 };

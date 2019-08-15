@@ -62,8 +62,6 @@ class WebRuntimeFeatures {
       const std::string& name,
       bool enable);
 
-  BLINK_PLATFORM_EXPORT static bool IsBlinkGenPropertyTreesEnabled();
-
   BLINK_PLATFORM_EXPORT static bool IsFractionalScrollOffsetsEnabled();
 
   BLINK_PLATFORM_EXPORT static void EnableCompositedSelectionUpdate(bool);
@@ -73,8 +71,6 @@ class WebRuntimeFeatures {
 
   BLINK_PLATFORM_EXPORT static void EnableOriginTrials(bool);
   BLINK_PLATFORM_EXPORT static bool IsOriginTrialsEnabled();
-
-  BLINK_PLATFORM_EXPORT static bool IsCompositeAfterPaintEnabled();
 
   BLINK_PLATFORM_EXPORT static void EnableAccelerated2dCanvas(bool);
   BLINK_PLATFORM_EXPORT static void EnableAccessibilityObjectModel(bool);

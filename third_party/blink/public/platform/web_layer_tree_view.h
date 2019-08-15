@@ -46,9 +46,6 @@ class WebLayerTreeView {
  public:
 
   virtual ~WebLayerTreeView() = default;
-
-  // Returns the FrameSinkId of the widget associated with this layer tree view.
-  virtual viz::FrameSinkId GetFrameSinkId() { return viz::FrameSinkId(); }
 };
 
 }  // namespace blink

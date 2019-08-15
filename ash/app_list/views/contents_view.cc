@@ -622,6 +622,10 @@ void ContentsView::FadeOutOnClose(base::TimeDelta animation_duration) {
 }
 
 void ContentsView::FadeInOnOpen(base::TimeDelta animation_duration) {
+  if (layer()->opacity() == 1.0f &&
+      GetSearchBoxView()->layer()->opacity() == 1.0f) {
+    return;
+  }
   DoAnimation(animation_duration, layer(), 1.0f);
   DoAnimation(animation_duration, GetSearchBoxView()->layer(), 1.0f);
 }

@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
+#include "base/strings/string16.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"

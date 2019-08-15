@@ -48,7 +48,12 @@ void MetricsProvider::ProvideIndependentMetrics(
 }
 
 void MetricsProvider::ProvideSystemProfileMetrics(
+    SystemProfileProto* system_profile_proto) {}
+
+void MetricsProvider::ProvideSystemProfileMetricsWithLogCreationTime(
+    base::TimeTicks log_creation_time,
     SystemProfileProto* system_profile_proto) {
+  ProvideSystemProfileMetrics(system_profile_proto);
 }
 
 bool MetricsProvider::HasPreviousSessionData() {

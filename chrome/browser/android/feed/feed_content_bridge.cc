@@ -57,7 +57,7 @@ static jlong JNI_FeedContentBridge_Init(
 }
 
 FeedContentBridge::FeedContentBridge(FeedContentDatabase* feed_content_database)
-    : feed_content_database_(feed_content_database), weak_ptr_factory_(this) {}
+    : feed_content_database_(feed_content_database) {}
 
 FeedContentBridge::~FeedContentBridge() = default;
 

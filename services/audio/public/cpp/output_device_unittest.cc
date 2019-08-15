@@ -143,14 +143,7 @@ class AudioServiceOutputDeviceTest : public testing::Test {
       : task_env_(base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
                   base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
                       QUEUED) {
-    service_manager::mojom::ConnectorRequest connector_request;
-    connector_ = service_manager::Connector::Create(&connector_request);
     stream_factory_ = std::make_unique<FakeOutputStreamFactory>();
-    connector_->OverrideBinderForTesting(
-        service_manager::ServiceFilter::ByName(audio::mojom::kServiceName),
-        audio::mojom::StreamFactory::Name_,
-        base::BindRepeating(&AudioServiceOutputDeviceTest::BindStreamFactory,
-                            base::Unretained(this)));
   }
 
   ~AudioServiceOutputDeviceTest() override {
@@ -160,22 +153,20 @@ class AudioServiceOutputDeviceTest : public testing::Test {
     task_env_.RunUntilIdle();
   }
 
+  mojo::PendingRemote<audio::mojom::StreamFactory> MakeFactoryRemote() {
+    return stream_factory_->receiver_.BindNewPipeAndPassRemote();
+  }
+
   base::test::ScopedTaskEnvironment task_env_;
-  std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<FakeOutputStreamFactory> stream_factory_;
 
  private:
-  void BindStreamFactory(mojo::ScopedMessagePipeHandle factory_receiver) {
-    stream_factory_->receiver_.Bind(
-        mojo::PendingReceiver<audio::mojom::StreamFactory>(
-            std::move(factory_receiver)));
-  }
   DISALLOW_COPY_AND_ASSIGN(AudioServiceOutputDeviceTest);
 };
 
 TEST_F(AudioServiceOutputDeviceTest, CreatePlayPause) {
   auto params(media::AudioParameters::UnavailableDeviceParams());
-  OutputDevice output_device(std::move(connector_), params, nullptr, kDeviceId);
+  OutputDevice output_device(MakeFactoryRemote(), params, nullptr, kDeviceId);
 
   constexpr double volume = 0.42;
   EXPECT_CALL(stream_factory_->stream_, SetVolume(volume));
@@ -199,8 +190,8 @@ TEST_F(AudioServiceOutputDeviceTest, MAYBE_VerifyDataFlow) {
   params.set_frames_per_buffer(kFrames);
   ASSERT_EQ(2, params.channels());
   DataFlowTestEnvironment env(params);
-  OutputDevice output_device(std::move(connector_), params,
-                             &env.render_callback, kDeviceId);
+  OutputDevice output_device(MakeFactoryRemote(), params, &env.render_callback,
+                             kDeviceId);
   EXPECT_CALL(stream_factory_->stream_, Play());
   output_device.Play();
   task_env_.RunUntilIdle();

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.m.js';
-import {isVisible} from 'chrome://test/extensions/test_util.m.js';
+import {isVisible} from 'chrome://test/test_util.m.js';
 
 suite('cr-view-manager-v3', function() {
   let viewManager;

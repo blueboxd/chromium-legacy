@@ -50,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
       "</div>"
       "<button id='button'>Button</button>";
   GURL url(url_str);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   // Simulate a condition where the RFH can't create a
   // BrowserAccessibilityManager - like if there's no view.
@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
       "data:text/html,"
       "<button id='button'>Button</button>";
   GURL url(url_str);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   RenderFrameHostImpl* frame = static_cast<RenderFrameHostImpl*>(
       shell()->web_contents()->GetMainFrame());
 

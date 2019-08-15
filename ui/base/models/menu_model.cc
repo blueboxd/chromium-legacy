@@ -62,6 +62,10 @@ const gfx::FontList* MenuModel::GetLabelFontListAt(int index) const {
   return NULL;
 }
 
+const gfx::VectorIcon* MenuModel::GetVectorIconAt(int index) const {
+  return nullptr;
+}
+
 // Default implementation ignores the event flags.
 void MenuModel::ActivatedAt(int index, int event_flags) {
   ActivatedAt(index);

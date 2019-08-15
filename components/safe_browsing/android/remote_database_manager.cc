@@ -59,17 +59,14 @@ class RemoteSafeBrowsingDatabaseManager::ClientRequest {
   RemoteSafeBrowsingDatabaseManager* db_manager_;
   GURL url_;
   base::ElapsedTimer timer_;
-  base::WeakPtrFactory<ClientRequest> weak_factory_;
+  base::WeakPtrFactory<ClientRequest> weak_factory_{this};
 };
 
 RemoteSafeBrowsingDatabaseManager::ClientRequest::ClientRequest(
     Client* client,
     RemoteSafeBrowsingDatabaseManager* db_manager,
     const GURL& url)
-    : client_(client),
-      db_manager_(db_manager),
-      url_(url),
-      weak_factory_(this) {}
+    : client_(client), db_manager_(db_manager), url_(url) {}
 
 // Static
 void RemoteSafeBrowsingDatabaseManager::ClientRequest::OnRequestDoneWeak(

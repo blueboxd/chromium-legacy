@@ -74,7 +74,7 @@ class ContentHashWaiter {
     }
 
     result_ = std::make_unique<ContentHashFetcherResult>();
-    result_->extension_id = content_hash->extension_key().extension_id;
+    result_->extension_id = content_hash->extension_id();
     result_->success = content_hash->succeeded();
     result_->was_cancelled = was_cancelled;
     result_->mismatch_paths = content_hash->hash_mismatch_unix_paths();

@@ -109,7 +109,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   // Add child layers. If the child is already parented, it will be removed from
   // its old parent.
   void AddChild(GraphicsLayer*);
-  void AddChildBelow(GraphicsLayer*, GraphicsLayer* sibling);
 
   void RemoveAllChildren();
   void RemoveFromParent();
@@ -121,7 +120,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   // graphics layer (so either zero or negative).
   IntSize OffsetFromLayoutObject() const { return offset_from_layout_object_; }
   void SetOffsetFromLayoutObject(const IntSize&);
-  LayoutSize OffsetFromLayoutObjectWithSubpixelAccumulation() const;
 
   // The position of the layer (the location of its top-left corner in its
   // parent).
@@ -259,7 +257,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   PaintController& GetPaintController() const;
 
   void SetElementId(const CompositorElementId&);
-  CompositorElementId GetElementId() const;
 
   // DisplayItemClient methods
   String DebugName() const final { return client_.DebugName(this); }

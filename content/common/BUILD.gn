@@ -435,6 +435,13 @@ source_set("common") {
     sources += [ "font_list_fuchsia.cc" ]
     deps += [ "//third_party/fuchsia-sdk/sdk:fdio" ]
   }
+
+  if (use_clang_coverage) {
+    sources += [
+      "coverage_utils.cc",
+      "coverage_utils.h",
+    ]
+  }
 }
 
 # See comment at the top of //content/BUILD.gn for how this works.
@@ -494,6 +501,9 @@ mojom("mojo_bindings") {
   }
   if (is_linux || is_chromeos) {
     enabled_features += [ "supports_thread_priorities" ]
+  }
+  if (use_clang_coverage) {
+    enabled_features += [ "clang_coverage" ]
   }
 
   import_dirs = [ "//mojo/services" ]

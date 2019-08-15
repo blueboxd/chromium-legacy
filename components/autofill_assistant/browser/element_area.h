@@ -139,7 +139,7 @@ class ElementArea {
                                const std::vector<RectF>& restricted_area)>
       on_update_;
 
-  base::WeakPtrFactory<ElementArea> weak_ptr_factory_;
+  base::WeakPtrFactory<ElementArea> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ElementArea);
 };

@@ -152,6 +152,10 @@ class CC_EXPORT TextureLayer : public Layer, SharedBitmapIdRegistrar {
   // at draw time. Defaults to false.
   void SetBlendBackgroundColor(bool blend);
 
+  // Sets whether we need to ensure that Texture is opaque before using it.
+  // This will blend texture with black color. Defaults to false.
+  void SetForceTextureToOpaque(bool opaque);
+
   // Code path for plugins which supply their own mailbox.
   void SetTransferableResource(
       const viz::TransferableResource& resource,
@@ -207,6 +211,7 @@ class CC_EXPORT TextureLayer : public Layer, SharedBitmapIdRegistrar {
   float vertex_opacity_[4] = {1.f, 1.f, 1.f, 1.f};
   bool premultiplied_alpha_ = true;
   bool blend_background_color_ = false;
+  bool force_texture_to_opaque_ = false;
 
   std::unique_ptr<TransferableResourceHolder::MainThreadReference> holder_ref_;
   bool needs_set_resource_ = false;

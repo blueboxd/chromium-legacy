@@ -782,6 +782,9 @@
       'filepath': 'chrome/browser/ui/webui/chromeos/|'\
                   'chrome/browser/resources/chromeos/',
     },
+    'chromeos_wifi_sync': {
+      'filepath': 'chromeos/components/sync_wifi/',
+    },
     'chromevox': {
       'filepath': 'chromevox|spoken_feedback',
     },
@@ -2233,6 +2236,10 @@
                      'stevenjb+watch-network@chromium.org'],
     'chromeos_timezone': ['alemate+watch@chromium.org'],
     'chromeos_webui': ['alemate+watch@chromium.org'],
+    'chromeos_wifi_sync': ['jhawkins+watch@chromium.org',
+                           'jonmann+watch@chromium.org',
+                           'khorimoto+watch@chromium.org',
+                           'stevenjb+watch@chromium.org'],
     'chromevox': ['anastasi+watch@google.com'],
     'clang_update': ['dcheng@chromium.org',
                      'dmikurube+clang@chromium.org',

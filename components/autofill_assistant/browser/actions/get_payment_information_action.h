@@ -58,7 +58,7 @@ class GetPaymentInformationAction
   bool personal_data_changed_ = false;
   bool action_successful_ = false;
   ProcessActionCallback callback_;
-  base::WeakPtrFactory<GetPaymentInformationAction> weak_ptr_factory_;
+  base::WeakPtrFactory<GetPaymentInformationAction> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GetPaymentInformationAction);
 };

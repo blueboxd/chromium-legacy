@@ -50,6 +50,14 @@ enum class AXTextBoundary {
   kWordStartOrEnd,
 };
 
+// Specifies the direction to search for a text boundary.
+enum class AXTextBoundaryDirection {
+  // Search forward for the next boundary past a given position.
+  kForwards,
+  // Search backward for the previous boundary before a given position.
+  kBackwards
+};
+
 // Produces a string representation of AXTextBoundary.
 AX_EXPORT std::string ToString(const AXTextBoundary boundary);
 AX_EXPORT std::ostream& operator<<(std::ostream& stream,

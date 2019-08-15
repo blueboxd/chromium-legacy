@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -26,11 +27,14 @@ namespace device {
 class TestWakeLockProvider : public mojom::WakeLockProvider,
                              public service_manager::Service {
  public:
+  TestWakeLockProvider();
   explicit TestWakeLockProvider(service_manager::mojom::ServiceRequest request);
   ~TestWakeLockProvider() override;
 
   // For internal use only.
   class TestWakeLock;
+
+  void BindReceiver(mojo::PendingReceiver<mojom::WakeLockProvider> receiver);
 
   // mojom::WakeLockProvider:
   void GetWakeLockContextForID(
@@ -66,7 +70,7 @@ class TestWakeLockProvider : public mojom::WakeLockProvider,
   // Called by a wake lock when the lock is canceled for the last time.
   void OnWakeLockDeactivated(mojom::WakeLockType type);
 
-  service_manager::ServiceBinding service_binding_;
+  service_manager::ServiceBinding service_binding_{this};
 
   mojo::BindingSet<mojom::WakeLockProvider> bindings_;
 

@@ -65,7 +65,7 @@ class ExtendedAttribute(object):
                 and self.syntactic_form == other.syntactic_form)
 
     def __ne__(self, other):
-        return not self.__eq__(other)
+        return not self == other
 
     def __hash__(self):
         return hash((self._key, self._values, self._arguments))
@@ -191,7 +191,7 @@ class ExtendedAttributes(object):
         return True
 
     def __ne__(self, other):
-        return not self.__eq__(other)
+        return not self == other
 
     __hash__ = None
 

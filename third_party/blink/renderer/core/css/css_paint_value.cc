@@ -92,13 +92,21 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
   // and defer the actual JavaScript call until much later (during cc Raster).
   if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
     if (paint_off_thread_) {
+      // It is not necessary for a LayoutObject to always have RareData which
+      // contains the ElementId. If this |layout_object| doesn't have an
+      // ElementId, then create one for it.
+      layout_object.GetMutableForPainting().EnsureId();
+
       Vector<CSSPropertyID> native_properties =
           generator_->NativeInvalidationProperties();
       Vector<AtomicString> custom_properties =
           generator_->CustomInvalidationProperties();
       float zoom = layout_object.StyleRef().EffectiveZoom();
+      std::vector<std::pair<std::string, CompositorElementId>>
+          input_property_keys;
       auto style_data = PaintWorkletStylePropertyMap::BuildCrossThreadData(
-          document, style, native_properties, custom_properties);
+          document, layout_object.UniqueId(), style, native_properties,
+          custom_properties, input_property_keys);
       paint_off_thread_ = style_data.has_value();
       if (paint_off_thread_) {
         Vector<std::unique_ptr<CrossThreadStyleValue>>
@@ -108,7 +116,8 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
             base::MakeRefCounted<PaintWorkletInput>(
                 GetName(), target_size, zoom, device_scale_factor,
                 generator_->WorkletId(), std::move(style_data.value()),
-                std::move(cross_thread_input_arguments));
+                std::move(cross_thread_input_arguments),
+                std::move(input_property_keys));
         return PaintWorkletDeferredImage::Create(std::move(input), target_size);
       }
     }

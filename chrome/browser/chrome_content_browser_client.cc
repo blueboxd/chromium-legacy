@@ -202,8 +202,8 @@
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/data_reduction_proxy/content/common/data_reduction_proxy_url_loader_throttle.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -2697,13 +2697,16 @@ std::unique_ptr<net::ClientCertIdentity> AutoSelectCertificate(
 }
 
 void AddDataReductionProxyBinding(
-    content::ResourceContext* resource_context,
+    content::BrowserContext* browser_context,
     data_reduction_proxy::mojom::DataReductionProxyRequest request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  auto* io_data = ProfileIOData::FromResourceContext(resource_context);
-  if (io_data && io_data->data_reduction_proxy_io_data()) {
-    io_data->data_reduction_proxy_io_data()->Clone(std::move(request));
-  }
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* drp_settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+          browser_context);
+  if (!drp_settings)
+    return;
+
+  drp_settings->data_reduction_proxy_service()->Clone(std::move(request));
 }
 
 }  // namespace
@@ -3664,9 +3667,10 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
 #endif
 
   if (data_reduction_proxy::params::IsEnabledWithNetworkService()) {
-    registry->AddInterface(base::BindRepeating(
-        &AddDataReductionProxyBinding,
-        render_process_host->GetBrowserContext()->GetResourceContext()));
+    registry->AddInterface(
+        base::BindRepeating(&AddDataReductionProxyBinding,
+                            render_process_host->GetBrowserContext()),
+        ui_task_runner);
   }
 
 #if defined(OS_WIN)
@@ -4352,7 +4356,7 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
 
 #if !defined(OS_ANDROID)
   frame_interfaces_parameterized_->AddInterface(
-      base::BindRepeating(&badging::BadgeManager::BindRequest));
+      base::BindRepeating(&badging::BadgeManager::BindBadgeForRequest));
 #endif
 
   frame_interfaces_parameterized_->AddInterface(
@@ -4464,7 +4468,9 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
           new data_reduction_proxy::DataReductionProxyThrottleManager(
               drp_settings->data_reduction_proxy_service(),
               data_reduction_proxy::DataReductionProxyThrottleManager::
-                  CreateConfig(drp_settings->proxies_for_http())),
+                  CreateConfig(drp_settings->data_reduction_proxy_service()
+                                   ->config()
+                                   ->GetProxiesForHttp())),
           base::OnTaskRunnerDeleter(base::SequencedTaskRunnerHandle::Get()));
     }
     net::HttpRequestHeaders headers;

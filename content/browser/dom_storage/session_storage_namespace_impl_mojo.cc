@@ -115,21 +115,21 @@ void SessionStorageNamespaceImplMojo::Reset() {
   state_ = State::kNotPopulated;
   child_namespaces_waiting_for_clone_call_.clear();
   origin_areas_.clear();
-  bindings_.CloseAllBindings();
+  receivers_.Clear();
 }
 
 void SessionStorageNamespaceImplMojo::Bind(
-    blink::mojom::SessionStorageNamespaceRequest request,
+    mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver,
     int process_id) {
   if (!IsPopulated()) {
     bind_waiting_on_population_ = true;
-    run_after_population_.push_back(
-        base::BindOnce(&SessionStorageNamespaceImplMojo::Bind,
-                       base::Unretained(this), std::move(request), process_id));
+    run_after_population_.push_back(base::BindOnce(
+        &SessionStorageNamespaceImplMojo::Bind, base::Unretained(this),
+        std::move(receiver), process_id));
     return;
   }
   DCHECK(IsPopulated());
-  bindings_.AddBinding(this, std::move(request), process_id);
+  receivers_.Add(this, std::move(receiver), process_id);
   bind_waiting_on_population_ = false;
 }
 
@@ -169,10 +169,10 @@ void SessionStorageNamespaceImplMojo::RemoveOriginData(
 
 void SessionStorageNamespaceImplMojo::OpenArea(
     const url::Origin& origin,
-    blink::mojom::StorageAreaAssociatedRequest database) {
+    mojo::PendingAssociatedReceiver<blink::mojom::StorageArea> receiver) {
   DCHECK(IsPopulated());
-  DCHECK(!bindings_.empty());
-  int process_id = bindings_.dispatch_context();
+  DCHECK(!receivers_.empty());
+  int process_id = receivers_.current_context();
   // TODO(943887): Replace HasSecurityState() call with something that can
   // preserve security state after process shutdown. The security state check
   // is a temporary solution to avoid crashes when this method is run after the
@@ -182,7 +182,7 @@ void SessionStorageNamespaceImplMojo::OpenArea(
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   if (!policy->CanAccessDataForOrigin(process_id, origin) &&
       policy->HasSecurityState(process_id)) {
-    bindings_.ReportBadMessage("Access denied for sessionStorage request");
+    receivers_.ReportBadMessage("Access denied for sessionStorage request");
     return;
   }
   auto it = origin_areas_.find(origin);
@@ -215,7 +215,7 @@ void SessionStorageNamespaceImplMojo::OpenArea(
                              register_new_map_callback_)))
              .first;
   }
-  it->second->Bind(std::move(database));
+  it->second->Bind(std::move(receiver));
 }
 
 void SessionStorageNamespaceImplMojo::Clone(

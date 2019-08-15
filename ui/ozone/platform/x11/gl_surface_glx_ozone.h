@@ -6,7 +6,7 @@
 #define UI_OZONE_PLATFORM_X11_GL_SURFACE_GLX_OZONE_H_
 
 #include "base/macros.h"
-#include "ui/events/platform/x11/x11_event_source_libevent.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gl/gl_surface_glx.h"
 
 namespace ui {

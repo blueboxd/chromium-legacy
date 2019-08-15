@@ -25,7 +25,7 @@ GpuSurfacelessBrowserCompositorOutputSurface::
         gpu::SurfaceHandle surface_handle,
         gfx::BufferFormat format,
         gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
-    : GpuBrowserCompositorOutputSurface(std::move(context)),
+    : GpuBrowserCompositorOutputSurface(std::move(context), surface_handle),
       use_gpu_fence_(
           context_provider_->ContextCapabilities().chromium_gpu_fence &&
           context_provider_->ContextCapabilities()
@@ -33,8 +33,7 @@ GpuSurfacelessBrowserCompositorOutputSurface::
       gpu_fence_id_(0),
       current_texture_(0u),
       fbo_(0u),
-      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
-      surface_handle_(surface_handle) {
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
   // Set |max_frames_pending| to 2 for surfaceless, which aligns scheduling
@@ -186,8 +185,4 @@ void GpuSurfacelessBrowserCompositorOutputSurface::SetDrawRectangle(
   buffer_queue_->CopyDamageForCurrentSurface(damage);
 }
 
-gpu::SurfaceHandle
-GpuSurfacelessBrowserCompositorOutputSurface::GetSurfaceHandle() const {
-  return surface_handle_;
-}
 }  // namespace content

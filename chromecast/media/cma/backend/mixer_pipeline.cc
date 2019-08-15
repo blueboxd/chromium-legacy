@@ -4,6 +4,7 @@
 
 #include "chromecast/media/cma/backend/mixer_pipeline.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/containers/flat_set.h"
@@ -19,8 +20,6 @@ namespace chromecast {
 namespace media {
 
 namespace {
-
-const int kNumInputChannels = 2;
 
 bool IsOutputDeviceId(const std::string& device) {
   return device == ::media::AudioDeviceDescription::kDefaultDeviceId ||
@@ -47,10 +46,10 @@ std::unique_ptr<FilterGroup> CreateFilterGroup(
 // static
 std::unique_ptr<MixerPipeline> MixerPipeline::CreateMixerPipeline(
     PostProcessingPipelineParser* config,
-    PostProcessingPipelineFactory* factory) {
-  std::unique_ptr<MixerPipeline> mixer_pipeline(new MixerPipeline);
-
-  if (mixer_pipeline->BuildPipeline(config, factory)) {
+    PostProcessingPipelineFactory* factory,
+    int expected_input_channels) {
+  std::unique_ptr<MixerPipeline> mixer_pipeline(new MixerPipeline());
+  if (mixer_pipeline->BuildPipeline(config, factory, expected_input_channels)) {
     return mixer_pipeline;
   }
   return nullptr;
@@ -60,7 +59,8 @@ MixerPipeline::MixerPipeline() = default;
 MixerPipeline::~MixerPipeline() = default;
 
 bool MixerPipeline::BuildPipeline(PostProcessingPipelineParser* config,
-                                  PostProcessingPipelineFactory* factory) {
+                                  PostProcessingPipelineFactory* factory,
+                                  int expected_input_channels) {
   DCHECK(config);
   DCHECK(factory);
   int mix_group_input_channels = -1;
@@ -68,36 +68,36 @@ bool MixerPipeline::BuildPipeline(PostProcessingPipelineParser* config,
   // Create "stream" processor groups:
   for (auto& stream_pipeline : config->GetStreamPipelines()) {
     const base::Value* device_ids = stream_pipeline.stream_types;
+    int input_channels = (stream_pipeline.num_input_channels.has_value()
+                              ? stream_pipeline.num_input_channels.value()
+                              : expected_input_channels);
+    const std::string& name = device_ids->GetList()[0].GetString();
+    LOG(INFO) << input_channels << " input channels to '" << name << "' group";
 
     DCHECK(!device_ids->GetList().empty());
     DCHECK(device_ids->GetList()[0].is_string());
     filter_groups_.push_back(CreateFilterGroup(
-        kNumInputChannels, device_ids->GetList()[0].GetString() /* name */,
-        stream_pipeline.pipeline, factory));
+        input_channels, name, stream_pipeline.pipeline, factory));
 
     if (!SetGroupDeviceIds(device_ids, filter_groups_.back().get())) {
       return false;
     }
 
-    if (mix_group_input_channels == -1) {
-      mix_group_input_channels = filter_groups_.back()->GetOutputChannelCount();
-    } else if (mix_group_input_channels !=
-               filter_groups_.back()->GetOutputChannelCount()) {
-      LOG(ERROR)
-          << "All output stream mixers must have the same number of channels"
-          << filter_groups_.back()->name() << " has "
-          << filter_groups_.back()->GetOutputChannelCount()
-          << " but others have " << mix_group_input_channels;
-      return false;
-    }
+    mix_group_input_channels =
+        std::max(mix_group_input_channels,
+                 filter_groups_.back()->GetOutputChannelCount());
   }
 
   if (mix_group_input_channels == -1) {
-    mix_group_input_channels = kNumInputChannels;
+    mix_group_input_channels = expected_input_channels;
   }
 
   // Create "mix" processor group:
   const auto mix_pipeline = config->GetMixPipeline();
+  if (mix_pipeline.num_input_channels.has_value()) {
+    mix_group_input_channels = mix_pipeline.num_input_channels.value();
+  }
+  LOG(INFO) << mix_group_input_channels << " input channels to 'mix' group";
   std::unique_ptr<FilterGroup> mix_filter = CreateFilterGroup(
       mix_group_input_channels, "mix", mix_pipeline.pipeline, factory);
   for (std::unique_ptr<FilterGroup>& group : filter_groups_) {
@@ -111,9 +111,17 @@ bool MixerPipeline::BuildPipeline(PostProcessingPipelineParser* config,
 
   // Create "linearize" processor group:
   const auto linearize_pipeline = config->GetLinearizePipeline();
+  int linearize_group_input_channels =
+      loopback_output_group_->GetOutputChannelCount();
+  if (linearize_pipeline.num_input_channels.has_value()) {
+    linearize_group_input_channels =
+        linearize_pipeline.num_input_channels.value();
+  }
+  LOG(INFO) << linearize_group_input_channels
+            << " input channels to 'linearize' group";
   filter_groups_.push_back(
-      CreateFilterGroup(loopback_output_group_->GetOutputChannelCount(),
-                        "linearize", linearize_pipeline.pipeline, factory));
+      CreateFilterGroup(linearize_group_input_channels, "linearize",
+                        linearize_pipeline.pipeline, factory));
   output_group_ = filter_groups_.back().get();
   output_group_->AddMixedInput(loopback_output_group_);
   if (!SetGroupDeviceIds(linearize_pipeline.stream_types, output_group_)) {
@@ -217,6 +225,15 @@ void MixerPipeline::SetPlayoutChannel(int playout_channel) {
   for (auto& filter_group : filter_groups_) {
     filter_group->UpdatePlayoutChannel(playout_channel);
   }
+}
+
+bool MixerPipeline::IsRinging() const {
+  for (auto& filter_group : filter_groups_) {
+    if (filter_group->IsRinging()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace media

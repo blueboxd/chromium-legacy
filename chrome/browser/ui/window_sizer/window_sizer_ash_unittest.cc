@@ -113,7 +113,7 @@ std::unique_ptr<Browser> CreateTestBrowser(aura::Window* window,
   std::unique_ptr<Browser> browser =
       chrome::CreateBrowserWithAuraTestWindowForParams(base::WrapUnique(window),
                                                        params);
-  if (!browser->is_type_popup()) {
+  if (browser->is_type_normal()) {
     browser->window()->GetNativeWindow()->SetProperty(
         ash::kWindowPositionManagedTypeKey, true);
   }
@@ -567,7 +567,7 @@ TEST_F(WindowSizerAshTest, TestShowState) {
   UpdateDisplay("1600x1200");
 
   // Creating a browser & window to play with.
-  Browser::CreateParams params(Browser::TYPE_TABBED, &profile_, true);
+  Browser::CreateParams params(Browser::TYPE_NORMAL, &profile_, true);
   auto browser = CreateWindowlessBrowser(params);
 
   // Create also a popup browser since that behaves different.
@@ -614,7 +614,7 @@ TEST_F(WindowSizerAshTest, TestShowState) {
 }
 
 TEST_F(WindowSizerAshTest, TestShowStateOnTinyScreen) {
-  Browser::CreateParams params(Browser::TYPE_TABBED, &profile_, true);
+  Browser::CreateParams params(Browser::TYPE_NORMAL, &profile_, true);
   auto browser = CreateWindowlessBrowser(params);
 
   // In smaller screen resolutions we default to maximized if there is no other
@@ -632,7 +632,7 @@ TEST_F(WindowSizerAshTest, TestShowStateDefaults) {
   UpdateDisplay("1600x1200");
   // Creating a browser & window to play with.
 
-  Browser::CreateParams params(Browser::TYPE_TABBED, &profile_, true);
+  Browser::CreateParams params(Browser::TYPE_NORMAL, &profile_, true);
   auto browser = CreateWindowlessBrowser(params);
 
   // Create also a popup browser since that behaves slightly different for

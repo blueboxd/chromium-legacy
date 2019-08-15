@@ -31,13 +31,13 @@ class IncognitoMenuView : public ProfileMenuViewBase {
   void Init() override;
   base::string16 GetAccessibleWindowTitle() const override;
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
   void Reset();
 
   // Adds the incognito window count view.
   void AddIncognitoWindowCountView();
+
+  // Button actions.
+  void OnExitButtonClicked();
 
   views::Button* exit_button_;
 

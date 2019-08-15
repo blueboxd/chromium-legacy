@@ -56,6 +56,7 @@ void TextureLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   texture_layer->SetVertexOpacity(vertex_opacity_);
   texture_layer->SetPremultipliedAlpha(premultiplied_alpha_);
   texture_layer->SetBlendBackgroundColor(blend_background_color_);
+  texture_layer->SetForceTextureToOpaque(force_texture_to_opaque_);
   texture_layer->SetNearestNeighbor(nearest_neighbor_);
   if (own_resource_) {
     texture_layer->SetTransferableResource(transferable_resource_,
@@ -122,6 +123,11 @@ void TextureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
 
   SkColor bg_color =
       blend_background_color_ ? background_color() : SK_ColorTRANSPARENT;
+
+  if (force_texture_to_opaque_) {
+    bg_color = SK_ColorBLACK;
+  }
+
   bool are_contents_opaque =
       contents_opaque() || (SkColorGetA(bg_color) == 0xFF);
 
@@ -156,6 +162,9 @@ void TextureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
 
 SimpleEnclosedRegion TextureLayerImpl::VisibleOpaqueRegion() const {
   if (contents_opaque())
+    return SimpleEnclosedRegion(visible_layer_rect());
+
+  if (force_texture_to_opaque_)
     return SimpleEnclosedRegion(visible_layer_rect());
 
   if (blend_background_color_ && (SkColorGetA(background_color()) == 0xFF))
@@ -197,6 +206,10 @@ void TextureLayerImpl::SetPremultipliedAlpha(bool premultiplied_alpha) {
 
 void TextureLayerImpl::SetBlendBackgroundColor(bool blend) {
   blend_background_color_ = blend;
+}
+
+void TextureLayerImpl::SetForceTextureToOpaque(bool opaque) {
+  force_texture_to_opaque_ = opaque;
 }
 
 void TextureLayerImpl::SetFlipped(bool flipped) {

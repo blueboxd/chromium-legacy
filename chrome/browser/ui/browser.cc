@@ -325,7 +325,7 @@ bool IsOnKioskSplashScreen() {
 // Browser, CreateParams:
 
 Browser::CreateParams::CreateParams(Profile* profile, bool user_gesture)
-    : CreateParams(TYPE_TABBED, profile, user_gesture) {}
+    : CreateParams(TYPE_NORMAL, profile, user_gesture) {}
 
 Browser::CreateParams::CreateParams(Type type,
                                     Profile* profile,
@@ -352,7 +352,7 @@ Browser::CreateParams Browser::CreateParams::CreateForApp(
     bool user_gesture) {
   DCHECK(!app_name.empty());
 
-  CreateParams params(TYPE_POPUP, profile, user_gesture);
+  CreateParams params(TYPE_APP, profile, user_gesture);
   params.app_name = app_name;
   params.trusted_source = trusted_source;
   params.initial_bounds = window_bounds;
@@ -363,7 +363,7 @@ Browser::CreateParams Browser::CreateParams::CreateForApp(
 // static
 Browser::CreateParams Browser::CreateParams::CreateForDevTools(
     Profile* profile) {
-  CreateParams params(TYPE_POPUP, profile, true);
+  CreateParams params(TYPE_DEVTOOLS, profile, true);
   params.app_name = DevToolsWindow::kDevToolsApp;
   params.trusted_source = true;
   return params;
@@ -469,7 +469,7 @@ Browser::Browser(const CreateParams& params)
                           base::Unretained(this),
                           BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE));
 
-  if (search::IsInstantExtendedAPIEnabled() && is_type_tabbed())
+  if (search::IsInstantExtendedAPIEnabled() && is_type_normal())
     instant_controller_.reset(new BrowserInstantController(this));
 
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_INIT);
@@ -645,14 +645,6 @@ bool Browser::HasFindBarController() const {
   return find_bar_controller_.get() != NULL;
 }
 
-bool Browser::is_app() const {
-  return !app_name_.empty();
-}
-
-bool Browser::is_devtools() const {
-  return app_name_ == DevToolsWindow::kDevToolsApp;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, State Storage and Retrieval for UI:
 
@@ -698,7 +690,7 @@ base::string16 Browser::GetWindowTitleFromWebContents(
   }
 
   // If there is no title, leave it empty for apps.
-  if (title.empty() && !is_app())
+  if (title.empty() && (is_type_normal() || is_type_popup()))
     title = CoreTabHelper::GetDefaultTitle();
 
 #if defined(OS_MACOSX)
@@ -709,14 +701,15 @@ base::string16 Browser::GetWindowTitleFromWebContents(
   // If there is no title and this is an app, fall back on the app name. This
   // ensures that the native window gets a title which is important for a11y,
   // for example the window selector uses the Aura window title.
-  if (title.empty() && is_app() && include_app_name) {
+  if (title.empty() && (is_type_app() || is_type_devtools()) &&
+      include_app_name) {
     return base::UTF8ToUTF16(
         app_controller_ ? app_controller_->GetAppShortName() : app_name());
   }
 
   // Include the app name in window titles for tabbed browser windows when
   // requested with |include_app_name|.
-  return (!is_app() && include_app_name)
+  return ((is_type_normal() || is_type_popup()) && include_app_name)
              ? l10n_util::GetStringFUTF16(IDS_BROWSER_WINDOW_TITLE_FORMAT,
                                           title)
              : title;
@@ -820,11 +813,11 @@ void Browser::OnWindowClosing() {
       TabRestoreServiceFactory::GetForProfile(profile());
 
 #if defined(USE_AURA)
-  if (tab_restore_service && is_app() && !is_devtools())
+  if (tab_restore_service && is_type_app())
     tab_restore_service->BrowserClosing(live_tab_context());
 #endif
 
-  if (tab_restore_service && is_type_tabbed() && tab_strip_model_->count())
+  if (tab_restore_service && is_type_normal() && tab_strip_model_->count())
     tab_restore_service->BrowserClosing(live_tab_context());
 
   BrowserList::NotifyBrowserCloseStarted(this);
@@ -1142,7 +1135,7 @@ void Browser::SetTopControlsGestureScrollInProgress(bool in_progress) {
 
 bool Browser::CanOverscrollContent() {
 #if defined(USE_AURA)
-  return !is_devtools() &&
+  return !is_type_devtools() &&
          base::FeatureList::IsEnabled(features::kOverscrollHistoryNavigation);
 #else
   return false;
@@ -1387,7 +1380,7 @@ void Browser::OnWindowDidShow() {
   startup_metric_utils::RecordBrowserWindowDisplay(base::TimeTicks::Now());
 
   // Nothing to do for non-tabbed windows.
-  if (!is_type_tabbed())
+  if (!is_type_normal())
     return;
 
   // Show any pending global error bubble.
@@ -1403,7 +1396,7 @@ void Browser::OnWindowDidShow() {
 
 WebContents* Browser::OpenURLFromTab(WebContents* source,
                                      const OpenURLParams& params) {
-  if (is_devtools()) {
+  if (is_type_devtools()) {
     DevToolsWindow* window = DevToolsWindow::AsDevToolsWindow(source);
     DCHECK(window);
     return window->OpenURLFromTab(source, params);
@@ -1521,7 +1514,7 @@ void Browser::CloseContents(WebContents* source) {
 }
 
 void Browser::SetContentsBounds(WebContents* source, const gfx::Rect& bounds) {
-  if (!is_type_popup())
+  if (is_type_normal())
     return;
 
   window_->SetBounds(bounds);
@@ -1562,8 +1555,8 @@ bool Browser::TakeFocus(content::WebContents* source, bool reverse) {
 void Browser::BeforeUnloadFired(WebContents* web_contents,
                                 bool proceed,
                                 bool* proceed_to_fire_unload) {
-  if (is_devtools() && DevToolsWindow::HandleBeforeUnload(
-                           web_contents, proceed, proceed_to_fire_unload))
+  if (is_type_devtools() && DevToolsWindow::HandleBeforeUnload(
+                                web_contents, proceed, proceed_to_fire_unload))
     return;
 
   *proceed_to_fire_unload =
@@ -1727,7 +1720,7 @@ blink::WebDisplayMode Browser::GetDisplayMode(const WebContents* web_contents) {
   if (window_->IsFullscreen())
     return blink::kWebDisplayModeFullscreen;
 
-  if (is_app() && is_type_popup())
+  if (is_type_app() || is_type_devtools())
     return blink::kWebDisplayModeStandalone;
 
   return blink::kWebDisplayModeBrowser;
@@ -1777,6 +1770,10 @@ void Browser::RegisterProtocolHandler(WebContents* web_contents,
   PermissionRequestManager* permission_request_manager =
       PermissionRequestManager::FromWebContents(web_contents);
   if (permission_request_manager) {
+    // At this point, there will be UI presented, and running a dialog causes an
+    // exit to webpage-initiated fullscreen. http://crbug.com/728276
+    web_contents->ForSecurityDropFullscreen();
+
     permission_request_manager->AddRequest(
         new RegisterProtocolHandlerPermissionRequest(registry, handler, url,
                                                      user_gesture));
@@ -2607,7 +2604,7 @@ void Browser::UpdateWindowForLoadingStateChanged(content::WebContents* source,
   }
 }
 
-bool Browser::TabbedBrowserSupportsWindowFeature(WindowFeature feature,
+bool Browser::NormalBrowserSupportsWindowFeature(WindowFeature feature,
                                                  bool check_can_support) const {
   bool fullscreen = ShouldHideUIForFullscreen();
   switch (feature) {
@@ -2688,19 +2685,19 @@ bool Browser::WebAppBrowserSupportsWindowFeature(WindowFeature feature,
 
 bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
                                         bool check_can_support) const {
-  // TODO(crbug.com/992834): Change to TYPE_WEB_APP.
-  if (app_controller_)
-    return WebAppBrowserSupportsWindowFeature(feature, check_can_support);
-
-  // TODO(crbug.com/992834): Change to TYPE_LEGACY_APP.
-  if (is_app())
-    return LegacyAppBrowserSupportsWindowFeature(feature, check_can_support);
-
   switch (type_) {
-    case TYPE_TABBED:
-      return TabbedBrowserSupportsWindowFeature(feature, check_can_support);
+    case TYPE_NORMAL:
+      return NormalBrowserSupportsWindowFeature(feature, check_can_support);
     case TYPE_POPUP:
       return PopupBrowserSupportsWindowFeature(feature, check_can_support);
+    case TYPE_APP:
+      // TODO(crbug.com/992834): Change to TYPE_WEB_APP.
+      if (app_controller_)
+        return WebAppBrowserSupportsWindowFeature(feature, check_can_support);
+      // TODO(crbug.com/992834): Change to TYPE_LEGACY_APP.
+      return LegacyAppBrowserSupportsWindowFeature(feature, check_can_support);
+    case TYPE_DEVTOOLS:
+      return LegacyAppBrowserSupportsWindowFeature(feature, check_can_support);
   }
 }
 

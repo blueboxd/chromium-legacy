@@ -14,7 +14,7 @@
 
 namespace autofill_assistant {
 
-BatchElementChecker::BatchElementChecker() : weak_ptr_factory_(this) {}
+BatchElementChecker::BatchElementChecker() {}
 
 BatchElementChecker::~BatchElementChecker() {}
 

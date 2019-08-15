@@ -50,7 +50,7 @@ void RecordUMAForTransferredWindowType(aura::Window* window) {
   if (browser) {
     if (browser->profile()->IsOffTheRecord()) {
       window_type = TELEPORT_WINDOW_INCOGNITO_BROWSER;
-    } else if (browser->is_app()) {
+    } else if (browser->deprecated_is_app()) {
       window_type = TELEPORT_WINDOW_V1_APP;
     } else if (browser->is_type_popup()) {
       window_type = TELEPORT_WINDOW_POPUP;

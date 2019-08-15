@@ -84,6 +84,18 @@ void OnAppIconsLoaded(Profile* profile,
   std::move(completion_closure).Run();
 }
 
+void OnTaskComplete(FileTaskFinishedCallback done,
+                    bool success,
+                    std::string failure_reason) {
+  if (!success) {
+    LOG(ERROR) << "Crostini task error: " << failure_reason;
+  }
+  std::move(done).Run(
+      success ? extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT
+              : extensions::api::file_manager_private::TASK_RESULT_FAILED,
+      std::move(failure_reason));
+}
+
 }  // namespace
 
 void FindCrostiniTasks(Profile* profile,
@@ -152,19 +164,9 @@ void ExecuteCrostiniTask(
     FileTaskFinishedCallback done) {
   DCHECK(crostini::IsCrostiniUIAllowedForProfile(profile));
 
-  std::vector<std::string> files;
-  for (const storage::FileSystemURL& file_system_url : file_system_urls) {
-    base::FilePath file;
-    if (!util::ConvertFileSystemURLToPathInsideCrostini(
-            profile, file_system_url, &file)) {
-      LOG(ERROR) << "Invalid file: " << file_system_url.DebugString();
-      return;
-    }
-    files.emplace_back(file.value());
-  }
-
   crostini::LaunchCrostiniApp(profile, task.app_id, display::kInvalidDisplayId,
-                              files);
+                              file_system_urls,
+                              base::BindOnce(OnTaskComplete, std::move(done)));
 }
 
 }  // namespace file_tasks

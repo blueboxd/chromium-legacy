@@ -7,8 +7,9 @@
 
 #include "base/macros.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/preferences/public/cpp/pref_service_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/preferences/public/mojom/preferences.mojom.h"
 
 namespace chromeos {
 namespace assistant {
@@ -20,9 +21,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) PrefConnectionDelegate {
   virtual ~PrefConnectionDelegate() = default;
 
   virtual void ConnectToPrefService(
-      service_manager::Connector* connector,
+      mojo::PendingRemote<::prefs::mojom::PrefStoreConnector> connector,
       scoped_refptr<PrefRegistrySimple> pref_registry,
-      prefs::ConnectCallback callback);
+      ::prefs::ConnectCallback callback);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PrefConnectionDelegate);

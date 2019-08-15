@@ -11,8 +11,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
-#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/menu_manager_factory.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
@@ -25,11 +23,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/data_store.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
@@ -418,46 +412,6 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
     menu->AppendImageItems();
   }
 
-  void SetupDataReductionProxy(bool enable_data_reduction_proxy) {
-    drp_test_context_ =
-        data_reduction_proxy::DataReductionProxyTestContext::Builder()
-            .WithMockConfig()
-            .SkipSettingsInitialization()
-            .Build();
-
-    DataReductionProxyChromeSettings* settings =
-        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-            profile());
-
-    // TODO(bengr): Remove proxy_config::prefs::kProxy registration after M46.
-    // See http://crbug.com/445599.
-    PrefRegistrySimple* registry =
-        drp_test_context_->pref_service()->registry();
-    registry->RegisterDictionaryPref(proxy_config::prefs::kProxy);
-    drp_test_context_->SetDataReductionProxyEnabled(
-        enable_data_reduction_proxy);
-    settings->InitDataReductionProxySettings(
-        drp_test_context_->io_data(), drp_test_context_->pref_service(),
-        profile(), base::MakeRefCounted<network::TestSharedURLLoaderFactory>(),
-        std::make_unique<data_reduction_proxy::DataStore>(),
-        base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get());
-  }
-
-  // Force destruction of |DataReductionProxySettings| so that objects on DB
-  // task runner can be destroyed before test threads are destroyed. This method
-  // must be called by tests that call |SetupDataReductionProxy|. We cannot
-  // destroy |drp_test_context_| until browser context keyed services are
-  // destroyed since |DataReductionProxyChromeSettings| holds a pointer to the
-  // |PrefService|, which is owned by |drp_test_context_|.
-  void DestroyDataReductionProxySettings() {
-    drp_test_context_->DestroySettings();
-  }
-
- protected:
-  std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>
-      drp_test_context_;
-
  private:
   std::unique_ptr<ProtocolHandlerRegistry> registry_;
 
@@ -509,7 +463,8 @@ TEST_F(RenderViewContextMenuPrefsTest,
 // the original non compressed resource when "Save Image As..." is used with
 // Data Saver enabled.
 TEST_F(RenderViewContextMenuPrefsTest, DataSaverEnabledSaveImageAs) {
-  SetupDataReductionProxy(true);
+  data_reduction_proxy::DataReductionProxySettings::
+      SetDataSaverEnabledForTesting(profile()->GetPrefs(), true);
 
   content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
   params.unfiltered_link_url = params.link_url;
@@ -523,14 +478,13 @@ TEST_F(RenderViewContextMenuPrefsTest, DataSaverEnabledSaveImageAs) {
   EXPECT_TRUE(headers.find(
       "Chrome-Proxy-Accept-Transform: identity") != std::string::npos);
   EXPECT_TRUE(headers.find("Cache-Control: no-cache") != std::string::npos);
-
-  DestroyDataReductionProxySettings();
 }
 
 // Verify that request headers do not specify pass through when "Save Image
 // As..." is used with Data Saver disabled.
 TEST_F(RenderViewContextMenuPrefsTest, DataSaverDisabledSaveImageAs) {
-  SetupDataReductionProxy(false);
+  data_reduction_proxy::DataReductionProxySettings::
+      SetDataSaverEnabledForTesting(profile()->GetPrefs(), false);
 
   content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
   params.unfiltered_link_url = params.link_url;
@@ -544,8 +498,6 @@ TEST_F(RenderViewContextMenuPrefsTest, DataSaverDisabledSaveImageAs) {
   EXPECT_TRUE(headers.find(
       "Chrome-Proxy-Accept-Transform: identity") == std::string::npos);
   EXPECT_TRUE(headers.find("Cache-Control: no-cache") == std::string::npos);
-
-  DestroyDataReductionProxySettings();
 }
 
 // Check that if image is broken "Load image" menu item is present.

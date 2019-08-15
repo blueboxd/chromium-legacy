@@ -9,6 +9,8 @@
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/password_protection/metrics_util.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
@@ -16,6 +18,8 @@ namespace settings {
 
 using password_manager::metrics_util::PasswordType;
 using safe_browsing::ChromePasswordProtectionService;
+using safe_browsing::LoginReputationClientResponse;
+using safe_browsing::RequestOutcome;
 
 ChangePasswordHandler::ChangePasswordHandler(
     Profile* profile,
@@ -59,6 +63,8 @@ void ChangePasswordHandler::HandleChangePassword(const base::ListValue* args) {
       web_ui()->GetWebContents(),
       service_->GetPasswordProtectionReusedPasswordAccountType(
           PasswordType::PRIMARY_ACCOUNT_PASSWORD, service_->username()),
+      RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
       safe_browsing::WarningUIType::CHROME_SETTINGS,
       safe_browsing::WarningAction::CHANGE_PASSWORD);
 }

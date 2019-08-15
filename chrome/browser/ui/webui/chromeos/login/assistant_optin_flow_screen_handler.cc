@@ -15,17 +15,16 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/assistant/assistant_service_connection.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
-#include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
 #include "components/arc/arc_prefs.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/chromeos/devicetype_utils.h"
 
 namespace chromeos {
@@ -287,11 +286,10 @@ void AssistantOptInFlowScreenHandler::BindAssistantSettingsManager() {
     return;
 
   // Set up settings mojom.
-  service_manager::Connector* connector =
-      content::BrowserContext::GetConnectorFor(
-          ProfileManager::GetActiveUserProfile());
-  connector->BindInterface(assistant::mojom::kServiceName,
-                           mojo::MakeRequest(&settings_manager_));
+  AssistantServiceConnection::GetForProfile(
+      ProfileManager::GetActiveUserProfile())
+      ->service()
+      ->BindSettingsManager(mojo::MakeRequest(&settings_manager_));
 
   if (initialized_) {
     SendGetSettingsRequest();

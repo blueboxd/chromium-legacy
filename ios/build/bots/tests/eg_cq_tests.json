@@ -5,14 +5,15 @@
   "tests": [
     {
       "app": "ios_chrome_integration_egtests",
+      "shard size": 7,
       "xcode parallelization": true,
-      "shards": 3
+      "shards": 1
     },
     {
       "app": "ios_chrome_ui_egtests",
-      "shard size": 12,
+      "shard size": 7,
       "xcode parallelization": true,
-      "shards": 3
+      "shards": 2
     },
     {
       "app": "ios_web_shell_egtests",

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BADGING_BADGE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BADGING_BADGE_H_
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/badging/badging.mojom-blink.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -42,7 +43,7 @@ class Badge final : public ScriptWrappable,
  private:
   static Badge* BadgeFromState(ScriptState* script_state);
 
-  blink::mojom::blink::BadgeServicePtr badge_service_;
+  mojo::Remote<blink::mojom::blink::BadgeService> badge_service_;
 };
 
 }  // namespace blink

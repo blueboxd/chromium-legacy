@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -138,12 +139,7 @@ class ImageBitmapFactories final
 
     void RejectPromise(ImageBitmapRejectionReason);
 
-    void ScheduleAsyncImageBitmapDecoding(DOMArrayBuffer*);
-    void DecodeImageOnDecoderThread(scoped_refptr<base::SingleThreadTaskRunner>,
-                                    DOMArrayBuffer*,
-                                    const String& premultiply_alpha_option,
-                                    const String& color_space_conversion_option,
-                                    bool scheduled_from_main_thread);
+    void ScheduleAsyncImageBitmapDecoding(WTF::ArrayBufferContents::DataHandle);
     void ResolvePromiseOnOriginalThread(sk_sp<SkImage>);
 
     // ContextLifecycleObserver

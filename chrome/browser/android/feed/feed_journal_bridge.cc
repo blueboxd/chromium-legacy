@@ -51,7 +51,7 @@ static jlong JNI_FeedJournalBridge_Init(
 }
 
 FeedJournalBridge::FeedJournalBridge(FeedJournalDatabase* feed_journal_database)
-    : feed_journal_database_(feed_journal_database), weak_ptr_factory_(this) {
+    : feed_journal_database_(feed_journal_database) {
   DCHECK(feed_journal_database_);
 }
 

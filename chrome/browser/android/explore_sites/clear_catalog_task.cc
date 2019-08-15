@@ -14,7 +14,7 @@
 namespace explore_sites {
 ClearCatalogTask::ClearCatalogTask(ExploreSitesStore* store,
                                    BooleanCallback callback)
-    : store_(store), callback_(std::move(callback)), weak_factory_(this) {}
+    : store_(store), callback_(std::move(callback)) {}
 
 ClearCatalogTask::~ClearCatalogTask() = default;
 

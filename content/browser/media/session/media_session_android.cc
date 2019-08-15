@@ -174,6 +174,15 @@ void MediaSessionAndroid::Seek(
   media_session_->Seek(base::TimeDelta::FromMilliseconds(millis));
 }
 
+void MediaSessionAndroid::SeekTo(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_obj,
+    const jlong millis) {
+  DCHECK(media_session_);
+  DCHECK_GT(millis, 0) << "Attempted to seek to a negative position";
+  media_session_->SeekTo(base::TimeDelta::FromMilliseconds(millis));
+}
+
 void MediaSessionAndroid::DidReceiveAction(JNIEnv* env,
                                            const JavaParamRef<jobject>& obj,
                                            int action) {

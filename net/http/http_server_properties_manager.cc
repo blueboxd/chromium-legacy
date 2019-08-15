@@ -55,6 +55,46 @@ const char kBrokenAlternativeServicesKey[] = "broken_alternative_services";
 const char kBrokenUntilKey[] = "broken_until";
 const char kBrokenCountKey[] = "broken_count";
 
+// Utility method to return only those AlternativeServiceInfos that should be
+// persisted to disk. In particular, removes expired and invalid alternative
+// services. Also checks if an alternative service for the same canonical suffix
+// has already been saved, and if so, returns an empty list.
+AlternativeServiceInfoVector GetAlternativeServiceToPersist(
+    const base::Optional<AlternativeServiceInfoVector>& alternative_services,
+    const url::SchemeHostPort& server,
+    base::Time now,
+    const HttpServerPropertiesManager::GetCannonicalSuffix&
+        get_canonical_suffix,
+    std::set<std::string>* persisted_canonical_suffix_map) {
+  if (!alternative_services)
+    return AlternativeServiceInfoVector();
+  // Separate out valid, non-expired AlternativeServiceInfo entries.
+  AlternativeServiceInfoVector notbroken_alternative_service_info_vector;
+  for (const auto& alternative_service_info : alternative_services.value()) {
+    if (alternative_service_info.expiration() < now ||
+        !IsAlternateProtocolValid(
+            alternative_service_info.alternative_service().protocol)) {
+      continue;
+    }
+    notbroken_alternative_service_info_vector.push_back(
+        alternative_service_info);
+  }
+  if (notbroken_alternative_service_info_vector.empty())
+    return notbroken_alternative_service_info_vector;
+  const std::string* canonical_suffix = get_canonical_suffix.Run(server.host());
+
+  // Don't save if have already saved information associated with the same
+  // canonical suffix.
+  if (canonical_suffix != nullptr &&
+      persisted_canonical_suffix_map->find(*canonical_suffix) !=
+          persisted_canonical_suffix_map->end()) {
+    return AlternativeServiceInfoVector();
+  }
+  if (canonical_suffix)
+    persisted_canonical_suffix_map->emplace(*canonical_suffix);
+  return notbroken_alternative_service_info_vector;
+}
+
 void AddAlternativeServiceFieldsToDictionaryValue(
     const AlternativeService& alternative_service,
     base::DictionaryValue* dict) {
@@ -65,18 +105,6 @@ void AddAlternativeServiceFieldsToDictionaryValue(
   dict->SetString(kProtocolKey,
                   NextProtoToString(alternative_service.protocol));
 }
-
-// A local or temporary data structure to hold preferences for a server.
-// This is used only in UpdatePrefs.
-//
-// TODO(mmenke): Replace this with HttpServerProperties::ServerInfo, once it
-// contains all the relevant data.
-struct ServerPref {
-  bool supports_spdy = false;
-  AlternativeServiceInfoVector alternative_service_info_vector;
-  bool server_network_stats_valid = false;
-  ServerNetworkStats server_network_stats;
-};
 
 quic::QuicServerId QuicServerIdFromString(const std::string& str) {
   GURL url(str);
@@ -132,8 +160,6 @@ HttpServerPropertiesManager::~HttpServerPropertiesManager() {
 
 void HttpServerPropertiesManager::ReadPrefs(
     std::unique_ptr<HttpServerProperties::ServerInfoMap>* server_info_map,
-    std::unique_ptr<AlternativeServiceMap>* alternative_service_map,
-    std::unique_ptr<ServerNetworkStatsMap>* server_network_stats_map,
     IPAddress* last_quic_address,
     std::unique_ptr<QuicServerInfoMap>* quic_server_info_map,
     std::unique_ptr<BrokenAlternativeServiceList>*
@@ -185,8 +211,6 @@ void HttpServerPropertiesManager::ReadPrefs(
   ReadSupportsQuic(*http_server_properties_dict, last_quic_address);
 
   *server_info_map = std::make_unique<HttpServerProperties::ServerInfoMap>();
-  *alternative_service_map = std::make_unique<AlternativeServiceMap>();
-  *server_network_stats_map = std::make_unique<ServerNetworkStatsMap>();
   *quic_server_info_map = std::make_unique<QuicServerInfoMap>(
       max_server_configs_stored_in_properties_);
 
@@ -199,9 +223,7 @@ void HttpServerPropertiesManager::ReadPrefs(
       DVLOG(1) << "Malformed http_server_properties for servers dictionary.";
       continue;
     }
-    AddServersData(*servers_dict, server_info_map->get(),
-                   alternative_service_map->get(),
-                   server_network_stats_map->get());
+    AddServersData(*servers_dict, server_info_map->get());
   }
 
   AddToQuicServerInfoMap(*http_server_properties_dict,
@@ -238,11 +260,6 @@ void HttpServerPropertiesManager::ReadPrefs(
   // TODO(mmenke): Rename this once more information is stored in this map.
   UMA_HISTOGRAM_COUNTS_1M("Net.HttpServerProperties.CountOfServers",
                           (*server_info_map)->size());
-
-  // Update the cached data and use the new alternative service list from
-  // preferences.
-  UMA_HISTOGRAM_COUNTS_1M("Net.CountOfAlternateProtocolServers",
-                          (*alternative_service_map)->size());
 
   UMA_HISTOGRAM_COUNTS_1000("Net.CountOfQuicServerInfos",
                             (*quic_server_info_map)->size());
@@ -320,9 +337,7 @@ void HttpServerPropertiesManager::AddToBrokenAlternativeServices(
 
 void HttpServerPropertiesManager::AddServersData(
     const base::DictionaryValue& servers_dict,
-    HttpServerProperties::ServerInfoMap* server_info_map,
-    AlternativeServiceMap* alternative_service_map,
-    ServerNetworkStatsMap* network_stats_map) {
+    HttpServerProperties::ServerInfoMap* server_info_map) {
   for (base::DictionaryValue::Iterator it(servers_dict); !it.IsAtEnd();
        it.Advance()) {
     // Get server's scheme/host/pair.
@@ -340,18 +355,19 @@ void HttpServerPropertiesManager::AddServersData(
       return;
     }
 
-    // Get if server supports Spdy.
+    HttpServerProperties::ServerInfo server_info;
+
     bool supports_spdy;
     if (server_pref_dict->GetBoolean(kSupportsSpdyKey, &supports_spdy)) {
-      HttpServerProperties::ServerInfo server_info;
       server_info.supports_spdy = supports_spdy;
-      server_info_map->Put(spdy_server, std::move(server_info));
     }
 
-    if (AddToAlternativeServiceMap(spdy_server, *server_pref_dict,
-                                   alternative_service_map)) {
-      AddToNetworkStatsMap(spdy_server, *server_pref_dict, network_stats_map);
+    if (ParseAlternativeServiceInfo(spdy_server, *server_pref_dict,
+                                    &server_info)) {
+      ParseNetworkStats(spdy_server, *server_pref_dict, &server_info);
     }
+    if (!server_info.empty())
+      server_info_map->Put(spdy_server, std::move(server_info));
   }
 }
 
@@ -463,12 +479,11 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceInfoDictOfServer(
   return true;
 }
 
-bool HttpServerPropertiesManager::AddToAlternativeServiceMap(
+bool HttpServerPropertiesManager::ParseAlternativeServiceInfo(
     const url::SchemeHostPort& server,
     const base::DictionaryValue& server_pref_dict,
-    AlternativeServiceMap* alternative_service_map) {
-  DCHECK(alternative_service_map->Peek(server) ==
-         alternative_service_map->end());
+    HttpServerProperties::ServerInfo* server_info) {
+  DCHECK(!server_info->alternative_services.has_value());
   const base::ListValue* alternative_service_list;
   if (!server_pref_dict.GetListWithoutPathExpansion(
           kAlternativeServiceKey, &alternative_service_list)) {
@@ -499,7 +514,7 @@ bool HttpServerPropertiesManager::AddToAlternativeServiceMap(
     return false;
   }
 
-  alternative_service_map->Put(server, alternative_service_info_vector);
+  server_info->alternative_services = alternative_service_info_vector;
   return true;
 }
 
@@ -528,11 +543,11 @@ void HttpServerPropertiesManager::ReadSupportsQuic(
   }
 }
 
-void HttpServerPropertiesManager::AddToNetworkStatsMap(
+void HttpServerPropertiesManager::ParseNetworkStats(
     const url::SchemeHostPort& server,
     const base::DictionaryValue& server_pref_dict,
-    ServerNetworkStatsMap* network_stats_map) {
-  DCHECK(network_stats_map->Peek(server) == network_stats_map->end());
+    HttpServerProperties::ServerInfo* server_info) {
+  DCHECK(!server_info->server_network_stats.has_value());
   const base::DictionaryValue* server_network_stats_dict = nullptr;
   if (!server_pref_dict.GetDictionaryWithoutPathExpansion(
           kNetworkStatsKey, &server_network_stats_dict)) {
@@ -549,7 +564,7 @@ void HttpServerPropertiesManager::AddToNetworkStatsMap(
   server_network_stats.srtt = base::TimeDelta::FromMicroseconds(srtt);
   // TODO(rtenneti): When QUIC starts using bandwidth_estimate, then persist
   // bandwidth_estimate.
-  network_stats_map->Put(server, server_network_stats);
+  server_info->server_network_stats = server_network_stats;
 }
 
 void HttpServerPropertiesManager::AddToQuicServerInfoMap(
@@ -595,9 +610,7 @@ void HttpServerPropertiesManager::AddToQuicServerInfoMap(
 
 void HttpServerPropertiesManager::WriteToPrefs(
     const HttpServerProperties::ServerInfoMap& server_info_map,
-    const AlternativeServiceMap& alternative_service_map,
     const GetCannonicalSuffix& get_canonical_suffix,
-    const ServerNetworkStatsMap& server_network_stats_map,
     const IPAddress& last_quic_address,
     const QuicServerInfoMap& quic_server_info_map,
     const BrokenAlternativeServiceList& broken_alternative_service_list,
@@ -610,102 +623,49 @@ void HttpServerPropertiesManager::WriteToPrefs(
   // existing prefs.
   on_prefs_loaded_callback_.Reset();
 
-  typedef base::MRUCache<url::SchemeHostPort, ServerPref> ServerPrefMap;
-  ServerPrefMap server_pref_map(ServerPrefMap::NO_AUTO_EVICT);
-
-  // Add SPDY servers to |server_pref_map|.
-  for (auto it = server_info_map.rbegin(); it != server_info_map.rend(); ++it) {
-    // Only add servers that support SPDY.
-    if (!it->second.supports_spdy.value_or(false))
-      continue;
-
-    auto map_it = server_pref_map.Put(it->first, ServerPref());
-    map_it->second.supports_spdy = true;
-  }
-
-  // Add alternative service info to |server_pref_map|.
-  UMA_HISTOGRAM_COUNTS_1M("Net.CountOfAlternateProtocolServers.Memory",
-                          alternative_service_map.size());
-  typedef std::map<std::string, bool> CanonicalHostPersistedMap;
-  CanonicalHostPersistedMap persisted_map;
+  std::set<std::string> persisted_canonical_suffix_map;
   const base::Time now = base::Time::Now();
-  for (auto it = alternative_service_map.rbegin();
-       it != alternative_service_map.rend(); ++it) {
-    const url::SchemeHostPort& server = it->first;
-    AlternativeServiceInfoVector notbroken_alternative_service_info_vector;
-    for (const AlternativeServiceInfo& alternative_service_info : it->second) {
-      // Do not persist expired entries
-      if (alternative_service_info.expiration() < now) {
-        continue;
-      }
-      if (!IsAlternateProtocolValid(
-              alternative_service_info.alternative_service().protocol)) {
-        continue;
-      }
-      notbroken_alternative_service_info_vector.push_back(
-          alternative_service_info);
-    }
-    if (notbroken_alternative_service_info_vector.empty()) {
-      continue;
-    }
-    const std::string* canonical_suffix =
-        get_canonical_suffix.Run(server.host());
-    if (canonical_suffix != nullptr) {
-      if (persisted_map.find(*canonical_suffix) != persisted_map.end())
-        continue;
-      persisted_map[*canonical_suffix] = true;
-    }
-
-    auto map_it = server_pref_map.Get(server);
-    if (map_it == server_pref_map.end())
-      map_it = server_pref_map.Put(server, ServerPref());
-    map_it->second.alternative_service_info_vector =
-        std::move(notbroken_alternative_service_info_vector);
-  }
-
-  // Add server network stats to |server_pref_map|.
-  for (auto it = server_network_stats_map.rbegin();
-       it != server_network_stats_map.rend(); ++it) {
-    const url::SchemeHostPort& server = it->first;
-    auto map_it = server_pref_map.Get(server);
-    if (map_it == server_pref_map.end())
-      map_it = server_pref_map.Put(server, ServerPref());
-    map_it->second.server_network_stats_valid = true;
-    map_it->second.server_network_stats = it->second;
-  }
-
   base::DictionaryValue http_server_properties_dict;
 
-  // Convert |server_pref_map| to a DictionaryValue and add it to
+  // Convert |server_info_map| to a DictionaryValue and add it to
   // |http_server_properties_dict|.
-  auto servers_list = std::make_unique<base::ListValue>();
-  for (ServerPrefMap::const_reverse_iterator map_it = server_pref_map.rbegin();
-       map_it != server_pref_map.rend(); ++map_it) {
+  base::Value servers_list(base::Value::Type::LIST);
+  for (auto map_it = server_info_map.rbegin(); map_it != server_info_map.rend();
+       ++map_it) {
     const url::SchemeHostPort server = map_it->first;
-    const ServerPref& server_pref = map_it->second;
+    const HttpServerProperties::ServerInfo& server_info = map_it->second;
 
-    auto servers_dict = std::make_unique<base::DictionaryValue>();
-    auto server_pref_dict = std::make_unique<base::DictionaryValue>();
+    base::DictionaryValue servers_dict;
+    base::DictionaryValue server_pref_dict;
 
-    if (server_pref.supports_spdy) {
-      server_pref_dict->SetBoolean(kSupportsSpdyKey, server_pref.supports_spdy);
-    }
-    if (!server_pref.alternative_service_info_vector.empty()) {
-      SaveAlternativeServiceToServerPrefs(
-          server_pref.alternative_service_info_vector, server_pref_dict.get());
-    }
-    if (server_pref.server_network_stats_valid) {
-      SaveNetworkStatsToServerPrefs(server_pref.server_network_stats,
-                                    server_pref_dict.get());
+    bool supports_spdy = server_info.supports_spdy.value_or(false);
+    if (supports_spdy)
+      server_pref_dict.SetBoolKey(kSupportsSpdyKey, supports_spdy);
+
+    AlternativeServiceInfoVector alternative_services =
+        GetAlternativeServiceToPersist(server_info.alternative_services, server,
+                                       now, get_canonical_suffix,
+                                       &persisted_canonical_suffix_map);
+    if (!alternative_services.empty()) {
+      SaveAlternativeServiceToServerPrefs(alternative_services,
+                                          &server_pref_dict);
     }
 
-    servers_dict->SetWithoutPathExpansion(server.Serialize(),
-                                          std::move(server_pref_dict));
-    bool value = servers_list->AppendIfNotPresent(std::move(servers_dict));
-    DCHECK(value);  // Should never happen.
+    if (server_info.server_network_stats) {
+      SaveNetworkStatsToServerPrefs(*server_info.server_network_stats,
+                                    &server_pref_dict);
+    }
+
+    // Don't add empty entries. This can happen if, for example, all alternative
+    // services are empty, or |supports_spdy| is set to false, and all other
+    // fields are not set.
+    if (server_pref_dict.DictEmpty())
+      continue;
+
+    servers_dict.SetKey(server.Serialize(), std::move(server_pref_dict));
+    servers_list.GetList().emplace_back(std::move(servers_dict));
   }
-  http_server_properties_dict.SetWithoutPathExpansion(kServersKey,
-                                                      std::move(servers_list));
+  http_server_properties_dict.SetKey(kServersKey, std::move(servers_list));
 
   http_server_properties_dict.SetInteger(kVersionKey, kVersionNumber);
 
@@ -888,22 +848,18 @@ void HttpServerPropertiesManager::OnHttpServerPropertiesLoaded() {
     return;
 
   std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map;
-  std::unique_ptr<AlternativeServiceMap> alternative_service_map;
-  std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map;
   IPAddress last_quic_address;
   std::unique_ptr<QuicServerInfoMap> quic_server_info_map;
   std::unique_ptr<BrokenAlternativeServiceList> broken_alternative_service_list;
   std::unique_ptr<RecentlyBrokenAlternativeServices>
       recently_broken_alternative_services;
 
-  ReadPrefs(&server_info_map, &alternative_service_map,
-            &server_network_stats_map, &last_quic_address,
-            &quic_server_info_map, &broken_alternative_service_list,
+  ReadPrefs(&server_info_map, &last_quic_address, &quic_server_info_map,
+            &broken_alternative_service_list,
             &recently_broken_alternative_services);
 
   std::move(on_prefs_loaded_callback_)
-      .Run(std::move(server_info_map), std::move(alternative_service_map),
-           std::move(server_network_stats_map), last_quic_address,
+      .Run(std::move(server_info_map), last_quic_address,
            std::move(quic_server_info_map),
            std::move(broken_alternative_service_list),
            std::move(recently_broken_alternative_services));

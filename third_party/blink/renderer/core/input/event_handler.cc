@@ -1533,13 +1533,6 @@ WebInputEventResult EventHandler::HandleGestureScrollEvent(
   return scroll_manager_->HandleGestureScrollEvent(gesture_event);
 }
 
-WebInputEventResult EventHandler::HandleGestureScrollEnd(
-    const WebGestureEvent& gesture_event) {
-  if (!frame_->GetPage())
-    return WebInputEventResult::kNotHandled;
-  return scroll_manager_->HandleGestureScrollEnd(gesture_event);
-}
-
 void EventHandler::SetMouseDownMayStartAutoscroll() {
   mouse_event_manager_->SetMouseDownMayStartAutoscroll();
 }

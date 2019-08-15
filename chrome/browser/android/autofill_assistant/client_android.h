@@ -127,7 +127,7 @@ class ClientAndroid : public Client,
       fetch_access_token_callback_;
   std::string server_url_;
 
-  base::WeakPtrFactory<ClientAndroid> weak_ptr_factory_;
+  base::WeakPtrFactory<ClientAndroid> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ClientAndroid);
 };

@@ -85,8 +85,7 @@ class LocalMediaDataSource : public chrome::mojom::MediaDataSource {
       : file_path_(file_path),
         file_task_runner_(file_task_runner),
         media_data_callback_(media_data_callback),
-        receiver_(this, std::move(receiver)),
-        weak_ptr_factory_(this) {}
+        receiver_(this, std::move(receiver)) {}
   ~LocalMediaDataSource() override = default;
 
  private:
@@ -125,7 +124,7 @@ class LocalMediaDataSource : public chrome::mojom::MediaDataSource {
   chrome::mojom::MediaDataSource::ReadCallback ipc_read_callback_;
 
   mojo::Receiver<chrome::mojom::MediaDataSource> receiver_;
-  base::WeakPtrFactory<LocalMediaDataSource> weak_ptr_factory_;
+  base::WeakPtrFactory<LocalMediaDataSource> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LocalMediaDataSource);
 };

@@ -1052,16 +1052,6 @@ config("compiler_codegen") {
 
   if (is_nacl) {
     configs += [ "//build/config/nacl:compiler_codegen" ]
-  } else if (is_posix && !is_mac && !is_ios) {
-    if (current_cpu == "x86") {
-      if (is_clang) {
-        cflags += [
-          # Else building libyuv gives clang's register allocator issues,
-          # see llvm.org/PR15798 / crbug.com/233709
-          "-momit-leaf-frame-pointer",
-        ]
-      }
-    }
   }
 
   if (current_cpu == "arm64" && is_android) {
@@ -1518,21 +1508,10 @@ config("default_warnings") {
           # Ignore warnings about MSVC optimization pragmas.
           # TODO(thakis): Only for no_chromium_code? http://crbug.com/912662
           "-Wno-ignored-pragma-optimize",
-        ]
-        if (llvm_force_head_revision) {
-          cflags += [
-            # TODO(https://crbug.com/989932): Evaluate and possibly enable.
-            "-Wno-implicit-int-float-conversion",
 
-            # TODO(https://crbug.com/992458): Fix and re-enable. When rolling
-            # past clang r368446, do *not* move this out of
-            # llvm_force_head_revision -- we need to fix all instances before
-            # rolling, else we lose a valuable pre-existing warning that got
-            # smarter on clang trunk. (And having a -Wno-error flag instead of
-            # -Wno-return-stack-address on pinned clang won't fly either.)
-            "-Wno-error=return-stack-address",
-          ]
-        }
+          # TODO(https://crbug.com/989932): Evaluate and possibly enable.
+          "-Wno-implicit-int-float-conversion",
+        ]
       }
     }
   }
@@ -1959,6 +1938,13 @@ config("default_stack_frames") {
   if (is_posix || is_fuchsia) {
     if (enable_frame_pointers) {
       cflags = [ "-fno-omit-frame-pointer" ]
+
+      # Omit frame pointers for leaf functions on x86, otherwise building libyuv
+      # gives clang's register allocator issues, see llvm.org/PR15798 /
+      # crbug.com/233709
+      if (is_clang && current_cpu == "x86" && !is_mac && !is_ios) {
+        cflags += [ "-momit-leaf-frame-pointer" ]
+      }
     } else {
       cflags = [ "-fomit-frame-pointer" ]
     }

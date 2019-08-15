@@ -278,7 +278,7 @@ bool IsWindowOnDesktopOfUser(aura::Window* window,
 class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
  protected:
   ChromeLauncherControllerTest()
-      : BrowserWithTestWindowTest(Browser::TYPE_TABBED) {}
+      : BrowserWithTestWindowTest(Browser::TYPE_NORMAL) {}
 
   ~ChromeLauncherControllerTest() override {}
 
@@ -502,7 +502,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
       Profile* profile) {
     TestBrowserWindow* browser_window = CreateTestBrowserWindowAura();
     new TestBrowserWindowOwner(browser_window);
-    return CreateBrowser(profile, Browser::TYPE_TABBED, false, browser_window);
+    return CreateBrowser(profile, Browser::TYPE_NORMAL, false, browser_window);
   }
 
   // Create an uninitialized chrome launcher controller instance.
@@ -4763,7 +4763,7 @@ TEST_F(ChromeLauncherControllerTest, CrostiniBrowserWindowsRecogniseShelfItem) {
       true /* trusted_srouce */, browser()->window()->GetBounds(), profile(),
       true /* user_gesture */);
   params.window = browser()->window();
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   Browser* b = new Browser(params);
   set_browser(b);
   chrome::NewTab(browser());

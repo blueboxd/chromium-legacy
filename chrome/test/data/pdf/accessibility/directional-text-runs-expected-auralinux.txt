@@ -1,0 +1,5 @@
+[embedded component]
+++[document frame]
+++++[landmark] name='Page 1'
+++++++[paragraph]
+++++++++[text] name='Hello,<newline> world!<newline><newline>Goodbye,<newline> world!'

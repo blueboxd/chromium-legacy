@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
-#include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_inputs_updater.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_layer_assigner.h"
@@ -754,13 +753,6 @@ GraphicsLayer* PaintLayerCompositor::PaintRootGraphicsLayer() const {
   return RootGraphicsLayer();
 }
 
-GraphicsLayer* PaintLayerCompositor::ScrollLayer() const {
-  if (ScrollableArea* scrollable_area =
-          layout_view_.GetFrameView()->GetScrollableArea())
-    return scrollable_area->LayerForScrolling();
-  return nullptr;
-}
-
 void PaintLayerCompositor::UpdatePotentialCompositingReasonsFromStyle(
     PaintLayer& layer) {
   auto reasons = CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
@@ -901,28 +893,6 @@ bool PaintLayerCompositor::IsMainFrame() const {
 
 VisualViewport& PaintLayerCompositor::GetVisualViewport() const {
   return layout_view_.GetFrameView()->GetPage()->GetVisualViewport();
-}
-
-bool PaintLayerCompositor::IsRootScrollerAncestor() const {
-  const TopDocumentRootScrollerController& global_rsc =
-      layout_view_.GetDocument().GetPage()->GlobalRootScrollerController();
-  PaintLayer* root_scroller_layer = global_rsc.RootScrollerPaintLayer();
-
-  if (root_scroller_layer) {
-    Frame* frame = root_scroller_layer->GetLayoutObject().GetFrame();
-    while (frame) {
-      if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
-        PaintLayerCompositor* plc =
-            local_frame->View()->GetLayoutView()->Compositor();
-        if (plc == this)
-          return true;
-      }
-
-      frame = frame->Tree().Parent();
-    }
-  }
-
-  return false;
 }
 
 }  // namespace blink

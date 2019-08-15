@@ -16,6 +16,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/tile_size_calculator.h"
+#include "cc/paint/discardable_image_map.h"
 #include "cc/paint/image_id.h"
 #include "cc/tiles/picture_layer_tiling.h"
 #include "cc/tiles/picture_layer_tiling_set.h"
@@ -139,7 +140,7 @@ class CC_EXPORT PictureLayerImpl
   const Region& InvalidationForTesting() const { return invalidation_; }
 
   // Set the paint result (PaintRecord) for a given PaintWorkletInput.
-  void SetPaintWorkletRecord(scoped_refptr<PaintWorkletInput>,
+  void SetPaintWorkletRecord(scoped_refptr<const PaintWorkletInput>,
                              sk_sp<PaintRecord>);
 
   // Retrieve the map of PaintWorkletInputs to their painted results
@@ -150,6 +151,11 @@ class CC_EXPORT PictureLayerImpl
   }
 
   gfx::Size content_bounds() { return content_bounds_; }
+
+  // Invalidates all PaintWorklets in this layer who depend on the given
+  // property to be painted. Used when the value for the property is changed by
+  // an animation, at which point the PaintWorklet must be re-painted.
+  void InvalidatePaintWorklets(const PaintWorkletInput::PropertyKey& key);
 
  protected:
   PictureLayerImpl(LayerTreeImpl* tree_impl,
@@ -185,9 +191,11 @@ class CC_EXPORT PictureLayerImpl
 
   std::unique_ptr<base::DictionaryValue> LayerAsJson() const override;
 
-  // Set the collection of PaintWorkletInputs that are part of this layer.
+  // Set the collection of PaintWorkletInput as well as their PaintImageId that
+  // are part of this layer.
   void SetPaintWorkletInputs(
-      const std::vector<scoped_refptr<PaintWorkletInput>>& inputs);
+      const std::vector<DiscardableImageMap::PaintWorkletInputWithImageId>&
+          inputs);
 
   PictureLayerImpl* twin_layer_;
 

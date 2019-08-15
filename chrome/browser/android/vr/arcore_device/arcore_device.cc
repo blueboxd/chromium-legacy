@@ -81,8 +81,7 @@ ArCoreDevice::ArCoreDevice(
       ar_image_transport_factory_(std::move(ar_image_transport_factory)),
       mailbox_bridge_(std::move(mailbox_to_surface_bridge)),
       arcore_session_utils_(std::move(arcore_session_utils)),
-      session_state_(std::make_unique<ArCoreDevice::SessionState>()),
-      weak_ptr_factory_(this) {
+      session_state_(std::make_unique<ArCoreDevice::SessionState>()) {
   // Ensure display_info_ is set to avoid crash in CallDeferredSessionCallback
   // if initialization fails. Use an arbitrary but really low resolution to make
   // it obvious if we're using this data instead of the actual values we get

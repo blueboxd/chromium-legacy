@@ -22,19 +22,35 @@ CrosNetworkConfigTestObserver::GenerateInterfacePtr() {
   return observer_ptr;
 }
 
+int CrosNetworkConfigTestObserver::GetNetworkChangedCount(
+    const std::string& guid) const {
+  const auto iter = networks_changed_.find(guid);
+  if (iter == networks_changed_.end())
+    return 0;
+  return iter->second;
+}
+
 void CrosNetworkConfigTestObserver::OnActiveNetworksChanged(
     std::vector<mojom::NetworkStatePropertiesPtr> networks) {
   active_networks_changed_++;
 }
+
+void CrosNetworkConfigTestObserver::OnNetworkStateChanged(
+    chromeos::network_config::mojom::NetworkStatePropertiesPtr network) {
+  networks_changed_[network->guid]++;
+}
+
 void CrosNetworkConfigTestObserver::OnNetworkStateListChanged() {
   network_state_list_changed_++;
 }
+
 void CrosNetworkConfigTestObserver::OnDeviceStateListChanged() {
   device_state_list_changed_++;
 }
 
 void CrosNetworkConfigTestObserver::ResetNetworkChanges() {
   active_networks_changed_ = 0;
+  networks_changed_.clear();
   network_state_list_changed_ = 0;
   device_state_list_changed_ = 0;
 }

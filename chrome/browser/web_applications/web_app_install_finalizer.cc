@@ -74,6 +74,7 @@ void WebAppInstallFinalizer::FinalizeInstall(
   web_app->SetLaunchContainer(web_app_info.open_as_window
                                   ? LaunchContainer::kWindow
                                   : LaunchContainer::kTab);
+  web_app->SetIsLocallyInstalled(options.locally_installed);
 
   SetIcons(web_app_info, web_app.get());
 

@@ -158,6 +158,90 @@ INSTANTIATE_TEST_SUITE_P(,
 
 class GcpReauthCredentialGlsRunnerTest : public GlsRunnerTestBase {};
 
+TEST_F(GcpReauthCredentialGlsRunnerTest, NoGaiaIdAvailable) {
+  USES_CONVERSION;
+  CredentialProviderSigninDialogTestDataStorage test_data_storage;
+
+  CComBSTR username = L"foo_bar";
+  CComBSTR full_name = A2COLE(test_data_storage.GetSuccessFullName().c_str());
+  CComBSTR password = A2COLE(test_data_storage.GetSuccessPassword().c_str());
+  CComBSTR email = A2COLE(test_data_storage.GetSuccessEmail().c_str());
+
+  // Create a fake user to reauth.
+  CComBSTR sid;
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                OLE2CW(username), OLE2CW(password), OLE2CW(full_name),
+                L"comment", base::UTF8ToUTF16(test_data_storage.GetSuccessId()),
+                OLE2CW(email), &sid));
+
+  // Create provider and start logon.
+  CComPtr<ICredentialProviderCredential> cred;
+
+  // Create with invalid token handle response so that a reauth occurs.
+  SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(1, &cred));
+
+  // Change the registry entry for gaia id to empty string.
+  ASSERT_EQ(S_OK, SetUserProperty(OLE2CW(sid), kUserId, L""));
+
+  // The GetSerialization call that loads the GLS should fail.
+  BOOL auto_login;
+  EXPECT_EQ(S_OK, cred->SetSelected(&auto_login));
+
+  // Logging on is an async process, so the call to GetSerialization() starts
+  // the process, but when it returns it has not completed.
+  CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
+  CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
+  wchar_t* status_text;
+  CREDENTIAL_PROVIDER_STATUS_ICON status_icon;
+  ASSERT_EQ(E_UNEXPECTED,
+            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
+  ASSERT_EQ(CPGSR_NO_CREDENTIAL_NOT_FINISHED, cpgsr);
+}
+
+TEST_F(GcpReauthCredentialGlsRunnerTest, NoGaiaIdAvailableForADUser) {
+  USES_CONVERSION;
+
+  // Override registry to enable AD association with google.
+  constexpr wchar_t kRegEnableADAssociation[] = L"enable_ad_association";
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEnableADAssociation, 1));
+
+  CredentialProviderSigninDialogTestDataStorage test_data_storage;
+
+  CComBSTR username = L"foo_bar";
+  CComBSTR full_name = A2COLE(test_data_storage.GetSuccessFullName().c_str());
+  CComBSTR password = A2COLE(test_data_storage.GetSuccessPassword().c_str());
+  CComBSTR email = A2COLE(test_data_storage.GetSuccessEmail().c_str());
+
+  // Create a fake ad joined domain user to reauth.
+  CComBSTR sid;
+  std::string empty_gaia_id = "";
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      OLE2CW(username), OLE2CW(password), OLE2CW(full_name),
+                      L"comment", base::UTF8ToUTF16(empty_gaia_id),
+                      OLE2CW(email), L"domain", &sid));
+
+  // Create provider and start logon.
+  CComPtr<ICredentialProviderCredential> cred;
+
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(1, &cred));
+
+  // The GetSerialization call that loads the GLS should succeed.
+  BOOL auto_login;
+  EXPECT_EQ(S_OK, cred->SetSelected(&auto_login));
+
+  // Logging on is an async process, so the call to GetSerialization() starts
+  // the process, but when it returns it has not completed.
+  CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
+  CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
+  wchar_t* status_text;
+  CREDENTIAL_PROVIDER_STATUS_ICON status_icon;
+  ASSERT_EQ(S_OK,
+            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
+  ASSERT_EQ(CPGSR_NO_CREDENTIAL_NOT_FINISHED, cpgsr);
+}
+
 TEST_F(GcpReauthCredentialGlsRunnerTest, UserGaiaIdMismatch) {
   USES_CONVERSION;
 

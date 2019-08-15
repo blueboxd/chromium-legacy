@@ -7,11 +7,14 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "storage/browser/blob/blob_data_handle.h"

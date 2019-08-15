@@ -261,7 +261,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool HasNonZeroEffectiveOpacity() const;
 
  protected:
-  void EnsureIdForTesting() { fragment_.EnsureIdForTesting(); }
+  void EnsureIdForTesting() { fragment_.EnsureId(); }
 
  private:
   // DisplayItemClient methods.
@@ -671,7 +671,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsProgress() const { return IsOfType(kLayoutObjectProgress); }
   bool IsQuote() const { return IsOfType(kLayoutObjectQuote); }
   bool IsLayoutButton() const { return IsOfType(kLayoutObjectLayoutButton); }
-  bool IsLayoutCustom() const { return IsOfType(kLayoutObjectLayoutCustom); }
+  bool IsLayoutNGCustom() const {
+    return IsOfType(kLayoutObjectLayoutNGCustom);
+  }
   bool IsLayoutGrid() const { return IsOfType(kLayoutObjectLayoutGrid); }
   bool IsLayoutIFrame() const { return IsOfType(kLayoutObjectLayoutIFrame); }
   bool IsLayoutImage() const { return IsOfType(kLayoutObjectLayoutImage); }
@@ -2283,6 +2285,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
     FragmentData& FirstFragment() { return layout_object_.fragment_; }
 
+    void EnsureId() { layout_object_.fragment_.EnsureId(); }
+
    protected:
     friend class LayoutBoxModelObject;
     friend class LayoutScrollbar;
@@ -2479,7 +2483,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectProgress,
     kLayoutObjectQuote,
     kLayoutObjectLayoutButton,
-    kLayoutObjectLayoutCustom,
+    kLayoutObjectLayoutNGCustom,
     kLayoutObjectLayoutFlowThread,
     kLayoutObjectLayoutGrid,
     kLayoutObjectLayoutIFrame,

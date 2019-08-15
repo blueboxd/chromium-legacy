@@ -4,6 +4,8 @@
 
 #include "content/browser/indexed_db/indexed_db_pre_close_task_queue.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"

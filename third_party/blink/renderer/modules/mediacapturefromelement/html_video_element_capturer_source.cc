@@ -98,8 +98,7 @@ void HtmlVideoElementCapturerSource::StartCapture(
                         params.requested_format.frame_rate));
 
   running_callback_.Run(true);
-  // TODO(crbug.com/964463): Use per-frame task runner.
-  Thread::Current()->GetTaskRunner()->PostTask(
+  task_runner_->PostTask(
       FROM_HERE, WTF::Bind(&HtmlVideoElementCapturerSource::sendNewFrame,
                            weak_factory_.GetWeakPtr()));
 }

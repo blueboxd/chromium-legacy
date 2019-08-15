@@ -30,28 +30,23 @@ public class ChromeMenu extends PageController {
     }
 
     @Override
-    public boolean isCurrentPageThis() {
-        return mLocatorHelper.isOnScreen(LOCATOR_CHROME_MENU);
+    public ChromeMenu verifyActive() {
+        mLocatorHelper.verifyOnScreen(LOCATOR_CHROME_MENU);
+        return this;
     }
 
     public NewTabPageController openNewTab() {
         mUtils.click(LOCATOR_NEW_TAB);
-        NewTabPageController inst = NewTabPageController.getInstance();
-        inst.verify();
-        return inst;
+        return NewTabPageController.getInstance().verifyActive();
     }
 
     public IncognitoNewTabPageController openNewIncognitoTab() {
         mUtils.click(LOCATOR_NEW_INCOGNITO_TAB);
-        IncognitoNewTabPageController inst = IncognitoNewTabPageController.getInstance();
-        inst.verify();
-        return inst;
+        return IncognitoNewTabPageController.getInstance().verifyActive();
     }
 
     public NewTabPageController dismiss() {
         mUtils.clickOutsideOf(LOCATOR_CHROME_MENU_BOX);
-        NewTabPageController inst = NewTabPageController.getInstance();
-        inst.verify();
-        return inst;
+        return NewTabPageController.getInstance().verifyActive();
     }
 }

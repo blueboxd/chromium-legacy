@@ -8,6 +8,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
@@ -33,6 +35,36 @@ namespace {
 const char kCupsPrintJobNotificationId[] =
     "chrome://settings/printing/cups-print-job-notification";
 
+const int64_t kSuccessTimeoutSeconds = 8;
+
+base::string16 GetNotificationTitleForError(
+    const base::WeakPtr<CupsPrintJob>& print_job) {
+  DCHECK_EQ(CupsPrintJob::State::STATE_ERROR, print_job->state());
+
+  switch (print_job->error_code()) {
+    case CupsPrintJob::ErrorCode::PAPER_JAM:
+      return l10n_util::GetStringFUTF16(
+          IDS_PRINT_JOB_PAPER_JAM_NOTIFICATION_TITLE,
+          base::UTF8ToUTF16(print_job->document_title()));
+    case CupsPrintJob::ErrorCode::OUT_OF_INK:
+      return l10n_util::GetStringFUTF16(
+          IDS_PRINT_JOB_OUT_OF_INK_NOTIFICATION_TITLE,
+          base::UTF8ToUTF16(print_job->document_title()));
+    case CupsPrintJob::ErrorCode::OUT_OF_PAPER:
+      return l10n_util::GetStringFUTF16(
+          IDS_PRINT_JOB_OUT_OF_PAPER_NOTIFICATION_TITLE,
+          base::UTF8ToUTF16(print_job->document_title()));
+    case CupsPrintJob::ErrorCode::DOOR_OPEN:
+      return l10n_util::GetStringFUTF16(
+          IDS_PRINT_JOB_DOOR_OPEN_NOTIFICATION_TITLE,
+          base::UTF8ToUTF16(print_job->document_title()));
+    default:
+      return l10n_util::GetStringFUTF16(
+          IDS_PRINT_JOB_ERROR_NOTIFICATION_TITLE,
+          base::UTF8ToUTF16(print_job->document_title()));
+  }
+}
+
 }  // namespace
 
 CupsPrintJobNotification::CupsPrintJobNotification(
@@ -43,6 +75,7 @@ CupsPrintJobNotification::CupsPrintJobNotification(
       notification_id_(print_job->GetUniqueId()),
       print_job_(print_job),
       profile_(profile),
+      success_timer_(std::make_unique<base::OneShotTimer>()),
       weak_factory_(this) {
   // Create a notification for the print job. The title, body, icon and buttons
   // of the notification will be updated in UpdateNotification().
@@ -103,10 +136,7 @@ void CupsPrintJobNotification::Click(
       // print_job_ was deleted in CancelPrintJob.  Forget the pointer.
       print_job_ = nullptr;
 
-      // Clean up the notification.
-      NotificationDisplayService::GetForProfile(profile_)->Close(
-          NotificationHandler::Type::TRANSIENT, notification_id_);
-      notification_manager_->OnPrintJobNotificationRemoved(this);
+      CleanUpNotification();
       break;
     case ButtonCommand::GET_HELP:
       // Show CUPS printing help page.
@@ -117,6 +147,12 @@ void CupsPrintJobNotification::Click(
       Navigate(&params);
       break;
   }
+}
+
+void CupsPrintJobNotification::CleanUpNotification() {
+  NotificationDisplayService::GetForProfile(profile_)->Close(
+      NotificationHandler::Type::TRANSIENT, notification_id_);
+  notification_manager_->OnPrintJobNotificationRemoved(this);
 }
 
 void CupsPrintJobNotification::UpdateNotification() {
@@ -143,12 +179,16 @@ void CupsPrintJobNotification::UpdateNotification() {
                                *notification_, /*metadata=*/nullptr);
     }
   } else {
-    closed_in_middle_ = false;
-    // In order to make sure it pop up, we should delete it before readding it.
-    display_service->Close(NotificationHandler::Type::TRANSIENT,
-                           notification_id_);
     display_service->Display(NotificationHandler::Type::TRANSIENT,
                              *notification_, /*metadata=*/nullptr);
+    if (print_job_->state() == CupsPrintJob::State::STATE_DOCUMENT_DONE) {
+      display_service->Display(NotificationHandler::Type::TRANSIENT,
+                               *notification_, /*metadata=*/nullptr);
+      success_timer_->Start(
+          FROM_HERE, base::TimeDelta::FromSeconds(kSuccessTimeoutSeconds),
+          base::BindOnce(&CupsPrintJobNotification::CleanUpNotification,
+                         base::Unretained(this)));
+    }
   }
 
   // |print_job_| will be deleted by CupsPrintJobManager if the job is finished
@@ -182,6 +222,9 @@ void CupsPrintJobNotification::UpdateNotificationTitle() {
           IDS_PRINT_JOB_ERROR_NOTIFICATION_TITLE,
           base::UTF8ToUTF16(print_job_->document_title()));
       break;
+    case CupsPrintJob::State::STATE_ERROR:
+      title = GetNotificationTitleForError(print_job_);
+      break;
     default:
       break;
   }
@@ -206,6 +249,7 @@ void CupsPrintJobNotification::UpdateNotificationIcon() {
       break;
     case CupsPrintJob::State::STATE_CANCELLED:
     case CupsPrintJob::State::STATE_FAILED:
+    case CupsPrintJob::State::STATE_ERROR:
       notification_->set_accent_color(ash::kSystemNotificationColorWarning);
       notification_->set_vector_small_image(kNotificationPrintingWarningIcon);
       break;
@@ -240,14 +284,17 @@ void CupsPrintJobNotification::UpdateNotificationType() {
     case CupsPrintJob::State::STATE_PAGE_DONE:
     case CupsPrintJob::State::STATE_SUSPENDED:
     case CupsPrintJob::State::STATE_RESUMED:
+    case CupsPrintJob::State::STATE_ERROR:
       notification_->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
       notification_->set_progress(print_job_->printed_page_number() * 100 /
                                   print_job_->total_page_number());
+      notification_->set_never_timeout(/*never_timeout=*/true);
       break;
     case CupsPrintJob::State::STATE_NONE:
     case CupsPrintJob::State::STATE_DOCUMENT_DONE:
     case CupsPrintJob::State::STATE_FAILED:
     case CupsPrintJob::State::STATE_CANCELLED:
+      notification_->set_never_timeout(/*never_timeout=*/false);
       notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
       break;
   }
@@ -276,6 +323,7 @@ CupsPrintJobNotification::GetButtonCommands() const {
     case CupsPrintJob::State::STATE_PAGE_DONE:
     case CupsPrintJob::State::STATE_RESUMED:
     case CupsPrintJob::State::STATE_SUSPENDED:
+    case CupsPrintJob::State::STATE_ERROR:
       commands.push_back(ButtonCommand::CANCEL_PRINTING);
       break;
     case CupsPrintJob::State::STATE_FAILED:

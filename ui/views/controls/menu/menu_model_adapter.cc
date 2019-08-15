@@ -96,7 +96,7 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
   if (*type == MenuItemView::SEPARATOR) {
     return menu->AddMenuItemAt(menu_index, item_id, base::string16(),
                                base::string16(), base::string16(), nullptr,
-                               gfx::ImageSkia(), *type,
+                               gfx::ImageSkia(), nullptr, *type,
                                model->GetSeparatorTypeAt(model_index));
   }
 
@@ -106,8 +106,8 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
       menu_index, item_id, model->GetLabelAt(model_index),
       model->GetSublabelAt(model_index), model->GetMinorTextAt(model_index),
       model->GetMinorIconAt(model_index),
-      icon.IsEmpty() ? gfx::ImageSkia() : *icon.ToImageSkia(), *type,
-      ui::NORMAL_SEPARATOR);
+      icon.IsEmpty() ? gfx::ImageSkia() : *icon.ToImageSkia(),
+      model->GetVectorIconAt(model_index), *type, ui::NORMAL_SEPARATOR);
 }
 
 // Static.

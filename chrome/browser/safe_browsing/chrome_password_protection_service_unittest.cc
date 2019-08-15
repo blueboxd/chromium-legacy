@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
@@ -38,6 +39,7 @@
 #include "components/safe_browsing/verdict_cache_manager.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/model/model_type_controller_delegate.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/sync_user_events/fake_user_event_service.h"
 #include "content/public/browser/navigation_handle.h"
@@ -60,11 +62,29 @@ using PasswordReuseEvent =
 using PasswordReuseLookup = GaiaPasswordReuse::PasswordReuseLookup;
 using ::testing::_;
 using ::testing::Return;
+using ::testing::WithArg;
 
 namespace OnPolicySpecifiedPasswordReuseDetected = extensions::api::
     safe_browsing_private::OnPolicySpecifiedPasswordReuseDetected;
 namespace OnPolicySpecifiedPasswordChanged =
     extensions::api::safe_browsing_private::OnPolicySpecifiedPasswordChanged;
+
+class MockSecurityEventRecorder : public SecurityEventRecorder {
+ public:
+  MockSecurityEventRecorder() = default;
+  ~MockSecurityEventRecorder() override = default;
+
+  static BrowserContextKeyedServiceFactory::TestingFactory Create() {
+    return base::BindRepeating(
+        [](content::BrowserContext* context) -> std::unique_ptr<KeyedService> {
+          return std::make_unique<MockSecurityEventRecorder>();
+        });
+  }
+
+  MOCK_METHOD0(GetControllerDelegate,
+               base::WeakPtr<syncer::ModelTypeControllerDelegate>());
+  MOCK_METHOD1(RecordGaiaPasswordReuse, void(const GaiaPasswordReuse&));
+};
 
 namespace safe_browsing {
 
@@ -223,6 +243,12 @@ class ChromePasswordProtectionServiceTest
 
     identity_test_env_profile_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
+
+    security_event_recorder_ = static_cast<MockSecurityEventRecorder*>(
+        SecurityEventRecorderFactory::GetInstance()->SetTestingFactoryAndUse(
+            browser_context(), MockSecurityEventRecorder::Create()));
+    // To make sure we are not accidentally calling the SecurityEventRecorder.
+    EXPECT_CALL(*security_event_recorder_, RecordGaiaPasswordReuse(_)).Times(0);
   }
 
   void TearDown() override {
@@ -339,6 +365,7 @@ class ChromePasswordProtectionServiceTest
   std::unique_ptr<LoginReputationClientResponse> verdict_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_profile_adaptor_;
+  MockSecurityEventRecorder* security_event_recorder_;
   // Owned by KeyedServiceFactory.
   syncer::FakeUserEventService* fake_user_event_service_;
   extensions::TestEventRouter* test_event_router_;
@@ -576,14 +603,16 @@ TEST_F(ChromePasswordProtectionServiceTest,
   service_->MaybeLogPasswordReuseDetectedEvent(web_contents());
   EXPECT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
   service_->MaybeLogPasswordReuseLookupEvent(
-      web_contents(), RequestOutcome::MATCHED_WHITELIST, nullptr);
+      web_contents(), RequestOutcome::MATCHED_WHITELIST,
+      PasswordType::PRIMARY_ACCOUNT_PASSWORD, nullptr);
   EXPECT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
 
   // PasswordReuseLookup
   unsigned long t = 0;
   for (const auto& it : kTestCasesWithoutVerdict) {
-    service_->MaybeLogPasswordReuseLookupEvent(web_contents(),
-                                               it.request_outcome, nullptr);
+    service_->MaybeLogPasswordReuseLookupEvent(
+        web_contents(), it.request_outcome,
+        PasswordType::PRIMARY_ACCOUNT_PASSWORD, nullptr);
     ASSERT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty()) << t;
     t++;
   }
@@ -623,6 +652,21 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
   // Not checking for the extended_reporting_level since that requires setting
   // multiple prefs and doesn't add much verification value.
+}
+
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyPasswordReuseDetectedSecurityEventRecorded) {
+  EXPECT_CALL(*security_event_recorder_, RecordGaiaPasswordReuse(_))
+      .WillOnce(WithArg<0>([&](const auto& message) {
+        EXPECT_EQ(PasswordReuseLookup::REQUEST_SUCCESS,
+                  message.reuse_lookup().lookup_result());
+        EXPECT_EQ(PasswordReuseLookup::SAFE, message.reuse_lookup().verdict());
+        EXPECT_EQ("verdict_token", message.reuse_lookup().verdict_token());
+      }));
+  service_->MaybeLogPasswordReuseLookupResultWithVerdict(
+      web_contents(), PasswordType::OTHER_GAIA_PASSWORD,
+      PasswordReuseLookup::REQUEST_SUCCESS, PasswordReuseLookup::SAFE,
+      "verdict_token");
 }
 
 // Check that the PaswordCapturedEvent timer is set for 1 min if password
@@ -744,8 +788,9 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
   unsigned long t = 0;
   for (const auto& it : kTestCasesWithoutVerdict) {
-    service_->MaybeLogPasswordReuseLookupEvent(web_contents(),
-                                               it.request_outcome, nullptr);
+    service_->MaybeLogPasswordReuseLookupEvent(
+        web_contents(), it.request_outcome,
+        PasswordType::PRIMARY_ACCOUNT_PASSWORD, nullptr);
     ASSERT_EQ(t + 1, GetUserEventService()->GetRecordedUserEvents().size())
         << t;
     PasswordReuseLookup reuse_lookup = GetUserEventService()
@@ -762,7 +807,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
     response->set_verdict_type(LoginReputationClientResponse::LOW_REPUTATION);
     service_->MaybeLogPasswordReuseLookupEvent(
         web_contents(), RequestOutcome::RESPONSE_ALREADY_CACHED,
-        response.get());
+        PasswordType::PRIMARY_ACCOUNT_PASSWORD, response.get());
     ASSERT_EQ(t + 1, GetUserEventService()->GetRecordedUserEvents().size())
         << t;
     PasswordReuseLookup reuse_lookup = GetUserEventService()
@@ -781,7 +826,8 @@ TEST_F(ChromePasswordProtectionServiceTest,
     response->set_verdict_token("token2");
     response->set_verdict_type(LoginReputationClientResponse::SAFE);
     service_->MaybeLogPasswordReuseLookupEvent(
-        web_contents(), RequestOutcome::SUCCEEDED, response.get());
+        web_contents(), RequestOutcome::SUCCEEDED,
+        PasswordType::PRIMARY_ACCOUNT_PASSWORD, response.get());
     ASSERT_EQ(t + 1, GetUserEventService()->GetRecordedUserEvents().size())
         << t;
     PasswordReuseLookup reuse_lookup = GetUserEventService()

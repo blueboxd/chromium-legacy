@@ -10,6 +10,7 @@
 
 #include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "chromeos/services/assistant/assistant_settings_manager.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
@@ -18,7 +19,8 @@ namespace chromeos {
 namespace assistant {
 
 // Interface class that defines all assistant functionalities.
-class AssistantManagerService : public mojom::Assistant {
+class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
+    : public mojom::Assistant {
  public:
   enum State {
     // Initial state, the service is created but not started yet.

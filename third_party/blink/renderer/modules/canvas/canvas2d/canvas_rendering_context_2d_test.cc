@@ -12,8 +12,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
@@ -22,7 +25,6 @@
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_gradient.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_pattern.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
@@ -39,6 +41,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -97,10 +100,11 @@ scoped_refptr<Image> FakeImageSource::GetSourceImageForCanvas(
 
 enum LinearPixelMathState { kLinearPixelMathDisabled, kLinearPixelMathEnabled };
 
-class CanvasRenderingContext2DTest : public PageTestBase {
+class CanvasRenderingContext2DTest : public ::testing::Test {
  protected:
   CanvasRenderingContext2DTest();
   void SetUp() override;
+  virtual bool AllowsAcceleration() { return false; }
 
   HTMLCanvasElement& CanvasElement() const { return *canvas_element_; }
   bool IsCanvasResourceHostSet(Canvas2DLayerBridge* bridge) {
@@ -139,9 +143,26 @@ class CanvasRenderingContext2DTest : public PageTestBase {
       const IntSize&,
       Canvas2DLayerBridge::AccelerationMode);
 
- private:
+  Document& GetDocument() const {
+    return *web_view_helper_->GetWebView()
+                ->MainFrameImpl()
+                ->GetFrame()
+                ->DomWindow()
+                ->document();
+  }
+
+  void UpdateAllLifecyclePhasesForTest() {
+    GetDocument().View()->UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    GetDocument().View()->RunPostLifecycleSteps();
+  }
+
+  std::unique_ptr<frame_test_helpers::WebViewHelper> web_view_helper_;
   Persistent<HTMLCanvasElement> canvas_element_;
+
+ private:
   Persistent<MemoryCache> global_memory_cache_;
+  std::unique_ptr<ScopedAccelerated2dCanvasForTest> allow_accelerated_;
 
   class WrapGradients final : public GarbageCollectedFinalized<WrapGradients> {
    public:
@@ -165,9 +186,6 @@ class CanvasRenderingContext2DTest : public PageTestBase {
   FakeImageSource opaque_bitmap_;
   FakeImageSource alpha_bitmap_;
   FakeGLES2Interface gl_;
-
-  // Set this to override frame settings.
-  FrameSettingOverrideFunction override_settings_function_ = nullptr;
 
   StringOrCanvasGradientOrCanvasPattern& OpaqueGradient() {
     return wrap_gradients_->opaque_gradient_;
@@ -201,14 +219,20 @@ void CanvasRenderingContext2DTest::SetUp() {
   SharedGpuContext::SetContextProviderFactoryForTesting(
       WTF::BindRepeating(factory, WTF::Unretained(&gl_)));
 
-  PageTestBase::SetUp();
+  allow_accelerated_.reset(
+      new ScopedAccelerated2dCanvasForTest(AllowsAcceleration()));
+  web_view_helper_ = std::make_unique<frame_test_helpers::WebViewHelper>();
+  web_view_helper_->Initialize();
+
+  GetDocument().documentElement()->SetInnerHTMLFromString(String::FromUTF8(
+      "<body><canvas id='c'></canvas><canvas id='d'></canvas></body>"));
+  UpdateAllLifecyclePhasesForTest();
+
   // Simulate that we allow scripts, so that HTMLCanvasElement uses
   // LayoutHTMLCanvas.
-  GetPage().GetSettings().SetScriptEnabled(true);
+  GetDocument().GetPage()->GetSettings().SetScriptEnabled(true);
 
-  SetHtmlInnerHTML(
-      "<body><canvas id='c'></canvas><canvas id='d'></canvas></body>");
-  canvas_element_ = To<HTMLCanvasElement>(GetElementById("c"));
+  canvas_element_ = To<HTMLCanvasElement>(GetDocument().getElementById("c"));
 
   full_image_data_ = ImageData::Create(IntSize(10, 10));
   partial_image_data_ = ImageData::Create(IntSize(2, 2));
@@ -667,7 +691,7 @@ TEST_F(CanvasRenderingContext2DTest,
 
   // This Page is not actually being shown by a compositor, but we act like it
   // will in order to test behaviour.
-  GetPage().GetSettings().SetAcceleratedCompositingEnabled(true);
+  GetDocument().GetPage()->GetSettings().SetAcceleratedCompositingEnabled(true);
   CreateContext(kNonOpaque);
   IntSize size(300, 300);
   std::unique_ptr<Canvas2DLayerBridge> bridge =
@@ -1149,27 +1173,17 @@ TEST_F(CanvasRenderingContext2DTest, ColorManagedPutImageDataOnP3Canvas) {
       CanvasElement(), CanvasColorSpaceSettings::CANVAS_P3);
 }
 
-class CanvasRenderingContext2DTestWithTestingPlatform
+class CanvasRenderingContext2DTestAccelerated
     : public CanvasRenderingContext2DTest {
  protected:
-  CanvasRenderingContext2DTestWithTestingPlatform() {
-    EnablePlatform();
-    platform()->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings.
-  }
-
-  void SetUp() override {
-    EnableCompositing();
-    CanvasRenderingContext2DTest::SetUp();
-    GetDocument().View()->UpdateLayout();
-  }
-
-  void RunUntilIdle() { platform()->RunUntilIdle(); }
+  CanvasRenderingContext2DTestAccelerated() = default;
+  bool AllowsAcceleration() override { return true; }
 };
 
 // https://crbug.com/708445: When the Canvas2DLayerBridge hibernates or wakes up
 // from hibernation, the compositing reasons for the canvas element may change.
 // In these cases, the element should request a compositing update.
-TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
+TEST_F(CanvasRenderingContext2DTestAccelerated,
        ElementRequestsCompositingUpdateOnHibernateAndWakeUp) {
   CreateContext(kNonOpaque);
   IntSize size(300, 300);
@@ -1194,14 +1208,16 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
   // Hide element to trigger hibernation (if enabled).
   GetDocument().GetPage()->SetIsHidden(/*is_hidden=*/true,
                                        /*is_initial_state=*/false);
-  RunUntilIdle();  // Run hibernation task.
+  blink::test::RunPendingTasks();  // Run hibernation task.
   // If enabled, hibernation should cause compositing update.
   EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED,
             layer->NeedsCompositingInputsUpdate());
   EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED,
             !CanvasElement().ResourceProvider());
 
-  UpdateAllLifecyclePhasesForTest();
+  // The page is hidden so it doesn't make sense to paint, and doing so will
+  // DCHECK. Update all other lifecycle phases.
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_FALSE(layer->NeedsCompositingInputsUpdate());
 
   // Wake up again, which should request a compositing update synchronously.
@@ -1209,10 +1225,9 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
                                        /*is_initial_state=*/false);
   EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED,
             layer->NeedsCompositingInputsUpdate());
-  RunUntilIdle();  // Clear task queue.
 }
 
-TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
+TEST_F(CanvasRenderingContext2DTestAccelerated,
        NoHibernationIfNoResourceProvider) {
   CreateContext(kNonOpaque);
   IntSize size(300, 300);
@@ -1229,11 +1244,15 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
   PaintLayer* layer = CanvasElement().GetLayoutBoxModelObject()->Layer();
   EXPECT_TRUE(layer);
   UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(layer->NeedsCompositingInputsUpdate());
+
+  // The resource provider gets lazily created. Force it to be dropped.
+  canvas_element_->ReplaceResourceProvider(nullptr);
 
   // Hide element to trigger hibernation (if enabled).
   GetDocument().GetPage()->SetIsHidden(/*is_hidden=*/true,
                                        /*is_initial_state=*/false);
-  RunUntilIdle();  // Run hibernation task.
+  blink::test::RunPendingTasks();  // Run hibernation task.
 
   // Never hibernate a canvas with no resource provider
   EXPECT_FALSE(layer->NeedsCompositingInputsUpdate());
@@ -1247,6 +1266,9 @@ TEST_F(CanvasRenderingContext2DTest, LowLatencyIsSingleBuffered) {
   CreateContext(kNonOpaque, kLowLatency);
   // No need to set-up the layer bridge when testing low latency mode.
   DrawSomething();
+  // This test relies on a non-accelerated code path, and the software shared
+  // bitmap resource provider.
+  EXPECT_FALSE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
   auto frame1_resource =
       CanvasElement()
           .GetOrCreateCanvasResourceProvider(kPreferNoAcceleration)

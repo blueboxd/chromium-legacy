@@ -19,8 +19,7 @@ using base::android::JavaParamRef;
 
 namespace content {
 
-TtsPlatformImplAndroid::TtsPlatformImplAndroid()
-    : utterance_id_(0), weak_factory_(this) {
+TtsPlatformImplAndroid::TtsPlatformImplAndroid() : utterance_id_(0) {
   JNIEnv* env = AttachCurrentThread();
   java_ref_.Reset(
       Java_TtsPlatformImpl_create(env, reinterpret_cast<intptr_t>(this)));

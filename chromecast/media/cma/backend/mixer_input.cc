@@ -18,6 +18,7 @@
 #include "chromecast/media/cma/backend/filter_group.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_timestamp_helper.h"
+#include "media/base/channel_mixer.h"
 #include "media/base/multi_channel_resampler.h"
 
 namespace chromecast {
@@ -27,6 +28,7 @@ namespace {
 
 const int64_t kMicrosecondsPerSecond = 1000 * 1000;
 const int kDefaultSlewTimeMs = 15;
+const int kDefaultFillBufferFrames = 2048;
 
 int RoundUpMultiple(int value, int multiple) {
   return multiple * ((value + (multiple - 1)) / multiple);
@@ -53,6 +55,10 @@ MixerInput::MixerInput(Source* source, FilterGroup* filter_group)
   DCHECK(source_);
   DCHECK_GT(num_channels_, 0);
   DCHECK_GT(input_samples_per_second_, 0);
+
+  fill_buffer_ =
+      ::media::AudioBus::Create(num_channels_, kDefaultFillBufferFrames);
+  fill_buffer_->Zero();
 
   MediaPipelineBackend::AudioDecoder::RenderingDelay initial_rendering_delay =
       filter_group->GetRenderingDelayToOutput();
@@ -108,6 +114,15 @@ void MixerInput::SetFilterGroup(FilterGroup* filter_group) {
   }
   if (filter_group) {
     filter_group->AddInput(this);
+    if (filter_group->num_channels() == num_channels_) {
+      channel_mixer_.reset();
+    } else {
+      LOG(INFO) << "Remixing channels for " << source_ << " from "
+                << num_channels_ << " to " << filter_group->num_channels();
+      channel_mixer_ = std::make_unique<::media::ChannelMixer>(
+          ::media::GuessChannelLayout(num_channels_),
+          ::media::GuessChannelLayout(filter_group->num_channels()));
+    }
   }
   filter_group_ = filter_group;
 }
@@ -143,8 +158,17 @@ int MixerInput::FillAudioData(int num_frames,
                               ::media::AudioBus* dest) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(dest);
-  DCHECK_EQ(num_channels_, dest->channels());
   DCHECK_GE(dest->frames(), num_frames);
+
+  ::media::AudioBus* fill_dest;
+  if (channel_mixer_) {
+    if (num_frames > fill_buffer_->frames()) {
+      fill_buffer_ = ::media::AudioBus::Create(num_channels_, dest->frames());
+    }
+    fill_dest = fill_buffer_.get();
+  } else {
+    fill_dest = dest;
+  }
 
   volume_applied_ = false;
 
@@ -153,17 +177,17 @@ int MixerInput::FillAudioData(int num_frames,
     redirected_delay.delay_microseconds +=
         audio_output_redirectors_[0]->GetDelayMicroseconds();
   }
-  int filled = FillBuffer(num_frames, redirected_delay, dest);
+  int filled = FillBuffer(num_frames, redirected_delay, fill_dest);
 
   bool redirected = false;
   for (auto* redirector : audio_output_redirectors_) {
-    redirector->Redirect(dest, filled, rendering_delay, redirected);
+    redirector->Redirect(fill_dest, filled, rendering_delay, redirected);
     redirected = true;
   }
 
   float* channels[num_channels_];
   for (int c = 0; c < num_channels_; ++c) {
-    channels[c] = dest->channel(c);
+    channels[c] = fill_dest->channel(c);
   }
   if (first_buffer_ && redirected) {
     // If the first buffer is redirected, don't provide any data to the mixer
@@ -185,6 +209,23 @@ int MixerInput::FillAudioData(int num_frames,
   }
   previous_ended_in_silence_ = redirected;
   first_buffer_ = false;
+
+  if (source_->playout_channel() != kChannelAll) {
+    DCHECK_LT(source_->playout_channel(), num_channels_);
+
+    // Duplicate selected channel to all channels.
+    for (int c = 0; c < num_channels_; ++c) {
+      if (c != source_->playout_channel()) {
+        std::copy_n(fill_dest->channel(source_->playout_channel()), filled,
+                    fill_dest->channel(c));
+      }
+    }
+  }
+
+  // Mix channels if necessary.
+  if (channel_mixer_) {
+    channel_mixer_->TransformPartial(fill_dest, filled, dest);
+  }
 
   return filled;
 }

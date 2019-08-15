@@ -24,6 +24,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -117,7 +118,8 @@ public class FakeUrlResponseTest {
         String nameNotInOriginalList = "nameNotInOriginalList";
         String valueNotInOriginalList = "valueNotInOriginalList";
         AbstractMap.SimpleEntry<String, String> entryNotInOriginalList =
-                new AbstractMap.SimpleEntry<>(nameNotInOriginalList, valueNotInOriginalList);
+                new AbstractMap.SimpleEntry<>(
+                        nameNotInOriginalList.toLowerCase(Locale.ROOT), valueNotInOriginalList);
 
         FakeUrlResponse testResponseWithHeader =
                 mTestResponse.toBuilder()

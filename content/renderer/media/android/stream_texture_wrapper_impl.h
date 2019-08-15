@@ -122,7 +122,7 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
 
-  base::WeakPtrFactory<StreamTextureWrapperImpl> weak_factory_;
+  base::WeakPtrFactory<StreamTextureWrapperImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StreamTextureWrapperImpl);
 };

@@ -42,14 +42,8 @@ const service_manager::Manifest& GetManifest() {
           .ExposeCapability(
               "system_ui",
               service_manager::Manifest::InterfaceList<
-                  mojom::AssistantAlarmTimerController,
-                  mojom::AssistantController,
-                  mojom::AssistantNotificationController,
-                  mojom::AssistantScreenContextController,
-                  mojom::AssistantVolumeControl,
                   mojom::CrosDisplayConfigController, mojom::ImeController,
-                  mojom::TrayAction, mojom::VoiceInteractionController,
-                  mojom::VpnList>())
+                  mojom::TrayAction, mojom::VpnList>())
           .RequireCapability("*", "accessibility")
           .RequireCapability("*", "app")
           .RequireCapability(content::mojom::kServiceName, "navigation")

@@ -20,6 +20,10 @@ class FilePath;
 class Clock;
 }  // namespace base
 
+namespace leveldb_proto {
+class ProtoDatabaseProvider;
+}  // namespace leveldb_proto
+
 namespace media {
 
 class DecodeStatsProto;
@@ -36,7 +40,9 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
   // Create an instance! |db_dir| specifies where to store LevelDB files to
   // disk. LevelDB generates a handful of files, so its recommended to provide a
   // dedicated directory to keep them isolated.
-  static std::unique_ptr<VideoDecodeStatsDBImpl> Create(base::FilePath db_dir);
+  static std::unique_ptr<VideoDecodeStatsDBImpl> Create(
+      base::FilePath db_dir,
+      leveldb_proto::ProtoDatabaseProvider* db_provider);
 
   ~VideoDecodeStatsDBImpl() override;
 
@@ -55,8 +61,7 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
   // Private constructor only called by tests (friends). Production code
   // should always use the static Create() method.
   VideoDecodeStatsDBImpl(
-      std::unique_ptr<leveldb_proto::ProtoDatabase<DecodeStatsProto>> db,
-      const base::FilePath& dir);
+      std::unique_ptr<leveldb_proto::ProtoDatabase<DecodeStatsProto>> db);
 
   // Default |last_write_time| for DB entries that lack a time stamp due to
   // using an earlier version of DecodeStatsProto. Date chosen so old stats from
@@ -79,7 +84,7 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
 
   // Called when the database has been initialized. Will immediately call
   // |init_cb| to forward |success|.
-  void OnInit(InitializeCB init_cb, bool success);
+  void OnInit(InitializeCB init_cb, leveldb_proto::Enums::InitStatus status);
 
   // Returns true if the DB is successfully initialized.
   bool IsInitialized();
@@ -133,9 +138,6 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
   // ProtoDatabase instance. Set to nullptr if fatal database error is
   // encountered.
   std::unique_ptr<leveldb_proto::ProtoDatabase<DecodeStatsProto>> db_;
-
-  // Directory where levelDB should store database files.
-  base::FilePath db_dir_;
 
   // For getting wall-clock time. Tests may override via SetClockForTest().
   const base::Clock* wall_clock_ = nullptr;

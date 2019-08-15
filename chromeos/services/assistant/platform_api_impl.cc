@@ -77,26 +77,26 @@ void PlatformApiImpl::DummyAuthProvider::Reset() {}
 ////////////////////////////////////////////////////////////////////////////////
 
 PlatformApiImpl::PlatformApiImpl(
-    service_manager::Connector* connector,
+    mojom::Client* client,
     AssistantMediaSession* media_session,
     device::mojom::BatteryMonitorPtr battery_monitor,
     scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
     std::string pref_locale)
-    : audio_input_provider_(connector,
+    : audio_input_provider_(client,
                             media::AudioDeviceDescription::kDefaultDeviceId,
                             /*hotword_device_id=*/std::string()),
-      audio_output_provider_(connector,
+      audio_output_provider_(client,
                              media_session,
                              background_task_runner,
                              media::AudioDeviceDescription::kDefaultDeviceId),
-      network_provider_(connector),
+      network_provider_(client),
       pref_locale_(pref_locale) {
   // Only enable native power features if they are supported by the UI.
   std::unique_ptr<PowerManagerProviderImpl> provider;
   if (features::IsPowerManagerEnabled()) {
     provider = std::make_unique<PowerManagerProviderImpl>(
-        connector, std::move(main_thread_task_runner));
+        client, std::move(main_thread_task_runner));
   }
   system_provider_ = std::make_unique<SystemProviderImpl>(
       std::move(provider), std::move(battery_monitor));

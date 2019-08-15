@@ -81,7 +81,7 @@ Where:
     <pin-keyboard id="pinKeyboard" on-pin-change="onPinChange_"
         on-submit="onPinSubmit_" value="{{pinKeyboardValue_}}"
         has-error="[[hasError_(problemMessageId_, problemClass_)]]"
-        enable-placeholder="[[enablePlaceholder]]"
+        enable-placeholder="[[enablePlaceholder]]" enable-letters
         is-incognito-ui="[[isIncognitoUi]]">
       <!-- Warning/error; only shown if title is hidden. -->
       <div id="problemDiv" class$="[[problemClass_]]"

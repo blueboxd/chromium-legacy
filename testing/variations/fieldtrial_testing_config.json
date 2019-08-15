@@ -1202,25 +1202,6 @@
             ]
         }
     ],
-    "BlinkGenPropertyTrees": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "BlinkGenPropertyTrees"
-                    ]
-                }
-            ]
-        }
-    ],
     "BlinkLayoutNG": [
         {
             "platforms": [
@@ -1260,6 +1241,25 @@
                     },
                     "enable_features": [
                         "BlinkSchedulerWorkerThrottling"
+                    ]
+                }
+            ]
+        }
+    ],
+    "BlinkSchedulerDisableAntiStarvationForPriorities": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "BlinkSchedulerDisableAntiStarvationForPriorities"
                     ]
                 }
             ]
@@ -2535,6 +2535,29 @@
                     "name": "Enabled",
                     "enable_features": [
                         "GridLayoutForNtpShortcuts"
+                    ]
+                }
+            ]
+        }
+    ],
+    "GwpAsanAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "AllocationSamplingRange": "16",
+                        "MaxAllocations": "70",
+                        "MaxMetadata": "255",
+                        "ProcessSamplingBoost2": "10",
+                        "ProcessSamplingProbability": "0.05"
+                    },
+                    "enable_features": [
+                        "GwpAsanMalloc",
+                        "GwpAsanPartitionAlloc"
                     ]
                 }
             ]

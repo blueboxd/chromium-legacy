@@ -5,6 +5,7 @@
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/strings/string_piece.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
@@ -621,7 +622,7 @@ Status IndexedDBMetadataCoding::CreateObjectStore(
   if (!s.ok())
     return s;
 
-  static const constexpr long long kInitialLastVersionNumber = 1;
+  static const constexpr int64_t kInitialLastVersionNumber = 1;
   const std::string name_key = ObjectStoreMetaDataKey::Encode(
       database_id, object_store_id, ObjectStoreMetaDataKey::NAME);
   const std::string key_path_key = ObjectStoreMetaDataKey::Encode(

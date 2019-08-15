@@ -100,23 +100,21 @@ void AssertURLIs(const GURL& expectedURL) {
 
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
 
-  // On iOS13 waiting for the toolbar to be visible is not enough -- the PDF
-  // itself can take a little longer to load.  Instead, wait for an internal
-  // PDF class to appear in the view hierarchy.
-  if (@available(iOS 13, *)) {
-    ConditionBlock condition = ^{
-      NSError* error = nil;
-      [[EarlGrey selectElementWithMatcher:grey_kindOfClass(NSClassFromString(
-                                              @"PDFExtensionTopView"))]
-          assertWithMatcher:grey_notNil()
-                      error:&error];
-      return error == nil;
-    };
+  // Waiting for the toolbar to be visible is not enough -- the PDF itself can
+  // take a little longer to load.  Instead, wait for an internal PDF class to
+  // appear in the view hierarchy.
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:grey_kindOfClass(NSClassFromString(
+                                            @"PDFExtensionTopView"))]
+        assertWithMatcher:grey_notNil()
+                    error:&error];
+    return error == nil;
+  };
 
-    NSString* errorMessage = @"PDFExtensionTopView was not visible";
-    GREYAssert(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, condition),
-               errorMessage);
-  }
+  NSString* errorMessage = @"PDFExtensionTopView was not visible";
+  GREYAssert(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, condition),
+             errorMessage);
 
   // Initial y scroll positions are set to make room for the toolbar.
   // TODO(crbug.com/618887) Replace use of specific values when API which

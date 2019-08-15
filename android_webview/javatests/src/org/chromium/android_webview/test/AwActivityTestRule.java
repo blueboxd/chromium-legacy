@@ -101,7 +101,7 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
 
     public AwBrowserContext createAwBrowserContextOnUiThread(InMemorySharedPreferences prefs) {
         // Native pointer is initialized later in startBrowserProcess if needed.
-        return new AwBrowserContext(prefs, 0);
+        return new AwBrowserContext(prefs, 0, true);
     }
 
     public TestDependencyFactory createTestDependencyFactory() {

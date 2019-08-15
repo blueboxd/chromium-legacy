@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/core/loader/appcache/application_cache.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_frame.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_shared_worker.h"
-#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
@@ -62,40 +61,7 @@ const char* const kEventNames[] = {"Checking",    "Error",    "NoUpdate",
                                    "Downloading", "Progress", "UpdateReady",
                                    "Cached",      "Obsolete"};
 
-mojom::blink::DocumentInterfaceBroker* GetDocumentInterfaceBroker(
-    LocalFrame* local_frame) {
-  return local_frame->Client()->GetDocumentInterfaceBroker();
-}
-
 }  // namespace
-
-// TODO(https://crbug.com/538751): Remove this creation function, and instead
-// directly create an appcache host for frame in DocumentLoader after
-// WorkerShadowPage is removed.
-ApplicationCacheHost* ApplicationCacheHost::Create(
-    DocumentLoader* document_loader) {
-  DCHECK(document_loader);
-  DCHECK(document_loader->GetFrame());
-  LocalFrame* local_frame = document_loader->GetFrame();
-
-  DCHECK(local_frame->Client());
-  WebLocalFrameClient::AppCacheType type =
-      local_frame->Client()->GetAppCacheType();
-  switch (type) {
-    case WebLocalFrameClient::AppCacheType::kAppCacheForFrame:
-      return MakeGarbageCollected<ApplicationCacheHostForFrame>(
-          document_loader, GetDocumentInterfaceBroker(local_frame),
-          local_frame->GetTaskRunner(TaskType::kNetworking));
-    case WebLocalFrameClient::AppCacheType::kAppCacheForSharedWorker:
-      // This creation function is being called for WorkerShadowPage. Return a
-      // null application cache host. A real host is constructed in
-      // WebSharedWorkerImpl.
-    case WebLocalFrameClient::AppCacheType::kAppCacheForNone:
-      return MakeGarbageCollected<ApplicationCacheHost>(
-          /*interface_broker=*/nullptr, /*task_runner=*/nullptr);
-  }
-  return nullptr;
-}
 
 ApplicationCacheHost::ApplicationCacheHost(
     mojom::blink::DocumentInterfaceBroker* interface_broker,

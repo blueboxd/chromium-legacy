@@ -13,7 +13,7 @@
 namespace feed {
 
 FeedHistoryHelper::FeedHistoryHelper(history::HistoryService* history_service)
-    : history_service_(history_service), weak_ptr_factory_(this) {}
+    : history_service_(history_service) {}
 
 FeedHistoryHelper::~FeedHistoryHelper() = default;
 

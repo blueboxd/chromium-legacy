@@ -871,8 +871,7 @@ MediaDrmBridge::MediaDrmBridge(
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      media_crypto_context_(this),
-      weak_factory_(this) {
+      media_crypto_context_(this) {
   DVLOG(1) << __func__;
 
   DCHECK(storage_);

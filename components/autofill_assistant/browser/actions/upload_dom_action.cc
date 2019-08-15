@@ -15,7 +15,7 @@ namespace autofill_assistant {
 
 UploadDomAction::UploadDomAction(ActionDelegate* delegate,
                                  const ActionProto& proto)
-    : Action(delegate, proto), weak_ptr_factory_(this) {
+    : Action(delegate, proto) {
   DCHECK(proto_.has_upload_dom());
 }
 

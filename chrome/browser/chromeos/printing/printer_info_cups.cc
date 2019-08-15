@@ -2,26 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/printing/printer_info.h"
-
 #include <algorithm>
 #include <array>
 #include <string>
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
 #include "base/version.h"
+#include "chrome/browser/chromeos/printing/printer_info.h"
 #include "printing/backend/cups_jobs.h"
 
 namespace {
 
 const char kPdfMimeType[] = "application/pdf";
 const char kPwgRasterMimeType[] = "image/pwg-raster";
+
+const char kPwgRasterDocumentResolutionSupported[] =
+    "Printing.CUPS.PwgRasterDocumentResolutionSupported";
 
 // List of known multi-word printer manufacturers to help with make-and-model
 // string parsing.  Keep in UPPER CASE as that's how matches are performed.
@@ -124,6 +127,9 @@ void OnPrinterQueried(chromeos::PrinterInfoCallback callback,
     // If there's only one word or an empty string, use it.
     model = make_and_model;
   }
+
+  base::UmaHistogramBoolean(kPwgRasterDocumentResolutionSupported,
+                            printer_info.supports_pwg_raster_resolution);
 
   std::move(callback).Run(
       result, make.as_string(), model.as_string(), printer_info.make_and_model,

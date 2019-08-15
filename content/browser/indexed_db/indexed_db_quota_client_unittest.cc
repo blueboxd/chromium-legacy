@@ -5,6 +5,8 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"

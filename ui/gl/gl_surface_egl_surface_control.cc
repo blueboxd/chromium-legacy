@@ -52,8 +52,7 @@ GLSurfaceEGLSurfaceControl::GLSurfaceEGLSurfaceControl(
                    ANativeWindow_getHeight(window)),
       root_surface_(
           new SurfaceControl::Surface(window, root_surface_name_.c_str())),
-      gpu_task_runner_(std::move(task_runner)),
-      weak_factory_(this) {}
+      gpu_task_runner_(std::move(task_runner)) {}
 
 GLSurfaceEGLSurfaceControl::~GLSurfaceEGLSurfaceControl() {
   Destroy();

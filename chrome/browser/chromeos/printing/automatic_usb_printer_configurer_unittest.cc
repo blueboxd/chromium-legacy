@@ -94,7 +94,9 @@ class FakePrinterInstallationManager : public PrinterInstallationManager {
   ~FakePrinterInstallationManager() override = default;
 
   // CupsPrintersManager overrides
-  void PrinterInstalled(const Printer& printer, bool is_automatic) override {
+  void PrinterInstalled(const Printer& printer,
+                        bool is_automatic,
+                        PrinterSetupSource source) override {
     DCHECK(is_automatic);
 
     installed_printers_.insert(printer.id());

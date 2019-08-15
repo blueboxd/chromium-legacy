@@ -19,6 +19,7 @@
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 
@@ -95,6 +96,15 @@ class OptimizationGuideHintsManager
   // |optimization_type|.
   bool HasLoadedOptimizationFilter(
       optimization_guide::proto::OptimizationType optimization_type);
+
+  // Returns whether the current conditions match |optimization_target| and
+  // |optimization_type| can be applied for the URL associated with
+  // |navigation_handle|.
+  optimization_guide::OptimizationGuideDecision CanApplyOptimization(
+      content::NavigationHandle* navigation_handle,
+      optimization_guide::OptimizationTarget optimization_target,
+      optimization_guide::proto::OptimizationType optimization_type,
+      optimization_guide::OptimizationMetadata* optimization_metadata);
 
   // Overrides |hints_fetcher_| for testing.
   void SetHintsFetcherForTesting(
@@ -199,7 +209,7 @@ class OptimizationGuideHintsManager
   // The set of optimization types that the component specified by
   // |component_info_| has optimization filters for.
   std::unordered_set<optimization_guide::proto::OptimizationType>
-      available_optimization_filters_ GUARDED_BY(optimization_filters_lock_);
+      optimization_types_with_filter_ GUARDED_BY(optimization_filters_lock_);
 
   // A map from optimization type to the host filter that holds the blacklist
   // for that type.

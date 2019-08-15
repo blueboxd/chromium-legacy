@@ -91,8 +91,10 @@ void GamepadPlatformDataFetcherLinux::GetGamepadData(bool) {
   TRACE_EVENT0("GAMEPAD", "GetGamepadData");
 
   // Update our internal state.
-  for (size_t i = 0; i < Gamepads::kItemsLengthCap; ++i)
-    ReadDeviceData(i);
+  for (const auto& device : devices_) {
+    if (device->GetJoydevIndex() >= 0)
+      ReadDeviceData(device->GetJoydevIndex());
+  }
 }
 
 // Used during enumeration, and monitor notifications.
@@ -164,8 +166,6 @@ void GamepadPlatformDataFetcherLinux::RefreshJoydevDevice(
     udev_device* dev,
     const UdevGamepadLinux& pad_info) {
   const int joydev_index = pad_info.index;
-  if (joydev_index < 0 || joydev_index >= (int)Gamepads::kItemsLengthCap)
-    return;
 
   GamepadDeviceLinux* device = GetOrCreateMatchingDevice(pad_info);
   if (device == nullptr)
@@ -316,8 +316,6 @@ void GamepadPlatformDataFetcherLinux::OnHidrawDeviceOpened(
 }
 
 void GamepadPlatformDataFetcherLinux::ReadDeviceData(size_t index) {
-  CHECK_LT(index, Gamepads::kItemsLengthCap);
-
   GamepadDeviceLinux* device = GetDeviceWithJoydevIndex(index);
   if (!device)
     return;

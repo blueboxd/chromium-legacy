@@ -482,13 +482,12 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutCandidate(
                             container_physical_content_size);
 
   // Need a constraint space to resolve offsets.
-  NGConstraintSpace candidate_constraint_space =
-      NGConstraintSpaceBuilder(writing_mode_, candidate_writing_mode,
-                               /* is_new_fc */ true)
-          .SetTextDirection(candidate_direction)
-          .SetAvailableSize(container_content_size)
-          .SetPercentageResolutionSize(container_content_size)
-          .ToConstraintSpace();
+  NGConstraintSpaceBuilder builder(writing_mode_, candidate_writing_mode,
+                                   /* is_new_fc */ true);
+  builder.SetTextDirection(candidate_direction);
+  builder.SetAvailableSize(container_content_size);
+  builder.SetPercentageResolutionSize(container_content_size);
+  NGConstraintSpace candidate_constraint_space = builder.ToConstraintSpace();
 
   base::Optional<PaintLayerScrollableArea::FreezeScrollbarsScope>
       freeze_scrollbars;
@@ -753,11 +752,11 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
   // TODO(atotic) will need to be adjusted for scrollbars.
   NGConstraintSpaceBuilder builder(writing_mode, writing_mode,
                                    /* is_new_fc */ true);
-  builder.SetAvailableSize(available_size)
-      .SetTextDirection(node.Style().Direction())
-      .SetPercentageResolutionSize(
-          container_content_size_in_candidate_writing_mode)
-      .SetIsFixedInlineSize(true);
+  builder.SetAvailableSize(available_size);
+  builder.SetTextDirection(node.Style().Direction());
+  builder.SetPercentageResolutionSize(
+      container_content_size_in_candidate_writing_mode);
+  builder.SetIsFixedInlineSize(true);
   if (block_estimate)
     builder.SetIsFixedBlockSize(true);
   NGConstraintSpace space = builder.ToConstraintSpace();

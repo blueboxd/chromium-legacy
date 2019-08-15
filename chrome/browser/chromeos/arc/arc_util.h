@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_ARC_UTIL_H_
 
 #include <stdint.h>
+#include <memory>
 
 #include "base/callback_forward.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
@@ -18,15 +19,24 @@
 // by DEPS.
 
 class AccountId;
+class GURL;
 class Profile;
+
+namespace aura {
+class Window;
+}  // namespace aura
 
 namespace base {
 class FilePath;
-}
+}  // namespace base
+
+namespace content {
+class WebContents;
+}  // namespace content
 
 namespace user_manager {
 class User;
-}
+}  // namespace user_manager
 
 namespace arc {
 
@@ -175,6 +185,14 @@ bool IsPlayStoreAvailable();
 // directly. Leaves B&R/GLS off if not set by admin since users don't see
 // the Tos page.
 bool ShouldStartArcSilentlyForManagedProfile(const Profile* profile);
+
+// Returns an ARC window with the given task ID.
+aura::Window* GetArcWindow(int32_t task_id);
+
+// Creates a web contents for an ARC Custom Tab using the given profile and url.
+std::unique_ptr<content::WebContents> CreateArcCustomTabWebContents(
+    Profile* profile,
+    const GURL& url);
 
 }  // namespace arc
 

@@ -78,9 +78,7 @@ const std::string GetFlagNames(uint32_t flag) {
 
 }  // namespace
 
-HitTestQuery::HitTestQuery(base::RepeatingClosure bad_message_gpu_callback)
-    : bad_message_gpu_callback_(std::move(bad_message_gpu_callback)) {}
-
+HitTestQuery::HitTestQuery() = default;
 HitTestQuery::~HitTestQuery() = default;
 
 void HitTestQuery::OnAggregatedHitTestRegionListUpdated(
@@ -351,11 +349,6 @@ bool HitTestQuery::GetTransformToTargetRecursively(
   }
 
   return false;
-}
-
-void HitTestQuery::ReceivedBadMessageFromGpuProcess() const {
-  if (!bad_message_gpu_callback_.is_null())
-    bad_message_gpu_callback_.Run();
 }
 
 void HitTestQuery::RecordSlowPathHitTestReasons(uint32_t reasons) const {

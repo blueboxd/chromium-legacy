@@ -174,15 +174,8 @@ jumbo_source_set("config_sources") {
 
   if (is_win) {
     libs = [
-      "cfgmgr32.lib",
+      "dxgi.lib",
       "dxguid.lib",
-      "setupapi.lib",
-    ]
-
-    sources += [
-      "//third_party/nvml/nvml.h",
-      "nvml_info.cc",
-      "nvml_info.h",
     ]
 
     if (is_chrome_branded && is_official_build) {

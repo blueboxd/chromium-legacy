@@ -70,8 +70,7 @@ WebApkUpdateDataFetcher::WebApkUpdateDataFetcher(JNIEnv* env,
       scope_(scope),
       web_manifest_url_(web_manifest_url),
       info_(GURL()),
-      is_primary_icon_maskable_(false),
-      weak_ptr_factory_(this) {
+      is_primary_icon_maskable_(false) {
   java_ref_.Reset(env, obj);
 }
 

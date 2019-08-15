@@ -113,7 +113,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<VideoFrameFactoryImpl> weak_factory_;
+  base::WeakPtrFactory<VideoFrameFactoryImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameFactoryImpl);
 };

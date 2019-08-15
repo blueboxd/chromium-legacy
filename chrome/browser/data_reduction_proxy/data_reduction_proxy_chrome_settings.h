@@ -18,7 +18,6 @@ class Profile;
 
 namespace base {
 class SequencedTaskRunner;
-class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace content {
@@ -27,13 +26,8 @@ class NavigationHandle;
 
 namespace data_reduction_proxy {
 class DataReductionProxyData;
-class DataReductionProxyIOData;
 class DataStore;
 }  // namespace data_reduction_proxy
-
-namespace network {
-class SharedURLLoaderFactory;
-}
 
 class PrefService;
 
@@ -67,16 +61,11 @@ class DataReductionProxyChromeSettings
   // Overrides KeyedService::Shutdown:
   void Shutdown() override;
 
-  // Initialize the settings object with the given io_data, prefs services,
-  // request context getter, URL loader factory, data store, ui task runner, and
-  // db task runner.
+  // Initialize the settings object with the given profile, data store, and db
+  // task runner.
   void InitDataReductionProxySettings(
-      data_reduction_proxy::DataReductionProxyIOData* io_data,
-      PrefService* profile_prefs,
       Profile* profile,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::unique_ptr<data_reduction_proxy::DataStore> store,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner);
 
   // Gets the client type for the data reduction proxy.

@@ -46,7 +46,6 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
-#import "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -1003,6 +1002,12 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 - (void)handleLongPress:(UILongPressGestureRecognizer*)sender {
   if (sender.state != UIGestureRecognizerStateBegan)
     return;
+
+  // Do not handle the long press and present the context menu if the recent
+  // tabs UI is not visible.
+  if (!self.viewLoaded || !self.view.window || self.presentedViewController)
+    return;
+
   UIView* headerTapped = sender.view;
   NSInteger tappedHeaderSectionIdentifier = headerTapped.tag;
   NSInteger sectionIdentifier = tappedHeaderSectionIdentifier;
@@ -1027,11 +1032,8 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   // Get view coordinates in local space.
   CGPoint viewCoordinate = [sender locationInView:self.tableView];
   // Present sheet/popover using controller that is added to view hierarchy.
-  // TODO(crbug.com/754642): Remove TopPresentedViewController().
-  UIViewController* topController =
-      top_view_controller::TopPresentedViewController();
   self.contextMenuCoordinator = [[ContextMenuCoordinator alloc]
-      initWithBaseViewController:topController
+      initWithBaseViewController:self
                            title:nil
                           inView:self.tableView
                       atLocation:viewCoordinate];

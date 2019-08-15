@@ -64,11 +64,7 @@ int TabModelSyncedWindowDelegate::GetActiveIndex() const {
   return web_state_list_->active_index();
 }
 
-bool TabModelSyncedWindowDelegate::IsApp() const {
-  return false;
-}
-
-bool TabModelSyncedWindowDelegate::IsTypeTabbed() const {
+bool TabModelSyncedWindowDelegate::IsTypeNormal() const {
   return true;
 }
 

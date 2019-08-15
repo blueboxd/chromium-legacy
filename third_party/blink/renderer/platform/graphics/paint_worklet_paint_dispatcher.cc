@@ -137,7 +137,8 @@ void PaintWorkletPaintDispatcher::DispatchWorklets(
                scoped_refptr<cc::PaintWorkletJobVector> jobs,
                std::unique_ptr<base::ScopedClosureRunner> on_done_runner) {
               for (cc::PaintWorkletJob& job : jobs->data) {
-                job.SetOutput(painter->Paint(job.input().get()));
+                job.SetOutput(painter->Paint(job.input().get(),
+                                             job.GetAnimatedPropertyValues()));
               }
               on_done_runner->RunAndReset();
             },

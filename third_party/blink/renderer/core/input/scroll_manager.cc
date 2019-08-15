@@ -113,6 +113,15 @@ void ScrollManager::ClearGestureScrollState() {
   }
 }
 
+Node* ScrollManager::GetScrollEventTarget() {
+  // Send the overscroll event to the node that scrolling is latched to which
+  // is either previously scrolled node or the last node in the scroll chain.
+  Node* scroll_target = previous_gesture_scrolled_node_;
+  if (!scroll_target && !current_scroll_chain_.IsEmpty())
+    scroll_target = DOMNodeIds::NodeForId(current_scroll_chain_.front());
+  return scroll_target;
+}
+
 void ScrollManager::StopAutoscroll() {
   if (AutoscrollController* controller = GetAutoscrollController())
     controller->StopAutoscroll();
@@ -317,11 +326,12 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
     }
 
     ScrollableArea::ScrollCallback callback;
-    if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
+    if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled() ||
+        RuntimeEnabledFeatures::OverscrollCustomizationEnabled()) {
       callback = ScrollableArea::ScrollCallback(WTF::Bind(
           [](WeakPersistent<ScrollableArea> area) {
             if (area)
-              area->MarkHoverStateDirty();
+              area->OnScrollFinished();
           },
           WrapWeakPersistent(scrollable_area)));
     }
@@ -625,13 +635,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
     return WebInputEventResult::kHandledSystem;
 
   if (RuntimeEnabledFeatures::OverscrollCustomizationEnabled()) {
-    // Send the overscroll event to the node that scrolling is latched to which
-    // is either previously scrolled node or the last node in the scroll chain.
-    Node* overscroll_target = previous_gesture_scrolled_node_;
-    if (!overscroll_target && !current_scroll_chain_.IsEmpty())
-      overscroll_target = DOMNodeIds::NodeForId(current_scroll_chain_.front());
-
-    if (overscroll_target) {
+    if (Node* overscroll_target = GetScrollEventTarget()) {
       overscroll_target->GetDocument().EnqueueOverscrollEventForNode(
           overscroll_target, delta.Width(), delta.Height());
     }
@@ -692,16 +696,9 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
     snap_at_gesture_scroll_end = SnapAtGestureScrollEnd();
     NotifyScrollPhaseEndForCustomizedScroll();
 
-    if (RuntimeEnabledFeatures::OverscrollCustomizationEnabled()) {
-      // Send the scrollend event to the node that scrolling is latched to
-      // which is either previously scrolled node or the last node in the
-      // scroll chain.
-      DCHECK(!current_scroll_chain_.IsEmpty());
-      if (previous_gesture_scrolled_node_) {
-        previous_gesture_scrolled_node_->GetDocument()
-            .EnqueueScrollEndEventForNode(previous_gesture_scrolled_node_);
-      } else if (Node* scroll_end_target =
-                     DOMNodeIds::NodeForId(current_scroll_chain_.front())) {
+    if (RuntimeEnabledFeatures::OverscrollCustomizationEnabled() &&
+        !snap_at_gesture_scroll_end) {
+      if (Node* scroll_end_target = GetScrollEventTarget()) {
         scroll_end_target->GetDocument().EnqueueScrollEndEventForNode(
             scroll_end_target);
       }
@@ -795,6 +792,12 @@ gfx::Vector2dF ScrollManager::ScrollByForSnapFling(
 }
 
 void ScrollManager::ScrollEndForSnapFling() {
+  if (RuntimeEnabledFeatures::OverscrollCustomizationEnabled()) {
+    if (Node* scroll_end_target = GetScrollEventTarget()) {
+      scroll_end_target->GetDocument().EnqueueScrollEndEventForNode(
+          scroll_end_target);
+    }
+  }
   if (current_scroll_chain_.IsEmpty()) {
     NotifyScrollPhaseEndForCustomizedScroll();
     ClearGestureScrollState();

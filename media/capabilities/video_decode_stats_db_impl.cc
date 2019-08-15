@@ -26,10 +26,6 @@ using ProtoDecodeStatsEntry = leveldb_proto::ProtoDatabase<DecodeStatsProto>;
 
 namespace {
 
-// Avoid changing client name. Used in UMA.
-// See comments in components/leveldb_proto/leveldb_database.h
-const char kDatabaseClientName[] = "VideoDecodeStatsDB";
-
 const int kMaxFramesPerBufferDefault = 2500;
 
 const int kMaxDaysToKeepStatsDefault = 30;
@@ -70,34 +66,30 @@ bool VideoDecodeStatsDBImpl::GetEnableUnweightedEntries() {
 
 // static
 std::unique_ptr<VideoDecodeStatsDBImpl> VideoDecodeStatsDBImpl::Create(
-    base::FilePath db_dir) {
+    base::FilePath db_dir,
+    leveldb_proto::ProtoDatabaseProvider* db_provider) {
   DVLOG(2) << __func__ << " db_dir:" << db_dir;
 
-  auto proto_db =
-      leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<DecodeStatsProto>(
-          base::CreateSequencedTaskRunner(
-              {base::ThreadPool(), base::MayBlock(),
-               base::TaskPriority::BEST_EFFORT,
-               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
+  auto proto_db = db_provider->GetDB<DecodeStatsProto>(
+      leveldb_proto::ProtoDbType::VIDEO_DECODE_STATS_DB, db_dir,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
 
-  return base::WrapUnique(
-      new VideoDecodeStatsDBImpl(std::move(proto_db), db_dir));
+  return base::WrapUnique(new VideoDecodeStatsDBImpl(std::move(proto_db)));
 }
 
 constexpr char VideoDecodeStatsDBImpl::kDefaultWriteTime[];
 
 VideoDecodeStatsDBImpl::VideoDecodeStatsDBImpl(
-    std::unique_ptr<leveldb_proto::ProtoDatabase<DecodeStatsProto>> db,
-    const base::FilePath& db_dir)
-    : db_(std::move(db)),
-      db_dir_(db_dir),
-      wall_clock_(base::DefaultClock::GetInstance()) {
+    std::unique_ptr<leveldb_proto::ProtoDatabase<DecodeStatsProto>> db)
+    : db_(std::move(db)), wall_clock_(base::DefaultClock::GetInstance()) {
   bool time_parsed =
       base::Time::FromString(kDefaultWriteTime, &default_write_time_);
   DCHECK(time_parsed);
 
   DCHECK(db_);
-  DCHECK(!db_dir_.empty());
 }
 
 VideoDecodeStatsDBImpl::~VideoDecodeStatsDBImpl() {
@@ -113,13 +105,15 @@ void VideoDecodeStatsDBImpl::Initialize(InitializeCB init_cb) {
   // case our whole DB will be less than 35K, so we aren't worried about
   // spamming the cache.
   // TODO(chcunningham): Keep an eye on the size as the table evolves.
-  db_->Init(kDatabaseClientName, db_dir_, leveldb_proto::CreateSimpleOptions(),
-            base::BindOnce(&VideoDecodeStatsDBImpl::OnInit,
+  db_->Init(base::BindOnce(&VideoDecodeStatsDBImpl::OnInit,
                            weak_ptr_factory_.GetWeakPtr(), std::move(init_cb)));
 }
 
-void VideoDecodeStatsDBImpl::OnInit(InitializeCB init_cb, bool success) {
+void VideoDecodeStatsDBImpl::OnInit(InitializeCB init_cb,
+                                    leveldb_proto::Enums::InitStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(status, leveldb_proto::Enums::InitStatus::kInvalidOperation);
+  bool success = status == leveldb_proto::Enums::InitStatus::kOK;
   DVLOG(2) << __func__ << (success ? " succeeded" : " FAILED!");
   UMA_HISTOGRAM_BOOLEAN("Media.VideoDecodeStatsDB.OpSuccess.Initialize",
                         success);

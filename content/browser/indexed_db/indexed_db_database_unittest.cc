@@ -482,6 +482,9 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
     // which kicks off the upgrade. This ensures that the transaction has
     // processed at least one task before the CreateObjectStore call.
     transaction_->ScheduleTask(base::BindOnce(&DummyOperation));
+    // Run posted tasks to execute the dummy operation and ensure that it is
+    // stored in the connection.
+    RunPostedTasks();
   }
 
   void RunPostedTasks() { base::RunLoop().RunUntilIdle(); }
@@ -516,28 +519,33 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
 TEST_F(IndexedDBDatabaseOperationTest, CreateObjectStore) {
   EXPECT_EQ(0ULL, db_->metadata().object_stores.size());
   const int64_t store_id = 1001;
-  db_->CreateObjectStore(transaction_, store_id, ASCIIToUTF16("store"),
-                         IndexedDBKeyPath(), false /*auto_increment*/);
-  EXPECT_EQ(1ULL, db_->metadata().object_stores.size());
-  RunPostedTasks();
-  transaction_->Commit();
+  leveldb::Status s = db_->CreateObjectStoreOperation(
+      store_id, ASCIIToUTF16("store"), IndexedDBKeyPath(),
+      false /*auto_increment*/, transaction_);
+  EXPECT_TRUE(s.ok());
+  s = transaction_->Commit();
+  EXPECT_TRUE(s.ok());
   EXPECT_EQ(1ULL, db_->metadata().object_stores.size());
 }
 
 TEST_F(IndexedDBDatabaseOperationTest, CreateIndex) {
   EXPECT_EQ(0ULL, db_->metadata().object_stores.size());
   const int64_t store_id = 1001;
-  db_->CreateObjectStore(transaction_, store_id, ASCIIToUTF16("store"),
-                         IndexedDBKeyPath(), false /*auto_increment*/);
+  leveldb::Status s = db_->CreateObjectStoreOperation(
+      store_id, ASCIIToUTF16("store"), IndexedDBKeyPath(),
+      false /*auto_increment*/, transaction_);
+  EXPECT_TRUE(s.ok());
   EXPECT_EQ(1ULL, db_->metadata().object_stores.size());
   const int64_t index_id = 2002;
-  db_->CreateIndex(transaction_, store_id, index_id, ASCIIToUTF16("index"),
-                   IndexedDBKeyPath(), false /*unique*/, false /*multi_entry*/);
+  s = db_->CreateIndexOperation(store_id, index_id, ASCIIToUTF16("index"),
+                                IndexedDBKeyPath(), false /*unique*/,
+                                false /*multi_entry*/, transaction_);
+  EXPECT_TRUE(s.ok());
   EXPECT_EQ(
       1ULL,
       db_->metadata().object_stores.find(store_id)->second.indexes.size());
-  RunPostedTasks();
-  transaction_->Commit();
+  s = transaction_->Commit();
+  EXPECT_TRUE(s.ok());
   EXPECT_EQ(1ULL, db_->metadata().object_stores.size());
   EXPECT_EQ(
       1ULL,
@@ -558,28 +566,34 @@ class IndexedDBDatabaseOperationAbortTest
 TEST_F(IndexedDBDatabaseOperationAbortTest, CreateObjectStore) {
   EXPECT_EQ(0ULL, db_->metadata().object_stores.size());
   const int64_t store_id = 1001;
-  db_->CreateObjectStore(transaction_, store_id, ASCIIToUTF16("store"),
-                         IndexedDBKeyPath(), false /*auto_increment*/);
+  leveldb::Status s = db_->CreateObjectStoreOperation(
+      store_id, ASCIIToUTF16("store"), IndexedDBKeyPath(),
+      false /*auto_increment*/, transaction_);
+  EXPECT_TRUE(s.ok());
   EXPECT_EQ(1ULL, db_->metadata().object_stores.size());
-  RunPostedTasks();
-  transaction_->Commit();
+  s = transaction_->Commit();
+  EXPECT_FALSE(s.ok());
   EXPECT_EQ(0ULL, db_->metadata().object_stores.size());
 }
 
 TEST_F(IndexedDBDatabaseOperationAbortTest, CreateIndex) {
   EXPECT_EQ(0ULL, db_->metadata().object_stores.size());
   const int64_t store_id = 1001;
-  db_->CreateObjectStore(transaction_, store_id, ASCIIToUTF16("store"),
-                         IndexedDBKeyPath(), false /*auto_increment*/);
+  leveldb::Status s = db_->CreateObjectStoreOperation(
+      store_id, ASCIIToUTF16("store"), IndexedDBKeyPath(),
+      false /*auto_increment*/, transaction_);
+  EXPECT_TRUE(s.ok());
   EXPECT_EQ(1ULL, db_->metadata().object_stores.size());
   const int64_t index_id = 2002;
-  db_->CreateIndex(transaction_, store_id, index_id, ASCIIToUTF16("index"),
-                   IndexedDBKeyPath(), false /*unique*/, false /*multi_entry*/);
+  s = db_->CreateIndexOperation(store_id, index_id, ASCIIToUTF16("index"),
+                                IndexedDBKeyPath(), false /*unique*/,
+                                false /*multi_entry*/, transaction_);
+  EXPECT_TRUE(s.ok());
   EXPECT_EQ(
       1ULL,
       db_->metadata().object_stores.find(store_id)->second.indexes.size());
-  RunPostedTasks();
-  transaction_->Commit();
+  s = transaction_->Commit();
+  EXPECT_FALSE(s.ok());
   EXPECT_EQ(0ULL, db_->metadata().object_stores.size());
 }
 
@@ -587,28 +601,34 @@ TEST_F(IndexedDBDatabaseOperationTest, CreatePutDelete) {
   EXPECT_EQ(0ULL, db_->metadata().object_stores.size());
   const int64_t store_id = 1001;
 
-  // Creation is synchronous.
-  db_->CreateObjectStore(transaction_, store_id, ASCIIToUTF16("store"),
-                         IndexedDBKeyPath(), false /*auto_increment*/);
+  leveldb::Status s = db_->CreateObjectStoreOperation(
+      store_id, ASCIIToUTF16("store"), IndexedDBKeyPath(),
+      false /*auto_increment*/, transaction_);
+  EXPECT_TRUE(s.ok());
   EXPECT_EQ(1ULL, db_->metadata().object_stores.size());
 
-  // Put is asynchronous
   IndexedDBValue value("value1", std::vector<IndexedDBBlobInfo>());
   std::unique_ptr<IndexedDBKey> key(std::make_unique<IndexedDBKey>("key"));
   std::vector<IndexedDBIndexKeys> index_keys;
   base::MockCallback<blink::mojom::IDBTransaction::PutCallback> callback;
-  db_->Put(transaction_, store_id, &value, std::move(key),
-           blink::mojom::IDBPutMode::AddOnly, callback.Get(), index_keys);
 
-  // Deletion is asynchronous.
-  db_->DeleteObjectStore(transaction_, store_id);
-  EXPECT_EQ(1ULL, db_->metadata().object_stores.size());
+  auto put_params = std::make_unique<IndexedDBDatabase::PutOperationParams>();
+  put_params->object_store_id = store_id;
+  put_params->value = value;
+  put_params->key = std::move(key);
+  put_params->put_mode = blink::mojom::IDBPutMode::AddOnly;
+  put_params->callback = callback.Get();
+  put_params->index_keys = index_keys;
+  s = db_->PutOperation(std::move(put_params), transaction_);
+  EXPECT_TRUE(s.ok());
 
-  // This will execute the Put then Delete.
-  RunPostedTasks();
+  s = db_->DeleteObjectStoreOperation(store_id, transaction_);
+  EXPECT_TRUE(s.ok());
+
   EXPECT_EQ(0ULL, db_->metadata().object_stores.size());
 
-  transaction_->Commit();  // Cleans up the object hierarchy.
+  s = transaction_->Commit();  // Cleans up the object hierarchy.
+  EXPECT_TRUE(s.ok());
 }
 
 }  // namespace content

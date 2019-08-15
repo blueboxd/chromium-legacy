@@ -120,7 +120,13 @@ UserMediaClientImpl::UserMediaClientImpl(
       apply_constraints_processor_(new ApplyConstraintsProcessor(
           WTF::BindRepeating(&UserMediaClientImpl::GetMediaDevicesDispatcher,
                              WTF::Unretained(this)),
-          std::move(task_runner))) {}
+          std::move(task_runner))) {
+  if (frame_) {
+    // WTF::Unretained is safe because the |frame_| owns UMCI.
+    frame_->SetIsCapturingMediaCallback(WTF::BindRepeating(
+        &UserMediaClientImpl::IsCapturing, WTF::Unretained(this)));
+  }
+}
 
 // WTF::Unretained(this) is safe here because |this| owns
 // |user_media_processor_|.

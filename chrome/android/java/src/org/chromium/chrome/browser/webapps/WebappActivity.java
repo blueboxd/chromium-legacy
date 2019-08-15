@@ -188,8 +188,7 @@ public class WebappActivity extends SingleTabActivity {
             // Web Share Target Post was successful, so don't load anything.
             return;
         }
-        LoadUrlParams params =
-                new LoadUrlParams(webappInfo.uri().toString(), PageTransition.AUTO_TOPLEVEL);
+        LoadUrlParams params = new LoadUrlParams(webappInfo.url(), PageTransition.AUTO_TOPLEVEL);
         params.setShouldClearHistoryList(true);
         tab.loadUrl(params);
     }
@@ -534,7 +533,7 @@ public class WebappActivity extends SingleTabActivity {
      * @return A string containing the scope of the webapp opened in this activity.
      */
     public String getWebappScope() {
-        return mWebappInfo.scopeUri().toString();
+        return mWebappInfo.scopeUrl();
     }
 
     public static void addWebappInfo(String id, WebappInfo info) {

@@ -18,6 +18,7 @@ class FakeXRSessionRequestConsentManager
     kClickAllowButton,
     kClickCancelButton,
     kCloseDialog,
+    kUnexpected,
   };
 
   FakeXRSessionRequestConsentManager(

@@ -60,7 +60,7 @@ class Node(object):
 
   def __exit__(self, exc_type, exc_value, traceback):
     if exc_type is not None:
-      print(u'Error processing node %s' % unicode(self))
+      print(u'Error processing node %s' % six.text_type(self))
 
   def __iter__(self):
     '''A preorder iteration through the tree that this node is the root of.'''

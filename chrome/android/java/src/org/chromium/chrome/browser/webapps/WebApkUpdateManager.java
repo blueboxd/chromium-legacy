@@ -320,7 +320,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
         } else if (!TextUtils.equals(badgeIconMurmur2Hash, fetchedBadgeIconMurmur2Hash)) {
             return WebApkUpdateReason.BADGE_ICON_HASH_DIFFERS;
         } else if (!UrlUtilities.urlsMatchIgnoringFragments(
-                           oldInfo.scopeUri().toString(), fetchedInfo.scopeUri().toString())) {
+                           oldInfo.scopeUrl(), fetchedInfo.scopeUrl())) {
             return WebApkUpdateReason.SCOPE_DIFFERS;
         } else if (!UrlUtilities.urlsMatchIgnoringFragments(
                            oldInfo.manifestStartUrl(), fetchedInfo.manifestStartUrl())) {
@@ -373,7 +373,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
         }
 
         WebApkUpdateManagerJni.get().storeWebApkUpdateRequestToFile(updateRequestPath,
-                info.manifestStartUrl(), info.scopeUri().toString(), info.name(), info.shortName(),
+                info.manifestStartUrl(), info.scopeUrl(), info.name(), info.shortName(),
                 primaryIconUrl, info.icon(), info.isIconAdaptive(), badgeIconUrl, info.badgeIcon(),
                 iconUrls, iconHashes, info.displayMode(), info.orientation(), info.themeColor(),
                 info.backgroundColor(), info.shareTarget().getAction(),

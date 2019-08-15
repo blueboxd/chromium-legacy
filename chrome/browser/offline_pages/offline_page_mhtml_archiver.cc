@@ -54,8 +54,7 @@ void ComputeDigestOnFileThread(
 }  // namespace
 
 // static
-OfflinePageMHTMLArchiver::OfflinePageMHTMLArchiver()
-    : weak_ptr_factory_(this) {}
+OfflinePageMHTMLArchiver::OfflinePageMHTMLArchiver() {}
 
 OfflinePageMHTMLArchiver::~OfflinePageMHTMLArchiver() {
 }

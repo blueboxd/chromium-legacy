@@ -82,12 +82,6 @@ struct NET_EXPORT ServerNetworkStats {
 typedef std::vector<AlternativeService> AlternativeServiceVector;
 typedef std::vector<AlternativeServiceInfo> AlternativeServiceInfoVector;
 
-// Store at most 200 MRU AlternateProtocolHostPortPairs in memory and disk.
-const int kMaxAlternateProtocolEntries = 200;
-
-// Store at most 200 MRU ServerNetworkStats in memory and disk.
-const int kMaxServerNetworkStatsEntries = 200;
-
 // Store at most 200 MRU RecentlyBrokenAlternativeServices in memory and disk.
 // This ideally would be with the other constants in HttpServerProperties, but
 // has to go here instead of prevent a circular dependency.
@@ -95,22 +89,6 @@ const int kMaxRecentlyBrokenAlternativeServiceEntries = 200;
 
 // Store at most 5 MRU QUIC servers by default. This is mainly used by cronet.
 const int kDefaultMaxQuicServerEntries = 5;
-
-class AlternativeServiceMap
-    : public base::MRUCache<url::SchemeHostPort, AlternativeServiceInfoVector> {
- public:
-  AlternativeServiceMap()
-      : base::MRUCache<url::SchemeHostPort, AlternativeServiceInfoVector>(
-            kMaxAlternateProtocolEntries) {}
-};
-
-class ServerNetworkStatsMap
-    : public base::MRUCache<url::SchemeHostPort, ServerNetworkStats> {
- public:
-  ServerNetworkStatsMap()
-      : base::MRUCache<url::SchemeHostPort, ServerNetworkStats>(
-            kMaxServerNetworkStatsEntries) {}
-};
 
 // Max number of quic servers to store is not hardcoded and can be set.
 // Because of this, QuicServerInfoMap will not be a subclass of MRUCache.
@@ -160,6 +138,9 @@ class NET_EXPORT HttpServerProperties
     ServerInfo(ServerInfo&& server_info);
     ~ServerInfo();
 
+    // Returns true if no fields are populated.
+    bool empty() const;
+
     // IMPORTANT:  When adding a field here, be sure to update
     // HttpServerProperties::OnServerInfoLoaded() as well as
     // HttpServerPropertiesManager to correctly load/save the from/to the pref
@@ -172,9 +153,11 @@ class NET_EXPORT HttpServerProperties
     // priority over a not set value.
     base::Optional<bool> supports_spdy;
 
-    // TODO(mmenke):  Add a base::Optional<AlternativeServiceInfoVector> and
-    // base::Optional<ServerNetworkStats>, and probably other per-server data as
-    // well (Http11ServerHostPortSet, QUIC server info).
+    base::Optional<AlternativeServiceInfoVector> alternative_services;
+    base::Optional<ServerNetworkStats> server_network_stats;
+
+    // TODO(mmenke):  Add other per-server data as well
+    // (Http11ServerHostPortSet, QUIC server info).
   };
 
   class NET_EXPORT ServerInfoMap
@@ -186,6 +169,11 @@ class NET_EXPORT HttpServerProperties
     // front and returns an iterator to it. Otherwise, inserts an empty
     // ServerInfo using |key|, and returns an iterator to it.
     iterator GetOrPut(const url::SchemeHostPort& key);
+
+    // Erases the ServerInfo identified by |server_info_it| if no fields have
+    // data. The iterator must point to an entry in the map. Regardless of
+    // whether the entry is removed or not, returns iterator for the next entry.
+    iterator EraseIfEmpty(iterator server_info_it);
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ServerInfoMap);
@@ -301,10 +289,6 @@ class NET_EXPORT HttpServerProperties
   // default network changed.
   void OnDefaultNetworkChanged();
 
-  // Returns all alternative service mappings.
-  // Returned alternative services may have empty hostnames.
-  const AlternativeServiceMap& alternative_service_map() const;
-
   // Returns all alternative service mappings as human readable strings.
   // Empty alternative service hostnames will be printed as such.
   std::unique_ptr<base::Value> GetAlternativeServiceInfoAsValue() const;
@@ -323,8 +307,6 @@ class NET_EXPORT HttpServerProperties
   // Returns any stats for |server| or nullptr if there are none.
   const ServerNetworkStats* GetServerNetworkStats(
       const url::SchemeHostPort& server);
-
-  const ServerNetworkStatsMap& server_network_stats_map() const;
 
   // Save QuicServerInfo (in std::string form) for the given |server_id|.
   void SetQuicServerInfo(const quic::QuicServerId& server_id,
@@ -358,14 +340,6 @@ class NET_EXPORT HttpServerProperties
   void OnServerInfoLoadedForTesting(
       std::unique_ptr<ServerInfoMap> server_info_map) {
     OnServerInfoLoaded(std::move(server_info_map));
-  }
-  void OnAlternativeServiceServersLoadedForTesting(
-      std::unique_ptr<AlternativeServiceMap> alternate_protocol_servers) {
-    OnAlternativeServiceServersLoaded(std::move(alternate_protocol_servers));
-  }
-  void OnServerNetworkStatsLoadedForTesting(
-      std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map) {
-    OnServerNetworkStatsLoaded(std::move(server_network_stats_map));
   }
   void OnSupportsQuicLoadedForTesting(const IPAddress& last_address) {
     OnSupportsQuicLoaded(last_address);
@@ -410,8 +384,9 @@ class NET_EXPORT HttpServerProperties
   typedef std::vector<std::string> CanonicalSuffixList;
   typedef std::set<HostPortPair> Http11ServerHostPortSet;
 
-  // Return the iterator for |server|, or for its canonical host, or end.
-  AlternativeServiceMap::const_iterator GetAlternateProtocolIterator(
+  // Return the iterator for |server|, or for its canonical host, or end. Skips
+  // over ServerInfos without |alternative_service_info| populated.
+  ServerInfoMap::const_iterator GetIteratorWithAlternativeServiceInfo(
       const url::SchemeHostPort& server);
 
   // Return the canonical host for |server|, or end if none exists.
@@ -439,8 +414,6 @@ class NET_EXPORT HttpServerProperties
 
   void OnPrefsLoaded(
       std::unique_ptr<ServerInfoMap> server_info_map,
-      std::unique_ptr<AlternativeServiceMap> alternative_service_map,
-      std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map,
       const IPAddress& last_quic_address,
       std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
       std::unique_ptr<BrokenAlternativeServiceList>
@@ -452,10 +425,6 @@ class NET_EXPORT HttpServerProperties
   // loaded from prefs with what has been learned while waiting for prefs to
   // load.
   void OnServerInfoLoaded(std::unique_ptr<ServerInfoMap> server_info_map);
-  void OnAlternativeServiceServersLoaded(
-      std::unique_ptr<AlternativeServiceMap> alternate_protocol_servers);
-  void OnServerNetworkStatsLoaded(
-      std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map);
   void OnSupportsQuicLoaded(const IPAddress& last_address);
   void OnQuicServerInfoMapLoaded(
       std::unique_ptr<QuicServerInfoMap> quic_server_info_map);
@@ -490,14 +459,12 @@ class NET_EXPORT HttpServerProperties
   std::unique_ptr<HttpServerPropertiesManager> properties_manager_;
 
   ServerInfoMap server_info_map_;
-  Http11ServerHostPortSet http11_servers_;
 
-  AlternativeServiceMap alternative_service_map_;
+  Http11ServerHostPortSet http11_servers_;
 
   BrokenAlternativeServices broken_alternative_services_;
 
   IPAddress last_quic_address_;
-  ServerNetworkStatsMap server_network_stats_map_;
   // Contains a map of servers which could share the same alternate protocol.
   // Map from a Canonical scheme/host/port (host is some postfix of host names)
   // to an actual origin, which has a plausible alternate protocol mapping.

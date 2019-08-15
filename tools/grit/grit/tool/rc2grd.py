@@ -201,7 +201,7 @@ C preprocessor on the .rc file or manually edit it before using this tool.
                 os.path.splitext(os.path.basename(path))[0] + '.grd')
 
     rctext = util.ReadFile(path, self.input_encoding)
-    grd_text = unicode(self.Process(rctext, path))
+    grd_text = six.text_type(self.Process(rctext, path))
     with util.WrapOutputStream(file(out_path, 'w'), 'utf-8') as outfile:
       outfile.write(grd_text)
 

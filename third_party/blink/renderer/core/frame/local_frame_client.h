@@ -105,7 +105,6 @@ class ResourceResponse;
 class SecurityOrigin;
 class WebContentCaptureClient;
 class WebDedicatedWorkerHostFactoryClient;
-class WebLayerTreeView;
 class WebLocalFrame;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
@@ -316,8 +315,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
-      WebMediaPlayerClient*,
-      WebLayerTreeView*) = 0;
+      WebMediaPlayerClient*) = 0;
   virtual WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
       HTMLMediaElement&) = 0;
 
@@ -532,9 +530,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // AppCache ------------------------------------------------------------
   virtual void UpdateSubresourceFactory(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {}
-  virtual WebLocalFrameClient::AppCacheType GetAppCacheType() {
-    return WebLocalFrameClient::AppCacheType::kAppCacheForNone;
-  }
 
   virtual void EvictFromBackForwardCache() = 0;
 };

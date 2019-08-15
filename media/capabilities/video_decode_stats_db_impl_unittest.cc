@@ -62,8 +62,7 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
 
     // Wrap the fake proto DB with our interface.
     stats_db_ = base::WrapUnique(new VideoDecodeStatsDBImpl(
-        std::unique_ptr<FakeDB<DecodeStatsProto>>(fake_db_),
-        base::FilePath(FILE_PATH_LITERAL("/fake/path"))));
+        std::unique_ptr<FakeDB<DecodeStatsProto>>(fake_db_)));
   }
 
   int GetMaxFramesPerBuffer() {
@@ -86,7 +85,7 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
     stats_db_->Initialize(base::BindOnce(
         &VideoDecodeStatsDBImplTest::OnInitialize, base::Unretained(this)));
     EXPECT_CALL(*this, OnInitialize(true));
-    fake_db_->InitCallback(true);
+    fake_db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
     testing::Mock::VerifyAndClearExpectations(this);
   }
 
@@ -180,7 +179,7 @@ TEST_F(VideoDecodeStatsDBImplTest, FailedInitialize) {
   stats_db_->Initialize(base::BindOnce(
       &VideoDecodeStatsDBImplTest::OnInitialize, base::Unretained(this)));
   EXPECT_CALL(*this, OnInitialize(false));
-  fake_db_->InitCallback(false);
+  fake_db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kError);
 }
 
 TEST_F(VideoDecodeStatsDBImplTest, ReadExpectingNothing) {

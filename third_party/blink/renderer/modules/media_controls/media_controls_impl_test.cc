@@ -102,8 +102,7 @@ class StubLocalFrameClientForImpl : public EmptyLocalFrameClient {
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
-      WebMediaPlayerClient*,
-      WebLayerTreeView*) override {
+      WebMediaPlayerClient*) override {
     return std::make_unique<MockWebMediaPlayerForImpl>();
   }
 

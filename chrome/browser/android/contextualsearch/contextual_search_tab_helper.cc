@@ -23,8 +23,7 @@ ContextualSearchTabHelper::ContextualSearchTabHelper(JNIEnv* env,
                                                      jobject obj,
                                                      Profile* profile)
     : weak_java_ref_(env, obj),
-      pref_change_registrar_(new PrefChangeRegistrar()),
-      weak_factory_(this) {
+      pref_change_registrar_(new PrefChangeRegistrar()) {
   pref_change_registrar_->Init(profile->GetPrefs());
   pref_change_registrar_->Add(
       prefs::kContextualSearchEnabled,

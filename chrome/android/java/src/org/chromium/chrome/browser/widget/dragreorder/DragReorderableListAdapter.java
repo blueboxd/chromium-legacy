@@ -14,6 +14,7 @@ import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 
@@ -41,6 +42,9 @@ public abstract class DragReorderableListAdapter<T> extends RecyclerView.Adapter
     private final float mDraggedElevation;
 
     protected DragStateDelegate mDragStateDelegate;
+
+    private int mStart;
+    private ObserverList<DragListener> mListeners = new ObserverList<>();
 
     /**
      * A callback for touch actions on drag-reorderable lists.
@@ -71,7 +75,8 @@ public abstract class DragReorderableListAdapter<T> extends RecyclerView.Adapter
             super.onSelectedChanged(viewHolder, actionState);
 
             if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
-                int start = viewHolder.getAdapterPosition();
+                mStart = viewHolder.getAdapterPosition();
+                onDragStateChange(true);
                 updateVisualState(true, viewHolder);
             }
         }
@@ -79,8 +84,11 @@ public abstract class DragReorderableListAdapter<T> extends RecyclerView.Adapter
         @Override
         public void clearView(RecyclerView recyclerView, ViewHolder viewHolder) {
             super.clearView(recyclerView, viewHolder);
-            // Commit the position change for the dragged item when it's dropped.
-            setOrder(mElements);
+            if (viewHolder.getAdapterPosition() != mStart) {
+                // Commit the position change for the dragged item when it's dropped.
+                setOrder(mElements);
+            }
+            onDragStateChange(false);
             updateVisualState(false, viewHolder);
         }
 
@@ -124,6 +132,18 @@ public abstract class DragReorderableListAdapter<T> extends RecyclerView.Adapter
                     .setDuration(ANIMATION_DELAY_MS)
                     .start();
         }
+    }
+
+    /**
+     * Listens to drag actions in a drag-reorderable list.
+     */
+    public interface DragListener {
+        /**
+         * Called when drag starts or ends.
+         *
+         * @param drag True iff drag is currently on.
+         */
+        void onDragStateChange(boolean drag);
     }
 
     /**
@@ -220,6 +240,31 @@ public abstract class DragReorderableListAdapter<T> extends RecyclerView.Adapter
      */
     protected void setDragStateDelegate(DragStateDelegate delegate) {
         mDragStateDelegate = delegate;
+    }
+
+    /**
+     * @param l The drag listener to be added.
+     */
+    public void addDragListener(DragListener l) {
+        mListeners.addObserver(l);
+    }
+
+    /**
+     * @param l The drag listener to be added.
+     */
+    public void removeDragListener(DragListener l) {
+        mListeners.removeObserver(l);
+    }
+
+    /**
+     * Called when drag state changes (drag starts / ends), and notifies all listeners.
+     *
+     * @param drag True iff drag is currently on.
+     */
+    private void onDragStateChange(boolean drag) {
+        for (DragListener l : mListeners) {
+            l.onDragStateChange(drag);
+        }
     }
 
     /**

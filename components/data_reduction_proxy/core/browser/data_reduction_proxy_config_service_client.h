@@ -40,7 +40,7 @@ namespace data_reduction_proxy {
 
 class ClientConfig;
 class DataReductionProxyConfig;
-class DataReductionProxyIOData;
+class DataReductionProxyService;
 class DataReductionProxyMutableConfigValues;
 class DataReductionProxyRequestOptions;
 
@@ -89,14 +89,14 @@ class DataReductionProxyConfigServiceClient
       DataReductionProxyRequestOptions* request_options,
       DataReductionProxyMutableConfigValues* config_values,
       DataReductionProxyConfig* config,
-      DataReductionProxyIOData* io_data,
+      DataReductionProxyService* service,
       network::NetworkConnectionTracker* network_connection_tracker,
       ConfigStorer config_storer);
 
   ~DataReductionProxyConfigServiceClient() override;
 
   // Performs initialization on the IO thread.
-  void InitializeOnIOThread(
+  void Initialize(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   // Sets whether the configuration should be retrieved or not.
@@ -200,8 +200,8 @@ class DataReductionProxyConfigServiceClient
   // The caller must ensure that the |config_| outlives this instance.
   DataReductionProxyConfig* config_;
 
-  // The caller must ensure that the |io_data_| outlives this instance.
-  DataReductionProxyIOData* io_data_;
+  // The caller must ensure that the |service_| outlives this instance.
+  DataReductionProxyService* service_;
 
   // Watches for network changes.
   network::NetworkConnectionTracker* network_connection_tracker_;

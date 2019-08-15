@@ -26,7 +26,8 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_store.h"
+#include "components/data_reduction_proxy/core/browser/data_store_impl.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
@@ -37,6 +38,7 @@
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_features.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/previews_state.h"
@@ -70,30 +72,12 @@ class PreviewsUITabHelperUnitTest : public ChromeRenderViewHostTestHarness {
     content::RenderFrameHostTester::For(main_rfh())
         ->InitializeRenderFrameIfNeeded();
 
-    drp_test_context_ =
-        data_reduction_proxy::DataReductionProxyTestContext::Builder()
-            .WithMockConfig()
-            .SkipSettingsInitialization()
-            .Build();
-
-    auto* data_reduction_proxy_settings =
-        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-            web_contents()->GetBrowserContext());
-
-    PrefRegistrySimple* registry =
-        drp_test_context_->pref_service()->registry();
-    registry->RegisterDictionaryPref(proxy_config::prefs::kProxy);
-    data_reduction_proxy_settings->InitDataReductionProxySettings(
-        drp_test_context_->io_data(), drp_test_context_->pref_service(),
-        profile(), base::MakeRefCounted<network::TestSharedURLLoaderFactory>(),
-        base::WrapUnique(new data_reduction_proxy::DataStore()),
-        base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get());
-  }
-
-  void TearDown() override {
-    drp_test_context_->DestroySettings();
-    ChromeRenderViewHostTestHarness::TearDown();
+    DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile())
+        ->InitDataReductionProxySettings(
+            profile(),
+            std::make_unique<data_reduction_proxy::DataStoreImpl>(
+                profile()->GetPath()),
+            thread_bundle()->GetMainThreadTaskRunner());
   }
 
   void SetCommittedPreviewsType(previews::PreviewsType previews_type) {
@@ -126,10 +110,6 @@ class PreviewsUITabHelperUnitTest : public ChromeRenderViewHostTestHarness {
     return ui_tab_helper->CreatePreviewsUserDataForNavigationHandle(
         test_handle_.get(), page_id);
   }
-
- protected:
-  std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>
-      drp_test_context_;
 
  private:
   std::unique_ptr<content::MockNavigationHandle> test_handle_;
@@ -242,8 +222,7 @@ TEST_F(PreviewsUITabHelperUnitTest, CreateOfflineUI) {
                   ->DataUsageMapForTesting()
                   .empty());
 
-  drp_test_context_->pref_service()->SetBoolean("data_usage_reporting.enabled",
-                                                true);
+  profile()->GetPrefs()->SetBoolean("data_usage_reporting.enabled", true);
   base::RunLoop().RunUntilIdle();
 
   SetCommittedPreviewsType(previews::PreviewsType::OFFLINE);
@@ -377,7 +356,7 @@ TEST_F(PreviewsUITabHelperUnitTest, TestReloadWithoutPreviewsDeferAllScript) {
 
 TEST_F(PreviewsUITabHelperUnitTest, TestInfoBarShownOnlyWhenNotSeen) {
   data_reduction_proxy::DataReductionProxySettings::
-      SetDataSaverEnabledForTesting(drp_test_context_->pref_service(), true);
+      SetDataSaverEnabledForTesting(profile()->GetPrefs(), true);
 
   PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));

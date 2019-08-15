@@ -222,7 +222,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   float screen_touch_active_ = false;
 
   // Must be last.
-  base::WeakPtrFactory<ArCoreGl> weak_ptr_factory_;
+  base::WeakPtrFactory<ArCoreGl> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ArCoreGl);
 };
 

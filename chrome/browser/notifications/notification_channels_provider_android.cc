@@ -196,8 +196,7 @@ NotificationChannelsProviderAndroid::NotificationChannelsProviderAndroid(
     : bridge_(std::move(bridge)),
       platform_supports_channels_(bridge_->ShouldUseChannelSettings()),
       clock_(std::move(clock)),
-      initialized_cached_channels_(false),
-      weak_factory_(this) {}
+      initialized_cached_channels_(false) {}
 
 NotificationChannelsProviderAndroid::~NotificationChannelsProviderAndroid() =
     default;

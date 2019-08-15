@@ -168,8 +168,7 @@ AwProxyingRestrictedCookieManager::AwProxyingRestrictedCookieManager(
           std::move(underlying_restricted_cookie_manager)),
       is_service_worker_(is_service_worker),
       process_id_(process_id),
-      frame_id_(frame_id),
-      weak_factory_(this) {
+      frame_id_(frame_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 

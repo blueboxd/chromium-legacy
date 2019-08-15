@@ -26,7 +26,7 @@ NGPercentageStorage GetPercentageStorage(LayoutUnit percentage_size,
 
 }  // namespace
 
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetPercentageResolutionSize(
+void NGConstraintSpaceBuilder::SetPercentageResolutionSize(
     LogicalSize percentage_resolution_size) {
 #if DCHECK_IS_ON()
   DCHECK(is_available_size_set_);
@@ -68,12 +68,9 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetPercentageResolutionSize(
           percentage_resolution_size.inline_size;
     }
   }
-
-  return *this;
 }
 
-NGConstraintSpaceBuilder&
-NGConstraintSpaceBuilder::SetReplacedPercentageResolutionSize(
+void NGConstraintSpaceBuilder::SetReplacedPercentageResolutionSize(
     LogicalSize replaced_percentage_resolution_size) {
 #if DCHECK_IS_ON()
   DCHECK(is_available_size_set_);
@@ -111,8 +108,6 @@ NGConstraintSpaceBuilder::SetReplacedPercentageResolutionSize(
           block_size;
     }
   }
-
-  return *this;
 }
 
 }  // namespace blink

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/renderer/core/css/cssom/cross_thread_unit_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -162,7 +163,9 @@ void PaintWorkletProxyClient::Trace(blink::Visitor* visitor) {
 }
 
 sk_sp<PaintRecord> PaintWorkletProxyClient::Paint(
-    const CompositorPaintWorkletInput* compositor_input) {
+    const CompositorPaintWorkletInput* compositor_input,
+    const CompositorPaintWorkletJob::AnimatedPropertyValues&
+        animated_property_values) {
   // TODO: Can this happen? We don't register till all are here.
   if (global_scopes_.IsEmpty())
     return sk_make_sp<PaintRecord>();
@@ -190,6 +193,20 @@ sk_sp<PaintRecord> PaintWorkletProxyClient::Paint(
   CSSStyleValueVector paint_arguments;
   for (const auto& style_value : input->ParsedInputArguments()) {
     paint_arguments.push_back(style_value->ToCSSStyleValue());
+  }
+
+  for (const auto& property : animated_property_values) {
+    String property_name(property.first.c_str());
+    DCHECK(style_map->StyleMapData().Contains(property_name));
+    CrossThreadStyleValue* old_value =
+        style_map->StyleMapData().at(property_name);
+    DCHECK(old_value->GetType() ==
+           CrossThreadStyleValue::StyleValueType::kUnitType);
+    std::unique_ptr<CrossThreadUnitValue> new_value =
+        std::make_unique<CrossThreadUnitValue>(
+            property.second,
+            DynamicTo<CrossThreadUnitValue>(old_value)->GetUnitType());
+    style_map->StyleMapData().Set(property_name, std::move(new_value));
   }
 
   device_pixel_ratio_ = input->DeviceScaleFactor() * input->EffectiveZoom();

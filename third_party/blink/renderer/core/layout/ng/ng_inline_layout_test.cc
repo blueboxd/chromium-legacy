@@ -21,13 +21,14 @@ namespace blink {
 class NGInlineLayoutTest : public SimTest {
  public:
   NGConstraintSpace ConstraintSpaceForElement(LayoutBlockFlow* block_flow) {
-    return NGConstraintSpaceBuilder(block_flow->Style()->GetWritingMode(),
-                                    block_flow->Style()->GetWritingMode(),
-                                    /* is_new_fc */ false)
-        .SetAvailableSize(LogicalSize(LayoutUnit(), LayoutUnit()))
-        .SetPercentageResolutionSize(LogicalSize(LayoutUnit(), LayoutUnit()))
-        .SetTextDirection(block_flow->Style()->Direction())
-        .ToConstraintSpace();
+    NGConstraintSpaceBuilder builder(block_flow->Style()->GetWritingMode(),
+                                     block_flow->Style()->GetWritingMode(),
+                                     /* is_new_fc */ false);
+    builder.SetAvailableSize(LogicalSize(LayoutUnit(), LayoutUnit()));
+    builder.SetPercentageResolutionSize(
+        LogicalSize(LayoutUnit(), LayoutUnit()));
+    builder.SetTextDirection(block_flow->Style()->Direction());
+    return builder.ToConstraintSpace();
   }
 };
 

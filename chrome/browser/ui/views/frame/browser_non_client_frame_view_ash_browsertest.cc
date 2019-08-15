@@ -587,7 +587,7 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
       browser()->profile(), true);
   params.initial_show_state = ui::SHOW_STATE_DEFAULT;
   Browser* browser = new Browser(params);
-  ASSERT_TRUE(browser->is_app());
+  ASSERT_TRUE(browser->is_type_app());
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
 
   ash::ImmersiveFullscreenControllerTestApi(
@@ -1430,7 +1430,7 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
       browser()->profile(), true);
   params.initial_show_state = ui::SHOW_STATE_DEFAULT;
   Browser* browser = new Browser(params);
-  ASSERT_TRUE(browser->is_app());
+  ASSERT_TRUE(browser->is_type_app());
   browser->window()->Show();
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);

@@ -13,7 +13,7 @@
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/incognito_color_util.h"
+#import "ios/chrome/common/colors/dynamic_color_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 
@@ -56,8 +56,8 @@ const CGFloat kLeadingPaddingIpadCompact = 71;
     self.isAccessibilityElement = YES;
     self.backgroundColor = UIColor.clearColor;
     self.selectedBackgroundView = [[UIView alloc] initWithFrame:CGRectZero];
-    self.selectedBackgroundView.backgroundColor = color::IncognitoDynamicColor(
-        _incognito, [UIColor colorNamed:kTableViewRowHighlightColor],
+    self.selectedBackgroundView.backgroundColor = color::DarkModeDynamicColor(
+        [UIColor colorNamed:kTableViewRowHighlightColor], _incognito,
         [UIColor colorNamed:kTableViewRowHighlightDarkColor]);
 
     _incognito = incognito;
@@ -96,8 +96,8 @@ const CGFloat kLeadingPaddingIpadCompact = 71;
 
     _imageView.layer.cornerRadius = kImageViewCornerRadiusUIRefresh;
     _imageView.backgroundColor = UIColor.clearColor;
-    _imageView.tintColor = color::IncognitoDynamicColor(
-        _incognito, [UIColor colorNamed:@"omnibox_suggestion_icon_color"],
+    _imageView.tintColor = color::DarkModeDynamicColor(
+        [UIColor colorNamed:@"omnibox_suggestion_icon_color"], _incognito,
         [UIColor colorNamed:@"omnibox_suggestion_icon_dark_color"]);
 
     _answerImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
@@ -168,8 +168,8 @@ const CGFloat kLeadingPaddingIpadCompact = 71;
   appendImage =
       [appendImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   _trailingButton.tintColor =
-      color::IncognitoDynamicColor(_incognito, [UIColor colorNamed:kBlueColor],
-                                   [UIColor colorNamed:kBlueDarkColor]);
+      color::DarkModeDynamicColor([UIColor colorNamed:kBlueColor], _incognito,
+                                  [UIColor colorNamed:kBlueDarkColor]);
 
   [_trailingButton setImage:appendImage forState:UIControlStateNormal];
 }

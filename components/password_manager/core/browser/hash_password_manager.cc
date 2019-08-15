@@ -219,6 +219,23 @@ void HashPasswordManager::ClearAllPasswordHash(bool is_gaia_password) {
   }
 }
 
+void HashPasswordManager::ClearAllNonGmailPasswordHash() {
+  if (!prefs_)
+    return;
+
+  ListPrefUpdate update(prefs_, prefs::kPasswordHashDataList);
+
+  base::EraseIf(update->GetList(), [](const base::Value& data) {
+    if (GetAndDecryptField(data, kIsGaiaFieldKey) == "false") {
+      return false;
+    }
+    std::string username = GetAndDecryptField(data, kUsernameFieldKey);
+    std::string email =
+        CanonicalizeUsername(username, /*is_gaia_account=*/true);
+    return email.find("@gmail.com") == std::string::npos;
+  });
+}
+
 std::vector<PasswordHashData> HashPasswordManager::RetrieveAllPasswordHashes() {
   std::vector<PasswordHashData> result;
   if (!prefs_ || !prefs_->HasPrefPath(prefs::kPasswordHashDataList))

@@ -91,13 +91,7 @@ void SwitchAccessEventHandler::OnKeyEvent(ui::KeyEvent* event) {
 
   if (ShouldCancelEvent(*event)) {
     CancelEvent(event);
-    // Old method of sending information forwarded all events cancelled.
-    // TODO(anastasi): Remove event dispatch once settings migration is
-    // complete.
-    delegate_->DispatchKeyEvent(*event);
     if (ShouldForwardEvent(*event)) {
-      // The Command events are now used by Switch Access. The next step of
-      // the migration will be to remove the key events entirely.
       SwitchAccessCommand command = command_for_key_code_[event->key_code()];
       delegate_->SendSwitchAccessCommand(command);
     }

@@ -789,11 +789,8 @@ bool LayerTreeHost::DoUpdateLayers() {
 
   UpdateHudLayer(debug_state_.ShowHudInfo());
 
-  // The non-layer-list mode is used when blink provides cc with a layer tree
-  // and cc needs to compute property trees from that.
-  // In layer lists mode, blink sends cc property trees directly so they do not
-  // need to be built here. Layer lists mode is used by BlinkGenPropertyTrees
-  // and CompositeAfterPaint.
+  // In layer lists mode, the cc property trees are built directly and do not
+  // need to be built here.
   if (!IsUsingLayerLists()) {
     TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::BuildPropertyTrees");
     Layer* root_scroll =

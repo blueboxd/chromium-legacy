@@ -459,7 +459,7 @@ const Extension* ExtensionAppShimHandler::MaybeGetAppExtension(
 // static
 const Extension* ExtensionAppShimHandler::MaybeGetAppForBrowser(
     Browser* browser) {
-  if (!browser || !browser->is_app())
+  if (!browser || !browser->deprecated_is_app())
     return NULL;
 
   return MaybeGetAppExtension(

@@ -311,8 +311,9 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   // Optional crypto object from the Cdm.
   base::android::ScopedJavaGlobalRef<jobject> media_crypto_;
 
-  base::WeakPtrFactory<MediaCodecVideoDecoder> weak_factory_;
-  base::WeakPtrFactory<MediaCodecVideoDecoder> codec_allocator_weak_factory_;
+  base::WeakPtrFactory<MediaCodecVideoDecoder> weak_factory_{this};
+  base::WeakPtrFactory<MediaCodecVideoDecoder> codec_allocator_weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaCodecVideoDecoder);
 };

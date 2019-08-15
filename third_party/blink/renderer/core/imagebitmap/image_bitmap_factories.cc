@@ -49,7 +49,6 @@
 #include "third_party/blink/renderer/core/svg/svg_image_element.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -298,76 +297,62 @@ void ImageBitmapFactories::ImageBitmapLoader::ContextDestroyed(
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::DidFinishLoading() {
-  DOMArrayBuffer* array_buffer = loader_->ArrayBufferResult();
+  auto data_handle = loader_->TakeDataHandle();
   loader_.reset();
-  if (!array_buffer) {
+  if (!data_handle) {
     RejectPromise(kAllocationFailureImageBitmapRejectionReason);
     return;
   }
-  ScheduleAsyncImageBitmapDecoding(array_buffer);
+  ScheduleAsyncImageBitmapDecoding(std::move(data_handle));
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::DidFail(FileErrorCode) {
   RejectPromise(kUndecodableImageBitmapRejectionReason);
 }
 
-void ImageBitmapFactories::ImageBitmapLoader::ScheduleAsyncImageBitmapDecoding(
-    DOMArrayBuffer* array_buffer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      Thread::Current()->GetTaskRunner();
-  worker_pool::PostTask(
-      FROM_HERE,
-      CrossThreadBindOnce(
-          &ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread,
-          WrapCrossThreadWeakPersistent(this), std::move(task_runner),
-          WrapCrossThreadPersistent(array_buffer), options_->premultiplyAlpha(),
-          options_->colorSpaceConversion(), IsMainThread()));
-}
-
-void ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread(
+namespace {
+void DecodeImageOnDecoderThread(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    DOMArrayBuffer* array_buffer,
-    const String& premultiply_alpha_option,
-    const String& color_space_conversion_option,
-    bool scheduled_from_main_thread) {
-#if DCHECK_IS_ON()
-  DCHECK(!sequence_checker_.CalledOnValidSequence());
-#endif  // DCHECK_IS_ON()
-  ImageDecoder::AlphaOption alpha_op = ImageDecoder::kAlphaPremultiplied;
-  if (premultiply_alpha_option == "none")
-    alpha_op = ImageDecoder::kAlphaNotPremultiplied;
-  bool ignore_color_space = false;
-  if (color_space_conversion_option == "none")
-    ignore_color_space = true;
+    WTF::ArrayBufferContents::DataHandle data_handle,
+    ImageDecoder::AlphaOption alpha_option,
+    ColorBehavior color_behavior,
+    WTF::CrossThreadOnceFunction<void(sk_sp<SkImage>)> result_callback) {
   const bool data_complete = true;
-  // As array buffer can be created from a worker thread, and that thread can be
-  // destroyed, there would be the possibility of a race condition here when
-  // creating the SkData without copy (just referencing it). To fix this issue
-  // we will be making it with copy if we don't come from the main thread, to
-  // ensure that the data will be safe in the current thread where the decoding
-  // is taking place.
-  // todo(crbug/989675) Evaluate if there is another way to fix this without
-  // copying the array.
   std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
-      SegmentReader::CreateFromSkData(
-          scheduled_from_main_thread
-              ? SkData::MakeWithoutCopy(array_buffer->Data(),
-                                        array_buffer->ByteLength())
-              : SkData::MakeWithCopy(array_buffer->Data(),
-                                     array_buffer->ByteLength())),
-      data_complete, alpha_op, ImageDecoder::kDefaultBitDepth,
-      ignore_color_space ? ColorBehavior::Ignore() : ColorBehavior::Tag());
+      SegmentReader::CreateFromSkData(SkData::MakeWithoutCopy(
+          data_handle.Data(), data_handle.DataLength())),
+      data_complete, alpha_option, ImageDecoder::kDefaultBitDepth,
+      color_behavior);
   sk_sp<SkImage> frame;
   if (decoder) {
     frame = ImageBitmap::GetSkImageFromDecoder(std::move(decoder));
   }
   PostCrossThreadTask(
       *task_runner, FROM_HERE,
-      CrossThreadBindOnce(&ImageBitmapFactories::ImageBitmapLoader::
-                              ResolvePromiseOnOriginalThread,
-                          WrapCrossThreadWeakPersistent(this),
-                          std::move(frame)));
+      CrossThreadBindOnce(std::move(result_callback), std::move(frame)));
+}
+}  // namespace
+
+void ImageBitmapFactories::ImageBitmapLoader::ScheduleAsyncImageBitmapDecoding(
+    WTF::ArrayBufferContents::DataHandle data_handle) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      Thread::Current()->GetTaskRunner();
+  ImageDecoder::AlphaOption alpha_option =
+      options_->premultiplyAlpha() != "none"
+          ? ImageDecoder::AlphaOption::kAlphaPremultiplied
+          : ImageDecoder::AlphaOption::kAlphaNotPremultiplied;
+  ColorBehavior color_behavior = options_->colorSpaceConversion() == "none"
+                                     ? ColorBehavior::Ignore()
+                                     : ColorBehavior::Tag();
+  worker_pool::PostTask(
+      FROM_HERE,
+      CrossThreadBindOnce(
+          DecodeImageOnDecoderThread, std::move(task_runner),
+          std::move(data_handle), alpha_option, color_behavior,
+          CrossThreadBindOnce(&ImageBitmapFactories::ImageBitmapLoader::
+                                  ResolvePromiseOnOriginalThread,
+                              WrapCrossThreadWeakPersistent(this))));
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::ResolvePromiseOnOriginalThread(

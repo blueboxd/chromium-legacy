@@ -35,22 +35,19 @@ public class ArticleActionsMenu extends PageController {
     }
 
     @Override
-    public boolean isCurrentPageThis() {
-        return mLocatorHelper.isOnScreen(LOCATOR_LEARN_MORE);
+    public ArticleActionsMenu verifyActive() {
+        mLocatorHelper.verifyOnScreen(LOCATOR_LEARN_MORE);
+        return this;
     }
 
     public UrlPage clickOpenNewTab() {
         mUtils.click(LOCATOR_OPEN_NEW_TAB);
-        UrlPage inst = UrlPage.getInstance();
-        inst.verify();
-        return inst;
+        return UrlPage.getInstance().verifyActive();
     }
 
     public UrlPage clickOpenIncognitoTab() {
         mUtils.click(LOCATOR_OPEN_INCOGNITO);
-        UrlPage inst = UrlPage.getInstance();
-        inst.verify();
-        return inst;
+        return UrlPage.getInstance().verifyActive();
     }
 
     public void clickDownloadLink() {
@@ -59,9 +56,7 @@ public class ArticleActionsMenu extends PageController {
 
     public NewTabPageController clickRemoveArticle() {
         mUtils.click(LOCATOR_REMOVE);
-        NewTabPageController inst = NewTabPageController.getInstance();
-        inst.verify();
-        return inst;
+        return NewTabPageController.getInstance().verifyActive();
     }
 
     public void clickLearnMore() {
@@ -70,8 +65,6 @@ public class ArticleActionsMenu extends PageController {
 
     public NewTabPageController dismiss() {
         mUtils.clickOutsideOf(LOCATOR_MENU);
-        NewTabPageController inst = NewTabPageController.getInstance();
-        inst.verify();
-        return inst;
+        return NewTabPageController.getInstance().verifyActive();
     }
 }

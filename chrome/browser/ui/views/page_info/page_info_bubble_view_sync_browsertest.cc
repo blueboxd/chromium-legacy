@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
@@ -155,7 +156,10 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewSyncBrowserTest,
   account_type.set_account_type(
       safe_browsing::ReusedPasswordAccountType::GSUITE);
   account_type.set_is_account_syncing(true);
-  service->ShowModalWarning(contents, "token", account_type);
+  service->ShowModalWarning(
+      contents, safe_browsing::RequestOutcome::UNKNOWN,
+      safe_browsing::LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+      "unused_token", account_type);
 
   OpenPageInfoBubble(browser());
   views::View* change_password_button = GetView(

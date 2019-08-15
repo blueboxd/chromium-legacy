@@ -14,12 +14,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "chromeos/dbus/power/native_timer.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "libassistant/shared/public/platform_system.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace chromeos {
 namespace assistant {
@@ -41,7 +38,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) PowerManagerProviderImpl
     : public assistant_client::PowerManagerProvider {
  public:
   PowerManagerProviderImpl(
-      service_manager::Connector* connector,
+      mojom::Client* client,
       scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner);
   ~PowerManagerProviderImpl() override;
 
@@ -88,7 +85,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) PowerManagerProviderImpl
   void OnTimerFiredOnMainThread(AlarmId id);
 
   // Owned by chromeos::assistant::Service.
-  service_manager::Connector* const connector_;
+  mojom::Client* const client_;
 
   // Store of currently active alarm ids returned to clients and the
   // corresponding pair of timer objects and client callbacks.

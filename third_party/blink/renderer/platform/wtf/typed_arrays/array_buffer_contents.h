@@ -32,6 +32,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
@@ -56,6 +57,8 @@ class WTF_EXPORT ArrayBufferContents {
     DISALLOW_COPY_AND_ASSIGN(DataHandle);
 
    public:
+    DataHandle() : DataHandle(nullptr, 0, nullptr, nullptr) {}
+
     DataHandle(void* data,
                size_t length,
                DataDeleter deleter,
@@ -81,6 +84,8 @@ class WTF_EXPORT ArrayBufferContents {
       other.data_ = nullptr;
       return *this;
     }
+
+    void reset() { *this = DataHandle(); }
 
     void* Data() const { return data_; }
     size_t DataLength() const { return data_length_; }
@@ -224,6 +229,15 @@ class WTF_EXPORT ArrayBufferContents {
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ArrayBufferContents);
+};
+
+template <>
+struct CrossThreadCopier<ArrayBufferContents::DataHandle> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = ArrayBufferContents::DataHandle;
+  static Type Copy(Type handle) {
+    return handle;  // This is in fact a move.
+  }
 };
 
 }  // namespace WTF

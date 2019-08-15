@@ -301,7 +301,7 @@ class OfflinePageRequestHandler {
   base::FilePath file_path_;
   std::unique_ptr<net::FileStream> stream_;
 
-  base::WeakPtrFactory<OfflinePageRequestHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<OfflinePageRequestHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageRequestHandler);
 };

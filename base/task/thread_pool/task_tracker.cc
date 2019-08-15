@@ -20,7 +20,6 @@
 #include "base/sequence_token.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/task/scoped_set_task_priority_for_current_thread.h"
-#include "base/task/thread_pool/thread_pool_clock.h"
 #include "base/threading/sequence_local_storage_map.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
@@ -488,7 +487,7 @@ void TaskTracker::RecordLatencyHistogram(
     LatencyHistogramType latency_histogram_type,
     TaskTraits task_traits,
     TimeTicks posted_time) const {
-  const TimeDelta task_latency = ThreadPoolClock::Now() - posted_time;
+  const TimeDelta task_latency = TimeTicks::Now() - posted_time;
 
   DCHECK(latency_histogram_type == LatencyHistogramType::TASK_LATENCY ||
          latency_histogram_type == LatencyHistogramType::HEARTBEAT_LATENCY);

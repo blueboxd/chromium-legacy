@@ -249,7 +249,7 @@ void LocationBarView::Init() {
 
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableDomDistiller) &&
-        !browser_->is_type_popup()) {
+        browser_->is_type_normal()) {
       params.types_enabled.push_back(PageActionIconType::kReaderMode);
     }
   }
@@ -682,6 +682,12 @@ void LocationBarView::Update(const WebContents* contents) {
     omnibox_view_->OnTabChanged(contents);
   else
     omnibox_view_->Update();
+
+  if (omnibox_page_action_icon_container_view_->GetPageActionIconView(
+          PageActionIconType::kSendTabToSelf))
+    omnibox_page_action_icon_container_view_
+        ->GetPageActionIconView(PageActionIconType::kSendTabToSelf)
+        ->SetVisible(false);
 
   OnChanged();  // NOTE: Calls Layout().
 }

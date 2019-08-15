@@ -167,10 +167,10 @@ class PLATFORM_EXPORT PaintController {
   void FinishCycle();
 
   // |FinishCycle| clears the property tree changed state but only does this for
-  // non-transient controllers. The root paint controller is transient with
-  // BlinkGenPropertyTrees and this function provides a hook for clearing
+  // non-transient controllers. Until CompositeAfterPaint, the root paint
+  // controller is transient with and this function provides a hook for clearing
   // the property tree changed state after paint.
-  // TODO(pdr): Remove this when BlinkGenPropertyTrees ships.
+  // TODO(pdr): Remove this when CompositeAfterPaint ships.
   void ClearPropertyTreeChangedStateTo(const PropertyTreeState&);
 
   // Returns the approximate memory usage, excluding memory likely to be

@@ -11,18 +11,15 @@
 
 #include "base/macros.h"
 #include "chromeos/services/assistant/platform/audio_input_impl.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "libassistant/shared/public/platform_audio_input.h"
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace chromeos {
 namespace assistant {
 
 class AudioInputProviderImpl : public assistant_client::AudioInputProvider {
  public:
-  AudioInputProviderImpl(service_manager::Connector* connector,
+  AudioInputProviderImpl(mojom::Client* client,
                          const std::string& input_device_id,
                          const std::string& hotword_device_id);
   ~AudioInputProviderImpl() override;

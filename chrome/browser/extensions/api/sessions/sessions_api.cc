@@ -269,7 +269,7 @@ SessionsGetDevicesFunction::CreateWindowModel(
 
   api::windows::WindowType type = api::windows::WINDOW_TYPE_NONE;
   switch (window.type) {
-    case sessions::SessionWindow::TYPE_TABBED:
+    case sessions::SessionWindow::TYPE_NORMAL:
       type = api::windows::WINDOW_TYPE_NORMAL;
       break;
     case sessions::SessionWindow::TYPE_POPUP:

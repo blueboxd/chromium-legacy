@@ -77,7 +77,7 @@ class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
     AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                            accessibility_mode,
                                            ax::mojom::Event::kLoadComplete);
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     waiter.WaitForNotification();
   }
 
@@ -190,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "<body><input type='button' value='push' /><input type='checkbox' />"
       "</body></html>";
   GURL url(url_str);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
 
@@ -252,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "<input value=\"Hello, world.\"/>"
       "</body></html>";
   GURL url(url_str);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
@@ -283,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "<input value=\"Hello, world.\"/>"
       "</body></html>";
   GURL url(url_str);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
@@ -315,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "  }, 1);\n"
       "</script>";
   GURL url(url_str);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
@@ -337,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "<button>Button 3</button>"
       "</body></html>";
   GURL url(url_str);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
@@ -389,7 +389,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "<button>Button 3</button>"
       "</body></html>");
 
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   waiter.WaitForNotification();
   WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
                                                 "Button 2");
@@ -449,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "<button>Button 4</button>"
       "</body></html>");
 
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   waiter.WaitForNotification();
   WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
                                                 "Button 2");
@@ -495,7 +495,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "<!doctype html>"
       "<em><code ><h4 ></em>";
   GURL url(url_str);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
@@ -522,7 +522,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest, MAYBE_TableSpan) {
       " </tr>"
       "</table>";
   GURL url(url_str);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
@@ -573,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest, WritableElement) {
       " Some text"
       "</div>";
   GURL url(url_str);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
   ASSERT_EQ(1u, root->GetUnignoredChildCount());
@@ -594,7 +594,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "<th scope='col'>col header 3</th>"
       "</tr></table>";
   GURL url(url_str);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
@@ -649,7 +649,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "<div role='region' aria-label='region'></div>"
       "<div role='search' aria-label='search'></div>");
 
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   waiter.WaitForNotification();
 
   BrowserAccessibility* root = GetManager()->GetRoot();
@@ -755,7 +755,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "<!doctype html>"
       "<p>text <mark>mark text</mark></p>");
 
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   waiter.WaitForNotification();
 
   BrowserAccessibility* root = GetManager()->GetRoot();
@@ -807,7 +807,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "<input type='text' title='title' aria-labelledby='inputlabel'>"
       "<div id='inputlabel'>aria-labelledby</div>";
   GURL url(url_str);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
@@ -838,7 +838,7 @@ IN_PROC_BROWSER_TEST_F(
       "<input type='text' placeholder='placeholder'>"
       "<input type='text' placeholder='placeholder' aria-label='label'>";
   GURL url(url_str);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
@@ -982,7 +982,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
     AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                            ui::kAXModeComplete,
                                            ax::mojom::Event::kLoadComplete);
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     waiter.WaitForNotification();
   }
 
@@ -1058,7 +1058,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
     AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                            ui::kAXModeComplete,
                                            ax::mojom::Event::kLoadComplete);
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     waiter.WaitForNotification();
   }
 

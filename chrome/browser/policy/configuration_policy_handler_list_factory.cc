@@ -790,6 +790,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kStartupBrowserWindowLaunchSuppressed,
     prefs::kStartupBrowserWindowLaunchSuppressed,
     base::Value::Type::BOOLEAN },
+  { key::kLockScreenMediaPlaybackEnabled,
+    ash::prefs::kLockScreenMediaControlsEnabled,
+    base::Value::Type::BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 // Metrics reporting is controlled by a platform specific policy for ChromeOS

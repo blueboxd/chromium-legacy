@@ -29,10 +29,8 @@ class AccessibilityTreeFormatterUia : public AccessibilityTreeFormatterBase {
 
   static void SetUpCommandLineForTestPass(base::CommandLine* command_line);
 
-  const base::FilePath::StringType GetExpectedFileSuffix() override;
-
-  const base::FilePath::StringType GetVersionSpecificExpectedFileSuffix()
-      override;
+  base::FilePath::StringType GetExpectedFileSuffix() override;
+  base::FilePath::StringType GetVersionSpecificExpectedFileSuffix() override;
 
   std::unique_ptr<base::DictionaryValue> BuildAccessibilityTree(
       BrowserAccessibility* start) override;

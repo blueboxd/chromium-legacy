@@ -280,6 +280,26 @@ class WebAppInstallTaskTest : public WebAppTest {
     return app_id;
   }
 
+  AppId InstallWebAppFromInfoRetrieveIcons(const GURL& url,
+                                           bool is_locally_installed) {
+    AppId app_id;
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->app_url = url;
+
+    base::RunLoop run_loop;
+    install_task_->InstallWebAppFromInfoRetrieveIcons(
+        web_contents(), std::move(web_app_info), is_locally_installed,
+        WebappInstallSource::SYNC,
+        base::BindLambdaForTesting(
+            [&](const AppId& installed_app_id, InstallResultCode code) {
+              ASSERT_EQ(InstallResultCode::kSuccess, code);
+              app_id = installed_app_id;
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    return app_id;
+  }
+
   void PrepareTestAppInstall() {
     const GURL url{"https://example.com/path"};
     CreateDefaultDataToRetrieve(url);
@@ -1131,6 +1151,24 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_LaunchContainer) {
 
     EXPECT_EQ(LaunchContainer::kWindow,
               registrar_->GetAppById(app_id)->launch_container());
+  }
+}
+
+TEST_F(WebAppInstallTaskTest,
+       InstallWebAppFromInfoRetrieveIcons_LocallyInstallled) {
+  {
+    const auto url = GURL("https://example.com/");
+    CreateDataToRetrieve(url, /*open_as_window*/ false);
+    auto app_id =
+        InstallWebAppFromInfoRetrieveIcons(url, /*is_locally_installed*/ false);
+    EXPECT_FALSE(registrar_->GetAppById(app_id)->is_locally_installed());
+  }
+  {
+    const auto url = GURL("https://example.org/");
+    CreateDataToRetrieve(url, /*open_as_window*/ false);
+    auto app_id =
+        InstallWebAppFromInfoRetrieveIcons(url, /*is_locally_installed*/ true);
+    EXPECT_TRUE(registrar_->GetAppById(app_id)->is_locally_installed());
   }
 }
 

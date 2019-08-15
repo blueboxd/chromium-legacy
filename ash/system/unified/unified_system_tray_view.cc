@@ -448,7 +448,7 @@ bool UnifiedSystemTrayView::IsTransformEnabled() const {
   // TODO(tetsui): Support animation by transform even when
   // UnifiedMessageCenterview is visible.
   if (features::IsUnifiedMessageCenterRefactorEnabled()) {
-    return expanded_amount_ != 0 && expanded_amount_ != 1.0;
+    return false;
   } else {
     return expanded_amount_ != 0.0 && expanded_amount_ != 1.0 &&
            !message_center_view_->GetVisible();

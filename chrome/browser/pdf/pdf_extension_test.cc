@@ -2445,3 +2445,8 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest,
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, MultiPage) {
   RunPDFTest(FILE_PATH_LITERAL("multi-page.pdf"));
 }
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest,
+                       DirectionalTextRuns) {
+  RunPDFTest(FILE_PATH_LITERAL("directional-text-runs.pdf"));
+}

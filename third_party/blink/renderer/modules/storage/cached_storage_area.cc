@@ -11,7 +11,7 @@
 #include "base/rand_util.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/memory_dump_manager.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -31,14 +31,14 @@ enum class StorageFormat : uint8_t { UTF16 = 0, Latin1 = 1 };
 
 class GetAllCallback : public mojom::blink::StorageAreaGetAllCallback {
  public:
-  static mojom::blink::StorageAreaGetAllCallbackAssociatedPtrInfo CreateAndBind(
-      base::OnceCallback<void(bool)> callback) {
-    mojom::blink::StorageAreaGetAllCallbackAssociatedPtrInfo ptr_info;
-    auto request = mojo::MakeRequest(&ptr_info);
-    mojo::MakeStrongAssociatedBinding(
+  static mojo::PendingAssociatedRemote<mojom::blink::StorageAreaGetAllCallback>
+  CreateAndBind(base::OnceCallback<void(bool)> callback) {
+    mojo::PendingAssociatedRemote<mojom::blink::StorageAreaGetAllCallback>
+        pending_remote;
+    mojo::MakeSelfOwnedAssociatedReceiver(
         base::WrapUnique(new GetAllCallback(std::move(callback))),
-        std::move(request));
-    return ptr_info;
+        pending_remote.InitWithNewEndpointAndPassReceiver());
+    return pending_remote;
   }
 
  private:
@@ -70,7 +70,7 @@ void UnpackSource(const String& source,
 // static
 scoped_refptr<CachedStorageArea> CachedStorageArea::CreateForLocalStorage(
     scoped_refptr<const SecurityOrigin> origin,
-    mojo::InterfacePtr<mojom::blink::StorageArea> area,
+    mojo::PendingRemote<mojom::blink::StorageArea> area,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
     InspectorEventListener* listener) {
   return base::AdoptRef(new CachedStorageArea(
@@ -80,7 +80,7 @@ scoped_refptr<CachedStorageArea> CachedStorageArea::CreateForLocalStorage(
 // static
 scoped_refptr<CachedStorageArea> CachedStorageArea::CreateForSessionStorage(
     scoped_refptr<const SecurityOrigin> origin,
-    mojo::AssociatedInterfacePtr<mojom::blink::StorageArea> area,
+    mojo::PendingAssociatedRemote<mojom::blink::StorageArea> area,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
     InspectorEventListener* listener) {
   return base::AdoptRef(new CachedStorageArea(
@@ -228,19 +228,16 @@ String CachedStorageArea::RegisterSource(Source* source) {
 // LocalStorage constructor.
 CachedStorageArea::CachedStorageArea(
     scoped_refptr<const SecurityOrigin> origin,
-    mojo::InterfacePtr<mojom::blink::StorageArea> area,
+    mojo::PendingRemote<mojom::blink::StorageArea> area,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
     InspectorEventListener* listener)
     : origin_(std::move(origin)),
       inspector_event_listener_(listener),
-      mojo_area_(area.get()),
-      mojo_area_ptr_(std::move(area)),
-      binding_(this),
+      mojo_area_remote_(std::move(area), ipc_runner),
+      mojo_area_(mojo_area_remote_.get()),
       areas_(MakeGarbageCollected<HeapHashMap<WeakMember<Source>, String>>()) {
-  mojom::blink::StorageAreaObserverAssociatedPtrInfo ptr_info;
-  binding_.Bind(mojo::MakeRequest(&ptr_info), std::move(ipc_runner));
-  mojo_area_->AddObserver(std::move(ptr_info));
-
+  mojo_area_->AddObserver(
+      receiver_.BindNewEndpointAndPassRemote(std::move(ipc_runner)));
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "DOMStorage",
       ThreadScheduler::Current()->DeprecatedDefaultTaskRunner());
@@ -249,19 +246,16 @@ CachedStorageArea::CachedStorageArea(
 // SessionStorage constructor.
 CachedStorageArea::CachedStorageArea(
     scoped_refptr<const SecurityOrigin> origin,
-    mojo::AssociatedInterfacePtr<mojom::blink::StorageArea> area,
+    mojo::PendingAssociatedRemote<mojom::blink::StorageArea> area,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
     InspectorEventListener* listener)
     : origin_(std::move(origin)),
       inspector_event_listener_(listener),
-      mojo_area_(area.get()),
-      mojo_area_associated_ptr_(std::move(area)),
-      binding_(this),
+      mojo_area_associated_remote_(std::move(area), ipc_runner),
+      mojo_area_(mojo_area_associated_remote_.get()),
       areas_(MakeGarbageCollected<HeapHashMap<WeakMember<Source>, String>>()) {
-  mojom::blink::StorageAreaObserverAssociatedPtrInfo ptr_info;
-  binding_.Bind(mojo::MakeRequest(&ptr_info), std::move(ipc_runner));
-  mojo_area_->AddObserver(std::move(ptr_info));
-
+  mojo_area_->AddObserver(
+      receiver_.BindNewEndpointAndPassRemote(std::move(ipc_runner)));
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "DOMStorage",
       ThreadScheduler::Current()->DeprecatedDefaultTaskRunner());
@@ -521,7 +515,7 @@ CachedStorageArea::FormatOption CachedStorageArea::GetValueFormat() const {
 }
 
 bool CachedStorageArea::IsSessionStorage() const {
-  return mojo_area_associated_ptr_.is_bound();
+  return mojo_area_associated_remote_.is_bound();
 }
 
 void CachedStorageArea::EnqueueStorageEvent(const String& key,

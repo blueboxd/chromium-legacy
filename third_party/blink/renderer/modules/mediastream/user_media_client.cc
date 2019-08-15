@@ -69,13 +69,6 @@ void UserMediaClient::StopTrack(MediaStreamComponent* track) {
   }
 }
 
-bool UserMediaClient::IsCapturing() {
-  if (!client_)
-    return false;
-
-  return client_->IsCapturing();
-}
-
 void UserMediaClient::ContextDestroyed() {
   if (!client_)
     return;

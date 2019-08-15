@@ -63,7 +63,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.h"
-#include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_frame.h"
 #include "third_party/blink/renderer/core/loader/frame_fetch_context.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
@@ -1125,7 +1125,9 @@ void DocumentLoader::StartLoadingInternal() {
   DCHECK_EQ(state_, kNotStarted);
   DCHECK(params_);
   state_ = kProvisional;
-  application_cache_host_ = ApplicationCacheHost::Create(this);
+  application_cache_host_ = MakeGarbageCollected<ApplicationCacheHostForFrame>(
+      this, GetFrame()->Client()->GetDocumentInterfaceBroker(),
+      GetFrame()->GetTaskRunner(TaskType::kNetworking));
 
   if (url_.IsEmpty() &&
       !GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument()) {

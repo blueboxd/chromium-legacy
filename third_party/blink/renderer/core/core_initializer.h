@@ -51,7 +51,6 @@ class PictureInPictureController;
 class Settings;
 class ShadowRoot;
 class WebLocalFrameClient;
-class WebLayerTreeView;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMediaPlayerSource;
@@ -106,8 +105,7 @@ class CORE_EXPORT CoreInitializer {
       WebLocalFrameClient*,
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
-      WebMediaPlayerClient*,
-      WebLayerTreeView*) const = 0;
+      WebMediaPlayerClient*) const = 0;
 
   virtual WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
       HTMLMediaElement&) const = 0;

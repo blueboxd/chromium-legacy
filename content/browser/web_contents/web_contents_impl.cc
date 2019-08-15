@@ -4231,6 +4231,32 @@ void WebContentsImpl::ExitFullscreen(bool will_cause_resize) {
   ExitFullscreenMode(will_cause_resize);
 }
 
+void WebContentsImpl::ForSecurityDropFullscreen() {
+  // There are two chains of WebContents to kick out of fullscreen.
+  //
+  // Chain 1, the inner/outer WebContents chain. If an inner WebContents has
+  // done something that requires the browser to drop fullscreen, drop
+  // fullscreen from it and any outer WebContents that may be in fullscreen.
+  //
+  // Chain 2, the opener WebContents chain. If a WebContents has done something
+  // that requires the browser to drop fullscreen, drop fullscreen from any
+  // WebContents that was involved in the chain of opening it.
+  //
+  // Note that these two chains don't interact, as only a top-level WebContents
+  // can have an opener. This simplifies things.
+
+  WebContents* web_contents = this;
+  while (web_contents) {
+    if (web_contents->IsFullscreenForCurrentTab())
+      web_contents->ExitFullscreen(true);
+
+    if (web_contents->HasOriginalOpener())
+      web_contents = FromRenderFrameHost(web_contents->GetOriginalOpener());
+    else
+      web_contents = web_contents->GetOuterWebContents();
+  }
+}
+
 void WebContentsImpl::ResumeLoadingCreatedWebContents() {
   if (delayed_load_url_params_.get()) {
     DCHECK(!delayed_open_url_params_);
@@ -6147,32 +6173,6 @@ void WebContentsImpl::EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) {
       source_rfhi->frame_tree_node()->render_manager()->CreateOpenerProxies(
           GetSiteInstance(), nullptr);
     }
-  }
-}
-
-void WebContentsImpl::ForSecurityDropFullscreen() {
-  // There are two chains of WebContents to kick out of fullscreen.
-  //
-  // Chain 1, the inner/outer WebContents chain. If an inner WebContents has
-  // done something that requires the browser to drop fullscreen, drop
-  // fullscreen from it and any outer WebContents that may be in fullscreen.
-  //
-  // Chain 2, the opener WebContents chain. If a WebContents has done something
-  // that requires the browser to drop fullscreen, drop fullscreen from any
-  // WebContents that was involved in the chain of opening it.
-  //
-  // Note that these two chains don't interact, as only a top-level WebContents
-  // can have an opener. This simplifies things.
-
-  WebContents* web_contents = this;
-  while (web_contents) {
-    if (web_contents->IsFullscreenForCurrentTab())
-      web_contents->ExitFullscreen(true);
-
-    if (web_contents->HasOriginalOpener())
-      web_contents = FromRenderFrameHost(web_contents->GetOriginalOpener());
-    else
-      web_contents = web_contents->GetOuterWebContents();
   }
 }
 

@@ -901,8 +901,7 @@ WebPluginContainerImpl* LocalFrameClientImpl::CreatePlugin(
 std::unique_ptr<WebMediaPlayer> LocalFrameClientImpl::CreateWebMediaPlayer(
     HTMLMediaElement& html_media_element,
     const WebMediaPlayerSource& source,
-    WebMediaPlayerClient* client,
-    WebLayerTreeView* layer_tree_view) {
+    WebMediaPlayerClient* client) {
   WebLocalFrameImpl* web_frame =
       WebLocalFrameImpl::FromFrame(html_media_element.GetDocument().GetFrame());
 
@@ -910,7 +909,7 @@ std::unique_ptr<WebMediaPlayer> LocalFrameClientImpl::CreateWebMediaPlayer(
     return nullptr;
 
   return CoreInitializer::GetInstance().CreateWebMediaPlayer(
-      web_frame->Client(), html_media_element, source, client, layer_tree_view);
+      web_frame->Client(), html_media_element, source, client);
 }
 
 WebRemotePlaybackClient* LocalFrameClientImpl::CreateWebRemotePlaybackClient(
@@ -1268,11 +1267,6 @@ void LocalFrameClientImpl::UpdateSubresourceFactory(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {
   DCHECK(web_frame_->Client());
   web_frame_->Client()->UpdateSubresourceFactory(std::move(info));
-}
-
-WebLocalFrameClient::AppCacheType LocalFrameClientImpl::GetAppCacheType() {
-  DCHECK(web_frame_->Client());
-  return web_frame_->Client()->GetAppCacheType();
 }
 
 void LocalFrameClientImpl::EvictFromBackForwardCache() {

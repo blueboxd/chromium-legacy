@@ -1390,7 +1390,7 @@ TEST_P(FrameThrottlingTest, LifecycleUpdateAfterUnthrottledCompositingUpdate) {
 }
 
 TEST_P(FrameThrottlingTest, GraphicsLayerCollection) {
-  // This test is for BlinkGenPropertyTrees only.
+  // GraphicsLayers are not created with CompositeAfterPaint.
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 

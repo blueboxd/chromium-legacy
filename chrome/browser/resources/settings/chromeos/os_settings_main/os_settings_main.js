@@ -83,6 +83,10 @@ Polymer({
 
     showAndroidApps: Boolean,
 
+    showCrostini: Boolean,
+
+    showReset: Boolean,
+
     havePlayStoreApp: Boolean,
   },
 

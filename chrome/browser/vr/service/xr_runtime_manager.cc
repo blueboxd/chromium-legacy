@@ -149,7 +149,12 @@ BrowserXRRuntime* XRRuntimeManager::GetRuntime(device::mojom::XRDeviceId id) {
   return it->second.get();
 }
 
-BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
+bool XRRuntimeManager::HasRuntime(device::mojom::XRDeviceId id) {
+  return runtimes_.find(id) != runtimes_.end();
+}
+
+base::Optional<device::mojom::XRDeviceId>
+XRRuntimeManager::GetRuntimeIdForOptions(
     device::mojom::XRSessionOptions* options) {
   // Examine options to determine which device provider we should use.
 
@@ -157,61 +162,69 @@ BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
   if (options->environment_integration) {
     if (!options->immersive) {
       DVLOG(1) << __func__ << ": non-immersive AR mode is unsupported";
-      return nullptr;
+      return base::nullopt;
     }
     // Return the ARCore runtime.
-    return GetRuntime(device::mojom::XRDeviceId::ARCORE_DEVICE_ID);
+    return device::mojom::XRDeviceId::ARCORE_DEVICE_ID;
   }
 
   if (options->immersive) {
-    return GetImmersiveRuntime();
+    return GetImmersiveRuntimeId();
   } else {
     // Non immersive session.
     // Try the orientation provider if it exists.
-    auto* orientation_runtime =
-        GetRuntime(device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID);
-    if (orientation_runtime) {
-      return orientation_runtime;
-    }
+    if (HasRuntime(device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID))
+      return device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID;
 
     // If we don't have an orientation provider, then we don't have an explicit
     // runtime to back a non-immersive session
-    return nullptr;
+    return base::nullopt;
   }
 }
 
-BrowserXRRuntime* XRRuntimeManager::GetImmersiveRuntime() {
+BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
+    device::mojom::XRSessionOptions* options) {
+  auto optional_device_id = GetRuntimeIdForOptions(options);
+  if (!optional_device_id)
+    return nullptr;
+  return GetRuntime(optional_device_id.value());
+}
+
+base::Optional<device::mojom::XRDeviceId>
+XRRuntimeManager::GetImmersiveRuntimeId() {
 #if defined(OS_ANDROID)
-  auto* gvr = GetRuntime(device::mojom::XRDeviceId::GVR_DEVICE_ID);
-  if (gvr)
-    return gvr;
+  if (HasRuntime(device::mojom::XRDeviceId::GVR_DEVICE_ID))
+    return device::mojom::XRDeviceId::GVR_DEVICE_ID;
 #endif
 
 #if BUILDFLAG(ENABLE_OPENXR)
-  auto* openxr = GetRuntime(device::mojom::XRDeviceId::OPENXR_DEVICE_ID);
-  if (openxr)
-    return openxr;
+  if (HasRuntime(device::mojom::XRDeviceId::OPENXR_DEVICE_ID))
+    return device::mojom::XRDeviceId::OPENXR_DEVICE_ID;
 #endif
 
 #if BUILDFLAG(ENABLE_OPENVR)
-  auto* openvr = GetRuntime(device::mojom::XRDeviceId::OPENVR_DEVICE_ID);
-  if (openvr)
-    return openvr;
+  if (HasRuntime(device::mojom::XRDeviceId::OPENVR_DEVICE_ID))
+    return device::mojom::XRDeviceId::OPENVR_DEVICE_ID;
 #endif
 
 #if BUILDFLAG(ENABLE_OCULUS_VR)
-  auto* oculus = GetRuntime(device::mojom::XRDeviceId::OCULUS_DEVICE_ID);
-  if (oculus)
-    return oculus;
+  if (HasRuntime(device::mojom::XRDeviceId::OCULUS_DEVICE_ID))
+    return device::mojom::XRDeviceId::OCULUS_DEVICE_ID;
 #endif
 
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
-  auto* wmr = GetRuntime(device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID);
-  if (wmr)
-    return wmr;
+  if (HasRuntime(device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID))
+    return device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID;
 #endif
 
-  return nullptr;
+  return base::nullopt;
+}
+
+BrowserXRRuntime* XRRuntimeManager::GetImmersiveRuntime() {
+  auto optional_device_id = GetImmersiveRuntimeId();
+  if (!optional_device_id)
+    return nullptr;
+  return GetRuntime(optional_device_id.value());
 }
 
 device::mojom::VRDisplayInfoPtr XRRuntimeManager::GetCurrentVRDisplayInfo(

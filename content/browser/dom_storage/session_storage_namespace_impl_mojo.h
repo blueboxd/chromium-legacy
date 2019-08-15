@@ -15,9 +15,8 @@
 #include "content/browser/dom_storage/session_storage_area_impl.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "url/origin.h"
 
@@ -149,13 +148,13 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
 
   // Must be preceded by a call to |PopulateFromMetadata|, |PopulateAsClone|, or
   // |SetWaitingForClonePopulation|. For the later case, |PopulateAsClone| must
-  // eventually be called before the SessionStorageNamespaceRequest can be
-  // bound.
-  void Bind(blink::mojom::SessionStorageNamespaceRequest request,
-            int process_id);
+  // eventually be called before the PendingReceiver can be bound.
+  void Bind(
+      mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver,
+      int process_id);
 
   bool IsBound() const {
-    return !bindings_.empty() || bind_waiting_on_population_;
+    return !receivers_.empty() || bind_waiting_on_population_;
   }
 
   // Removes any StorageAreas bound in |OpenArea| that are no longer bound.
@@ -171,7 +170,8 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   // origin. Before connection, it checks to make sure the |process_id| given to
   // the |Bind| method can access the given origin.
   void OpenArea(const url::Origin& origin,
-                blink::mojom::StorageAreaAssociatedRequest database) override;
+                mojo::PendingAssociatedReceiver<blink::mojom::StorageArea>
+                    receiver) override;
 
   // Simply calls the |add_namespace_callback_| callback with this namespace's
   // data.
@@ -218,7 +218,7 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
 
   OriginAreas origin_areas_;
   // The context is the process id.
-  mojo::BindingSet<blink::mojom::SessionStorageNamespace, int> bindings_;
+  mojo::ReceiverSet<blink::mojom::SessionStorageNamespace, int> receivers_;
 };
 
 }  // namespace content

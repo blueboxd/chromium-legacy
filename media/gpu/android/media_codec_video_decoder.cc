@@ -218,9 +218,7 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
       overlay_factory_cb_(std::move(overlay_factory_cb)),
       device_info_(device_info),
       enable_threaded_texture_mailboxes_(
-          gpu_preferences.enable_threaded_texture_mailboxes),
-      weak_factory_(this),
-      codec_allocator_weak_factory_(this) {
+          gpu_preferences.enable_threaded_texture_mailboxes) {
   DVLOG(2) << __func__;
   surface_chooser_helper_.chooser()->SetClientCallbacks(
       base::Bind(&MediaCodecVideoDecoder::OnSurfaceChosen,

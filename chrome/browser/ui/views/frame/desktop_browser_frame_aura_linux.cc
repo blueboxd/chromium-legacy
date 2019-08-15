@@ -35,7 +35,7 @@ views::Widget::InitParams DesktopBrowserFrameAuraLinux::GetWidgetParams() {
   // windows and e.g app windows.
   const Browser& browser = *browser_view()->browser();
   params.wm_class_name =
-      browser.is_app() && !browser.is_devtools()
+      browser.is_type_app()
           ? shell_integration_linux::GetWMClassFromAppName(browser.app_name())
           // This window is a hosted app or v1 packaged app.
           // NOTE: v2 packaged app windows are created by
@@ -44,7 +44,7 @@ views::Widget::InitParams DesktopBrowserFrameAuraLinux::GetWidgetParams() {
   params.wm_class_class = shell_integration_linux::GetProgramClassClass();
   const char kX11WindowRoleBrowser[] = "browser";
   const char kX11WindowRolePopup[] = "pop-up";
-  params.wm_role_name = browser_view()->browser()->is_type_tabbed()
+  params.wm_role_name = browser_view()->browser()->is_type_normal()
                             ? std::string(kX11WindowRoleBrowser)
                             : std::string(kX11WindowRolePopup);
   params.remove_standard_frame = UseCustomFrame();

@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
+#include "storage/browser/fileapi/file_system_url.h"
 #include "ui/base/resource/scale_factor.h"
 
 namespace base {
@@ -31,6 +32,11 @@ struct LinuxPackageInfo;
 
 // A unique identifier for our containers. This is <vm_name, container_name>.
 using ContainerId = std::pair<std::string, std::string>;
+
+// TODO(joelhockey): Update guest_os::SharePath::SharePathCallback to be
+// <void(bool success, const std::string& failure_reason)> and use it here.
+using LaunchCrostiniAppCallback =
+    base::OnceCallback<void(bool success, std::string failure_reason)>;
 
 // Return" (<vm_name>, <container_name>)".
 std::string ContainerIdToString(const ContainerId& container_id);
@@ -77,7 +83,8 @@ void LaunchCrostiniApp(Profile* profile,
 void LaunchCrostiniApp(Profile* profile,
                        const std::string& app_id,
                        int64_t display_id,
-                       const std::vector<std::string>& files);
+                       const std::vector<storage::FileSystemURL>& files,
+                       LaunchCrostiniAppCallback callback);
 
 // Convenience wrapper around CrostiniAppIconLoader. As requesting icons from
 // the container can be slow, we just use the default (penguin) icons after the

@@ -28,9 +28,8 @@ bool FloatEquals(float f1, float f2) {
 }  // namespace
 
 DirectManipulationEventHandler::DirectManipulationEventHandler(
-    DirectManipulationHelper* helper,
     ui::WindowEventTarget* event_target)
-    : helper_(helper), event_target_(event_target) {}
+    : event_target_(event_target) {}
 
 bool DirectManipulationEventHandler::SetViewportSizeInPixels(
     const gfx::Size& viewport_size_in_pixels) {
@@ -43,6 +42,11 @@ bool DirectManipulationEventHandler::SetViewportSizeInPixels(
 void DirectManipulationEventHandler::SetDeviceScaleFactor(
     float device_scale_factor) {
   device_scale_factor_ = device_scale_factor;
+}
+
+void DirectManipulationEventHandler::SetDirectManipulationHelper(
+    DirectManipulationHelper* helper) {
+  helper_ = helper;
 }
 
 DirectManipulationEventHandler::~DirectManipulationEventHandler() {}
@@ -303,6 +307,9 @@ HRESULT DirectManipulationEventHandler::OnContentUpdated(
 HRESULT DirectManipulationEventHandler::OnInteraction(
     IDirectManipulationViewport2* viewport,
     DIRECTMANIPULATION_INTERACTION_TYPE interaction) {
+  if (!helper_)
+    return S_OK;
+
   if (interaction == DIRECTMANIPULATION_INTERACTION_BEGIN) {
     DebugLogging("OnInteraction BEGIN.", S_OK);
     helper_->AddAnimationObserver();

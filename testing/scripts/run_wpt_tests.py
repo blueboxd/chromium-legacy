@@ -52,7 +52,6 @@ class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
             # from multiprocessing.cpu_count()
             "--processes=10",
             "--no-capture-stdio",
-            "--no-manifest-update",
             "--no-manifest-download",
             "--no-pause-after-test",
             "--no-fail-on-unexpected",
@@ -60,6 +59,12 @@ class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
             # By specifying metadata above, WPT will try to find manifest in the
             # metadata directory. So here we point it back to the correct path
             # for the manifest.
+            # TODO(lpz): Allowing WPT to rebuild its own manifest temporarily to
+            # gauge performance impact. Issue with specifying the base manifest
+            # below is that it can get stale if tests are renamed, and requires
+            # a lengthy import/export cycle to refresh. So we allow WPT to
+            # update the manifest in cast it's stale.
+            #"--no-manifest-update",
             "--manifest=../../third_party/blink/web_tests/external/"
                 "WPT_BASE_MANIFEST_6.json"
         ])

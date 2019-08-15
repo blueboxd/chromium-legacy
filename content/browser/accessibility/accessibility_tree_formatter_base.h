@@ -50,8 +50,7 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBase
       const std::vector<PropertyFilter>& property_filters) override;
   void SetNodeFilters(const std::vector<NodeFilter>& node_filters) override;
   void set_show_ids(bool show_ids) override;
-  const base::FilePath::StringType GetVersionSpecificExpectedFileSuffix()
-      override;
+  base::FilePath::StringType GetVersionSpecificExpectedFileSuffix() override;
 
  protected:
   //

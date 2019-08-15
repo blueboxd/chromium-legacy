@@ -155,6 +155,9 @@ class CORE_EXPORT CompositorAnimations {
       Vector<std::unique_ptr<CompositorKeyframeModel>>& animations,
       double animation_playback_rate);
 
+  static CompositorElementIdNamespace CompositorElementNamespaceForProperty(
+      CSSPropertyID property);
+
  private:
   static FailureReasons CheckCanStartEffectOnCompositor(
       const Timing&,

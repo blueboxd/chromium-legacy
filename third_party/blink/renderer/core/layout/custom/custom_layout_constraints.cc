@@ -7,17 +7,18 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 
-CustomLayoutConstraints::CustomLayoutConstraints(LayoutUnit fixed_inline_size,
-                                                 LayoutUnit fixed_block_size,
-                                                 SerializedScriptValue* data,
-                                                 v8::Isolate* isolate)
-    : fixed_inline_size_(fixed_inline_size),
-      fixed_block_size_(fixed_block_size) {
+CustomLayoutConstraints::CustomLayoutConstraints(
+    const LogicalSize& border_box_size,
+    SerializedScriptValue* data,
+    v8::Isolate* isolate)
+    : fixed_inline_size_(border_box_size.inline_size),
+      fixed_block_size_(border_box_size.block_size) {
   if (data)
     layout_worklet_world_v8_data_.Set(isolate, data->Deserialize(isolate));
 }

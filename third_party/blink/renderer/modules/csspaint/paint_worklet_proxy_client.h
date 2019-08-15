@@ -54,7 +54,10 @@ class MODULES_EXPORT PaintWorkletProxyClient
 
   // PaintWorkletPainter implementation.
   int GetWorkletId() const override { return worklet_id_; }
-  sk_sp<PaintRecord> Paint(const CompositorPaintWorkletInput*) override;
+  sk_sp<PaintRecord> Paint(
+      const CompositorPaintWorkletInput*,
+      const CompositorPaintWorkletJob::AnimatedPropertyValues&
+          animated_property_values) override;
 
   // Add a global scope to the PaintWorkletProxyClient.
   virtual void AddGlobalScope(WorkletGlobalScope*);

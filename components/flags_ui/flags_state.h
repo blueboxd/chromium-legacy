@@ -44,14 +44,9 @@ enum {
   kOsCrOSOwnerOnly = 1 << 5,
   kOsIos = 1 << 6,
   kEnterprise = 1 << 7,
-
-  // These bits are used to keep track of expiring flags for the next
-  // three milestones in the expiry process. See //docs/flag_expiry.md for
-  // details of how they are used.
-  kExpireM77 = 1 << 8,
 };
 
-extern const base::Feature kUnexpireFlagsM77;
+extern const base::Feature kUnexpireFlagsM78;
 
 // A flag controlling the behavior of the |ConvertFlagsToSwitches| function -
 // whether it should add the sentinel switches around flags.

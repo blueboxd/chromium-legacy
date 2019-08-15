@@ -880,6 +880,7 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/ui/util/CrashInfoLoader.java",
     "java/src/org/chromium/android_webview/ui/util/UnuploadedFilesStateLoader.java",
     "java/src/org/chromium/android_webview/ui/util/UploadedCrashesInfoLoader.java",
+    "java/src/org/chromium/android_webview/ui/util/WebViewCrashInfoCollector.java",
     "java/src/org/chromium/android_webview/ui/util/WebViewCrashLogParser.java",
   ]
   deps = [

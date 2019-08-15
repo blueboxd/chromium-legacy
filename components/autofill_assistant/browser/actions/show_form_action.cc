@@ -17,7 +17,7 @@ namespace autofill_assistant {
 
 ShowFormAction::ShowFormAction(ActionDelegate* delegate,
                                const ActionProto& proto)
-    : Action(delegate, proto), weak_ptr_factory_(this) {
+    : Action(delegate, proto) {
   DCHECK(proto_.has_show_form() && proto_.show_form().has_form());
 }
 

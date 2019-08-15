@@ -12,6 +12,7 @@
 #include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/optional.h"
 
 namespace base {
 class DictionaryValue;
@@ -31,9 +32,11 @@ struct StreamPipelineDescriptor {
   //    ... ]
   const base::Value* pipeline;
   const base::Value* stream_types;
+  const base::Optional<int> num_input_channels;
 
   StreamPipelineDescriptor(const base::Value* pipeline_in,
-                           const base::Value* stream_types_in);
+                           const base::Value* stream_types_in,
+                           const base::Optional<int> num_input_channels_in);
   ~StreamPipelineDescriptor();
   StreamPipelineDescriptor(const StreamPipelineDescriptor& other);
   StreamPipelineDescriptor operator=(const StreamPipelineDescriptor& other) =
@@ -43,10 +46,10 @@ struct StreamPipelineDescriptor {
 // Helper class to parse post-processing pipeline descriptor file.
 class PostProcessingPipelineParser {
  public:
-  PostProcessingPipelineParser(const base::FilePath& path);
+  explicit PostProcessingPipelineParser(const base::FilePath& path);
 
   // For testing only:
-  PostProcessingPipelineParser(
+  explicit PostProcessingPipelineParser(
       std::unique_ptr<base::DictionaryValue> config_dict);
 
   ~PostProcessingPipelineParser();

@@ -70,7 +70,9 @@
         i18n-values="button-label:tryAgainButton;
                      link-label:learnMoreButton">
     </notification-card>
-    <div id="saml-notice-container" hidden="[[!isSaml_]]">
+    <div id="saml-notice-container"
+        hidden="[[!isSamlNoticeContainerVisible_(isSaml_,
+                                                 pinDialogParameters_)]]">
       <span id="saml-notice-recording-indicator" hidden="[[!videoEnabled_]]">
         <img src="chrome://theme/IDR_TAB_RECORDING_INDICATOR">
       </span>

@@ -365,7 +365,7 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
   // We inform the WebView when it has a local main frame attached once the
   // WebFrame it fully set up and the WebWidgetClient is initialized (which is
   // the case by this point).
-  web_view_->DidAttachLocalMainFrame(test_web_widget_client_);
+  web_view_->DidAttachLocalMainFrame();
 
   // Set an initial size for subframes.
   if (frame->Parent())
@@ -429,9 +429,6 @@ WebViewImpl* WebViewHelper::InitializeRemote(
   web_view_->MainFrameWidget()->SetLayerTreeView(
       test_web_widget_client_->layer_tree_view(),
       test_web_widget_client_->animation_host());
-  // TODO(danakj): Remove this! Make WebViewImpl not need a WebWidgetClient when
-  // the main frame is remote.
-  web_view_->DidAttachRemoteMainFrame(test_web_widget_client_);
 
   return web_view_;
 }
@@ -737,6 +734,10 @@ void TestWebWidgetClient::SetBrowserControlsHeight(float top_height,
                                                    bool shrink_viewport) {
   layer_tree_host()->SetBrowserControlsHeight(top_height, bottom_height,
                                               shrink_viewport);
+}
+
+viz::FrameSinkId TestWebWidgetClient::GetFrameSinkId() {
+  return viz::FrameSinkId();
 }
 
 void TestWebViewClient::DestroyChildViews() {

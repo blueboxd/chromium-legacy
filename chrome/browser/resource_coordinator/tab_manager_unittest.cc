@@ -433,7 +433,7 @@ TEST_F(TabManagerTest, MAYBE_DiscardTabWithNonVisibleTabs) {
   // its active tab.
   auto window1 = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params1(profile(), true);
-  params1.type = Browser::TYPE_TABBED;
+  params1.type = Browser::TYPE_NORMAL;
   params1.window = window1.get();
   auto browser1 = std::make_unique<Browser>(params1);
   TabStripModel* tab_strip1 = browser1->tab_strip_model();
@@ -444,7 +444,7 @@ TEST_F(TabManagerTest, MAYBE_DiscardTabWithNonVisibleTabs) {
 
   auto window2 = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params2(profile(), true);
-  params2.type = Browser::TYPE_TABBED;
+  params2.type = Browser::TYPE_NORMAL;
   params2.window = window2.get();
   auto browser2 = std::make_unique<Browser>(params1);
   TabStripModel* tab_strip2 = browser2->tab_strip_model();
@@ -1008,7 +1008,7 @@ TEST_F(TabManagerTest, IsTabRestoredInForeground) {
 TEST_F(TabManagerTest, TrackingNumberOfLoadedLifecycleUnits) {
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   params.window = window.get();
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -1053,7 +1053,7 @@ TEST_F(TabManagerTest, TrackingNumberOfLoadedLifecycleUnits) {
 TEST_F(TabManagerTest, GetSortedLifecycleUnits) {
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   params.window = window.get();
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -1080,7 +1080,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
        GetTimeInBackgroundBeforeProactiveDiscardTest) {
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   params.window = window.get();
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -1127,7 +1127,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
        ProactiveDiscardTestLow) {
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   params.window = window.get();
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -1164,7 +1164,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
        ProactiveDiscardTestModerate) {
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   params.window = window.get();
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -1200,7 +1200,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
        ProactiveDiscardTestHigh) {
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   params.window = window.get();
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -1236,7 +1236,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
        ProactiveDiscardTestExcessive) {
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   params.window = window.get();
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -1263,7 +1263,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
        ProactiveDiscardTestChangingStates) {
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   params.window = window.get();
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -1364,7 +1364,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
        ProactiveDiscardTestTabClosedPriorToDiscard) {
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   params.window = window.get();
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -1389,7 +1389,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
        FreezeBackgroundTabs) {
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   params.window = window.get();
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -1457,7 +1457,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
 TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest, FreezeOnceLoaded) {
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   params.window = window.get();
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -1489,7 +1489,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
 
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   params.window = window.get();
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -1596,7 +1596,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
 
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   params.window = window.get();
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -1639,7 +1639,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
 
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   params.window = window.get();
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -1663,7 +1663,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
 
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   params.window = window.get();
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -1686,7 +1686,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
        NoProactiveDiscardWhenOffline) {
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   params.window = window.get();
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -1711,7 +1711,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
        NoProactiveDiscardWhenChromeNotInUse) {
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   params.window = window.get();
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -1781,7 +1781,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
 TEST_F(TabManagerTest, NoProactiveDiscardWhenFeatureDisabled) {
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   params.window = window.get();
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -1801,7 +1801,7 @@ TEST_F(TabManagerTest, NoProactiveDiscardWhenFeatureDisabled) {
 TEST_F(TabManagerTest, NoFreezingWhenFeatureDisabled) {
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   params.window = window.get();
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();

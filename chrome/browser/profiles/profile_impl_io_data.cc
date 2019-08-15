@@ -27,9 +27,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
-#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_io_data.h"
-#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
@@ -40,10 +37,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/cookie_config/cookie_store_util.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/core/browser/data_store_impl.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/prefs/json_pref_store.h"
@@ -88,11 +81,6 @@ ProfileImplIOData::Handle::Handle(Profile* profile)
 
 ProfileImplIOData::Handle::~Handle() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // io_data_->data_reduction_proxy_io_data() might be NULL if Init() was
-  // never called.
-  if (io_data_->data_reduction_proxy_io_data())
-    io_data_->data_reduction_proxy_io_data()->ShutdownOnUIThread();
-
   io_data_->ShutdownOnUIThread();
 }
 
@@ -101,17 +89,6 @@ void ProfileImplIOData::Handle::Init(const base::FilePath& profile_path) {
 
   // Keep track of profile path for data reduction proxy..
   io_data_->profile_path_ = profile_path;
-
-  io_data_->set_data_reduction_proxy_io_data(
-      CreateDataReductionProxyChromeIOData(
-          profile_, base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
-          base::CreateSingleThreadTaskRunner({BrowserThread::UI})));
-
-#if defined(OS_CHROMEOS)
-  io_data_->data_reduction_proxy_io_data()
-      ->config()
-      ->EnableGetNetworkIdAsynchronously();
-#endif
 }
 
 content::ResourceContext*
@@ -128,25 +105,6 @@ ProfileImplIOData::Handle::GetResourceContextNoInit() const {
   // the beginning of initalization and is used by some members while they're
   // being initialized (i.e. AppCacheService).
   return io_data_->GetResourceContext();
-}
-
-void ProfileImplIOData::Handle::InitializeDataReductionProxy() const {
-  scoped_refptr<base::SequencedTaskRunner> db_task_runner =
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-  std::unique_ptr<data_reduction_proxy::DataStore> store(
-      new data_reduction_proxy::DataStoreImpl(io_data_->profile_path_));
-  DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_)
-      ->InitDataReductionProxySettings(
-          io_data_->data_reduction_proxy_io_data(), profile_->GetPrefs(),
-          profile_,
-          content::BrowserContext::GetDefaultStoragePartition(profile_)
-              ->GetURLLoaderFactoryForBrowserProcess(),
-          std::move(store),
-          base::CreateSingleThreadTaskRunner({BrowserThread::UI}),
-          db_task_runner);
 }
 
 void ProfileImplIOData::Handle::LazyInitialize() const {

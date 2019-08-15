@@ -136,6 +136,10 @@ struct PRINTING_EXPORT PrinterInfo {
 
   // Does ipp-features-supported contain 'ipp-everywhere'.
   bool ipp_everywhere = false;
+
+  // Does the printer have at least one resolution defined in the
+  // pwg-raster-document-resolution-supported IPP attribute.
+  bool supports_pwg_raster_resolution = false;
 };
 
 // Specifies classes of jobs.

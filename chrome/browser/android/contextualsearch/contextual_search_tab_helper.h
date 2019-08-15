@@ -55,7 +55,7 @@ class ContextualSearchTabHelper {
   std::unique_ptr<contextual_search::UnhandledTapWebContentsObserver>
       unhandled_tap_web_contents_observer_;
 
-  base::WeakPtrFactory<ContextualSearchTabHelper> weak_factory_;
+  base::WeakPtrFactory<ContextualSearchTabHelper> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ContextualSearchTabHelper);
 };
 

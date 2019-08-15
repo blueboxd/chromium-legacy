@@ -10,11 +10,13 @@
 
 #include "base/base_switches.h"
 #include "base/bind.h"
+#include "base/clang_coverage_buildflags.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/debug/leak_annotations.h"
 #include "base/debug/profiler.h"
+#include "base/files/file.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -84,6 +86,14 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mach_port_rendezvous.h"
+#endif
+
+#if BUILDFLAG(CLANG_COVERAGE)
+#include <stdio.h>
+#include <unistd.h>
+// Function provided by libclang_rt.profile-*.a, declared and documented at:
+// https://github.com/llvm/llvm-project/blob/master/compiler-rt/lib/profile/InstrProfiling.h
+extern "C" void __llvm_profile_set_file_object(FILE* File, int EnableMerge);
 #endif
 
 namespace content {
@@ -370,6 +380,18 @@ class ChildProcessImpl : public mojom::ChildProcess {
         FROM_HERE, base::BindOnce(&ChildThreadImpl::OnBindReceiver,
                                   weak_main_thread_, std::move(receiver)));
   }
+
+#if BUILDFLAG(CLANG_COVERAGE)
+  void SetCoverageFile(base::File file) override {
+    // TODO(crbug.com/988816) Fix this when we support coverage on Windows.
+#if defined(OS_POSIX)
+    // Take the file descriptor so that |file| does not close it.
+    int fd = file.TakePlatformFile();
+    FILE* f = fdopen(fd, "r+b");
+    __llvm_profile_set_file_object(f, 1);
+#endif
+  }
+#endif
 
   const scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
   const base::WeakPtr<ChildThreadImpl> weak_main_thread_;

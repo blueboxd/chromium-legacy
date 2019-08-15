@@ -103,7 +103,8 @@ class DiscardableImageGenerator {
   TakeAnimatedImagesMetadata() {
     return std::move(animated_images_metadata_);
   }
-  std::vector<scoped_refptr<PaintWorkletInput>> TakePaintWorkletInputs() {
+  std::vector<DiscardableImageMap::PaintWorkletInputWithImageId>
+  TakePaintWorkletInputs() {
     return std::move(paint_worklet_inputs_);
   }
 
@@ -358,7 +359,8 @@ class DiscardableImageGenerator {
     src_rect.roundOut(&src_irect);
 
     if (paint_image.IsPaintWorklet()) {
-      paint_worklet_inputs_.push_back(paint_image.paint_worklet_input());
+      paint_worklet_inputs_.push_back(std::make_pair(
+          paint_image.paint_worklet_input(), paint_image.stable_id()));
     } else {
       // Make a note if any image was originally specified in a non-sRGB color
       // space. PaintWorklets do not have the concept of a color space, so
@@ -420,7 +422,9 @@ class DiscardableImageGenerator {
   base::flat_map<PaintImage::Id, DiscardableImageMap::Rects> image_id_to_rects_;
   std::vector<DiscardableImageMap::AnimatedImageMetadata>
       animated_images_metadata_;
-  std::vector<scoped_refptr<PaintWorkletInput>> paint_worklet_inputs_;
+  std::vector<DiscardableImageMap::PaintWorkletInputWithImageId>
+      paint_worklet_inputs_;
+  PaintImageIdFlatSet paint_worklet_image_ids_;
   base::flat_map<PaintImage::Id, PaintImage::DecodingMode> decoding_mode_map_;
   bool only_gather_animated_images_ = false;
 

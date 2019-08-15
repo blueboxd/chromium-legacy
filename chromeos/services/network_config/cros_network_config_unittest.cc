@@ -675,5 +675,19 @@ TEST_F(CrosNetworkConfigTest, ActiveNetworksChanged) {
   EXPECT_EQ(1, observer()->active_networks_changed());
 }
 
+TEST_F(CrosNetworkConfigTest, NetworkStateChanged) {
+  SetupObserver();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, observer()->GetNetworkChangedCount("wifi1_guid"));
+  EXPECT_EQ(0, observer()->GetNetworkChangedCount("wifi2_guid"));
+
+  // Change a network state.
+  helper().SetServiceProperty(wifi1_path(), shill::kSignalStrengthProperty,
+                              base::Value(10));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, observer()->GetNetworkChangedCount("wifi1_guid"));
+  EXPECT_EQ(0, observer()->GetNetworkChangedCount("wifi2_guid"));
+}
+
 }  // namespace network_config
 }  // namespace chromeos

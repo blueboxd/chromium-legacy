@@ -29,7 +29,8 @@ public class DownloadNotificationController extends PageController {
     }
 
     @Override
-    public boolean isCurrentPageThis() {
-        return mLocatorHelper.isOnScreen(LOCATOR_DOWNLOAD_NOTIFICATION);
+    public DownloadNotificationController verifyActive() {
+        mLocatorHelper.verifyOnScreen(LOCATOR_DOWNLOAD_NOTIFICATION);
+        return this;
     }
 }

@@ -197,8 +197,7 @@ TEST(ProtoConversionTest, NotificationEntryConversion) {
 
   // Test scheduling params.
   const ScheduleParams::Priority priorities[] = {
-      ScheduleParams::Priority::kLow, ScheduleParams::Priority::kHigh,
-      ScheduleParams::Priority::kNoThrottle};
+      ScheduleParams::Priority::kLow, ScheduleParams::Priority::kNoThrottle};
   for (auto priority : priorities) {
     entry.schedule_params.priority = priority;
     TestNotificationEntryConversion(&entry);
@@ -207,6 +206,12 @@ TEST(ProtoConversionTest, NotificationEntryConversion) {
       ImpressionResult::kPositive;
   entry.schedule_params.impression_mapping[UserFeedback::kClick] =
       ImpressionResult::kNeutral;
+  TestNotificationEntryConversion(&entry);
+
+  entry.schedule_params.deliver_time_start = entry.create_time;
+  entry.schedule_params.deliver_time_end =
+      entry.create_time + base::TimeDelta::FromMinutes(10);
+
   TestNotificationEntryConversion(&entry);
 }
 

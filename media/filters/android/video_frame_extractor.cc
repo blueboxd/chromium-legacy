@@ -29,7 +29,7 @@
 namespace media {
 
 VideoFrameExtractor::VideoFrameExtractor(DataSource* data_source)
-    : data_source_(data_source), video_stream_index_(-1), weak_factory_(this) {}
+    : data_source_(data_source), video_stream_index_(-1) {}
 
 VideoFrameExtractor::~VideoFrameExtractor() = default;
 

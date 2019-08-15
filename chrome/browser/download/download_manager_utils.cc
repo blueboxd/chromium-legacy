@@ -27,8 +27,7 @@ namespace {
 // A map for owning InProgressDownloadManagers before DownloadManagerImpl gets
 // created.
 using InProgressManagerMap =
-    std::map<SimpleFactoryKey*,
-             std::unique_ptr<download::InProgressDownloadManager>>;
+    std::map<ProfileKey*, std::unique_ptr<download::InProgressDownloadManager>>;
 
 InProgressManagerMap& GetInProgressManagerMap() {
   static base::NoDestructor<InProgressManagerMap> map;
@@ -55,15 +54,14 @@ void GetDownloadManagerOnProfileCreation(Profile* profile) {
 // static
 download::InProgressDownloadManager*
 DownloadManagerUtils::RetrieveInProgressDownloadManager(Profile* profile) {
-  SimpleFactoryKey* key = profile->GetProfileKey();
+  ProfileKey* key = profile->GetProfileKey();
   GetInProgressDownloadManager(key);
   auto& map = GetInProgressManagerMap();
   return map[key].release();
 }
 
 // static
-void DownloadManagerUtils::InitializeSimpleDownloadManager(
-    SimpleFactoryKey* key) {
+void DownloadManagerUtils::InitializeSimpleDownloadManager(ProfileKey* key) {
 #if defined(OS_ANDROID)
   if (!g_browser_process) {
     GetInProgressDownloadManager(key);
@@ -82,7 +80,7 @@ void DownloadManagerUtils::InitializeSimpleDownloadManager(
 
 // static
 download::InProgressDownloadManager*
-DownloadManagerUtils::GetInProgressDownloadManager(SimpleFactoryKey* key) {
+DownloadManagerUtils::GetInProgressDownloadManager(ProfileKey* key) {
   auto& map = GetInProgressManagerMap();
   auto it = map.find(key);
   // Create the InProgressDownloadManager if it hasn't been created yet.
@@ -91,6 +89,7 @@ DownloadManagerUtils::GetInProgressDownloadManager(SimpleFactoryKey* key) {
     auto in_progress_manager =
         std::make_unique<download::InProgressDownloadManager>(
             nullptr, key->IsOffTheRecord() ? base::FilePath() : key->GetPath(),
+            key->GetProtoDatabaseProvider(),
             base::BindRepeating(&IgnoreOriginSecurityCheck),
             base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe),
             connector);

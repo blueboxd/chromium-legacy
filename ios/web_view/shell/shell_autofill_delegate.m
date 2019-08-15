@@ -235,11 +235,13 @@
                                           message:@"Enter CVC"
                                    preferredStyle:UIAlertControllerStyleAlert];
 
+  __weak UIAlertController* weakAlertController = alertController;
   UIAlertAction* submit = [UIAlertAction
       actionWithTitle:@"Confirm"
                 style:UIAlertActionStyleDefault
               handler:^(UIAlertAction* action) {
-                UITextField* textField = alertController.textFields.firstObject;
+                UITextField* textField =
+                    weakAlertController.textFields.firstObject;
                 NSString* CVC = textField.text;
                 [verifier verifyWithCVC:CVC
                         expirationMonth:nil
@@ -250,6 +252,12 @@
               }];
 
   [alertController addAction:submit];
+
+  UIAlertAction* cancel =
+      [UIAlertAction actionWithTitle:@"Cancel"
+                               style:UIAlertActionStyleCancel
+                             handler:nil];
+  [alertController addAction:cancel];
 
   [alertController
       addTextFieldWithConfigurationHandler:^(UITextField* textField) {

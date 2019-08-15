@@ -91,8 +91,7 @@ MediaPlayerBridge::MediaPlayerBridge(const GURL& url,
                                        base::Unretained(this)),
                    base::BindRepeating(&MediaPlayerBridge::GetCurrentTime,
                                        base::Unretained(this))),
-      client_(client),
-      weak_factory_(this) {
+      client_(client) {
   listener_ = std::make_unique<MediaPlayerListener>(
       base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr());
 }

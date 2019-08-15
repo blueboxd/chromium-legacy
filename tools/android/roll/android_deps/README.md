@@ -34,14 +34,16 @@ Full steps to add a new third party library:
 3. Run `fetch_all.py --update-all` to update your current workspace with the
    changes. This will update, among other things, your top-level DEPS file,
    and print a series of commands to create new CIPD packages.
-    - Before running this command, make sure to increment the `CIPD_SUFFIX`
-      variable in `BuildConfigGenerator.groovy` in order to ensure that each
-      tag in CIPD is unique.
-      - One option to thoroughly test your change is to run
-        `rm -rf third_party/android_deps/libs/[!O]* && tools/android/roll/android_deps/fetch_all.py --update-all`.
-        This will ensure all your deps are fresh. The commands
-        printed out in the following step will ensure you do not upload
-        duplicate instances.
+    - One option to thoroughly test your change is to run
+      `rm -rf third_party/android_deps/libs/[!O]* && tools/android/roll/android_deps/fetch_all.py --update-all`.
+      This will ensure all your deps are fresh. The commands
+      printed out in the following step will ensure you do not upload
+      duplicate instances.
+    - Every package in CIPD has to have a unique tag other wise it will cause
+      problems. The cipd commands output by `fetch_all.py --update-all` already
+      check for uniqueness of the tag before uploading a new version. You can
+      also supply a new suffix in your package using FALLBACK_PROPERTIES in
+      tools/android/roll/android_deps/buildSrc/src/main/groovy/ChromiumDepGraph.goovy
 
 4. Run the commands printed at step 3 to create new and updated packages
    via cipd.

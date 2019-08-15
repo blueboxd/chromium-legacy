@@ -292,7 +292,10 @@ void ChromeClientImpl::DidOverscroll(const FloatSize& overscroll_delta,
                                      const FloatSize& velocity_in_viewport) {
   if (!web_view_->does_composite())
     return;
-  web_view_->WidgetClient()->DidOverscroll(
+
+  // TODO(darin): Change caller to pass LocalFrame.
+  DCHECK(web_view_->MainFrameImpl());
+  web_view_->MainFrameImpl()->FrameWidgetImpl()->Client()->DidOverscroll(
       overscroll_delta, accumulated_overscroll, position_in_viewport,
       velocity_in_viewport);
 }
@@ -322,10 +325,10 @@ void ChromeClientImpl::SetOverscrollBehavior(
 }
 
 void ChromeClientImpl::Show(NavigationPolicy navigation_policy) {
-  if (web_view_->WidgetClient()) {
-    web_view_->WidgetClient()->Show(
-        static_cast<WebNavigationPolicy>(navigation_policy));
-  }
+  // TODO(darin): Change caller to pass LocalFrame.
+  DCHECK(web_view_->MainFrameImpl());
+  web_view_->MainFrameImpl()->FrameWidgetImpl()->Client()->Show(
+      static_cast<WebNavigationPolicy>(navigation_policy));
 }
 
 bool ChromeClientImpl::ShouldReportDetailedMessageForSource(
@@ -465,10 +468,15 @@ IntRect ChromeClientImpl::ViewportToScreen(
 }
 
 float ChromeClientImpl::WindowToViewportScalar(const float scalar_value) const {
-  if (!web_view_->WidgetClient())
+  // TODO(darin): Change caller to pass LocalFrame. Note, FrameWidgetImpl() can
+  // be null during Scrollbar() construction.
+  WebLocalFrameImpl* local_frame = web_view_->MainFrameImpl();
+  if (!local_frame || !local_frame->FrameWidgetImpl())
     return scalar_value;
+
   WebFloatRect viewport_rect(0, 0, scalar_value, 0);
-  web_view_->WidgetClient()->ConvertWindowToViewport(&viewport_rect);
+  local_frame->FrameWidgetImpl()->Client()->ConvertWindowToViewport(
+      &viewport_rect);
   return viewport_rect.width;
 }
 
@@ -912,13 +920,11 @@ bool ChromeClientImpl::ShouldOpenUIElementDuringPageDismissal(
   return false;
 }
 
-WebLayerTreeView* ChromeClientImpl::GetWebLayerTreeView(LocalFrame* frame) {
-  CHECK(frame);
-  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
-  CHECK(web_frame);
-  if (WebFrameWidgetBase* frame_widget = web_frame->LocalRootFrameWidget())
-    return frame_widget->GetLayerTreeView();
-  return nullptr;
+viz::FrameSinkId ChromeClientImpl::GetFrameSinkId(LocalFrame* frame) {
+  WebFrameWidgetBase* widget =
+      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
+  WebWidgetClient* client = widget->Client();
+  return client->GetFrameSinkId();
 }
 
 void ChromeClientImpl::RequestDecode(LocalFrame* frame,

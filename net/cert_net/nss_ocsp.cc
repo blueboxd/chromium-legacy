@@ -400,8 +400,8 @@ class OCSPRequestSession
     request_ = url_request_context->CreateRequest(url_, DEFAULT_PRIORITY, this,
                                                   traffic_annotation);
     // To meet the privacy requirements of incognito mode.
-    request_->SetLoadFlags(LOAD_DISABLE_CACHE | LOAD_DO_NOT_SAVE_COOKIES |
-                           LOAD_DO_NOT_SEND_COOKIES);
+    request_->SetLoadFlags(LOAD_DISABLE_CACHE);
+    request_->set_allow_credentials(false);
 
     if (http_request_method_ == "POST") {
       DCHECK(!upload_content_.empty());

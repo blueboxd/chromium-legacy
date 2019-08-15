@@ -200,7 +200,7 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
   bool surface_lost_ = false;
 
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
-  base::WeakPtrFactory<GLSurfaceEGLSurfaceControl> weak_factory_;
+  base::WeakPtrFactory<GLSurfaceEGLSurfaceControl> weak_factory_{this};
 };
 
 }  // namespace gl

@@ -335,11 +335,13 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
   }
 
   float pingback_reporting_fraction() const {
-    return test_context_->io_data()->pingback_reporting_fraction();
+    return test_context_->test_data_reduction_proxy_service()
+        ->pingback_reporting_fraction();
   }
 
   bool ignore_blacklist() const {
-    return test_context_->io_data()->ignore_blacklist();
+    return test_context_->test_data_reduction_proxy_service()
+        ->ignore_blacklist();
   }
 
   void RunUntilIdle() {
@@ -398,8 +400,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::test::ScopedTaskEnvironment task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::ScopedTaskEnvironment task_environment_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory>
@@ -552,8 +553,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
   NetworkPropertiesManager manager(base::DefaultClock::GetInstance(),
-                                   &test_prefs,
-                                   base::ThreadTaskRunnerHandle::Get());
+                                   &test_prefs);
   manager.SetIsSecureProxyDisallowedByCarrier(true);
   configurator()->Enable(manager, http_proxies);
   VerifyRemoteSuccess(false);
@@ -691,8 +691,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
   NetworkPropertiesManager manager(base::DefaultClock::GetInstance(),
-                                   &test_prefs,
-                                   base::ThreadTaskRunnerHandle::Get());
+                                   &test_prefs);
   manager.SetIsSecureProxyDisallowedByCarrier(true);
   configurator()->Enable(manager, http_proxies);
   VerifyRemoteSuccess(false);
@@ -837,7 +836,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   for (const auto& test : tests) {
     base::HistogramTester histogram_tester;
     // Reset the state.
-    test_context_->io_data()->test_request_options()->Invalidate();
+    request_options()->Invalidate();
     test_context_->pref_service()->ClearPref(
         prefs::kDataReductionProxyLastConfigRetrievalTime);
     RunUntilIdle();
@@ -868,9 +867,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
     // Simulate startup which should cause the empty persisted client config to
     // be read from the disk.
     config_client()->SetRemoteConfigApplied(false);
-    test_context_->io_data()->test_request_options()->Invalidate();
-    test_context_->data_reduction_proxy_service()->SetIOData(
-        test_context_->io_data()->GetWeakPtr());
+    request_options()->Invalidate();
+    test_context_->data_reduction_proxy_service()->ReadPersistedClientConfig();
     RunUntilIdle();
     EXPECT_NE(test.expect_valid_config,
               request_options()->GetSecureSession().empty());
@@ -976,9 +974,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, MultipleAuthFailures) {
       "DataReductionProxy.ConfigService.AuthExpired", true, 1);
 
   DCHECK(test_context_->data_reduction_proxy_service());
-  test_context_->io_data()->test_request_options()->Invalidate();
-  test_context_->data_reduction_proxy_service()->SetIOData(
-      test_context_->io_data()->GetWeakPtr());
+  request_options()->Invalidate();
+  test_context_->data_reduction_proxy_service()->ReadPersistedClientConfig();
   test_context_->RunUntilIdle();
 }
 

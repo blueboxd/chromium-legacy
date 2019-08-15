@@ -25,12 +25,14 @@ div {
 }
 </style>
 
-<div id="scroller">
-  <div id="space"></div>
-  <div class="target" style="left: 0px; top: 0px;"></div>
-  <div class="target" style="left: 80px; top: 80px;"></div>
-  <div class="target" style="left: 200px; top: 200px;"></div>
-</div>
+<body style="margin:0" onload=runTests()>
+  <div id="scroller">
+    <div id="space"></div>
+    <div class="target" style="left: 0px; top: 0px;"></div>
+    <div class="target" style="left: 80px; top: 80px;"></div>
+    <div class="target" style="left: 200px; top: 200px;"></div>
+  </div>
+</body>
 
 <script>
 if (window.internals)
@@ -54,28 +56,30 @@ scroller.addEventListener("scroll", () => {
 scroller.addEventListener("scrollend", () => {
   scroll_end_arrived = true;
 });
-promise_test (async () => {
-  await waitForCompositorCommit();
-  await smoothScroll(100, 200, 200, GestureSourceType.TOUCH_INPUT, 'down');
-  // Wait for the scroll snap animation to finish.
-  await waitForAnimationEnd(scrollLeft, MAX_FRAME_COUNT, MAX_UNCHANGED_FRAME);
-  await waitFor(() => { return scroll_end_arrived; });
-  // Verify that scroll snap animation has finished before firing scrollend event.
-  assert_false(scroll_arrived_after_scroll_end);
-}, "Tests that scrollend is fired after scroll snap animation completion.");
+function runTests() {
+  promise_test (async () => {
+    await waitForCompositorCommit();
+    await smoothScroll(100, 200, 200, GestureSourceType.TOUCH_INPUT, 'down');
+    // Wait for the scroll snap animation to finish.
+    await waitForAnimationEnd(scrollLeft, MAX_FRAME_COUNT, MAX_UNCHANGED_FRAME);
+    await waitUntil(() => { return scroll_end_arrived; });
+    // Verify that scroll snap animation has finished before firing scrollend event.
+    assert_false(scroll_arrived_after_scroll_end);
+  }, "Tests that scrollend is fired after scroll snap animation completion.");
 
-promise_test (async () => {
-  // Reset scroll state.
-  scroller.scrollTo(0, 0);
-  await waitForCompositorCommit();
-  scroll_end_arrived = false;
-  scroll_arrived_after_scroll_end = false;
+  promise_test (async () => {
+    // Reset scroll state.
+    scroller.scrollTo(0, 0);
+    await waitForCompositorCommit();
+    scroll_end_arrived = false;
+    scroll_arrived_after_scroll_end = false;
 
-  await swipe(100, 200, 200, 'up');
-  // Wait for the scroll snap animation to finish.
-  await waitForAnimationEnd(scrollLeft, MAX_FRAME_COUNT, MAX_UNCHANGED_FRAME);
-  await waitFor(() => { return scroll_end_arrived; });
-  // Verify that scroll snap animation has finished before firing scrollend event.
-  assert_false(scroll_arrived_after_scroll_end);
-}, "Tests that scrollend is fired after fling snap animation completion.");
+    await swipe(100, 200, 200, 'up');
+    // Wait for the scroll snap animation to finish.
+    await waitForAnimationEnd(scrollLeft, MAX_FRAME_COUNT, MAX_UNCHANGED_FRAME);
+    await waitUntil(() => { return scroll_end_arrived; });
+    // Verify that scroll snap animation has finished before firing scrollend event.
+    assert_false(scroll_arrived_after_scroll_end);
+  }, "Tests that scrollend is fired after fling snap animation completion.");
+}
 </script>

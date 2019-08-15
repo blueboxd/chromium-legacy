@@ -55,6 +55,9 @@ class MediaSessionAndroid final
   void Seek(JNIEnv* env,
             const base::android::JavaParamRef<jobject>& j_obj,
             const jlong millis);
+  void SeekTo(JNIEnv* env,
+              const base::android::JavaParamRef<jobject>& j_obj,
+              const jlong millis);
   void DidReceiveAction(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& j_obj,
                         jint action);

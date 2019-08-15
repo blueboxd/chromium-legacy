@@ -55,18 +55,6 @@ base::string16 IncognitoMenuView::GetAccessibleWindowTitle() const {
       BrowserList::GetIncognitoSessionsActiveForProfile(browser()->profile()));
 }
 
-void IncognitoMenuView::ButtonPressed(views::Button* sender,
-                                      const ui::Event& event) {
-  DCHECK_EQ(sender, exit_button_);
-
-  // Skipping before-unload trigger to give incognito mode users a chance to
-  // quickly close all incognito windows without needing to confirm closing the
-  // open forms.
-  BrowserList::CloseAllBrowsersWithIncognitoProfile(
-      browser()->profile(), base::DoNothing(), base::DoNothing(),
-      true /* skip_beforeunload */);
-}
-
 void IncognitoMenuView::AddIncognitoWindowCountView() {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   int incognito_window_count =
@@ -88,10 +76,21 @@ void IncognitoMenuView::AddIncognitoWindowCountView() {
           ? l10n_util::GetPluralStringFUTF16(IDS_INCOGNITO_WINDOW_COUNT_MESSAGE,
                                              incognito_window_count)
           : base::string16(),
-      false);
+      base::RepeatingClosure());
 
   AddMenuGroup();
   exit_button_ = CreateAndAddButton(
       gfx::CreateVectorIcon(kCloseAllIcon, 16, gfx::kChromeIconGrey),
-      l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_CLOSE_BUTTON));
+      l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_CLOSE_BUTTON),
+      base::BindRepeating(&IncognitoMenuView::OnExitButtonClicked,
+                          base::Unretained(this)));
+}
+
+void IncognitoMenuView::OnExitButtonClicked() {
+  // Skipping before-unload trigger to give incognito mode users a chance to
+  // quickly close all incognito windows without needing to confirm closing the
+  // open forms.
+  BrowserList::CloseAllBrowsersWithIncognitoProfile(
+      browser()->profile(), base::DoNothing(), base::DoNothing(),
+      true /* skip_beforeunload */);
 }

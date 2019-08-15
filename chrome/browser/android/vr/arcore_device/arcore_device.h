@@ -132,7 +132,7 @@ class ArCoreDevice : public VRDeviceBase {
   base::OnceCallback<void(bool)> on_request_ar_module_result_callback_;
 
   // Must be last.
-  base::WeakPtrFactory<ArCoreDevice> weak_ptr_factory_;
+  base::WeakPtrFactory<ArCoreDevice> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ArCoreDevice);
 };
 

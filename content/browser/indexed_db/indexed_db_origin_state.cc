@@ -4,6 +4,10 @@
 
 #include "content/browser/indexed_db/indexed_db_origin_state.h"
 
+#include <list>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/rand_util.h"

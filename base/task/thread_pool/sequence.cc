@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/task_features.h"
-#include "base/task/thread_pool/thread_pool_clock.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -42,7 +41,7 @@ void Sequence::Transaction::PushTask(Task task) {
   DCHECK(task.queue_time.is_null());
 
   bool should_be_queued = WillPushTask();
-  task.queue_time = ThreadPoolClock::Now();
+  task.queue_time = TimeTicks::Now();
 
   task.task = sequence()->traits_.shutdown_behavior() ==
                       TaskShutdownBehavior::BLOCK_SHUTDOWN

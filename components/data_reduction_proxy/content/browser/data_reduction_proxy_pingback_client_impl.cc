@@ -241,14 +241,12 @@ std::string AddBatchInfoAndSerializeRequest(
 
 DataReductionProxyPingbackClientImpl::DataReductionProxyPingbackClientImpl(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const std::string& channel)
     : url_loader_factory_(std::move(url_loader_factory)),
       pingback_url_(util::AddApiKeyToUrl(params::GetPingbackURL())),
       pingback_reporting_fraction_(0.0),
       current_loader_message_count_(0u),
       current_loader_crash_count_(0u),
-      ui_task_runner_(std::move(ui_task_runner)),
       channel_(channel)
 #if defined(OS_ANDROID)
       ,
@@ -359,7 +357,7 @@ void DataReductionProxyPingbackClientImpl::AddRequestToCrashMap(
   // being analyzed. 5 seconds should be enough time for breakpad to process the
   // dump, while being short enough that the user will probably not shutdown the
   // app.
-  ui_task_runner_->PostDelayedTask(
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&DataReductionProxyPingbackClientImpl::RemoveFromCrashMap,
                      weak_factory_.GetWeakPtr(), timing.host_id),

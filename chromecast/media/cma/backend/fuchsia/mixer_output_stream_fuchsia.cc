@@ -76,6 +76,10 @@ bool MixerOutputStreamFuchsia::Start(int requested_sample_rate, int channels) {
   return true;
 }
 
+int MixerOutputStreamFuchsia::GetNumChannels() {
+  return channels_;
+}
+
 int MixerOutputStreamFuchsia::GetSampleRate() {
   return sample_rate_;
 }

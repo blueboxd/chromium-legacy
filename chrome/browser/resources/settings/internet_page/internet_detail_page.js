@@ -303,6 +303,19 @@ Polymer({
     }
   },
 
+  /**
+   * CrosNetworkConfigObserver impl
+   * @param {!chromeos.networkConfig.mojom.NetworkStateProperties} network
+   */
+  onNetworkStateChanged: function(network) {
+    if (!this.guid || !this.networkProperties_) {
+      return;
+    }
+    if (network.guid == this.guid) {
+      this.getNetworkDetails_();
+    }
+  },
+
   /** CrosNetworkConfigObserver impl */
   onNetworkStateListChanged: function() {
     this.checkNetworkExists_();

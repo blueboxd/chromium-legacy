@@ -73,7 +73,7 @@ class SpellingRequest {
   // Callback to delete |this|. Called on |this| after everything is done.
   DestructionCallback destruction_callback_;
 
-  base::WeakPtrFactory<SpellingRequest> weak_factory_;
+  base::WeakPtrFactory<SpellingRequest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SpellingRequest);
 };

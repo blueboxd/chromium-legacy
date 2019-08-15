@@ -83,7 +83,7 @@ class PLATFORM_EXPORT CompositorKeyframeModel {
   std::unique_ptr<CompositorColorAnimationCurve> ColorCurveForTesting() const;
 
   const std::string& GetCustomPropertyNameForTesting() const {
-    return keyframe_model_->GetCustomPropertyNameForTesting();
+    return keyframe_model_->custom_property_name();
   }
 
  private:

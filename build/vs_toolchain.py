@@ -405,7 +405,18 @@ def _CopyDebugger(target_dir, target_cpu):
 
 def _GetDesiredVsToolchainHashes():
   """Load a list of SHA1s corresponding to the toolchains that we want installed
-  to build with."""
+  to build with.
+
+  When updating the toolchain, consider the following areas impacted by the
+  toolchain version:
+
+  * //base/win/windows_version.cc NTDDI preprocessor check
+    Triggers a compiler error if the available SDK is older than the minimum.
+  * //build/config/win/BUILD.gn NTDDI_VERSION value
+    Affects the availability of APIs in the toolchain headers.
+  * //docs/windows_build_instructions.md mentions of VS or Windows SDK.
+    Keeps the document consistent with the toolchain version.
+  """
   env_version = GetVisualStudioVersion()
   if env_version == '2017':
     # VS 2017 Update 9 (15.9.12) with 10.0.18362 SDK, 10.0.17763 version of

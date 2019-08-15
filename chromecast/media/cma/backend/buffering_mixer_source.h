@@ -6,6 +6,7 @@
 #define CHROMECAST_MEDIA_CMA_BACKEND_BUFFERING_MIXER_SOURCE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
@@ -69,6 +70,7 @@ class BufferingMixerSource : public MixerInput::Source,
   };
 
   BufferingMixerSource(Delegate* delegate,
+                       int num_channels,
                        int input_samples_per_second,
                        bool primary,
                        const std::string& device_id,

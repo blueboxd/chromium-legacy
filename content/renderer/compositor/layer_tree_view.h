@@ -104,7 +104,6 @@ class CONTENT_EXPORT LayerTreeView
       std::unique_ptr<base::Value> value,
       base::OnceCallback<void(std::unique_ptr<base::Value>)> callback);
   bool SendMessageToMicroBenchmark(int id, std::unique_ptr<base::Value> value);
-  void SetFrameSinkId(const viz::FrameSinkId& frame_sink_id);
   void SetRasterColorSpace(const gfx::ColorSpace& color_space);
   void SetExternalPageScaleFactor(float page_scale_factor,
                                   bool is_external_pinch_gesture_active);
@@ -124,8 +123,6 @@ class CONTENT_EXPORT LayerTreeView
   // should just be destroyed instead.
   void ReleaseLayerTreeFrameSink();
 
-  // blink::WebLayerTreeView implementation.
-  viz::FrameSinkId GetFrameSinkId() override;
   void SetNonBlinkManagedRootLayer(scoped_refptr<cc::Layer> layer);
 
   // cc::LayerTreeHostClient implementation.
@@ -195,7 +192,6 @@ class CONTENT_EXPORT LayerTreeView
 
   bool layer_tree_frame_sink_request_failed_while_invisible_ = false;
 
-  viz::FrameSinkId frame_sink_id_;
   base::circular_deque<
       std::pair<uint32_t,
                 std::vector<base::OnceCallback<void(base::TimeTicks)>>>>

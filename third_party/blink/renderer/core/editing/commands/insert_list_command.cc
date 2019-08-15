@@ -474,7 +474,7 @@ void InsertListCommand::UnlistifyParagraph(
   VisiblePosition start;
   VisiblePosition end;
   DCHECK(list_child_node);
-  if (IsHTMLLIElement(*list_child_node)) {
+  if (IsA<HTMLLIElement>(*list_child_node)) {
     start = VisiblePosition::FirstPositionInNode(*list_child_node);
     end = VisiblePosition::LastPositionInNode(*list_child_node);
     next_list_child = list_child_node->nextSibling();
@@ -648,7 +648,7 @@ void InsertListCommand::ListifyParagraph(const VisiblePosition& original_start,
   }
   // Also avoid the containing list item.
   Node* const list_child = EnclosingListChild(insertion_pos.AnchorNode());
-  if (IsHTMLLIElement(list_child))
+  if (IsA<HTMLLIElement>(list_child))
     insertion_pos = Position::InParentBeforeNode(*list_child);
 
   HTMLElement* list_element = CreateHTMLElement(GetDocument(), list_tag);

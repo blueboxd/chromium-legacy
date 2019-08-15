@@ -191,7 +191,7 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotification) {
   NotificationData notification_data;
   notification_data.title = base::UTF8ToUTF16(kTitle);
   ScheduleParams schedule_params;
-  schedule_params.priority = ScheduleParams::Priority::kHigh;
+  schedule_params.priority = ScheduleParams::Priority::kLow;
   auto params = std::make_unique<NotificationParams>(
       SchedulerClientType::kTest1, notification_data, schedule_params);
   params->enable_ihnr_buttons = true;
@@ -216,7 +216,7 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotification) {
 
   // TODO(xingliu): change these to compare with operator==.
   EXPECT_EQ(base::UTF16ToUTF8(entry->notification_data.title), kTitle);
-  EXPECT_EQ(entry->schedule_params.priority, ScheduleParams::Priority::kHigh);
+  EXPECT_EQ(entry->schedule_params.priority, ScheduleParams::Priority::kLow);
 
   auto buttons = entry->notification_data.buttons;
   EXPECT_EQ(buttons.size(), 2u);

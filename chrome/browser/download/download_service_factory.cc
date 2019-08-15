@@ -184,7 +184,7 @@ std::unique_ptr<KeyedService> DownloadServiceFactory::BuildServiceInstanceFor(
     // and cause the download service to fail. Call
     // InitializeSimpleDownloadManager() to initialize the DownloadManager
     // whenever profile becomes available.
-    DownloadManagerUtils::InitializeSimpleDownloadManager(key);
+    DownloadManagerUtils::InitializeSimpleDownloadManager(profile_key);
     leveldb_proto::ProtoDatabaseProvider* proto_db_provider =
         profile_key->GetProtoDatabaseProvider();
     return download::BuildDownloadService(

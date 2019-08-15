@@ -81,8 +81,7 @@ class MediaStubLocalFrameClient : public EmptyLocalFrameClient {
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
-      WebMediaPlayerClient* client,
-      WebLayerTreeView*) override {
+      WebMediaPlayerClient* client) override {
     return std::make_unique<FakeWebMediaPlayer>(client);
   }
 };

@@ -178,12 +178,12 @@ class CC_ANIMATION_EXPORT KeyframeModel {
   }
   bool affects_pending_elements() const { return affects_pending_elements_; }
 
-  KeyframeModel::Phase CalculatePhaseForTesting(
-      base::TimeDelta local_time) const;
-
-  const std::string& GetCustomPropertyNameForTesting() {
+  const std::string& custom_property_name() const {
     return custom_property_name_;
   }
+
+  KeyframeModel::Phase CalculatePhaseForTesting(
+      base::TimeDelta local_time) const;
 
  private:
   KeyframeModel(std::unique_ptr<AnimationCurve> curve,

@@ -12,7 +12,9 @@
 #include "chrome/grit/browser_resources.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/user_prefs/user_prefs.h"
@@ -22,6 +24,9 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using safe_browsing::LoginReputationClientResponse;
+using safe_browsing::RequestOutcome;
 
 namespace {
 
@@ -63,7 +68,9 @@ class ResetPasswordHandlerImpl : public mojom::ResetPasswordHandler {
           web_contents_,
           service->GetPasswordProtectionReusedPasswordAccountType(
               password_type_, service->username()),
-          safe_browsing::WarningUIType::INTERSTITIAL,
+          RequestOutcome::UNKNOWN,
+          LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+          /*verdict_token=*/"", safe_browsing::WarningUIType::INTERSTITIAL,
           safe_browsing::WarningAction::CHANGE_PASSWORD);
     }
   }

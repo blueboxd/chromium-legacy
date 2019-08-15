@@ -263,9 +263,14 @@ class _IRBuilder(object):
             debug_info=self._build_debug_info(node))
 
     def _build_enumeration(self, node):
+        child_nodes = list(node.GetChildren())
+        extended_attributes = self._take_extended_attributes(child_nodes)
+        assert all(child.GetClass() == 'EnumItem' for child in child_nodes)
+        values = [child.GetName() for child in child_nodes]
         return Enumeration.IR(
             identifier=Identifier(node.GetName()),
-            values=[child.GetName() for child in node.GetChildren()],
+            values=values,
+            extended_attributes=extended_attributes,
             component=self._component,
             debug_info=self._build_debug_info(node))
 
@@ -295,14 +300,15 @@ class _IRBuilder(object):
             child_nodes = list(node.GetChildren())
             is_optional = bool(node.GetProperty('OPTIONAL'))
             is_variadic = bool(self._take_is_variadic_argument(child_nodes))
-            idl_type = self._take_type(
-                child_nodes, is_optional=is_optional, is_variadic=is_variadic)
-            default_value = self._take_default_value(child_nodes)
             # The parser may place extended attributes on arguments, but they
             # should be applied to types.
-            # TODO(yukishiino): Move the extended attributes on this argument
-            # into |idl_type|.
-            _ = self._take_extended_attributes(child_nodes)
+            extended_attributes = self._take_extended_attributes(child_nodes)
+            idl_type = self._take_type(
+                child_nodes,
+                is_optional=is_optional,
+                is_variadic=is_variadic,
+                extended_attributes=extended_attributes)
+            default_value = self._take_default_value(child_nodes)
             assert len(child_nodes) == 0
             return Argument.IR(
                 identifier=Identifier(node.GetName()),
@@ -418,24 +424,31 @@ class _IRBuilder(object):
         assert node.GetClass() == 'Stringifier'
         return None
 
-    def _build_type(self, node, is_optional=False, is_variadic=False):
-        def build_maybe_nullable_type(node):
-            if node.GetProperty('NULLABLE'):
-                return self._idl_type_factory.nullable_type(
-                    self._build_type_internal(node.GetChildren()),
-                    is_optional=is_optional)
-            return self._build_type_internal(
-                node.GetChildren(), is_optional=is_optional)
-
+    def _build_type(self,
+                    node,
+                    is_optional=False,
+                    is_variadic=False,
+                    extended_attributes=None):
         assert node.GetClass() == 'Type'
         assert not (is_optional and is_variadic)
-        if is_variadic:
-            return self._idl_type_factory.variadic_type(
-                element_type=build_maybe_nullable_type(node),
+        idl_type = self._build_type_internal(
+            node.GetChildren(),
+            is_optional=is_optional,
+            extended_attributes=extended_attributes)
+        if node.GetProperty('NULLABLE'):
+            idl_type = self._idl_type_factory.nullable_type(
+                idl_type,
+                is_optional=is_optional,
                 debug_info=self._build_debug_info(node))
-        return build_maybe_nullable_type(node)
+        if is_variadic:
+            idl_type = self._idl_type_factory.variadic_type(
+                idl_type, debug_info=self._build_debug_info(node))
+        return idl_type
 
-    def _build_type_internal(self, nodes, is_optional=False):
+    def _build_type_internal(self,
+                             nodes,
+                             is_optional=False,
+                             extended_attributes=None):
         """
         Args:
             nodes: The child nodes of a 'Type' node.
@@ -504,7 +517,13 @@ class _IRBuilder(object):
                 debug_info=self._build_debug_info(node))
 
         type_nodes = list(nodes)
-        extended_attributes = self._take_extended_attributes(type_nodes)
+        ext_attrs1 = extended_attributes
+        ext_attrs2 = self._take_extended_attributes(type_nodes)
+        if ext_attrs1 and ext_attrs2:
+            extended_attributes = ExtendedAttributes(
+                list(ext_attrs1) + list(ext_attrs2))
+        else:
+            extended_attributes = ext_attrs1 or ext_attrs2
         assert len(type_nodes) == 1
         body_node = type_nodes[0]
 
@@ -519,8 +538,8 @@ class _IRBuilder(object):
             'Typeref': build_reference_type,
             'UnionType': build_union_type,
         }
-        return build_functions[body_node.GetClass()](body_node,
-                                                     extended_attributes)
+        return build_functions[body_node.GetClass()](
+            body_node, extended_attributes=extended_attributes)
 
     def _take_and_build(self, node_class, build_func, node_list, **kwargs):
         """
@@ -572,10 +591,15 @@ class _IRBuilder(object):
         return self._take_and_build('Stringifier', self._build_stringifier,
                                     node_list)
 
-    def _take_type(self, node_list, is_optional=False, is_variadic=False):
+    def _take_type(self,
+                   node_list,
+                   is_optional=False,
+                   is_variadic=False,
+                   extended_attributes=None):
         return self._take_and_build(
             'Type',
             self._build_type,
             node_list,
             is_optional=is_optional,
-            is_variadic=is_variadic)
+            is_variadic=is_variadic,
+            extended_attributes=extended_attributes)

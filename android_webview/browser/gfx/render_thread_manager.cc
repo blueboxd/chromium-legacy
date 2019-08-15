@@ -25,9 +25,7 @@ namespace android_webview {
 
 RenderThreadManager::RenderThreadManager(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_loop)
-    : ui_loop_(ui_loop),
-      mark_hardware_release_(false),
-      weak_factory_on_ui_thread_(this) {
+    : ui_loop_(ui_loop), mark_hardware_release_(false) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   ui_thread_weak_ptr_ = weak_factory_on_ui_thread_.GetWeakPtr();
 }

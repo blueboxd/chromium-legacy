@@ -9,11 +9,13 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
@@ -70,9 +72,13 @@ class VR_EXPORT XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
   void RemoveService(VRServiceImpl* service);
 
   BrowserXRRuntime* GetRuntime(device::mojom::XRDeviceId id);
+  bool HasRuntime(device::mojom::XRDeviceId id);
   BrowserXRRuntime* GetRuntimeForOptions(
       device::mojom::XRSessionOptions* options);
+  base::Optional<device::mojom::XRDeviceId> GetRuntimeIdForOptions(
+      device::mojom::XRSessionOptions* options);
   BrowserXRRuntime* GetImmersiveRuntime();
+  base::Optional<device::mojom::XRDeviceId> GetImmersiveRuntimeId();
   device::mojom::VRDisplayInfoPtr GetCurrentVRDisplayInfo(
       VRServiceImpl* service);
 

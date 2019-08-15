@@ -40,7 +40,8 @@ public class PermissionDialog extends PageController {
     }
 
     @Override
-    public boolean isCurrentPageThis() {
-        return mLocatorHelper.isOnScreen(LOCATOR_PERMISSION_DIALOG);
+    public PermissionDialog verifyActive() {
+        mLocatorHelper.verifyOnScreen(LOCATOR_PERMISSION_DIALOG);
+        return this;
     }
 }

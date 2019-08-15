@@ -27,8 +27,7 @@ using base::android::ScopedJavaGlobalRef;
 
 namespace feed {
 
-FeedNetworkBridge::FeedNetworkBridge(const JavaParamRef<jobject>& j_profile)
-    : weak_factory_(this) {
+FeedNetworkBridge::FeedNetworkBridge(const JavaParamRef<jobject>& j_profile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   FeedHostService* host_service =
       FeedHostServiceFactory::GetForBrowserContext(profile);

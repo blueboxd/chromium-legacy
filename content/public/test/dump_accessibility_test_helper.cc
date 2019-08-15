@@ -23,8 +23,8 @@ const char kSignalDiff[] = "*";
 }  // namespace
 
 DumpAccessibilityTestHelper::DumpAccessibilityTestHelper(
-    AccessibilityTreeFormatter* formatter)
-    : formatter_(formatter) {}
+    AccessibilityTestExpectationsLocator* test_locator)
+    : test_locator_(test_locator) {}
 
 base::FilePath DumpAccessibilityTestHelper::GetExpectationFilePath(
     const base::FilePath& test_file_path) {
@@ -33,7 +33,7 @@ base::FilePath DumpAccessibilityTestHelper::GetExpectationFilePath(
 
   // Try to get version specific expected file.
   base::FilePath::StringType expected_file_suffix =
-      formatter_->GetVersionSpecificExpectedFileSuffix();
+      test_locator_->GetVersionSpecificExpectedFileSuffix();
   if (expected_file_suffix != FILE_PATH_LITERAL("")) {
     expected_file_path = base::FilePath(
         test_file_path.RemoveExtension().value() + expected_file_suffix);
@@ -42,7 +42,7 @@ base::FilePath DumpAccessibilityTestHelper::GetExpectationFilePath(
   }
 
   // If a version specific file does not exist, get the generic one.
-  expected_file_suffix = formatter_->GetExpectedFileSuffix();
+  expected_file_suffix = test_locator_->GetExpectedFileSuffix();
   expected_file_path = base::FilePath(test_file_path.RemoveExtension().value() +
                                       expected_file_suffix);
   if (base::PathExists(expected_file_path))

@@ -140,7 +140,7 @@ class NotificationChannelsProviderAndroid
   //    callback for this event.
   std::map<std::string, NotificationChannel> cached_channels_;
 
-  base::WeakPtrFactory<NotificationChannelsProviderAndroid> weak_factory_;
+  base::WeakPtrFactory<NotificationChannelsProviderAndroid> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NotificationChannelsProviderAndroid);
 };

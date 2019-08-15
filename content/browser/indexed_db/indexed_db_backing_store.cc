@@ -3158,7 +3158,7 @@ void IndexedDBBackingStore::Transaction::Reset() {
   transaction_ = nullptr;
 }
 
-void IndexedDBBackingStore::Transaction::Rollback() {
+void IndexedDBBackingStore::Transaction::RollbackAndMaybeTearDown() {
   IDB_TRACE("IndexedDBBackingStore::Transaction::Rollback");
   if (committing_) {
     committing_ = false;
@@ -3171,8 +3171,11 @@ void IndexedDBBackingStore::Transaction::Rollback() {
   }
   if (!transaction_)
     return;
-  transaction_->Rollback();
-  transaction_ = nullptr;
+  // The RollbackAndMaybeTearDown method could tear down the
+  // IndexedDBOriginState, which would destroy |this|.
+  scoped_refptr<TransactionalLevelDBTransaction> transaction =
+      std::move(transaction_);
+  transaction->RollbackAndMaybeTearDown();
 }
 
 uint64_t IndexedDBBackingStore::Transaction::GetTransactionSize() {

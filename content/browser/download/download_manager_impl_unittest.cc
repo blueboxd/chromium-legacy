@@ -371,6 +371,7 @@ TestInProgressManager::TestInProgressManager()
     : download::InProgressDownloadManager(
           nullptr,
           base::FilePath(),
+          nullptr,
           download::InProgressDownloadManager::IsOriginSecureCallback(),
           base::BindRepeating(&URLAlwaysSafe),
           nullptr) {}

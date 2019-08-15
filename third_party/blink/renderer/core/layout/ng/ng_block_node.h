@@ -118,6 +118,10 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // restricted (e.g. height of the cell or its table is non-auto).
   bool IsRestrictedBlockSizeTableCell() const;
 
+  // Returns true if the custom layout node is in its loaded state (all script
+  // for the web-developer defined layout is ready).
+  bool IsCustomLayoutLoaded() const;
+
   // Layout an atomic inline; e.g., inline block.
   scoped_refptr<const NGLayoutResult> LayoutAtomicInline(
       const NGConstraintSpace& parent_constraint_space,

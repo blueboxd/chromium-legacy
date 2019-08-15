@@ -146,15 +146,18 @@ TEST_F(PaintWorkletStylePropertyMapTest, CreateSupportedCrossThreadData) {
   Node* node = PageNode();
 
   Vector<std::unique_ptr<CrossThreadStyleValue>> input_arguments;
+  std::vector<std::pair<std::string, CompositorElementId>> input_property_keys;
   auto data = PaintWorkletStylePropertyMap::BuildCrossThreadData(
-      GetDocument(), node->ComputedStyleRef(), native_properties,
-      custom_properties);
+      GetDocument(), node->GetLayoutObject()->UniqueId(),
+      node->ComputedStyleRef(), native_properties, custom_properties,
+      input_property_keys);
 
   EXPECT_TRUE(data.has_value());
+  std::vector<cc::PaintWorkletInput::PropertyKey> property_keys;
   scoped_refptr<PaintWorkletInput> input =
-      base::MakeRefCounted<PaintWorkletInput>("test", FloatSize(100, 100), 1.0f,
-                                              1.0f, 1, std::move(data.value()),
-                                              std::move(input_arguments));
+      base::MakeRefCounted<PaintWorkletInput>(
+          "test", FloatSize(100, 100), 1.0f, 1.0f, 1, std::move(data.value()),
+          std::move(input_arguments), std::move(property_keys));
   DCHECK(input);
 
   thread_ = blink::Thread::CreateThread(
@@ -185,9 +188,11 @@ TEST_F(PaintWorkletStylePropertyMapTest, UnsupportedCrossThreadData) {
   Node* node = PageNode();
 
   Vector<std::unique_ptr<CrossThreadStyleValue>> input_arguments;
+  std::vector<std::pair<std::string, CompositorElementId>> input_property_keys;
   auto data1 = PaintWorkletStylePropertyMap::BuildCrossThreadData(
-      GetDocument(), node->ComputedStyleRef(), native_properties1,
-      custom_properties1);
+      GetDocument(), node->GetLayoutObject()->UniqueId(),
+      node->ComputedStyleRef(), native_properties1, custom_properties1,
+      input_property_keys);
 
   EXPECT_FALSE(data1.has_value());
 
@@ -196,8 +201,9 @@ TEST_F(PaintWorkletStylePropertyMapTest, UnsupportedCrossThreadData) {
   Vector<AtomicString> custom_properties2;
 
   auto data2 = PaintWorkletStylePropertyMap::BuildCrossThreadData(
-      GetDocument(), node->ComputedStyleRef(), native_properties2,
-      custom_properties2);
+      GetDocument(), node->GetLayoutObject()->UniqueId(),
+      node->ComputedStyleRef(), native_properties2, custom_properties2,
+      input_property_keys);
 
   EXPECT_FALSE(data2.has_value());
 }

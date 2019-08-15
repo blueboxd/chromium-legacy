@@ -81,8 +81,7 @@ ImageFetcherBridge::ImageFetcherBridge(
     ImageFetcherService* image_fetcher_service,
     base::FilePath base_file_path)
     : image_fetcher_service_(image_fetcher_service),
-      base_file_path_(base_file_path),
-      weak_ptr_factory_(this) {}
+      base_file_path_(base_file_path) {}
 
 ImageFetcherBridge::~ImageFetcherBridge() = default;
 

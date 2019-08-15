@@ -61,6 +61,10 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // Returns the title to be displayed in this sheet's header.
   virtual base::string16 GetSheetTitle() = 0;
 
+  // Stops the controller from controlling the UI. Used when the UI is being
+  // destroyed.
+  void Stop() { is_active_ = false; }
+
  protected:
   // Clears the content part of the view represented by this view controller and
   // calls FillContentView again to re-populate it with updated views.
@@ -164,6 +168,9 @@ class PaymentRequestSheetController : public views::ButtonListener {
 
   views::Button* primary_button() { return primary_button_; }
 
+  // Returns whether the controller should be controlling the UI.
+  bool is_active() const { return is_active_; }
+
  private:
   // Called when the Enter accelerator is pressed. Perform the action associated
   // with the primary button and returns true if it's enabled, returns false
@@ -193,6 +200,9 @@ class PaymentRequestSheetController : public views::ButtonListener {
   views::Button* secondary_button_ = nullptr;
   views::View* header_view_ = nullptr;
   views::View* header_content_separator_container_ = nullptr;
+
+  // Whether the controller should be controlling the UI.
+  bool is_active_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestSheetController);
 };

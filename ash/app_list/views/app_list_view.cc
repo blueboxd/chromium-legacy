@@ -1491,11 +1491,7 @@ void AppListView::StartAnimationForState(ash::AppListViewState target_state) {
     const int child_animation_duration = animation_duration / 2;
     app_list_main_view_->contents_view()->FadeOutOnClose(
         base::TimeDelta::FromMilliseconds(child_animation_duration));
-  } else if (GetWidget()->GetNativeView()->bounds().y() ==
-             GetDisplayNearestView().work_area().bottom()) {
-    // If the animation start position is the bottom of the screen, activate the
-    // fade in animation. This prevents the search box from flashing at the
-    // bottom of the screen as it goes behind the shelf.
+  } else {
     app_list_main_view_->contents_view()->FadeInOnOpen(
         base::TimeDelta::FromMilliseconds(animation_duration));
   }

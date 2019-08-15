@@ -81,7 +81,7 @@ bool IndentOutdentCommand::TryIndentingAsListItem(const Position& start,
   Element* selected_list_item = EnclosingBlock(last_node_in_selected_paragraph);
 
   // FIXME: we need to deal with the case where there is no li (malformed HTML)
-  if (!IsHTMLLIElement(selected_list_item))
+  if (!IsA<HTMLLIElement>(selected_list_item))
     return false;
 
   // FIXME: previousElementSibling does not ignore non-rendered content like

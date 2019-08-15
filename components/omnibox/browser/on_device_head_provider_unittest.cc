@@ -116,6 +116,24 @@ TEST_F(OnDeviceHeadProviderTest, RejectIncognito) {
   EXPECT_TRUE(provider_->done());
 }
 
+TEST_F(OnDeviceHeadProviderTest, RejectOnFocusRequest) {
+  AutocompleteInput input(base::UTF8ToUTF16("M"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  input.set_want_asynchronous_matches(true);
+  input.set_from_omnibox_focus(true);
+
+  EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillOnce(Return(false));
+  EXPECT_CALL(*client_.get(), SearchSuggestEnabled()).WillOnce(Return(true));
+
+  provider_->Start(input, false);
+  if (!provider_->done())
+    scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(provider_->matches().empty());
+  EXPECT_TRUE(provider_->done());
+}
+
 TEST_F(OnDeviceHeadProviderTest, NoMatches) {
   AutocompleteInput input(base::UTF8ToUTF16("b"),
                           metrics::OmniboxEventProto::OTHER,

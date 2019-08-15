@@ -1590,50 +1590,6 @@ TEST_F(HttpCacheTest, RangeGET_FullAfterPartial) {
   }
 }
 
-// Tests that when a range request transaction becomes a writer for the first
-// range and then fails conditionalization for the next range and decides to
-// doom the entry, then there should not be a dcheck assertion hit.
-TEST_F(HttpCacheTest, RangeGET_OverlappingRangesCouldntConditionalize) {
-  MockHttpCache cache;
-
-  {
-    ScopedMockTransaction transaction_pre(kRangeGET_TransactionOK);
-    transaction_pre.request_headers = "Range: bytes = 10-19\r\n" EXTRA_HEADER;
-    transaction_pre.data = "rg: 10-19 ";
-    MockHttpRequest request_pre(transaction_pre);
-
-    HttpResponseInfo response_pre;
-    RunTransactionTestWithRequest(cache.http_cache(), transaction_pre,
-                                  request_pre, &response_pre);
-    ASSERT_TRUE(response_pre.headers != nullptr);
-    EXPECT_EQ(206, response_pre.headers->response_code());
-    EXPECT_EQ(1, cache.network_layer()->transaction_count());
-    EXPECT_EQ(0, cache.disk_cache()->open_count());
-    EXPECT_EQ(1, cache.disk_cache()->create_count());
-  }
-
-  {
-    // First range skips validation because the response is fresh while the
-    // second range requires validation since that range is not present in the
-    // cache and during validation it fails conditionalization.
-    cache.FailConditionalizations();
-    ScopedMockTransaction transaction_pre(kRangeGET_TransactionOK);
-    transaction_pre.request_headers = "Range: bytes = 10-29\r\n" EXTRA_HEADER;
-
-    // TODO(crbug.com/992521): Fix this scenario to not return the cached bytes
-    // repeatedly.
-    transaction_pre.data = "rg: 10-19 rg: 10-19 rg: 20-29 ";
-    MockHttpRequest request_pre(transaction_pre);
-    HttpResponseInfo response_pre;
-    RunTransactionTestWithRequest(cache.http_cache(), transaction_pre,
-                                  request_pre, &response_pre);
-    ASSERT_TRUE(response_pre.headers != nullptr);
-    EXPECT_EQ(2, cache.network_layer()->transaction_count());
-    EXPECT_EQ(1, cache.disk_cache()->open_count());
-    EXPECT_EQ(2, cache.disk_cache()->create_count());
-  }
-}
-
 TEST_F(HttpCacheTest, RangeGET_FullAfterPartialReuse) {
   MockHttpCache cache;
 
@@ -2071,7 +2027,6 @@ TEST_F(HttpCacheTest, RangeGET_ParallelValidationDifferentRanges) {
   EXPECT_EQ(1, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
-  context_list.clear();
   histograms.ExpectBucketCount(
       histogram_name,
       static_cast<int>(HttpCache::PARALLEL_WRITING_NOT_JOIN_RANGE), 1);
@@ -3440,7 +3395,6 @@ TEST_F(HttpCacheTest, SimplePOST_ParallelWritingDisallowed) {
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
-  context_list.clear();
   histograms.ExpectBucketCount(
       histogram_name,
       static_cast<int>(HttpCache::PARALLEL_WRITING_NOT_JOIN_METHOD_NOT_GET), 1);
@@ -3530,7 +3484,6 @@ TEST_F(HttpCacheTest, SimpleGET_ParallelWritingSuccess) {
   }
 
   // Verify metrics.
-  context_list.clear();
   histograms.ExpectBucketCount(
       histogram_name, static_cast<int>(HttpCache::PARALLEL_WRITING_CREATE), 1);
   histograms.ExpectBucketCount(
@@ -3611,7 +3564,6 @@ TEST_F(HttpCacheTest, SimpleGET_ParallelWritingHuge) {
   EXPECT_EQ(kNumTransactions, cache.network_layer()->transaction_count());
 
   // Verify metrics.
-  context_list.clear();
   histograms.ExpectBucketCount(
       histogram_name, static_cast<int>(HttpCache::PARALLEL_WRITING_CREATE), 1);
   histograms.ExpectBucketCount(

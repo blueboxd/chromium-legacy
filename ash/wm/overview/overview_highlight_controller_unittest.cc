@@ -278,7 +278,7 @@ TEST_F(OverviewHighlightControllerTest, HighlightLocationWhileDragging) {
   // Tab once to show the highlight.
   SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_TAB);
   EXPECT_EQ(window3.get(), GetOverviewHighlightedWindow());
-  OverviewItem* item = GetOverviewItemInGridWithWindow(0, window3.get());
+  OverviewItem* item = GetOverviewItemForWindow(window3.get());
 
   // Tests that while dragging an item, tabbing does not change which item the
   // highlight is hovered over, but the highlight is hidden. Drag the item in a
@@ -376,7 +376,7 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingBasic) {
 
   // Tests that the overview item gets highlighted after the new desk button.
   SendKey(ui::VKEY_TAB);
-  auto* item2 = GetOverviewItemInGridWithWindow(0, window2.get());
+  auto* item2 = GetOverviewItemForWindow(window2.get());
   EXPECT_EQ(item2->caption_container_view(), GetHighlightedView());
 
   // Tests that after tabbing through the overview items, we go back to the
@@ -400,7 +400,7 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingReverse) {
   // Tests that the first highlighted item when reversing is the last overview
   // item.
   SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
-  auto* item1 = GetOverviewItemInGridWithWindow(0, window1.get());
+  auto* item1 = GetOverviewItemForWindow(window1.get());
   EXPECT_EQ(item1->caption_container_view(), GetHighlightedView());
 
   // Tests that after reverse tabbing through the overview items, we highlight
@@ -457,10 +457,10 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingMultiDisplay) {
   // Tests that two more tabs, will highlight the two overview items on the
   // first display.
   SendKey(ui::VKEY_TAB);
-  auto* item2 = GetOverviewItemInGridWithWindow(0, window2.get());
+  auto* item2 = GetOverviewItemForWindow(window2.get());
   EXPECT_EQ(item2->caption_container_view(), GetHighlightedView());
   SendKey(ui::VKEY_TAB);
-  auto* item1 = GetOverviewItemInGridWithWindow(0, window1.get());
+  auto* item1 = GetOverviewItemForWindow(window1.get());
   EXPECT_EQ(item1->caption_container_view(), GetHighlightedView());
 
   // Tests that the next tab will bring us to the first mini view on the
@@ -474,7 +474,7 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingMultiDisplay) {
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(desk_bar_view2->new_desk_button(), GetHighlightedView());
   SendKey(ui::VKEY_TAB);
-  auto* item3 = GetOverviewItemInGridWithWindow(1, window3.get());
+  auto* item3 = GetOverviewItemForWindow(window3.get());
   EXPECT_EQ(item3->caption_container_view(), GetHighlightedView());
 
   // Tests that after tabbing through the items on the second display, the
@@ -488,7 +488,7 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingMultiDisplay) {
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(desk_bar_view3->new_desk_button(), GetHighlightedView());
   SendKey(ui::VKEY_TAB);
-  auto* item4 = GetOverviewItemInGridWithWindow(2, window4.get());
+  auto* item4 = GetOverviewItemForWindow(window4.get());
   EXPECT_EQ(item4->caption_container_view(), GetHighlightedView());
 
   // Tests that after tabbing through the items on the third display, the next
@@ -522,7 +522,7 @@ TEST_F(DesksOverviewHighlightControllerTest,
   SendKey(ui::VKEY_TAB);
   EXPECT_TRUE(CoveredByOverviewHighlight(desk_bar_view1->new_desk_button()));
   SendKey(ui::VKEY_TAB);
-  auto* item1 = GetOverviewItemInGridWithWindow(0, window1.get());
+  auto* item1 = GetOverviewItemForWindow(window1.get());
   EXPECT_TRUE(CoveredByOverviewHighlight(item1->caption_container_view()));
 
   const auto* desk_bar_view2 = GetDesksBarViewForRoot(roots[1]);
@@ -533,7 +533,7 @@ TEST_F(DesksOverviewHighlightControllerTest,
   SendKey(ui::VKEY_TAB);
   EXPECT_TRUE(CoveredByOverviewHighlight(desk_bar_view2->new_desk_button()));
   SendKey(ui::VKEY_TAB);
-  auto* item2 = GetOverviewItemInGridWithWindow(1, window2.get());
+  auto* item2 = GetOverviewItemForWindow(window2.get());
   EXPECT_TRUE(CoveredByOverviewHighlight(item2->caption_container_view()));
 
   const auto* desk_bar_view3 = GetDesksBarViewForRoot(roots[2]);
@@ -568,12 +568,12 @@ TEST_F(DesksOverviewHighlightControllerTest,
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
-  auto* item2 = GetOverviewItemInGridWithWindow(0, window2.get());
+  auto* item2 = GetOverviewItemForWindow(window2.get());
   EXPECT_TRUE(CoveredByOverviewHighlight(item2->caption_container_view()));
-  auto* item1 = GetOverviewItemInGridWithWindow(0, widget1->GetNativeWindow());
+  auto* item1 = GetOverviewItemForWindow(widget1->GetNativeWindow());
   item1->CloseWindow();
   EXPECT_TRUE(CoveredByOverviewHighlight(item2->caption_container_view()));
-  auto* item3 = GetOverviewItemInGridWithWindow(0, widget3->GetNativeWindow());
+  auto* item3 = GetOverviewItemForWindow(widget3->GetNativeWindow());
   item3->CloseWindow();
   EXPECT_TRUE(CoveredByOverviewHighlight(item2->caption_container_view()));
 }

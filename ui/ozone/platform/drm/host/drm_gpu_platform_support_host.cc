@@ -373,8 +373,10 @@ bool DrmGpuPlatformSupportHost::GpuDestroyWindow(
   return Send(new OzoneGpuMsg_DestroyWindow(widget));
 }
 
-bool DrmGpuPlatformSupportHost::GpuCreateWindow(gfx::AcceleratedWidget widget) {
-  return Send(new OzoneGpuMsg_CreateWindow(widget));
+bool DrmGpuPlatformSupportHost::GpuCreateWindow(
+    gfx::AcceleratedWidget widget,
+    const gfx::Rect& initial_bounds) {
+  return Send(new OzoneGpuMsg_CreateWindow(widget, initial_bounds));
 }
 
 bool DrmGpuPlatformSupportHost::GpuWindowBoundsChanged(

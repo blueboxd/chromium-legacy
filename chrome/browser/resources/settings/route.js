@@ -516,7 +516,11 @@ cr.define('settings', function() {
         // Files (analogous to Downloads)
         r.FILES = r.ADVANCED.createSection('/files', 'files');
         r.SMB_SHARES = r.FILES.createChild('/smbShares');
+      }
 
+      // Reset
+      if (loadTimeData.valueExists('allowPowerwash') &&
+          loadTimeData.getBoolean('allowPowerwash')) {
         r.RESET = r.ADVANCED.createSection('/reset', 'reset');
       }
 
@@ -546,6 +550,7 @@ cr.define('settings', function() {
         assert(r.DOWNLOADS, 'DOWNLOADS route should exist');
         r.SMB_SHARES = r.DOWNLOADS.createChild('/smbShares');
 
+        // Reset
         assert(r.RESET, 'RESET route should exist');
       }
 

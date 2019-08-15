@@ -564,25 +564,14 @@ SkiaOutputSurfaceImpl::CreateSkSurfaceCharacterization(
   // LegacyFontHost will get LCD text and skia figures out what type to use.
   SkSurfaceProps surface_props(0 /*flags */,
                                SkSurfaceProps::kLegacyFontHost_InitType);
-  SkColorType color_type =
+  auto color_type =
       ResourceFormatToClosestSkColorType(true /* gpu_compositing */, format);
-  SkImageInfo image_info =
+  auto image_info =
       SkImageInfo::Make(surface_size.width(), surface_size.height(), color_type,
                         kPremul_SkAlphaType, std::move(color_space));
-  GrBackendFormat backend_format;
-  if (!is_using_vulkan_) {
-    const auto* version_info = impl_on_gpu_->gl_version_info();
-    unsigned int texture_storage_format = TextureStorageFormat(format);
-    backend_format = GrBackendFormat::MakeGL(
-        gl::GetInternalFormat(version_info, texture_storage_format),
-        GL_TEXTURE_2D);
-  } else {
-#if BUILDFLAG(ENABLE_VULKAN)
-    backend_format = GrBackendFormat::MakeVk(ToVkFormat(format));
-#else
-    NOTREACHED();
-#endif
-  }
+  auto backend_format = gr_context_thread_safe->defaultBackendFormat(
+      color_type, GrRenderable::kYes);
+  DCHECK(backend_format.isValid());
   auto characterization = gr_context_thread_safe->createCharacterization(
       cache_max_resource_bytes, image_info, backend_format, 0 /* sampleCount */,
       kTopLeft_GrSurfaceOrigin, surface_props, mipmap);

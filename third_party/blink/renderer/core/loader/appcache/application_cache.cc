@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_frame.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -50,7 +51,8 @@ void ApplicationCache::Trace(blink::Visitor* visitor) {
   DOMWindowClient::Trace(visitor);
 }
 
-ApplicationCacheHost* ApplicationCache::GetApplicationCacheHost() const {
+ApplicationCacheHostForFrame* ApplicationCache::GetApplicationCacheHost()
+    const {
   if (!GetFrame() || !GetFrame()->Loader().GetDocumentLoader())
     return nullptr;
   return GetFrame()->Loader().GetDocumentLoader()->GetApplicationCacheHost();

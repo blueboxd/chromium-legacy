@@ -34,7 +34,7 @@ using base::android::ToJavaByteArray;
 namespace media {
 
 MediaDrmStorageBridge::MediaDrmStorageBridge()
-    : task_runner_(base::ThreadTaskRunnerHandle::Get()), weak_factory_(this) {}
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 MediaDrmStorageBridge::~MediaDrmStorageBridge() = default;
 

@@ -78,8 +78,9 @@ DirectManipulationHelper::CreateInstanceForTesting(
       base::WrapUnique(new DirectManipulationHelper(0, nullptr));
 
   instance->event_handler_ =
-      Microsoft::WRL::Make<DirectManipulationEventHandler>(instance.get(),
-                                                           event_target);
+      Microsoft::WRL::Make<DirectManipulationEventHandler>(event_target);
+
+  instance->event_handler_->SetDirectManipulationHelper(instance.get());
 
   instance->viewport_ = viewport;
 
@@ -159,7 +160,9 @@ bool DirectManipulationHelper::Initialize(ui::WindowEventTarget* event_target) {
   }
 
   event_handler_ =
-      Microsoft::WRL::Make<DirectManipulationEventHandler>(this, event_target);
+      Microsoft::WRL::Make<DirectManipulationEventHandler>(event_target);
+
+  event_handler_->SetDirectManipulationHelper(this);
 
   // We got Direct Manipulation transform from
   // IDirectManipulationViewportEventHandler.
@@ -265,6 +268,7 @@ void DirectManipulationHelper::Destroy() {
   if (has_animation_observer_)
     RemoveAnimationObserver();
   compositor_ = nullptr;
+  event_handler_->SetDirectManipulationHelper(nullptr);
 
   HRESULT hr;
   if (viewport_) {

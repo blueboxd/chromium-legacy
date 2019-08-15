@@ -14,7 +14,6 @@
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/sessions/session_restore_test_helper.h"
 #include "chrome/browser/sessions/tab_loader_tester.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/sessions/tab_restore_service_load_waiter.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_live_tab_context.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -126,9 +126,7 @@ class TabRestoreTest : public InProcessBrowserTest {
     ASSERT_GT(tab_count, 0);
 
     // Restore the tab.
-    content::WindowedNotificationObserver tab_added_observer(
-        chrome::NOTIFICATION_TAB_PARENTED,
-        content::NotificationService::AllSources());
+    ui_test_utils::AllBrowserTabAddedWaiter tab_added_waiter;
     content::WindowedNotificationObserver tab_loaded_observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
@@ -137,7 +135,7 @@ class TabRestoreTest : public InProcessBrowserTest {
       chrome::RestoreTab(browser);
       waiter.Wait();
     }
-    tab_added_observer.Wait();
+    content::WebContents* new_tab = tab_added_waiter.Wait();
     tab_loaded_observer.Wait();
 
     if (expect_new_window) {
@@ -147,6 +145,8 @@ class TabRestoreTest : public InProcessBrowserTest {
     } else {
       EXPECT_EQ(++tab_count, browser->tab_strip_model()->count());
     }
+
+    EXPECT_EQ(chrome::FindBrowserWithWebContents(new_tab), browser);
 
     // Get a handle to the restored tab.
     ASSERT_GT(browser->tab_strip_model()->count(), expected_tabstrip_index);
@@ -498,15 +498,13 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabFromClosedWindowByID) {
 
   // Restore the tab into the current window.
   EXPECT_EQ(1, browser->tab_strip_model()->count());
-  content::WindowedNotificationObserver tab_added_observer(
-      chrome::NOTIFICATION_TAB_PARENTED,
-      content::NotificationService::AllSources());
+  ui_test_utils::TabAddedWaiter tab_added_waiter(browser);
   content::WindowedNotificationObserver tab_loaded_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   service->RestoreEntryById(browser->live_tab_context(), tab_id_to_restore,
                             WindowOpenDisposition::NEW_FOREGROUND_TAB);
-  tab_added_observer.Wait();
+  tab_added_waiter.Wait();
   tab_loaded_observer.Wait();
 
   // Check that the tab was correctly restored.

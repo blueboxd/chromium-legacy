@@ -20,8 +20,7 @@ namespace media {
 
 MojoMediaDrmStorage::MojoMediaDrmStorage(
     mojom::MediaDrmStoragePtr media_drm_storage_ptr)
-    : media_drm_storage_ptr_(std::move(media_drm_storage_ptr)),
-      weak_factory_(this) {
+    : media_drm_storage_ptr_(std::move(media_drm_storage_ptr)) {
   DVLOG(1) << __func__;
 }
 

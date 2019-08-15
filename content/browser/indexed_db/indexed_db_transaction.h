@@ -7,8 +7,11 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <set>
+#include <utility>
+#include <vector>
 
 #include "base/containers/queue.h"
 #include "base/containers/stack.h"

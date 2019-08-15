@@ -31,6 +31,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/features.h"
@@ -1210,10 +1211,11 @@ class StoragePartitonInterceptor
   // Override this method to allow changing the origin. It simulates a
   // renderer process sending incorrect data to the browser process, so
   // security checks can be tested.
-  void OpenLocalStorage(const url::Origin& origin,
-                        blink::mojom::StorageAreaRequest request) override {
+  void OpenLocalStorage(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::StorageArea> receiver) override {
     GetForwardingInterface()->OpenLocalStorage(origin_to_inject_,
-                                               std::move(request));
+                                               std::move(receiver));
   }
 
  private:

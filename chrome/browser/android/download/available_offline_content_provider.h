@@ -48,7 +48,7 @@ class AvailableOfflineContentProvider
 
   Profile* profile_;
 
-  base::WeakPtrFactory<AvailableOfflineContentProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<AvailableOfflineContentProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AvailableOfflineContentProvider);
 };

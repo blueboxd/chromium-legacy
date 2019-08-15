@@ -7,6 +7,7 @@ from .composition_parts import Identifier
 from .database import Database
 from .database import DatabaseBody
 from .dictionary import Dictionary
+from .enumeration import Enumeration
 from .identifier_ir_map import IdentifierIRMap
 from .idl_type import IdlTypeFactory
 from .interface import Interface
@@ -207,6 +208,11 @@ class IdlCompiler(object):
         for ir in callback_function_irs.itervalues():
             self._db.register(DatabaseBody.Kind.CALLBACK_FUNCTION,
                               CallbackFunction(ir))
+
+        enum_irs = self._ir_map.find_by_kind(
+            IdentifierIRMap.IR.Kind.ENUMERATION)
+        for ir in enum_irs.itervalues():
+            self._db.register(DatabaseBody.Kind.ENUMERATION, Enumeration(ir))
 
         typedef_irs = self._ir_map.find_by_kind(
             IdentifierIRMap.IR.Kind.TYPEDEF)

@@ -60,7 +60,6 @@ component("lib") {
     "//chromeos/services/assistant/public/mojom",
     "//mojo/public/cpp/bindings:bindings",
     "//services/audio/public/cpp:cpp",
-    "//services/service_manager/public/cpp:cpp",
   ]
 
   if (enable_cros_libassistant) {
@@ -120,7 +119,6 @@ component("lib") {
       "//services/media_session/public/mojom",
       "//services/network/public/cpp",
       "//services/network/public/mojom",
-      "//services/service_manager/public/cpp",
       "//ui/base",
       "//url",
     ]
@@ -151,12 +149,13 @@ source_set("tests") {
     "//services/identity/public/mojom",
     "//services/network:test_support",
     "//services/network/public/cpp:cpp",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
+
   sources = [
+    "fake_client.cc",
+    "fake_client.h",
     "service_unittest.cc",
   ]
 

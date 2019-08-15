@@ -405,7 +405,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       display_output_surface = std::move(gpu_output_surface);
     } else {
       auto gpu_output_surface =
-          std::make_unique<GpuBrowserCompositorOutputSurface>(context_provider);
+          std::make_unique<GpuBrowserCompositorOutputSurface>(
+              context_provider, data->surface_handle);
       display_output_surface = std::move(gpu_output_surface);
     }
   }

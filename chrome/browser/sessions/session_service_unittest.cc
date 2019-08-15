@@ -64,8 +64,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest {
 
     helper_.SetService(session_service);
 
-    service()->SetWindowType(window_id,
-                             Browser::TYPE_TABBED,
+    service()->SetWindowType(window_id, Browser::TYPE_NORMAL,
                              SessionService::TYPE_NORMAL);
     service()->SetWindowBounds(window_id,
                                window_bounds,
@@ -163,8 +162,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest {
     UpdateNavigation(window_id, tab1_id, *nav1, true);
 
     const gfx::Rect window2_bounds(3, 4, 5, 6);
-    service()->SetWindowType(window2_id,
-                             Browser::TYPE_TABBED,
+    service()->SetWindowType(window2_id, Browser::TYPE_NORMAL,
                              SessionService::TYPE_NORMAL);
     service()->SetWindowBounds(window2_id,
                                window2_bounds,
@@ -210,7 +208,7 @@ TEST_F(SessionServiceTest, Basic) {
   ASSERT_EQ(0, windows[0]->selected_tab_index);
   ASSERT_EQ(window_id, windows[0]->window_id);
   ASSERT_EQ(1U, windows[0]->tabs.size());
-  ASSERT_EQ(sessions::SessionWindow::TYPE_TABBED, windows[0]->type);
+  ASSERT_EQ(sessions::SessionWindow::TYPE_NORMAL, windows[0]->type);
 
   sessions::SessionTab* tab = windows[0]->tabs[0].get();
   helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
@@ -373,8 +371,7 @@ TEST_F(SessionServiceTest, WindowWithNoTabsGetsPruned) {
   UpdateNavigation(window_id, tab1_id, nav1, true);
 
   const gfx::Rect window2_bounds(3, 4, 5, 6);
-  service()->SetWindowType(window2_id,
-                           Browser::TYPE_TABBED,
+  service()->SetWindowType(window2_id, Browser::TYPE_NORMAL,
                            SessionService::TYPE_NORMAL);
   service()->SetWindowBounds(window2_id,
                              window2_bounds,
@@ -468,8 +465,7 @@ TEST_F(SessionServiceTest, WindowCloseCommittedAfterNavigate) {
   SessionID tab2_id = SessionID::NewUnique();
   ASSERT_NE(window2_id, window_id);
 
-  service()->SetWindowType(window2_id,
-                           Browser::TYPE_TABBED,
+  service()->SetWindowType(window2_id, Browser::TYPE_NORMAL,
                            SessionService::TYPE_NORMAL);
   service()->SetWindowBounds(window2_id,
                              window_bounds,
@@ -549,13 +545,13 @@ TEST_F(SessionServiceTest, IgnorePopups) {
 TEST_F(SessionServiceTest, RemoveUnusedRestoreWindowsTest) {
   std::vector<std::unique_ptr<sessions::SessionWindow>> windows_list;
   windows_list.push_back(std::make_unique<sessions::SessionWindow>());
-  windows_list.back()->type = sessions::SessionWindow::TYPE_TABBED;
+  windows_list.back()->type = sessions::SessionWindow::TYPE_NORMAL;
   windows_list.push_back(std::make_unique<sessions::SessionWindow>());
   windows_list.back()->type = sessions::SessionWindow::TYPE_POPUP;
 
   service()->RemoveUnusedRestoreWindows(&windows_list);
   ASSERT_EQ(1U, windows_list.size());
-  EXPECT_EQ(sessions::SessionWindow::TYPE_TABBED, windows_list[0]->type);
+  EXPECT_EQ(sessions::SessionWindow::TYPE_NORMAL, windows_list[0]->type);
 }
 
 #if defined (OS_CHROMEOS)
@@ -566,8 +562,7 @@ TEST_F(SessionServiceTest, RestoreApp) {
   SessionID tab2_id = SessionID::NewUnique();
   ASSERT_NE(window2_id, window_id);
 
-  service()->SetWindowType(window2_id,
-                           Browser::TYPE_POPUP,
+  service()->SetWindowType(window2_id, Browser::TYPE_APP,
                            SessionService::TYPE_APP);
   service()->SetWindowBounds(window2_id,
                              window_bounds,
@@ -591,8 +586,8 @@ TEST_F(SessionServiceTest, RestoreApp) {
   ReadWindows(&windows, NULL);
 
   ASSERT_EQ(2U, windows.size());
-  int tabbed_index = windows[0]->type == sessions::SessionWindow::TYPE_TABBED ?
-      0 : 1;
+  int tabbed_index =
+      windows[0]->type == sessions::SessionWindow::TYPE_NORMAL ? 0 : 1;
   int app_index = tabbed_index == 0 ? 1 : 0;
   ASSERT_EQ(0, windows[tabbed_index]->selected_tab_index);
   ASSERT_EQ(window_id, windows[tabbed_index]->window_id);
@@ -618,7 +613,7 @@ TEST_F(SessionServiceTest, IgnoreCrostiniApps) {
   SessionID window2_id = SessionID::NewUnique();
   ASSERT_NE(window2_id, window_id);
 
-  service()->SetWindowType(window2_id, Browser::TYPE_POPUP,
+  service()->SetWindowType(window2_id, Browser::TYPE_APP,
                            SessionService::TYPE_NORMAL);
   service()->SetWindowBounds(window2_id, window_bounds, ui::SHOW_STATE_NORMAL);
   service()->SetWindowAppName(window2_id, "_crostini_fakeappid");

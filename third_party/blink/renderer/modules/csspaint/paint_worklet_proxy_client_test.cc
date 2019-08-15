@@ -217,11 +217,12 @@ void RunPaintTestOnWorklet(WorkerThread* thread,
 
   PaintWorkletStylePropertyMap::CrossThreadData data;
   Vector<std::unique_ptr<CrossThreadStyleValue>> input_arguments;
+  std::vector<cc::PaintWorkletInput::PropertyKey> property_keys;
   scoped_refptr<PaintWorkletInput> input =
-      base::MakeRefCounted<PaintWorkletInput>("foo", FloatSize(100, 100), 1.0f,
-                                              1.0f, 1, std::move(data),
-                                              std::move(input_arguments));
-  sk_sp<PaintRecord> record = proxy_client->Paint(input.get());
+      base::MakeRefCounted<PaintWorkletInput>(
+          "foo", FloatSize(100, 100), 1.0f, 1.0f, 1, std::move(data),
+          std::move(input_arguments), std::move(property_keys));
+  sk_sp<PaintRecord> record = proxy_client->Paint(input.get(), {});
   EXPECT_NE(record, nullptr);
 
   waitable_event->Signal();

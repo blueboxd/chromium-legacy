@@ -14,6 +14,7 @@ if __name__ == '__main__':
 
 import unittest
 
+import six
 from six import StringIO
 
 from grit import exception
@@ -55,7 +56,7 @@ class GrdReaderUnittest(unittest.TestCase):
 </grit>'''
     pseudo_file = StringIO(input)
     tree = grd_reader.Parse(pseudo_file, '.')
-    output = unicode(tree)
+    output = six.text_type(tree)
     expected_output = input.replace(u' base_dir="."', u'')
     self.assertEqual(expected_output, output)
     self.failUnless(tree.GetNodeById('IDS_GREETING'))

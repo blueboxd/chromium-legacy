@@ -82,7 +82,7 @@ void BrowserFrameAsh::OnWidgetInitDone() {
   // For legacy reasons v1 apps (like Secure Shell) are allowed to consume keys
   // like brightness, volume, etc. Otherwise these keys are handled by the
   // Ash window manager.
-  window_state->SetCanConsumeSystemKeys(browser->is_app());
+  window_state->SetCanConsumeSystemKeys(browser->deprecated_is_app());
 }
 
 void BrowserFrameAsh::OnBoundsChanged(const gfx::Rect& old_bounds,
@@ -170,6 +170,6 @@ int BrowserFrameAsh::GetMinimizeButtonOffset() const {
 void BrowserFrameAsh::SetWindowAutoManaged() {
   // For browser window in Chrome OS, we should only enable the auto window
   // management logic for tabbed browser.
-  if (!browser_view_->browser()->is_type_popup())
+  if (browser_view_->browser()->is_type_normal())
     GetNativeWindow()->SetProperty(ash::kWindowPositionManagedTypeKey, true);
 }

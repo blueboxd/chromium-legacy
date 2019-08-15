@@ -27,9 +27,6 @@ class ProfileImplIOData : public ProfileIOData {
     // safely be used during initialization.
     content::ResourceContext* GetResourceContextNoInit() const;
 
-    // Called to initialize Data Reduction Proxy.
-    void InitializeDataReductionProxy() const;
-
    private:
     // Lazily initialize ProfileParams. We do this on the calls to
     // Get*RequestContextGetter(), so we only initialize ProfileParams right

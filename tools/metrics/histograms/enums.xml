@@ -17757,6 +17757,7 @@ Called by update_net_error_codes.py.-->
   <int value="578" label="CheckURLsInRealTime"/>
   <int value="579" label="CACertificateManagementAllowed"/>
   <int value="580" label="PasswordLeakDetectionEnabled"/>
+  <int value="581" label="LockScreenMediaPlaybackEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -19762,8 +19763,8 @@ Called by update_net_error_codes.py.-->
   <int value="871" label="DELETED_FILESYSTEM_UNOBSERVEENTRY"/>
   <int value="872" label="DELETED_FILESYSTEM_GETOBSERVEDENTRIES"/>
   <int value="873" label="BROWSINGDATA_REMOVESERVICEWORKERS"/>
-  <int value="874" label="USBPRIVATE_GETDEVICES"/>
-  <int value="875" label="USBPRIVATE_GETDEVICEINFO"/>
+  <int value="874" label="DELETED_USBPRIVATE_GETDEVICES"/>
+  <int value="875" label="DELETED_USBPRIVATE_GETDEVICEINFO"/>
   <int value="876" label="DELETED_EASYUNLOCKPRIVATE_UPDATESCREENLOCKSTATE"/>
   <int value="877" label="CAST_CHANNEL_GETLOGS"/>
   <int value="878" label="DELETED_EASYUNLOCKPRIVATE_SETPERMITACCESS"/>
@@ -24302,6 +24303,10 @@ Called by update_net_error_codes.py.-->
   <int value="2995" label="CSSValueOverflowOverlay"/>
   <int value="2996" label="RequestedFileSystemTemporary"/>
   <int value="2997" label="RequestedFileSystemPersistent"/>
+  <int value="2998"
+      label="ElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop"/>
+  <int value="2999"
+      label="ElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTopSetPositive"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -34393,7 +34398,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1837329460" label="NewEncodeCpuLoadEstimator:enabled"/>
   <int value="-1835975804" label="disable-offline-auto-reload"/>
   <int value="-1835608319" label="EnableHeuristicPalmDetectionFilter:disabled"/>
-  <int value="-1835123381" label="TemporaryUnexpireFlagsM77:enabled"/>
   <int value="-1833149810" label="enable-accessibility-tab-switcher"/>
   <int value="-1832575380" label="show-saved-copy"/>
   <int value="-1832221649" label="disable-out-of-process-pac"/>
@@ -35162,6 +35166,7 @@ from previous Chrome versions.
   <int value="-795600188" label="disable-async-dns"/>
   <int value="-793921836" label="ShowAllDialogsWithViewsToolkit:disabled"/>
   <int value="-793383355" label="StrictOriginIsolation:enabled"/>
+  <int value="-792785226" label="TemporaryUnexpireFlagsM78:disabled"/>
   <int value="-792079435" label="EnableAppsGridGapFeature:disabled"/>
   <int value="-790036192" label="overscroll-start-threshold"/>
   <int value="-788074946"
@@ -36229,6 +36234,7 @@ from previous Chrome versions.
   <int value="724208771" label="TabsInCBD:enabled"/>
   <int value="724427456" label="WebAuthenticationPINSupport:disabled"/>
   <int value="725270017" label="ScrollAnchorSerialization:disabled"/>
+  <int value="725870294" label="RequestUnbufferedDispatch:disabled"/>
   <int value="726764779" label="WebXRGamepadSupport:enabled"/>
   <int value="727270087" label="PromosOnLocalNtp:enabled"/>
   <int value="727571565" label="PasswordForceSaving"/>
@@ -36294,6 +36300,7 @@ from previous Chrome versions.
   <int value="820650704" label="disable-ntp-popular-sites"/>
   <int value="821192723" label="show-fps-counter"/>
   <int value="824961931" label="use-simple-cache-backend"/>
+  <int value="828092263" label="TemporaryUnexpireFlagsM78:enabled"/>
   <int value="832142463" label="WebAssemblyStreaming:enabled"/>
   <int value="834033186" label="enable-data-reduction-proxy-dev"/>
   <int value="834326277" label="enable-answers-in-suggest"/>
@@ -36384,7 +36391,6 @@ from previous Chrome versions.
   <int value="976079108" label="TouchpadOverscrollHistoryNavigation:disabled"/>
   <int value="976278412" label="google-password-manager:enabled"/>
   <int value="977968353" label="WebUITabStrip:disabled"/>
-  <int value="978659723" label="TemporaryUnexpireFlagsM77:disabled"/>
   <int value="979445973" label="OmniboxSpareRenderer:enabled"/>
   <int value="980396200" label="enable-new-korean-ime"/>
   <int value="981818901" label="AppBanners:enabled"/>
@@ -36655,6 +36661,7 @@ from previous Chrome versions.
   <int value="1331098784" label="ReducedReferrerGranularity:enabled"/>
   <int value="1332120969" label="ChromeDuet:disabled"/>
   <int value="1333847867" label="NoScriptPreviews:enabled"/>
+  <int value="1334185492" label="TurnOffStreamingMediaCaching:disabled"/>
   <int value="1338356182" label="AutofillAssistantChromeEntry:disabled"/>
   <int value="1338864675" label="EnableTouchableAppContextMenu:disabled"/>
   <int value="1339426771" label="TopSitesFromSiteEngagement:disabled"/>
@@ -36980,6 +36987,7 @@ from previous Chrome versions.
   <int value="1810311887" label="WebAssemblyThreads:enabled"/>
   <int value="1812368073" label="enable-new-app-list-mixer"/>
   <int value="1814671708" label="disable-password-manager-reauthentication"/>
+  <int value="1816174635" label="RequestUnbufferedDispatch:enabled"/>
   <int value="1816843861" label="ServiceWorkerServicification:enabled"/>
   <int value="1817312143" label="num-raster-threads"/>
   <int value="1818829958" label="IdentityDisc:enabled"/>
@@ -37037,6 +37045,7 @@ from previous Chrome versions.
   <int value="1878331098" label="GuestViewCrossProcessFrames:enabled"/>
   <int value="1881036528" label="disable-multilingual-spellchecker"/>
   <int value="1881174782" label="disable-brotli"/>
+  <int value="1885368291" label="TurnOffStreamingMediaCaching:enabled"/>
   <int value="1887031213" label="AutofillManualFallbackAndroid:disabled"/>
   <int value="1887882558" label="RTCUnifiedPlanByDefault:enabled"/>
   <int value="1888812860" label="ChromeModernAlternateCardLayout:enabled"/>
@@ -39078,6 +39087,11 @@ Called by update_use_counter_css.py.-->
 <enum name="MediaRecorderVEAUsed">
   <int value="0" label="Not used"/>
   <int value="1" label="Used"/>
+</enum>
+
+<enum name="MediaResponseCacheType">
+  <int value="0" label="Transaction Cache Enabled"/>
+  <int value="1" label="Transaction Cache Disabled"/>
 </enum>
 
 <enum name="MediaRouteProviderResult">
@@ -48925,6 +48939,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="13" label="Failed to download PPD"/>
   <int value="64" label="No reply from debugd over D-Bus"/>
   <int value="65" label="Generic D-Bus timeout"/>
+</enum>
+
+<enum name="PrinterSetupSource">
+  <int value="0" label="Printer was setup from Print Preview"/>
+  <int value="1" label="Printer was setup from Settings"/>
+  <int value="2" label="Printer was setup by automatic USB configurer"/>
+  <int value="3" label="Printer was setup by arc print service"/>
 </enum>
 
 <enum name="PrintJobResult">
@@ -59585,7 +59606,7 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Ethernet"/>
   <int value="2" label="Wifi"/>
   <int value="3" label="WiMAX (Deprecated)"/>
-  <int value="4" label="Bluetooth"/>
+  <int value="4" label="Bluetooth (Deprecated)"/>
   <int value="5" label="Cellular"/>
   <int value="6" label="Tethered (Ethernet)"/>
   <int value="7" label="Tethered (Wifi)"/>

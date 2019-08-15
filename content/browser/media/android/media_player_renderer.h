@@ -136,7 +136,7 @@ class CONTENT_EXPORT MediaPlayerRenderer
   mojo::Binding<MediaPlayerRendererExtension> renderer_extension_binding_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<MediaPlayerRenderer> weak_factory_;
+  base::WeakPtrFactory<MediaPlayerRenderer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaPlayerRenderer);
 };

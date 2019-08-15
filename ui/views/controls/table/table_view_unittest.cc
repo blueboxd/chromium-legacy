@@ -114,6 +114,7 @@ class TestTableModel2 : public ui::TableModel {
   // ui::TableModel:
   int RowCount() override;
   base::string16 GetText(int row, int column_id) override;
+  base::string16 GetTooltip(int row) override;
   void SetObserver(ui::TableModelObserver* observer) override;
   int CompareValues(int row1, int row2, int column_id) override;
 
@@ -178,6 +179,10 @@ int TestTableModel2::RowCount() {
 
 base::string16 TestTableModel2::GetText(int row, int column_id) {
   return base::NumberToString16(rows_[row][column_id]);
+}
+
+base::string16 TestTableModel2::GetTooltip(int row) {
+  return base::ASCIIToUTF16("Tooltip") + base::NumberToString16(row);
 }
 
 void TestTableModel2::SetObserver(ui::TableModelObserver* observer) {
@@ -742,6 +747,24 @@ TEST_F(TableViewTest, SortOnSpaceBar) {
   EXPECT_EQ(0, table_->sort_descriptors()[1].column_id);
   EXPECT_TRUE(table_->sort_descriptors()[0].ascending);
   EXPECT_FALSE(table_->sort_descriptors()[1].ascending);
+}
+
+TEST_F(TableViewTest, Tooltip) {
+  // Column 0 uses the TableModel's GetTooltipText override for tooltips.
+  table_->SetVisibleColumnWidth(0, 10);
+  auto local_point_for_row = [&](int row) {
+    return gfx::Point(5, (row + 0.5) * table_->GetRowHeight());
+  };
+  auto expected = [](int row) {
+    return base::ASCIIToUTF16("Tooltip") + base::NumberToString16(row);
+  };
+  EXPECT_EQ(expected(0), table_->GetTooltipText(local_point_for_row(0)));
+  EXPECT_EQ(expected(1), table_->GetTooltipText(local_point_for_row(1)));
+  EXPECT_EQ(expected(2), table_->GetTooltipText(local_point_for_row(2)));
+
+  // Hovering another column will return that cell's text instead.
+  const gfx::Point point(15, local_point_for_row(0).y());
+  EXPECT_EQ(model_->GetText(0, 1), table_->GetTooltipText(point));
 }
 
 namespace {

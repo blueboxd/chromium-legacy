@@ -110,7 +110,7 @@ const char kDigitalAssetLinksCheckResponseKeyLinked[] = "linked";
 
 DigitalAssetLinksHandler::DigitalAssetLinksHandler(
     scoped_refptr<network::SharedURLLoaderFactory> factory)
-    : shared_url_loader_factory_(std::move(factory)), weak_ptr_factory_(this) {}
+    : shared_url_loader_factory_(std::move(factory)) {}
 
 DigitalAssetLinksHandler::~DigitalAssetLinksHandler() = default;
 

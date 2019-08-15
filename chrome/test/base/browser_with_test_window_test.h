@@ -96,7 +96,7 @@ class BrowserWithTestWindowTest : public testing::Test {
             std::make_unique<content::TestBrowserThreadBundle>(
                 base::trait_helpers::Exclude<HostedApp, Browser::Type>::Filter(
                     args)...),
-            base::trait_helpers::GetEnum<Browser::Type, Browser::TYPE_TABBED>(
+            base::trait_helpers::GetEnum<Browser::Type, Browser::TYPE_NORMAL>(
                 args...),
             base::trait_helpers::HasTrait<HostedApp>(args...)) {}
 

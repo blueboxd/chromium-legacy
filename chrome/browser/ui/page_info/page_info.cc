@@ -61,6 +61,8 @@
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/safe_browsing/password_protection/metrics_util.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/ssl_errors/error_info.h"
 #include "components/strings/grit/components_chromium_strings.h"
@@ -100,7 +102,8 @@ using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
 using base::UTF8ToUTF16;
 using content::BrowserThread;
-using password_manager::metrics_util::PasswordType;
+using safe_browsing::LoginReputationClientResponse;
+using safe_browsing::RequestOutcome;
 
 namespace {
 
@@ -595,7 +598,9 @@ void PageInfo::OnChangePasswordButtonPressed(
           ->GetPasswordProtectionReusedPasswordAccountType(
               GetPasswordTypeFromSafeBrowsingStatus(safe_browsing_status_),
               password_protection_service_->username()),
-      safe_browsing::WarningUIType::PAGE_INFO,
+      RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+      /*verdict_token=*/"", safe_browsing::WarningUIType::PAGE_INFO,
       safe_browsing::WarningAction::CHANGE_PASSWORD);
 #endif
 }
@@ -617,7 +622,9 @@ void PageInfo::OnWhitelistPasswordReuseButtonPressed(
           ->GetPasswordProtectionReusedPasswordAccountType(
               GetPasswordTypeFromSafeBrowsingStatus(safe_browsing_status_),
               password_protection_service_->username()),
-      safe_browsing::WarningUIType::PAGE_INFO,
+      RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+      /*verdict_token=*/"", safe_browsing::WarningUIType::PAGE_INFO,
       safe_browsing::WarningAction::MARK_AS_LEGITIMATE);
 #endif
 }

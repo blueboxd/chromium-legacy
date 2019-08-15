@@ -629,7 +629,7 @@ TEST_F(TabManagerStatsCollectorTest, PeriodicSamplingWorks) {
   // tab strip in order to be tracked by the TabManager.
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   params.window = window.get();
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();

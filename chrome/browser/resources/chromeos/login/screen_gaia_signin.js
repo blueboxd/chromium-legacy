@@ -564,6 +564,17 @@ Polymer({
   },
 
   /**
+   * Whether the saml-notice-container element should be visible.
+   * @param {boolean} isSaml
+   * @param {OobeTypes.SecurityTokenPinDialogParameters} pinDialogParameters
+   * @return {boolean}
+   * @private
+   */
+  isSamlNoticeContainerVisible_: function(isSaml, pinDialogParameters) {
+    return isSaml && !pinDialogParameters;
+  },
+
+  /**
    * This enables or disables trying to go back to the online login page
    * after the user is idle for a few minutes, assuming that we're currently
    * in the offline one. This is only applicable when the offline page is

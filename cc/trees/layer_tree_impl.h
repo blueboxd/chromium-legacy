@@ -20,6 +20,7 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/layer_list_iterator.h"
+#include "cc/paint/discardable_image_map.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -665,6 +666,10 @@ class CC_EXPORT LayerTreeImpl {
   // TODO(pdr): This should be removed because there is no longer a tree
   // of layers, only a list.
   std::string LayerTreeAsJson() const;
+
+  AnimatedPaintWorkletTracker& paint_worklet_tracker() {
+    return host_impl_->paint_worklet_tracker();
+  }
 
  protected:
   float ClampPageScaleFactorToLimits(float page_scale_factor) const;

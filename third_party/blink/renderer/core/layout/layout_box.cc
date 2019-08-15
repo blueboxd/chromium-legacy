@@ -47,7 +47,6 @@
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_box.h"
 #include "third_party/blink/renderer/core/layout/box_layout_extra_input.h"
-#include "third_party/blink/renderer/core/layout/custom/layout_custom.h"
 #include "third_party/blink/renderer/core/layout/custom/layout_worklet.h"
 #include "third_party/blink/renderer/core/layout/custom/layout_worklet_global_scope_proxy.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
@@ -63,6 +62,7 @@
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/layout_ng_custom.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
@@ -3643,15 +3643,14 @@ bool LayoutBox::SkipContainingBlockForPercentHeightCalculation(
 
   // For quirks mode, we skip most auto-height containing blocks when computing
   // percentages.
-  auto* layout_custom = DynamicTo<LayoutCustom>(containing_block);
   return containing_block->GetDocument().InQuirksMode() &&
          containing_block->StyleRef().LogicalHeight().IsAuto() &&
          !containing_block->IsTableCell() &&
          !containing_block->IsOutOfFlowPositioned() &&
-         !(layout_custom && layout_custom->IsLoaded()) &&
          !containing_block->HasOverridePercentageResolutionBlockSize() &&
          !containing_block->IsLayoutGrid() &&
-         !containing_block->IsFlexibleBoxIncludingDeprecatedAndNG();
+         !containing_block->IsFlexibleBoxIncludingDeprecatedAndNG() &&
+         !containing_block->IsLayoutNGCustom();
 }
 
 LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPercentageResolution(
@@ -5433,16 +5432,15 @@ void LayoutBox::UnmarkOrthogonalWritingModeRoot() {
 // Children of LayoutCustom object's are only considered "items" when it has a
 // loaded algorithm.
 bool LayoutBox::IsCustomItem() const {
-  auto* parent_layout_box = DynamicTo<LayoutCustom>(Parent());
-  return parent_layout_box &&
-         parent_layout_box->State() == LayoutCustomState::kBlock;
+  auto* parent_layout_box = DynamicTo<LayoutNGCustom>(Parent());
+  return parent_layout_box && parent_layout_box->IsLoaded();
 }
 
 // LayoutCustom items are only shrink-to-fit during the web-developer defined
 // layout phase (not during fallback).
 bool LayoutBox::IsCustomItemShrinkToFit() const {
   DCHECK(IsCustomItem());
-  return To<LayoutCustom>(Parent())->Phase() == LayoutCustomPhase::kCustom;
+  return To<LayoutNGCustom>(Parent())->IsLoaded();
 }
 
 void LayoutBox::AddVisualEffectOverflow() {

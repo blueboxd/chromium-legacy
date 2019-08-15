@@ -44,11 +44,11 @@ DocumentLayout::DocumentLayout() = default;
 
 DocumentLayout::~DocumentLayout() = default;
 
-std::vector<pp::Rect> DocumentLayout::GetSingleViewLayout(
+void DocumentLayout::ComputeSingleViewLayout(
     const std::vector<pp::Size>& page_sizes) {
   set_size({GetWidestPageWidth(page_sizes), 0});
 
-  std::vector<pp::Rect> formatted_rects(page_sizes.size());
+  page_rects_.resize(page_sizes.size());
   for (size_t i = 0; i < page_sizes.size(); ++i) {
     if (i != 0) {
       // Add space for bottom separator.
@@ -56,19 +56,17 @@ std::vector<pp::Rect> DocumentLayout::GetSingleViewLayout(
     }
 
     const pp::Size& page_size = page_sizes[i];
-    formatted_rects[i] =
+    page_rects_[i] =
         draw_utils::GetRectForSingleView(page_size, size_, kSingleViewInsets);
-    AppendPageRect(page_size);
+    draw_utils::ExpandDocumentSize(page_size, &size_);
   }
-
-  return formatted_rects;
 }
 
-std::vector<pp::Rect> DocumentLayout::GetTwoUpViewLayout(
+void DocumentLayout::ComputeTwoUpViewLayout(
     const std::vector<pp::Size>& page_sizes) {
   set_size({GetWidestPageWidth(page_sizes), 0});
 
-  std::vector<pp::Rect> formatted_rects(page_sizes.size());
+  page_rects_.resize(page_sizes.size());
   for (size_t i = 0; i < page_sizes.size(); ++i) {
     draw_utils::PageInsetSizes page_insets =
         draw_utils::GetPageInsetsForTwoUpView(
@@ -76,10 +74,10 @@ std::vector<pp::Rect> DocumentLayout::GetTwoUpViewLayout(
     const pp::Size& page_size = page_sizes[i];
 
     if (i % 2 == 0) {
-      formatted_rects[i] = draw_utils::GetLeftRectForTwoUpView(
+      page_rects_[i] = draw_utils::GetLeftRectForTwoUpView(
           page_size, {size_.width(), size_.height()}, page_insets);
     } else {
-      formatted_rects[i] = draw_utils::GetRightRectForTwoUpView(
+      page_rects_[i] = draw_utils::GetRightRectForTwoUpView(
           page_size, {size_.width(), size_.height()}, page_insets);
       EnlargeHeight(std::max(page_size.height(), page_sizes[i - 1].height()));
     }
@@ -90,18 +88,11 @@ std::vector<pp::Rect> DocumentLayout::GetTwoUpViewLayout(
   }
 
   size_.set_width(2 * size_.width());
-
-  return formatted_rects;
 }
 
 void DocumentLayout::EnlargeHeight(int height) {
   DCHECK_GE(height, 0);
   size_.Enlarge(0, height);
-}
-
-void DocumentLayout::AppendPageRect(const pp::Size& page_rect) {
-  // TODO(kmoon): Inline draw_utils::ExpandDocumentSize().
-  draw_utils::ExpandDocumentSize(page_rect, &size_);
 }
 
 }  // namespace chrome_pdf

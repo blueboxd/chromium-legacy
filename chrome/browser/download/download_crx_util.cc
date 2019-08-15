@@ -55,7 +55,7 @@ std::unique_ptr<ExtensionInstallPrompt> CreateExtensionInstallPrompt(
       Browser* browser = chrome::FindLastActiveWithProfile(profile);
       if (!browser) {
         browser = new Browser(
-            Browser::CreateParams(Browser::TYPE_TABBED, profile, true));
+            Browser::CreateParams(Browser::TYPE_NORMAL, profile, true));
       }
       web_contents = browser->tab_strip_model()->GetActiveWebContents();
     }

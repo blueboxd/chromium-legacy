@@ -22,7 +22,7 @@ namespace autofill_assistant {
 
 WaitForDomAction::WaitForDomAction(ActionDelegate* delegate,
                                    const ActionProto& proto)
-    : Action(delegate, proto), weak_ptr_factory_(this) {}
+    : Action(delegate, proto) {}
 
 WaitForDomAction::~WaitForDomAction() {}
 

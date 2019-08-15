@@ -31,9 +31,9 @@ namespace {
 
 const int kInvalidResponseCode = -1;
 
-void BindNetworkContextOnUI(network::mojom::CustomProxyConfigPtr config,
-                            network::mojom::NetworkContextRequest request,
-                            const std::string& user_agent) {
+void BindNetworkContext(network::mojom::CustomProxyConfigPtr config,
+                        network::mojom::NetworkContextRequest request,
+                        const std::string& user_agent) {
   auto params = network::mojom::NetworkContextParams::New();
   params->user_agent = user_agent;
   params->initial_custom_proxy_config = std::move(config);
@@ -46,15 +46,13 @@ WarmupURLFetcher::WarmupURLFetcher(
     CreateCustomProxyConfigCallback create_custom_proxy_config_callback,
     WarmupURLFetcherCallback callback,
     GetHttpRttCallback get_http_rtt_callback,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const std::string& user_agent)
     : is_fetch_in_flight_(false),
       previous_attempt_counts_(0),
       create_custom_proxy_config_callback_(create_custom_proxy_config_callback),
       callback_(callback),
       get_http_rtt_callback_(get_http_rtt_callback),
-      user_agent_(user_agent),
-      ui_task_runner_(ui_task_runner) {
+      user_agent_(user_agent) {
   DCHECK(create_custom_proxy_config_callback);
   DCHECK(!params::IsIncludedInHoldbackFieldTrial());
 }
@@ -171,11 +169,8 @@ network::mojom::URLLoaderFactory*
 WarmupURLFetcher::GetNetworkServiceURLLoaderFactory(
     const DataReductionProxyServer& proxy_server) {
   network::mojom::NetworkContextPtr context;
-  ui_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&BindNetworkContextOnUI,
-                     create_custom_proxy_config_callback_.Run({proxy_server}),
-                     mojo::MakeRequest(&context_), user_agent_));
+  BindNetworkContext(create_custom_proxy_config_callback_.Run({proxy_server}),
+                     mojo::MakeRequest(&context_), user_agent_);
 
   auto factory_params = network::mojom::URLLoaderFactoryParams::New();
   factory_params->process_id = network::mojom::kBrowserProcessId;

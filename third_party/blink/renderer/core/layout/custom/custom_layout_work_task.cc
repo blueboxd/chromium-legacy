@@ -8,9 +8,12 @@
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_child.h"
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_constraints_options.h"
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment.h"
-#include "third_party/blink/renderer/core/layout/custom/layout_custom.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 
 namespace blink {
 
@@ -28,100 +31,80 @@ CustomLayoutWorkTask::CustomLayoutWorkTask(
 
 CustomLayoutWorkTask::~CustomLayoutWorkTask() = default;
 
-void CustomLayoutWorkTask::Run() {
+void CustomLayoutWorkTask::Run(const NGConstraintSpace& parent_space,
+                               const ComputedStyle& parent_style) {
   DCHECK(token_->IsValid());
+  NGBlockNode node(child_->GetLayoutBox());
+  NGConstraintSpaceBuilder builder(parent_space, node.Style().GetWritingMode(),
+                                   /* is_new_fc */ true);
+  SetOrthogonalFallbackInlineSizeIfNeeded(parent_style, node, &builder);
 
-  LayoutBox* box = child_->GetLayoutBox();
-  const ComputedStyle& style = box->StyleRef();
-
-  DCHECK(box->Parent());
-  DCHECK(box->Parent()->IsLayoutCustom());
-  DCHECK(box->Parent() == box->ContainingBlock());
-
-  bool is_parallel_writing_mode = IsParallelWritingMode(
-      box->Parent()->StyleRef().GetWritingMode(), style.GetWritingMode());
+  bool is_fixed_inline_size = false;
+  bool is_fixed_block_size = false;
+  LogicalSize available_size;
+  LogicalSize percentage_size;
 
   if (options_->hasFixedInlineSize()) {
-    if (is_parallel_writing_mode) {
-      box->SetOverrideLogicalWidth(
-          LayoutUnit::FromDoubleRound(options_->fixedInlineSize()));
-    } else {
-      box->SetOverrideLogicalHeight(
-          LayoutUnit::FromDoubleRound(options_->fixedInlineSize()));
-    }
+    is_fixed_inline_size = true;
+    available_size.inline_size =
+        LayoutUnit::FromDoubleRound(options_->fixedInlineSize());
   } else {
-    box->SetOverrideContainingBlockContentLogicalWidth(
+    available_size.inline_size =
         options_->hasAvailableInlineSize() &&
                 options_->availableInlineSize() >= 0.0
             ? LayoutUnit::FromDoubleRound(options_->availableInlineSize())
-            : LayoutUnit());
+            : LayoutUnit();
   }
 
   if (options_->hasFixedBlockSize()) {
-    if (is_parallel_writing_mode) {
-      box->SetOverrideLogicalHeight(
-          LayoutUnit::FromDoubleRound(options_->fixedBlockSize()));
-    } else {
-      box->SetOverrideLogicalWidth(
-          LayoutUnit::FromDoubleRound(options_->fixedBlockSize()));
-    }
+    is_fixed_block_size = true;
+    available_size.block_size =
+        LayoutUnit::FromDoubleRound(options_->fixedBlockSize());
   } else {
-    box->SetOverrideContainingBlockContentLogicalHeight(
+    available_size.block_size =
         options_->hasAvailableBlockSize() &&
                 options_->availableBlockSize() >= 0.0
             ? LayoutUnit::FromDoubleRound(options_->availableBlockSize())
-            : LayoutUnit());
+            : LayoutUnit();
   }
 
-  // We default the percentage resolution block-size to indefinite if nothing
-  // is specified.
-  LayoutUnit percentage_resolution_logical_height(-1);
+  if (options_->hasPercentageInlineSize() &&
+      options_->percentageInlineSize() >= 0.0) {
+    percentage_size.inline_size =
+        LayoutUnit::FromDoubleRound(options_->percentageInlineSize());
+  } else if (options_->hasAvailableInlineSize() &&
+             options_->availableInlineSize() >= 0.0) {
+    percentage_size.inline_size =
+        LayoutUnit::FromDoubleRound(options_->availableInlineSize());
+  }
 
-  if (is_parallel_writing_mode) {
-    if (options_->hasPercentageBlockSize() &&
-        options_->percentageBlockSize() >= 0.0) {
-      percentage_resolution_logical_height =
-          LayoutUnit::FromDoubleRound(options_->percentageBlockSize());
-    } else if (options_->hasAvailableBlockSize() &&
-               options_->availableBlockSize() >= 0.0) {
-      percentage_resolution_logical_height =
-          LayoutUnit::FromDoubleRound(options_->availableBlockSize());
-    }
+  if (options_->hasPercentageBlockSize() &&
+      options_->percentageBlockSize() >= 0.0) {
+    percentage_size.block_size =
+        LayoutUnit::FromDoubleRound(options_->percentageBlockSize());
+  } else if (options_->hasAvailableBlockSize() &&
+             options_->availableBlockSize() >= 0.0) {
+    percentage_size.block_size =
+        LayoutUnit::FromDoubleRound(options_->availableBlockSize());
   } else {
-    if (options_->hasPercentageInlineSize() &&
-        options_->percentageInlineSize() >= 0.0) {
-      percentage_resolution_logical_height =
-          LayoutUnit::FromDoubleRound(options_->percentageInlineSize());
-    } else if (options_->hasAvailableInlineSize() &&
-               options_->availableInlineSize() >= 0.0) {
-      percentage_resolution_logical_height =
-          LayoutUnit::FromDoubleRound(options_->availableInlineSize());
-    }
+    percentage_size.block_size = kIndefiniteSize;
   }
 
-  box->SetOverridePercentageResolutionBlockSize(
-      percentage_resolution_logical_height);
+  builder.SetTextDirection(node.Style().Direction());
+  builder.SetAvailableSize(available_size);
+  builder.SetPercentageResolutionSize(percentage_size);
+  builder.SetReplacedPercentageResolutionSize(percentage_size);
+  builder.SetIsShrinkToFit(node.Style().LogicalWidth().IsAuto());
+  builder.SetIsFixedInlineSize(is_fixed_inline_size);
+  builder.SetIsFixedBlockSize(is_fixed_block_size);
+  auto space = builder.ToConstraintSpace();
+  auto result = To<NGBlockNode>(node).Layout(space, nullptr /* break_token */);
 
-  auto* layout_custom = DynamicTo<LayoutCustom>(box);
-  if (layout_custom)
-    layout_custom->SetConstraintData(constraint_data_);
-  // TODO(cbiesinger): Can this just be ForceLayout()?
-  box->ForceLayoutWithPaintInvalidation();
-
-  box->ClearOverrideContainingBlockContentSize();
-  box->ClearOverridePercentageResolutionBlockSize();
-  box->ClearOverrideSize();
-
-  if (layout_custom)
-    layout_custom->ClearConstraintData();
-
-  LayoutUnit fragment_inline_size =
-      is_parallel_writing_mode ? box->LogicalWidth() : box->LogicalHeight();
-  LayoutUnit fragment_block_size =
-      is_parallel_writing_mode ? box->LogicalHeight() : box->LogicalWidth();
+  LogicalSize size = result->PhysicalFragment().Size().ConvertToLogical(
+      parent_space.GetWritingMode());
 
   resolver_->Resolve(MakeGarbageCollected<CustomLayoutFragment>(
-      child_, token_, fragment_inline_size, fragment_block_size,
+      child_, token_, std::move(result), size,
       resolver_->GetScriptState()->GetIsolate()));
 }
 

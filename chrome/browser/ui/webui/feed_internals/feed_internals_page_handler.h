@@ -59,7 +59,7 @@ class FeedInternalsPageHandler : public feed_internals::mojom::PageHandler {
   feed::FeedOfflineHost* feed_offline_host_;
   PrefService* pref_service_;
 
-  base::WeakPtrFactory<FeedInternalsPageHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<FeedInternalsPageHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FeedInternalsPageHandler);
 };

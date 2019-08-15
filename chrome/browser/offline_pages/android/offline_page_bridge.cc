@@ -304,9 +304,7 @@ std::string OfflinePageBridge::GetEncodedOriginApp(
 OfflinePageBridge::OfflinePageBridge(JNIEnv* env,
                                      SimpleFactoryKey* key,
                                      OfflinePageModel* offline_page_model)
-    : key_(key),
-      offline_page_model_(offline_page_model),
-      weak_ptr_factory_(this) {
+    : key_(key), offline_page_model_(offline_page_model) {
   ScopedJavaLocalRef<jobject> j_offline_page_bridge =
       Java_OfflinePageBridge_create(env, reinterpret_cast<jlong>(this));
   java_ref_.Reset(j_offline_page_bridge);

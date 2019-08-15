@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CALLBACK_HELPERS_H_
 
 #include <memory>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"

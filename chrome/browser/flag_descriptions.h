@@ -403,9 +403,6 @@ extern const char kBuiltInModuleInfraDescription[];
 extern const char kBuiltInModuleKvStorageName[];
 extern const char kBuiltInModuleKvStorageDescription[];
 
-extern const char kEnableBlinkGenPropertyTreesName[];
-extern const char kEnableBlinkGenPropertyTreesDescription[];
-
 extern const char kEnableCSSBackdropFilterName[];
 extern const char kEnableCSSBackdropFilterDescription[];
 
@@ -544,9 +541,6 @@ extern const char kEnableWasmDescription[];
 
 extern const char kEnableWebAuthenticationCableSupportName[];
 extern const char kEnableWebAuthenticationCableSupportDescription[];
-
-extern const char kEnableWebAuthenticationPINSupportName[];
-extern const char kEnableWebAuthenticationPINSupportDescription[];
 
 extern const char kEnableWebUsbName[];
 extern const char kEnableWebUsbDescription[];
@@ -961,6 +955,9 @@ extern const char kRendererSideResourceSchedulerDescription[];
 extern const char kReorderBookmarksName[];
 extern const char kReorderBookmarksDescription[];
 
+extern const char kRequestUnbufferedDispatchName[];
+extern const char kRequestUnbufferedDispatchDescription[];
+
 extern const char kRequestTabletSiteName[];
 extern const char kRequestTabletSiteDescription[];
 
@@ -1182,8 +1179,11 @@ extern const char kTreatUnsafeDownloadsAsActiveDescription[];
 extern const char kTrySupportedChannelLayoutsName[];
 extern const char kTrySupportedChannelLayoutsDescription[];
 
-extern const char kUnexpireFlagsM77Name[];
-extern const char kUnexpireFlagsM77Description[];
+extern const char kTurnOffStreamingMediaCachingName[];
+extern const char kTurnOffStreamingMediaCachingDescription[];
+
+extern const char kUnexpireFlagsM78Name[];
+extern const char kUnexpireFlagsM78Description[];
 
 extern const char kUnifiedConsentName[];
 extern const char kUnifiedConsentDescription[];

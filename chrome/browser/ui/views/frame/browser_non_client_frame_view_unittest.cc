@@ -64,7 +64,7 @@ class BrowserNonClientFrameViewTabbedTest
     : public BrowserNonClientFrameViewTest {
  public:
   BrowserNonClientFrameViewTabbedTest()
-      : BrowserNonClientFrameViewTest(Browser::TYPE_TABBED) {}
+      : BrowserNonClientFrameViewTest(Browser::TYPE_NORMAL) {}
 };
 
 TEST_F(BrowserNonClientFrameViewTabbedTest, HitTestTabstrip) {

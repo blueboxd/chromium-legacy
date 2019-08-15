@@ -118,7 +118,7 @@ class RenderThreadManager : public CompositorFrameConsumer {
   viz::FrameTimingDetailsMap timing_details_;
   uint32_t presented_frame_token_ = 0u;
 
-  base::WeakPtrFactory<RenderThreadManager> weak_factory_on_ui_thread_;
+  base::WeakPtrFactory<RenderThreadManager> weak_factory_on_ui_thread_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadManager);
 };

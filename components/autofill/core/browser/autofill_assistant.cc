@@ -16,9 +16,7 @@
 namespace autofill {
 
 AutofillAssistant::AutofillAssistant(AutofillManager* autofill_manager)
-    : credit_card_form_data_(nullptr),
-      autofill_manager_(autofill_manager),
-      weak_ptr_factory_(this) {}
+    : credit_card_form_data_(nullptr), autofill_manager_(autofill_manager) {}
 
 AutofillAssistant::~AutofillAssistant() {}
 

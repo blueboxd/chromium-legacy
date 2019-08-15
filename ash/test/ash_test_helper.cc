@@ -176,7 +176,7 @@ void AshTestHelper::SetUp(const InitParams& init_params,
 
   assistant_service_ = std::make_unique<TestAssistantService>();
   shell->assistant_controller()->SetAssistant(
-      assistant_service_->CreateInterfacePtrAndBind());
+      assistant_service_->CreateInterfacePtrAndBind().PassInterface());
 
   system_tray_client_ = std::make_unique<TestSystemTrayClient>();
   shell->system_tray_model()->SetClient(system_tray_client_.get());

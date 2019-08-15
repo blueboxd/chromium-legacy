@@ -563,7 +563,10 @@ base::string16 TableView::GetTooltipText(const gfx::Point& p) const {
       x > (visible_columns_[column].x + visible_columns_[column].width))
     return base::string16();
 
-  return model_->GetText(ViewToModel(row), visible_columns_[column].column.id);
+  const int model_row = ViewToModel(row);
+  if (column == 0 && !model_->GetTooltip(model_row).empty())
+    return model_->GetTooltip(model_row);
+  return model_->GetText(model_row, visible_columns_[column].column.id);
 }
 
 void TableView::GetAccessibleNodeData(ui::AXNodeData* node_data) {

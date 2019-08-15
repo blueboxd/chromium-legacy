@@ -168,6 +168,12 @@ void ProfileMenuViewBase::WindowClosing() {
   g_profile_bubble_ = nullptr;
 }
 
+void ProfileMenuViewBase::ButtonPressed(views::Button* sender,
+                                        const ui::Event& event) {
+  DCHECK(!button_actions_[sender].is_null());
+  button_actions_[sender].Run();
+}
+
 void ProfileMenuViewBase::StyledLabelLinkClicked(views::StyledLabel* label,
                                                  const gfx::Range& range,
                                                  int event_flags) {
@@ -238,32 +244,38 @@ views::Button* ProfileMenuViewBase::CreateAndAddTitleCard(
     std::unique_ptr<views::View> icon_view,
     const base::string16& title,
     const base::string16& subtitle,
-    bool enabled) {
+    base::RepeatingClosure action) {
   std::unique_ptr<HoverButton> title_card = std::make_unique<HoverButton>(
-      enabled ? this : nullptr, std::move(icon_view), title, subtitle);
-  title_card->SetEnabled(enabled);
+      this, std::move(icon_view), title, subtitle);
+  if (action.is_null())
+    title_card->SetEnabled(false);
   views::Button* button_ptr = title_card.get();
+  RegisterButtonAction(button_ptr, std::move(action));
   AddMenuItemInternal(std::move(title_card), MenuItems::kTitleCard);
   return button_ptr;
 }
 
 views::Button* ProfileMenuViewBase::CreateAndAddButton(
     const gfx::ImageSkia& icon,
-    const base::string16& title) {
+    const base::string16& title,
+    base::RepeatingClosure action) {
   std::unique_ptr<HoverButton> button =
       std::make_unique<HoverButton>(this, icon, title);
   views::Button* pointer = button.get();
+  RegisterButtonAction(pointer, std::move(action));
   AddMenuItemInternal(std::move(button), MenuItems::kButton);
   return pointer;
 }
 
 views::Button* ProfileMenuViewBase::CreateAndAddBlueButton(
     const base::string16& text,
-    bool md_style) {
+    bool md_style,
+    base::RepeatingClosure action) {
   std::unique_ptr<views::LabelButton> button =
       md_style ? views::MdTextButton::CreateSecondaryUiBlueButton(this, text)
                : views::MdTextButton::Create(this, text);
   views::Button* pointer = button.get();
+  RegisterButtonAction(pointer, std::move(action));
 
   // Add margins.
   std::unique_ptr<views::View> margined_view = std::make_unique<views::View>();
@@ -279,12 +291,14 @@ views::Button* ProfileMenuViewBase::CreateAndAddBlueButton(
 #if !defined(OS_CHROMEOS)
 DiceSigninButtonView* ProfileMenuViewBase::CreateAndAddDiceSigninButton(
     AccountInfo* account_info,
-    gfx::Image* account_icon) {
+    gfx::Image* account_icon,
+    base::RepeatingClosure action) {
   std::unique_ptr<DiceSigninButtonView> button =
       account_info ? std::make_unique<DiceSigninButtonView>(*account_info,
                                                             *account_icon, this)
                    : std::make_unique<DiceSigninButtonView>(this);
   DiceSigninButtonView* pointer = button.get();
+  RegisterButtonAction(pointer->signin_button(), std::move(action));
 
   // Add margins.
   std::unique_ptr<views::View> margined_view = std::make_unique<views::View>();
@@ -326,6 +340,12 @@ void ProfileMenuViewBase::AddViewItem(std::unique_ptr<views::View> view) {
       gfx::Insets(0, kMenuEdgeMargin)));
   margined_view->AddChildView(std::move(view));
   AddMenuItemInternal(std::move(margined_view), MenuItems::kGeneral);
+}
+
+void ProfileMenuViewBase::RegisterButtonAction(views::Button* button,
+                                               base::RepeatingClosure action) {
+  DCHECK(button_actions_.count(button) == 0);
+  button_actions_[button] = std::move(action);
 }
 
 void ProfileMenuViewBase::RepopulateViewFromMenuItems() {

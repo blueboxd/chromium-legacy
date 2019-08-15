@@ -29,6 +29,8 @@ Polymer({
 
     showCrostini: Boolean,
 
+    showReset: Boolean,
+
     allowCrostini_: Boolean,
 
     havePlayStoreApp: Boolean,

@@ -600,7 +600,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   base::android::ScopedJavaGlobalRef<jobject> obj_;
 
-  base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_;
+  base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };

@@ -84,7 +84,7 @@ class AwPermissionManager : public content::PermissionControllerDelegate {
   PendingRequestsMap pending_requests_;
   std::unique_ptr<LastRequestResultCache> result_cache_;
 
-  base::WeakPtrFactory<AwPermissionManager> weak_ptr_factory_;
+  base::WeakPtrFactory<AwPermissionManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AwPermissionManager);
 };

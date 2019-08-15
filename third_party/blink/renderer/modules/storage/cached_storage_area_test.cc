@@ -32,11 +32,11 @@ class CachedStorageAreaTest : public testing::Test,
   void SetUp() override {
     if (IsSessionStorage()) {
       cached_area_ = CachedStorageArea::CreateForSessionStorage(
-          kOrigin, mock_storage_area_.GetAssociatedInterfacePtr(),
+          kOrigin, mock_storage_area_.GetAssociatedInterfaceRemote(),
           scheduler::GetSingleThreadTaskRunnerForTesting(), this);
     } else {
       cached_area_ = CachedStorageArea::CreateForLocalStorage(
-          kOrigin, mock_storage_area_.GetInterfacePtr(),
+          kOrigin, mock_storage_area_.GetInterfaceRemote(),
           scheduler::GetSingleThreadTaskRunnerForTesting(), this);
     }
     source_area_ = MakeGarbageCollected<FakeAreaSource>(kPageUrl);

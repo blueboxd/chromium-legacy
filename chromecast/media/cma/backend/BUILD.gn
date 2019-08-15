@@ -183,6 +183,36 @@ cast_source_set("audio_resampler") {
     "//chromecast/media/cma/base",
     "//media",
   ]
+
+  # Use fastest possible float math.
+  configs -= [ "//build/config/compiler:default_optimization" ]
+  configs += [ "//build/config/compiler:optimize_speed" ]
+  cflags = [ "-ffast-math" ]
+}
+
+cast_source_set("interleaved_channel_mixer") {
+  sources = [
+    "interleaved_channel_mixer.cc",
+    "interleaved_channel_mixer.h",
+  ]
+  deps = [
+    "//base",
+    "//media",
+  ]
+
+  # Use fastest possible float math.
+  configs -= [ "//build/config/compiler:default_optimization" ]
+  configs += [ "//build/config/compiler:optimize_speed" ]
+  cflags = [ "-ffast-math" ]
+}
+
+cast_source_set("mixer_control") {
+  sources = [
+    "mixer_control.h",
+  ]
+  deps = [
+    "//chromecast/public",
+  ]
 }
 
 cast_source_set("mixer_pipeline") {
@@ -205,6 +235,7 @@ cast_source_set("mixer_pipeline") {
     ":audio_helpers",
     ":audio_resampler",
     ":cast_audio_json",
+    ":interleaved_channel_mixer",
     ":post_processor_factory",
     ":public",
     "//base",
@@ -255,6 +286,8 @@ cast_source_set("for_mixer_audio") {
     ":audio_helpers",
     ":audio_resampler",
     ":cast_audio_json",
+    ":interleaved_channel_mixer",
+    ":mixer_control",
     ":mixer_pipeline",
     ":post_processor_factory",
     ":public",
@@ -293,6 +326,7 @@ test("cast_audio_backend_unittests") {
   sources = [
     "audio_fader_unittest.cc",
     "filter_group_unittest.cc",
+    "interleaved_channel_mixer_unittest.cc",
     "mock_mixer_source.cc",
     "mock_mixer_source.h",
     "mock_post_processor_factory.cc",
@@ -309,6 +343,7 @@ test("cast_audio_backend_unittests") {
     ":av_sync_dummy",
     ":cast_audio_json",
     ":for_mixer_audio",
+    ":interleaved_channel_mixer",
     ":mixer_pipeline",
     ":null_video",
     ":public",

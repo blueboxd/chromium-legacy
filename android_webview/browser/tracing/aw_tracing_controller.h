@@ -32,7 +32,7 @@ class AwTracingController {
       std::unique_ptr<const base::DictionaryValue> metadata);
 
   JavaObjectWeakGlobalRef weak_java_object_;
-  base::WeakPtrFactory<AwTracingController> weak_factory_;
+  base::WeakPtrFactory<AwTracingController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AwTracingController);
 };

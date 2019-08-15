@@ -31,8 +31,7 @@ class DataReductionProxyConfiguratorTest : public testing::Test {
   void SetUp() override {
     test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
     manager_.reset(new NetworkPropertiesManager(
-        base::DefaultClock::GetInstance(), &test_prefs,
-        base::ThreadTaskRunnerHandle::Get()));
+        base::DefaultClock::GetInstance(), &test_prefs));
     manager_->OnChangeInNetworkID("test");
 
     test_context_ = DataReductionProxyTestContext::Builder().Build();

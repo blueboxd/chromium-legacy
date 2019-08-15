@@ -71,7 +71,8 @@ class GpuThreadAdapter {
 
   // Services needed by DrmWindowHost
   virtual bool GpuDestroyWindow(gfx::AcceleratedWidget widget) = 0;
-  virtual bool GpuCreateWindow(gfx::AcceleratedWidget widget) = 0;
+  virtual bool GpuCreateWindow(gfx::AcceleratedWidget widget,
+                               const gfx::Rect& initial_bounds) = 0;
   virtual bool GpuWindowBoundsChanged(gfx::AcceleratedWidget widget,
                                       const gfx::Rect& bounds) = 0;
 };

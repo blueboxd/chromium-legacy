@@ -20,6 +20,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -143,7 +144,10 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     // by the transaction and not referenced by running scripts.
     virtual leveldb::Status CommitPhaseTwo();
 
-    virtual void Rollback();
+    // This can actually tear down the IndexedDBOriginState in a single-sequence
+    // scopes setup.
+    virtual void RollbackAndMaybeTearDown();
+
     void Reset();
     leveldb::Status PutBlobInfoIfNeeded(
         int64_t database_id,
@@ -229,7 +233,6 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     typedef std::vector<WriteDescriptor> WriteDescriptorVec;
 
    private:
-
     // Called by CommitPhaseOne: Identifies the blob entries to write and adds
     // them to the primary blob journal directly (i.e. not as part of the
     // transaction). Populates blobs_to_write_.

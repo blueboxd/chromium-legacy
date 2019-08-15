@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -53,7 +52,6 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
@@ -65,6 +63,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chromeos/constants/chromeos_features.h"
 #endif
 
 using base::ASCIIToUTF16;
@@ -155,8 +154,7 @@ const int kCtrlOrCmdMask = ui::EF_CONTROL_DOWN;
 
 }  // namespace
 
-class OmniboxViewTest : public InProcessBrowserTest,
-                        public content::NotificationObserver {
+class OmniboxViewTest : public InProcessBrowserTest {
  public:
   OmniboxViewTest() {}
 
@@ -241,14 +239,6 @@ class OmniboxViewTest : public InProcessBrowserTest,
     int tab_count = browser()->tab_strip_model()->count();
     if (tab_count == expected_tab_count)
       return;
-
-    content::NotificationRegistrar registrar;
-    registrar.Add(
-        this,
-        (tab_count < expected_tab_count)
-            ? static_cast<int>(chrome::NOTIFICATION_TAB_PARENTED)
-            : static_cast<int>(content::NOTIFICATION_WEB_CONTENTS_DESTROYED),
-        content::NotificationService::AllSources());
 
     while (!HasFailure() &&
            browser()->tab_strip_model()->count() != expected_tab_count) {
@@ -378,18 +368,6 @@ class OmniboxViewTest : public InProcessBrowserTest,
     test_location_bar_model_->set_url_for_display(text);
 
     omnibox_view->Update();
-  }
-
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    switch (type) {
-      case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
-      case chrome::NOTIFICATION_TAB_PARENTED:
-        break;
-      default:
-        FAIL() << "Unexpected notification type";
-    }
   }
 
   policy::MockConfigurationPolicyProvider* policy_provider() {
@@ -1724,6 +1702,11 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, Paste) {
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EditSearchEngines) {
+#if defined(OS_CHROMEOS)
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(chromeos::features::kSplitSettings);
+#endif
+
   OmniboxView* omnibox_view = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
 #if defined(OS_CHROMEOS)

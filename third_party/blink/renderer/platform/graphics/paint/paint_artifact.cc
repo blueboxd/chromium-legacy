@@ -186,9 +186,9 @@ sk_sp<PaintRecord> PaintArtifact::GetPaintRecord(
 }
 
 void PaintArtifact::FinishCycle() {
-  // BlinkGenPropertyTrees uses PaintController::ClearPropertyTreeChangedStateTo
-  // for clearing the property tree changed state at the end of paint instead of
-  // in FinishCycle. See: LocalFrameView::RunPaintLifecyclePhase.
+  // Until CompositeAfterPaint, PaintController::ClearPropertyTreeChangedStateTo
+  // is used for clearing the property tree changed state at the end of paint
+  // instead of in FinishCycle. See: LocalFrameView::RunPaintLifecyclePhase.
   bool clear_property_tree_changed =
       RuntimeEnabledFeatures::CompositeAfterPaintEnabled();
   for (auto& chunk : chunks_) {

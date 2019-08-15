@@ -123,7 +123,7 @@ class OomInterventionTabHelper
                  crash_reporter::CrashMetricsReporter::Observer>
       scoped_observer_;
 
-  base::WeakPtrFactory<OomInterventionTabHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<OomInterventionTabHelper> weak_ptr_factory_{this};
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 

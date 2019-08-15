@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "ui/base/x/x11_window.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
-#include "ui/events/platform/x11/x11_event_source_libevent.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/x/x11_types.h"

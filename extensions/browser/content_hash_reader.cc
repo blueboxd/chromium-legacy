@@ -28,8 +28,6 @@ std::unique_ptr<const ContentHashReader> ContentHashReader::Create(
     const scoped_refptr<const ContentHash>& content_hash) {
   base::ElapsedTimer timer;
 
-  const ContentHash::ExtensionKey& extension_key =
-      content_hash->extension_key();
   auto hash_reader = base::WrapUnique(new ContentHashReader);
 
   if (!content_hash->succeeded())
@@ -44,7 +42,7 @@ std::unique_ptr<const ContentHashReader> ContentHashReader::Create(
   // resource.
   if (!verified_contents.HasTreeHashRoot(relative_path)) {
     base::FilePath full_path =
-        extension_key.extension_root.Append(relative_path);
+        content_hash->extension_root().Append(relative_path);
     // Making a request to a non-existent file or to a directory should not
     // result in content verification failure.
     // TODO(proberge): This logic could be simplified if |content_verify_job|

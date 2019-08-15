@@ -794,8 +794,11 @@ media::VideoDecodePerfHistory* BrowserContext::GetVideoDecodePerfHistory() {
       stats_db =
           std::make_unique<media::InMemoryVideoDecodeStatsDBImpl>(nullptr);
     } else {
+      auto* db_provider =
+          GetDefaultStoragePartition(this)->GetProtoDatabaseProvider();
+
       stats_db = media::VideoDecodeStatsDBImpl::Create(
-          GetPath().Append(FILE_PATH_LITERAL("VideoDecodeStats")));
+          GetPath().Append(FILE_PATH_LITERAL("VideoDecodeStats")), db_provider);
     }
 
     auto new_decode_history = std::make_unique<media::VideoDecodePerfHistory>(

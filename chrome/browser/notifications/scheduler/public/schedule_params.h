@@ -7,6 +7,8 @@
 
 #include <map>
 
+#include "base/optional.h"
+#include "base/time/time.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_types.h"
 
 namespace notifications {
@@ -17,10 +19,6 @@ struct ScheduleParams {
     // Notification may be delivered if picked by display decision layer. Most
     // notification types should use this priority.
     kLow,
-    // Notification may be delivered if picked by display decision layer. Has
-    // higher priority to pick as the next notification to deliver. Should not
-    // be used by feature frequently send notifications.
-    kHigh,
     // No notification throttling logic is applied, every notification scheduled
     // will be delivered.
     kNoThrottle,
@@ -40,6 +38,12 @@ struct ScheduleParams {
   // notification is neutural. Only put value when need to change the default
   // mapping.
   std::map<UserFeedback, ImpressionResult> impression_mapping;
+
+  // The start time of the deliver time window of the notification.
+  base::Optional<base::Time> deliver_time_start;
+
+  // The end time of the deliver time window of the notification.
+  base::Optional<base::Time> deliver_time_end;
 };
 
 }  // namespace notifications

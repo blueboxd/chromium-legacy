@@ -149,7 +149,10 @@ bool HasIncompatibleAnimations(const Element& target_element,
   return false;
 }
 
-CompositorElementIdNamespace CompositorElementNamespaceForProperty(
+}  // namespace
+
+CompositorElementIdNamespace
+CompositorAnimations::CompositorElementNamespaceForProperty(
     CSSPropertyID property) {
   switch (property) {
     case CSSPropertyID::kOpacity:
@@ -174,8 +177,6 @@ CompositorElementIdNamespace CompositorElementNamespaceForProperty(
   }
   return CompositorElementIdNamespace::kPrimary;
 }
-
-}  // namespace
 
 CompositorAnimations::FailureReasons
 CompositorAnimations::CheckCanStartEffectOnCompositor(

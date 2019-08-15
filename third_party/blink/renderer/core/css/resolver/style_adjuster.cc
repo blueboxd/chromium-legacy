@@ -421,6 +421,12 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
     style.UpdateFontOrientation();
   }
 
+  // Disable editing custom layout elements, until EditingNG is ready.
+  if (!RuntimeEnabledFeatures::EditingNGEnabled() &&
+      (style.Display() == EDisplay::kLayoutCustom ||
+       style.Display() == EDisplay::kInlineLayoutCustom))
+    style.SetUserModify(EUserModify::kReadOnly);
+
   if (layout_parent_style.IsDisplayFlexibleOrGridBox()) {
     style.SetFloating(EFloat::kNone);
 
@@ -549,7 +555,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     AdjustStyleForDisplay(style, layout_parent_style,
                           element ? &element->GetDocument() : nullptr);
 
-    // If this is a child of a LayoutCustom, we need the name of the parent
+    // If this is a child of a LayoutNGCustom, we need the name of the parent
     // layout function for invalidation purposes.
     if (layout_parent_style.IsDisplayLayoutCustomBox()) {
       style.SetDisplayLayoutCustomParentName(

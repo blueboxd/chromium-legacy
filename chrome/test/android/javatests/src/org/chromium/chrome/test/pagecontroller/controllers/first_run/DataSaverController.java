@@ -28,7 +28,8 @@ public class DataSaverController extends PageController {
     }
 
     @Override
-    public boolean isCurrentPageThis() {
-        return mLocatorHelper.isOnScreen(LOCATOR_DATA_SAVER);
+    public DataSaverController verifyActive() {
+        mLocatorHelper.verifyOnScreen(LOCATOR_DATA_SAVER);
+        return this;
     }
 }

@@ -407,7 +407,7 @@ class VrShell : device::GvrGamepadDataProvider,
   std::set<int> regular_tab_ids_;
   std::set<int> incognito_tab_ids_;
 
-  base::WeakPtrFactory<VrShell> weak_ptr_factory_;
+  base::WeakPtrFactory<VrShell> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VrShell);
 };

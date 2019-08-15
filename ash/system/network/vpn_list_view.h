@@ -21,9 +21,6 @@ class View;
 }
 
 namespace ash {
-
-class TrayNetworkStateModel;
-
 namespace tray {
 
 // A list of VPN providers and networks that shows VPN providers and networks in
@@ -55,8 +52,6 @@ class VPNListView : public NetworkStateListDetailedView,
 
   // VpnList::Observer:
   void OnVPNProvidersChanged() override;
-
-  TrayNetworkStateModel* model() { return model_; }
 
   // See Shell::RegisterProfilePrefs().
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -94,8 +89,6 @@ class VPNListView : public NetworkStateListDetailedView,
 
   // Adds all available VPN providers and networks to the list.
   void AddProvidersAndNetworks(const NetworkStateList& networks);
-
-  TrayNetworkStateModel* model_;
 
   // A mapping from each VPN provider's list entry to the provider.
   std::map<const views::View* const, VPNProvider> provider_view_map_;

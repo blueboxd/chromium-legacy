@@ -87,7 +87,7 @@ class BASE_EXPORT CPUFreqMonitor : public TraceLog::EnabledStateObserver {
   base::subtle::Atomic32 is_enabled_ = 0;
   scoped_refptr<SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<CPUFreqMonitorDelegate> delegate_;
-  base::WeakPtrFactory<CPUFreqMonitor> weak_ptr_factory_;
+  base::WeakPtrFactory<CPUFreqMonitor> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CPUFreqMonitor);
 };

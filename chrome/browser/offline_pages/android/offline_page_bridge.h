@@ -262,7 +262,7 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
   // Not owned.
   OfflinePageModel* offline_page_model_;
 
-  base::WeakPtrFactory<OfflinePageBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<OfflinePageBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageBridge);
 };

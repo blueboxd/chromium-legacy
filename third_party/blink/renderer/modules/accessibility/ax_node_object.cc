@@ -234,7 +234,7 @@ AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
 
   // Don't ignore labels, because they serve as TitleUIElements.
   Node* node = GetNode();
-  if (IsHTMLLabelElement(node))
+  if (IsA<HTMLLabelElement>(node))
     return kIncludeObject;
 
   // Anything that is content editable should not be ignored.
@@ -381,7 +381,7 @@ static bool IsRequiredOwnedElement(AXObject* parent,
   if (current_role == ax::mojom::Role::kListItem)
     return IsListElement(parent_node);
   if (current_role == ax::mojom::Role::kListMarker)
-    return IsHTMLLIElement(*parent_node);
+    return IsA<HTMLLIElement>(*parent_node);
   if (current_role == ax::mojom::Role::kMenuItemCheckBox ||
       current_role == ax::mojom::Role::kMenuItem ||
       current_role == ax::mojom::Role::kMenuItemRadio)
@@ -588,7 +588,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsHTMLParagraphElement(*GetNode()))
     return ax::mojom::Role::kParagraph;
 
-  if (IsHTMLLabelElement(*GetNode()))
+  if (IsA<HTMLLabelElement>(*GetNode()))
     return ax::mojom::Role::kLabelText;
 
   if (IsHTMLLegendElement(*GetNode()))

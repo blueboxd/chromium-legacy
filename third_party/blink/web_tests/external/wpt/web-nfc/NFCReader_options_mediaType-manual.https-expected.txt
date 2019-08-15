@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Test that the mediaType of NFCReaderOptions filters relevant data sources correctly. promise_test: Unhandled rejection with value: object "NotSupportedError: No NFC adapter or cannot establish connection."
-Harness: the test ran to completion.
-

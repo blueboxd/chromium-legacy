@@ -47,7 +47,7 @@ EventConverterEvdev::~EventConverterEvdev() {
 
 void EventConverterEvdev::Start() {
   base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
-      fd_, true, base::MessagePumpLibevent::WATCH_READ, &controller_, this);
+      fd_, true, base::MessagePumpForUI::WATCH_READ, &controller_, this);
   watching_ = true;
 }
 

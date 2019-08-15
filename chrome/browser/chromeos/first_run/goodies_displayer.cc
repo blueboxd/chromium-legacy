@@ -111,7 +111,7 @@ void GoodiesDisplayer::Delete() {
 // removes itself from BrowserListObservers, and deletes itself.
 void GoodiesDisplayer::OnBrowserSetLastActive(Browser* browser) {
   // 1. Must be an actual tabbed browser window.
-  if (browser->type() != Browser::TYPE_TABBED)
+  if (!browser->is_type_normal())
     return;
 
   // 2. Not guest or incognito session or supervised user (keep observing).

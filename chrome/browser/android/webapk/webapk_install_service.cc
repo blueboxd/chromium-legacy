@@ -25,8 +25,7 @@ WebApkInstallService* WebApkInstallService::Get(
 
 WebApkInstallService::WebApkInstallService(
     content::BrowserContext* browser_context)
-    : browser_context_(browser_context),
-      weak_ptr_factory_(this) {}
+    : browser_context_(browser_context) {}
 
 WebApkInstallService::~WebApkInstallService() {}
 

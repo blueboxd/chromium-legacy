@@ -253,7 +253,7 @@
             <os-settings-a11y-page prefs="{{prefs}}">
             </os-settings-a11y-page>
           </settings-section>
-          <template is="dom-if" if="[[!isGuestMode_]]">
+          <template is="dom-if" if="[[showReset]]">
             <settings-section page-title="$i18n{resetPageTitle}"
                 section="reset">
               <os-settings-reset-page></os-settings-reset-page>

@@ -22,7 +22,6 @@ class SwitchAccessEventHandlerDelegate
 
  private:
   // ash::SwitchAccessEventHandlerDelegate:
-  void DispatchKeyEvent(const ui::KeyEvent& event) override;
   void SendSwitchAccessCommand(ash::SwitchAccessCommand command) override;
 
   DISALLOW_COPY_AND_ASSIGN(SwitchAccessEventHandlerDelegate);

@@ -64,7 +64,7 @@ class TtsPlatformImplAndroid : public TtsPlatformImpl {
   int utterance_id_;
   std::string utterance_;
 
-  base::WeakPtrFactory<TtsPlatformImplAndroid> weak_factory_;
+  base::WeakPtrFactory<TtsPlatformImplAndroid> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TtsPlatformImplAndroid);
 };

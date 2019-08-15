@@ -18,6 +18,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 
@@ -98,12 +99,14 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   void Flush();
 
   // See mojom::StoragePartitionService interface.
-  void OpenLocalStorage(const url::Origin& origin,
-                        blink::mojom::StorageAreaRequest request);
-  void OpenSessionStorage(int process_id,
-                          const std::string& namespace_id,
-                          mojo::ReportBadMessageCallback bad_message_callback,
-                          blink::mojom::SessionStorageNamespaceRequest request);
+  void OpenLocalStorage(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
+  void OpenSessionStorage(
+      int process_id,
+      const std::string& namespace_id,
+      mojo::ReportBadMessageCallback bad_message_callback,
+      mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver);
 
   void SetLocalStorageDatabaseForTesting(
       leveldb::mojom::LevelDBDatabaseAssociatedPtr database);

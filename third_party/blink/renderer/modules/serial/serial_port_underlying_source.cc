@@ -41,6 +41,8 @@ ScriptPromise SerialPortUnderlyingSource::pull(ScriptState* script_state) {
 
 ScriptPromise SerialPortUnderlyingSource::Cancel(ScriptState* script_state,
                                                  ScriptValue reason) {
+  // TODO(crbug.com/989653): cancel() should trigger a purge of the serial
+  // read buffer.
   Close();
   return ScriptPromise::CastUndefined(script_state);
 }

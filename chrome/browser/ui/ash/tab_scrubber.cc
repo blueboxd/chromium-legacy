@@ -202,7 +202,7 @@ void TabScrubber::OnTabRemoved(int index) {
 
 Browser* TabScrubber::GetActiveBrowser() {
   Browser* browser = chrome::FindLastActive();
-  if (!browser || browser->type() != Browser::TYPE_TABBED ||
+  if (!browser || !browser->is_type_normal() ||
       !browser->window()->IsActive()) {
     return nullptr;
   }

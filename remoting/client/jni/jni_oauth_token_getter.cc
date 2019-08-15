@@ -46,7 +46,7 @@ static void JNI_JniOAuthTokenGetter_ResolveOAuthTokenCallback(
   delete callback;
 }
 
-JniOAuthTokenGetter::JniOAuthTokenGetter() : weak_factory_(this) {
+JniOAuthTokenGetter::JniOAuthTokenGetter() {
   DETACH_FROM_THREAD(thread_checker_);
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }

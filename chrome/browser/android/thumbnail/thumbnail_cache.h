@@ -189,7 +189,7 @@ class ThumbnailCache : ThumbnailDelegate {
   SEQUENCE_CHECKER(sequence_checker_);
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_;
-  base::WeakPtrFactory<ThumbnailCache> weak_factory_;
+  base::WeakPtrFactory<ThumbnailCache> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailCache);
 };

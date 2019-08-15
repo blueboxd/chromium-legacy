@@ -19,6 +19,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/clang_coverage_buildflags.h"
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/debug/alias.h"
@@ -266,6 +267,10 @@
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
 #include "services/service_manager/zygote/common/zygote_handle.h"  // nogncheck
+#endif
+
+#if BUILDFLAG(CLANG_COVERAGE)
+#include "content/common/coverage_utils.h"
 #endif
 
 namespace content {
@@ -2015,13 +2020,13 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(
-          &BackgroundSyncContextImpl::CreateOneShotSyncService,
+          &BackgroundSyncContextImpl::CreateOneShotSyncServiceForRequest,
           base::Unretained(
               storage_partition_impl_->GetBackgroundSyncContext())));
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(
-          &BackgroundSyncContextImpl::CreatePeriodicSyncService,
+          &BackgroundSyncContextImpl::CreatePeriodicSyncServiceForRequest,
           base::Unretained(
               storage_partition_impl_->GetBackgroundSyncContext())));
   AddUIThreadInterface(
@@ -3296,6 +3301,10 @@ void RenderProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
 
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   child_process_->SetIPCLoggingEnabled(IPC::Logging::GetInstance()->Enabled());
+#endif
+
+#if BUILDFLAG(CLANG_COVERAGE)
+  child_process_->SetCoverageFile(OpenCoverageFile());
 #endif
 }
 

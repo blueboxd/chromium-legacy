@@ -6,7 +6,7 @@ package org.chromium.chrome.test.pagecontroller.controllers;
 
 import android.os.RemoteException;
 
-import org.junit.Assert;
+import org.chromium.chrome.test.pagecontroller.utils.UiLocationException;
 
 /**
  * Base class for page controllers.
@@ -37,13 +37,18 @@ public abstract class PageController extends ElementController {
      * Checks if the current page displayed corresponds to this page controller.
      * @return True if current page can be controlled by this controller, else false.
      */
-    public abstract boolean isCurrentPageThis();
+    public final boolean isCurrentPageThis() {
+        try {
+            verifyActive();
+            return true;
+        } catch (UiLocationException e) {
+            return false;
+        }
+    }
 
     /**
      * Verifies that the current page belongs to the controller.
-     * @throws           AssertionError if the current page does not belong the controller.
+     * @throws           UiLocationException if the current page does not belong the controller.
      */
-    public void verify() {
-        Assert.assertTrue("Page expected to be " + getClass().getName(), isCurrentPageThis());
-    }
+    public abstract PageController verifyActive();
 }

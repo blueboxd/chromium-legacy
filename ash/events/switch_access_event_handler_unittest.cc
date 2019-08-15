@@ -45,15 +45,11 @@ class TestDelegate : public SwitchAccessEventHandlerDelegate {
   TestDelegate() = default;
   virtual ~TestDelegate() = default;
 
-  ui::KeyEvent* last_key_event() { return key_events_.back().get(); }
   SwitchAccessCommand last_command() { return commands_.back(); }
   int command_count() { return commands_.size(); }
 
  private:
   // SwitchAccessEventHandlerDelegate:
-  void DispatchKeyEvent(const ui::KeyEvent& event) override {
-    key_events_.push_back(std::make_unique<ui::KeyEvent>(event));
-  }
   void SendSwitchAccessCommand(SwitchAccessCommand command) override {
     commands_.push_back(command);
   }
@@ -140,8 +136,6 @@ TEST_F(SwitchAccessEventHandlerTest, CaptureSpecifiedKeys) {
 
   // The event was handled by SwitchAccessEventHandler.
   EXPECT_FALSE(event_capturer_.last_key_event());
-  ui::KeyEvent* key_event_1 = delegate_->last_key_event();
-  EXPECT_TRUE(key_event_1);
   EXPECT_EQ(SwitchAccessCommand::kSelect, delegate_->last_command());
 
   // Press the "2" key.
@@ -149,12 +143,9 @@ TEST_F(SwitchAccessEventHandlerTest, CaptureSpecifiedKeys) {
   generator_->ReleaseKey(ui::VKEY_2, ui::EF_NONE);
 
   // We received a new event.
-  EXPECT_NE(delegate_->last_key_event(), key_event_1);
 
   // The event was handled by SwitchAccessEventHandler.
   EXPECT_FALSE(event_capturer_.last_key_event());
-  ui::KeyEvent* key_event_2 = delegate_->last_key_event();
-  EXPECT_TRUE(key_event_2);
 
   // Press the "3" key.
   generator_->PressKey(ui::VKEY_3, ui::EF_NONE);
@@ -177,8 +168,6 @@ TEST_F(SwitchAccessEventHandlerTest, KeysNoLongerCaptureAfterUpdate) {
 
   // The event was handled by SwitchAccessEventHandler.
   EXPECT_FALSE(event_capturer_.last_key_event());
-  ui::KeyEvent* key_event_1 = delegate_->last_key_event();
-  EXPECT_TRUE(key_event_1);
   EXPECT_EQ(SwitchAccessCommand::kSelect, delegate_->last_command());
 
   // Update the Switch Access keys to capture {2, 3, 4}.
@@ -190,7 +179,6 @@ TEST_F(SwitchAccessEventHandlerTest, KeysNoLongerCaptureAfterUpdate) {
   generator_->ReleaseKey(ui::VKEY_1, ui::EF_NONE);
 
   // We received a new event.
-  EXPECT_NE(event_capturer_.last_key_event(), key_event_1);
 
   // The event was NOT handled by SwitchAccessEventHandler.
   EXPECT_TRUE(event_capturer_.last_key_event());
@@ -201,8 +189,6 @@ TEST_F(SwitchAccessEventHandlerTest, KeysNoLongerCaptureAfterUpdate) {
   generator_->ReleaseKey(ui::VKEY_4, ui::EF_NONE);
 
   // The event was handled by SwitchAccessEventHandler.
-  ui::KeyEvent* key_event_4 = delegate_->last_key_event();
-  EXPECT_TRUE(key_event_4);
 }
 
 TEST_F(SwitchAccessEventHandlerTest, ForwardKeyEvents) {
@@ -220,14 +206,12 @@ TEST_F(SwitchAccessEventHandlerTest, ForwardKeyEvents) {
 
   // The event should be handled by SwitchAccessEventHandler.
   EXPECT_FALSE(event_capturer_.last_key_event());
-  EXPECT_TRUE(delegate_->last_key_event());
 
   // Release the "T" key.
   generator_->ReleaseKey(ui::VKEY_T, ui::EF_NONE);
 
   // The event should be handled by SwitchAccessEventHandler.
   EXPECT_FALSE(event_capturer_.last_key_event());
-  EXPECT_TRUE(delegate_->last_key_event());
 
   // Tell the Switch Access Event Handler to stop forwarding key events.
   Shell::Get()->accessibility_controller()->ForwardKeyEventsToSwitchAccess(

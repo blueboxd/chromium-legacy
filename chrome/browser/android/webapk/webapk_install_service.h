@@ -116,7 +116,7 @@ class WebApkInstallService : public KeyedService {
   std::set<GURL> installs_;
 
   // Used to get |weak_ptr_|.
-  base::WeakPtrFactory<WebApkInstallService> weak_ptr_factory_;
+  base::WeakPtrFactory<WebApkInstallService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebApkInstallService);
 };

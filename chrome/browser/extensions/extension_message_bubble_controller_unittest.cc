@@ -712,7 +712,7 @@ TEST_F(ExtensionMessageBubbleTest, ShowDevModeBubbleOncePerOriginalProfile) {
 
     std::unique_ptr<BrowserWindow> off_the_record_window(CreateBrowserWindow());
     std::unique_ptr<Browser> off_the_record_browser(
-        CreateBrowser(off_the_record_profile, Browser::TYPE_TABBED, false,
+        CreateBrowser(off_the_record_profile, Browser::TYPE_NORMAL, false,
                       off_the_record_window.get()));
 
     // The bubble shouldn't want to show for an incognito version of the same

@@ -15,6 +15,7 @@
 #include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/utility/screenshot_controller.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
@@ -66,7 +67,7 @@ void AssistantController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 }
 
 void AssistantController::BindRequest(
-    mojom::AssistantControllerRequest request) {
+    chromeos::assistant::mojom::AssistantControllerRequest request) {
   assistant_controller_bindings_.AddBinding(this, std::move(request));
 }
 
@@ -85,8 +86,8 @@ void AssistantController::RemoveObserver(
 }
 
 void AssistantController::SetAssistant(
-    chromeos::assistant::mojom::AssistantPtr assistant) {
-  assistant_ = std::move(assistant);
+    mojo::PendingRemote<chromeos::assistant::mojom::Assistant> assistant) {
+  assistant_.Bind(std::move(assistant));
 
   // Provide reference to sub-controllers.
   assistant_alarm_timer_controller_.SetAssistant(assistant_.get());
@@ -332,6 +333,37 @@ void AssistantController::OnVoiceInteractionStatusChanged(
 void AssistantController::OnLockedFullScreenStateChanged(bool enabled) {
   if (enabled)
     assistant_ui_controller_.CloseUi(AssistantExitPoint::kUnspecified);
+}
+
+void AssistantController::BindController(
+    mojo::PendingReceiver<chromeos::assistant::mojom::AssistantController>
+        receiver) {
+  BindRequest(std::move(receiver));
+}
+
+void AssistantController::BindAlarmTimerController(
+    mojo::PendingReceiver<mojom::AssistantAlarmTimerController> receiver) {
+  Shell::Get()->assistant_controller()->alarm_timer_controller()->BindRequest(
+      std::move(receiver));
+}
+
+void AssistantController::BindNotificationController(
+    mojo::PendingReceiver<mojom::AssistantNotificationController> receiver) {
+  Shell::Get()->assistant_controller()->notification_controller()->BindRequest(
+      std::move(receiver));
+}
+
+void AssistantController::BindScreenContextController(
+    mojo::PendingReceiver<mojom::AssistantScreenContextController> receiver) {
+  Shell::Get()
+      ->assistant_controller()
+      ->screen_context_controller()
+      ->BindRequest(std::move(receiver));
+}
+
+void AssistantController::BindVolumeControl(
+    mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver) {
+  Shell::Get()->assistant_controller()->BindRequest(std::move(receiver));
 }
 
 base::WeakPtr<AssistantController> AssistantController::GetWeakPtr() {

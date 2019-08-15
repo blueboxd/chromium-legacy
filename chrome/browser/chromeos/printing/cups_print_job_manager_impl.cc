@@ -177,6 +177,12 @@ bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
   switch (job.state) {
     case ::printing::CupsJob::PROCESSING:
       pages_updated = UpdateCurrentPage(job, print_job);
+      if (ErrorCodeFromReasons(printer_status) != ErrorCode::NO_ERROR) {
+        print_job->set_error_code(ErrorCodeFromReasons(printer_status));
+        print_job->set_state(State::STATE_ERROR);
+      } else {
+        print_job->set_state(State::STATE_STARTED);
+      }
       break;
     case ::printing::CupsJob::COMPLETED:
       DCHECK_GE(job.current_pages, print_job->total_page_number());
@@ -529,6 +535,9 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
         break;
       case State::STATE_DOCUMENT_DONE:
         NotifyJobDone(job);
+        break;
+      case State::STATE_ERROR:
+        NotifyJobUpdated(job);
         break;
     }
   }

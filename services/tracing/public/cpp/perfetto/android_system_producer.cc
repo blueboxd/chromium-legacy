@@ -31,8 +31,7 @@ AndroidSystemProducer::AndroidSystemProducer(const char* socket,
                                              PerfettoTaskRunner* task_runner)
     : SystemProducer(task_runner),
       socket_name_(socket),
-      connection_backoff_ms_(kInitialConnectionBackoffMs),
-      weak_ptr_factory_(this) {
+      connection_backoff_ms_(kInitialConnectionBackoffMs) {
   Connect();
 }
 

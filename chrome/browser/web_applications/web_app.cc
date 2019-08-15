@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/web_applications/web_app.h"
+
 #include <ios>
 #include <ostream>
 
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/web_app.h"
-
 #include "base/logging.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "ui/gfx/color_utils.h"
 
 namespace web_app {
@@ -45,6 +45,10 @@ void WebApp::SetLaunchContainer(LaunchContainer launch_container) {
   launch_container_ = launch_container;
 }
 
+void WebApp::SetIsLocallyInstalled(bool is_locally_installed) {
+  is_locally_installed_ = is_locally_installed;
+}
+
 void WebApp::SetIcons(Icons icons) {
   icons_ = std::move(icons);
 }
@@ -54,12 +58,17 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
       app.theme_color()
           ? color_utils::SkColorToRgbaString(app.theme_color().value())
           : "none";
+  const char* launch_container =
+      LaunchContainerEnumToStr(app.launch_container());
+  const bool is_locally_installed = app.is_locally_installed();
 
   return out << "app_id: " << app.app_id() << std::endl
              << "  name: " << app.name() << std::endl
              << "  launch_url: " << app.launch_url() << std::endl
              << "  scope: " << app.scope() << std::endl
              << "  theme_color: " << theme_color << std::endl
+             << "  launch_container: " << launch_container << std::endl
+             << "  is_locally_installed: " << is_locally_installed << std::endl
              << "  description: " << app.description();
 }
 

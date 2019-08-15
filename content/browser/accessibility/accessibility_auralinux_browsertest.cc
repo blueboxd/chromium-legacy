@@ -172,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kLoadComplete);
-  NavigateToURL(shell(), GURL("data:text/html,"));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("data:text/html,")));
   waiter.WaitForNotification();
 
   // Get the BrowserAccessibilityManager.

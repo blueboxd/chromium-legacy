@@ -112,41 +112,10 @@ void SecurityContext::SetContentSecurityPolicy(
 
 bool SecurityContext::IsSandboxed(WebSandboxFlags mask) const {
   if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
-    switch (mask) {
-      case WebSandboxFlags::kAll:
-        NOTREACHED();
-        break;
-      case WebSandboxFlags::kTopNavigation:
-        return !feature_policy_->IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kTopNavigation);
-      case WebSandboxFlags::kForms:
-        return !feature_policy_->IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kFormSubmission);
-      case WebSandboxFlags::kScripts:
-        return !feature_policy_->IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kScript);
-      case WebSandboxFlags::kPopups:
-        return !feature_policy_->IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kPopups);
-      case WebSandboxFlags::kPointerLock:
-        return !feature_policy_->IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kPointerLock);
-      case WebSandboxFlags::kOrientationLock:
-        return !feature_policy_->IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kOrientationLock);
-      case WebSandboxFlags::kModals:
-        return !feature_policy_->IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kModals);
-      case WebSandboxFlags::kPresentationController:
-        return !feature_policy_->IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kPresentation);
-      case WebSandboxFlags::kDownloads:
-        return !feature_policy_->IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kDownloadsWithoutUserActivation);
-      default:
-        // Any other flags fall through to the bitmask test below
-        break;
-    }
+    mojom::FeaturePolicyFeature feature =
+        FeaturePolicy::FeatureForSandboxFlag(mask);
+    if (feature != mojom::FeaturePolicyFeature::kNotFound)
+      return !feature_policy_->IsFeatureEnabled(feature);
   }
   return (sandbox_flags_ & mask) != WebSandboxFlags::kNone;
 }

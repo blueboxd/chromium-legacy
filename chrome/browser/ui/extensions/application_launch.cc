@@ -202,7 +202,7 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params,
     // TODO(erg): AppLaunchParams should pass user_gesture from the extension
     // system to here.
     browser =
-        new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile, true));
+        new Browser(Browser::CreateParams(Browser::TYPE_NORMAL, profile, true));
     browser->window()->Show();
     // There's no current tab in this browser window, so add a new one.
     disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;

@@ -17,8 +17,7 @@ ContextualSearchContext::ContextualSearchContext(JNIEnv* env, jobject obj)
       base_page_url(GURL()),
       surrounding_text(base::string16()),
       start_offset(0),
-      end_offset(0),
-      weak_factory_(this) {
+      end_offset(0) {
   java_object_.Reset(env, obj);
 }
 
@@ -28,8 +27,7 @@ ContextualSearchContext::ContextualSearchContext(
     const std::string& encoding)
     : home_country(home_country),
       base_page_url(page_url),
-      base_page_encoding(encoding),
-      weak_factory_(this) {
+      base_page_encoding(encoding) {
   java_object_ = nullptr;
 }
 

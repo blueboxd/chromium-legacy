@@ -211,6 +211,13 @@ void RenderViewContextMenuBase::AddMenuItemWithIcon(
   menu_model_.AddItemWithIcon(command_id, title, image);
 }
 
+void RenderViewContextMenuBase::AddMenuItemWithIcon(
+    int command_id,
+    const base::string16& title,
+    const gfx::VectorIcon& icon) {
+  menu_model_.AddItemWithIcon(command_id, title, icon);
+}
+
 void RenderViewContextMenuBase::AddCheckItem(int command_id,
                                          const base::string16& title) {
   menu_model_.AddCheckItem(command_id, title);
@@ -233,6 +240,15 @@ void RenderViewContextMenuBase::AddSubMenuWithStringIdAndIcon(
     const gfx::ImageSkia& image) {
   menu_model_.AddSubMenuWithStringIdAndIcon(command_id, message_id, model,
                                             image);
+}
+
+void RenderViewContextMenuBase::AddSubMenuWithStringIdAndIcon(
+    int command_id,
+    int message_id,
+    ui::MenuModel* model,
+    const gfx::VectorIcon& icon) {
+  menu_model_.AddSubMenuWithStringIdAndIcon(command_id, message_id, model,
+                                            icon);
 }
 
 void RenderViewContextMenuBase::UpdateMenuItem(int command_id,

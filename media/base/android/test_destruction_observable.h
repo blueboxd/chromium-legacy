@@ -54,7 +54,7 @@ class DestructionObserver {
   // Whether to expect destruction. Unset if there is no expectation.
   base::Optional<bool> expect_destruction_;
 
-  base::WeakPtrFactory<DestructionObserver> weak_factory_;
+  base::WeakPtrFactory<DestructionObserver> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DestructionObserver);
 };
 

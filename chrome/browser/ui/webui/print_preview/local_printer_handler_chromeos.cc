@@ -159,11 +159,8 @@ void LocalPrinterHandlerChromeos::StartGetPrinters(
   // thread.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // TODO(crbug.com/971823): Re-enable printing from OOBE.
-  if (chromeos::ProfileHelper::IsSigninProfile(profile_)) {
-    std::move(done_callback).Run();
-    return;
-  }
+  // Printing is not allowed during OOBE.
+  CHECK(!chromeos::ProfileHelper::IsSigninProfile(profile_));
 
   PrinterList printer_list;
   AddPrintersToList(printers_manager_->GetPrinters(PrinterClass::kSaved),
@@ -216,7 +213,9 @@ void LocalPrinterHandlerChromeos::OnPrinterInstalled(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (result == chromeos::PrinterSetupResult::kSuccess) {
-    printers_manager_->PrinterInstalled(printer, true /*is_automatic*/);
+    printers_manager_->PrinterInstalled(
+        printer, /*is_automatic=*/true,
+        chromeos::PrinterSetupSource::kPrintPreview);
   }
 
   HandlePrinterSetup(printer, std::move(cb), printer.IsUsbProtocol(), result);

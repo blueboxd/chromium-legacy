@@ -144,9 +144,12 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   // Shows modal warning dialog on the current |web_contents| and pass the
   // |verdict_token| to callback of this dialog.
-  virtual void ShowModalWarning(content::WebContents* web_contents,
-                                const std::string& verdict_token,
-                                ReusedPasswordAccountType password_type) = 0;
+  virtual void ShowModalWarning(
+      content::WebContents* web_contents,
+      RequestOutcome outcome,
+      LoginReputationClientResponse::VerdictType verdict_type,
+      const std::string& verdict_token,
+      ReusedPasswordAccountType password_type) = 0;
 
   // Shows chrome://reset-password interstitial.
   virtual void ShowInterstitial(content::WebContents* web_contens,
@@ -325,6 +328,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual void MaybeLogPasswordReuseLookupEvent(
       content::WebContents* web_contents,
       RequestOutcome,
+      PasswordType password_type,
       const LoginReputationClientResponse*) = 0;
 
   void CheckCsdWhitelistOnIOThread(const GURL& url, bool* check_result);

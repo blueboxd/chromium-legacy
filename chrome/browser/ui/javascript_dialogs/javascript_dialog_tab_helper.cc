@@ -348,7 +348,7 @@ void JavaScriptDialogTabHelper::RunBeforeUnloadDialog(
 #if !defined(OS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (browser) {
-    browser_is_app = browser->is_app();
+    browser_is_app = browser->deprecated_is_app();
   }
 #endif
   return AppModalDialogManager()->RunBeforeUnloadDialogWithOptions(

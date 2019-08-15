@@ -586,7 +586,7 @@ void ContentVerifier::OnExtensionUnloadedOnIO(
 void ContentVerifier::OnFetchComplete(
     const scoped_refptr<const ContentHash>& content_hash) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  ExtensionId extension_id = content_hash->extension_key().extension_id;
+  ExtensionId extension_id = content_hash->extension_id();
   if (g_content_verifier_test_observer) {
     g_content_verifier_test_observer->OnFetchComplete(
         extension_id, content_hash->has_verified_contents());
@@ -595,9 +595,9 @@ void ContentVerifier::OnFetchComplete(
   VLOG(1) << "OnFetchComplete " << extension_id
           << " success:" << content_hash->succeeded();
 
-  const bool did_hash_mismatch = ShouldVerifyAnyPaths(
-      extension_id, content_hash->extension_key().extension_root,
-      content_hash->hash_mismatch_unix_paths());
+  const bool did_hash_mismatch =
+      ShouldVerifyAnyPaths(extension_id, content_hash->extension_root(),
+                           content_hash->hash_mismatch_unix_paths());
   if (!did_hash_mismatch)
     return;
 

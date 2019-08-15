@@ -54,7 +54,7 @@ cr.define('extension_detail_view_tests', function() {
 
       extension_test_util.testIcons(item);
 
-      const testIsVisible = extension_test_util.isVisible.bind(null, item);
+      const testIsVisible = test_util.isVisible.bind(null, item);
       expectTrue(testIsVisible('#closeButton'));
       expectTrue(testIsVisible('#icon'));
       expectTrue(testIsVisible('#enable-toggle'));
@@ -73,15 +73,15 @@ cr.define('extension_detail_view_tests', function() {
       ];
       const isChecked = id => item.$$(id).checked;
       for (let option of accessOptions) {
-        expectTrue(extension_test_util.isVisible(item, option.id));
+        expectTrue(test_util.isVisible(item, option.id));
         expectFalse(isChecked(option.id), option.id);
         item.set('data.' + option.key + '.isEnabled', false);
         Polymer.dom.flush();
-        expectFalse(extension_test_util.isVisible(item, option.id));
+        expectFalse(test_util.isVisible(item, option.id));
         item.set('data.' + option.key + '.isEnabled', true);
         item.set('data.' + option.key + '.isActive', true);
         Polymer.dom.flush();
-        expectTrue(extension_test_util.isVisible(item, option.id));
+        expectTrue(test_util.isVisible(item, option.id));
         expectTrue(isChecked(option.id));
       }
 
@@ -227,19 +227,19 @@ cr.define('extension_detail_view_tests', function() {
       item.set('data.location', 'FROM_STORE');
       Polymer.dom.flush();
       assertEquals('Chrome Web Store', item.$.source.textContent.trim());
-      assertFalse(extension_test_util.isVisible(item, '#load-path'));
+      assertFalse(test_util.isVisible(item, '#load-path'));
 
       item.set('data.location', 'THIRD_PARTY');
       Polymer.dom.flush();
       assertEquals('Added by a third-party', item.$.source.textContent.trim());
-      assertFalse(extension_test_util.isVisible(item, '#load-path'));
+      assertFalse(test_util.isVisible(item, '#load-path'));
 
       item.set('data.location', 'UNPACKED');
       item.set('data.prettifiedPath', 'foo/bar/baz/');
       Polymer.dom.flush();
       assertEquals('Unpacked extension', item.$.source.textContent.trim());
       // Test whether the load path is displayed for unpacked extensions.
-      assertTrue(extension_test_util.isVisible(item, '#load-path'));
+      assertTrue(test_util.isVisible(item, '#load-path'));
 
       item.set('data.location', 'UNKNOWN');
       item.set('data.prettifiedPath', '');
@@ -247,7 +247,7 @@ cr.define('extension_detail_view_tests', function() {
       item.set('data.locationText', 'Foo');
       Polymer.dom.flush();
       assertEquals('Foo', item.$.source.textContent.trim());
-      assertFalse(extension_test_util.isVisible(item, '#load-path'));
+      assertFalse(test_util.isVisible(item, '#load-path'));
     });
 
     test(assert(TestNames.ClickableElements), function() {
@@ -318,7 +318,7 @@ cr.define('extension_detail_view_tests', function() {
     test(assert(TestNames.Warnings), function() {
       const testWarningVisible = function(id, isVisible) {
         const f = isVisible ? expectTrue : expectFalse;
-        f(extension_test_util.isVisible(item, id));
+        f(test_util.isVisible(item, id));
       };
 
       testWarningVisible('#runtime-warnings', false);

@@ -157,7 +157,7 @@ class BrowserCloseTest : public testing::Test {
     for (int i = 0; i < num_windows; ++i) {
       TestBrowserWindow* window = new TestBrowserWindow();
       Browser::CreateParams params(profile, true);
-      params.type = Browser::TYPE_TABBED;
+      params.type = Browser::TYPE_NORMAL;
       params.window = window;
       Browser* browser = new Browser(params);
 

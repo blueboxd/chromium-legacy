@@ -225,7 +225,7 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
-#include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_frame.h"
 #include "third_party/blink/renderer/core/loader/cookie_jar.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_fetch_context.h"
@@ -807,6 +807,27 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
                              .GetSecurityOrigin()
                              ->IsolatedCopy();
     }
+
+    if (initializer.HasSecurityContext()) {
+      if (Settings* settings = initializer.GetSettings()) {
+        if (!settings->GetWebSecurityEnabled()) {
+          // Web security is turned off. We should let this document access
+          // every other document. This is used primary by testing harnesses for
+          // web sites.
+          security_origin_->GrantUniversalAccess();
+        } else if (security_origin_->IsLocal()) {
+          if (settings->GetAllowUniversalAccessFromFileURLs()) {
+            // Some clients want local URLs to have universal access, but that
+            // setting is dangerous for other clients.
+            security_origin_->GrantUniversalAccess();
+          } else if (!settings->GetAllowFileAccessFromFileURLs()) {
+            // Some clients do not want local URLs to have access to other local
+            // URLs.
+            security_origin_->BlockLocalAccessFromLocalOrigin();
+          }
+        }
+      }
+    }
   }
 
   void InitializeFeaturePolicy(const DocumentInit& initializer,
@@ -928,6 +949,10 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
       agent_ = MakeGarbageCollected<WindowAgent>(
           V8PerIsolateData::MainThreadIsolate());
     }
+
+    // Derive possibly a new security origin that contains the cluster id.
+    security_origin_ =
+        security_origin_->GetOriginForAgentCluster(agent_->cluster_id());
   }
 
   bool IsPagePopupRunningInWebTest(LocalFrame* frame) {
@@ -6888,25 +6913,6 @@ void Document::InitSecurityContext(
     SetAddressSpace(network::mojom::IPAddressSpace::kLocal);
   } else {
     SetAddressSpace(network::mojom::IPAddressSpace::kPublic);
-  }
-
-  if (Settings* settings = initializer.GetSettings()) {
-    if (!settings->GetWebSecurityEnabled()) {
-      // Web security is turned off. We should let this document access every
-      // other document. This is used primary by testing harnesses for web
-      // sites.
-      GetMutableSecurityOrigin()->GrantUniversalAccess();
-    } else if (GetSecurityOrigin()->IsLocal()) {
-      if (settings->GetAllowUniversalAccessFromFileURLs()) {
-        // Some clients want local URLs to have universal access, but that
-        // setting is dangerous for other clients.
-        GetMutableSecurityOrigin()->GrantUniversalAccess();
-      } else if (!settings->GetAllowFileAccessFromFileURLs()) {
-        // Some clients do not want local URLs to have access to other local
-        // URLs.
-        GetMutableSecurityOrigin()->BlockLocalAccessFromLocalOrigin();
-      }
-    }
   }
 
   if (GetSecurityOrigin()->IsOpaque() &&

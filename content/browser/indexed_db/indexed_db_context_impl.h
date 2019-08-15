@@ -17,6 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/public/browser/indexed_db_context.h"

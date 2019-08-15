@@ -14,11 +14,13 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/sequenced_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/policy/task_executor_with_retries.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/timezone_settings.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/icu/source/i18n/unicode/gregocal.h"
 #include "third_party/icu/source/i18n/unicode/ucal.h"
 
@@ -29,9 +31,8 @@ namespace {
 // The tag associated to register |update_check_timer_|.
 constexpr char kUpdateCheckTimerTag[] = "DeviceScheduledUpdateChecker";
 
-// The tag associated to register |start_update_check_timer_task_executor_|.
-constexpr char kStartUpdateCheckTimerTaskRunnerTag[] =
-    "StartUpdateCheckTimerTaskRunner";
+// Reason associated to acquire |ScopedWakeLock|.
+constexpr char kWakeLockReason[] = "DeviceScheduledUpdateChecker";
 
 DeviceScheduledUpdateChecker::Frequency GetFrequency(
     const std::string& frequency) {
@@ -268,23 +269,19 @@ std::unique_ptr<icu::Calendar> ConvertUtcToTzIcuTime(base::Time cur_time,
 // so it's safe to use "this" with any callbacks.
 DeviceScheduledUpdateChecker::DeviceScheduledUpdateChecker(
     chromeos::CrosSettings* cros_settings,
-    chromeos::NetworkStateHandler* network_state_handler)
+    chromeos::NetworkStateHandler* network_state_handler,
+    service_manager::Connector* connector)
     : cros_settings_(cros_settings),
+      connector_(connector),
       cros_settings_observer_(cros_settings_->AddSettingsObserver(
           chromeos::kDeviceScheduledUpdateCheck,
           base::BindRepeating(
               &DeviceScheduledUpdateChecker::OnScheduledUpdateCheckDataChanged,
               base::Unretained(this)))),
       start_update_check_timer_task_executor_(
-          kStartUpdateCheckTimerTaskRunnerTag,
-          base::BindRepeating(&DeviceScheduledUpdateChecker::GetTicksSinceBoot,
-                              base::Unretained(this)),
           update_checker_internal::kMaxStartUpdateCheckTimerRetryIterations,
           update_checker_internal::kStartUpdateCheckTimerRetryTime),
-      os_and_policies_update_checker_(
-          network_state_handler,
-          base::BindRepeating(&DeviceScheduledUpdateChecker::GetTicksSinceBoot,
-                              base::Unretained(this))) {
+      os_and_policies_update_checker_(network_state_handler) {
   chromeos::system::TimezoneSettings::GetInstance()->AddObserver(this);
   // Check if policy already exists.
   OnScheduledUpdateCheckDataChanged();
@@ -302,24 +299,37 @@ DeviceScheduledUpdateChecker::ScheduledUpdateCheckData::
     ~ScheduledUpdateCheckData() = default;
 
 void DeviceScheduledUpdateChecker::OnUpdateCheckTimerExpired() {
-  // If no policy exists, state should have been reset and this callback
-  // shouldn't have fired.
-  DCHECK(scheduled_update_check_data_);
-
   // Following things needs to be done on every update check event. These will
   // be done serially to make state management easier -
   // - Download updates and refresh policies.
   // - Calculate and start the next update check timer.
+  // For both these operations a wake lock should be held to ensure that the
+  // update check is completed successfully and the device doesn't suspend while
+  // calculating time ticks and setting the timer for the next update check. The
+  // wake lock is held even when the above two operations are retried on
+  // failure. This decision was made to simplify the design.
   //
+  // The wake lock will be released in |OnUpdateCheckTimerStartResult| either
+  // due to successful completion of step 2 above or failure and letting the
+  // device suspend and reacquire the wake lock again in
+  // |StartUpdateCheckTimer|.
+
+  // If no policy exists, state should have been reset and this callback
+  // shouldn't have fired.
+  DCHECK(scheduled_update_check_data_);
+
   // |os_and_policies_update_checker_| will be destroyed as part of this object,
   // so it's safe to use "this" with any callbacks. This overrides any previous
   // update check calls. Since, the minimum update frequency is daily there is
   // very little chance of stepping on an existing update check that hasn't
   // finished for a day. Timeouts will ensure that an update check completes,
   // successfully or unsuccessfully, way before a day.
-  os_and_policies_update_checker_.Start(
-      base::BindOnce(&DeviceScheduledUpdateChecker::OnUpdateCheckCompletion,
-                     base::Unretained(this)));
+  os_and_policies_update_checker_.Start(base::BindOnce(
+      &DeviceScheduledUpdateChecker::OnUpdateCheckCompletion,
+      base::Unretained(this),
+      ScopedWakeLock(connector_,
+                     device::mojom::WakeLockType::kPreventAppSuspension,
+                     kWakeLockReason)));
 }
 
 void DeviceScheduledUpdateChecker::TimezoneChanged(
@@ -327,7 +337,12 @@ void DeviceScheduledUpdateChecker::TimezoneChanged(
   // Anytime the time zone changes, the update check timer delay should be
   // recalculated and the timer should be started with updated values according
   // to the new time zone.
-  MaybeStartUpdateCheckTimer();
+  // |scheduled_update_check_data_->next_update_check_time_ticks| also needs to
+  // be reset, as it would be incorrect in the context of a new time zone. For
+  // this purpose, treat it as a new policy and call
+  // |OnScheduledUpdateCheckDataChanged| instead of |MaybeStartUpdateCheckTimer|
+  // directly.
+  OnScheduledUpdateCheckDataChanged();
 }
 
 void DeviceScheduledUpdateChecker::OnScheduledUpdateCheckDataChanged() {
@@ -352,7 +367,11 @@ void DeviceScheduledUpdateChecker::OnScheduledUpdateCheckDataChanged() {
 
   // Policy has been updated, calculate and set |update_check_timer_| again.
   scheduled_update_check_data_ = std::move(scheduled_update_check_data);
-  MaybeStartUpdateCheckTimer();
+  MaybeStartUpdateCheckTimer(
+      ScopedWakeLock(connector_,
+                     device::mojom::WakeLockType::kPreventAppSuspension,
+                     kWakeLockReason),
+      false /* is_retry */);
 }
 
 base::TimeDelta
@@ -364,7 +383,7 @@ DeviceScheduledUpdateChecker::CalculateNextUpdateCheckTimerDelay(
       update_checker_internal::ConvertUtcToTzIcuTime(cur_time, GetTimeZone());
   if (!cur_cal) {
     LOG(ERROR) << "Failed to get current ICU time";
-    return base::TimeDelta();
+    return update_checker_internal::kInvalidDelay;
   }
 
   auto update_check_time = base::WrapUnique(cur_cal->clone());
@@ -375,7 +394,7 @@ DeviceScheduledUpdateChecker::CalculateNextUpdateCheckTimerDelay(
   if (!SetTimeBasedOnPolicy(scheduled_update_check_data_.value(),
                             update_check_time.get())) {
     LOG(ERROR) << "Failed to set time based on policy";
-    return base::TimeDelta();
+    return update_checker_internal::kInvalidDelay;
   }
 
   // If the time has already passed it means that the update check needs to be
@@ -393,13 +412,13 @@ DeviceScheduledUpdateChecker::CalculateNextUpdateCheckTimerDelay(
     if (!AdvanceTimeBasedOnPolicy(scheduled_update_check_data_.value(),
                                   update_check_time.get())) {
       LOG(ERROR) << "Failed to advance time";
-      return base::TimeDelta();
+      return update_checker_internal::kInvalidDelay;
     }
 
     if (!SetTimeBasedOnPolicy(scheduled_update_check_data_.value(),
                               update_check_time.get())) {
       LOG(ERROR) << "Failed to set time based on policy";
-      return base::TimeDelta();
+      return update_checker_internal::kInvalidDelay;
     }
   }
   DCHECK(!IsCalGreaterThanEqual(*cur_cal, *update_check_time));
@@ -407,7 +426,17 @@ DeviceScheduledUpdateChecker::CalculateNextUpdateCheckTimerDelay(
   return update_checker_internal::GetDiff(*update_check_time, *cur_cal);
 }
 
-void DeviceScheduledUpdateChecker::StartUpdateCheckTimer() {
+void DeviceScheduledUpdateChecker::StartUpdateCheckTimer(
+    ScopedWakeLock scoped_wake_lock) {
+  // The device shouldn't suspend while calculating time ticks and setting the
+  // timer for the next update check. Otherwise the next update check timer will
+  // be inaccurately scheduled. Hence, a wake lock must always be held for this
+  // entire task. The wake lock could already be held at this
+  // point due to |OnUpdateCheckTimerExpired|.
+
+  // Only one |StartUpdateCheckTimer| can be outstanding.
+  update_check_timer_.reset();
+
   DCHECK(scheduled_update_check_data_);
 
   // For accuracy of the next update check, capture current time as close to
@@ -415,55 +444,63 @@ void DeviceScheduledUpdateChecker::StartUpdateCheckTimer() {
   const base::TimeTicks cur_ticks = GetTicksSinceBoot();
   const base::Time cur_time = GetCurrentTime();
 
-  // Calculate the next update check time. In case there is an error while
-  // calculating, due to concurrent DST or Time Zone changes, then reschedule
-  // this function and try to schedule the update check again. There should
-  // only be one outstanding task to start the timer.
-  base::TimeDelta delay = CalculateNextUpdateCheckTimerDelay(cur_time);
-  if (delay <= base::TimeDelta()) {
-    LOG(ERROR) << "Failed to calculate next update check time";
-    start_update_check_timer_task_executor_.ScheduleRetry();
-    return;
-  }
-  scheduled_update_check_data_->next_update_check_time_ticks =
-      cur_ticks + delay;
-
-  // The timer could be destroyed in |OnScheduledUpdateCheckDataChanged|.
-  if (!update_check_timer_) {
-    update_check_timer_ =
-        std::make_unique<chromeos::NativeTimer>(kUpdateCheckTimerTag);
+  // If this is a retry then |cur_ticks| could be >=
+  // |next_update_check_time_ticks| i.e. the next timer schedule has already
+  // passed, recalculate it. Else respect the calculated time.
+  if (cur_ticks >= scheduled_update_check_data_->next_update_check_time_ticks) {
+    // Calculate the next update check time. In case there is an error while
+    // calculating, due to concurrent DST or Time Zone changes, then reschedule
+    // this function and try to schedule the update check again. There should
+    // only be one outstanding task to start the timer. If there is a failure
+    // the wake lock is released and acquired again when this task runs.
+    base::TimeDelta delay = CalculateNextUpdateCheckTimerDelay(cur_time);
+    if (delay <= update_checker_internal::kInvalidDelay) {
+      LOG(ERROR) << "Failed to calculate next update check time";
+      MaybeStartUpdateCheckTimer(std::move(scoped_wake_lock),
+                                 true /* is_retry */);
+      return;
+    }
+    scheduled_update_check_data_->next_update_check_time_ticks =
+        cur_ticks + delay;
   }
 
   // |update_check_timer_| will be destroyed as part of this object and is
   // guaranteed to not run callbacks after its destruction. Therefore, it's
   // safe to use "this" while starting the timer.
+  update_check_timer_ =
+      std::make_unique<chromeos::NativeTimer>(kUpdateCheckTimerTag);
   update_check_timer_->Start(
       scheduled_update_check_data_->next_update_check_time_ticks,
       base::BindOnce(&DeviceScheduledUpdateChecker::OnUpdateCheckTimerExpired,
                      base::Unretained(this)),
-      base::BindOnce(&DeviceScheduledUpdateChecker::OnTimerStartResult,
-                     base::Unretained(this)));
+      base::BindOnce(
+          &DeviceScheduledUpdateChecker::OnUpdateCheckTimerStartResult,
+          base::Unretained(this), std::move(scoped_wake_lock)));
 }
 
-void DeviceScheduledUpdateChecker::OnTimerStartResult(bool result) {
+void DeviceScheduledUpdateChecker::OnUpdateCheckTimerStartResult(
+    ScopedWakeLock scoped_wake_lock,
+    bool result) {
   // Schedule a retry if |update_check_timer_| failed to start.
   if (!result) {
     LOG(ERROR) << "Failed to start update check timer";
-    start_update_check_timer_task_executor_.ScheduleRetry();
-    return;
+    MaybeStartUpdateCheckTimer(std::move(scoped_wake_lock),
+                               true /* is_retry */);
   }
 }
 
 void DeviceScheduledUpdateChecker::OnStartUpdateCheckTimerRetryFailure() {
-  // Retrying has a limit. In the unlikely scenario this is met, let an
-  // existing lingering update check from a previous iteration finish. Reset
-  // all other state including any callbacks. The next update check can only
-  // happen when a new policy comes in or Chrome is restarted.
+  // Retrying has a limit. In the unlikely scenario this is met, the next update
+  // check can only happen when a new policy comes in or Chrome is restarted.
+  // The wake lock acquired in |MaybeStartUpdateCheckTimer| will be released
+  // because |task| was destroyed in |start_update_check_timer_executor_|.
   LOG(ERROR) << "Failed to start update check timer after all retries";
   ResetState();
 }
 
-void DeviceScheduledUpdateChecker::MaybeStartUpdateCheckTimer() {
+void DeviceScheduledUpdateChecker::MaybeStartUpdateCheckTimer(
+    ScopedWakeLock scoped_wake_lock,
+    bool is_retry) {
   // No need to start the next update check timer if the policy has been
   // removed. This can happen if an update check was ongoing, a new policy
   // came in but failed to start the timer which reset all state in
@@ -471,21 +508,35 @@ void DeviceScheduledUpdateChecker::MaybeStartUpdateCheckTimer() {
   if (!scheduled_update_check_data_)
     return;
 
+  // Only start the timer if an existing update check is not running because if
+  // it is, it will start the timer in |OnUpdateCheckCompletion|.
+  if (os_and_policies_update_checker_.IsRunning())
+    return;
+
   // Safe to use |this| as |start_update_check_timer_task_executor_| is a
-  // member of |this|.
-  start_update_check_timer_task_executor_.Start(
-      base::BindRepeating(&DeviceScheduledUpdateChecker::StartUpdateCheckTimer,
-                          base::Unretained(this)),
-      base::BindOnce(
-          &DeviceScheduledUpdateChecker::OnStartUpdateCheckTimerRetryFailure,
-          base::Unretained(this)));
+  // member of |this|. Wake lock needs to be held to calculate next update check
+  // timer accurately without the device suspending mid-calculation.
+  if (is_retry) {
+    start_update_check_timer_task_executor_.ScheduleRetry(
+        base::BindOnce(&DeviceScheduledUpdateChecker::StartUpdateCheckTimer,
+                       base::Unretained(this), std::move(scoped_wake_lock)));
+  } else {
+    start_update_check_timer_task_executor_.Start(
+        base::BindOnce(&DeviceScheduledUpdateChecker::StartUpdateCheckTimer,
+                       base::Unretained(this), std::move(scoped_wake_lock)),
+        base::BindOnce(
+            &DeviceScheduledUpdateChecker::OnStartUpdateCheckTimerRetryFailure,
+            base::Unretained(this)));
+  }
 }
 
-void DeviceScheduledUpdateChecker::OnUpdateCheckCompletion(bool result) {
+void DeviceScheduledUpdateChecker::OnUpdateCheckCompletion(
+    ScopedWakeLock scoped_wake_lock,
+    bool result) {
   // Start the next update check timer irrespective of the current update
   // check succeeding or not.
   LOG_IF(ERROR, !result) << "Update check failed";
-  MaybeStartUpdateCheckTimer();
+  MaybeStartUpdateCheckTimer(std::move(scoped_wake_lock), false /* is_retry */);
 }
 
 void DeviceScheduledUpdateChecker::ResetState() {

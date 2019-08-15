@@ -46,7 +46,7 @@ void PinnedTabService::Observe(int type,
 }
 
 void PinnedTabService::OnBrowserAdded(Browser* browser) {
-  if (browser->profile() != profile_ || !browser->is_type_tabbed())
+  if (browser->profile() != profile_ || !browser->is_type_normal())
     return;
 
   need_to_write_pinned_tabs_ = true;
@@ -54,7 +54,7 @@ void PinnedTabService::OnBrowserAdded(Browser* browser) {
 }
 
 void PinnedTabService::OnBrowserClosing(Browser* browser) {
-  if (browser->profile() != profile_ || !browser->is_type_tabbed())
+  if (browser->profile() != profile_ || !browser->is_type_normal())
     return;
 
   if (TabStripModelObserver::CountObservedModels(this) == 1)
@@ -62,7 +62,7 @@ void PinnedTabService::OnBrowserClosing(Browser* browser) {
 }
 
 void PinnedTabService::OnBrowserRemoved(Browser* browser) {
-  if (browser->profile() != profile_ || !browser->is_type_tabbed())
+  if (browser->profile() != profile_ || !browser->is_type_normal())
     return;
 
   browser->tab_strip_model()->RemoveObserver(this);

@@ -517,7 +517,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
         web_widget_client.layer_tree_view(),
         web_widget_client.animation_host());
     blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, frame);
-    web_view->DidAttachLocalMainFrame(&web_widget_client);
+    web_view->DidAttachLocalMainFrame();
   }
 
   // The color should be passed to the compositor.
@@ -5725,8 +5725,8 @@ TEST_F(WebViewTest, RootLayerAttachment) {
       WebFrameWidget::LifecycleUpdate::kPrePaint,
       WebWidget::LifecycleUpdateReason::kTest);
 
-  // With BlinkGenPropertyTrees, layers (including the root layer) should not be
-  // attached until the paint lifecycle phase.
+  // Layers (including the root layer) should not be attached until the paint
+  // lifecycle phase.
   auto* layer_tree_view = web_view_helper_.GetLayerTreeView();
   EXPECT_FALSE(layer_tree_view->GetRootLayer());
 

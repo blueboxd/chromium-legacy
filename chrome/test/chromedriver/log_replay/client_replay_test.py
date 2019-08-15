@@ -48,7 +48,7 @@ _NEGATIVE_FILTER = []
 def SubstituteVariableEntries(s):
   """Identifies and removes items that can legitimately vary between runs."""
   white_list = r'(("(id|userDataDir|frameId|version|ELEMENT|message|timestamp' \
-               r'|expiry|chromedriverVersion)": ' \
+               r'|expiry|chromedriverVersion|sessionId)": ' \
                r'("[0-9]\.[0-9]*(\.[0-9]*)? \([a-f0-9]*\)"|[^\s},]*))' \
                r'|CDwindow-[A-F0-9]*|cd_frame_id_="[a-f0-9]*")'
 

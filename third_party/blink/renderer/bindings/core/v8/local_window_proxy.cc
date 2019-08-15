@@ -412,13 +412,6 @@ void LocalWindowProxy::SetSecurityToken(const SecurityOrigin* origin) {
     return;
   }
 
-  // Append the agent cluster id to the generated token to prevent
-  // access from two contexts that have the same security origin but are
-  // in different agent clusters.
-  token =
-      token +
-      GetFrame()->GetDocument()->GetAgent()->cluster_id().ToString().c_str();
-
   if (world_->IsIsolatedWorld()) {
     const SecurityOrigin* frame_security_origin =
         GetFrame()->GetDocument()->GetSecurityOrigin();

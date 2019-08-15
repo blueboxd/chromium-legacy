@@ -1044,176 +1044,8 @@
   <message name="IDS_BROWSE_WITHOUT_SIGNING_IN_HTML" desc="Text shown on side of Google sign-in UI.">
     You may also skip signing in and <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>browse as Guest<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph>.
   </message>
-  <message name="IDS_CREATE_SUPERVISED_INTRO_TEXT_TITLE" desc="Supervised user dialog, intro page, title">
-    What is a supervised user?
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_INTRO_ALTERNATE_TEXT" desc="Supervised user dialog, intro page, first paragraph">
-    A supervised user can explore the web with your guidance. As the manager of a supervised user, you can
-    <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>allow or prohibit<ph name="END_BOLD">&lt;/strong&gt;</ph> certain websites,
-    <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>review<ph name="END_BOLD">&lt;/strong&gt;</ph> websites the supervised user has visited, and
-    <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>manage<ph name="END_BOLD">&lt;/strong&gt;</ph> other settings.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_INTRO_TEXT_1" desc="Supervised user dialog, intro page, first paragraph">
-    A supervised user can explore the web with your guidance. As the manager of a supervised user in Chrome, you can:
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_INTRO_MANAGER_ITEM_1" desc="Supervised user dialog, intro page, options available to manager">
-    allow or prohibit certain websites,
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_INTRO_MANAGER_ITEM_2" desc="Supervised user dialog, intro page, options available to manager">
-    review websites the supervised user has visited, and
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_INTRO_MANAGER_ITEM_3" desc="Supervised user dialog, intro page, options available to manager">
-    manage other settings
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_INTRO_TEXT_2" desc="Supervised user dialog, intro page, second paragraph">
-    Creating a supervised user does not create a Google Account, and their settings
-    and data will not follow them to other devices with Chrome Sync. A supervised user applies only to this device.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_INTRO_TEXT_3" desc="Supervised user dialog, intro page, third paragraph">
-    After you create a new supervised user, you can manage the settings at any time from any device at <ph name="MANAGEMENT_URL">$1<ex>www.example.com</ex></ph>.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_PICK_MANAGER_TITLE" desc="Supervised user dialog, manager selection page, title of the page">
-    Choose the manager for this supervised user
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_PICK_MANAGER_EXPLANATION" desc="Supervised user dialog, manager selection page, explanation of the page">
-    The manager will be able to configure restrictions and settings for this supervised user at <ph name="MANAGEMENT_URL">$1<ex>www.example.com</ex></ph>.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_MANAGER_PASSWORD_HINT" desc="Supervised user dialog, manager selection page, text shown as a hint in the user password field.">
-    Enter password
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_SETUP_ACCESSIBLE_TITLE" desc="Text to be spoken on opening supervised user creation username and password set-up dialog.">
-    Set up new supervised user
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_ACCOUNT_NAME_TITLE" desc="Supervised user dialog, new user page, title for name of new user">
-    Create a name -
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_ACCOUNT_NAME_EXPLANATION" desc="Supervised user dialog, new user page, explanation for name of new user">
-    This supervised user will be managed by <ph name="MANAGER_EMAIL">$1<ex>john.doe@example.com</ex></ph>.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_ACCOUNT_NAME_HINT" desc="Text shown as a hint in the new user name field in supervised user creation dialog.">
-    Enter new name
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_PASSWORD_TITLE" desc="Supervised user dialog, new user page, title for password for new user.">
-    Create a password -
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_PASSWORD_EXPLANATION" desc="Supervised user dialog, new user page, explanation for password for new user.">
-    The supervised user will need to use this password to sign in, so choose a safe password and remember to discuss it with the supervised user.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_PASSWORD_HINT" desc="Text shown as a hint in the password field in supervised user creation dialog.">
-    Enter password
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_PASSWORD_CONFIRM_HINT" desc="Text shown as a hint in the password confirmation field in supervised user creation dialog.">
-    Confirm password
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_CONTINUE_BUTTON_TEXT" desc="Text shown on continue button in supervised user creation dialog.">
-    Continue
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_START_BUTTON_TEXT" desc="Text shown on start button in supervised user creation dialog.">
-    Create supervised user
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_NEXT_BUTTON_TEXT" desc="Text shown on next button in supervised user creation dialog.">
-    Next
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_PREVIOUS_BUTTON_TEXT" desc="Text shown on previous button in supervised user creation dialog.">
-    Previous
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATED_1_TEXT_1" desc="Supervised user dialog, getting started page 1, paragraph 1">
-    A supervised user named <ph name="USER_DISPLAY_NAME">$1<ex>John</ex></ph> has been created.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATED_1_TEXT_2" desc="Supervised user dialog, getting started page 1, paragraph 2">
-    To set which websites the supervised user can view, you can configure restrictions
-    and settings by visiting <ph name="MANAGEMENT_URL">$1<ex>www.example.com</ex></ph>.
-    If you do not change the default settings, <ph name="USER_DISPLAY_NAME">$2<ex>John</ex></ph>
-    can browse all sites on the web.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATED_1_TEXT_3" desc="Supervised user dialog, getting started page 1, paragraph 3">
-    Please check your email at <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="MANAGER_EMAIL">$1<ex>john.doe@example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> for further instructions.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATION_GOT_IT_BUTTON_TITLE" desc="Text for button on a screen with successful supervised user creation text">
-    Got it!
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_HANDLE_ERROR_BUTTON_TEXT" desc="Text for button on an error screen that closes supervised user creation dialog">
-    Okay
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_USERNAME_ALREADY_EXISTS" desc="Error text shown in supervised user creation dialog when local account with suggested name already exists on a device.">
-    Whoops, this name is already in use!
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_ILLEGAL_USERNAME" desc="Error text shown in supervised user creation dialog when suggested name contains illegal characters (e.g. html tags).">
-    Whoops, illegal symbols in name!
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_PASSWORD_MISMATCH_ERROR" desc="Error text shown in supervised user creation dialog when typed passwords does not match.">
-    Whoops, passwords do not match!
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_PASSWORD_TOO_SHORT" desc="Error text shown in supervised user creation dialog when typed password is too short.">
-    Password is too short.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_MANAGER_PASSWORD_ERROR" desc="Error text shown in supervised user creation dialog when manager password is incorrect.">
-    Incorrect password.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_MANAGER_INCONSISTENT_STATE_TITLE" desc="Supervised user dialog, error page, manager account is in inconsistent state, title">
-    Oops, something went wrong
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_MANAGER_INCONSISTENT_STATE" desc="Supervised user dialog, error page, manager account is in inconsistent state, text">
-    To recover from this error, you will need to sign in to your Google Account
-    from the sign-in screen. You can then sign out of your Google Account and
-    try creating a supervised user again.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_MANAGER_INCONSISTENT_STATE_BUTTON" desc="Supervised user dialog, error page, manager account is in inconsistent state, button title">
-    OK, Take me back to sign-in screen
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_TPM_ERROR_TITLE" desc="Supervised user dialog, error page, tpm error during creation, title">
-    Oops, TPM error.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_TPM_ERROR" desc="Supervised user dialog, error page, tpm error during creation, text">
-    Something is wrong with device.  To recover from this error you will need to reboot device and try again.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_TPM_ERROR_BUTTON" desc="Supervised user dialog, error page, tpm error during creation, button title">
-    OK
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_SECURE_MODULE_ERROR_TITLE" desc="Supervised user dialog, error page, secure module error during creation, title">
-    Oops, secure module error.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_SECURE_MODULE_ERROR" desc="Supervised user dialog, error page, secure module error during creation, text">
-    Something is wrong with device.  To recover from this error you will need to reboot device and try again.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_SECURE_MODULE_ERROR_BUTTON" desc="Supervised user dialog, error page, secure module error during creation, button title">
-    OK
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR_TITLE" desc="Supervised user dialog, error page, generic error during creation, title">
-    Oops, something went wrong
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR" desc="Supervised user dialog, error page, generic error during creation, text">
-    Due to an error, a supervised user was not created. Please try again later.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR_BUTTON" desc="Supervised user dialog, error page, generic error during creation, button title">
-    OK
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATION_ERROR_CANCEL_BUTTON_TITLE" desc="Text for button on an error reporting screen for supervised user creation, that is used to abort whole operation">
-    Cancel
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATION_ERROR_RETRY_BUTTON_TITLE" desc="Text for button on an error reporting screen for supervised user creation, that is used to retry failed operation">
-    Retry
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATION_AUTH_PROGRESS_MESSAGE" desc="Text shown next to progress indicator upon manager authentication.">
-    Authenticating
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATION_CREATION_PROGRESS_MESSAGE" desc="Text shown next to progress indicator upon supervised user creation.">
-    Creating supervised user
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATION_CREATION_TIMEOUT_MESSAGE" desc="Text shown at the place of progess indicator if creation takes too long and should be cancelled.">
-    This is taking much longer than usual. You can keep waiting, or cancel and try again later.
-  </message>
   <message name="IDS_SUPERVISED_USER_EXPIRED_TOKEN_WARNING" desc="Warning text that is shown on login screen trying to sign in as a supervised user that has expired token">
     This supervised user may have been deleted or disabled by the manager. Please contact the manager if you would like to continue signing in as this user.
-  </message>
-  <message name="IDS_SUPERVISED_USER_IMPORT_USER_EXIST" desc="In list of supervised users eligible for import, this text indicates that user already is already imported on device.">
-    <ph name="USER_DISPLAY_NAME">$1<ex>John</ex></ph> (already on this device)
-  </message>
-  <message name="IDS_SUPERVISED_USER_IMPORT_USERNAME_EXIST" desc="In list of supervised users eligible for import, this text indicates that another supervised user with same name already exists on device.">
-    <ph name="USER_DISPLAY_NAME">$1<ex>John</ex></ph> (name used on this device)
-  </message>
-  <message name="IDS_SUPERVISED_USER_IMPORT_BUBBLE_TEXT" desc="Text shown in notification bubble when user enters name of user that can be imported.">
-    Looks like you're already managing a user by that name. Did you want to <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>import <ph name="USER_DISPLAY_NAME">$2<ex>John</ex></ph> to this device<ph name="LINK_END">$3<ex>&gt;/a&lt;</ex></ph>?
   </message>
   <!-- Supervised users deprecation notifications -->
   <message name="IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_TITLE" desc="Title of notification displayed on supervised user login indicating that the feature is expiring soon.">
@@ -3357,13 +3189,25 @@
     Print
   </message>
   <message name="IDS_PRINT_JOB_PRINTING_NOTIFICATION_TITLE" desc="Title of the printing-in-progress notification.">
-    Now printing <ph name="DOCUMENT_NAME">$1<ex>document.pdf</ex></ph>
+    Printing
   </message>
   <message name="IDS_PRINT_JOB_DONE_NOTIFICATION_TITLE" desc="Title of the successful printing notification.">
-    Successfully printed <ph name="DOCUMENT_NAME">$1<ex>document.pdf</ex></ph>
+    Printing complete
   </message>
   <message name="IDS_PRINT_JOB_ERROR_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
-    Error printing <ph name="DOCUMENT_NAME">$1<ex>document.pdf</ex></ph>
+    Couldn't print. Check printer and try again.
+  </message>
+  <message name="IDS_PRINT_JOB_PAPER_JAM_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
+    Paper is jammed
+  </message>
+  <message name="IDS_PRINT_JOB_OUT_OF_INK_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
+    Out of ink
+  </message>
+  <message name="IDS_PRINT_JOB_OUT_OF_PAPER_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
+    Out of paper
+  </message>
+  <message name="IDS_PRINT_JOB_DOOR_OPEN_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
+    Printer door open
   </message>
   <message name="IDS_PRINT_JOB_NOTIFICATION_MESSAGE" desc="Message of the print job notification.">
     <ph name="PAGE_NUMBER">$1<ex>5</ex></ph> pages to <ph name="PRINTER_NAME">$2<ex>printer</ex></ph>

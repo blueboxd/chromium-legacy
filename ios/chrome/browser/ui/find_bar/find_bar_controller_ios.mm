@@ -19,7 +19,7 @@
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/incognito_color_util.h"
+#import "ios/chrome/common/colors/dynamic_color_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -125,8 +125,8 @@ const NSTimeInterval kSearchShortDelay = 0.100;
                          : UIUserInterfaceStyleUnspecified;
   }
 #endif
-  findBarBackground.backgroundColor = color::IncognitoDynamicColor(
-      self.isIncognito, [UIColor colorNamed:kBackgroundColor],
+  findBarBackground.backgroundColor = color::DarkModeDynamicColor(
+      [UIColor colorNamed:kBackgroundColor], self.isIncognito,
       [UIColor colorNamed:kBackgroundDarkColor]);
   self.findBarView =
       [[FindBarView alloc] initWithDarkAppearance:self.isIncognito];

@@ -47,9 +47,7 @@ base::Value ToValueArray(const T& v) {
 
 ScriptTracker::ScriptTracker(ScriptExecutorDelegate* delegate,
                              ScriptTracker::Listener* listener)
-    : delegate_(delegate),
-      listener_(listener),
-      weak_ptr_factory_(this) {
+    : delegate_(delegate), listener_(listener) {
   DCHECK(delegate_);
   DCHECK(listener_);
 }

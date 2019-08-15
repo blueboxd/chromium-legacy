@@ -146,6 +146,12 @@ Polymer({
             loadTimeData.getStringF('printerEditedSuccessfulMessage',
                                     printerName);
         break;
+      case PrinterSetupResult.PRINTER_UNREACHABLE:
+        if (this.enableUpdatedUi_) {
+          this.addPrinterResultText_ =
+              loadTimeData.getStringF('printerUnavailableMessage', printerName);
+          break;
+        }
       default:
         assertNotReached();
       }

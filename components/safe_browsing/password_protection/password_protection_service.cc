@@ -191,7 +191,8 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
                  password_field_exists);
   } else {
     if (reused_password_account_type.is_account_syncing())
-      MaybeLogPasswordReuseLookupEvent(web_contents, reason, nullptr);
+      MaybeLogPasswordReuseLookupEvent(web_contents, reason, password_type,
+                                       nullptr);
   }
   if (CanShowInterstitial(reason, reused_password_account_type,
                           main_frame_url)) {
@@ -248,7 +249,8 @@ void PasswordProtectionService::RequestFinished(
     if (ShouldShowModalWarning(request->trigger_type(), password_type,
                                response->verdict_type())) {
       username_ = request->username();
-      ShowModalWarning(request->web_contents(), response->verdict_token(),
+      ShowModalWarning(request->web_contents(), request->request_outcome(),
+                       response->verdict_type(), response->verdict_token(),
                        password_type);
       request->set_is_modal_warning_showing(true);
     }
@@ -400,6 +402,8 @@ bool PasswordProtectionService::IsWarningEnabled(
 }
 
 bool PasswordProtectionService::IsEventLoggingEnabled() {
+  // TODO(bdea): Refactor all places that call this method to directly call
+  // IsIncognito.
   return !IsIncognito();
 }
 

@@ -478,14 +478,13 @@ class WebController::ElementPositionGetter : public WebController::Worker {
   int point_x_ = 0;
   int point_y_ = 0;
 
-  base::WeakPtrFactory<ElementPositionGetter> weak_ptr_factory_;
+  base::WeakPtrFactory<ElementPositionGetter> weak_ptr_factory_{this};
 };
 
 WebController::ElementPositionGetter::ElementPositionGetter(
     const ClientSettings& settings)
     : check_interval_(settings.box_model_check_interval),
-      max_rounds_(settings.box_model_check_count),
-      weak_ptr_factory_(this) {}
+      max_rounds_(settings.box_model_check_count) {}
 
 WebController::ElementPositionGetter::~ElementPositionGetter() = default;
 
@@ -669,7 +668,7 @@ class WebController::ElementFinder : public WebController::Worker {
   FindElementCallback callback_;
   std::unique_ptr<FindElementResult> element_result_;
 
-  base::WeakPtrFactory<ElementFinder> weak_ptr_factory_;
+  base::WeakPtrFactory<ElementFinder> weak_ptr_factory_{this};
 };
 
 WebController::ElementFinder::ElementFinder(content::WebContents* web_contents,
@@ -680,8 +679,7 @@ WebController::ElementFinder::ElementFinder(content::WebContents* web_contents,
       devtools_client_(devtools_client),
       selector_(selector),
       strict_(strict),
-      element_result_(std::make_unique<FindElementResult>()),
-      weak_ptr_factory_(this) {}
+      element_result_(std::make_unique<FindElementResult>()) {}
 
 WebController::ElementFinder::~ElementFinder() = default;
 
@@ -987,8 +985,7 @@ WebController::WebController(content::WebContents* web_contents,
                              const ClientSettings* settings)
     : web_contents_(web_contents),
       devtools_client_(std::move(devtools_client)),
-      settings_(settings),
-      weak_ptr_factory_(this) {}
+      settings_(settings) {}
 
 WebController::~WebController() {}
 

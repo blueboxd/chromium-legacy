@@ -59,12 +59,10 @@ class CORE_EXPORT ApplicationCacheHost
     : public GarbageCollectedFinalized<ApplicationCacheHost>,
       public mojom::blink::AppCacheFrontend {
  public:
-  static ApplicationCacheHost* Create(DocumentLoader* document_loader);
   // |interface_broker| can be null for workers and |task_runner| is null for
   // kAppCacheForNone.
-  explicit ApplicationCacheHost(
-      mojom::blink::DocumentInterfaceBroker* interface_broker,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  ApplicationCacheHost(mojom::blink::DocumentInterfaceBroker* interface_broker,
+                       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~ApplicationCacheHost() override;
   virtual void Detach();
 

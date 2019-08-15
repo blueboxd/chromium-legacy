@@ -199,7 +199,7 @@ class BackgroundLoaderOffliner
   // Holds stats for resource request status for resource types we track.
   RequestStats stats_[ResourceDataType::RESOURCE_DATA_TYPE_COUNT];
 
-  base::WeakPtrFactory<BackgroundLoaderOffliner> weak_ptr_factory_;
+  base::WeakPtrFactory<BackgroundLoaderOffliner> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(BackgroundLoaderOffliner);
 };
 

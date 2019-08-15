@@ -16,7 +16,7 @@
 namespace audio {
 
 scoped_refptr<media::AudioCapturerSource> CreateInputDevice(
-    std::unique_ptr<service_manager::Connector> connector,
+    mojo::PendingRemote<mojom::StreamFactory> stream_factory,
     const std::string& device_id);
 
 scoped_refptr<media::AudioCapturerSource> CreateInputDevice(

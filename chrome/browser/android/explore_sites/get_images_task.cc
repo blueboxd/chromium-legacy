@@ -114,8 +114,7 @@ GetImagesTask::GetImagesTask(ExploreSitesStore* store,
       data_type_(DataType::kSite),
       id_(site_id),
       max_results_(1),
-      callback_(std::move(callback)),
-      weak_ptr_factory_(this) {}
+      callback_(std::move(callback)) {}
 
 GetImagesTask::GetImagesTask(ExploreSitesStore* store,
                              int category_id,
@@ -125,8 +124,7 @@ GetImagesTask::GetImagesTask(ExploreSitesStore* store,
       data_type_(DataType::kCategory),
       id_(category_id),
       max_results_(max_images),
-      callback_(std::move(callback)),
-      weak_ptr_factory_(this) {}
+      callback_(std::move(callback)) {}
 
 GetImagesTask::GetImagesTask(ExploreSitesStore* store,
                              DataType data_type,
@@ -136,8 +134,7 @@ GetImagesTask::GetImagesTask(ExploreSitesStore* store,
       data_type_(data_type),
       id_(0),
       max_results_(max_images),
-      callback_(std::move(callback)),
-      weak_ptr_factory_(this) {}
+      callback_(std::move(callback)) {}
 
 GetImagesTask::~GetImagesTask() = default;
 

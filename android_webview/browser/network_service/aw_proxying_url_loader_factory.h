@@ -93,7 +93,7 @@ class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
   // a response, the loader will abort loading.
   bool intercept_only_;
 
-  base::WeakPtrFactory<AwProxyingURLLoaderFactory> weak_factory_;
+  base::WeakPtrFactory<AwProxyingURLLoaderFactory> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AwProxyingURLLoaderFactory);
 };

@@ -64,12 +64,6 @@ void WebRuntimeFeatures::EnableFeatureFromString(const std::string& name,
   RuntimeEnabledFeatures::SetFeatureEnabledFromString(name, enable);
 }
 
-bool WebRuntimeFeatures::IsBlinkGenPropertyTreesEnabled() {
-  // TODO(pdr): Remove this function now that BlinkGenPropertyTrees has
-  // launched.
-  return true;
-}
-
 bool WebRuntimeFeatures::IsFractionalScrollOffsetsEnabled() {
   return RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled();
 }
@@ -378,10 +372,6 @@ void WebRuntimeFeatures::EnableScriptedSpeechRecognition(bool enable) {
 
 void WebRuntimeFeatures::EnableScriptedSpeechSynthesis(bool enable) {
   RuntimeEnabledFeatures::SetScriptedSpeechSynthesisEnabled(enable);
-}
-
-bool WebRuntimeFeatures::IsCompositeAfterPaintEnabled() {
-  return RuntimeEnabledFeatures::CompositeAfterPaintEnabled();
 }
 
 void WebRuntimeFeatures::EnableUpdateHoverAtBeginFrame(bool enable) {

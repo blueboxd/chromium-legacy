@@ -1778,6 +1778,16 @@ void LocalFrame::FinishedLoading(FrameLoader::NavigationFinishState state) {
   }
 }
 
+void LocalFrame::SetIsCapturingMediaCallback(
+    IsCapturingMediaCallback callback) {
+  is_capturing_media_callback_ = std::move(callback);
+}
+
+bool LocalFrame::IsCapturingMedia() const {
+  return is_capturing_media_callback_ ? is_capturing_media_callback_.Run()
+                                      : false;
+}
+
 void LocalFrame::EvictFromBackForwardCache() {
   Client()->EvictFromBackForwardCache();
 }

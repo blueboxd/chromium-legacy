@@ -42,9 +42,6 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
  private:
   friend class ProfileMenuViewExtensionsTest;
 
-  typedef std::vector<size_t> Indexes;
-  typedef std::map<views::Button*, int> ButtonIndexes;
-
   // ProfileMenuViewBase:
   void FocusButtonOnKeyboardOpen() override;
 
@@ -53,9 +50,6 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   void OnWidgetClosing(views::Widget* widget) override;
   views::View* GetInitiallyFocusedView() override;
   base::string16 GetAccessibleWindowTitle() const override;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Button actions.
   void OnManageGoogleAccountButtonClicked();
@@ -147,9 +141,6 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   void IncrementDiceSigninPromoShowCount();
 
   std::unique_ptr<AvatarMenu> avatar_menu_;
-
-  // Other profiles used in the "fast profile switcher" view.
-  ButtonIndexes open_other_profile_indexes_map_;
 
   // Button in the signin/sync error header on top of the desktop user menu.
   views::Button* sync_error_button_;

@@ -48,8 +48,7 @@ DeviceController::DeviceController(std::unique_ptr<Socket> host_socket,
                                    int exit_notifier_fd)
     : host_socket_(std::move(host_socket)),
       exit_notifier_fd_(exit_notifier_fd),
-      construction_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this) {
+      construction_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   host_socket_->AddEventFd(exit_notifier_fd);
 }
 

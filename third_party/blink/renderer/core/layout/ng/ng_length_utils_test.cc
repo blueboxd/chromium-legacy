@@ -26,13 +26,13 @@ static NGConstraintSpace ConstructConstraintSpace(
     WritingMode writing_mode = WritingMode::kHorizontalTb) {
   LogicalSize size = {LayoutUnit(inline_size), LayoutUnit(block_size)};
 
-  return NGConstraintSpaceBuilder(writing_mode, writing_mode,
-                                  /* is_new_fc */ false)
-      .SetAvailableSize(size)
-      .SetPercentageResolutionSize(size)
-      .SetIsFixedInlineSize(fixed_inline)
-      .SetIsFixedBlockSize(fixed_block)
-      .ToConstraintSpace();
+  NGConstraintSpaceBuilder builder(writing_mode, writing_mode,
+                                   /* is_new_fc */ false);
+  builder.SetAvailableSize(size);
+  builder.SetPercentageResolutionSize(size);
+  builder.SetIsFixedInlineSize(fixed_inline);
+  builder.SetIsFixedBlockSize(fixed_block);
+  return builder.ToConstraintSpace();
 }
 
 class NGLengthUtilsTest : public testing::Test {

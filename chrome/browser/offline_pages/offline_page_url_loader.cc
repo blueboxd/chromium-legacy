@@ -94,8 +94,7 @@ OfflinePageURLLoader::OfflinePageURLLoader(
       loader_callback_(std::move(callback)),
       binding_(this),
       is_offline_preview_allowed_(tentative_resource_request.previews_state &
-                                  content::OFFLINE_PAGE_ON),
-      weak_ptr_factory_(this) {
+                                  content::OFFLINE_PAGE_ON) {
   // TODO(crbug.com/876527): Figure out how offline page interception should
   // interact with URLLoaderThrottles. It might be incorrect to use
   // |tentative_resource_request.headers| here, since throttles can rewrite

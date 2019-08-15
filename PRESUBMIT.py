@@ -347,7 +347,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^components/policy/',
   '^components/pref_registry/',
   '^components/prefs/',
-  '^components/printing/',
   '^components/proxy_config/',
   '^components/quirks/',
   '^components/rappor/',

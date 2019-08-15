@@ -16,12 +16,14 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/login/configuration_keys.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
@@ -36,6 +38,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
@@ -44,6 +48,13 @@
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "components/version_info/version_info.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/site_instance.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/user_agent.h"
+#include "ui/aura/window.h"
+#include "url/gurl.h"
 
 namespace arc {
 
@@ -608,6 +619,48 @@ bool ShouldStartArcSilentlyForManagedProfile(const Profile* profile) {
   return IsArcPlayStoreEnabledPreferenceManagedForProfile(profile) &&
          (AreArcAllOptInPreferencesIgnorableForProfile(profile) ||
           !IsArcOobeOptInActive());
+}
+
+aura::Window* GetArcWindow(int32_t task_id) {
+  for (auto* window : ChromeLauncherController::instance()->GetArcWindows()) {
+    if (arc::GetWindowTaskId(window) == task_id)
+      return window;
+  }
+
+  return nullptr;
+}
+
+std::unique_ptr<content::WebContents> CreateArcCustomTabWebContents(
+    Profile* profile,
+    const GURL& url) {
+  scoped_refptr<content::SiteInstance> site_instance =
+      tab_util::GetSiteInstanceForNewTab(profile, url);
+  content::WebContents::CreateParams create_params(profile, site_instance);
+  std::unique_ptr<content::WebContents> web_contents =
+      content::WebContents::Create(create_params);
+
+  // Use the same version number as browser_commands.cc
+  // TODO(hashimoto): Get the actual Android version from the container.
+  constexpr char kOsOverrideForTabletSite[] = "Linux; Android 9; Chrome tablet";
+  // Override the user agent to request mobile version web sites.
+  const std::string product =
+      version_info::GetProductNameAndVersionForUserAgent();
+  const std::string user_agent = content::BuildUserAgentFromOSAndProduct(
+      kOsOverrideForTabletSite, product);
+  web_contents->SetUserAgentOverride(user_agent,
+                                     false /*override_in_new_tabs=*/);
+
+  content::NavigationController::LoadURLParams load_url_params(url);
+  load_url_params.source_site_instance = site_instance;
+  load_url_params.override_user_agent =
+      content::NavigationController::UA_OVERRIDE_TRUE;
+  web_contents->GetController().LoadURLWithParams(load_url_params);
+
+  // Add a flag to remember this tab originated in the ARC context.
+  web_contents->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
+                            std::make_unique<arc::ArcWebContentsData>());
+
+  return web_contents;
 }
 
 }  // namespace arc

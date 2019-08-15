@@ -482,7 +482,7 @@ void Navigate(NavigateParams* params) {
   // focusing a regular browser window an opening a tab in the background
   // of that window. Change the disposition to NEW_FOREGROUND_TAB so that
   // the new tab is focused.
-  if (source_browser && source_browser->is_app() &&
+  if (source_browser && source_browser->deprecated_is_app() &&
       params->disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB) {
     params->disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   }

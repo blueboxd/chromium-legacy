@@ -2229,6 +2229,7 @@ bool PDFiumEngine::GetPageSizeAndUniformity(pp::Size* size) {
   return true;
 }
 
+// TODO(kmoon): Rewrite this to use DocumentLayout properly.
 void PDFiumEngine::AppendBlankPages(int num_pages) {
   DCHECK_NE(num_pages, 0);
 
@@ -2388,36 +2389,33 @@ void PDFiumEngine::ContinueLoadingDocument(const std::string& password) {
     FinishLoadingDocument();
 }
 
-void PDFiumEngine::AppendPageRectToPages(const pp::Rect& page_rect,
-                                         size_t page_index,
-                                         bool reload) {
-  if (!reload) {
-    // The page is marked as not being available even if |doc_complete| is
-    // true because FPDFAvail_IsPageAvail() still has to be called for this
-    // page, which will be done in FinishLoadingDocument().
-    pages_.push_back(
-        std::make_unique<PDFiumPage>(this, page_index, page_rect, false));
-  } else if (page_index < pages_.size()) {
-    pages_[page_index]->set_rect(page_rect);
-  } else {
-    bool available =
-        FPDFAvail_IsPageAvail(fpdf_availability(), page_index, nullptr);
-    pages_.push_back(
-        std::make_unique<PDFiumPage>(this, page_index, page_rect, available));
-  }
-}
-
 void PDFiumEngine::LoadPagesInCurrentLayout(std::vector<pp::Size> page_sizes,
                                             bool reload) {
-  std::vector<pp::Rect> formatted_pages;
   if (two_up_view_) {
-    formatted_pages = layout_.GetTwoUpViewLayout(page_sizes);
+    layout_.ComputeTwoUpViewLayout(page_sizes);
   } else {
-    formatted_pages = layout_.GetSingleViewLayout(page_sizes);
+    layout_.ComputeSingleViewLayout(page_sizes);
   }
 
-  for (size_t i = 0; i < formatted_pages.size(); ++i) {
-    AppendPageRectToPages(formatted_pages[i], i, reload);
+  ApplyCurrentLayoutToPages(reload);
+}
+
+// TODO(kmoon): This should be the only method that sets |PDFiumPage::rect_|.
+void PDFiumEngine::ApplyCurrentLayoutToPages(bool reload) {
+  for (size_t i = 0; i < layout_.page_count(); ++i) {
+    const pp::Rect& page_rect = layout_.page_rect(i);
+    if (!reload) {
+      // The page is marked as not being available even if |doc_complete| is
+      // true because FPDFAvail_IsPageAvail() still has to be called for this
+      // page, which will be done in FinishLoadingDocument().
+      pages_.push_back(std::make_unique<PDFiumPage>(this, i, page_rect, false));
+    } else if (i < pages_.size()) {
+      pages_[i]->set_rect(page_rect);
+    } else {
+      bool available = FPDFAvail_IsPageAvail(fpdf_availability(), i, nullptr);
+      pages_.push_back(
+          std::make_unique<PDFiumPage>(this, i, page_rect, available));
+    }
   }
 }
 
@@ -2572,18 +2570,15 @@ void PDFiumEngine::CalculateVisiblePages() {
   // screen coordinates.
   form_highlights_.clear();
 
-  int most_visible_page = visible_pages_.empty() ? -1 : visible_pages_.front();
-  // Check if the next page is more visible than the first one.
-  if (most_visible_page != -1 && !pages_.empty() &&
-      most_visible_page < static_cast<int>(pages_.size()) - 1) {
-    pp::Rect rc_first =
-        visible_rect.Intersect(GetPageScreenRect(most_visible_page));
-    pp::Rect rc_next =
-        visible_rect.Intersect(GetPageScreenRect(most_visible_page + 1));
-    if (rc_next.height() > rc_first.height())
-      most_visible_page++;
+  std::vector<draw_utils::IndexedPage> visible_pages_rects;
+  visible_pages_rects.reserve(visible_pages_.size());
+  for (int visible_page_index : visible_pages_) {
+    visible_pages_rects.push_back(
+        {visible_page_index, pages_[visible_page_index]->rect()});
   }
 
+  int most_visible_page =
+      draw_utils::GetMostVisiblePage(visible_pages_rects, GetVisibleRect());
   SetCurrentPage(most_visible_page);
 }
 

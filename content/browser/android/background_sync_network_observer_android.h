@@ -74,7 +74,8 @@ class BackgroundSyncNetworkObserverAndroid
   // Accessed on UI Thread
   scoped_refptr<Observer> observer_;
 
-  base::WeakPtrFactory<BackgroundSyncNetworkObserverAndroid> weak_ptr_factory_;
+  base::WeakPtrFactory<BackgroundSyncNetworkObserverAndroid> weak_ptr_factory_{
+      this};
 };
 
 }  // namespace content

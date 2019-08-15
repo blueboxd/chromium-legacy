@@ -57,7 +57,6 @@ class MODULES_EXPORT UserMediaClient {
   void CancelUserMediaRequest(UserMediaRequest*);
   void ApplyConstraints(ApplyConstraintsRequest*);
   void StopTrack(MediaStreamComponent*);
-  bool IsCapturing();
   void ContextDestroyed();
 
  private:

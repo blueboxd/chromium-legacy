@@ -110,7 +110,7 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
 
   bool is_waiting_for_manifest_;
 
-  base::WeakPtrFactory<AddToHomescreenDataFetcher> weak_ptr_factory_;
+  base::WeakPtrFactory<AddToHomescreenDataFetcher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AddToHomescreenDataFetcher);
 };

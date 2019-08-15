@@ -279,7 +279,7 @@ void BrowserNonClientFrameViewMac::UpdateMinimumSize() {
 
 gfx::Size BrowserNonClientFrameViewMac::GetMinimumSize() const {
   gfx::Size client_size = frame()->client_view()->GetMinimumSize();
-  if (browser_view()->browser()->is_type_tabbed())
+  if (browser_view()->browser()->is_type_normal())
     client_size.SetToMax(browser_view()->tabstrip()->GetMinimumSize());
 
   // macOS apps generally don't allow their windows to get shorter than a

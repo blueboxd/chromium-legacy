@@ -582,6 +582,12 @@ class _Parser(object):
   _CLIENT_PREAMBLE_REGEX = re.compile(
       r"^\[[0-9]{10}\.[0-9]{3}\]\[INFO\]: \[[a-f0-9]*\]")
 
+  # Matches headers for client commands/responses when readable-timestamp
+  #option is selected
+  _CLIENT_PREAMBLE_REGEX_READABLE = re.compile(
+      r"^\[[0-9]{2}-[0-9]{2}-[0-9]{4} "
+      "[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}\]\[INFO\]: \[[a-f0-9]*\]")
+
   def __init__(self, log_file):
     """Initialize the _Parser instance.
 
@@ -617,6 +623,11 @@ class _Parser(object):
         return None
       if re.match(self._CLIENT_PREAMBLE_REGEX, next_line):
         return next_line
+      if re.match(self._CLIENT_PREAMBLE_REGEX_READABLE, next_line):
+        #Readable timestamp contains a space between date and time,
+        #which breaks other parsing of the header. Replace with underscore
+        next_line = next_line.replace(" ", "_", 1)
+        return next_line
 
   def _GetPayloadString(self, header_line):
     """Gets the payload for the current command in self._logfile.
@@ -633,11 +644,13 @@ class _Parser(object):
     Returns:
       payload of the command as a string
     """
+    min_header = 5
+
     header_segments = header_line.split()
-    if len(header_segments) < 5:
+    if len(header_segments) < min_header:
       return None
-    payload = " ".join(header_segments[4:])
-    opening_char = header_segments[4]
+    payload = " ".join(header_segments[min_header-1:])
+    opening_char = header_segments[min_header-1]
     if opening_char == "{":
       closing_char = "}"
     elif opening_char == "[":
@@ -727,6 +740,7 @@ class CommandSequence(object):
       return command
     if not response.IsResponse():
       raise ReplayException("Command and Response unexpectedly out of order.")
+
     self._IngestLoggedResponse(response)
     return command
 
@@ -749,10 +763,12 @@ class CommandSequence(object):
         self._staged_logged_ids = None
 
     # In W3C format, the http response is a single key dict,
-    # where the value is another dictionary
+    # where the value is None, a single value, or another dictionary
     # sessionId is contained in the nested dictionary
-    if ("value" in response and "sessionId" in response["value"]
-        and self._staged_logged_session_id):
+    if (self._staged_logged_session_id
+        and "value" in response and response["value"]
+        and isinstance(response["value"], dict)
+        and "sessionId" in response["value"]):
       self._id_map[self._staged_logged_session_id] = (
         response["value"]["sessionId"])
       self._staged_logged_session_id = None

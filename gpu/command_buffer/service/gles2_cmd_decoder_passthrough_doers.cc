@@ -2265,6 +2265,11 @@ error::Error GLES2DecoderPassthroughImpl::DoMemoryBarrierByRegion(
 
 error::Error GLES2DecoderPassthroughImpl::DoMultiDrawBeginCHROMIUM(
     GLsizei drawcount) {
+  if (drawcount < 0) {
+    InsertError(GL_INVALID_VALUE, "drawcount cannot be negative.");
+    return error::kNoError;
+  }
+
   if (!multi_draw_manager_->Begin(drawcount)) {
     return error::kInvalidArguments;
   }
@@ -4710,6 +4715,12 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerCHROMIUM(
 error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerInUseQueryCHROMIUM(
     GLuint n,
     const volatile GLuint* textures) {
+  // Validate that count is non-negative before allocating a vector
+  if (n < 0) {
+    InsertError(GL_INVALID_VALUE, "count cannot be negative.");
+    return error::kNoError;
+  }
+
   std::vector<gl::GLSurface::CALayerInUseQuery> queries;
   queries.reserve(n);
   for (GLuint i = 0; i < n; ++i) {

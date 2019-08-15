@@ -321,8 +321,7 @@ bool ConvertFileSystemURLToPathInsideCrostini(
                     .Append(kFolderNameMyFiles)
                     .Append(kFolderNameDownloads);
     }
-  } else if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs) &&
-             id == mount_point_name_drive) {
+  } else if (!mount_point_name_drive.empty() && id == mount_point_name_drive) {
     // DriveFS has some more complicated mappings.
     std::vector<base::FilePath::StringType> components;
     path.GetComponents(&components);

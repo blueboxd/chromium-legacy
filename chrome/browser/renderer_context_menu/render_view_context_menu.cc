@@ -1147,7 +1147,7 @@ void RenderViewContextMenu::AppendDevtoolsForUnpackedExtensions() {
 void RenderViewContextMenu::AppendLinkItems() {
   if (!params_.link_url.is_empty()) {
     const Browser* browser = GetBrowser();
-    const bool in_app = browser && browser->is_app();
+    const bool in_app = browser && browser->deprecated_is_app();
     WebContents* active_web_contents =
         browser ? browser->tab_strip_model()->GetActiveWebContents() : nullptr;
 

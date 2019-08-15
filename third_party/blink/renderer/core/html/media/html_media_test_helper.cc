@@ -16,8 +16,7 @@ MediaStubLocalFrameClient::MediaStubLocalFrameClient(
 std::unique_ptr<WebMediaPlayer> MediaStubLocalFrameClient::CreateWebMediaPlayer(
     HTMLMediaElement&,
     const WebMediaPlayerSource&,
-    WebMediaPlayerClient*,
-    WebLayerTreeView*) {
+    WebMediaPlayerClient*) {
   DCHECK(player_) << " Empty injected player - already used?";
   return std::move(player_);
 }

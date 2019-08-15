@@ -93,7 +93,7 @@ void PopulateSyncedSessionWindowFromSpecifics(
   if (specifics.has_browser_type()) {
     if (specifics.browser_type() ==
         sync_pb::SessionWindow_BrowserType_TYPE_TABBED) {
-      session_window->type = sessions::SessionWindow::TYPE_TABBED;
+      session_window->type = sessions::SessionWindow::TYPE_NORMAL;
     } else {
       // Note: custom tabs are treated like popup windows on restore, as you can
       // restore a custom tab on a platform that doesn't support them.

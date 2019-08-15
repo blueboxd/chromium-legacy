@@ -52,6 +52,8 @@
 #include "cc/layers/surface_layer_impl.h"
 #include "cc/layers/viewport.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
+#include "cc/paint/display_item_list.h"
+#include "cc/paint/paint_worklet_job.h"
 #include "cc/paint/paint_worklet_layer_painter.h"
 #include "cc/raster/bitmap_raster_buffer_provider.h"
 #include "cc/raster/gpu_raster_buffer_provider.h"
@@ -442,6 +444,15 @@ void LayerTreeHostImpl::CommitComplete() {
     ActivateAnimations();
   }
 
+  // We clear the entries that were never mutated by CC animations from the last
+  // commit until now. Moreover, we reset the values of input properties and
+  // relies on the fact that CC animation will mutate those values when pending
+  // tree is animated below.
+  // With that, when CC finishes animating an input property, the value of that
+  // property stays at finish state until a commit kicks in, which is consistent
+  // with current composited animations.
+  paint_worklet_tracker_.ClearUnusedInputProperties();
+
   // Start animations before UpdateDrawProperties and PrepareTiles, as they can
   // change the results. When doing commit to the active tree, this must happen
   // after ActivateAnimations() in order for this ticking to be propogated
@@ -501,6 +512,27 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
   const auto& animated_images =
       image_animation_controller_.AnimateForSyncTree(CurrentBeginFrameArgs());
   images_to_invalidate.insert(animated_images.begin(), animated_images.end());
+
+  // Invalidate cached PaintRecords for worklets whose input properties were
+  // mutated since the last pending tree. We keep requesting invalidations until
+  // the animation is ticking on impl thread. Note that this works since the
+  // animation starts ticking on the pending tree
+  // (AnimatePendingTreeAfterCommit) which committed this animation timeline.
+  // After this the animation may only tick on the active tree for impl-side
+  // invalidations (since AnimatePendingTreeAfterCommit is not done for pending
+  // trees created by impl-side invalidations). But we ensure here that we
+  // request another invalidation if an input property was mutated on the active
+  // tree.
+  if (paint_worklet_tracker_.InvalidatePaintWorkletsOnPendingTree()) {
+    client_->NeedsImplSideInvalidation(
+        true /* needs_first_draw_on_activation */);
+  }
+  PaintImageIdFlatSet dirty_paint_worklet_ids;
+  PaintWorkletJobMap dirty_paint_worklets =
+      GatherDirtyPaintWorklets(&dirty_paint_worklet_ids);
+  images_to_invalidate.insert(dirty_paint_worklet_ids.begin(),
+                              dirty_paint_worklet_ids.end());
+
   sync_tree()->InvalidateRegionForImages(images_to_invalidate);
 
   // Note that it is important to push the state for checkerboarded and animated
@@ -520,7 +552,6 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
     return;
   }
 
-  PaintWorkletJobMap dirty_paint_worklets = GatherDirtyPaintWorklets();
   if (!dirty_paint_worklets.size()) {
     pending_tree_fully_painted_ = true;
     NotifyPendingTreeFullyPainted();
@@ -535,33 +566,60 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
                                            std::move(done_callback));
 }
 
-PaintWorkletJobMap LayerTreeHostImpl::GatherDirtyPaintWorklets() const {
+PaintWorkletJobMap LayerTreeHostImpl::GatherDirtyPaintWorklets(
+    PaintImageIdFlatSet* dirty_paint_worklet_ids) const {
   PaintWorkletJobMap dirty_paint_worklets;
   for (PictureLayerImpl* layer :
        sync_tree()->picture_layers_with_paint_worklets()) {
     for (const auto& entry : layer->GetPaintWorkletRecordMap()) {
+      const scoped_refptr<const PaintWorkletInput>& input = entry.first;
+      const PaintImage::Id& paint_image_id = entry.second.first;
+      const sk_sp<PaintRecord>& record = entry.second.second;
       // If we already have a record we can reuse it and so the
       // PaintWorkletInput isn't dirty.
-      if (entry.second)
+      if (record)
         continue;
 
-      int id = entry.first->WorkletId();
-      auto result = dirty_paint_worklets.insert(
-          std::make_pair(id, scoped_refptr<PaintWorkletJobVector>{}));
-      scoped_refptr<PaintWorkletJobVector>& job_vector = result.first->second;
+      // Mark this PaintWorklet as needing invalidation.
+      dirty_paint_worklet_ids->insert(paint_image_id);
+
+      // Create an entry in the appropriate PaintWorkletJobVector for this dirty
+      // PaintWorklet.
+      int worklet_id = input->WorkletId();
+      auto& job_vector = dirty_paint_worklets[worklet_id];
       if (!job_vector)
-        job_vector = base::WrapRefCounted(new PaintWorkletJobVector);
-      job_vector->data.emplace_back(layer->id(), entry.first);
+        job_vector = base::MakeRefCounted<PaintWorkletJobVector>();
+
+      PaintWorkletJob::AnimatedPropertyValues animated_property_values;
+      for (const auto& element : input->GetPropertyKeys()) {
+        // We should not have multiple property ids with the same name.
+        DCHECK(!animated_property_values.contains(element.first));
+        base::Optional<float> animated_property_value =
+            paint_worklet_tracker_.GetPropertyAnimationValue(element);
+        // No value indicates that the input property was not mutated by CC
+        // animation.
+        if (animated_property_value) {
+          animated_property_values.emplace(element.first,
+                                           animated_property_value.value());
+        }
+      }
+
+      job_vector->data.emplace_back(layer->id(), input,
+                                    std::move(animated_property_values));
     }
   }
   return dirty_paint_worklets;
 }
 
 void LayerTreeHostImpl::OnPaintWorkletResultsReady(PaintWorkletJobMap results) {
+#if DCHECK_IS_ON()
   // Nothing else should have painted the PaintWorklets while we were waiting,
   // and the results should have painted every PaintWorklet, so these should be
   // the same.
-  DCHECK_EQ(results.size(), GatherDirtyPaintWorklets().size());
+  PaintImageIdFlatSet dirty_paint_worklet_ids;
+  DCHECK_EQ(results.size(),
+            GatherDirtyPaintWorklets(&dirty_paint_worklet_ids).size());
+#endif
 
   for (const auto& entry : results) {
     for (const PaintWorkletJob& job : entry.second->data) {
@@ -5867,6 +5925,14 @@ void LayerTreeHostImpl::SetElementFilterMutated(
     if (recycle_tree())
       recycle_tree()->SetFilterMutated(element_id, filters);
   }
+}
+
+void LayerTreeHostImpl::OnCustomPropertyMutated(
+    ElementId element_id,
+    const std::string& custom_property_name,
+    float custom_property_value) {
+  paint_worklet_tracker_.OnCustomPropertyMutated(
+      element_id, custom_property_name, custom_property_value);
 }
 
 void LayerTreeHostImpl::SetElementBackdropFilterMutated(

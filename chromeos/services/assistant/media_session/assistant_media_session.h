@@ -8,16 +8,13 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "libassistant/shared/public/media_manager.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace assistant_client {
 struct MediaStatus;
@@ -36,7 +33,7 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
   enum class State { ACTIVE, SUSPENDED, INACTIVE };
 
   explicit AssistantMediaSession(
-      service_manager::Connector* connector,
+      mojom::Client* client,
       AssistantManagerServiceImpl* assistant_manager);
   ~AssistantMediaSession() override;
 
@@ -105,7 +102,7 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
   media_session::MediaMetadata metadata_;
 
   AssistantManagerServiceImpl* const assistant_manager_service_;
-  service_manager::Connector* connector_;
+  mojom::Client* const client_;
 
   // Binding for Mojo pointer to |this| held by AudioFocusManager.
   mojo::Receiver<media_session::mojom::MediaSession> receiver_{this};
@@ -138,7 +135,7 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
   base::UnguessableToken internal_audio_focus_id_ =
       base::UnguessableToken::Null();
 
-  base::WeakPtrFactory<AssistantMediaSession> weak_factory_;
+  base::WeakPtrFactory<AssistantMediaSession> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantMediaSession);
 };

@@ -51,8 +51,7 @@ class ClientCertRequest {
       std::unique_ptr<content::ClientCertificateDelegate> delegate)
       : pending_requests_(pending_requests),
         cert_request_info_(cert_request_info),
-        delegate_(std::move(delegate)),
-        weak_factory_(this) {}
+        delegate_(std::move(delegate)) {}
 
   base::OnceClosure GetCancellationCallback() {
     return base::BindOnce(&ClientCertRequest::OnCancel,
@@ -72,7 +71,7 @@ class ClientCertRequest {
   base::WeakPtr<SSLClientCertPendingRequests> pending_requests_;
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
   std::unique_ptr<content::ClientCertificateDelegate> delegate_;
-  base::WeakPtrFactory<ClientCertRequest> weak_factory_;
+  base::WeakPtrFactory<ClientCertRequest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ClientCertRequest);
 };
@@ -82,7 +81,7 @@ class SSLClientCertPendingRequests
       public content::WebContentsObserver {
  public:
   explicit SSLClientCertPendingRequests(content::WebContents* web_contents)
-      : content::WebContentsObserver(web_contents), weak_factory_(this) {}
+      : content::WebContentsObserver(web_contents) {}
   ~SSLClientCertPendingRequests() override {}
 
   void AddRequest(std::unique_ptr<ClientCertRequest> request);
@@ -133,7 +132,7 @@ class SSLClientCertPendingRequests
 
   CertificateDialogPolicy dialog_policy_;
   base::queue<std::unique_ptr<ClientCertRequest>> pending_requests_;
-  base::WeakPtrFactory<SSLClientCertPendingRequests> weak_factory_;
+  base::WeakPtrFactory<SSLClientCertPendingRequests> weak_factory_{this};
 
   friend class content::WebContentsUserData<SSLClientCertPendingRequests>;
 

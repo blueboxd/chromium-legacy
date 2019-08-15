@@ -9,7 +9,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/incognito_color_util.h"
+#import "ios/chrome/common/colors/dynamic_color_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -29,41 +29,41 @@
 }
 
 - (UIColor*)NTPBackgroundColor {
-  return color::IncognitoDynamicColor(
-      self.style == INCOGNITO, ntp_home::kNTPBackgroundColor(),
-      [UIColor colorNamed:kBackgroundDarkColor]);
+  return color::DarkModeDynamicColor(ntp_home::kNTPBackgroundColor(),
+                                     self.style == INCOGNITO,
+                                     [UIColor colorNamed:kBackgroundDarkColor]);
 }
 
 - (UIColor*)backgroundColor {
-  return color::IncognitoDynamicColor(
-      self.style == INCOGNITO, [UIColor colorNamed:kBackgroundColor],
-      [UIColor colorNamed:kBackgroundDarkColor]);
+  return color::DarkModeDynamicColor([UIColor colorNamed:kBackgroundColor],
+                                     self.style == INCOGNITO,
+                                     [UIColor colorNamed:kBackgroundDarkColor]);
 }
 
 - (UIColor*)buttonsTintColor {
-  return color::IncognitoDynamicColor(
-      self.style == INCOGNITO, [UIColor colorNamed:kToolbarButtonColor],
+  return color::DarkModeDynamicColor(
+      [UIColor colorNamed:kToolbarButtonColor], self.style == INCOGNITO,
       [UIColor colorNamed:kToolbarButtonDarkColor]);
 }
 
 - (UIColor*)buttonsTintColorHighlighted {
-  return color::IncognitoDynamicColor(
-      self.style == INCOGNITO,
+  return color::DarkModeDynamicColor(
       [UIColor colorNamed:@"tab_toolbar_button_color_highlighted"],
+      self.style == INCOGNITO,
       [UIColor colorNamed:@"tab_toolbar_button_color_highlighted_incognito"]);
 }
 
 - (UIColor*)buttonsSpotlightColor {
-  return color::IncognitoDynamicColor(
-      self.style == INCOGNITO,
+  return color::DarkModeDynamicColor(
       [UIColor colorNamed:@"tab_toolbar_button_halo_color"],
+      self.style == INCOGNITO,
       [UIColor colorNamed:@"tab_toolbar_button_halo_color_incognito"]);
 }
 
 - (UIColor*)dimmedButtonsSpotlightColor {
-  return color::IncognitoDynamicColor(
-      self.style == INCOGNITO,
+  return color::DarkModeDynamicColor(
       [UIColor colorNamed:@"tab_toolbar_button_halo_color"],
+      self.style == INCOGNITO,
       [UIColor colorNamed:@"tab_toolbar_button_halo_color_incognito"]);
 }
 

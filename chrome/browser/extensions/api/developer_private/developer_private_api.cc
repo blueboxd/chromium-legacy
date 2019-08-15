@@ -1821,7 +1821,7 @@ DeveloperPrivateOpenDevToolsFunction::Run() {
   // ... but some pages (popups and apps) don't have tabs, and some (background
   // pages) don't have an associated browser. For these, the inspector opens in
   // a new window, and our work is done.
-  if (!browser || !browser->is_type_tabbed())
+  if (!browser || !browser->is_type_normal())
     return RespondNow(NoArguments());
 
   TabStripModel* tab_strip = browser->tab_strip_model();

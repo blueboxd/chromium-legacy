@@ -52,7 +52,7 @@ class HistoryStatisticsReporter : public history::HistoryServiceObserver {
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
   bool attempted_to_report_once_ = false;
-  base::WeakPtrFactory<HistoryStatisticsReporter> weak_ptr_factory_;
+  base::WeakPtrFactory<HistoryStatisticsReporter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HistoryStatisticsReporter);
 };

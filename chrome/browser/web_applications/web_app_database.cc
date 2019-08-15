@@ -79,6 +79,8 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
                                   ? LaunchContainerProto::WINDOW
                                   : LaunchContainerProto::TAB);
 
+  proto->set_is_locally_installed(web_app.is_locally_installed());
+
   // Optional fields:
   proto->set_description(web_app.description());
   if (!web_app.scope().is_empty())
@@ -122,6 +124,12 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
                                       LaunchContainerProto::WINDOW
                                   ? LaunchContainer::kWindow
                                   : LaunchContainer::kTab);
+
+  if (!proto.has_is_locally_installed()) {
+    DLOG(ERROR) << "WebApp proto parse error: no is_locally_installed field";
+    return nullptr;
+  }
+  web_app->SetIsLocallyInstalled(proto.is_locally_installed());
 
   // Optional fields:
   if (proto.has_description())

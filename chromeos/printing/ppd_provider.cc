@@ -52,11 +52,6 @@ namespace {
 
 const char kEpsonGenericPPD[] = "epson generic escpr printer";
 
-struct UsbVendorPair {
-  int vendor_id;
-  const char* vendor_name;
-};
-
 // Holds a metadata_v2 reverse-index response
 struct ReverseIndexJSON {
   // Canonical name of printer

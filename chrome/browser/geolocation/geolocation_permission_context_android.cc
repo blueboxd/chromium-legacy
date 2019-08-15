@@ -88,8 +88,7 @@ GeolocationPermissionContextAndroid::GeolocationPermissionContextAndroid(
     Profile* profile)
     : GeolocationPermissionContext(profile),
       location_settings_(new LocationSettingsImpl()),
-      location_settings_dialog_request_id_(0, 0, 0),
-      weak_factory_(this) {}
+      location_settings_dialog_request_id_(0, 0, 0) {}
 
 GeolocationPermissionContextAndroid::~GeolocationPermissionContextAndroid() {
 }

@@ -71,7 +71,7 @@ public class UiLocatorHelper {
     }
 
     /**
-     * Checks and waits if a node is found on the screen.
+     * Determines if a node is found on the screen.
      * @param locator Locator used to find the node.
      * @return        true if node is found, false otherwise.
      */
@@ -85,7 +85,7 @@ public class UiLocatorHelper {
     }
 
     /**
-     * Checks if a node is found on the screen, does not retry.
+     * Determines if a node is found on the screen, does not retry.
      * @param locator Locator used to find the node.
      * @param root    Node to search under, or null if all the nodes should be searched.
      *                Possible root staleness will make retries ineffective, this means
@@ -94,6 +94,15 @@ public class UiLocatorHelper {
      */
     public boolean isOnScreenImmediate(@NonNull IUi2Locator locator, UiObject2 root) {
         return getOneImmediate(locator, root) == null;
+    }
+
+    /**
+     * Checks that a node is found on the screen.
+     * @param locator Locator used to find the node.
+     * @throws        UiLocationException if locator is not found on screen.
+     */
+    public void verifyOnScreen(@NonNull IUi2Locator locator) {
+        getOne(locator);
     }
 
     /**

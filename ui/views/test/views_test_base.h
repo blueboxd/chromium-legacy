@@ -7,11 +7,13 @@
 
 #include <memory>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/test/scoped_views_test_helper.h"
 #include "ui/views/test/test_views_delegate.h"
@@ -31,8 +33,6 @@ namespace views {
 // to drive UI events and takes care of OLE initialization for windows.
 class ViewsTestBase : public PlatformTest {
  public:
-  using ScopedTaskEnvironment = base::test::ScopedTaskEnvironment;
-
   enum class NativeWidgetType {
     // On Aura, corresponds to NativeWidgetAura.
     kDefault,
@@ -41,7 +41,27 @@ class ViewsTestBase : public PlatformTest {
     kDesktop,
   };
 
-  ViewsTestBase();
+  // Constructs a ViewsTestBase with |traits| being forwarded to its
+  // ScopedTaskEnvironment. MainThreadType always defaults to UI and must not be
+  // specified.
+  template <typename... TaskEnvironmentTraits>
+  NOINLINE explicit ViewsTestBase(TaskEnvironmentTraits... traits)
+      : scoped_task_environment_(
+            base::in_place,
+            base::test::ScopedTaskEnvironment::MainThreadType::UI,
+            traits...) {
+    // MaterialDesignController is initialized here instead of in SetUp because
+    // a subclass might construct a MaterialDesignControllerTestAPI as a member
+    // to override the value, and this must happen first.
+    ui::MaterialDesignController::Initialize();
+  }
+
+  // Alternatively a subclass may pass this tag to ask this ViewsTestBase not to
+  // instantiate a ScopedTaskEnvironment. The subclass is then responsible to
+  // instantiate one before ViewsTestBase::SetUp().
+  struct SubclassManagesTaskEnvironment {};
+  explicit ViewsTestBase(SubclassManagesTaskEnvironment tag);
+
   ~ViewsTestBase() override;
 
   // testing::Test:
@@ -74,16 +94,6 @@ class ViewsTestBase : public PlatformTest {
     native_widget_type_ = native_widget_type;
   }
 
-  void set_scoped_task_environment(
-      std::unique_ptr<ScopedTaskEnvironment> scoped_task_environment) {
-    DCHECK(!setup_called_);
-    scoped_task_environment_ = std::move(scoped_task_environment);
-  }
-
-  ScopedTaskEnvironment* scoped_task_environment() {
-    return scoped_task_environment_.get();
-  }
-
   void set_views_delegate(std::unique_ptr<TestViewsDelegate> views_delegate) {
     DCHECK(!setup_called_);
     views_delegate_for_setup_.swap(views_delegate);
@@ -113,6 +123,11 @@ class ViewsTestBase : public PlatformTest {
       const Widget::InitParams& init_params,
       internal::NativeWidgetDelegate* delegate);
 
+ protected:
+  // Initialized first, destroyed last. Use this protected member directly from
+  // the test body to drive tasks posted within a ViewsTestBase-based test.
+  base::Optional<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+
  private:
   // Controls what type of widget will be created by default for a test (i.e.
   // when creating a Widget and leaving InitParams::native_widget unspecified).
@@ -122,7 +137,6 @@ class ViewsTestBase : public PlatformTest {
   // value is ignored.
   NativeWidgetType native_widget_type_ = NativeWidgetType::kDefault;
 
-  std::unique_ptr<ScopedTaskEnvironment> scoped_task_environment_;
   std::unique_ptr<TestViewsDelegate> views_delegate_for_setup_;
   std::unique_ptr<ScopedViewsTestHelper> test_helper_;
   bool interactive_setup_called_ = false;
@@ -141,7 +155,7 @@ class ViewsTestBaseWithNativeWidgetType
     : public ViewsTestBase,
       public testing::WithParamInterface<ViewsTestBase::NativeWidgetType> {
  public:
-  ViewsTestBaseWithNativeWidgetType() = default;
+  using ViewsTestBase::ViewsTestBase;
   ~ViewsTestBaseWithNativeWidgetType() override = default;
 
   // ViewsTestBase:
@@ -159,7 +173,7 @@ class ViewsTestBaseWithNativeWidgetType
 // used either way.
 class ViewsTestWithDesktopNativeWidget : public ViewsTestBase {
  public:
-  ViewsTestWithDesktopNativeWidget() = default;
+  using ViewsTestBase::ViewsTestBase;
   ~ViewsTestWithDesktopNativeWidget() override = default;
 
   // ViewsTestBase:

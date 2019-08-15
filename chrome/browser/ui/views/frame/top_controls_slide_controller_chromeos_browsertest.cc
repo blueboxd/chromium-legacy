@@ -471,7 +471,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, DisabledForHostedApps) {
   Browser* browser = new Browser(params);
   AddBlankTabAndShow(browser);
 
-  ASSERT_TRUE(browser->is_app());
+  ASSERT_TRUE(browser->is_type_app());
 
   // No slide controller gets created for hosted apps.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);

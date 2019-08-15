@@ -7,6 +7,7 @@ per-file *gl_image*=dcastagna@chromium.org
 per-file *_ozone*=alexst@chromium.org
 per-file *_ozone*=dnicoara@chromium.org
 per-file *_ozone*=spang@chromium.org
+per-file *surface_control*=khushalsagar@chromium.org
 
 # COMPONENT: Internals>GPU>Internals
 # TEAM: graphics-dev@chromium.org

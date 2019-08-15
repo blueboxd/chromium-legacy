@@ -63,11 +63,6 @@ const base::Feature kFreezeUserAgent{"FreezeUserAgent",
 const base::Feature kJankTrackingSweepLine{"JankTrackingSweepLine",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable a new compositing mode called BlinkGenPropertyTrees where Blink
-// generates the compositor property trees. See: https://crbug.com/836884.
-const base::Feature kBlinkGenPropertyTrees{"BlinkGenPropertyTrees",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable a new CSS property called backdrop-filter.
 const base::Feature kCSSBackdropFilter{"CSSBackdropFilter",
                                        base::FEATURE_ENABLED_BY_DEFAULT};

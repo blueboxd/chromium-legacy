@@ -41,10 +41,6 @@ namespace content_settings {
 class CookieSettings;
 }
 
-namespace data_reduction_proxy {
-class DataReductionProxyIOData;
-}
-
 namespace extensions {
 class InfoMap;
 }
@@ -99,11 +95,6 @@ class ProfileIOData {
     client_cert_store_factory_ = factory;
   }
 
-  data_reduction_proxy::DataReductionProxyIOData*
-  data_reduction_proxy_io_data() const {
-    return data_reduction_proxy_io_data_.get();
-  }
-
   // Get platform ClientCertStore. May return nullptr.
   std::unique_ptr<net::ClientCertStore> CreateClientCertStore();
 
@@ -155,10 +146,6 @@ class ProfileIOData {
   // Called when the Profile is destroyed. Triggers destruction of the
   // ProfileIOData.
   void ShutdownOnUIThread();
-
-  void set_data_reduction_proxy_io_data(
-      std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
-          data_reduction_proxy_io_data) const;
 
   bool initialized() const {
     return initialized_;
@@ -216,9 +203,6 @@ class ProfileIOData {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   mutable scoped_refptr<extensions::InfoMap> extension_info_map_;
 #endif
-
-  mutable std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
-      data_reduction_proxy_io_data_;
 
 #if defined(OS_CHROMEOS)
   mutable std::string username_hash_;

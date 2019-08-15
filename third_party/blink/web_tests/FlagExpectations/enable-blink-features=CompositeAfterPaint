@@ -327,6 +327,7 @@ crbug.com/931486 paint/invalidation/compositing/should-not-clip-composited-viewp
 crbug.com/931486 paint/invalidation/compositing/should-not-repaint-scrolling-contents-outline-change.html [ Failure ]
 crbug.com/931486 paint/invalidation/compositing/text-color-change.html [ Failure ]
 crbug.com/931486 paint/invalidation/compositing/text-match-highlight.html [ Failure ]
+crbug.com/931486 paint/invalidation/compositing/updating-scrolling-container-and-content.html [ Failure ]
 crbug.com/931486 paint/invalidation/line-flow-with-floats-1.html [ Failure ]
 crbug.com/931486 paint/invalidation/line-flow-with-floats-10.html [ Failure ]
 crbug.com/931486 paint/invalidation/line-flow-with-floats-2.html [ Failure ]

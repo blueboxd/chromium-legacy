@@ -344,9 +344,9 @@ class LocalStorageContextMojo::StorageAreaHolder final
                                 leveldb_env::LEVELDB_STATUS_MAX);
   }
 
-  void Bind(blink::mojom::StorageAreaRequest request) {
+  void Bind(mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
     has_bindings_ = true;
-    storage_area()->Bind(std::move(request));
+    storage_area()->Bind(std::move(receiver));
   }
 
   bool has_bindings() const { return has_bindings_; }
@@ -417,10 +417,10 @@ LocalStorageContextMojo::LocalStorageContextMojo(
 
 void LocalStorageContextMojo::OpenLocalStorage(
     const url::Origin& origin,
-    blink::mojom::StorageAreaRequest request) {
+    mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
   RunWhenConnected(base::BindOnce(&LocalStorageContextMojo::BindLocalStorage,
                                   weak_ptr_factory_.GetWeakPtr(), origin,
-                                  std::move(request)));
+                                  std::move(receiver)));
 }
 
 void LocalStorageContextMojo::GetStorageUsage(
@@ -933,8 +933,8 @@ void LocalStorageContextMojo::OnDBDestroyed(
 // directly from that function, or through |on_database_open_callbacks_|.
 void LocalStorageContextMojo::BindLocalStorage(
     const url::Origin& origin,
-    blink::mojom::StorageAreaRequest request) {
-  GetOrCreateStorageArea(origin)->Bind(std::move(request));
+    mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
+  GetOrCreateStorageArea(origin)->Bind(std::move(receiver));
 }
 
 LocalStorageContextMojo::StorageAreaHolder*

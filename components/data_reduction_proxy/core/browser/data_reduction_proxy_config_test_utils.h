@@ -16,7 +16,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {
-class SingleThreadTaskRunner;
 class TickClock;
 }
 
@@ -33,8 +32,6 @@ class TestDataReductionProxyParams;
 class TestDataReductionProxyConfig : public DataReductionProxyConfig {
  public:
   TestDataReductionProxyConfig(
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       DataReductionProxyConfigurator* configurator);
 
   // Creates a |TestDataReductionProxyConfig| with the provided |config_values|.
@@ -42,8 +39,6 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   // DataReductionProxyParams or DataReductionProxyMutableConfigValues).
   TestDataReductionProxyConfig(
       std::unique_ptr<DataReductionProxyConfigValues> config_values,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       DataReductionProxyConfigurator* configurator);
 
   ~TestDataReductionProxyConfig() override;
@@ -132,8 +127,6 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
   // Creates a |MockDataReductionProxyConfig|.
   MockDataReductionProxyConfig(
       std::unique_ptr<DataReductionProxyConfigValues> config_values,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       DataReductionProxyConfigurator* configurator);
   ~MockDataReductionProxyConfig() override;
 

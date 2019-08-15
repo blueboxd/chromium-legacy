@@ -182,8 +182,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
     # Removes metadata needed for Resources.getIdentifier("resource_name").
     strip_resource_names = !is_java_debug
 
-    # TODO(753402): enable once aapt2>=3.6.0 and bundletool>0.9.0 are rolled in.
-    short_resource_paths = false
+    short_resource_paths = true
 
     if (defined(shared_libraries) && shared_libraries != []) {
       _native_lib_file =

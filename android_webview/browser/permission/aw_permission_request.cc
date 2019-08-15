@@ -31,7 +31,7 @@ base::android::ScopedJavaLocalRef<jobject> AwPermissionRequest::Create(
 AwPermissionRequest::AwPermissionRequest(
     std::unique_ptr<AwPermissionRequestDelegate> delegate,
     ScopedJavaLocalRef<jobject>* java_peer)
-    : delegate_(std::move(delegate)), processed_(false), weak_factory_(this) {
+    : delegate_(std::move(delegate)), processed_(false) {
   DCHECK(delegate_.get());
   DCHECK(java_peer);
 

@@ -206,7 +206,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   // Java VideoCaptureAndroid instance.
   base::android::ScopedJavaLocalRef<jobject> j_capture_;
 
-  base::WeakPtrFactory<VideoCaptureDeviceAndroid> weak_ptr_factory_;
+  base::WeakPtrFactory<VideoCaptureDeviceAndroid> weak_ptr_factory_{this};
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceAndroid);
 };

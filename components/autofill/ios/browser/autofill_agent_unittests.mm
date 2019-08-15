@@ -37,6 +37,7 @@
 
 using autofill::POPUP_ITEM_ID_CLEAR_FORM;
 using autofill::POPUP_ITEM_ID_GOOGLE_PAY_BRANDING;
+using autofill::POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS;
 using base::test::ios::WaitUntilCondition;
 
 // Subclass of web::FakeWebFrame that allow to set a callback before any
@@ -281,6 +282,46 @@ TEST_F(AutofillAgentTests,
     return completion_handler_called;
   });
   EXPECT_FALSE(completion_handler_success);
+}
+
+// Tests that "Show credit cards from account" opt-in is shown.
+TEST_F(AutofillAgentTests, onSuggestionsReady_ShowAccountCards) {
+  __block NSArray<FormSuggestion*>* completion_handler_suggestions = nil;
+  __block BOOL completion_handler_called = NO;
+
+  // Make the suggestions available to AutofillAgent.
+  std::vector<autofill::Suggestion> suggestions;
+  suggestions.push_back(
+      autofill::Suggestion("", "", "", POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS));
+  [autofill_agent_
+      showAutofillPopup:suggestions
+          popupDelegate:base::WeakPtr<autofill::AutofillPopupDelegate>()];
+
+  // Retrieves the suggestions.
+  auto completionHandler = ^(NSArray<FormSuggestion*>* suggestions,
+                             id<FormSuggestionProvider> delegate) {
+    completion_handler_suggestions = [suggestions copy];
+    completion_handler_called = YES;
+  };
+  [autofill_agent_ retrieveSuggestionsForForm:@"form"
+                              fieldIdentifier:@"address"
+                                    fieldType:@"text"
+                                         type:@"focus"
+                                   typedValue:@""
+                                      frameID:@"frameID"
+                                     webState:&test_web_state_
+                            completionHandler:completionHandler];
+  test_web_state_.WasShown();
+
+  // Wait until the expected handler is called.
+  WaitUntilCondition(^bool() {
+    return completion_handler_called;
+  });
+
+  // "Show credit cards from account" should be the only suggestion.
+  EXPECT_EQ(1U, completion_handler_suggestions.count);
+  EXPECT_EQ(POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS,
+            completion_handler_suggestions[0].identifier);
 }
 
 // Tests that when Autofill suggestions are made available to AutofillAgent

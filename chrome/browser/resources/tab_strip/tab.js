@@ -27,6 +27,7 @@ export class TabElement extends CustomElement {
     this.titleTextEl_ = /** @type {!HTMLElement} */ (
         this.shadowRoot.querySelector('#titleText'));
 
+    this.addEventListener('click', this.onClick_.bind(this));
     this.closeButtonEl_.addEventListener('click', this.onClose_.bind(this));
   }
 
@@ -37,6 +38,8 @@ export class TabElement extends CustomElement {
 
   /** @param {!Tab} tab */
   set tab(tab) {
+    this.toggleAttribute('active', tab.active);
+
     if (!this.tab_ || this.tab_.title !== tab.title) {
       this.titleTextEl_.textContent = tab.title;
     }
@@ -48,12 +51,24 @@ export class TabElement extends CustomElement {
   }
 
   /** @private */
-  onClose_() {
-    // There is no tab data and therefore nothing to close
+  onClick_() {
     if (!this.tab_) {
       return;
     }
 
+    this.tabsApi_.activateTab(this.tab_.id);
+  }
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onClose_(event) {
+    if (!this.tab_) {
+      return;
+    }
+
+    event.stopPropagation();
     this.tabsApi_.closeTab(this.tab_.id);
   }
 }

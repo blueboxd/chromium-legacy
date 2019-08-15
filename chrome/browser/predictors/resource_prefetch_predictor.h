@@ -190,7 +190,7 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetCorrectPLT);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
                            PopulatePrefetcherRequest);
-  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetRedirectEndpoint);
+  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetRedirectOrigin);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetPrefetchData);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
                            TestPredictPreconnectOrigins);
@@ -208,14 +208,14 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   };
 
   // Returns true iff one of the following conditions is true
-  // * |redirect_data| contains confident redirect endpoint for |entry_point|
-  //   and assigns it to the |redirect_endpoint|
+  // * |redirect_data| contains confident redirect origin for |entry_origin|
+  //   and assigns it to the |redirect_origin|
   //
-  // * |redirect_data| doens't contain an entry for |entry_point| and assigns
-  //   |entry_point| to the |redirect_endpoint|.
-  bool GetRedirectEndpoint(const std::string& entry_point,
-                           const RedirectDataMap& redirect_data,
-                           std::string* redirect_endpoint) const;
+  // * |redirect_data| doesn't contain an entry for |entry_origin| and assigns
+  //   |entry_origin| to the |redirect_origin|.
+  static bool GetRedirectOrigin(const url::Origin& entry_origin,
+                                const RedirectDataMap& redirect_data,
+                                url::Origin* redirect_origin);
 
   // Callback for the task to read the predictor database. Takes ownership of
   // all arguments.

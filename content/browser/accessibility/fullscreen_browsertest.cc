@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityFullscreenBrowserTest,
                                          ax::mojom::Event::kLoadComplete);
   GURL url(
       embedded_test_server()->GetURL("/accessibility/fullscreen/links.html"));
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   waiter.WaitForNotification();
 
   WebContentsImpl* web_contents =
@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityFullscreenBrowserTest,
                                          ax::mojom::Event::kLoadComplete);
   GURL url(
       embedded_test_server()->GetURL("/accessibility/fullscreen/iframe.html"));
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   waiter.WaitForNotification();
 
   WebContentsImpl* web_contents =

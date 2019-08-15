@@ -42,7 +42,7 @@ void AccessibilityBrowserTest::LoadInitialAccessibilityTreeFromHtml(
                                          ax::mojom::Event::kLoadComplete);
   GURL html_data_url("data:text/html," +
                      net::EscapeQueryParamValue(html, false));
-  NavigateToURL(shell(), html_data_url);
+  EXPECT_TRUE(NavigateToURL(shell(), html_data_url));
   waiter.WaitForNotification();
 }
 

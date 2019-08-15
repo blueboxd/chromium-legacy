@@ -107,15 +107,15 @@ X11ScreenOzone::X11ScreenOzone(X11WindowManagerOzone* window_manager)
 
 X11ScreenOzone::~X11ScreenOzone() {
   if (x11_display_manager_->IsXrandrAvailable() &&
-      X11EventSourceLibevent::GetInstance()) {
-    X11EventSourceLibevent::GetInstance()->RemoveXEventDispatcher(this);
+      X11EventSource::HasInstance()) {
+    X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
   }
 }
 
 void X11ScreenOzone::Init() {
   if (x11_display_manager_->IsXrandrAvailable() &&
-      X11EventSourceLibevent::GetInstance()) {
-    X11EventSourceLibevent::GetInstance()->AddXEventDispatcher(this);
+      X11EventSource::HasInstance()) {
+    X11EventSource::GetInstance()->AddXEventDispatcher(this);
   }
   x11_display_manager_->Init();
 }

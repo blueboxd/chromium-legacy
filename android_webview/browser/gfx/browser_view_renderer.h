@@ -256,7 +256,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   ParentCompositorDrawConstraints external_draw_constraints_;
 
-  base::WeakPtrFactory<CompositorFrameProducer> weak_ptr_factory_;
+  base::WeakPtrFactory<CompositorFrameProducer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserViewRenderer);
 };

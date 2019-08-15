@@ -109,7 +109,8 @@ void ContentHash::Create(const ExtensionKey& key,
 
   // Step 2/2: computed_hashes.json:
   scoped_refptr<ContentHash> hash =
-      new ContentHash(key, std::move(verified_contents), nullptr);
+      new ContentHash(key.extension_id, key.extension_root,
+                      std::move(verified_contents), nullptr);
   const bool did_fetch_verified_contents = false;
   hash->BuildComputedHashes(did_fetch_verified_contents,
                             false /* force_build */, is_cancelled);
@@ -135,10 +136,12 @@ const ComputedHashes::Reader& ContentHash::computed_hashes() const {
 }
 
 ContentHash::ContentHash(
-    const ExtensionKey& key,
+    const ExtensionId& id,
+    const base::FilePath& root,
     std::unique_ptr<VerifiedContents> verified_contents,
     std::unique_ptr<ComputedHashes::Reader> computed_hashes)
-    : key_(key),
+    : extension_id_(id),
+      extension_root_(root),
       verified_contents_(std::move(verified_contents)),
       computed_hashes_(std::move(computed_hashes)) {
   if (!verified_contents_)
@@ -218,7 +221,8 @@ void ContentHash::DidFetchVerifiedContents(
 
   RecordFetchResult(true);
   scoped_refptr<ContentHash> hash =
-      new ContentHash(key, std::move(verified_contents), nullptr);
+      new ContentHash(key.extension_id, key.extension_root,
+                      std::move(verified_contents), nullptr);
   const bool did_fetch_verified_contents = true;
   hash->BuildComputedHashes(did_fetch_verified_contents,
                             false /* force_build */, is_cancelled);
@@ -233,7 +237,7 @@ void ContentHash::DispatchFetchFailure(
   RecordFetchResult(false);
   // NOTE: bare new because ContentHash constructor is private.
   scoped_refptr<ContentHash> content_hash =
-      new ContentHash(key, nullptr, nullptr);
+      new ContentHash(key.extension_id, key.extension_root, nullptr, nullptr);
   std::move(created_callback)
       .Run(content_hash, is_cancelled && is_cancelled.Run());
 }
@@ -251,7 +255,7 @@ bool ContentHash::CreateHashes(const base::FilePath& hashes_file,
   if (!base::CreateDirectoryAndGetError(hashes_file.DirName(), nullptr))
     return false;
 
-  base::FileEnumerator enumerator(key_.extension_root, true, /* recursive */
+  base::FileEnumerator enumerator(extension_root_, true, /* recursive */
                                   base::FileEnumerator::FILES);
   // First discover all the file paths and put them in a sorted set.
   SortedFilePathSet paths;
@@ -274,7 +278,7 @@ bool ContentHash::CreateHashes(const base::FilePath& hashes_file,
 
     const base::FilePath& full_path = *i;
     base::FilePath relative_unix_path;
-    key_.extension_root.AppendRelativePath(full_path, &relative_unix_path);
+    extension_root_.AppendRelativePath(full_path, &relative_unix_path);
     relative_unix_path = relative_unix_path.NormalizePathSeparatorsTo('/');
 
     if (!verified_contents_->HasTreeHashRoot(relative_unix_path))
@@ -314,7 +318,7 @@ void ContentHash::BuildComputedHashes(bool attempted_fetching_verified_contents,
                                       bool force_build,
                                       const IsCancelledCallback& is_cancelled) {
   base::FilePath computed_hashes_path =
-      file_util::GetComputedHashesPath(key_.extension_root);
+      file_util::GetComputedHashesPath(extension_root_);
 
   // Create computed_hashes.json file if any of the following is true:
   // - We just fetched and wrote a verified_contents.json (i.e.

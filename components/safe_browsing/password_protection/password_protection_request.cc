@@ -167,10 +167,12 @@ void PasswordProtectionRequest::CheckCachedVerdicts() {
   auto verdict = password_protection_service_->GetCachedVerdict(
       main_frame_url_, trigger_type_, password_account_type,
       cached_response.get());
-  if (verdict != LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED)
+  if (verdict != LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED) {
+    set_request_outcome(RequestOutcome::RESPONSE_ALREADY_CACHED);
     Finish(RequestOutcome::RESPONSE_ALREADY_CACHED, std::move(cached_response));
-  else
+  } else {
     FillRequestProto();
+  }
 }
 
 void PasswordProtectionRequest::FillRequestProto() {
@@ -449,6 +451,7 @@ void PasswordProtectionRequest::OnURLLoaderComplete(
   if (response_body && response->ParseFromString(*response_body)) {
     WebUIInfoSingleton::GetInstance()->AddToPGResponses(web_ui_token_,
                                                         *response);
+    set_request_outcome(RequestOutcome::SUCCEEDED);
     Finish(RequestOutcome::SUCCEEDED, std::move(response));
   } else {
     Finish(RequestOutcome::RESPONSE_MALFORMED, nullptr);
@@ -475,7 +478,7 @@ void PasswordProtectionRequest::Finish(
 
       if (password_type_ == PasswordType::PRIMARY_ACCOUNT_PASSWORD) {
         password_protection_service_->MaybeLogPasswordReuseLookupEvent(
-            web_contents_, outcome, response.get());
+            web_contents_, outcome, password_type_, response.get());
       }
     }
 

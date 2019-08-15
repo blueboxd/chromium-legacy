@@ -1255,6 +1255,12 @@ void RenderFrameHostImpl::MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
 }
 
 bool RenderFrameHostImpl::IsSandboxed(blink::WebSandboxFlags flags) {
+  if (base::FeatureList::IsEnabled(features::kFeaturePolicyForSandbox)) {
+    blink::mojom::FeaturePolicyFeature feature =
+        blink::FeaturePolicy::FeatureForSandboxFlag(flags);
+    if (feature != blink::mojom::FeaturePolicyFeature::kNotFound)
+      return !IsFeatureEnabled(feature);
+  }
   return static_cast<int>(active_sandbox_flags_) & static_cast<int>(flags);
 }
 

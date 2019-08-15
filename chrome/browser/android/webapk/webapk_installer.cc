@@ -484,8 +484,7 @@ WebApkInstaller::WebApkInstaller(content::BrowserContext* browser_context)
       server_url_(GetServerUrl()),
       webapk_server_timeout_ms_(kWebApkDownloadUrlTimeoutMs),
       relax_updates_(false),
-      task_type_(UNDEFINED),
-      weak_ptr_factory_(this) {
+      task_type_(UNDEFINED) {
   CreateJavaRef();
 }
 

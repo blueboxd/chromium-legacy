@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chromeos/services/assistant/pref_connection_delegate.h"
+#include "services/preferences/public/cpp/pref_service_factory.h"
 
 #include <utility>
 
@@ -10,11 +11,12 @@ namespace chromeos {
 namespace assistant {
 
 void PrefConnectionDelegate::ConnectToPrefService(
-    service_manager::Connector* connector,
+    mojo::PendingRemote<prefs::mojom::PrefStoreConnector> connector,
     scoped_refptr<PrefRegistrySimple> pref_registry,
     prefs::ConnectCallback callback) {
-  ::prefs::ConnectToPrefService(connector, std::move(pref_registry), callback,
-                                ::prefs::mojom::kServiceName);
+  prefs::mojom::PrefStoreConnectorPtr ptr(std::move(connector));
+  ::prefs::ConnectToPrefService(std::move(ptr), std::move(pref_registry),
+                                callback);
 }
 
 }  // namespace assistant

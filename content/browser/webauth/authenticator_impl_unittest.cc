@@ -2994,8 +2994,6 @@ class PINAuthenticatorImplTest : public UVAuthenticatorImplTest {
   PINAuthenticatorImplTest() = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(device::kWebAuthPINSupport);
-
     UVAuthenticatorImplTest::SetUp();
     old_client_ = SetBrowserClientForTesting(&test_client_);
     device::VirtualCtap2Device::Config config;
@@ -3053,7 +3051,6 @@ class PINAuthenticatorImplTest : public UVAuthenticatorImplTest {
 
  private:
   ContentBrowserClient* old_client_ = nullptr;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PINAuthenticatorImplTest);
 };
@@ -3617,8 +3614,7 @@ class ResidentKeyAuthenticatorImplTest : public UVAuthenticatorImplTest {
   ResidentKeyAuthenticatorImplTest() = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {device::kWebAuthPINSupport, device::kWebAuthResidentKeys}, {});
+    scoped_feature_list_.InitWithFeatures({device::kWebAuthResidentKeys}, {});
 
     UVAuthenticatorImplTest::SetUp();
     old_client_ = SetBrowserClientForTesting(&test_client_);

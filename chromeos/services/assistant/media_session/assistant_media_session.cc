@@ -8,8 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/assistant/assistant_manager_service_impl.h"
 #include "services/media_session/public/cpp/features.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 namespace assistant {
@@ -25,11 +23,9 @@ const char kAudioFocusSourceName[] = "assistant";
 }  // namespace
 
 AssistantMediaSession::AssistantMediaSession(
-    service_manager::Connector* connector,
+    mojom::Client* client,
     AssistantManagerServiceImpl* assistant_manager)
-    : assistant_manager_service_(assistant_manager),
-      connector_(connector),
-      weak_factory_(this) {}
+    : assistant_manager_service_(assistant_manager), client_(client) {}
 
 AssistantMediaSession::~AssistantMediaSession() {
   AbandonAudioFocusIfNeeded();
@@ -145,8 +141,8 @@ void AssistantMediaSession::EnsureServiceConnection() {
     return;
 
   audio_focus_remote_.reset();
-  connector_->Connect(media_session::mojom::kServiceName,
-                      audio_focus_remote_.BindNewPipeAndPassReceiver());
+  client_->RequestAudioFocusManager(
+      audio_focus_remote_.BindNewPipeAndPassReceiver());
   audio_focus_remote_->SetSourceName(kAudioFocusSourceName);
 }
 

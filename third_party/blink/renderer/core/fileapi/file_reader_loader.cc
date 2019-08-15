@@ -147,10 +147,12 @@ DOMArrayBuffer* FileReaderLoader::ArrayBufferResult() {
 
   if (!finished_loading_) {
     return DOMArrayBuffer::Create(ArrayBuffer::Create(
-        raw_data_->Data(), static_cast<unsigned>(bytes_loaded_)));
+        raw_data_.Data(), static_cast<unsigned>(bytes_loaded_)));
   }
 
-  array_buffer_result_ = DOMArrayBuffer::Create(std::move(raw_data_));
+  WTF::ArrayBufferContents contents(std::move(raw_data_),
+                                    WTF::ArrayBufferContents::kNotShared);
+  array_buffer_result_ = DOMArrayBuffer::Create(contents);
   AdjustReportedMemoryUsageToV8(-1 * static_cast<int64_t>(bytes_loaded_));
   raw_data_.reset();
   return array_buffer_result_;
@@ -170,7 +172,7 @@ String FileReaderLoader::StringResult() {
       // No conversion is needed.
       return string_result_;
     case kReadAsBinaryString:
-      SetStringResult(String(static_cast<const char*>(raw_data_->Data()),
+      SetStringResult(String(static_cast<const char*>(raw_data_.Data()),
                              static_cast<size_t>(bytes_loaded_)));
       break;
     case kReadAsText:
@@ -191,6 +193,17 @@ String FileReaderLoader::StringResult() {
     raw_data_.reset();
   }
   return string_result_;
+}
+
+WTF::ArrayBufferContents::DataHandle FileReaderLoader::TakeDataHandle() {
+  if (!raw_data_ || error_code_ != FileErrorCode::kOK)
+    return WTF::ArrayBufferContents::DataHandle();
+
+  DCHECK(finished_loading_);
+  WTF::ArrayBufferContents::DataHandle handle = std::move(raw_data_);
+  AdjustReportedMemoryUsageToV8(-1 * static_cast<int64_t>(bytes_loaded_));
+  raw_data_.reset();
+  return handle;
 }
 
 void FileReaderLoader::SetEncoding(const String& encoding) {
@@ -241,7 +254,9 @@ void FileReaderLoader::OnStartLoading(uint64_t total_bytes) {
       return;
     }
 
-    raw_data_ = ArrayBuffer::Create(static_cast<unsigned>(total_bytes), 1);
+    raw_data_ = WTF::ArrayBufferContents::CreateDataHandle(
+        static_cast<unsigned>(total_bytes),
+        WTF::ArrayBufferContents::kDontInitialize);
     if (!raw_data_) {
       Failed(FileErrorCode::kNotReadableErr,
              FailureType::kArrayBufferBuilderCreation);
@@ -273,14 +288,14 @@ void FileReaderLoader::OnReceivedData(const char* data, unsigned data_length) {
   // that the BlobPtr is actually backed by a "real" blob, so to defend against
   // compromised renderer processes we still need to carefully validate anything
   // received. So return an error if we received too much data.
-  if (bytes_loaded_ + data_length > raw_data_->ByteLength()) {
+  if (bytes_loaded_ + data_length > raw_data_.DataLength()) {
     raw_data_.reset();
     bytes_loaded_ = 0;
     Failed(FileErrorCode::kNotReadableErr,
            FailureType::kArrayBufferBuilderAppend);
     return;
   }
-  memcpy(static_cast<char*>(raw_data_->Data()) + bytes_loaded_, data,
+  memcpy(static_cast<char*>(raw_data_.Data()) + bytes_loaded_, data,
          data_length);
   bytes_loaded_ += data_length;
   is_raw_data_converted_ = false;
@@ -292,7 +307,7 @@ void FileReaderLoader::OnReceivedData(const char* data, unsigned data_length) {
 
 void FileReaderLoader::OnFinishLoading() {
   if (read_type_ != kReadByClient && raw_data_) {
-    DCHECK_EQ(bytes_loaded_, raw_data_->ByteLength());
+    DCHECK_EQ(bytes_loaded_, raw_data_.DataLength());
     is_raw_data_converted_ = false;
   }
 
@@ -435,7 +450,7 @@ String FileReaderLoader::ConvertToText() {
         TextResourceDecoderOptions::kPlainTextContent,
         encoding_.IsValid() ? encoding_ : UTF8Encoding()));
   }
-  builder.Append(decoder_->Decode(static_cast<const char*>(raw_data_->Data()),
+  builder.Append(decoder_->Decode(static_cast<const char*>(raw_data_.Data()),
                                   static_cast<size_t>(bytes_loaded_)));
 
   if (finished_loading_)
@@ -461,7 +476,7 @@ String FileReaderLoader::ConvertToDataURL() {
   builder.Append(";base64,");
 
   Vector<char> out;
-  Base64Encode(base::make_span(static_cast<const uint8_t*>(raw_data_->Data()),
+  Base64Encode(base::make_span(static_cast<const uint8_t*>(raw_data_.Data()),
                                SafeCast<unsigned>(bytes_loaded_)),
                out);
   builder.Append(out.data(), out.size());

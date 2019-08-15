@@ -179,7 +179,7 @@ void MultiResolutionImageResourceFetcher::OnURLFetchComplete(
   std::move(callback_).Run(this, bitmaps);
 }
 
-void MultiResolutionImageResourceFetcher::OnRenderFrameDestruct() {
+void MultiResolutionImageResourceFetcher::Dispose() {
   std::move(callback_).Run(this, WTF::Vector<SkBitmap>());
 }
 

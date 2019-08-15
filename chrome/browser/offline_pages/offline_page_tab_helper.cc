@@ -99,8 +99,7 @@ bool OfflinePageTabHelper::LoadedOfflinePageInfo::IsValid() const {
 
 OfflinePageTabHelper::OfflinePageTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      mhtml_page_notifier_bindings_(web_contents, this),
-      weak_ptr_factory_(this) {
+      mhtml_page_notifier_bindings_(web_contents, this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());

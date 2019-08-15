@@ -652,6 +652,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
                               float maximum_scale,
                               float starting_scale) override;
 
+  void OnCustomPropertyMutated(ElementId element_id,
+                               const std::string& custom_property_name,
+                               float custom_property_value) override {}
+
   void ScrollOffsetAnimationFinished() override {}
   gfx::ScrollOffset GetScrollOffsetForAnimation(
       ElementId element_id) const override;

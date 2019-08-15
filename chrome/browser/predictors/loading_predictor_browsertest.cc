@@ -39,6 +39,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
+#include "net/base/escape.h"
 #include "net/base/features.h"
 #include "net/base/network_isolation_key.h"
 #include "net/dns/mock_host_resolver.h"
@@ -396,6 +397,8 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
         &LoadingPredictorBrowserTest::HandleFaviconRequest));
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        &LoadingPredictorBrowserTest::HandleCacheRedirectRequest));
     InProcessBrowserTest::SetUp();
   }
 
@@ -482,6 +485,29 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
     auto http_response =
         std::make_unique<net::test_server::BasicHttpResponse>();
     http_response->set_code(net::HTTP_OK);
+    http_response->AddCustomHeader("Cache-Control", "max-age=6000");
+    return http_response;
+  }
+
+  static std::unique_ptr<net::test_server::HttpResponse>
+  HandleCacheRedirectRequest(const net::test_server::HttpRequest& request) {
+    if (!base::StartsWith(request.relative_url, "/cached-redirect?",
+                          base::CompareCase::INSENSITIVE_ASCII)) {
+      return std::unique_ptr<net::test_server::HttpResponse>();
+    }
+
+    GURL request_url = request.GetURL();
+    std::string dest =
+        net::UnescapeBinaryURLComponent(request_url.query_piece());
+
+    auto http_response =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+    http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
+    http_response->AddCustomHeader("Location", dest);
+    http_response->set_content_type("text/html");
+    http_response->set_content(base::StringPrintf(
+        "<html><head></head><body>Redirecting to %s</body></html>",
+        dest.c_str()));
     http_response->AddCustomHeader("Cache-Control", "max-age=6000");
     return http_response;
   }
@@ -700,16 +726,6 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
   prediction = GetPreconnectPrediction(original_url);
   EXPECT_FALSE(prediction);
 
-  // TODO(https://crbug.com/987735): These predictions should match |requests|
-  // should use |redirect_url|'s origin.
-  url::Origin original_origin = url::Origin::Create(original_url);
-  std::vector<PreconnectRequest> requests2;
-  for (auto* const host : kHtmlSubresourcesHosts) {
-    requests2.emplace_back(
-        embedded_test_server()->GetURL(host, "/"), 1,
-        net::NetworkIsolationKey(original_origin, original_origin));
-  }
-
   // The predictor will start predict a redirect after the second navigation.
   ui_test_utils::NavigateToURL(browser(), original_url);
   prediction = GetPreconnectPrediction(original_url);
@@ -717,7 +733,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
   EXPECT_EQ(prediction->is_redirected, true);
   EXPECT_EQ(prediction->host, redirect_url.host());
   EXPECT_THAT(prediction->requests,
-              testing::UnorderedElementsAreArray(requests2));
+              testing::UnorderedElementsAreArray(requests));
 }
 
 // Tests that the LoadingPredictor performs preresolving/preconnecting for a
@@ -975,7 +991,7 @@ INSTANTIATE_TEST_SUITE_P(
 // both when the predictor is populated and when it isn't.
 IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
                        LoadingPredictorNoRedirects) {
-  // Cache resources needed by navigations, so so the only sockets created
+  // Cache resources needed by navigations, so the only sockets created
   // during navigations should be for the two preconnects.
   CacheFavIcon();
   GURL cacheable_url = embedded_test_server()->GetURL("/cachetime");
@@ -1006,6 +1022,103 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
                               ->GetMainFrame(),
                           fetch_resource));
 
+    EXPECT_EQ(2u, connection_tracker()->GetAcceptedSocketCount());
+    EXPECT_EQ(1u, connection_tracker()->GetReadSocketCount());
+
+    ResetNetworkState();
+  }
+}
+
+// Make sure that the right NetworkIsolationKey is used by the LoadingPredictor,
+// both when the predictor is populated and when it isn't.
+IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
+                       LoadingPredictorWithRedirects) {
+  // Cache resources needed by navigations, so the only connections to the
+  // tracked server created during navigations should be for preconnects.
+  CacheFavIcon();
+  GURL cacheable_url = embedded_test_server()->GetURL("/cachetime");
+  CacheUrl(cacheable_url);
+
+  GURL redirecting_url = preconnecting_test_server()->GetURL(
+      "/server-redirect?" + cacheable_url.spec());
+
+  // Learn the redirects from initial navigation.
+  ui_test_utils::NavigateToURL(browser(), redirecting_url);
+  EXPECT_EQ(0u, connection_tracker()->GetAcceptedSocketCount());
+  EXPECT_EQ(0u, connection_tracker()->GetReadSocketCount());
+
+  // The next navigation should preconnect. It won't use the preconnected
+  // socket, since the destination resource is still in the cache.
+  auto observer = NavigateToURLAsync(redirecting_url);
+  observer->WaitForNavigationFinished();
+  connection_tracker()->WaitForAcceptedConnections(1);
+  EXPECT_EQ(0u, connection_tracker()->GetReadSocketCount());
+
+  // Have the page fetch a subresource, which should use one of the
+  // preconnects triggered by the above navigation, due to the matching
+  // NetworkIsolationKey. Do this instead of a navigation to a non-cached URL
+  // to avoid triggering more preconnects.
+  std::string fetch_resource = base::StringPrintf(
+      "(async () => {"
+      "  var resp = (await fetch('%s'));"
+      "  return resp.status; })();",
+      embedded_test_server()->GetURL("/echo").spec().c_str());
+  EXPECT_EQ(
+      200,
+      EvalJs(
+          browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+          fetch_resource));
+
+  EXPECT_EQ(1u, connection_tracker()->GetAcceptedSocketCount());
+  EXPECT_EQ(1u, connection_tracker()->GetReadSocketCount());
+}
+
+// Checks the opposite of the above test - tests that even when a redirect is
+// predicted, preconnects are still made to the original origin using the
+// correct NetworkIsolationKey.
+IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
+                       LoadingPredictorWithRedirects2) {
+  // Cache the redirect, so the only connections to the tracked server created
+  // during navigations should be for preconnects.
+  GURL destination_url = preconnecting_test_server()->GetURL("/cachetime");
+  GURL redirecting_url = embedded_test_server()->GetURL("/cached-redirect?" +
+                                                        destination_url.spec());
+  CacheUrl(redirecting_url);
+
+  // The first navigation learns to preconnect based on the redirect, and the
+  // second actually preconnects to the untracked server. All navigations should
+  // preconnect twice to the tracked server.
+  for (int i = 0; i < 2; ++i) {
+    if (i == 0) {
+      // NavigateToURL waits long enough to ensure information from the
+      // navigation is learned, while WaitForNavigationFinished() does not.
+      ui_test_utils::NavigateToURL(browser(), redirecting_url);
+    } else {
+      auto observer = NavigateToURLAsync(redirecting_url);
+      observer->WaitForNavigationFinished();
+    }
+    connection_tracker()->WaitForAcceptedConnections(2);
+    EXPECT_EQ(0u, connection_tracker()->GetReadSocketCount());
+
+    // Verify that the preconnects were made using the |redirecting_url|'s
+    // NetworkIsolationKey. To do this, make a request using the tracked
+    // server's NetworkIsolationKey, and verify it used one of the existing
+    // sockets.
+    auto request = std::make_unique<network::ResourceRequest>();
+    request->url = embedded_test_server()->GetURL("/echo");
+    content::SimpleURLLoaderTestHelper simple_loader_helper;
+    url::Origin origin = url::Origin::Create(request->url);
+    request->trusted_params = network::ResourceRequest::TrustedParams();
+    request->trusted_params->network_isolation_key =
+        net::NetworkIsolationKey(origin, origin);
+    std::unique_ptr<network::SimpleURLLoader> simple_loader =
+        network::SimpleURLLoader::Create(std::move(request),
+                                         TRAFFIC_ANNOTATION_FOR_TESTS);
+    simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+        browser()->profile()->GetURLLoaderFactory().get(),
+        simple_loader_helper.GetCallback());
+    simple_loader_helper.WaitForCallback();
+    ASSERT_TRUE(simple_loader_helper.response_body());
     EXPECT_EQ(2u, connection_tracker()->GetAcceptedSocketCount());
     EXPECT_EQ(1u, connection_tracker()->GetReadSocketCount());
 

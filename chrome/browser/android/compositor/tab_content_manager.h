@@ -153,7 +153,7 @@ class TabContentManager : public ThumbnailCacheObserver {
   TabReadbackRequestMap pending_tab_readbacks_;
 
   JavaObjectWeakGlobalRef weak_java_tab_content_manager_;
-  base::WeakPtrFactory<TabContentManager> weak_factory_;
+  base::WeakPtrFactory<TabContentManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TabContentManager);
 };

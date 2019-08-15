@@ -962,11 +962,6 @@
     "expiry_milestone": 86
   },
   {
-    "name": "enable-blink-gen-property-trees",
-    "owners": [ "paint-dev@chromium.org" ],
-    "expiry_milestone": 74
-  },
-  {
     "name": "enable-bookmark-reorder",
     "owners": ["jhimawan@google.com", "twellington" ],
     "expiry_milestone": 80
@@ -2788,6 +2783,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "request-unbuffered-dispatch",
+    "owners": [ "bokan" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "rewrite-leveldb-on-deletion",
     "owners": [ "dullweber" ],
     "expiry_milestone": 75
@@ -3013,9 +3013,9 @@
     "expiry_milestone":  79
   },
   {
-    "name": "temporary-unexpire-flags-m77",
+    "name": "temporary-unexpire-flags-m78",
     "owners": [ "ellyjones", "flags-dev" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 81
   },
   {
     "name": "terminal-system-app",
@@ -3097,6 +3097,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "turn-off-streaming-media-caching",
+    "owners": [ "shawnpi@microsoft.com" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "ui-disable-partial-swap",
     "owners": [ "//components/viz/OWNERS" ],
     // This flag is used for in-the-field debugging of rendering issues,
@@ -3168,8 +3173,9 @@
   },
   {
     "name": "use_messages_staging_url",
-    "owners": [ "azeemarshad", "khorimoto" ],
-    "expiry_milestone": 76
+    "owners": [ "azeemarshad", "khorimoto", "jonmann" ],
+    // This flag is required for QA and dogfood testing.
+    "expiry_milestone": -1
   },
   {
     "name": "use-multilogin-endpoint",

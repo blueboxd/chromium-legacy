@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -125,7 +126,8 @@ public class FakeUrlResponse {
          * @return a builder with the corresponding header set
          */
         public Builder addHeader(String name, String value) {
-            mAllHeadersList.add(new AbstractMap.SimpleEntry<>(name, value));
+            mAllHeadersList.add(
+                    new AbstractMap.SimpleEntry<>(name.toLowerCase(Locale.ROOT), value));
             return this;
         }
 

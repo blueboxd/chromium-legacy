@@ -17,7 +17,7 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/incognito_color_util.h"
+#import "ios/chrome/common/colors/dynamic_color_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -59,20 +59,20 @@ const CGFloat kClearButtonSize = 28.0f;
 #pragma mark - UIViewController
 
 - (void)loadView {
-  UIColor* textColor = color::IncognitoDynamicColor(
-      self.incognito, [UIColor colorNamed:kTextPrimaryColor],
+  UIColor* textColor = color::DarkModeDynamicColor(
+      [UIColor colorNamed:kTextPrimaryColor], self.incognito,
       [UIColor colorNamed:kTextPrimaryDarkColor]);
-  UIColor* textFieldTintColor = color::IncognitoDynamicColor(
-      self.incognito, [UIColor colorNamed:kBlueColor],
+  UIColor* textFieldTintColor = color::DarkModeDynamicColor(
+      [UIColor colorNamed:kBlueColor], self.incognito,
       [UIColor colorNamed:kBlueDarkColor]);
   UIColor* iconTintColor;
   if (base::FeatureList::IsEnabled(kNewOmniboxPopupLayout)) {
-    iconTintColor = color::IncognitoDynamicColor(
-        self.incognito, [UIColor colorNamed:kToolbarButtonColor],
+    iconTintColor = color::DarkModeDynamicColor(
+        [UIColor colorNamed:kToolbarButtonColor], self.incognito,
         [UIColor colorNamed:kToolbarButtonDarkColor]);
   } else {
-    iconTintColor = color::IncognitoDynamicColor(
-        self.incognito, [UIColor colorNamed:kToolbarButtonColor],
+    iconTintColor = color::DarkModeDynamicColor(
+        [UIColor colorNamed:kToolbarButtonColor], self.incognito,
         [UIColor colorNamed:kToolbarButtonDarkColor]);
   }
 
@@ -192,8 +192,8 @@ const CGFloat kClearButtonSize = 28.0f;
 
 // Tint color for the textfield placeholder and the clear button.
 - (UIColor*)placeholderAndClearButtonColor {
-  return color::IncognitoDynamicColor(
-      self.incognito, [UIColor colorNamed:kTextfieldPlaceholderColor],
+  return color::DarkModeDynamicColor(
+      [UIColor colorNamed:kTextfieldPlaceholderColor], self.incognito,
       [UIColor colorNamed:kTextfieldPlaceholderDarkColor]);
 }
 

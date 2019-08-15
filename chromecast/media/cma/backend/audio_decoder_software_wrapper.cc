@@ -141,7 +141,6 @@ bool AudioDecoderSoftwareWrapper::CreateSoftwareDecoder(
   software_decoder_ = media::CastAudioDecoder::Create(
       base::ThreadTaskRunnerHandle::Get(), config,
       media::CastAudioDecoder::kOutputSigned16,
-      media::CastAudioDecoder::OutputChannelLayoutFromConfig(config),
       base::BindOnce(&AudioDecoderSoftwareWrapper::OnDecoderInitialized,
                      base::Unretained(this)));
   return (software_decoder_.get() != nullptr);

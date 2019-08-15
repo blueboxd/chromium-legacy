@@ -22,6 +22,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chromecast/media/cma/backend/loopback_handler.h"
+#include "chromecast/media/cma/backend/mixer_control.h"
 #include "chromecast/media/cma/backend/mixer_input.h"
 #include "chromecast/media/cma/backend/mixer_pipeline.h"
 #include "chromecast/public/cast_media_shlib.h"
@@ -35,6 +36,7 @@ class ThreadHealthChecker;
 namespace media {
 
 class AudioOutputRedirector;
+class InterleavedChannelMixer;
 class MixerOutputStream;
 class PostProcessingPipelineFactory;
 
@@ -60,7 +62,7 @@ class PostProcessingPipelineFactory;
 //    input sources, then the output sample rate is updated to match the input
 //    sample rate of the new source.
 //  * Otherwise, the output sample rate remains unchanged.
-class StreamMixer {
+class StreamMixer : public MixerControl {
  public:
   // Returns the mixer instance for this process. Caller must not delete the
   // returned instance!
@@ -68,7 +70,9 @@ class StreamMixer {
 
   StreamMixer();
   // Only public to allow tests to create/destroy mixers.
-  ~StreamMixer();
+  ~StreamMixer() override;
+
+  int num_output_channels() const { return num_output_channels_; }
 
   // Adds an input source to the mixer. The |input_source| must live at least
   // until input_source->FinalizeAudioPlayback() is called.
@@ -122,8 +126,7 @@ class StreamMixer {
       std::unique_ptr<PostProcessingPipelineFactory> pipeline_factory,
       const std::string& pipeline_json);
   void SetNumOutputChannelsForTest(int num_output_channels);
-  void ValidatePostProcessorsForTest();
-  int num_output_channels() const { return num_output_channels_; }
+  void EnableDynamicChannelCountForTest(bool enable);
 
  private:
   class BaseExternalMediaVolumeChangeRequestObserver
@@ -148,25 +151,30 @@ class StreamMixer {
     bool muted = false;
   };
 
+  // MixerControl implementation:
+  void SetNumOutputChannels(int num_channels) override;
+
+  void SetNumOutputChannelsOnThread(int num_channels);
   void ResetPostProcessorsOnThread(CastMediaShlib::ResultCallback callback,
                                    const std::string& override_config);
   void CreatePostProcessors(CastMediaShlib::ResultCallback callback,
-                            const std::string& override_config);
+                            const std::string& override_config,
+                            int expected_input_channels);
   bool PostProcessorsHaveCorrectNumOutputs();
   void FinalizeOnMixerThread();
   void Start();
   void Stop();
-  void CheckChangeOutputRate(int input_samples_per_second);
+  void CheckChangeOutputParams(int num_input_channels,
+                               int input_samples_per_second);
   void SignalError(MixerInput::Source::MixerError error);
+  int GetEffectiveChannelCount(MixerInput::Source* input_source);
   void RemoveInputOnThread(MixerInput::Source* input_source);
   void SetCloseTimeout();
   void UpdatePlayoutChannel();
-  void UpdateLoopbackChannelCount();
 
   void PlaybackLoop();
   void WriteOneBuffer();
   void WriteMixedPcm(int frames, int64_t expected_playback_time);
-  void MixToMono(float* data, int frames, int channels);
 
   void RemoveAudioOutputRedirectorOnThread(AudioOutputRedirector* redirector);
 
@@ -184,10 +192,14 @@ class StreamMixer {
   std::unique_ptr<LoopbackHandler, LoopbackHandler::Deleter> loopback_handler_;
   std::unique_ptr<ThreadHealthChecker> health_checker_;
 
+  std::unique_ptr<InterleavedChannelMixer> loopback_channel_mixer_;
+  std::unique_ptr<InterleavedChannelMixer> output_channel_mixer_;
+
   void OnHealthCheckFailed();
 
-  int num_output_channels_;
+  bool enable_dynamic_channel_count_;
   const int low_sample_rate_cutoff_;
+  int fixed_num_output_channels_;
   const int fixed_output_sample_rate_;
   const base::TimeDelta no_input_close_timeout_;
   // Force data to be filtered in multiples of |filter_frame_alignment_| frames.
@@ -196,12 +208,16 @@ class StreamMixer {
   const int filter_frame_alignment_;
 
   int playout_channel_ = kChannelAll;
+  int requested_input_channels_ = 0;
+  int post_processor_input_channels_ = 0;
+  int num_output_channels_ = 0;
+
   int requested_output_samples_per_second_ = 0;
   int output_samples_per_second_ = 0;
   int frames_per_write_ = 0;
+
   int redirector_samples_per_second_ = 0;
   int redirector_frames_per_write_ = 0;
-  int loopback_channel_count_ = 0;
 
   State state_;
   base::TimeTicks close_timestamp_;

@@ -23,8 +23,6 @@ class SurfaceLayer;
 
 namespace blink {
 
-class WebLayerTreeView;
-
 // The SurfaceLayerBridge facilitates communication about changes to a Surface
 // between the Render and Browser processes.
 class PLATFORM_EXPORT SurfaceLayerBridge
@@ -33,7 +31,7 @@ class PLATFORM_EXPORT SurfaceLayerBridge
       public WebSurfaceLayerBridge {
  public:
   SurfaceLayerBridge(
-      WebLayerTreeView*,
+      viz::FrameSinkId parent_frame_sink_id,
       WebSurfaceLayerBridgeObserver*,
       cc::UpdateSubmissionStateCB update_submission_state_callback);
   ~SurfaceLayerBridge() override;

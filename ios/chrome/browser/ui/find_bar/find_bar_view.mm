@@ -9,7 +9,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
-#import "ios/chrome/common/colors/incognito_color_util.h"
+#import "ios/chrome/common/colors/dynamic_color_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -139,20 +139,20 @@ const CGFloat kButtonLength = 44;
 
 // Sets the colors for the different subviews, based on the |darkMode|.
 - (void)setupColors {
-  UIColor* inputFieldBackground = color::IncognitoDynamicColor(
-      self.darkMode, [UIColor colorNamed:kTextfieldBackgroundColor],
+  UIColor* inputFieldBackground = color::DarkModeDynamicColor(
+      [UIColor colorNamed:kTextfieldBackgroundColor], self.darkMode,
       [UIColor colorNamed:kTextfieldBackgroundDarkColor]);
-  UIColor* inputFieldPlaceHolderTextColor = color::IncognitoDynamicColor(
-      self.darkMode, [UIColor colorNamed:kTextfieldPlaceholderColor],
+  UIColor* inputFieldPlaceHolderTextColor = color::DarkModeDynamicColor(
+      [UIColor colorNamed:kTextfieldPlaceholderColor], self.darkMode,
       [UIColor colorNamed:kTextfieldPlaceholderDarkColor]);
-  UIColor* inputFieldTextColor = color::IncognitoDynamicColor(
-      self.darkMode, [UIColor colorNamed:kTextPrimaryColor],
+  UIColor* inputFieldTextColor = color::DarkModeDynamicColor(
+      [UIColor colorNamed:kTextPrimaryColor], self.darkMode,
       [UIColor colorNamed:kTextPrimaryDarkColor]);
-  UIColor* resultsCountLabelTextColor = color::IncognitoDynamicColor(
-      self.darkMode, [UIColor colorNamed:kTextfieldPlaceholderColor],
+  UIColor* resultsCountLabelTextColor = color::DarkModeDynamicColor(
+      [UIColor colorNamed:kTextfieldPlaceholderColor], self.darkMode,
       [UIColor colorNamed:kTextfieldPlaceholderDarkColor]);
-  UIColor* buttonTintColor = color::IncognitoDynamicColor(
-      self.darkMode, [UIColor colorNamed:kBlueColor],
+  UIColor* buttonTintColor = color::DarkModeDynamicColor(
+      [UIColor colorNamed:kBlueColor], self.darkMode,
       [UIColor colorNamed:kBlueDarkColor]);
 
   self.inputField.backgroundColor = inputFieldBackground;

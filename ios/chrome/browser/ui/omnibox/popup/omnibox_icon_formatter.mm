@@ -76,7 +76,7 @@ OmniboxSuggestionIconType IconTypeFromMatchAndAnswerType(
     case AutocompleteMatchType::CLIPBOARD_IMAGE:
       return SEARCH;
     case AutocompleteMatchType::SEARCH_HISTORY:
-      return HISTORY;
+      return SEARCH_HISTORY;
     case AutocompleteMatchType::CALCULATOR:
       return CALCULATOR;
     case AutocompleteMatchType::EXTENSION_APP_DEPRECATED:

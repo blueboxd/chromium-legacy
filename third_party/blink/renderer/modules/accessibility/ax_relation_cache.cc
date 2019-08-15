@@ -232,7 +232,7 @@ void AXRelationCache::UpdateRelatedText(Node* node) {
     }
 
     // Forward relation via <label for="[id]">.
-    if (IsHTMLLabelElement(*node))
+    if (IsA<HTMLLabelElement>(*node))
       LabelChanged(node);
 
     node = node->parentNode();
@@ -273,7 +273,7 @@ void AXRelationCache::LabelChanged(Node* node) {
   const auto& id = To<HTMLElement>(node)->FastGetAttribute(kForAttr);
   if (!id.IsEmpty()) {
     all_previously_seen_label_target_ids_.insert(id);
-    if (HTMLElement* control = ToHTMLLabelElement(node)->control())
+    if (auto* control = To<HTMLLabelElement>(node)->control())
       TextChanged(Get(control));
   }
 }

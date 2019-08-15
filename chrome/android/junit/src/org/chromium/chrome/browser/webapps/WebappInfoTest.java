@@ -193,7 +193,7 @@ public class WebappInfoTest {
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_SCOPE, scope);
         WebappInfo info = WebappInfo.create(intent);
-        Assert.assertEquals(scope, info.scopeUri().toString());
+        Assert.assertEquals(scope, info.scopeUrl());
     }
 
     @Test
@@ -202,7 +202,7 @@ public class WebappInfoTest {
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_URL, url);
         WebappInfo info = WebappInfo.create(intent);
-        Assert.assertEquals(ShortcutHelper.getScopeFromUrl(url), info.scopeUri().toString());
+        Assert.assertEquals(ShortcutHelper.getScopeFromUrl(url), info.scopeUrl());
     }
 
     @Test

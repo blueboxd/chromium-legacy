@@ -134,6 +134,12 @@ public class MediaSessionTabHelper implements MediaImageCallback {
                 mMediaSessionObserver.getMediaSession().didReceiveAction(action);
             }
         }
+
+        @Override
+        public void onMediaSessionSeekTo(long pos) {
+            if (mMediaSessionObserver == null) return;
+            mMediaSessionObserver.getMediaSession().seekTo(pos);
+        }
     };
 
     private void hideNotificationDelayed() {

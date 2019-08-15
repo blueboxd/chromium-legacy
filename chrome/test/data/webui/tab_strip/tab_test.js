@@ -26,13 +26,27 @@ suite('Tab', function() {
     document.body.appendChild(tabElement);
   });
 
+  test('toggles an [active] attribute when active', () => {
+    tabElement.tab = Object.assign({}, tab, {active: true});
+    assertTrue(tabElement.hasAttribute('active'));
+    tabElement.tab = Object.assign({}, tab, {active: false});
+    assertFalse(tabElement.hasAttribute('active'));
+  });
+
+  test('clicking on the element activates the tab', () => {
+    tabElement.click();
+    return testTabsApiProxy.whenCalled('activateTab', tabId => {
+      assertEquals(tabId, tab.id);
+    });
+  });
+
   test('sets the title', () => {
     assertEquals(
         tab.title, tabElement.shadowRoot.querySelector('#titleText').innerText);
   });
 
   test('exposes the tab ID to an attribute', () => {
-    tabElement.tab = {id: 1001};
+    tabElement.tab = Object.assign({}, tab, {id: 1001});
     assertEquals('1001', tabElement.getAttribute('data-tab-id'));
   });
 

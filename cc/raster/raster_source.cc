@@ -259,13 +259,6 @@ void RasterSource::DidBeginTracing() {
     display_list_->EmitTraceSnapshot();
 }
 
-std::vector<scoped_refptr<PaintWorkletInput>>
-RasterSource::GetPaintWorkletInputs() const {
-  if (!display_list_)
-    return {};
-  return display_list_->discardable_image_map().paint_worklet_inputs();
-}
-
 RasterSource::PlaybackSettings::PlaybackSettings() = default;
 
 RasterSource::PlaybackSettings::PlaybackSettings(const PlaybackSettings&) =

@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-FAIL Test that nfc watch success if NFC HW is enabled. promise_test: Unhandled rejection with value: object "ReferenceError: NFCReader is not defined"
-FAIL Test that NFCReader.start succeeds if NFCReaderOptions.url is valid URL. promise_test: Unhandled rejection with value: object "ReferenceError: NFCReader is not defined"
-FAIL Test that NFCReader.start succeeds if NFCReaderOptions.url is valid URL with "*" wildcard character in path. promise_test: Unhandled rejection with value: object "ReferenceError: NFCReader is not defined"
-FAIL Test that NFCReader.start succeeds if NFCReaderOptions.url is valid URL with "*" wildcard character in the beginning of path component followed by subpath. promise_test: Unhandled rejection with value: object "ReferenceError: NFCReader is not defined"
-FAIL Test that NFCReader.start succeeds if NFCReaderOptions.url is empty. promise_test: Unhandled rejection with value: object "ReferenceError: NFCReader is not defined"
-Harness: the test ran to completion.
-

@@ -1266,8 +1266,13 @@ void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
         SkMatrix::MakeRectToRect(op->src, op->dst, SkMatrix::kFill_ScaleToFit));
     canvas->clipRect(op->src);
     canvas->saveLayer(&op->src, &paint);
-    DCHECK(result && result.paint_record());
-    result.paint_record()->Playback(canvas, params);
+    // Compositor thread animations can cause PaintWorklet jobs to be dispatched
+    // to the worklet thread even after main has torn down the worklet (e.g.
+    // because a navigation is happening). In that case the PaintWorklet jobs
+    // will fail and there will be no result to raster here. This state is
+    // transient as the next main frame commit will remove the PaintWorklets.
+    if (result && result.paint_record())
+      result.paint_record()->Playback(canvas, params);
     return;
   }
 

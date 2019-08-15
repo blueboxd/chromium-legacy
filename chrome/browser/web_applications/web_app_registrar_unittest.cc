@@ -210,6 +210,7 @@ TEST(WebAppRegistrar, GetAppDataFields) {
   web_app->SetThemeColor(theme_color);
   web_app->SetLaunchUrl(launch_url);
   web_app->SetLaunchContainer(launch_container);
+  web_app->SetIsLocallyInstalled(/*is_locally_installed*/ false);
 
   registrar->RegisterApp(std::move(web_app));
 
@@ -218,11 +219,16 @@ TEST(WebAppRegistrar, GetAppDataFields) {
   EXPECT_EQ(theme_color, registrar->GetAppThemeColor(app_id));
   EXPECT_EQ(launch_url, registrar->GetAppLaunchURL(app_id));
   EXPECT_EQ(launch_container, registrar->GetAppLaunchContainer(app_id));
+  EXPECT_FALSE(registrar->IsLocallyInstalled(app_id));
 
   EXPECT_EQ(LaunchContainer::kDefault,
             registrar->GetAppLaunchContainer("unknown"));
   web_app_ptr->SetLaunchContainer(LaunchContainer::kTab);
   EXPECT_EQ(LaunchContainer::kTab, registrar->GetAppLaunchContainer(app_id));
+
+  EXPECT_FALSE(registrar->IsLocallyInstalled("unknown"));
+  web_app_ptr->SetIsLocallyInstalled(/*is_locally_installed*/ true);
+  EXPECT_TRUE(registrar->IsLocallyInstalled(app_id));
 }
 
 }  // namespace web_app

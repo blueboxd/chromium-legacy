@@ -34,8 +34,14 @@ public class FeedConfigurationTest {
     @Feature({"Feed"})
     @Features.EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS})
     public void testDefaultFeedConfigurationValues() {
+        Assert.assertEquals(FeedConfiguration.ABANDON_RESTORE_BELOW_FOLD_DEFAULT,
+                FeedConfiguration.getAbandonRestoreBelowFold());
         Assert.assertEquals(FeedConfiguration.CARD_MENU_TOOLTIP_ELIGIBLE_DEFAULT,
                 FeedConfiguration.getCardMenuTooltipEligible());
+        Assert.assertEquals(FeedConfiguration.CONSUME_SYNTHETIC_TOKENS_DEFAULT,
+                FeedConfiguration.getConsumeSyntheticTokens());
+        Assert.assertEquals(FeedConfiguration.CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING_DEFAULT,
+                FeedConfiguration.getConsumeSyntheticTokensWhileRestoring());
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_ENDPOINT_DEFAULT,
                 FeedConfiguration.getFeedServerEndpoint());
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_METHOD_DEFAULT,
@@ -82,10 +88,41 @@ public class FeedConfigurationTest {
     @Feature({"Feed"})
     @CommandLineFlags.
     Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:abandon_restore_below_fold/false"})
+    public void
+    testAbandonRestoreBelowFold() {
+        Assert.assertFalse(FeedConfiguration.getAbandonRestoreBelowFold());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
             "force-fieldtrial-params=Trial.Group:card_menu_tooltip_eligible/true"})
     public void
     testCardMenuTooltipEligible() {
         Assert.assertTrue(FeedConfiguration.getCardMenuTooltipEligible());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:consume_synthetic_tokens_bool/true"})
+    public void
+    testConsumeSyntheticTokens() {
+        Assert.assertTrue(FeedConfiguration.getConsumeSyntheticTokens());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:consume_synthetic_tokens_while_restoring_bool/"
+                    + "true"})
+    public void
+    testConsumeSyntheticTokensWhileRestoring() {
+        Assert.assertTrue(FeedConfiguration.getConsumeSyntheticTokensWhileRestoring());
     }
 
     @Test
@@ -294,8 +331,14 @@ public class FeedConfigurationTest {
     @Features.EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS})
     public void testCreateConfiguration() {
         Configuration configuration = FeedConfiguration.createConfiguration();
+        Assert.assertTrue(
+                configuration.getValueOrDefault(ConfigKey.ABANDON_RESTORE_BELOW_FOLD, false));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.CARD_MENU_TOOLTIP_ELIGIBLE, true));
+        Assert.assertFalse(
+                configuration.getValueOrDefault(ConfigKey.CONSUME_SYNTHETIC_TOKENS, true));
+        Assert.assertFalse(configuration.getValueOrDefault(
+                ConfigKey.CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING, true));
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_ENDPOINT_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.FEED_SERVER_ENDPOINT, ""));
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_METHOD_DEFAULT,

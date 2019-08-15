@@ -42,13 +42,13 @@ std::unique_ptr<InputStream> AwWebResourceResponse::GetInputStream(
   DCHECK(!input_stream_transferred_);
 
   if (input_stream_transferred_)
-    return std::unique_ptr<InputStream>();
+    return nullptr;
 
   input_stream_transferred_ = true;
   ScopedJavaLocalRef<jobject> jstream =
       Java_AwWebResourceResponse_getData(env, java_object_);
   if (jstream.is_null())
-    return std::unique_ptr<InputStream>();
+    return nullptr;
   return std::make_unique<InputStream>(jstream);
 }
 

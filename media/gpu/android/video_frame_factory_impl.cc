@@ -85,8 +85,7 @@ VideoFrameFactoryImpl::VideoFrameFactoryImpl(
       gpu_task_runner_(std::move(gpu_task_runner)),
       enable_threaded_texture_mailboxes_(
           gpu_preferences.enable_threaded_texture_mailboxes),
-      mre_manager_(std::move(mre_manager)),
-      weak_factory_(this) {}
+      mre_manager_(std::move(mre_manager)) {}
 
 VideoFrameFactoryImpl::~VideoFrameFactoryImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -8,10 +8,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
-#include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/canvas/htmlcanvas/html_canvas_element_module.h"
 #include "third_party/blink/renderer/modules/canvas/offscreencanvas2d/offscreen_canvas_rendering_context_2d.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
@@ -37,7 +39,7 @@ struct TestParams {
 };
 }  // unnamed namespace
 
-class OffscreenCanvasTest : public PageTestBase,
+class OffscreenCanvasTest : public ::testing::Test,
                             public ::testing::WithParamInterface<TestParams> {
  protected:
   OffscreenCanvasTest();
@@ -52,7 +54,16 @@ class OffscreenCanvasTest : public PageTestBase,
     return ToScriptStateForMainWorld(GetDocument().GetFrame());
   }
 
+  Document& GetDocument() const {
+    return *web_view_helper_.GetWebView()
+                ->MainFrameImpl()
+                ->GetFrame()
+                ->DomWindow()
+                ->document();
+  }
+
  private:
+  frame_test_helpers::WebViewHelper web_view_helper_;
   Persistent<OffscreenCanvas> offscreen_canvas_;
   Persistent<OffscreenCanvasRenderingContext2D> context_;
   FakeGLES2Interface gl_;
@@ -69,9 +80,14 @@ void OffscreenCanvasTest::SetUp() {
   };
   SharedGpuContext::SetContextProviderFactoryForTesting(
       WTF::BindRepeating(factory, WTF::Unretained(&gl_)));
-  PageTestBase::SetUp();
-  SetHtmlInnerHTML("<body><canvas id='c'></canvas></body>");
-  auto* canvas_element = To<HTMLCanvasElement>(GetElementById("c"));
+
+  web_view_helper_.Initialize();
+
+  GetDocument().documentElement()->SetInnerHTMLFromString(
+      String::FromUTF8("<body><canvas id='c'></canvas></body>"));
+
+  auto* canvas_element =
+      To<HTMLCanvasElement>(GetDocument().getElementById("c"));
 
   DummyExceptionStateForTesting exception_state;
   offscreen_canvas_ = HTMLCanvasElementModule::transferControlToOffscreen(

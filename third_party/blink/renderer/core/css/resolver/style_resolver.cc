@@ -673,7 +673,7 @@ void StyleResolver::LoadPendingResources(StyleResolverState& state) {
   state.GetElementStyleResources().LoadPendingResources(state.Style());
 }
 
-static const ComputedStyle* CalculateBaseComputedStyle(
+static const ComputedStyle* CachedAnimationBaseComputedStyle(
     StyleResolverState& state) {
   if (!state.GetAnimatingElement())
     return nullptr;
@@ -694,7 +694,7 @@ static const ComputedStyle* CalculateBaseComputedStyle(
   return element_animations->BaseComputedStyle();
 }
 
-static void UpdateBaseComputedStyle(StyleResolverState& state) {
+static void UpdateAnimationBaseComputedStyle(StyleResolverState& state) {
   if (!state.GetAnimatingElement())
     return;
 
@@ -726,10 +726,19 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
   StyleResolverState state(GetDocument(), *element, default_parent,
                            default_layout_parent);
 
-  const ComputedStyle* base_computed_style = CalculateBaseComputedStyle(state);
+  // This function can return different results with different last 3 params,
+  // but we can only cache one base computed style for animations, thus we cache
+  // only when this function is called with default last 3 params.
+  bool can_cache_animation_base_computed_style =
+      !default_parent && !default_layout_parent &&
+      matching_behavior == kMatchAllRules;
+  const ComputedStyle* animation_base_computed_style =
+      can_cache_animation_base_computed_style
+          ? CachedAnimationBaseComputedStyle(state)
+          : nullptr;
 
-  if (base_computed_style) {
-    state.SetStyle(ComputedStyle::Clone(*base_computed_style));
+  if (animation_base_computed_style) {
+    state.SetStyle(ComputedStyle::Clone(*animation_base_computed_style));
     if (!state.ParentStyle()) {
       state.SetParentStyle(InitialStyleForElement(GetDocument()));
       state.SetLayoutParentStyle(state.ParentStyle());
@@ -773,7 +782,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
     state.Style()->SetInsideLink(link_state);
   }
 
-  if (!base_computed_style) {
+  if (!animation_base_computed_style) {
     GetDocument().GetStyleEngine().EnsureUAStyleForElement(*element);
 
     ElementRuleCollector collector(state.ElementContext(), selector_filter_,
@@ -824,7 +833,8 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
 
     StyleAdjuster::AdjustComputedStyle(state, element);
 
-    UpdateBaseComputedStyle(state);
+    if (can_cache_animation_base_computed_style)
+      UpdateAnimationBaseComputedStyle(state);
   } else {
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                   base_styles_used, 1);
@@ -894,10 +904,11 @@ bool StyleResolver::PseudoStyleForElementInternal(
 
   SelectorFilterParentScope::EnsureParentStackIsPushed();
 
-  const ComputedStyle* base_computed_style = CalculateBaseComputedStyle(state);
+  const ComputedStyle* animation_base_computed_style =
+      CachedAnimationBaseComputedStyle(state);
 
-  if (base_computed_style) {
-    state.SetStyle(ComputedStyle::Clone(*base_computed_style));
+  if (animation_base_computed_style) {
+    state.SetStyle(ComputedStyle::Clone(*animation_base_computed_style));
   } else if (pseudo_style_request.AllowsInheritance(state.ParentStyle())) {
     scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
     style->InheritFrom(*state.ParentStyle());
@@ -912,7 +923,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
   // Since we don't use pseudo-elements in any of our quirk/print
   // user agent rules, don't waste time walking those rules.
 
-  if (!base_computed_style) {
+  if (!animation_base_computed_style) {
     // Check UA, user and author rules.
     ElementRuleCollector collector(state.ElementContext(), selector_filter_,
                                    state.Style());
@@ -939,7 +950,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
     // in the StyleAdjuster::AdjustComputedStyle code.
     StyleAdjuster::AdjustComputedStyle(state, nullptr);
 
-    UpdateBaseComputedStyle(state);
+    UpdateAnimationBaseComputedStyle(state);
   }
 
   // FIXME: The CSSWG wants to specify that the effects of animations are

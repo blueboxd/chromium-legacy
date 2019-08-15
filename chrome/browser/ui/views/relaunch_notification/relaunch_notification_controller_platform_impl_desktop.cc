@@ -40,7 +40,7 @@ Browser* FindLastActiveTabbedBrowser() {
   BrowserList* browser_list = BrowserList::GetInstance();
   const auto end = browser_list->end_last_active();
   for (auto scan = browser_list->begin_last_active(); scan != end; ++scan) {
-    if ((*scan)->is_type_tabbed())
+    if ((*scan)->is_type_normal())
       return *scan;
   }
   return nullptr;

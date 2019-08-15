@@ -68,6 +68,12 @@ public class MediaSessionImpl extends MediaSession {
     }
 
     @Override
+    public void seekTo(long millis) {
+        assert millis >= 0 : "Attempted to seek to a negative posision";
+        nativeSeekTo(mNativeMediaSessionAndroid, millis);
+    }
+
+    @Override
     public void didReceiveAction(int action) {
         nativeDidReceiveAction(mNativeMediaSessionAndroid, action);
     }
@@ -142,6 +148,7 @@ public class MediaSessionImpl extends MediaSession {
     private native void nativeSuspend(long nativeMediaSessionAndroid);
     private native void nativeStop(long nativeMediaSessionAndroid);
     private native void nativeSeek(long nativeMediaSessionAndroid, long millis);
+    private native void nativeSeekTo(long nativeMediaSessionAndroid, long millis);
     private native void nativeDidReceiveAction(long nativeMediaSessionAndroid, int action);
     private native void nativeRequestSystemAudioFocus(long nativeMediaSessionAndroid);
     private static native MediaSessionImpl nativeGetMediaSessionFromWebContents(

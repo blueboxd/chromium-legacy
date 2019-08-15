@@ -24,6 +24,7 @@
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/input_stream.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -195,6 +196,7 @@ InProgressDownloadManager::Delegate::GetDefaultDownloadDirectory() {
 InProgressDownloadManager::InProgressDownloadManager(
     Delegate* delegate,
     const base::FilePath& in_progress_db_dir,
+    leveldb_proto::ProtoDatabaseProvider* db_provider,
     const IsOriginSecureCallback& is_origin_secure_cb,
     const URLSecurityPolicy& url_security_policy,
     service_manager::Connector* connector)
@@ -205,7 +207,7 @@ InProgressDownloadManager::InProgressDownloadManager(
       url_security_policy_(url_security_policy),
       use_empty_db_(in_progress_db_dir.empty()),
       connector_(connector) {
-  Initialize(in_progress_db_dir);
+  Initialize(in_progress_db_dir, db_provider);
 }
 
 InProgressDownloadManager::~InProgressDownloadManager() = default;
@@ -330,13 +332,20 @@ void InProgressDownloadManager::InterceptDownloadFromNavigation(
 }
 
 void InProgressDownloadManager::Initialize(
-    const base::FilePath& in_progress_db_dir) {
-  download_db_cache_ = std::make_unique<DownloadDBCache>(
-      in_progress_db_dir.empty()
-          ? std::make_unique<DownloadDB>()
-          : std::make_unique<DownloadDBImpl>(
-                DownloadNamespace::NAMESPACE_BROWSER_DOWNLOAD,
-                in_progress_db_dir));
+    const base::FilePath& in_progress_db_dir,
+    leveldb_proto::ProtoDatabaseProvider* db_provider) {
+  std::unique_ptr<DownloadDB> download_db;
+
+  if (use_empty_db_) {
+    download_db = std::make_unique<DownloadDB>();
+  } else {
+    download_db = std::make_unique<DownloadDBImpl>(
+        DownloadNamespace::NAMESPACE_BROWSER_DOWNLOAD, in_progress_db_dir,
+        db_provider);
+  }
+
+  download_db_cache_ =
+      std::make_unique<DownloadDBCache>(std::move(download_db));
   download_db_cache_->Initialize(base::BindOnce(
       &InProgressDownloadManager::OnDBInitialized, weak_factory_.GetWeakPtr()));
 }

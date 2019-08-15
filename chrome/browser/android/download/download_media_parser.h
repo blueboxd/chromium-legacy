@@ -128,7 +128,7 @@ class DownloadMediaParser : public MediaParserProvider, public media::MediaLog {
   std::unique_ptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
   bool decode_done_;
 
-  base::WeakPtrFactory<DownloadMediaParser> weak_factory_;
+  base::WeakPtrFactory<DownloadMediaParser> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadMediaParser);
 };

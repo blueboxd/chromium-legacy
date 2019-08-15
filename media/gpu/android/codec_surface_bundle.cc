@@ -12,22 +12,19 @@ namespace media {
 
 CodecSurfaceBundle::CodecSurfaceBundle()
     : RefCountedDeleteOnSequence<CodecSurfaceBundle>(
-          base::SequencedTaskRunnerHandle::Get()),
-      weak_factory_(this) {}
+          base::SequencedTaskRunnerHandle::Get()) {}
 
 CodecSurfaceBundle::CodecSurfaceBundle(std::unique_ptr<AndroidOverlay> overlay)
     : RefCountedDeleteOnSequence<CodecSurfaceBundle>(
           base::SequencedTaskRunnerHandle::Get()),
-      overlay_(std::move(overlay)),
-      weak_factory_(this) {}
+      overlay_(std::move(overlay)) {}
 
 CodecSurfaceBundle::CodecSurfaceBundle(
     scoped_refptr<TextureOwner> texture_owner)
     : RefCountedDeleteOnSequence<CodecSurfaceBundle>(
           base::SequencedTaskRunnerHandle::Get()),
       texture_owner_(std::move(texture_owner)),
-      texture_owner_surface_(texture_owner_->CreateJavaSurface()),
-      weak_factory_(this) {}
+      texture_owner_surface_(texture_owner_->CreateJavaSurface()) {}
 
 CodecSurfaceBundle::~CodecSurfaceBundle() {
   // Explicitly free the surface first, just to be sure that it's deleted before

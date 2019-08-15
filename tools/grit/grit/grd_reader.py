@@ -235,4 +235,4 @@ def Parse(filename_or_stream, dir=None, stop_after=None, first_ids_file=None,
 
 if __name__ == '__main__':
   util.ChangeStdoutEncoding()
-  print(unicode(Parse(sys.argv[1])))
+  print(six.text_type(Parse(sys.argv[1])))

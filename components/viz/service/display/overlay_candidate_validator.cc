@@ -128,6 +128,12 @@ std::unique_ptr<OverlayCandidateValidator> OverlayCandidateValidator::Create(
     return CreateOverlayCandidateValidatorWin(context_provider);
 #elif defined(OS_ANDROID)
     return CreateOverlayCandidateValidatorAndroid(context_provider);
+#elif defined(USE_OZONE)
+    // Chromecast could either be backed by Ozone-DRM, which is covered by Surfacelss code path
+    // above, or Ozone-Cast, which is the type of Ozone platform that doesn't use Surfaceless
+    // Surface.
+    return CreateOverlayCandidateValidatorOzone(surface_handle,
+                                                renderer_settings);
 #else
     return nullptr;
 #endif

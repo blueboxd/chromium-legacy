@@ -24,6 +24,8 @@
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -297,14 +299,12 @@ BeginFrameProviderParams DedicatedWorker::CreateBeginFrameProviderParams() {
   BeginFrameProviderParams begin_frame_provider_params;
   if (auto* document = DynamicTo<Document>(GetExecutionContext())) {
     LocalFrame* frame = document->GetFrame();
-    WebLayerTreeView* layer_tree_view = nullptr;
-    if (frame && frame->GetPage()) {
-      layer_tree_view =
-          frame->GetPage()->GetChromeClient().GetWebLayerTreeView(frame);
-      if (layer_tree_view) {
-        begin_frame_provider_params.parent_frame_sink_id =
-            layer_tree_view->GetFrameSinkId();
-      }
+    if (frame) {
+      WebFrameWidgetBase* widget =
+          WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
+      WebWidgetClient* client = widget->Client();
+      begin_frame_provider_params.parent_frame_sink_id =
+          client->GetFrameSinkId();
     }
     begin_frame_provider_params.frame_sink_id =
         Platform::Current()->GenerateFrameSinkId();

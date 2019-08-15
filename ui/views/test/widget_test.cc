@@ -16,7 +16,6 @@ void WidgetTest::WidgetCloser::operator()(Widget* widget) const {
   widget->CloseNow();
 }
 
-WidgetTest::WidgetTest() = default;
 WidgetTest::~WidgetTest() = default;
 
 Widget* WidgetTest::CreateTopLevelPlatformWidget() {

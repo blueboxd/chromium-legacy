@@ -15,9 +15,7 @@ namespace offline_pages {
 
 OfflinePageBookmarkObserver::OfflinePageBookmarkObserver(
     content::BrowserContext* context)
-    : context_(context),
-      offline_page_model_(nullptr),
-      weak_ptr_factory_(this) {}
+    : context_(context), offline_page_model_(nullptr) {}
 
 OfflinePageBookmarkObserver::~OfflinePageBookmarkObserver() {}
 

@@ -7,11 +7,11 @@
 
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
-#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
+struct LogicalSize;
 class ScriptState;
 class ScriptValue;
 class SerializedScriptValue;
@@ -22,8 +22,7 @@ class CustomLayoutConstraints : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  CustomLayoutConstraints(LayoutUnit fixed_inline_size,
-                          LayoutUnit fixed_block_size,
+  CustomLayoutConstraints(const LogicalSize& border_box_size,
                           SerializedScriptValue* data,
                           v8::Isolate*);
   ~CustomLayoutConstraints() override;

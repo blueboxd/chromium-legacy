@@ -214,7 +214,7 @@ class UiControllerAndroid : public ControllerObserver {
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
   OverlayState desired_overlay_state_ = OverlayState::FULL;
-  base::WeakPtrFactory<UiControllerAndroid> weak_ptr_factory_;
+  base::WeakPtrFactory<UiControllerAndroid> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UiControllerAndroid);
 };

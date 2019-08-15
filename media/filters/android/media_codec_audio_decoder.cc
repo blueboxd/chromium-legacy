@@ -34,8 +34,7 @@ MediaCodecAudioDecoder::MediaCodecAudioDecoder(
       sample_rate_(0),
       media_crypto_context_(nullptr),
       cdm_registration_id_(0),
-      pool_(new AudioBufferMemoryPool()),
-      weak_factory_(this) {
+      pool_(new AudioBufferMemoryPool()) {
   DVLOG(1) << __func__;
 }
 

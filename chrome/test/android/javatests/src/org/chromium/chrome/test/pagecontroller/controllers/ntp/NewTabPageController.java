@@ -217,9 +217,7 @@ public class NewTabPageController extends PageController {
         IUi2Locator locator = ArticleCardController.getInstance().getLocator(article);
         mUtils.swipeUpVerticallyUntilFound(locator, LOCATOR_BOTTOM_OF_PAGE);
         mUtils.click(locator);
-        UrlPage inst = UrlPage.getInstance();
-        inst.verify();
-        return inst;
+        return UrlPage.getInstance().verifyActive();
     }
 
     /**
@@ -232,9 +230,7 @@ public class NewTabPageController extends PageController {
         IUi2Locator locator = mSuggestionsTileController.getLocator(tile);
         mUtils.swipeUpVerticallyUntilFound(locator, LOCATOR_BOTTOM_OF_PAGE);
         mUtils.click(locator);
-        UrlPage inst = UrlPage.getInstance();
-        inst.verify();
-        return inst;
+        return UrlPage.getInstance().verifyActive();
     }
 
     /**
@@ -253,9 +249,7 @@ public class NewTabPageController extends PageController {
     public TabSwitcherController openTabSwitcher() {
         scrollToTop();
         mUtils.click(LOCATOR_TAB_SWITCHER);
-        TabSwitcherController inst = TabSwitcherController.getInstance();
-        inst.verify();
-        return inst;
+        return TabSwitcherController.getInstance().verifyActive();
     }
 
     /**
@@ -265,9 +259,7 @@ public class NewTabPageController extends PageController {
     public ChromeMenu openChromeMenu() {
         scrollToTop();
         mUtils.click(LOCATOR_MENU_BUTTON);
-        ChromeMenu inst = ChromeMenu.getInstance();
-        inst.verify();
-        return inst;
+        return ChromeMenu.getInstance().verifyActive();
     }
 
     public ArticleActionsMenu openArticleContextMenu(ArticleCardController.Info card) {
@@ -275,21 +267,18 @@ public class NewTabPageController extends PageController {
         IUi2Locator locator = mAriticleCardController.getLocator(card);
         mUtils.swipeUpVerticallyUntilFound(locator, LOCATOR_BOTTOM_OF_PAGE);
         mUtils.longClick(locator);
-        ArticleActionsMenu inst = ArticleActionsMenu.getInstance();
-        inst.verify();
-        return inst;
+        return ArticleActionsMenu.getInstance().verifyActive();
     }
 
     public UrlPage omniboxSearch(String url) {
         mUtils.click(LOCATOR_SEARCH_BOX_TEXT);
         mUtils.setTextAndEnter(LOCATOR_URL_BAR, url);
-        UrlPage inst = UrlPage.getInstance();
-        inst.verify();
-        return inst;
+        return UrlPage.getInstance().verifyActive();
     }
 
     @Override
-    public boolean isCurrentPageThis() {
-        return mLocatorHelper.isOnScreen(LOCATOR_NEW_TAB_PAGE);
+    public NewTabPageController verifyActive() {
+        mLocatorHelper.verifyOnScreen(LOCATOR_NEW_TAB_PAGE);
+        return this;
     }
 }

@@ -71,7 +71,7 @@ Browser* PermissionBubbleBrowserTest::OpenExtensionAppWindow() {
 
   Browser* app_browser = chrome::FindBrowserWithWebContents(app_window);
   CHECK(app_browser);
-  CHECK(app_browser->is_app());
+  CHECK(app_browser->is_type_app());
 
   return app_browser;
 }

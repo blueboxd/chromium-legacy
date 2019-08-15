@@ -526,12 +526,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
 
   PhysicalRect composited_bounds_;
 
-  // We keep track of the scrolling contents offset, so that when it changes we
-  // can notify the ScrollingCoordinator, which passes on main-thread scrolling
-  // updates to the compositor.
-  // TODO(bokan): scrolling_contents_offset_ can be removed when BGPT ships.
-  DoubleSize scrolling_contents_offset_;
-
   unsigned pending_update_scope_ : 2;
   unsigned is_main_frame_layout_view_layer_ : 1;
 

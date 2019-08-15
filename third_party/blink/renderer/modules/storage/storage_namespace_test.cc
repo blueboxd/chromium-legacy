@@ -6,6 +6,7 @@
 #include <third_party/blink/renderer/modules/storage/storage_controller.h>
 
 #include "base/task/post_task.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -20,12 +21,14 @@ namespace {
 class NoopStoragePartitionService
     : public mojom::blink::StoragePartitionService {
  public:
-  void OpenLocalStorage(const scoped_refptr<const SecurityOrigin>& origin,
-                        mojom::blink::StorageAreaRequest request) override {}
+  void OpenLocalStorage(
+      const scoped_refptr<const SecurityOrigin>& origin,
+      mojo::PendingReceiver<mojom::blink::StorageArea> receiver) override {}
 
   void OpenSessionStorage(
       const String& namespace_id,
-      mojom::blink::SessionStorageNamespaceRequest request) override {}
+      mojo::PendingReceiver<mojom::blink::SessionStorageNamespace> receiver)
+      override {}
 };
 
 }  // namespace

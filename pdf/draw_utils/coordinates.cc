@@ -37,6 +37,31 @@ pp::Rect GetBottomGapBetweenRects(int page_rect_bottom,
                   bottom_rect.bottom() - page_rect_bottom);
 }
 
+int GetMostVisiblePage(const std::vector<IndexedPage>& visible_pages,
+                       const pp::Rect& visible_screen) {
+  if (visible_pages.empty())
+    return -1;
+
+  int most_visible_page_index = visible_pages.front().index;
+  double most_visible_page_area = 0.0;
+  for (const auto& visible_page : visible_pages) {
+    double page_area = static_cast<double>(visible_page.rect.size().GetArea());
+    // TODO(thestig): Check whether we can remove this check.
+    if (page_area <= 0.0)
+      continue;
+
+    pp::Rect screen_intersect = visible_screen.Intersect(visible_page.rect);
+    double intersect_area =
+        static_cast<double>(screen_intersect.size().GetArea()) / page_area;
+    if (intersect_area > most_visible_page_area) {
+      most_visible_page_index = visible_page.index;
+      most_visible_page_area = intersect_area;
+    }
+  }
+
+  return most_visible_page_index;
+}
+
 PageInsetSizes GetPageInsetsForTwoUpView(
     size_t page_index,
     size_t num_of_pages,

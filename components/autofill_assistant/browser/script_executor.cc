@@ -749,8 +749,7 @@ ScriptExecutor::WaitForDomOperation::WaitForDomOperation(
       check_elements_(std::move(check_elements)),
       callback_(std::move(callback)),
       retry_timer_(main_script->delegate_->GetSettings()
-                       .periodic_element_check_interval),
-      weak_ptr_factory_(this) {}
+                       .periodic_element_check_interval) {}
 
 ScriptExecutor::WaitForDomOperation::~WaitForDomOperation() {
   delegate_->RemoveListener(this);

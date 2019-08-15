@@ -1653,7 +1653,7 @@ content::KeyboardEventProcessingResult BrowserView::PreHandleKeyboardEvent(
   // - If the |browser_| is not for an app, and the |accelerator| is associated
   //   with the browser, and it is not a reserved one, do nothing.
 
-  if (browser_->is_app()) {
+  if (browser_->deprecated_is_app()) {
     // Let all keys fall through to a v1 app's web content, even accelerators.
     // We don't use NOT_HANDLED_IS_SHORTCUT here. If we do that, the app
     // might not be able to see a subsequent Char event. See OnHandleInputEvent
@@ -1929,7 +1929,7 @@ base::string16 BrowserView::GetAccessibleWindowTitleForChannelAndProfile(
     title = browser_->GetWindowTitleForCurrentTab(include_app_name);
 
   // Add the name of the browser, unless this is an app window.
-  if (!browser()->is_app()) {
+  if (browser()->is_type_normal() || browser()->is_type_popup()) {
     int message_id;
     switch (channel) {
       case version_info::Channel::CANARY:
@@ -2064,14 +2064,14 @@ void BrowserView::EnsureFocusOrder() {
 
 bool BrowserView::CanChangeWindowIcon() const {
   // The logic of this function needs to be same as GetWindowIcon().
-  if (browser_->is_devtools())
+  if (browser_->is_type_devtools())
     return false;
   if (browser_->app_controller())
     return true;
 #if defined(OS_CHROMEOS)
   // On ChromeOS, the tabbed browser always use a static image for the window
   // icon. See GetWindowIcon().
-  if (browser_->is_type_tabbed())
+  if (browser_->is_type_normal())
     return false;
 #endif
   return true;
@@ -2100,7 +2100,7 @@ gfx::ImageSkia BrowserView::GetWindowAppIcon() {
 
 gfx::ImageSkia BrowserView::GetWindowIcon() {
   // Use the default icon for devtools.
-  if (browser_->is_devtools())
+  if (browser_->is_type_devtools())
     return gfx::ImageSkia();
 
   // Hosted apps always show their app icon.
@@ -2110,7 +2110,7 @@ gfx::ImageSkia BrowserView::GetWindowIcon() {
 
 #if defined(OS_CHROMEOS)
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (browser_->is_type_tabbed()) {
+  if (browser_->is_type_normal()) {
     return rb.GetImageNamed(IDR_CHROME_APP_ICON_192).AsImageSkia();
   }
   auto* window = GetNativeWindow();
@@ -2120,7 +2120,7 @@ gfx::ImageSkia BrowserView::GetWindowIcon() {
     return rb.GetImageNamed(override_window_icon_resource_id).AsImageSkia();
 #endif
 
-  if (browser_->is_app() || browser_->is_type_popup())
+  if (browser_->deprecated_is_app())
     return browser_->GetCurrentPageIcon().AsImageSkia();
 
   return gfx::ImageSkia();
@@ -2663,7 +2663,7 @@ void BrowserView::InitViews() {
 }
 
 void BrowserView::LoadingAnimationCallback() {
-  if (browser_->is_type_tabbed()) {
+  if (browser_->is_type_normal()) {
     // Loading animations are shown in the tab for tabbed windows.  We check the
     // browser type instead of calling IsTabStripVisible() because the latter
     // will return false for fullscreen windows, but we still need to update

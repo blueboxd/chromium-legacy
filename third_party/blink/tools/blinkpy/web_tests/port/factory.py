@@ -132,6 +132,15 @@ def configuration_options():
     ]
 
 
+def wpt_options():
+    return [
+        optparse.make_option('--no-manifest-update', dest='manifest_update',
+                             action='store_false', default=True,
+                             help=('Do not update the web-platform-tests '
+                                   'MANIFEST.json unless it does not exist.')),
+    ]
+
+
 def _builder_options(builder_name):
     return optparse.Values({
         'builder_name': builder_name,

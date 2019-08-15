@@ -218,7 +218,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   // flaky.
   BrowserAccessibilityManager::NeverSuppressOrDelayEventsForTesting();
 
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   // Exit without running the test if we can't find an expectation file.
   // This is used to skip certain tests on certain platforms.
@@ -273,7 +273,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   if (enable_accessibility_after_navigating_ &&
       web_contents->GetAccessibilityMode().is_mode_off()) {
     // Load the url, then enable accessibility.
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     AccessibilityNotificationWaiter accessibility_waiter(
         web_contents, ui::kAXModeComplete, ax::mojom::Event::kNone);
     accessibility_waiter.WaitForNotification();
@@ -282,7 +282,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     // "load complete" AX event.
     AccessibilityNotificationWaiter accessibility_waiter(
         web_contents, ui::kAXModeComplete, ax::mojom::Event::kLoadComplete);
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     accessibility_waiter.WaitForNotification();
   }
 

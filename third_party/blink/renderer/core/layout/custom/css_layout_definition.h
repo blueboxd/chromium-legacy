@@ -17,7 +17,9 @@ namespace blink {
 
 class CustomLayoutScope;
 class FragmentResultOptions;
-class LayoutCustom;
+struct LogicalSize;
+class NGBlockNode;
+class NGConstraintSpace;
 class ScriptState;
 class SerializedScriptValue;
 class V8Function;
@@ -51,7 +53,10 @@ class CSSLayoutDefinition final
     // Runs the web developer defined layout, returns true if everything
     // succeeded. It populates the FragmentResultOptions dictionary, and
     // fragment_result_data.
-    bool Layout(const LayoutCustom&,
+    bool Layout(const NGConstraintSpace& space,
+                const Document& document,
+                const NGBlockNode& node,
+                const LogicalSize& border_box_size,
                 CustomLayoutScope*,
                 FragmentResultOptions*,
                 scoped_refptr<SerializedScriptValue>* fragment_result_data);

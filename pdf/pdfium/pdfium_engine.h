@@ -235,15 +235,18 @@ class PDFiumEngine : public PDFEngine,
   // If this has been run once, it will not notify the client again.
   void FinishLoadingDocument();
 
-  // Appends a PDFiumPage with |page_rect| to |pages_| or sets existing
-  // PDFiumPage for |page_index| to |page_rect|. |page_index| is 0-based.
-  void AppendPageRectToPages(const pp::Rect& page_rect,
-                             size_t page_index,
-                             bool reload);
-
   // Formats the pages of |page_sizes| and appends them to |pages_|. Formats to
   // two-up view if |two_up_view_| is true, else formats to single-view.
   void LoadPagesInCurrentLayout(std::vector<pp::Size> page_sizes, bool reload);
+
+  // Applies the current layout to the PDFiumPage objects. This primarily
+  // involves updating the PDFiumPage rectangles from the corresponding layout
+  // page rectangles.
+  //
+  // TODO(kmoon): Conceivably, the PDFiumPages wouldn't need to store page
+  // rectangles at all, and we could get rid of this step. This is a pretty
+  // involved change, however.
+  void ApplyCurrentLayoutToPages(bool reload);
 
   // Loads information about the pages in the document and calculate the
   // document size.

@@ -33,7 +33,7 @@ base::Optional<VideoFrameLayout> CreateLayout(uint32_t fourcc,
           V4L2Device::V4L2PixFmtToVideoPixelFormat(fourcc);
       if (pixel_format == PIXEL_FORMAT_UNKNOWN)
         return base::nullopt;
-      num_planes = VideoFrame::NumPlanes(pixel_format);
+      num_planes = V4L2Device::GetNumPlanesOfV4L2PixFmt(fourcc);
       if (num_planes == 1)
         return VideoFrameLayout::Create(pixel_format, size);
       else

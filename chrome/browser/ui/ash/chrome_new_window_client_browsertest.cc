@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientWebAppBrowserTest, OpenWebApp) {
     observer->WaitForNavigationFinished();
 
     EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
-    EXPECT_FALSE(GetLastActiveBrowser()->is_app());
+    EXPECT_FALSE(GetLastActiveBrowser()->is_type_app());
     content::WebContents* contents =
         GetLastActiveBrowser()->tab_strip_model()->GetActiveWebContents();
     EXPECT_EQ(url, contents->GetLastCommittedURL());
@@ -171,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientWebAppBrowserTest, OpenWebApp) {
     observer->WaitForNavigationFinished();
 
     EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
-    EXPECT_TRUE(GetLastActiveBrowser()->is_app());
+    EXPECT_TRUE(GetLastActiveBrowser()->is_type_app());
     content::WebContents* contents =
         GetLastActiveBrowser()->tab_strip_model()->GetActiveWebContents();
     EXPECT_EQ(app_url, contents->GetLastCommittedURL());

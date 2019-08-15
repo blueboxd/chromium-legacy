@@ -147,7 +147,7 @@ class COMPONENT_EXPORT(TRACING_CPP) AndroidSystemProducer
   SEQUENCE_CHECKER(sequence_checker_);
   // NOTE: Weak pointers must be invalidated before all other member variables.
   // and thus must be the last member variable.
-  base::WeakPtrFactory<AndroidSystemProducer> weak_ptr_factory_;
+  base::WeakPtrFactory<AndroidSystemProducer> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AndroidSystemProducer);
 };
 

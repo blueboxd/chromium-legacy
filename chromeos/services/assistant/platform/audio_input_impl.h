@@ -19,17 +19,13 @@
 #include "media/base/audio_capturer_source.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace chromeos {
 namespace assistant {
 
 class AudioInputImpl : public assistant_client::AudioInput,
                        public media::AudioCapturerSource::CaptureCallback {
  public:
-  AudioInputImpl(service_manager::Connector* connector,
+  AudioInputImpl(mojom::Client* client,
                  const std::string& device_id,
                  const std::string& hotword_device_id);
   ~AudioInputImpl() override;
@@ -113,7 +109,7 @@ class AudioInputImpl : public assistant_client::AudioInput,
   // sequence.
   SEQUENCE_CHECKER(observer_sequence_checker_);
 
-  service_manager::Connector* connector_;
+  mojom::Client* const client_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

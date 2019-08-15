@@ -9,14 +9,12 @@
 #include "ash/public/cpp/accessibility_controller.h"
 #include "ash/public/cpp/accessibility_controller_enums.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/accessibility/event_handler_common.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
-#include "ui/events/event.h"
 
 namespace {
 
@@ -49,20 +47,6 @@ SwitchAccessEventHandlerDelegate::SwitchAccessEventHandlerDelegate() {
 SwitchAccessEventHandlerDelegate::~SwitchAccessEventHandlerDelegate() {
   if (auto* controller = ash::AccessibilityController::Get())
     controller->SetSwitchAccessEventHandlerDelegate(nullptr);
-}
-
-void SwitchAccessEventHandlerDelegate::DispatchKeyEvent(
-    const ui::KeyEvent& event) {
-  // We can only call the Switch Access extension on the UI thread, make sure we
-  // don't ever try to run this code on some other thread.
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  extensions::ExtensionHost* host = chromeos::GetAccessibilityExtensionHost(
-      extension_misc::kSwitchAccessExtensionId);
-  if (!host)
-    return;
-
-  chromeos::ForwardKeyToExtension(event, host);
 }
 
 void SwitchAccessEventHandlerDelegate::SendSwitchAccessCommand(

@@ -281,6 +281,12 @@ class ProgressCenterPanel {
      */
     this.dismissErrorItemCallback = null;
 
+    /**
+     * Timeout for hiding file operations in progress.
+     * @const @type {number}
+     */
+    this.PENDING_TIME_MS_ = 2000;
+
     // Register event handlers.
     element.addEventListener('click', this.onClick_.bind(this));
     element.addEventListener(
@@ -400,6 +406,11 @@ class ProgressCenterPanel {
     if (newItem) {
       if (!panelItem) {
         panelItem = this.feedbackHost_.addPanelItem(item.id);
+        panelItem.hidden = true;
+        // Show the panel only for long running operations.
+        setTimeout(() => {
+          panelItem.hidden = false;
+        }, this.PENDING_TIME_MS_);
         panelItem.panelType = panelItem.panelTypeProgress;
         panelItem.userData = {
           'source': item.sourceMessage,
@@ -425,9 +436,10 @@ class ProgressCenterPanel {
       panelItem.progress = item.progressRateInPercent.toString();
       switch (item.state) {
         case 'completed':
-          // Create a completed panel for copies an moves.
+          // Create a completed panel for copies and moves.
           // TODO(crbug.com/947388) decide if we want these for delete, etc.
-          if (item.type === 'copy' || item.type === 'move') {
+          if (panelItem.hidden === false &&
+              (item.type === 'copy' || item.type === 'move')) {
             const donePanelItem = this.completedHost_.addPanelItem(item.id);
             donePanelItem.panelType = donePanelItem.panelTypeDone;
             donePanelItem.setAttribute(

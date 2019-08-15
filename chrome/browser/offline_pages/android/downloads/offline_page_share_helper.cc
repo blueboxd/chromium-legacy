@@ -42,7 +42,7 @@ std::unique_ptr<OfflineItemShareInfo> CreateShareInfo(
 }  // namespace
 
 OfflinePageShareHelper::OfflinePageShareHelper(OfflinePageModel* model)
-    : model_(model), weak_ptr_factory_(this) {}
+    : model_(model) {}
 
 OfflinePageShareHelper::~OfflinePageShareHelper() = default;
 

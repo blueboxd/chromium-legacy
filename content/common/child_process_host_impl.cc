@@ -7,7 +7,9 @@
 #include <limits>
 
 #include "base/atomic_sequence_num.h"
+#include "base/clang_coverage_buildflags.h"
 #include "base/command_line.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/hash/hash.h"
 #include "base/logging.h"
@@ -38,6 +40,10 @@
 #include "base/mac/foundation_util.h"
 #include "content/common/mac_helpers.h"
 #endif  // OS_LINUX
+
+#if BUILDFLAG(CLANG_COVERAGE)
+#include "content/common/coverage_utils.h"
+#endif
 
 namespace {
 
@@ -181,6 +187,10 @@ bool ChildProcessHostImpl::InitChannel() {
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   bool enabled = IPC::Logging::GetInstance()->Enabled();
   child_process_->SetIPCLoggingEnabled(enabled);
+#endif
+
+#if BUILDFLAG(CLANG_COVERAGE)
+  child_process_->SetCoverageFile(OpenCoverageFile());
 #endif
 
   opening_channel_ = true;

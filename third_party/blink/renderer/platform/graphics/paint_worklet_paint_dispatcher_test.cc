@@ -60,7 +60,10 @@ class MockPaintWorkletPainter
   ~MockPaintWorkletPainter() = default;
 
   MOCK_CONST_METHOD0(GetWorkletId, int());
-  MOCK_METHOD1(Paint, sk_sp<PaintRecord>(const cc::PaintWorkletInput*));
+  MOCK_METHOD2(
+      Paint,
+      sk_sp<PaintRecord>(const cc::PaintWorkletInput*,
+                         const cc::PaintWorkletJob::AnimatedPropertyValues&));
 };
 
 class MockPaintWorkletInput : public cc::PaintWorkletInput {
@@ -72,6 +75,8 @@ class MockPaintWorkletInput : public cc::PaintWorkletInput {
 
   MOCK_CONST_METHOD0(GetSize, gfx::SizeF());
   MOCK_CONST_METHOD0(WorkletId, int());
+  MOCK_CONST_METHOD0(GetPropertyKeys,
+                     const std::vector<PaintWorkletInput::PropertyKey>&());
 };
 
 cc::PaintWorkletInput* AddPaintWorkletInputToMap(cc::PaintWorkletJobMap& map,
@@ -80,7 +85,9 @@ cc::PaintWorkletInput* AddPaintWorkletInputToMap(cc::PaintWorkletJobMap& map,
     map[worklet_id] = base::MakeRefCounted<cc::PaintWorkletJobVector>();
   auto input = base::MakeRefCounted<MockPaintWorkletInput>(worklet_id);
   MockPaintWorkletInput* input_ptr = input.get();
-  map[worklet_id]->data.emplace_back(/*layer_id=*/1, std::move(input));
+  cc::PaintWorkletJob::AnimatedPropertyValues animated_property_values;
+  map[worklet_id]->data.emplace_back(/*layer_id=*/1, std::move(input),
+                                     animated_property_values);
   return input_ptr;
 }
 }  // namespace
@@ -105,7 +112,7 @@ TEST_F(PaintWorkletPaintDispatcherAsyncTest, DispatchedWorkletIsPainted) {
   // The input jobs match the registered painter, so we should see a series of
   // calls to Paint() with the appropriate PaintWorkletInputs.
   for (cc::PaintWorkletInput* input : inputs)
-    EXPECT_CALL(*mock_painter, Paint(input)).Times(1);
+    EXPECT_CALL(*mock_painter, Paint(input, _)).Times(1);
   dispatcher->DispatchWorklets(job_map, CreateTestCompleteCallback());
 
   WaitForTestCompletion();
@@ -141,7 +148,7 @@ TEST_F(PaintWorkletPaintDispatcherAsyncTest, DispatchHandlesEmptyInput) {
 
   // The input job map is empty, so we should see no calls to Paint but the
   // callback should still be called.
-  EXPECT_CALL(*mock_painter, Paint(_)).Times(0);
+  EXPECT_CALL(*mock_painter, Paint(_, _)).Times(0);
   dispatcher->DispatchWorklets(job_map, CreateTestCompleteCallback());
 
   WaitForTestCompletion();
@@ -172,9 +179,9 @@ TEST_F(PaintWorkletPaintDispatcherAsyncTest, DispatchSelectsCorrectPainter) {
   };
 
   // Paint should only be called on the correct painter, with our input.
-  EXPECT_CALL(*first_mock_painter, Paint(_)).Times(0);
+  EXPECT_CALL(*first_mock_painter, Paint(_, _)).Times(0);
   for (cc::PaintWorkletInput* input : inputs) {
-    EXPECT_CALL(*second_mock_painter, Paint(input)).Times(1);
+    EXPECT_CALL(*second_mock_painter, Paint(input, _)).Times(1);
   }
   dispatcher->DispatchWorklets(job_map, CreateTestCompleteCallback());
 
@@ -199,7 +206,7 @@ TEST_F(PaintWorkletPaintDispatcherAsyncTest, DispatchIgnoresNonMatchingInput) {
 
   // Only one job matches, so our painter should only be called once, and the
   // callback should still be called.
-  EXPECT_CALL(*mock_painter, Paint(matching_input)).Times(1);
+  EXPECT_CALL(*mock_painter, Paint(matching_input, _)).Times(1);
   dispatcher->DispatchWorklets(job_map, CreateTestCompleteCallback());
 
   WaitForTestCompletion();
@@ -231,8 +238,8 @@ TEST_F(PaintWorkletPaintDispatcherAsyncTest,
       AddPaintWorkletInputToMap(job_map, second_worklet_id);
 
   // Both painters should be called with the correct inputs.
-  EXPECT_CALL(*first_mock_painter, Paint(first_input)).Times(1);
-  EXPECT_CALL(*second_mock_painter, Paint(second_input)).Times(1);
+  EXPECT_CALL(*first_mock_painter, Paint(first_input, _)).Times(1);
+  EXPECT_CALL(*second_mock_painter, Paint(second_input, _)).Times(1);
   dispatcher->DispatchWorklets(job_map, CreateTestCompleteCallback());
 
   WaitForTestCompletion();

@@ -387,7 +387,7 @@ Node* EnclosingListChild(const Node* node) {
   // instead of node->parentNode()
   for (Node* n = const_cast<Node*>(node); n && n->parentNode();
        n = n->parentNode()) {
-    if (IsHTMLLIElement(*n) ||
+    if (IsA<HTMLLIElement>(*n) ||
         (IsHTMLListElement(n->parentNode()) && n != root))
       return n;
     if (n == root || IsTableCell(n))

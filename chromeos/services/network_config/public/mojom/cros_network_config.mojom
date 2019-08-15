@@ -648,9 +648,15 @@ interface CrosNetworkConfig {
 };
 
 interface CrosNetworkConfigObserver {
-  // Fired when the properties of an active network or previously active
-  // network change.
+  // Fired when properties of any active network or previously active network
+  // change. Provides all currently active network states.
   OnActiveNetworksChanged(array<NetworkStateProperties> networks);
+
+  // Fired when the properties of a specific network state change. For active
+  // networks this will be fired in addition to OnActiveNetworksChanged. For
+  // other networks it will fire when the configuration changes or a non
+  // active property changes (e.g. signal_strength).
+  OnNetworkStateChanged(NetworkStateProperties network);
 
   // Fired when the list of networks changes.
   // CrosNetworkConfig::GetNetworkStateList() can be used to get the network

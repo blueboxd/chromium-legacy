@@ -14,7 +14,9 @@
 #include "components/services/leveldb/public/cpp/util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/fake_leveldb_database.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -52,15 +54,13 @@ MakeGetAllCallback(bool* sucess_out,
 
 class GetAllCallback : public blink::mojom::StorageAreaGetAllCallback {
  public:
-  static blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo CreateAndBind(
-      bool* result,
-      base::OnceClosure callback) {
-    blink::mojom::StorageAreaGetAllCallbackAssociatedPtr ptr;
-    auto request = mojo::MakeRequestAssociatedWithDedicatedPipe(&ptr);
-    mojo::MakeStrongAssociatedBinding(
+  static mojo::PendingAssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
+  CreateAndBind(bool* result, base::OnceClosure callback) {
+    mojo::AssociatedRemote<blink::mojom::StorageAreaGetAllCallback> remote;
+    mojo::MakeSelfOwnedAssociatedReceiver(
         base::WrapUnique(new GetAllCallback(result, std::move(callback))),
-        std::move(request));
-    return ptr.PassInterface();
+        remote.BindNewEndpointAndPassDedicatedReceiverForTesting());
+    return remote.Unbind();
   }
 
  private:

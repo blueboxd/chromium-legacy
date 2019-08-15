@@ -65,7 +65,7 @@ void Badge::Trace(blink::Visitor* visitor) {
 
 Badge::Badge(ExecutionContext* context) {
   context->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&badge_service_));
+      badge_service_.BindNewPipeAndPassReceiver());
   DCHECK(badge_service_);
 }
 

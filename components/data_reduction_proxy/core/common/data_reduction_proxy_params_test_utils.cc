@@ -50,4 +50,13 @@ TestDataReductionProxyParams::TestDataReductionProxyParams()
     return DataReductionProxyParams::proxies_for_http();
 }
 
+net::ProxyList TestDataReductionProxyParams::GetAllConfiguredProxies() const {
+  return configured_proxies_;
+}
+
+void TestDataReductionProxyParams::SetConfiguredProxies(
+    const net::ProxyList& configured_proxies) {
+  configured_proxies_ = configured_proxies;
+}
+
 }  // namespace data_reduction_proxy

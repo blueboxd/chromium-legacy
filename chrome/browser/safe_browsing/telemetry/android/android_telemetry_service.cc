@@ -73,10 +73,7 @@ void RecordApkDownloadTelemetryIncompleteReason(
 AndroidTelemetryService::AndroidTelemetryService(
     SafeBrowsingService* sb_service,
     Profile* profile)
-    : TelemetryService(),
-      profile_(profile),
-      sb_service_(sb_service),
-      weak_ptr_factory_(this) {
+    : TelemetryService(), profile_(profile), sb_service_(sb_service) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
   DCHECK(sb_service_);

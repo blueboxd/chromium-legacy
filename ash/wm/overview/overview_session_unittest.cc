@@ -412,7 +412,7 @@ TEST_F(OverviewSessionTest, ActivateMinimized) {
   EXPECT_EQ(0.f, window->layer()->GetTargetOpacity());
   EXPECT_EQ(WindowStateType::kMinimized, window_state->GetStateType());
   WindowPreviewView* preview_view =
-      GetPreviewView(GetOverviewItemInGridWithWindow(0, window.get()));
+      GetPreviewView(GetOverviewItemForWindow(window.get()));
   EXPECT_TRUE(preview_view);
 
   const gfx::Point point = preview_view->GetBoundsInScreen().CenterPoint();
@@ -552,10 +552,9 @@ TEST_F(OverviewSessionTest, ActiveWindowChangedUserActionWindowClose) {
 
   ToggleOverview();
   aura::Window* window = widget->GetNativeWindow();
-  const gfx::Point point =
-      GetCloseButton(GetOverviewItemInGridWithWindow(0, window))
-          ->GetBoundsInScreen()
-          .CenterPoint();
+  const gfx::Point point = GetCloseButton(GetOverviewItemForWindow(window))
+                               ->GetBoundsInScreen()
+                               .CenterPoint();
   ASSERT_FALSE(widget->IsClosed());
   GetEventGenerator()->set_current_screen_location(point);
   GetEventGenerator()->ClickLeftButton();
@@ -658,10 +657,9 @@ TEST_F(OverviewSessionTest, CloseButton) {
 
   ToggleOverview();
   aura::Window* window = widget->GetNativeWindow();
-  const gfx::Point point =
-      GetCloseButton(GetOverviewItemInGridWithWindow(0, window))
-          ->GetBoundsInScreen()
-          .CenterPoint();
+  const gfx::Point point = GetCloseButton(GetOverviewItemForWindow(window))
+                               ->GetBoundsInScreen()
+                               .CenterPoint();
   GetEventGenerator()->set_current_screen_location(point);
 
   EXPECT_FALSE(widget->IsClosed());
@@ -671,10 +669,10 @@ TEST_F(OverviewSessionTest, CloseButton) {
 
   aura::Window* minimized_window = minimized_widget->GetNativeWindow();
   WindowPreviewView* preview_view =
-      GetPreviewView(GetOverviewItemInGridWithWindow(0, minimized_window));
+      GetPreviewView(GetOverviewItemForWindow(minimized_window));
   EXPECT_TRUE(preview_view);
   const gfx::Point point2 =
-      GetCloseButton(GetOverviewItemInGridWithWindow(0, minimized_window))
+      GetCloseButton(GetOverviewItemForWindow(minimized_window))
           ->GetBoundsInScreen()
           .CenterPoint();
   GetEventGenerator()->MoveMouseTo(point2);
@@ -694,16 +692,16 @@ TEST_F(OverviewSessionTest, MinimizeUnminimize) {
   aura::Window* window = widget->GetNativeWindow();
 
   ToggleOverview();
-  EXPECT_FALSE(GetPreviewView(GetOverviewItemInGridWithWindow(0, window)));
+  EXPECT_FALSE(GetPreviewView(GetOverviewItemForWindow(window)));
 
   widget->Minimize();
   EXPECT_TRUE(widget->IsMinimized());
   EXPECT_TRUE(InOverviewSession());
-  EXPECT_TRUE(GetPreviewView(GetOverviewItemInGridWithWindow(0, window)));
+  EXPECT_TRUE(GetPreviewView(GetOverviewItemForWindow(window)));
 
   widget->Restore();
   EXPECT_FALSE(widget->IsMinimized());
-  EXPECT_FALSE(GetPreviewView(GetOverviewItemInGridWithWindow(0, window)));
+  EXPECT_FALSE(GetPreviewView(GetOverviewItemForWindow(window)));
   EXPECT_TRUE(InOverviewSession());
 }
 
@@ -1008,7 +1006,7 @@ TEST_F(OverviewSessionTest, ActivateDraggedOverviewWindowNotCancelOverview) {
   EnterTabletMode();
   std::unique_ptr<aura::Window> window(CreateTestWindow());
   ToggleOverview();
-  OverviewItem* item = GetOverviewItemInGridWithWindow(0, window.get());
+  OverviewItem* item = GetOverviewItemForWindow(window.get());
   gfx::PointF drag_point = item->target_bounds().CenterPoint();
   overview_session()->InitiateDrag(item, drag_point,
                                    /*allow_drag_to_close=*/false);
@@ -1027,7 +1025,7 @@ TEST_F(OverviewSessionTest,
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
   ToggleOverview();
-  OverviewItem* item1 = GetOverviewItemInGridWithWindow(0, window1.get());
+  OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
   gfx::PointF drag_point = item1->target_bounds().CenterPoint();
   overview_session()->InitiateDrag(item1, drag_point,
                                    /*allow_drag_to_close=*/false);
@@ -1048,7 +1046,7 @@ TEST_F(OverviewSessionTest,
       CreateTestWindow(gfx::Rect(), aura::client::WINDOW_TYPE_POPUP));
   EXPECT_TRUE(window_util::ShouldExcludeForOverview(window2.get()));
   ToggleOverview();
-  OverviewItem* item1 = GetOverviewItemInGridWithWindow(0, window1.get());
+  OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
   gfx::PointF drag_point = item1->target_bounds().CenterPoint();
   overview_session()->InitiateDrag(item1, drag_point,
                                    /*allow_drag_to_close=*/false);
@@ -1170,14 +1168,14 @@ TEST_F(OverviewSessionTest, MultipleDisplays) {
   EXPECT_EQ(root_windows[1], window4->GetRootWindow());
 
   // Window indices are based on top-down order. The reverse of our creation.
-  CheckWindowAndCloseButtonInScreen(
-      window1.get(), GetOverviewItemInGridWithWindow(0, window1.get()));
-  CheckWindowAndCloseButtonInScreen(
-      window2.get(), GetOverviewItemInGridWithWindow(0, window2.get()));
-  CheckWindowAndCloseButtonInScreen(
-      window3.get(), GetOverviewItemInGridWithWindow(1, window3.get()));
-  CheckWindowAndCloseButtonInScreen(
-      window4.get(), GetOverviewItemInGridWithWindow(1, window4.get()));
+  CheckWindowAndCloseButtonInScreen(window1.get(),
+                                    GetOverviewItemForWindow(window1.get()));
+  CheckWindowAndCloseButtonInScreen(window2.get(),
+                                    GetOverviewItemForWindow(window2.get()));
+  CheckWindowAndCloseButtonInScreen(window3.get(),
+                                    GetOverviewItemForWindow(window3.get()));
+  CheckWindowAndCloseButtonInScreen(window4.get(),
+                                    GetOverviewItemForWindow(window4.get()));
 }
 
 // Tests shutting down during overview.
@@ -1316,9 +1314,9 @@ TEST_F(OverviewSessionTest, DropTargetOnCorrectDisplayForDraggingFromOverview) {
 
   ToggleOverview();
   OverviewItem* primary_screen_item =
-      GetOverviewItemInGridWithWindow(0, primary_screen_window.get());
+      GetOverviewItemForWindow(primary_screen_window.get());
   OverviewItem* secondary_screen_item =
-      GetOverviewItemInGridWithWindow(1, secondary_screen_window.get());
+      GetOverviewItemForWindow(secondary_screen_window.get());
 
   EXPECT_FALSE(GetDropTarget(0));
   EXPECT_FALSE(GetDropTarget(1));
@@ -1707,8 +1705,8 @@ TEST_F(OverviewSessionTest, ExitOverviewWhenAllGridsEmpty) {
   ASSERT_EQ(3u, grids.size());
   EXPECT_FALSE(overview_session()->no_windows_widget_for_testing());
 
-  OverviewItem* item1 = GetOverviewItemInGridWithWindow(0, window1);
-  OverviewItem* item2 = GetOverviewItemInGridWithWindow(1, window2);
+  OverviewItem* item1 = GetOverviewItemForWindow(window1);
+  OverviewItem* item2 = GetOverviewItemForWindow(window2);
   ASSERT_TRUE(item1 && item2);
 
   // Close |item2|. Verify that we are still in overview mode because |window1|
@@ -2112,7 +2110,7 @@ TEST_F(OverviewSessionTest, WindowItemCanAnimateOnDragRelease) {
 
   EnterTabletMode();
   ToggleOverview();
-  OverviewItem* item2 = GetOverviewItemInGridWithWindow(0, window2.get());
+  OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
   // Drag |item2| in a way so that |window2| does not get activated.
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(
@@ -2148,8 +2146,8 @@ TEST_F(OverviewSessionTest, WindowItemTitleCloseVisibilityOnDrag) {
 
   EnterTabletMode();
   ToggleOverview();
-  OverviewItem* item1 = GetOverviewItemInGridWithWindow(0, window1.get());
-  OverviewItem* item2 = GetOverviewItemInGridWithWindow(0, window2.get());
+  OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
+  OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
   // Start the drag on |item1|. Verify the dragged item, |item1| has both the
   // close button and titlebar hidden. The close button opacity however is
   // opaque as its a child of the header which handles fading away the whole
@@ -2199,9 +2197,9 @@ TEST_F(OverviewSessionTest, OverviewWidgetStackingOrder) {
 
   EnterTabletMode();
   ToggleOverview();
-  OverviewItem* item1 = GetOverviewItemInGridWithWindow(0, minimized.get());
-  OverviewItem* item2 = GetOverviewItemInGridWithWindow(0, window.get());
-  OverviewItem* item3 = GetOverviewItemInGridWithWindow(0, window3.get());
+  OverviewItem* item1 = GetOverviewItemForWindow(minimized.get());
+  OverviewItem* item2 = GetOverviewItemForWindow(window.get());
+  OverviewItem* item3 = GetOverviewItemForWindow(window3.get());
 
   views::Widget* widget1 = item_widget(item1);
   views::Widget* widget2 = item_widget(item2);
@@ -2298,10 +2296,8 @@ TEST_F(OverviewSessionTest, DropTargetStackedAtBottomForOverviewItem) {
   wm::ActivateWindow(window1.get());
   ToggleOverview();
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->MoveMouseTo(
-      gfx::ToRoundedPoint(GetOverviewItemInGridWithWindow(0, window1.get())
-                              ->target_bounds()
-                              .CenterPoint()));
+  generator->MoveMouseTo(gfx::ToRoundedPoint(
+      GetOverviewItemForWindow(window1.get())->target_bounds().CenterPoint()));
   generator->PressLeftButton();
   generator->MoveMouseBy(5, 0);
   ASSERT_TRUE(GetDropTarget(0));
@@ -2325,9 +2321,9 @@ TEST_F(OverviewSessionTest, Backdrop) {
 
   ToggleOverview();
   base::RunLoop().RunUntilIdle();
-  OverviewItem* wide_item = GetOverviewItemInGridWithWindow(0, wide.get());
-  OverviewItem* tall_item = GetOverviewItemInGridWithWindow(0, tall.get());
-  OverviewItem* normal_item = GetOverviewItemInGridWithWindow(0, normal.get());
+  OverviewItem* wide_item = GetOverviewItemForWindow(wide.get());
+  OverviewItem* tall_item = GetOverviewItemForWindow(tall.get());
+  OverviewItem* normal_item = GetOverviewItemForWindow(normal.get());
 
   // Only very tall and very wide windows will have a backdrop. The backdrop
   // only gets created if we need it once during the overview session.
@@ -2389,8 +2385,8 @@ TEST_F(OverviewSessionRoundedCornerTest, DISABLED_RoundedEdgeMaskVisibility) {
   // the animation is complete.
   EnterTabletMode();
   ToggleOverview();
-  OverviewItem* item1 = GetOverviewItemInGridWithWindow(0, window1.get());
-  OverviewItem* item2 = GetOverviewItemInGridWithWindow(0, window2.get());
+  OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
+  OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
   EXPECT_FALSE(HasRoundedCorner(item1));
   EXPECT_FALSE(HasRoundedCorner(item2));
   window1->layer()->GetAnimator()->StopAnimating();
@@ -2410,8 +2406,8 @@ TEST_F(OverviewSessionRoundedCornerTest, DISABLED_RoundedEdgeMaskVisibility) {
   WindowState::Get(window1.get())->Minimize();
   WindowState::Get(window2.get())->Minimize();
   ToggleOverview();
-  item1 = GetOverviewItemInGridWithWindow(0, window1.get());
-  item2 = GetOverviewItemInGridWithWindow(0, window2.get());
+  item1 = GetOverviewItemForWindow(window1.get());
+  item2 = GetOverviewItemForWindow(window2.get());
   EXPECT_FALSE(HasRoundedCorner(item1));
   EXPECT_FALSE(HasRoundedCorner(item2));
   item_widget(item1)
@@ -2445,8 +2441,8 @@ TEST_F(OverviewSessionRoundedCornerTest, ShadowVisibilityDragging) {
 
   EnterTabletMode();
   ToggleOverview();
-  OverviewItem* item1 = GetOverviewItemInGridWithWindow(0, window1.get());
-  OverviewItem* item2 = GetOverviewItemInGridWithWindow(0, window2.get());
+  OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
+  OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -2520,9 +2516,9 @@ TEST_F(OverviewSessionTest, ShadowBounds) {
 
   ToggleOverview();
   base::RunLoop().RunUntilIdle();
-  OverviewItem* wide_item = GetOverviewItemInGridWithWindow(0, wide.get());
-  OverviewItem* tall_item = GetOverviewItemInGridWithWindow(0, tall.get());
-  OverviewItem* normal_item = GetOverviewItemInGridWithWindow(0, normal.get());
+  OverviewItem* wide_item = GetOverviewItemForWindow(wide.get());
+  OverviewItem* tall_item = GetOverviewItemForWindow(tall.get());
+  OverviewItem* normal_item = GetOverviewItemForWindow(normal.get());
 
   views::Widget* wide_widget = item_widget(wide_item);
   views::Widget* tall_widget = item_widget(tall_item);
@@ -2569,8 +2565,8 @@ TEST_F(OverviewSessionTest, DISABLED_DraggingWithTwoFingers) {
   EnterTabletMode();
   ToggleOverview();
   base::RunLoop().RunUntilIdle();
-  OverviewItem* item1 = GetOverviewItemInGridWithWindow(0, window1.get());
-  OverviewItem* item2 = GetOverviewItemInGridWithWindow(0, window2.get());
+  OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
+  OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
 
   const gfx::RectF original_bounds1 = item1->target_bounds();
   const gfx::RectF original_bounds2 = item2->target_bounds();
@@ -2667,9 +2663,9 @@ TEST_F(OverviewSessionTest, PositionWindows) {
   std::unique_ptr<aura::Window> window3(CreateTestWindow());
 
   ToggleOverview();
-  OverviewItem* item1 = GetOverviewItemInGridWithWindow(0, window1.get());
-  OverviewItem* item2 = GetOverviewItemInGridWithWindow(0, window2.get());
-  OverviewItem* item3 = GetOverviewItemInGridWithWindow(0, window3.get());
+  OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
+  OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
+  OverviewItem* item3 = GetOverviewItemForWindow(window3.get());
   const gfx::RectF bounds1 = item1->target_bounds();
   const gfx::RectF bounds2 = item2->target_bounds();
   const gfx::RectF bounds3 = item3->target_bounds();
@@ -2768,7 +2764,7 @@ TEST_F(OverviewSessionTest, SelectingWindowWithBackdrop) {
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(500, 200)));
 
   ToggleOverview();
-  OverviewItem* item = GetOverviewItemInGridWithWindow(0, window.get());
+  OverviewItem* item = GetOverviewItemForWindow(window.get());
   ASSERT_EQ(ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed,
             item->GetWindowDimensionsType());
 
@@ -2838,10 +2834,10 @@ TEST_F(OverviewSessionNewLayoutTest, CheckNewLayoutWindowPositions) {
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
 
-  OverviewItem* item1 = GetOverviewItemInGridWithWindow(0, window1.get());
-  OverviewItem* item2 = GetOverviewItemInGridWithWindow(0, window2.get());
-  OverviewItem* item3 = GetOverviewItemInGridWithWindow(0, window3.get());
-  OverviewItem* item4 = GetOverviewItemInGridWithWindow(0, window4.get());
+  OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
+  OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
+  OverviewItem* item3 = GetOverviewItemForWindow(window3.get());
+  OverviewItem* item4 = GetOverviewItemForWindow(window4.get());
 
   const gfx::RectF item1_bounds = item1->target_bounds();
   const gfx::RectF item2_bounds = item2->target_bounds();
@@ -2877,10 +2873,10 @@ TEST_F(OverviewSessionNewLayoutTest, CheckOffscreenWindows) {
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
 
-  OverviewItem* item0 = GetOverviewItemInGridWithWindow(0, windows[0].get());
-  OverviewItem* item1 = GetOverviewItemInGridWithWindow(0, windows[1].get());
-  OverviewItem* item6 = GetOverviewItemInGridWithWindow(0, windows[6].get());
-  OverviewItem* item7 = GetOverviewItemInGridWithWindow(0, windows[7].get());
+  OverviewItem* item0 = GetOverviewItemForWindow(windows[0].get());
+  OverviewItem* item1 = GetOverviewItemForWindow(windows[1].get());
+  OverviewItem* item6 = GetOverviewItemForWindow(windows[6].get());
+  OverviewItem* item7 = GetOverviewItemForWindow(windows[7].get());
 
   const gfx::RectF screen_bounds(GetGridBounds());
   const gfx::RectF item0_bounds = item0->target_bounds();
@@ -2909,7 +2905,7 @@ TEST_F(OverviewSessionNewLayoutTest, CheckNoOverviewItemShift) {
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
 
-  OverviewItem* item0 = GetOverviewItemInGridWithWindow(0, windows[0].get());
+  OverviewItem* item0 = GetOverviewItemForWindow(windows[0].get());
   const gfx::RectF before_shift_bounds = item0->target_bounds();
 
   GenerateScrollSequence(gfx::Point(100, 50), gfx::Point(0, 50));
@@ -2926,7 +2922,7 @@ TEST_F(OverviewSessionNewLayoutTest, CheckOverviewItemShift) {
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
 
-  OverviewItem* item0 = GetOverviewItemInGridWithWindow(0, windows[0].get());
+  OverviewItem* item0 = GetOverviewItemForWindow(windows[0].get());
   const gfx::RectF before_shift_bounds = item0->target_bounds();
 
   GenerateScrollSequence(gfx::Point(100, 50), gfx::Point(0, 50));
@@ -2946,8 +2942,7 @@ TEST_F(OverviewSessionNewLayoutTest, CheckOverviewItemScrollingBounds) {
   // bounds. First, align the left-most window (|windows|0||) to the left-hand
   // bound and store the item's location. Then, scroll a far amount and check to
   // see if the item moved at all.
-  OverviewItem* leftmost_window =
-      GetOverviewItemInGridWithWindow(0, windows[0].get());
+  OverviewItem* leftmost_window = GetOverviewItemForWindow(windows[0].get());
 
   GenerateScrollSequence(gfx::Point(0, 50), gfx::Point(5000, 50));
   const gfx::RectF left_bounds = leftmost_window->target_bounds();
@@ -2958,8 +2953,7 @@ TEST_F(OverviewSessionNewLayoutTest, CheckOverviewItemScrollingBounds) {
   // bounds. First, align the right-most window (|windows|7||) to the right-hand
   // bound and store the item's location. Then, scroll a far amount and check to
   // see if the item moved at all.
-  OverviewItem* rightmost_window =
-      GetOverviewItemInGridWithWindow(0, windows[7].get());
+  OverviewItem* rightmost_window = GetOverviewItemForWindow(windows[7].get());
   GenerateScrollSequence(gfx::Point(5000, 50), gfx::Point(0, 50));
   const gfx::RectF right_bounds = rightmost_window->target_bounds();
   GenerateScrollSequence(gfx::Point(5000, 50), gfx::Point(0, 50));
@@ -3006,8 +3000,7 @@ TEST_F(OverviewSessionNewLayoutTest, CheckScrollingOnWindowItems) {
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
 
-  OverviewItem* leftmost_window =
-      GetOverviewItemInGridWithWindow(0, windows[0].get());
+  OverviewItem* leftmost_window = GetOverviewItemForWindow(windows[0].get());
   const gfx::Point topleft_window_center =
       gfx::ToRoundedPoint(leftmost_window->target_bounds().CenterPoint());
   const gfx::RectF left_bounds = leftmost_window->target_bounds();
@@ -3057,8 +3050,7 @@ TEST_F(OverviewSessionNewLayoutTest, DragOverviewWindowToSnap) {
   // start dragging in SplitView. Drags |overview_item1| to the left border of
   // the screen. SplitView should trigger and upon completing drag,
   // |overview_item1| should snap to the left.
-  OverviewItem* overview_item1 =
-      GetOverviewItemInGridWithWindow(0, window1.get());
+  OverviewItem* overview_item1 = GetOverviewItemForWindow(window1.get());
   const gfx::PointF snap_left_location =
       gfx::PointF(GetGridBounds().left_center());
 
@@ -3076,8 +3068,7 @@ TEST_F(OverviewSessionNewLayoutTest, DragOverviewWindowToSnap) {
   // start dragging in SplitView. Drags |overview_item2| to the right border of
   // the screen. Upon completing drag, |overview_item2| should snap to the
   // right.
-  OverviewItem* overview_item2 =
-      GetOverviewItemInGridWithWindow(0, window2.get());
+  OverviewItem* overview_item2 = GetOverviewItemForWindow(window2.get());
   const gfx::PointF snap_right_location =
       gfx::PointF(GetGridBounds().right_center());
 
@@ -3251,9 +3242,7 @@ TEST_F(SplitViewOverviewSessionTest, DragOverviewWindowToSnap) {
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
   // Drag |window1| selector item to snap to left.
-  const int grid_index = 0;
-  OverviewItem* overview_item1 =
-      GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  OverviewItem* overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
 
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
@@ -3263,8 +3252,7 @@ TEST_F(SplitViewOverviewSessionTest, DragOverviewWindowToSnap) {
   // Drag |window2| selector item to attempt to snap to left. Since there is
   // already one left snapped window |window1|, |window1| will be put in
   // overview mode.
-  OverviewItem* overview_item2 =
-      GetOverviewItemInGridWithWindow(grid_index, window2.get());
+  OverviewItem* overview_item2 = GetOverviewItemForWindow(window2.get());
   DragWindowTo(overview_item2, gfx::PointF(0, 0));
 
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kLeftSnapped);
@@ -3273,8 +3261,7 @@ TEST_F(SplitViewOverviewSessionTest, DragOverviewWindowToSnap) {
       window1.get()));
 
   // Drag |window3| selector item to snap to right.
-  OverviewItem* overview_item3 =
-      GetOverviewItemInGridWithWindow(grid_index, window3.get());
+  OverviewItem* overview_item3 = GetOverviewItemForWindow(window3.get());
   const gfx::PointF end_location3(GetWorkAreaInScreen(window3.get()).width(),
                                   0.f);
   DragWindowTo(overview_item3, end_location3);
@@ -3294,10 +3281,8 @@ TEST_F(SplitViewOverviewSessionTest, OverviewDragControllerBehavior) {
   ToggleOverview();
   ASSERT_TRUE(overview_controller()->InOverviewSession());
 
-  OverviewItem* window_item1 =
-      GetOverviewItemInGridWithWindow(0, window1.get());
-  OverviewItem* window_item2 =
-      GetOverviewItemInGridWithWindow(0, window2.get());
+  OverviewItem* window_item1 = GetOverviewItemForWindow(window1.get());
+  OverviewItem* window_item2 = GetOverviewItemForWindow(window2.get());
 
   // Verify that if a drag is orginally horizontal, the drag behavior is drag to
   // snap.
@@ -3339,8 +3324,7 @@ TEST_F(SplitViewOverviewSessionTest, DragToClose) {
   ToggleOverview();
   ASSERT_TRUE(overview_controller()->InOverviewSession());
 
-  OverviewItem* item =
-      GetOverviewItemInGridWithWindow(0, widget->GetNativeWindow());
+  OverviewItem* item = GetOverviewItemForWindow(widget->GetNativeWindow());
   const gfx::PointF start = item->target_bounds().CenterPoint();
   ASSERT_TRUE(item);
 
@@ -3371,8 +3355,7 @@ TEST_F(SplitViewOverviewSessionTest, FlingToClose) {
   ASSERT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_EQ(1u, overview_session()->grid_list()[0]->size());
 
-  OverviewItem* item =
-      GetOverviewItemInGridWithWindow(0, widget->GetNativeWindow());
+  OverviewItem* item = GetOverviewItemForWindow(widget->GetNativeWindow());
   const gfx::PointF start = item->target_bounds().CenterPoint();
   ASSERT_TRUE(item);
 
@@ -3414,9 +3397,9 @@ TEST_F(SplitViewOverviewSessionTest, BasicNudging) {
   ToggleOverview();
   ASSERT_TRUE(overview_controller()->InOverviewSession());
 
-  OverviewItem* item1 = GetOverviewItemInGridWithWindow(0, window1.get());
-  OverviewItem* item2 = GetOverviewItemInGridWithWindow(0, window2.get());
-  OverviewItem* item3 = GetOverviewItemInGridWithWindow(0, window3.get());
+  OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
+  OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
+  OverviewItem* item3 = GetOverviewItemForWindow(window3.get());
 
   const gfx::RectF item1_bounds = item1->target_bounds();
   const gfx::RectF item2_bounds = item2->target_bounds();
@@ -3461,10 +3444,10 @@ TEST_F(SplitViewOverviewSessionTest, NoNudgingWhenNumRowsChange) {
   ToggleOverview();
   ASSERT_TRUE(overview_controller()->InOverviewSession());
 
-  OverviewItem* item1 = GetOverviewItemInGridWithWindow(0, window1.get());
-  OverviewItem* item2 = GetOverviewItemInGridWithWindow(0, window2.get());
-  OverviewItem* item3 = GetOverviewItemInGridWithWindow(0, window3.get());
-  OverviewItem* item4 = GetOverviewItemInGridWithWindow(0, window4.get());
+  OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
+  OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
+  OverviewItem* item3 = GetOverviewItemForWindow(window3.get());
+  OverviewItem* item4 = GetOverviewItemForWindow(window4.get());
 
   const gfx::RectF item1_bounds = item1->target_bounds();
   const gfx::RectF item2_bounds = item2->target_bounds();
@@ -3502,7 +3485,7 @@ TEST_F(SplitViewOverviewSessionTest, NoNudgingWhenLastItemOnPreviousRowDrops) {
   OverviewItem* items[kWindows];
   gfx::RectF item_bounds[kWindows];
   for (int i = 0; i < kWindows; ++i) {
-    items[i] = GetOverviewItemInGridWithWindow(0, windows[i].get());
+    items[i] = GetOverviewItemForWindow(windows[i].get());
     item_bounds[i] = items[i]->target_bounds();
   }
 
@@ -3551,11 +3534,9 @@ TEST_F(SplitViewOverviewSessionTest,
   ASSERT_TRUE(overview_controller()->InOverviewSession());
 
   // Select window one and start the drag.
-  const int grid_index = 0;
   const int window_width =
       Shell::Get()->GetPrimaryRootWindow()->GetBoundsInScreen().width();
-  OverviewItem* overview_item =
-      GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  OverviewItem* overview_item = GetOverviewItemForWindow(window1.get());
   gfx::RectF overview_item_bounds = overview_item->target_bounds();
   gfx::PointF start_location(overview_item_bounds.CenterPoint());
   overview_session()->InitiateDrag(overview_item, start_location,
@@ -3590,7 +3571,7 @@ TEST_F(SplitViewOverviewSessionTest,
   overview_session()->CompleteDrag(overview_item, left);
   ASSERT_EQ(SplitViewState::kLeftSnapped, split_view_controller()->state());
   ASSERT_EQ(window1.get(), split_view_controller()->left_window());
-  overview_item = GetOverviewItemInGridWithWindow(grid_index, window2.get());
+  overview_item = GetOverviewItemForWindow(window2.get());
   overview_item_bounds = overview_item->target_bounds();
   start_location = overview_item_bounds.CenterPoint();
   overview_session()->InitiateDrag(overview_item, start_location,
@@ -3624,7 +3605,7 @@ TEST_F(SplitViewOverviewSessionTest, DraggingUnsnappableAppWithSplitView) {
   // Verify that after dragging the unsnappable window to the left and right,
   // the window grid bounds do not change.
   OverviewItem* overview_item =
-      GetOverviewItemInGridWithWindow(0, unsnappable_window.get());
+      GetOverviewItemForWindow(unsnappable_window.get());
   overview_session()->InitiateDrag(overview_item,
                                    overview_item->target_bounds().CenterPoint(),
                                    /*allow_drag_to_close=*/false);
@@ -3649,9 +3630,7 @@ TEST_F(SplitViewOverviewSessionTest, EmptyWindowsListNotExitOverview) {
   EXPECT_TRUE(overview_controller()->InOverviewSession());
 
   // Drag |window1| selector item to snap to left.
-  const int grid_index = 0;
-  OverviewItem* overview_item1 =
-      GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  OverviewItem* overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF());
 
   // Test that overview mode is active in this single window case.
@@ -3700,7 +3679,7 @@ TEST_F(SplitViewOverviewSessionTest, EmptyWindowsListNotExitOverview) {
   // Now enter overview and split view again. Test that exiting tablet mode can
   // end split view and overview correctly.
   ToggleOverview();
-  overview_item1 = GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF());
   EXPECT_TRUE(Shell::Get()->split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller()->InOverviewSession());
@@ -3738,16 +3717,13 @@ TEST_F(SplitViewOverviewSessionTest, SplitViewRotationTest) {
 
   ToggleOverview();
   // Test that dragging |window1| to the left of the screen snaps it to left.
-  const int grid_index = 0;
-  OverviewItem* overview_item1 =
-      GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  OverviewItem* overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF());
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kLeftSnapped);
   EXPECT_EQ(split_view_controller()->left_window(), window1.get());
 
   // Test that dragging |window2| to the right of the screen snaps it to right.
-  OverviewItem* overview_item2 =
-      GetOverviewItemInGridWithWindow(grid_index, window2.get());
+  OverviewItem* overview_item2 = GetOverviewItemForWindow(window2.get());
   gfx::Rect work_area_rect = GetWorkAreaInScreen(window2.get());
   gfx::PointF end_location2(work_area_rect.width(), work_area_rect.height());
   DragWindowTo(overview_item2, end_location2);
@@ -3769,13 +3745,13 @@ TEST_F(SplitViewOverviewSessionTest, SplitViewRotationTest) {
   ToggleOverview();
 
   // Test that dragging |window1| to the top of the screen snaps it to left.
-  overview_item1 = GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kLeftSnapped);
   EXPECT_EQ(split_view_controller()->left_window(), window1.get());
 
   // Test that dragging |window2| to the bottom of the screen snaps it to right.
-  overview_item2 = GetOverviewItemInGridWithWindow(grid_index, window2.get());
+  overview_item2 = GetOverviewItemForWindow(window2.get());
   work_area_rect = GetWorkAreaInScreen(window2.get());
   end_location2 = gfx::PointF(work_area_rect.width(), work_area_rect.height());
   DragWindowTo(overview_item2, end_location2, SelectorItemLocation::ORIGIN);
@@ -3797,13 +3773,13 @@ TEST_F(SplitViewOverviewSessionTest, SplitViewRotationTest) {
   ToggleOverview();
 
   // Test that dragging |window1| to the left of the screen snaps it to right.
-  overview_item1 = GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF());
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kRightSnapped);
   EXPECT_EQ(split_view_controller()->right_window(), window1.get());
 
   // Test that dragging |window2| to the right of the screen snaps it to left.
-  overview_item2 = GetOverviewItemInGridWithWindow(grid_index, window2.get());
+  overview_item2 = GetOverviewItemForWindow(window2.get());
   work_area_rect = GetWorkAreaInScreen(window2.get());
   end_location2 = gfx::PointF(work_area_rect.width(), work_area_rect.height());
   DragWindowTo(overview_item2, end_location2, SelectorItemLocation::ORIGIN);
@@ -3825,13 +3801,13 @@ TEST_F(SplitViewOverviewSessionTest, SplitViewRotationTest) {
   ToggleOverview();
 
   // Test that dragging |window1| to the top of the screen snaps it to right.
-  overview_item1 = GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kRightSnapped);
   EXPECT_EQ(split_view_controller()->right_window(), window1.get());
 
   // Test that dragging |window2| to the bottom of the screen snaps it to left.
-  overview_item2 = GetOverviewItemInGridWithWindow(grid_index, window2.get());
+  overview_item2 = GetOverviewItemForWindow(window2.get());
   work_area_rect = GetWorkAreaInScreen(window2.get());
   end_location2 = gfx::PointF(work_area_rect.width(), work_area_rect.height());
   DragWindowTo(overview_item2, end_location2);
@@ -3860,9 +3836,7 @@ TEST_F(SplitViewOverviewSessionTest, SplitViewOverviewBothActiveTest) {
   ToggleOverview();
 
   // Drag |window1| selector item to snap to left.
-  const int grid_index = 0;
-  OverviewItem* overview_item1 =
-      GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  OverviewItem* overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF());
 
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kLeftSnapped);
@@ -3913,9 +3887,8 @@ TEST_F(SplitViewOverviewSessionTest, SelectUnsnappableWindowInSplitView) {
   ASSERT_TRUE(split_view_controller()->InSplitViewMode());
 
   // Select the unsnappable window.
-  const int grid_index = 0;
   OverviewItem* overview_item =
-      GetOverviewItemInGridWithWindow(grid_index, unsnappable_window.get());
+      GetOverviewItemForWindow(unsnappable_window.get());
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->set_current_screen_location(
       gfx::ToRoundedPoint(overview_item->target_bounds().CenterPoint()));
@@ -3944,8 +3917,7 @@ TEST_F(SplitViewOverviewSessionTest, SelectUnsnappableWindowInSplitView) {
   EXPECT_TRUE(overview_controller()->InOverviewSession());
 
   // Now select the unsnappable window.
-  overview_item =
-      GetOverviewItemInGridWithWindow(grid_index, unsnappable_window.get());
+  overview_item = GetOverviewItemForWindow(unsnappable_window.get());
   generator->set_current_screen_location(
       gfx::ToRoundedPoint(overview_item->target_bounds().CenterPoint()));
   generator->ClickLeftButton();
@@ -3970,11 +3942,10 @@ TEST_F(SplitViewOverviewSessionTest, OverviewUnsnappableIndicatorVisibility) {
   ToggleOverview();
   ASSERT_TRUE(overview_controller()->InOverviewSession());
 
-  const int grid_index = 0;
   OverviewItem* snappable_overview_item =
-      GetOverviewItemInGridWithWindow(grid_index, window2.get());
+      GetOverviewItemForWindow(window2.get());
   OverviewItem* unsnappable_overview_item =
-      GetOverviewItemInGridWithWindow(grid_index, unsnappable_window.get());
+      GetOverviewItemForWindow(unsnappable_window.get());
 
   // Note: |cannot_snap_label_view_| and its parent will be created on demand.
   EXPECT_FALSE(snappable_overview_item->cannot_snap_widget_for_testing());
@@ -4016,9 +3987,7 @@ TEST_F(SplitViewOverviewSessionTest, DragDividerToExitTest) {
   ToggleOverview();
 
   // Drag |window1| selector item to snap to left.
-  const int grid_index = 0;
-  OverviewItem* overview_item1 =
-      GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  OverviewItem* overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF());
   // Test that overview mode and split view mode are both active.
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
@@ -4035,8 +4004,7 @@ TEST_F(SplitViewOverviewSessionTest, DragDividerToExitTest) {
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
 
   // Now drag |window2| selector item to snap to left.
-  OverviewItem* overview_item2 =
-      GetOverviewItemInGridWithWindow(grid_index, window2.get());
+  OverviewItem* overview_item2 = GetOverviewItemForWindow(window2.get());
   DragWindowTo(overview_item2, gfx::PointF());
   // Test that overview mode and split view mode are both active.
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
@@ -4063,8 +4031,7 @@ TEST_F(SplitViewOverviewSessionTest, OverviewItemLongPressed) {
   ToggleOverview();
   ASSERT_TRUE(overview_controller()->InOverviewSession());
 
-  OverviewItem* overview_item =
-      GetOverviewItemInGridWithWindow(0, window1.get());
+  OverviewItem* overview_item = GetOverviewItemForWindow(window1.get());
   gfx::PointF start_location(overview_item->target_bounds().CenterPoint());
   const gfx::RectF original_bounds(overview_item->target_bounds());
 
@@ -4102,9 +4069,7 @@ TEST_F(SplitViewOverviewSessionTest, SnappedWindowBoundsTest) {
   ToggleOverview();
 
   // Drag |window1| selector item to snap to left.
-  const int grid_index = 0;
-  OverviewItem* overview_item1 =
-      GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  OverviewItem* overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF());
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller()->state());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
@@ -4126,8 +4091,7 @@ TEST_F(SplitViewOverviewSessionTest, SnappedWindowBoundsTest) {
   EXPECT_EQ(window1->bounds().width(), screen_width);
 
   // Drag |window2| selector item to snap to right.
-  OverviewItem* overview_item2 =
-      GetOverviewItemInGridWithWindow(grid_index, window2.get());
+  OverviewItem* overview_item2 = GetOverviewItemForWindow(window2.get());
   const gfx::Rect work_area_rect = GetWorkAreaInScreen(window2.get());
   gfx::Point end_location2 =
       gfx::Point(work_area_rect.width(), work_area_rect.height());
@@ -4166,9 +4130,7 @@ TEST_F(SplitViewOverviewSessionTest,
   ToggleOverview();
   // Drag |window1| selector item to snap to left. There should be two items on
   // the overview grid afterwards, |window2| and |window3|.
-  const int grid_index = 0;
-  OverviewItem* overview_item1 =
-      GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  OverviewItem* overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF());
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller()->state());
   EXPECT_TRUE(InOverviewSession());
@@ -4265,10 +4227,7 @@ TEST_F(SplitViewOverviewSessionTest, InsertMinimizedWindowBackToOverview) {
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
 
   ToggleOverview();
-
-  const int grid_index = 0;
-  OverviewItem* overview_item1 =
-      GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  OverviewItem* overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF());
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kLeftSnapped);
   EXPECT_EQ(split_view_controller()->left_window(), window1.get());
@@ -4278,10 +4237,10 @@ TEST_F(SplitViewOverviewSessionTest, InsertMinimizedWindowBackToOverview) {
   WindowState::Get(window1.get())->Minimize();
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(InOverviewSession());
-  EXPECT_TRUE(GetOverviewItemInGridWithWindow(grid_index, window1.get()));
+  EXPECT_TRUE(GetOverviewItemForWindow(window1.get()));
 
   // Now snap both |window1| and |window2|.
-  overview_item1 = GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF());
   wm::ActivateWindow(window2.get());
   EXPECT_FALSE(InOverviewSession());
@@ -4294,14 +4253,14 @@ TEST_F(SplitViewOverviewSessionTest, InsertMinimizedWindowBackToOverview) {
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kRightSnapped);
   EXPECT_TRUE(InOverviewSession());
-  EXPECT_TRUE(GetOverviewItemInGridWithWindow(grid_index, window1.get()));
+  EXPECT_TRUE(GetOverviewItemForWindow(window1.get()));
 
   // Minimize |window2| also put |window2| to overview grid.
   WindowState::Get(window2.get())->Minimize();
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(InOverviewSession());
-  EXPECT_TRUE(GetOverviewItemInGridWithWindow(grid_index, window1.get()));
-  EXPECT_TRUE(GetOverviewItemInGridWithWindow(grid_index, window2.get()));
+  EXPECT_TRUE(GetOverviewItemForWindow(window1.get()));
+  EXPECT_TRUE(GetOverviewItemForWindow(window2.get()));
 }
 
 // Test that when splitview and overview are both active at the same time, if
@@ -4323,14 +4282,11 @@ TEST_F(SplitViewOverviewSessionTest, SnappedWindowAnimationObserverTest) {
   EXPECT_FALSE(window1->layer()->GetTargetTransform().IsIdentity());
   EXPECT_FALSE(window2->layer()->GetTargetTransform().IsIdentity());
   EXPECT_FALSE(window3->layer()->GetTargetTransform().IsIdentity());
-  const int grid_index = 0;
-  OverviewItem* overview_item1 =
-      GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  OverviewItem* overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF());
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller()->state());
   // Drag |window2| to snap to right.
-  OverviewItem* overview_item2 =
-      GetOverviewItemInGridWithWindow(grid_index, window2.get());
+  OverviewItem* overview_item2 = GetOverviewItemForWindow(window2.get());
   const gfx::Rect work_area_rect =
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window2.get());
@@ -4396,9 +4352,7 @@ TEST_F(SplitViewOverviewSessionTest, SwapWindowAndOverviewGrid) {
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
 
   ToggleOverview();
-  const int grid_index = 0;
-  OverviewItem* overview_item1 =
-      GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  OverviewItem* overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF());
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kLeftSnapped);
   EXPECT_EQ(split_view_controller()->default_snap_position(),
@@ -4463,8 +4417,7 @@ TEST_F(SplitViewOverviewSessionTest, ClosingSplitViewWindow) {
 
   ToggleOverview();
   // Drag |window1| selector item to snap to left.
-  OverviewItem* overview_item1 =
-      GetOverviewItemInGridWithWindow(0, window1.get());
+  OverviewItem* overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
@@ -4534,9 +4487,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   // Drag |window1| selector item to snap to left.
-  const int grid_index = 0;
-  OverviewItem* overview_item1 =
-      GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  OverviewItem* overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   // Since the only window is snapped, overview and splitview should be both
   // ended.
@@ -4551,7 +4502,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   ToggleOverview();
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
-  overview_item1 = GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF(600, 300));
   // SplitView and overview are both active at the moment.
   EXPECT_TRUE(overview_controller()->InOverviewSession());
@@ -4568,10 +4519,9 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   // 3. Test that snap 2 windows will end overview and splitview.
   std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
   ToggleOverview();
-  overview_item1 = GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
-  OverviewItem* overview_item3 =
-      GetOverviewItemInGridWithWindow(grid_index, window3.get());
+  OverviewItem* overview_item3 = GetOverviewItemForWindow(window3.get());
   DragWindowTo(overview_item3, gfx::PointF(600, 300));
   EXPECT_EQ(window_state1->GetStateType(), WindowStateType::kLeftSnapped);
   EXPECT_EQ(WindowState::Get(window3.get())->GetStateType(),
@@ -4584,11 +4534,11 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   // the previous snapped window will not be put back into overview.
   std::unique_ptr<aura::Window> window4(CreateWindow(bounds));
   ToggleOverview();
-  overview_item1 = GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   EXPECT_FALSE(overview_controller()->overview_session()->IsWindowInOverview(
       window1.get()));
-  overview_item3 = GetOverviewItemInGridWithWindow(grid_index, window3.get());
+  overview_item3 = GetOverviewItemForWindow(window3.get());
   DragWindowTo(overview_item3, gfx::PointF(0, 0));
   EXPECT_FALSE(overview_controller()->overview_session()->IsWindowInOverview(
       window3.get()));
@@ -4613,7 +4563,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   // activating an new window will not auto-snap the new window. Overview and
   // splitview should be ended.
   ToggleOverview();
-  overview_item1 = GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
@@ -4630,7 +4580,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   // close the snapped window will end split view, but overview is still active.
   ToggleOverview();
   const gfx::Rect overview_bounds = GetGridBounds();
-  overview_item1 = GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
@@ -4644,7 +4594,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
 
   // 7. Test if split view mode is active, open the app list will not end
   // overview and splitview.
-  overview_item3 = GetOverviewItemInGridWithWindow(grid_index, window3.get());
+  overview_item3 = GetOverviewItemForWindow(window3.get());
   DragWindowTo(overview_item3, gfx::PointF(0, 0));
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
@@ -4683,9 +4633,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, IgnoreEventsIfApplistVisible) {
   ToggleOverview();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(app_list_controller->IsVisible());
-  const int grid_index = 0;
-  OverviewItem* overview_item1 =
-      GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  OverviewItem* overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
@@ -4729,9 +4677,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
 
   ToggleOverview();
   const gfx::Rect overview_full_bounds = GetGridBounds();
-  const int grid_index = 0;
-  OverviewItem* overview_item1 =
-      GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  OverviewItem* overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   EXPECT_NE(GetGridBounds(), overview_full_bounds);
   EXPECT_EQ(GetGridBounds(), GetSplitViewRightWindowBounds(window1.get()));
@@ -4751,8 +4697,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
   // Resize that happens on the left edge of the left snapped window will end
   // overview. The same for the resize that happens on the top or bottom edge of
   // the left snapped window.
-  OverviewItem* overview_item2 =
-      GetOverviewItemInGridWithWindow(grid_index, window2.get());
+  OverviewItem* overview_item2 = GetOverviewItemForWindow(window2.get());
   DragWindowTo(overview_item2, gfx::PointF(0, 0));
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
@@ -4763,8 +4708,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
   ToggleOverview();
-  OverviewItem* overview_item3 =
-      GetOverviewItemInGridWithWindow(grid_index, window3.get());
+  OverviewItem* overview_item3 = GetOverviewItemForWindow(window3.get());
   DragWindowTo(overview_item3, gfx::PointF(0, 0));
   ui::test::EventGenerator generator3(Shell::GetPrimaryRootWindow(),
                                       window3.get());
@@ -4773,8 +4717,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
   ToggleOverview();
-  OverviewItem* overview_item4 =
-      GetOverviewItemInGridWithWindow(grid_index, window4.get());
+  OverviewItem* overview_item4 = GetOverviewItemForWindow(window4.get());
   DragWindowTo(overview_item4, gfx::PointF(0, 0));
   ui::test::EventGenerator generator4(Shell::GetPrimaryRootWindow(),
                                       window4.get());
@@ -4793,9 +4736,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, MoveWindowTest) {
       CreateWindowWithHitTestComponent(HTCAPTION, bounds));
 
   ToggleOverview();
-  const int grid_index = 0;
-  OverviewItem* overview_item1 =
-      GetOverviewItemInGridWithWindow(grid_index, window1.get());
+  OverviewItem* overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
@@ -4816,8 +4757,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, MinimizedWindowTest) {
 
   ToggleOverview();
   // Drag |window1| selector item to snap to left.
-  OverviewItem* overview_item1 =
-      GetOverviewItemInGridWithWindow(0, window1.get());
+  OverviewItem* overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());

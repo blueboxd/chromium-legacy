@@ -300,7 +300,6 @@ class CORE_EXPORT LocalFrameView final
   const ObjectSet& BackgroundAttachmentFixedObjects() const {
     return background_attachment_fixed_objects_;
   }
-  bool HasBackgroundAttachmentFixedDescendants(const LayoutObject&) const;
   void InvalidateBackgroundAttachmentFixedDescendantsOnScroll(
       const LayoutObject& scrolled_object);
 
@@ -626,18 +625,6 @@ class CORE_EXPORT LocalFrameView final
   // Only for CompositeAfterPaint.
   std::unique_ptr<JSONObject> CompositedLayersAsJSON(LayerTreeFlags);
 
-  // Recursively update frame tree. Each frame has its only
-  // scroll on main reason. Given the following frame tree
-  // .. A...
-  // ../.\..
-  // .B...C.
-  // .|.....
-  // .D.....
-  // If B has fixed background-attachment but other frames
-  // don't, both A and C should scroll on cc. Frame D should
-  // scrolled on main thread as its ancestor B.
-  void UpdateSubFrameScrollOnMainReason(const Frame&,
-                                        MainThreadScrollingReasons);
   String MainThreadScrollingReasonsAsText();
   // Main thread scrolling reasons including reasons from ancestors.
   MainThreadScrollingReasons GetMainThreadScrollingReasons() const;
@@ -968,14 +955,12 @@ class CORE_EXPORT LocalFrameView final
   std::unique_ptr<Vector<ObjectPaintInvalidation>>
       tracked_object_paint_invalidations_;
 
-  // For BlinkGenPropertyTrees/CompositeAfterPaint only. It's created lazily
-  // when it's used.
-  // - For BlinkGenPropertyTrees, we use it in PushPaintArtifactToCompositor()
-  //   to collect GraphicsLayers as foreign layers. It's transient, but may live
-  //   across frame updates until GraphicsLayersDidChange() is called.
-  // - For CompositeAfterPaint, we use it in PaintTree() for all paintings of
-  //   the frame tree in PaintTree(). It caches display items and subsequences
-  //   across frame updates and repaints.
+  // Currently used in PushPaintArtifactToCompositor() to collect GraphicsLayers
+  // as foreign layers. It's transient, but may live across frame updates until
+  // GraphicsLayersDidChange() is called.
+  // For CompositeAfterPaint, we use it in PaintTree() for all paintings of the
+  // frame tree in PaintTree(). It caches display items and subsequences across
+  // frame updates and repaints.
   std::unique_ptr<PaintController> paint_controller_;
   std::unique_ptr<PaintArtifactCompositor> paint_artifact_compositor_;
 

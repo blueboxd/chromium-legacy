@@ -35,8 +35,7 @@ cr.define('extension_code_section_tests', function() {
         message: 'Highlight message',
       };
 
-      const testIsVisible =
-          extension_test_util.isVisible.bind(null, codeSection);
+      const testIsVisible = test_util.isVisible.bind(null, codeSection);
       expectFalse(!!codeSection.code);
       expectTrue(codeSection.$$('#scroll-container').hidden);
       expectFalse(testIsVisible('#main'));

@@ -432,6 +432,10 @@ class CONTENT_EXPORT BackgroundSyncManager
       blink::mojom::BackgroundSyncType sync_type,
       int to_add);
 
+  // Returns true if all registrations are waiting to be resolved.
+  // false otherwise.
+  bool AllRegistrationsWaitingToBeResolved() const;
+
   // Map from service worker registration id to its Background Sync
   // registrations.
   std::map<int64_t, BackgroundSyncRegistrations> active_registrations_;

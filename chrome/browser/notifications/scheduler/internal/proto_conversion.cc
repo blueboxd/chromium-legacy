@@ -240,8 +240,6 @@ proto::ScheduleParams_Priority ScheduleParamsPriorityToProto(
   switch (priority) {
     case Priority::kLow:
       return proto::ScheduleParams_Priority_LOW;
-    case Priority::kHigh:
-      return proto::ScheduleParams_Priority_HIGH;
     case Priority::kNoThrottle:
       return proto::ScheduleParams_Priority_NO_THROTTLE;
   }
@@ -254,8 +252,6 @@ ScheduleParams::Priority ScheduleParamsPriorityFromProto(
   switch (priority) {
     case proto::ScheduleParams_Priority_LOW:
       return Priority::kLow;
-    case proto::ScheduleParams_Priority_HIGH:
-      return Priority::kHigh;
     case proto::ScheduleParams_Priority_NO_THROTTLE:
       return Priority::kNoThrottle;
   }
@@ -272,6 +268,16 @@ void ScheduleParamsToProto(ScheduleParams* params,
     proto_impression_mapping->set_impression_result(
         ToImpressionResult(mapping.second));
   }
+
+  if (params->deliver_time_start.has_value()) {
+    proto->set_deliver_time_start(
+        TimeToMilliseconds(params->deliver_time_start.value()));
+  }
+
+  if (params->deliver_time_end.has_value()) {
+    proto->set_deliver_time_end(
+        TimeToMilliseconds(params->deliver_time_end.value()));
+  }
 }
 
 // Converts ScheduleParams from proto buffer type.
@@ -286,6 +292,13 @@ void ScheduleParamsFromProto(proto::ScheduleParams* proto,
     auto impression_result =
         FromImpressionResult(proto_impression_mapping.impression_result());
     params->impression_mapping[user_feedback] = impression_result;
+  }
+  if (proto->has_deliver_time_start()) {
+    params->deliver_time_start =
+        MillisecondsToTime(proto->deliver_time_start());
+  }
+  if (proto->has_deliver_time_end()) {
+    params->deliver_time_end = MillisecondsToTime(proto->deliver_time_end());
   }
 }
 

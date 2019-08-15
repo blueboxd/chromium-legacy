@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/message_loop/message_pump_libevent.h"
+#include "base/message_loop/message_loop_current.h"
 #include "ui/events/devices/gamepad_device.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"
@@ -26,7 +26,7 @@ namespace ui {
 enum class DomCode;
 
 class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
-    : public base::MessagePumpLibevent::FdWatcher {
+    : public base::MessagePumpForUI::FdWatcher {
  public:
   EventConverterEvdev(int fd,
                       const base::FilePath& path,
@@ -123,7 +123,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
   static base::TimeTicks TimeTicksFromInputEvent(const input_event& event);
 
  protected:
-  // base::MessagePumpLibevent::FdWatcher:
+  // base::MessagePumpForUI::FdWatcher:
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
   // File descriptor to read.
@@ -140,7 +140,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
   bool watching_ = false;
 
   // Controller for watching the input fd.
-  base::MessagePumpLibevent::FdWatchController controller_;
+  base::MessagePumpForUI::FdWatchController controller_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EventConverterEvdev);

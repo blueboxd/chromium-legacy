@@ -90,9 +90,13 @@ leveldb::Status TransactionalLevelDBTransaction::Commit() {
                                std::move(commit_cleanup_complete_callback_));
 }
 
-void TransactionalLevelDBTransaction::Rollback() {
+void TransactionalLevelDBTransaction::RollbackAndMaybeTearDown() {
   DCHECK(!finished_);
   finished_ = true;
+  // Resetting |scope_| can result in a revert. In single-sequence mode, the
+  // scopes system will synchronously execute the revert. If the revert errors,
+  // this can cause the IndexedDBOriginState to be deleted. Hence the method
+  // name, RollbackAndMaybeTearDown().
   scope_.reset();
 }
 

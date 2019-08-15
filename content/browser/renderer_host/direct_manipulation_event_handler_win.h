@@ -38,13 +38,14 @@ class DirectManipulationEventHandler
               IDirectManipulationViewportEventHandler,
               IDirectManipulationInteractionEventHandler>> {
  public:
-  DirectManipulationEventHandler(DirectManipulationHelper* helper,
-                                 ui::WindowEventTarget* event_target);
+  DirectManipulationEventHandler(ui::WindowEventTarget* event_target);
 
   // Return true if viewport_size_in_pixels_ changed.
   bool SetViewportSizeInPixels(const gfx::Size& viewport_size_in_pixels);
 
   void SetDeviceScaleFactor(float device_scale_factor);
+
+  void SetDirectManipulationHelper(DirectManipulationHelper* helper);
 
  private:
   friend class DirectManipulationBrowserTest;

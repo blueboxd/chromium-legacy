@@ -249,6 +249,10 @@ public class BookmarkManager
                 mAdapter.onBookmarkDelegateInitialized(BookmarkManager.this);
                 mToolbar.onBookmarkDelegateInitialized(BookmarkManager.this);
 
+                if (reorderBookmarksEnabled) {
+                    ((ReorderBookmarkItemsAdapter) mAdapter).addDragListener(mToolbar);
+                }
+
                 if (!TextUtils.isEmpty(mInitialUrl)) {
                     setState(BookmarkUIState.createStateFromUrl(mInitialUrl, mBookmarkModel));
                 }

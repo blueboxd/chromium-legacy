@@ -180,7 +180,7 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
   net::HttpRequestHeaders callback_headers_;
 };
 
-TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationOnIOThread) {
+TEST_F(DataReductionProxyRequestOptionsTest, Authorization) {
   std::string expected_header;
   SetHeaderExpectations(std::string(), kClientStr, kExpectedBuild,
                         kExpectedPatch, kPageId, std::string(),
@@ -195,7 +195,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationOnIOThread) {
   test_context_->RunUntilIdle();
 
   // Now set a key.
-  request_options()->SetKeyOnIO(kTestKey2);
+  request_options()->SetKey(kTestKey2);
 
   // Write headers.
   VerifyExpectedHeader(expected_header, kPageIdValue);
@@ -211,7 +211,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationIgnoresEmptyKey) {
 
   // Now set an empty key. The auth handler should ignore that, and the key
   // remains |kTestKey|.
-  request_options()->SetKeyOnIO(std::string());
+  request_options()->SetKey(std::string());
   VerifyExpectedHeader(expected_header, kPageIdValue);
 }
 

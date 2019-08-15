@@ -29,8 +29,7 @@ class OfflinePageArchivePublisherImplTest
  public:
   OfflinePageArchivePublisherImplTest()
       : task_runner_(new base::TestSimpleTaskRunner),
-        task_runner_handle_(task_runner_),
-        weak_ptr_factory_(this) {}
+        task_runner_handle_(task_runner_) {}
   ~OfflinePageArchivePublisherImplTest() override {}
 
   SavePageCallback save_page_callback;
@@ -71,7 +70,8 @@ class OfflinePageArchivePublisherImplTest
   PublishArchiveResult publish_archive_result_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
-  base::WeakPtrFactory<OfflinePageArchivePublisherImplTest> weak_ptr_factory_;
+  base::WeakPtrFactory<OfflinePageArchivePublisherImplTest> weak_ptr_factory_{
+      this};
 };
 
 void OfflinePageArchivePublisherImplTest::SetUp() {

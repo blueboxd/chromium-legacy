@@ -17,8 +17,7 @@ ElementPrecondition::ElementPrecondition(
         element_exists,
     const google::protobuf::RepeatedPtrField<FormValueMatchProto>&
         form_value_match)
-    : form_value_match_(form_value_match.begin(), form_value_match.end()),
-      weak_ptr_factory_(this) {
+    : form_value_match_(form_value_match.begin(), form_value_match.end()) {
   for (const auto& element : element_exists) {
     // TODO(crbug.com/806868): Check if we shouldn't skip the script when this
     // happens.

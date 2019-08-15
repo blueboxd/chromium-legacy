@@ -7589,8 +7589,9 @@ TEST_F(WebFrameTest, overflowHiddenRewrite) {
                                 base_url_ + "non-scrollable.html");
 
   UpdateAllLifecyclePhases(web_view_helper.GetWebView());
-  PaintLayerCompositor* compositor = web_view_helper.GetWebView()->Compositor();
-  GraphicsLayer* scroll_layer = compositor->ScrollLayer();
+
+  auto* frame_view = web_view_helper.LocalMainFrame()->GetFrameView();
+  auto* scroll_layer = frame_view->GetScrollableArea()->LayerForScrolling();
   ASSERT_TRUE(scroll_layer);
   cc::Layer* cc_scroll_layer = scroll_layer->CcLayer();
 
@@ -7603,7 +7604,7 @@ TEST_F(WebFrameTest, overflowHiddenRewrite) {
   frame->ExecuteScript(WebScriptSource("allowScroll();"));
   UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
-  scroll_layer = compositor->ScrollLayer();
+  scroll_layer = frame_view->GetScrollableArea()->LayerForScrolling();
   cc_scroll_layer = scroll_layer->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->GetUserScrollableHorizontal());
   ASSERT_TRUE(cc_scroll_layer->GetUserScrollableVertical());
@@ -7893,7 +7894,7 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
   // Verify that the viewports are nonscrollable.
   LocalFrameView* frame_view = web_view_helper.LocalMainFrame()->GetFrameView();
   GraphicsLayer* layout_viewport_scroll_layer =
-      web_view_impl->Compositor()->ScrollLayer();
+      frame_view->GetScrollableArea()->LayerForScrolling();
   GraphicsLayer* visual_viewport_scroll_layer =
       frame_view->GetPage()->GetVisualViewport().ScrollLayer();
 
@@ -7912,7 +7913,8 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
-  layout_viewport_scroll_layer = web_view_impl->Compositor()->ScrollLayer();
+  layout_viewport_scroll_layer =
+      frame_view->GetScrollableArea()->LayerForScrolling();
   visual_viewport_scroll_layer =
       frame_view->GetPage()->GetVisualViewport().ScrollLayer();
   ASSERT_TRUE(

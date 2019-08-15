@@ -1139,12 +1139,12 @@ void AccessibilityTreeFormatterUia::ProcessValueForOutput(
   }
 }
 
-const base::FilePath::StringType
+base::FilePath::StringType
 AccessibilityTreeFormatterUia::GetExpectedFileSuffix() {
   return FILE_PATH_LITERAL("-expected-uia-win.txt");
 }
 
-const base::FilePath::StringType
+base::FilePath::StringType
 AccessibilityTreeFormatterUia::GetVersionSpecificExpectedFileSuffix() {
   if (base::win::GetVersion() == base::win::Version::WIN7) {
     return FILE_PATH_LITERAL("-expected-uia-win7.txt");

@@ -146,7 +146,7 @@ class GeolocationPermissionContextAndroid
 
   // Must be the last member, to ensure that it will be destroyed first, which
   // will invalidate weak pointers.
-  base::WeakPtrFactory<GeolocationPermissionContextAndroid> weak_factory_;
+  base::WeakPtrFactory<GeolocationPermissionContextAndroid> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationPermissionContextAndroid);
 };

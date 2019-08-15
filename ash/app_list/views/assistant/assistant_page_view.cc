@@ -103,7 +103,7 @@ int AssistantPageView::GetHeightForWidth(int width) const {
       GetPreferredHeightForAppListState(contents_view_->app_list_view());
 
   preferred_height = std::max(preferred_height, min_height_dip_);
-  return GetChildViewPreferredHeight() > preferred_height
+  return GetChildViewHeightForWidth(width) > preferred_height
              ? ash::kMaxHeightEmbeddedDip
              : preferred_height;
 }
@@ -142,7 +142,7 @@ void AssistantPageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void AssistantPageView::ChildPreferredSizeChanged(views::View* child) {
-  MaybeUpdateAppListState(child->GetPreferredSize().height());
+  MaybeUpdateAppListState(child->GetHeightForWidth(width()));
   PreferredSizeChanged();
 
   // After layout events, focus can be lost so we need to explicitly request
@@ -154,7 +154,7 @@ void AssistantPageView::ChildVisibilityChanged(views::View* child) {
   if (!child->GetVisible())
     return;
 
-  MaybeUpdateAppListState(child->GetPreferredSize().height());
+  MaybeUpdateAppListState(child->GetHeightForWidth(width()));
 }
 
 void AssistantPageView::OnMouseEvent(ui::MouseEvent* event) {
@@ -255,17 +255,21 @@ void AssistantPageView::OnUiVisibilityChanged(
   }
 }
 
-int AssistantPageView::GetChildViewPreferredHeight() const {
+const AssistantMainView* AssistantPageView::GetMainViewForTest() const {
+  return assistant_main_view_;
+}
+
+int AssistantPageView::GetChildViewHeightForWidth(int width) const {
   int height = 0;
   if (assistant_view_delegate_) {
     switch (assistant_view_delegate_->GetUiModel()->ui_mode()) {
       case ash::AssistantUiMode::kLauncherEmbeddedUi:
         if (assistant_main_view_)
-          height = assistant_main_view_->GetPreferredSize().height();
+          height = assistant_main_view_->GetHeightForWidth(width);
         break;
       case ash::AssistantUiMode::kWebUi:
         if (assistant_web_view_)
-          height = assistant_web_view_->GetPreferredSize().height();
+          height = assistant_web_view_->GetHeightForWidth(width);
         break;
       case ash::AssistantUiMode::kMainUi:
       case ash::AssistantUiMode::kMiniUi:

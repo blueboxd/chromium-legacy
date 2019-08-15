@@ -11,6 +11,7 @@
 #include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_image_generator.h"
 #include "cc/paint/paint_record.h"
+#include "cc/paint/paint_worklet_input.h"
 #include "cc/paint/skia_paint_image_generator.h"
 #include "ui/gfx/skia_util.h"
 
@@ -277,6 +278,18 @@ SkColorType PaintImage::GetColorType() const {
   if (GetSkImage())
     return GetSkImage()->colorType();
   return kUnknown_SkColorType;
+}
+
+int PaintImage::width() const {
+  return paint_worklet_input_
+             ? static_cast<int>(paint_worklet_input_->GetSize().width())
+             : GetSkImage()->width();
+}
+
+int PaintImage::height() const {
+  return paint_worklet_input_
+             ? static_cast<int>(paint_worklet_input_->GetSize().height())
+             : GetSkImage()->height();
 }
 
 PaintImage::ImageType PaintImage::GetImageType() const {

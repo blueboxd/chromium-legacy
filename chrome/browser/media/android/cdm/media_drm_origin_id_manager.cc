@@ -332,7 +332,7 @@ void MediaDrmOriginIdManager::RegisterProfilePrefs(
 }
 
 MediaDrmOriginIdManager::MediaDrmOriginIdManager(PrefService* pref_service)
-    : pref_service_(pref_service), weak_factory_(this) {
+    : pref_service_(pref_service) {
   DVLOG(1) << __func__;
   DCHECK(pref_service_);
 

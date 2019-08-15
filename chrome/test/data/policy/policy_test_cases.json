@@ -4987,5 +4987,15 @@
     "pref_mappings": [
       { "pref": "safebrowsing.real_time_lookup_enabled" }
     ]
+  },
+
+  "LockScreenMediaPlaybackEnabled": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "LockScreenMediaPlaybackEnabled": true
+    },
+    "pref_mappings": [
+      { "pref": "ash.lock_screen_media_controls_enabled" }
+    ]
   }
 }

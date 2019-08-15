@@ -77,7 +77,7 @@ ScriptPromise SerialPortUnderlyingSink::close(ScriptState* script_state) {
     return ScriptPromise::RejectWithDOMException(script_state, exception);
   }
 
-  // TODO(crbug.com/893334): close() should wait for data to be flushed before
+  // TODO(crbug.com/989656): close() should wait for data to be flushed before
   // resolving. This will require waiting for |data_pipe_| to close.
   return ScriptPromise::CastUndefined(script_state);
 }
@@ -86,6 +86,8 @@ ScriptPromise SerialPortUnderlyingSink::abort(ScriptState* script_state,
                                               ScriptValue reason) {
   // The specification guarantees that this will only be called after all
   // pending writes have been completed.
+  // TODO(crbug.com/969653): abort() should trigger a purge of the serial write
+  // buffers.
   return close(script_state);
 }
 

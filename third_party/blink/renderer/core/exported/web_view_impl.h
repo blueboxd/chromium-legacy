@@ -91,7 +91,6 @@ class WebLocalFrameImpl;
 class WebRemoteFrame;
 class WebSettingsImpl;
 class WebViewClient;
-class WebWidgetClient;
 
 struct WebTextAutosizerPageInfo;
 
@@ -111,14 +110,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // they should be rendered by WebKit (which is the default).
   static bool UseExternalPopupMenus();
 
-  // Returns whether frames under this WebView are backed by a compositor. When
-  // false there may be no WebWidgetClient present. When true, there must be a
-  // WebWidgetClient while a local main frame is attached.
+  // Returns whether frames under this WebView are backed by a compositor.
   bool does_composite() const { return does_composite_; }
 
   // WebView methods:
-  void DidAttachLocalMainFrame(WebWidgetClient*) override;
-  void DidAttachRemoteMainFrame(WebWidgetClient*) override;
+  void DidAttachLocalMainFrame() override;
   void SetPrerendererClient(WebPrerendererClient*) override;
   WebSettings* GetSettings() override;
   WebString PageEncoding() const override;
@@ -233,9 +229,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   Element* FocusedElement() const;
 
   WebViewClient* Client() { return AsView().client; }
-  // TODO(dcheng): This client should be acquirable from the MainFrameImpl
-  // in some cases? We need to know how to get it in all cases.
-  WebWidgetClient* WidgetClient() { return AsWidget().client; }
 
   // Returns the page object associated with this view. This may be null when
   // the page is shutting down, but will be valid at all other times.
@@ -424,12 +417,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   struct ViewData;
   ViewData& AsView() { return as_view_; }
   const ViewData& AsView() const { return as_view_; }
-  struct WidgetData;
-  WidgetData& AsWidget() { return as_widget_; }
-  const WidgetData& AsWidget() const { return as_widget_; }
 
-  // Called while the main LocalFrame is being detached. The MainFrameImpl() and
-  // WebWidgetClient are still valid until after this method is called.
+  // Called while the main LocalFrame is being detached. The MainFrameImpl() is
+  // still valid until after this method is called.
   void DidDetachLocalMainFrame();
 
   // WebWidget methods:
@@ -571,14 +561,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
     WebViewClient* client;
     Persistent<Page> page;
   } as_view_;
-
-  // These member variables should not be accessed within calls to WebView
-  // APIs. They can be called from within WebWidget APIs, and internal methods,
-  // though these need to be sorted as being for the view or the widget also.
-  struct WidgetData {
-    // Can be null (e.g. unittests, shared workers, etc).
-    WebWidgetClient* client = nullptr;
-  } as_widget_;
 
   Persistent<ChromeClient> chrome_client_;
 

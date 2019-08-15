@@ -28,8 +28,7 @@ MediaPlayerRendererClient::MediaPlayerRendererClient(
           std::move(client_extension_request)),
       delayed_bind_renderer_extention_ptr_info_(
           renderer_extension_ptr.PassInterface()),
-      client_extension_binding_(this),
-      weak_factory_(this) {}
+      client_extension_binding_(this) {}
 
 MediaPlayerRendererClient::~MediaPlayerRendererClient() {
   // Clearing the STW's callback into |this| must happen first. Otherwise, the

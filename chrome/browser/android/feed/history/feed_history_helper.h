@@ -39,7 +39,7 @@ class FeedHistoryHelper {
   void OnCheckURLDone(FeedLoggingMetrics::CheckURLVisitCallback callback,
                       history::QueryURLResult result);
 
-  base::WeakPtrFactory<FeedHistoryHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<FeedHistoryHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FeedHistoryHelper);
 };

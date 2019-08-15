@@ -201,8 +201,9 @@ class XrBrowserTestBase : public InProcessBrowserTest {
 
   // Convenience function for running PollJavaScriptBooleanOrFail with the
   // return value of GetCurrentWebContents.
-  void PollJavaScriptBooleanOrFail(const std::string& bool_expression,
-                                   const base::TimeDelta& timeout);
+  void PollJavaScriptBooleanOrFail(
+      const std::string& bool_expression,
+      const base::TimeDelta& timeout = kPollTimeoutShort);
 
   // Convenience function for running WaitOnJavaScriptStep with the return value
   // of GetCurrentWebContents.

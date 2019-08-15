@@ -241,6 +241,7 @@ class TestWebWidgetClient : public WebWidgetClient {
   void SetBrowserControlsHeight(float top_height,
                                 float bottom_height,
                                 bool shrink_viewport) override;
+  viz::FrameSinkId GetFrameSinkId() override;
 
   content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
   cc::LayerTreeHost* layer_tree_host() {

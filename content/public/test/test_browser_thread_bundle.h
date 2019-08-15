@@ -52,15 +52,6 @@
 // DONT_CREATE_BROWSER_THREADS should only be used when the options specify at
 // least one real thread other than the main thread.
 //
-// TestBrowserThreadBundle may be instantiated in a scope where there is already
-// a base::test::ScopedTaskEnvironment. In that case, it will use the
-// MessageLoop and the ThreadPool provided by this
-// base::test::ScopedTaskEnvironment instead of creating its own. The ability to
-// have a base::test::ScopedTaskEnvironment and a TestBrowserThreadBundle in the
-// same scope is useful when a fixture that inherits from a fixture that
-// provides a base::test::ScopedTaskEnvironment needs to add support for browser
-// threads.
-//
 // Basic usage:
 //
 //   class MyTestFixture : public testing::Test {
@@ -78,6 +69,44 @@
 //
 //     // Other members go here (or further below in private section.)
 //   };
+//
+// To add a TestBrowserThreadBundle to a ChromeFooBase test fixture when its
+// FooBase base class already provides a base::test::ScopedTaskEnvironment:
+//   class FooBase {
+//    public:
+//     // Constructs a FooBase with |traits| being forwarded to its
+//     // ScopedTaskEnvironment.
+//     template <typename... TaskEnvironmentTraits>
+//     explicit FooBase(TaskEnvironmentTraits... traits)
+//         : scoped_task_environment_(
+//               base::in_place,
+//               traits...) {}
+//
+//     // Alternatively a subclass may pass this tag to ask this FooBase not to
+//     // instantiate a ScopedTaskEnvironment. The subclass is then responsible
+//     // to instantiate one before FooBase::SetUp().
+//     struct SubclassManagesTaskEnvironment {};
+//     FooBase(SubclassManagesTaskEnvironment tag);
+//
+//    protected:
+//     // Use this protected member directly from the test body to drive tasks
+//     // posted within a FooBase-based test.
+//     base::Optional<base::test::ScopedTaskEnvironment>
+//         scoped_task_environment_;
+//   };
+//
+//   class ChromeFooBase : public FooBase {
+//    public:
+//     explicit ChromeFooBase(TaskEnvironmentTraits... traits)
+//         : FooBase(FooBase::SubclassManagesTaskEnvironment()),
+//           thread_bundle_(traits...) {}
+//
+//    protected:
+//     // Use this protected member directly to drive tasks posted within a
+//     // ChromeFooBase-based test.
+//     content::TestBrowserThreadBundle thread_bundle_;
+//   };
+// See views::ViewsTestBase / ChromeViewsTestBase for a real-world example.
 
 #ifndef CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_BUNDLE_H_
 #define CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_BUNDLE_H_

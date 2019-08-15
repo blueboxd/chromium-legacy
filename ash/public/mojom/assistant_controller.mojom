@@ -4,28 +4,9 @@
 
 module ash.mojom;
 
-import "chromeos/services/assistant/public/mojom/assistant.mojom";
-import "ui/gfx/geometry/mojom/geometry.mojom";
+import "chromeos/services/assistant/public/mojom/assistant_notification.mojom";
 import "mojo/public/mojom/base/time.mojom";
-
-// Interface to AssistantController which is owned by Shell in Ash. This is
-// typically used by the Assistant service to provide the controller with an
-// interface to itself.
-interface AssistantController {
-  // Provides a reference to the underlying |assistant| service.
-  SetAssistant(chromeos.assistant.mojom.Assistant assistant);
-
-  // Show speaker id enrollment flow.
-  StartSpeakerIdEnrollmentFlow();
-
-  // Send Assistant feedback to Assistant server. If |pii_allowed| is
-  // true then the user gives permission to attach Assistant debug info.
-  // |feedback_description| is user's feedback input.
-  SendAssistantFeedback(
-    bool pii_allowed,
-    string feedback_description,
-    string screenshot_png);
-};
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 enum AssistantTimerState {
   kUnknown,

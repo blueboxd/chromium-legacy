@@ -20,9 +20,7 @@
 PermissionPromptAndroid::PermissionPromptAndroid(
     content::WebContents* web_contents,
     Delegate* delegate)
-    : web_contents_(web_contents),
-      delegate_(delegate),
-      weak_factory_(this) {
+    : web_contents_(web_contents), delegate_(delegate) {
   DCHECK(web_contents);
 
   if (PermissionDialogDelegate::ShouldShowDialog()) {

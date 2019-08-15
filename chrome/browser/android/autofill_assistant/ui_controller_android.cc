@@ -96,8 +96,7 @@ UiControllerAndroid::UiControllerAndroid(
     : overlay_delegate_(this),
       header_delegate_(this),
       payment_request_delegate_(this),
-      form_delegate_(this),
-      weak_ptr_factory_(this) {
+      form_delegate_(this) {
   java_object_ = Java_AutofillAssistantUiController_create(
       env, jactivity,
       /* allowTabSwitching= */

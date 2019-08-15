@@ -13,6 +13,8 @@
 #include "content/public/browser/browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/paint_vector_icon.h"
 
 MockRenderViewContextMenu::MockMenuItem::MockMenuItem()
     : command_id(0), enabled(false), checked(false), hidden(true) {}
@@ -72,6 +74,14 @@ void MockRenderViewContextMenu::AddMenuItemWithIcon(
   items_.push_back(item);
 }
 
+void MockRenderViewContextMenu::AddMenuItemWithIcon(
+    int command_id,
+    const base::string16& title,
+    const gfx::VectorIcon& icon) {
+  AddMenuItemWithIcon(command_id, title,
+                      gfx::CreateVectorIcon(icon, gfx::kPlaceholderColor));
+}
+
 void MockRenderViewContextMenu::AddCheckItem(int command_id,
                                              const base::string16& title) {
   MockMenuItem item;
@@ -121,6 +131,16 @@ void MockRenderViewContextMenu::AddSubMenuWithStringIdAndIcon(
   items_.push_back(item);
 
   AppendSubMenuItems(model);
+}
+
+void MockRenderViewContextMenu::AddSubMenuWithStringIdAndIcon(
+    int command_id,
+    int message_id,
+    ui::MenuModel* model,
+    const gfx::VectorIcon& icon) {
+  AddSubMenuWithStringIdAndIcon(
+      command_id, message_id, model,
+      gfx::CreateVectorIcon(icon, gfx::kPlaceholderColor));
 }
 
 void MockRenderViewContextMenu::AppendSubMenuItems(ui::MenuModel* model) {

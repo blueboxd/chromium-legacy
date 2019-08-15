@@ -119,7 +119,7 @@ class UsageStatsBridge : public history::HistoryServiceObserver {
 
   base::android::ScopedJavaGlobalRef<jobject> j_this_;
 
-  base::WeakPtrFactory<UsageStatsBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<UsageStatsBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UsageStatsBridge);
 };

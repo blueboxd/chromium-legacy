@@ -110,7 +110,6 @@ PasswordReuseLookup::ReputationVerdict GetVerdictToLogFromResponse(
     case LoginReputationClientResponse::PHISHING:
       return PasswordReuseLookup::PHISHING;
     case LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED:
-      NOTREACHED() << "Unexpected response_verdict: " << response_verdict;
       return PasswordReuseLookup::VERDICT_UNSPECIFIED;
   }
   NOTREACHED() << "Unexpected response_verdict: " << response_verdict;
@@ -387,6 +386,8 @@ std::string ChromePasswordProtectionService::GetSyncPasswordHashFromPrefs() {
 
 void ChromePasswordProtectionService::ShowModalWarning(
     content::WebContents* web_contents,
+    RequestOutcome outcome,
+    LoginReputationClientResponse::VerdictType verdict_type,
     const std::string& verdict_token,
     ReusedPasswordAccountType password_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -406,6 +407,7 @@ void ChromePasswordProtectionService::ShowModalWarning(
       web_contents, this, password_type,
       base::BindOnce(&ChromePasswordProtectionService::OnUserAction,
                      base::Unretained(this), web_contents, password_type,
+                     outcome, verdict_type, verdict_token,
                      WarningUIType::MODAL_DIALOG));
 
   if (password_type.account_type() == ReusedPasswordAccountType::GMAIL ||
@@ -488,6 +490,9 @@ void ChromePasswordProtectionService::ShowInterstitial(
 void ChromePasswordProtectionService::OnUserAction(
     content::WebContents* web_contents,
     ReusedPasswordAccountType password_type,
+    RequestOutcome outcome,
+    LoginReputationClientResponse::VerdictType verdict_type,
+    const std::string& verdict_token,
     WarningUIType ui_type,
     WarningAction action) {
   LogWarningAction(ui_type, action, password_type);
@@ -497,7 +502,8 @@ void ChromePasswordProtectionService::OnUserAction(
       HandleUserActionOnPageInfo(web_contents, password_type, action);
       break;
     case WarningUIType::MODAL_DIALOG:
-      HandleUserActionOnModalWarning(web_contents, password_type, action);
+      HandleUserActionOnModalWarning(web_contents, password_type, outcome,
+                                     verdict_type, verdict_token, action);
       break;
     case WarningUIType::CHROME_SETTINGS:
       HandleUserActionOnSettings(web_contents, password_type, action);
@@ -785,6 +791,7 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupResult(
 void ChromePasswordProtectionService::
     MaybeLogPasswordReuseLookupResultWithVerdict(
         content::WebContents* web_contents,
+        PasswordType password_type,
         PasswordReuseLookup::LookupResult result,
         PasswordReuseLookup::ReputationVerdict verdict,
         const std::string& verdict_token) {
@@ -793,28 +800,43 @@ void ChromePasswordProtectionService::
   if (!IsEventLoggingEnabled() && !WebUIInfoSingleton::HasListener())
     return;
 
-  syncer::UserEventService* user_event_service =
-      browser_sync::UserEventServiceFactory::GetForProfile(profile_);
-  if (!user_event_service)
-    return;
+  PasswordReuseLookup reuse_lookup;
+  reuse_lookup.set_lookup_result(result);
+  reuse_lookup.set_verdict(verdict);
+  reuse_lookup.set_verdict_token(verdict_token);
 
-  std::unique_ptr<UserEventSpecifics> specifics =
-      GetUserEventSpecifics(web_contents);
-  if (!specifics)
-    return;
+  // If password_type == OTHER_GAIA_PASSWORD, the account is not syncing.
+  // Therefore, we have to use the security event recorder to log events to mark
+  // the account at risk in order to send data to Google.
+  if (password_type == PasswordType::OTHER_GAIA_PASSWORD) {
+    sync_pb::GaiaPasswordReuse gaia_password_reuse_event;
+    *gaia_password_reuse_event.mutable_reuse_lookup() = reuse_lookup;
 
-  PasswordReuseLookup* const reuse_lookup =
-      specifics->mutable_gaia_password_reuse_event()->mutable_reuse_lookup();
-  reuse_lookup->set_lookup_result(result);
-  reuse_lookup->set_verdict(verdict);
-  reuse_lookup->set_verdict_token(verdict_token);
-  WebUIInfoSingleton::GetInstance()->AddToPGEvents(*specifics);
-  user_event_service->RecordUserEvent(std::move(specifics));
+    SecurityEventRecorderFactory::GetForProfile(profile_)
+        ->RecordGaiaPasswordReuse(gaia_password_reuse_event);
+    // TODO(bdea): Add other gaia events to PGEvents.
+  } else {
+    syncer::UserEventService* user_event_service =
+        browser_sync::UserEventServiceFactory::GetForProfile(profile_);
+    if (!user_event_service)
+      return;
+
+    std::unique_ptr<UserEventSpecifics> specifics =
+        GetUserEventSpecifics(web_contents);
+    if (!specifics)
+      return;
+
+    *(specifics->mutable_gaia_password_reuse_event())->mutable_reuse_lookup() =
+        reuse_lookup;
+    WebUIInfoSingleton::GetInstance()->AddToPGEvents(*specifics);
+    user_event_service->RecordUserEvent(std::move(specifics));
+  }
 }
 
 void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupEvent(
     content::WebContents* web_contents,
     RequestOutcome outcome,
+    PasswordType password_type,
     const LoginReputationClientResponse* response) {
   switch (outcome) {
     case RequestOutcome::MATCHED_WHITELIST:
@@ -823,13 +845,13 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupEvent(
       break;
     case RequestOutcome::RESPONSE_ALREADY_CACHED:
       MaybeLogPasswordReuseLookupResultWithVerdict(
-          web_contents, PasswordReuseLookup::CACHE_HIT,
+          web_contents, password_type, PasswordReuseLookup::CACHE_HIT,
           GetVerdictToLogFromResponse(response->verdict_type()),
           response->verdict_token());
       break;
     case RequestOutcome::SUCCEEDED:
       MaybeLogPasswordReuseLookupResultWithVerdict(
-          web_contents, PasswordReuseLookup::REQUEST_SUCCESS,
+          web_contents, password_type, PasswordReuseLookup::REQUEST_SUCCESS,
           GetVerdictToLogFromResponse(response->verdict_type()),
           response->verdict_token());
       break;
@@ -1092,6 +1114,9 @@ GURL ChromePasswordProtectionService::GetDefaultChangePasswordURL() const {
 void ChromePasswordProtectionService::HandleUserActionOnModalWarning(
     content::WebContents* web_contents,
     ReusedPasswordAccountType password_type,
+    RequestOutcome outcome,
+    LoginReputationClientResponse::VerdictType verdict_type,
+    const std::string& verdict_token,
     WarningAction action) {
   const Origin origin = Origin::Create(web_contents->GetLastCommittedURL());
   int64_t navigation_id =
@@ -1100,6 +1125,14 @@ void ChromePasswordProtectionService::HandleUserActionOnModalWarning(
     if (password_type.is_account_syncing()) {
       MaybeLogPasswordReuseDialogInteraction(
           navigation_id, PasswordReuseDialogInteraction::WARNING_ACTION_TAKEN);
+    } else {
+      // |outcome| is only recorded as succeeded or response_already_cached.
+      MaybeLogPasswordReuseLookupResultWithVerdict(
+          web_contents, PasswordType::OTHER_GAIA_PASSWORD,
+          outcome == RequestOutcome::SUCCEEDED
+              ? PasswordReuseLookup::REQUEST_SUCCESS
+              : PasswordReuseLookup::CACHE_HIT,
+          GetVerdictToLogFromResponse(verdict_type), verdict_token);
     }
     // Directly open enterprise change password page for enterprise password
     // reuses.
@@ -1418,9 +1451,7 @@ void ChromePasswordProtectionService::OnWarningTriggerChanged() {
       PasswordStoreFactory::GetForProfile(profile_,
                                           ServiceAccessType::EXPLICIT_ACCESS);
 
-  // TODO(bdea): Clear all non-gmail passwords.
-  if (!IsPrimaryAccountGmail())
-    password_store->ClearGaiaPasswordHash(GetAccountInfo().email);
+  password_store->ClearAllNonGmailPasswordHash();
   password_store->ClearAllEnterprisePasswordHash();
 }
 

@@ -987,14 +987,13 @@ TEST_P(TabStripTest, AnimationOnTabAdd) {
   const int initial_width = tab_strip_->tab_at(1)->width();
   EXPECT_LT(initial_width, tab_strip_->tab_at(0)->width());
 
-  scoped_task_environment()->FastForwardBy(TabAnimation::kAnimationDuration /
-                                           2);
+  thread_bundle_.FastForwardBy(TabAnimation::kAnimationDuration / 2);
 
   EXPECT_GT(tab_strip_->tab_at(1)->width(), initial_width);
   EXPECT_LT(tab_strip_->tab_at(1)->width(), tab_strip_->tab_at(0)->width());
 
   // Fast-forward by more than enough to ensure the animation finishes.
-  scoped_task_environment()->FastForwardBy(TabAnimation::kAnimationDuration);
+  thread_bundle_.FastForwardBy(TabAnimation::kAnimationDuration);
 
   EXPECT_EQ(tab_strip_->tab_at(0)->width(), tab_strip_->tab_at(1)->width());
 }

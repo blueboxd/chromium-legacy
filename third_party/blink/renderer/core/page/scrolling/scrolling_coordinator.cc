@@ -621,57 +621,6 @@ void ScrollingCoordinator::UpdateClipParentForGraphicsLayer(
   child->SetClipParent(clip_parent_cc_layer);
 }
 
-void ScrollingCoordinator::SetShouldUpdateScrollLayerPositionOnMainThread(
-    LocalFrame* frame,
-    MainThreadScrollingReasons main_thread_scrolling_reasons) {
-  VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
-  GraphicsLayer* visual_viewport_layer = visual_viewport.ScrollLayer();
-  cc::Layer* visual_viewport_scroll_layer =
-      GraphicsLayerToCcLayer(visual_viewport_layer);
-  // TODO(bokan): It would probably make more sense to use the root scroller's
-  // layer here, but this code is only ever executed in !BGPT mode. With BGPT
-  // the MainThreadScrollingReasons are already stored on individual
-  // ScrollNodes. The CompositorAnimation hand-off should probably be
-  // generalized to work on non-FrameView scrollers though.
-  ScrollableArea* scrollable_area = frame->View()->LayoutViewport();
-  GraphicsLayer* layer = scrollable_area->LayerForScrolling();
-  if (cc::Layer* scroll_layer = GraphicsLayerToCcLayer(layer)) {
-    if (main_thread_scrolling_reasons) {
-      if (ScrollAnimatorBase* scroll_animator =
-              scrollable_area->ExistingScrollAnimator()) {
-        DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-               frame->GetDocument()->Lifecycle().GetState() >=
-                   DocumentLifecycle::kCompositingClean);
-        scroll_animator->TakeOverCompositorAnimation();
-      }
-      scroll_layer->AddMainThreadScrollingReasons(
-          main_thread_scrolling_reasons);
-      if (visual_viewport_scroll_layer) {
-        if (ScrollAnimatorBase* scroll_animator =
-                visual_viewport.ExistingScrollAnimator()) {
-          DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-                 frame->GetDocument()->Lifecycle().GetState() >=
-                     DocumentLifecycle::kCompositingClean);
-          scroll_animator->TakeOverCompositorAnimation();
-        }
-        visual_viewport_scroll_layer->AddMainThreadScrollingReasons(
-            main_thread_scrolling_reasons);
-      }
-    } else {
-      // Clear all main thread scrolling reasons except the one that's set
-      // if there is a running scroll animation.
-      uint32_t main_thread_scrolling_reasons_to_clear = ~0u;
-      main_thread_scrolling_reasons_to_clear &=
-          ~cc::MainThreadScrollingReason::kHandlingScrollFromMainThread;
-      scroll_layer->ClearMainThreadScrollingReasons(
-          main_thread_scrolling_reasons_to_clear);
-      if (visual_viewport_scroll_layer)
-        visual_viewport_scroll_layer->ClearMainThreadScrollingReasons(
-            main_thread_scrolling_reasons_to_clear);
-    }
-  }
-}
-
 void ScrollingCoordinator::LayerTreeViewInitialized(
     WebLayerTreeView& layer_tree_view,
     cc::AnimationHost& animation_host,

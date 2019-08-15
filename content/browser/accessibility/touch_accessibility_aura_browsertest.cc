@@ -40,7 +40,7 @@ class TouchAccessibilityBrowserTest : public ContentBrowserTest {
     AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                            ui::kAXModeComplete,
                                            ax::mojom::Event::kLoadComplete);
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     waiter.WaitForNotification();
   }
 

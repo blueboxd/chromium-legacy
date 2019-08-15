@@ -28,7 +28,7 @@ class ConfigureBottomSheetAction : public Action {
 
   ProcessActionCallback callback_;
   base::OneShotTimer timer_;
-  base::WeakPtrFactory<ConfigureBottomSheetAction> weak_ptr_factory_;
+  base::WeakPtrFactory<ConfigureBottomSheetAction> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ConfigureBottomSheetAction);
 };
 

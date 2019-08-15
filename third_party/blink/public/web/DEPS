@@ -18,6 +18,7 @@ include_rules = [
     "+cc/paint/paint_flags.h",
     "+cc/trees/layer_tree_host_client.h",
     "+cc/trees/viewport_layers.h",
+    "+components/viz/common/surfaces/frame_sink_id.h",
     "+mojo/public",
     "+services/metrics/public/cpp/ukm_source_id.h",
     "+services/network/public/mojom/cors.mojom-shared.h",

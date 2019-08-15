@@ -13,7 +13,7 @@
 #include "base/optional.h"
 #include "chrome/browser/badging/badge_manager_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/badging/badging.mojom.h"
 
 class Profile;
@@ -40,8 +40,15 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
   // Sets the delegate used for setting/clearing badges.
   void SetDelegate(std::unique_ptr<BadgeManagerDelegate> delegate);
 
-  static void BindRequest(blink::mojom::BadgeServiceRequest request,
-                          content::RenderFrameHost* frame);
+  // TODO(https://crbug.com/955171): Remove this method and use BindRequest once
+  // ChromeContentBrowserClient uses service_manager::BinderMap instead of
+  // service_manager::BinderRegistry.
+  static void BindBadgeForRequest(blink::mojom::BadgeServiceRequest request,
+                                  content::RenderFrameHost* frame);
+
+  static void BindRequest(
+      mojo::PendingReceiver<blink::mojom::BadgeService> receiver,
+      content::RenderFrameHost* frame);
 
   // Sets the badge for |app_id| to be |content|. Note: If content is set, it
   // must be non-zero.
@@ -75,10 +82,10 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
   // Examines |context| to determine which app, if any, should be badged.
   base::Optional<std::string> GetAppIdToBadge(const BindingContext& context);
 
-  // All the mojo bindings for the BadgeManager. Keeps track of the
+  // All the mojo receivers for the BadgeManager. Keeps track of the
   // render_frame the binding is associated with, so as to not have to rely
   // on the renderer passing it in.
-  mojo::BindingSet<blink::mojom::BadgeService, BindingContext> bindings_;
+  mojo::ReceiverSet<blink::mojom::BadgeService, BindingContext> receivers_;
 
   // Delegate which handles actual setting and clearing of the badge.
   // Note: This is currently only set on Windows and MacOS.

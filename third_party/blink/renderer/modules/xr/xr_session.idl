@@ -28,7 +28,7 @@ enum XRVisibilityState {
     Exposed=Window,
     RuntimeEnabled=WebXR
 ] interface XRSession : EventTarget {
-  readonly attribute XREnvironmentBlendMode environmentBlendMode;
+  [RuntimeEnabled=WebXRHitTest] readonly attribute XREnvironmentBlendMode environmentBlendMode;
   readonly attribute XRVisibilityState visibilityState;
   [SameObject] readonly attribute XRRenderState renderState;
   [MeasureAs=XRSessionGetInputSources, SameObject] readonly attribute XRInputSourceArray inputSources;

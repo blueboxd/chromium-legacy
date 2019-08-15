@@ -98,6 +98,16 @@ function MockDocumentDimensions(width, height) {
       height: h
     });
   };
+  this.addPageForTwoUpView = function(x, y, w, h) {
+    this.width = Math.max(this.width, 2 * w);
+    this.height = Math.max(this.height, y + h);
+    this.pageDimensions.push({
+      x: x,
+      y: y,
+      width: w,
+      height: h
+    });
+  };
   this.reset = function() {
     this.width = 0;
     this.height = 0;

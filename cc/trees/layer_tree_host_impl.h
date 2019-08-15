@@ -28,6 +28,7 @@
 #include "cc/input/scrollbar_controller.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/metrics/frame_sequence_tracker.h"
+#include "cc/paint/discardable_image_map.h"
 #include "cc/paint/paint_worklet_job.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/scheduler/begin_frame_tracker.h"
@@ -38,6 +39,7 @@
 #include "cc/tiles/decoded_image_tracker.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "cc/tiles/tile_manager.h"
+#include "cc/trees/animated_paint_worklet_tracker.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
@@ -401,6 +403,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
                               ElementListType list_type,
                               float maximum_scale,
                               float starting_scale) override;
+  void OnCustomPropertyMutated(ElementId element_id,
+                               const std::string& custom_property_name,
+                               float custom_property_value) override;
 
   void ScrollOffsetAnimationFinished() override;
   gfx::ScrollOffset GetScrollOffsetForAnimation(
@@ -792,6 +797,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void set_pending_tree_fully_painted_for_testing(bool painted) {
     pending_tree_fully_painted_ = painted;
   }
+  AnimatedPaintWorkletTracker& paint_worklet_tracker() {
+    return paint_worklet_tracker_;
+  }
 
  protected:
   LayerTreeHostImpl(
@@ -864,7 +872,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   // Returns a job map for all 'dirty' PaintWorklets, e.g. PaintWorkletInputs
   // that do not map to a PaintRecord.
-  PaintWorkletJobMap GatherDirtyPaintWorklets() const;
+  PaintWorkletJobMap GatherDirtyPaintWorklets(PaintImageIdFlatSet*) const;
 
   // Called when all PaintWorklet results are ready (i.e. have been painted) for
   // the current pending tree.
@@ -1267,6 +1275,12 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // painted and cannot be rastered or activated. This boolean tracks whether or
   // not we are in that state.
   bool pending_tree_fully_painted_ = false;
+
+  // Provides support for PaintWorklets which depend on input properties that
+  // are being animated by the compositor (aka 'animated' PaintWorklets).
+  // Responsible for storing animated custom property values and for
+  // invalidating PaintWorklets as the property values change.
+  AnimatedPaintWorkletTracker paint_worklet_tracker_;
 
   // Must be the last member to ensure this is destroyed first in the
   // destruction order and invalidates all weak pointers.

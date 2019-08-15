@@ -91,7 +91,7 @@ class MenuItemViewTestInsert : public MenuTestBase {
 
     inserted_item_ = menu()->AddMenuItemAt(
         INSERT_INDEX, 1000, ASCIIToUTF16("inserted item"), base::string16(),
-        base::string16(), nullptr, gfx::ImageSkia(),
+        base::string16(), nullptr, gfx::ImageSkia(), nullptr,
         views::MenuItemView::NORMAL, ui::NORMAL_SEPARATOR);
     ASSERT_TRUE(inserted_item_);
     menu()->ChildrenChanged();
@@ -186,7 +186,7 @@ class MenuItemViewTestInsertWithSubmenu : public MenuTestBase {
   void Step2() {
     inserted_item_ = menu()->AddMenuItemAt(
         INSERT_INDEX, 1000, ASCIIToUTF16("inserted item"), base::string16(),
-        base::string16(), nullptr, gfx::ImageSkia(),
+        base::string16(), nullptr, gfx::ImageSkia(), nullptr,
         views::MenuItemView::NORMAL, ui::NORMAL_SEPARATOR);
     ASSERT_TRUE(inserted_item_);
     menu()->ChildrenChanged();

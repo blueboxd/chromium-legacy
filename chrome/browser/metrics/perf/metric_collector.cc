@@ -246,7 +246,6 @@ void MetricCollector::CollectIfNecessary(
   // whether or not the current collection was interval-triggered. If it had
   // been another type of trigger event, the interval timer would have been
   // halted, so it makes sense to reschedule a new interval collection.
-  timer_.Stop();
   ScheduleIntervalCollection();
 }
 

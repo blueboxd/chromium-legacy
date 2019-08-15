@@ -40,9 +40,9 @@ public class WebappScopePolicy {
     public static boolean isUrlInScope(@Type int type, WebappInfo info, String url) {
         switch (type) {
             case Type.LEGACY:
-                return UrlUtilities.sameDomainOrHost(info.uri().toString(), url, true);
+                return UrlUtilities.sameDomainOrHost(info.url(), url, true);
             case Type.STRICT:
-                return UrlUtilities.isUrlWithinScope(url, info.scopeUri().toString());
+                return UrlUtilities.isUrlWithinScope(url, info.scopeUrl());
             default:
                 assert false;
                 return false;

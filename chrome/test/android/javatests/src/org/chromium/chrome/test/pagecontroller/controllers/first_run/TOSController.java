@@ -25,8 +25,9 @@ public class TOSController extends PageController {
     }
 
     @Override
-    public boolean isCurrentPageThis() {
-        return mLocatorHelper.isOnScreen(LOCATOR_TOS);
+    public TOSController verifyActive() {
+        mLocatorHelper.verifyOnScreen(LOCATOR_TOS);
+        return this;
     }
 
     public boolean isSendingReports() {

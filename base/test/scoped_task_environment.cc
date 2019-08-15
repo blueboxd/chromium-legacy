@@ -20,7 +20,6 @@
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/time_domain.h"
 #include "base/task/thread_pool/thread_pool.h"
-#include "base/task/thread_pool/thread_pool_clock.h"
 #include "base/task/thread_pool/thread_pool_impl.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -31,7 +30,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
-#include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
@@ -432,11 +430,8 @@ void ScopedTaskEnvironment::InitializeThreadPool() {
 
   auto task_tracker = std::make_unique<TestTaskTracker>();
   task_tracker_ = task_tracker.get();
-  const TickClock* tick_clock =
-      mock_time_domain_ ? static_cast<TickClock*>(mock_time_domain_.get())
-                        : DefaultTickClock::GetInstance();
   auto thread_pool = std::make_unique<internal::ThreadPoolImpl>(
-      "ScopedTaskEnvironment", std::move(task_tracker), tick_clock);
+      "ScopedTaskEnvironment", std::move(task_tracker));
   if (mock_time_domain_)
     mock_time_domain_->SetThreadPool(thread_pool.get(), task_tracker_);
   ThreadPoolInstance::Set(std::move(thread_pool));

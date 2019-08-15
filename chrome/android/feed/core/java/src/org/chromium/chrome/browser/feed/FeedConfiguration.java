@@ -20,9 +20,22 @@ public final class FeedConfiguration {
     /** Do not allow construction */
     private FeedConfiguration() {}
 
+    private static final String ABANDON_RESTORE_BELOW_FOLD = "abandon_restore_below_fold";
+    /** Default value for whether to restore below fold. */
+    public static final boolean ABANDON_RESTORE_BELOW_FOLD_DEFAULT = true;
+
     private static final String CARD_MENU_TOOLTIP_ELIGIBLE = "card_menu_tooltip_eligible";
     /** Default value for if card menus should have tooltips enabled. */
     public static final boolean CARD_MENU_TOOLTIP_ELIGIBLE_DEFAULT = false;
+
+    private static final String CONSUME_SYNTHETIC_TOKENS = "consume_synthetic_tokens_bool";
+    /** Default value for whether to consumer synthetic tokens on load. */
+    public static final boolean CONSUME_SYNTHETIC_TOKENS_DEFAULT = false;
+
+    private static final String CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING =
+            "consume_synthetic_tokens_while_restoring_bool";
+    /** Default value for whether to consumer synthetic tokens on restore. */
+    public static final boolean CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING_DEFAULT = false;
 
     private static final String FEED_SERVER_ENDPOINT = "feed_server_endpoint";
     /** Default value for server endpoint. */
@@ -107,12 +120,40 @@ public final class FeedConfiguration {
     /** Default value for logging view threshold. */
     public static final double VIEW_LOG_THRESHOLD_DEFAULT = 0.66d;
 
-    /** @return Whether to show card tooltips */
+    /** @return Whether the Stream aborts restores if user is past configured fold count. */
+    @VisibleForTesting
+    static boolean getAbandonRestoreBelowFold() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, ABANDON_RESTORE_BELOW_FOLD,
+                ABANDON_RESTORE_BELOW_FOLD_DEFAULT);
+    }
+
+    /** @return Whether to show card tooltips. */
     @VisibleForTesting
     static boolean getCardMenuTooltipEligible() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, CARD_MENU_TOOLTIP_ELIGIBLE,
                 CARD_MENU_TOOLTIP_ELIGIBLE_DEFAULT);
+    }
+
+    /** @return Whether synthetic tokens should be consumed when they are found. */
+    @VisibleForTesting
+    static boolean getConsumeSyntheticTokens() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, CONSUME_SYNTHETIC_TOKENS,
+                CONSUME_SYNTHETIC_TOKENS_DEFAULT);
+    }
+
+    /**
+     * @return Whether synthetic tokens should be automatically consume when restoring. This will
+     * not cause synthetic tokens to be consumed when opening with a new session.
+     */
+    @VisibleForTesting
+    static boolean getConsumeSyntheticTokensWhileRestoring() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
+                CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING,
+                CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING_DEFAULT);
     }
 
     /** @return Feed server endpoint to use to fetch content suggestions. */
@@ -293,8 +334,14 @@ public final class FeedConfiguration {
      */
     public static Configuration createConfiguration() {
         return new Configuration.Builder()
+                .put(ConfigKey.ABANDON_RESTORE_BELOW_FOLD,
+                        FeedConfiguration.getAbandonRestoreBelowFold())
                 .put(ConfigKey.CARD_MENU_TOOLTIP_ELIGIBLE,
                         FeedConfiguration.getCardMenuTooltipEligible())
+                .put(ConfigKey.CONSUME_SYNTHETIC_TOKENS,
+                        FeedConfiguration.getConsumeSyntheticTokens())
+                .put(ConfigKey.CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING,
+                        FeedConfiguration.getConsumeSyntheticTokensWhileRestoring())
                 .put(ConfigKey.FEED_SERVER_ENDPOINT, FeedConfiguration.getFeedServerEndpoint())
                 .put(ConfigKey.FEED_SERVER_METHOD, FeedConfiguration.getFeedServerMethod())
                 .put(ConfigKey.FEED_SERVER_RESPONSE_LENGTH_PREFIXED,

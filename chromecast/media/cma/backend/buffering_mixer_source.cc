@@ -31,7 +31,6 @@ namespace media {
 
 namespace {
 
-const int kNumOutputChannels = 2;
 const int64_t kDefaultInputQueueMs = 90;
 constexpr base::TimeDelta kFadeTime = base::TimeDelta::FromMilliseconds(5);
 const int kDefaultAudioReadyForPlaybackThresholdMs = 70;
@@ -112,7 +111,8 @@ BufferingMixerSource::LockedMembers::Members::Members(
              input_samples_per_second,
              1.0 /* playback_rate */),
       playback_start_timestamp_(playback_start_timestamp),
-      playback_start_pts_(playback_start_pts) {
+      playback_start_pts_(playback_start_pts),
+      audio_resampler_(num_channels) {
   buffers_to_be_freed_.reserve(kFreeBufferListSize);
 }
 
@@ -161,6 +161,7 @@ BufferingMixerSource::LockedMembers::AssertAcquired() {
 }
 
 BufferingMixerSource::BufferingMixerSource(Delegate* delegate,
+                                           int num_channels,
                                            int input_samples_per_second,
                                            bool primary,
                                            const std::string& device_id,
@@ -169,7 +170,7 @@ BufferingMixerSource::BufferingMixerSource(Delegate* delegate,
                                            int64_t playback_start_pts,
                                            bool start_playback_asap)
     : delegate_(delegate),
-      num_channels_(kNumOutputChannels),
+      num_channels_(num_channels),
       input_samples_per_second_(input_samples_per_second),
       primary_(primary),
       device_id_(device_id),
@@ -189,6 +190,7 @@ BufferingMixerSource::BufferingMixerSource(Delegate* delegate,
   LOG(INFO) << "Create " << device_id_ << " (" << this
             << "), content type = " << AudioContentTypeToString(content_type_)
             << ", playback_start_pts=" << playback_start_pts;
+  DCHECK_GT(num_channels_, 0);
   DCHECK(delegate_);
   DCHECK(mixer_);
   DCHECK_LE(start_threshold_frames_, max_queued_frames_);

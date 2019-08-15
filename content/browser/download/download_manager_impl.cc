@@ -298,9 +298,13 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
       base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
 
   if (!in_progress_manager_) {
+    auto* proto_db_provider =
+        BrowserContext::GetDefaultStoragePartition(browser_context)
+            ->GetProtoDatabaseProvider();
     in_progress_manager_ =
         std::make_unique<download::InProgressDownloadManager>(
-            this, base::FilePath(), base::BindRepeating(&IsOriginSecure),
+            this, base::FilePath(), proto_db_provider,
+            base::BindRepeating(&IsOriginSecure),
             base::BindRepeating(&DownloadRequestUtils::IsURLSafe), nullptr);
   } else {
     in_progress_manager_->SetDelegate(this);
@@ -460,7 +464,8 @@ void DownloadManagerImpl::Shutdown() {
   // We'll have nothing more to report to the observers after this point.
   observers_.Clear();
 
-  in_progress_manager_->ShutDown();
+  if (in_progress_manager_)
+    in_progress_manager_->ShutDown();
 
   if (delegate_)
     delegate_->Shutdown();

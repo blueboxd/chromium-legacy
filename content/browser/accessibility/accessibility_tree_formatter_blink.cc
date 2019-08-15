@@ -562,7 +562,7 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
   return line;
 }
 
-const base::FilePath::StringType
+base::FilePath::StringType
 AccessibilityTreeFormatterBlink::GetExpectedFileSuffix() {
   return FILE_PATH_LITERAL("-expected-blink.txt");
 }

@@ -393,11 +393,11 @@ class SessionRestoreImpl : public BrowserListObserver {
     for (auto i = windows->begin(); i != windows->end(); ++i) {
       Browser* browser = nullptr;
       if (!has_tabbed_browser &&
-          (*i)->type == sessions::SessionWindow::TYPE_TABBED)
+          (*i)->type == sessions::SessionWindow::TYPE_NORMAL)
         has_tabbed_browser = true;
       if (i == windows->begin() &&
-          (*i)->type == sessions::SessionWindow::TYPE_TABBED && browser_ &&
-          browser_->is_type_tabbed() &&
+          (*i)->type == sessions::SessionWindow::TYPE_NORMAL && browser_ &&
+          browser_->is_type_normal() &&
           !browser_->profile()->IsOffTheRecord()) {
         // The first set of tabs is added to the existing browser.
         browser = browser_;
@@ -420,14 +420,14 @@ class SessionRestoreImpl : public BrowserListObserver {
             "SessionRestore-CreateRestoredBrowser-End", false);
 #endif
       }
-      if ((*i)->type == sessions::SessionWindow::TYPE_TABBED)
+      if ((*i)->type == sessions::SessionWindow::TYPE_NORMAL)
         last_browser = browser;
       WebContents* active_tab =
           browser->tab_strip_model()->GetActiveWebContents();
       int initial_tab_count = browser->tab_strip_model()->count();
       bool close_active_tab =
           clobber_existing_tab_ && i == windows->begin() &&
-          (*i)->type == sessions::SessionWindow::TYPE_TABBED && active_tab &&
+          (*i)->type == sessions::SessionWindow::TYPE_NORMAL && active_tab &&
           browser == browser_ && !(*i)->tabs.empty();
       if (close_active_tab)
         --initial_tab_count;
@@ -461,7 +461,7 @@ class SessionRestoreImpl : public BrowserListObserver {
         chrome::CloseWebContents(browser, active_tab, true);
     }
 
-    if (browser_to_activate && browser_to_activate->is_type_tabbed())
+    if (browser_to_activate && browser_to_activate->is_type_normal())
       last_browser = browser_to_activate;
 
     if (last_browser && !urls_to_open_.empty())

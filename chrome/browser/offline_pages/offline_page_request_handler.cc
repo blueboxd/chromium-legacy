@@ -461,8 +461,7 @@ OfflinePageRequestHandler::OfflinePageRequestHandler(
     : url_(url),
       delegate_(delegate),
       network_state_(NetworkState::CONNECTED_NETWORK),
-      candidate_index_(0),
-      weak_ptr_factory_(this) {
+      candidate_index_(0) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::string offline_header_value;
   extra_request_headers.GetHeader(kOfflinePageHeader, &offline_header_value);

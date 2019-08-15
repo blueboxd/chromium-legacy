@@ -24,12 +24,6 @@ class ASH_EXPORT SwitchAccessEventHandler : public ui::EventHandler {
   explicit SwitchAccessEventHandler(SwitchAccessEventHandlerDelegate* delegate);
   ~SwitchAccessEventHandler() override;
 
-  // Sets the keys that are captured by Switch Access.
-  // TODO(anastasi): Remove this function after Settings migration is complete.
-  void set_keys_to_capture(std::vector<int> keys) {
-    keys_to_capture_ = std::set<int>(keys.begin(), keys.end());
-  }
-
   // Sets what key_codes are captured for a given command.
   bool SetKeyCodesForCommand(std::set<int> key_codes,
                              SwitchAccessCommand command);
@@ -62,9 +56,6 @@ class ASH_EXPORT SwitchAccessEventHandler : public ui::EventHandler {
 
   // The delegate used to send key events to the Switch Access extension.
   SwitchAccessEventHandlerDelegate* delegate_;
-
-  // TODO(anastasi): Remove this once the settings migration is complete.
-  std::set<int> keys_to_capture_;
 
   std::set<int> key_codes_to_capture_;
   std::map<int, SwitchAccessCommand> command_for_key_code_;

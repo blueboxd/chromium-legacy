@@ -1564,6 +1564,16 @@ void CrosNetworkConfig::ActiveNetworksChanged(
   });
 }
 
+void CrosNetworkConfig::NetworkPropertiesUpdated(const NetworkState* network) {
+  mojom::NetworkStatePropertiesPtr mojo_network = GetMojoNetworkState(network);
+  if (!mojo_network)
+    return;
+  observers_.ForAllPtrs(
+      [&mojo_network](mojom::CrosNetworkConfigObserver* observer) {
+        observer->OnNetworkStateChanged(mojo_network.Clone());
+      });
+}
+
 void CrosNetworkConfig::DevicePropertiesUpdated(const DeviceState* device) {
   DeviceListChanged();
 }

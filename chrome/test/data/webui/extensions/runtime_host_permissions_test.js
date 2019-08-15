@@ -33,7 +33,7 @@ suite('RuntimeHostPermissions', function() {
     element.set('permissions', permissions);
     Polymer.dom.flush();
 
-    const testIsVisible = extension_test_util.isVisible.bind(null, element);
+    const testIsVisible = test_util.isVisible.bind(null, element);
     expectTrue(testIsVisible('#host-access'));
 
     const selectHostAccess = element.$$('#host-access');
@@ -208,7 +208,7 @@ suite('RuntimeHostPermissions', function() {
 
     const addHostButton = element.$$('#add-host');
     assertTrue(!!addHostButton);
-    expectTrue(extension_test_util.isVisible(element, '#add-host'));
+    expectTrue(test_util.isVisible(element, '#add-host'));
 
     addHostButton.click();
     Polymer.dom.flush();

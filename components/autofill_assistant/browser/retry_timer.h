@@ -63,7 +63,7 @@ class RetryTimer {
   base::OnceCallback<void(bool)> on_done_;
   std::unique_ptr<base::OneShotTimer> timer_;
 
-  base::WeakPtrFactory<RetryTimer> weak_ptr_factory_;
+  base::WeakPtrFactory<RetryTimer> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(RetryTimer);
 };
 

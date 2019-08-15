@@ -471,7 +471,7 @@ class WebController {
   // Workers currently running and using |devtools_client_|.
   std::map<Worker*, std::unique_ptr<Worker>> pending_workers_;
 
-  base::WeakPtrFactory<WebController> weak_ptr_factory_;
+  base::WeakPtrFactory<WebController> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(WebController);
 };
 }  // namespace autofill_assistant

@@ -19,6 +19,7 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "mojo/core/embedder/embedder.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -222,6 +223,8 @@ int main(int argc, char** argv) {
 
   // The exit manager is in charge of calling the dtors of singleton objects.
   base::AtExitManager exit_manager;
+
+  mojo::core::Init();
 
   base::i18n::InitializeICU();
 

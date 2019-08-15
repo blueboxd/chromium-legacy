@@ -42,6 +42,7 @@ class VIEWS_EXAMPLES_EXPORT TableExample : public ExampleBase,
   int RowCount() override;
   base::string16 GetText(int row, int column_id) override;
   gfx::ImageSkia GetIcon(int row) override;
+  base::string16 GetTooltip(int row) override;
   void SetObserver(ui::TableModelObserver* observer) override;
 
   // TableGrouper:

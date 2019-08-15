@@ -18,8 +18,7 @@
 
 namespace autofill_assistant {
 
-SelfDeleteFullCardRequester::SelfDeleteFullCardRequester()
-    : weak_ptr_factory_(this) {}
+SelfDeleteFullCardRequester::SelfDeleteFullCardRequester() {}
 
 void SelfDeleteFullCardRequester::GetFullCard(
     content::WebContents* web_contents,

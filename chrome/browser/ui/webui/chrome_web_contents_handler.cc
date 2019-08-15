@@ -43,7 +43,7 @@ WebContents* ChromeWebContentsHandler::OpenURLFromTab(
     // TODO(erg): OpenURLParams should pass a user_gesture flag, pass it to
     // CreateParams, and pass the real value to nav_params below.
     browser =
-        new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile, true));
+        new Browser(Browser::CreateParams(Browser::TYPE_NORMAL, profile, true));
   }
   NavigateParams nav_params(browser, params.url, params.transition);
   nav_params.referrer = params.referrer;
@@ -88,7 +88,7 @@ void ChromeWebContentsHandler::AddNewContents(
   const bool browser_created = !browser;
   if (!browser) {
     browser = new Browser(
-        Browser::CreateParams(Browser::TYPE_TABBED, profile, user_gesture));
+        Browser::CreateParams(Browser::TYPE_NORMAL, profile, user_gesture));
   }
   NavigateParams params(browser, std::move(new_contents));
   params.source_contents = source;

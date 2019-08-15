@@ -15,10 +15,7 @@ namespace content {
 
 StreamTextureHost::StreamTextureHost(scoped_refptr<gpu::GpuChannelHost> channel,
                                      int32_t route_id)
-    : route_id_(route_id),
-      listener_(nullptr),
-      channel_(std::move(channel)),
-      weak_ptr_factory_(this) {
+    : route_id_(route_id), listener_(nullptr), channel_(std::move(channel)) {
   DCHECK(channel_);
   DCHECK(route_id_);
 }

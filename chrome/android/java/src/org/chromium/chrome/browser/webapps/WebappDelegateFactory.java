@@ -49,7 +49,7 @@ public class WebappDelegateFactory extends TabDelegateFactoryImpl {
 
         @Override
         protected String getManifestScope() {
-            return mActivity.getWebappInfo().scopeUri().toString();
+            return mActivity.getWebappInfo().scopeUrl();
         }
 
         @Override
@@ -58,7 +58,7 @@ public class WebappDelegateFactory extends TabDelegateFactoryImpl {
             // will fire an Intent to launch the correct WebappActivity or WebApkActivity. On L+
             // this could probably be changed to call AppTask.moveToFront(), but for backwards
             // compatibility we relaunch it the hard way.
-            String startUrl = mActivity.getWebappInfo().uri().toString();
+            String startUrl = mActivity.getWebappInfo().url();
 
             WebappInfo webappInfo = mActivity.getWebappInfo();
             if (webappInfo.isForWebApk()) {

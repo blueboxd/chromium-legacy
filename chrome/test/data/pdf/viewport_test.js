@@ -214,9 +214,56 @@ var tests = [
     chrome.test.assertEq(1, viewport.getMostVisiblePage());
 
     // Scrolled just over half way through the first page with 2x zoom.
+    // Despite having a larger intersection height, the proportional
+    // intersection area for the second page is less than the proportional
+    // intersection area for the first page.
     viewport.setZoom(2);
     mockWindow.scrollTo(0, 151);
+    chrome.test.assertEq(0, viewport.getMostVisiblePage());
+
+    // After scrolling further down, we reach a point where proportionally
+    // more area of the second page intersects with the viewport than the first.
+    mockWindow.scrollTo(0, 170);
     chrome.test.assertEq(1, viewport.getMostVisiblePage());
+
+    // Zoomed out with the entire document visible.
+    viewport.setZoom(0.25);
+    mockWindow.scrollTo(0, 0);
+    chrome.test.assertEq(0, viewport.getMostVisiblePage());
+    chrome.test.succeed();
+  },
+
+  function testGetMostVisiblePageForTwoUpView() {
+    var mockWindow = new MockWindow(400, 500);
+    var viewport = new ViewportImpl(
+        mockWindow, new MockSizer(), function() {}, function() {},
+        function() {}, function() {}, 0, 1, 0);
+
+    var documentDimensions = new MockDocumentDimensions(100, 100);
+
+    documentDimensions.addPageForTwoUpView(100, 0, 300, 400);
+    documentDimensions.addPageForTwoUpView(400, 0, 400, 300);
+    documentDimensions.addPageForTwoUpView(0, 400, 400, 250);
+    documentDimensions.addPageForTwoUpView(400, 400, 200, 400);
+    documentDimensions.addPageForTwoUpView(50, 800, 350, 200);
+    viewport.setDocumentDimensions(documentDimensions);
+    viewport.setZoom(1);
+
+    // Scrolled to the start of the first page.
+    mockWindow.scrollTo(0, 0);
+    chrome.test.assertEq(0, viewport.getMostVisiblePage());
+
+    // Scrolled such that only the first and third pages are visible.
+    mockWindow.scrollTo(0, 200);
+    chrome.test.assertEq(2, viewport.getMostVisiblePage());
+
+    // Scrolled such that only the second and fourth pages are visible.
+    mockWindow.scrollTo(400, 200);
+    chrome.test.assertEq(3, viewport.getMostVisiblePage());
+
+    // Scroll such that first to fourth pages are visible.
+    mockWindow.scrollTo(200, 200);
+    chrome.test.assertEq(3, viewport.getMostVisiblePage());
 
     // Zoomed out with the entire document visible.
     viewport.setZoom(0.25);

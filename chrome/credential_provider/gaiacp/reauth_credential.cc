@@ -36,18 +36,24 @@ HRESULT CReauthCredential::GetUserGlsCommandline(
   // If this is an existing user with an SID, try to get its gaia id and pass
   // it to the GLS for verification.
   base::string16 gaia_id;
-  if (GetIdFromSid(OLE2CW(os_user_sid_), &gaia_id) == S_OK) {
+  if (GetIdFromSid(OLE2CW(os_user_sid_), &gaia_id) == S_OK &&
+      !gaia_id.empty()) {
     command_line->AppendSwitchNative(kGaiaIdSwitch, gaia_id);
     if (email_for_reauth_.Length()) {
       command_line->AppendSwitchNative(kPrefillEmailSwitch,
                                        OLE2CW(email_for_reauth_));
     }
+    return CGaiaCredentialBase::GetUserGlsCommandline(command_line);
+  } else if (CGaiaCredentialBase::IsAdToGoogleAssociationEnabled() &&
+             OSUserManager::Get()->IsUserDomainJoined(OLE2CW(os_user_sid_))) {
+    // Note that if ADAssociationIsEnabled and the reauth credential is an AD
+    // user account, then fallback to the GaiaCredentialBase for loading Gls.
+    return CGaiaCredentialBase::GetUserGlsCommandline(command_line);
   } else {
     LOGFN(ERROR) << "Reauth credential on user=" << os_username_
                  << " does not have an associated Gaia id";
     return E_UNEXPECTED;
   }
-  return CGaiaCredentialBase::GetUserGlsCommandline(command_line);
 }
 
 HRESULT CReauthCredential::ValidateExistingUser(const base::string16& username,

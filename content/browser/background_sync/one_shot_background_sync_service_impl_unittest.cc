@@ -23,11 +23,10 @@ class OneShotBackgroundSyncServiceImplTest
   void CreateOneShotBackgroundSyncServiceImpl() {
     // Create a dummy mojo channel so that the OneShotBackgroundSyncServiceImpl
     // can be instantiated.
-    mojo::InterfaceRequest<blink::mojom::OneShotBackgroundSyncService>
-        service_request = mojo::MakeRequest(&one_shot_sync_service_ptr_);
+    mojo::PendingReceiver<blink::mojom::OneShotBackgroundSyncService> receiver =
+        one_shot_sync_service_remote_.BindNewPipeAndPassReceiver();
     // Create a new OneShotBackgroundSyncServiceImpl bound to the dummy channel.
-    background_sync_context_->CreateOneShotSyncService(
-        std::move(service_request));
+    background_sync_context_->CreateOneShotSyncService(std::move(receiver));
     base::RunLoop().RunUntilIdle();
 
     // Since |background_sync_context_| is deleted after
@@ -54,7 +53,8 @@ class OneShotBackgroundSyncServiceImplTest
     base::RunLoop().RunUntilIdle();
   }
 
-  blink::mojom::OneShotBackgroundSyncServicePtr one_shot_sync_service_ptr_;
+  mojo::Remote<blink::mojom::OneShotBackgroundSyncService>
+      one_shot_sync_service_remote_;
 
   // Owned by |background_sync_context_|
   OneShotBackgroundSyncServiceImpl* one_shot_sync_service_impl_;

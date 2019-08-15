@@ -309,6 +309,11 @@ void ChromeOSMetricsProvider::ProvideCurrentSessionData(
 
 void ChromeOSMetricsProvider::WriteBluetoothProto(
     metrics::SystemProfileProto* system_profile_proto) {
+  // This may be called before the async init task to set |adapter_| is set,
+  // such as when the persistent system profile gets filled in initially.
+  if (!adapter_)
+    return;
+
   metrics::SystemProfileProto::Hardware* hardware =
       system_profile_proto->mutable_hardware();
 

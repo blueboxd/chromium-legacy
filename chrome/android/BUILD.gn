@@ -2077,9 +2077,8 @@ if (enable_arcore) {
 
 # Chrome smoke test is a minimal test to ensure Chrome is not DOA.  It is
 # designed to be runnable against uninstrumented Chrome apks.
-instrumentation_test_apk("chrome_smoke_test") {
+android_test_apk("chrome_smoke_test_apk") {
   apk_name = "ChromeSmokeTest"
-  apk_under_test = "//chrome/android:chrome_public_apk"
   android_manifest =
       "javatests/src/org/chromium/chrome/test/smoke/AndroidManifest.xml"
   target_sdk_version = 28
@@ -2090,13 +2089,16 @@ instrumentation_test_apk("chrome_smoke_test") {
     "//base:base_java_test_support",
     "//chrome/test/android:chrome_java_test_pagecontroller",
     "//content/public/test/android:content_java_test_support",
+    "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",
+    "//third_party/ub-uiautomator:ub_uiautomator_java",
   ]
+}
 
-  if (!is_java_debug) {
-    proguard_enabled = true
-    proguard_configs = [ "//chrome/android/java/apk_for_test.flags" ]
-  }
+instrumentation_test_runner("chrome_public_smoke_test") {
+  apk_under_test = "//chrome/android:chrome_public_apk"
+  android_test_apk = ":chrome_smoke_test_apk"
+  android_test_apk_name = "ChromeSmokeTest"
 }
 
 # TODO(crbug.com/989654): Add Chrome bundle as test target once the test runner

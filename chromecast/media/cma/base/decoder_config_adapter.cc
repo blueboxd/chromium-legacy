@@ -46,26 +46,6 @@ AudioCodec ToAudioCodec(const ::media::AudioCodec audio_codec) {
   return kAudioCodecUnknown;
 }
 
-ChannelLayout ToChannelLayout(const ::media::ChannelLayout channel_layout) {
-  switch (channel_layout) {
-    case ::media::ChannelLayout::CHANNEL_LAYOUT_UNSUPPORTED:
-      return ChannelLayout::UNSUPPORTED;
-    case ::media::ChannelLayout::CHANNEL_LAYOUT_MONO:
-      return ChannelLayout::MONO;
-    case ::media::ChannelLayout::CHANNEL_LAYOUT_STEREO:
-      return ChannelLayout::STEREO;
-    case ::media::ChannelLayout::CHANNEL_LAYOUT_5_1:
-    case ::media::ChannelLayout::CHANNEL_LAYOUT_5_1_BACK:
-      return ChannelLayout::SURROUND_5_1;
-    case ::media::ChannelLayout::CHANNEL_LAYOUT_BITSTREAM:
-      return ChannelLayout::BITSTREAM;
-
-    default:
-      NOTREACHED();
-      return ChannelLayout::UNSUPPORTED;
-  }
-}
-
 SampleFormat ToSampleFormat(const ::media::SampleFormat sample_format) {
   switch (sample_format) {
     case ::media::kUnknownSampleFormat:
@@ -92,26 +72,6 @@ SampleFormat ToSampleFormat(const ::media::SampleFormat sample_format) {
   }
   NOTREACHED();
   return kUnknownSampleFormat;
-}
-
-::media::ChannelLayout ToMediaChannelLayout(
-    const ChannelLayout channel_layout) {
-  switch (channel_layout) {
-    case ChannelLayout::UNSUPPORTED:
-      return ::media::ChannelLayout::CHANNEL_LAYOUT_UNSUPPORTED;
-    case ChannelLayout::MONO:
-      return ::media::ChannelLayout::CHANNEL_LAYOUT_MONO;
-    case ChannelLayout::STEREO:
-      return ::media::ChannelLayout::CHANNEL_LAYOUT_STEREO;
-    case ChannelLayout::SURROUND_5_1:
-      return ::media::ChannelLayout::CHANNEL_LAYOUT_5_1;
-    case ChannelLayout::BITSTREAM:
-      return ::media::ChannelLayout::CHANNEL_LAYOUT_BITSTREAM;
-
-    default:
-      NOTREACHED();
-      return ::media::ChannelLayout::CHANNEL_LAYOUT_UNSUPPORTED;
-  }
 }
 
 ::media::SampleFormat ToMediaSampleFormat(const SampleFormat sample_format) {
@@ -206,6 +166,49 @@ EncryptionScheme ToEncryptionScheme(const ::media::EncryptionScheme& scheme) {
 }
 
 }  // namespace
+
+// static
+ChannelLayout DecoderConfigAdapter::ToChannelLayout(
+    ::media::ChannelLayout channel_layout) {
+  switch (channel_layout) {
+    case ::media::ChannelLayout::CHANNEL_LAYOUT_UNSUPPORTED:
+      return ChannelLayout::UNSUPPORTED;
+    case ::media::ChannelLayout::CHANNEL_LAYOUT_MONO:
+      return ChannelLayout::MONO;
+    case ::media::ChannelLayout::CHANNEL_LAYOUT_STEREO:
+      return ChannelLayout::STEREO;
+    case ::media::ChannelLayout::CHANNEL_LAYOUT_5_1:
+    case ::media::ChannelLayout::CHANNEL_LAYOUT_5_1_BACK:
+      return ChannelLayout::SURROUND_5_1;
+    case ::media::ChannelLayout::CHANNEL_LAYOUT_BITSTREAM:
+      return ChannelLayout::BITSTREAM;
+
+    default:
+      NOTREACHED();
+      return ChannelLayout::UNSUPPORTED;
+  }
+}
+
+// static
+::media::ChannelLayout DecoderConfigAdapter::ToMediaChannelLayout(
+    ChannelLayout channel_layout) {
+  switch (channel_layout) {
+    case ChannelLayout::UNSUPPORTED:
+      return ::media::ChannelLayout::CHANNEL_LAYOUT_UNSUPPORTED;
+    case ChannelLayout::MONO:
+      return ::media::ChannelLayout::CHANNEL_LAYOUT_MONO;
+    case ChannelLayout::STEREO:
+      return ::media::ChannelLayout::CHANNEL_LAYOUT_STEREO;
+    case ChannelLayout::SURROUND_5_1:
+      return ::media::ChannelLayout::CHANNEL_LAYOUT_5_1;
+    case ChannelLayout::BITSTREAM:
+      return ::media::ChannelLayout::CHANNEL_LAYOUT_BITSTREAM;
+
+    default:
+      NOTREACHED();
+      return ::media::ChannelLayout::CHANNEL_LAYOUT_UNSUPPORTED;
+  }
+}
 
 // static
 AudioConfig DecoderConfigAdapter::ToCastAudioConfig(

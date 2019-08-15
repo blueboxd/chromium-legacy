@@ -47,15 +47,25 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
   // Shutdown must be called before deleting this. Call on the UI thread.
   void Shutdown();
 
+  // TODO(https://crbug.com/955171): Remove these methods and use
+  // CreateOneShotSyncService and CreatePeriodicSyncService directly once
+  // RenderProcessHostImpl uses service_manager::BinderMap.
+  void CreateOneShotSyncServiceForRequest(
+      blink::mojom::OneShotBackgroundSyncServiceRequest request);
+  void CreatePeriodicSyncServiceForRequest(
+      blink::mojom::PeriodicBackgroundSyncServiceRequest request);
+
   // Create a OneShotBackgroundSyncServiceImpl that is owned by this. Call on
   // the UI thread.
   void CreateOneShotSyncService(
-      blink::mojom::OneShotBackgroundSyncServiceRequest request);
+      mojo::PendingReceiver<blink::mojom::OneShotBackgroundSyncService>
+          receiver);
 
   // Create a PeriodicBackgroundSyncServiceImpl that is owned by this. Call on
   // the UI thread.
   void CreatePeriodicSyncService(
-      blink::mojom::PeriodicBackgroundSyncServiceRequest request);
+      mojo::PendingReceiver<blink::mojom::PeriodicBackgroundSyncService>
+          receiver);
 
   // Called by *BackgroundSyncServiceImpl objects so that they can
   // be deleted. Call on the IO thread.
@@ -101,11 +111,11 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
       scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context);
 
   void CreateOneShotSyncServiceOnIOThread(
-      mojo::InterfaceRequest<blink::mojom::OneShotBackgroundSyncService>
-          request);
+      mojo::PendingReceiver<blink::mojom::OneShotBackgroundSyncService>
+          receiver);
   void CreatePeriodicSyncServiceOnIOThread(
-      mojo::InterfaceRequest<blink::mojom::PeriodicBackgroundSyncService>
-          request);
+      mojo::PendingReceiver<blink::mojom::PeriodicBackgroundSyncService>
+          receiver);
 
   void ShutdownOnIO();
 

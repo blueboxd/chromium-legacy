@@ -15,7 +15,7 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
-#import "ios/chrome/common/colors/incognito_color_util.h"
+#import "ios/chrome/common/colors/dynamic_color_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -26,14 +26,14 @@
 namespace {
 // The color of the main text of a suggest cell.
 UIColor* SuggestionTextColor(bool incognito) {
-  return color::IncognitoDynamicColor(
-      incognito, [UIColor colorNamed:kTextPrimaryColor],
+  return color::DarkModeDynamicColor(
+      [UIColor colorNamed:kTextPrimaryColor], incognito,
       [UIColor colorNamed:kTextPrimaryDarkColor]);
 }
 // The color of the detail text of a suggest cell.
 UIColor* SuggestionDetailTextColor(bool incognito) {
-  return color::IncognitoDynamicColor(
-      incognito, [UIColor colorNamed:kTextSecondaryColor],
+  return color::DarkModeDynamicColor(
+      [UIColor colorNamed:kTextSecondaryColor], incognito,
       [UIColor colorNamed:kTextSecondaryDarkColor]);
 }
 // The color of the text in the portion of a search suggestion that matches the

@@ -221,8 +221,7 @@ class AndroidOutputSurface : public viz::OutputSurface {
       scoped_refptr<viz::ContextProviderCommandBuffer> context_provider,
       base::RepeatingCallback<void(const gfx::Size&)> swap_buffers_callback)
       : viz::OutputSurface(std::move(context_provider)),
-        swap_buffers_callback_(std::move(swap_buffers_callback)),
-        weak_ptr_factory_(this) {
+        swap_buffers_callback_(std::move(swap_buffers_callback)) {
     capabilities_.max_frames_pending = kMaxDisplaySwapBuffers;
   }
 
@@ -328,7 +327,7 @@ class AndroidOutputSurface : public viz::OutputSurface {
   base::RepeatingCallback<void(const gfx::Size&)> swap_buffers_callback_;
   ui::LatencyTracker latency_tracker_;
 
-  base::WeakPtrFactory<AndroidOutputSurface> weak_ptr_factory_;
+  base::WeakPtrFactory<AndroidOutputSurface> weak_ptr_factory_{this};
 };
 
 static bool g_initialized = false;
@@ -412,8 +411,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       client_(client),
       needs_animate_(false),
       pending_frames_(0U),
-      layer_tree_frame_sink_request_pending_(false),
-      weak_factory_(this) {
+      layer_tree_frame_sink_request_pending_(false) {
   CHECK(features::IsVizDisplayCompositorEnabled());
   CHECK(features::IsSurfaceSynchronizationEnabled());
   DCHECK(client);

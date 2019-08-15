@@ -26,7 +26,7 @@ class IndexedDBConnectionCoordinator {
   static const int64_t kInvalidId = 0;
   static const int64_t kMinimumIndexId = 30;
 
-  IndexedDBConnectionCoordinator(IndexedDBDatabase* db);
+  explicit IndexedDBConnectionCoordinator(IndexedDBDatabase* db);
   ~IndexedDBConnectionCoordinator();
 
   void ScheduleOpenConnection(

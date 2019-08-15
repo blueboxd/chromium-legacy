@@ -1243,6 +1243,17 @@
       }
     ]
   },
+  "Win x64 Builder": {
+    "additional_compile_targets": [
+      "pdf_fuzzers"
+    ],
+    "scripts": [
+      {
+        "name": "check_network_annotations",
+        "script": "check_network_annotations.py"
+      }
+    ]
+  },
   "Win10 Tests x64": {
     "gtest_tests": [
       {
@@ -3088,6 +3099,13 @@
           ],
           "shards": 12
         }
+      }
+    ],
+    "scripts": [
+      {
+        "name": "webkit_lint",
+        "script": "blink_lint_expectations.py",
+        "swarming": {}
       }
     ]
   },

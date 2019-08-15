@@ -16,6 +16,11 @@ import hashlib
 import os
 import sys
 
+# Import grit first to get local third_party modules.
+import grit  # pylint: disable=ungrouped-imports,unused-import
+
+import six
+
 from grit.format import data_pack
 
 
@@ -74,7 +79,7 @@ def _PrintMain(args):
     desc = '<data>'
     if try_decode:
       try:
-        desc = unicode(data, encoding)
+        desc = six.text_type(data, encoding)
         if len(desc) > 60:
           desc = desc[:60] + u'...'
         desc = desc.replace('\n', '\\n')

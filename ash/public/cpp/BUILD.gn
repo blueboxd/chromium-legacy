@@ -62,6 +62,8 @@ component("cpp") {
     "ash_view_ids.h",
     "assistant/assistant_image_downloader.cc",
     "assistant/assistant_image_downloader.h",
+    "assistant/assistant_interface_binder.cc",
+    "assistant/assistant_interface_binder.h",
     "assistant/assistant_setup.cc",
     "assistant/assistant_setup.h",
     "assistant/assistant_state_base.cc",
@@ -246,6 +248,7 @@ component("cpp") {
   public_deps = [
     "//ash/public/mojom",
     "//base",
+    "//chromeos/services/assistant/public/mojom",
     "//components/arc/mojom:notifications",
     "//components/session_manager:base",
     "//components/user_manager",

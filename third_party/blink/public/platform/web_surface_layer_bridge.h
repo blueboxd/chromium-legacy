@@ -34,8 +34,9 @@ class BLINK_PLATFORM_EXPORT WebSurfaceLayerBridgeObserver {
 // Maintains and exposes the SurfaceLayer.
 class BLINK_PLATFORM_EXPORT WebSurfaceLayerBridge {
  public:
+  // |parent_frame_sink_id| identifies the local root widget's FrameSinkId.
   static std::unique_ptr<WebSurfaceLayerBridge> Create(
-      WebLayerTreeView*,
+      viz::FrameSinkId parent_frame_sink_id,
       WebSurfaceLayerBridgeObserver*,
       cc::UpdateSubmissionStateCB);
   virtual ~WebSurfaceLayerBridge();

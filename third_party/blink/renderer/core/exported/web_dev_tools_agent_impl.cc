@@ -381,18 +381,10 @@ void WebDevToolsAgentImpl::DetachSession(DevToolsSession* session) {
 }
 
 void WebDevToolsAgentImpl::InspectElement(const WebPoint& point_in_local_root) {
-  WebPoint point = point_in_local_root;
-  // TODO(dgozman): the ViewImpl() check must not be necessary,
-  // but it is required when attaching early to a provisional frame.
-  // We should clean this up once provisional frames are gone.
-  // See https://crbug.com/578349.
-  if (web_local_frame_impl_->ViewImpl() &&
-      web_local_frame_impl_->ViewImpl()->Client()) {
-    WebFloatRect rect(point.x, point.y, 0, 0);
-    web_local_frame_impl_->ViewImpl()->WidgetClient()->ConvertWindowToViewport(
-        &rect);
-    point = WebPoint(rect.x, rect.y);
-  }
+  WebFloatRect rect(point_in_local_root.x, point_in_local_root.y, 0, 0);
+  web_local_frame_impl_->FrameWidgetImpl()->Client()->ConvertWindowToViewport(
+      &rect);
+  WebPoint point(rect.x, rect.y);
 
   HitTestRequest::HitTestRequestType hit_type =
       HitTestRequest::kMove | HitTestRequest::kReadOnly |

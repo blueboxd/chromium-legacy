@@ -16,14 +16,6 @@
 
 namespace ui {
 
-// A direction when searching for the next boundary.
-enum TextBoundaryDirection {
-  // Search forwards for the next boundary past the starting position.
-  FORWARDS_DIRECTION,
-  // Search backwards for the previous boundary before the starting position.
-  BACKWARDS_DIRECTION
-};
-
 // Convenience method needed to implement platform-specific text
 // accessibility APIs like IAccessible2. Search forwards or backwards
 // (depending on |direction|) from the given |start_offset| until the
@@ -33,7 +25,7 @@ AX_EXPORT size_t FindAccessibleTextBoundary(const base::string16& text,
                                             const std::vector<int>& line_breaks,
                                             AXTextBoundary boundary,
                                             size_t start_offset,
-                                            TextBoundaryDirection direction,
+                                            AXTextBoundaryDirection direction,
                                             ax::mojom::TextAffinity affinity);
 
 // Returns a string ID that corresponds to the name of the given action.

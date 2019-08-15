@@ -51,6 +51,8 @@
 #include "chrome/browser/content_index/content_index_provider_impl.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/dom_distiller/profile_utils.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
@@ -113,6 +115,9 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/core/browser/data_store_impl.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -183,7 +188,6 @@
 #include "chrome/browser/chromeos/secure_channel/secure_channel_client_provider.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
-#include "chromeos/assistant/buildflags.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/services/device_sync/device_sync_service.h"
@@ -194,12 +198,6 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-#include "chromeos/services/assistant/public/mojom/constants.mojom.h"
-#include "chromeos/services/assistant/service.h"
-#include "content/public/browser/network_service_instance.h"
-#endif
 
 #endif
 
@@ -767,7 +765,7 @@ void ProfileImpl::DoFinalInit() {
 
   SiteIsolationPolicy::ApplyPersistedIsolatedOrigins(this);
 
-  io_data_.InitializeDataReductionProxy();
+  InitializeDataReductionProxy();
 
   content::URLDataSource::Add(this,
                               std::make_unique<PrefsInternalsSource>(this));
@@ -1345,14 +1343,6 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
             : nullptr,
         chromeos::GcmDeviceInfoProviderImpl::GetInstance());
   }
-
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-  if (service_name == chromeos::assistant::mojom::kServiceName) {
-    return std::make_unique<chromeos::assistant::Service>(
-        std::move(request), GetURLLoaderFactory()->Clone());
-  }
-#endif  // BUILDFLAG(ENABLE_CROS_ASSISTANT)
-
 #endif  // defined(OS_CHROMEOS)
 
   return nullptr;
@@ -1581,4 +1571,16 @@ void ProfileImpl::UpdateIsEphemeralInStorage() {
     entry->SetIsEphemeral(
         GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles));
   }
+}
+
+void ProfileImpl::InitializeDataReductionProxy() {
+  scoped_refptr<base::SequencedTaskRunner> db_task_runner =
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  std::unique_ptr<data_reduction_proxy::DataStore> store(
+      new data_reduction_proxy::DataStoreImpl(GetPath()));
+  DataReductionProxyChromeSettingsFactory::GetForBrowserContext(this)
+      ->InitDataReductionProxySettings(this, std::move(store), db_task_runner);
 }

@@ -4051,6 +4051,8 @@
           'isolated_scripts': 'chromium_win_rel_isolated_scripts',
         },
       },
+      # 'Win Builder' and 'Win x64 Builder' should have the same set of
+      # additional_compile_targets and test_suites.
       'Win Builder': {
         'additional_compile_targets': [
           'pdf_fuzzers'
@@ -4059,6 +4061,16 @@
           'scripts': 'check_network_annotations_script',
         },
       },
+      'Win x64 Builder': {
+        'additional_compile_targets': [
+          'pdf_fuzzers'
+        ],
+        'test_suites': {
+          'scripts': 'check_network_annotations_script',
+        },
+      },
+      # 'Win10 Tests x64' and 'Win7 Tests (1)' should have the same set of
+      # additional_compile_targets and test_suites.
       'Win10 Tests x64': {
         'mixins': [
           'x86-64',
@@ -4067,6 +4079,7 @@
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'chromium_win_rel_isolated_scripts',
+          'scripts': 'chromium_scripts',
         },
       },
       'Win10 Tests x64 (dbg)': {

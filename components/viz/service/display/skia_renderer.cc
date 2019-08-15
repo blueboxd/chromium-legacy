@@ -268,6 +268,10 @@ bool IsAAForcedOff(const DrawQuad* quad) {
       return SolidColorDrawQuad::MaterialCast(quad)->force_anti_aliasing_off;
     case DrawQuad::Material::kTiledContent:
       return TileDrawQuad::MaterialCast(quad)->force_anti_aliasing_off;
+    case DrawQuad::Material::kYuvVideoContent:
+      // This is done to match the behaviour of GLRenderer and we can revisit it
+      // later.
+      return true;
     default:
       return false;
   }

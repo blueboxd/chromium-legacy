@@ -28,6 +28,8 @@
 
 #include <memory>
 
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom-blink.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom-blink.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -116,7 +118,7 @@ class MODULES_EXPORT StorageNamespace final
   // Lives globally.
   StorageController* controller_;
   String namespace_id_;
-  mojom::blink::SessionStorageNamespacePtr namespace_;
+  mojo::Remote<mojom::blink::SessionStorageNamespace> namespace_;
   HashMap<scoped_refptr<const SecurityOrigin>,
           scoped_refptr<CachedStorageArea>,
           SecurityOriginHash>

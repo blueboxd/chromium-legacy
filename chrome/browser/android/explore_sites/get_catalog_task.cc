@@ -179,8 +179,7 @@ GetCatalogTask::GetCatalogTask(ExploreSitesStore* store,
                                CatalogCallback callback)
     : store_(store),
       update_current_(update_current),
-      callback_(std::move(callback)),
-      weak_ptr_factory_(this) {}
+      callback_(std::move(callback)) {}
 
 GetCatalogTask::~GetCatalogTask() = default;
 

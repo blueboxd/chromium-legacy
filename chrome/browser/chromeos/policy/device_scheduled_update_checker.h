@@ -13,13 +13,19 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/os_and_policies_update_checker.h"
+#include "chrome/browser/chromeos/policy/scoped_wake_lock.h"
 #include "chrome/browser/chromeos/policy/task_executor_with_retries.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/dbus/power/native_timer.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/timezone_settings.h"
+#include "services/device/public/mojom/wake_lock.mojom.h"
 #include "third_party/icu/source/i18n/unicode/calendar.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
+
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
 
 namespace policy {
 
@@ -30,7 +36,8 @@ class DeviceScheduledUpdateChecker
  public:
   DeviceScheduledUpdateChecker(
       chromeos::CrosSettings* cros_settings,
-      chromeos::NetworkStateHandler* network_state_handler);
+      chromeos::NetworkStateHandler* network_state_handler,
+      service_manager::Connector* connector);
   ~DeviceScheduledUpdateChecker() override;
 
   // Frequency at which the update check should occur.
@@ -83,7 +90,8 @@ class DeviceScheduledUpdateChecker
 
   // Called when |os_and_policies_update_checker_| has finished successfully or
   // unsuccessfully after retrying.
-  virtual void OnUpdateCheckCompletion(bool result);
+  virtual void OnUpdateCheckCompletion(ScopedWakeLock scoped_wake_lock,
+                                       bool result);
 
  private:
   // Callback triggered when scheduled update check setting has changed.
@@ -95,20 +103,21 @@ class DeviceScheduledUpdateChecker
   // |CalculateNextUpdateCheckTimerDelay| then reschedules itself via
   // |start_update_check_timer_task_executor_|. Requires
   // |scheduled_update_check_data_| to be set.
-  void StartUpdateCheckTimer();
+  void StartUpdateCheckTimer(ScopedWakeLock scoped_wake_lock);
 
   // Called upon starting |update_check_timer_|. Indicates whether or not the
   // timer was started successfully.
-  void OnTimerStartResult(bool result);
+  void OnUpdateCheckTimerStartResult(ScopedWakeLock scoped_wake_lock,
+                                     bool result);
 
   // Called when |start_update_check_timer_task_executor_|'s retry limit has
   // been reached.
   void OnStartUpdateCheckTimerRetryFailure();
 
-  // Starts |start_update_check_timer_task_executor_| to run the next update
-  // check timer, via |StartUpdateCheckTimer|, only if a policy i.e.
-  // |scheduled_update_check_data_| is set.
-  void MaybeStartUpdateCheckTimer();
+  // Starts or retries |StartUpdateCheckTimer| via
+  // |start_update_check_timer_task_executor_| based on |is_retry|.
+  void MaybeStartUpdateCheckTimer(ScopedWakeLock scoped_wake_lock,
+                                  bool is_retry);
 
   // Reset all state and cancel all pending tasks
   void ResetState();
@@ -124,6 +133,9 @@ class DeviceScheduledUpdateChecker
 
   // Used to retrieve Chrome OS settings. Not owned.
   chromeos::CrosSettings* const cros_settings_;
+
+  // Owned by chromeos::assistant::Service.
+  service_manager::Connector* const connector_;
 
   // Used to observe when settings change.
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
@@ -141,10 +153,23 @@ class DeviceScheduledUpdateChecker
   // Timer that is scheduled to check for updates.
   std::unique_ptr<chromeos::NativeTimer> update_check_timer_;
 
+  base::WeakPtrFactory<DeviceScheduledUpdateChecker> weak_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(DeviceScheduledUpdateChecker);
 };
 
 namespace update_checker_internal {
+
+// The maximum iterations allowed to start an update check timer if the
+// operation fails.
+constexpr int kMaxStartUpdateCheckTimerRetryIterations = 5;
+
+// Time to call |StartUpdateCheckTimer| again in case it failed.
+constexpr base::TimeDelta kStartUpdateCheckTimerRetryTime =
+    base::TimeDelta::FromMinutes(1);
+
+// Used as canonical value for timer delay calculations.
+constexpr base::TimeDelta kInvalidDelay = base::TimeDelta();
 
 // Parses |value| into a |ScheduledUpdateCheckData|. Returns nullopt if there
 // is any error while parsing |value|.
@@ -161,14 +186,6 @@ base::TimeDelta GetDiff(const icu::Calendar& a, const icu::Calendar& b);
 // Converts |cur_time| to ICU time in the time zone |tz|.
 std::unique_ptr<icu::Calendar> ConvertUtcToTzIcuTime(base::Time cur_time,
                                                      const icu::TimeZone& tz);
-
-// The maximum iterations allowed to start an update check timer if the
-// operation fails.
-constexpr int kMaxStartUpdateCheckTimerRetryIterations = 5;
-
-// Time to call |StartUpdateCheckTimer| again in case it failed.
-constexpr base::TimeDelta kStartUpdateCheckTimerRetryTime =
-    base::TimeDelta::FromMinutes(5);
 
 }  // namespace update_checker_internal
 

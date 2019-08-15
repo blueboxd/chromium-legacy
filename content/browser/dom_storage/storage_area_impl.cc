@@ -12,6 +12,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 
 namespace content {
 namespace {
@@ -83,7 +84,7 @@ StorageAreaImpl::StorageAreaImpl(leveldb::mojom::LevelDBDatabase* database,
                          base::TimeDelta::FromHours(1)),
       commit_rate_limiter_(options.max_commits_per_hour,
                            base::TimeDelta::FromHours(1)) {
-  bindings_.set_connection_error_handler(base::BindRepeating(
+  receivers_.set_disconnect_handler(base::BindRepeating(
       &StorageAreaImpl::OnConnectionError, weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -100,8 +101,9 @@ void StorageAreaImpl::InitializeAsEmpty() {
               std::vector<leveldb::mojom::KeyValuePtr>());
 }
 
-void StorageAreaImpl::Bind(blink::mojom::StorageAreaRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void StorageAreaImpl::Bind(
+    mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
+  receivers_.Add(this, std::move(receiver));
   // If the number of bindings is more than 1, then the |client_old_value| sent
   // by the clients need not be valid due to races on updates from multiple
   // clients. So, cache the values in the service. Setting cache mode back to
@@ -109,7 +111,7 @@ void StorageAreaImpl::Bind(blink::mojom::StorageAreaRequest request) {
   // inconsistency due to the async notifications of mutations to the client
   // reaching late.
   if (cache_mode_ == CacheMode::KEYS_ONLY_WHEN_POSSIBLE &&
-      bindings_.size() > 1) {
+      receivers_.size() > 1) {
     SetCacheMode(CacheMode::KEYS_AND_VALUES);
   }
 }
@@ -221,26 +223,13 @@ void StorageAreaImpl::SetCacheModeForTesting(CacheMode cache_mode) {
   SetCacheMode(cache_mode);
 }
 
-mojo::InterfacePtrSetElementId StorageAreaImpl::AddObserver(
-    blink::mojom::StorageAreaObserverAssociatedPtr observer) {
-  if (cache_mode_ == CacheMode::KEYS_AND_VALUES)
-    observer->ShouldSendOldValueOnMutations(false);
-  return observers_.AddPtr(std::move(observer));
-}
-
-bool StorageAreaImpl::HasObserver(mojo::InterfacePtrSetElementId id) {
-  return observers_.HasPtr(id);
-}
-
-blink::mojom::StorageAreaObserverAssociatedPtr StorageAreaImpl::RemoveObserver(
-    mojo::InterfacePtrSetElementId id) {
-  return observers_.RemovePtr(id);
-}
-
 void StorageAreaImpl::AddObserver(
-    blink::mojom::StorageAreaObserverAssociatedPtrInfo observer) {
-  AddObserver(
-      blink::mojom::StorageAreaObserverAssociatedPtr(std::move(observer)));
+    mojo::PendingAssociatedRemote<blink::mojom::StorageAreaObserver> observer) {
+  mojo::AssociatedRemote<blink::mojom::StorageAreaObserver> observer_remote(
+      std::move(observer));
+  if (cache_mode_ == CacheMode::KEYS_AND_VALUES)
+    observer_remote->ShouldSendOldValueOnMutations(false);
+  observers_.Add(std::move(observer_remote));
 }
 
 void StorageAreaImpl::Put(
@@ -314,7 +303,7 @@ void StorageAreaImpl::Put(
   // shrinking changes to pre-existing maps that are over budget.
   if (new_item_size > old_item_size && new_storage_used > max_size_) {
     if (map_state_ == MapState::LOADED_KEYS_ONLY) {
-      bindings_.ReportBadMessage(
+      receivers_.ReportBadMessage(
           "The quota in browser cannot exceed when there is only one "
           "renderer.");
     } else {
@@ -343,16 +332,12 @@ void StorageAreaImpl::Put(
   memory_used_ += new_item_memory - old_item_memory;
   if (!old_value) {
     // We added a new key/value pair.
-    observers_.ForAllPtrs(
-        [&key, &value, &source](blink::mojom::StorageAreaObserver* observer) {
-          observer->KeyAdded(key, value, source);
-        });
+    for (auto& observer : observers_)
+      observer->KeyAdded(key, value, source);
   } else {
     // We changed the value for an existing key.
-    observers_.ForAllPtrs([&key, &value, &source, &old_value](
-                              blink::mojom::StorageAreaObserver* observer) {
+    for (auto& observer : observers_)
       observer->KeyChanged(key, value, old_value.value(), source);
-    });
   }
   std::move(callback).Run(true);
 }
@@ -422,10 +407,8 @@ void StorageAreaImpl::Delete(
       commit_batch_->changed_keys.insert(key);
   }
 
-  observers_.ForAllPtrs(
-      [&key, &source, &old_value](blink::mojom::StorageAreaObserver* observer) {
-        observer->KeyDeleted(key, old_value, source);
-      });
+  for (auto& observer : observers_)
+    observer->KeyDeleted(key, old_value, source);
   std::move(callback).Run(true);
 }
 
@@ -465,9 +448,8 @@ void StorageAreaImpl::DeleteAll(const std::string& source,
 
   storage_used_ = 0;
   memory_used_ = 0;
-  observers_.ForAllPtrs([&source](blink::mojom::StorageAreaObserver* observer) {
+  for (auto& observer : observers_)
     observer->AllDeleted(source);
-  });
   std::move(callback).Run(true);
 }
 
@@ -495,15 +477,16 @@ void StorageAreaImpl::Get(const std::vector<uint8_t>& key,
 }
 
 void StorageAreaImpl::GetAll(
-    blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo complete_callback,
+    mojo::PendingAssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
+        complete_callback,
     GetAllCallback callback) {
   // If the map is keys-only and empty, then no loading is necessary.
   if (IsMapLoadedAndEmpty()) {
     std::move(callback).Run(true, std::vector<blink::mojom::KeyValuePtr>());
     if (complete_callback.is_valid()) {
-      blink::mojom::StorageAreaGetAllCallbackAssociatedPtr complete_ptr;
-      complete_ptr.Bind(std::move(complete_callback));
-      complete_ptr->Complete(true);
+      mojo::AssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
+          complete_remote(std::move(complete_callback));
+      complete_remote->Complete(true);
     }
     return;
   }
@@ -525,9 +508,9 @@ void StorageAreaImpl::GetAll(
   }
   std::move(callback).Run(true, std::move(all));
   if (complete_callback.is_valid()) {
-    blink::mojom::StorageAreaGetAllCallbackAssociatedPtr complete_ptr;
-    complete_ptr.Bind(std::move(complete_callback));
-    complete_ptr->Complete(true);
+    mojo::AssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
+        complete_remote(std::move(complete_callback));
+    complete_remote->Complete(true);
   }
 }
 
@@ -538,10 +521,8 @@ void StorageAreaImpl::SetCacheMode(CacheMode cache_mode) {
   }
   cache_mode_ = cache_mode;
   bool should_send_values = cache_mode == CacheMode::KEYS_ONLY_WHEN_POSSIBLE;
-  observers_.ForAllPtrs(
-      [should_send_values](blink::mojom::StorageAreaObserver* observer) {
-        observer->ShouldSendOldValueOnMutations(should_send_values);
-      });
+  for (auto& observer : observers_)
+    observer->ShouldSendOldValueOnMutations(should_send_values);
 
   // If the |keys_only_map_| is loaded and desired state needs values, no point
   // keeping around the map since the next change would require reload. On the
@@ -551,7 +532,7 @@ void StorageAreaImpl::SetCacheMode(CacheMode cache_mode) {
 }
 
 void StorageAreaImpl::OnConnectionError() {
-  if (!bindings_.empty())
+  if (!receivers_.empty())
     return;
   // If any tasks are waiting for load to complete, delay calling the
   // no_bindings_callback_ until all those tasks have completed.
@@ -713,7 +694,7 @@ void StorageAreaImpl::OnLoadComplete() {
 
   // We might need to call the no_bindings_callback_ here if bindings became
   // empty while waiting for load to complete.
-  if (bindings_.empty())
+  if (receivers_.empty())
     delegate_->OnNoBindings();
 }
 

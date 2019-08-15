@@ -929,6 +929,6 @@ void ToolbarView::OnShowHomeButtonChanged() {
 
 void ToolbarView::UpdateHomeButtonVisibility() {
   const bool show_home_button =
-      show_home_button_.GetValue() || browser_->is_app();
+      show_home_button_.GetValue() || browser_->deprecated_is_app();
   home_->SetVisible(show_home_button);
 }

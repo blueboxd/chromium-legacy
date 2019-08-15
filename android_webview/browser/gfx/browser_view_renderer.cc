@@ -112,8 +112,7 @@ BrowserViewRenderer::BrowserViewRenderer(
       max_page_scale_factor_(0.f),
       on_new_picture_enable_(false),
       clear_view_(false),
-      offscreen_pre_raster_(false),
-      weak_ptr_factory_(this) {
+      offscreen_pre_raster_(false) {
   if (base::FeatureList::IsEnabled(features::kVizForWebView)) {
     root_frame_sink_proxy_ = std::make_unique<RootFrameSinkProxy>(
         ui_task_runner_,

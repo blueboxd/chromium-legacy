@@ -103,18 +103,22 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // return a raw pointer to the object. The ownership is transferred to the
   // menu when view is repopulated from menu items.
   // Please use |AddViewItem| only if none of the previous ones match.
+  views::Button* CreateAndAddButton(const gfx::ImageSkia& icon,
+                                    const base::string16& title,
+                                    base::RepeatingClosure action);
+  views::Button* CreateAndAddBlueButton(const base::string16& text,
+                                        bool md_style,
+                                        base::RepeatingClosure action);
+  // If |action| is null the card will be disabled.
   views::Button* CreateAndAddTitleCard(std::unique_ptr<views::View> icon_view,
                                        const base::string16& title,
                                        const base::string16& subtitle,
-                                       bool enabled = true);
-  views::Button* CreateAndAddButton(const gfx::ImageSkia& icon,
-                                    const base::string16& title);
-  views::Button* CreateAndAddBlueButton(const base::string16& text,
-                                        bool md_style);
+                                       base::RepeatingClosure action);
 #if !defined(OS_CHROMEOS)
   DiceSigninButtonView* CreateAndAddDiceSigninButton(
-      AccountInfo* account_info = nullptr,
-      gfx::Image* account_icon = nullptr);
+      AccountInfo* account_info,
+      gfx::Image* account_icon,
+      base::RepeatingClosure action);
 #endif
   views::Label* CreateAndAddLabel(
       const base::string16& text,
@@ -153,10 +157,16 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
                          const content::ContextMenuParams& params) override;
 
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) final;
+
   // views::StyledLabelListener:
   void StyledLabelLinkClicked(views::StyledLabel* label,
                               const gfx::Range& range,
                               int event_flags) override;
+
+  void RegisterButtonAction(views::Button* button,
+                            base::RepeatingClosure action);
 
   // Returns the size of different margin types.
   int GetMarginSize(GroupMarginSize margin_size) const;
@@ -171,6 +181,8 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   std::vector<MenuItems> menu_item_groups_;
 
   views::Button* const anchor_button_;
+
+  std::map<views::Button*, base::RepeatingClosure> button_actions_;
 
   CloseBubbleOnTabActivationHelper close_bubble_helper_;
 

@@ -309,6 +309,10 @@ bool CalculateStyleShouldForceLegacyLayout(const Element& element,
                                            const ComputedStyle& style) {
   const Document& document = element.GetDocument();
 
+  if (style.Display() == EDisplay::kLayoutCustom ||
+      style.Display() == EDisplay::kInlineLayoutCustom)
+    return false;
+
   // TODO(layout-dev): Once LayoutNG handles inline content editable, we
   // should get rid of following code fragment.
   if (!RuntimeEnabledFeatures::EditingNGEnabled()) {
@@ -329,13 +333,6 @@ bool CalculateStyleShouldForceLegacyLayout(const Element& element,
       return true;
   }
 
-  // The custom container is laid out by the legacy engine. Its children may
-  // not establish new formatting contexts, so we need to protect against
-  // re-entering LayoutNG there.
-  if (style.Display() == EDisplay::kLayoutCustom ||
-      style.Display() == EDisplay::kInlineLayoutCustom)
-    return true;
-
   // 'text-combine-upright' property is not supported yet.
   if (style.HasTextCombine() && !style.IsHorizontalWritingMode())
     return true;
@@ -353,6 +350,31 @@ bool CalculateStyleShouldForceLegacyLayout(const Element& element,
   }
 
   return false;
+}
+
+bool HasLeftwardDirection(const Element& element) {
+  auto* style = element.GetComputedStyle();
+  if (!style)
+    return false;
+
+  WritingMode writing_mode = style->GetWritingMode();
+  bool is_rtl = !style->IsLeftToRightDirection();
+  return (writing_mode == WritingMode::kHorizontalTb && is_rtl) ||
+         writing_mode == WritingMode::kVerticalRl ||
+         writing_mode == WritingMode::kSidewaysRl;
+}
+
+bool HasUpwardDirection(const Element& element) {
+  auto* style = element.GetComputedStyle();
+  if (!style)
+    return false;
+
+  WritingMode writing_mode = style->GetWritingMode();
+  bool is_rtl = !style->IsLeftToRightDirection();
+  return (is_rtl && (writing_mode == WritingMode::kVerticalRl ||
+                     writing_mode == WritingMode::kVerticalLr ||
+                     writing_mode == WritingMode::kSidewaysRl)) ||
+         (!is_rtl && writing_mode == WritingMode::kSidewaysLr);
 }
 
 }  // namespace
@@ -994,6 +1016,14 @@ double Element::scrollLeft() {
 
   if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
     DCHECK(GetLayoutBox());
+
+    if (HasLeftwardDirection(*this)) {
+      UseCounter::Count(
+          GetDocument(),
+          WebFeature::
+              kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop);
+    }
+
     return AdjustForAbsoluteZoom::AdjustScroll(
         scrollable_area->ScrollPosition().X(), *GetLayoutBox());
   }
@@ -1015,6 +1045,14 @@ double Element::scrollTop() {
 
   if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
     DCHECK(GetLayoutBox());
+
+    if (HasUpwardDirection(*this)) {
+      UseCounter::Count(
+          GetDocument(),
+          WebFeature::
+              kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop);
+    }
+
     return AdjustForAbsoluteZoom::AdjustScroll(
         scrollable_area->ScrollPosition().Y(), *GetLayoutBox());
   }
@@ -1039,6 +1077,20 @@ void Element::setScrollLeft(double new_left) {
   } else if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
     LayoutBox* box = GetLayoutBox();
     DCHECK(box);
+
+    if (HasLeftwardDirection(*this)) {
+      UseCounter::Count(
+          GetDocument(),
+          WebFeature::
+              kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop);
+      if (new_left > 0) {
+        UseCounter::Count(
+            GetDocument(),
+            WebFeature::
+                kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTopSetPositive);
+      }
+    }
+
     FloatPoint end_point(new_left * box->Style()->EffectiveZoom(),
                          scrollable_area->ScrollPosition().Y());
     std::unique_ptr<cc::SnapSelectionStrategy> strategy =
@@ -1073,6 +1125,20 @@ void Element::setScrollTop(double new_top) {
   } else if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
     LayoutBox* box = GetLayoutBox();
     DCHECK(box);
+
+    if (HasUpwardDirection(*this)) {
+      UseCounter::Count(
+          GetDocument(),
+          WebFeature::
+              kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop);
+      if (new_top > 0) {
+        UseCounter::Count(
+            GetDocument(),
+            WebFeature::
+                kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTopSetPositive);
+      }
+    }
+
     FloatPoint end_point(scrollable_area->ScrollPosition().X(),
                          new_top * box->Style()->EffectiveZoom());
     std::unique_ptr<cc::SnapSelectionStrategy> strategy =
@@ -1222,11 +1288,37 @@ void Element::ScrollLayoutBoxTo(const ScrollToOptions* scroll_to_options) {
     FloatPoint new_position(scrollable_area->ScrollPosition().X(),
                             scrollable_area->ScrollPosition().Y());
     if (scroll_to_options->hasLeft()) {
+      if (HasLeftwardDirection(*this)) {
+        UseCounter::Count(
+            GetDocument(),
+            WebFeature::
+                kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop);
+        if (scroll_to_options->left() > 0) {
+          UseCounter::Count(
+              GetDocument(),
+              WebFeature::
+                  kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTopSetPositive);
+        }
+      }
+
       new_position.SetX(
           ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->left()) *
           box->Style()->EffectiveZoom());
     }
     if (scroll_to_options->hasTop()) {
+      if (HasUpwardDirection(*this)) {
+        UseCounter::Count(
+            GetDocument(),
+            WebFeature::
+                kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop);
+        if (scroll_to_options->top() > 0) {
+          UseCounter::Count(
+              GetDocument(),
+              WebFeature::
+                  kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTopSetPositive);
+        }
+      }
+
       new_position.SetY(
           ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top()) *
           box->Style()->EffectiveZoom());
@@ -3732,6 +3824,7 @@ bool Element::IsMouseFocusable() const {
 void Element::ActivateDisplayLockIfNeeded() {
   if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
     return;
+  const_cast<Element*>(this)->UpdateDistributionForFlatTreeTraversal();
 
   HeapVector<std::pair<Member<Element>, Member<Element>>> activatable_targets;
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
@@ -3767,6 +3860,7 @@ bool Element::DisplayLockPreventsActivation() const {
   if (GetDocument().ActivationBlockingDisplayLockCount() == 0)
     return false;
 
+  const_cast<Element*>(this)->UpdateDistributionForFlatTreeTraversal();
   // TODO(vmpstr): Similar to Document::EnsurePaintLocationDataValidForNode(),
   // this iterates up to the ancestor hierarchy looking for locked display
   // locks. This is inefficient, particularly since it's unlikely that this will

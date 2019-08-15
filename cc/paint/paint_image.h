@@ -13,7 +13,6 @@
 #include "cc/paint/frame_metadata.h"
 #include "cc/paint/image_animation_count.h"
 #include "cc/paint/paint_export.h"
-#include "cc/paint/paint_worklet_input.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkYUVAIndex.h"
 #include "third_party/skia/include/core/SkYUVASizeInfo.h"
@@ -23,6 +22,7 @@ namespace cc {
 
 class PaintImageGenerator;
 class PaintOpBuffer;
+class PaintWorkletInput;
 using PaintRecord = PaintOpBuffer;
 
 // A representation of an image for the compositor.  This is the most abstract
@@ -222,16 +222,8 @@ class CC_PAINT_EXPORT PaintImage {
   bool IsTextureBacked() const {
     return paint_worklet_input_ ? false : GetSkImage()->isTextureBacked();
   }
-  int width() const {
-    return paint_worklet_input_
-               ? static_cast<int>(paint_worklet_input_->GetSize().width())
-               : GetSkImage()->width();
-  }
-  int height() const {
-    return paint_worklet_input_
-               ? static_cast<int>(paint_worklet_input_->GetSize().height())
-               : GetSkImage()->height();
-  }
+  int width() const;
+  int height() const;
   SkColorSpace* color_space() const {
     return paint_worklet_input_ ? nullptr : GetSkImage()->colorSpace();
   }

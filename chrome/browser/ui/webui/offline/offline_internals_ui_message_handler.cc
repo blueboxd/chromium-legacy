@@ -82,8 +82,7 @@ std::string GetStringFromSavePageStatus() {
 OfflineInternalsUIMessageHandler::OfflineInternalsUIMessageHandler()
     : offline_page_model_(nullptr),
       request_coordinator_(nullptr),
-      prefetch_service_(nullptr),
-      weak_ptr_factory_(this) {}
+      prefetch_service_(nullptr) {}
 
 OfflineInternalsUIMessageHandler::~OfflineInternalsUIMessageHandler() {}
 

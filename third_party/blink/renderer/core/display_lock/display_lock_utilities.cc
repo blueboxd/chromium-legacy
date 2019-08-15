@@ -62,6 +62,7 @@ bool DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(
 const HeapVector<Member<Element>>
 DisplayLockUtilities::ActivatableLockedInclusiveAncestors(Element& element) {
   HeapVector<Member<Element>> elements_to_activate;
+  const_cast<Element*>(&element)->UpdateDistributionForFlatTreeTraversal();
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(element)) {
     auto* ancestor_element = DynamicTo<Element>(ancestor);
     if (!ancestor_element)
@@ -128,6 +129,7 @@ void DisplayLockUtilities::ScopedChainForcedUpdate::
 
 const Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(
     const Node& node) {
+  const_cast<Node*>(&node)->UpdateDistributionForFlatTreeTraversal();
   auto* element = DynamicTo<Element>(node);
   if (!element)
     return NearestLockedExclusiveAncestor(node);
@@ -155,6 +157,7 @@ Element* DisplayLockUtilities::NearestLockedExclusiveAncestor(
       !node.CanParticipateInFlatTree()) {
     return nullptr;
   }
+  const_cast<Node*>(&node)->UpdateDistributionForFlatTreeTraversal();
   // TODO(crbug.com/924550): Once we figure out a more efficient way to
   // determine whether we're inside a locked subtree or not, change this.
   for (Node& ancestor : FlatTreeTraversal::AncestorsOf(node)) {
@@ -176,6 +179,7 @@ Element* DisplayLockUtilities::HighestLockedInclusiveAncestor(
       !node.CanParticipateInFlatTree()) {
     return nullptr;
   }
+  const_cast<Node*>(&node)->UpdateDistributionForFlatTreeTraversal();
   Element* locked_ancestor = nullptr;
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(node)) {
     auto* ancestor_node = DynamicTo<Element>(ancestor);
@@ -196,6 +200,8 @@ Element* DisplayLockUtilities::HighestLockedExclusiveAncestor(
       !node.CanParticipateInFlatTree()) {
     return nullptr;
   }
+  const_cast<Node*>(&node)->UpdateDistributionForFlatTreeTraversal();
+
   if (Node* parent = FlatTreeTraversal::Parent(node))
     return HighestLockedInclusiveAncestor(*parent);
   return nullptr;
@@ -235,6 +241,7 @@ bool DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(
     if (context && !context->ShouldLayout(DisplayLockContext::kSelf))
       return true;
   }
+  const_cast<Node*>(node)->UpdateDistributionForFlatTreeTraversal();
 
   // Since we handled the self-check above, we need to do inclusive checks
   // starting from the parent.

@@ -145,8 +145,7 @@ ImportCatalogTask::ImportCatalogTask(ExploreSitesStore* store,
     : store_(store),
       version_token_(version_token),
       catalog_proto_(std::move(catalog_proto)),
-      callback_(std::move(callback)),
-      weak_ptr_factory_(this) {}
+      callback_(std::move(callback)) {}
 
 ImportCatalogTask::~ImportCatalogTask() = default;
 

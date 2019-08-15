@@ -9,10 +9,10 @@
 
 #include "base/logging.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/services/assistant/fake_client.h"
 #include "chromeos/services/assistant/platform/power_manager_provider_impl.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -69,8 +69,7 @@ class SystemProviderImplTest : public testing::Test {
 
     system_provider_impl_ = std::make_unique<SystemProviderImpl>(
         std::make_unique<PowerManagerProviderImpl>(
-            connector_factory_.GetDefaultConnector(),
-            scoped_task_environment_.GetMainThreadTaskRunner()),
+            &fake_client_, scoped_task_environment_.GetMainThreadTaskRunner()),
         battery_monitor_.CreateInterfacePtrAndBind());
     FlushForTesting();
   }
@@ -83,8 +82,8 @@ class SystemProviderImplTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  service_manager::TestConnectorFactory connector_factory_;
   FakeBatteryMonitor battery_monitor_;
+  FakeClient fake_client_;
   std::unique_ptr<SystemProviderImpl> system_provider_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemProviderImplTest);

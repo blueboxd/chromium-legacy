@@ -35,7 +35,7 @@ const int kMaxJsonSize = 1000000;  // 1Mb
 }  // namespace
 
 NTPJsonFetcher::NTPJsonFetcher(content::BrowserContext* browser_context)
-    : browser_context_(browser_context), weak_factory_(this) {}
+    : browser_context_(browser_context) {}
 
 NTPJsonFetcher::~NTPJsonFetcher() {}
 

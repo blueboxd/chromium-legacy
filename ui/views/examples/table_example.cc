@@ -121,6 +121,20 @@ gfx::ImageSkia TableExample::GetIcon(int row) {
   return gfx::ImageSkia::CreateFrom1xBitmap(row_icon);
 }
 
+base::string16 TableExample::GetTooltip(int row) {
+  if (row == -1)
+    return base::string16();
+
+  const char* const tooltips[5] = {
+      "Orange - Orange you glad I didn't say banana?",
+      "Apple - An apple a day keeps the doctor away",
+      "Blue berries - Bet you can't eat just one",
+      "Strawberries - Always better when homegrown",
+      "Cantaloupe - So nice when perfectly ripe"};
+
+  return ASCIIToUTF16(tooltips[row % 5]);
+}
+
 void TableExample::SetObserver(ui::TableModelObserver* observer) {}
 
 void TableExample::GetGroupRange(int model_index, GroupRange* range) {

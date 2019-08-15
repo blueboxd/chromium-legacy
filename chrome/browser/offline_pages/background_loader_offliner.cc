@@ -106,8 +106,7 @@ BackgroundLoaderOffliner::BackgroundLoaderOffliner(
       page_load_state_(SUCCESS),
       network_bytes_(0LL),
       is_low_bar_met_(false),
-      did_snapshot_on_last_retry_(false),
-      weak_ptr_factory_(this) {
+      did_snapshot_on_last_retry_(false) {
   DCHECK(offline_page_model_);
   DCHECK(browser_context_);
   // When the offliner is created for test harness runs, the

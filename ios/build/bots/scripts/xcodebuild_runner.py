@@ -21,6 +21,7 @@ import xcode_log_parser
 
 LOGGER = logging.getLogger(__name__)
 MAXIMUM_TESTS_PER_SHARD_FOR_RERUN = 20
+XTDEVICE_FOLDER = os.path.expanduser('~/Library/Developer/XCTestDevices')
 
 
 class LaunchCommandCreationError(test_runner.TestRunnerError):
@@ -55,13 +56,38 @@ def get_all_tests(app_path, test_cases=None):
   return all_tests
 
 
-def erase_all_simulators():
+def erase_all_simulators(path=None):
   """Erases all simulator devices.
+
+  Args:
+    path: (str) A path with simulators
 
   Fix for DVTCoreSimulatorAdditionsErrorDomain error.
   """
-  LOGGER.info('Erasing all simulators.')
-  subprocess.call(['xcrun', 'simctl', 'erase', 'all'])
+  command = ['xcrun', 'simctl']
+  if path:
+    command += ['--set', path]
+    LOGGER.info('Erasing all simulators from folder %s.' % path)
+  else:
+    LOGGER.info('Erasing all simulators.')
+  subprocess.call(command + ['erase', 'all'])
+
+
+def shutdown_all_simulators(path=None):
+  """Shutdown all simulator devices.
+
+  Args:
+    path: (str) A path with simulators
+
+  Fix for DVTCoreSimulatorAdditionsErrorDomain error.
+  """
+  command = ['xcrun', 'simctl']
+  if path:
+    command += ['--set', path]
+    LOGGER.info('Shutdown all simulators from folder %s.' % path)
+  else:
+    LOGGER.info('Shutdown all simulators.')
+  subprocess.call(command + ['shutdown', 'all'])
 
 
 def terminate_process(proc):
@@ -308,14 +334,16 @@ class LaunchCommand(object):
     shards = self.shards
     running_tests = set(get_all_tests(self.egtests_app.egtests_path,
                                       self.egtests_app.included_tests))
-
     # total number of attempts is self.retries+1
     for attempt in range(self.retries + 1):
       # Erase all simulators per each attempt
       if 'iOS Simulator' in self.destination:
         # kill all running simulators to prevent possible memory leaks
         test_runner.SimulatorTestRunner.kill_simulators()
+        shutdown_all_simulators()
+        shutdown_all_simulators(XTDEVICE_FOLDER)
         erase_all_simulators()
+        erase_all_simulators(XTDEVICE_FOLDER)
       outdir_attempt = os.path.join(self.out_dir, 'attempt_%d' % attempt)
       cmd_list = self.command(self.egtests_app,
                               outdir_attempt,
@@ -585,3 +613,90 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
 
     # Test is failed if there are failures for the last run.
     return not self.logs['failed tests']
+
+
+class DeviceXcodeTestRunner(SimulatorParallelTestRunner,
+                            test_runner.DeviceTestRunner):
+  """Class for running tests on real device using xCode."""
+
+  def __init__(
+      self,
+      app_path,
+      host_app_path,
+      xcode_build_version,
+      out_dir,
+      mac_toolchain=None,
+      retries=1,
+      xcode_path=None,
+      test_cases=None,
+      test_args=None,
+      env_vars=None,
+  ):
+    """Initializes a new instance of DeviceXcodeTestRunner class.
+
+    Args:
+      app_path: (str) A path to egtests_app.
+      host_app_path: (str) A path to the host app for EG2.
+      xcode_build_version: (str) Xcode build version for running tests.
+      out_dir: (str) A directory to emit test data into.
+      mac_toolchain: (str) A command to run `mac_toolchain` tool.
+      retries: (int) A number to retry test run, will re-run only failed tests.
+      xcode_path: (str) A path to Xcode.app folder.
+      test_cases: (list) List of tests to be included in the test run.
+                  None or [] to include all tests.
+      test_args: List of strings to pass as arguments to the test when
+        launching.
+      env_vars: List of environment variables to pass to the test itself.
+
+    Raises:
+      AppNotFoundError: If the given app does not exist.
+      DeviceDetectionError: If no device found.
+      PlugInsNotFoundError: If the PlugIns directory does not exist for XCTests.
+      XcodeVersionNotFoundError: If the given Xcode version does not exist.
+      XCTestPlugInNotFoundError: If the .xctest PlugIn does not exist.
+    """
+    test_runner.DeviceTestRunner.__init__(
+        self,
+        app_path,
+        xcode_build_version,
+        out_dir,
+        env_vars=env_vars,
+        retries=retries,
+        test_args=test_args,
+        test_cases=test_cases,
+        mac_toolchain=mac_toolchain,
+        xcode_path=xcode_path,
+    )
+    self.shards = 1  # For tests on real devices shards=1
+    self.version = None
+    self.platform = None
+    self.host_app_path = None
+    if host_app_path != 'NO_PATH':
+      self.host_app_path = os.path.abspath(host_app_path)
+    self.homedir = ''
+    self.set_up()
+    self._init_sharding_data()
+    # Destination is required to run tests via xcodebuild on real devices
+    # and it looks like id=%ID%
+    self.sharding_data[0]['destination'] = 'id=%s' % self.udid
+
+    self.logs = collections.OrderedDict()
+    self.test_results = collections.OrderedDict()
+    self.test_results['start_run'] = int(time.time())
+    self.test_results['end_run'] = None
+    self.start_time = time.strftime('%Y-%m-%d-%H%M%S', time.localtime())
+
+  def set_up(self):
+    """Performs setup actions which must occur prior to every test launch."""
+    self.uninstall_apps()
+    self.wipe_derived_data()
+
+  def tear_down(self):
+    """Performs cleanup actions which must occur after every test launch."""
+    test_runner.DeviceTestRunner.tear_down(self)
+
+  def launch(self):
+    try:
+      return super(DeviceXcodeTestRunner, self).launch()
+    finally:
+      self.tear_down()

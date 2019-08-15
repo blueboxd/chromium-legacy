@@ -73,6 +73,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "content/public/common/service_manager_connection.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -242,7 +243,8 @@ void BrowserPolicyConnectorChromeOS::Init(
   device_scheduled_update_checker_ =
       std::make_unique<DeviceScheduledUpdateChecker>(
           chromeos::CrosSettings::Get(),
-          chromeos::NetworkHandler::Get()->network_state_handler());
+          chromeos::NetworkHandler::Get()->network_state_handler(),
+          content::ServiceManagerConnection::GetForProcess()->GetConnector());
 
   device_cloud_external_data_policy_handlers_.emplace_back(
       std::make_unique<policy::DeviceNativePrintersExternalDataHandler>(

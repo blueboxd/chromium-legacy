@@ -100,11 +100,11 @@ public class WebApkHandlerDelegate {
         }
         WebApkHandlerDelegateJni.get().onWebApkInfoRetrieved(mNativePointer, webApkInfo.name(),
                 webApkInfo.shortName(), webApkInfo.webApkPackageName(), webApkInfo.id(),
-                webApkInfo.shellApkVersion(), packageInfo.versionCode, webApkInfo.uri().toString(),
-                webApkInfo.scopeUri().toString(), webApkInfo.manifestUrl(),
-                webApkInfo.manifestStartUrl(), webApkInfo.displayMode(), webApkInfo.orientation(),
-                webApkInfo.themeColor(), webApkInfo.backgroundColor(),
-                lastUpdateCheckTimeMsForStorage, lastUpdateCompletionTimeMsInStorage,
-                relaxUpdatesForStorage, backingBrowserPackageName, isBackingBrowser, updateStatus);
+                webApkInfo.shellApkVersion(), packageInfo.versionCode, webApkInfo.url(),
+                webApkInfo.scopeUrl(), webApkInfo.manifestUrl(), webApkInfo.manifestStartUrl(),
+                webApkInfo.displayMode(), webApkInfo.orientation(), webApkInfo.themeColor(),
+                webApkInfo.backgroundColor(), lastUpdateCheckTimeMsForStorage,
+                lastUpdateCompletionTimeMsInStorage, relaxUpdatesForStorage,
+                backingBrowserPackageName, isBackingBrowser, updateStatus);
     }
 }

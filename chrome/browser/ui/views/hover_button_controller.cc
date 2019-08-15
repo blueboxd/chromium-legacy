@@ -21,9 +21,16 @@ HoverButtonController::HoverButtonController(
 HoverButtonController::~HoverButtonController() = default;
 
 bool HoverButtonController::OnKeyPressed(const ui::KeyEvent& event) {
-  if (event.key_code() == ui::VKEY_RETURN && listener_) {
-    listener_->ButtonPressed(button(), event);
-    return true;
+  if (!listener_)
+    return false;
+
+  switch (event.key_code()) {
+    case ui::VKEY_SPACE:
+    case ui::VKEY_RETURN:
+      listener_->ButtonPressed(button(), event);
+      return true;
+    default:
+      break;
   }
   return false;
 }

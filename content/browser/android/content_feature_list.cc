@@ -39,8 +39,6 @@ const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
 }  // namespace
 
 // Alphabetical:
-const base::Feature kRequestUnbufferedDispatch{
-    "RequestUnbufferedDispatch", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kServiceGroupImportance{"ServiceGroupImportance",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 

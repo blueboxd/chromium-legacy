@@ -62,7 +62,7 @@ bool IndexWriter::VerifyIndexKeys(
   return true;
 }
 
-void IndexWriter::WriteIndexKeys(
+leveldb::Status IndexWriter::WriteIndexKeys(
     const IndexedDBBackingStore::RecordIdentifier& record_identifier,
     IndexedDBBackingStore* backing_store,
     IndexedDBBackingStore::Transaction* transaction,
@@ -73,10 +73,10 @@ void IndexWriter::WriteIndexKeys(
     leveldb::Status s = backing_store->PutIndexDataForRecord(
         transaction, database_id, object_store_id, index_id, key,
         record_identifier);
-    // This should have already been verified as a valid write during
-    // verify_index_keys.
-    DCHECK(s.ok());
+    if (!s.ok())
+      return s;
   }
+  return leveldb::Status::OK();
 }
 
 bool IndexWriter::AddingKeyAllowed(

@@ -157,7 +157,7 @@ class MailboxToSurfaceBridge {
   scoped_refptr<base::SingleThreadTaskRunner> constructor_thread_task_runner_;
 
   // Must be last.
-  base::WeakPtrFactory<MailboxToSurfaceBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<MailboxToSurfaceBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MailboxToSurfaceBridge);
 };

@@ -269,7 +269,7 @@ WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
   // The WebFrame created here was already attached to the Page as its
   // main frame, and the WebFrameWidget has been initialized, so we can call
   // WebViewImpl's DidAttachLocalMainFrame().
-  web_view_->DidAttachLocalMainFrame(this);
+  web_view_->DidAttachLocalMainFrame();
 }
 
 WebViewPlugin::WebViewHelper::~WebViewHelper() {

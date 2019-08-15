@@ -63,7 +63,7 @@ class BrowserAccessibilityCocoaBrowserTest : public ContentBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(BrowserAccessibilityCocoaBrowserTest,
                        AXCellForColumnAndRow) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                          ui::kAXModeComplete,
@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAccessibilityCocoaBrowserTest,
                </tbody>
              </table>)HTML");
 
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   waiter.WaitForNotification();
 
   BrowserAccessibility* table = FindNode(ax::mojom::Role::kTable);

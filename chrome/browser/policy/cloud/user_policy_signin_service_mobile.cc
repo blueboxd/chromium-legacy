@@ -53,8 +53,7 @@ UserPolicySigninService::UserPolicySigninService(
                                   policy_manager,
                                   identity_manager,
                                   system_url_loader_factory),
-      profile_prefs_(profile->GetPrefs()),
-      weak_factory_(this) {}
+      profile_prefs_(profile->GetPrefs()) {}
 
 UserPolicySigninService::~UserPolicySigninService() {}
 

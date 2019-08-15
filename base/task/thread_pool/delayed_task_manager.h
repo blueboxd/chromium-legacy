@@ -19,6 +19,8 @@
 #include "base/task/common/intrusive_heap.h"
 #include "base/task/thread_pool/task.h"
 #include "base/thread_annotations.h"
+#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 
 namespace base {
 
@@ -34,7 +36,9 @@ class BASE_EXPORT DelayedTaskManager {
   // Posts |task| for execution immediately.
   using PostTaskNowCallback = OnceCallback<void(Task task)>;
 
-  DelayedTaskManager();
+  // |tick_clock| can be specified for testing.
+  DelayedTaskManager(
+      const TickClock* tick_clock = DefaultTickClock::GetInstance());
   ~DelayedTaskManager();
 
   // Starts the delayed task manager, allowing past and future tasks to be
@@ -106,6 +110,8 @@ class BASE_EXPORT DelayedTaskManager {
       TimeTicks process_ripe_tasks_time);
 
   const RepeatingClosure process_ripe_tasks_closure_;
+
+  const TickClock* const tick_clock_;
 
   // Synchronizes access to |delayed_task_queue_| and the setting of
   // |service_thread_task_runner_|. Once |service_thread_task_runner_| is set,

@@ -23,6 +23,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
+#include "chromeos/services/assistant/fake_client.h"
 #include "chromeos/services/assistant/pref_connection_delegate.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
@@ -31,9 +32,6 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
-#include "services/service_manager/public/mojom/service.mojom-forward.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -51,9 +49,10 @@ class FakePrefConnectionDelegate : public PrefConnectionDelegate {
   ~FakePrefConnectionDelegate() override = default;
 
   // PrefConnectionDelegate overrides:
-  void ConnectToPrefService(service_manager::Connector* connector,
-                            scoped_refptr<PrefRegistrySimple> pref_registry,
-                            ::prefs::ConnectCallback callback) override {
+  void ConnectToPrefService(
+      mojo::PendingRemote<::prefs::mojom::PrefStoreConnector> connector,
+      scoped_refptr<PrefRegistrySimple> pref_registry,
+      ::prefs::ConnectCallback callback) override {
     prefs::RegisterProfilePrefsForBrowser(pref_service_->registry());
     callback.Run(std::move(pref_service_));
   }
@@ -64,44 +63,6 @@ class FakePrefConnectionDelegate : public PrefConnectionDelegate {
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePrefConnectionDelegate);
-};
-
-class FakeAshService : public service_manager::Service {
- public:
-  explicit FakeAshService(service_manager::mojom::ServiceRequest request)
-      : service_binding_(this, std::move(request)) {}
-
-  ~FakeAshService() override {}
-
-  // service_manager::Service:
-  void OnStart() override {
-    auto task_runner = base::ThreadTaskRunnerHandle::Get();
-    registry_.AddInterface(
-        base::BindRepeating(
-            [](ash::VoiceInteractionController* controller,
-               ash::mojom::VoiceInteractionControllerRequest request) {
-              controller->BindRequest(std::move(request));
-            },
-            base::Unretained(&voice_interaction_controller_)),
-        task_runner);
-  }
-
-  void OnBindInterface(const service_manager::BindSourceInfo& remote_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle handle) override {
-    registry_.TryBindInterface(interface_name, &handle);
-  }
-
-  ash::VoiceInteractionController* voice_interaction_controller() {
-    return &voice_interaction_controller_;
-  }
-
- private:
-  ash::VoiceInteractionController voice_interaction_controller_;
-  service_manager::ServiceBinding service_binding_;
-  service_manager::BinderRegistry registry_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeAshService);
 };
 
 class FakeIdentityAccessor : identity::mojom::IdentityAccessor {
@@ -165,9 +126,11 @@ class FakeIdentityAccessor : identity::mojom::IdentityAccessor {
   DISALLOW_COPY_AND_ASSIGN(FakeIdentityAccessor);
 };
 
-class FakeAssistantClient : mojom::Client {
+class FakeAssistantClient : public FakeClient {
  public:
-  FakeAssistantClient() : binding_(this) {}
+  explicit FakeAssistantClient(
+      ash::VoiceInteractionController* voice_interaction_controller)
+      : voice_interaction_controller_(voice_interaction_controller) {}
 
   mojom::ClientPtr CreateInterfacePtrAndBind() {
     mojom::ClientPtr ptr;
@@ -176,12 +139,15 @@ class FakeAssistantClient : mojom::Client {
   }
 
  private:
-  // mojom::Client:
-  void OnAssistantStatusChanged(bool running) override {}
-  void RequestAssistantStructure(
-      RequestAssistantStructureCallback callback) override {}
+  // FakeClient:
+  void RequestVoiceInteractionController(
+      mojo::PendingReceiver<ash::mojom::VoiceInteractionController> receiver)
+      override {
+    voice_interaction_controller_->BindRequest(std::move(receiver));
+  }
 
-  mojo::Binding<mojom::Client> binding_;
+  ash::VoiceInteractionController* const voice_interaction_controller_;
+  mojo::Binding<mojom::Client> binding_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeAssistantClient);
 };
@@ -229,10 +195,6 @@ class AssistantServiceTest : public testing::Test {
 
   void SetUp() override {
     chromeos::CrasAudioHandler::InitializeForTesting();
-    connector_ = connector_factory_.CreateConnector();
-    // The assistant service may attempt to connect to a number of services
-    // which are irrelevant for these tests.
-    connector_factory_.set_ignore_unknown_service_requests(true);
 
     PowerManagerClient::InitializeFake();
     FakePowerManagerClient::Get()->SetTabletMode(
@@ -242,8 +204,6 @@ class AssistantServiceTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &url_loader_factory_);
 
-    fake_ash_service_ = std::make_unique<FakeAshService>(
-        connector_factory_.RegisterInstance(ash::mojom::kServiceName));
     voice_interaction_controller()->NotifyArcPlayStoreEnabledChanged(true);
     voice_interaction_controller()->NotifyContextEnabled(true);
     voice_interaction_controller()->NotifyFeatureAllowed(
@@ -254,9 +214,9 @@ class AssistantServiceTest : public testing::Test {
 
     auto fake_pref_connection = std::make_unique<FakePrefConnectionDelegate>();
     fake_pref_connection_ = fake_pref_connection.get();
-    service_ = std::make_unique<Service>(
-        connector_factory_.RegisterInstance(mojom::kServiceName),
-        shared_url_loader_factory_->Clone());
+    service_ =
+        std::make_unique<Service>(remote_service_.BindNewPipeAndPassReceiver(),
+                                  shared_url_loader_factory_->Clone());
     service_->SetPrefConnectionDelegateForTesting(
         std::move(fake_pref_connection));
     service_->is_test_ = true;
@@ -271,24 +231,17 @@ class AssistantServiceTest : public testing::Test {
     service_->SetIdentityAccessorForTesting(
         fake_identity_accessor_.CreateInterfacePtrAndBind());
 
-    GetPlatform()->Init(fake_assistant_client_.CreateInterfacePtrAndBind(),
-                        fake_device_actions_.CreateInterfacePtrAndBind(),
-                        /*is_test=*/true);
-    platform_.FlushForTesting();
+    remote_service_->Init(mojom::ClientPtr(mojom::ClientPtrInfo(
+                              fake_assistant_client_.MakeRemote())),
+                          fake_device_actions_.CreateInterfacePtrAndBind(),
+                          /*is_test=*/true);
     base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
     service_.reset();
     PowerManagerClient::Shutdown();
-    connector_.reset();
     chromeos::CrasAudioHandler::Shutdown();
-  }
-
-  mojom::AssistantPlatform* GetPlatform() {
-    if (!platform_)
-      connector_->BindInterface(mojom::kServiceName, &platform_);
-    return platform_.get();
   }
 
   Service* service() { return service_.get(); }
@@ -300,10 +253,8 @@ class AssistantServiceTest : public testing::Test {
 
   FakeIdentityAccessor* identity_accessor() { return &fake_identity_accessor_; }
 
-  FakeAshService* fake_ash_service() { return fake_ash_service_.get(); }
-
   ash::VoiceInteractionController* voice_interaction_controller() {
-    return fake_ash_service_->voice_interaction_controller();
+    return &voice_interaction_controller_;
   }
 
   base::TestMockTimeTaskRunner* mock_task_runner() {
@@ -312,18 +263,17 @@ class AssistantServiceTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
-  service_manager::TestConnectorFactory connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
 
   std::unique_ptr<Service> service_;
-  mojom::AssistantPlatformPtr platform_;
+  mojo::Remote<mojom::AssistantService> remote_service_;
+
+  ash::VoiceInteractionController voice_interaction_controller_;
 
   FakeIdentityAccessor fake_identity_accessor_;
-  FakeAssistantClient fake_assistant_client_;
+  FakeAssistantClient fake_assistant_client_{&voice_interaction_controller_};
   FakeDeviceActions fake_device_actions_;
 
   FakePrefConnectionDelegate* fake_pref_connection_;
-  std::unique_ptr<FakeAshService> fake_ash_service_;
 
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
@@ -385,8 +335,7 @@ TEST_F(AssistantServiceTest, StopImmediatelyIfAssistantIsRunning) {
   EXPECT_EQ(assistant_manager()->GetState(),
             AssistantManagerService::State::RUNNING);
 
-  fake_ash_service()->voice_interaction_controller()->NotifySettingsEnabled(
-      false);
+  voice_interaction_controller()->NotifySettingsEnabled(false);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(assistant_manager()->GetState(),
@@ -396,8 +345,7 @@ TEST_F(AssistantServiceTest, StopImmediatelyIfAssistantIsRunning) {
 TEST_F(AssistantServiceTest, StopDelayedIfAssistantNotFinishedStarting) {
   // Test is set up as |State::STARTED|, turning settings off will trigger
   // logic to try to stop it.
-  fake_ash_service()->voice_interaction_controller()->NotifySettingsEnabled(
-      false);
+  voice_interaction_controller()->NotifySettingsEnabled(false);
 
   EXPECT_EQ(assistant_manager()->GetState(),
             AssistantManagerService::State::STARTED);

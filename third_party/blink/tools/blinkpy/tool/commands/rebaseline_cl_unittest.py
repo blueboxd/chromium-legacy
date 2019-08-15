@@ -384,6 +384,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 ]],
                 [[
                     'python', 'echo', 'optimize-baselines',
+                    '--no-manifest-update',
                     '--suffixes', 'txt',
                     'one/flaky-fail.html',
                 ]]

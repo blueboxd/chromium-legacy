@@ -76,7 +76,7 @@ serial_test(async (t, fake) => {
   assert_false(done);
   compareArrays(data, value);
 
-  await promise_rejects(t, 'NetworkError', reader.read());
+  await promise_rejects(t, new DOMException('', 'ParityError'), reader.read());
   assert_not_equals(port.readable, readable);
 
   readable = port.readable;

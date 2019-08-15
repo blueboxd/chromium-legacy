@@ -11,9 +11,10 @@ command-line switches and there continue to be no guarantees about those.
 
 ## Do Not Depend On Flags
 
-If you are using (or think you need to use) a flag to configure Chromium for
-your use case, please [file a bug] or email flags-dev@, because that flag will
-likely be removed at some point.
+If you are a user or administrator of Chrome and are using (or think you need to
+use) a flag to configure Chromium for your use case, please [file a bug] or
+email flags-dev@, because that flag will likely be removed at some point. If you
+are a chromium developer, please carry on using flags as normal :)
 
 Flags have never been a supported configuration surface in Chromium, and we have
 never guaranteed that any specific flag will behave consistently or even
@@ -33,7 +34,7 @@ After each milestone's branch point:
    state, when there is not a big backlog of flags to remove, this set will be
    the entire list of flags that are `expired-by $MSTONE`.
 2. The flags team hides the flags in this set by default from `chrome://flags`,
-   and adds a flag `temporary-unexpire-flags-M$MSTONE` and a base::Feature
+   and adds a flag `temporary-unexpire-flags-m$MSTONE` and a base::Feature
    `TemporaryUnexpireFlagsM$MSTONE` which unhide these flags. When hidden from
    `chrome://flags`, all the expired flags will behave as if unset, so users
    cannot be stuck with a non-default setting of a hidden flag.
@@ -47,92 +48,12 @@ flags-dev@ tracking the status of the process.
 
 ## The Set
 
-In M77, the following flags are being hidden as the second step of this process.
+In M78, the following flags are being hidden as the second step of this process.
 If you are using one of these flags for some reason, please get in touch with
 the flags team (via flags-dev@) and/or the listed owner(s) of that flag. This
 list will be updated at each milestone as we expire more flags. This is the
 authoritative source of the expiry set for a given milestone.
 
-* allow-remote-context-for-notifications
-* android-files-in-files-app
-* app-service-ash
-* arc-available-for-child
-* arc-boot-completed-broadcast
-* arc-custom-tabs-experiment
-* arc-documents-provider
-* arc-graphics-buffer-visualization-tool
-* arc-native-bridge-experiment
-* arc-usb-host
-* arc-vpn
-* ash-enable-pip-rounded-corners
-* autofill-always-show-server-cards-in-sync-transport
-* autofill-enable-company-name
-* autofill-enable-local-card-migration-for-non-sync-user
-* autofill-enforce-min-required-fields-for-heuristics
-* autofill-enforce-min-required-fields-for-query
-* autofill-enforce-min-required-fields-for-upload
-* autofill-restrict-formless-form-extraction
-* autofill-rich-metadata-queries
-* autofill-settings-split-by-card-type
-* background-task-component-update
-* calculate-native-win-occlusion
-* cct-module-cache
-* cct-module-custom-request-header
-* cct-module-dex-loading
-* cct-module-post-message
-* cct-module-use-intent-extras
-* crostini-usb-support
-* document-passive-wheel-event-listeners
-* enable-app-list-search-autocomplete
-* enable-arc-cups-api
-* enable-arc-unified-audio-focus
-* enable-autofill-credit-card-upload-editable-cardholder-name
-* enable-autofill-credit-card-upload-editable-expiration-date
-* enable-autofill-do-not-upload-save-unsupported-cards
-* enable-autofill-import-dynamic-forms
-* enable-autofill-import-non-focusable-credit-card-forms
-* enable-autofill-local-card-migration-uses-strike-system-v2
-* enable-autofill-send-experiment-ids-in-payments-rpcs
-* enable-bulk-printers
-* enable-chromeos-account-manager
-* enable-custom-mac-paper-sizes
-* enable-encryption-migration
-* enable-experimental-accessibility-features
-* enable-experimental-accessibility-language-detection
-* enable-fs-nosymfollow
-* enable-google-branded-context-menu
-* enable-immersive-fullscreen-toolbar
-* enable-myfiles-volume
-* enable-native-controls
-* enable-native-google-assistant
-* enable-reopen-tab-in-product-help
-* enable-safe-browsing-ap-download-verdicts
-* enable-webrtc-hw-vp9-encoding
-* enable-webrtc-pipewire-capturer
-* enable-zero-state-suggestions
-* enable_messages_web_push
-* force-use-chrome-camera
-* foreground-notification-manager
-* gdi-text-printing
-* handwriting-gesture
-* manual-password-generation-android
-* offline-indicator-always-http-probe
-* offline-pages-ct-suppress-completed-notification
-* offline-pages-load-signal-collecting
-* offline-pages-resource-based-snapshot
-* omnibox-experimental-keyword-mode
-* on-the-fly-mhtml-hash-computation
-* pdf-annotations
-* postscript-printing
-* rewrite-leveldb-on-deletion
-* session-restore-prioritizes-background-use-cases
-* smart-text-selection
-* stop-in-background
-* ui-show-composited-layer-borders
-* unfiltered-bluetooth-devices
-* unsafely-treat-insecure-origin-as-secure
-* use_messages_google_com_domain
-* use_messages_staging_url
-* wake-on-wifi-packet
+TODO(https://crbug.com/953690): Fill in this list :)
 
 [file a bug]: https://new.crbug.com

@@ -27,6 +27,8 @@ class CORE_EXPORT CrossThreadUnitValue final : public CrossThreadStyleValue {
 
   bool operator==(const CrossThreadStyleValue&) const override;
 
+  CSSPrimitiveValue::UnitType GetUnitType() const { return unit_; }
+
  private:
   friend class CrossThreadStyleValueTest;
 

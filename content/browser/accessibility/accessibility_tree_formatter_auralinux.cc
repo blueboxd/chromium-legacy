@@ -34,7 +34,7 @@ class AccessibilityTreeFormatterAuraLinux
   ~AccessibilityTreeFormatterAuraLinux() override;
 
  private:
-  const base::FilePath::StringType GetExpectedFileSuffix() override;
+  base::FilePath::StringType GetExpectedFileSuffix() override;
   const std::string GetAllowEmptyString() override;
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;
@@ -723,7 +723,7 @@ base::string16 AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
   return line;
 }
 
-const base::FilePath::StringType
+base::FilePath::StringType
 AccessibilityTreeFormatterAuraLinux::GetExpectedFileSuffix() {
   return FILE_PATH_LITERAL("-expected-auralinux.txt");
 }

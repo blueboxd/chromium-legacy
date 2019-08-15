@@ -83,12 +83,12 @@ NGConstraintSpace CreateConstraintSpaceForFloat(
     builder.SetFragmentationType(NGFragmentationType::kFragmentNone);
   }
 
-  return builder.SetAvailableSize(float_available_size)
-      .SetPercentageResolutionSize(float_percentage_size)
-      .SetReplacedPercentageResolutionSize(float_replaced_percentage_size)
-      .SetIsShrinkToFit(style.LogicalWidth().IsAuto())
-      .SetTextDirection(style.Direction())
-      .ToConstraintSpace();
+  builder.SetAvailableSize(float_available_size);
+  builder.SetPercentageResolutionSize(float_percentage_size);
+  builder.SetReplacedPercentageResolutionSize(float_replaced_percentage_size);
+  builder.SetIsShrinkToFit(style.LogicalWidth().IsAuto());
+  builder.SetTextDirection(style.Direction());
+  return builder.ToConstraintSpace();
 }
 
 std::unique_ptr<NGExclusionShapeData> CreateExclusionShapeData(

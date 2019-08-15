@@ -17,8 +17,8 @@
 #include "net/base/network_change_notifier.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/mojom/assistant_controller.mojom.h"
-#include "ash/public/mojom/constants.mojom.h"
+#include "ash/public/cpp/assistant/assistant_interface_binder.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "extensions/browser/api/feedback_private/log_source_access_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 #endif  // defined(OS_CHROMEOS)
@@ -102,9 +102,9 @@ void FeedbackService::CompleteSendFeedback(
 #if defined(OS_CHROMEOS)
     // Send feedback to Assistant server if triggered from Google Assistant.
     if (feedback_data->from_assistant()) {
-      ash::mojom::AssistantControllerPtr assistant_controller;
-      content::BrowserContext::GetConnectorFor(browser_context_)
-          ->BindInterface(ash::mojom::kServiceName, &assistant_controller);
+      chromeos::assistant::mojom::AssistantControllerPtr assistant_controller;
+      ash::AssistantInterfaceBinder::GetInstance()->BindController(
+          mojo::MakeRequest(&assistant_controller));
       assistant_controller->SendAssistantFeedback(
           feedback_data->assistant_debug_info_allowed(),
           feedback_data->description(), feedback_data->image());

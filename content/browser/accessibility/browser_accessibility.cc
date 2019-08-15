@@ -20,7 +20,6 @@
 #include "content/public/common/content_client.h"
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_role_properties.h"
-#include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -42,8 +41,37 @@ BrowserAccessibility::~BrowserAccessibility() {}
 
 namespace {
 
+const BrowserAccessibility* GetTextContainerForPlainTextField(
+    const BrowserAccessibility& text_field) {
+  DCHECK(text_field.IsPlainTextField());
+  DCHECK(text_field.InternalChildCount() == 1);
+  // Text fields wrap their static text and inline text boxes in generic
+  // containers, and some, like input type=search, wrap the wrapper as well.
+  // Structure is like this:
+  // Text field
+  // -- Generic container
+  // ---- Generic container  (optional, only occurs in some controls)
+  // ------ Static text   <-- (optional, does not exist if field is empty)
+  // -------- Inline text box children (can be multiple)
+  // This method will return the lowest generic container.
+  const BrowserAccessibility* child = text_field.InternalGetFirstChild();
+  DCHECK_EQ(child->GetRole(), ax::mojom::Role::kGenericContainer);
+  DCHECK(child->InternalChildCount() <= 1);
+  if (child->InternalChildCount() == 1) {
+    const BrowserAccessibility* grand_child = child->InternalGetFirstChild();
+    if (grand_child->GetRole() == ax::mojom::Role::kGenericContainer) {
+      DCHECK_EQ(grand_child->InternalGetFirstChild()->GetRole(),
+                ax::mojom::Role::kStaticText);
+      return grand_child;
+    }
+    DCHECK_EQ(child->InternalGetFirstChild()->GetRole(),
+              ax::mojom::Role::kStaticText);
+  }
+  return child;
+}
+
 int GetBoundaryTextOffsetInsideBaseAnchor(
-    ui::TextBoundaryDirection direction,
+    ui::AXTextBoundaryDirection direction,
     const BrowserAccessibilityPosition::AXPositionInstance& base,
     const BrowserAccessibilityPosition::AXPositionInstance& position) {
   if (base->GetAnchor() == position->GetAnchor())
@@ -52,9 +80,9 @@ int GetBoundaryTextOffsetInsideBaseAnchor(
   // If the position is outside the anchor of the base position, then return
   // the first or last position in the same direction.
   switch (direction) {
-    case ui::BACKWARDS_DIRECTION:
+    case ui::AXTextBoundaryDirection::kBackwards:
       return base->CreatePositionAtStartOfAnchor()->text_offset();
-    case ui::FORWARDS_DIRECTION:
+    case ui::AXTextBoundaryDirection::kForwards:
       return base->CreatePositionAtEndOfAnchor()->text_offset();
   }
 }
@@ -552,8 +580,9 @@ gfx::Rect BrowserAccessibility::GetRootFrameHypertextRangeBoundsRect(
   // holds all the text.
   // TODO(nektar): This is fragile! Replace with code that flattens tree.
   if (IsPlainTextField() && InternalChildCount() == 1) {
-    return InternalGetFirstChild()->GetRootFrameHypertextRangeBoundsRect(
-        start, len, clipping_behavior, offscreen_result);
+    return GetTextContainerForPlainTextField(*this)
+        ->GetRootFrameHypertextRangeBoundsRect(start, len, clipping_behavior,
+                                               offscreen_result);
   }
 
   if (GetRole() != ax::mojom::Role::kStaticText) {
@@ -730,9 +759,8 @@ gfx::Rect BrowserAccessibility::GetInnerTextRangeBoundsRectInSubtree(
         coordinate_system, clipping_behavior, offscreen_result);
   }
 
-  const uint32_t internal_child_count = InternalChildCount();
-  if (IsPlainTextField() && internal_child_count == 1) {
-    return InternalGetFirstChild()->RelativeToAbsoluteBounds(
+  if (IsPlainTextField() && InternalChildCount() == 1) {
+    return GetTextContainerForPlainTextField(*this)->RelativeToAbsoluteBounds(
         GetInlineTextRect(start_offset, end_offset, GetInnerText().length()),
         coordinate_system, clipping_behavior, offscreen_result);
   }
@@ -1316,64 +1344,29 @@ const ui::AXUniqueId& BrowserAccessibility::GetUniqueId() const {
 base::Optional<int> BrowserAccessibility::FindTextBoundary(
     ui::AXTextBoundary boundary,
     int offset,
-    ui::TextBoundaryDirection direction,
+    ui::AXTextBoundaryDirection direction,
     ax::mojom::TextAffinity affinity) const {
-  switch (boundary) {
-    case ui::AXTextBoundary::kWordStart: {
-      BrowserAccessibilityPositionInstance position =
-          CreatePositionAt(static_cast<int>(offset), affinity);
-      switch (direction) {
-        case ui::BACKWARDS_DIRECTION:
-          return GetBoundaryTextOffsetInsideBaseAnchor(
-              direction, position,
-              position->CreatePreviousWordStartPosition(
-                  ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary));
-        case ui::FORWARDS_DIRECTION:
-          return GetBoundaryTextOffsetInsideBaseAnchor(
-              direction, position,
-              position->CreateNextWordStartPosition(
-                  ui::AXBoundaryBehavior::StopAtAnchorBoundary));
-      }
-    }
-    case ui::AXTextBoundary::kWordStartOrEnd: {
-      BrowserAccessibilityPositionInstance position =
-          CreatePositionAt(static_cast<int>(offset), affinity);
-      switch (direction) {
-        case ui::BACKWARDS_DIRECTION:
-          return GetBoundaryTextOffsetInsideBaseAnchor(
-              direction, position,
-              position->CreatePreviousWordStartPosition(
-                  ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary));
-        case ui::FORWARDS_DIRECTION:
-          return GetBoundaryTextOffsetInsideBaseAnchor(
-              direction, position,
-              position->CreateNextWordEndPosition(
-                  ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary));
-      }
-    }
-    case ui::AXTextBoundary::kLineStart: {
-      BrowserAccessibilityPositionInstance position =
-          CreatePositionAt(static_cast<int>(offset), affinity);
-      switch (direction) {
-        case ui::BACKWARDS_DIRECTION:
-          return GetBoundaryTextOffsetInsideBaseAnchor(
-              direction, position,
-              position->CreatePreviousLineStartPosition(
-                  ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary));
-        case ui::FORWARDS_DIRECTION:
-          return GetBoundaryTextOffsetInsideBaseAnchor(
-              direction, position,
-              position->CreateNextLineStartPosition(
-                  ui::AXBoundaryBehavior::StopAtAnchorBoundary));
-      }
-    }
-    default:
-      // TODO(nektar): |AXPosition| can handle other types of boundaries as
-      // well.
-      return ui::FindAccessibleTextBoundary(GetHypertext(),
-                                            GetLineStartOffsets(), boundary,
-                                            offset, direction, affinity);
+  BrowserAccessibilityPositionInstance position =
+      CreatePositionAt(offset, affinity);
+
+  // On Windows and Linux ATK, searching for a text boundary should always stop
+  // at the boundary of the current object.
+  auto boundary_behavior = ui::AXBoundaryBehavior::StopAtAnchorBoundary;
+  // On Windows and Linux ATK, it is standard text navigation behavior to stop
+  // if we are searching in the backwards direction and the current position is
+  // already at the required text boundary.
+  if (direction == ui::AXTextBoundaryDirection::kBackwards) {
+    // AXPosition disallows ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary when
+    // used on character boundaries because it would be non-sensical.
+    if (boundary == ui::AXTextBoundary::kCharacter)
+      return offset;
+    boundary_behavior = ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary;
   }
+
+  return GetBoundaryTextOffsetInsideBaseAnchor(
+      direction, position,
+      position->CreatePositionAtTextBoundary(boundary, direction,
+                                             boundary_behavior));
 }
 
 const std::vector<gfx::NativeViewAccessible>

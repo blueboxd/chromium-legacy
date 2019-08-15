@@ -18,6 +18,7 @@
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_image.h"
 #include "cc/paint/paint_shader.h"
+#include "cc/paint/paint_worklet_input.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/rect.h"
@@ -70,7 +71,9 @@ class CC_PAINT_EXPORT DiscardableImageMap {
   base::flat_map<PaintImage::Id, PaintImage::DecodingMode>
   TakeDecodingModeMap();
 
-  const std::vector<scoped_refptr<PaintWorkletInput>>& paint_worklet_inputs()
+  using PaintWorkletInputWithImageId =
+      std::pair<scoped_refptr<PaintWorkletInput>, PaintImage::Id>;
+  const std::vector<PaintWorkletInputWithImageId>& paint_worklet_inputs()
       const {
     return paint_worklet_inputs_;
   }
@@ -92,7 +95,7 @@ class CC_PAINT_EXPORT DiscardableImageMap {
 
   RTree<DrawImage> images_rtree_;
 
-  std::vector<scoped_refptr<PaintWorkletInput>> paint_worklet_inputs_;
+  std::vector<PaintWorkletInputWithImageId> paint_worklet_inputs_;
 };
 
 }  // namespace cc

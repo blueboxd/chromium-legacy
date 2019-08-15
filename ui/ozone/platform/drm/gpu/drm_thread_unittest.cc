@@ -81,6 +81,7 @@ class DrmThreadTest : public testing::Test {
 };
 
 TEST_F(DrmThreadTest, RunTaskAfterWindowReady) {
+  constexpr gfx::Rect bounds(10, 10);
   bool called1 = false, called2 = false;
   gfx::AcceleratedWidget widget1 = 1, widget2 = 2;
 
@@ -116,7 +117,7 @@ TEST_F(DrmThreadTest, RunTaskAfterWindowReady) {
   ASSERT_FALSE(called2);
 
   // Now create |widget1|. The first task should run.
-  drm_device_ptr_->CreateWindow(widget1);
+  drm_device_ptr_->CreateWindow(widget1, bounds);
   drm_thread_.FlushForTesting();
   ASSERT_TRUE(called1);
   ASSERT_FALSE(event->IsSignaled());
@@ -140,7 +141,7 @@ TEST_F(DrmThreadTest, RunTaskAfterWindowReady) {
   ASSERT_FALSE(called2);
 
   // Create |widget2|. The two blocked tasks should run.
-  drm_device_ptr_->CreateWindow(widget2);
+  drm_device_ptr_->CreateWindow(widget2, bounds);
   drm_thread_.FlushForTesting();
   ASSERT_TRUE(event->IsSignaled());
   ASSERT_TRUE(called2);

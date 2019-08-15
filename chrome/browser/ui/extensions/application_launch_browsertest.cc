@@ -33,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(ApplicationLaunchBrowserTest,
 
   Browser* app_browser =
       ReparentWebContentsForFocusMode(GetWebContentsForTab(browser(), 0));
-  EXPECT_TRUE(app_browser->is_app());
+  EXPECT_TRUE(app_browser->is_type_app());
   EXPECT_NE(app_browser, browser());
 
   content::WebContents* main_browser_web_contents =
@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(ApplicationLaunchBrowserTest,
 
   Browser* app_browser =
       ReparentWebContentsForFocusMode(GetWebContentsForTab(browser(), 1));
-  EXPECT_TRUE(app_browser->is_app());
+  EXPECT_TRUE(app_browser->is_type_app());
   EXPECT_NE(app_browser, browser());
   EXPECT_EQ(url, GetWebContentsForTab(app_browser, 0)->GetURL());
   EXPECT_EQ(2, browser()->tab_strip_model()->count());

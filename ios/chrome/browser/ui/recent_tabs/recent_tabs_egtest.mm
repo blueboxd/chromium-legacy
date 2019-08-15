@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
+#import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -244,9 +245,12 @@ id<GREYMatcher> TitleOfTestPage() {
 }
 
 // Tests that the VC can be dismissed by swiping down.
-- (void)DISABLED_testSwipeDownDismiss {
+- (void)testSwipeDownDismiss {
   if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
     EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
+  }
+  if (!IsCollectionsCardPresentationStyleEnabled()) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on when feature flag is off.");
   }
   OpenRecentTabsPanel();
 

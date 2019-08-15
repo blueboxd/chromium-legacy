@@ -17,13 +17,59 @@
 namespace blink {
 
 namespace {
+
+using device::mojom::SerialReceiveError;
+using device::mojom::SerialSendError;
+
 const char kResourcesExhaustedReadBuffer[] =
     "Resources exhausted allocating read buffer.";
 const char kResourcesExhaustedWriteBuffer[] =
     "Resources exhausted allocation write buffer.";
 const char kOpenError[] = "Failed to open serial port.";
-const char kUnexpectedCloseError[] = "The port closed unexpectedly.";
+const char kDeviceLostError[] = "The device has been lost.";
+const char kSystemError[] = "An unknown system error has occurred.";
 const int kMaxBufferSize = 16 * 1024 * 1024; /* 16 MiB */
+
+DOMException* DOMExceptionFromSendError(SerialSendError error) {
+  switch (error) {
+    case SerialSendError::NONE:
+      NOTREACHED();
+      return nullptr;
+    case SerialSendError::DISCONNECTED:
+      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kNetworkError,
+                                                kDeviceLostError);
+    case SerialSendError::SYSTEM_ERROR:
+      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kUnknownError,
+                                                kSystemError);
+  }
+}
+
+DOMException* DOMExceptionFromReceiveError(SerialReceiveError error) {
+  switch (error) {
+    case SerialReceiveError::NONE:
+      NOTREACHED();
+      return nullptr;
+    case SerialReceiveError::DISCONNECTED:
+    case SerialReceiveError::DEVICE_LOST:
+      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kNetworkError,
+                                                kDeviceLostError);
+    case SerialReceiveError::BREAK:
+      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kBreakError);
+    case SerialReceiveError::FRAME_ERROR:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kFramingError);
+    case SerialReceiveError::OVERRUN:
+    case SerialReceiveError::BUFFER_OVERFLOW:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kBufferOverrunError);
+    case SerialReceiveError::PARITY_ERROR:
+      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kParityError);
+    case SerialReceiveError::SYSTEM_ERROR:
+      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kUnknownError,
+                                                kSystemError);
+  }
+}
+
 }  // namespace
 
 SerialPort::SerialPort(Serial* parent, mojom::blink::SerialPortInfoPtr info)
@@ -210,8 +256,8 @@ void SerialPort::close() {
     // TODO(crbug.com/893334): Rather than triggering an error on the
     // WritableStream this should imply a call to abort() and fail if the stream
     // is locked.
-    underlying_sink_->SignalErrorOnClose(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kInvalidStateError, "The port has been closed."));
+    underlying_sink_->SignalErrorOnClose(DOMExceptionFromSendError(
+        device::mojom::SerialSendError::DISCONNECTED));
     underlying_sink_ = nullptr;
     writable_ = nullptr;
   }
@@ -254,17 +300,13 @@ void SerialPort::Dispose() {
 
 void SerialPort::OnReadError(device::mojom::blink::SerialReceiveError error) {
   if (underlying_source_) {
-    // TODO(crbug.com/893334): Customize the exception based on |error|.
-    underlying_source_->SignalErrorOnClose(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNetworkError, "Port encountered read error."));
+    underlying_source_->SignalErrorOnClose(DOMExceptionFromReceiveError(error));
   }
 }
 
 void SerialPort::OnSendError(device::mojom::blink::SerialSendError error) {
   if (underlying_sink_) {
-    // TODO(crbug.com/893334): Customize the exception based on |error|.
-    underlying_sink_->SignalErrorOnClose(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNetworkError, "Port encountered write error."));
+    underlying_sink_->SignalErrorOnClose(DOMExceptionFromSendError(error));
   }
 }
 
@@ -292,12 +334,12 @@ void SerialPort::OnConnectionError() {
     open_resolver_ = nullptr;
   }
   if (underlying_source_) {
-    underlying_source_->SignalErrorOnClose(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNetworkError, kUnexpectedCloseError));
+    underlying_source_->SignalErrorOnClose(
+        DOMExceptionFromReceiveError(SerialReceiveError::DISCONNECTED));
   }
   if (underlying_sink_) {
-    underlying_sink_->SignalErrorOnClose(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNetworkError, kUnexpectedCloseError));
+    underlying_sink_->SignalErrorOnClose(
+        DOMExceptionFromSendError(SerialSendError::DISCONNECTED));
   }
   if (client_binding_.is_bound())
     client_binding_.Unbind();

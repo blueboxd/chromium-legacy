@@ -65,8 +65,7 @@ BackgroundSyncNetworkObserverAndroid::Observer::Observer(
 
 BackgroundSyncNetworkObserverAndroid::BackgroundSyncNetworkObserverAndroid(
     const base::Closure& network_changed_callback)
-    : BackgroundSyncNetworkObserver(network_changed_callback),
-      weak_ptr_factory_(this) {
+    : BackgroundSyncNetworkObserver(network_changed_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   observer_ = Observer::Create(

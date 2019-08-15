@@ -88,7 +88,7 @@ void HatsService::LaunchSatisfactionSurvey() {
   if (ShouldShowSurvey(kHatsSurveyTriggerSatisfaction)) {
     Browser* browser = chrome::FindLastActive();
     // Never show HaTS bubble in Incognito mode.
-    if (browser && browser->is_type_tabbed() &&
+    if (browser && browser->is_type_normal() &&
         profiles::IsRegularOrGuestSession(browser)) {
       browser->window()->ShowHatsBubble(en_site_id_);
 

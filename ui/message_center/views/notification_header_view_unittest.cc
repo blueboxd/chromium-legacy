@@ -15,17 +15,13 @@ namespace message_center {
 
 class NotificationHeaderViewTest : public views::ViewsTestBase {
  public:
-  NotificationHeaderViewTest() = default;
+  NotificationHeaderViewTest()
+      : views::ViewsTestBase(
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
   ~NotificationHeaderViewTest() override = default;
 
   // ViewsTestBase:
   void SetUp() override {
-    // Setup a mocked time environment.
-    scoped_task_environment_ =
-        new ScopedTaskEnvironment(ScopedTaskEnvironment::MainThreadType::UI,
-                                  ScopedTaskEnvironment::TimeSource::MOCK_TIME);
-    set_scoped_task_environment(base::WrapUnique(scoped_task_environment_));
-
     ViewsTestBase::SetUp();
 
     views::Widget::InitParams params =
@@ -49,7 +45,6 @@ class NotificationHeaderViewTest : public views::ViewsTestBase {
 
  protected:
   NotificationHeaderView* notification_header_view_ = nullptr;
-  ScopedTaskEnvironment* scoped_task_environment_ = nullptr;
 
  private:
   views::Widget widget_;

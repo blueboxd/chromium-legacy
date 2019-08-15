@@ -42,8 +42,7 @@ static jlong JNI_FeedOfflineBridge_Init(
 FeedOfflineBridge::FeedOfflineBridge(const JavaRef<jobject>& j_this,
                                      FeedOfflineHost* offline_host)
     : j_this_(ScopedJavaGlobalRef<jobject>(j_this)),
-      offline_host_(offline_host),
-      weak_factory_(this) {
+      offline_host_(offline_host) {
   DCHECK(offline_host_);
   // The host guarantees to not invoke these callbacks until Initialize() exits.
   // This is important because until the Java bridge's constructor finishes, any

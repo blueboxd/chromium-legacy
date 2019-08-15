@@ -24,7 +24,7 @@
 namespace blink {
 
 SurfaceLayerBridge::SurfaceLayerBridge(
-    WebLayerTreeView* layer_tree_view,
+    viz::FrameSinkId parent_frame_sink_id,
     WebSurfaceLayerBridgeObserver* observer,
     cc::UpdateSubmissionStateCB update_submission_state_callback)
     : observer_(observer),
@@ -33,8 +33,7 @@ SurfaceLayerBridge::SurfaceLayerBridge(
       binding_(this),
       surface_embedder_binding_(this),
       frame_sink_id_(Platform::Current()->GenerateFrameSinkId()),
-      parent_frame_sink_id_(layer_tree_view ? layer_tree_view->GetFrameSinkId()
-                                            : viz::FrameSinkId()) {
+      parent_frame_sink_id_(parent_frame_sink_id) {
   mojom::blink::EmbeddedFrameSinkProviderPtr provider;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&provider));

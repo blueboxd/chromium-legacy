@@ -55,7 +55,7 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   XRSpace* targetRaySpace() const;
   XRSpace* gripSpace() const;
   Gamepad* gamepad() const { return gamepad_; }
-  Vector<String> profiles() const { return profiles_; }
+  Vector<String> profiles() const { return state_.profiles; }
 
   uint32_t source_id() const { return state_.source_id; }
 
@@ -102,6 +102,7 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
     device::mojom::XRTargetRayMode target_ray_mode;
     bool emulated_position = false;
     base::TimeTicks base_timestamp;
+    Vector<String> profiles;
 
     InternalState(uint32_t source_id,
                   device::mojom::XRTargetRayMode,
@@ -120,8 +121,6 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   // from InvalidatesSameObject
   void UpdateGamepad(const base::Optional<device::Gamepad>& gamepad);
 
-  void SetProfiles(const device::mojom::blink::XRInputSourceStatePtr& state);
-
   XRInputSourceEvent* CreateInputSourceEvent(const AtomicString& type);
 
   // These member variables all require special behavior when being copied or
@@ -132,7 +131,6 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   Member<XRTargetRaySpace> target_ray_space_;
   Member<XRGripSpace> grip_space_;
   Member<Gamepad> gamepad_;
-  Vector<String> profiles_;
 
   std::unique_ptr<TransformationMatrix> base_pose_matrix_;
 

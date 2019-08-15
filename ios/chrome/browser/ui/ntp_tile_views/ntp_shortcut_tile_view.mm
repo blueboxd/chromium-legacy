@@ -37,8 +37,7 @@ const CGFloat kIconSize = 56;
       [_iconView.heightAnchor constraintEqualToAnchor:_iconView.widthAnchor],
     ]];
 
-    self.imageBackgroundView.tintColor =
-        [[UIColor colorNamed:kBlueColor] colorWithAlphaComponent:0.1];
+    self.imageBackgroundView.tintColor = [UIColor colorNamed:kBlueHaloColor];
   }
   return self;
 }

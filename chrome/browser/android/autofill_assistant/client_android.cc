@@ -99,8 +99,7 @@ ClientAndroid::ClientAndroid(content::WebContents* web_contents)
     : web_contents_(web_contents),
       java_object_(Java_AutofillAssistantClient_create(
           AttachCurrentThread(),
-          reinterpret_cast<intptr_t>(this))),
-      weak_ptr_factory_(this) {
+          reinterpret_cast<intptr_t>(this))) {
   server_url_ = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kAutofillAssistantUrl);
   if (server_url_.empty()) {

@@ -73,7 +73,7 @@ class MediaResourceGetterImpl : public media::MediaResourceGetter {
   int render_frame_id_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<MediaResourceGetterImpl> weak_factory_;
+  base::WeakPtrFactory<MediaResourceGetterImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaResourceGetterImpl);
 };

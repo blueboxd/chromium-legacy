@@ -31,8 +31,7 @@ namespace offline_pages {
 PrefetchInstanceIDProxy::PrefetchInstanceIDProxy(
     const std::string& app_id,
     content::BrowserContext* context)
-    : app_id_(app_id), context_(context), weak_factory_(this) {
-}
+    : app_id_(app_id), context_(context) {}
 
 PrefetchInstanceIDProxy::~PrefetchInstanceIDProxy() = default;
 

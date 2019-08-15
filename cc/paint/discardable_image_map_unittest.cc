@@ -756,7 +756,7 @@ TEST_F(DiscardableImageMapTest, GathersPaintWorklets) {
   const auto& paint_worklet_inputs =
       display_list->discardable_image_map().paint_worklet_inputs();
   ASSERT_EQ(paint_worklet_inputs.size(), 1u);
-  EXPECT_EQ(paint_worklet_inputs[0], input);
+  EXPECT_EQ(paint_worklet_inputs[0].first, input);
 
   // PaintWorklets are not considered discardable images.
   std::vector<PositionScaleDrawImage> images = GetDiscardableImagesInRect(

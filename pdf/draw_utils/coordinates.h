@@ -5,7 +5,9 @@
 #ifndef PDF_DRAW_UTILS_COORDINATES_H_
 #define PDF_DRAW_UTILS_COORDINATES_H_
 
-#include "stddef.h"
+#include <stddef.h>
+
+#include <vector>
 
 #include "ppapi/cpp/rect.h"
 
@@ -24,6 +26,13 @@ struct PageInsetSizes {
   int top;
   int right;
   int bottom;
+};
+
+// Struct for sending a page's pp::Rect object along with its corresponding
+// index in the PDF document.
+struct IndexedPage {
+  int index;
+  pp::Rect rect;
 };
 
 // Given a right page's |bottom_gap|, reduce it to only the part of |bottom_gap|
@@ -47,6 +56,14 @@ void ExpandDocumentSize(const pp::Size& rect_size, pp::Size* doc_size);
 // is greater than or equal to |bottom_rect.bottom()|.
 pp::Rect GetBottomGapBetweenRects(int page_rect_bottom,
                                   const pp::Rect& bottom_rect);
+
+// Given |visible_pages| and |visible_screen| in the same coordinates, return
+// the index of the page in |visible_pages| which has the largest proportion of
+// its area intersecting with |visible_screen|. If there is a tie, return the
+// page with the lower index. Returns -1 if |visible_pages| is empty. Returns
+// first page in |visible_pages| if no page intersects with |visible_screen|.
+int GetMostVisiblePage(const std::vector<IndexedPage>& visible_pages,
+                       const pp::Rect& visible_screen);
 
 // Given |page_index|, and |num_of_pages|, return the configuration of
 // |single_view_insets| and |horizontal_separator| for the current page in

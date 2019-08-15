@@ -17,7 +17,7 @@
 namespace autofill_assistant {
 
 ElementArea::ElementArea(ScriptExecutorDelegate* delegate)
-    : delegate_(delegate), weak_ptr_factory_(this) {
+    : delegate_(delegate) {
   DCHECK(delegate_);
 }
 

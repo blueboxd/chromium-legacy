@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/x11/x11_window_manager_ozone.h"
 
+#include "base/stl_util.h"
 #include "ui/ozone/platform/x11/x11_window_ozone.h"
 
 namespace ui {

@@ -12,19 +12,17 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"
-#include "services/audio/public/mojom/constants.mojom.h"
 
 namespace audio {
 
-InputIPC::InputIPC(std::unique_ptr<service_manager::Connector> connector,
-                   const std::string& device_id,
-                   mojo::PendingRemote<media::mojom::AudioLog> log)
-    : device_id_(device_id), log_(std::move(log)) {
+InputIPC::InputIPC(
+    mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory,
+    const std::string& device_id,
+    mojo::PendingRemote<media::mojom::AudioLog> log)
+    : device_id_(device_id),
+      pending_stream_factory_(std::move(stream_factory)),
+      log_(std::move(log)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
-  DCHECK(connector);
-
-  connector->Connect(audio::mojom::kServiceName,
-                     pending_stream_factory_.InitWithNewPipeAndPassReceiver());
 }
 
 InputIPC::~InputIPC() = default;

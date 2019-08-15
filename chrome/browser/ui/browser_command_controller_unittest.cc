@@ -114,10 +114,16 @@ TEST_F(BrowserCommandControllerTest, IsReservedCommandOrKey) {
 }
 
 TEST_F(BrowserCommandControllerTest, IsReservedCommandOrKeyIsApp) {
-  browser()->app_name_ = "app";
-  ASSERT_TRUE(browser()->is_app());
+  Browser::CreateParams params = Browser::CreateParams::CreateForApp(
+      "app",
+      /*trusted_source=*/true, browser()->window()->GetBounds(), profile(),
+      /*user_gesture=*/true);
+  params.window = browser()->window();
+  set_browser(new Browser(params));
 
-  // When is_app(), no keys are reserved.
+  ASSERT_TRUE(browser()->is_type_app());
+
+  // When is_type_app(), no keys are reserved.
 #if defined(OS_CHROMEOS)
   EXPECT_FALSE(browser()->command_controller()->IsReservedCommandOrKey(
       IDC_BACK, content::NativeWebKeyboardEvent(ui::KeyEvent(
@@ -182,8 +188,13 @@ TEST_F(BrowserCommandControllerTest, AppFullScreen) {
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FULLSCREEN));
 
   // Enabled for app windows.
-  browser()->app_name_ = "app";
-  ASSERT_TRUE(browser()->is_app());
+  Browser::CreateParams params = Browser::CreateParams::CreateForApp(
+      "app",
+      /*trusted_source=*/true, browser()->window()->GetBounds(), profile(),
+      /*user_gesture=*/true);
+  params.window = browser()->window();
+  set_browser(new Browser(params));
+  ASSERT_TRUE(browser()->is_type_app());
   browser()->command_controller()->FullscreenStateChanged();
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FULLSCREEN));
 }

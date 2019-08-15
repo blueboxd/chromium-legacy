@@ -12,7 +12,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/incognito_color_util.h"
+#import "ios/chrome/common/colors/dynamic_color_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -951,8 +951,8 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
       self.backgroundColor = [UIColor colorNamed:kBackgroundColor];
       break;
     case OverscrollStyle::REGULAR_PAGE_INCOGNITO:
-      self.backgroundColor = color::IncognitoDynamicColor(
-          true, [UIColor colorNamed:kBackgroundColor],
+      self.backgroundColor = color::DarkModeDynamicColor(
+          [UIColor colorNamed:kBackgroundColor], true,
           [UIColor colorNamed:kBackgroundDarkColor]);
       break;
   }

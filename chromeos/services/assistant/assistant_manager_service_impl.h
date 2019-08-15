@@ -42,10 +42,6 @@ namespace network {
 class SharedURLLoaderFactoryInfo;
 }  // namespace network
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace chromeos {
 namespace assistant {
 
@@ -93,7 +89,7 @@ class AssistantManagerServiceImpl
  public:
   // |service| owns this class and must outlive this class.
   AssistantManagerServiceImpl(
-      service_manager::Connector* connector,
+      mojom::Client* client,
       device::mojom::BatteryMonitorPtr battery_monitor,
       Service* service,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
@@ -289,6 +285,7 @@ class AssistantManagerServiceImpl
 
   void UpdateMediaState();
 
+  mojom::Client* const client_;
   State state_ = State::STOPPED;
   std::unique_ptr<AssistantMediaSession> media_session_;
   std::unique_ptr<PlatformApiImpl> platform_api_;

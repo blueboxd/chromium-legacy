@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/task_features.h"
-#include "base/task/thread_pool/thread_pool_clock.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -37,7 +36,7 @@ JobTaskSource::JobTaskSource(
           },
           base::Unretained(this),
           std::move(worker_task))),
-      queue_time_(ThreadPoolClock::Now()) {}
+      queue_time_(TimeTicks::Now()) {}
 
 JobTaskSource::~JobTaskSource() {
 #if DCHECK_IS_ON()

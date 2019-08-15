@@ -2377,6 +2377,8 @@ enum WebFeature {
   kCSSValueOverflowOverlay = 2995,
   kRequestedFileSystemTemporary = 2996,
   kRequestedFileSystemPersistent = 2997,
+  kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop = 2998,
+  kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTopSetPositive = 2999,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

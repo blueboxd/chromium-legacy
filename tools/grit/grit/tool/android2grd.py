@@ -12,6 +12,7 @@ import sys
 from xml.dom import Node
 import xml.dom.minidom
 
+import six
 from six import StringIO
 
 import grit.node.empty
@@ -175,7 +176,7 @@ OPTIONS may be any of the following:
 
     # Do the hard work -- convert the Android dom to grd file contents.
     grd_dom = self.AndroidDomToGrdDom(android_dom)
-    grd_string = unicode(grd_dom)
+    grd_string = six.text_type(grd_dom)
 
     # Write the grd string to a file in grd_dir.
     grd_filename = self.name + '.grd'

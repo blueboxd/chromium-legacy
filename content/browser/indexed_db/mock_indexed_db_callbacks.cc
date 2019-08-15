@@ -4,6 +4,7 @@
 
 #include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 
+#include <memory>
 #include <utility>
 
 #include "testing/gtest/include/gtest/gtest.h"

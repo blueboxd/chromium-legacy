@@ -31,8 +31,8 @@ TEST_F(AvatarToolbarButtonTest, HighlightMeetsMinimumContrast) {
             color_utils::kMinimumReadableContrastRatio);
 
   SkColor result = ToolbarButton::AdjustHighlightColorForContrast(
-      button->GetThemeProvider(), highlight_color, highlight_color,
-      SK_ColorBLACK, SK_ColorWHITE);
+      button->GetThemeProvider(), highlight_color,
+      SkColorSetRGB(0xFF, 0x00, 0x00), SK_ColorBLACK, SK_ColorWHITE);
   EXPECT_GT(color_utils::GetContrastRatio(result, toolbar_color),
             color_utils::kMinimumReadableContrastRatio);
 }

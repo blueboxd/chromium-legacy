@@ -143,7 +143,7 @@ class PermissionsAPIUnitTest : public ExtensionServiceTestWithInstall {
     InitializeEmptyExtensionService();
     browser_window_.reset(new TestBrowserWindow());
     Browser::CreateParams params(profile(), true);
-    params.type = Browser::TYPE_TABBED;
+    params.type = Browser::TYPE_NORMAL;
     params.window = browser_window_.get();
     browser_.reset(new Browser(params));
   }

@@ -5,8 +5,10 @@
 #ifndef PDF_DOCUMENT_LAYOUT_H_
 #define PDF_DOCUMENT_LAYOUT_H_
 
+#include <cstddef>
 #include <vector>
 
+#include "base/logging.h"
 #include "pdf/draw_utils/coordinates.h"
 #include "pdf/page_orientation.h"
 #include "ppapi/cpp/rect.h"
@@ -68,33 +70,41 @@ class DocumentLayout final {
   const pp::Size& size() const { return size_; }
 
   // Sets the layout's total size.
+  //
+  // TODO(kmoon): Get rid of this method.
   void set_size(const pp::Size& size) { size_ = size; }
 
-  // Given |page_sizes|, return pp::Rects that represent |page_sizes|
-  // formatted for single view and update the layout's size to the size of
-  // the new single view layout.
-  std::vector<pp::Rect> GetSingleViewLayout(
-      const std::vector<pp::Size>& page_sizes);
+  size_t page_count() const { return page_rects_.size(); }
 
-  // Given |page_sizes|, return pp::Rects that represent |page_sizes|
-  // formatted for two-up view and update the layout's size to the size of
-  // the new two-up view layout.
-  std::vector<pp::Rect> GetTwoUpViewLayout(
-      const std::vector<pp::Size>& page_sizes);
+  // Gets the layout rectangle for a page. Only valid after computing a layout.
+  const pp::Rect& page_rect(size_t page_index) const {
+    DCHECK_LT(page_index, page_count());
+    return page_rects_[page_index];
+  }
+
+  // Computes layout that represent |page_sizes| formatted for single view.
+  //
+  // TODO(kmoon): Control layout type using an option.
+  void ComputeSingleViewLayout(const std::vector<pp::Size>& page_sizes);
+
+  // Computes layout that represent |page_sizes| formatted for two-up view.
+  //
+  // TODO(kmoon): Control layout type using an option.
+  void ComputeTwoUpViewLayout(const std::vector<pp::Size>& page_sizes);
 
   // Increases the layout's total height by |height|.
+  //
+  // TODO(kmoon): Delete or make this private.
   void EnlargeHeight(int height);
-
-  // Appends a rectangle of size |page_rect| to the layout. This will increase
-  // the layout's height by the page's height, and increase the layout's width
-  // to at least the page's width.
-  void AppendPageRect(const pp::Size& page_rect);
 
  private:
   Options options_;
 
   // Layout's total size.
   pp::Size size_;
+
+  // Page layout rectangles.
+  std::vector<pp::Rect> page_rects_;
 };
 
 }  // namespace chrome_pdf

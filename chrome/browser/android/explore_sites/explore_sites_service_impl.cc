@@ -57,8 +57,7 @@ ExploreSitesServiceImpl::ExploreSitesServiceImpl(
     : task_queue_(this),
       explore_sites_store_(std::move(store)),
       url_loader_factory_getter_(std::move(url_loader_factory_getter)),
-      history_statistics_reporter_(std::move(history_statistics_reporter)),
-      weak_ptr_factory_(this) {
+      history_statistics_reporter_(std::move(history_statistics_reporter)) {
   if (IsExploreSitesEnabled()) {
     ExploreSitesBridge::ScheduleDailyTask();
   }

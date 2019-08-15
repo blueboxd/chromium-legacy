@@ -86,6 +86,8 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "content/browser/sandbox_parameters_mac.h"
+#include "net/test/test_data_directory.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/test/event_generator_delegate_mac.h"
 #endif
@@ -286,6 +288,10 @@ void BrowserTestBase::SetUp() {
 #if defined(OS_MACOSX)
   // On Mac we always use hardware GL.
   use_software_gl = false;
+
+  // Expand the network service sandbox to allow reading the test TLS
+  // certificates.
+  SetNetworkTestCertsDirectoryForTesting(net::GetTestCertsDirectory());
 #endif
 
 #if defined(OS_ANDROID)

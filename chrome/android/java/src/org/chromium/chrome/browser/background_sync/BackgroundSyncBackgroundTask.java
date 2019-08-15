@@ -28,8 +28,7 @@ public class BackgroundSyncBackgroundTask extends NativeBackgroundTask {
         // Check that we're called with network connectivity.
         @ConnectionType
         int current_network_type = DeviceConditions.getCurrentNetConnectionType(context);
-        if (current_network_type == ConnectionType.CONNECTION_NONE
-                || current_network_type == ConnectionType.CONNECTION_UNKNOWN) {
+        if (current_network_type == ConnectionType.CONNECTION_NONE) {
             return StartBeforeNativeResult.RESCHEDULE;
         }
 

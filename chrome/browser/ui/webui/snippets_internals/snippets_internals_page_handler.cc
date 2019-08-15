@@ -117,8 +117,7 @@ SnippetsInternalsPageHandler::SnippetsInternalsPageHandler(
           content_suggestions_service_
               ->remote_suggestions_provider_for_debugging()),
       pref_service_(pref_service),
-      page_(std::move(page)),
-      weak_ptr_factory_(this) {}
+      page_(std::move(page)) {}
 
 SnippetsInternalsPageHandler::~SnippetsInternalsPageHandler() {}
 

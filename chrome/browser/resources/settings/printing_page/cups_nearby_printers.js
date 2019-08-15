@@ -93,8 +93,10 @@ Polymer({
 
     settings.CupsPrintersBrowserProxyImpl.getInstance()
         .addDiscoveredPrinter(item.printerInfo.printerId)
-        .then(this.onAddNearbyPrintersSucceeded_.bind(this,
-            item.printerInfo.printerName));
+        .then(
+            this.onAddNearbyPrintersSucceeded_.bind(this,
+                item.printerInfo.printerName),
+            this.onAddNearbyPrinterFailed_.bind(this));
   },
 
   /**
@@ -114,7 +116,7 @@ Polymer({
   },
 
   /**
-   * Handler for addDiscoveredPrinter.
+   * Handler for addDiscoveredPrinter success.
    * @param {string} printerName
    * @param {!PrinterSetupResult} result
    * @private
@@ -123,5 +125,17 @@ Polymer({
     this.fire(
         'show-cups-printer-toast',
         {resultCode: result, printerName: printerName});
+  },
+
+  /**
+   * Handler for addDiscoveredPrinter failure.
+   * @param {*} printer
+   * @private
+   */
+  onAddNearbyPrinterFailed_: function(printer) {
+    this.fire(
+        'show-cups-printer-toast',
+        {resultCode: PrinterSetupResult.PRINTER_UNREACHABLE,
+         printerName: printer.printerName});
   }
 });

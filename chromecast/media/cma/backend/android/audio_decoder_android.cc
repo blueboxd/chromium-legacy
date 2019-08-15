@@ -305,7 +305,6 @@ void AudioDecoderAndroid::CreateDecoder() {
   // Create a decoder.
   decoder_ = CastAudioDecoder::Create(
       task_runner_, config_, kDecoderSampleFormat,
-      CastAudioDecoder::OutputChannelLayoutFromConfig(config_),
       base::BindOnce(&AudioDecoderAndroid::OnDecoderInitialized,
                      base::Unretained(this)));
 }

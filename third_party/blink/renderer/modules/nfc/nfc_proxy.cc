@@ -110,13 +110,15 @@ void NFCProxy::CancelPush(
 void NFCProxy::OnWatch(const Vector<uint32_t>& watch_ids,
                        const String& serial_number,
                        device::mojom::blink::NDEFMessagePtr message) {
-  // Dispatch the event to all matched readers.
+  // Dispatch the event to all matched readers. We iterate on a copy of
+  // |readers_| because the user's NFCReader#onreading event handler may call
+  // NFCReader#stop() to modify |readers_| just during the iteration process.
   // This loop is O(n^2), however, we assume the number of readers to be small
   // so it'd be just OK.
-  for (auto pair : readers_) {
-    if (watch_ids.Contains(pair.value)) {
+  ReaderMap copy = readers_;
+  for (auto& pair : copy) {
+    if (watch_ids.Contains(pair.value))
       pair.key->OnReading(serial_number, *message);
-    }
   }
 }
 

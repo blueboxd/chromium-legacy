@@ -9,7 +9,7 @@
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/named_guide_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/incognito_color_util.h"
+#import "ios/chrome/common/colors/dynamic_color_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/material_timing.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -121,8 +121,8 @@ CGFloat kRotationAngleInRadians = 20.0 / 180 * M_PI;
   [super didMoveToSuperview];
 
   if (self.subviews.count == 0) {
-    self.backgroundColor = color::IncognitoDynamicColor(
-        self.incognito, [UIColor colorNamed:kBackgroundColor],
+    self.backgroundColor = color::DarkModeDynamicColor(
+        [UIColor colorNamed:kBackgroundColor], self.incognito,
         [UIColor colorNamed:kBackgroundDarkColor]);
     self.layer.shadowRadius = 20;
     self.layer.shadowOpacity = 0.4;
@@ -133,8 +133,8 @@ CGFloat kRotationAngleInRadians = 20.0 / 180 * M_PI;
             [[UIImage imageNamed:@"open_new_tab_background"]
                 imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
     linkImage.translatesAutoresizingMaskIntoConstraints = NO;
-    linkImage.tintColor = color::IncognitoDynamicColor(
-        self.incognito, [UIColor colorNamed:kToolbarButtonColor],
+    linkImage.tintColor = color::DarkModeDynamicColor(
+        [UIColor colorNamed:kToolbarButtonColor], self.incognito,
         [UIColor colorNamed:kToolbarButtonDarkColor]);
 
     [self addSubview:linkImage];

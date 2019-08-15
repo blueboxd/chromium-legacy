@@ -11,6 +11,8 @@ import os.path
 import re
 import sys
 
+import six
+
 from grit import constants
 from grit import exception
 from grit import util
@@ -577,7 +579,7 @@ class GritNode(base.Node):
     assert self._id_map is None, 'AssignFirstIds() after InitializeIds()'
     # If the input is a stream, then we're probably in a unit test and
     # should skip this step.
-    if type(filename_or_stream) not in (str, unicode):
+    if not isinstance(filename_or_stream, six.string_types):
       return
 
     # Nothing to do if the first_ids_filename attribute isn't set.

@@ -4,7 +4,6 @@
 
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
-import("//chromeos/assistant/assistant.gni")
 import("//components/gwp_asan/buildflags/buildflags.gni")
 import("//components/nacl/features.gni")
 import("//ppapi/buildflags/buildflags.gni")
@@ -452,7 +451,6 @@ source_set("chrome_content_browser_overlay_manifest") {
     deps += [
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/machine_learning:mojo_bindings",
-      "//chromeos/assistant:buildflags",
       "//chromeos/services/cellular_setup/public/mojom",
       "//chromeos/services/device_sync/public/cpp:manifest",
       "//chromeos/services/ime/public/mojom",
@@ -462,10 +460,6 @@ source_set("chrome_content_browser_overlay_manifest") {
       "//chromeos/services/network_config/public/mojom",
       "//media/capture/video/chromeos/mojom:cros_camera",
     ]
-
-    if (enable_cros_assistant) {
-      deps += [ "//chromeos/services/assistant/public/cpp:manifest" ]
-    }
   }
 
   if (is_android) {

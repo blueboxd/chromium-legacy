@@ -96,8 +96,7 @@ Controller::Controller(content::WebContents* web_contents,
       service_(service ? std::move(service)
                        : ServiceImpl::Create(web_contents->GetBrowserContext(),
                                              client_)),
-      navigating_to_new_document_(web_contents->IsWaitingForResponse()),
-      weak_ptr_factory_(this) {}
+      navigating_to_new_document_(web_contents->IsWaitingForResponse()) {}
 
 Controller::~Controller() = default;
 

@@ -183,7 +183,7 @@ void AccessibilityTreeFormatterBase::set_show_ids(bool show_ids) {
   show_ids_ = show_ids;
 }
 
-const base::FilePath::StringType
+base::FilePath::StringType
 AccessibilityTreeFormatterBase::GetVersionSpecificExpectedFileSuffix() {
   return FILE_PATH_LITERAL("");
 }

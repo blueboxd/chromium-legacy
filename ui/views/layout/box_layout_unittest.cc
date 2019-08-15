@@ -80,8 +80,7 @@ TEST_F(BoxLayoutTest, SetInsideBorderInsets) {
   EXPECT_EQ(gfx::Rect(10, 20, 10, 20), v1->bounds());
   EXPECT_EQ(gfx::Rect(20, 20, 10, 20), v2->bounds());
 
-  layout->set_inside_border_insets(
-      gfx::Insets(5, 10, 15, 20));
+  layout->set_inside_border_insets(gfx::Insets(5, 10, 15, 20));
   EXPECT_EQ(gfx::Size(50, 40), layout->GetPreferredSize(host_.get()));
   host_->SetBounds(0, 0, 50, 40);
   host_->Layout();
@@ -387,6 +386,78 @@ TEST_F(BoxLayoutTest, CrossAxisAlignmentVertical) {
   host_->Layout();
   EXPECT_EQ(gfx::Rect(30, 10, 20, 20).ToString(), v1->bounds().ToString());
   EXPECT_EQ(gfx::Rect(40, 40, 10, 10).ToString(), v2->bounds().ToString());
+}
+
+TEST_F(BoxLayoutTest, CrossAxisAlignmentVerticalChildPreferredWidth) {
+  const int available_width = 40;  // box-width - inset - margin
+  const int preferred_width = 30;
+
+  BoxLayout* layout = host_->SetLayoutManager(std::make_unique<BoxLayout>(
+      BoxLayout::Orientation::kVertical, gfx::Insets(10), 10));
+
+  auto* v1 = host_->AddChildView(std::make_unique<ProportionallySizedView>(1));
+  v1->SetPreferredWidth(preferred_width);
+
+  host_->SetBounds(0, 0, 60, 100);
+
+  // Default alignment should stretch child to full available width
+  host_->Layout();
+  EXPECT_EQ(gfx::Rect(10, 10, available_width, available_width), v1->bounds());
+
+  // Stretch alignment should stretch child to full available width
+  layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStretch);
+  host_->Layout();
+  EXPECT_EQ(gfx::Rect(10, 10, available_width, available_width), v1->bounds());
+
+  // Child aligned to start should use preferred area
+  layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStart);
+  host_->Layout();
+  EXPECT_EQ(gfx::Rect(10, 10, preferred_width, preferred_width), v1->bounds());
+
+  // Child aligned to center should use preferred area
+  layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kCenter);
+  host_->Layout();
+  EXPECT_EQ(gfx::Rect(15, 10, preferred_width, preferred_width), v1->bounds());
+
+  // Child aligned to end should use preferred area
+  layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kEnd);
+  host_->Layout();
+  EXPECT_EQ(gfx::Rect(20, 10, preferred_width, preferred_width), v1->bounds());
+}
+
+TEST_F(BoxLayoutTest, CrossAxisAlignmentVerticalChildHugePreferredWidth) {
+  // Here we test the case where the child's preferred width is more than the
+  // actual available width.
+  // In this case the height should be calculated using the available width
+  // and not the preferred width.
+  const int available_width = 40;
+
+  BoxLayout* layout = host_->SetLayoutManager(std::make_unique<BoxLayout>(
+      BoxLayout::Orientation::kVertical, gfx::Insets(10), 10));
+
+  auto* v1 = host_->AddChildView(std::make_unique<ProportionallySizedView>(1));
+  v1->SetPreferredWidth(100);
+
+  host_->SetBounds(0, 0, 60, 100);
+
+  host_->Layout();
+  EXPECT_EQ(gfx::Rect(10, 10, available_width, available_width), v1->bounds());
+
+  layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStretch);
+  host_->Layout();
+  EXPECT_EQ(gfx::Rect(10, 10, available_width, available_width), v1->bounds());
+
+  layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStart);
+  host_->Layout();
+  EXPECT_EQ(gfx::Rect(10, 10, available_width, available_width), v1->bounds());
+
+  layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kCenter);
+  host_->Layout();
+  EXPECT_EQ(gfx::Rect(10, 10, available_width, available_width), v1->bounds());
+
+  layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kEnd);
+  host_->Layout();
+  EXPECT_EQ(gfx::Rect(10, 10, available_width, available_width), v1->bounds());
 }
 
 TEST_F(BoxLayoutTest, FlexAll) {

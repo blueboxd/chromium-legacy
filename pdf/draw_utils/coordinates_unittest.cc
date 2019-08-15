@@ -93,6 +93,40 @@ TEST(CoordinateTest, GetBottomGapBetweenRects) {
   CompareRect({0, 0, 0, 0}, GetBottomGapBetweenRects(1400, {0, 10, 300, 500}));
 }
 
+TEST(CoordinateTest, GetMostVisiblePage) {
+  // Test a single-view layout.
+  std::vector<IndexedPage> visible_pages = {
+      {0, {0, 0, 50, 100}}, {1, {0, 100, 100, 100}}, {2, {0, 200, 100, 200}}};
+  EXPECT_EQ(0, GetMostVisiblePage(visible_pages, {0, 0, 100, 100}));
+  EXPECT_EQ(1, GetMostVisiblePage(visible_pages, {0, 100, 100, 100}));
+  EXPECT_EQ(0, GetMostVisiblePage(visible_pages, {0, 50, 100, 100}));
+  EXPECT_EQ(1, GetMostVisiblePage(visible_pages, {0, 51, 100, 100}));
+  EXPECT_EQ(2, GetMostVisiblePage(visible_pages, {0, 180, 100, 100}));
+  EXPECT_EQ(1, GetMostVisiblePage(visible_pages, {0, 160, 100, 100}));
+  EXPECT_EQ(0, GetMostVisiblePage(visible_pages, {0, 77, 50, 50}));
+  EXPECT_EQ(1, GetMostVisiblePage(visible_pages, {0, 85, 50, 50}));
+  EXPECT_EQ(0, GetMostVisiblePage(visible_pages, {0, 0, 400, 400}));
+
+  // Test a two-up view layout.
+  visible_pages = {{0, {100, 0, 300, 400}},
+                   {1, {400, 0, 400, 300}},
+                   {2, {0, 400, 400, 250}},
+                   {3, {400, 400, 200, 400}},
+                   {4, {50, 800, 350, 200}}};
+  EXPECT_EQ(0, GetMostVisiblePage(visible_pages, {0, 0, 400, 500}));
+  EXPECT_EQ(2, GetMostVisiblePage(visible_pages, {0, 200, 400, 500}));
+  EXPECT_EQ(3, GetMostVisiblePage(visible_pages, {400, 200, 400, 500}));
+  EXPECT_EQ(3, GetMostVisiblePage(visible_pages, {200, 200, 400, 500}));
+  EXPECT_EQ(0, GetMostVisiblePage(visible_pages, {0, 0, 1600, 2000}));
+
+  // Test case where no pages intersect with the viewport.
+  EXPECT_EQ(0, GetMostVisiblePage(visible_pages, {1000, 2000, 150, 200}));
+
+  // Test empty vector.
+  std::vector<IndexedPage> empty_pages;
+  EXPECT_EQ(-1, GetMostVisiblePage(empty_pages, {100, 200, 300, 400}));
+}
+
 TEST(CoordinateTest, GetPageInsetsForTwoUpView) {
   // Page is on the left side and isn't the last page in the document.
   CompareInsetSizes(kLeftInsets,

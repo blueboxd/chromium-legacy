@@ -36,6 +36,9 @@ crbug.com/591099 external/wpt/css/css-fonts/font-features-across-space-3.html [ 
 ### external/wpt/css/css-grid/grid-items/
 crbug.com/591099 external/wpt/css/css-grid/grid-items/grid-item-percentage-sizes-003.html [ Failure ]
 
+### external/wpt/css/css-layout-api/
+crbug.com/591099 external/wpt/css/css-layout-api/ [ Skip ]
+
 ### external/wpt/css/css-multicol/
 crbug.com/591099 external/wpt/css/css-multicol/multicol-span-all-list-item-002.html [ Failure ]
 
@@ -276,6 +279,9 @@ crbug.com/591099 fast/css/absolute-inline-alignment-2.html [ Failure ]
 
 ### http/tests/credentialmanager/
 crbug.com/874695 http/tests/credentialmanager/credentialscontainer-create-with-virtual-authenticator.html [ Failure ]
+
+### http/tests/csslayout/
+crbug.com/591099 http/tests/csslayout/ [ Skip ]
 
 ### virtual/blink-cors/external/wpt/service-workers/service-worker/
 crbug.com/591099 virtual/blink-cors/external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Failure ]

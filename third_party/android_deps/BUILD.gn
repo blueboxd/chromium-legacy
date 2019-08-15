@@ -6,9 +6,12 @@ import("//build/config/android/rules.gni")
 
 # Library groups
 # TODO(bjoyce): Empty Java Groups. Remove after upstream review 1541944 lands.
-java_group("com_android_support_collections_java") {}
-java_group("com_android_support_drawerlayout_java") {}
-java_group("com_android_support_localbroadcastmanager_java") {}
+java_group("com_android_support_collections_java") {
+}
+java_group("com_android_support_drawerlayout_java") {
+}
+java_group("com_android_support_localbroadcastmanager_java") {
+}
 
 java_group("android_support_v4_java") {
   deps = [
@@ -418,7 +421,8 @@ android_aar_prebuilt("google_play_services_cast_framework_java") {
     ":google_play_services_cast_java",
   ]
 
-  # Cannot get rid of cast framework resources: crbug.com/985139.
+  # Removing all resources from cast framework as they are unused bloat.
+  strip_resources = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

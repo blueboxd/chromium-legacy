@@ -214,6 +214,9 @@ class ProfileImpl : public Profile {
   void UpdateAvatarInStorage();
   void UpdateIsEphemeralInStorage();
 
+  // Called to initialize Data Reduction Proxy.
+  void InitializeDataReductionProxy();
+
   policy::ConfigurationPolicyProvider* configuration_policy_provider();
 
   PrefChangeRegistrar pref_change_registrar_;

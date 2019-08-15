@@ -396,7 +396,7 @@ const base::Feature kLookalikeUrlNavigationSuggestionsUI{
 // This feature requires Windows 10 or higher to work because it depends on
 // the "Apps & Features" system settings.
 const base::Feature kIncompatibleApplicationsWarning{
-    "IncompatibleApplicationsWarning", base::FEATURE_ENABLED_BY_DEFAULT};
+    "IncompatibleApplicationsWarning", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_CHROMEOS)

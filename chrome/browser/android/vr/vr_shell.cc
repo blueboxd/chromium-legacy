@@ -156,8 +156,7 @@ VrShell::VrShell(JNIEnv* env,
       display_size_pixels_(display_width_pixels, display_height_pixels),
       gl_surface_created_event_(
           base::WaitableEvent::ResetPolicy::MANUAL,
-          base::WaitableEvent::InitialState::NOT_SIGNALED),
-      weak_ptr_factory_(this) {
+          base::WaitableEvent::InitialState::NOT_SIGNALED) {
   DVLOG(1) << __FUNCTION__ << "=" << this;
   DCHECK(g_vr_shell_instance == nullptr);
   g_vr_shell_instance = this;

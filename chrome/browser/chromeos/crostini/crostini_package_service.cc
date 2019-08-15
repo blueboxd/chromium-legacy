@@ -13,6 +13,8 @@
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -149,10 +151,49 @@ void CrostiniPackageService::NotificationCompleted(
 void CrostiniPackageService::GetLinuxPackageInfo(
     const std::string& vm_name,
     const std::string& container_name,
-    const std::string& package_path,
+    const storage::FileSystemURL& package_url,
     CrostiniManager::GetLinuxPackageInfoCallback callback) {
+  base::FilePath path;
+  if (!file_manager::util::ConvertFileSystemURLToPathInsideCrostini(
+          profile_, package_url, &path)) {
+    LinuxPackageInfo info;
+    info.success = false;
+    info.failure_reason = "Invalid package url: " + package_url.DebugString();
+    return std::move(callback).Run(info);
+  }
+
+  // Share path if it is not in crostini.
+  if (package_url.mount_filesystem_id() !=
+      file_manager::util::GetCrostiniMountPointName(profile_)) {
+    guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePaths(
+        vm_name, {package_url.path()}, /*persist=*/false,
+        base::BindOnce(
+            &CrostiniPackageService::OnSharePathForGetLinuxPackageInfo,
+            weak_ptr_factory_.GetWeakPtr(), vm_name, container_name,
+            package_url, path, std::move(callback)));
+  } else {
+    OnSharePathForGetLinuxPackageInfo(vm_name, container_name, package_url,
+                                      path, std::move(callback), true, "");
+  }
+}
+
+void CrostiniPackageService::OnSharePathForGetLinuxPackageInfo(
+    const std::string& vm_name,
+    const std::string& container_name,
+    const storage::FileSystemURL& package_url,
+    const base::FilePath& package_path,
+    CrostiniManager::GetLinuxPackageInfoCallback callback,
+    bool share_success,
+    std::string share_failure_reason) {
+  if (!share_success) {
+    LinuxPackageInfo info;
+    info.success = false;
+    info.failure_reason = "Error sharing package " + package_url.DebugString() +
+                          ": " + share_failure_reason;
+    return std::move(callback).Run(info);
+  }
   CrostiniManager::GetForProfile(profile_)->GetLinuxPackageInfo(
-      profile_, vm_name, container_name, package_path,
+      profile_, vm_name, container_name, package_path.value(),
       base::BindOnce(&CrostiniPackageService::OnGetLinuxPackageInfo,
                      weak_ptr_factory_.GetWeakPtr(), vm_name, container_name,
                      std::move(callback)));
@@ -161,13 +202,22 @@ void CrostiniPackageService::GetLinuxPackageInfo(
 void CrostiniPackageService::InstallLinuxPackage(
     const std::string& vm_name,
     const std::string& container_name,
-    const std::string& package_path,
+    const storage::FileSystemURL& package_url,
     CrostiniManager::InstallLinuxPackageCallback callback) {
   const ContainerId container_id(vm_name, container_name);
   containers_with_pending_installs_.insert(container_id);
 
+  base::FilePath path;
+  if (!file_manager::util::ConvertFileSystemURLToPathInsideCrostini(
+          profile_, package_url, &path)) {
+    LOG(ERROR) << "Invalid install linux package: "
+               << package_url.DebugString();
+    return std::move(callback).Run(
+        CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED);
+  }
+
   CrostiniManager::GetForProfile(profile_)->InstallLinuxPackage(
-      vm_name, container_name, package_path,
+      vm_name, container_name, path.value(),
       base::BindOnce(&CrostiniPackageService::OnInstallLinuxPackage,
                      weak_ptr_factory_.GetWeakPtr(), vm_name, container_name,
                      std::move(callback)));

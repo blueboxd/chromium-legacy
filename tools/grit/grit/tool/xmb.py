@@ -13,6 +13,8 @@ import sys
 
 from xml.sax import saxutils
 
+import six
+
 from grit import grd_reader
 from grit import lazy_re
 from grit import tclib
@@ -36,9 +38,7 @@ def _XmlEscape(s):
   internal Translation Console tool.  May be used for attributes as
   well as for contents.
   """
-  if not type(s) == unicode:
-    s = unicode(s)
-  return saxutils.escape(s, _XML_QUOTE_ESCAPES).encode('utf-8')
+  return saxutils.escape(six.text_type(s), _XML_QUOTE_ESCAPES).encode('utf-8')
 
 
 def _WriteAttribute(file, name, value):
@@ -55,7 +55,7 @@ def _WriteAttribute(file, name, value):
 
 def _WriteMessage(file, message):
   presentable_content = message.GetPresentableContent()
-  assert (type(presentable_content) == unicode or
+  assert (isinstance(presentable_content, six.string_types) or
           (len(message.parts) == 1 and
            type(message.parts[0] == tclib.Placeholder)))
   preserve_space = presentable_content != _WHITESPACES_REGEX.sub(

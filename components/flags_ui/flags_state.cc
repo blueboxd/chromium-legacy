@@ -34,7 +34,7 @@ namespace internal {
 const char kTrialGroupAboutFlags[] = "AboutFlags";
 }  // namespace internal
 
-const base::Feature kUnexpireFlagsM77{"TemporaryUnexpireFlagsM77",
+const base::Feature kUnexpireFlagsM78{"TemporaryUnexpireFlagsM78",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
@@ -335,12 +335,6 @@ void DidModifyOriginListFlag(const FlagsStorage& flags_storage,
   current_cl->AppendSwitchASCII(entry.command_line_switch, sanitized);
 }
 #endif
-
-bool MaskMatchesExpiredCohort(int flag_platform_mask) {
-  if (!base::FeatureList::IsEnabled(kUnexpireFlagsM77))
-    return !!(flag_platform_mask & kExpireM77);
-  return false;
-}
 
 }  // namespace
 
@@ -681,9 +675,6 @@ void FlagsState::GetFlagFeatureEntries(
       supported = true;
     }
 #endif
-
-    if (MaskMatchesExpiredCohort(entry.supported_platforms))
-      supported = false;
 
     if (supported)
       supported_entries->Append(std::move(data));

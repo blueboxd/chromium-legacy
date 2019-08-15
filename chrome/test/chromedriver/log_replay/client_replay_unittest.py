@@ -43,6 +43,9 @@ _RESPONSE_ONLY = ('[1531428670.535][INFO]: [b15232d5497ec0d8300a5a1ea56f33ce] '
                   'RESPONSE GetTitle {\n"param2": 42\n}\n')
 _PAYLOAD_SCRIPT = ('[1531428670.535][INFO]: [b15232d5497ec0d8300a5a1ea56f33ce]'
                    ' RESPONSE GetTitle {\n"param2": "function(){func()}"\n}\n')
+_PAYLOAD_READABLE_TIME = (
+    '[08-12-2019 15:45:34.824002][INFO]: [b15232d5497ec0d8300a5a1ea56f33ce]'
+    ' RESPONSE GetTitle {\n"param2": "function(){func()}"\n}\n')
 _BAD_SCRIPT = ('[1531428670.535][INFO]: [b15232d5497ec0d8300a5a1ea56f33ce]'
                ' RESPONSE GetTitle {\n"param2": "))}\\})}/{)}({(})}"\n}\n')
 _MULTI_SESSION = ('[1531428669.535][INFO]: [b15232d5497ec0d8300a5a1ea56f33ce] '
@@ -106,6 +109,22 @@ class ChromeDriverClientReplayUnitTest(unittest.TestCase):
     self.assertEqual(command.GetPayloadPrimitive(), {"param1": 7})
     self.assertEqual(command.session_id, _SESSION_ID)
 
+  def testGetNextClientHeaderLine(self):
+    string_buffer = StringIO.StringIO(_PAYLOAD_SCRIPT)
+    command_sequence = client_replay.CommandSequence()
+    command_sequence._parser = client_replay._Parser(string_buffer)
+    self.assertEquals(command_sequence._parser._GetNextClientHeaderLine(),
+        ("[1531428670.535][INFO]: [b15232d5497ec0d8300a5a1ea56f33ce]"
+            " RESPONSE GetTitle {\n"))
+
+  def testGetNextClientHeaderLine_readableTime(self):
+    string_buffer = StringIO.StringIO(_PAYLOAD_READABLE_TIME)
+    command_sequence = client_replay.CommandSequence()
+    command_sequence._parser = client_replay._Parser(string_buffer)
+    self.assertEquals(command_sequence._parser._GetNextClientHeaderLine(),
+        ("[08-12-2019_15:45:34.824002][INFO]:"
+         " [b15232d5497ec0d8300a5a1ea56f33ce] RESPONSE GetTitle {\n"))
+
   def testIngestLoggedResponse(self):
     string_buffer = StringIO.StringIO(_RESPONSE_ONLY)
     command_sequence = client_replay.CommandSequence()
@@ -132,6 +151,25 @@ class ChromeDriverClientReplayUnitTest(unittest.TestCase):
     self.assertEqual(
         command_sequence._id_map[_SESSION_ID_ALT], _SESSION_ID)
     self.assertEqual(command_sequence._staged_logged_session_id, None)
+
+  def testIngestRealResponseNone(self):
+    real_resp = {u'value': None}
+
+    command_sequence = client_replay.CommandSequence()
+    command_sequence._IngestRealResponse(real_resp)
+
+    self.assertEqual(command_sequence._last_response, None)
+
+  def testIngestRealResponseInt(self):
+    real_resp = {u'value': 1}
+
+    command_sequence = client_replay.CommandSequence()
+    command_sequence._IngestRealResponse(real_resp)
+
+    #last response is not changed by IngestRealResponse,
+    #but we want to verify that int response content does not
+    #cause error.
+    self.assertEqual(command_sequence._last_response, None)
 
   def testGetPayload_simple(self):
     string_buffer = StringIO.StringIO(_RESPONSE_ONLY)
@@ -280,7 +318,8 @@ class ChromeDriverClientReplayUnitTest(unittest.TestCase):
     self.assertEqual(payload_replaced, payload_dict)
 
   def testGetCommandName(self):
-    self.assertEqual(client_replay._GetCommandName(_PAYLOAD_SCRIPT), "GetTitle")
+    self.assertEqual(client_replay._GetCommandName(_PAYLOAD_SCRIPT),
+        "GetTitle")
 
   def testGetSessionId(self):
     self.assertEqual(client_replay._GetSessionId(_PAYLOAD_SCRIPT),

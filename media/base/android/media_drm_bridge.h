@@ -353,7 +353,7 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   MediaCryptoContextImpl media_crypto_context_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<MediaDrmBridge> weak_factory_;
+  base::WeakPtrFactory<MediaDrmBridge> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaDrmBridge);
 };

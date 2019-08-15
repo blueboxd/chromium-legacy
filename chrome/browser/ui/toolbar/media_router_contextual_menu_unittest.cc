@@ -167,7 +167,7 @@ TEST_F(MediaRouterContextualMenuUnitTest, EnableAndDisableReportIssue) {
 
   std::unique_ptr<BrowserWindow> window(CreateBrowserWindow());
   std::unique_ptr<Browser> incognito_browser(
-      CreateBrowser(profile()->GetOffTheRecordProfile(), Browser::TYPE_TABBED,
+      CreateBrowser(profile()->GetOffTheRecordProfile(), Browser::TYPE_NORMAL,
                     false, window.get()));
 
   MediaRouterContextualMenu incognito_menu(incognito_browser.get(),

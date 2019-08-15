@@ -106,8 +106,7 @@ AndroidStreamReaderURLLoader::AndroidStreamReaderURLLoader(
       response_delegate_(std::move(response_delegate)),
       writable_handle_watcher_(FROM_HERE,
                                mojo::SimpleWatcher::ArmingPolicy::MANUAL,
-                               base::SequencedTaskRunnerHandle::Get()),
-      weak_factory_(this) {
+                               base::SequencedTaskRunnerHandle::Get()) {
   DCHECK(response_delegate_);
   // If there is a client error, clean up the request.
   client_.set_connection_error_handler(

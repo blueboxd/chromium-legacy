@@ -30,7 +30,6 @@
 #include "base/task/thread_pool/thread_group.h"
 #include "base/task/thread_pool/thread_group_impl.h"
 #include "base/task/thread_pool/thread_pool.h"
-#include "base/task/thread_pool/thread_pool_clock.h"
 #include "base/updateable_sequenced_task_runner.h"
 #include "build/build_config.h"
 
@@ -65,11 +64,9 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   //|histogram_label| is used to label histograms, it must not be empty.
   explicit ThreadPoolImpl(StringPiece histogram_label);
 
-  // For testing only. Creates a ThreadPoolImpl with a custom TaskTracker and
-  // TickClock.
+  // For testing only. Creates a ThreadPoolImpl with a custom TaskTracker.
   ThreadPoolImpl(StringPiece histogram_label,
-                 std::unique_ptr<TaskTrackerImpl> task_tracker,
-                 const TickClock* tick_clock);
+                 std::unique_ptr<TaskTrackerImpl> task_tracker);
 
   ~ThreadPoolImpl() override;
 
@@ -144,10 +141,6 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   bool IsRunningPoolWithTraits(const TaskTraits& traits) const override;
   void UpdatePriority(scoped_refptr<TaskSource> task_source,
                       TaskPriority priority) override;
-
-  // The clock instance used by all classes in base/task/thread_pool. Must
-  // outlive everything else to ensure no discrepancy in Now().
-  ThreadPoolClock thread_pool_clock_;
 
   const std::unique_ptr<TaskTrackerImpl> task_tracker_;
   std::unique_ptr<Thread> service_thread_;

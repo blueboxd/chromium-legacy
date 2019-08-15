@@ -131,6 +131,7 @@ vs-chromium-project.txt
 /chrome/setup_unittests.xml
 /chrome/sync_integration_tests_run.xml
 /chrome/test/android/telemetry_tests/browser_tests/*.wpr
+/chrome/test/chromedriver/third_party/
 /chrome/test/chromeos/autotest/files/client/deps/chrome_test/test_src/
 /chrome/test/chromeos/autotest/files/client/deps/page_cycler_dep/test_src/
 /chrome/test/chromeos/autotest/files/client/deps/perf_data_dep/test_src/

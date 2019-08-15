@@ -297,7 +297,10 @@ void MetricsLog::WriteRealtimeStabilityAttributes(
 
 const SystemProfileProto& MetricsLog::RecordEnvironment(
     DelegatingProvider* delegating_provider) {
-  DCHECK(!has_environment_);
+  // Clear any previous system profile. This will be present in the case when
+  // the initial system profile got recorded on start up. Clearing it ensures
+  // there is no duplication of repeated fields.
+  uma_proto()->clear_system_profile();
   has_environment_ = true;
 
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
@@ -309,7 +312,8 @@ const SystemProfileProto& MetricsLog::RecordEnvironment(
   if (client_->GetBrand(&brand_code))
     system_profile->set_brand_code(brand_code);
 
-  delegating_provider->ProvideSystemProfileMetrics(system_profile);
+  delegating_provider->ProvideSystemProfileMetricsWithLogCreationTime(
+      creation_time_, system_profile);
 
   return *system_profile;
 }

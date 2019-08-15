@@ -145,8 +145,7 @@ GLuint ConsumeTexture(gpu::gles2::GLES2Interface* gl,
 namespace vr {
 
 MailboxToSurfaceBridge::MailboxToSurfaceBridge()
-    : constructor_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this) {
+    : constructor_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DVLOG(1) << __FUNCTION__;
 }
 

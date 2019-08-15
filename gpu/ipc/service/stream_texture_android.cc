@@ -118,8 +118,7 @@ StreamTexture::StreamTexture(
               CommandBufferNamespace::GPU_IO,
               CommandBufferIdFromChannelAndRoute(channel_->client_id(),
                                                  route_id),
-              sequence_)),
-      weak_factory_(this) {
+              sequence_)) {
   context_state_->AddContextLostObserver(this);
   memset(current_matrix_, 0, sizeof(current_matrix_));
   channel->AddRoute(route_id, sequence_, this);

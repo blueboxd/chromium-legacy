@@ -80,7 +80,7 @@ static jlong JNI_AwTracingController_Init(JNIEnv* env,
 }
 
 AwTracingController::AwTracingController(JNIEnv* env, jobject obj)
-    : weak_java_object_(env, obj), weak_factory_(this) {}
+    : weak_java_object_(env, obj) {}
 
 AwTracingController::~AwTracingController() {}
 

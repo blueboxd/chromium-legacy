@@ -131,7 +131,7 @@ class MediaDrmStorageImpl final
   bool is_initialized_ = false;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<MediaDrmStorageImpl> weak_factory_;
+  base::WeakPtrFactory<MediaDrmStorageImpl> weak_factory_{this};
 };
 
 }  // namespace cdm

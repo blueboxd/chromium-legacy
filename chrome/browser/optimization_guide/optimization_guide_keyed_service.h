@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 
 namespace base {
@@ -33,7 +34,9 @@ class TopHostProvider;
 
 class OptimizationGuideHintsManager;
 
-class OptimizationGuideKeyedService : public KeyedService {
+class OptimizationGuideKeyedService
+    : public KeyedService,
+      optimization_guide::OptimizationGuideDecider {
  public:
   explicit OptimizationGuideKeyedService(
       content::BrowserContext* browser_context);
@@ -55,17 +58,21 @@ class OptimizationGuideKeyedService : public KeyedService {
     return top_host_provider_.get();
   }
 
-  // Registers the optimization types that intend to be queried during the
-  // session.
-  void RegisterOptimizationTypes(
-      std::vector<optimization_guide::proto::OptimizationType>
-          optimization_types);
-
   // Prompts the load of the hint for the navigation, if there is at least one
   // optimization type registered and there is a hint available.
   void MaybeLoadHintForNavigation(content::NavigationHandle* navigation_handle);
 
-  // KeyedService implementation.
+  // optimization_guide::OptimizationGuideDecider implementation:
+  void RegisterOptimizationTypes(
+      std::vector<optimization_guide::proto::OptimizationType>
+          optimization_types) override;
+  optimization_guide::OptimizationGuideDecision CanApplyOptimization(
+      content::NavigationHandle* navigation_handle,
+      optimization_guide::OptimizationTarget optimization_target,
+      optimization_guide::proto::OptimizationType optimization_type,
+      optimization_guide::OptimizationMetadata* optimization_metadata) override;
+
+  // KeyedService implementation:
   void Shutdown() override;
 
  private:

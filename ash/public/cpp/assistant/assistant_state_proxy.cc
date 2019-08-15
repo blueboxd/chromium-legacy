@@ -16,9 +16,10 @@ AssistantStateProxy::AssistantStateProxy()
 
 AssistantStateProxy::~AssistantStateProxy() = default;
 
-void AssistantStateProxy::Init(service_manager::Connector* connector) {
-  connector->BindInterface(ash::mojom::kServiceName,
-                           &voice_interaction_controller_);
+void AssistantStateProxy::Init(
+    mojo::PendingRemote<mojom::VoiceInteractionController>
+        voice_interaction_controller) {
+  voice_interaction_controller_.Bind(std::move(voice_interaction_controller));
 
   ash::mojom::VoiceInteractionObserverPtr ptr;
   voice_interaction_observer_binding_.Bind(mojo::MakeRequest(&ptr));

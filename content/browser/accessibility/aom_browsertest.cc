@@ -69,14 +69,14 @@ class AccessibilityObjectModelBrowserTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(AccessibilityObjectModelBrowserTest,
                        EventListenerOnVirtualNode) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kLoadComplete);
   GURL url(embedded_test_server()->GetURL(
       "/accessibility/aom/event-listener-on-virtual-node.html"));
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   waiter.WaitForNotification();
 
   BrowserAccessibility* button = FindNode(ax::mojom::Role::kButton, "FocusMe");

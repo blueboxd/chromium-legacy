@@ -74,7 +74,7 @@ class WaitForDomAction : public Action {
   bool require_all_ = false;
   std::vector<Condition> conditions_;
 
-  base::WeakPtrFactory<WaitForDomAction> weak_ptr_factory_;
+  base::WeakPtrFactory<WaitForDomAction> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WaitForDomAction);
 };

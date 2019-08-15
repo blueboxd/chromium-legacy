@@ -10,6 +10,7 @@ group("resources") {
     ":background_dark_color",
     ":blue_color",
     ":blue_dark_color",
+    ":blue_halo_color",
     ":close_button_color",
     ":close_button_dark_color",
     ":disabled_tint_color",
@@ -70,6 +71,12 @@ colorset("blue_color") {
 colorset("blue_dark_color") {
   sources = [
     "blue_dark_color.colorset/Contents.json",
+  ]
+}
+
+colorset("blue_halo_color") {
+  sources = [
+    "blue_halo_color.colorset/Contents.json",
   ]
 }
 

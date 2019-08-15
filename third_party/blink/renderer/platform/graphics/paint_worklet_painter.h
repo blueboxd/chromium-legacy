@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_WORKLET_PAINTER_H_
 
 #include "cc/paint/paint_worklet_input.h"
+#include "cc/paint/paint_worklet_job.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -31,7 +32,10 @@ class PLATFORM_EXPORT PaintWorkletPainter : public GarbageCollectedMixin {
   virtual ~PaintWorkletPainter() = default;
 
   virtual int GetWorkletId() const = 0;
-  virtual sk_sp<PaintRecord> Paint(const cc::PaintWorkletInput*) = 0;
+  virtual sk_sp<PaintRecord> Paint(
+      const cc::PaintWorkletInput*,
+      const cc::PaintWorkletJob::AnimatedPropertyValues&
+          animated_property_values) = 0;
 };
 
 }  // namespace blink

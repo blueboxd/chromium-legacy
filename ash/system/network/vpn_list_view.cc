@@ -173,6 +173,7 @@ class VPNListNetworkEntry : public HoverHighlightView,
                             public network_icon::AnimationObserver {
  public:
   VPNListNetworkEntry(VPNListView* vpn_list_view,
+                      TrayNetworkStateModel* model,
                       const NetworkStateProperties* network);
   ~VPNListNetworkEntry() override;
 
@@ -190,6 +191,7 @@ class VPNListNetworkEntry : public HoverHighlightView,
   void UpdateFromNetworkState(const NetworkStateProperties* network);
 
   VPNListView* const owner_;
+  TrayNetworkStateModel* model_;
   const std::string guid_;
 
   views::LabelButton* disconnect_button_ = nullptr;
@@ -200,8 +202,12 @@ class VPNListNetworkEntry : public HoverHighlightView,
 };
 
 VPNListNetworkEntry::VPNListNetworkEntry(VPNListView* owner,
+                                         TrayNetworkStateModel* model,
                                          const NetworkStateProperties* network)
-    : HoverHighlightView(owner), owner_(owner), guid_(network->guid) {
+    : HoverHighlightView(owner),
+      owner_(owner),
+      model_(model),
+      guid_(network->guid) {
   UpdateFromNetworkState(network);
 }
 
@@ -210,7 +216,7 @@ VPNListNetworkEntry::~VPNListNetworkEntry() {
 }
 
 void VPNListNetworkEntry::NetworkIconChanged() {
-  owner_->model()->cros_network_config()->GetNetworkState(
+  model_->cros_network_config()->GetNetworkState(
       guid_, base::BindOnce(&VPNListNetworkEntry::OnGetNetworkState,
                             weak_ptr_factory_.GetWeakPtr()));
 }
@@ -271,8 +277,7 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
 }  // namespace
 
 VPNListView::VPNListView(DetailedViewDelegate* delegate, LoginStatus login)
-    : NetworkStateListDetailedView(delegate, LIST_TYPE_VPN, login),
-      model_(Shell::Get()->system_tray_model()->network_state_model()) {
+    : NetworkStateListDetailedView(delegate, LIST_TYPE_VPN, login) {
   Shell::Get()->vpn_list()->AddObserver(this);
 }
 
@@ -281,7 +286,7 @@ VPNListView::~VPNListView() {
 }
 
 void VPNListView::UpdateNetworkList() {
-  model_->cros_network_config()->GetNetworkStateList(
+  model()->cros_network_config()->GetNetworkStateList(
       NetworkFilter::New(FilterType::kVisible, NetworkType::kVPN,
                          chromeos::network_config::mojom::kNoLimit),
       base::BindOnce(&VPNListView::OnGetNetworkStateList,
@@ -373,7 +378,7 @@ const char* VPNListView::GetClassName() const {
 }
 
 void VPNListView::AddNetwork(const NetworkStateProperties* network) {
-  views::View* entry(new VPNListNetworkEntry(this, network));
+  views::View* entry(new VPNListNetworkEntry(this, model(), network));
   scroll_content()->AddChildView(entry);
   network_view_guid_map_[entry] = network->guid;
   list_empty_ = false;

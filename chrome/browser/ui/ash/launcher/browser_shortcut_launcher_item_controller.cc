@@ -78,7 +78,7 @@ bool IsBrowserRepresentedInBrowserList(Browser* browser) {
   if (!browser || !multi_user_util::IsProfileFromActiveUser(browser->profile()))
     return false;
 
-  if (browser->is_app() && browser->is_type_popup()) {
+  if (browser->deprecated_is_app()) {
     // Crostini Terminals always have their own item.
     // TODO(rjwright): We shouldn't need to special-case Crostini here.
     // https://crbug.com/846546
@@ -111,7 +111,7 @@ BrowserList::BrowserVector GetListOfActiveBrowsers() {
       continue;
     }
     if (!IsBrowserRepresentedInBrowserList(browser) &&
-        !browser->is_type_tabbed()) {
+        !browser->is_type_normal()) {
       continue;
     }
     active_browsers.push_back(browser);
@@ -235,7 +235,7 @@ BrowserShortcutLauncherItemController::GetAppMenuItems(int event_flags) {
   ChromeLauncherController* controller = ChromeLauncherController::instance();
   for (auto* browser : GetListOfActiveBrowsers()) {
     TabStripModel* tab_strip = browser->tab_strip_model();
-    if (browser->is_type_tabbed())
+    if (browser->is_type_normal())
       found_tabbed_browser = true;
     if (!(event_flags & ui::EF_SHIFT_DOWN)) {
       app_menu_items.push_back({browser, kNoTab});

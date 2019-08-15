@@ -33,7 +33,7 @@ class HighlightElementAction : public Action {
   void OnHighlightElement(ProcessActionCallback callback,
                           const ClientStatus& status);
 
-  base::WeakPtrFactory<HighlightElementAction> weak_ptr_factory_;
+  base::WeakPtrFactory<HighlightElementAction> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HighlightElementAction);
 };

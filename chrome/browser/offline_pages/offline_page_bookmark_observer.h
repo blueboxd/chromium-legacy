@@ -48,7 +48,7 @@ class OfflinePageBookmarkObserver
 
   OfflinePageModel* offline_page_model_;
 
-  base::WeakPtrFactory<OfflinePageBookmarkObserver> weak_ptr_factory_;
+  base::WeakPtrFactory<OfflinePageBookmarkObserver> weak_ptr_factory_{this};
 };
 }  // namespace offline_pages
 

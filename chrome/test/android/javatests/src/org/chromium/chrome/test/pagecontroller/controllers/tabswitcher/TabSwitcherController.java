@@ -62,20 +62,17 @@ public class TabSwitcherController extends PageController {
     }
     public NewTabPageController clickNewTab() {
         mUtils.click(LOCATOR_NEW_TAB);
-        NewTabPageController inst = NewTabPageController.getInstance();
-        inst.verify();
-        return inst;
+        return NewTabPageController.getInstance().verifyActive();
     }
 
     public TabSwitcherMenuController clickMenu() {
         mUtils.click(LOCATOR_MENU);
-        TabSwitcherMenuController inst = TabSwitcherMenuController.getInstance();
-        inst.verify();
-        return inst;
+        return TabSwitcherMenuController.getInstance().verifyActive();
     }
 
     @Override
-    public boolean isCurrentPageThis() {
-        return mLocatorHelper.isOnScreen(LOCATOR_NEW_TAB);
+    public TabSwitcherController verifyActive() {
+        mLocatorHelper.verifyOnScreen(LOCATOR_NEW_TAB);
+        return this;
     }
 }

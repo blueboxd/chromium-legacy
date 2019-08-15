@@ -49,7 +49,6 @@ class WarmupURLFetcherTest : public WarmupURLFetcher {
                 base::Unretained(this)),
             base::BindRepeating(&WarmupURLFetcherTest::GetHttpRttEstimate,
                                 base::Unretained(this)),
-            base::ThreadTaskRunnerHandle::Get(),
             std::string() /*user_agent*/),
         url_loader_factory_(url_loader_factory) {}
   ~WarmupURLFetcherTest() override {}

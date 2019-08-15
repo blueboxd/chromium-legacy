@@ -1468,7 +1468,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   // The WebFrame created here was already attached to the Page as its
   // main frame, and the WebFrameWidget has been initialized, so we can call
   // WebViewImpl's DidAttachLocalMainFrame().
-  render_view->webview()->DidAttachLocalMainFrame(render_widget);
+  render_view->webview()->DidAttachLocalMainFrame();
 
   render_frame->render_widget_ = render_widget;
   DCHECK(!render_frame->owned_render_widget_);
@@ -4113,10 +4113,6 @@ void RenderFrameImpl::UpdateSubresourceFactory(
   GetLoaderFactoryBundle()->Update(std::move(child_info));
 }
 
-blink::WebLocalFrameClient::AppCacheType RenderFrameImpl::GetAppCacheType() {
-  return blink::WebLocalFrameClient::AppCacheType::kAppCacheForFrame;
-}
-
 void RenderFrameImpl::EvictFromBackForwardCache() {
   GetFrameHost()->EvictFromBackForwardCache();
 }
@@ -4175,13 +4171,12 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
     blink::MediaInspectorContext* inspector_context,
     WebMediaPlayerEncryptedMediaClient* encrypted_client,
     WebContentDecryptionModule* initial_cdm,
-    const blink::WebString& sink_id,
-    blink::WebLayerTreeView* layer_tree_view) {
+    const blink::WebString& sink_id) {
   const cc::LayerTreeSettings& settings =
       GetLocalRootRenderWidget()->layer_tree_view()->GetLayerTreeSettings();
-  return media_factory_.CreateMediaPlayer(source, client, inspector_context,
-                                          encrypted_client, initial_cdm,
-                                          sink_id, layer_tree_view, settings);
+  return media_factory_.CreateMediaPlayer(
+      source, client, inspector_context, encrypted_client, initial_cdm, sink_id,
+      GetLocalRootRenderWidget()->GetFrameSinkId(), settings);
 }
 
 std::unique_ptr<blink::WebContentSettingsClient>
@@ -6387,7 +6382,7 @@ bool RenderFrameImpl::SwapIn() {
     // its main frame, and the WebFrameWidget was previously initialized when
     // the frame was created, so we can call WebViewImpl's
     // DidAttachLocalMainFrame().
-    render_view_->webview()->DidAttachLocalMainFrame(render_view_->GetWidget());
+    render_view_->webview()->DidAttachLocalMainFrame();
   }
 
   return true;

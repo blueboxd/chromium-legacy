@@ -53,7 +53,7 @@ class NTPJsonFetcher {
   Callback callback_;
   content::BrowserContext* browser_context_;
   std::unique_ptr<network::SimpleURLLoader> simple_loader_;
-  base::WeakPtrFactory<NTPJsonFetcher> weak_factory_;
+  base::WeakPtrFactory<NTPJsonFetcher> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NTPJsonFetcher);
 };

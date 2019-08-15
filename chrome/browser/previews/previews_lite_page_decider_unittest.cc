@@ -10,14 +10,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
+#include "components/data_reduction_proxy/core/browser/data_store_impl.h"
 #include "components/previews/core/previews_switches.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
@@ -173,36 +171,23 @@ TEST_F(PreviewsLitePageDeciderTest, TestSingleBypass) {
 
 class PreviewsLitePageDeciderPrefTest : public ChromeRenderViewHostTestHarness {
  protected:
-  void SetUp() override {
-    ChromeRenderViewHostTestHarness::SetUp();
-
-    drp_test_context_ =
-        data_reduction_proxy::DataReductionProxyTestContext::Builder()
-            .WithMockConfig()
-            .SkipSettingsInitialization()
-            .Build();
-  }
-
-  void TearDown() override {
-    drp_test_context_->DestroySettings();
-    ChromeRenderViewHostTestHarness::TearDown();
-  }
-
   PreviewsLitePageDecider* GetDeciderWithDRPEnabled(bool enabled) {
-    drp_test_context_->SetDataReductionProxyEnabled(enabled);
+    data_reduction_proxy::DataReductionProxySettings::
+        SetDataSaverEnabledForTesting(profile()->GetPrefs(), enabled);
+    DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile())
+        ->InitDataReductionProxySettings(
+            profile(),
+            std::make_unique<data_reduction_proxy::DataStoreImpl>(
+                profile()->GetPath()),
+            thread_bundle()->GetMainThreadTaskRunner());
 
     decider_ = std::make_unique<PreviewsLitePageDecider>(
         web_contents()->GetBrowserContext());
-    decider_->SetDRPSettingsForTesting(drp_test_context_->settings());
-
-    drp_test_context_->InitSettings();
 
     return decider_.get();
   }
 
  private:
-  std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>
-      drp_test_context_;
   std::unique_ptr<PreviewsLitePageDecider> decider_;
 };
 

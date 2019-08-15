@@ -71,6 +71,13 @@ void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
     base::Clock* clock) {
   MockDataReductionProxySettings<C>* settings =
       new MockDataReductionProxySettings<C>();
+  if (settings_) {
+    settings->data_reduction_proxy_service_ =
+        std::move(settings_->data_reduction_proxy_service_);
+  } else {
+    settings->data_reduction_proxy_service_ = test_context_->TakeService();
+  }
+  settings->data_reduction_proxy_service_->SetSettingsForTesting(settings);
   settings->config_ = test_context_->config();
   test_context_->config()->ResetParamFlagsForTest();
   EXPECT_CALL(*settings, GetOriginalProfilePrefs())
@@ -80,8 +87,6 @@ void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
       .Times(AnyNumber())
       .WillRepeatedly(Return(test_context_->pref_service()));
   settings_.reset(settings);
-  settings_->data_reduction_proxy_service_ =
-      test_context_->CreateDataReductionProxyService(settings_.get());
 }
 
 template void data_reduction_proxy::DataReductionProxySettingsTestBase::

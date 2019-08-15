@@ -196,6 +196,12 @@ class CORE_EXPORT NGLayoutInputNode {
   // occurs, there will be multiple NGPaintFragment for a node.
   const NGPaintFragment* PaintFragment() const;
 
+  CustomLayoutChild* GetCustomLayoutChild() const {
+    // TODO(ikilpatrick): Support NGInlineNode.
+    DCHECK(IsBlock());
+    return box_->GetCustomLayoutChild();
+  }
+
   String ToString() const;
 
   explicit operator bool() const { return box_ != nullptr; }

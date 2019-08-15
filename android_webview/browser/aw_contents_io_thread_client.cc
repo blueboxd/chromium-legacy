@@ -436,20 +436,21 @@ std::unique_ptr<AwWebResourceResponse> RunShouldInterceptRequest(
   RecordInterceptedScheme(ret.is_null(), request.url);
 
   if (ret.is_null())
-    return std::unique_ptr<AwWebResourceResponse>(nullptr);
+    return nullptr;
 
-  AwWebResourceResponse* response = new AwWebResourceResponse(ret);
+  std::unique_ptr<AwWebResourceResponse> response =
+      std::make_unique<AwWebResourceResponse>(ret);
   if (!response->HasInputStream(env)) {
     // Only record UMA for cases where the input stream is null (see
     // crbug.com/974273).
-    RecordResponseStatusCode(env, response);
+    RecordResponseStatusCode(env, response.get());
   }
 
-  return std::unique_ptr<AwWebResourceResponse>(response);
+  return response;
 }
 
 std::unique_ptr<AwWebResourceResponse> ReturnNull() {
-  return std::unique_ptr<AwWebResourceResponse>();
+  return nullptr;
 }
 
 }  // namespace

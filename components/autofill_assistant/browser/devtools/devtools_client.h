@@ -104,7 +104,7 @@ class DevtoolsClient : public MessageDispatcher,
   bool renderer_crashed_;
   int next_message_id_;
 
-  base::WeakPtrFactory<DevtoolsClient> weak_ptr_factory_;
+  base::WeakPtrFactory<DevtoolsClient> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DevtoolsClient);
 };
 

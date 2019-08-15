@@ -53,6 +53,12 @@ public abstract class MediaSession {
     public abstract void seek(long millis);
 
     /**
+     * Seeks the media session to a specific point relative from the beginning
+     * of the media. The number of milliseconds should not be negative.
+     */
+    public abstract void seekTo(long millis);
+
+    /**
      * Notify the media session that an action has been performed.
      */
     public abstract void didReceiveAction(int action);

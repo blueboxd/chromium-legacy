@@ -124,8 +124,8 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
 
         ReplaceResourceProvider(CanvasResourceProvider::CreateForCanvas(
             Size(), usage, SharedGpuContext::ContextProviderWrapper(),
-            0 /* msaa_sample_count */, ColorParams(), presentation_mode,
-            std::move(dispatcher), is_origin_top_left));
+            0 /* msaa_sample_count */, FilterQuality(), ColorParams(),
+            presentation_mode, std::move(dispatcher), is_origin_top_left));
       } else {
         DCHECK(Is2d());
         const bool want_acceleration =
@@ -156,8 +156,8 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
 
         ReplaceResourceProvider(CanvasResourceProvider::CreateForCanvas(
             Size(), usage, SharedGpuContext::ContextProviderWrapper(),
-            GetMSAASampleCountFor2dContext(), ColorParams(), presentation_mode,
-            std::move(dispatcher), is_origin_top_left));
+            GetMSAASampleCountFor2dContext(), FilterQuality(), ColorParams(),
+            presentation_mode, std::move(dispatcher), is_origin_top_left));
 
         if (ResourceProvider()) {
           // Always save an initial frame, to support resetting the top level

@@ -6,7 +6,7 @@
 // Explainer: https://github.com/WICG/file-handling/blob/master/explainer.md
 
 [RuntimeEnabled=FileHandling] interface LaunchParams {
-  readonly attribute FrozenArray<FileSystemBaseHandle> files;
+  readonly attribute FrozenArray<FileSystemHandle> files;
 
   [CallWith=ScriptState]
   readonly attribute Request request;

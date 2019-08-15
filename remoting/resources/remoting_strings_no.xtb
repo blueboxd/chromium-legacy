@@ -8,14 +8,6 @@
 <translation id="1199593201721843963">Deaktiver eksterne tilkoblinger</translation>
 <translation id="1291443878853470558">Du må aktivere eksterne tilkoblinger hvis du ønsker å bruke Chromoting med denne datamaskinen.</translation>
 <translation id="1297009705180977556">Det oppsto en feil ved tilkobling til <ph name="HOSTNAME" /></translation>
-<translation id="1300633907480909701">Få sikker tilgang til datamaskinene dine fra Android-enheten din.
-
-• Konfigurer ekstern tilgang på alle datamaskinene dine via Chrome Ekstern tilgang-appen fra Chrome Nettmarked: https://chrome.google.com/remotedesktop
-• Åpne appen på Android-enheten, og trykk på en av datamaskinene som er på nett for å koble til den.
-
-Eksterne datamaskiner som bruker andre tastaturspråk enn engelsk (USA) kan ha problemer med tekstinndata. Støtte for andre tastaturoppsett kommer snart!
-
-Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl/SyrVzj) og personvernreglene for Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(Denne funksjonen er ikke tilgjengelig for datamaskinen din ennå.)</translation>
 <translation id="1342297293546459414">Se og kontrollér en delt datamaskin.</translation>
 <translation id="1389790901665088353">Last ned installasjonsprogrammet for verten for Chrome Eksternt skrivebord</translation>
@@ -28,7 +20,6 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="1643640058022401035">Hvis du forlater denne siden, avsluttes Chromoting-økten din.</translation>
 <translation id="1654128982815600832">Slår på eksterne tilkoblinger for denne datamaskinen …</translation>
 <translation id="170207782578677537">Kunne ikke registrere denne datamaskinen.</translation>
-<translation id="1727412735341161734">Chrome Eksternt skrivebord</translation>
 <translation id="174018511426417793">Du har ikke registrert noen datamaskiner. For å aktivere ekstern tilkobling til en datamaskin må du installere Chrome Eksternt skrivebord på maskinen, og klikke på «<ph name="BUTTON_NAME" />».</translation>
 <translation id="1742469581923031760">Kobler til …</translation>
 <translation id="1770394049404108959">Jeg kan ikke åpne appen.</translation>
@@ -46,13 +37,6 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="2078880767960296260">Vertsprosess</translation>
 <translation id="20876857123010370">Styreflatemodus</translation>
 <translation id="2089514346391228378">Eksterne tilkoblinger for denne datamaskinen er slått på.</translation>
-<translation id="2118549242412205620">Få sikker tilgang til datamaskinene dine fra Android-enheten din.
-
-• Konfigurer ekstern tilgang på alle datamaskinene dine via Chrome Ekstern tilgang-appen fra Chrome Nettmarked: https://chrome.google.com/remotedesktop
-• Åpne appen på Android-enheten, og trykk på en datamaskinene som er på nett for å koble til den.
-
-Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl/SyrVzj) og personvernreglene for Chrome (http://goo.gl/0uXE5d).</translation>
-<translation id="2124408767156847088">Få sikker tilgang til datamaskinene dine fra Android-enheten din.</translation>
 <translation id="2208514473086078157">Innstillingene tillater ikke at denne datamaskinen deles som vert for Chrome Eksternt skrivebord. Ta kontakt med systemadministratoren for å få hjelp.</translation>
 <translation id="2220529011494928058">Rapportér et problem</translation>
 <translation id="2221097377466213233">Bruk høyre Ctrl som Win-tast (⌘ på Mac)</translation>
@@ -91,11 +75,6 @@ Hvis «<ph name="SERVICE_SCRIPT_NAME" />» allerede er til stede og merket av, m
 <translation id="2851754573186462851">Chromium-appstrømming</translation>
 <translation id="2888969873284818612">En nettverksfeil oppsto. Appen blir startet på nytt når enheten din er på nettet igjen.</translation>
 <translation id="2891243864890517178">For Mac (OS X Yosemite 10.10 eller nyere)</translation>
-<translation id="289405675947420287">Få sikker tilgang til datamaskinen din fra iOS-enheter. Det er raskt, enkelt og gratis.
-
-• Last ned Chrome Eksternt skrivebord-appen fra Chrome Nettmarked på datamaskinen du vil ha ekstern tilgang til.
-• Installer Chrome Eksternt skrivebord, og følg veiledningen for å fullføre konfigureringen.
-• Åpne appen på iOS-enheten din, og trykk på en av de tilgjengelige datamaskinene dine for å koble til.</translation>
 <translation id="2894654864775534701">Denne datamaskinen er for øyeblikket delt under en annen konto.</translation>
 <translation id="2919669478609886916">Du deler denne datamaskinen med en annen bruker. Vil du fortsette å dele?</translation>
 <translation id="2921543551052660690">Du har tidligere logget på som <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Hvis du vil ha tilgang til datamaskiner på den kontoen, må du bruke den til å <ph name="LINK_BEGIN" />logge på Chromium<ph name="LINK_END" /> og deretter installere Chromoting på nytt.</translation>
@@ -109,7 +88,6 @@ Hvis «<ph name="SERVICE_SCRIPT_NAME" />» allerede er til stede og merket av, m
 <translation id="310979712355504754">Slett alle</translation>
 <translation id="3150823315463303127">Verten kunne ikke lese policyen.</translation>
 <translation id="3171922709365450819">Denne enheten støttes ikke av denne klienten fordi den krever tredjepartsautentisering.</translation>
-<translation id="3194245623920924351">Chrome Eksternt skrivebord</translation>
 <translation id="3197730452537982411">Eksternt skrivebord</translation>
 <translation id="324272851072175193">Send disse instruksjonene på e-post</translation>
 <translation id="3258789396564295715">Du kan få sikker tilgang til denne datamaskinen ved å bruke Chrome Eksternt skrivebord.</translation>
@@ -174,13 +152,6 @@ Hvis «<ph name="SERVICE_SCRIPT_NAME" />» allerede er til stede og merket av, m
 <translation id="4660011489602794167">Vis tastatur</translation>
 <translation id="4703302905453407178">En nødvendig komponent har sluttet å fungere. Vennligst rapportér dette problemet til utviklerne.</translation>
 <translation id="4703799847237267011">Chromoting-økten er avsluttet.</translation>
-<translation id="4706355010316049867">Chrome
-Eksternt
-Skrivebord
-Bruk
-Brukerstøtte
-Datamaskin
-PC</translation>
 <translation id="4736223761657662401">Tilkoblingslogg</translation>
 <translation id="4741792197137897469">Autentiseringen mislyktes. Logg på Chrome på nytt.</translation>
 <translation id="477305884757156764">Appen er for langsom.</translation>
@@ -252,7 +223,6 @@ PC</translation>
 <translation id="6381670701864002291">Noe annet.</translation>
 <translation id="6398765197997659313">Avslutt fullskjerm</translation>
 <translation id="6441316101718669559">Denne plattformen har ikke støtte for skrivebordsintegrasjon. Du kan fortsatt bruke programmet, men brukeropplevelsen blir redusert.</translation>
-<translation id="6502629188777329097">Bruk datamaskinen din på en sikker måte</translation>
 <translation id="652218476070540101">PIN-koden for denne datamaskinen oppdateres …</translation>
 <translation id="6527303717912515753">Del</translation>
 <translation id="6541219117979389420">Programlogger kan inneholde privat informasjon, deriblant identiteten din (e-postadressen) og navnene og egenskapene til filer og mapper i Google Disk.</translation>
@@ -286,7 +256,6 @@ PC</translation>
 <translation id="7116737094673640201">Velkommen til Chrome Eksternt skrivebord</translation>
 <translation id="7144878232160441200">Prøv på nytt</translation>
 <translation id="7149517134817561223">Program som brukes til å sende kommandoer til verten for Chrome Eksternt skriverbord.</translation>
-<translation id="7213491505512310433">Stabilitetsforbedringer og feilrettinger.</translation>
 <translation id="7215059001581613786">Skriv inn en PIN-kode på seks sifre eller fler.</translation>
 <translation id="7312846573060934304">Verten er uten nett.</translation>
 <translation id="7319983568955948908">Stopp deling</translation>

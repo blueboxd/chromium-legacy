@@ -37,6 +37,7 @@
 <translation id="1419738280318246476">Desbloqueie o dispositivo para executar a ação de notificação</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1455242230282523554">Mostrar configurações de idioma</translation>
+<translation id="1460620680449458626">O som está desativado.</translation>
 <translation id="1467432559032391204">Para a esquerda</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Mostrar configurações de notificação. As notificações estão desativadas para um app}one{Mostrar configurações de notificação. As notificações estão desativadas para # app}other{Mostrar configurações de notificação. As notificações estão desativadas para # apps}}</translation>
@@ -159,6 +160,7 @@
 <translation id="3236488194889173876">Nenhuma rede móvel disponível</translation>
 <translation id="3249513730522716925">A janela <ph name="WINDOW_TITLE" /> foi movida da área de trabalho <ph name="ACTIVE_DESK" /> para a <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">O que você pode fazer?</translation>
+<translation id="3277674767125718685">O som está ativado.</translation>
 <translation id="3294437725009624529">Visitante</translation>
 <translation id="3308453408813785101">O usuário <ph name="USER_EMAIL_ADDRESS" /> ainda poderá fazer login mais tarde.</translation>
 <translation id="3321628682574733415">Código de pai/mãe incorreto</translation>
@@ -507,6 +509,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Carregador de baixa potência conectado</translation>
 <translation id="8683506306463609433">Acompanhamento de desempenho ativo</translation>
+<translation id="8721053961083920564">Altere o volume. <ph name="STATE_TEXT" /></translation>
 <translation id="8734991477317290293">Ele pode estar tentando capturar sua digitação</translation>
 <translation id="8735953464173050365">Mostrar configurações do teclado. <ph name="KEYBOARD_NAME" /> está selecionado</translation>
 <translation id="875593634123171288">Mostrar configurações de VPN</translation>

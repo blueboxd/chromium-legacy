@@ -1156,9 +1156,14 @@ void TabStrip::ChangeTabGroup(int model_index,
                        base::Unretained(this), new_group.value()));
     group_headers_[new_group.value()] = std::move(header);
   }
-  if (old_group.has_value() &&
-      controller_->ListTabsInGroup(old_group.value()).size() == 0) {
-    layout_helper_->RemoveGroupHeader(old_group.value());
+  if (old_group.has_value()) {
+    if (controller_->ListTabsInGroup(old_group.value()).size() == 0) {
+      layout_helper_->RemoveGroupHeader(old_group.value());
+    } else {
+      // The group header may be in the wrong place if the tab didn't actually
+      // move in terms of model indices.
+      layout_helper_->UpdateGroupHeaderIndex(old_group.value());
+    }
   }
   UpdateIdealBounds();
   AnimateToIdealBounds();

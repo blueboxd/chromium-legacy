@@ -1003,7 +1003,7 @@ base::string16 AccessibilityTreeFormatterUia::ProcessTreeForOutput(
   base::string16 role_value;
   dict.GetString(UiaIdentifierToCondensedString(UIA_AriaRolePropertyId),
                  &role_value);
-  WriteAttribute(true, base::UTF16ToUTF8(role_value), &line);
+  WriteAttribute(true, role_value, &line);
   if (filtered_result) {
     filtered_result->SetString(
         UiaIdentifierToStringUTF8(UIA_AriaRolePropertyId), role_value);

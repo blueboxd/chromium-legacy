@@ -13,13 +13,7 @@
 namespace policy {
 
 void GetExpectedDefaultPolicy(PolicyMap* policy_map) {
-#if defined(OS_ANDROID)
-  policy_map->Set(key::kNTPContentSuggestionsEnabled, POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  base::WrapUnique(new base::Value(false)), nullptr);
-#elif defined(OS_CHROMEOS)
-  SetEnterpriseUsersDefaults(policy_map);
-#endif
+  policy_map->ApplyEnterpriseUsersDefaults(GetEnterpriseUsersDefaults());
 }
 
 

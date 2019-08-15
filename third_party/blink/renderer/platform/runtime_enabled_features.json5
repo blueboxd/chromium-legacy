@@ -1547,7 +1547,7 @@
     },
     {
       name: "StreamsNative",
-      status: "test",
+      status: "stable",
     },
     {
       name: "SurfaceEmbeddingFeatures",

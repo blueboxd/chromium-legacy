@@ -10,6 +10,7 @@
 #include "device/gamepad/gamepad_consumer.h"
 #include "device/gamepad/gamepad_export.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace device {
 
@@ -30,10 +31,11 @@ class DEVICE_GAMEPAD_EXPORT GamepadMonitor : public GamepadConsumer,
   // mojom::GamepadMonitor implementation.
   void GamepadStartPolling(GamepadStartPollingCallback callback) override;
   void GamepadStopPolling(GamepadStopPollingCallback callback) override;
-  void SetObserver(mojom::GamepadObserverPtr gamepad_observer) override;
+  void SetObserver(
+      mojo::PendingRemote<mojom::GamepadObserver> gamepad_observer) override;
 
  private:
-  mojom::GamepadObserverPtr gamepad_observer_;
+  mojo::Remote<mojom::GamepadObserver> gamepad_observer_remote_;
   bool is_started_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadMonitor);

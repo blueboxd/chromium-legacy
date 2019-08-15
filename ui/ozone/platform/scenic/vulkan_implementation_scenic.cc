@@ -250,20 +250,32 @@ bool VulkanImplementationScenic::CreateImageFromGpuMemoryHandle(
     return false;
   }
 
-  if (gmb_handle.native_pixmap_handle.buffer_index >=
-          collection->num_buffers() ||
-      size != collection->size()) {
-    DLOG(ERROR)
-        << "Can't import GpuMemoryBuffer to an image with a different size.";
-    return false;
-  }
+  return collection->CreateVkImage(
+      gmb_handle.native_pixmap_handle.buffer_index, vk_device, size, vk_image,
+      vk_image_info, vk_device_memory, mem_allocation_size, ycbcr_info);
+}
 
-  // TODO(crbug.com/981022): Initialize VulkanYCbCrInfo from the collection.
-  *ycbcr_info = base::nullopt;
+class SysmemBufferCollectionImpl : public gpu::SysmemBufferCollection {
+ public:
+  SysmemBufferCollectionImpl(
+      scoped_refptr<ui::SysmemBufferCollection> collection)
+      : collection_(std::move(collection)) {}
+  ~SysmemBufferCollectionImpl() override = default;
 
-  return collection->CreateVkImage(gmb_handle.native_pixmap_handle.buffer_index,
-                                   vk_device, vk_image, vk_image_info,
-                                   vk_device_memory, mem_allocation_size);
+ private:
+  scoped_refptr<ui::SysmemBufferCollection> collection_;
+
+  DISALLOW_COPY_AND_ASSIGN(SysmemBufferCollectionImpl);
+};
+
+std::unique_ptr<gpu::SysmemBufferCollection>
+VulkanImplementationScenic::RegisterSysmemBufferCollection(
+    VkDevice device,
+    gfx::SysmemBufferCollectionId id,
+    zx::channel token) {
+  return std::make_unique<SysmemBufferCollectionImpl>(
+      sysmem_buffer_manager_->ImportSysmemBufferCollection(device, id,
+                                                           std::move(token)));
 }
 
 }  // namespace ui

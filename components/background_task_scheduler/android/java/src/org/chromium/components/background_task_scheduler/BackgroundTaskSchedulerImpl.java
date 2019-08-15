@@ -75,6 +75,11 @@ class BackgroundTaskSchedulerImpl implements BackgroundTaskScheduler {
             int oldSdkInt = BackgroundTaskSchedulerPrefs.getLastSdkVersion();
             int newSdkInt = Build.VERSION.SDK_INT;
 
+            // Update tasks stored in the old format to the proto format at Chrome Startup, if
+            // tasks are found to be stored in the old format. This allows to keep only one
+            // implementation of the storage methods.
+            BackgroundTaskSchedulerPrefs.migrateStoredTasksToProto();
+
             if (oldSdkInt != newSdkInt) {
                 // Save the current SDK version to preferences.
                 BackgroundTaskSchedulerPrefs.setLastSdkVersion(newSdkInt);

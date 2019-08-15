@@ -6,11 +6,16 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/location.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/services/app_service/public/mojom/constants.mojom.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/url_data_source.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -110,6 +115,12 @@ AppServiceProxy::AppServiceProxy(Profile* profile,
                                apps::mojom::AppType::kExtension);
     extension_web_apps_.Initialize(app_service_, profile,
                                    apps::mojom::AppType::kWeb);
+
+    // Asynchronously add app icon source, so we don't do too much work in the
+    // constructor.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&AppServiceProxy::AddAppIconSource,
+                                  weak_ptr_factory_.GetWeakPtr(), profile));
 #endif  // OS_CHROMEOS
   }
 }
@@ -200,6 +211,12 @@ void AppServiceProxy::ReInitializeCrostiniForTesting(Profile* profile) {
     crostini_apps_.ReInitializeForTesting(app_service_, profile);
   }
 #endif
+}
+
+void AppServiceProxy::AddAppIconSource(Profile* profile) {
+  // Make the chrome://app-icon/ resource available.
+  content::URLDataSource::Add(profile,
+                              std::make_unique<apps::AppIconSource>(profile));
 }
 
 void AppServiceProxy::Shutdown() {

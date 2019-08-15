@@ -1094,6 +1094,33 @@ TEST_P(TabStripTest, GroupHeaderDoesntMoveReorderingTabsInGroup) {
   EXPECT_EQ(initial_tab_2_x, tab1->x());
 }
 
+TEST_P(TabStripTest, GroupHeaderMovesOnRegrouping) {
+  tab_strip_->SetBounds(0, 0, 2000, 100);
+  for (int i = 0; i < 3; i++)
+    tab_strip_->AddTabAt(i, TabRendererData(), false);
+  TabGroupId group0 = TabGroupId::GenerateNew();
+  controller_->MoveTabIntoGroup(0, group0);
+  TabGroupId group1 = TabGroupId::GenerateNew();
+  controller_->MoveTabIntoGroup(1, group1);
+  controller_->MoveTabIntoGroup(2, group1);
+  CompleteAnimationAndLayout();
+
+  std::vector<TabGroupHeader*> headers = ListGroupHeaders();
+  auto header1_it = std::find_if(
+      headers.begin(), headers.end(),
+      [&group1](TabGroupHeader* header) { return header->group() == group1; });
+  ASSERT_TRUE(header1_it != headers.end());
+  TabGroupHeader* header1 = *header1_it;
+
+  // Change groups in a way so that the header should swap with the tab, without
+  // an explicit MoveTab call.
+  controller_->MoveTabIntoGroup(1, group0);
+
+  // Header is now right of tab 1.
+  EXPECT_LT(tab_strip_->tab_at(1)->x(), header1->x());
+  EXPECT_LT(header1->x(), tab_strip_->tab_at(2)->x());
+}
+
 // This can happen when a tab in the middle of a group starts to close.
 TEST_P(TabStripTest, DiscontinuousGroup) {
   tab_strip_->SetBounds(0, 0, 1000, 100);

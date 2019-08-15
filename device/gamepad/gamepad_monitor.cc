@@ -29,20 +29,20 @@ void GamepadMonitor::Create(mojom::GamepadMonitorRequest request) {
 
 void GamepadMonitor::OnGamepadConnected(uint32_t index,
                                         const Gamepad& gamepad) {
-  if (gamepad_observer_)
-    gamepad_observer_->GamepadConnected(index, gamepad);
+  if (gamepad_observer_remote_)
+    gamepad_observer_remote_->GamepadConnected(index, gamepad);
 }
 
 void GamepadMonitor::OnGamepadDisconnected(uint32_t index,
                                            const Gamepad& gamepad) {
-  if (gamepad_observer_)
-    gamepad_observer_->GamepadDisconnected(index, gamepad);
+  if (gamepad_observer_remote_)
+    gamepad_observer_remote_->GamepadDisconnected(index, gamepad);
 }
 
 void GamepadMonitor::OnGamepadButtonOrAxisChanged(uint32_t index,
                                                   const Gamepad& gamepad) {
-  if (gamepad_observer_)
-    gamepad_observer_->GamepadButtonOrAxisChanged(index, gamepad);
+  if (gamepad_observer_remote_)
+    gamepad_observer_remote_->GamepadButtonOrAxisChanged(index, gamepad);
 }
 
 void GamepadMonitor::GamepadStartPolling(GamepadStartPollingCallback callback) {
@@ -62,8 +62,9 @@ void GamepadMonitor::GamepadStopPolling(GamepadStopPollingCallback callback) {
   std::move(callback).Run();
 }
 
-void GamepadMonitor::SetObserver(mojom::GamepadObserverPtr gamepad_observer) {
-  gamepad_observer_ = std::move(gamepad_observer);
+void GamepadMonitor::SetObserver(
+    mojo::PendingRemote<mojom::GamepadObserver> gamepad_observer) {
+  gamepad_observer_remote_.Bind(std::move(gamepad_observer));
 }
 
 }  // namespace device

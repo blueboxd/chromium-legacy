@@ -42,7 +42,7 @@
 
     DOMString getResourceHeader(DOMString url, DOMString header, Document document);
 
-    bool doesWindowHaveUrlFragment(Window window);
+    boolean doesWindowHaveUrlFragment(Window window);
 
     CSSStyleDeclaration computedStyleIncludingVisitedInfo(Node node);
 
@@ -418,12 +418,12 @@
     void DisableIntersectionObserverThrottleDelay();
 
     // Reports whether an iframe's browsing context runs in a separate process
-    bool isSiteIsolated(HTMLIFrameElement iframe);
+    boolean isSiteIsolated(HTMLIFrameElement iframe);
 
     // Reports whether a parent document is propagating occlusion information
     // down to a child frame, for the purpose of servicing IntersectionObserver
     // instances that track visibility.
-    bool isTrackingOcclusionForIFrame(HTMLIFrameElement iframe);
+    boolean isTrackingOcclusionForIFrame(HTMLIFrameElement iframe);
 
     // Declare that the given |name| is in use by the embedder via the custom
     // element mechanism.

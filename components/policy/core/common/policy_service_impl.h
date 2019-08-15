@@ -34,6 +34,14 @@ class POLICY_EXPORT PolicyServiceImpl
   // Creates a new PolicyServiceImpl with the list of
   // ConfigurationPolicyProviders, in order of decreasing priority.
   explicit PolicyServiceImpl(Providers providers);
+
+  // Creates a new PolicyServiceImpl with the list of
+  // ConfigurationPolicyProviders, in order of decreasing priority.
+  // |enterprise_users_default_delegate_|  will be used to decide whether
+  // enterprise user defaults should be applied.
+  PolicyServiceImpl(Providers providers,
+                    PolicyService::EnterpriseUsersDefaultDelegate*
+                        enterprise_users_default_delegate);
   ~PolicyServiceImpl() override;
 
   // PolicyService overrides:
@@ -91,6 +99,11 @@ class POLICY_EXPORT PolicyServiceImpl
 
   // Used to verify thread-safe usage.
   base::ThreadChecker thread_checker_;
+
+  // Used to determine if enterprise default values should be applied to the
+  // policies.
+  PolicyService::EnterpriseUsersDefaultDelegate*
+      enterprise_users_default_delegate_;
 
   // Used to create tasks to delay new policy updates while we may be already
   // processing previous policy updates.

@@ -326,7 +326,6 @@
 <translation id="4880520557730313061">Automaattinen korjaus</translation>
 <translation id="4881695831933465202">Avaa</translation>
 <translation id="4886021172213954916">Tamilinkielinen näppäimistö (kirjoituskone)</translation>
-<translation id="4892969127351273348"><ph name="APP_NAME" /> ei onnistunut avaamaan tiedostoa</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> valmiina varmuuskopiointiin</translation>
 <translation id="4924638091161556692">Korjattu</translation>
 <translation id="4935975195727477204">Kukka</translation>
@@ -366,7 +365,6 @@
 <translation id="5218183485292899140">ranska (Sveitsi)</translation>
 <translation id="5234764350956374838">Piilota</translation>
 <translation id="5241298539944515331">Vietnamilainen näppäimistö (VIQR)</translation>
-<translation id="52446585071384036">Kopioi tiedostot ensin Linux-tiedostojen kansioon, jotta <ph name="APP_NAME" /> voi avata ne.</translation>
 <translation id="5253070652067921974">Tekijä</translation>
 <translation id="5257456363153333584">Sudenkorento</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Käytä tiedostojasi missä vain, myös offline-tilassa.<ph name="MARKUP_2" />

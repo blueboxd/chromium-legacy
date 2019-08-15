@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "components/exo/test/exo_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
@@ -221,6 +222,23 @@ TEST_F(ZAuraSurfaceTest,
   EXPECT_NE(parent_widget().GetNativeWindow(),
             ash::window_util::GetActiveWindow());
   EXPECT_EQ(0.0f, occlusion_fraction_on_activation_loss());
+  EXPECT_EQ(0.0f, aura_surface().last_sent_occlusion_fraction());
+}
+
+TEST_F(ZAuraSurfaceTest, OcclusionIncludesOffScreenArea) {
+  UpdateDisplay("150x150");
+  // This is scaled by 1.5 - set the bounds to (-60, 75, 120, 150) in screen
+  // coordinates so 75% of it is outside of the 100x100 screen.
+  surface().window()->SetBounds(gfx::Rect(-40, 50, 80, 100));
+  surface().OnWindowOcclusionChanged();
+
+  EXPECT_EQ(0.75f, aura_surface().last_sent_occlusion_fraction());
+}
+
+TEST_F(ZAuraSurfaceTest, ZeroSizeWindowSendsZeroOcclusionFraction) {
+  // Zero sized window should not be occluded.
+  surface().window()->SetBounds(gfx::Rect(0, 0, 0, 0));
+  surface().OnWindowOcclusionChanged();
   EXPECT_EQ(0.0f, aura_surface().last_sent_occlusion_fraction());
 }
 

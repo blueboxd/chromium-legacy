@@ -30,7 +30,6 @@ class QuietModeView;
 class UnifiedSliderBubbleController;
 class UnifiedSystemTrayBubble;
 class UnifiedSystemTrayModel;
-class UnifiedMessageCenterBubble;
 
 // The UnifiedSystemTray is the system menu of Chromium OS, which is a clickable
 // rounded rectangle typically located on the bottom right corner of the screen,
@@ -111,10 +110,6 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   UnifiedSystemTrayModel* model() { return model_.get(); }
   UnifiedSystemTrayBubble* bubble() { return bubble_.get(); }
 
-  UnifiedMessageCenterBubble* message_center_bubble_for_test() {
-    return message_center_bubble_.get();
-  }
-
  private:
   static const base::TimeDelta kNotificationCountUpdateDelay;
 
@@ -137,8 +132,6 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   const std::unique_ptr<UiDelegate> ui_delegate_;
 
   std::unique_ptr<UnifiedSystemTrayBubble> bubble_;
-
-  std::unique_ptr<UnifiedMessageCenterBubble> message_center_bubble_;
 
   // Model class that stores UnifiedSystemTray's UI specific variables.
   const std::unique_ptr<UnifiedSystemTrayModel> model_;

@@ -6,9 +6,8 @@
 
 #include <memory>
 
-#include "base/test/test_mock_time_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/clock.h"
-#include "chrome/browser/chromeos/power/ml/fake_boot_clock.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
@@ -69,11 +68,6 @@ class IdleEventNotifierTest : public testing::Test {
     idle_event_notifier_ = std::make_unique<IdleEventNotifier>(
         PowerManagerClient::Get(), &user_activity_detector_,
         mojo::MakeRequest(&observer));
-    idle_event_notifier_->SetClockForTesting(
-        scoped_task_env_.GetMainThreadTaskRunner(),
-        const_cast<base::Clock*>(scoped_task_env_.GetMockClock()),
-        std::make_unique<FakeBootClock>(&scoped_task_env_,
-                                        base::TimeDelta::FromSeconds(10)));
     ac_power_.set_external_power(
         power_manager::PowerSupplyProperties_ExternalPower_AC);
     disconnected_power_.set_external_power(
@@ -104,7 +98,7 @@ TEST_F(IdleEventNotifierTest, CheckInitialValues) {
 
 // Lid is opened, followed by an idle event.
 TEST_F(IdleEventNotifierTest, LidOpenEventReceived) {
-  base::Time now = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now = base::Time::Now();
   idle_event_notifier_->LidEventReceived(
       chromeos::PowerManagerClient::LidState::OPEN,
       base::TimeTicks::UnixEpoch());
@@ -120,7 +114,7 @@ TEST_F(IdleEventNotifierTest, LidOpenEventReceived) {
 // PowerChanged signal is received but source isn't changed, so it won't change
 // ActivityData that gets reported when an idle event is received.
 TEST_F(IdleEventNotifierTest, PowerSourceNotChanged) {
-  base::Time now = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now = base::Time::Now();
   idle_event_notifier_->PowerChanged(ac_power_);
   IdleEventNotifier::ActivityData data;
   data.last_activity_day = GetDayOfWeek(now);
@@ -138,7 +132,7 @@ TEST_F(IdleEventNotifierTest, PowerSourceNotChanged) {
 // PowerChanged signal is received and source is changed, so a different
 // ActivityData gets reported when the 2nd idle event is received.
 TEST_F(IdleEventNotifierTest, PowerSourceChanged) {
-  base::Time now_1 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_1 = base::Time::Now();
   idle_event_notifier_->PowerChanged(ac_power_);
   IdleEventNotifier::ActivityData data_1;
   data_1.last_activity_day = GetDayOfWeek(now_1);
@@ -149,7 +143,7 @@ TEST_F(IdleEventNotifierTest, PowerSourceChanged) {
   EXPECT_EQ(data_1, idle_event_notifier_->GetActivityDataAndReset());
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(100));
-  base::Time now_2 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_2 = base::Time::Now();
   idle_event_notifier_->PowerChanged(disconnected_power_);
   IdleEventNotifier::ActivityData data_2;
   data_2.last_activity_day = GetDayOfWeek(now_2);
@@ -162,7 +156,7 @@ TEST_F(IdleEventNotifierTest, PowerSourceChanged) {
 
 // Short sleep duration does not break up recent time active.
 TEST_F(IdleEventNotifierTest, ShortSuspendDone) {
-  base::Time now_1 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_1 = base::Time::Now();
   idle_event_notifier_->PowerChanged(ac_power_);
 
   scoped_task_env_.FastForwardBy(IdleEventNotifier::kIdleDelay / 2);
@@ -170,7 +164,7 @@ TEST_F(IdleEventNotifierTest, ShortSuspendDone) {
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(5));
   idle_event_notifier_->PowerChanged(disconnected_power_);
-  base::Time now_2 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_2 = base::Time::Now();
 
   IdleEventNotifier::ActivityData data;
   data.last_activity_day = GetDayOfWeek(now_2);
@@ -187,12 +181,12 @@ TEST_F(IdleEventNotifierTest, LongSuspendDone) {
 
   scoped_task_env_.FastForwardBy(IdleEventNotifier::kIdleDelay +
                                  base::TimeDelta::FromSeconds(10));
-  base::Time now_1 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_1 = base::Time::Now();
   idle_event_notifier_->SuspendDone(IdleEventNotifier::kIdleDelay +
                                     base::TimeDelta::FromSeconds(10));
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-  base::Time now_2 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_2 = base::Time::Now();
   idle_event_notifier_->PowerChanged(disconnected_power_);
 
   IdleEventNotifier::ActivityData data;
@@ -205,7 +199,7 @@ TEST_F(IdleEventNotifierTest, LongSuspendDone) {
 }
 
 TEST_F(IdleEventNotifierTest, UserActivityKey) {
-  base::Time now = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now = base::Time::Now();
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   idle_event_notifier_->OnUserActivity(&key_event);
   IdleEventNotifier::ActivityData data;
@@ -221,7 +215,7 @@ TEST_F(IdleEventNotifierTest, UserActivityKey) {
 }
 
 TEST_F(IdleEventNotifierTest, UserActivityMouse) {
-  base::Time now = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now = base::Time::Now();
   ui::MouseEvent mouse_event(ui::ET_MOUSE_EXITED, gfx::Point(0, 0),
                              gfx::Point(0, 0), base::TimeTicks(), 0, 0);
 
@@ -239,7 +233,7 @@ TEST_F(IdleEventNotifierTest, UserActivityMouse) {
 }
 
 TEST_F(IdleEventNotifierTest, UserActivityOther) {
-  base::Time now = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now = base::Time::Now();
   ui::GestureEvent gesture_event(0, 0, 0, base::TimeTicks(),
                                  ui::GestureEventDetails(ui::ET_GESTURE_TAP));
 
@@ -257,13 +251,13 @@ TEST_F(IdleEventNotifierTest, UserActivityOther) {
 // Two consecutive activities separated by 2sec only. Only 1 idle event with
 // different timestamps for the two activities.
 TEST_F(IdleEventNotifierTest, TwoQuickUserActivities) {
-  base::Time now_1 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_1 = base::Time::Now();
   ui::MouseEvent mouse_event(ui::ET_MOUSE_EXITED, gfx::Point(0, 0),
                              gfx::Point(0, 0), base::TimeTicks(), 0, 0);
   idle_event_notifier_->OnUserActivity(&mouse_event);
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(2));
-  base::Time now_2 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_2 = base::Time::Now();
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   idle_event_notifier_->OnUserActivity(&key_event);
 
@@ -285,15 +279,15 @@ TEST_F(IdleEventNotifierTest, TwoQuickUserActivities) {
 TEST_F(IdleEventNotifierTest, ActivityAfterVideoStarts) {
   ui::MouseEvent mouse_event(ui::ET_MOUSE_EXITED, gfx::Point(0, 0),
                              gfx::Point(0, 0), base::TimeTicks(), 0, 0);
-  base::Time now_1 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_1 = base::Time::Now();
   idle_event_notifier_->OnVideoActivityStarted();
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
-  base::Time now_2 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_2 = base::Time::Now();
   idle_event_notifier_->OnUserActivity(&mouse_event);
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(2));
-  base::Time now_3 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_3 = base::Time::Now();
   idle_event_notifier_->OnVideoActivityEnded();
 
   IdleEventNotifier::ActivityData data;
@@ -310,12 +304,12 @@ TEST_F(IdleEventNotifierTest, ActivityAfterVideoStarts) {
 }
 
 TEST_F(IdleEventNotifierTest, IdleEventFieldReset) {
-  base::Time now_1 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_1 = base::Time::Now();
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   idle_event_notifier_->OnUserActivity(&key_event);
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-  base::Time now_2 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_2 = base::Time::Now();
   ui::MouseEvent mouse_event(ui::ET_MOUSE_EXITED, gfx::Point(0, 0),
                              gfx::Point(0, 0), base::TimeTicks(), 0, 0);
   idle_event_notifier_->OnUserActivity(&mouse_event);
@@ -334,7 +328,7 @@ TEST_F(IdleEventNotifierTest, IdleEventFieldReset) {
   EXPECT_EQ(data_1, idle_event_notifier_->GetActivityDataAndReset());
 
   idle_event_notifier_->PowerChanged(ac_power_);
-  base::Time now_3 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_3 = base::Time::Now();
 
   IdleEventNotifier::ActivityData data_2;
   data_2.last_activity_day = GetDayOfWeek(now_3);
@@ -354,7 +348,7 @@ TEST_F(IdleEventNotifierTest, IdleEventFieldReset) {
 TEST_F(IdleEventNotifierTest, TwoConsecutiveVideoPlaying) {
   // Two video playing sessions with a gap shorter than kIdleDelay. They are
   // merged into one playing session.
-  base::Time now_1 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_1 = base::Time::Now();
   idle_event_notifier_->OnVideoActivityStarted();
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(2));
@@ -364,11 +358,11 @@ TEST_F(IdleEventNotifierTest, TwoConsecutiveVideoPlaying) {
   idle_event_notifier_->OnVideoActivityStarted();
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(20));
-  base::Time now_2 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_2 = base::Time::Now();
   idle_event_notifier_->OnVideoActivityEnded();
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-  base::Time now_3 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_3 = base::Time::Now();
   ui::MouseEvent mouse_event(ui::ET_MOUSE_EXITED, gfx::Point(0, 0),
                              gfx::Point(0, 0), base::TimeTicks(), 0, 0);
   idle_event_notifier_->OnUserActivity(&mouse_event);
@@ -389,7 +383,7 @@ TEST_F(IdleEventNotifierTest, TwoConsecutiveVideoPlaying) {
 
 TEST_F(IdleEventNotifierTest, TwoVideoPlayingFarApartOneIdleEvent) {
   // Two video playing sessions with a gap larger than kIdleDelay.
-  base::Time now_1 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_1 = base::Time::Now();
   idle_event_notifier_->OnVideoActivityStarted();
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(2));
@@ -403,10 +397,10 @@ TEST_F(IdleEventNotifierTest, TwoVideoPlayingFarApartOneIdleEvent) {
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(20));
   idle_event_notifier_->OnUserActivity(&mouse_event);
 
-  base::Time now_2 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_2 = base::Time::Now();
   idle_event_notifier_->OnVideoActivityStarted();
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(20));
-  base::Time now_3 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_3 = base::Time::Now();
   idle_event_notifier_->OnVideoActivityEnded();
 
   IdleEventNotifier::ActivityData data;
@@ -425,11 +419,11 @@ TEST_F(IdleEventNotifierTest, TwoVideoPlayingFarApartOneIdleEvent) {
 TEST_F(IdleEventNotifierTest, TwoVideoPlayingFarApartTwoIdleEvents) {
   // Two video playing sessions with a gap equal to kIdleDelay. An idle event
   // is generated in between, both video sessions are reported.
-  base::Time now_1 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_1 = base::Time::Now();
   idle_event_notifier_->OnVideoActivityStarted();
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(2));
-  base::Time now_2 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_2 = base::Time::Now();
   idle_event_notifier_->OnVideoActivityEnded();
 
   IdleEventNotifier::ActivityData data_1;
@@ -443,10 +437,10 @@ TEST_F(IdleEventNotifierTest, TwoVideoPlayingFarApartTwoIdleEvents) {
                                  base::TimeDelta::FromSeconds(10));
   EXPECT_EQ(data_1, idle_event_notifier_->GetActivityDataAndReset());
 
-  base::Time now_3 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_3 = base::Time::Now();
   idle_event_notifier_->OnVideoActivityStarted();
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(20));
-  base::Time now_4 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_4 = base::Time::Now();
   idle_event_notifier_->OnVideoActivityEnded();
 
   IdleEventNotifier::ActivityData data_2;
@@ -461,11 +455,11 @@ TEST_F(IdleEventNotifierTest, TwoVideoPlayingFarApartTwoIdleEvents) {
 TEST_F(IdleEventNotifierTest, TwoVideoPlayingSeparatedByAnIdleEvent) {
   // Two video playing sessions with gap shorter than kIdleDelay but separated
   // by an idle event. They are considered as two video sessions.
-  const base::Time kNow1 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time kNow1 = base::Time::Now();
   idle_event_notifier_->OnVideoActivityStarted();
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(2));
-  const base::Time kNow2 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time kNow2 = base::Time::Now();
   idle_event_notifier_->OnVideoActivityEnded();
 
   IdleEventNotifier::ActivityData data_1;
@@ -477,10 +471,10 @@ TEST_F(IdleEventNotifierTest, TwoVideoPlayingSeparatedByAnIdleEvent) {
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(data_1, idle_event_notifier_->GetActivityDataAndReset());
 
-  const base::Time kNow3 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time kNow3 = base::Time::Now();
   idle_event_notifier_->OnVideoActivityStarted();
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(20));
-  const base::Time kNow4 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time kNow4 = base::Time::Now();
   idle_event_notifier_->OnVideoActivityEnded();
 
   IdleEventNotifier::ActivityData data_2;
@@ -493,15 +487,15 @@ TEST_F(IdleEventNotifierTest, TwoVideoPlayingSeparatedByAnIdleEvent) {
 }
 
 TEST_F(IdleEventNotifierTest, VideoPlayingPausedByShortSuspend) {
-  base::Time now_1 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_1 = base::Time::Now();
   idle_event_notifier_->OnVideoActivityStarted();
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(100));
-  base::Time now_2 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_2 = base::Time::Now();
   idle_event_notifier_->SuspendDone(IdleEventNotifier::kIdleDelay / 2);
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(20));
-  base::Time now_3 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_3 = base::Time::Now();
   idle_event_notifier_->OnVideoActivityEnded();
 
   IdleEventNotifier::ActivityData data;
@@ -518,11 +512,11 @@ TEST_F(IdleEventNotifierTest, VideoPlayingPausedByLongSuspend) {
   idle_event_notifier_->OnVideoActivityStarted();
 
   scoped_task_env_.FastForwardBy(2 * IdleEventNotifier::kIdleDelay);
-  base::Time now_1 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_1 = base::Time::Now();
   idle_event_notifier_->SuspendDone(2 * IdleEventNotifier::kIdleDelay);
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(20));
-  base::Time now_2 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_2 = base::Time::Now();
   idle_event_notifier_->OnVideoActivityEnded();
 
   IdleEventNotifier::ActivityData data;
@@ -543,16 +537,16 @@ TEST_F(IdleEventNotifierTest, UserInputEventsOneIdleEvent) {
       ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), base::TimeTicks::UnixEpoch(),
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
 
-  base::Time first_activity_time = scoped_task_env_.GetMockClock()->Now();
+  const base::Time first_activity_time = base::Time::Now();
   // This key event will be too old to be counted.
   idle_event_notifier_->OnUserActivity(&key_event);
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-  base::Time video_start_time = scoped_task_env_.GetMockClock()->Now();
+  const base::Time video_start_time = base::Time::Now();
   idle_event_notifier_->OnVideoActivityStarted();
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromMinutes(11));
-  base::Time last_key_time = scoped_task_env_.GetMockClock()->Now();
+  const base::Time last_key_time = base::Time::Now();
   idle_event_notifier_->OnUserActivity(&key_event);
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromMinutes(11));
@@ -565,15 +559,15 @@ TEST_F(IdleEventNotifierTest, UserInputEventsOneIdleEvent) {
   idle_event_notifier_->OnUserActivity(&touch_event);
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromMinutes(11));
-  base::Time last_touch_time = scoped_task_env_.GetMockClock()->Now();
+  const base::Time last_touch_time = base::Time::Now();
   idle_event_notifier_->OnUserActivity(&touch_event);
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromMinutes(11));
-  base::Time last_mouse_time = scoped_task_env_.GetMockClock()->Now();
+  const base::Time last_mouse_time = base::Time::Now();
   idle_event_notifier_->OnUserActivity(&mouse_event);
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-  base::Time video_end_time = scoped_task_env_.GetMockClock()->Now();
+  const base::Time video_end_time = base::Time::Now();
   idle_event_notifier_->OnVideoActivityEnded();
 
   IdleEventNotifier::ActivityData data;
@@ -606,7 +600,7 @@ TEST_F(IdleEventNotifierTest, UserInputEventsTwoIdleEvents) {
       ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), base::TimeTicks::UnixEpoch(),
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
 
-  base::Time now_1 = scoped_task_env_.GetMockClock()->Now();
+  const base::Time now_1 = base::Time::Now();
   idle_event_notifier_->OnUserActivity(&key_event);
 
   IdleEventNotifier::ActivityData data_1;
@@ -620,11 +614,11 @@ TEST_F(IdleEventNotifierTest, UserInputEventsTwoIdleEvents) {
   EXPECT_EQ(data_1, idle_event_notifier_->GetActivityDataAndReset());
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromMinutes(11));
-  base::Time last_key_time = scoped_task_env_.GetMockClock()->Now();
+  const base::Time last_key_time = base::Time::Now();
   idle_event_notifier_->OnUserActivity(&key_event);
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-  base::Time video_start_time = scoped_task_env_.GetMockClock()->Now();
+  const base::Time video_start_time = base::Time::Now();
   // Keep playing video so we won't run into an idle event.
   idle_event_notifier_->OnVideoActivityStarted();
 
@@ -638,15 +632,15 @@ TEST_F(IdleEventNotifierTest, UserInputEventsTwoIdleEvents) {
   idle_event_notifier_->OnUserActivity(&touch_event);
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromMinutes(11));
-  base::Time last_touch_time = scoped_task_env_.GetMockClock()->Now();
+  const base::Time last_touch_time = base::Time::Now();
   idle_event_notifier_->OnUserActivity(&touch_event);
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromMinutes(11));
-  base::Time last_mouse_time = scoped_task_env_.GetMockClock()->Now();
+  const base::Time last_mouse_time = base::Time::Now();
   idle_event_notifier_->OnUserActivity(&mouse_event);
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-  base::Time video_end_time = scoped_task_env_.GetMockClock()->Now();
+  const base::Time video_end_time = base::Time::Now();
   idle_event_notifier_->OnVideoActivityEnded();
 
   IdleEventNotifier::ActivityData data_2;

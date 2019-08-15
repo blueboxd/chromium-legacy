@@ -7,10 +7,7 @@
 #include <memory>
 
 #include "ash/public/cpp/ash_features.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray.h"
-#include "ash/system/unified/unified_system_tray_bubble.h"
-#include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/message_center/message_center.h"
@@ -27,8 +24,22 @@ class UnifiedMessageCenterBubbleTest : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override {
-    AshTestBase::SetUp();
     scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+    scoped_feature_list_->InitAndEnableFeature(
+        features::kUnifiedMessageCenterRefactor);
+    AshTestBase::SetUp();
+    tray_ = GetPrimaryUnifiedSystemTray();
+    tray_->ShowBubble(true);
+    message_center_bubble_ =
+        std::make_unique<UnifiedMessageCenterBubble>(tray_);
+  }
+
+  void TearDown() override {
+    // message_center_bubble_ needs to be destroyed before
+    // the UnifiedSystemTray and TrayEventFilter. Need to do it
+    // manually since we manually created it in SetUp.
+    message_center_bubble_.reset();
+    AshTestBase::TearDown();
   }
 
  protected:
@@ -43,78 +54,31 @@ class UnifiedMessageCenterBubbleTest : public AshTestBase {
     return id;
   }
 
-  void EnableMessageCenterRefactor() {
-    scoped_feature_list_->InitAndEnableFeature(
-        features::kUnifiedMessageCenterRefactor);
-  }
+  UnifiedSystemTray* tray() { return tray_; }
 
-  UnifiedMessageCenterBubble* GetMessageCenterBubble() {
-    return GetPrimaryUnifiedSystemTray()->message_center_bubble_for_test();
-  }
-
-  UnifiedSystemTrayBubble* GetSystemTrayBubble() {
-    return GetPrimaryUnifiedSystemTray()->bubble();
-  }
-
-  int MessageCenterSeparationHeight() {
-    gfx::Rect message_bubble_bounds =
-        GetMessageCenterBubble()->GetBubbleView()->GetBoundsInScreen();
-    gfx::Rect tray_bounds =
-        GetSystemTrayBubble()->GetBubbleView()->GetBoundsInScreen();
-
-    return message_bubble_bounds.y() + message_bubble_bounds.height() -
-           tray_bounds.y();
+  UnifiedMessageCenterBubble* message_center_bubble() {
+    return message_center_bubble_.get();
   }
 
  private:
   int id_ = 0;
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
+  UnifiedSystemTray* tray_ = nullptr;
+  std::unique_ptr<UnifiedMessageCenterBubble> message_center_bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedMessageCenterBubbleTest);
 };
 
 TEST_F(UnifiedMessageCenterBubbleTest, VisibileOnlyWithNotifications) {
-  EnableMessageCenterRefactor();
-  GetPrimaryUnifiedSystemTray()->ShowBubble(true);
   // UnifiedMessageCenterBubble should not be visible when there are no
   // notifications.
-  EXPECT_FALSE(GetMessageCenterBubble()->GetBubbleWidget()->IsVisible());
+  EXPECT_FALSE(message_center_bubble()->GetBubbleWidget()->IsVisible());
 
   AddNotification();
 
   // UnifiedMessageCenterBubble should become visible after a notification is
   // added.
-  EXPECT_TRUE(GetMessageCenterBubble()->GetBubbleWidget()->IsVisible());
-}
-
-TEST_F(UnifiedMessageCenterBubbleTest, PositionedAboveSystemTray) {
-  const int total_notifications = 5;
-  EnableMessageCenterRefactor();
-  GetPrimaryUnifiedSystemTray()->ShowBubble(true);
-  AddNotification();
-
-  const int reference_separation = MessageCenterSeparationHeight();
-
-  // The message center should be positioned a constant distance above
-  // the tray as it grows in size.
-  for (int i = 0; i < total_notifications; i++) {
-    AddNotification();
-    EXPECT_EQ(reference_separation, MessageCenterSeparationHeight());
-  }
-
-  // When the system tray is collapsing, message view should stay at a constant
-  // height above it.
-  for (double i = 1.0; i >= 0; i -= 0.1) {
-    GetSystemTrayBubble()->unified_view()->SetExpandedAmount(i);
-    EXPECT_EQ(reference_separation, MessageCenterSeparationHeight());
-  }
-
-  // When the system tray is collapsing, message view should stay at a constant
-  // height above it.
-  for (double i = 0.0; i <= 1.0; i += 0.1) {
-    GetSystemTrayBubble()->unified_view()->SetExpandedAmount(i);
-    EXPECT_EQ(reference_separation, MessageCenterSeparationHeight());
-  }
+  EXPECT_TRUE(message_center_bubble()->GetBubbleWidget()->IsVisible());
 }
 
 }  // namespace ash

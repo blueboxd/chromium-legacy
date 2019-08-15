@@ -729,9 +729,6 @@
     <message name="IDS_SETTINGS_APPS_LINK_TEXT" desc="The label for the button which links to the App Management page.">
       Manage your apps
     </message>
-    <message name="IDS_SETTINGS_APPS_LINK_SUBLABEL_TEXT" desc="The sublabel for the button which links to the App Management page.">
-      Open App Management
-    </message>
   </if>
 
   <!-- Appearance Page -->

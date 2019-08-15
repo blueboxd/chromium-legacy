@@ -1,4 +1,25 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
+<translation id="125153950246128346">Натисніть, щоб побачити іншу вкладку</translation>
+<translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> вкладка}one{<ph name="TABS_COUNT_MANY" /> вкладка}few{<ph name="TABS_COUNT_MANY" /> вкладки}many{<ph name="TABS_COUNT_MANY" /> вкладок}other{<ph name="TABS_COUNT_MANY" /> вкладки}}</translation>
+<translation id="257674075312929031">Група</translation>
+<translation id="2613747923081026172">Створити групу</translation>
+<translation id="2845873210977809562">Відкриті вкладки закрито</translation>
+<translation id="2977480621796371840">Вилучити з групи</translation>
+<translation id="4648718555153979859">Тут згруповано ваші вкладки</translation>
+<translation id="5073204694187207510">Сховати повноекранну сітку</translation>
+<translation id="5082793167783849073">Швидко порівнюйте сторінки, створивши групу. Щоб почати, натисніть і втримуйте посилання.</translation>
+<translation id="5497272504048921382">Відкриті вкладки</translation>
+<translation id="5580090775658607195">Згруповано стільки вкладок: <ph name="TAB_COUNT" /></translation>
+<translation id="5586306159936941448">Перетягніть одну вкладку на іншу, щоб згрупувати їх</translation>
+<translation id="58326064309361797">Перетягуйте вкладки, щоб групувати їх</translation>
+<translation id="6193448654517602979">Виберіть вкладки</translation>
+<translation id="6615455863669487791">Показати</translation>
+<translation id="6803423358608456383">Вкладки відкрито на половину висоти</translation>
+<translation id="7559245342362162951">Показувати вкладки групи в повноекранній сітці</translation>
+<translation id="8582216581279205169">Вкладки відкрито на повну висоту</translation>
+<translation id="9150694013019234766">Переходьте між вкладками в групі вкладок унизу екрана</translation>
+<translation id="9169594135889675189">Додати нову вкладку в групу</translation>
+<translation id="959682366969460160">Упорядковуйте свої дані</translation>
 </translationbundle>

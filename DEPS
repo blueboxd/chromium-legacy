@@ -145,7 +145,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '319fd3d7bcb4c699fe1cdd6503af57c00f312e13',
+  'skia_revision': '201cdbb64614ba7749ad6c3d8f15c2e9342a9c75',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -157,11 +157,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '3ea90d609720b7b9b9d05ca094860382f2425294',
+  'angle_revision': '611663f4f61c7a98fcd64208c15d99be2da8740f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '80e57adac02bc9b5bd55041f17ed34c9dbc6165e',
+  'swiftshader_revision': '75b6f212c8536b2fa0558b711b741eb60d9e2188',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -264,7 +264,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': 'f701237f2d88af13fe9f920f29f288dc7157c262',
+  'spv_tools_revision': 'ff872dc6bf9f929002b5645e689555c98ac489d2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -908,7 +908,7 @@ deps = {
   },
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '37fc4d27d612d3b0c916933e16dab3da5bb7ab34',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '95609e6d923a9cf9593afca36ab1c419999f3519',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1212,7 +1212,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '0bd6571a6abd8e49037270b04d0c79cf543e714d',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f714c29b97d00e2277b3d6d608fcc1679f5fe45b',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1421,7 +1421,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4698d89ee54d342678242f4517d996d256e47699',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5a3cb60821903aab006eb57d7c2bdf9d2c50caed',
     'condition': 'checkout_src_internal',
   },
 

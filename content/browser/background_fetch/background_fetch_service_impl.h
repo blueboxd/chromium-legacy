@@ -60,7 +60,7 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
       url::Origin origin,
       int render_frame_tree_node_id,
       WebContents::Getter wc_getter,
-      blink::mojom::BackgroundFetchServiceRequest request);
+      mojo::PendingReceiver<blink::mojom::BackgroundFetchService> receiver);
 
   // Validates and returns whether the |developer_id|, |unique_id|, |requests|
   // and |title| respectively have valid values. The renderer will be flagged

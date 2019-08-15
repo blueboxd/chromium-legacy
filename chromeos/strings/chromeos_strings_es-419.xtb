@@ -13,7 +13,7 @@
 <translation id="2872961005593481000">Cerrar</translation>
 <translation id="3008341117444806826">ACTUALIZAR</translation>
 <translation id="3838338534323494292">Nueva contraseña</translation>
-<translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> administra este dispositivo y tiene acceso a toda la actividad del usuario, incluidos el correo electrónico, las páginas web que visitó y las contraseñas.</translation>
+<translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> administra este dispositivo y tiene acceso a toda la actividad del usuario, incluso las páginas web que visitó, su correo electrónico y sus contraseñas.</translation>
 <translation id="4227825898293920515">La contraseña caduca en <ph name="TIME" /></translation>
 <translation id="4429881212383817840">El ticket de Kerberos caducará pronto</translation>
 <translation id="445059817448385655">Contraseña anterior</translation>

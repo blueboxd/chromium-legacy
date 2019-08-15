@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
@@ -34,6 +35,7 @@ import java.util.concurrent.TimeUnit;
  * This is a helper class for Content Shell tests.
 */
 @RunWith(BaseJUnit4ClassRunner.class)
+@CommandLineFlags.Add({"allow-pre-commit-input"})
 public class GestureDetectorResetTest {
     @Rule
     public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();

@@ -753,7 +753,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ClearAllWebUI();
 
   // Returns the Mojo ImageDownloader service.
-  const blink::mojom::ImageDownloaderPtr& GetMojoImageDownloader();
+  const mojo::Remote<blink::mojom::ImageDownloader>& GetMojoImageDownloader();
 
   // Returns remote to renderer side FindInPage associated with this frame.
   const mojo::AssociatedRemote<blink::mojom::FindInPage>& GetFindInPage();
@@ -1969,7 +1969,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<PermissionServiceContext> permission_service_context_;
 
   // Holder of Mojo connection with ImageDownloader service in Blink.
-  blink::mojom::ImageDownloaderPtr mojo_image_downloader_;
+  mojo::Remote<blink::mojom::ImageDownloader> mojo_image_downloader_;
 
   // Holder of Mojo connection with FindInPage service in Blink.
   mojo::AssociatedRemote<blink::mojom::FindInPage> find_in_page_;

@@ -15,13 +15,13 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::test::ScopedTaskEnvironment;
+using base::test::TaskEnvironment;
 
 namespace content {
 
 namespace {
 
-// TestBrowserThreadBundleTest.RunUntilIdle will run kNumTasks tasks that will
+// BrowserTaskEnvironmentTest.RunUntilIdle will run kNumTasks tasks that will
 // hop back-and-forth between ThreadPool and UI thread kNumHops times.
 // Note: These values are arbitrary.
 constexpr int kNumHops = 13;
@@ -55,8 +55,8 @@ void PostTaskToUIThread(int iteration, base::subtle::Atomic32* tasks_run) {
 
 }  // namespace
 
-TEST(TestBrowserThreadBundleTest, RunUntilIdle) {
-  TestBrowserThreadBundle test_browser_thread_bundle;
+TEST(BrowserTaskEnvironmentTest, RunUntilIdle) {
+  BrowserTaskEnvironment browser_task_environment;
 
   base::subtle::Atomic32 tasks_run = 0;
 
@@ -70,7 +70,7 @@ TEST(TestBrowserThreadBundleTest, RunUntilIdle) {
     }
   }
 
-  test_browser_thread_bundle.RunUntilIdle();
+  browser_task_environment.RunUntilIdle();
 
   EXPECT_EQ(kNumTasks * kNumHops, base::subtle::NoBarrier_Load(&tasks_run));
 }
@@ -92,9 +92,9 @@ void PostRecurringTaskToIOThread(int iteration, int* tasks_run) {
 
 }  // namespace
 
-TEST(TestBrowserThreadBundleTest, RunIOThreadUntilIdle) {
-  TestBrowserThreadBundle test_browser_thread_bundle(
-      TestBrowserThreadBundle::Options::REAL_IO_THREAD);
+TEST(BrowserTaskEnvironmentTest, RunIOThreadUntilIdle) {
+  BrowserTaskEnvironment browser_task_environment(
+      BrowserTaskEnvironment::Options::REAL_IO_THREAD);
 
   int tasks_run = 0;
 
@@ -102,40 +102,40 @@ TEST(TestBrowserThreadBundleTest, RunIOThreadUntilIdle) {
     PostRecurringTaskToIOThread(0, &tasks_run);
   }
 
-  test_browser_thread_bundle.RunIOThreadUntilIdle();
+  browser_task_environment.RunIOThreadUntilIdle();
 
   EXPECT_EQ(kNumTasks * kNumHops, tasks_run);
 }
 
-TEST(TestBrowserThreadBundleTest, MessageLoopTypeMismatch) {
+TEST(BrowserTaskEnvironmentTest, MessageLoopTypeMismatch) {
   testing::FLAGS_gtest_death_test_style = "threadsafe";
 
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::UI);
 
   EXPECT_DEATH_IF_SUPPORTED(
       {
-        TestBrowserThreadBundle test_browser_thread_bundle(
-            TestBrowserThreadBundle::IO_MAINLOOP);
+        BrowserTaskEnvironment browser_task_environment(
+            BrowserTaskEnvironment::IO_MAINLOOP);
       },
       "");
 }
 
-TEST(TestBrowserThreadBundleTest, MultipleTestBrowserThreadBundle) {
+TEST(BrowserTaskEnvironmentTest, MultipleBrowserTaskEnvironment) {
   testing::FLAGS_gtest_death_test_style = "threadsafe";
 
   EXPECT_DEATH_IF_SUPPORTED(
       {
-        TestBrowserThreadBundle test_browser_thread_bundle;
-        TestBrowserThreadBundle other_test_browser_thread_bundle;
+        BrowserTaskEnvironment browser_task_environment;
+        BrowserTaskEnvironment other_browser_task_environment;
       },
       "");
 }
 
-TEST(TestBrowserThreadBundleTest, TraitsConstructor) {
-  TestBrowserThreadBundle test_browser_thread_bundle(
-      TestBrowserThreadBundle::Options::REAL_IO_THREAD,
-      base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED);
+TEST(BrowserTaskEnvironmentTest, TraitsConstructor) {
+  BrowserTaskEnvironment browser_task_environment(
+      BrowserTaskEnvironment::Options::REAL_IO_THREAD,
+      base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED);
   // Should set up a UI main thread.
   EXPECT_TRUE(base::MessageLoopCurrentForUI::IsSet());
   EXPECT_FALSE(base::MessageLoopCurrentForIO::IsSet());
@@ -159,21 +159,21 @@ TEST(TestBrowserThreadBundleTest, TraitsConstructor) {
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   EXPECT_FALSE(task_ran.IsSet());
 
-  test_browser_thread_bundle.RunUntilIdle();
+  browser_task_environment.RunUntilIdle();
   EXPECT_TRUE(task_ran.IsSet());
 }
 
-TEST(TestBrowserThreadBundleTest, TraitsConstructorOverrideMainThreadType) {
-  TestBrowserThreadBundle test_browser_thread_bundle(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI,
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
+TEST(BrowserTaskEnvironmentTest, TraitsConstructorOverrideMainThreadType) {
+  BrowserTaskEnvironment browser_task_environment(
+      base::test::TaskEnvironment::MainThreadType::UI,
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
   // Should set up a UI main thread.
   EXPECT_TRUE(base::MessageLoopCurrentForUI::IsSet());
   EXPECT_FALSE(base::MessageLoopCurrentForIO::IsSet());
 
   // There should be a mock clock.
-  EXPECT_THAT(test_browser_thread_bundle.GetMockClock(), testing::NotNull());
+  EXPECT_THAT(browser_task_environment.GetMockClock(), testing::NotNull());
 }
 
 }  // namespace content

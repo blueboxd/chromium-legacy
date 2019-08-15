@@ -39,7 +39,6 @@
 <translation id="5456409301717116725">תוסף זה כולל את קובץ המפתח "<ph name="KEY_PATH" />". מומלץ לא לעשות זאת.</translation>
 <translation id="5486326529110362464">חייב להתקיים ערך קלט של מפתח פרטי.</translation>
 <translation id="5627523580512561598">תוסף <ph name="EXTENSION_NAME" /></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">מנהל המערכת של מכשיר זה דורש התקנה של <ph name="EXTENSION_NAME" />. לא ניתן להסיר את ההתקנה.</translation>
 <translation id="6027032947578871493">מוצר לא ידוע <ph name="PRODUCT_ID" /> מהספק <ph name="VENDOR_NAME" /> (מספר סידורי <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME" /> מהספק <ph name="VENDOR_ID" /></translation>

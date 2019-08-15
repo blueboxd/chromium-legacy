@@ -18,7 +18,7 @@
 #include "content/browser/cookie_store/cookie_change_subscription.h"
 #include "content/browser/cookie_store/cookie_store_host.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom.h"
 #include "url/origin.h"
@@ -57,7 +57,7 @@ class CookieStoreManager : public ServiceWorkerContextCoreObserver,
   //
   // This is called when service workers use the Cookie Store API to subscribe
   // to cookie changes or obtain the list of cookie changes.
-  void CreateService(blink::mojom::CookieStoreRequest request,
+  void CreateService(mojo::PendingReceiver<blink::mojom::CookieStore> receiver,
                      const url::Origin& origin);
 
   // Starts loading the on-disk subscription data.
@@ -181,9 +181,9 @@ class CookieStoreManager : public ServiceWorkerContextCoreObserver,
   // Tracks the open mojo pipes created by CreateService().
   //
   // Each pipe is associated with the CookieStoreHost instance that it is
-  // connected to. When the pipe is closed, the StrongBindingSet automatically
+  // connected to. When the pipe is closed, the UniqueReceiverSet automatically
   // deletes the CookieStoreHost.
-  mojo::StrongBindingSet<blink::mojom::CookieStore> bindings_;
+  mojo::UniqueReceiverSet<blink::mojom::CookieStore> receivers_;
 
   // Used to receive cookie changes from the network service.
   ::network::mojom::CookieManagerPtr cookie_manager_;

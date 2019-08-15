@@ -157,6 +157,7 @@
 <translation id="6620110761915583480">Guardar archivo</translation>
 <translation id="6699343763173986273">Siguiente pista multimedia</translation>
 <translation id="673773751041746814">Eliminación</translation>
+<translation id="6779314412797872738">Para enviar un número desde aquí a tu teléfono Android, <ph name="TROUBLESHOOT_LINK" /> en los ajustes de ambos dispositivos.</translation>
 <translation id="6786750046913594791">Cerrar carpeta</translation>
 <translation id="6808150112686056157">Detener contenido multimedia</translation>
 <translation id="6845383723252244143">Seleccionar carpeta</translation>
@@ -175,7 +176,7 @@
 <translation id="7319740667687257810">Menú de aplicaciones, vista parcial</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Hace 1 min}other{Hace # min}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">Comprueba la conexión del teléfono y vuelve a intentarlo</translation>
+<translation id="7399254631220132461">Comprueba la conexión del teléfono y vuelve a intentarlo.</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Queda 1 minuto}other{Quedan # minutos}}</translation>
 <translation id="7430878839542012341">¿Quieres eliminar esta búsqueda de tu historial?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

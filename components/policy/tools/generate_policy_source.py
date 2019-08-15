@@ -469,10 +469,9 @@ def _WritePolicyConstantHeader(policies, policy_atomic_groups, target_platform,
             'configuration resides.\n'
             'extern const wchar_t kRegistryChromePolicyKey[];\n')
 
-  f.write('#if defined (OS_CHROMEOS)\n'
-          '// Sets default values for enterprise users.\n'
-          'void SetEnterpriseUsersDefaults(PolicyMap* policy_map);\n'
-          '#endif\n'
+  f.write('// Returns default values for enterprise users.\n'
+          'std::map<std::string, std::unique_ptr<base::Value>>'
+          ' GetEnterpriseUsersDefaults();\n'
           '\n'
           '// Returns the PolicyDetails for |policy| if |policy| is a known\n'
           '// Chrome policy, otherwise returns NULL.\n'
@@ -1094,9 +1093,10 @@ def _WritePolicyConstantSource(policies, policy_atomic_groups, target_platform,
           '  return &kChromeSchemaData;\n'
           '}\n\n')
 
-  f.write('#if defined (OS_CHROMEOS)\n'
-          'void SetEnterpriseUsersDefaults(PolicyMap* policy_map) {\n')
-
+  f.write('std::map<std::string, std::unique_ptr<base::Value>>'
+          ' GetEnterpriseUsersDefaults() {\n')
+  f.write(
+      '  std::map<std::string, std::unique_ptr<base::Value>> default_values;\n')
   for policy in policies:
     if policy.has_enterprise_default and policy.is_supported:
       declare_default_stmts, fetch_default = _GenerateDefaultValue(
@@ -1112,18 +1112,12 @@ def _WritePolicyConstantSource(policies, policy_atomic_groups, target_platform,
       else:
         declare_default = ''
 
-      f.write(
-          '  if (!policy_map->Get(key::k%s)) {\n'
-          '%s'
-          '    policy_map->Set(key::k%s,\n'
-          '                    POLICY_LEVEL_MANDATORY,\n'
-          '                    POLICY_SCOPE_USER,\n'
-          '                    POLICY_SOURCE_ENTERPRISE_DEFAULT,\n'
-          '                    %s,\n'
-          '                    nullptr);\n'
-          '  }\n' % (policy.name, declare_default, policy.name, fetch_default))
+      f.write('%s'
+              '  default_values[key::k%s] = %s;\n' %
+              (declare_default, policy.name, fetch_default))
 
-  f.write('}\n' '#endif\n\n')
+  f.write('  return default_values;\n')
+  f.write('}\n\n')
 
   f.write('const PolicyDetails* GetChromePolicyDetails('
           'const std::string& policy) {\n'

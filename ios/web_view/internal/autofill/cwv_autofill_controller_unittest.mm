@@ -137,8 +137,8 @@ TEST_F(CWVAutofillControllerTest, FetchSuggestions) {
   }));
 }
 
-// Tests CWVAutofillController fills suggestion.
-TEST_F(CWVAutofillControllerTest, FillSuggestion) {
+// Tests CWVAutofillController accepts suggestion.
+TEST_F(CWVAutofillControllerTest, AcceptSuggestion) {
   FormSuggestion* form_suggestion =
       [FormSuggestion suggestionWithValue:kTestFieldValue
                        displayDescription:nil
@@ -150,15 +150,15 @@ TEST_F(CWVAutofillControllerTest, FillSuggestion) {
                                             fieldIdentifier:kTestFieldIdentifier
                                                     frameID:kTestFrameId
                                        isPasswordSuggestion:NO];
-  __block BOOL fill_completion_was_called = NO;
-  [autofill_controller_ fillSuggestion:suggestion
-                     completionHandler:^{
-                       fill_completion_was_called = YES;
-                     }];
+  __block BOOL accept_completion_was_called = NO;
+  [autofill_controller_ acceptSuggestion:suggestion
+                       completionHandler:^{
+                         accept_completion_was_called = YES;
+                       }];
 
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool {
     base::RunLoop().RunUntilIdle();
-    return fill_completion_was_called;
+    return accept_completion_was_called;
   }));
   EXPECT_NSEQ(
       form_suggestion,

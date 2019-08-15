@@ -266,6 +266,7 @@ Os dados estão encriptados com a sua frase de acesso de sincronização. Introd
 <translation id="4802417911091824046">A encriptação da frase de acesso não inclui métodos de pagamento nem endereços do Google Pay.
 
 Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" />.</translation>
+<translation id="4805759445554688327">Número de cartão inválido</translation>
 <translation id="4807020197310989387">1 artigo não lido na Lista de leitura.</translation>
 <translation id="4818522717893377262">Adicionar idioma…</translation>
 <translation id="481968316161811770">Cookies, dados de sites</translation>
@@ -393,6 +394,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="6476800141292307438">A traduzir a página para <ph name="LANGUAGE" />. Estão disponíveis opções junto à parte inferior do ecrã.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens eliminados</translation>
 <translation id="6610002944194042868">Opções de tradução</translation>
+<translation id="6628106477656132239">Data de validade inválida</translation>
 <translation id="6642362222295953972">Mudar para um separador existente</translation>
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="6656103420185847513">Editar Pasta</translation>

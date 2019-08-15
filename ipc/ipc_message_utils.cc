@@ -669,6 +669,52 @@ bool ParamTraits<zx::vmo>::Read(const base::Pickle* m,
 void ParamTraits<zx::vmo>::Log(const param_type& p, std::string* l) {
   l->append("ZirconVMO");
 }
+
+void ParamTraits<zx::channel>::Write(base::Pickle* m, const param_type& p) {
+  // This serialization must be kept in sync with
+  // nacl_message_scanner.cc:WriteHandle().
+  const bool valid = p.is_valid();
+  WriteParam(m, valid);
+
+  if (!valid)
+    return;
+
+  if (!m->WriteAttachment(new internal::HandleAttachmentFuchsia(
+          std::move(const_cast<param_type&>(p))))) {
+    NOTREACHED();
+  }
+}
+
+bool ParamTraits<zx::channel>::Read(const base::Pickle* m,
+                                    base::PickleIterator* iter,
+                                    param_type* r) {
+  r->reset();
+
+  bool valid;
+  if (!ReadParam(m, iter, &valid))
+    return false;
+
+  if (!valid)
+    return true;
+
+  scoped_refptr<base::Pickle::Attachment> attachment;
+  if (!m->ReadAttachment(iter, &attachment))
+    return false;
+
+  if (static_cast<MessageAttachment*>(attachment.get())->GetType() !=
+      MessageAttachment::Type::FUCHSIA_HANDLE) {
+    return false;
+  }
+
+  *r = zx::channel(
+      static_cast<internal::HandleAttachmentFuchsia*>(attachment.get())
+          ->Take());
+  return true;
+}
+
+void ParamTraits<zx::channel>::Log(const param_type& p, std::string* l) {
+  l->append("ZirconChannel");
+}
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_ANDROID)

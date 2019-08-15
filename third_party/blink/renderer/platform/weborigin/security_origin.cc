@@ -398,6 +398,14 @@ bool SecurityOrigin::CanAccess(const SecurityOrigin* other,
     can_access = false;
   }
 
+  // Compare that the clusters are the same.
+  if (can_access && !cross_agent_cluster_access_ &&
+      !agent_cluster_id_.is_empty() && !other->agent_cluster_id_.is_empty() &&
+      agent_cluster_id_ != other->agent_cluster_id_) {
+    detail = AccessResultDomainDetail::kDomainNotRelevantAgentClusterMismatch;
+    can_access = false;
+  }
+
   return can_access;
 }
 

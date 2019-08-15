@@ -70,7 +70,6 @@
 
           Se l'impostazione viene disattivata o non configurata, l'host dell'assistenza remota viene eseguito nel contesto dell'utente e gli utenti remoti non possono interagire con finestre con privilegi più elevati sul desktop.</translation>
 <translation id="1096105751829466145">Provider di ricerca predefinito</translation>
-<translation id="1099024407376270611">Controlla la reputazione degli URL visitati in tempo reale con Navigazione sicura</translation>
 <translation id="1099282607296956954">Attiva isolamento sito per ogni sito</translation>
 <translation id="1100570158310952027">
       Questa norma consente di specificare un elenco di origini (URL) o di schemi di nomi host (ad esempio "*.example.com") a cui non vengono applicate limitazioni di sicurezza previste per le origini non sicure.
@@ -398,22 +397,6 @@ Se la norma non viene configurata o viene impostata su false, la chiave manifest
 Avviso. Non è consigliato delegare il controllo della versione di <ph name="PRODUCT_OS_NAME" /> a un'app kiosk, poiché potrebbe impedire al dispositivo di ricevere aggiornamenti software e correzioni di sicurezza fondamentali. Delegare il controllo della versione di <ph name="PRODUCT_OS_NAME" /> potrebbe mettere a rischio gli utenti.</translation>
 <translation id="1675002386741412210">Supportato su:</translation>
 <translation id="1700811900332333712">Consenti al dispositivo di richiedere il powerwash</translation>
-<translation id="1704516734140344991">Consente di configurare disponibilità e comportamento della funzionalità di aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      Le impostazioni individuali possono essere specificate nelle proprietà JSON:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: se viene impostata l'opzione <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, gli utenti potranno attivare il flusso della funzione Powerwash per l'installazione di un aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: se viene impostata l'opzione <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, gli utenti potranno richiamare il flusso di aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> che conserverà lo stato a livello di dispositivo (registrazione aziendale compresa), ma che comporta la perdita dei dati degli utenti. Questo flusso di aggiornamento è disponibile a partire dalla versione 68.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: consente di controllare in che modo gli aggiornamenti automatici del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> vengono applicati per contrastare la vulnerabilità del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />. Tutti i flussi conservano lo stato del dispositivo locale.
-        Se la norma viene impostata su 1 o non viene impostata, gli aggiornamenti del firmware TPM non vengono applicati.
-        Se la norma viene impostata su 2, il firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> verrà aggiornato al riavvio successivo, in seguito alla conferma dell'aggiornamento da parte dell'utente.
-        Se la norma viene impostata su 3, il firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> viene aggiornato al riavvio successivo.
-        Se la norma viene impostata su 4, il firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> verrà aggiornato in seguito alla registrazione, prima dell'accesso dell'utente.
-        Questa opzione è disponibile a partire dalla versione 74.
-
-      Se la norma non viene impostata, la funzionalità di aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> non sarà disponibile.</translation>
 <translation id="1708496595873025510">Imposta la limitazione sul recupero del numero di inizializzazione delle varianti</translation>
 <translation id="1717817358640580294">Se questa norma non viene impostata, nel caso in cui Chrome Software Cleaner dovesse rilevare software indesiderato, a Google potrebbero essere segnalati metadati relativi alla scansione in base alla norma stabilita da SafeBrowsingExtendedReportingEnabled. Chrome Software Cleaner chiederà poi all'utente se vuole ripulire il software indesiderato. L'utente può scegliere se condividere i risultati della pulizia con Google per facilitare l'identificazione di software indesiderato in futuro. Questi risultati contengono metadati di file, estensioni installate automaticamente e chiavi del registro di sistema, come spiegato nel Whitepaper sulla privacy di Chrome.
 
@@ -682,7 +665,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questa impostazione viene configurata, gli utenti che usano lo sblocco rapido devono inserire le proprie password nella schermata di blocco in base a questa impostazione.
 
       Se questa impostazione non viene configurata, gli utenti che usano lo sblocco rapido devono inserire ogni giorno la propria password nella schermata di blocco.</translation>
-<translation id="219297066914002620">Consente di indicare a <ph name="PRODUCT_OS_NAME" /> di attivare o disattivare gli strumenti della console di gestione delle macchine virtuali.
+<translation id="219297066914002620">Indica a <ph name="PRODUCT_OS_NAME" /> di attivare o disattivare gli strumenti della console di gestione delle macchine virtuali.
 
       Se il criterio viene impostato su true o non viene impostato, l'utente potrà usare l'interfaccia a riga di comando di gestione delle macchine virtuali.
       In caso contrario, l'intera interfaccia a riga di comando di gestione delle macchine virtuali viene disattivata e nascosta.
@@ -803,6 +786,22 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2463034609187171371">Attiva i pacchetti di crittografia DHE in TLS</translation>
 <translation id="2463365186486772703">Lingua dell'applicazione</translation>
 <translation id="2466131534462628618">L'autenticazione tramite captive portal ignora il proxy</translation>
+<translation id="2466697858869282874">Consente di configurare disponibilità e comportamento della funzionalità di aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Le singole impostazioni possono essere specificate nelle proprietà JSON:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: se viene impostata l'opzione <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, gli utenti potranno attivare il flusso della funzione Powerwash per l'installazione di un aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: se viene impostata l'opzione <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, gli utenti potranno richiamare il flusso di aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> che conserverà lo stato a livello di dispositivo (registrazione aziendale compresa), ma che comporta la perdita dei dati degli utenti. Questo flusso di aggiornamento è disponibile a partire dalla versione 68.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: consente di controllare in che modo gli aggiornamenti automatici del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> vengono applicati per contrastare la vulnerabilità del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />. Tutti i flussi conservano lo stato del dispositivo locale.
+        Se il criterio viene impostato su 1 o non viene impostato, gli aggiornamenti del firmware TPM non vengono applicati.
+        Se il criterio viene impostato su 2, il firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> verrà aggiornato al riavvio successivo, in seguito alla conferma dell'aggiornamento da parte dell'utente.
+        Se il criterio viene impostato su 3, il firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> verrà aggiornato al riavvio successivo.
+        Se il criterio viene impostato su 4, il firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> verrà aggiornato in seguito alla registrazione, prima dell'accesso dell'utente.
+        Questa opzione è disponibile a partire dalla versione 75.
+
+      Se il criterio non viene impostato, la funzionalità di aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> non sarà disponibile.</translation>
 <translation id="2471748297300970300">Se disattivato, impedisce la visualizzazione degli avvisi sulla sicurezza quando Chrome viene avviato con alcuni flag della riga di comando potenzialmente pericolosi.
 
           Se attivato o non impostato, gli avvisi sulla sicurezza vengono visualizzati quando vengono utilizzati determinati flag della linea di comando per avviare Chrome.
@@ -1793,6 +1792,13 @@ Il valore della norma dovrebbe essere specificato in secondi. Il valore minimo d
 
       Se questa norma non è impostata, verrà utilizzato il percorso di profilo di roaming predefinito.</translation>
 <translation id="4239720644496144453">La cache non viene utilizzata per le app Android. Se più utenti installano la stessa app Android, questa viene scaricata per ogni utente.</translation>
+<translation id="4241202391219483189">Questo criterio consente di stabilire se l'utente può o meno importare e rimuovere certificati CA tramite Gestione certificati.
+
+      Se il criterio viene impostato su "Consenti agli utenti di gestire tutti i certificati" o se non viene impostato, gli utenti potranno modificare le impostazioni di attendibilità di tutti i certificati CA, rimuovere i certificati importati dagli utenti e importare certificati.
+
+      Se il criterio viene impostato su "Consenti agli utenti di gestire i certificati utente", gli utenti potranno gestire soltanto i certificati importati dagli utenti e non potranno modificare le impostazioni di attendibilità dei certificati integrati.
+
+      Se il criterio viene impostato su "Non consentire più agli utenti di gestire i certificati", gli utenti non potranno gestire i certificati CA, ma solo visualizzarli.</translation>
 <translation id="4243336580717651045">Consente di attivare la raccolta di dati anonimizzati con chiave URL in <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
 
       La raccolta di dati anonimizzati con chiave URL invia a Google gli URL delle pagine visitate dall'utente al fine di migliorare la ricerca e la navigazione.
@@ -1868,6 +1874,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
           Questa funzione è attualmente disattivata lato server.</translation>
 <translation id="4363057787588706121">Consenti l'unione dei criteri nell'elenco provenienti da origini diverse</translation>
+<translation id="4363101430102811068">Attiva il rilevamento della divulgazione delle credenziali inserite</translation>
 <translation id="4363136876356691536">Se questo criterio è impostato su true, le opzioni di accessibilità vengono visualizzate sempre nel menu della barra delle applicazioni.
 
           Se questo criterio è impostato su false, le opzioni di accessibilità non vengono mai visualizzate nel menu della barra delle applicazioni.
@@ -2013,10 +2020,6 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
 
           Se questa norma non è impostata, <ph name="PRODUCT_NAME" /> non delegherà le credenziali utente, anche se viene rilevato un server sulla Intranet.</translation>
 <translation id="4752880493649142945">Certificato client per la connessione a RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4756984056524699088">Permette di consentire all'utente l'accesso root ai contenitori Crostini.
-
-      Se il criterio viene impostato su true o non viene impostato, all'utente viene concesso l'accesso root ai contenitori Crostini.
-      Se il criterio viene impostato su false, all'utente non viene concesso l'accesso root ai contenitori Crostini nuovi ed esistenti.</translation>
 <translation id="4759650396863318477">Consente di stabilire per quanto tempo, in millisecondi, gli utenti riceveranno notifiche relative alla necessità di riavviare <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> per applicare un aggiornamento in sospeso.
 
       Durante questo periodo di tempo l'utente verrà informato più volte della necessità di un aggiornamento. Per quanto riguarda i dispositivi <ph name="PRODUCT_OS_NAME" />, nella barra delle applicazioni viene mostrata una notifica relativa al riavvio in base al criterio <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Per quanto riguarda i browser <ph name="PRODUCT_NAME" />, il menu delle app cambia per indicare che è necessario il riavvio una volta trascorso un terzo del periodo di notifica. Questa notifica cambia colore una volta trascorsi due terzi del periodo di notifica e lo cambia di nuovo al termine dell'intero periodo di notifica. Le notifiche aggiuntive attivate in base al criterio <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> seguono questa stessa pianificazione.
@@ -2864,6 +2867,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="637934607141010488">Consente di indicare un elenco di utenti del dispositivo che hanno eseguito l'accesso di recente. Se la norma è impostata su False, gli utenti non vengono indicati.</translation>
 <translation id="6394350458541421998">La norma non è più supportata a partire dalla versione 29 di <ph name="PRODUCT_OS_NAME" />. Utilizza la norma PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Disconnetti l'utente</translation>
+<translation id="6403746242226534223">Controlla la reputazione degli URL visitati in tempo reale con Navigazione sicura</translation>
 <translation id="6406448383934634215">Se come azione all'avvio è stato impostato "Apri un elenco di URL", puoi specificare l'elenco degli URL che vengono aperti. Se questa norma non viene impostata, all'avvio non verrà aperto alcun URL.
 
           Questa norma funziona soltanto se la norma "RestoreOnStartup" viene impostata su "RestoreOnStartupIsURLs".
@@ -2940,6 +2944,9 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6544897973797372144">Se questa norma è impostata su True e non è specificata la norma ChromeOsReleaseChannel, gli utenti del dominio di registrazione avranno la facoltà di modificare il canale della versione del dispositivo. Se questa norma è impostata su False, il dispositivo risulterà bloccato in qualunque canale in cui è stato impostato per ultimo.
 
       Il canale selezionato dall'utente verrà sostituito dalla norma ChromeOsReleaseChannel, ma se il canale della norma è più stabile di quello che è stato installato sul dispositivo, il canale cambierà solo quando la versione del canale più stabile raggiungerà un numero di versione superiore rispetto a quello installato sul dispositivo.</translation>
+<translation id="6549567350270907557">Se questa impostazione viene attivata, gli utenti possono impostare <ph name="PRODUCT_NAME" /> affinché controlli se le credenziali inserite sono state rese note.
+
+              Se questo criterio viene attivato o disattivato, gli utenti non possono modificarlo o ignorarlo in <ph name="PRODUCT_NAME" />. Se questo criterio non viene impostato, viene consentito il controllo della divulgazione (che può però essere disattivato dall'utente).</translation>
 <translation id="6553143066970470539">Percentuale di luminosità dello schermo</translation>
 <translation id="6559057113164934677">Non consentire ad alcun sito di accedere alla fotocamera e al microfono</translation>
 <translation id="6561396069801924653">Mostra le opzioni di accessibilità nel menu della barra delle applicazioni di sistema</translation>
@@ -3910,6 +3917,10 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 
       Per ulteriori informazioni sulla norma <ph name="IEEM_SITELIST_POLICY" /> di Internet Explorer, visita il sito https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Apri sempre file PDF esternamente</translation>
+<translation id="8405691014775178834">Consente all'utente l'accesso root ai contenitori Crostini.
+
+      Se il criterio viene impostato su true o non viene impostato, all'utente viene concesso l'accesso root ai contenitori Crostini.
+      Se il criterio viene impostato su false, all'utente non viene concesso l'accesso root ai contenitori Crostini nuovi ed esistenti.</translation>
 <translation id="8417305981081876834">Imposta la lunghezza massima del PIN per la schermata di blocco</translation>
 <translation id="841977920223099909">Attivazione dell'avviso di protezione tramite password</translation>
 <translation id="8424255554404582727">Imposta la rotazione predefinita dello schermo, riapplicata a ogni riavvio</translation>
@@ -4146,6 +4157,7 @@ Il metodo consigliato per bloccare lo schermo in caso di inattività consiste ne
 
 Il valore della norma deve essere specificato in millisecondi. I valori devono essere inferiori al ritardo di inattività.</translation>
 <translation id="891435090623616439">codificato sotto forma di stringa JSON; per informazioni dettagliate, visita la pagina <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8917070657147922192">Consenti agli utenti di gestire i certificati CA installati.</translation>
 <translation id="8934944553121392674">Consente di stabilire quali stampanti della norma <ph name="DEVICE_PRINTERS_POLICY" /> mettere a disposizione degli utenti.
 
       Determina quale norma di accesso usare per la configurazione collettiva delle stampanti. Se viene selezionata l'opzione <ph name="PRINTERS_ALLOW_ALL" />, vengono mostrate tutte le stampanti. Se viene selezionata l'opzione <ph name="PRINTERS_BLACKLIST" />, viene usata la norma <ph name="DEVICE_PRINTERS_BLACKLIST" /> per limitare l'accesso a stampanti specifiche. Se viene selezionata l'opzione <ph name="PRINTERS_WHITELIST" />, la norma <ph name="DEVICE_PRINTERS_WHITELIST" /> stabilisce soltanto le stampanti selezionabili.

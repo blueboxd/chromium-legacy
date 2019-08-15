@@ -67,7 +67,6 @@
 
           如果停用或未配置此设置，远程协助主机则会在用户的环境中运行，而远程用户将无法在桌面上操控提权后的窗口。</translation>
 <translation id="1096105751829466145">默认搜索服务提供商</translation>
-<translation id="1099024407376270611">实时检查所访问网址的安全浏览声誉</translation>
 <translation id="1099282607296956954">为所有网站启用网站隔离功能</translation>
 <translation id="1100570158310952027">
       此政策可指定针对不安全来源的安全性限制不适用于哪些来源（网址）或主机名模式（例如“*.example.com”）。
@@ -387,22 +386,6 @@
       警告：建议您不要委托自助服务终端应用控制 <ph name="PRODUCT_OS_NAME" />版本，因为这可能会阻止相应设备接收软件更新和重要的安全修补程序。委托 <ph name="PRODUCT_OS_NAME" />版本控制可能会将用户置于风险之中。</translation>
 <translation id="1675002386741412210">支持的环境：</translation>
 <translation id="1700811900332333712">允许设备请求 Powerwash</translation>
-<translation id="1704516734140344991">配置 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新功能的可用性和行为。
-
-      各项具体设置可在 JSON 属性中进行指定：
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />：如果设为 <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />，用户将能够触发 Powerwash 流程以安装 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新。
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />：如果设为 <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />，用户将能够调用 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新流程，此流程会保留设备级状态（包括企业注册），但不会保留用户数据。68 及更高版本均支持此更新流程。
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />：控制如何对容易受到攻击的 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件强制执行自动 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新。所有流程都会保留本地设备状态。
-        如果设为 1 或未设置，则系统不会强制执行 TPM 固件更新。
-        如果设为 2，系统将在用户确认更新后的下次重启时更新 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件。
-        如果设为 3，系统将在下次重启时更新 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件。
-        如果设为 4，系统将在注册后、用户登录前更新 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件。
-        74 及更高版本均提供此选项。
-
-      如果未设置此政策，<ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新功能将不可用。</translation>
 <translation id="1708496595873025510">对变体种子的提取设置限制条件</translation>
 <translation id="1717817358640580294">如果此政策未设置，当 Chrome 清理功能检测到垃圾软件时，它可能会按照 SafeBrowsingExtendedReportingEnabled 设置的政策向 Google 报告与此项扫描相关的元数据。然后，Chrome 清理功能会询问用户是否要清理垃圾软件。用户可以选择与 Google 分享清理结果，以协助 Google 日后更好地检测垃圾软件。这些结果包括文件元数据、自动安装的扩展程序以及注册表项（如《Chrome 隐私权白皮书》中所述）。
 
@@ -782,6 +765,22 @@
 <translation id="2463034609187171371">在 TLS 中启用 DHE 加密套件</translation>
 <translation id="2463365186486772703">应用语言区域</translation>
 <translation id="2466131534462628618">进行强制门户身份验证时忽略代理服务器</translation>
+<translation id="2466697858869282874">配置 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新功能的可用性和行为。
+
+      各项具体设置可在 JSON 属性中进行指定：
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />：如果设为 <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />，用户将能够触发 Powerwash 流程以安装 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新。
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />：如果设为 <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />，用户将能够调用 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新流程，此流程会保留设备级状态（包括企业注册），但不会保留用户数据。版本 68 及更高版本均支持此更新流程。
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />：控制如何对容易受到攻击的 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件强制执行自动 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新。所有流程都会保留本地设备状态。
+        如果设为 1 或未设置，则系统不会强制执行 TPM 固件更新。
+        如果设为 2，系统将在用户确认更新后的下次重启时更新 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件。
+        如果设为 3，系统将在下次重启时更新 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件。
+        如果设为 4，系统将在注册后、用户登录前更新 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件。
+        版本 75 及更高版本均提供此选项。
+
+      如果未设置此政策，<ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新功能将不可用。</translation>
 <translation id="2471748297300970300">如果此政策已停用，当您使用某些可能不安全的命令行标记启动 Chrome 时，系统会禁止显示安全警告。
 
           如果此政策处于启用状态或未设置，当您使用某些命令行标记启动 Chrome 时，系统会显示安全警告。
@@ -1841,6 +1840,7 @@
 
           该功能目前在服务器端已停用。</translation>
 <translation id="4363057787588706121">允许合并具有多个不同来源的列表政策</translation>
+<translation id="4363101430102811068">针对输入的凭据启用泄露检测功能</translation>
 <translation id="4363136876356691536">如果将此政策设为 true，系统任务栏菜单中将始终显示无障碍选项。
 
           如果将此政策设为 false，系统任务栏菜单中绝不会显示无障碍选项。
@@ -1992,10 +1992,6 @@
 
           如果此政策未设置，那么即使检测到某个服务器在内网上，<ph name="PRODUCT_NAME" /> 也不会委托用户凭据。</translation>
 <translation id="4752880493649142945">连接到 RemoteAccessHostTokenValidationUrl 时使用的客户端证书</translation>
-<translation id="4756984056524699088">允许此用户拥有 Crostini 容器的 root 权限。
-
-      如果此政策设为 true 或未设置，用户会获得对 Crostini 容器的 root 权限。
-      如果此政策设为 false，则用户不会获得对现有以及新的 Crostini 容器的 root 权限。</translation>
 <translation id="4759650396863318477">让您能够设置一个时间段（以毫秒为单位），在该时间段内，如果必须重新启动 <ph name="PRODUCT_NAME" /> 或必须重启 <ph name="PRODUCT_OS_NAME" />设备以应用待应用的更新，用户将会收到通知。
 
       在该时间段内，如果需要更新，系统会反复通知用户。对于 <ph name="PRODUCT_OS_NAME" />设备，系统会根据 <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> 政策在系统任务栏中显示重启通知。对于 <ph name="PRODUCT_NAME" /> 浏览器，应用菜单会在通知时间段过去三分之一后立即发生变化，以指示需要重新启动浏览器。此通知会在通知时间段过去三分之二后立即改变颜色，并会在整个通知时间段过后再次立即改变颜色。由 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策启用的其他通知也会遵循这一时间表。
@@ -2149,7 +2145,7 @@
 <translation id="5142301680741828703">总是通过“<ph name="PRODUCT_FRAME_NAME" />”呈现以下网址格式</translation>
 <translation id="5146261336206349846">如果此政策设为启用，安全浏览功能会实时检查所访问的所有网址。
 
-      如果此政策设为停用或未设置，系统会应用用户的安全浏览检查设置。</translation>
+      如果此政策设为停用或未设置，系统会采用用户的安全浏览检查设置。</translation>
 <translation id="5148753489738115745">可让您指定在 <ph name="PRODUCT_FRAME_NAME" />启动 <ph name="PRODUCT_NAME" />时所使用的其他参数。
 
           如果未设置此政策，系统将会使用默认命令行。</translation>
@@ -2824,6 +2820,7 @@
       如果此政策设为False，则不报告这些用户。</translation>
 <translation id="6394350458541421998">此政策从 <ph name="PRODUCT_OS_NAME" />版本 29 起开始弃用。请改用 PresentationScreenDimDelayScale 政策。</translation>
 <translation id="6401669939808766804">使用户退出</translation>
+<translation id="6403746242226534223">实时检查所访问网址的安全浏览声誉</translation>
 <translation id="6406448383934634215">如果选择“打开网址列表”作为启动时的操作，您就可以指定要打开的网址的列表。如果此政策未设置，启动时将不会打开任何网址。
 
           仅当“RestoreOnStartup”政策设为“RestoreOnStartupIsURLs”时，此政策才有效。
@@ -2900,6 +2897,9 @@
 <translation id="6544897973797372144">如果该策略设置为 True，且未指定 ChromeOsReleaseChannel 策略，那么注册域的用户将可以更改设备的发布版。如果该策略设置为 False，那么设备就会锁定最后设置的任何版本。
 
      ChromeOsReleaseChannel 策略将会覆盖用户选择的版本，但是，如果该策略版本比设备上已安装的版本更稳定，那么仅当较稳定版本的版本值高于设备上已安装版本时，系统才会切换版本。</translation>
+<translation id="6549567350270907557">如果启用此设置，用户可以让 <ph name="PRODUCT_NAME" /> 检查输入的凭据是否已泄露。
+
+              如果启用或停用了此政策，用户将无法在 <ph name="PRODUCT_NAME" /> 中更改或覆盖它。如果未设置此政策，系统将允许执行泄露检查（但可由用户关闭）。</translation>
 <translation id="6553143066970470539">屏幕亮度百分比</translation>
 <translation id="6559057113164934677">不允许任何网站使用摄像头和麦克风</translation>
 <translation id="6561396069801924653">在系统任务栏菜单中显示无障碍选项</translation>
@@ -3865,6 +3865,10 @@
 
       如需详细了解 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策，请访问：https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">始终使用外部应用打开 PDF 文件</translation>
+<translation id="8405691014775178834">允许此用户拥有 Crostini 容器的 root 权限。
+
+      如果此政策设为 true 或未设置，用户会获得对 Crostini 容器的 root 权限。
+      如果此政策设为 false，用户将不会获得对现有以及新的 Crostini 容器的 root 权限。</translation>
 <translation id="8417305981081876834">设置锁定屏幕 PIN 码的长度上限</translation>
 <translation id="841977920223099909">密码保护服务警告功能触发条件</translation>
 <translation id="8424255554404582727">设置显示屏默认旋转角度，每次重新启动后都重新应用设置的角度</translation>

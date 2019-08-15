@@ -71,6 +71,11 @@ struct NET_EXPORT DnsConfig {
 
   // List of name server addresses.
   std::vector<IPEndPoint> nameservers;
+
+  // Status of system DNS-over-TLS (DoT).
+  bool dns_over_tls_active;
+  std::string dns_over_tls_hostname;
+
   // Suffix search list; used on first lookup when number of dots in given name
   // is less than |ndots|.
   std::vector<std::string> search;

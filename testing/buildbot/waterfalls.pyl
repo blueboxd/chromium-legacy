@@ -3379,8 +3379,7 @@
       },
       'Linux Tests (dbg)(1)': {
         'mixins': [
-          # TODO(tikuta): investigate browser_tests failure on xenial crbug.com/954450 .
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',

@@ -153,11 +153,9 @@ var OSSettingsAppManagementPageTest = class extends OSSettingsBrowserTest {
 
   /** @override */
   get extraLibraries() {
-    return super.extraLibraries.concat([
-      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
-      BROWSER_SETTINGS_PATH + 'test_open_window_proxy.js',
-      'app_management_page_test.js',
-    ]);
+    // TODO(https://crbug.com/979531) Add tests to this as migration progresses.
+    // Tests will be added here soon.
+    return super.extraLibraries.concat([]);
   }
 };
 

@@ -127,9 +127,6 @@
 <translation id="5634636535844844681">Chromium માટે Windows 7 અથવા તે પછીનું સંસ્કરણ આવશ્યક છે.</translation>
 <translation id="5680901439334282664">Chromium માં સાઇન ઇન કરો</translation>
 <translation id="5698481217667032250">આ ભાષામાં Chromium બતાવો</translation>
-<translation id="5756484659843248772">આ ભાષાનો ઉપયોગ Chromium OS UI પ્રદર્શિત કરવા માટે થાય છે</translation>
-<translation id="5768914737813585044">આ ભાષામાં Chromium OS બતાવો</translation>
-<translation id="5796460469508169315">Chromium લગભગ તૈયાર છે.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Chromium માં સ્વાગત છે</translation>
 <translation id="5877064549588274448">ચેનલ બદલી. ફેરફારો લાગુ કરવા માટે તમારા ઉપકરણને પુનઃપ્રારંભ કરો.</translation>
@@ -192,12 +189,6 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">નવી વિંડો</translation>
 <translation id="734373864078049451">તમારું વેબ, બુકમાર્ક્સ, અને અન્ય Chromium સામગ્રી અહીં રહે છે.</translation>
-<translation id="7344413941077984497">કઈ વેબસાઇટને <ph name="NEW_PROFILE_NAME" /> જોઈ શકે એ સેટ કરવા માટે, તમે <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />ની મુલાકાત લઈને પ્રતિબંધો અને સેટિંગને ગોઠવી શકો છો. જો તમે ડિફોલ્ટ સેટિંગમાં ફેરફાર કરતાં નથી, તો <ph name="NEW_PROFILE_NAME" />, વેબ પર બધું જ બ્રાઉઝ કરી શકે છે.
-
-<ph name="NEW_PROFILE_NAME" />ને તમારા એકાઉન્ટને ઍક્સેસ કરવાથી અટકાવવા માટે, જ્યારે તમે Chromiumનો ઉપયોગ કરી રહ્યાં ન હો ત્યારે તમે તમારી પ્રોફાઇલને લૉક કરી હોવાની ખાતરી કરો. આ કરવા માટે, બ્રાઉઝરના ઉપલા-જમણા ખૂણામાં તમારા પ્રોફાઇલ નામને ક્લિક કરો અને "બહાર નીકળો અને ચાઇલ્ડ લૉક" પસંદ કરો.
-<ph name="BEGIN_LINK_2" />વધુ જાણો<ph name="END_LINK_2" />
-
-વધુ સૂચનો માટે કૃપા કરીને <ph name="ACCOUNT_EMAIL" /> પર તમારા ઇમેઇલને તપાસો.</translation>
 <translation id="7349591376906416160">તમારા સિસ્ટમ વ્યવસ્થાપકે <ph name="TARGET_URL_HOSTNAME" />ને ઍક્સેસ કરવા Chromiumને <ph name="ALTERNATIVE_BROWSER_NAME" /> ખોલવા માટે ગોઠવેલું છે.</translation>
 <translation id="7448255348454382571">Chromium OS ફરી શરૂ કરો</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
@@ -234,6 +225,8 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="8417404458978023919">{0,plural, =1{એક દિવસની અંદર Chromiumને ફરીથી લૉન્ચ કરો}one{# દિવસની અંદર Chromiumને ફરીથી લૉન્ચ કરો}other{# દિવસની અંદર Chromiumને ફરીથી લૉન્ચ કરો}}</translation>
 <translation id="8453117565092476964">ઇન્સ્ટૉલર આર્કાઇવ ખરાબ અથવા અમાન્ય છે. કૃપા કરીને Chromium ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="8493179195440786826">Chromium જૂનું થઈ ગયું છે</translation>
+<translation id="8494843963476918365">જો આ પેજ પર સેટિંગ બતાવેલું ન હોય, તો તમારા <ph name="LINK_BEGIN" />
+    Chromium બ્રાઉઝર સેટિંગ<ph name="LINK_END" />નો ઉપયોગ કરી જુઓ.</translation>
 <translation id="85843667276690461">Chromium નો ઉપયોગ કરવા સહાય મેળવો</translation>
 <translation id="8586442755830160949">કોપિરાઇટ <ph name="YEAR" /> The Chromium Authors. સર્વાધિકાર સુરક્ષિત.</translation>
 <translation id="8619360774459241877">Chromium લૉન્ચ કરી રહ્યાં છીએ…</translation>

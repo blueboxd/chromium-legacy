@@ -16,6 +16,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
@@ -185,6 +186,19 @@ void TestSharedImageInterface::PresentSwapChain(
     const gpu::Mailbox& mailbox) {
   NOTREACHED();
 }
+
+#if defined(OS_FUCHSIA)
+void TestSharedImageInterface::RegisterSysmemBufferCollection(
+    gfx::SysmemBufferCollectionId id,
+    zx::channel token) {
+  NOTREACHED();
+}
+
+void TestSharedImageInterface::ReleaseSysmemBufferCollection(
+    gfx::SysmemBufferCollectionId id) {
+  NOTREACHED();
+}
+#endif  // defined(OS_FUCHSIA)
 
 gpu::SyncToken TestSharedImageInterface::GenVerifiedSyncToken() {
   most_recent_generated_token_ =

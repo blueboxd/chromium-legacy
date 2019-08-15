@@ -492,12 +492,20 @@ testcase.openFileDialogFileListShowContextMenu = async () => {
   chrome.fileSystem.chooseEntry({type: 'openFile'}, (entry) => {});
   const appId = await remoteCall.waitForWindow('dialog#');
 
-  // Wait for files to be displayed.
-  await remoteCall.waitForFiles(
-      appId, TestEntryInfo.getExpectedRows(BASIC_LOCAL_ENTRY_SET));
-
   // Wait to finish initial load.
   await remoteCall.waitFor('isFileManagerLoaded', appId, true);
+
+  // Wait for files to be displayed.
+  const expectedRows = [
+    ['Play files', '--', 'Folder'],
+    ['Downloads', '--', 'Folder'],
+    ['Linux files', '--', 'Folder'],
+  ];
+  await remoteCall.waitForFiles(
+      appId, expectedRows, {ignoreLastModifiedTime: true});
+
+  // Navigate to Downloads folder.
+  await remoteCall.navigateWithDirectoryTree(appId, '/Downloads', 'My files');
 
   // Right-click "photos" folder to show context menu.
   await remoteCall.waitAndRightClick(appId, '#file-list [file-name="photos"]');

@@ -69,7 +69,7 @@ class CORE_EXPORT ImageRecordsManager {
       std::set<base::WeakPtr<ImageRecord>, NodesQueueComparator>;
 
  public:
-  ImageRecordsManager();
+  explicit ImageRecordsManager(LocalFrameView*);
   ImageRecord* FindLargestPaintCandidate() const;
 
   inline void RemoveInvisibleRecordIfNeeded(const LayoutObject& object) {
@@ -114,7 +114,9 @@ class CORE_EXPORT ImageRecordsManager {
     DCHECK(visible_images_.Contains(record_id));
     return visible_images_.at(record_id)->loaded;
   }
-  void OnImageLoaded(const RecordId&, unsigned current_frame_index);
+  void OnImageLoaded(const RecordId&,
+                     unsigned current_frame_index,
+                     const StyleFetchedImage*);
   void OnImageLoadedInternal(base::WeakPtr<ImageRecord>&,
                              unsigned current_frame_index);
 
@@ -174,6 +176,9 @@ class CORE_EXPORT ImageRecordsManager {
   // Map containing timestamps of when LayoutObject::ImageNotifyFinished is
   // first called.
   HashMap<RecordId, base::TimeTicks> image_finished_times_;
+  // ImageRecordsManager is always owned by ImagePaintTimingDetector, which
+  // contains the LocalFrameView as a Member.
+  UntracedMember<LocalFrameView> frame_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageRecordsManager);
 };
@@ -204,10 +209,15 @@ class CORE_EXPORT ImagePaintTimingDetector final
 
  public:
   ImagePaintTimingDetector(LocalFrameView*, PaintTimingCallbackManager*);
+  // Record an image paint. This method covers both img and background image. In
+  // the case of a normal img, the last parameter will be nullptr. This
+  // parameter is needed only for the purposes of plumbing the correct loadTime
+  // value to the ImageRecord.
   void RecordImage(const LayoutObject&,
                    const IntSize& intrinsic_size,
                    const ImageResourceContent&,
-                   const PropertyTreeState& current_paint_chunk_properties);
+                   const PropertyTreeState& current_paint_chunk_properties,
+                   const StyleFetchedImage*);
   void NotifyImageFinished(const LayoutObject&, const ImageResourceContent*);
   void OnPaintFinished();
   void LayoutObjectWillBeDestroyed(const LayoutObject&);

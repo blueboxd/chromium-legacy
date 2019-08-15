@@ -372,7 +372,7 @@ TEST_F(LoginScreenPowerManagementPolicyHandlerTest, WrongType) {
 
 TEST(ArcServicePolicyHandlerTest, DisabledByDefault) {
   PolicyMap policy_map;
-  SetEnterpriseUsersDefaults(&policy_map);
+  policy_map.ApplyEnterpriseUsersDefaults(GetEnterpriseUsersDefaults());
   ArcServicePolicyHandler handler(key::kArcBackupRestoreServiceEnabled,
                                   arc::prefs::kArcBackupRestoreEnabled);
   PolicyErrorMap errors;
@@ -391,7 +391,7 @@ TEST(ArcServicePolicyHandlerTest, UnderUserControlWhenWrongType) {
   policy_map.Set(key::kArcBackupRestoreServiceEnabled, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                  std::make_unique<base::Value>(false), nullptr);
-  SetEnterpriseUsersDefaults(&policy_map);
+  policy_map.ApplyEnterpriseUsersDefaults(GetEnterpriseUsersDefaults());
   ArcServicePolicyHandler handler(key::kArcBackupRestoreServiceEnabled,
                                   arc::prefs::kArcBackupRestoreEnabled);
   PolicyErrorMap errors;
@@ -404,7 +404,7 @@ TEST(ArcServicePolicyHandlerTest, UnderUserControlWhenOutOfRange) {
   policy_map.Set(key::kArcBackupRestoreServiceEnabled, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                  std::make_unique<base::Value>(3), nullptr);
-  SetEnterpriseUsersDefaults(&policy_map);
+  policy_map.ApplyEnterpriseUsersDefaults(GetEnterpriseUsersDefaults());
   ArcServicePolicyHandler handler(key::kArcBackupRestoreServiceEnabled,
                                   arc::prefs::kArcBackupRestoreEnabled);
   PolicyErrorMap errors;
@@ -419,7 +419,7 @@ TEST(ArcServicePolicyHandlerTest, DisabledByPolicy) {
                  std::make_unique<base::Value>(
                      static_cast<int>(ArcServicePolicyValue::kDisabled)),
                  nullptr);
-  SetEnterpriseUsersDefaults(&policy_map);
+  policy_map.ApplyEnterpriseUsersDefaults(GetEnterpriseUsersDefaults());
   ArcServicePolicyHandler handler(key::kArcBackupRestoreServiceEnabled,
                                   arc::prefs::kArcBackupRestoreEnabled);
   PolicyErrorMap errors;
@@ -440,7 +440,7 @@ TEST(ArcServicePolicyHandlerTest, UnderUserControlByPolicy) {
                  std::make_unique<base::Value>(static_cast<int>(
                      ArcServicePolicyValue::kUnderUserControl)),
                  nullptr);
-  SetEnterpriseUsersDefaults(&policy_map);
+  policy_map.ApplyEnterpriseUsersDefaults(GetEnterpriseUsersDefaults());
   ArcServicePolicyHandler handler(key::kArcBackupRestoreServiceEnabled,
                                   arc::prefs::kArcBackupRestoreEnabled);
   PolicyErrorMap errors;
@@ -459,7 +459,7 @@ TEST(ArcServicePolicyHandlerTest, EnabledByPolicy) {
                  std::make_unique<base::Value>(
                      static_cast<int>(ArcServicePolicyValue::kEnabled)),
                  nullptr);
-  SetEnterpriseUsersDefaults(&policy_map);
+  policy_map.ApplyEnterpriseUsersDefaults(GetEnterpriseUsersDefaults());
   ArcServicePolicyHandler handler(key::kArcBackupRestoreServiceEnabled,
                                   arc::prefs::kArcBackupRestoreEnabled);
   PolicyErrorMap errors;
@@ -480,7 +480,7 @@ TEST(ArcServicePolicyHandlerTest, NotOverridingAnotherPolicy) {
                  std::make_unique<base::Value>(
                      static_cast<int>(ArcServicePolicyValue::kEnabled)),
                  nullptr);
-  SetEnterpriseUsersDefaults(&policy_map);
+  policy_map.ApplyEnterpriseUsersDefaults(GetEnterpriseUsersDefaults());
   ArcServicePolicyHandler handler(key::kArcBackupRestoreServiceEnabled,
                                   arc::prefs::kArcBackupRestoreEnabled);
   PolicyErrorMap errors;

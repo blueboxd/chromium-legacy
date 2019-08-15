@@ -309,22 +309,23 @@ double ResourceResponse::CacheControlStaleWhileRevalidate() const {
   return cache_control_header_.stale_while_revalidate;
 }
 
-static double ParseDateValueInHeader(const HTTPHeaderMap& headers,
-                                     const AtomicString& header_name) {
+static base::Optional<base::Time> ParseDateValueInHeader(
+    const HTTPHeaderMap& headers,
+    const AtomicString& header_name) {
   const AtomicString& header_value = headers.Get(header_name);
   if (header_value.IsEmpty())
-    return std::numeric_limits<double>::quiet_NaN();
+    return base::nullopt;
   // This handles all date formats required by RFC2616:
   // Sun, 06 Nov 1994 08:49:37 GMT  ; RFC 822, updated by RFC 1123
   // Sunday, 06-Nov-94 08:49:37 GMT ; RFC 850, obsoleted by RFC 1036
   // Sun Nov  6 08:49:37 1994       ; ANSI C's asctime() format
-  double date_in_milliseconds = ParseDate(header_value);
-  if (!std::isfinite(date_in_milliseconds))
-    return std::numeric_limits<double>::quiet_NaN();
-  return date_in_milliseconds / 1000;
+  base::Optional<base::Time> date = ParseDate(header_value);
+  if (date && date.value().is_max())
+    return base::nullopt;
+  return date;
 }
 
-double ResourceResponse::Date() const {
+base::Optional<base::Time> ResourceResponse::Date() const {
   if (!have_parsed_date_header_) {
     static const char kHeaderName[] = "date";
     date_ = ParseDateValueInHeader(http_header_fields_, kHeaderName);
@@ -346,7 +347,7 @@ double ResourceResponse::Age() const {
   return age_;
 }
 
-double ResourceResponse::Expires() const {
+base::Optional<base::Time> ResourceResponse::Expires() const {
   if (!have_parsed_expires_header_) {
     static const char kHeaderName[] = "expires";
     expires_ = ParseDateValueInHeader(http_header_fields_, kHeaderName);
@@ -355,7 +356,7 @@ double ResourceResponse::Expires() const {
   return expires_;
 }
 
-double ResourceResponse::LastModified() const {
+base::Optional<base::Time> ResourceResponse::LastModified() const {
   if (!have_parsed_last_modified_header_) {
     static const char kHeaderName[] = "last-modified";
     last_modified_ = ParseDateValueInHeader(http_header_fields_, kHeaderName);

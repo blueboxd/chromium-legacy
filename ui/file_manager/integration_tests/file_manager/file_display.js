@@ -615,19 +615,11 @@ testcase.fileDisplayWithoutDriveThenDisable = async () => {
   // Wait for Files app to finish loading.
   await remoteCall.waitFor('isFileManagerLoaded', appId, true);
 
-  // We should navigate to Downloads or MyFiles.
-  // TODO(crbug.com/880130): Remove this conditional.
-  let defaultFolder = '/My files/Downloads';
-  let expectedRows = [ENTRIES.newlyAdded.getExpectedRow()];
-  if (RootPath.DOWNLOADS_PATH === '/Downloads') {
-    defaultFolder = '/My files';
-    expectedRows = [
-      ['Downloads', '--', 'Folder'],
-      ['Linux files', '--', 'Folder'],
-    ];
-  }
-
-  // Ensure MyFiles or Downloads has loaded.
+  // We should navigate to MyFiles.
+  const expectedRows = [
+    ['Downloads', '--', 'Folder'],
+    ['Linux files', '--', 'Folder'],
+  ];
   await remoteCall.waitForFiles(
       appId, expectedRows, {ignoreLastModifiedTime: true});
 
@@ -642,7 +634,7 @@ testcase.fileDisplayWithoutDriveThenDisable = async () => {
   await sendTestMessage({name: 'setDriveEnabled', enabled: false});
 
   // The current directory should change to the default (Downloads).
-  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, defaultFolder);
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/My files');
 
   // Ensure Downloads has loaded.
   await remoteCall.waitForFiles(
@@ -709,23 +701,15 @@ testcase.fileDisplayUnmountDriveWithSharedWithMeSelected = async () => {
   // Unmount drive.
   await sendTestMessage({name: 'unmountDrive'});
 
-  // We should navigate to Downloads or MyFiles.
-  // TODO(crbug.com/880130): Remove this conditional.
-  let defaultFolder = '/My files/Downloads';
-  let expectedRows = [ENTRIES.newlyAdded.getExpectedRow()];
-  if (RootPath.DOWNLOADS_PATH === '/Downloads') {
-    defaultFolder = '/My files';
-    expectedRows = [
-      ['Play files', '--', 'Folder'],
-      ['Downloads', '--', 'Folder'],
-      ['Linux files', '--', 'Folder'],
-    ];
-  }
-
-  // Ensure MyFiles or Downloads has loaded.
-  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, defaultFolder);
+  // We should navigate to MyFiles.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/My files');
 
   // Which should contain a file.
+  const expectedRows = [
+    ['Play files', '--', 'Folder'],
+    ['Downloads', '--', 'Folder'],
+    ['Linux files', '--', 'Folder'],
+  ];
   await remoteCall.waitForFiles(
       appId, expectedRows, {ignoreLastModifiedTime: true});
 };
@@ -778,23 +762,15 @@ async function unmountRemovableVolume(removableDirectory) {
   // Unmount partitioned device.
   await sendTestMessage({name: 'unmountPartitions'});
 
-  // We should navigate to Downloads or MyFiles.
-  // TODO(crbug.com/880130): Remove this conditional.
-  let defaultFolder = '/My files/Downloads';
-  let expectedRows = [ENTRIES.photos.getExpectedRow()];
-  if (RootPath.DOWNLOADS_PATH === '/Downloads') {
-    defaultFolder = '/My files';
-    expectedRows = [
-      ['Play files', '--', 'Folder'],
-      ['Downloads', '--', 'Folder'],
-      ['Linux files', '--', 'Folder'],
-    ];
-  }
-
-  // Ensure MyFiles or Downloads has loaded.
-  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, defaultFolder);
+  // We should navigate to MyFiles.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/My files');
 
   // And contains the expected files.
+  const expectedRows = [
+    ['Play files', '--', 'Folder'],
+    ['Downloads', '--', 'Folder'],
+    ['Linux files', '--', 'Folder'],
+  ];
   await remoteCall.waitForFiles(
       appId, expectedRows, {ignoreLastModifiedTime: true});
 }

@@ -7,9 +7,16 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "ui/gfx/buffer_types.h"
+#include "ui/gfx/native_pixmap_handle.h"
+
+#if defined(OS_FUCHSIA)
+#include <lib/zx/channel.h>
+#endif  // defined(OS_FUCHSIA)
 
 namespace gfx {
 class ColorSpace;
@@ -123,6 +130,21 @@ class SharedImageInterface {
   // presenting the swap chain.
   virtual void PresentSwapChain(const SyncToken& sync_token,
                                 const Mailbox& mailbox) = 0;
+
+#if defined(OS_FUCHSIA)
+  // Registers a sysmem buffer collection. While the collection exists (i.e.
+  // between RegisterSysmemBufferCollection() and
+  // ReleaseSysmemBufferCollection()) the caller can use CreateSharedImage() to
+  // create shared images from the buffer in the collection by setting
+  // |buffer_collection_id| and |buffer_index| fields in NativePixmapHandle,
+  // wrapping it in GpuMemoryBufferHandle and then creating GpuMemoryBuffer from
+  // that handle.
+  virtual void RegisterSysmemBufferCollection(gfx::SysmemBufferCollectionId id,
+                                              zx::channel token) = 0;
+
+  virtual void ReleaseSysmemBufferCollection(
+      gfx::SysmemBufferCollectionId id) = 0;
+#endif  // defined(OS_FUCHSIA)
 
   // Generates an unverified SyncToken that is released after all previous
   // commands on this interface have executed on the service side.

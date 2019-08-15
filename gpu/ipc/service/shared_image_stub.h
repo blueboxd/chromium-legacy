@@ -73,6 +73,11 @@ class GPU_IPC_SERVICE_EXPORT SharedImageStub
   void OnCreateSwapChain(const GpuChannelMsg_CreateSwapChain_Params& params);
   void OnPresentSwapChain(const Mailbox& mailbox, uint32_t release_id);
 #endif  // OS_WIN
+#if defined(OS_FUCHSIA)
+  void OnRegisterSysmemBufferCollection(gfx::SysmemBufferCollectionId id,
+                                        zx::channel token);
+  void OnReleaseSysmemBufferCollection(gfx::SysmemBufferCollectionId id);
+#endif  // OS_FUCHSIA
 
   bool MakeContextCurrent();
   ContextResult MakeContextCurrentAndCreateFactory();

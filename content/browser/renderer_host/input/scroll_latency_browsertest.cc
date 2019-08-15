@@ -98,6 +98,7 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
     // instead of starting a new one.
     command_line->AppendSwitchASCII(
         cc::switches::kCCScrollAnimationDurationForTesting, "10000000");
+    command_line->AppendSwitch(switches::kAllowPreCommitInput);
   }
 
   void LoadURL() {

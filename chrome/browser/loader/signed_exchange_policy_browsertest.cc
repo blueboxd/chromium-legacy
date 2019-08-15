@@ -73,9 +73,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangePolicyBrowserTest, BlackList) {
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
                blacklist.CreateDeepCopy(), nullptr);
 
-#if defined(OS_CHROMEOS)
-  policy::SetEnterpriseUsersDefaults(&policies);
-#endif
+  policies.ApplyEnterpriseUsersDefaults(policy::GetEnterpriseUsersDefaults());
   policy_provider_.UpdateChromePolicy(policies);
   base::RunLoop loop;
   loop.RunUntilIdle();

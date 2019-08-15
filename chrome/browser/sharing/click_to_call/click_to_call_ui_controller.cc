@@ -6,19 +6,15 @@
 
 #include <utility>
 
-#include "base/strings/strcat.h"
+#include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
-#include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
-#include "chrome/browser/sharing/sharing_service.h"
-#include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/url_constants.h"
 #include "components/sync_device_info/device_info.h"
@@ -43,60 +39,55 @@ void ClickToCallUiController::ShowDialog(content::WebContents* web_contents,
                                          const GURL& url,
                                          bool hide_default_handler) {
   auto* controller = GetOrCreateFromWebContents(web_contents);
-  // Invalidate old dialog results.
-  controller->last_dialog_id_++;
   controller->phone_url_ = url;
   controller->hide_default_handler_ = hide_default_handler;
-  controller->InvalidateOldDialog();
-}
-
-// static
-void ClickToCallUiController::DeviceSelected(content::WebContents* web_contents,
-                                             const GURL& url,
-                                             const SharingDeviceInfo& device) {
-  auto* controller = GetOrCreateFromWebContents(web_contents);
-  // Invalidate old dialog results.
-  controller->last_dialog_id_++;
-  controller->phone_url_ = url;
-  controller->OnDeviceChosen(device);
+  controller->UpdateAndShowDialog();
 }
 
 ClickToCallUiController::ClickToCallUiController(
     content::WebContents* web_contents)
-    : SharingUiController(web_contents),
-      sharing_service_(SharingServiceFactory::GetForBrowserContext(
-          web_contents->GetBrowserContext())) {}
+    : SharingUiController(web_contents) {}
 
 ClickToCallUiController::~ClickToCallUiController() = default;
+
+void ClickToCallUiController::OnDeviceSelected(
+    const GURL& url,
+    const SharingDeviceInfo& device) {
+  phone_url_ = url;
+  OnDeviceChosen(device);
+}
 
 base::string16 ClickToCallUiController::GetTitle() {
   return l10n_util::GetStringUTF16(
       IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_LABEL);
 }
 
-std::vector<SharingDeviceInfo> ClickToCallUiController::GetSyncedDevices() {
-  return sharing_service_->GetDeviceCandidates(
-      static_cast<int>(SharingDeviceCapability::kTelephony));
+PageActionIconType ClickToCallUiController::GetIconType() {
+  return PageActionIconType::kClickToCall;
 }
 
-std::vector<App> ClickToCallUiController::GetApps() {
+int ClickToCallUiController::GetRequiredDeviceCapabilities() {
+  return static_cast<int>(SharingDeviceCapability::kTelephony);
+}
+
+void ClickToCallUiController::DoUpdateApps(UpdateAppsCallback callback) {
   std::vector<App> apps;
-  if (hide_default_handler_)
-    return apps;
+  if (hide_default_handler_) {
+    std::move(callback).Run(std::move(apps));
+    return;
+  }
 
   base::string16 app_name =
       shell_integration::GetApplicationNameForProtocol(phone_url_);
 
   if (!app_name.empty()) {
-    apps.emplace_back(vector_icons::kOpenInNewIcon, std::move(app_name),
-                      std::string());
+    apps.emplace_back(&vector_icons::kOpenInNewIcon, gfx::Image(),
+                      std::move(app_name), std::string());
   }
-  return apps;
+  std::move(callback).Run(std::move(apps));
 }
 
 void ClickToCallUiController::OnDeviceChosen(const SharingDeviceInfo& device) {
-  StartLoading();
-
   std::string phone_number_string(phone_url_.GetContent());
   url::RawCanonOutputT<base::char16> unescaped_phone_number;
   url::DecodeURLEscapeSequences(
@@ -108,18 +99,7 @@ void ClickToCallUiController::OnDeviceChosen(const SharingDeviceInfo& device) {
       base::UTF16ToUTF8(base::string16(unescaped_phone_number.data(),
                                        unescaped_phone_number.length())));
 
-  sharing_service_->SendMessageToDevice(
-      device.guid(), kSharingMessageTTL, std::move(sharing_message),
-      base::Bind(&ClickToCallUiController::OnMessageSentToDevice,
-                 weak_ptr_factory_.GetWeakPtr(), last_dialog_id_));
-}
-
-void ClickToCallUiController::OnMessageSentToDevice(int dialog_id,
-                                                    bool success) {
-  if (dialog_id != last_dialog_id_)
-    return;
-
-  StopLoading(!success);
+  SendMessageToDevice(device, std::move(sharing_message));
 }
 
 void ClickToCallUiController::OnAppChosen(const App& app) {
@@ -133,11 +113,7 @@ void ClickToCallUiController::OnHelpTextClicked() {
 }
 
 SharingDialog* ClickToCallUiController::DoShowDialog(BrowserWindow* window) {
-  return window->ShowClickToCallDialog(web_contents_, this);
-}
-
-PageActionIconType ClickToCallUiController::GetIconType() {
-  return PageActionIconType::kClickToCall;
+  return window->ShowClickToCallDialog(web_contents(), this);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ClickToCallUiController)

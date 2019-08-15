@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/bindings/core/v8/boxed_v8_module.h"
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
@@ -112,8 +113,8 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
     v8::Isolate* isolate = script_state_->GetIsolate();
     v8::HandleScope scope(isolate);
 
-    return instantiated_records_.Contains(ModuleRecord(
-        isolate, module_script->V8Module(), module_script->SourceURL()));
+    return instantiated_records_.Contains(MakeGarbageCollected<BoxedV8Module>(
+        isolate, module_script->V8Module()));
   }
 
  private:
@@ -153,9 +154,8 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
           script_state_->GetIsolate(), "Instantiation failure.");
       return ScriptValue(script_state_, error);
     }
-    // TODO(rikaf): replace ModuleRecord with GCed
-    instantiated_records_.insert(
-        ModuleRecord(script_state_->GetIsolate(), record, source_url));
+    instantiated_records_.insert(MakeGarbageCollected<BoxedV8Module>(
+        script_state_->GetIsolate(), record));
     return ScriptValue();
   }
 
@@ -178,7 +178,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
   Member<ScriptState> script_state_;
   HeapHashMap<KURL, Member<SingleModuleClient>> pending_clients_;
   HeapHashMap<KURL, Member<ModuleScript>> module_map_;
-  HashSet<ModuleRecord> instantiated_records_;
+  HeapHashSet<Member<BoxedV8Module>> instantiated_records_;
   bool instantiate_should_fail_ = false;
 };
 
@@ -186,6 +186,7 @@ void ModuleTreeLinkerTestModulator::Trace(blink::Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(pending_clients_);
   visitor->Trace(module_map_);
+  visitor->Trace(instantiated_records_);
   DummyModulator::Trace(visitor);
 }
 

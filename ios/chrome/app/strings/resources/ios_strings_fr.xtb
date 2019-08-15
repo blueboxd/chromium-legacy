@@ -266,6 +266,7 @@ Vos données sont chiffrées avec votre phrase secrète de synchronisation. Sais
 <translation id="4802417911091824046">Le chiffrement par phrase secrète ne s'applique pas aux modes de paiement et adresses Google Pay.
 
 Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" /></translation>
+<translation id="4805759445554688327">Numéro de carte non valide</translation>
 <translation id="4807020197310989387">1 article non lu dans la liste de lecture.</translation>
 <translation id="4818522717893377262">Ajouter une langue…</translation>
 <translation id="481968316161811770">Cookies/données site</translation>
@@ -393,6 +394,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="6476800141292307438">Traduction de la page en <ph name="LANGUAGE" />. Options disponibles au bas de l'écran.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> éléments supprimés.</translation>
 <translation id="6610002944194042868">Options de traduction</translation>
+<translation id="6628106477656132239">Date d'expiration non valide</translation>
 <translation id="6642362222295953972">Passer à un onglet existant</translation>
 <translation id="6643016212128521049">Effacer</translation>
 <translation id="6656103420185847513">Modifier le dossier</translation>

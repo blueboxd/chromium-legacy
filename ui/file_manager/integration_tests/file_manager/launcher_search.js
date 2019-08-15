@@ -58,9 +58,13 @@
    */
   testcase.launcherSearch = async () => {
     // Create a file in Downloads, and a pinned and unpinned file in Drive.
-    await setupAndWaitUntilReady(
-        'downloads', [ENTRIES.tallText, photos],
-        [ENTRIES.hello, ENTRIES.pinned, hostedDocument, photos]);
+    await Promise.all([
+      addEntries(['local'], [ENTRIES.tallText, photos]),
+      addEntries(
+          ['drive'], [ENTRIES.hello, ENTRIES.pinned, hostedDocument, photos]),
+    ]);
+    const appId = await openNewWindow(null, null);
+    chrome.test.assertTrue(!!appId, 'failed to open new window');
 
     const result = JSON.parse(await sendTestMessage({
       name: 'runLauncherSearch',
@@ -83,9 +87,13 @@
    */
   testcase.launcherSearchOffline = async () => {
     // Create a file in Downloads, and a pinned and unpinned file in Drive.
-    await setupAndWaitUntilReady(
-        'downloads', [ENTRIES.tallText, photos],
-        [ENTRIES.hello, ENTRIES.pinned, hostedDocument, photos]);
+    await Promise.all([
+      addEntries(['local'], [ENTRIES.tallText, photos]),
+      addEntries(
+          ['drive'], [ENTRIES.hello, ENTRIES.pinned, hostedDocument, photos]),
+    ]);
+    const appId = await openNewWindow(null, null);
+    chrome.test.assertTrue(!!appId, 'failed to open new window');
 
     const result = JSON.parse(await sendTestMessage({
       name: 'runLauncherSearch',

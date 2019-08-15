@@ -176,7 +176,7 @@ public class PrefetchFeedFlowTest {
         }
         @Override
         public NetworkState getCurrentNetworkState() {
-            return new NetworkState(true, ConnectivityManager.TYPE_WIFI, 0, null, false);
+            return new NetworkState(true, ConnectivityManager.TYPE_WIFI, 0, null, false, "");
         }
     }
 

@@ -110,8 +110,6 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   // ShelfObserver:
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
 
-  UnifiedSystemTrayView* unified_view() { return unified_view_; }
-
  private:
   friend class UnifiedSystemTrayTestApi;
 

@@ -236,8 +236,8 @@ void TrackEventJSONExporter::HandleInternedData(
         std::make_pair(event_cat.iid(), event_cat.name()));
     DCHECK(iter.second || iter.first->second == event_cat.name());
   }
-  for (const auto& event_name : data.legacy_event_names()) {
-    auto iter = current_state_->interned_legacy_event_names_.insert(
+  for (const auto& event_name : data.event_names()) {
+    auto iter = current_state_->interned_event_names_.insert(
         std::make_pair(event_name.iid(), event_name.name()));
     DCHECK(iter.second || iter.first->second == event_name.name());
   }
@@ -712,8 +712,8 @@ TrackEventJSONExporter::HandleLegacyEvent(const TrackEvent::LegacyEvent& event,
   int32_t tid =
       event.tid_override() == 0 ? current_state_->tid : event.tid_override();
 
-  const std::string& name = GetInternedName(
-      event.name_iid(), current_state_->interned_legacy_event_names_);
+  const std::string& name =
+      GetInternedName(event.name_iid(), current_state_->interned_event_names_);
 
   // Build the actual json output, if we are missing the interned name we just
   // use the interned ID.

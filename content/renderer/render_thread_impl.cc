@@ -737,7 +737,6 @@ RenderThreadImpl::RenderThreadImpl(
 
 void RenderThreadImpl::Init() {
   TRACE_EVENT0("startup", "RenderThreadImpl::Init");
-  init_start_ = base::TimeTicks::Now();
 
   GetContentClient()->renderer()->PostIOThreadCreated(GetIOTaskRunner().get());
 
@@ -984,8 +983,6 @@ void RenderThreadImpl::Init() {
     compositing_mode_reporter_->AddCompositingModeWatcher(
         std::move(watcher_ptr));
   }
-
-  init_end_ = base::TimeTicks::Now();
 }
 
 RenderThreadImpl::~RenderThreadImpl() {
@@ -2095,24 +2092,6 @@ void RenderThreadImpl::CreateFrameProxy(
 
 void RenderThreadImpl::SetUpEmbeddedWorkerChannelForServiceWorker(
     blink::mojom::EmbeddedWorkerInstanceClientRequest client_request) {
-  // This is a hack. Process creation and initialization occurs before tracing
-  // is setup, so trace events logged at that time get dropped. We want these
-  // trace events to analyze service worker performance, so log them here.
-  //
-  // TODO(crbug.com/968424): Remove this hack when trace events that happen
-  // early on are supported.
-  if (!init_start_.is_null()) {
-    TRACE_EVENT_BEGIN_WITH_ID_TID_AND_TIMESTAMP0(
-        "ServiceWorker", "RenderThreadImpl initialization", this,
-        0 /* thread_id */, init_start_);
-    TRACE_EVENT_END_WITH_ID_TID_AND_TIMESTAMP0(
-        "ServiceWorker", "RenderThreadImpl initialization", this,
-        0 /* thread_id */, init_end_);
-    // Clear to avoid double logging.
-    init_start_ = base::TimeTicks();
-    init_end_ = base::TimeTicks();
-  }
-
   EmbeddedWorkerInstanceClientImpl::Create(
       std::move(client_request),
       GetWebMainThreadScheduler()->DefaultTaskRunner());

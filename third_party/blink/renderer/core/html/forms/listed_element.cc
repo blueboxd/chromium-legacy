@@ -570,7 +570,7 @@ void ListedElement::UpdateAncestorDisabledState() const {
   ContainerNode* last_legend_ancestor = nullptr;
   for (auto* ancestor = Traversal<HTMLElement>::FirstAncestor(ToHTMLElement());
        ancestor; ancestor = Traversal<HTMLElement>::FirstAncestor(*ancestor)) {
-    if (IsHTMLLegendElement(*ancestor)) {
+    if (IsA<HTMLLegendElement>(*ancestor)) {
       last_legend_ancestor = ancestor;
       continue;
     }

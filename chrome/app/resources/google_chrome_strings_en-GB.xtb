@@ -89,12 +89,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="3080151273017101988">Continue running background apps when Google Chrome is closed</translation>
 <translation id="3089968997497233615">There's a new, safer version of Google Chrome available.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
-<translation id="3251381707915721925">To set which websites that <ph name="NEW_PROFILE_NAME" /> can view, you can configure restrictions and settings by visiting <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. If you do not change the default settings, <ph name="NEW_PROFILE_NAME" /> can browse everything on the web.
-
-To prevent <ph name="NEW_PROFILE_NAME" /> from accessing your account, make sure that you lock your profile when you're not using Chrome. To do this, click your profile name in the upper-right corner of the browser, and select "Exit and child lock."
-<ph name="BEGIN_LINK_2" />Learn more<ph name="END_LINK_2" />
-
-Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.</translation>
 <translation id="3282568296779691940">Sign in to Chrome</translation>
 <translation id="3340978935015468852">settings</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -194,6 +188,8 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6291549208091401781">Google Chrome is already installed for all users on your computer.</translation>
 <translation id="6338556085225130112">Updating Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS" />open-source software<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="6400930858680434649">If a setting doesn't show on this page, try your <ph name="LINK_BEGIN" />
+    Chrome browser settings<ph name="LINK_END" />.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
 <translation id="6566149418543181476">Updating Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">You're using <ph name="PROFILE_EMAIL" /> to sync your Chrome stuff. To update your sync preference or to use Chrome without a Google Account, visit <ph name="SETTINGS_LINK" />.</translation>
@@ -226,7 +222,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7486227612705979895">Chrome will access your Drive to make suggestions in the address bar</translation>
 <translation id="7531671357096394523">Quit all copies of Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
-<translation id="7552219221109926349">Display Chrome OS in this language</translation>
 <translation id="7589360514048265910">This computer will no longer receive Google Chrome updates because Mac OS X 10.9 is no longer supported.</translation>
 <translation id="7592736734348559088">Google Chrome could not sync your data because your account sign-in details are out of date.</translation>
 <translation id="7626032353295482388">Welcome to Chrome</translation>
@@ -244,7 +239,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7896673875602241923">Someone previously signed in to Chrome on this computer as <ph name="ACCOUNT_EMAIL_LAST" />. Please create a new Chrome user to keep your information separate.</translation>
 <translation id="7908168227788431038">Nearly up to date! Relaunch Google Chrome to finish updating.</translation>
 <translation id="7962410387636238736">This computer will no longer receive Google Chrome updates because Windows XP and Windows Vista are no longer supported</translation>
-<translation id="8005540215158006229">Chrome is almost ready.</translation>
 <translation id="8008534537613507642">Reinstall Chrome</translation>
 <translation id="8013993649590906847">If an image doesn’t have a useful description, Chrome will try to provide one for you. To create descriptions, images are sent to Google.</translation>
 <translation id="8030318113982266900">Updating your device to <ph name="CHANNEL_NAME" /> channel...</translation>
@@ -277,7 +271,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="870251953148363156">Update &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome cannot determine or set the default browser</translation>
 <translation id="8736674169840206667">Your administrator requires that you relaunch Chrome to apply an update</translation>
-<translation id="8788264404293392165">This language is used to display the Chrome OS UI</translation>
 <translation id="8823341990149967727">Chrome is Out of Date</translation>
 <translation id="884296878221830158">It also controls what page is shown when you start Chrome or click the Home button.</translation>
 <translation id="8862326446509486874">You do not have appropriate rights for system-level installation. Try running the installer again as Administrator.</translation>

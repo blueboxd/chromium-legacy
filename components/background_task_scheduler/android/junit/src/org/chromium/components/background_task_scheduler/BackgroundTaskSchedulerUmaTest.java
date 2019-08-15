@@ -258,6 +258,16 @@ public class BackgroundTaskSchedulerUmaTest {
 
     @Test
     @Feature({"BackgroundTaskScheduler"})
+    public void testReportMigrationToProto() {
+        doNothing().when(mUmaSpy).cacheEvent(anyString(), anyInt());
+        BackgroundTaskSchedulerUma.getInstance().reportMigrationToProto(TaskIds.TEST);
+        verify(mUmaSpy, times(1))
+                .cacheEvent(eq("Android.BackgroundTaskScheduler.MigrationToProto"),
+                        eq(BackgroundTaskSchedulerUma.BACKGROUND_TASK_TEST));
+    }
+
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
     public void testReportTaskStartedNativeFullBrowser() {
         doNothing().when(mUmaSpy).cacheEvent(anyString(), anyInt());
         BackgroundTaskSchedulerExternalUma.reportTaskStartedNative(

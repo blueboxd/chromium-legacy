@@ -180,6 +180,7 @@ public class StartSurfaceLayoutTest {
     // clang-format off
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     public void testTabToGridFromLiveTabSoftAnimation() throws InterruptedException {
         // clang-format on
         prepareTabs(2, NTP_URL);

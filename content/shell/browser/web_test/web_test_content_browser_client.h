@@ -90,7 +90,12 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
   // Creates and stores a FakeBluetoothChooserFactory instance.
   void CreateFakeBluetoothChooserFactory(
       mojom::FakeBluetoothChooserFactoryRequest request);
-  void BindClipboardHost(blink::mojom::ClipboardHostRequest request);
+  // TODO(https://crbug.com/955171): Remove this and use BindClipboardHost
+  // directly once it uses service_manager::BinderMap instead of
+  // service_manager::BinderRegistry.
+  void BindClipboardHostForRequest(blink::mojom::ClipboardHostRequest request);
+  void BindClipboardHost(
+      mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver);
 
   std::unique_ptr<MockPlatformNotificationService>
       mock_platform_notification_service_;

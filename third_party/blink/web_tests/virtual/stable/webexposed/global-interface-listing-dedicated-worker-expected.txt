@@ -955,6 +955,13 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method pipeThrough
 [Worker]     method pipeTo
 [Worker]     method tee
+[Worker] interface ReadableStreamDefaultReader
+[Worker]     attribute @@toStringTag
+[Worker]     getter closed
+[Worker]     method cancel
+[Worker]     method constructor
+[Worker]     method read
+[Worker]     method releaseLock
 [Worker] interface Request
 [Worker]     attribute @@toStringTag
 [Worker]     getter bodyUsed
@@ -2634,6 +2641,16 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method abort
 [Worker]     method constructor
 [Worker]     method getWriter
+[Worker] interface WritableStreamDefaultWriter
+[Worker]     attribute @@toStringTag
+[Worker]     getter closed
+[Worker]     getter desiredSize
+[Worker]     getter ready
+[Worker]     method abort
+[Worker]     method close
+[Worker]     method constructor
+[Worker]     method releaseLock
+[Worker]     method write
 [Worker] interface XMLHttpRequest : XMLHttpRequestEventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     attribute DONE

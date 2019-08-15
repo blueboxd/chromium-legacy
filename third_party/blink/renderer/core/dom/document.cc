@@ -5902,6 +5902,7 @@ void Document::setDomain(const String& raw_domain,
 
 // http://www.whatwg.org/specs/web-apps/current-work/#dom-document-lastmodified
 String Document::lastModified() const {
+  // TODO(tkent): Use base::Time::LocalExplode() instead of DateComponents.
   DateComponents date;
   bool found_date = false;
   AtomicString http_last_modified = override_last_modified_;
@@ -5912,10 +5913,10 @@ String Document::lastModified() const {
     }
   }
   if (!http_last_modified.IsEmpty()) {
-    double date_value = ParseDate(http_last_modified);
-    if (!std::isnan(date_value)) {
+    base::Optional<base::Time> date_value = ParseDate(http_last_modified);
+    if (date_value) {
       date.SetMillisecondsSinceEpochForDateTimeLocal(
-          ConvertToLocalTime(date_value));
+          ConvertToLocalTime(date_value.value()).InMillisecondsF());
       found_date = true;
     }
   }
@@ -5924,7 +5925,7 @@ String Document::lastModified() const {
   // system.
   if (!found_date) {
     date.SetMillisecondsSinceEpochForDateTimeLocal(
-        ConvertToLocalTime(base::Time::Now().ToDoubleT() * 1000.0));
+        ConvertToLocalTime(base::Time::Now()).InMillisecondsF());
   }
   return String::Format("%02d/%02d/%04d %02d:%02d:%02d", date.Month() + 1,
                         date.MonthDay(), date.FullYear(), date.Hour(),

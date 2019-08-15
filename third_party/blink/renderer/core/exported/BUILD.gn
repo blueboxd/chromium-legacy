@@ -79,8 +79,6 @@ blink_core_sources("exported") {
     "web_v8_context_snapshot.cc",
     "web_view_impl.cc",
     "web_view_impl.h",
-    "worker_shadow_page.cc",
-    "worker_shadow_page.h",
   ]
 
   defines = [ "BLINK_IMPLEMENTATION=1" ]

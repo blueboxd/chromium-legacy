@@ -137,6 +137,11 @@ class POLICY_EXPORT PolicyMap {
 
   void Set(const std::string& policy, Entry entry);
 
+  // Applies the policies values from |enterprise_defaults| as policies as
+  // mandatory user level policies with POLICY_SOURCE_ENTERPRISE_DEFAULT.
+  void ApplyEnterpriseUsersDefaults(
+      std::map<std::string, std::unique_ptr<base::Value>> enterprise_defaults);
+
   // Adds non-localized |error| to the map for the key |policy| that should be
   // shown to the user alongside the value in the policy UI. This should only be
   // called for policies that are already stored in this map.

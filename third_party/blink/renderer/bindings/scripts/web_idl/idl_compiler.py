@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from .callback_function import CallbackFunction
+from .callback_interface import CallbackInterface
 from .composition_parts import Identifier
 from .database import Database
 from .database import DatabaseBody
@@ -202,6 +203,12 @@ class IdlCompiler(object):
             IdentifierIRMap.IR.Kind.DICTIONARY)
         for ir in dictionary_irs.itervalues():
             self._db.register(DatabaseBody.Kind.DICTIONARY, Dictionary(ir))
+
+        callback_interface_irs = self._ir_map.find_by_kind(
+            IdentifierIRMap.IR.Kind.CALLBACK_INTERFACE)
+        for ir in callback_interface_irs.itervalues():
+            self._db.register(DatabaseBody.Kind.CALLBACK_INTERFACE,
+                              CallbackInterface(ir))
 
         callback_function_irs = self._ir_map.find_by_kind(
             IdentifierIRMap.IR.Kind.CALLBACK_FUNCTION)

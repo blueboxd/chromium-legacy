@@ -27,10 +27,23 @@ from grit.node import misc
 
 
 @contextlib.contextmanager
-# Returns the name of the new temporary file containing |content|, which must be
-# deleted by the caller.
 def _MakeTempPredeterminedIdsFile(content):
-  with tempfile.NamedTemporaryFile(delete=False) as f:
+  """Write the |content| string to a temporary file.
+
+  The temporary file must be deleted by the caller.
+
+  Example:
+    with _MakeTempPredeterminedIdsFile('foo') as path:
+      ...
+      os.remove(path)
+
+  Args:
+    content: The string to write.
+
+  Yields:
+    The name of the temporary file.
+  """
+  with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
     f.write(content)
     f.flush()
     f.close()

@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/modules/mediasession/media_session.h"
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/mediasession/media_position_state.h"
@@ -20,10 +22,9 @@ class MockMediaSessionService : public mojom::blink::MediaSessionService {
  public:
   MockMediaSessionService() = default;
 
-  mojom::blink::MediaSessionServicePtr CreateInterfacePtrAndBind() {
-    mojom::blink::MediaSessionServicePtr service;
-    binding_.Bind(mojo::MakeRequest(&service));
-    return service;
+  mojo::Remote<mojom::blink::MediaSessionService> CreateRemoteAndBind() {
+    return mojo::Remote<mojom::blink::MediaSessionService>(
+        receiver_.BindNewPipeAndPassRemote());
   }
 
   void SetClient(
@@ -39,7 +40,7 @@ class MockMediaSessionService : public mojom::blink::MediaSessionService {
       media_session::mojom::blink::MediaSessionAction action) override {}
 
  private:
-  mojo::Binding<mojom::blink::MediaSessionService> binding_{this};
+  mojo::Receiver<mojom::blink::MediaSessionService> receiver_{this};
 };
 
 }  // namespace
@@ -54,7 +55,7 @@ class MediaSessionTest : public PageTestBase {
     mock_service_ = std::make_unique<MockMediaSessionService>();
 
     media_session_ = MakeGarbageCollected<MediaSession>(&GetDocument());
-    media_session_->service_ = mock_service_->CreateInterfacePtrAndBind();
+    media_session_->service_ = mock_service_->CreateRemoteAndBind();
   }
 
   void SetPositionState(double duration,

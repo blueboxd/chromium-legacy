@@ -23,6 +23,7 @@ class LargestContentfulPaintCalculator;
 class LayoutObject;
 class LocalFrameView;
 class PropertyTreeState;
+class StyleFetchedImage;
 class TextPaintTimingDetector;
 struct WebFloatRect;
 
@@ -122,7 +123,7 @@ class CORE_EXPORT PaintTimingDetector
   static void NotifyBackgroundImagePaint(
       const Node*,
       const Image*,
-      const ImageResourceContent* cached_image,
+      const StyleFetchedImage*,
       const PropertyTreeState& current_paint_chunk_properties);
   static void NotifyImagePaint(
       const LayoutObject&,

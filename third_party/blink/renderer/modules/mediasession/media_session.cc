@@ -320,7 +320,7 @@ mojom::blink::MediaSessionService* MediaSession::GetService() {
   auto task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   frame->GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&service_, task_runner));
+      service_.BindNewPipeAndPassReceiver());
   if (service_.get()) {
     // Record the eTLD+1 of the frame using the API.
     Platform::Current()->RecordRapporURL("Media.Session.APIUsage.Origin",

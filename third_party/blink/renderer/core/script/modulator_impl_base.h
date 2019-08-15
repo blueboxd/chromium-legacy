@@ -81,7 +81,8 @@ class ModulatorImplBase : public Modulator {
   void RegisterImportMap(const ImportMap*) final;
   bool IsAcquiringImportMaps() const final { return acquiring_import_maps_; }
   void ClearIsAcquiringImportMaps() final { acquiring_import_maps_ = false; }
-  ModuleImportMeta HostGetImportMetaProperties(ModuleRecord) const override;
+  ModuleImportMeta HostGetImportMetaProperties(
+      v8::Local<v8::Module>) const override;
   ScriptValue InstantiateModule(v8::Local<v8::Module>, const KURL&) override;
   Vector<ModuleRequest> ModuleRequestsFromModuleRecord(
       v8::Local<v8::Module>) override;

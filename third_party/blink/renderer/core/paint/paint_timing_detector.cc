@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/paint/largest_contentful_paint_calculator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/text_paint_timing_detector.h"
+#include "third_party/blink/renderer/core/style/style_fetched_image.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
@@ -103,10 +104,10 @@ void PaintTimingDetector::NotifyPaintFinished() {
 void PaintTimingDetector::NotifyBackgroundImagePaint(
     const Node* node,
     const Image* image,
-    const ImageResourceContent* cached_image,
+    const StyleFetchedImage* style_image,
     const PropertyTreeState& current_paint_chunk_properties) {
   DCHECK(image);
-  DCHECK(cached_image);
+  DCHECK(style_image->CachedImage());
   if (!node)
     return;
   LayoutObject* object = node->GetLayoutObject();
@@ -121,7 +122,8 @@ void PaintTimingDetector::NotifyBackgroundImagePaint(
   if (!IsBackgroundImageContentful(*object, *image))
     return;
   detector.GetImagePaintTimingDetector()->RecordImage(
-      *object, image->Size(), *cached_image, current_paint_chunk_properties);
+      *object, image->Size(), *style_image->CachedImage(),
+      current_paint_chunk_properties, style_image);
 }
 
 // static
@@ -139,7 +141,8 @@ void PaintTimingDetector::NotifyImagePaint(
   if (!detector.GetImagePaintTimingDetector())
     return;
   detector.GetImagePaintTimingDetector()->RecordImage(
-      object, intrinsic_size, *cached_image, current_paint_chunk_properties);
+      object, intrinsic_size, *cached_image, current_paint_chunk_properties,
+      nullptr);
 }
 
 void PaintTimingDetector::NotifyImageFinished(

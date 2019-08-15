@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 #include "ui/base/clipboard/clipboard.h"
 
@@ -29,12 +29,19 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
  public:
   ~ClipboardHostImpl() override;
 
-  static void Create(blink::mojom::ClipboardHostRequest request);
+  // TODO(https://crbug.com/955171): Remove this and use Create directly once
+  // RenderProcessHostImpl uses service_manager::BinderMap instead of
+  // service_manager::BinderRegistry.
+  static void CreateForRequest(blink::mojom::ClipboardHostRequest request);
+
+  static void Create(
+      mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver);
 
  private:
   friend class ClipboardHostImplTest;
 
-  explicit ClipboardHostImpl(blink::mojom::ClipboardHostRequest request);
+  explicit ClipboardHostImpl(
+      mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver);
 
   // content::mojom::ClipboardHost
   void GetSequenceNumber(ui::ClipboardType clipboard_type,
@@ -68,7 +75,7 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
   void WriteStringToFindPboard(const base::string16& text) override;
 #endif
 
-  mojo::Binding<blink::mojom::ClipboardHost> binding_;
+  mojo::Receiver<blink::mojom::ClipboardHost> receiver_;
   ui::Clipboard* const clipboard_;  // Not owned
   std::unique_ptr<ui::ScopedClipboardWriter> clipboard_writer_;
 };

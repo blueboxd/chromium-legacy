@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_SYSTEM_CLIPBOARD_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_SYSTEM_CLIPBOARD_H_
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -71,7 +72,7 @@ class CORE_EXPORT SystemClipboard {
   SystemClipboard();
   bool IsValidBufferType(mojom::ClipboardBuffer);
 
-  mojom::blink::ClipboardHostPtr clipboard_;
+  mojo::Remote<mojom::blink::ClipboardHost> clipboard_;
   // In X11, |buffer_| may equal ClipboardBuffer::kStandard or kSelection.
   // Outside X11, |buffer_| always equals ClipboardBuffer::kStandard.
   mojom::ClipboardBuffer buffer_ = mojom::ClipboardBuffer::kStandard;

@@ -25,6 +25,14 @@ namespace policy {
 // BrowserProcess as a global singleton.
 class POLICY_EXPORT PolicyService {
  public:
+  class POLICY_EXPORT EnterpriseUsersDefaultDelegate {
+   public:
+    // Returns whether enterprise users default policies should be applied.
+    /// i.e. The machine or profile is managed. This value can change during
+    // this object's lifetime.
+    virtual bool ShouldApplyEnterpriseUsersDefault() = 0;
+  };
+
   class POLICY_EXPORT Observer {
    public:
     // Invoked whenever policies for the given |ns| namespace are modified.

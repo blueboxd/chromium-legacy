@@ -87,6 +87,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
       ResourceUsage,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       unsigned msaa_sample_count,
+      SkFilterQuality,
       const CanvasColorParams&,
       PresentationMode,
       base::WeakPtr<CanvasResourceDispatcher>,
@@ -97,6 +98,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
       ResourceUsage,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       unsigned msaa_sample_count,
+      SkFilterQuality,
       const CanvasColorParams&,
       PresentationMode,
       base::WeakPtr<CanvasResourceDispatcher>,
@@ -197,6 +199,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   CanvasResourceProvider(const ResourceProviderType&,
                          const IntSize&,
+                         const SkFilterQuality&,
                          const CanvasColorParams&,
                          base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
                          base::WeakPtr<CanvasResourceDispatcher>);
@@ -229,10 +232,10 @@ class PLATFORM_EXPORT CanvasResourceProvider
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher_;
   IntSize size_;
+  SkFilterQuality filter_quality_;
   CanvasColorParams color_params_;
   std::unique_ptr<CanvasImageProvider> canvas_image_provider_;
   std::unique_ptr<cc::SkiaPaintCanvas> canvas_;
-  SkFilterQuality filter_quality_ = kLow_SkFilterQuality;
 
   const cc::PaintImage::Id snapshot_paint_image_id_;
   cc::PaintImage::ContentId snapshot_paint_image_content_id_ =

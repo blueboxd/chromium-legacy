@@ -3624,6 +3624,23 @@ TEST_F(HostResolverManagerDnsTest, DisableAndEnableInsecureDnsClient) {
                                     CreateExpected("127.0.0.1", 1212)));
 }
 
+TEST_F(HostResolverManagerDnsTest, UseProcTaskWhenPrivateDnsActive) {
+  // Disable fallback to allow testing how requests are initially handled.
+  set_allow_fallback_to_proctask(false);
+  proc_->AddRuleForAllFamilies("nx_succeed", "192.168.2.47");
+  proc_->SignalMultiple(1u);
+
+  DnsConfig config = CreateValidDnsConfig();
+  config.dns_over_tls_active = true;
+  ChangeDnsConfig(config);
+  ResolveHostResponseHelper response_proc(resolver_->CreateRequest(
+      HostPortPair("nx_succeed", 1212), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response_proc.result_error(), IsOk());
+  EXPECT_THAT(response_proc.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("192.168.2.47", 1212)));
+}
+
 // RFC 6761 localhost names should always resolve to loopback.
 TEST_F(HostResolverManagerDnsTest, LocalhostLookup) {
   // Add a rule resolving localhost names to a non-loopback IP and test
@@ -5016,6 +5033,67 @@ TEST_F(HostResolverManagerDnsTest,
 
   // The insecure cache should still be checked even if the insecure part of
   // the dns client is disabled.
+  ResolveHostResponseHelper response_insecure_cached(resolver_->CreateRequest(
+      HostPortPair("insecure_automatic_cached", 80), NetLogWithSource(),
+      base::nullopt, request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response_insecure_cached.result_error(), IsOk());
+  EXPECT_THAT(response_insecure_cached.request()
+                  ->GetAddressResults()
+                  .value()
+                  .endpoints(),
+              testing::ElementsAre(kExpectedInsecureIP));
+}
+
+TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic_DotActive) {
+  proc_->AddRuleForAllFamilies("insecure_automatic", "192.168.1.100");
+  DnsConfig config = CreateValidDnsConfig();
+  config.dns_over_tls_active = true;
+  ChangeDnsConfig(config);
+  DnsConfigOverrides overrides;
+  overrides.secure_dns_mode = DnsConfig::SecureDnsMode::AUTOMATIC;
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  const std::pair<const HostCache::Key, HostCache::Entry>* cache_result;
+
+  // The secure part of the dns client should be enabled.
+  ResolveHostResponseHelper response_secure(resolver_->CreateRequest(
+      HostPortPair("automatic", 80), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  ASSERT_THAT(response_secure.result_error(), IsOk());
+  EXPECT_THAT(
+      response_secure.request()->GetAddressResults().value().endpoints(),
+      testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 80),
+                                    CreateExpected("::1", 80)));
+  HostCache::Key secure_key =
+      HostCache::Key("automatic", DnsQueryType::UNSPECIFIED,
+                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  secure_key.secure = true;
+  cache_result = GetCacheHit(secure_key);
+  EXPECT_TRUE(!!cache_result);
+
+  // Insecure async requests should be skipped since the system resolver
+  // requests will be secure.
+  ResolveHostResponseHelper response_insecure(resolver_->CreateRequest(
+      HostPortPair("insecure_automatic", 80), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  proc_->SignalMultiple(1u);
+  ASSERT_THAT(response_insecure.result_error(), IsOk());
+  EXPECT_THAT(
+      response_insecure.request()->GetAddressResults().value().endpoints(),
+      testing::ElementsAre(CreateExpected("192.168.1.100", 80)));
+  HostCache::Key insecure_key =
+      HostCache::Key("insecure_automatic", DnsQueryType::UNSPECIFIED,
+                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  cache_result = GetCacheHit(insecure_key);
+  EXPECT_TRUE(!!cache_result);
+
+  HostCache::Key cached_insecure_key =
+      HostCache::Key("insecure_automatic_cached", DnsQueryType::UNSPECIFIED,
+                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  IPEndPoint kExpectedInsecureIP = CreateExpected("192.168.1.101", 80);
+  PopulateCache(cached_insecure_key, kExpectedInsecureIP);
+
+  // The insecure cache should still be checked.
   ResolveHostResponseHelper response_insecure_cached(resolver_->CreateRequest(
       HostPortPair("insecure_automatic_cached", 80), NetLogWithSource(),
       base::nullopt, request_context_.get(), host_cache_.get()));
@@ -6439,6 +6517,47 @@ TEST_F(HostResolverManagerDnsTest, ModeForHistogram) {
     ChangeDnsConfig(dns_config);
     EXPECT_EQ(resolver_->mode_for_histogram_,
               HostResolverManager::MODE_FOR_HISTOGRAM_SYSTEM_SUPPORTS_DOH);
+  }
+
+  // Test private DNS is detected.
+  DnsConfig config = CreateValidDnsConfig();
+  config.dns_over_tls_active = true;
+  ChangeDnsConfig(config);
+  EXPECT_EQ(resolver_->mode_for_histogram_,
+            HostResolverManager::MODE_FOR_HISTOGRAM_SYSTEM_PRIVATE_DNS);
+
+  // Test upgradeability from IP addresses when private DNS is active.
+  for (const char* upgradable_server : upgradable_servers) {
+    IPAddress ip_address;
+    ASSERT_TRUE(ip_address.AssignFromIPLiteral(upgradable_server));
+    DnsConfig dns_config;
+    dns_config.dns_over_tls_active = true;
+    dns_config.nameservers.push_back(
+        IPEndPoint(ip_address, dns_protocol::kDefaultPort));
+    ChangeDnsConfig(dns_config);
+    EXPECT_EQ(resolver_->mode_for_histogram_,
+              HostResolverManager::
+                  MODE_FOR_HISTOGRAM_SYSTEM_PRIVATE_DNS_SUPPORTS_DOH);
+  }
+
+  // Test upgradeability from private DNS hostname.
+  static const std::vector<const char*> upgradeable_private_servers(
+      {// Google Public DNS
+       "dns.google",
+       // Cloudflare DNS
+       "1dot1dot1dot1.cloudflare-dns.com", "cloudflare-dns.com",
+       // Quad9 DNS
+       "dns.quad9.net"});
+  for (const char* upgradeable_private_server : upgradeable_private_servers) {
+    DnsConfig dns_config;
+    dns_config.dns_over_tls_active = true;
+    dns_config.dns_over_tls_hostname = upgradeable_private_server;
+    dns_config.nameservers.push_back(
+        IPEndPoint(IPAddress(1, 2, 3, 4), dns_protocol::kDefaultPort));
+    ChangeDnsConfig(dns_config);
+    EXPECT_EQ(resolver_->mode_for_histogram_,
+              HostResolverManager::
+                  MODE_FOR_HISTOGRAM_SYSTEM_PRIVATE_DNS_SUPPORTS_DOH);
   }
 }
 

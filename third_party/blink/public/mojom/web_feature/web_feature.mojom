@@ -2379,6 +2379,10 @@ enum WebFeature {
   kRequestedFileSystemPersistent = 2997,
   kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop = 2998,
   kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTopSetPositive = 2999,
+  kXMLHttpRequestSynchronousInMainFrame = 3000,
+  kXMLHttpRequestSynchronousInCrossOriginSubframe = 3001,
+  kXMLHttpRequestSynchronousInSameOriginSubframe = 3002,
+  kXMLHttpRequestSynchronousInWorker = 3003,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

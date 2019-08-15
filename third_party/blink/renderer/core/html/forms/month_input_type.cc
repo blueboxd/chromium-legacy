@@ -76,7 +76,7 @@ String MonthInputType::SerializeWithMilliseconds(double value) const {
 Decimal MonthInputType::DefaultValueForStepUp() const {
   DateComponents date;
   date.SetMillisecondsSinceEpochForMonth(
-      ConvertToLocalTime(base::Time::Now().ToDoubleT() * 1000.0));
+      ConvertToLocalTime(base::Time::Now()).InMillisecondsF());
   double months = date.MonthsSinceEpoch();
   DCHECK(std::isfinite(months));
   return Decimal::FromDouble(months);

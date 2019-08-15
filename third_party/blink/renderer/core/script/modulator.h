@@ -181,7 +181,8 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   virtual const ImportMap* GetImportMapForTest() const = 0;
 
   // https://html.spec.whatwg.org/C/#hostgetimportmetaproperties
-  virtual ModuleImportMeta HostGetImportMetaProperties(ModuleRecord) const = 0;
+  virtual ModuleImportMeta HostGetImportMetaProperties(
+      v8::Local<v8::Module>) const = 0;
 
   virtual bool HasValidContext() = 0;
 
@@ -193,7 +194,6 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
     ModuleRequest(const String& specifier, const TextPosition& position)
         : specifier(specifier), position(position) {}
   };
-  // TODO(rikaf) : Replace ModuleRecord with v8::Local<v8::Module>
   virtual Vector<ModuleRequest> ModuleRequestsFromModuleRecord(
       v8::Local<v8::Module>) = 0;
 

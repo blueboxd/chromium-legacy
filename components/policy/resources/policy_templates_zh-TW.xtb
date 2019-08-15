@@ -70,7 +70,6 @@
 
           如果停用或未指定這項設定，遠端協助主機則會在使用者的作業環境中執行，遠端使用者將無法在桌面上操控權限較高的視窗。</translation>
 <translation id="1096105751829466145">預設搜尋引擎</translation>
-<translation id="1099024407376270611">即時檢查使用者所造訪網址的安全瀏覽信譽</translation>
 <translation id="1099282607296956954">為所有網站啟用網站隔離</translation>
 <translation id="1100570158310952027">
       這項政策可指定要視為安全內容的來源 (網址) 或主機名稱模式 (例如「*.example.com」)，清單中的內容來源將不會套用針對不安全來源所設的安全性限制。
@@ -409,22 +408,6 @@
       警告：我們不建議將對 <ph name="PRODUCT_OS_NAME" /> 版本的控制權委派給資訊站應用程式，因為這可能導致裝置無法接收軟體更新，且無法修正重大的安全性問題。委派 <ph name="PRODUCT_OS_NAME" /> 版本的控制權可能讓使用者面臨風險。</translation>
 <translation id="1675002386741412210">支援環境：</translation>
 <translation id="1700811900332333712">允許裝置要求執行 Powerwash</translation>
-<translation id="1704516734140344991">設定 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新功能的可用性和行為。
-
-      你可以在 JSON 屬性中指定個別設定：
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />：如果設為 <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />，使用者可觸發 Powerwash 流程來安裝 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新。
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />：如果設為 <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />，使用者可以叫用 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新流程，這項流程會保留整個裝置的狀態 (包括企業註冊)，但會捨棄使用者資料。68 以上版本皆支援這項更新流程。
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />：控管如何對具有安全漏洞的 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體強制執行自動 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新。所有流程均會保留本機裝置狀態。
-        如果設為 1 或不設定，系統不會強制執行 TPM 韌體更新。
-        如果設為 2，系統將在使用者同意更新後，於下次重新啟動時更新 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體。
-        如果設為 3，系統將在下次重新啟動時更新 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體。
-        如果設為 4，系統將在裝置進行註冊後，於使用者登入前更新 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體。
-        74 以上版本皆支援這個選項。
-
-      如果未設定這項政策，則無法使用 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新功能。</translation>
 <translation id="1708496595873025510">設定變異版本種子的擷取限制</translation>
 <translation id="1717817358640580294">如未設定這項政策，當 Chrome 清理功能偵測到垃圾軟體時，可能會根據 SafeBrowsingExtendedReportingEnabled 設定的政策，將掃描作業的相關中繼資料回報給 Google。回報完畢後，Chrome 清理功能會詢問使用者是否要將偵測到的垃圾軟體清除。使用者可以選擇將清理作業的執行結果分享給 Google，讓日後的垃圾軟體偵測作業更精確。分享的結果包括檔案中繼資料、自動安裝的擴充功能和登錄機碼，詳情請見《Chrome 隱私權白皮書》。
 
@@ -700,8 +683,8 @@
           如果未指定這項設定，系統則會每天要求快速解鎖功能使用者在鎖定畫面中輸入密碼。</translation>
 <translation id="219297066914002620">指示 <ph name="PRODUCT_OS_NAME" />啟用或停用虛擬機器管理主控台工具。
 
-      如果將這項政策設為 True 或不予設定，使用者將可以使用「VM 管理 CLI」。
-      否則系統會停用並隱藏「VM 管理 CLI」。
+      如果將這項政策設為 True 或不予設定，使用者將可以使用 VM 管理 CLI。
+      否則系統會停用並隱藏 VM 管理 CLI。
       </translation>
 <translation id="2194470398825717446">M61 已淘汰這項政策，請改用 EcryptfsMigrationStrategy。
 
@@ -818,6 +801,22 @@
 <translation id="2463034609187171371">在傳輸層安全標準 (TLS) 中啟用 DHE 加密套件</translation>
 <translation id="2463365186486772703">應用程式語言代碼</translation>
 <translation id="2466131534462628618">要求網頁認證入口的驗證機制忽略 Proxy 設定</translation>
+<translation id="2466697858869282874">設定 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新功能的可用性和行為。
+
+      你可以在 JSON 屬性中指定個別設定：
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />：如果設為 <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />，使用者可觸發 Powerwash 流程來安裝 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新。
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />：如果設為 <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />，使用者可叫用 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新流程，這項流程會保留整個裝置的狀態 (包括企業註冊)，但會捨棄使用者資料。68 以上版本皆支援這項更新流程。
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />：控管如何針對具有安全漏洞的 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體強制執行自動 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新。所有流程均會保留本機裝置狀態。
+        如果設為 1 或不設定，系統不會強制執行 TPM 韌體更新。
+        如果設為 2，系統將在使用者同意更新後，於下次重新啟動時更新 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體。
+        如果設為 3，系統將在下次重新啟動時更新 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體。
+        如果設為 4，系統將在裝置完成註冊後，於使用者登入前更新 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體。
+        75 以上版本皆支援這個選項。
+
+      如果未設定這項政策，則無法使用 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新功能。</translation>
 <translation id="2471748297300970300">如果停用這項政策，使用具有安全疑慮的指令列標記啟動 Chrome 時，系統不會顯示安全性警告。
 
           如果啟用或不設定這項政策，使用某些指令列標記啟動 Chrome 時，系統會顯示安全性警告。
@@ -1801,6 +1800,13 @@
 
       如果不設定這項政策，系統會使用預設的漫遊設定檔路徑。</translation>
 <translation id="4239720644496144453">這個快取不會供 Android 應用程式使用。如有多位使用者安裝同一個 Android 應用程式，則會針對每位使用者重新下載快取。</translation>
+<translation id="4241202391219483189">這項政策可控管使用者是否能夠透過「憑證管理員」匯入及移除 CA 憑證。
+
+      如果將這項政策設為「允許使用者管理所有憑證」或不設定這項政策，使用者將能夠編輯所有 CA 憑證的信任設定、移除使用者匯入的憑證，以及匯入憑證。
+
+      如果將這項政策設為「允許使用者管理使用者憑證」，使用者將只能管理使用者匯入的憑證，無法變更內建憑證的信任設定。
+
+      如果將這項政策設為「禁止使用者管理憑證」，使用者將無法管理 CA 憑證，只能查看 CA 憑證。</translation>
 <translation id="4243336580717651045">啟用 <ph name="PRODUCT_NAME" /> 的輸入網址匿名資料收集功能，並且禁止使用者變更這項設定。
 
       輸入網址匿名資料收集功能會將使用者造訪的網頁網址傳送給 Google，用以改善搜尋和瀏覽體驗。
@@ -1876,6 +1882,7 @@
 
           這項功能目前在伺服器端設為停用。</translation>
 <translation id="4363057787588706121">允許合併不同來源的清單政策</translation>
+<translation id="4363101430102811068">為已輸入的憑證啟用資料外洩偵測功能</translation>
 <translation id="4363136876356691536">如果將這項政策設為 True，系統匣選單中一律會顯示無障礙工具選項。
 
           如果將這項政策設為 False，系統匣選單中一律不會顯示無障礙工具選項。
@@ -2025,10 +2032,6 @@
 
           如果你未設定這項政策，則即使 <ph name="PRODUCT_NAME" /> 已偵測到位於內部網路的伺服器，也不會委派使用者憑證。</translation>
 <translation id="4752880493649142945">用於連線至 RemoteAccessHostTokenValidationUrl 的用戶端憑證</translation>
-<translation id="4756984056524699088">允許這位使用者擁有 Crostini 容器的 Root 權限。
-
-      如果將這項政策設為 True 或不予設定，系統會對使用者授予 Crostini 容器的 Root 權限。
-      如果將這項政策設為 False，系統不會將現有或新 Crostini 容器的 Root 權限授予使用者。</translation>
 <translation id="4759650396863318477">你可以設定時間範圍 (以毫秒為單位)，系統會在這段時間內通知使用者必須重新啟動 <ph name="PRODUCT_NAME" /> 或 <ph name="PRODUCT_OS_NAME" />裝置，才能套用未安裝的更新。
 
       在你設定的時間範圍內，使用者會持續收到更新通知。在 <ph name="PRODUCT_OS_NAME" />裝置上，系統會根據 <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> 政策，在系統匣中顯示重新啟動通知。在 <ph name="PRODUCT_NAME" /> 瀏覽器中，當通知時間過了三分之一後，應用程式選單會有所變更，表示瀏覽器需要重新啟動。這項通知會在時間過了三分之二後變更顏色，並於時間結束後再次變色。由 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策啟用的其他通知也會遵循相同的時間表。
@@ -2172,7 +2175,7 @@
       如果將這項政策設為 True 或不設定這項政策，當 Chrome 分頁改以其他瀏覽器開啟後，Chrome 中仍會有至少一個分頁保持開啟。
 
       如果將這項政策設為 False，當 Chrome 分頁改以其他瀏覽器開啟後，Chrome 將關閉該分頁，即使該分頁是最後一個分頁也一樣。這會導致 Chrome 完全關閉。</translation>
-<translation id="5102203758995933166">這項政策可依使用者將網路設定強制套用至 <ph name="PRODUCT_OS_NAME" />裝置。這個網路設定是根據「開放網路設定」格式所定義的 JSON 格式字串。</translation>
+<translation id="5102203758995933166">這項政策可依使用者將網路設定強制套用至 <ph name="PRODUCT_OS_NAME" />裝置。這個網路設定是根據「開放式網路設定」格式所定義的 JSON 格式字串。</translation>
 <translation id="5105313908130842249">在電池供電環境下執行時的螢幕鎖定延遲時間</translation>
 <translation id="5108031557082757679">已停用企業裝置印表機</translation>
 <translation id="5124368997194894978">啟用「連接 AC (交流電) 電源時啟動」功能</translation>
@@ -2865,6 +2868,7 @@
       如果這項政策設為 False，則不會回報這些使用者。</translation>
 <translation id="6394350458541421998">我們已於 <ph name="PRODUCT_OS_NAME" />版本 29 中移除這項政策。請改用 PresentationScreenDimDelayScale 政策。</translation>
 <translation id="6401669939808766804">登出使用者</translation>
+<translation id="6403746242226534223">即時檢查使用者所造訪網址的安全瀏覽信譽</translation>
 <translation id="6406448383934634215">如果選取 [開啟網址清單] 做為啟動動作，你就能指定要開啟的網址清單。如果沒有設定這項政策，啟動時就不會開啟任何網址。
 
           只有在「RestoreOnStartup」政策設為「RestoreOnStartupIsURLs」時，這項政策才會執行。
@@ -2940,6 +2944,9 @@
 <translation id="6544897973797372144">如果你將這項政策設為「True」，且並未指定 ChromeOsReleaseChannel 政策，則註冊網域的使用者將可變更裝置的發佈頻道。如果你將這項政策設為「False」，則系統會將裝置鎖定為先前設定的任何頻道。
 
       ChromeOsReleaseChannel 政策會覆寫使用者選取的頻道，但如果政策設定的頻道比裝置原本安裝的頻道更穩定，則系統只會在更穩定的頻道發佈比裝置上安裝的頻道更高的版本時，才會切換至該版本。</translation>
+<translation id="6549567350270907557">啟用這項設定後，使用者可以透過 <ph name="PRODUCT_NAME" /> 檢查已輸入的憑證是否有資料外洩。
+
+              這項政策一經啟用或停用，使用者即無法在 <ph name="PRODUCT_NAME" /> 中變更或覆寫政策。如果不設定這項政策，系統可執行資料外洩檢查功能 (但使用者可自行關閉)。</translation>
 <translation id="6553143066970470539">螢幕亮度百分比</translation>
 <translation id="6559057113164934677">不允許任何網站使用攝影機和麥克風</translation>
 <translation id="6561396069801924653">在系統匣選單中顯示無障礙選項</translation>
@@ -3201,7 +3208,7 @@
       Google 可能會依照工作階段 ID 將這些記錄和 Google 服務本身收集的其他記錄建立關聯，目的是簡化偵錯作業。
       </translation>
 <translation id="706669471845501145">允許網站顯示桌面通知</translation>
-<translation id="7068108874199666656">這項政策可將網路設定強制套用至 <ph name="PRODUCT_OS_NAME" />裝置的所有使用者。這個網路設定是根據「開放網路設定」格式所定義的 JSON 格式字串。</translation>
+<translation id="7068108874199666656">這項政策可將網路設定強制套用至 <ph name="PRODUCT_OS_NAME" />裝置的所有使用者。這個網路設定是根據「開放式網路設定」格式所定義的 JSON 格式字串。</translation>
 <translation id="7070525176564511548">每週 (168 小時) 需輸入一次密碼</translation>
 <translation id="7072208053150563108">裝置密碼變更頻率</translation>
 <translation id="7079519252486108041">封鎖這些網站的彈出式視窗</translation>
@@ -3900,6 +3907,10 @@
 
       如要進一步瞭解 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策，請參閱：https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">一律使用外部應用程式開啟 PDF 檔案</translation>
+<translation id="8405691014775178834">允許這位使用者擁有 Crostini 容器的 Root 權限。
+
+      如果將這項政策設為 True 或不予設定，系統會將 Crostini 容器的 Root 權限授予這位使用者。
+      如果將這項政策設為 False，系統不會將現有或新 Crostini 容器的 Root 權限授予這位使用者。</translation>
 <translation id="8417305981081876834">設定螢幕鎖定 PIN 碼的長度上限</translation>
 <translation id="841977920223099909">密碼保護警告觸發條件</translation>
 <translation id="8424255554404582727">設定畫面旋轉預設值 (每次重新啟動皆重新套用)</translation>
@@ -4143,6 +4154,7 @@
 
           指定政策值時需以毫秒為單位。該值需小於閒置延遲時間。</translation>
 <translation id="891435090623616439">以 JSON 字串格式編碼，詳情請參閱 <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8917070657147922192">允許使用者管理已安裝的 CA 憑證。</translation>
 <translation id="8934944553121392674">根據 <ph name="DEVICE_PRINTERS_POLICY" /> 設定哪些印表機是可供使用的。
 
       指派用於大量印表機設定的存取權政策。如果選取 <ph name="PRINTERS_ALLOW_ALL" />，系統會顯示所有印表機。如果選取 <ph name="PRINTERS_BLACKLIST" />，系統會使用 <ph name="DEVICE_PRINTERS_BLACKLIST" /> 限制對特定印表機的存取權。如果選取 <ph name="PRINTERS_WHITELIST" />，<ph name="DEVICE_PRINTERS_WHITELIST" /> 只會指派可選取的印表機。

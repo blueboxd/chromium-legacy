@@ -12,7 +12,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ShellAutofillDelegate () <CWVCreditCardVerifierDelegate>
+@interface ShellAutofillDelegate ()
 
 // Autofill controller.
 @property(nonatomic, strong) CWVAutofillController* autofillController;
@@ -67,16 +67,6 @@
     for (CWVAutofillSuggestion* suggestion in suggestions) {
       [alertController addAction:[self actionForSuggestion:suggestion]];
     }
-    UIAlertAction* clearAction = [UIAlertAction
-        actionWithTitle:@"Clear"
-                  style:UIAlertActionStyleDefault
-                handler:^(UIAlertAction* _Nonnull action) {
-                  [autofillController clearFormWithName:formName
-                                        fieldIdentifier:fieldIdentifier
-                                                frameID:frameID
-                                      completionHandler:nil];
-                }];
-    [alertController addAction:clearAction];
 
     [UIApplication.sharedApplication.keyWindow.rootViewController
         presentViewController:alertController
@@ -247,8 +237,13 @@
                         expirationMonth:nil
                          expirationYear:nil
                            storeLocally:NO
-                             dataSource:self.riskDataLoader
-                               delegate:self];
+                               riskData:self.riskDataLoader.riskData
+                      completionHandler:^(NSError* error) {
+                        if (error) {
+                          NSLog(@"Card %@ failed to verify error: %@",
+                                verifier.creditCard, error);
+                        }
+                      }];
               }];
 
   [alertController addAction:submit];
@@ -271,27 +266,6 @@
                  completion:nil];
 }
 
-#pragma mark - CWVCreditCardVerifierDelegate
-
-- (void)creditCardVerifier:(CWVCreditCardVerifier*)creditCardVerifier
-    didFinishVerificationWithError:(nullable NSError*)error {
-  if (error) {
-    UIAlertController* alertController = [UIAlertController
-        alertControllerWithTitle:@"Verification Error"
-                         message:error.localizedDescription
-                  preferredStyle:UIAlertControllerStyleAlert];
-    UIAlertAction* action =
-        [UIAlertAction actionWithTitle:@"OK"
-                                 style:UIAlertActionStyleDefault
-                               handler:nil];
-    [alertController addAction:action];
-    [UIApplication.sharedApplication.keyWindow.rootViewController
-        presentViewController:alertController
-                     animated:YES
-                   completion:nil];
-  }
-}
-
 #pragma mark - Private Methods
 
 - (UIAlertAction*)actionForSuggestion:(CWVAutofillSuggestion*)suggestion {
@@ -301,8 +275,9 @@
   return [UIAlertAction actionWithTitle:title
                                   style:UIAlertActionStyleDefault
                                 handler:^(UIAlertAction* _Nonnull action) {
-                                  [_autofillController fillSuggestion:suggestion
-                                                    completionHandler:nil];
+                                  [_autofillController
+                                       acceptSuggestion:suggestion
+                                      completionHandler:nil];
                                   [UIApplication.sharedApplication.keyWindow
                                       endEditing:YES];
                                 }];

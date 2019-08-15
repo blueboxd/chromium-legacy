@@ -26,7 +26,7 @@ void GamepadDispatcher::PlayVibrationEffectOnce(
     device::mojom::blink::GamepadEffectParametersPtr params,
     GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
   InitializeHaptics();
-  gamepad_haptics_manager_->PlayVibrationEffectOnce(
+  gamepad_haptics_manager_remote_->PlayVibrationEffectOnce(
       pad_index, type, std::move(params), std::move(callback));
 }
 
@@ -34,8 +34,8 @@ void GamepadDispatcher::ResetVibrationActuator(
     uint32_t pad_index,
     GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
   InitializeHaptics();
-  gamepad_haptics_manager_->ResetVibrationActuator(pad_index,
-                                                   std::move(callback));
+  gamepad_haptics_manager_remote_->ResetVibrationActuator(pad_index,
+                                                          std::move(callback));
 }
 
 GamepadDispatcher::GamepadDispatcher(
@@ -45,9 +45,10 @@ GamepadDispatcher::GamepadDispatcher(
 GamepadDispatcher::~GamepadDispatcher() = default;
 
 void GamepadDispatcher::InitializeHaptics() {
-  if (!gamepad_haptics_manager_) {
+  if (!gamepad_haptics_manager_remote_) {
     Platform::Current()->GetInterfaceProvider()->GetInterface(
-        mojo::MakeRequest(&gamepad_haptics_manager_, task_runner_));
+        gamepad_haptics_manager_remote_.BindNewPipeAndPassReceiver(
+            task_runner_));
   }
 }
 

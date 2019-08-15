@@ -61,8 +61,8 @@ inline bool KeyMatchesId(const AtomicString& key, const Element& element) {
 }
 
 inline bool KeyMatchesMapName(const AtomicString& key, const Element& element) {
-  return IsHTMLMapElement(element) &&
-         ToHTMLMapElement(element).GetName() == key;
+  auto* html_map_element = DynamicTo<HTMLMapElement>(element);
+  return html_map_element && html_map_element->GetName() == key;
 }
 
 inline bool KeyMatchesSlotName(const AtomicString& key,

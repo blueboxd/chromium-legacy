@@ -39,7 +39,6 @@
 <translation id="5456409301717116725">Esta extensão inclui o arquivo de chave '<ph name="KEY_PATH" />'. Você provavelmente não quer fazer isso.</translation>
 <translation id="5486326529110362464">O valor inserido para a chave privada deve existir.</translation>
 <translation id="5627523580512561598">extensão <ph name="EXTENSION_NAME" /></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">O administrador desta máquina requer a instalação da extensão <ph name="EXTENSION_NAME" />. Ela não pode ser desinstalada.</translation>
 <translation id="6027032947578871493">Produto <ph name="PRODUCT_ID" /> desconhecido de <ph name="VENDOR_NAME" /> (número de série <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME" /> do fornecedor <ph name="VENDOR_ID" /></translation>

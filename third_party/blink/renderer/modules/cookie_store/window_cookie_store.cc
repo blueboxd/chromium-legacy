@@ -26,7 +26,7 @@ CookieStore* GlobalCookieStoreImpl<LocalDOMWindow>::BuildCookieStore(
       execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   return MakeGarbageCollected<CookieStore>(
       execution_context, std::move(cookie_manager_ptr),
-      blink::mojom::blink::CookieStorePtr());
+      mojo::Remote<blink::mojom::blink::CookieStore>());
 }
 
 CookieStore* WindowCookieStore::cookieStore(LocalDOMWindow& window) {

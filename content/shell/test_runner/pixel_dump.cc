@@ -18,6 +18,7 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "content/shell/common/web_test/web_test_utils.h"
 #include "content/shell/test_runner/web_test_runtime_flags.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "printing/metafile_skia.h"
 #include "printing/print_settings.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -89,9 +90,10 @@ void CopyImageAtAndCapturePixels(
     int x,
     int y,
     base::OnceCallback<void(const SkBitmap&)> callback) {
-  blink::mojom::ClipboardHostPtr clipboard;
-  blink::Platform::Current()->GetConnector()->BindInterface(
-      blink::Platform::Current()->GetBrowserServiceName(), &clipboard);
+  mojo::Remote<blink::mojom::ClipboardHost> clipboard;
+  blink::Platform::Current()->GetConnector()->Connect(
+      blink::Platform::Current()->GetBrowserServiceName(),
+      clipboard.BindNewPipeAndPassReceiver());
 
   uint64_t sequence_number_before = 0;
   clipboard->GetSequenceNumber(ui::ClipboardType::kCopyPaste,

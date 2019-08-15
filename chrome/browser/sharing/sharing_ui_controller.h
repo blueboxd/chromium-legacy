@@ -8,13 +8,18 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/sharing/proto/sharing_message.pb.h"
+#include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/ui/page_action/page_action_icon_container.h"
+#include "ui/gfx/image/image.h"
 
 class BrowserWindow;
-class SharingDeviceInfo;
 class SharingDialog;
+class SharingService;
 
 namespace gfx {
 struct VectorIcon;
@@ -28,28 +33,26 @@ class WebContents;
 class SharingUiController {
  public:
   struct App {
-    App(const gfx::VectorIcon& icon,
+    App(const gfx::VectorIcon* vector_icon,
+        const gfx::Image& image,
         base::string16 name,
         std::string identifier);
     App(App&& other);
     ~App();
 
-    const gfx::VectorIcon& icon;
+    const gfx::VectorIcon* vector_icon = nullptr;
+    gfx::Image image;
     base::string16 name;
     std::string identifier;
   };
 
+  using UpdateAppsCallback = base::OnceCallback<void(std::vector<App>)>;
+
   explicit SharingUiController(content::WebContents* web_contents);
-  virtual ~SharingUiController() = default;
+  virtual ~SharingUiController();
 
   // Title of the dialog.
   virtual base::string16 GetTitle() = 0;
-
-  // Returns filtered list of synced devices for the feature.
-  virtual std::vector<SharingDeviceInfo> GetSyncedDevices() = 0;
-
-  // Returns list of local apps capable of supporting action.
-  virtual std::vector<App> GetApps() = 0;
 
   // Called when user chooses a synced device to complete the task.
   virtual void OnDeviceChosen(const SharingDeviceInfo& device) = 0;
@@ -59,33 +62,67 @@ class SharingUiController {
 
   virtual PageActionIconType GetIconType() = 0;
 
-  // Called by the ClickToCallDialogView when it is being closed.
+  virtual int GetRequiredDeviceCapabilities() = 0;
+
+  // Called by the SharingDialog when it is being closed.
   void OnDialogClosed(SharingDialog* dialog);
-  void StartLoading();
-  void StopLoading(bool send_failed);
-  void InvalidateOldDialog();
-  // Shows an error dialog if we're still on the same tab.
-  void ShowErrorDialog();
+
+  void UpdateAndShowDialog();
+
+  void UpdateDevices();
+
   // Returns the currently open SharingDialog or nullptr if there is no
   // dialog open.
   SharingDialog* dialog() const { return dialog_; }
   bool is_loading() const { return is_loading_; }
   bool send_failed() const { return send_failed_; }
   content::WebContents* web_contents() const { return web_contents_; }
+  const std::vector<App>& apps() const { return apps_; }
+  const std::vector<SharingDeviceInfo>& devices() const { return devices_; }
+
+  void set_apps_for_testing(std::vector<App> apps) { apps_ = std::move(apps); }
+  void set_devices_for_testing(std::vector<SharingDeviceInfo> devices) {
+    devices_ = std::move(devices);
+  }
 
  protected:
   virtual SharingDialog* DoShowDialog(BrowserWindow* window) = 0;
 
+  virtual void DoUpdateApps(UpdateAppsCallback callback) = 0;
+
+  void SendMessageToDevice(
+      const SharingDeviceInfo& device,
+      chrome_browser_sharing::SharingMessage sharing_message);
+
  private:
   // Updates the omnibox icon if available.
   void UpdateIcon();
-  // Shows a new ClickToCallDialogView and closes the old one.
+  // Closes the current dialog if there is one.
+  void CloseDialog();
+  // Shows a new SharingDialog and closes the old one.
   void ShowNewDialog();
 
+  // Called after a message got sent to a device. Shows a new error dialog if
+  // |success| is false and updates the omnibox icon.
+  void OnMessageSentToDevice(int dialog_id, bool success);
+
+  void OnAppsReceived(int dialog_id, std::vector<App> apps);
+
   SharingDialog* dialog_ = nullptr;
+  content::WebContents* web_contents_ = nullptr;
+  SharingService* sharing_service_ = nullptr;
+
   bool is_loading_ = false;
   bool send_failed_ = false;
-  content::WebContents* web_contents_ = nullptr;
+
+  // Currently used apps and devices since the last call to UpdateAndShowDialog.
+  std::vector<App> apps_;
+  std::vector<SharingDeviceInfo> devices_;
+
+  // ID of the last shown dialog used to ignore events from old dialogs.
+  int last_dialog_id_ = 0;
+
+  base::WeakPtrFactory<SharingUiController> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_UI_CONTROLLER_H_

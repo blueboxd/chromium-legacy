@@ -97,13 +97,13 @@ public class BackgroundTaskGcmTaskServiceTest {
         TaskParams taskParams = buildTaskParams(TaskIds.TEST, taskExtras, null);
 
         BackgroundTaskGcmTaskService taskService = new BackgroundTaskGcmTaskService();
-        assertEquals(taskService.onRunTask(taskParams), GcmNetworkManager.RESULT_SUCCESS);
+        assertEquals(GcmNetworkManager.RESULT_SUCCESS, taskService.onRunTask(taskParams));
 
         assertNotNull(sLastTask);
         TaskParameters parameters = sLastTask.getTaskParameters();
 
-        assertEquals(parameters.getTaskId(), TaskIds.TEST);
-        assertEquals(parameters.getExtras().getString("foo"), "bar");
+        assertEquals(TaskIds.TEST, parameters.getTaskId());
+        assertEquals("bar", parameters.getExtras().getString("foo"));
 
         verify(mBackgroundTaskSchedulerUma, times(1)).reportTaskStarted(eq(TaskIds.TEST));
     }
@@ -119,7 +119,7 @@ public class BackgroundTaskGcmTaskServiceTest {
 
         BackgroundTaskGcmTaskService taskService = new BackgroundTaskGcmTaskService();
         taskService.setClockForTesting(sClock);
-        assertEquals(taskService.onRunTask(taskParams), GcmNetworkManager.RESULT_FAILURE);
+        assertEquals(GcmNetworkManager.RESULT_FAILURE, taskService.onRunTask(taskParams));
 
         assertNull(sLastTask);
 
@@ -137,7 +137,7 @@ public class BackgroundTaskGcmTaskServiceTest {
 
         BackgroundTaskGcmTaskService taskService = new BackgroundTaskGcmTaskService();
         taskService.setClockForTesting(sClock);
-        assertEquals(taskService.onRunTask(taskParams), GcmNetworkManager.RESULT_FAILURE);
+        assertEquals(GcmNetworkManager.RESULT_FAILURE, taskService.onRunTask(taskParams));
 
         assertNull(sLastTask);
 
@@ -155,12 +155,12 @@ public class BackgroundTaskGcmTaskServiceTest {
 
         BackgroundTaskGcmTaskService taskService = new BackgroundTaskGcmTaskService();
         taskService.setClockForTesting(sZeroClock);
-        assertEquals(taskService.onRunTask(taskParams), GcmNetworkManager.RESULT_SUCCESS);
+        assertEquals(GcmNetworkManager.RESULT_SUCCESS, taskService.onRunTask(taskParams));
 
         assertNotNull(sLastTask);
         TaskParameters parameters = sLastTask.getTaskParameters();
 
-        assertEquals(parameters.getTaskId(), TaskIds.TEST);
+        assertEquals(TaskIds.TEST, parameters.getTaskId());
 
         verify(mBackgroundTaskSchedulerUma, times(1)).reportTaskStarted(eq(TaskIds.TEST));
     }
@@ -170,13 +170,12 @@ public class BackgroundTaskGcmTaskServiceTest {
     public void testOnRuntaskNeedsReschedulingFromCallback() {
         BackgroundTaskSchedulerFactory.setBackgroundTaskFactory(
                 new TestBackgroundTaskWithParamsFactory());
-
         sReturnThroughCallback = true;
         sNeedsRescheduling = true;
         TaskParams taskParams = buildTaskParams(TaskIds.TEST, new Bundle(), null);
 
         BackgroundTaskGcmTaskService taskService = new BackgroundTaskGcmTaskService();
-        assertEquals(taskService.onRunTask(taskParams), GcmNetworkManager.RESULT_RESCHEDULE);
+        assertEquals(GcmNetworkManager.RESULT_RESCHEDULE, taskService.onRunTask(taskParams));
     }
 
     @Test
@@ -190,7 +189,7 @@ public class BackgroundTaskGcmTaskServiceTest {
         TaskParams taskParams = buildTaskParams(TaskIds.TEST, new Bundle(), null);
 
         BackgroundTaskGcmTaskService taskService = new BackgroundTaskGcmTaskService();
-        assertEquals(taskService.onRunTask(taskParams), GcmNetworkManager.RESULT_SUCCESS);
+        assertEquals(GcmNetworkManager.RESULT_SUCCESS, taskService.onRunTask(taskParams));
     }
 
     @Test

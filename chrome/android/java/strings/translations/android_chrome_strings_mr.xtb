@@ -38,7 +38,6 @@
 <translation id="123724288017357924">कॅश केलेला आशय दुर्लक्षित करून, सद्य पेज रीलोड करा</translation>
 <translation id="124116460088058876">आणखी भाषा...</translation>
 <translation id="124678866338384709">वर्तमान टॅब बंद करा</translation>
-<translation id="125153950246128346">दुसरा टॅब पाहण्यासाठी टॅप करा</translation>
 <translation id="1258753120186372309">Google डूडल: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">शोधा आणि एक्सप्लोर करा</translation>
 <translation id="1264974993859112054">क्रीडा</translation>
@@ -113,7 +112,6 @@
 <translation id="1853692000353488670">नवीन गुप्त टॅब</translation>
 <translation id="1856325424225101786">लाइट मोड रीसेट करायचा?</translation>
 <translation id="1868024384445905608">Chrome आता फायली वेगाने डाउनलोड करते</translation>
-<translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> टॅब}other{<ph name="TABS_COUNT_MANY" /> टॅब}}</translation>
 <translation id="1880072593381090678">Chrome ची लोकप्रिय पेज</translation>
 <translation id="1883903952484604915">माझ्या फायली</translation>
 <translation id="1887786770086287077">या डिव्हाइसाठी स्थान अ‍ॅक्सेस बंद आहे, <ph name="BEGIN_LINK" />Android सेटिंग्‍ज<ph name="END_LINK" /> मध्‍ये हे चालू करा.</translation>
@@ -218,14 +216,12 @@
 <translation id="2567385386134582609">इमेज</translation>
 <translation id="257088987046510401">थीम</translation>
 <translation id="2570922361219980984">या डिव्हाइसाठी स्थान अ‍ॅक्सेस देखील बंद आहे, <ph name="BEGIN_LINK" />Android सेटिंग्‍ज<ph name="END_LINK" /> मध्‍ये हे सुरू करा.</translation>
-<translation id="257674075312929031">गट</translation>
 <translation id="257931822824936280">विस्‍तृत केले - संकुचित करण्‍यासाठी क्‍लिक करा.</translation>
 <translation id="2581165646603367611">हे सर्व कुकी, कॅशे आणि साइटचा अन्य डेटा साफ करेल जो Chrome ला महत्त्वाचा वाटत नाही.</translation>
 <translation id="2586657967955657006">क्लिपबोर्ड</translation>
 <translation id="2587052924345400782">अधिक नवीन आवृत्ती उपलब्ध आहे</translation>
 <translation id="2593272815202181319">मोनोस्पेस</translation>
 <translation id="2612676031748830579">कार्ड नंबर</translation>
-<translation id="2613747923081026172">गट तयार करा</translation>
 <translation id="2621115761605608342">विशिष्ट साइटसाठी JavaScript ला अनुमती द्या.</translation>
 <translation id="2625189173221582860">पासवर्ड कॉपी केला</translation>
 <translation id="2631006050119455616">वाचवला</translation>
@@ -255,7 +251,6 @@
 <translation id="2822354292072154809">तुम्हाला नक्की <ph name="CHOSEN_OBJECT_NAME" /> साठी सर्व साइट परवानग्या रीसेट करायच्या आहेत का?</translation>
 <translation id="2836148919159985482">फुलस्क्रीन मधून बाहेर पडण्यासाठी परत बटणास स्पर्श करा.</translation>
 <translation id="2842985007712546952">मुख्य फोल्डर</translation>
-<translation id="2845873210977809562">खुल्या टॅब बंद केल्या</translation>
 <translation id="2858138569776157458">टॉप साइट</translation>
 <translation id="2870560284913253234">साइट</translation>
 <translation id="2874939134665556319">मागील ट्रॅक</translation>
@@ -275,7 +270,6 @@
 <translation id="2956410042958133412">हे खाते <ph name="PARENT_NAME_1" /> आणि <ph name="PARENT_NAME_2" /> द्वारे व्यवस्थापित केले आहे.</translation>
 <translation id="2962095958535813455">गुप्त टॅबवर स्विच केले</translation>
 <translation id="2968755619301702150">सर्टिफिकेट दर्शक</translation>
-<translation id="2977480621796371840">गटामधून काढून टाका</translation>
 <translation id="2979025552038692506">निवडलेला गुप्त टॅब</translation>
 <translation id="2989523299700148168">अलीकडे भेट दिलेले</translation>
 <translation id="2996291259634659425">सांकेतिक पासफ्रेझ तयार करा</translation>
@@ -355,7 +349,6 @@
 <translation id="3632295766818638029">पासवर्ड पहा</translation>
 <translation id="363596933471559332">स्टोअर क्रेडेंशियल वापरून वेबसाइटवर आपोआप साइन इन करा. वैशिष्ट्य बंद असते तेव्हा, वेबसाइटवर साइन इन करण्यापूर्वी दरवेळी तुम्हाला पडताळणीसाठी विचारले जाईल.</translation>
 <translation id="3658159451045945436">रीसेट केल्याने तुमचा डेटा सेव्हिंग इतिहास, भेट दिलेल्या साइटच्या सूचीसह, मिटवला जातो.</translation>
-<translation id="3663367437272849150"><ph name="NUM_SELECTED" /> टॅबची गटामध्ये विभागणी करा.</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> download failed because storage location is not reachable.</translation>
 <translation id="3714981814255182093">शोध बार उघडा</translation>
 <translation id="3716182511346448902">हे पेज खूपच जास्त मेमरी वापरत असल्यामुळे Chrome ने ते थांबवून ठेवलेले आहे.</translation>
@@ -482,7 +475,6 @@
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> उघडा</translation>
 <translation id="4634124774493850572">पासवर्ड वापरा</translation>
 <translation id="4645575059429386691">आपल्या पालकांद्वारे व्यवस्थापित करण्यात आले</translation>
-<translation id="4648718555153979859">तुमचे टॅब येथे एकत्रित केले आहेत</translation>
 <translation id="4650364565596261010">सिस्टम डीफॉल्ट</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> बुकमार्क हटविले</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> ला तुमच्या होम स्क्रीनवर पेअरिंग आले</translation>
@@ -547,8 +539,6 @@
 <translation id="5040262127954254034">गोपनीयता</translation>
 <translation id="5048398596102334565">साइटना मोशन सेन्सर ॲक्सेस करण्याची अनुमती द्या (शिफारस केलेले)</translation>
 <translation id="5063480226653192405">वापर</translation>
-<translation id="5073204694187207510">फुलस्क्रीन ग्रिड लपवा</translation>
-<translation id="5082793167783849073">गट बनवून त्वरित पेजशी तुलना करा. सुरू करण्यासाठी, लिंकला स्पर्श करा आणि धरून ठेवा.</translation>
 <translation id="5087580092889165836">कार्ड जोडा</translation>
 <translation id="5098406615395468004">माझी अ‍ॅप्समध्ये जोडा</translation>
 <translation id="5100237604440890931">संकुचित केले - विस्तृत करण्यासाठी क्लिक करा.</translation>
@@ -562,6 +552,7 @@
 <translation id="5152843274749979095">कोणतेही समर्थित ॲप्स इंस्टॉल केले नाहीत</translation>
 <translation id="5161254044473106830">शीर्षक आवश्यक</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{एक डाउनलोड होऊ शकला नाही.}other{# डाउनलोड होऊ शकले नाहीत.}}</translation>
+<translation id="5170568018924773124">फोल्डरमध्ये दर्शवा</translation>
 <translation id="5184329579814168207">Chrome मध्ये उघडा</translation>
 <translation id="5199929503336119739">कार्य प्रोफाइल</translation>
 <translation id="5202089186707505116">या साइटला तुमचे VR सेन्सर ॲक्सेस करण्याची अनुमती द्यायची का?</translation>
@@ -606,7 +597,6 @@
 <translation id="548278423535722844">नकाशे ॲपमध्ये उघडा</translation>
 <translation id="5487521232677179737">डेटा साफ करा</translation>
 <translation id="5494752089476963479">अनाहूत किंवा दिशाभूल करणाऱ्या जाहिराती दाखवणाऱ्या साइटवरील जाहिराती ब्लॉक करा</translation>
-<translation id="5497272504048921382">खुले टॅब</translation>
 <translation id="5500777121964041360">तुमच्या स्थानामध्ये उपलब्ध नसू शकते</translation>
 <translation id="5512137114520586844">हे खाते <ph name="PARENT_NAME" /> द्वारे व्यवस्थापित केले आहे.</translation>
 <translation id="5514904542973294328">या डिव्हाइसच्या अॅडमिनिस्ट्रेटरने बंद केले आहे.</translation>
@@ -623,9 +613,7 @@
 <translation id="557283862590186398">या साइटसाठी Chromeला तुमचा मायक्रोफोन अॅक्सेस करण्याची परवानगी आवश्यक आहे.</translation>
 <translation id="55737423895878184">स्‍थान आणि सूचनांना अनुमती आहे</translation>
 <translation id="5578795271662203820">या इमेजसाठी <ph name="SEARCH_ENGINE" /> शोधा</translation>
-<translation id="5580090775658607195"><ph name="TAB_COUNT" /> टॅबची गटामध्ये विभागणी केली आहे</translation>
 <translation id="5581519193887989363">तुम्ही काय सिंक करायचे हे <ph name="BEGIN_LINK1" />सेटिंग्ज<ph name="END_LINK1" /> मध्ये कधीही निवडू शकता.</translation>
-<translation id="5586306159936941448">त्यांना समूहित करण्यासाठी टॅबला दुसऱ्या टॅबवर ड्रॅग करा</translation>
 <translation id="5595485650161345191">पत्ता संपादित करा</translation>
 <translation id="5596627076506792578">अधिक पर्याय</translation>
 <translation id="5599455543593328020">गुप्त मोड</translation>
@@ -657,7 +645,6 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{# तासापूर्वी}other{# तासांपूर्वी}}</translation>
 <translation id="5810288467834065221">कॉपीराइट <ph name="YEAR" /> Google LLC. सर्व हक्क राखीव.</translation>
 <translation id="5817918615728894473">जोडा</translation>
-<translation id="58326064309361797">त्यांचा गट बनवण्यासाठी टॅबना ड्रॅग करा</translation>
 <translation id="583281660410589416">अज्ञात</translation>
 <translation id="5833984609253377421">लिंक शेअर करा</translation>
 <translation id="5836192821815272682">Chrome अपडेट डाउनलोड करत आहे…</translation>
@@ -688,6 +675,7 @@
 <translation id="6042308850641462728">अधिक</translation>
 <translation id="604996488070107836">अज्ञात एररमुळे <ph name="FILE_NAME" /> डाउनलोड करणे अयशस्वी झाले.</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6064125863973209585">डाउनलोड पूर्ण झाले</translation>
 <translation id="6075798973483050474">होम पेज संपादित करा</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> तास शिल्लक</translation>
 <translation id="6108923351542677676">सेटअप प्रगती पथावर आहे...</translation>
@@ -703,7 +691,6 @@
 <translation id="6181444274883918285">साइट एक्सेप्शन जोडा</translation>
 <translation id="6192333916571137726">फाइल डाउनलोड करा</translation>
 <translation id="6192792657125177640">अपवाद</translation>
-<translation id="6193448654517602979">टॅब निवडा</translation>
 <translation id="6194112207524046168">Chrome ला तुमच्या कॅमेराचा ॲक्सेस द्या, <ph name="BEGIN_LINK" />Android सेटिंग्ज<ph name="END_LINK" /> मध्ये देखील कॅमेरा सुरू करा.</translation>
 <translation id="6196640612572343990">तृतीय-पक्ष कुकीज अवरोधित करा</translation>
 <translation id="6206551242102657620">कनेक्शन सुरक्षित आहे. साइट माहिती</translation>
@@ -766,7 +753,6 @@
 <translation id="6600954340915313787">Chrome वर कॉपी केले</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">संरक्षित आशय</translation>
-<translation id="6615455863669487791">मला दर्शवा</translation>
 <translation id="6627583120233659107">फोल्डर संपादित करा</translation>
 <translation id="6643016212128521049">साफ करा</translation>
 <translation id="6643649862576733715">वाचवलेल्या डेटानुसार क्रमाने लावा</translation>
@@ -792,7 +778,6 @@
 <translation id="6767294960381293877">अर्ध्या उंचीवर उघडलेल्या टॅबसह शेअर करण्यासाठी डिव्हाइसची सूची.</translation>
 <translation id="6782111308708962316">तृतीय-पक्ष वेबसाइटना कुकी डेटा सेव्ह करण्यास आणि वाचण्यास प्रतिबंधित करा</translation>
 <translation id="6790428901817661496">प्ले करा</translation>
-<translation id="6803423358608456383">खुले टॅब अर्ध्या स्क्रीनवर आहेत</translation>
 <translation id="6811034713472274749">पेज पाहाण्यासाठी तयार आहे</translation>
 <translation id="6818926723028410516">आयटम निवडा</translation>
 <translation id="6820686453637990663">CVC</translation>
@@ -839,7 +824,6 @@
 <translation id="7141896414559753902">साइट पॉप-अप आणि रीडिरेक्ट दाखवण्यापासून ब्लॉक करा (शिफारस केलेले)</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> वरून <ph name="BEGIN_LINK" />मुळचे पेज लोड करा<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">शेवटच्या 72 तासांमधील</translation>
-<translation id="7161892015146974550"><ph name="TAB_TITLE" /> टॅब निवडा.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">तुम्ही हे नंतर सेटिंग्ज मध्ये बदलू शकता.</translation>
 <translation id="7180611975245234373">रिफ्रेश करा</translation>
@@ -856,6 +840,7 @@
 <translation id="7302081693174882195">तपशील: सेव्ह केलेल्या डेटाच्या प्रमाणानुसार क्रमाने लावलेले</translation>
 <translation id="7328017930301109123">लाइट मोडमध्ये, Chrome पेज आणखी जलद लोड करते आणि ६० टक्के पर्यंत कमी डेटा वापरते.</translation>
 <translation id="7333031090786104871">अद्याप मागील साइट जोडत आहे</translation>
+<translation id="7352651011704765696">काहीतरी चूक झाली</translation>
 <translation id="7352939065658542140">व्हिडिओ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 निवडलेला आयटम शेअर करा}other{# निवडलेले आयटम शेअर करा}}</translation>
 <translation id="7359002509206457351">पेमेंट पद्धती अ‍ॅक्सेस करा</translation>
@@ -890,7 +875,6 @@
 <translation id="751961395872307827">साइटशी कनेक्ट करु शकत नाही</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">सूचना मिळवू शकत नाही</translation>
-<translation id="7559245342362162951">फुलस्क्रीन ग्रिडमध्ये गटाचे टॅब दाखवा</translation>
 <translation id="7559975015014302720">लाइट मोड बंद आहे</translation>
 <translation id="7562080006725997899">ब्राउझिंग डेटा साफ करत आहे</translation>
 <translation id="756809126120519699">Chrome डेटा साफ केला</translation>
@@ -1007,7 +991,6 @@
 <translation id="8339163506404995330"><ph name="LANGUAGE" />मधील पेज भाषांतरीत केले जाणार नाही</translation>
 <translation id="8349013245300336738">वापरलेल्या डेटानुसार क्रमाने लावा</translation>
 <translation id="8364299278605033898">लोकप्रिय वेबसाइट पाहा</translation>
-<translation id="8364603787714420828"><ph name="TAB_TITLE" /> टॅबची निवड रद्द करा.</translation>
 <translation id="8368027906805972958">अज्ञात किंवा सपोर्ट नसलेले डिव्हाइस (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">विशिष्ट साइटसाठी पार्श्वभूमी संकालनासाठी अनुमती द्या.</translation>
 <translation id="8374821112118309944">तुम्हाला नवीनतम आवृत्तीवर TalkBack बदलण्याची आवश्यकता आहे.</translation>
@@ -1015,7 +998,6 @@
 <translation id="8380167699614421159">ही साइट अनाहूत किंवा दिशाभूल करणाऱ्या जाहिराती दाखवते</translation>
 <translation id="8393700583063109961">संदेश पाठवा</translation>
 <translation id="8413126021676339697">संपूर्ण इतिहास दर्शवा</translation>
-<translation id="8425955042390522843">फोन नंबरची पडताळणी</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>
 <translation id="8438566539970814960">शोध आणि ब्राउझ करणे चांगले करा</translation>
 <translation id="8441146129660941386">मागे शोधा</translation>
@@ -1041,7 +1023,6 @@
 <translation id="8569404424186215731"><ph name="DATE" /> पासून</translation>
 <translation id="8571213806525832805">मागील 4 आठवड्यांमधील</translation>
 <translation id="857943718398505171">अनुमती दिली (शिफारस केलेले)</translation>
-<translation id="8582216581279205169">खुले टॅब पूर्ण स्क्रीनवर आहेत</translation>
 <translation id="8583805026567836021">खाते डेटा साफ करत आहे</translation>
 <translation id="860043288473659153">कार्डधारकाचे नाव</translation>
 <translation id="8609465669617005112">वर हलवा</translation>
@@ -1108,9 +1089,7 @@
 <translation id="9137013805542155359">मूळ दर्शवा</translation>
 <translation id="9139068048179869749">साइटना सूचना पाठविण्याची अनुमती देण्यापूर्वी प्रथम विचारा (शिफारस केलेले)</translation>
 <translation id="9139318394846604261">खरेदी</translation>
-<translation id="9150694013019234766">स्क्रीनच्या तळाजवळ तुमच्या टॅब गटातील टॅब दरम्यान स्विच करा</translation>
 <translation id="9155898266292537608">तुम्ही शब्दावर जलद टॅप करूनदेखील शोधू शकता</translation>
-<translation id="9169594135889675189">गटामध्ये नवीन टॅब जोडा</translation>
 <translation id="9188680907066685419">व्यवस्थापित केलेल्या खात्यामधून साइन आउट करा</translation>
 <translation id="9204836675896933765">1 फाइल शिल्लक</translation>
 <translation id="9206873250291191720">A</translation>
@@ -1121,7 +1100,6 @@
 <translation id="945632385593298557">तुमचा मायक्रोफोन अॅक्सेस करा</translation>
 <translation id="951339005376969845">सद्य डेटा हटवा. <ph name="FROM_ACCOUNT" /> वर परत स्विच करून तुम्ही तो रिट्रीव्ह करू शकता.</translation>
 <translation id="95817756606698420">Chrome चीनमध्ये शोध करण्‍यासाठी <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> चा वापर करू शकते. तुम्ही हे <ph name="BEGIN_LINK" />सेटिंग्जमध्ये<ph name="END_LINK" /> बदलू शकता.</translation>
-<translation id="959682366969460160">व्यवस्‍थापित करा</translation>
 <translation id="965817943346481315">साइट अनाहूत किंवा दिशाभूल करणाऱ्या जाहिराती दाखवत असल्यास ब्लॉक करा (शिफारस केलेले)</translation>
 <translation id="968900484120156207">तुम्ही भेट देता ती पेज येथे दिसतील</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> मिनिटे शिल्लक</translation>

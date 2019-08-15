@@ -579,6 +579,40 @@ class AXPosition {
     return false;
   }
 
+  bool AtStartOfFormat() const {
+    // Since formats are stored on text anchors, the start of a format boundary
+    // must be at the start of an anchor.
+    if (IsNullPosition() || !AtStartOfAnchor())
+      return false;
+
+    // Treat the first iterable node as a format boundary.
+    if (CreatePreviousLeafTreePosition()->IsNullPosition())
+      return true;
+
+    // Iterate over anchors until a format boundary is found. This will return a
+    // null position upon crossing a boundary.
+    auto previous_position = CreatePreviousLeafTreePosition(
+        base::BindRepeating(&AbortMoveAtFormatBoundary));
+    return previous_position->IsNullPosition();
+  }
+
+  bool AtEndOfFormat() const {
+    // Since formats are stored on text anchors, the end of a format break must
+    // be at the end of an anchor.
+    if (IsNullPosition() || !AtEndOfAnchor())
+      return false;
+
+    // Treat the last iterable node as a format boundary
+    if (CreateNextLeafTreePosition()->IsNullPosition())
+      return true;
+
+    // Iterate over anchors until a format boundary is found. This will return a
+    // null position upon crossing a boundary.
+    auto next_position = CreateNextLeafTreePosition(
+        base::BindRepeating(&AbortMoveAtFormatBoundary));
+    return next_position->IsNullPosition();
+  }
+
   bool AtStartOfDocument() const {
     if (IsNullPosition())
       return false;
@@ -963,129 +997,6 @@ class AXPosition {
     return CreateNullPosition();
   }
 
-  AXPositionInstance CreatePreviousFormatStartPosition(
-      AXBoundaryBehavior boundary_behavior) const {
-    return CreatePositionAtFormatBoundary(AXTextBoundaryDirection::kBackwards,
-                                          boundary_behavior);
-  }
-
-  AXPositionInstance CreateNextFormatEndPosition(
-      AXBoundaryBehavior boundary_behavior) const {
-    return CreatePositionAtFormatBoundary(AXTextBoundaryDirection::kForwards,
-                                          boundary_behavior);
-  }
-
-  AXPositionInstance CreatePositionAtFormatBoundary(
-      AXTextBoundaryDirection direction,
-      AXBoundaryBehavior boundary_behavior) const {
-    // Disallow AXBoundaryBehavior::StopAtAnchorBoundary, as it would be no
-    // different than moving by anchor
-    DCHECK_NE(boundary_behavior, AXBoundaryBehavior::StopAtAnchorBoundary);
-
-    if (IsNullPosition())
-      return CreateNullPosition();
-
-    bool was_tree_position = IsTreePosition();
-    AXPositionInstance initial_endpoint = AsLeafTextPosition();
-    AXPositionInstance current_endpoint = CreateNullPosition();
-    switch (direction) {
-      case AXTextBoundaryDirection::kBackwards:
-        current_endpoint = initial_endpoint->CreatePreviousLeafTextPosition();
-        break;
-      case AXTextBoundaryDirection::kForwards:
-        current_endpoint = initial_endpoint->CreateNextLeafTextPosition();
-        break;
-    }
-
-    // Start or end of document
-    if (current_endpoint->IsNullPosition()) {
-      if (boundary_behavior == AXBoundaryBehavior::CrossBoundary &&
-          ((direction == AXTextBoundaryDirection::kForwards &&
-            AtEndOfAnchor()) ||
-           (direction == AXTextBoundaryDirection::kBackwards &&
-            AtStartOfAnchor()))) {
-        // Expected behavior is to return a null position for cross-boundary
-        // moves that hit the beginning or end of the document
-        return std::move(current_endpoint);
-      }
-
-      switch (direction) {
-        case AXTextBoundaryDirection::kBackwards:
-          current_endpoint = initial_endpoint->CreatePositionAtStartOfAnchor();
-          break;
-        case AXTextBoundaryDirection::kForwards:
-          current_endpoint = initial_endpoint->CreatePositionAtEndOfAnchor();
-          break;
-      }
-
-      return was_tree_position ? current_endpoint->AsTreePosition()
-                               : std::move(current_endpoint);
-    }
-
-    AXNodeTextStyles initial_styles = GetTextStyles();
-    if (current_endpoint->GetTextStyles() != initial_styles) {
-      // Initial node is at a format boundary. If it's a text position that's
-      // not at the start or end of the current anchor, move to the start or
-      // end, depending on direction.
-      if (!was_tree_position) {
-        if (direction == AXTextBoundaryDirection::kForwards &&
-            !initial_endpoint->AtEndOfAnchor()) {
-          return initial_endpoint->CreatePositionAtEndOfAnchor();
-        } else if (direction == AXTextBoundaryDirection::kBackwards &&
-                   !initial_endpoint->AtStartOfAnchor()) {
-          return initial_endpoint->CreatePositionAtStartOfAnchor();
-        }
-      }
-
-      // We were already at the start or end of a node on a format boundary.
-      // If AXBoundaryBehavior::StopIfAlreadyAtBoundary, return here.
-      if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary) {
-        return was_tree_position ? initial_endpoint->AsTreePosition()
-                                 : std::move(initial_endpoint);
-      }
-
-      // If we were already at a boundary but moving cross-boundary, use the
-      // formats beyond the initial boundary for comparison.
-      initial_styles = current_endpoint->GetTextStyles();
-      initial_endpoint = current_endpoint->Clone();
-    }
-
-    auto next_endpoint = current_endpoint->Clone();
-    do {
-      switch (direction) {
-        case AXTextBoundaryDirection::kBackwards:
-          next_endpoint = next_endpoint->CreatePreviousLeafTextPosition();
-          break;
-        case AXTextBoundaryDirection::kForwards:
-          next_endpoint = next_endpoint->CreateNextLeafTextPosition();
-          break;
-      }
-
-      if (next_endpoint->IsNullPosition() ||
-          next_endpoint->GetTextStyles() != initial_styles)
-        break;
-
-      current_endpoint = next_endpoint->Clone();
-    } while (true);
-
-    // Moving forwards should leave the position at the end of an anchor.
-    // Backwards moves are already at the start of the anchor from
-    // CreatePreviousLeafTextPosition, so there's no need to move again.
-    switch (direction) {
-      case AXTextBoundaryDirection::kBackwards:
-        DCHECK(current_endpoint->AtStartOfAnchor());
-        break;
-      case AXTextBoundaryDirection::kForwards:
-        current_endpoint = current_endpoint->CreatePositionAtEndOfAnchor();
-        break;
-    }
-
-    if (was_tree_position)
-      return current_endpoint->AsTreePosition();
-
-    return current_endpoint->AsLeafTextPosition();
-  }
-
   AXPositionInstance CreatePositionAtStartOfDocument() const {
     AXPositionInstance position =
         AsTreePosition()->CreateDocumentAncestorPosition();
@@ -1213,27 +1124,15 @@ class AXPosition {
   // Creates a tree position using the next text-only node as its anchor.
   // Assumes that text-only nodes are leaf nodes.
   AXPositionInstance CreateNextLeafTreePosition() const {
-    AXPositionInstance next_leaf = AsTreePosition()->CreateNextAnchorPosition();
-    while (!next_leaf->IsNullPosition() && next_leaf->AnchorChildCount()) {
-      next_leaf = next_leaf->CreateNextAnchorPosition();
-    }
-
-    DCHECK(next_leaf);
-    return next_leaf;
+    return CreateNextLeafTreePosition(
+        base::BindRepeating(&DefaultAbortMovePredicate));
   }
 
   // Creates a tree position using the previous text-only node as its anchor.
   // Assumes that text-only nodes are leaf nodes.
   AXPositionInstance CreatePreviousLeafTreePosition() const {
-    AXPositionInstance previous_leaf =
-        AsTreePosition()->CreatePreviousAnchorPosition();
-    while (!previous_leaf->IsNullPosition() &&
-           previous_leaf->AnchorChildCount()) {
-      previous_leaf = previous_leaf->CreatePreviousAnchorPosition();
-    }
-
-    DCHECK(previous_leaf);
-    return previous_leaf;
+    return CreatePreviousLeafTreePosition(
+        base::BindRepeating(&DefaultAbortMovePredicate));
   }
 
   // Creates a text position using the next text-only node as its anchor.
@@ -1819,6 +1718,129 @@ class AXPosition {
     if (was_tree_position)
       text_position = text_position->AsTreePosition();
     return text_position;
+  }
+
+  AXPositionInstance CreatePreviousFormatStartPosition(
+      AXBoundaryBehavior boundary_behavior) const {
+    // Disallow AXBoundaryBehavior::StopAtAnchorBoundary, as it would be no
+    // different than moving by anchor.
+    DCHECK_NE(boundary_behavior, AXBoundaryBehavior::StopAtAnchorBoundary);
+
+    if (IsNullPosition())
+      return Clone();
+
+    if (AtStartOfFormat()) {
+      if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary) {
+        AXPositionInstance clone = Clone();
+        // If there is no ambiguity as to whether the position is at the end of
+        // the current format boundary or the start of the next format boundary,
+        // affinity should be reset in order to get consistent output from this
+        // function regardless of input affinity.
+        clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
+        return clone;
+      } else if (CreatePreviousLeafTreePosition()->IsNullPosition()) {
+        // If we're at a format boundary and there are no more text positions
+        // to traverse, return a null position for cross-boundary moves.
+        return CreateNullPosition();
+      }
+    }
+
+    bool was_text_position = IsTextPosition();
+    AXPositionInstance tree_position = AsTreePosition();
+    do {
+      if (tree_position->AtStartOfAnchor())
+        tree_position = tree_position->CreatePreviousAnchorPosition();
+      else
+        tree_position = tree_position->CreatePositionAtStartOfAnchor();
+
+      if (tree_position->IsNullPosition() ||
+          tree_position->CreatePreviousLeafTreePosition()->IsNullPosition()) {
+        break;
+      }
+
+      // Continue searching for the previous format boundary start until the
+      // next logical text position is reached.
+    } while (
+        !tree_position->AtStartOfFormat() ||
+        (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
+         *this == *tree_position));
+
+    // If the format boundary is in the same subtree, return a position rooted
+    // at the current position.
+    // This is necessary because we don't want to return any position that might
+    // be in the shadow DOM if the original position was not.
+    AXPositionInstance common_ancestor =
+        tree_position->LowestCommonAncestor(*this);
+    if (GetAnchor() == common_ancestor->GetAnchor())
+      tree_position = std::move(common_ancestor);
+
+    if (was_text_position)
+      tree_position = tree_position->AsTextPosition();
+
+    return tree_position;
+  }
+
+  AXPositionInstance CreateNextFormatEndPosition(
+      AXBoundaryBehavior boundary_behavior) const {
+    // Disallow AXBoundaryBehavior::StopAtAnchorBoundary, as it would be no
+    // different than moving by anchor.
+    DCHECK_NE(boundary_behavior, AXBoundaryBehavior::StopAtAnchorBoundary);
+
+    if (IsNullPosition())
+      return Clone();
+
+    if (AtEndOfFormat()) {
+      if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary) {
+        AXPositionInstance clone = Clone();
+        // If there is no ambiguity as to whether the position is at the end of
+        // the current format boundary or the start of the next format boundary,
+        // affinity should be reset in order to get consistent output from this
+        // function regardless of input affinity.
+        clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
+        if (clone->AtStartOfFormat())
+          clone->affinity_ = ax::mojom::TextAffinity::kUpstream;
+        return clone;
+      } else if (CreateNextLeafTreePosition()->IsNullPosition()) {
+        // If we're at a format boundary and there are no more text positions
+        // to traverse, return a null position for cross-boundary moves.
+        return CreateNullPosition();
+      }
+    }
+
+    bool was_text_position = IsTextPosition();
+    AXPositionInstance tree_position = AsTreePosition();
+    do {
+      if (tree_position->AtEndOfAnchor())
+        tree_position = tree_position->CreateNextAnchorPosition()
+                            ->CreatePositionAtEndOfAnchor();
+      else
+        tree_position = tree_position->CreatePositionAtEndOfAnchor();
+
+      if (tree_position->IsNullPosition() ||
+          tree_position->CreateNextLeafTreePosition()->IsNullPosition()) {
+        break;
+      }
+
+      // Continue searching for the next format boundary until the next logical
+      // text position is reached.
+    } while (
+        !tree_position->AtEndOfFormat() ||
+        (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
+         *this == *tree_position));
+
+    // If the format boundary is in the same subtree, return a position
+    // rooted at the current position.
+    // This is necessary because we don't want to return any position that might
+    // be in the shadow DOM if the original position was not.
+    AXPositionInstance common_ancestor =
+        tree_position->LowestCommonAncestor(*this);
+    if (GetAnchor() == common_ancestor->GetAnchor())
+      tree_position = std::move(common_ancestor);
+
+    if (was_text_position)
+      tree_position = tree_position->AsTextPosition();
+
+    return tree_position;
   }
 
   AXPositionInstance CreateNextParagraphStartPosition(
@@ -2488,6 +2510,36 @@ class AXPosition {
     return previous_leaf->AsLeafTextPosition();
   }
 
+  // Creates a tree position using the next text-only node as its anchor.
+  // Assumes that text-only nodes are leaf nodes.
+  AXPositionInstance CreateNextLeafTreePosition(
+      const AbortMovePredicate abort_predicate) const {
+    AXPositionInstance next_leaf =
+        AsTreePosition()->CreateNextAnchorPosition(abort_predicate);
+    while (!next_leaf->IsNullPosition() && next_leaf->AnchorChildCount()) {
+      next_leaf = next_leaf->CreateNextAnchorPosition(abort_predicate);
+    }
+
+    DCHECK(next_leaf);
+    return next_leaf;
+  }
+
+  // Creates a tree position using the previous text-only node as its anchor.
+  // Assumes that text-only nodes are leaf nodes.
+  AXPositionInstance CreatePreviousLeafTreePosition(
+      const AbortMovePredicate abort_predicate) const {
+    AXPositionInstance previous_leaf =
+        AsTreePosition()->CreatePreviousAnchorPosition(abort_predicate);
+    while (!previous_leaf->IsNullPosition() &&
+           previous_leaf->AnchorChildCount()) {
+      previous_leaf =
+          previous_leaf->CreatePreviousAnchorPosition(abort_predicate);
+    }
+
+    DCHECK(previous_leaf);
+    return previous_leaf;
+  }
+
   // Static helpers for lambda usage
   static bool AtStartOfParagraphPredicate(const AXPositionInstance& position) {
     return position->AtStartOfParagraph();
@@ -2520,6 +2572,29 @@ class AXPosition {
       const AXMoveType move_type,
       const AXMoveDirection direction) {
     return false;
+  }
+
+  // AbortMovePredicate function used to detect format boundaries.
+  static bool AbortMoveAtFormatBoundary(
+      const AXPosition<AXPositionType, AXNodeType>& move_from,
+      const AXPosition<AXPositionType, AXNodeType>& move_to,
+      const AXMoveType move_type,
+      const AXMoveDirection direction) {
+    if (move_from.IsNullPosition() || move_to.IsNullPosition())
+      return true;
+
+    // Treat moving to a leaf with different tags as a format break.
+    if ((move_to.AnchorChildCount() == 0) &&
+        move_from.GetAnchor()->GetStringAttribute(
+            ax::mojom::StringAttribute::kHtmlTag) !=
+            move_to.GetAnchor()->GetStringAttribute(
+                ax::mojom::StringAttribute::kHtmlTag)) {
+      return true;
+    }
+
+    // Stop moving when text styles differ.
+    return move_from.AsLeafTextPosition()->GetTextStyles() !=
+           move_to.AsLeafTextPosition()->GetTextStyles();
   }
 
   // AbortMovePredicate function used to detect paragraph boundaries.

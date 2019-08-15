@@ -464,7 +464,7 @@ testcase.driveRecoverDirtyFiles = async () => {
 
   // Navigate to the recovered files directory.
   await remoteCall.navigateWithDirectoryTree(
-      appId, RootPath.DOWNLOADS_PATH + '/Recovered files from Google Drive',
+      appId, '/Downloads/Recovered files from Google Drive',
       'My files/Downloads');
 
   // Ensure it contains never-sync.txt and never-sync (1).txt.

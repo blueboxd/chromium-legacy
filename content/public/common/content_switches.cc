@@ -13,6 +13,10 @@ namespace switches {
 // have an effect. 0 disables MSAA.
 const char kAcceleratedCanvas2dMSAASampleCount[] = "canvas-msaa-sample-count";
 
+// Allows processing of input before a frame has been committed.
+// TODO(schenney): Remove when crbug.com/987626 is fixed.
+const char kAllowPreCommitInput[] = "allow-pre-commit-input";
+
 // By default, file:// URIs cannot read other file:// URIs. This is an
 // override for developers who need the old behavior for testing.
 const char kAllowFileAccessFromFiles[]      = "allow-file-access-from-files";

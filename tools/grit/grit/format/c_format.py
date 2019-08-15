@@ -56,7 +56,7 @@ def _HexToOct(match):
   result = ""
   while len(hex):
     next_num = int(hex[2:4], 16)
-    result += "\\" + '%03d' % int(oct(next_num), 10)
+    result += "\\" + '%03o' % next_num
     hex = hex[4:]
   return match.group("escaped_backslashes") + result
 

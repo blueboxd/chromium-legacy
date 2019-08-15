@@ -67,7 +67,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya dinonaktifkan bagi penggun
 
           Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, host bantuan jarak jauh akan dijalankan dalam konteks pengguna dan pengguna jarak jauh tidak dapat berinteraksi dengan jendela yang berada jauh di desktop.</translation>
 <translation id="1096105751829466145">Penyedia penelusuran default</translation>
-<translation id="1099024407376270611">Periksa reputasi SafeBrowsing URL yang dikunjungi secara real time</translation>
 <translation id="1099282607296956954">Aktifkan Isolasi Situs untuk setiap situs</translation>
 <translation id="1100570158310952027">
       Kebijakan ini menentukan daftar asal (URL) atau pola hostname (seperti "*.example.com") yang tidak dikenai pembatasan keamanan untuk asal yang tidak aman.
@@ -403,22 +402,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Peringatan: Sebaiknya jangan mendelegasikan kontrol versi <ph name="PRODUCT_OS_NAME" /> ke aplikasi kios karena tindakan tersebut dapat mencegah perangkat dari menerima update software dan perbaikan keamanan penting. Mendelegasikan kontrol versi <ph name="PRODUCT_OS_NAME" /> dapat menimbulkan risiko terhadap pengguna.</translation>
 <translation id="1675002386741412210">Didukung di:</translation>
 <translation id="1700811900332333712">Izinkan perangkat untuk meminta powerwash</translation>
-<translation id="1704516734140344991">Mengonfigurasi ketersediaan dan perilaku fungsionalitas update firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      Setiap setelan dapat ditentukan dalam properti JSON:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Jika ditetapkan ke <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, pengguna dapat memicu alur powerwash untuk menginstal update firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Jika ditetapkan ke <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, pengguna dapat memanggil alur update firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> yang mempertahankan status di seluruh perangkat (termasuk pendaftaran perusahaan), tetapi kehilangan data pengguna. Alur update ini tersedia mulai dari versi 68.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Mengontrol cara update otomatis firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> diberlakukan untuk firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> yang rentan. Semua alur mempertahankan status perangkat lokal.
-        Jika ditetapkan ke 1 atau tidak ditetapkan, update firmware TPM tidak diberlakukan.
-        Jika ditetapkan ke 2, firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> akan diupdate saat reboot berikutnya setelah pengguna mengonfirmasi update tersebut.
-        Jika ditetapkan ke 3, firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> akan diupdate saat reboot berikutnya.
-        Jika ditetapkan ke 4, firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> akan diupdate setelah pendaftaran, sebelum pengguna login.
-        Opsi ini tersedia mulai dari versi 74.
-
-      Jika kebijakan ini tidak ditetapkan, fungsionalitas update firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> tidak akan tersedia.</translation>
 <translation id="1708496595873025510">Setel batasan pada pengambilan bibit Varietas</translation>
 <translation id="1717817358640580294">Jika tidak disetel, apabila mendeteksi software yang tidak diinginkan, Pembersih Chrome dapat melaporkan metadata tentang pemindaian ke Google sesuai kebijakan yang disetel oleh SafeBrowsingExtendedReportingEnabled. Selanjutnya, Pembersih Chrome akan menanyakan kepada pengguna apakah ia ingin menghapus software yang tidak diinginkan tersebut atau tidak. Pengguna dapat membagikan hasil pembersihan ke Google untuk membantu mendeteksi software yang tidak diinginkan di masa mendatang. Hasil ini memuat metadata file, ekstensi yang diinstal otomatis, dan kunci registry seperti dijelaskan dalam Lembar Informasi Privasi Chrome.
 
@@ -696,7 +679,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="219297066914002620">Instruksikan <ph name="PRODUCT_OS_NAME" /> untuk mengaktifkan atau menonaktifkan fitur konsol pengelola mesin virtual.
 
       Jika kebijakan ditetapkan ke true atau tidak ditetapkan, pengguna akan dapat menggunakan CLI pengelolaan VM.
-      Jika tidak, semua CLI pengelolaan VM dinonaktifkan dan disembunyikan.
+      Jika tidak, semua CLI pengelolaan VM akan dinonaktifkan dan disembunyikan.
       </translation>
 <translation id="2194470398825717446">Kebijakan ini sudah tidak digunakan lagi di M61, sebagai gantinya harap gunakan EcryptfsMigrationStrategy.
 
@@ -809,6 +792,22 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="2463034609187171371">Mengaktifkan paket penyandian DHE di TLS</translation>
 <translation id="2463365186486772703">Lokal aplikasi</translation>
 <translation id="2466131534462628618">Autentikasi portal tawanan mengabaikan proxy</translation>
+<translation id="2466697858869282874">Mengonfigurasi ketersediaan dan perilaku fungsionalitas update firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Setiap setelan dapat ditentukan dalam properti JSON:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Jika ditetapkan ke <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, pengguna dapat memicu alur powerwash untuk menginstal update firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Jika ditetapkan ke <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, pengguna dapat memanggil alur update firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> yang mempertahankan status di seluruh perangkat (termasuk pendaftaran perusahaan), tetapi kehilangan data pengguna. Alur update ini tersedia mulai dari versi 68.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Mengontrol cara update otomatis firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> diberlakukan untuk firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> yang rentan. Semua alur mempertahankan status perangkat lokal.
+        Jika ditetapkan ke 1 atau tidak ditetapkan, update firmware TPM tidak diberlakukan.
+        Jika ditetapkan ke 2, firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> akan diupdate saat reboot berikutnya setelah pengguna mengonfirmasi update tersebut.
+        Jika ditetapkan ke 3, firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> akan diupdate saat reboot berikutnya.
+        Jika ditetapkan ke 4, firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> akan diupdate setelah pendaftaran, sebelum pengguna login.
+        Opsi ini tersedia mulai dari versi 75.
+
+      Jika kebijakan ini tidak ditetapkan, fungsionalitas update firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> tidak akan tersedia.</translation>
 <translation id="2471748297300970300">Jika dinonaktifkan, akan mencegah peringatan keamanan muncul saat Chrome diluncurkan dengan beberapa tanda command line yang berpotensi berbahaya.
 
           Jika diaktifkan atau tidak ditetapkan, peringatan keamanan akan ditampilkan saat beberapa tanda command line digunakan untuk meluncurkan Chrome.
@@ -1815,6 +1814,13 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 
       Jika kebijakan ini tidak ditetapkan, jalur profil roaming default akan digunakan.</translation>
 <translation id="4239720644496144453">Cache tidak digunakan untuk aplikasi Android. Jika beberapa pengguna memasang aplikasi Android yang sama, aplikasi akan didownload lagi untuk setiap pengguna.</translation>
+<translation id="4241202391219483189">Kebijakan ini mengontrol apakah pengguna dapat mengimpor dan menghapus sertifikat CA melalui Pengelola Sertifikat.
+
+      Jika kebijakan ini ditetapkan ke "Izinkan pengguna mengelola semua sertifikat" atau tidak ditetapkan, pengguna akan dapat mengedit setelan kepercayaan untuk semua sertifikat CA, menghapus sertifikat yang diimpor oleh pengguna, dan mengimpor sertifikat.
+
+      Jika kebijakan ini ditetapkan ke "Izinkan pengguna mengelola sertifikat pengguna", pengguna hanya akan dapat mengelola sertifikat yang diimpor oleh pengguna dan tidak akan dapat mengubah setelan kepercayaan di sertifikat bawaan.
+
+      Jika kebijakan ini ditetapkan ke "Jangan izinkan pengguna mengelola sertifikat", pengguna hanya dapat melihat sertifikat CA, tetapi tidak dapat mengelolanya.</translation>
 <translation id="4243336580717651045">Mengaktifkan pengumpulan data anonim yang menyertakan URL di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
 
       Pengumpulan data anonim yang menyertakan URL mengirimkan URL halaman yang dibuka oleh pengguna ke Google untuk membuat penelusuran dan browsing lebih baik.
@@ -1890,6 +1896,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 
           Fitur ini saat ini dinonaktifkan pada sistem server.</translation>
 <translation id="4363057787588706121">Mengizinkan penggabungan kebijakan yang ada dalam daftar dari sumber berbeda</translation>
+<translation id="4363101430102811068">Aktifkan deteksi kebocoran untuk kredensial yang dimasukkan</translation>
 <translation id="4363136876356691536">Jika kebijakan ini ditetapkan ke true, opsi Aksesibilitas akan selalu muncul di menu baki sistem.
 
           Jika kebijakan ini ditetapkan ke false, opsi Aksesibilitas tidak akan muncul di menu baki sistem.
@@ -2041,10 +2048,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
           Jika Anda membiarkan kebijakan ini tidak disetel, <ph name="PRODUCT_NAME" /> tidak akan mendelegasikan kredensial pengguna meskipun server terdeteksi sebagai Intranet.</translation>
 <translation id="4752880493649142945">Sertifikat klien untuk menyambung ke RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4756984056524699088">Izinkan akses root pengguna ini ke penampung Crostini.
-
-      Jika kebijakan ditetapkan ke true atau tidak ditetapkan, akses root ke penampung Crostini tidak akan diberikan kepada pengguna.
-      Jika kebijakan ditetapkan ke false, akses root ke penampung Crostini yang ada maupun yang baru tidak akan diberikan kepada pengguna.</translation>
 <translation id="4759650396863318477">Memungkinkan Anda menyetel jangka waktu, dalam milidetik, untuk memberi tahu pengguna bahwa <ph name="PRODUCT_NAME" /> harus diluncurkan ulang atau bahwa perangkat <ph name="PRODUCT_OS_NAME" /> harus dimulai ulang untuk menerapkan update yang tertunda.
 
       Selama jangka waktu ini, pengguna akan berulang kali diberi tahu tentang perlunya update. Untuk perangkat <ph name="PRODUCT_OS_NAME" />, notifikasi mulai ulang akan muncul di baki sistem sesuai dengan kebijakan <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Untuk browser <ph name="PRODUCT_NAME" />, menu aplikasi berubah untuk menunjukkan bahwa peluncuran ulang diperlukan setelah sepertiga periode notifikasi berlalu. Warna notifikasi akan berubah setelah dua pertiga periode notifikasi berlalu, dan berubah lagi setelah seluruh periode notifikasi berlalu. Notifikasi tambahan yang diaktifkan oleh kebijakan <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> mengikuti jadwal yang sama seperti ini.
@@ -2196,7 +2199,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika setelan ini dinonaktifkan atau tidak ditetapkan, hanya entri daftar dari sumber dengan prioritas tertinggi yang akan diambil. Semua sumber lainnya akan ditampilkan sebagai konflik tetapi diabaikan.</translation>
 <translation id="5141670636904227950">Menyetel jenis lup default yang diaktifkan di layar masuk</translation>
 <translation id="5142301680741828703">Selalu mengurai pola URL berikut di <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5146261336206349846">Ketika kebijakan ini ditetapkan ke nonaktif, semua URL yang dikunjungi akan diperiksa menggunakan Safe Browsing secara real time.
+<translation id="5146261336206349846">Ketika kebijakan ini ditetapkan ke aktif, semua URL yang dikunjungi akan diperiksa menggunakan Safe Browsing secara real time.
 
       Ketika kebijakan ini ditetapkan ke nonaktif, atau tidak ditetapkan, pemeriksaan Safe Browsing pelanggan akan diterapkan.</translation>
 <translation id="5148753489738115745">Memungkinkan Anda menentukan parameter tambahan yang digunakan saat <ph name="PRODUCT_FRAME_NAME" /> meluncurkan <ph name="PRODUCT_NAME" />.
@@ -2318,7 +2321,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika kebijakan tidak disetel, atau jika disetel menjadi string kosong maupun rentang port yang tidak valid, WebRTC diizinkan untuk menggunakan port UDP lokal mana pun yang tersedia.</translation>
 <translation id="5290940294294002042">Tentukan daftar plugin yang dapat diaktifkan atau dinonaktifkan pengguna</translation>
-<translation id="5306186200045823863">Mengaktifkan kepercayaan pada Infrastruktur IKU Lama milik Symantec Corporation</translation>
+<translation id="5306186200045823863">Mengaktifkan kepercayaan pada Infrastruktur IKP Lama milik Symantec Corporation</translation>
 <translation id="5307432759655324440">Ketersediaan mode samaran</translation>
 <translation id="5318185076587284965">Aktifkan penggunaan server relay oleh hosting akses jarak jauh</translation>
 <translation id="5323128137188992869">Izinkan konten untuk ditransmisikan ke perangkat menggunakan <ph name="PRODUCT_NAME" />.
@@ -2876,6 +2879,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika kebijakan disetel ke false, pengguna tidak akan dilaporkan.</translation>
 <translation id="6394350458541421998">Kebijakan ini tidak lagi digunakan sejak <ph name="PRODUCT_OS_NAME" /> versi 29. Gunakan kebijakan PresentationScreenDimDelayScale sebagai gantinya.</translation>
 <translation id="6401669939808766804">Keluarkan pengguna</translation>
+<translation id="6403746242226534223">Periksa reputasi Safe Browsing URL yang dikunjungi secara real time</translation>
 <translation id="6406448383934634215">Jika 'Buka daftar URL' dipilih sebagai tindakan saat memulai, Anda dapat menentukan daftar URL yang dibuka. Jika dibiarkan tidak disetel, tidak ada URL yang akan dibuka saat memulai.
 
           Kebijakan ini hanya akan berfungsi jika kebijakan 'RestoreOnStartup' disetel ke 'RestoreOnStartupIsURLs'.
@@ -2952,6 +2956,9 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6544897973797372144">Jika kebijakan ini disetel ke True dan kebijakan ChromeOsReleaseChannel tidak ditentukan, maka pengguna domain yang mendaftar akan diizinkan mengubah saluran rilis perangkat. Jika kebijakan ini disetel ke false, perangkat akan dikunci pada saluran apa pun yang disetel terakhir kali.
 
       Saluran yang dipilih pengguna akan ditimpa oleh kebijakan ChromeOsReleaseChannel, namun jika saluran kebijakan lebih stabil dari saluran kebijakan yang telah terpasang pada perangkat, maka saluran ini hanya akan beralih setelah versi saluran yang lebih stabil mencapai jumlah versi yang lebih tinggi dari saluran kebijakan yang telah terpasang pada perangkat.</translation>
+<translation id="6549567350270907557">Jika setelan ini diaktifkan, pengguna dapat memeriksa <ph name="PRODUCT_NAME" /> apakah kredensial yang dimasukkan adalah bagian dari kebocoran.
+
+              Jika kebijakan ini diaktifkan atau dinonaktifkan, pengguna tidak dapat mengubah atau menggantinya di <ph name="PRODUCT_NAME" />. Jika kebijakan ini tidak ditetapkan, pemeriksaan kebocoran diizinkan (tetapi dapat dinonaktifkan oleh pengguna).</translation>
 <translation id="6553143066970470539">Persentase kecerahan layar</translation>
 <translation id="6559057113164934677">Jangan izinkan situs apa pun mengakses kamera dan mikrofon</translation>
 <translation id="6561396069801924653">Tampilkan opsi aksesibilitas di menu baki sistem</translation>
@@ -3921,6 +3928,10 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
       Jika kebijakan ini disetel ke true, <ph name="PRODUCT_NAME" /> akan membaca <ph name="IEEM_SITELIST_POLICY" /> Internet Explorer untuk mendapatkan URL daftar situs. Kemudian, <ph name="PRODUCT_NAME" /> akan mendownload daftar situs dari URL tersebut, dan menerapkan aturan seolah-olah telah dikonfigurasi dengan kebijakan <ph name="SITELIST_POLICY_NAME" />.
       Untuk informasi selengkapnya terkait kebijakan <ph name="IEEM_SITELIST_POLICY" /> Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Selalu Buka file PDF secara eksternal</translation>
+<translation id="8405691014775178834">Izinkan akses root pengguna ini ke penampung Crostini.
+
+      Jika kebijakan ditetapkan ke true atau tidak ditetapkan, akses root ke penampung Crostini akan diberikan kepada pengguna.
+      Jika kebijakan ditetapkan ke false, akses root ke penampung Crostini yang ada maupun yang baru tidak akan diberikan kepada pengguna.</translation>
 <translation id="8417305981081876834">Setel panjang maksimal PIN layar kunci</translation>
 <translation id="841977920223099909">Pemicu peringatan perlindungan sandi</translation>
 <translation id="8424255554404582727">Setel pemutaran layar default, diterapkan kembali setiap kali melakukan boot ulang</translation>
@@ -4164,6 +4175,7 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 
           Nilai kebijakan ini harus ditentukan dalam milidetik. Nilai dijepit menjadi lebih sedikit dari penundaan waktu menganggur.</translation>
 <translation id="891435090623616439">dienkode sebagai string JSON, untuk detailnya lihat <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8917070657147922192">Izinkan pengguna mengelola sertifikat CA yang terinstal.</translation>
 <translation id="8934944553121392674">Mengontrol printer mana dari <ph name="DEVICE_PRINTERS_POLICY" /> yang tersedia bagi pengguna.
 
       Menetapkan kebijakan akses yang digunakan untuk konfigurasi printer massal. Jika <ph name="PRINTERS_ALLOW_ALL" /> dipilih, semua printer akan ditampilkan. Jika <ph name="PRINTERS_BLACKLIST" /> dipilih, <ph name="DEVICE_PRINTERS_BLACKLIST" /> digunakan untuk membatasi akses ke printer yang ditentukan.  Jika <ph name="PRINTERS_WHITELIST" /> dipilih, <ph name="DEVICE_PRINTERS_WHITELIST" /> hanya menetapkan printer yang dapat dipilih.

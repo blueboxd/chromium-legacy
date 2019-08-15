@@ -78,7 +78,7 @@
   async function navigateToDestinationDirectoryAndTestPaste(appId) {
     // Navigates to destination directory.
     await remoteCall.navigateWithDirectoryTree(
-        appId, RootPath.DOWNLOADS_PATH + '/destination', 'My files/Downloads');
+        appId, '/Downloads/destination', 'My files/Downloads');
 
     // Confirm files before paste.
     await remoteCall.waitForFiles(
@@ -103,7 +103,7 @@
           ['body', 'Enter', true /* ctrl */, false, false]));
     } else {
       await clickDirectoryTreeContextMenuItem(
-          appId, RootPath.DOWNLOADS_PATH + '/photos', 'rename');
+          appId, '/Downloads/photos', 'rename');
     }
     await remoteCall.waitForElement(appId, '.tree-row > input');
     await remoteCall.callRemoteTestUtil(
@@ -122,7 +122,7 @@
     const appId = await setupForDirectoryTreeContextMenuTest();
 
     await remoteCall.navigateWithDirectoryTree(
-        appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
+        appId, '/Downloads/photos', 'My files/Downloads');
     await renamePhotosDirectoryTo(appId, 'New photos', useKeyboardShortcut);
 
     // Confirm that current directory has moved to new folder.
@@ -138,7 +138,7 @@
     const appId = await setupForDirectoryTreeContextMenuTest();
 
     await remoteCall.navigateWithDirectoryTree(
-        appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
+        appId, '/Downloads/photos', 'My files/Downloads');
     await renamePhotosDirectoryTo(appId, newName, false);
 
     // Confirm that a dialog is shown.
@@ -154,7 +154,7 @@
 
     if (changeCurrentDirectory) {
       await remoteCall.navigateWithDirectoryTree(
-          appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
+          appId, '/Downloads/photos', 'My files/Downloads');
     } else {
       const downloadsQuery =
           '#directory-tree [entry-label="My files"] [entry-label="Downloads"]';
@@ -165,7 +165,7 @@
           'fakeKeyDown', appId, ['body', 'e', true /* ctrl */, false, false]);
     } else {
       await clickDirectoryTreeContextMenuItem(
-          appId, RootPath.DOWNLOADS_PATH + '/photos', 'new-folder');
+          appId, '/Downloads/photos', 'new-folder');
     }
     await remoteCall.waitForElement(appId, '.tree-row > input');
     await remoteCall.callRemoteTestUtil(
@@ -176,8 +176,7 @@
 
     // Confirm that new directory is added to the directory tree.
     await remoteCall.waitForElement(
-        appId,
-        `[full-path-for-testing="${RootPath.DOWNLOADS_PATH}/photos/test"]`);
+        appId, `[full-path-for-testing="/Downloads/photos/test"]`);
 
     // Confirm that current directory is not changed at this timing.
     await remoteCall.waitUntilCurrentDirectoryIsChanged(
@@ -187,7 +186,7 @@
 
     // Confirm that new directory is actually created by navigating to it.
     await remoteCall.navigateWithDirectoryTree(
-        appId, RootPath.DOWNLOADS_PATH + '/photos/test', 'My files/Downloads');
+        appId, '/Downloads/photos/test', 'My files/Downloads');
   }
 
   /**
@@ -324,9 +323,8 @@
   testcase.dirCopyWithContextMenu = async () => {
     const appId = await setupForDirectoryTreeContextMenuTest();
     await remoteCall.navigateWithDirectoryTree(
-        appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
-    await clickDirectoryTreeContextMenuItem(
-        appId, RootPath.DOWNLOADS_PATH + '/photos', 'copy');
+        appId, '/Downloads/photos', 'My files/Downloads');
+    await clickDirectoryTreeContextMenuItem(appId, '/Downloads/photos', 'copy');
     await navigateToDestinationDirectoryAndTestPaste(appId);
   };
 
@@ -336,7 +334,7 @@
   testcase.dirCopyWithKeyboard = async () => {
     const appId = await setupForDirectoryTreeContextMenuTest();
     await remoteCall.navigateWithDirectoryTree(
-        appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
+        appId, '/Downloads/photos', 'My files/Downloads');
 
     // Press Ctrl+C.
     await remoteCall.callRemoteTestUtil(
@@ -353,8 +351,7 @@
     const downloadsQuery =
         '#directory-tree [entry-label="My files"] [entry-label="Downloads"]';
     await remoteCall.expandTreeItemInDirectoryTree(appId, downloadsQuery);
-    await clickDirectoryTreeContextMenuItem(
-        appId, RootPath.DOWNLOADS_PATH + '/photos', 'copy');
+    await clickDirectoryTreeContextMenuItem(appId, '/Downloads/photos', 'copy');
     await navigateToDestinationDirectoryAndTestPaste(appId);
   };
 
@@ -364,14 +361,13 @@
   testcase.dirCutWithContextMenu = async () => {
     const appId = await setupForDirectoryTreeContextMenuTest();
     await remoteCall.navigateWithDirectoryTree(
-        appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
-    await clickDirectoryTreeContextMenuItem(
-        appId, RootPath.DOWNLOADS_PATH + '/photos', 'cut');
+        appId, '/Downloads/photos', 'My files/Downloads');
+    await clickDirectoryTreeContextMenuItem(appId, '/Downloads/photos', 'cut');
     await navigateToDestinationDirectoryAndTestPaste(appId);
 
     // Confirm that directory tree is updated.
     await remoteCall.waitForElementLost(
-        appId, `[full-path-for-testing="${RootPath.DOWNLOADS_PATH}/photos"]`);
+        appId, `[full-path-for-testing="/Downloads/photos"]`);
   };
 
   /**
@@ -380,7 +376,7 @@
   testcase.dirCutWithKeyboard = async () => {
     const appId = await setupForDirectoryTreeContextMenuTest();
     await remoteCall.navigateWithDirectoryTree(
-        appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
+        appId, '/Downloads/photos', 'My files/Downloads');
 
     // Press Ctrl+X.
     await remoteCall.callRemoteTestUtil(
@@ -389,7 +385,7 @@
 
     // Confirm that directory tree is updated.
     await remoteCall.waitForElementLost(
-        appId, `[full-path-for-testing="${RootPath.DOWNLOADS_PATH}/photos"]`);
+        appId, `[full-path-for-testing="/Downloads/photos"]`);
   };
 
   /**
@@ -401,11 +397,10 @@
     const downloadsQuery =
         '#directory-tree [entry-label="My files"] [entry-label="Downloads"]';
     await remoteCall.expandTreeItemInDirectoryTree(appId, downloadsQuery);
-    await clickDirectoryTreeContextMenuItem(
-        appId, RootPath.DOWNLOADS_PATH + '/photos', 'cut');
+    await clickDirectoryTreeContextMenuItem(appId, '/Downloads/photos', 'cut');
     await navigateToDestinationDirectoryAndTestPaste(appId);
     await remoteCall.waitForElementLost(
-        appId, `[full-path-for-testing="${RootPath.DOWNLOADS_PATH}/photos"]`);
+        appId, `[full-path-for-testing="/Downloads/photos"]`);
   };
 
   /**
@@ -413,11 +408,11 @@
    */
   testcase.dirPasteWithContextMenu = async () => {
     const appId = await setupForDirectoryTreeContextMenuTest();
-    const destinationPath = RootPath.DOWNLOADS_PATH + '/destination';
+    const destinationPath = '/Downloads/destination';
 
     // Copy photos directory as a test data.
     await remoteCall.navigateWithDirectoryTree(
-        appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
+        appId, '/Downloads/photos', 'My files/Downloads');
     await remoteCall.callRemoteTestUtil(
         'fakeKeyDown', appId, ['body', 'c', true /* ctrl */, false, false]);
     await remoteCall.navigateWithDirectoryTree(
@@ -450,15 +445,14 @@
    * Tests pasting into a folder without changing the current directory.
    */
   testcase.dirPasteWithoutChangingCurrent = async () => {
-    const destinationPath = RootPath.DOWNLOADS_PATH + '/destination';
+    const destinationPath = '/Downloads/destination';
     const downloadsQuery =
         '#directory-tree [entry-label="My files"] [entry-label="Downloads"]';
 
     const appId = await setupForDirectoryTreeContextMenuTest();
     await remoteCall.expandTreeItemInDirectoryTree(appId, downloadsQuery);
     await remoteCall.callRemoteTestUtil('focus', appId, ['#directory-tree']);
-    await clickDirectoryTreeContextMenuItem(
-        appId, RootPath.DOWNLOADS_PATH + '/photos', 'copy');
+    await clickDirectoryTreeContextMenuItem(appId, '/Downloads/photos', 'copy');
     await clickDirectoryTreeContextMenuItem(
         appId, destinationPath, 'paste-into-folder');
     await remoteCall.waitForElement(
@@ -500,12 +494,11 @@
 
     // Navigate to child folder.
     await remoteCall.navigateWithDirectoryTree(
-        appId, RootPath.DOWNLOADS_PATH + '/photos/child-folder',
-        'My files/Downloads');
+        appId, '/Downloads/photos/child-folder', 'My files/Downloads');
 
     // Rename parent folder.
     await clickDirectoryTreeContextMenuItem(
-        appId, RootPath.DOWNLOADS_PATH + '/photos', 'rename');
+        appId, '/Downloads/photos', 'rename');
     await remoteCall.waitForElement(appId, '.tree-row > input');
     await remoteCall.callRemoteTestUtil(
         'inputText', appId, ['.tree-row > input', 'photos-new']);
@@ -517,18 +510,13 @@
     // Confirm that current directory is now My files or /Downloads, because it
     // can't find the previously selected folder /Downloads/photos/child-folder,
     // since its path/parent has been renamed.
-    // TODO(lucmult): Remove this conditional once MyFilesVolume is rolled out.
-    await remoteCall.waitUntilCurrentDirectoryIsChanged(
-        appId,
-        RootPath.DOWNLOADS_PATH === '/Downloads' ? '/My files' :
-                                                   '/My files/Downloads');
+    await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/My files');
 
     // Navigate to child-folder using the new path.
     // |navigateWithDirectoryTree| already checks for breadcrumbs to
     // match the path.
     await remoteCall.navigateWithDirectoryTree(
-        appId, RootPath.DOWNLOADS_PATH + '/photos-new/child-folder',
-        'My files/Downloads');
+        appId, '/Downloads/photos-new/child-folder', 'My files/Downloads');
   };
 
   /**
@@ -548,14 +536,13 @@
         '#directory-tree [entry-label="My files"] [entry-label="Downloads"]';
     await remoteCall.expandTreeItemInDirectoryTree(appId, downloadsQuery);
     await remoteCall.waitForElement(
-        appId, `[full-path-for-testing="${RootPath.DOWNLOADS_PATH}/photos"]`);
+        appId, `[full-path-for-testing="/Downloads/photos"]`);
     await renamePhotosDirectoryTo(
         appId, 'New photos', false /* Do not use keyboard shortcut. */);
     await remoteCall.waitForElementLost(
-        appId, `[full-path-for-testing="${RootPath.DOWNLOADS_PATH}/photos"]`);
+        appId, `[full-path-for-testing="/Downloads/photos"]`);
     await remoteCall.waitForElement(
-        appId,
-        `[full-path-for-testing="${RootPath.DOWNLOADS_PATH}/New photos"]`);
+        appId, `[full-path-for-testing="/Downloads/New photos"]`);
   };
 
   /**
@@ -565,7 +552,7 @@
     const appId = await setupForDirectoryTreeContextMenuTest();
 
     await remoteCall.navigateWithDirectoryTree(
-        appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
+        appId, '/Downloads/photos', 'My files/Downloads');
     await renamePhotosDirectoryTo(appId, '', false);
 
     // Wait for the input to be removed.

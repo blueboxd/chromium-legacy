@@ -91,7 +91,8 @@ class CanvasResourceDispatcherTest
         CanvasResourceProvider::ResourceUsage::kSoftwareCompositedResourceUsage,
         nullptr,  // context_provider_wrapper
         0,        // msaa_sample_count
-        CanvasColorParams(), CanvasResourceProvider::kDefaultPresentationMode,
+        kLow_SkFilterQuality, CanvasColorParams(),
+        CanvasResourceProvider::kDefaultPresentationMode,
         dispatcher_->GetWeakPtr());
   }
 

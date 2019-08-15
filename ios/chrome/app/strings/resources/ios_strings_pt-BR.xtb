@@ -266,6 +266,7 @@ Seus dados são criptografados com sua senha longa de sincronização. Informe-a
 <translation id="4802417911091824046">A criptografia por senha longa não inclui formas de pagamento e endereços do Google Pay.
 
 Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" /></translation>
+<translation id="4805759445554688327">Número de cartão inválido</translation>
 <translation id="4807020197310989387">1 artigo não lido na lista de leitura.</translation>
 <translation id="4818522717893377262">Adicionar idioma…</translation>
 <translation id="481968316161811770">Dados do site e arquivos "cookies"</translation>
@@ -393,6 +394,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="6476800141292307438">Tradução da página para <ph name="LANGUAGE" />. Opções disponíveis na parte inferior da tela.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens excluídos</translation>
 <translation id="6610002944194042868">Opções de tradução</translation>
+<translation id="6628106477656132239">Data de validade inválida</translation>
 <translation id="6642362222295953972">Alternar para guia existente</translation>
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="6656103420185847513">Editar pasta</translation>

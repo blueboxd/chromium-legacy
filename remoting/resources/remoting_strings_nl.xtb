@@ -8,14 +8,6 @@
 <translation id="1199593201721843963">Externe verbindingen uitschakelen</translation>
 <translation id="1291443878853470558">Je moet externe verbindingen inschakelen als je Chromoting wilt gebruiken voor toegang tot deze computer.</translation>
 <translation id="1297009705180977556">Fout bij maken van verbinding met <ph name="HOSTNAME" /></translation>
-<translation id="1300633907480909701">Beveiligd toegang tot je computers vanaf je Android-apparaat.
-
-• Stel op elk van je computers externe toegang in via de app Chrome Remote Desktop uit de Chrome Web Store: https://chrome.google.com/remotedesktop
-• Open de app op je Android-apparaat en tik op een van je online computers om verbinding te maken.
-
-Externe computers met toetsenborden met een niet-Amerikaanse indeling kunnen onjuiste tekstinvoer ontvangen. Ondersteuning voor andere toetsenbordindelingen komt binnenkort beschikbaar.
-
-Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http://goo.gl/SyrVzj) en het Privacybeleid van Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(deze functie is nog niet beschikbaar voor je computer)</translation>
 <translation id="1342297293546459414">Een gedeelde computer bekijken en beheren.</translation>
 <translation id="1389790901665088353">Installatieprogramma voor Chrome Remote Desktop-host downloaden</translation>
@@ -28,7 +20,6 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="1643640058022401035">Als je deze pagina verlaat, wordt je Chromoting-sessie beëindigd.</translation>
 <translation id="1654128982815600832">Externe verbindingen voor deze computer inschakelen…</translation>
 <translation id="170207782578677537">Kan deze computer niet registreren.</translation>
-<translation id="1727412735341161734">Chrome Remote Desktop</translation>
 <translation id="174018511426417793">Je hebt geen geregistreerde computers. Als je externe verbindingen met een computer mogelijk wilt maken, installeer je Chrome Remote Desktop op die computer en klik je op '<ph name="BUTTON_NAME" />'.</translation>
 <translation id="1742469581923031760">Verbinding maken…</translation>
 <translation id="1770394049404108959">Ik kan de app niet openen.</translation>
@@ -46,13 +37,6 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="2078880767960296260">Hostproces</translation>
 <translation id="20876857123010370">Trackpadmodus</translation>
 <translation id="2089514346391228378">Externe verbindingen voor deze computer zijn ingeschakeld.</translation>
-<translation id="2118549242412205620">Beveiligd toegang tot je computers vanaf je Android-apparaat.
-
-• Stel op elk van je computers externe toegang in via de app Chrome Remote Desktop uit de Chrome Web Store: https://chrome.google.com/remotedesktop
-• Open de app op je Android-apparaat en tik op een van je online computers om verbinding te maken.
-
-Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http://goo.gl/SyrVzj) en het Privacybeleid van Chrome (http://goo.gl/0uXE5d).</translation>
-<translation id="2124408767156847088">Beveiligd toegang tot je computers vanaf je Android-apparaat.</translation>
 <translation id="2208514473086078157">De beleidsinstellingen staan het delen van deze computer als host voor Chrome Remote Desktop niet toe. Neem contact op met je systeembeheerder voor hulp.</translation>
 <translation id="2220529011494928058">Een probleem melden</translation>
 <translation id="2221097377466213233">Gebruik rechter Ctrl-toets als Windows-toets (⌘ op Mac)</translation>
@@ -91,11 +75,6 @@ Als '<ph name="SERVICE_SCRIPT_NAME" />' al aanwezig en aangevinkt is, moet je di
 <translation id="2851754573186462851">Streaming via Chromium-app</translation>
 <translation id="2888969873284818612">Er is een netwerkfout opgetreden. We starten de app opnieuw wanneer je apparaat weer online is.</translation>
 <translation id="2891243864890517178">Voor Mac (OS X Yosemite 10.10 en hoger)</translation>
-<translation id="289405675947420287">Krijg op een beveiligde manier toegang tot je computer vanaf je iOS-apparaat. Het is snel, gemakkelijk en eenvoudig.
-
-• Download de Chrome Remote Desktop-app vanuit de Chrome Web Store naar de computer waartoe je extern toegang wilt.
-• Installeer de Chrome Remote Desktop-software en volg de instructies om het instellen te voltooien.
-• Open de app op je iOS-apparaat en tik op een van je online computers om verbinding te maken.</translation>
 <translation id="2894654864775534701">Deze computer wordt momenteel via een ander account gedeeld.</translation>
 <translation id="2919669478609886916">Je deelt deze computer momenteel met een andere gebruiker. Wil je doorgaan met delen?</translation>
 <translation id="2921543551052660690">Je bent eerder ingelogd als <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Als je toegang wilt tot je computers met dat account, <ph name="LINK_BEGIN" />log je in bij Chromium<ph name="LINK_END" /> met dat account en installeer je Chromoting opnieuw.</translation>
@@ -109,7 +88,6 @@ Als '<ph name="SERVICE_SCRIPT_NAME" />' al aanwezig en aangevinkt is, moet je di
 <translation id="310979712355504754">Alles verwijderen</translation>
 <translation id="3150823315463303127">Host kan het beleid niet lezen.</translation>
 <translation id="3171922709365450819">Dit apparaat wordt niet ondersteund door deze klant, omdat hiervoor verificatie van derden is vereist.</translation>
-<translation id="3194245623920924351">Chrome Remote Desktop</translation>
 <translation id="3197730452537982411">Remote Desktop</translation>
 <translation id="324272851072175193">Deze instructies e-mailen</translation>
 <translation id="3258789396564295715">Je kunt beveiligd toegang krijgen tot deze computer via Chrome Remote Desktop.</translation>
@@ -174,13 +152,6 @@ Als '<ph name="SERVICE_SCRIPT_NAME" />' al aanwezig en aangevinkt is, moet je di
 <translation id="4660011489602794167">Toetsenbord weergeven</translation>
 <translation id="4703302905453407178">Een vereiste component werkt niet meer. Meld dit probleem aan de ontwikkelaars.</translation>
 <translation id="4703799847237267011">Je Chromoting-sessie is beëindigd.</translation>
-<translation id="4706355010316049867">Chrome
-Remote
-Desktop
-Toegang
-Ondersteuning
-Computer
-Pc</translation>
 <translation id="4736223761657662401">Verbindingsgeschiedenis</translation>
 <translation id="4741792197137897469">Verificatie mislukt. Log opnieuw in bij Chrome.</translation>
 <translation id="477305884757156764">De app is te langzaam.</translation>
@@ -252,7 +223,6 @@ Pc</translation>
 <translation id="6381670701864002291">Iets anders.</translation>
 <translation id="6398765197997659313">Volledig scherm sluiten</translation>
 <translation id="6441316101718669559">Bureaubladintegratie wordt niet ondersteund op dit platform. Je kunt de app nog steeds gebruiken, maar de gebruikerservaring is beperkt.</translation>
-<translation id="6502629188777329097">Beveiligde toegang tot je computer</translation>
 <translation id="652218476070540101">De pincode voor deze computer wordt bijgewerkt…</translation>
 <translation id="6527303717912515753">Delen</translation>
 <translation id="6541219117979389420">App-logboeken bevatten mogelijk privégegevens, inclusief je identiteit (e-mailadres) en de namen en eigenschappen van bestanden en mappen in Google Drive.</translation>
@@ -286,7 +256,6 @@ Pc</translation>
 <translation id="7116737094673640201">Welkom bij Chrome Remote Desktop</translation>
 <translation id="7144878232160441200">Opnieuw proberen</translation>
 <translation id="7149517134817561223">App die opdrachten geeft aan de Chrome Remote Desktop-host.</translation>
-<translation id="7213491505512310433">Stabiliteitsverbeteringen en bugfixes.</translation>
 <translation id="7215059001581613786">Geef een pincode van zes of meer cijfers op.</translation>
 <translation id="7312846573060934304">Host is offline.</translation>
 <translation id="7319983568955948908">Delen stoppen</translation>

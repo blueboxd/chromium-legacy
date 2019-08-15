@@ -56,12 +56,13 @@ CookieStoreManager::~CookieStoreManager() {
   service_worker_context_->RemoveObserver(this);
 }
 
-void CookieStoreManager::CreateService(blink::mojom::CookieStoreRequest request,
-                                       const url::Origin& origin) {
+void CookieStoreManager::CreateService(
+    mojo::PendingReceiver<blink::mojom::CookieStore> receiver,
+    const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  bindings_.AddBinding(std::make_unique<CookieStoreHost>(this, origin),
-                       std::move(request));
+  receivers_.Add(std::make_unique<CookieStoreHost>(this, origin),
+                 std::move(receiver));
 }
 
 void CookieStoreManager::LoadAllSubscriptions(

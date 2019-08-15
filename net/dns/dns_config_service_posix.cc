@@ -196,7 +196,9 @@ ConfigParsePosixResult ReadDnsConfig(DnsConfig* dns_config) {
 
   if (base::android::BuildInfo::GetInstance()->sdk_int() >=
       base::android::SDK_VERSION_MARSHMALLOW) {
-    return net::android::GetDnsServers(&dns_config->nameservers);
+    return net::android::GetDnsServers(&dns_config->nameservers,
+                                       &dns_config->dns_over_tls_active,
+                                       &dns_config->dns_over_tls_hostname);
   }
 
   if (IsVpnPresent()) {

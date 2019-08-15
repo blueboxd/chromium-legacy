@@ -87,6 +87,7 @@
 <translation id="3960700977367013758">scrollbar</translation>
 <translation id="4103419683916926126">Milliseconden</translation>
 <translation id="4151657705144244502">afbeelding</translation>
+<translation id="4160057747563657758">telefoon</translation>
 <translation id="4193965531860883258">voorwoord</translation>
 <translation id="4201051445878709314">Vorige maand weergeven</translation>
 <translation id="421884353938374759">kleurkiezer</translation>
@@ -206,7 +207,7 @@
 <translation id="775297008183122718">Ongeldige invoer</translation>
 <translation id="7789962463072032349">onderbreken</translation>
 <translation id="7802800022689234070">driehoek voor samen-/uitvouwen</translation>
-<translation id="7888071071722539607">Gebruik een '<ph name="ATSIGN" />' in thet e-mailadres. In '<ph name="INVALIDADDRESS" />' ontbreekt een '<ph name="ATSIGN" />'.</translation>
+<translation id="7888071071722539607">Gebruik een '<ph name="ATSIGN" />' in het e-mailadres. In '<ph name="INVALIDADDRESS" />' ontbreekt een '<ph name="ATSIGN" />'.</translation>
 <translation id="7891486169920085145">splitser</translation>
 <translation id="795667975304826397">Geen bestand gekozen</translation>
 <translation id="8053789581856978548">zoektekstveld</translation>
@@ -243,6 +244,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" />  KB</translation>
 <translation id="8987927404178983737">Maand</translation>
 <translation id="901493112792887934">huidige tijd in seconden</translation>
+<translation id="901834265349196618">e-mail</translation>
 <translation id="9048119486235211610">navigatie</translation>
 <translation id="9062295712474918030">document</translation>
 <translation id="9062307380734144336">selecteer om te schakelen tussen afspelen en pauzeren</translation>

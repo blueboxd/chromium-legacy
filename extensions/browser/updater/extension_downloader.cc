@@ -954,7 +954,7 @@ void ExtensionDownloader::NotifyDelegateDownloadFinished(
   const std::set<int>& request_ids = fetch_data->request_ids;
   const crx_file::VerifierFormat required_format =
       extension_urls::IsWebstoreUpdateUrl(fetch_data->url)
-          ? GetWebstoreVerifierFormat()
+          ? GetWebstoreVerifierFormat(false)
           : crx_format_requirement_;
   delegate_->OnExtensionDownloadFinished(
       CRXFileInfo(id, crx_path, package_hash, required_format),

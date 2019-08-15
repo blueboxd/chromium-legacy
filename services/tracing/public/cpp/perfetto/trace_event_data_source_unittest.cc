@@ -282,7 +282,7 @@ class TraceEventDataSourceTest : public testing::Test {
     last_thread_time_ = packet->thread_descriptor().reference_thread_time_us();
 
     EXPECT_EQ(packet->interned_data().event_categories_size(), 0);
-    EXPECT_EQ(packet->interned_data().legacy_event_names_size(), 0);
+    EXPECT_EQ(packet->interned_data().event_names_size(), 0);
 
     // ThreadDescriptor is only emitted when incremental state was reset, and
     // thus also always serves as indicator for the state reset to the consumer.
@@ -411,7 +411,7 @@ class TraceEventDataSourceTest : public testing::Test {
   void ExpectEventNames(
       const perfetto::protos::TracePacket* packet,
       std::initializer_list<std::pair<uint32_t, std::string>> entries) {
-    ExpectInternedNames(packet->interned_data().legacy_event_names(), entries);
+    ExpectInternedNames(packet->interned_data().event_names(), entries);
   }
 
   void ExpectDebugAnnotationNames(
@@ -549,7 +549,7 @@ TEST_F(TraceEventDataSourceTest, TraceLogMetadataEvents) {
   bool has_process_uptime_event = false;
   for (size_t i = 0; i < producer_client()->GetFinalizedPacketCount(); ++i) {
     auto* packet = producer_client()->GetFinalizedPacket(i);
-    for (auto& event_name : packet->interned_data().legacy_event_names()) {
+    for (auto& event_name : packet->interned_data().event_names()) {
       if (event_name.name() == "process_uptime_seconds") {
         has_process_uptime_event = true;
         break;
@@ -1211,7 +1211,7 @@ TEST_F(TraceEventDataSourceTest, StartupTracingTimeout) {
   std::set<std::string> event_names;
   for (const auto& packet : producer_client()->finalized_packets()) {
     if (packet->has_interned_data()) {
-      for (const auto& name : packet->interned_data().legacy_event_names()) {
+      for (const auto& name : packet->interned_data().event_names()) {
         event_names.insert(name.name());
       }
     }

@@ -1095,9 +1095,10 @@ InspectorPageAgent::BuildObjectForResourceTree(LocalFrame* frame) {
             .setMimeType(cached_resource->GetResponse().MimeType())
             .setContentSize(cached_resource->GetResponse().DecodedBodyLength())
             .build();
-    double last_modified = cached_resource->GetResponse().LastModified();
-    if (!std::isnan(last_modified))
-      resource_object->setLastModified(last_modified);
+    base::Optional<base::Time> last_modified =
+        cached_resource->GetResponse().LastModified();
+    if (last_modified)
+      resource_object->setLastModified(last_modified.value().ToDoubleT());
     if (cached_resource->WasCanceled())
       resource_object->setCanceled(true);
     else if (cached_resource->GetStatus() == ResourceStatus::kLoadError)

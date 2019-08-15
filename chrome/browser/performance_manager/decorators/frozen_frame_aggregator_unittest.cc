@@ -10,7 +10,6 @@
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,20 +19,21 @@ namespace {
 
 using LifecycleState = PageNodeImpl::LifecycleState;
 
-class LenientMockGraphObserver : public GraphImplObserverDefaultImpl {
+class LenientMockProcessNodeObserver : public ProcessNode::ObserverDefaultImpl {
  public:
-  LenientMockGraphObserver() = default;
-  ~LenientMockGraphObserver() override = default;
+  LenientMockProcessNodeObserver() = default;
+  ~LenientMockProcessNodeObserver() override = default;
 
   virtual bool ShouldObserve(const NodeBase* node) { return false; }
 
-  MOCK_METHOD1(OnAllFramesInProcessFrozen, void(ProcessNodeImpl*));
+  MOCK_METHOD1(OnAllFramesInProcessFrozen, void(const ProcessNode*));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(LenientMockGraphObserver);
+  DISALLOW_COPY_AND_ASSIGN(LenientMockProcessNodeObserver);
 };
 
-using MockGraphObserver = ::testing::StrictMock<LenientMockGraphObserver>;
+using MockProcessNodeObserver =
+    ::testing::StrictMock<LenientMockProcessNodeObserver>;
 
 }  // namespace
 
@@ -92,9 +92,8 @@ class FrozenFrameAggregatorTest : public GraphTestHarness {
 };
 
 TEST_F(FrozenFrameAggregatorTest, ProcessAggregation) {
-  // Explicitly add the observer to only the process node.
-  MockGraphObserver obs;
-  process_node_.get()->AddObserver(&obs);
+  MockProcessNodeObserver obs;
+  graph()->AddProcessNodeObserver(&obs);
 
   ExpectProcessData(0, 0);
 
@@ -126,7 +125,9 @@ TEST_F(FrozenFrameAggregatorTest, ProcessAggregation) {
   f1.get()->SetIsCurrent(true);
   ExpectProcessData(1, 1);
 
-  // Freeze the child frame and expect no change, as its in another process.
+  // Freeze the child frame and expect |proc2| to receive an event, but not
+  // |process_node_|.
+  EXPECT_CALL(obs, OnAllFramesInProcessFrozen(proc2.get()));
   f1.get()->SetLifecycleState(LifecycleState::kFrozen);
   ExpectProcessData(1, 1);
 
@@ -150,6 +151,7 @@ TEST_F(FrozenFrameAggregatorTest, ProcessAggregation) {
   ExpectProcessData(2, 1);
 
   // Freeze the child frame of the first page, hosted in the other process.
+  EXPECT_CALL(obs, OnAllFramesInProcessFrozen(proc2.get()));
   f1.get()->SetLifecycleState(LifecycleState::kFrozen);
   ExpectProcessData(2, 1);
 
@@ -173,7 +175,7 @@ TEST_F(FrozenFrameAggregatorTest, ProcessAggregation) {
   f0.reset();
   ExpectProcessData(0, 0);
 
-  process_node_.get()->RemoveObserver(&obs);
+  graph()->RemoveProcessNodeObserver(&obs);
 }
 
 TEST_F(FrozenFrameAggregatorTest, PageAggregation) {

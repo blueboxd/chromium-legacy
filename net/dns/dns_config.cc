@@ -20,6 +20,8 @@ DnsConfig::DnsConfig(DnsConfig&& other) = default;
 
 DnsConfig::DnsConfig(std::vector<IPEndPoint> nameservers)
     : nameservers(std::move(nameservers)),
+      dns_over_tls_active(false),
+      dns_over_tls_hostname(std::string()),
       unhandled_options(false),
       append_to_multi_label_name(true),
       randomize_ports(false),
@@ -45,8 +47,10 @@ bool DnsConfig::operator==(const DnsConfig& d) const {
 }
 
 bool DnsConfig::EqualsIgnoreHosts(const DnsConfig& d) const {
-  return (nameservers == d.nameservers) && (search == d.search) &&
-         (unhandled_options == d.unhandled_options) &&
+  return (nameservers == d.nameservers) &&
+         (dns_over_tls_active == d.dns_over_tls_active) &&
+         (dns_over_tls_hostname == d.dns_over_tls_hostname) &&
+         (search == d.search) && (unhandled_options == d.unhandled_options) &&
          (append_to_multi_label_name == d.append_to_multi_label_name) &&
          (ndots == d.ndots) && (timeout == d.timeout) &&
          (attempts == d.attempts) && (rotate == d.rotate) &&
@@ -57,6 +61,8 @@ bool DnsConfig::EqualsIgnoreHosts(const DnsConfig& d) const {
 
 void DnsConfig::CopyIgnoreHosts(const DnsConfig& d) {
   nameservers = d.nameservers;
+  dns_over_tls_active = d.dns_over_tls_active;
+  dns_over_tls_hostname = d.dns_over_tls_hostname;
   search = d.search;
   unhandled_options = d.unhandled_options;
   append_to_multi_label_name = d.append_to_multi_label_name;
@@ -76,6 +82,9 @@ std::unique_ptr<base::Value> DnsConfig::ToValue() const {
   for (size_t i = 0; i < nameservers.size(); ++i)
     list->AppendString(nameservers[i].ToString());
   dict->Set("nameservers", std::move(list));
+
+  dict->SetBoolean("dns_over_tls_active", dns_over_tls_active);
+  dict->SetString("dns_over_tls_hostname", dns_over_tls_hostname);
 
   list = std::make_unique<base::ListValue>();
   for (size_t i = 0; i < search.size(); ++i)

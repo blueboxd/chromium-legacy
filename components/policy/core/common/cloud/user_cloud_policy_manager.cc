@@ -111,7 +111,7 @@ void UserCloudPolicyManager::GetChromePolicy(PolicyMap* policy_map) {
   // If the store has a verified policy blob received from the server then apply
   // the defaults for policies that haven't been configured by the administrator
   // given that this is an enterprise user.
-  // TODO(crbug.com/640950): We should just call SetEnterpriseUsersDefaults
+  // TODO(crbug.com/640950): We should just call ApplyEnterpriseUsersDefaults
   // here.
 #if defined(OS_ANDROID)
   if (store()->has_policy() &&

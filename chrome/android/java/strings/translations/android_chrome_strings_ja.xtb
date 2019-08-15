@@ -38,7 +38,6 @@
 <translation id="123724288017357924">キャッシュ コンテンツを無視して現在のページを再読み込みする</translation>
 <translation id="124116460088058876">その他の言語</translation>
 <translation id="124678866338384709">現在のタブを閉じる</translation>
-<translation id="125153950246128346">タップすると他のタブが表示されます</translation>
 <translation id="1258753120186372309">Google Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">検索</translation>
 <translation id="1264974993859112054">スポーツ</translation>
@@ -78,7 +77,7 @@
 <translation id="1513858653616922153">パスワードを削除</translation>
 <translation id="1516229014686355813">「タップして検索」では選択した単語と現在のページがコンテキストとして Google 検索に送信されます。これは [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で無効にすることができます。</translation>
 <translation id="1521774566618522728">最終同期: 今日</translation>
-<translation id="1544826120773021464">Googleアカウントを管理するには、[アカウントを管理] をタップします。</translation>
+<translation id="1544826120773021464">Google アカウントを管理するには、[アカウントを管理] をタップします。</translation>
 <translation id="1549000191223877751">他のウィンドウに移動</translation>
 <translation id="1553358976309200471">Chrome を更新</translation>
 <translation id="1569387923882100876">接続しているデバイス</translation>
@@ -113,7 +112,6 @@
 <translation id="1853692000353488670">新しいシークレット タブ</translation>
 <translation id="1856325424225101786">ライトモードをリセットしますか？</translation>
 <translation id="1868024384445905608">Chrome でのファイルのダウンロードがさらに速くなりました</translation>
-<translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> 個のタブ}other{<ph name="TABS_COUNT_MANY" /> 個のタブ}}</translation>
 <translation id="1880072593381090678">Chrome でよくアクセスするページ</translation>
 <translation id="1883903952484604915">マイファイル</translation>
 <translation id="1887786770086287077">位置情報へのアクセスがデバイスでオフになっています。<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でオンにしてください。</translation>
@@ -218,14 +216,12 @@
 <translation id="2567385386134582609">画像</translation>
 <translation id="257088987046510401">テーマ</translation>
 <translation id="2570922361219980984">位置情報へのアクセスがデバイスでもオフになっています。<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でオンにしてください。</translation>
-<translation id="257674075312929031">グループ</translation>
 <translation id="257931822824936280">展開されています - クリックすると折りたたまれます。</translation>
 <translation id="2581165646603367611">Chrome で重要度が低いと判断されるサイトの Cookie やキャッシュなどのデータを削除します。</translation>
 <translation id="2586657967955657006">クリップボード</translation>
 <translation id="2587052924345400782">新しいバージョンをご利用いただけます</translation>
 <translation id="2593272815202181319">等幅</translation>
 <translation id="2612676031748830579">カード番号</translation>
-<translation id="2613747923081026172">グループを作成</translation>
 <translation id="2621115761605608342">特定のサイトに対して JavaScript を許可します。</translation>
 <translation id="2625189173221582860">パスワードがコピーされました</translation>
 <translation id="2631006050119455616">削減量</translation>
@@ -255,7 +251,6 @@
 <translation id="2822354292072154809">「<ph name="CHOSEN_OBJECT_NAME" />」に関するすべてのサイト権限をリセットしてもよろしいですか？</translation>
 <translation id="2836148919159985482">全画面表示を終了するには戻るボタンをタップします。</translation>
 <translation id="2842985007712546952">親フォルダ</translation>
-<translation id="2845873210977809562">開いているタブが閉じられました</translation>
 <translation id="2858138569776157458">上位のサイト</translation>
 <translation id="2870560284913253234">サイト</translation>
 <translation id="2874939134665556319">前のトラック</translation>
@@ -275,7 +270,6 @@
 <translation id="2956410042958133412">このアカウントは <ph name="PARENT_NAME_1" /> と <ph name="PARENT_NAME_2" /> によって管理されています。</translation>
 <translation id="2962095958535813455">シークレット タブに切り替えました</translation>
 <translation id="2968755619301702150">証明書ビューア</translation>
-<translation id="2977480621796371840">グループから削除</translation>
 <translation id="2979025552038692506">選択したシークレット タブ</translation>
 <translation id="2989523299700148168">最近のアクセス</translation>
 <translation id="2996291259634659425">パスフレーズの作成</translation>
@@ -355,7 +349,6 @@
 <translation id="3632295766818638029">パスワードを表示</translation>
 <translation id="363596933471559332">保存されている認証情報を使用してウェブサイトに自動的にログインします。この機能がオフの場合は、ウェブサイトにログインするときに毎回確認を求められます。</translation>
 <translation id="3658159451045945436">リセットすると、アクセスしたサイトのリストなど、節約したデータの履歴が削除されます。</translation>
-<translation id="3663367437272849150"><ph name="NUM_SELECTED" /> 個のタブをグループ化します。</translation>
 <translation id="3692944402865947621">保存場所にアクセスできないため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="3714981814255182093">検索バーを開く</translation>
 <translation id="3716182511346448902">このページは大量のメモリを使用しているため、Chrome により一時停止されました。</translation>
@@ -482,7 +475,6 @@
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> を起動</translation>
 <translation id="4634124774493850572">パスワードを使用</translation>
 <translation id="4645575059429386691">保護者により管理されています</translation>
-<translation id="4648718555153979859">タブはここにグループ化されます</translation>
 <translation id="4650364565596261010">システムのデフォルト</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> 件のブックマークを削除しました</translation>
 <translation id="4665282149850138822">「<ph name="NAME" />」がホーム画面に追加されました</translation>
@@ -547,8 +539,6 @@
 <translation id="5040262127954254034">プライバシー</translation>
 <translation id="5048398596102334565">サイトによるモーション センサーへのアクセスを許可する（推奨）</translation>
 <translation id="5063480226653192405">使用状況</translation>
-<translation id="5073204694187207510">全画面グリッドを非表示</translation>
-<translation id="5082793167783849073">グループを作成して簡単にページを比較できます。グループを作成するには、リンクを長押しします。</translation>
 <translation id="5087580092889165836">カードを追加</translation>
 <translation id="5098406615395468004">マイアプリに追加</translation>
 <translation id="5100237604440890931">折りたたまれています - クリックすると展開します。</translation>
@@ -562,6 +552,7 @@
 <translation id="5152843274749979095">サポートされているアプリがインストールされていません</translation>
 <translation id="5161254044473106830">タイトルが必要です</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 件のダウンロードが失敗しました。}other{# 件のダウンロードが失敗しました。}}</translation>
+<translation id="5170568018924773124">フォルダを開く</translation>
 <translation id="5184329579814168207">Chromeで開く</translation>
 <translation id="5199929503336119739">仕事用プロファイル</translation>
 <translation id="5202089186707505116">このサイトによる VR センサーへのアクセスを許可しますか？</translation>
@@ -606,7 +597,6 @@
 <translation id="548278423535722844">マップアプリで開く</translation>
 <translation id="5487521232677179737">データを削除</translation>
 <translation id="5494752089476963479">煩わしい広告や誤解を招く広告が表示されるサイトで広告をブロックする</translation>
-<translation id="5497272504048921382">開いているタブ</translation>
 <translation id="5500777121964041360">お住まいの地域ではご利用になれない可能性があります</translation>
 <translation id="5512137114520586844">このアカウントは <ph name="PARENT_NAME" /> によって管理されています。</translation>
 <translation id="5514904542973294328">このデバイスの管理者によって無効にされています</translation>
@@ -623,9 +613,7 @@
 <translation id="557283862590186398">このサイトを利用するには、Chrome でマイクの使用を許可する必要があります。</translation>
 <translation id="55737423895878184">位置情報の使用と通知の送信が許可されています</translation>
 <translation id="5578795271662203820">この画像を <ph name="SEARCH_ENGINE" /> で検索</translation>
-<translation id="5580090775658607195"><ph name="TAB_COUNT" /> 個のタブがグループ化されました</translation>
 <translation id="5581519193887989363">同期する項目はいつでも [<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />] で選択できます。</translation>
-<translation id="5586306159936941448">タブをグループ化するには片方のタブをもう片方のタブにドラッグします</translation>
 <translation id="5595485650161345191">住所の編集</translation>
 <translation id="5596627076506792578">その他のオプション</translation>
 <translation id="5599455543593328020">シークレット モード</translation>
@@ -657,7 +645,6 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{# 時間前}other{# 時間前}}</translation>
 <translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. All rights reserved.</translation>
 <translation id="5817918615728894473">ペア設定</translation>
-<translation id="58326064309361797">タブをグループ化するにはドラッグします</translation>
 <translation id="583281660410589416">不明</translation>
 <translation id="5833984609253377421">リンクを共有</translation>
 <translation id="5836192821815272682">Chrome のアップデートをダウンロードしています…</translation>
@@ -688,6 +675,7 @@
 <translation id="6042308850641462728">もっと見る</translation>
 <translation id="604996488070107836">不明なエラーが発生したため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6064125863973209585">完了したダウンロード</translation>
 <translation id="6075798973483050474">ホームページの編集</translation>
 <translation id="60923314841986378">残り <ph name="HOURS" /> 時間</translation>
 <translation id="6108923351542677676">設定しています...</translation>
@@ -703,7 +691,6 @@
 <translation id="6181444274883918285">サイトの例外を追加</translation>
 <translation id="6192333916571137726">ダウンロード ファイル</translation>
 <translation id="6192792657125177640">例外</translation>
-<translation id="6193448654517602979">タブを選択</translation>
 <translation id="6194112207524046168">Chrome にカメラへのアクセスを許可するには、<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />でもカメラをオンにしてください。</translation>
 <translation id="6196640612572343990">サードパーティの Cookie をブロックする</translation>
 <translation id="6206551242102657620">接続は保護されています。サイト情報</translation>
@@ -766,7 +753,6 @@
 <translation id="6600954340915313787">Chrome にコピー済み</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">保護されたコンテンツ</translation>
-<translation id="6615455863669487791">表示</translation>
 <translation id="6627583120233659107">フォルダを編集</translation>
 <translation id="6643016212128521049">削除</translation>
 <translation id="6643649862576733715">データ節約量で並べ替え</translation>
@@ -792,7 +778,6 @@
 <translation id="6767294960381293877">タブを共有するデバイスのリストが画面の下半分に表示されました。</translation>
 <translation id="6782111308708962316">サードパーティのウェブサイトが Cookie データを保存したり読み取ったりできないようにします</translation>
 <translation id="6790428901817661496">再生</translation>
-<translation id="6803423358608456383">開いているタブは画面の半分の高さで表示されています</translation>
 <translation id="6811034713472274749">ページを表示できます</translation>
 <translation id="6818926723028410516">アイテムを選択</translation>
 <translation id="6820686453637990663">CVC</translation>
@@ -839,7 +824,6 @@
 <translation id="7141896414559753902">サイトでのポップアップ表示とリダイレクトをブロックする（推奨）</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> から<ph name="BEGIN_LINK" />元のページを読み込む<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">過去 24 時間</translation>
-<translation id="7161892015146974550">「<ph name="TAB_TITLE" />」タブを選択します。</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">これは後から [設定] で変更できます</translation>
 <translation id="7180611975245234373">更新</translation>
@@ -856,6 +840,7 @@
 <translation id="7302081693174882195">詳細: データ節約量の順</translation>
 <translation id="7328017930301109123">ライトモードを使用すると、Chrome でページの読み込みが高速化され、データ使用量も最大 60 パーセント抑えることができます。</translation>
 <translation id="7333031090786104871">前のサイトを追加中です</translation>
+<translation id="7352651011704765696">問題が発生しました</translation>
 <translation id="7352939065658542140">動画</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 件の選択されたアイテムを共有します}other{# 件の選択されたアイテムを共有します}}</translation>
 <translation id="7359002509206457351">お支払い方法へのアクセス</translation>
@@ -890,7 +875,6 @@
 <translation id="751961395872307827">サイトに接続できません</translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7542481630195938534">おすすめの記事を取得できません</translation>
-<translation id="7559245342362162951">グループのタブを全画面グリッドで表示</translation>
 <translation id="7559975015014302720">ライトモードはオフです</translation>
 <translation id="7562080006725997899">閲覧データの消去</translation>
 <translation id="756809126120519699">Chrome データの消去完了</translation>
@@ -1007,7 +991,6 @@
 <translation id="8339163506404995330"><ph name="LANGUAGE" />のページは翻訳されません</translation>
 <translation id="8349013245300336738">データ使用量で並べ替え</translation>
 <translation id="8364299278605033898">人気のウェブサイトを表示します</translation>
-<translation id="8364603787714420828">「<ph name="TAB_TITLE" />」タブの選択を解除</translation>
 <translation id="8368027906805972958">不明またはサポートされていないデバイス（<ph name="DEVICE_ID" />）</translation>
 <translation id="8372893542064058268">特定のサイトに対してバックグラウンド同期を許可します。</translation>
 <translation id="8374821112118309944">TalkBack を最新版に更新する必要があります。</translation>
@@ -1015,7 +998,6 @@
 <translation id="8380167699614421159">このサイトでは煩わしい広告や誤解を招く広告が表示されます</translation>
 <translation id="8393700583063109961">メッセージを送信</translation>
 <translation id="8413126021676339697">全履歴を表示</translation>
-<translation id="8425955042390522843">電話番号の確認</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8438566539970814960">検索とブラウジングを改善する</translation>
 <translation id="8441146129660941386">後方にシーク再生</translation>
@@ -1041,7 +1023,6 @@
 <translation id="8569404424186215731">（<ph name="DATE" />以降）</translation>
 <translation id="8571213806525832805">過去 4 週間</translation>
 <translation id="857943718398505171">許可（推奨）</translation>
-<translation id="8582216581279205169">開いているタブは画面いっぱいの高さで表示されています</translation>
 <translation id="8583805026567836021">アカウント データをクリア中</translation>
 <translation id="860043288473659153">カード名義人</translation>
 <translation id="8609465669617005112">上に移動</translation>
@@ -1108,9 +1089,7 @@
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="9139068048179869749">サイトに通知の送信を許可する前に確認する（推奨）</translation>
 <translation id="9139318394846604261">ショッピング</translation>
-<translation id="9150694013019234766">画面下部にあるタブグループのタブを切り替えます</translation>
 <translation id="9155898266292537608">単語をタップするだけでも検索できます</translation>
-<translation id="9169594135889675189">グループに新しいタブを追加</translation>
 <translation id="9188680907066685419">管理対象アカウントからログアウトする</translation>
 <translation id="9204836675896933765">残り 1 ファイル</translation>
 <translation id="9206873250291191720">A</translation>
@@ -1121,7 +1100,6 @@
 <translation id="945632385593298557">マイクへのアクセス</translation>
 <translation id="951339005376969845">既存のデータを削除します。<ph name="FROM_ACCOUNT" /> に切り替えると、削除したデータを取得できます。</translation>
 <translation id="95817756606698420">中国のユーザーは Chrome での検索に <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> を使用できます。この設定は [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で変更可能です。</translation>
-<translation id="959682366969460160">タブを整理</translation>
 <translation id="965817943346481315">煩わしい広告や誤解を招く広告が表示されるサイトの場合にブロック（推奨）</translation>
 <translation id="968900484120156207">アクセスしたページがここに表示されます</translation>
 <translation id="970715775301869095">残り <ph name="MINUTES" /> 分</translation>

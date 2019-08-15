@@ -127,7 +127,7 @@ LayoutBox::LayoutBox(ContainerNode* node)
       max_preferred_logical_width_(-1),
       inline_box_wrapper_(nullptr) {
   SetIsBox();
-  if (blink::IsHTMLLegendElement(node))
+  if (blink::IsA<HTMLLegendElement>(node))
     SetIsHTMLLegendElement();
 }
 
@@ -3577,7 +3577,7 @@ LayoutUnit LayoutBox::ComputeIntrinsicLogicalContentHeightUsing(
   if (logical_height_length.IsMinContent() ||
       logical_height_length.IsMaxContent() ||
       logical_height_length.IsFitContent()) {
-    if (IsAtomicInlineLevel() && !IsLayoutGrid())
+    if (IsAtomicInlineLevel() && !IsFlexibleBoxIncludingNG() && !IsLayoutGrid())
       return IntrinsicSize().Height();
     return intrinsic_content_height;
   }

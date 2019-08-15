@@ -37,6 +37,7 @@
 <translation id="1419738280318246476">Buka kunci perangkat untuk melakukan tindakan notifikasi</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1455242230282523554">Tampilkan setelan bahasa</translation>
+<translation id="1460620680449458626">Volume dibisukan.</translation>
 <translation id="1467432559032391204">Kiri</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Tampilkan setelan notifikasi. Notifikasi nonaktif untuk satu aplikasi}other{Tampilkan setelan notifikasi. Notifikasi nonaktif untuk # aplikasi}}</translation>
@@ -157,8 +158,9 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Tersambung ke satu perangkat}other{Tersambung ke # perangkat}}</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> lagi</translation>
 <translation id="3236488194889173876">Jaringan seluler tidak tersedia</translation>
-<translation id="3249513730522716925">Jendela <ph name="WINDOW_TITLE" /> berpindah dari Halaman kerja <ph name="ACTIVE_DESK" /> ke Halaman kerja <ph name="TARGET_DESK" /></translation>
+<translation id="3249513730522716925">Jendela <ph name="WINDOW_TITLE" /> berpindah dari Desktop <ph name="ACTIVE_DESK" /> ke Desktop <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Apa yang bisa kamu lakukan?</translation>
+<translation id="3277674767125718685">Volume aktif.</translation>
 <translation id="3294437725009624529">Tamu</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> tetap dapat login di lain waktu.</translation>
 <translation id="3321628682574733415">Kode induk salah</translation>
@@ -179,7 +181,7 @@
 <translation id="3573179567135747900">Ubah kembali ke "<ph name="FROM_LOCALE" />" (harus dinyalakan ulang)</translation>
 <translation id="3576141592585647168">Ubah zona waktu</translation>
 <translation id="3595596368722241419">Baterai penuh</translation>
-<translation id="3604801046548457007">Halaman kerja <ph name="DESK_TITILE" /> dibuat</translation>
+<translation id="3604801046548457007">Desktop <ph name="DESK_TITILE" /> dibuat</translation>
 <translation id="3606978283550408104">Layar Braille tersambung.</translation>
 <translation id="3621202678540785336">Masukan</translation>
 <translation id="3626281679859535460">Kecerahan</translation>
@@ -379,7 +381,7 @@
 <translation id="6723839937902243910">Daya</translation>
 <translation id="6727969043791803658">Terhubung, baterai <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">Pelacakan performa diaktifkan</translation>
-<translation id="6752912906630585008">Halaman kerja <ph name="REMOVED_DESK" /> dihapus dan digabung dengan Halaman kerja <ph name="RECEIVE_DESK" /></translation>
+<translation id="6752912906630585008">Desktop <ph name="REMOVED_DESK" /> dihapus dan digabung dengan Desktop <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">Putar</translation>
 <translation id="6803622936009808957">Tidak dapat menggandakan tampilan karena tidak ditemukan resolusi yang didukung. Memasuki desktop yang diperluas sebagai gantinya.</translation>
 <translation id="6820676911989879663">Istirahatlah sebentar</translation>
@@ -490,7 +492,7 @@
 <translation id="8428213095426709021">Setelan</translation>
 <translation id="8433186206711564395">Setelan jaringan</translation>
 <translation id="8433977262951327081">Pintasan untuk menampilkan balon menu opsi masukan di rak telah diubah. Harap gunakan <ph name="NEW_SHORTCUT" />, bukan <ph name="OLD_SHORTCUT" />.</translation>
-<translation id="8444246603146515890">Halaman kerja <ph name="DESK_TITILE" /> diaktifkan</translation>
+<translation id="8444246603146515890">Desktop <ph name="DESK_TITILE" /> diaktifkan</translation>
 <translation id="8452135315243592079">Kartu SIM tidak ada</translation>
 <translation id="8454013096329229812">Wi-Fi diaktifkan.</translation>
 <translation id="847056008324733326">Setelan skala layar</translation>
@@ -506,6 +508,7 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Pengisi daya rendah terpasang</translation>
 <translation id="8683506306463609433">Pelacakan performa aktif</translation>
+<translation id="8721053961083920564">Ubah Volume. <ph name="STATE_TEXT" /></translation>
 <translation id="8734991477317290293">Keyboard mungkin mencoba mencuri ketukan tombol Anda</translation>
 <translation id="8735953464173050365">Tampilkan setelan keyboard. <ph name="KEYBOARD_NAME" /> dipilih</translation>
 <translation id="875593634123171288">Tampilkan setelan VPN</translation>

@@ -620,6 +620,11 @@ void V4L2VideoEncodeAccelerator::EncodeTask(scoped_refptr<VideoFrame> frame,
     return;
   }
 
+  // If a video frame to be encoded is fed, then call VIDIOC_REQBUFS if it has
+  // not been called yet.
+  if (frame && input_buffer_map_.empty() && !CreateInputBuffers())
+    return;
+
   if (image_processor_) {
     image_processor_input_queue_.emplace(std::move(frame), force_keyframe);
     InputImageProcessorTask();
@@ -642,7 +647,7 @@ bool V4L2VideoEncodeAccelerator::ReconfigureFormatIfNeeded(
     VLOGF(2) << "Call S_FMT with a new size=" << new_frame_size.ToString()
              << ", the previous size ="
              << device_input_layout_->coded_size().ToString();
-    if (input_streamon_ || output_streamon_) {
+    if (!input_buffer_map_.empty()) {
       VLOGF(1) << "Input frame size is changed during encoding";
       NOTIFY_ERROR(kInvalidArgumentError);
       return false;
@@ -685,7 +690,7 @@ bool V4L2VideoEncodeAccelerator::ReconfigureFormatIfNeeded(
              << device_input_layout_->coded_size().ToString()
              << " (the size requested to client="
              << input_allocated_size_.ToString();
-    if (input_streamon_ || output_streamon_) {
+    if (!input_buffer_map_.empty()) {
       VLOGF(1) << "Input frame size is changed during encoding";
       NOTIFY_ERROR(kInvalidArgumentError);
       return false;
@@ -764,10 +769,6 @@ void V4L2VideoEncodeAccelerator::UseOutputBitstreamBufferTask(
   Enqueue();
 
   if (encoder_state_ == kInitialized) {
-    // Finish setting up our OUTPUT queue.  See: Initialize().
-    // VIDIOC_REQBUFS on OUTPUT queue.
-    if (!CreateInputBuffers())
-      return;
     if (!StartDevicePoll())
       return;
     encoder_state_ = kEncoding;
@@ -844,6 +845,7 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
   DVLOGF(4) << "free_input_buffers: " << free_input_buffers_.size()
             << "input_queue: " << encoder_input_queue_.size();
 
+  bool do_streamon = false;
   // Enqueue all the inputs we can.
   const int old_inputs_queued = input_buffer_queued_count_;
   while (!encoder_input_queue_.empty() && !free_input_buffers_.empty()) {
@@ -881,20 +883,17 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
     // Queue state changed; signal interrupt.
     if (!device_->SetDevicePollInterrupt())
       return;
-    // Start VIDIOC_STREAMON if we haven't yet.
-    if (!input_streamon_) {
-      __u32 type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-      IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMON, &type);
-      input_streamon_ = true;
-    }
+    // Shall call VIDIOC_STREAMON if we haven't yet.
+    do_streamon = !input_streamon_;
   }
 
-  if (!input_streamon_) {
+  if (!input_streamon_ && !do_streamon) {
     // We don't have to enqueue any buffers in the output queue until we enqueue
     // buffers in the input queue. This enables to call S_FMT in Encode() on
     // the first frame.
     return;
   }
+
   // Enqueue all the outputs we can.
   const int old_outputs_queued = output_buffer_queued_count_;
   while (!free_output_buffers_.empty() && !encoder_output_queue_.empty()) {
@@ -906,12 +905,25 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
     // Queue state changed; signal interrupt.
     if (!device_->SetDevicePollInterrupt())
       return;
-    // Start VIDIOC_STREAMON if we haven't yet.
-    if (!output_streamon_) {
-      __u32 type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-      IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMON, &type);
-      output_streamon_ = true;
-    }
+  }
+
+  // STREAMON in CAPTURE queue first and then OUTPUT queue.
+  // This is a workaround of a tegra driver bug that STREAMON in CAPTURE queue
+  // will never return (i.e. blocks |encoder_thread_| forever) if the STREAMON
+  // in CAPTURE queue is called after STREAMON in OUTPUT queue.
+  // Once nyan_kitty, which uses tegra driver, reaches EOL, crrev.com/c/1753982
+  // should be reverted.
+  if (do_streamon) {
+    DCHECK(!output_streamon_ && !input_streamon_);
+    // When VIDIOC_STREAMON can be executed in OUTPUT queue, it is fine to call
+    // STREAMON in CAPTURE queue.
+    __u32 type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+    IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMON, &type);
+    output_streamon_ = true;
+
+    type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+    IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMON, &type);
+    input_streamon_ = true;
   }
 }
 

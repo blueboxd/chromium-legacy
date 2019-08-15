@@ -19,6 +19,12 @@
                  file="chromeos/os_a11y_page/os_a11y_page.html"
                  type="chrome_html"
                  allowexternalscript="true" />
+      <structure name="IDR_OS_SETTINGS_APPS_PAGE_JS"
+                 file="chromeos/os_apps_page/os_apps_page.js"
+                 type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_APPS_PAGE_HTML"
+                 file="chromeos/os_apps_page/os_apps_page.html"
+                 type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_MANAGE_A11Y_PAGE_JS"
                  file="a11y_page/manage_a11y_page.js"
                  type="chrome_html" />
@@ -947,12 +953,6 @@
                  type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_ZOOM_LEVELS_JS"
                  file="site_settings/zoom_levels.js"
-                 type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_APP_MANAGEMENT_PAGE_HTML"
-                 file="app_management_page/app_management_page.html"
-                 type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_APP_MANAGEMENT_PAGE_JS"
-                 file="app_management_page/app_management_page.js"
                  type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_ANDROID_APPS_PAGE_HTML"
                  file="android_apps_page/android_apps_page.html"

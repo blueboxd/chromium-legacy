@@ -143,7 +143,11 @@ class FrameScheduler : public FrameOrWorkerScheduler {
   virtual void DidCommitProvisionalLoad(bool is_web_history_inert_commit,
                                         NavigationType navigation_type) = 0;
 
-  // Tells the scheduler that the first meaningful paint has occured for this
+  // Tells the scheduler that the first contentful paint has occurred for this
+  // frame.
+  virtual void OnFirstContentfulPaint() = 0;
+
+  // Tells the scheduler that the first meaningful paint has occurred for this
   // frame.
   virtual void OnFirstMeaningfulPaint() = 0;
 

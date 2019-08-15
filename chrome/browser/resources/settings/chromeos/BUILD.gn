@@ -63,6 +63,7 @@ if (optimize_webui) {
 group("closure_compile") {
   deps = [
     "os_a11y_page:closure_compile",
+    "os_apps_page:closure_compile",
     "os_files_page:closure_compile",
     "os_languages_page:closure_compile",
     "os_people_page:closure_compile",

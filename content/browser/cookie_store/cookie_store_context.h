@@ -60,8 +60,8 @@ class CONTENT_EXPORT CookieStoreContext
   void ListenToCookieChanges(::network::mojom::NetworkContext* network_context,
                              base::OnceCallback<void(bool)> success_callback);
 
-  // Routes a mojo request to the CookieStoreManager on the IO thread.
-  void CreateService(blink::mojom::CookieStoreRequest request,
+  // Routes a mojo receiver to the CookieStoreManager on the IO thread.
+  void CreateService(mojo::PendingReceiver<blink::mojom::CookieStore> receiver,
                      const url::Origin& origin);
 
  private:
@@ -77,8 +77,9 @@ class CONTENT_EXPORT CookieStoreContext
       ::network::mojom::CookieManagerPtrInfo cookie_manager_ptr_info,
       base::OnceCallback<void(bool)> success_callback);
 
-  void CreateServiceOnIOThread(blink::mojom::CookieStoreRequest request,
-                               const url::Origin& origin);
+  void CreateServiceOnIOThread(
+      mojo::PendingReceiver<blink::mojom::CookieStore> receiver,
+      const url::Origin& origin);
 
   // Only accessed on the IO thread.
   std::unique_ptr<CookieStoreManager> cookie_store_manager_;

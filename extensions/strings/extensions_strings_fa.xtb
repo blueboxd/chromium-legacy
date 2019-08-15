@@ -39,7 +39,6 @@
 <translation id="5456409301717116725">این برنامهٔ افزودنی شامل فایل کلید «<ph name="KEY_PATH" />» است. احتمالاً نمی‌خواهید این کار را انجام دهید.</translation>
 <translation id="5486326529110362464">مقدار ورودی برای کلید خصوصی باید وجود داشته باشد.</translation>
 <translation id="5627523580512561598">برنامهٔ افزودنی <ph name="EXTENSION_NAME" /></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">سرپرست این دستگاه نصب <ph name="EXTENSION_NAME" /> را لازم می‌داند. این برنامه افزودنی نمی‌تواند حذف نصب شود.</translation>
 <translation id="6027032947578871493">محصول نامشخص <ph name="PRODUCT_ID" /> از <ph name="VENDOR_NAME" /> (شماره سریال <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME" /> از فروشنده <ph name="VENDOR_ID" /></translation>

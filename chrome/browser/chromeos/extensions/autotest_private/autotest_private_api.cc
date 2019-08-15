@@ -2024,6 +2024,9 @@ AutotestPrivateGetArcAppWindowInfoFunction::Run() {
 
   const gfx::Rect bounds = arc_window->GetBoundsInRootWindow();
   const bool is_animating = arc_window->layer()->GetAnimator()->is_animating();
+  const auto* screen = display::Screen::GetScreen();
+  const int64_t display_id =
+      !screen ? -1 : screen->GetDisplayNearestWindow(arc_window).id();
 
   auto bounds_dict = std::make_unique<base::DictionaryValue>();
   bounds_dict->SetInteger("left", bounds.x());
@@ -2034,6 +2037,7 @@ AutotestPrivateGetArcAppWindowInfoFunction::Run() {
   auto result = std::make_unique<base::DictionaryValue>();
   result->SetDictionary("bounds", std::move(bounds_dict));
   result->SetBoolean("is_animating", is_animating);
+  result->SetString("display_id", base::NumberToString(display_id));
 
   return RespondNow(OneArgument(std::move(result)));
 }

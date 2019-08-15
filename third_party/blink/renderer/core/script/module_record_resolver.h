@@ -37,14 +37,14 @@ class CORE_EXPORT ModuleRecordResolver
   virtual void UnregisterModuleScript(const ModuleScript*) = 0;
 
   virtual const ModuleScript* GetModuleScriptFromModuleRecord(
-      const ModuleRecord&) const = 0;
+      v8::Local<v8::Module>) const = 0;
 
   // Implements "Runtime Semantics: HostResolveImportedModule"
   // https://tc39.github.io/ecma262/#sec-hostresolveimportedmodule
   // This returns a null ModuleRecord when an exception is thrown.
-  virtual ModuleRecord Resolve(const String& specifier,
-                               const ModuleRecord& referrer,
-                               ExceptionState&) = 0;
+  virtual v8::Local<v8::Module> Resolve(const String& specifier,
+                                        v8::Local<v8::Module> referrer,
+                                        ExceptionState&) = 0;
 };
 
 }  // namespace blink

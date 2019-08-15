@@ -1,4 +1,25 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
+<translation id="125153950246128346">Puudutage muu vahelehe vaatamiseks</translation>
+<translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> vaheleht}other{<ph name="TABS_COUNT_MANY" /> vahelehte}}</translation>
+<translation id="257674075312929031">Rühm</translation>
+<translation id="2613747923081026172">Loo grupp</translation>
+<translation id="2845873210977809562">Avatud vahelehed suleti</translation>
+<translation id="2977480621796371840">Grupist eemaldamine</translation>
+<translation id="4648718555153979859">Teie vahelehed on siin rühmitatud</translation>
+<translation id="5073204694187207510">Peida täisekraani ruudustik</translation>
+<translation id="5082793167783849073">Looge rühm, et lehti kiiresti võrrelda. Alustamiseks puudutage pikalt linki.</translation>
+<translation id="5497272504048921382">Avatud vahelehed</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> vahekaarti grupeeriti</translation>
+<translation id="5586306159936941448">Lohistage vaheleht teise vahelehe peale, et need rühmitada</translation>
+<translation id="58326064309361797">Lohistage vahelehti, et neid rühmitata</translation>
+<translation id="6193448654517602979">Valige vahelehed</translation>
+<translation id="6615455863669487791">Kuva mulle</translation>
+<translation id="6803423358608456383">Avatud vahelehti poole kõrgusega</translation>
+<translation id="7559245342362162951">Kuva grupi vahelehed täisekraani ruudustikus</translation>
+<translation id="8582216581279205169">Avatud vahekaardid täiskõrgusega</translation>
+<translation id="9150694013019234766">Ekraanikuva allosas olevas vahelehtede grupis vahelehtede vahel vahetamine</translation>
+<translation id="9169594135889675189">Lisa gruppi uus vaheleht</translation>
+<translation id="959682366969460160">Lööge kord majja</translation>
 </translationbundle>

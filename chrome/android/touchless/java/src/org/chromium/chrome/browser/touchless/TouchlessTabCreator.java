@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.touchless;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.Browser;
+import android.support.annotation.Nullable;
 
 import androidx.browser.customtabs.CustomTabsIntent;
 
@@ -85,8 +86,9 @@ public class TouchlessTabCreator extends ChromeTabCreator {
 
     @Override
     public boolean createTabWithWebContents(
-            Tab parent, WebContents webContents, @TabLaunchType int type, String url) {
-        InterceptNavigationDelegateImpl delegate = InterceptNavigationDelegateImpl.get(parent);
+            @Nullable Tab parent, WebContents webContents, @TabLaunchType int type, String url) {
+        InterceptNavigationDelegateImpl delegate = parent == null ? null :
+                InterceptNavigationDelegateImpl.get(parent);
         if (delegate != null && delegate.shouldIgnoreNewTab(url, false)) return false;
         if (shouldRedirectToCCT(type)) {
             return mAsyncTabDelegate.createTabWithWebContents(parent, webContents, type, url);

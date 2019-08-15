@@ -30,6 +30,7 @@
 <translation id="4523886039239821078">Некоторые дополнения вызывают сбой Chrome. Необходимо удалить:</translation>
 <translation id="4615174829807303908">Вы выходите из аккаунта, которым управляет администратор домена <ph name="SIGNOUT_MANAGED_DOMAIN" />. Все данные Chrome, хранящиеся на этом устройстве, будут удалены, но останутся в вашем аккаунте Google.</translation>
 <translation id="5389212809648216794">Google Chrome не может получить доступ к камере, поскольку она используется другим приложением.</translation>
+<translation id="5621912349729388018"><ph name="BEGIN_LINK" />Ознакомьтесь с обновленными Условиями использования Chrome<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">Откройте "Настройки &gt; Конфиденциальность &gt; Камера &gt; Chrome" и включите камеру.</translation>
 <translation id="5642200033778930880">Google Chrome не может использовать камеру в режиме Split View.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

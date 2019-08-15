@@ -548,6 +548,69 @@ TEST(AnimatedPNGTests, fdatBeforeIdat) {
   }
 }
 
+TEST(AnimatedPNGTests, FrameOverflowX) {
+  const char* png_file =
+      "/images/resources/"
+      "png-animated-idat-part-of-animation.png";
+  scoped_refptr<SharedBuffer> data = ReadFile(png_file);
+  ASSERT_FALSE(data->IsEmpty());
+
+  // Change the x_offset for frame 1
+  const size_t kFctlOffset = 172u;
+  scoped_refptr<SharedBuffer> modified_data =
+      SharedBuffer::Create(data->Data(), kFctlOffset);
+  const size_t kFctlSize = 38u;
+  png_byte fctl[kFctlSize];
+  memcpy(fctl, data->Data() + kFctlOffset, kFctlSize);
+
+  // Set the x_offset to a value that will overflow
+  WriteUint32(4294967295, fctl + 20);
+  // Correct the crc
+  WriteUint32(689600712, fctl + 34);
+  modified_data->Append((const char*)fctl, kFctlSize);
+  const size_t kAfterFctl = kFctlOffset + kFctlSize;
+  modified_data->Append(data->Data() + kAfterFctl, data->size() - kAfterFctl);
+
+  auto decoder = CreatePNGDecoder();
+  decoder->SetData(modified_data.get(), true);
+  for (size_t i = 0; i < decoder->FrameCount(); i++) {
+    decoder->DecodeFrameBufferAtIndex(i);
+  }
+  ASSERT_TRUE(decoder->Failed());
+}
+
+// This test is exactly the same as above, except it changes y_offset.
+TEST(AnimatedPNGTests, FrameOverflowY) {
+  const char* png_file =
+      "/images/resources/"
+      "png-animated-idat-part-of-animation.png";
+  scoped_refptr<SharedBuffer> data = ReadFile(png_file);
+  ASSERT_FALSE(data->IsEmpty());
+
+  // Change the y_offset for frame 1
+  const size_t kFctlOffset = 172u;
+  scoped_refptr<SharedBuffer> modified_data =
+      SharedBuffer::Create(data->Data(), kFctlOffset);
+  const size_t kFctlSize = 38u;
+  png_byte fctl[kFctlSize];
+  memcpy(fctl, data->Data() + kFctlOffset, kFctlSize);
+
+  // Set the y_offset to a value that will overflow
+  WriteUint32(4294967295, fctl + 24);
+  // Correct the crc
+  WriteUint32(2094185741, fctl + 34);
+  modified_data->Append((const char*)fctl, kFctlSize);
+  const size_t kAfterFctl = kFctlOffset + kFctlSize;
+  modified_data->Append(data->Data() + kAfterFctl, data->size() - kAfterFctl);
+
+  auto decoder = CreatePNGDecoder();
+  decoder->SetData(modified_data.get(), true);
+  for (size_t i = 0; i < decoder->FrameCount(); i++) {
+    decoder->DecodeFrameBufferAtIndex(i);
+  }
+  ASSERT_TRUE(decoder->Failed());
+}
+
 TEST(AnimatedPNGTests, IdatSizeMismatch) {
   // The default image must fill the image
   const char* png_file =

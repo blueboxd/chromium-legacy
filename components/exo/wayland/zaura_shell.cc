@@ -21,6 +21,7 @@
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_util.h"
+#include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/public/activation_client.h"
@@ -201,7 +202,7 @@ void AuraSurface::OnSurfaceDestroying(Surface* surface) {
 }
 
 void AuraSurface::OnWindowOcclusionChanged(Surface* surface) {
-  if (!surface_)
+  if (!surface_ || !surface_->is_tracking_occlusion())
     return;
   auto* window = surface_->window();
   ComputeAndSendOcclusionFraction(window->occlusion_state(),
@@ -279,19 +280,31 @@ void AuraSurface::ComputeAndSendOcclusionFraction(
   float fraction_occluded = 0.0f;
   switch (occlusion_state) {
     case aura::Window::OcclusionState::VISIBLE: {
+      const gfx::Rect display_bounds_in_screen =
+          display::Screen::GetScreen()
+              ->GetDisplayNearestWindow(window)
+              .bounds();
       const gfx::Rect bounds_in_screen = GetTransformedBoundsInScreen(window);
       const int tracked_area =
           bounds_in_screen.width() * bounds_in_screen.height();
-      int occluded_area = 0;
       SkRegion tracked_and_occluded_region = occluded_region;
       tracked_and_occluded_region.op(gfx::RectToSkIRect(bounds_in_screen),
                                      SkRegion::Op::kIntersect_Op);
+
+      // Clip the area outside of the display.
+      gfx::Rect area_inside_display = bounds_in_screen;
+      area_inside_display.Intersect(display_bounds_in_screen);
+      int occluded_area = tracked_area - area_inside_display.width() *
+                                             area_inside_display.height();
+
       for (SkRegion::Iterator i(tracked_and_occluded_region); !i.done();
            i.next()) {
         occluded_area += i.rect().width() * i.rect().height();
       }
-      fraction_occluded =
-          static_cast<float>(occluded_area) / static_cast<float>(tracked_area);
+      if (tracked_area) {
+        fraction_occluded = static_cast<float>(occluded_area) /
+                            static_cast<float>(tracked_area);
+      }
       break;
     }
     case aura::Window::OcclusionState::OCCLUDED:
@@ -302,7 +315,6 @@ void AuraSurface::ComputeAndSendOcclusionFraction(
     case aura::Window::OcclusionState::UNKNOWN:
       return;  // Window is not tracked.
   }
-
   SendOcclusionFraction(fraction_occluded);
 }
 

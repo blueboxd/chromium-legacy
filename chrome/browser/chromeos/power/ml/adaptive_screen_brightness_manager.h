@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/power/ml/boot_clock.h"
 #include "chrome/browser/chromeos/power/ml/screen_brightness_event.pb.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
@@ -20,7 +21,6 @@
 #include "ui/base/user_activity/user_activity_observer.h"
 
 namespace base {
-class Clock;
 class RepeatingTimer;
 }  // namespace base
 
@@ -37,7 +37,6 @@ namespace power {
 namespace ml {
 
 class AdaptiveScreenBrightnessUkmLogger;
-class BootClock;
 class RecentEventsCounter;
 
 // AdaptiveScreenBrightnessManager logs screen brightness and other features
@@ -62,9 +61,7 @@ class AdaptiveScreenBrightnessManager
       AccessibilityManager* accessibility_manager,
       MagnificationManager* magnification_manager,
       viz::mojom::VideoDetectorObserverRequest request,
-      std::unique_ptr<base::RepeatingTimer> periodic_timer,
-      base::Clock* clock,
-      std::unique_ptr<BootClock> boot_clock);
+      std::unique_ptr<base::RepeatingTimer> periodic_timer);
 
   ~AdaptiveScreenBrightnessManager() override;
 
@@ -107,10 +104,7 @@ class AdaptiveScreenBrightnessManager
 
   void LogEvent();
 
-  // It is base::DefaultClock, but will be set to a mock clock for tests.
-  base::Clock* const clock_;
-  // It is RealBootClock, but will be set to FakeBootClock for tests.
-  const std::unique_ptr<BootClock> boot_clock_;
+  BootClock boot_clock_;
 
   // Timer to trigger periodically for logging data.
   const std::unique_ptr<base::RepeatingTimer> periodic_timer_;

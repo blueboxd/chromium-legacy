@@ -283,8 +283,8 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
                                    completionHandler:availableHandler];
 }
 
-- (void)fillSuggestion:(CWVAutofillSuggestion*)suggestion
-     completionHandler:(nullable void (^)(void))completionHandler {
+- (void)acceptSuggestion:(CWVAutofillSuggestion*)suggestion
+       completionHandler:(nullable void (^)(void))completionHandler {
   if (suggestion.isPasswordSuggestion) {
     [_passwordController fillSuggestion:suggestion
                       completionHandler:^{
@@ -394,13 +394,16 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
                 (const base::WeakPtr<autofill::AutofillPopupDelegate>&)
                     delegate {
   // frontend_id is > 0 for Autofill suggestions, == 0 for Autocomplete
-  // suggestions, and < 0 for special suggestions such as clear form, or go to
-  // autofill settings which are not supported by CWVAutofillController.
+  // suggestions, and < 0 for special suggestions such as clear form.
   std::vector<autofill::Suggestion> filtered_suggestions;
   std::copy_if(suggestions.begin(), suggestions.end(),
                std::back_inserter(filtered_suggestions),
                [](autofill::Suggestion suggestion) {
-                 return suggestion.frontend_id > 0;
+                 return suggestion.frontend_id > 0 ||
+                        suggestion.frontend_id ==
+                            autofill::POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS ||
+                        suggestion.frontend_id ==
+                            autofill::POPUP_ITEM_ID_CLEAR_FORM;
                });
   [_autofillAgent showAutofillPopup:filtered_suggestions
                       popupDelegate:delegate];

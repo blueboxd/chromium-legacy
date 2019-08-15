@@ -8,14 +8,6 @@
 <translation id="1199593201721843963">Disattiva connessioni remote</translation>
 <translation id="1291443878853470558">Per accedere a questo computer utilizzando Chromoting devi attivare le connessioni remote.</translation>
 <translation id="1297009705180977556">Errore durante la connessione a <ph name="HOSTNAME" /></translation>
-<translation id="1300633907480909701">Accedi in sicurezza ai tuoi computer dal tuo dispositivo Android.
-
-• Su ogni tuo computer puoi configurare l'accesso remoto utilizzando l'app Chrome Remote Desktop del Chrome Web Store: https://chrome.google.com/remotedesktop.
-• Sul tuo dispositivo Android apri l'app e tocca uno dei tuoi computer online per collegarti.
-
-I computer remoti con tastiere diverse dall'inglese americano potrebbero ricevere in modo sbagliato il testo inserito. A breve verranno supportati altri layout da tastiera.
-
-Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://goo.gl/SyrVzj) e le Norme sulla privacy di Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(questa funzione non è ancora disponibile per il tuo computer)</translation>
 <translation id="1342297293546459414">Visualizza e controlla un computer condiviso.</translation>
 <translation id="1389790901665088353">Scarica il programma di installazione di Chrome Remote Desktop Host</translation>
@@ -28,7 +20,6 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="1643640058022401035">Se esci da questa pagina, la sessione Chromoting verrà terminata.</translation>
 <translation id="1654128982815600832">Attivazione connessioni remote per questo computer in corso…</translation>
 <translation id="170207782578677537">Impossibile registrare il computer.</translation>
-<translation id="1727412735341161734">Chrome Remote Desktop</translation>
 <translation id="174018511426417793">Non sono presenti computer registrati. Per attivare le connessioni remote su un computer, installa Chrome Remote Desktop sul computer e fai clic su "<ph name="BUTTON_NAME" />".</translation>
 <translation id="1742469581923031760">Connessione in corso...</translation>
 <translation id="1770394049404108959">Non riesco ad aprire l'applicazione.</translation>
@@ -46,13 +37,6 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="2078880767960296260">Processo host</translation>
 <translation id="20876857123010370">Modalità trackpad</translation>
 <translation id="2089514346391228378">Le connessioni remote per questo computer sono state attivate.</translation>
-<translation id="2118549242412205620">Accedi in sicurezza ai tuoi computer dal tuo dispositivo Android.
-
-• Su ogni tuo computer puoi configurare l'accesso remoto utilizzando l'app Chrome Remote Desktop del Chrome Web Store: https://chrome.google.com/remotedesktop.
-• Sul tuo dispositivo Android apri l'app e tocca uno dei tuoi computer online per collegarti.
-
-Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://goo.gl/SyrVzj) e le Norme sulla privacy di Chrome (http://goo.gl/0uXE5d).</translation>
-<translation id="2124408767156847088">Accedi in sicurezza ai tuoi computer dal tuo dispositivo Android.</translation>
 <translation id="2208514473086078157">Le impostazioni criterio non consentono la condivisione di questo computer come host Chrome Remote Desktop. Contatta l'amministratore di sistema per ricevere assistenza.</translation>
 <translation id="2220529011494928058">Segnala un problema</translation>
 <translation id="2221097377466213233">Utilizza il tasto Ctrl di destra e il tasto Windows (⌘ su Mac)</translation>
@@ -91,11 +75,6 @@ Se l'opzione "<ph name="SERVICE_SCRIPT_NAME" />" è già presente e selezionata,
 <translation id="2851754573186462851">Chromium App Stream</translation>
 <translation id="2888969873284818612">Si è verificato un errore di rete. L'app sarà riavviata quando il dispositivo tornerà online.</translation>
 <translation id="2891243864890517178">Per Mac (OS X Yosemite 10.10 e versioni successive)</translation>
-<translation id="289405675947420287">Accedi in sicurezza al tuo computer dal tuo dispositivo iOS. È veloce, semplice e gratuito.
-
-• Scarica l'app Chrome Remote Desktop dal Chrome Web Store sul computer a cui vuoi accedere da remoto.
-• Installa il software Chrome Remote Desktop e segui le istruzioni per completare la configurazione.
-• Sul tuo dispositivo iOS, apri l'app e tocca uno dei tuoi computer online per collegarti.</translation>
 <translation id="2894654864775534701">Questo computer è attualmente condiviso con un altro account.</translation>
 <translation id="2919669478609886916">Stai condividendo questo computer con un altro utente. Continuare la condivisione?</translation>
 <translation id="2921543551052660690">Hai già eseguito l'accesso come <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Per accedere ai tuoi computer nell'account in questione, <ph name="LINK_BEGIN" />accedi a Chromium<ph name="LINK_END" /> con tale account e installa di nuovo Chromoting.</translation>
@@ -109,7 +88,6 @@ Se l'opzione "<ph name="SERVICE_SCRIPT_NAME" />" è già presente e selezionata,
 <translation id="310979712355504754">Elimina tutti</translation>
 <translation id="3150823315463303127">L'host non è riuscito a leggere la norma.</translation>
 <translation id="3171922709365450819">Questo dispositivo non è supportato da questo client perché richiede l'autenticazione di terze parti.</translation>
-<translation id="3194245623920924351">Chrome Remote Desktop</translation>
 <translation id="3197730452537982411">Remote Desktop</translation>
 <translation id="324272851072175193">Invia queste istruzioni tramite email</translation>
 <translation id="3258789396564295715">Puoi accedere a questo computer in sicurezza utilizzando Chrome Remote Desktop.</translation>
@@ -174,13 +152,6 @@ Se l'opzione "<ph name="SERVICE_SCRIPT_NAME" />" è già presente e selezionata,
 <translation id="4660011489602794167">Mostra tastiera</translation>
 <translation id="4703302905453407178">Un componente obbligatorio ha smesso di funzionare. Segnala il problema agli sviluppatori.</translation>
 <translation id="4703799847237267011">La sessione Chromoting è terminata.</translation>
-<translation id="4706355010316049867">Chrome
-Remote
-Desktop
-Accesso
-Supporto
-Computer
-PC</translation>
 <translation id="4736223761657662401">Cronologia connessioni</translation>
 <translation id="4741792197137897469">Autenticazione non riuscita. Accedi di nuovo a Chrome.</translation>
 <translation id="477305884757156764">L'applicazione è troppo lenta.</translation>
@@ -252,7 +223,6 @@ PC</translation>
 <translation id="6381670701864002291">Qualcos'altro.</translation>
 <translation id="6398765197997659313">Esci da schermo intero</translation>
 <translation id="6441316101718669559">L'integrazione desktop non è supportata su questa piattaforma. Puoi comunque utilizzare l'applicazione, ma l'esperienza utente sarà peggiore.</translation>
-<translation id="6502629188777329097">Accedi in sicurezza al tuo computer</translation>
 <translation id="652218476070540101">Aggiornamento PIN del computer in corso…</translation>
 <translation id="6527303717912515753">Condividi</translation>
 <translation id="6541219117979389420">I log delle applicazioni potrebbero includere informazioni private quali la tua identità (indirizzo email), i nomi e le proprietà di file e cartelle memorizzati su Google Drive.</translation>
@@ -286,7 +256,6 @@ PC</translation>
 <translation id="7116737094673640201">Benvenuto in Chrome Remote Desktop</translation>
 <translation id="7144878232160441200">Riprova</translation>
 <translation id="7149517134817561223">Applicazione per fornire comandi all'host Chrome Remote Desktop.</translation>
-<translation id="7213491505512310433">Stabilità migliorata e correzioni di bug.</translation>
 <translation id="7215059001581613786">Inserisci un PIN formato da almeno sei cifre.</translation>
 <translation id="7312846573060934304">L'host è offline.</translation>
 <translation id="7319983568955948908">Interrompi condivisione</translation>

@@ -5027,13 +5027,6 @@ interface NDEFRecord
     getter recordType
     method constructor
     method data
-interface NFC
-    attribute @@toStringTag
-    method cancelPush
-    method cancelWatch
-    method constructor
-    method push
-    method watch
 interface NFCErrorEvent : Event
     attribute @@toStringTag
     getter error
@@ -5099,7 +5092,6 @@ interface Navigator
     getter mediaDevices
     getter mediaSession
     getter mimeTypes
-    getter nfc
     getter onLine
     getter permissions
     getter platform

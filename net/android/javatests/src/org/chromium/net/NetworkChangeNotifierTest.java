@@ -190,6 +190,7 @@ public class NetworkChangeNotifierTest {
         private int mNetworkType;
         private int mNetworkSubtype;
         private boolean mIsPrivateDnsActive;
+        private String mPrivateDnsServerName;
         private NetworkCallback mLastRegisteredNetworkCallback;
         private NetworkCallback mLastRegisteredDefaultNetworkCallback;
 
@@ -199,7 +200,7 @@ public class NetworkChangeNotifierTest {
                     mNetworkType == ConnectivityManager.TYPE_WIFI
                             ? wifiManagerDelegate.getWifiSsid()
                             : null,
-                    mIsPrivateDnsActive);
+                    mIsPrivateDnsActive, mPrivateDnsServerName);
         }
 
         @Override
@@ -276,6 +277,10 @@ public class NetworkChangeNotifierTest {
 
         public void setIsPrivateDnsActive(boolean isPrivateDnsActive) {
             mIsPrivateDnsActive = isPrivateDnsActive;
+        }
+
+        public void setPrivateDnsServerName(String privateDnsServerName) {
+            mPrivateDnsServerName = privateDnsServerName;
         }
 
         public NetworkCallback getLastRegisteredNetworkCallback() {
@@ -656,15 +661,20 @@ public class NetworkChangeNotifierTest {
 
         // We should be notified if use of DNS-over-TLS changes.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            // Verify notification for enabling.
+            // Verify notification for enabling private DNS.
             mConnectivityDelegate.setIsPrivateDnsActive(true);
+            mConnectivityDelegate.getDefaultNetworkCallback().onLinkPropertiesChanged(null, null);
+            Assert.assertTrue(observer.hasReceivedNotification());
+            observer.resetHasReceivedNotification();
+            // Verify notification for specifying private DNS server.
+            mConnectivityDelegate.setPrivateDnsServerName("dotserver.com");
             mConnectivityDelegate.getDefaultNetworkCallback().onLinkPropertiesChanged(null, null);
             Assert.assertTrue(observer.hasReceivedNotification());
             observer.resetHasReceivedNotification();
             // Verify no notification for no change.
             mConnectivityDelegate.getDefaultNetworkCallback().onLinkPropertiesChanged(null, null);
             Assert.assertFalse(observer.hasReceivedNotification());
-            // Verify notification for disbling.
+            // Verify notification for disabling.
             mConnectivityDelegate.setIsPrivateDnsActive(false);
             mConnectivityDelegate.getDefaultNetworkCallback().onLinkPropertiesChanged(null, null);
             Assert.assertTrue(observer.hasReceivedNotification());

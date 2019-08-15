@@ -90,7 +90,7 @@ void PrivacyFilteringCheck::CheckProtoForUnexpectedFields(
     if (packet.has_interned_data()) {
       InternedData::Decoder interned_data(packet.interned_data().data,
                                           packet.interned_data().size);
-      stats_.has_interned_names |= interned_data.has_legacy_event_names();
+      stats_.has_interned_names |= interned_data.has_event_names();
       stats_.has_interned_categories |= interned_data.has_event_categories();
       stats_.has_interned_source_locations |=
           interned_data.has_source_locations();

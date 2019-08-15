@@ -13,8 +13,9 @@ MockClipboardHost::MockClipboardHost() = default;
 
 MockClipboardHost::~MockClipboardHost() = default;
 
-void MockClipboardHost::Bind(blink::mojom::ClipboardHostRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void MockClipboardHost::Bind(
+    mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void MockClipboardHost::Reset() {

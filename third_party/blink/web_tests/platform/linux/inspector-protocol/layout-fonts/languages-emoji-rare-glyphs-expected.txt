@@ -36,8 +36,17 @@
 "Noto Sans Khmer" : 26,
 "Tinos" : 1
 
-⇦⇧⇨⇩
-#text_presentation_arrows:
-"DejaVu Sans" : 4
+𐌲𐌿𐍄𐌹𐍃𐌺
+#gothic:
+"DejaVu Sans" : 6
+
+ܐܬܘܪܝܐ
+#syriac:
+"DejaVu Sans" : 6
+
+⇦⇧⇨⇩￩￪￫￬⟀
+#text_presentation_arrows_maths:
+"DejaVu Sans" : 5,
+"Noto Sans CJK JP Regular" : 4
 
 

@@ -186,6 +186,13 @@ IPC_MESSAGE_ROUTED2(GpuChannelMsg_PresentSwapChain,
                     gpu::Mailbox /* mailbox */,
                     uint32_t /* release_id */)
 #endif  // OS_WIN
+#if defined(OS_FUCHSIA)
+IPC_MESSAGE_ROUTED2(GpuChannelMsg_RegisterSysmemBufferCollection,
+                    gfx::SysmemBufferCollectionId /* id */,
+                    zx::channel /* token */)
+IPC_MESSAGE_ROUTED1(GpuChannelMsg_ReleaseSysmemBufferCollection,
+                    gfx::SysmemBufferCollectionId /* id */)
+#endif  // OS_FUCHSIA
 IPC_MESSAGE_ROUTED1(GpuChannelMsg_RegisterSharedImageUploadBuffer,
                     base::ReadOnlySharedMemoryRegion /* shm */)
 

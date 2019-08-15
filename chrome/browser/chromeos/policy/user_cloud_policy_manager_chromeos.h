@@ -176,10 +176,6 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // token when fetching the policy OAuth token.
   void SetUserContextRefreshTokenForTests(const std::string& refresh_token);
 
- protected:
-  // CloudPolicyManager:
-  void GetChromePolicy(PolicyMap* policy_map) override;
-
  private:
   // Sets the appropriate persistent flags to mark whether the current session
   // requires policy. If |policy_required| is true, this ensures that future

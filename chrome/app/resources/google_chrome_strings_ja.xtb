@@ -85,12 +85,6 @@
 <translation id="3080151273017101988">Google Chrome を閉じた際にバックグラウンド アプリの処理を続行する</translation>
 <translation id="3089968997497233615">Google クロームブラウザがより速く、さらに便利に。いますぐトライ！</translation>
 <translation id="3149510190863420837">Chrome アプリ</translation>
-<translation id="3251381707915721925"><ph name="NEW_PROFILE_NAME" /> が閲覧できるウェブサイトを設定するには、<ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> で制限と設定を指定します。デフォルト設定のままにすると、<ph name="NEW_PROFILE_NAME" /> はウェブ上のあらゆるコンテンツを閲覧できます。
-
-ご使用のアカウントに <ph name="NEW_PROFILE_NAME" /> がアクセスできないようにするには、Chrome の使用時以外はご自分のプロフィールをロックします。それには、ブラウザ右上でご自分のプロフィール名をクリックし、[終了してチャイルドロックをかける] を選択します。
-<ph name="BEGIN_LINK_2" />詳細<ph name="END_LINK_2" />
-
-詳しくは、<ph name="ACCOUNT_EMAIL" /> 宛にメールをお送りしましたのでご確認ください。</translation>
 <translation id="3282568296779691940">Chrome にログイン</translation>
 <translation id="3340978935015468852">設定</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -186,6 +180,8 @@
 <translation id="6291549208091401781">Google Chrome は既にパソコンのすべてのユーザー対してインストールされています。</translation>
 <translation id="6338556085225130112">Google Chrome を更新しています</translation>
 <translation id="6368958679917195344">Chrome OS は、さらに追加の<ph name="BEGIN_LINK_CROS_OSS" />オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS" />によって実現しました。</translation>
+<translation id="6400930858680434649">このページに設定が表示されない場合は、<ph name="LINK_BEGIN" />
+    Chrome ブラウザの設定<ph name="LINK_END" />を試してみてください。</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome を更新しています（<ph name="PROGRESS_PERCENT" />）</translation>
 <translation id="6598387184982954187">Chrome データの同期に <ph name="PROFILE_EMAIL" /> を使用しています。同期設定を更新する、または Google アカウントなしで Chrome を使用するには、<ph name="SETTINGS_LINK" /> にアクセスしてください。</translation>
@@ -218,7 +214,6 @@
 <translation id="7486227612705979895">Chrome からお客様のドライブにアクセスして、アドレスバーに候補を表示します</translation>
 <translation id="7531671357096394523">Chrome のすべてのコピーを終了します。</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
-<translation id="7552219221109926349">Chrome OS をこの言語で表示</translation>
 <translation id="7589360514048265910">Mac OS X 10.9 はサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません。</translation>
 <translation id="7592736734348559088">アカウントのログイン情報が最新ではないため、Google Chrome はデータを同期できませんでした。</translation>
 <translation id="7626032353295482388">Chrome へようこそ</translation>
@@ -236,7 +231,6 @@
 <translation id="7896673875602241923">前回このパソコンで別のユーザー（<ph name="ACCOUNT_EMAIL_LAST" />）が Chrome にログインしました。情報を個別に保持するには、新しい Chrome ユーザーを作成してください。</translation>
 <translation id="7908168227788431038">Google Chrome を再起動して更新を完了してください。</translation>
 <translation id="7962410387636238736">Windows XP と Windows Vista はサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません</translation>
-<translation id="8005540215158006229">Chrome はすぐに利用できるようになります。</translation>
 <translation id="8008534537613507642">Chrome を再インストール</translation>
 <translation id="8013993649590906847">画像に有効な説明が設定されていない場合に、Chrome で説明を自動的に生成できるよう Google に画像が送信されます。</translation>
 <translation id="8030318113982266900">デバイスを <ph name="CHANNEL_NAME" /> チャンネルに更新しています...</translation>
@@ -269,7 +263,6 @@
 <translation id="870251953148363156">Google Chrome を更新(&amp;G)</translation>
 <translation id="873133009373065397">Google Chrome では既定のブラウザを判定または設定できません</translation>
 <translation id="8736674169840206667">管理者が、アップデートを適用するために Chrome を再起動するよう求めています</translation>
-<translation id="8788264404293392165">この言語が Chrome OS UI の表示に使用されます</translation>
 <translation id="8823341990149967727">Chrome は古いバージョンです</translation>
 <translation id="884296878221830158">この拡張機能では、Chrome の起動時、またはホーム ボタンのクリック時に表示されるページも制御されます。</translation>
 <translation id="8862326446509486874">権限が不十分なためシステムレベルのインストールができません。管理者権限でインストールしてください。</translation>

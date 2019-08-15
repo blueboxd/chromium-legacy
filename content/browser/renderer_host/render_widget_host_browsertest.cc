@@ -22,6 +22,7 @@
 #include "content/common/widget_messages.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -43,6 +44,8 @@ namespace content {
 class RenderWidgetHostSitePerProcessTest : public ContentBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    ContentBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kAllowPreCommitInput);
     IsolateAllSitesForTesting(command_line);
   }
 
@@ -118,6 +121,11 @@ class RenderWidgetHostTouchEmulatorBrowserTest : public ContentBrowserTest {
     router_ = static_cast<WebContentsImpl*>(shell()->web_contents())
                   ->GetInputEventRouter();
     ASSERT_TRUE(router_);
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ContentBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kAllowPreCommitInput);
   }
 
   base::TimeTicks GetNextSimulatedEventTime() {

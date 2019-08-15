@@ -556,22 +556,6 @@ void UserCloudPolicyManagerChromeOS::SetPolicyRequired(bool policy_required) {
   }
 }
 
-void UserCloudPolicyManagerChromeOS::GetChromePolicy(PolicyMap* policy_map) {
-  CloudPolicyManager::GetChromePolicy(policy_map);
-
-  // If the store has a verified policy blob received from the server then apply
-  // the defaults for policies that haven't been configured by the administrator
-  // given that this is an enterprise user.
-  if (!store()->has_policy())
-    return;
-
-  // Don't apply enterprise defaults for Child user.
-  if (IsChildUser(account_id_))
-    return;
-
-  SetEnterpriseUsersDefaults(policy_map);
-}
-
 void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthToken() {
   // By-pass token fetching for test.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

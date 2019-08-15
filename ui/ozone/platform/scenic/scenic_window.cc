@@ -37,7 +37,7 @@ ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
       fit::bind_member(this, &ScenicWindow::OnScenicError));
   scenic_session_.set_event_handler(
       fit::bind_member(this, &ScenicWindow::OnScenicEvents));
-  scenic_session_.SetDebugName("Chromium");
+  scenic_session_.SetDebugName("Chromium ScenicWindow");
 
   // Subscribe to metrics events from the node. These events are used to
   // get the device pixel ratio for the screen.

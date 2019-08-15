@@ -56,6 +56,10 @@ class VulkanImplementationScenic : public gpu::VulkanImplementation {
       VkDeviceMemory* vk_device_memory,
       VkDeviceSize* mem_allocation_size,
       base::Optional<gpu::VulkanYCbCrInfo>* ycbcr_info) override;
+  std::unique_ptr<gpu::SysmemBufferCollection> RegisterSysmemBufferCollection(
+      VkDevice device,
+      gfx::SysmemBufferCollectionId id,
+      zx::channel token) override;
 
  private:
   ScenicSurfaceFactory* const scenic_surface_factory_;

@@ -137,11 +137,11 @@ namespace {
 const base::Clock* g_clock_for_testing = nullptr;
 }
 
-static inline double Now() {
+static inline base::Time Now() {
   const base::Clock* clock = g_clock_for_testing
                                  ? g_clock_for_testing
                                  : base::DefaultClock::GetInstance();
-  return clock->Now().ToDoubleT();
+  return clock->Now();
 }
 
 Resource::Resource(const ResourceRequest& request,
@@ -393,23 +393,24 @@ const scoped_refptr<const SecurityOrigin>& Resource::GetOrigin() const {
 }
 
 static double CurrentAge(const ResourceResponse& response,
-                         double response_timestamp) {
+                         base::Time response_timestamp) {
   // RFC2616 13.2.3
   // No compensation for latency as that is not terribly important in practice
-  double date_value = response.Date();
-  double apparent_age = std::isfinite(date_value)
-                            ? std::max(0., response_timestamp - date_value)
-                            : 0;
+  base::Optional<base::Time> date_value = response.Date();
+  double apparent_age =
+      date_value
+          ? std::max(0., (response_timestamp - date_value.value()).InSecondsF())
+          : 0;
   double age_value = response.Age();
   double corrected_received_age = std::isfinite(age_value)
                                       ? std::max(apparent_age, age_value)
                                       : apparent_age;
-  double resident_time = Now() - response_timestamp;
+  double resident_time = (Now() - response_timestamp).InSecondsF();
   return corrected_received_age + resident_time;
 }
 
 static double FreshnessLifetime(const ResourceResponse& response,
-                                double response_timestamp) {
+                                base::Time response_timestamp) {
 #if !defined(OS_ANDROID)
   // On desktop, local files should be reloaded in case they change.
   if (response.CurrentRequestUrl().IsLocalFile())
@@ -425,15 +426,14 @@ static double FreshnessLifetime(const ResourceResponse& response,
   double max_age_value = response.CacheControlMaxAge();
   if (std::isfinite(max_age_value))
     return max_age_value;
-  double expires_value = response.Expires();
-  double date_value = response.Date();
-  double creation_time =
-      std::isfinite(date_value) ? date_value : response_timestamp;
-  if (std::isfinite(expires_value))
-    return expires_value - creation_time;
-  double last_modified_value = response.LastModified();
-  if (std::isfinite(last_modified_value))
-    return (creation_time - last_modified_value) * 0.1;
+  base::Optional<base::Time> expires = response.Expires();
+  base::Optional<base::Time> date = response.Date();
+  base::Time creation_time = date ? date.value() : response_timestamp;
+  if (expires)
+    return (expires.value() - creation_time).InSecondsF();
+  base::Optional<base::Time> last_modified = response.LastModified();
+  if (last_modified)
+    return (creation_time - last_modified.value()).InSecondsF() * 0.1;
   // If no cache headers are present, the specification leaves the decision to
   // the UA. Other browsers seem to opt for 0.
   return 0;
@@ -441,7 +441,7 @@ static double FreshnessLifetime(const ResourceResponse& response,
 
 static bool CanUseResponse(const ResourceResponse& response,
                            bool allow_stale,
-                           double response_timestamp) {
+                           base::Time response_timestamp) {
   if (response.IsNull())
     return false;
 
@@ -457,7 +457,7 @@ static bool CanUseResponse(const ResourceResponse& response,
   if (response.HttpStatusCode() == 302 || response.HttpStatusCode() == 307) {
     // Default to not cacheable unless explicitly allowed.
     bool has_max_age = std::isfinite(response.CacheControlMaxAge());
-    bool has_expires = std::isfinite(response.Expires());
+    bool has_expires = response.Expires() != base::nullopt;
     // TODO: consider catching Cache-Control "private" and "public" here.
     if (!has_max_age && !has_expires)
       return false;
@@ -1064,7 +1064,7 @@ bool Resource::MustRevalidateDueToCacheHeaders(bool allow_stale) const {
 
 static bool ShouldRevalidateStaleResponse(const ResourceRequest& request,
                                           const ResourceResponse& response,
-                                          double response_timestamp) {
+                                          base::Time response_timestamp) {
   double staleness = response.CacheControlStaleWhileRevalidate();
   if (staleness == 0)
     return false;

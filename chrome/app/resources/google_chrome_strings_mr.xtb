@@ -88,11 +88,6 @@
 <translation id="3080151273017101988">जेव्हा Google Chrome बंद असेल तेव्हा पार्श्वभूमीत ॲप्लिकेशन चालणे सुरू ठेवा</translation>
 <translation id="3089968997497233615">Google Chrome ची नवीन, सुरक्षित आवृत्ती उपलब्ध आहे.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
-<translation id="3251381707915721925"><ph name="NEW_PROFILE_NAME" /> कोणत्या वेबसाइट पाहू शकतो ते सेट करण्‍यासाठी, <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> वर भेट देऊन तुम्ही प्रतिबंध आणि सेटिंग्ज कॉन्फिगर करू शकता. तुम्ही डीफॉल्ट सेटिंग्ज बदलत नसल्यास, <ph name="NEW_PROFILE_NAME" /> वेबवरील प्रत्येक गोष्ट पाहू शकतो.
-
-<ph name="NEW_PROFILE_NAME" /> ला आपल्या खात्यात प्रवेश करण्‍यापासून प्रतिबंधित करण्यासाठी, तुम्ही Chrome वापरत नसता तेव्हा तुम्ही तुमचे प्रोफाइल लॉक करता याची खात्री करा. हे करण्‍यासाठी, ब्राउझरच्या वरील उजव्या कोपर्‍यातील तुमचे प्रोफाइल नाव क्लिक करा आणि "बाहेर पडा आणि मुलांचा लॉक" निवडा. <ph name="BEGIN_LINK_2" />अधिक जाणून घ्या<ph name="END_LINK_2" />
-
-कृपया पुढील सूचनांसाठी तुमचे ईमेल <ph name="ACCOUNT_EMAIL" /> वर तपासा.</translation>
 <translation id="3282568296779691940">Chrome वर साइन इन करा</translation>
 <translation id="3340978935015468852">सेटिंग्ज</translation>
 <translation id="3360895254066713204">Chrome मदतनीस</translation>
@@ -191,6 +186,8 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="6291549208091401781">तुमच्या कॉंप्युटरवरील सर्व वापरकर्त्यांसाठी Google Chrome आधीच इंस्टॉल केला आहे.</translation>
 <translation id="6338556085225130112">Google Chrome अपडेट होत आहे</translation>
 <translation id="6368958679917195344"> Chrome OS अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS" />मुक्त स्रोत सॉफ्टवेअर<ph name="END_LINK_CROS_OSS" /> द्वारे शक्य झाले आहे.</translation>
+<translation id="6400930858680434649">या पेजवर सेटिंग दिसत नसल्यास, तुमची <ph name="LINK_BEGIN" />
+    Chrome ब्राउझर सेटिंग्ज<ph name="LINK_END" /> वापरून पाहा.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome डेव्हलपर</translation>
 <translation id="6566149418543181476">Google Chrome अपडेट करीत आहे (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">तुम्ही तुमचा Chrome आशय सिंक करण्यासाठी <ph name="PROFILE_EMAIL" /> वापरत आहात. तुमचे सिंक प्राधान्य अपडेट करण्यासाठी किंवा Google खात्याशिवाय Chrome वापरण्यासाठी, <ph name="SETTINGS_LINK" /> ला भेट द्या.</translation>
@@ -223,7 +220,6 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="7486227612705979895">ॲड्रेस बारमध्ये सूचना देण्यासाठी Chrome तुमची ड्राइव्ह ॲक्सेस करेल</translation>
 <translation id="7531671357096394523">Chrome च्या सर्व प्रती बंद करा.</translation>
 <translation id="7535429826459677826">Google Chrome विकासक</translation>
-<translation id="7552219221109926349">Chrome OS या भाषेत डिस्प्ले करा</translation>
 <translation id="7589360514048265910">यापुढे Mac OS X 10.9 ला सपोर्ट नसल्यामुळे, या कॉंप्युटरला इथून पुढे Google Chrome चे अपडेट मिळणार नाहीत.</translation>
 <translation id="7592736734348559088">तुमचे खाते साइन इन तपशील कालबाह्य झाल्यामुळे Google Chrome तुमचा डेटा संकालित करू शकले नाही.</translation>
 <translation id="7626032353295482388">Chrome मध्ये स्वागत आहे</translation>
@@ -241,7 +237,6 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="7896673875602241923">कोणीतरी यापूर्वी <ph name="ACCOUNT_EMAIL_LAST" /> म्हणून या संंगणकावरील Chrome मध्ये साइन इन केले आहे. कृपया तुमची माहिती स्वतंत्र ठेवण्यासाठी एक नवीन Chrome वापरकर्ता तयार करा.</translation>
 <translation id="7908168227788431038">जवळजवळ अद्ययावत पूर्ण झाले! अपडेट समाप्त करण्यासाठी Google Chrome रीलाँच करा.</translation>
 <translation id="7962410387636238736">Windows XP आणि Windows Vista ला आता सपोर्ट नसल्याने या कॉंप्युटरला यापुढे Google Chrome अपडेट मिळणार नाहीत</translation>
-<translation id="8005540215158006229">Chrome जवळजवळ तयार आहे.</translation>
 <translation id="8008534537613507642">Chrome पुनर्स्थापित करा</translation>
 <translation id="8013993649590906847">इमेजचे उपयोगी वर्णन नसल्यास, Chrome तुमच्यासाठी ते देण्याचा प्रयत्न करेल. वर्णने तयार करण्यासाठी, इमेज Google ला पाठवल्या जातात.</translation>
 <translation id="8030318113982266900"><ph name="CHANNEL_NAME" /> चॅनेलवर तुमचे डिव्हाइस अपडेट करत आहे...</translation>
@@ -274,7 +269,6 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="870251953148363156">&amp;Google Chrome अपडेट करा</translation>
 <translation id="873133009373065397">Google Chrome डीफॉल्ट ब्राउझर निर्धारित करू शकत नाही किंवा सेट करू शकत नाही</translation>
 <translation id="8736674169840206667">तुमच्या अॅडमिनिस्ट्रेटरला अपडेट लागू करता यावी यासाठी तुम्ही Chrome पुन्हा लाँच करणे अावश्यक आहे</translation>
-<translation id="8788264404293392165">ही भाषा Chrome OS UI दाखवण्यासाठी वापरली जाते</translation>
 <translation id="8823341990149967727">Chrome कालबाह्य आहे</translation>
 <translation id="884296878221830158">तुम्ही Chrome सुरू करता किंवा होम बटण क्लिक करता तेव्हा कोणते पेज दर्शविले जाते ते देखील हे नियंत्रित करते.</translation>
 <translation id="8862326446509486874">तुमच्याकडे सिस्टम स्तरावरील इंस्टॉलसाठी योग्य अधिकार नाहीत. अॅडमिनिस्ट्रेटर म्हणून पुन्हा इंस्टॉलर चालविण्याचा प्रयत्न करा.</translation>

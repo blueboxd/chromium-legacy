@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
@@ -36,6 +37,7 @@ class SysmemBufferCollection
                                             gfx::BufferUsage usage);
 
   SysmemBufferCollection();
+  explicit SysmemBufferCollection(gfx::SysmemBufferCollectionId id);
 
   bool Initialize(fuchsia::sysmem::Allocator_Sync* allocator,
                   gfx::Size size,
@@ -43,6 +45,10 @@ class SysmemBufferCollection
                   gfx::BufferUsage usage,
                   VkDevice vk_device,
                   size_t num_buffers);
+
+  bool Initialize(fuchsia::sysmem::Allocator_Sync* allocator,
+                  VkDevice vk_device,
+                  zx::channel token);
 
   // Must not be called more than once.
   void SetOnDeletedCallback(base::OnceClosure on_deleted);
@@ -55,10 +61,12 @@ class SysmemBufferCollection
   // Creates a new Vulkan image for the buffer with the specified index.
   bool CreateVkImage(size_t buffer_index,
                      VkDevice vk_device,
+                     gfx::Size size,
                      VkImage* vk_image,
                      VkImageCreateInfo* vk_image_info,
                      VkDeviceMemory* vk_device_memory,
-                     VkDeviceSize* mem_allocation_size);
+                     VkDeviceSize* mem_allocation_size,
+                     base::Optional<gpu::VulkanYCbCrInfo>* ycbcr_info);
 
   gfx::SysmemBufferCollectionId id() const { return id_; }
   size_t num_buffers() const { return buffers_info_.buffer_count; }
@@ -73,7 +81,15 @@ class SysmemBufferCollection
 
   ~SysmemBufferCollection();
 
-  void InitializeImageCreateInfo(VkImageCreateInfo* vk_image_info);
+  bool InitializeInternal(
+      fuchsia::sysmem::Allocator_Sync* allocator,
+      fuchsia::sysmem::BufferCollectionTokenSyncPtr collection_token,
+      size_t buffers_for_camping,
+      base::Optional<fuchsia::sysmem::ImageFormatConstraints>
+          image_format_constraints);
+
+  void InitializeImageCreateInfo(VkImageCreateInfo* vk_image_info,
+                                 gfx::Size size);
 
   bool is_mappable() const {
     return usage_ == gfx::BufferUsage::SCANOUT_CPU_READ_WRITE ||
@@ -83,6 +99,9 @@ class SysmemBufferCollection
   const gfx::SysmemBufferCollectionId id_;
 
   gfx::Size size_;
+
+  // Valid only for owned buffer collections, i.e. those that  that were
+  // initialized using the first Initialize() methods.
   gfx::BufferFormat format_ = gfx::BufferFormat::RGBA_8888;
   gfx::BufferUsage usage_ = gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
 

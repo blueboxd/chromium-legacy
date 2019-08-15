@@ -246,35 +246,6 @@ TEST_F('CrSettingsAboutPageTest', 'AboutPage_OfficialBuild', function() {
 });
 GEN('#endif');
 
-GEN('#if defined(OS_CHROMEOS)');
-/**
- * Test fixture for
- * chrome/browser/resources/settings/app_management/app_management_page.html
- * @constructor
- * @extends {CrSettingsBrowserTestCrOS}
- */
-function CrSettingsAppManagementPageTest() {}
-
-CrSettingsAppManagementPageTest.prototype = {
-  __proto__: CrSettingsBrowserTestCrOS.prototype,
-
-  /** @override */
-  browsePreload: 'chrome://settings',
-
-  /** @override */
-  extraLibraries: CrSettingsBrowserTestCrOS.prototype.extraLibraries.concat([
-    '../test_browser_proxy.js',
-    'chromeos/app_management_page_test.js',
-    'test_open_window_proxy.js',
-  ]),
-};
-
-// TODO(https://crbug.com/979553) Disabled due to failures .
-TEST_F('CrSettingsAppManagementPageTest', 'DISABLED_All', function() {
-  mocha.run();
-});
-GEN('#endif  // defined(OS_CHROMEOS)');
-
 /**
  * Test fixture for
  * chrome/browser/resources/settings/autofill_page/autofill_page.html.

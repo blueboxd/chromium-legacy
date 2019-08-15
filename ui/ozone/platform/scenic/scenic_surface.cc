@@ -26,6 +26,7 @@ ScenicSurface::ScenicSurface(
   shape_.SetShape(scenic::Rectangle(&scenic_session_, 1.f, 1.f));
   shape_.SetMaterial(material_);
   scenic_surface_factory->AddSurface(window, this);
+  scenic_session_.SetDebugName("Chromium ScenicSurface");
 }
 
 ScenicSurface::~ScenicSurface() {

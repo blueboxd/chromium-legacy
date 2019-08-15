@@ -445,6 +445,18 @@ class DirectContextProviderDelegateImpl : public DirectContextProviderDelegate,
     NOTREACHED();
   }
 
+#if defined(OS_FUCHSIA)
+  void RegisterSysmemBufferCollection(gfx::SysmemBufferCollectionId id,
+                                      zx::channel token) override {
+    NOTREACHED();
+  }
+
+  void ReleaseSysmemBufferCollection(
+      gfx::SysmemBufferCollectionId id) override {
+    NOTREACHED();
+  }
+#endif  // defined(OS_FUCHSIA)
+
   gpu::SyncToken GenUnverifiedSyncToken() override {
     return gpu::SyncToken(sync_point_client_state_->namespace_id(),
                           sync_point_client_state_->command_buffer_id(),

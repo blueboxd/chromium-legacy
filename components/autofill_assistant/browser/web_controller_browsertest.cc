@@ -50,6 +50,11 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     paint_occurred_during_last_loop_ = true;
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ContentBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch("allow-pre-commit-input");
+  }
+
   void WaitTillPageIsIdle(base::TimeDelta continuous_paint_timeout) {
     base::TimeTicks finished_load_time = base::TimeTicks::Now();
     bool page_is_loading = false;

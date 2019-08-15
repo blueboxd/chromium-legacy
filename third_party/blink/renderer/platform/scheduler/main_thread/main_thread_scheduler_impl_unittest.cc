@@ -353,6 +353,8 @@ class MainThreadSchedulerImplTest
                     GetParam() == AntiStarvationLogic::kDisabled)
                 .Build()),
         base::nullopt));
+    if (initially_ensure_usecase_none_)
+      EnsureUseCaseNone();
   }
 
   void CreateTestTaskRunner() {
@@ -767,6 +769,18 @@ class MainThreadSchedulerImplTest
     }
   }
 
+  void EnsureUseCaseNone() {
+    // Make sure we're not in UseCase::kLoading.
+    scheduler_->OnFirstContentfulPaint();
+    scheduler_->OnFirstMeaningfulPaint();
+
+    EXPECT_EQ(ForceUpdatePolicyAndGetCurrentUseCase(), UseCase::kNone);
+
+    // Don't count the above policy change.
+    scheduler_->update_policy_count_ = 0;
+    scheduler_->use_cases_.clear();
+  }
+
  protected:
   static base::TimeDelta priority_escalation_after_input_duration() {
     return base::TimeDelta::FromMilliseconds(
@@ -836,6 +850,7 @@ class MainThreadSchedulerImplTest
   scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> v8_task_runner_;
   bool simulate_timer_task_ran_;
+  bool initially_ensure_usecase_none_ = true;
   uint64_t next_begin_frame_number_ = viz::BeginFrameArgs::kStartingFrameNumber;
 
   DISALLOW_COPY_AND_ASSIGN(MainThreadSchedulerImplTest);
@@ -999,6 +1014,8 @@ TEST_P(MainThreadSchedulerImplTest, TestDelayedEndIdlePeriodCanceled) {
 }
 
 TEST_P(MainThreadSchedulerImplTest, TestDefaultPolicy) {
+  EnsureUseCaseNone();
+
   Vector<String> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 P1 C1 D2 P2 C2");
 
@@ -1307,9 +1324,40 @@ TEST_P(MainThreadSchedulerImplTest, TestTouchstartPolicy_MainThread) {
   EXPECT_THAT(run_order, testing::ElementsAre("L1", "T1", "T2"));
 }
 
-// TODO(alexclarke): Reenable once we've reinstaed the Loading
-// UseCase.
-TEST_P(MainThreadSchedulerImplTest, DISABLED_LoadingUseCase) {
+class DefaultUseCaseTest : public MainThreadSchedulerImplTest {
+ public:
+  DefaultUseCaseTest() : MainThreadSchedulerImplTest({}, {}) {
+    initially_ensure_usecase_none_ = false;
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         DefaultUseCaseTest,
+                         testing::Values(AntiStarvationLogic::kEnabled,
+                                         AntiStarvationLogic::kDisabled),
+                         GetTestNameSuffix);
+
+TEST_P(DefaultUseCaseTest, InitiallyInEarlyLoadingUseCase) {
+  // Should be early loading by default.
+  EXPECT_EQ(UseCase::kEarlyLoading, ForceUpdatePolicyAndGetCurrentUseCase());
+
+  scheduler_->OnFirstContentfulPaint();
+  EXPECT_EQ(UseCase::kLoading, CurrentUseCase());
+
+  scheduler_->OnFirstMeaningfulPaint();
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
+class PrioritizeCompositingAndLoadingInUseCaseLoadingTest
+    : public MainThreadSchedulerImplTest {
+ public:
+  PrioritizeCompositingAndLoadingInUseCaseLoadingTest()
+      : MainThreadSchedulerImplTest(
+            {kPrioritizeCompositingAndLoadingDuringEarlyLoading},
+            {}) {}
+};
+
+TEST_P(PrioritizeCompositingAndLoadingInUseCaseLoadingTest, LoadingUseCase) {
   Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 T1 L1 D2 C2 T2 L2");
 
@@ -1317,15 +1365,38 @@ TEST_P(MainThreadSchedulerImplTest, DISABLED_LoadingUseCase) {
   EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
 
-  // In loading policy, loading tasks are prioritized other others.
-  String loading_policy_expected[] = {"D1", "L1", "D2", "L2", "C1",
-                                      "T1", "C2", "T2", "I1"};
-  EXPECT_THAT(run_order, testing::ElementsAreArray(loading_policy_expected));
+  // In early loading policy, loading and composting tasks are prioritized over
+  // other tasks.
+  String early_loading_policy_expected[] = {"C1", "L1", "C2", "L2", "D1",
+                                            "T1", "D2", "T2", "I1"};
+  EXPECT_THAT(run_order,
+              testing::ElementsAreArray(early_loading_policy_expected));
+  EXPECT_EQ(UseCase::kEarlyLoading, ForceUpdatePolicyAndGetCurrentUseCase());
+
+  // After OnFirstContentfulPaint we should transition to UseCase::kLoading.
+  scheduler_->OnFirstContentfulPaint();
+
+  run_order.clear();
+  PostTestTasks(&run_order, "I1 D1 C1 T1 L1 D2 C2 T2 L2");
+  EnableIdleTasks();
+  base::RunLoop().RunUntilIdle();
+
+  String default_order_expected[] = {"D1",
+                                     "C1"
+                                     "T1",
+                                     "L1",
+                                     "D2",
+                                     "C2",
+                                     "T2",
+                                     "L2",
+                                     "I1"};
+  EXPECT_THAT(run_order, testing::ElementsAreArray(default_order_expected));
   EXPECT_EQ(UseCase::kLoading, CurrentUseCase());
 
   // Advance 15s and try again, the loading policy should have ended and the
   // task order should return to the NONE use case where loading tasks are no
   // longer prioritized.
+  scheduler_->OnFirstMeaningfulPaint();
   test_task_runner_->AdvanceMockTickClock(
       base::TimeDelta::FromMilliseconds(150000));
   run_order.clear();
@@ -1333,8 +1404,6 @@ TEST_P(MainThreadSchedulerImplTest, DISABLED_LoadingUseCase) {
   EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
 
-  String default_order_expected[] = {"D1", "C1", "T1", "L1", "D2",
-                                     "C2", "T2", "L2", "I1"};
   EXPECT_THAT(run_order, testing::ElementsAreArray(default_order_expected));
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 }
@@ -2471,6 +2540,7 @@ TEST_P(MainThreadSchedulerImplTest, ShutdownPreventsPostingOfNewTasks) {
 
 TEST_P(MainThreadSchedulerImplTest,
        EstimateLongestJankFreeTaskDuration_UseCase_NONE) {
+  EnsureUseCaseNone();
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
   EXPECT_EQ(rails_response_time(),
             scheduler_->EstimateLongestJankFreeTaskDuration());
@@ -2485,11 +2555,18 @@ TEST_P(MainThreadSchedulerImplTest,
             scheduler_->EstimateLongestJankFreeTaskDuration());
 }
 
-// TODO(alexclarke): Reenable once we've reinstaed the Loading
-// UseCase.
 TEST_P(MainThreadSchedulerImplTest,
-       DISABLED_EstimateLongestJankFreeTaskDuration_UseCase_) {
+       EstimateLongestJankFreeTaskDuration_UseCase_EarlyLoading) {
   scheduler_->DidStartProvisionalLoad(true);
+  EXPECT_EQ(UseCase::kEarlyLoading, ForceUpdatePolicyAndGetCurrentUseCase());
+  EXPECT_EQ(rails_response_time(),
+            scheduler_->EstimateLongestJankFreeTaskDuration());
+}
+
+TEST_P(MainThreadSchedulerImplTest,
+       EstimateLongestJankFreeTaskDuration_UseCase_Loading) {
+  scheduler_->DidStartProvisionalLoad(true);
+  scheduler_->OnFirstContentfulPaint();
   EXPECT_EQ(UseCase::kLoading, ForceUpdatePolicyAndGetCurrentUseCase());
   EXPECT_EQ(rails_response_time(),
             scheduler_->EstimateLongestJankFreeTaskDuration());
@@ -2907,6 +2984,8 @@ TEST_P(MainThreadSchedulerImplTest, TestLoadRAILMode) {
 
   scheduler_->DidStartProvisionalLoad(true);
   EXPECT_EQ(RAILMode::kLoad, GetRAILMode());
+  EXPECT_EQ(UseCase::kEarlyLoading, ForceUpdatePolicyAndGetCurrentUseCase());
+  scheduler_->OnFirstContentfulPaint();
   EXPECT_EQ(UseCase::kLoading, ForceUpdatePolicyAndGetCurrentUseCase());
   scheduler_->OnFirstMeaningfulPaint();
   EXPECT_EQ(UseCase::kNone, ForceUpdatePolicyAndGetCurrentUseCase());
@@ -2922,7 +3001,7 @@ TEST_P(MainThreadSchedulerImplTest, InputTerminatesLoadRAILMode) {
 
   scheduler_->DidStartProvisionalLoad(true);
   EXPECT_EQ(RAILMode::kLoad, GetRAILMode());
-  EXPECT_EQ(UseCase::kLoading, ForceUpdatePolicyAndGetCurrentUseCase());
+  EXPECT_EQ(UseCase::kEarlyLoading, ForceUpdatePolicyAndGetCurrentUseCase());
   scheduler_->DidHandleInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::kGestureScrollBegin),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);

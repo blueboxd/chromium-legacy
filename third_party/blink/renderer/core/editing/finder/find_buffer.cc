@@ -103,7 +103,7 @@ bool ShouldIgnoreContents(const Node& node) {
     return false;
   return (!element->ShouldSerializeEndTag() && !IsHTMLInputElement(*element)) ||
          IsA<HTMLIFrameElement>(*element) || IsHTMLImageElement(*element) ||
-         IsHTMLLegendElement(*element) || IsHTMLMeterElement(*element) ||
+         IsA<HTMLLegendElement>(*element) || IsHTMLMeterElement(*element) ||
          IsHTMLObjectElement(*element) || IsHTMLProgressElement(*element) ||
          (IsHTMLSelectElement(*element) &&
           ToHTMLSelectElement(*element).UsesMenuList()) ||

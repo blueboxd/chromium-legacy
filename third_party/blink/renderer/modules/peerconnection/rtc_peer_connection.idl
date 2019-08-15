@@ -142,7 +142,7 @@ enum RTCPeerConnectionState {
 
     // RTP Media API
     // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-gettransceivers
-    [Measure] sequence<RTCRtpTranceiver> getTransceivers();
+    [Measure] sequence<RTCRtpTransceiver> getTransceivers();
     // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-getsenders
     [Measure] sequence<RTCRtpSender> getSenders();
     // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-getreceivers

@@ -343,6 +343,24 @@ void WidgetInputHandlerManager::DispatchEvent(
   if (!event_is_move)
     LogInputTimingUMA();
 
+  // Drop input if we have not yet displayed anything, unless it's a move event.
+  // We don't want users interacting with stuff they can't see, so we drop it.
+  // We allow moves because we need to keep the current pointer location up
+  // to date. Tests can allow pre-commit input through the
+  // "allow-pre-commit-input" command line flag.
+  // TODO(schenney): Also allow scrolls? This would make some tests not flaky,
+  // it seems, because they sometimes crash on seeing a scroll update/end
+  // without a begin. Scrolling doesn't seem dangerous.
+  if (current_lifecycle_state_ < InitialInputTiming::kAfterCommit &&
+      !allow_early_input_for_testing_ && !event_is_move) {
+    if (callback) {
+      std::move(callback).Run(
+          InputEventAckSource::MAIN_THREAD, ui::LatencyInfo(),
+          INPUT_EVENT_ACK_STATE_NOT_CONSUMED, base::nullopt, base::nullopt);
+    }
+    return;
+  }
+
   // If TimeTicks is not consistent across processes we cannot use the event's
   // platform timestamp in this process. Instead use the time that the event is
   // received as the event's timestamp.

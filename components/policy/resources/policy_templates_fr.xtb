@@ -69,7 +69,6 @@
 
           Si ce paramètre est désactivé ou non configuré, l'hôte d'assistance à distance est exécuté dans le contexte de l'utilisateur et les utilisateurs distants ne peuvent pas interagir avec des fenêtres élevées sur le Bureau.</translation>
 <translation id="1096105751829466145">Moteur de recherche par défaut</translation>
-<translation id="1099024407376270611">Vérifier la réputation des URL visitées en temps réel (navigation sécurisée)</translation>
 <translation id="1099282607296956954">Activer l'isolation des sites pour tous les sites</translation>
 <translation id="1100570158310952027">
       Cette règle répertorie les origines (URL) ou les modèles de nom d'hôte (par exemple,
@@ -421,22 +420,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Avertissement : Il est recommandé de ne pas déléguer le contrôle de la version de <ph name="PRODUCT_OS_NAME" /> à une application kiosque, car l'appareil risque de ne pas recevoir les mises à jour logicielles et les correctifs de sécurité essentiels. La délégation du contrôle de la version de <ph name="PRODUCT_OS_NAME" /> pourrait constituer un risque pour les utilisateurs.</translation>
 <translation id="1675002386741412210">Compatible avec :</translation>
 <translation id="1700811900332333712">Autoriser l'appareil à lancer Powerwash</translation>
-<translation id="1704516734140344991">Configure la disponibilité et le comportement de la fonctionnalité de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      Les paramètres individuels peuvent être spécifiés dans les propriétés JSON :
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" /> : si vous définissez cette règle sur <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, les utilisateurs peuvent déclencher le flux Powerwash pour installer une mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" /> : si vous définissez cette règle sur <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, les utilisateurs peuvent appeler le flux de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> qui préserve l'état au niveau de l'appareil (y compris l'inscription d'entreprise), mais perd les informations sur l'utilisateur. Ce flux de mise à jour est disponible à partir de la version 68.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" /> : contrôle l'application des mises à jour automatiques du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> pour les micrologiciels <ph name="TPM_FIRMWARE_UPDATE_TPM" /> vulnérables. Tous les flux préservent l'état de l'appareil local.
-        Si vous définissez cette règle sur 1 ou que vous ne la définissez pas, les mises à jour du micrologiciel TPM ne sont pas appliquées.
-        Si vous définissez cette règle sur 2, le micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> est mis à jour lors du prochain redémarrage, une fois que l'utilisateur a pris connaissance de la mise à jour.
-        Si vous définissez cette règle sur 3, le micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> est mis à jour lors du prochain redémarrage.
-        Si vous définissez cette règle sur 4, le micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> est mis à jour après l'inscription, avant que l'utilisateur se connecte.
-        Cette option est disponible à partir de la version 74.
-
-      Si cette règle n'est pas définie, la fonctionnalité de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> n'est pas disponible.</translation>
 <translation id="1708496595873025510">Définir la restriction liée à la récupération de la valeur de départ des variantes</translation>
 <translation id="1717817358640580294">Si cette règle n'est pas configurée et si l'outil Chrome Cleanup détecte des logiciels indésirables, celui-ci peut envoyer à Google des métadonnées concernant l'analyse, conformément à la configuration de la règle SafeBrowsingExtendedReportingEnabled. Chrome Cleanup demande ensuite à l'utilisateur s'il souhaite supprimer les logiciels indésirables détectés. Ce dernier peut choisir de nous communiquer les résultats du nettoyage afin de nous aider à améliorer la détection de ces logiciels. Ces résultats comprennent des métadonnées de fichiers, des extensions installées automatiquement et des clés de registre, tel que décrit dans le livre blanc sur la confidentialité dans Google Chrome.
 
@@ -726,7 +709,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent choisir d'utiliser 
 <translation id="219297066914002620">Ordonne à <ph name="PRODUCT_OS_NAME" /> d'activer ou de désactiver les outils de la console de gestion des machines virtuelles.
 
       Si la règle est définie sur "true" ou n'est pas définie, l'utilisateur pourra se servir de l'interface de ligne de commande de gestion des machines virtuelles.
-      Sinon, l'interface de ligne de commande de gestion des machines virtuelles est entièrement désactivée et masquée.
+      Dans le cas contraire, l'interface de ligne de commande de gestion des machines virtuelles sera entièrement désactivée et masquée.
       </translation>
 <translation id="2194470398825717446">Cette stratégie est obsolète dans M61. Veuillez appliquer "EcryptfsMigrationStrategy" à la place.
 
@@ -845,6 +828,22 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="2463034609187171371">Activer des suites de chiffrement DHE dans TLS</translation>
 <translation id="2463365186486772703">Paramètres régionaux de l'application</translation>
 <translation id="2466131534462628618">L'authentification de portail captif ignore le proxy</translation>
+<translation id="2466697858869282874">Configure la disponibilité et le comportement de la fonctionnalité de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Les paramètres individuels peuvent être spécifiés dans les propriétés JSON :
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" /> : si vous définissez cette règle sur <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, les utilisateurs peuvent déclencher le flux Powerwash pour installer une mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" /> : si vous définissez cette règle sur <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, les utilisateurs peuvent appeler le flux de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> qui préserve l'état au niveau de l'appareil (y compris l'inscription d'entreprise), mais perd les informations sur l'utilisateur. Ce flux de mise à jour est disponible à partir de la version 68.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" /> : contrôle l'application des mises à jour automatiques du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> pour les micrologiciels <ph name="TPM_FIRMWARE_UPDATE_TPM" /> vulnérables. Tous les flux préservent l'état de l'appareil local.
+        Si vous définissez cette règle sur 1 ou que vous ne la définissez pas, les mises à jour du micrologiciel TPM ne sont pas appliquées.
+        Si vous définissez cette règle sur 2, le micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> est mis à jour lors du prochain redémarrage, une fois que l'utilisateur a pris connaissance de la mise à jour.
+        Si vous définissez cette règle sur 3, le micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> est mis à jour lors du prochain redémarrage.
+        Si vous définissez cette règle sur 4, le micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> est mis à jour après l'inscription, avant que l'utilisateur se connecte.
+        Cette option est disponible à partir de la version 75.
+
+      Si cette règle n'est pas définie, la fonctionnalité de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> n'est pas disponible.</translation>
 <translation id="2471748297300970300">Si cette règle est désactivée, les avertissements de sécurité ne s'affichent pas lorsque Chrome est lancé avec certains indicateurs de ligne de commande présentant un risque.
 
           Si elle est activée ou si elle n'est pas définie, les avertissements de sécurité s'affichent si certains indicateurs de ligne de commande sont utilisés pour lancer Chrome.
@@ -1867,6 +1866,13 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 
       Si cette règle n'est pas définie, le chemin d'accès aux profils itinérants par défaut est utilisé.</translation>
 <translation id="4239720644496144453">Le cache n'est pas utilisé pour les applications Android. Si plusieurs utilisateurs installent la même application Android, celle-ci sera à nouveau téléchargée pour chacun d'eux.</translation>
+<translation id="4241202391219483189">Cette règle détermine si les utilisateurs peuvent ou non importer et supprimer des certificats CA via le gestionnaire de certificats.
+
+      Si cette règle est définie sur "Autoriser les utilisateurs à gérer tous les certificats" ou si elle n'est pas configurée, les utilisateurs pourront modifier les paramètres de confiance de tous les certificats CA, importer des certificats et supprimer ceux qu'ils ont importés.
+
+      Si cette règle est définie sur ''Autoriser les utilisateurs à gérer les certificats utilisateur'', les utilisateurs ne pourront gérer que les certificats qu'ils ont importés, et ils ne pourront pas modifier les paramètres de confiance des certificats intégrés.
+
+      Si cette règle est définie sur "Ne pas autoriser les utilisateurs à gérer les certificats", ils pourront consulter les certificats CA, mais ils ne seront pas autorisés à les gérer.</translation>
 <translation id="4243336580717651045">Permet d'activer la collecte des données anonymes incluant les URL dans <ph name="PRODUCT_NAME" /> et empêche l'utilisateur de modifier ce paramètre.
 
       La collecte des données anonymes incluant les URL transmet les URL des pages que l'utilisateur a visitées à Google pour améliorer vos recherches et votre navigation.
@@ -1942,6 +1948,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 
           Cette fonctionnalité est actuellement désactivée côté serveur.</translation>
 <translation id="4363057787588706121">Autoriser la fusion de règles répertoriées qui proviennent de sources différentes</translation>
+<translation id="4363101430102811068">Autorise la détection de fuite pour les identifiants saisis</translation>
 <translation id="4363136876356691536">Si cette règle est définie sur "True", les options d'accessibilité s'affichent en permanence dans le menu de la barre d'état système.
 
           Si cette règle est définie sur "False", les options d'accessibilité ne s'affichent jamais dans le menu de la barre d'état système.
@@ -2101,10 +2108,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 
           Si cette règle n'est pas définie, <ph name="PRODUCT_NAME" /> ne transmet pas les identifiants de l'utilisateur, même si le serveur est identifié comme faisant partie de l'Intranet.</translation>
 <translation id="4752880493649142945">Certificat client pour se connecter à RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4756984056524699088">Autoriser cet utilisateur à accéder à la racine des conteneurs Crostini.
-
-      Si la règle est définie sur "true" ou n'est pas définie, l'utilisateur a accès à la racine des conteneurs Crostini.
-      Si la règle est définie sur "false", l'utilisateur n'a pas accès à la racine des conteneurs Crostini (existants ou nouveaux).</translation>
 <translation id="4759650396863318477">Permet de définir la période, en millisecondes, pendant laquelle les utilisateurs sont avertis que <ph name="PRODUCT_NAME" /> doit être relancé ou qu'un appareil <ph name="PRODUCT_OS_NAME" /> doit être redémarré pour appliquer une mise à jour en attente.
 
       Au cours de cette période, l'utilisateur est régulièrement informé de la nécessité d'appliquer la mise à jour. Pour les appareils <ph name="PRODUCT_OS_NAME" />, une notification de redémarrage s'affiche dans la barre d'état système conformément à la règle <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Pour les navigateurs <ph name="PRODUCT_NAME" />, lorsqu'un tiers de la période de notification s'est écoulé, le menu d'application change pour indiquer qu'il est nécessaire de redémarrer le navigateur. La notification change de couleur une première fois lorsque les deux tiers de la période de notification se sont écoulés et une deuxième fois à l'issue de cette période. Les notifications supplémentaires activées par la règle <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> pour les navigateurs suivent le même calendrier.
@@ -2998,6 +3001,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
       Si cette règle est définie sur "False", aucune liste d'utilisateurs n'est générée.</translation>
 <translation id="6394350458541421998">Cette règle a été supprimée à partir de la version 29 de <ph name="PRODUCT_OS_NAME" />. Veuillez utiliser la règle PresentationScreenDimDelayScale à la place.</translation>
 <translation id="6401669939808766804">Déconnecter l'utilisateur</translation>
+<translation id="6403746242226534223">Vérifier la réputation des URL visitées en temps réel (navigation sécurisée)</translation>
 <translation id="6406448383934634215">Si l'option "Ouvrir une liste d'URL" est sélectionnée comme action de démarrage, vous pouvez spécifier la liste des URL qui sont ouvertes. Si cette règle n'est pas configurée, aucune URL ne sera ouverte au démarrage.
 
           Cette règle ne fonctionne que si la règle RestoreOnStartup est définie sur RestoreOnStartupIsURLs.
@@ -3074,6 +3078,9 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6544897973797372144">Si cette règle est définie sur "True", et si la règle ChromeOsReleaseChannel n'est pas spécifiée, les utilisateurs du domaine correspondant sont autorisés à modifier la version de l'appareil. Si elle est définie sur "False", l'appareil est verrouillé sur la dernière version configurée.
 
       La règle ChromeOsReleaseChannel prévaut sur la version sélectionnée par l'utilisateur. Toutefois, si cette dernière est plus stable que la version installée sur l'appareil, elle n'est remplacée qu'une fois que la version la plus stable atteint un numéro supérieur à celui de la version installée sur l'appareil.</translation>
+<translation id="6549567350270907557">Si ce paramètre est activé, les utilisateurs peuvent demander à <ph name="PRODUCT_NAME" /> de contrôler si les identifiants saisis ont été touchés par une fuite.
+
+              Si cette règle est activée ou désactivée, les utilisateurs ne peuvent pas la modifier ni l'ignorer dans <ph name="PRODUCT_NAME" />. Si cette règle n'est pas définie, la vérification de fuite est autorisée (l'utilisateur peut la désactiver).</translation>
 <translation id="6553143066970470539">Niveau de luminosité de l'écran (%)</translation>
 <translation id="6559057113164934677">Interdire à tous les sites d'accéder à la caméra et au microphone</translation>
 <translation id="6561396069801924653">Afficher les options d'accessibilité dans le menu de la barre système</translation>
@@ -4074,6 +4081,10 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 
       Pour en savoir plus sur la règle <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer, consultez l'article suivant : https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Toujours ouvrir les fichiers PDF en externe</translation>
+<translation id="8405691014775178834">Autoriser cet utilisateur à accéder à la racine des conteneurs Crostini.
+
+      Si la règle est définie sur "true" ou n'est pas définie, l'utilisateur a accès à la racine des conteneurs Crostini.
+      Si la règle est définie sur "false", l'utilisateur n'a pas accès à la racine des conteneurs Crostini (existants ou nouveaux).</translation>
 <translation id="8417305981081876834">Définir le nombre maximal de caractères pour le code de l'écran de verrouillage</translation>
 <translation id="841977920223099909">Déclencheur de l'avertissement relatif à la protection par mot de passe</translation>
 <translation id="8424255554404582727">Définir la rotation de l'écran par défaut (réappliquée à chaque redémarrage)</translation>
@@ -4321,6 +4332,7 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications AR
 
                       La valeur de cette règle doit être indiquée en millisecondes. Les valeurs doivent être inférieures au délai d'inactivité.</translation>
 <translation id="891435090623616439">codée comme une chaîne JSON, pour plus de détails voir <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8917070657147922192">Autoriser les utilisateurs à gérer les certificats CA installés.</translation>
 <translation id="8934944553121392674">Détermine les imprimantes de <ph name="DEVICE_PRINTERS_POLICY" /> qui sont à la disposition des utilisateurs.
 
       Indique quelle règle d'accès est utilisée pour la configuration groupée des imprimantes. Si <ph name="PRINTERS_ALLOW_ALL" /> est sélectionné, toutes les imprimantes sont affichées. Si <ph name="PRINTERS_BLACKLIST" /> est sélectionné, <ph name="DEVICE_PRINTERS_BLACKLIST" /> est utilisé pour limiter l'accès aux imprimantes spécifiées. Si <ph name="PRINTERS_WHITELIST" /> est sélectionné, <ph name="DEVICE_PRINTERS_WHITELIST" /> 

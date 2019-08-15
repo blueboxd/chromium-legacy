@@ -168,6 +168,9 @@ void PaintTiming::SetFirstContentfulPaint(base::TimeTicks stamp) {
     return;
   GetFrame()->GetPage()->GetChromeClient().StopDeferringCommits(
       *GetFrame(), cc::PaintHoldingCommitTrigger::kFirstContentfulPaint);
+
+  if (GetFrame()->GetFrameScheduler())
+    GetFrame()->GetFrameScheduler()->OnFirstContentfulPaint();
 }
 
 void PaintTiming::RegisterNotifySwapTime(PaintEvent event) {

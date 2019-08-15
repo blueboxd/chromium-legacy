@@ -125,9 +125,6 @@
 <translation id="5634636535844844681">Chromium memerlukan Windows 7 atau lebih tinggi.</translation>
 <translation id="5680901439334282664">masuk ke Chromium</translation>
 <translation id="5698481217667032250">Tampilkan Chromium dalam bahasa ini</translation>
-<translation id="5756484659843248772">Bahasa ini digunakan untuk menampilkan UI Chromium OS</translation>
-<translation id="5768914737813585044">Tampilkan Chromium OS dalam bahasa ini</translation>
-<translation id="5796460469508169315">Chromium hampir siap.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Selamat Datang di Chromium</translation>
 <translation id="5877064549588274448">Saluran diubah. Mulai ulang perangkat Anda untuk menerapkan perubahan.</translation>
@@ -190,12 +187,6 @@ Chromium tidak dapat memulihkan setelan Anda.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Jendela baru</translation>
 <translation id="734373864078049451">Web, bookmark, dan barang Chromium Anda lainnya tersedia di sini.</translation>
-<translation id="7344413941077984497">Untuk menyetel situs web mana saja yang dapat dilihat <ph name="NEW_PROFILE_NAME" />, Anda dapat mengonfigurasi batasan dan setelan dengan membuka <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Jika Anda tidak mengubah setelan default, <ph name="NEW_PROFILE_NAME" /> dapat menjelajahi apa pun di web.
-
-Agar <ph name="NEW_PROFILE_NAME" /> tidak dapat mengakses akun Anda, pastikan profil terkunci saat Anda tidak menggunakan Chromium. Untuk mengunci akun, klik nama profil di pojok kanan atas browser, dan pilih "Keluar dan aktifkan kunci anak".
-<ph name="BEGIN_LINK_2" />Pelajari lebih lanjut<ph name="END_LINK_2" />
-
-Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</translation>
 <translation id="7349591376906416160">Administrator sistem Anda telah mengonfigurasi Chromium untuk membuka <ph name="ALTERNATIVE_BROWSER_NAME" /> guna mengakses <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7448255348454382571">Mulai ulang Chromium OS</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
@@ -232,6 +223,8 @@ Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</tr
 <translation id="8417404458978023919">{0,plural, =1{Luncurkan ulang Chromium dalam 1 hari}other{Luncurkan ulang Chromium dalam # hari}}</translation>
 <translation id="8453117565092476964">Arsip pemasang rusak atau tidak valid. Download Chromium lagi.</translation>
 <translation id="8493179195440786826">Chromium Terlalu Lawas</translation>
+<translation id="8494843963476918365">Jika setelan tidak ditampilkan pada halaman ini, coba <ph name="LINK_BEGIN" />
+    setelan browser Chromium<ph name="LINK_END" /> Anda.</translation>
 <translation id="85843667276690461">Dapatkan bantuan tentang penggunaan Chromium</translation>
 <translation id="8586442755830160949">Hak Cipta <ph name="YEAR" /> Pengarang Chromium. Semua hak dilindungi undang-undang.</translation>
 <translation id="8619360774459241877">Meluncurkan Chromium...</translation>

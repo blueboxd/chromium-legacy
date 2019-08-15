@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/boxed_v8_module.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
@@ -207,11 +208,12 @@ v8::MaybeLocal<v8::Module> ModuleRecord::ResolveModuleCallback(
   ModuleRecord referrer_record(isolate, referrer, KURL());
   ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
                                  "ModuleRecord", "resolveModuleCallback");
-  ModuleRecord resolved = modulator->GetModuleRecordResolver()->Resolve(
-      ToCoreStringWithNullCheck(specifier), referrer_record, exception_state);
-  DCHECK(!resolved.IsNull());
+  v8::Local<v8::Module> resolved =
+      modulator->GetModuleRecordResolver()->Resolve(
+          ToCoreStringWithNullCheck(specifier), referrer, exception_state);
+  DCHECK(!resolved.IsEmpty());
   DCHECK(!exception_state.HadException());
-  return resolved.module_->NewLocal(isolate);
+  return resolved;
 }
 
 }  // namespace blink

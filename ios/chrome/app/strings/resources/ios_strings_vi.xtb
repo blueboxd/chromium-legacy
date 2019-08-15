@@ -266,6 +266,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="4802417911091824046">Việc mã hóa cụm mật khẩu không bao gồm địa chỉ và phương thức thanh toán từ Google Pay.
 
 Để thay đổi tùy chọn cài đặt này, hãy <ph name="BEGIN_LINK" />đặt lại tính năng đồng bộ hóa<ph name="END_LINK" /></translation>
+<translation id="4805759445554688327">Số thẻ không hợp lệ</translation>
 <translation id="4807020197310989387">1 bài viết chưa đọc trong Danh sách đọc.</translation>
 <translation id="4818522717893377262">Thêm ngôn ngữ...</translation>
 <translation id="481968316161811770">Cookie, Dữ liệu trang web</translation>
@@ -393,6 +394,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6476800141292307438">Đang dịch trang sang <ph name="LANGUAGE" />. Các tùy chọn nằm ở gần cuối màn hình.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> dấu trang đã bị xóa</translation>
 <translation id="6610002944194042868">Tùy chọn dịch</translation>
+<translation id="6628106477656132239">Ngày hết hạn không hợp lệ</translation>
 <translation id="6642362222295953972">Chuyển sang tab đang mở</translation>
 <translation id="6643016212128521049">Xóa</translation>
 <translation id="6656103420185847513">Chỉnh sửa thư mục</translation>

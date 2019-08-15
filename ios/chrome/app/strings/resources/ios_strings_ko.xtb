@@ -266,6 +266,7 @@
 <translation id="4802417911091824046">Google Pay 결제 수단 및 주소는 암호로 암호화되지 않습니다.
 
 이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />하세요.</translation>
+<translation id="4805759445554688327">카드 번호가 잘못됨</translation>
 <translation id="4807020197310989387">읽기 목록에 읽지 않은 기사가 1개 있습니다.</translation>
 <translation id="4818522717893377262">언어 추가...</translation>
 <translation id="481968316161811770">쿠키, 사이트 데이터</translation>
@@ -393,6 +394,7 @@
 <translation id="6476800141292307438">페이지를 <ph name="LANGUAGE" />로 번역합니다. 화면 하단에 옵션이 있습니다.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />개 항목 삭제함</translation>
 <translation id="6610002944194042868">번역 옵션</translation>
+<translation id="6628106477656132239">유효기간이 잘못됨</translation>
 <translation id="6642362222295953972">기존 탭으로 전환</translation>
 <translation id="6643016212128521049">삭제</translation>
 <translation id="6656103420185847513">폴더 수정</translation>

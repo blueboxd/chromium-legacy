@@ -305,7 +305,8 @@ bool PageSchedulerImpl::IsMainFrameLocal() const {
 }
 
 bool PageSchedulerImpl::IsLoading() const {
-  return main_thread_scheduler_->current_use_case() == UseCase::kLoading;
+  return main_thread_scheduler_->current_use_case() == UseCase::kEarlyLoading ||
+         main_thread_scheduler_->current_use_case() == UseCase::kLoading;
 }
 
 bool PageSchedulerImpl::IsOrdinary() const {

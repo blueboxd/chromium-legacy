@@ -1124,7 +1124,21 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   } else {
     // Use count for XHR synchronous requests.
     UseCounter::Count(&execution_context, WebFeature::kXMLHttpRequestSynchronous);
-    if (GetExecutionContext()->IsDocument()) {
+    if (execution_context.IsDocument()) {
+      if (Frame* frame = GetDocument()->GetFrame()) {
+        if (frame->IsMainFrame()) {
+          UseCounter::Count(&execution_context,
+                            WebFeature::kXMLHttpRequestSynchronousInMainFrame);
+        } else if (frame->IsCrossOriginSubframe()) {
+          UseCounter::Count(
+              &execution_context,
+              WebFeature::kXMLHttpRequestSynchronousInCrossOriginSubframe);
+        } else {
+          UseCounter::Count(
+              &execution_context,
+              WebFeature::kXMLHttpRequestSynchronousInSameOriginSubframe);
+        }
+      }
       // Update histogram for usage of sync xhr within pagedismissal.
       auto pagedismissal = GetDocument()->PageDismissalEventBeingDispatched();
       if (pagedismissal != Document::kNoDismissal) {
@@ -1142,13 +1156,18 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
                                       "Synchronous XHR in page dismissal.");
           return;
         } else {
-          UseCounter::Count(GetDocument(), WebFeature::kSyncXhrInPageDismissal);
+          UseCounter::Count(&execution_context,
+                            WebFeature::kSyncXhrInPageDismissal);
           DEFINE_STATIC_LOCAL(EnumerationHistogram,
                               syncxhr_pagedismissal_histogram,
                               ("XHR.Sync.PageDismissal", 5));
           syncxhr_pagedismissal_histogram.Count(pagedismissal);
         }
       }
+    } else {
+      DCHECK(execution_context.IsWorkerGlobalScope());
+      UseCounter::Count(&execution_context,
+                        WebFeature::kXMLHttpRequestSynchronousInWorker);
     }
     resource_loader_options.synchronous_policy = kRequestSynchronously;
   }

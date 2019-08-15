@@ -266,6 +266,7 @@ Your data is encrypted with your sync passphrase. Enter it to start sync.</trans
 <translation id="4802417911091824046">Passphrase encryption doesn’t include payment methods and addresses from Google Pay.
 
 To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /></translation>
+<translation id="4805759445554688327">Invalid Card Number</translation>
 <translation id="4807020197310989387">1 unread Reading List article.</translation>
 <translation id="4818522717893377262">Add language…</translation>
 <translation id="481968316161811770">Cookies, Site Data</translation>
@@ -393,6 +394,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="6476800141292307438">Translating the page to <ph name="LANGUAGE" />. Options available near bottom of the screen.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items deleted</translation>
 <translation id="6610002944194042868">Translate Options</translation>
+<translation id="6628106477656132239">Invalid Expiry Date</translation>
 <translation id="6642362222295953972">Switch to existing tab</translation>
 <translation id="6643016212128521049">Clear</translation>
 <translation id="6656103420185847513">Edit Folder</translation>

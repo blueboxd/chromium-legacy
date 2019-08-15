@@ -14,7 +14,7 @@
 
     function checkQuickViewElementsDisplayNone(elements) {
       chrome.test.assertTrue(Array.isArray(elements));
-      if (elements.length > 0 && elements[0].styles.display !== 'none') {
+      if (elements.length == 0 || elements[0].styles.display !== 'none') {
         return pending(caller, 'Waiting for Quick View to close.');
       }
     }

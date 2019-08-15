@@ -532,7 +532,7 @@ Node* HitTestResult::InnerNodeOrImageMapImage() const {
   HTMLImageElement* image_map_image_element = nullptr;
   if (auto* area = DynamicTo<HTMLAreaElement>(inner_node_.Get()))
     image_map_image_element = area->ImageElement();
-  else if (auto* map = ToHTMLMapElementOrNull(inner_node_.Get()))
+  else if (auto* map = DynamicTo<HTMLMapElement>(inner_node_.Get()))
     image_map_image_element = map->ImageElement();
 
   if (!image_map_image_element)

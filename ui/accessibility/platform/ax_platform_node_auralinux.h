@@ -71,24 +71,15 @@ struct FindInPageResultInfo {
 // supported version.
 struct AX_EXPORT AtkTableCellInterface {
   typedef struct _AtkTableCell AtkTableCell;
-  typedef struct _AtkTableCellIface AtkTableCellIface;
-  typedef GType (*GetTypeFunc)();
-  typedef GPtrArray* (*GetColumnHeaderCellsFunc)(AtkTableCell* cell);
-  typedef GPtrArray* (*GetRowHeaderCellsFunc)(AtkTableCell* cell);
-  typedef bool (*GetRowColumnSpanFunc)(AtkTableCell* cell,
-                                       gint* row,
-                                       gint* column,
-                                       gint* row_span,
-                                       gint* col_span);
-
-  base::ProtectedMemory<GetTypeFunc>* GetType = nullptr;
-  base::ProtectedMemory<GetColumnHeaderCellsFunc>* GetColumnHeaderCells =
-      nullptr;
-  base::ProtectedMemory<GetRowHeaderCellsFunc>* GetRowHeaderCells = nullptr;
-  base::ProtectedMemory<GetRowColumnSpanFunc>* GetRowColumnSpan = nullptr;
-  bool initialized = false;
-
-  static base::Optional<AtkTableCellInterface> Get();
+  static GType GetType();
+  static GPtrArray* GetColumnHeaderCells(AtkTableCell* cell);
+  static GPtrArray* GetRowHeaderCells(AtkTableCell* cell);
+  static bool GetRowColumnSpan(AtkTableCell* cell,
+                               gint* row,
+                               gint* column,
+                               gint* row_span,
+                               gint* col_span);
+  static bool Exists();
 };
 
 // Implements accessibility on Aura Linux using ATK.

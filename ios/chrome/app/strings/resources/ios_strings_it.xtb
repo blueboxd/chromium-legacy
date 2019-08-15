@@ -266,6 +266,7 @@ I tuoi dati vengono criptati con la tua passphrase di sincronizzazione. Inserisc
 <translation id="4802417911091824046">La crittografia della passphrase non include metodi di pagamento e indirizzi di Google Pay.
 
 Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincronizzazione<ph name="END_LINK" />.</translation>
+<translation id="4805759445554688327">Numero di carta non valido</translation>
 <translation id="4807020197310989387">1 articolo dell'elenco di lettura da leggere.</translation>
 <translation id="4818522717893377262">Aggiungi lingua…</translation>
 <translation id="481968316161811770">Cookie, dati dei siti</translation>
@@ -393,6 +394,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="6476800141292307438">Traduzione della pagina in <ph name="LANGUAGE" />. Opzioni disponibili nella parte inferiore dello schermo.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementi eliminati</translation>
 <translation id="6610002944194042868">Opzioni di Traduttore</translation>
+<translation id="6628106477656132239">Data di scadenza non valida</translation>
 <translation id="6642362222295953972">Passa alla scheda esistente</translation>
 <translation id="6643016212128521049">Cancella</translation>
 <translation id="6656103420185847513">Modifica cartella</translation>

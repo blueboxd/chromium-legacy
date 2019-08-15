@@ -208,7 +208,7 @@ TEST(GeneratePolicySource, SetEnterpriseDefaults) {
   PolicyMap policy_map;
 
   // If policy not configured yet, set the enterprise default.
-  SetEnterpriseUsersDefaults(&policy_map);
+  policy_map.ApplyEnterpriseUsersDefaults(GetEnterpriseUsersDefaults());
 
   const base::Value* multiprof_behavior =
       policy_map.GetValue(key::kChromeOsMultiProfileUserBehavior);
@@ -219,7 +219,7 @@ TEST(GeneratePolicySource, SetEnterpriseDefaults) {
   policy_map.Set(key::kChromeOsMultiProfileUserBehavior, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                  std::make_unique<base::Value>("test_value"), nullptr);
-  SetEnterpriseUsersDefaults(&policy_map);
+  policy_map.ApplyEnterpriseUsersDefaults(GetEnterpriseUsersDefaults());
   multiprof_behavior =
       policy_map.GetValue(key::kChromeOsMultiProfileUserBehavior);
   expected = base::Value("test_value");

@@ -81,9 +81,8 @@ class ClickToCallUiControllerTest : public testing::Test {
         }));
     ClickToCallUiController::ShowDialog(
         web_contents_.get(), GURL(base::StrCat({"tel:", kPhoneNumber})), false);
-    click_to_call_sharing_dialog_controller_ =
-        ClickToCallUiController::GetOrCreateFromWebContents(
-            web_contents_.get());
+    controller_ = ClickToCallUiController::GetOrCreateFromWebContents(
+        web_contents_.get());
   }
 
  protected:
@@ -95,7 +94,7 @@ class ClickToCallUiControllerTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   std::unique_ptr<content::WebContents> web_contents_;
-  ClickToCallUiController* click_to_call_sharing_dialog_controller_ = nullptr;
+  ClickToCallUiController* controller_ = nullptr;
 };
 }  // namespace
 
@@ -117,12 +116,12 @@ TEST_F(ClickToCallUiControllerTest, OnDeviceChosen) {
   EXPECT_CALL(*service(),
               SendMessageToDevice(Eq(kReceiverGuid), Eq(kSharingMessageTTL),
                                   ProtoEquals(sharing_message), _));
-  click_to_call_sharing_dialog_controller_->OnDeviceChosen(sharing_device_info);
+  controller_->OnDeviceChosen(sharing_device_info);
 }
 
 // Check the call to sharing service to get all synced devices.
 TEST_F(ClickToCallUiControllerTest, GetSyncedDevices) {
   EXPECT_CALL(*service(), GetDeviceCandidates(Eq(static_cast<int>(
                               SharingDeviceCapability::kTelephony))));
-  click_to_call_sharing_dialog_controller_->GetSyncedDevices();
+  controller_->UpdateAndShowDialog();
 }

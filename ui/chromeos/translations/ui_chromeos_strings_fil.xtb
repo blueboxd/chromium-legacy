@@ -326,7 +326,6 @@
 <translation id="4880520557730313061">Auto-fix</translation>
 <translation id="4881695831933465202">Buksan</translation>
 <translation id="4886021172213954916">Tamil keyboard (Typewriter)</translation>
-<translation id="4892969127351273348">Hindi mabuksan gamit ang <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Handa nang i-back up ang <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Naayos</translation>
 <translation id="4935975195727477204">Bulaklak</translation>
@@ -366,7 +365,6 @@
 <translation id="5218183485292899140">Swiss French</translation>
 <translation id="5234764350956374838">Balewalain</translation>
 <translation id="5241298539944515331">Vietnamese keyboard (VIQR)</translation>
-<translation id="52446585071384036">Para magbukas ng mga file gamit ang <ph name="APP_NAME" />, kopyahin muna ang mga ito sa folder ng mga file ng Linux.</translation>
 <translation id="5253070652067921974">Ginawa ni</translation>
 <translation id="5257456363153333584">Tutubi</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Mag-access ng mga file kahit saan, kahit offline.<ph name="MARKUP_2" />
@@ -671,6 +669,7 @@
 <translation id="8569764466147087991">Piliin ang isang file para buksan</translation>
 <translation id="8579285237314169903">Nagsi-sync ng <ph name="NUMBER_OF_FILES" /> (na) item...</translation>
 <translation id="8600173386174225982">Naging thumbnail view ang listahan ng file.</translation>
+<translation id="8601932370724196034">Crostini image file</translation>
 <translation id="8669949407341943408">Inililipat...</translation>
 <translation id="8671210955687109937">Makakapagkomento</translation>
 <translation id="8686213429977032554">Hindi pa ibinabahagi ang file sa Drive na ito</translation>

@@ -74,39 +74,6 @@ testcase.showMyFiles = async () => {
 };
 
 /**
- * Tests search button hidden when selected My Files.
- */
-testcase.hideSearchButton = async () => {
-  // Open Files app on local Downloads.
-  const appId =
-      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
-
-  // Select Downloads folder.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectVolume', appId, ['downloads']));
-
-  // Get the search button element.
-  const buttonQuery = ['#search-button'];
-  let buttonElements = await remoteCall.callRemoteTestUtil(
-      'queryAllElements', appId, buttonQuery);
-
-  // Check that search button is visible on Downloads.
-  chrome.test.assertEq(1, buttonElements.length);
-  chrome.test.assertFalse(buttonElements[0].hidden);
-
-  // Select My files in directory tree.
-  await selectMyFiles(appId);
-
-  // Get the search button element.
-  buttonElements = await remoteCall.callRemoteTestUtil(
-      'queryAllElements', appId, buttonQuery);
-
-  // Check that search button is hidden on My Files.
-  chrome.test.assertEq(1, buttonElements.length);
-  chrome.test.assertTrue(buttonElements[0].hidden);
-};
-
-/**
  * Tests directory tree refresh doesn't hide Downloads folder.
  *
  * This tests a regression where Downloads folder would disappear because

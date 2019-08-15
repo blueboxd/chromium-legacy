@@ -3370,6 +3370,8 @@ jumbo_split_static_library("browser") {
       "sharing/shared_clipboard/shared_clipboard_context_menu_observer.h",
       "sharing/shared_clipboard/shared_clipboard_ui_controller.cc",
       "sharing/shared_clipboard/shared_clipboard_ui_controller.h",
+      "sharing/shared_clipboard/shared_clipboard_utils.cc",
+      "sharing/shared_clipboard/shared_clipboard_utils.h",
       "sharing/sharing_dialog.h",
       "sharing/sharing_ui_controller.cc",
       "sharing/sharing_ui_controller.h",

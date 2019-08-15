@@ -36,7 +36,7 @@
     <template is="dom-if" if="[[showAddSmbDialog_]]" restamp>
       <add-smb-share-dialog on-close="onAddSmbDialogClosed_"
           last-url="[[prefs.network_file_shares.most_recently_used_url.value]]"
-          should-open-file-manager-after-mount
+          should-open-file-manager-after-mount>
       </add-smb-share-dialog>
     </template>
   </template>

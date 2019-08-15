@@ -436,22 +436,19 @@ void AccessibilityTreeFormatterAuraLinux::AddTableCellProperties(
   // Properties obtained via AtkTableCell, if possible. If we do not have at
   // least ATK 2.12, use the same logic in our AtkTableCell implementation so
   // that tests can still be run.
-  auto cell_interface = ui::AtkTableCellInterface::Get();
-  if (cell_interface.has_value()) {
+  if (ui::AtkTableCellInterface::Exists()) {
     AtkTableCell* cell = G_TYPE_CHECK_INSTANCE_CAST(
-        (atk_object), base::UnsanitizedCfiCall(*cell_interface->GetType)(),
-        AtkTableCell);
+        (atk_object), ui::AtkTableCellInterface::GetType(), AtkTableCell);
 
-    base::UnsanitizedCfiCall (*cell_interface->GetRowColumnSpan)(
-        cell, &row, &col, &row_span, &col_span);
+    ui::AtkTableCellInterface::GetRowColumnSpan(cell, &row, &col, &row_span,
+                                                &col_span);
 
     GPtrArray* column_headers =
-        base::UnsanitizedCfiCall(*cell_interface->GetColumnHeaderCells)(cell);
+        ui::AtkTableCellInterface::GetColumnHeaderCells(cell);
     n_column_headers = column_headers->len;
     g_ptr_array_unref(column_headers);
 
-    GPtrArray* row_headers =
-        base::UnsanitizedCfiCall(*cell_interface->GetRowHeaderCells)(cell);
+    GPtrArray* row_headers = ui::AtkTableCellInterface::GetRowHeaderCells(cell);
     n_row_headers = row_headers->len;
     g_ptr_array_unref(row_headers);
   } else {

@@ -107,6 +107,8 @@ class PLATFORM_EXPORT CanvasResource
     Abandon();
   }
 
+  SkFilterQuality FilterQuality() const { return filter_quality_; }
+
  protected:
   CanvasResource(base::WeakPtr<CanvasResourceProvider>,
                  SkFilterQuality,
@@ -136,7 +138,6 @@ class PLATFORM_EXPORT CanvasResource
       MailboxSyncMode);
   bool PrepareUnacceleratedTransferableResource(
       viz::TransferableResource* out_resource);
-  SkFilterQuality FilterQuality() const { return filter_quality_; }
   const CanvasColorParams& ColorParams() const { return color_params_; }
   void OnDestroy();
   CanvasResourceProvider* Provider() { return provider_.get(); }

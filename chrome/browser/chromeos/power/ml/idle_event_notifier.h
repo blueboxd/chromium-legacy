@@ -11,9 +11,9 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
-#include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/power/ml/boot_clock.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
@@ -22,15 +22,10 @@
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 
-namespace base {
-class Clock;
-}
-
 namespace chromeos {
 namespace power {
 namespace ml {
 
-class BootClock;
 class RecentEventsCounter;
 
 // This is time since midnight in the local time zone and may move back or
@@ -100,11 +95,6 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
                     viz::mojom::VideoDetectorObserverRequest request);
   ~IdleEventNotifier() override;
 
-  // Set test clock so that we can check activity time.
-  void SetClockForTesting(scoped_refptr<base::SequencedTaskRunner> task_runner,
-                          base::Clock* test_clock,
-                          std::unique_ptr<BootClock> test_boot_clock);
-
   // chromeos::PowerManagerClient::Observer overrides:
   void LidEventReceived(chromeos::PowerManagerClient::LidState state,
                         const base::TimeTicks& timestamp) override;
@@ -153,11 +143,7 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
   // will be recalculated.
   void ResetTimestampsForRecentActivity();
 
-  // It is base::DefaultClock, but will be set to a mock clock for tests.
-  base::Clock* clock_;
-
-  // It is RealBootClock, but will be set to FakeBootClock for tests.
-  std::unique_ptr<BootClock> boot_clock_;
+  BootClock boot_clock_;
 
   ScopedObserver<chromeos::PowerManagerClient,
                  chromeos::PowerManagerClient::Observer>

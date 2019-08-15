@@ -95,7 +95,15 @@ std::set<std::string> GetStringListPolicyItems(const PolicyBundle& bundle,
 
 }  // namespace
 
-PolicyServiceImpl::PolicyServiceImpl(Providers providers) {
+PolicyServiceImpl::PolicyServiceImpl(Providers providers)
+    : PolicyServiceImpl(providers,
+                        /*enterprise_users_default_delegate=*/nullptr) {}
+
+PolicyServiceImpl::PolicyServiceImpl(
+    Providers providers,
+    PolicyService::EnterpriseUsersDefaultDelegate*
+        enterprise_users_default_delegate)
+    : enterprise_users_default_delegate_(enterprise_users_default_delegate) {
   providers_ = std::move(providers);
   for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain)
     initialization_complete_[domain] = true;
@@ -220,7 +228,13 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
   std::set<std::string> policy_dictionaries_to_merge = GetStringListPolicyItems(
       bundle, chrome_namespace, key::kPolicyDictionaryMultipleSourceMergeList);
 
-  const auto& chrome_policies = bundle.Get(chrome_namespace);
+  auto& chrome_policies = bundle.Get(chrome_namespace);
+
+  if (enterprise_users_default_delegate_ &&
+      enterprise_users_default_delegate_->ShouldApplyEnterpriseUsersDefault()) {
+    chrome_policies.ApplyEnterpriseUsersDefaults(GetEnterpriseUsersDefaults());
+  }
+
   auto* value =
       chrome_policies.GetValue(key::kExtensionInstallListsMergeEnabled);
   if (value && value->GetBool()) {

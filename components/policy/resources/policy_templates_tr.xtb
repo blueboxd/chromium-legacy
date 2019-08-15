@@ -71,7 +71,6 @@
 
           Bu ayar devre dışı bırakılır veya yapılandırılmazsa uzaktan yardım ana makinesi, kullanıcının içeriğinde çalışır ve uzak kullanıcılar, masaüstündeki yükseltilmiş pencerelerle etkileşimde bulunamaz.</translation>
 <translation id="1096105751829466145">Varsayılan arama sağlayıcı</translation>
-<translation id="1099024407376270611">Ziyaret edilen URL'lerin Güvenli Tarama itibarını gerçek zamanlı kontrol etme</translation>
 <translation id="1099282607296956954">Site İzolasyonu'nu her site için etkinleştirme</translation>
 <translation id="1100570158310952027">
       Bu politika, güvenli olmayan başlangıç noktalarında güvenlik kısıtlamalarının geçerli olmayacağı başlangıç noktalarının (URL'ler) veya ana makine adı kalıplarının (örneğin, "*.example.com") bir listesini belirtir.
@@ -412,22 +411,6 @@
       Uyarı: Cihazın yazılım güncellemelerini ve kritik güvenlik düzeltmelerini almasını engelleyebileceği için <ph name="PRODUCT_OS_NAME" /> sürümünün kontrol yetkisinin bir kiosk uygulamasına verilmesi önerilmez. <ph name="PRODUCT_OS_NAME" /> sürümü kontrol yetkisinin devredilmesi, kullanıcıları risk altında bırakabilir.</translation>
 <translation id="1675002386741412210">Desteklendiği yerler:</translation>
 <translation id="1700811900332333712">Cihaza Powerwash isteme izni verme</translation>
-<translation id="1704516734140344991"><ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımını güncelleme işlevinin kullanılabilirliğini ve davranışını yapılandırır.
-
-      Bağımsız ayarlar JSON özelliklerinde belirtilebilir:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" /> olarak ayarlanırsa, kullanıcılar <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı güncellemesini yüklemek için powerwash sürecini başlatabilirler.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" /> olarak ayarlanırsa, kullanıcılar cihaz genelindeki durumu (kurumsal kayıt dahil) koruyan ancak kullanıcı verilerini kaybeden <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı güncelleme sürecini başlatabilirler. Bu güncelleme süreci, sürüm 68'den itibaren kullanılabilmektedir.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Otomatik <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı güncellemelerinin, güvenlik açığı olan <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı için nasıl zorunlu kılınacağını denetler. Tüm süreçlerde yerel cihaz durumu korunur.
-        1 olarak ayarlanır veya ayarlanmazsa TPM donanım yazılımı güncellemeleri zorunlu kılınmaz.
-        2 olarak ayarlanırsa <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı, kullanıcı güncellemeyi onaylamasının ardından, bir sonraki yeniden başlatma işlemi sırasında güncellenir.
-        3 olarak ayarlanırsa, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı bir sonraki yeniden başlatma sırasında güncellenir.
-        4 olarak ayarlanırsa, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı kayıt işleminden sonra, kullanıcı oturum açmadan önce güncellenir.
-        Bu seçenek sürüm 74'ten itibaren kullanılabilir.
-
-      Politika ayarlanmazsa, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı güncelleme işlevi kullanılamaz.</translation>
 <translation id="1708496595873025510">Varyasyon temelini alma sınırlamasını ayarla</translation>
 <translation id="1717817358640580294">Ayarlanmadan bırakılırsa, Chrome Temizleme Aracı istenmeyen yazılımlar tespit ettiğinde, SafeBrowsingExtendedReportingEnabled tarafından ayarlanan politikaya uygun şekilde taramayla ilgili meta verileri Google'a raporlayabilir. Chrome Temizleme Aracı, daha sonra kullanıcıya istenmeyen yazılımın temizlenmesini isteyip istemediğini sorar. Kullanıcı, ileride istenmeyen yazılımların tespiti konusunda yardımcı olması için temizleme işlemi sonuçlarının Google ile paylaşılmasını seçebilir. Bu sonuçlar, Chrome Gizlilik Raporu'nda açıklandığı gibi dosya meta verilerini, otomatik olarak yüklenen uzantıları ve kayıt defteri anahtarlarını içerir.
 
@@ -832,6 +815,22 @@
 <translation id="2463034609187171371">TLS'deki şifre paketlerini etkinleştir</translation>
 <translation id="2463365186486772703">Uygulama yerel ayarı</translation>
 <translation id="2466131534462628618">Giriş portalı kimlik doğrulaması, proxy'yi yoksayar</translation>
+<translation id="2466697858869282874"><ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımını güncelleme işlevinin kullanılabilirliğini ve davranışını yapılandırır.
+
+      Bağımsız ayarlar JSON özelliklerinde belirtilebilir:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" /> olarak ayarlanırsa, kullanıcılar bir <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı güncellemesini yüklemek için powerwash sürecini başlatabilirler.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" /> olarak ayarlanırsa, kullanıcılar cihaz genelindeki durumu (kurumsal kayıt dahil) koruyan ancak kullanıcı verilerini kaybeden <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı güncelleme sürecini başlatabilirler. Bu güncelleme süreci, sürüm 68'den itibaren kullanılabilmektedir.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Otomatik <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı güncellemelerinin, güvenlik açığı olan <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı için nasıl zorunlu kılınacağını denetler. Tüm süreçlerde yerel cihaz durumu korunur.
+        1 olarak ayarlanır veya ayarlanmazsa TPM donanım yazılımı güncellemeleri zorunlu kılınmaz.
+        2 olarak ayarlanırsa <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı, kullanıcı güncellemeyi onaylamasının ardından, bir sonraki yeniden başlatma işlemi sırasında güncellenir.
+        3 olarak ayarlanırsa, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı bir sonraki yeniden başlatma sırasında güncellenir.
+        4 olarak ayarlanırsa, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı kayıt işleminden sonra, kullanıcı oturum açmadan önce güncellenir.
+        Bu seçenek sürüm 75'ten itibaren kullanılabilir.
+
+      Politika ayarlanmazsa, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı güncelleme işlevi kullanılamaz.</translation>
 <translation id="2471748297300970300">Devre dışı bırakılırsa, Chrome tehlikeli olabilecek komut satırı işaretleriyle başlatıldığında güvenlik uyarılarının gösterilmesini engeller.
 
           Etkinleştirilir veya ayarlanmadan bırakılırsa, Chrome'u başlatmak için komut satırı işaretleri kullanıldığında güvenlik uyarıları gösterilir.
@@ -1464,7 +1463,7 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 <translation id="356579196325389849">Kullanıcılar Chrome OS sürümü kanalını yapılandırabilir</translation>
 <translation id="3575011234198230041">HTTP kimlik doğrulaması</translation>
 <translation id="3577251398714997599">Araya giren reklamların yer aldığı siteler için reklam ayarı</translation>
-<translation id="357917253161699596">Kullanıcıların kullanıcı sertifikalarını yönetmelerine izin ver</translation>
+<translation id="357917253161699596">Kullanıcıların, kullanıcı sertifikalarını yönetmelerine izin ver</translation>
 <translation id="3583230441447348508">Önceden yapılandırılmış ağ dosyası paylaşımlarının bir listesini belirtir.
 
       Politikanın her liste öğesi, iki üyeli bir nesnedir: "share_url" ve "mode". "share_url", paylaşılacak web sayfasının URL'si olmalı, "mode" ise "drop_down" veya "pre_mount" olmalıdır. "drop_down" modu, "share_url"nin paylaşım keşfi açılır menüsüne ekleneceğini gösterir. "pre_mount" modu, "share_url"nin ekleneceğini gösterir.</translation>
@@ -1852,6 +1851,13 @@ politikayı geçersiz kılamaz.
 
       Bu politika ayarlanmazsa varsayılan dolaşım profili yolu kullanılır.</translation>
 <translation id="4239720644496144453">Önbellek, Android uygulamaları için kullanılmaz. Birden fazla kullanıcı aynı Android uygulamasını yüklerse bu uygulama her kullanıcı için yeniden indirilir.</translation>
+<translation id="4241202391219483189">Bu politika, kullanıcıların Sertifika Yöneticisi'ni kullanarak istemci CA sertifikalarını içe aktarmalarının ve kaldırmalarının mümkün olup olmadığını kontrol eder.
+
+      Bu politika "Kullanıcıların tüm sertifikaları yönetmelerine izin ver'' değerine ayarlanırsa veya ayarlanmadan bırakılırsa kullanıcılar tüm CA sertifikaları için güven ayarlarını düzenleyebilir, kullanıcının içe aktardığı sertifikaları kaldırabilir ve başka sertifikaları içe aktarabilirler.
+
+      Bu politika ''Kullanıcıların, kullanıcı sertifikalarını yönetmelerine izin ver" değerine ayarlanırsa kullanıcılar yalnızca kullanıcının içe aktardığı sertifikaları yönetebilirler ve yerleşik sertifikaların güven ayarlarını değiştiremezler.
+
+      Bu politika ''Kullanıcıların sertifikaları yönetmelerine izin verme" değerine ayarlanırsa kullanıcılar CA sertifikalarını yönetemez, yalnızca görüntüleyebilirler.</translation>
 <translation id="4243336580717651045"><ph name="PRODUCT_NAME" /> ürününde URL içeren veya URL'lerle ilişkili anonim veri toplamayı etkinleştirir ve kullanıcıların bu ayarı değiştirmesini önler.
 
       URL içeren veya URL'lerle ilişkili anonim veri toplama özelliği, arama ve göz atmayı iyileştirmek için, kullanıcının ziyaret ettiği sayfaların URL'lerini Google'a gönderir.
@@ -1927,6 +1933,7 @@ politikayı geçersiz kılamaz.
 
           Bu özellik şu anda sunucu tarafında devre dışıdır.</translation>
 <translation id="4363057787588706121">Farklı kaynaklara ait liste politikalarını birleştirmeye izin ver</translation>
+<translation id="4363101430102811068">Girilen kimlik bilgileri için sızıntı algılamayı etkinleştir</translation>
 <translation id="4363136876356691536">Bu politika true (doğru) değerine ayarlanırsa, Erişilebilirlik seçenekleri her zaman sistem tepsisi menüsünde görüntülenir.
 
           Bu politika false (yanlış) değerine ayarlanırsa, Erişilebilirlik seçenekleri hiçbir zaman sistem tepsisi menüsünde görüntülenmez.
@@ -2086,10 +2093,6 @@ politikayı geçersiz kılamaz.
 
           Bu politikayı ayarlanmamış olarak bırakırsanız, sunucunun İntranet'te olduğu belirlense dahi <ph name="PRODUCT_NAME" />, kullanıcı kimlik bilgilerine yetki vermez.</translation>
 <translation id="4752880493649142945">RemoteAccessHostTokenValidationUrl'ye bağlanmak için istemci sertifikası</translation>
-<translation id="4756984056524699088">Bu kullanıcının, Crostini kapsayıcılarına root erişimine izin verilir.
-
-      Bu politika true (doğru) değerine ayarlanırsa veya ayarlanmadan bırakılırsa, kullanıcıya Crostini kapsayıcılarına root erişimi izni verilir.
-      Politika false (yanlış) değerine ayarlanırsa, kullanıcıya hem mevcut hem de yeni Crostini kapsayıcılara root erişimi izni verilmez.</translation>
 <translation id="4759650396863318477">Beklemedeki bir güncellemenin uygulanması için <ph name="PRODUCT_NAME" /> ürününün veya bir <ph name="PRODUCT_OS_NAME" /> cihazının yeniden başlatılması gerektiği konusunda kullanıcıların bilgilendirileceği dönemi milisaniye cinsinden ayarlamanıza olanak tanır.
 
       Bu zaman diliminde kullanıcı, güncelleme yapılması gerektiğine dair tekrar tekrar bilgilendirilir. <ph name="PRODUCT_OS_NAME" /> cihazları için yeniden başlatma bildirimi, <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> politikası gereği sistem tepsisinde görünür. <ph name="PRODUCT_NAME" /> tarayıcıları için uygulama menüsü, bildirim süresinin üçte biri geçtikten sonra yeniden başlatmanın gerekli olduğunu gösterecek şekilde değişir. Bu bildirim, bildirim süresinin üçte ikisi geçtikten sonra renk değiştirir ve bildirim süresinin tamamı geçtikten sonra tekrar renk değiştirir. <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> politikası tarafından etkinleştirilen ek bildirimler, aynı programı takip eder.
@@ -2967,6 +2970,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
       Politika yanlış değerine ayarlanırsa kullanıcılar bildirilmez.</translation>
 <translation id="6394350458541421998">Bu politika, <ph name="PRODUCT_OS_NAME" /> Sürüm 29 itibariyle kullanımdan kaldırılmıştır. Lütfen bunun yerine PresentationScreenDimDelayScale politikasını kullanın.</translation>
 <translation id="6401669939808766804">Kullanıcının oturumunu kapat</translation>
+<translation id="6403746242226534223">Ziyaret edilen URL'lerin Güvenli Tarama itibarını gerçek zamanlı kontrol etme</translation>
 <translation id="6406448383934634215">Başlangıç işlemi olarak "Bir URL listesi aç" seçildiyse, bu politika, açılan URL listesini belirtmenize olanak tanır. Ayarlanmadan bırakılırsa, başlangıçta herhangi bir URL açılmaz.
 
           Bu politika yalnızca "RestoreOnStartup" politikası "RestoreOnStartupIsURLs" seçeneğine ayarlandığında çalışır.
@@ -3043,6 +3047,9 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 <translation id="6544897973797372144">Bu politika True değerine ayarlanırsa ve ChromeOsReleaseChannel politikası belirtilmediyse, kaydedilmekte olan alan adı kullanıcılarının cihazın yayın kanalını değiştirmelerine izin verilir. Bu politika false değerine ayarlanırsa, cihaz son olarak ayarlandığı kanalda kilitlenir.
 
       Kullanıcının seçtiği kanal ChromeOsReleaseChannel politikası tarafından geçersiz kılınırsa, ancak politika kanalı cihaza yüklenen kanaldan daha dengeliyse; kanal yalnızca daha dengeli kanalın sürümü cihazda yüklü olandan daha yüksek bir sürüme ulaştığında değiştirilir.</translation>
+<translation id="6549567350270907557">Bu ayar etkinleştirilirse kullanıcılar, <ph name="PRODUCT_NAME" /> ürününün, girilen kimlik bilgilerinin bir sızıntının parçası olup olmadığını kontrol etmesini sağlayabilir.
+
+              Bu politika etkinleştilir veya devre dışı bırakılırsa kullanıcılar tarafından değiştirilemez veya <ph name="PRODUCT_NAME" /> içinde geçersiz kılınamaz. Bu politika ayarlanmadan bırakılırsa sızıntı denetimine izin verilir (ancak kullanıcı tarafından kapatılabilir).</translation>
 <translation id="6553143066970470539">Ekran parlaklığı yüzdesi</translation>
 <translation id="6559057113164934677">Hiçbir sitenin kamera ve mikrofona erişmesine izin verme</translation>
 <translation id="6561396069801924653">Erişilebilirlik seçeneklerini sistem tepsisi menüsünde göster</translation>
@@ -4046,6 +4053,10 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 
       Internet Explorer'ın <ph name="IEEM_SITELIST_POLICY" /> politikası hakkında daha fazla bilgi edinmek için: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">PDF dosyalarını her zaman harici olarak aç</translation>
+<translation id="8405691014775178834">Bu kullanıcının, Crostini kapsayıcılarına root erişimine izin verilir.
+
+      Bu politika true (doğru) değerine ayarlanırsa veya ayarlanmadan bırakılırsa, kullanıcıya Crostini kapsayıcılarına root erişimi izni verilir.
+      Politika false (yanlış) değerine ayarlanırsa, kullanıcıya hem mevcut hem de yeni Crostini kapsayıcılara root erişimi izni verilmez.</translation>
 <translation id="8417305981081876834">Kilit ekranı PIN'inin maksimum uzunluğunu ayarla</translation>
 <translation id="841977920223099909">Şifre koruma uyarısı tetikleyicisi</translation>
 <translation id="8424255554404582727">Her yeniden başlatmada tekrar uygulanacak varsayılan ekran döndürmesini ayarla</translation>
@@ -4291,6 +4302,7 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 
           Politika değeri milisaniye olarak belirtilmelidir. Değerler boşta kalma gecikmesinden daha az olacak şekilde bir aralığa sıkıştırılır.</translation>
 <translation id="891435090623616439">JSON dizesi olarak kodlanmıştır, ayrıntılar için <ph name="COMPLEX_POLICIES_URL" /> sayfasına bakın</translation>
+<translation id="8917070657147922192">Kullanıcıların yüklü CA sertifikalarını yönetmelerine izin ver.</translation>
 <translation id="8934944553121392674">Kullanıcıların <ph name="DEVICE_PRINTERS_POLICY" /> politikasındaki hangi yazıcıları kullanabileceğini kontrol eder.
 
       Toplu yazıcı yapılandırması için hangi erişim politikasının kullanılacağını belirler. <ph name="PRINTERS_ALLOW_ALL" /> seçilirse tüm yazıcılar gösterilir. <ph name="PRINTERS_BLACKLIST" /> seçilirse, belirtilen yazıcılara erişimi kısıtlamak için <ph name="DEVICE_PRINTERS_BLACKLIST" /> kullanılır. <ph name="PRINTERS_WHITELIST" /> seçilirse, <ph name="DEVICE_PRINTERS_WHITELIST" /> yalnızca seçilebilir yazıcıları gösterir.

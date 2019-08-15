@@ -547,6 +547,9 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   widget_input_handler_manager_ = WidgetInputHandlerManager::Create(
       weak_ptr_factory_.GetWeakPtr(), std::move(compositor_input_task_runner),
       main_thread_scheduler, uses_input_handler);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAllowPreCommitInput))
+    widget_input_handler_manager_->AllowEarlyInputForTesting();
 
   show_callback_ = std::move(show_callback);
 
@@ -1083,7 +1086,7 @@ void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
     input_event_queue_->DispatchRafAlignedInput(frame_time);
   }
 
-  // The input handler wants to know about the main frame for metric purposes
+  // The input handler wants to know about the main frame for metric purposes.
   DCHECK(widget_input_handler_manager_);
   widget_input_handler_manager_->BeginMainFrame();
 
@@ -1162,6 +1165,7 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::DidCommitAndDrawCompositorFrame");
 
   // The input handler wants to know about the commit for metric purposes
+  // and to resume input if suspended pending a frame.
   DCHECK(widget_input_handler_manager_);
   widget_input_handler_manager_->CompositorDidCommit();
 
@@ -1278,7 +1282,7 @@ void RenderWidget::UpdateVisualState() {
   // When recording main frame metrics set the lifecycle reason to
   // kBeginMainFrame, because this is the calller of UpdateLifecycle
   // for the main frame. Otherwise, set the reason to kTests, which is
-  // the oinly other reason this method is called.
+  // the only other reason this method is called.
   WebWidget::LifecycleUpdateReason lifecycle_reason =
       record_main_frame_metrics
           ? WebWidget::LifecycleUpdateReason::kBeginMainFrame
@@ -3691,8 +3695,9 @@ void RenderWidget::DidNavigate() {
     return;
 
   // The input handler wants to know about navigation so that it can
-  // resets the state for UMA reporting of input arrival with respect to
-  // document lifecycle.
+  // suppress input until the newly navigated page has a committed frame.
+  // It also resets the state for UMA reporting of input arrival with respect
+  // to document lifecycle.
   DCHECK(widget_input_handler_manager_);
   widget_input_handler_manager_->DidNavigate();
 

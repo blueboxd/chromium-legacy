@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "base/test/bind_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -25,20 +26,22 @@ class ClipboardHostImplTest : public ::testing::Test {
  protected:
   ClipboardHostImplTest()
       : clipboard_(ui::TestClipboard::CreateForCurrentThread()) {
-    ClipboardHostImpl::Create(mojo::MakeRequest(&ptr_));
+    ClipboardHostImpl::Create(remote_.BindNewPipeAndPassReceiver());
   }
 
   ~ClipboardHostImplTest() override {
     ui::Clipboard::DestroyClipboardForCurrentThread();
   }
 
-  blink::mojom::ClipboardHostPtr& mojo_clipboard() { return ptr_; }
+  mojo::Remote<blink::mojom::ClipboardHost>& mojo_clipboard() {
+    return remote_;
+  }
 
   ui::Clipboard* system_clipboard() { return clipboard_; }
 
  private:
   const TestBrowserThreadBundle thread_bundle_;
-  blink::mojom::ClipboardHostPtr ptr_;
+  mojo::Remote<blink::mojom::ClipboardHost> remote_;
   ui::Clipboard* const clipboard_;
 };
 
@@ -84,10 +87,10 @@ TEST_F(ClipboardHostImplTest, ReentrancyInSyncCall) {
   base::RunLoop run_loop;
   mojo::WriteMessageRaw(mojo_clipboard().internal_state()->handle(), "moo", 3,
                         nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE);
-  mojo_clipboard().set_connection_error_handler(run_loop.QuitClosure());
+  mojo_clipboard().set_disconnect_handler(run_loop.QuitClosure());
   run_loop.Run();
 
-  EXPECT_TRUE(mojo_clipboard().encountered_error());
+  EXPECT_FALSE(mojo_clipboard().is_connected());
 }
 
 }  // namespace content

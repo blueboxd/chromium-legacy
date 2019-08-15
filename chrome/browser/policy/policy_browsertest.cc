@@ -949,12 +949,20 @@ class PolicyTest : public InProcessBrowserTest {
     observer.WaitForExtensionUnloaded();
   }
 
+  void UpdateProviderPolicyWithoutPolicyDefaults(const PolicyMap& policy) {
+    PolicyMap policy_with_defaults;
+    policy_with_defaults.CopyFrom(policy);
+    provider_.UpdateChromePolicy(policy);
+    DCHECK(base::MessageLoopCurrent::Get());
+    base::RunLoop loop;
+    loop.RunUntilIdle();
+  }
+
   void UpdateProviderPolicy(const PolicyMap& policy) {
     PolicyMap policy_with_defaults;
     policy_with_defaults.CopyFrom(policy);
-#if defined(OS_CHROMEOS)
-    SetEnterpriseUsersDefaults(&policy_with_defaults);
-#endif
+    policy_with_defaults.ApplyEnterpriseUsersDefaults(
+        GetEnterpriseUsersDefaults());
     provider_.UpdateChromePolicy(policy_with_defaults);
     DCHECK(base::MessageLoopCurrent::Get());
     base::RunLoop loop;
@@ -1555,9 +1563,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SeparateProxyPoliciesMerging) {
   expected_value->SetInteger(key::kProxyServerMode, 3);
   expected.Set(key::kProxySettings, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD, std::move(expected_value), nullptr);
-#if defined(OS_CHROMEOS)
-  SetEnterpriseUsersDefaults(&expected);
-#endif
+  expected.ApplyEnterpriseUsersDefaults(GetEnterpriseUsersDefaults());
 
   // Check both the browser and the profile.
   const PolicyMap& actual_from_browser =
@@ -6996,6 +7002,99 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, CheckURLsInRealTime) {
   UpdateProviderPolicy(policies);
 
   EXPECT_TRUE(rt_policy_engine.CanPerformFullURLLookup());
+}
+
+// Verifies that the enterprise default policies are only applied on the profile
+// when it is managed.
+IN_PROC_BROWSER_TEST_F(PolicyTest, EnterpriseDefaultPolicies) {
+  PolicyMap initial_from_profile;
+  initial_from_profile.CopyFrom(
+      browser()
+          ->profile()
+          ->GetProfilePolicyConnector()
+          ->policy_service()
+          ->GetPolicies(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())));
+#if !defined(OS_CHROMEOS)
+  {
+    const PolicyMap& actual_from_browser =
+        g_browser_process->browser_policy_connector()
+            ->GetPolicyService()
+            ->GetPolicies(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
+    EXPECT_TRUE(actual_from_browser.size() == 0);
+  }
+#endif  // !defined(OS_CHROMEOS)
+  // Machine level policies only should not trigger enterprise user defaults
+  // to be installed since it does not always mean the browser/profile is in
+  // enterprise environment.
+  {
+    PolicyMap policies;
+    policies.Set(key::kEnableMediaRouter, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM,
+                 std::make_unique<base::Value>(true), nullptr);
+    UpdateProviderPolicyWithoutPolicyDefaults(policies);
+
+    const PolicyMap& actual_from_profile =
+        browser()
+            ->profile()
+            ->GetProfilePolicyConnector()
+            ->policy_service()
+            ->GetPolicies(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
+    PolicyMap expected;
+    expected.CopyFrom(initial_from_profile);
+    expected.Set(key::kEnableMediaRouter, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM,
+                 std::make_unique<base::Value>(true), nullptr);
+    EXPECT_TRUE(expected.Equals(actual_from_profile));
+  }
+  // Enterprise user default should be applied only on the profile if the
+  // profile is managed.
+  {
+    PolicyMap policies;
+    browser()
+        ->profile()
+        ->GetProfilePolicyConnector()
+        ->OverrideIsManagedForTesting(true);
+    UpdateProviderPolicyWithoutPolicyDefaults(policies);
+    const PolicyMap& actual_from_profile =
+        browser()
+            ->profile()
+            ->GetProfilePolicyConnector()
+            ->policy_service()
+            ->GetPolicies(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
+
+    EXPECT_FALSE(initial_from_profile.Equals(actual_from_profile));
+    PolicyMap expected;
+    expected.CopyFrom(initial_from_profile);
+    expected.ApplyEnterpriseUsersDefaults(GetEnterpriseUsersDefaults());
+    EXPECT_TRUE(expected.Equals(actual_from_profile));
+  }
+#if defined(OS_CHROMEOS)
+  // Enterprise user default should be applied only on the profile there are
+  // Active directory policies.
+  {
+    PolicyMap policies;
+    policies.Set(key::kEnableMediaRouter, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_MACHINE, POLICY_SOURCE_ACTIVE_DIRECTORY,
+                 std::make_unique<base::Value>(true), nullptr);
+    UpdateProviderPolicyWithoutPolicyDefaults(policies);
+
+    const PolicyMap& actual_from_profile =
+        browser()
+            ->profile()
+            ->GetProfilePolicyConnector()
+            ->policy_service()
+            ->GetPolicies(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
+    EXPECT_FALSE(initial_from_profile.Equals(actual_from_profile));
+
+    PolicyMap expected;
+    expected.CopyFrom(initial_from_profile);
+    expected.Set(key::kEnableMediaRouter, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_MACHINE, POLICY_SOURCE_ACTIVE_DIRECTORY,
+                 std::make_unique<base::Value>(true), nullptr);
+    expected.ApplyEnterpriseUsersDefaults(GetEnterpriseUsersDefaults());
+    EXPECT_TRUE(expected.Equals(actual_from_profile));
+  }
+#endif  // defined(OS_CHROMEOS)
 }
 
 }  // namespace policy

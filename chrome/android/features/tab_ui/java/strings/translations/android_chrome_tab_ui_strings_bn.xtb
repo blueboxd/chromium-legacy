@@ -1,4 +1,25 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
+<translation id="125153950246128346">অন্য ট্যাব দেখতে ট্যাপ করুন</translation>
+<translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" />টি ট্যাব}one{<ph name="TABS_COUNT_MANY" />টি ট্যাব}other{<ph name="TABS_COUNT_MANY" />টি ট্যাব}}</translation>
+<translation id="257674075312929031">গ্রুপ</translation>
+<translation id="2613747923081026172">গ্রুপ তৈরি করুন</translation>
+<translation id="2845873210977809562">খুলে রাখা ট্যাব বন্ধ হয়েছে</translation>
+<translation id="2977480621796371840">গ্রুপ থেকে সরান</translation>
+<translation id="4648718555153979859">আপনার ট্যাবগুলিকে এখানে একসাথে গ্রুপ করা আছে</translation>
+<translation id="5073204694187207510">ফুলস্ক্রিন গ্রিড লুকান</translation>
+<translation id="5082793167783849073">একটি গ্রুপ তৈরি করে দ্রুত পৃষ্ঠাগুলির তুলনা করুন। শুরু করতে, কোনও একটি লিঙ্ক স্পর্শ করে ধরে থাকুন।</translation>
+<translation id="5497272504048921382">খুলে রাখা ট্যাব</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" />টি ট্যাব গ্রুপ করা হয়েছে</translation>
+<translation id="5586306159936941448">ট্যাবগুলিকে গ্রুপ করতে, একটিকে ড্র্যাগ করে আরেকটির উপর নিয়ে যান</translation>
+<translation id="58326064309361797">ট্যাবগুলি গ্রুপ করতে ড্র্যাগ করুন</translation>
+<translation id="6193448654517602979">ট্যাব বেছে নিন</translation>
+<translation id="6615455863669487791">আমাকে দেখান</translation>
+<translation id="6803423358608456383">অর্ধেক স্ক্রিন জুড়ে খুলে রাখা ট্যাব</translation>
+<translation id="7559245342362162951">ফুলস্ক্রিন গ্রিডে গ্রুপের ট্যাব দেখুন</translation>
+<translation id="8582216581279205169">পূর্ণ স্ক্রিন জুড়ে খুলে রাখা ট্যাব</translation>
+<translation id="9150694013019234766">স্ক্রিনের নিচে থাকা ট্যাব গ্রুপের মধ্যে একটি ট্যাব থেকে অন্য ট্যাবে যান</translation>
+<translation id="9169594135889675189">গ্রুপে নতুন ট্যাব যোগ করুন</translation>
+<translation id="959682366969460160">সবকিছু গুছিয়ে রাখুন</translation>
 </translationbundle>

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "chrome/services/app_service/public/cpp/icon_cache.h"
 #include "chrome/services/app_service/public/cpp/icon_coalescer.h"
@@ -140,6 +141,8 @@ class AppServiceProxy : public KeyedService,
 
   AppServiceProxy(Profile* profile, service_manager::Connector* connector);
 
+  void AddAppIconSource(Profile* profile);
+
   // KeyedService overrides.
   void Shutdown() override;
 
@@ -167,6 +170,8 @@ class AppServiceProxy : public KeyedService,
   ExtensionApps extension_apps_;
   ExtensionApps extension_web_apps_;
 #endif  // OS_CHROMEOS
+
+  base::WeakPtrFactory<AppServiceProxy> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceProxy);
 };

@@ -171,6 +171,12 @@ class BackgroundTaskSchedulerUma {
         cacheEvent("Android.BackgroundTaskScheduler.TaskStopped", toUmaEnumValueFromTaskId(taskId));
     }
 
+    /** Reports metrics for migrating scheduled tasks to Protocol Buffer data format. */
+    public void reportMigrationToProto(int taskId) {
+        cacheEvent("Android.BackgroundTaskScheduler.MigrationToProto",
+                toUmaEnumValueFromTaskId(taskId));
+    }
+
     /**
      * Reports metrics for when a NativeBackgroundTask loads the native library.
      * @param taskId An id from {@link TaskIds}.

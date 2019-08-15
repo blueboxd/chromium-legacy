@@ -2039,8 +2039,9 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
           &RenderProcessHostImpl::CreateBroadcastChannelProvider,
           base::Unretained(this)));
 
-  AddUIThreadInterface(registry.get(),
-                       base::BindRepeating(&ClipboardHostImpl::Create));
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(&ClipboardHostImpl::CreateForRequest));
 
   AddUIThreadInterface(
       registry.get(),
@@ -2892,6 +2893,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     service_manager::switches::kEnableSandboxLogging,
 #endif
     switches::kAgcStartupMinVolume,
+    switches::kAllowPreCommitInput,
     switches::kAllowLoopbackInPeerConnection,
     switches::kAndroidFontsPath,
     switches::kAudioBufferSize,

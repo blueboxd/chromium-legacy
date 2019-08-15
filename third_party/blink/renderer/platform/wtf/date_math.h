@@ -45,8 +45,10 @@
 
 #include <stdint.h>
 #include <string.h>
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+#include "base/optional.h"
+#include "base/time/time.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
@@ -58,7 +60,7 @@ namespace WTF {
 // header values. net::HTTPResponseHeaders::GetTimeValuedHeader() uses
 // base::Time::FromUTCString() for the same purpose.  We should consider
 // switching to base::Time::FromUTCString() for consistency.
-WTF_EXPORT double ParseDateFromNullTerminatedCharacters(
+WTF_EXPORT base::Optional<base::Time> ParseDateFromNullTerminatedCharacters(
     const char* date_string);
 
 // utcOffset: [-720,720].
@@ -89,8 +91,13 @@ WTF_EXPORT int DayInYear(double ms, int year);
 WTF_EXPORT int MonthFromDayInYear(int day_in_year, bool leap_year);
 WTF_EXPORT int DayInMonthFromDayInYear(int day_in_year, bool leap_year);
 
-// Returns milliseconds with UTC and DST.
-WTF_EXPORT double ConvertToLocalTime(double ms);
+// Returns a TimeDelta between the UNIX epoch in the local timezone and the
+// specified time.
+//
+// For example, if the local timezone is PDT and the specified time represents
+// "2019-08-09 13:00 PDT", this function returns a TimeDelta since
+// "1970-01-01 00:00 PDT".
+WTF_EXPORT base::TimeDelta ConvertToLocalTime(base::Time time);
 
 }  // namespace WTF
 

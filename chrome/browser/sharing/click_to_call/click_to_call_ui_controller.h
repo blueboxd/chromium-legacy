@@ -31,43 +31,34 @@ class ClickToCallUiController
   static void ShowDialog(content::WebContents* web_contents,
                          const GURL& url,
                          bool hide_default_handler);
-  static void DeviceSelected(content::WebContents* web_contents,
-                             const GURL& url,
-                             const SharingDeviceInfo& device);
 
   ~ClickToCallUiController() override;
 
+  void OnDeviceSelected(const GURL& url, const SharingDeviceInfo& device);
+
   // Overridden from SharingUiController:
   base::string16 GetTitle() override;
-  std::vector<SharingDeviceInfo> GetSyncedDevices() override;
-  std::vector<App> GetApps() override;
+  PageActionIconType GetIconType() override;
+  int GetRequiredDeviceCapabilities() override;
   void OnDeviceChosen(const SharingDeviceInfo& device) override;
   void OnAppChosen(const App& app) override;
-  PageActionIconType GetIconType() override;
 
   // Called by the ClickToCallDialogView when the help text got clicked.
   void OnHelpTextClicked();
 
  protected:
   explicit ClickToCallUiController(content::WebContents* web_contents);
+
+  // Overridden from SharingUiController:
   SharingDialog* DoShowDialog(BrowserWindow* window) override;
+  void DoUpdateApps(UpdateAppsCallback callback) override;
 
  private:
   friend class content::WebContentsUserData<ClickToCallUiController>;
 
-  // Called after a message got sent to a device. Shows a new error dialog if
-  // |success| is false and updates the omnibox icon.
-  void OnMessageSentToDevice(int dialog_id, bool success);
-
-  content::WebContents* web_contents_ = nullptr;
-  SharingService* sharing_service_ = nullptr;
 
   GURL phone_url_;
   bool hide_default_handler_ = false;
-
-  // ID of the last shown dialog used to ignore events from old dialogs.
-  // TODO(yasmo): Maybe can be moved to the base class.
-  int last_dialog_id_ = 0;
 
   base::WeakPtrFactory<ClickToCallUiController> weak_ptr_factory_{this};
 

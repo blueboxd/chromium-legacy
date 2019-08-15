@@ -100,6 +100,11 @@ class TabStripLayoutHelper {
   // Removes the group header for |group|.
   void RemoveGroupHeader(TabGroupId group);
 
+  // Ensures the group header for |group| is at the correct index. Should be
+  // called externally when group membership changes but nothing else about the
+  // layout does.
+  void UpdateGroupHeaderIndex(TabGroupId group);
+
   // Changes the active tab from |prev_active_index| to |new_active_index|.
   void SetActiveTab(int prev_active_index, int new_active_index);
 

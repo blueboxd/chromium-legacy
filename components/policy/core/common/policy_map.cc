@@ -12,6 +12,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/policy/core/common/policy_merger.h"
+#include "components/policy/policy_constants.h"
 #include "components/strings/grit/components_strings.h"
 
 namespace policy {
@@ -226,6 +227,16 @@ void PolicyMap::Set(
 
 void PolicyMap::Set(const std::string& policy, Entry entry) {
   map_[policy] = std::move(entry);
+}
+
+void PolicyMap::ApplyEnterpriseUsersDefaults(
+    std::map<std::string, std::unique_ptr<base::Value>> enterprise_defaults) {
+  for (auto& it : enterprise_defaults) {
+    if (Get(it.first))
+      continue;
+    Set(it.first, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        POLICY_SOURCE_ENTERPRISE_DEFAULT, std::move(it.second), nullptr);
+  }
 }
 
 void PolicyMap::AddError(const std::string& policy, const std::string& error) {

@@ -14,7 +14,7 @@
 
     // Navigate to Downloads/photos.
     await remoteCall.navigateWithDirectoryTree(
-        appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
+        appId, '/Downloads/photos', 'My files');
 
     // Use the breadcrumbs to navigate back to Downloads.
     await remoteCall.waitAndClickElement(
@@ -38,7 +38,7 @@
 
     // Navigate to Downloads/photos.
     await remoteCall.navigateWithDirectoryTree(
-        appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
+        appId, '/Downloads/photos', 'My files');
 
     // Focus and click on "photos" in the breadcrumbs.
     const leafBreadCrumb =
@@ -72,13 +72,16 @@
     // Check the breadcrumbs for Downloads:
     // Os meu ficheiros => My files.
     // Transferências => Downloads (as in Transfers).
-    const path =
+    let path =
         await remoteCall.callRemoteTestUtil('getBreadcrumbPath', appId, []);
     chrome.test.assertEq('/Os meus ficheiros/Transferências', path);
 
     // Navigate to Downloads/photos.
-    await remoteCall.navigateWithDirectoryTree(
-        appId, RootPath.DOWNLOADS_PATH + '/photos',
-        'Os meus ficheiros/Transferências');
+    await remoteCall.waitAndClickElement(
+        appId, '[full-path-for-testing="/Downloads/photos"]');
+
+    // Wait and check breadcrumb translation.
+    await remoteCall.waitUntilCurrentDirectoryIsChanged(
+        appId, '/Os meus ficheiros/Transferências/photos');
   };
 })();

@@ -102,7 +102,7 @@ class HtmlInlineUnittest(unittest.TestCase):
 
     with self.assertRaises(Exception) as cm:
       html_inline.GetResourceFilenames(tmp_dir.GetPath('index.html'), None)
-    self.failUnlessEqual(cm.exception.message, 'Unmatched </if>')
+    self.failUnlessEqual(str(cm.exception), 'Unmatched </if>')
     tmp_dir.CleanUp()
 
   def testCompressedJavaScript(self):

@@ -591,8 +591,9 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video,
       CanvasResourceProvider::Create(
           IntSize(video->videoWidth(), video->videoHeight()),
           CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage,
-          nullptr,              // context_provider_wrapper
-          0,                    // msaa_sample_count
+          nullptr,  // context_provider_wrapper
+          0,        // msaa_sample_count
+          kLow_SkFilterQuality,
           CanvasColorParams(),  // TODO: set color space here to avoid clamping
           CanvasResourceProvider::kDefaultPresentationMode,
           nullptr,           // canvas_resource_dispatcher

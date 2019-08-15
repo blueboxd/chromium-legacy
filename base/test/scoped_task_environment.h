@@ -31,26 +31,33 @@ class ScopedTimeClockOverrides;
 
 namespace test {
 
-// ScopedTaskEnvironment allows usage of these APIs within its scope:
-// - (Thread|Sequenced)TaskRunnerHandle, on the thread where it lives
-// - base/task/post_task.h, on any thread
+// This header exposes SingleThreadTaskEnvironment and TaskEnvironment.
+// TODO(gab): Rename this header to task_environment.h and migrate all users.
 //
-// Tests that need either of these APIs should instantiate a
-// ScopedTaskEnvironment.
+// SingleThreadTaskEnvironment enables the following APIs within its scope:
+//  - (Thread|Sequenced)TaskRunnerHandle on the main thread
+//  - RunLoop on the main thread
+//
+// TaskEnvironment additionally enables:
+//  - posting to base::ThreadPool() through base/task/post_task.h.
+//
+// Hint: For content::BrowserThreads, use content::BrowserTaskEnvironment.
+//
+// Tests should prefer SingleThreadTaskEnvironment over TaskEnvironment when the
+// former is sufficient.
 //
 // Tasks posted to the (Thread|Sequenced)TaskRunnerHandle run synchronously when
-// RunLoop::Run(UntilIdle) or ScopedTaskEnvironment::RunUntilIdle is called on
-// the thread where the ScopedTaskEnvironment lives.
+// RunLoop::Run(UntilIdle) or TaskEnvironment::RunUntilIdle is called on the
+// main thread.
 //
 // The TimeSource trait can be used to request that delayed tasks be under the
-// manual control of ScopedTaskEnvironment::FastForward*() methods.
+// manual control of RunLoop::Run() and TaskEnvironment::FastForward*() methods.
 //
-// Tasks posted through base/task/post_task.h run on dedicated threads. If
-// ThreadPoolExecutionMode is QUEUED, they run when RunUntilIdle() or
-// ~ScopedTaskEnvironment is called. If ThreadPoolExecutionMode is ASYNC, they
-// run as they are posted.
+// If a TaskEnvironment's ThreadPoolExecutionMode is QUEUED, ThreadPool tasks
+// run when RunUntilIdle() or ~TaskEnvironment is called. If
+// ThreadPoolExecutionMode is ASYNC, they run as they are posted.
 //
-// All methods of ScopedTaskEnvironment must be called from the same thread.
+// All TaskEnvironment methods must be called from the main thread.
 //
 // Usage:
 //
@@ -66,17 +73,17 @@ namespace test {
 //     // destroyed last (some members that require single-threaded
 //     // initialization and tear down may need to come before -- e.g.
 //     // base::test::ScopedFeatureList). Extra traits, like TimeSource, are
-//     // best provided inline when declaring the ScopedTaskEnvironment, as
+//     // best provided inline when declaring the TaskEnvironment, as
 //     // such:
-//     base::test::ScopedTaskEnvironment scoped_task_environment_{
-//         base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+//     base::test::TaskEnvironment task_environment_{
+//         base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 //
 //     // Other members go here (or further below in private section.)
 //   };
-class ScopedTaskEnvironment {
+class TaskEnvironment {
  protected:
   // This enables a two-phase initialization for sub classes such as
-  // content::TestBrowserThreadBundle which need to provide the default task
+  // content::BrowserTaskEnvironment which need to provide the default task
   // queue because they instantiate a scheduler on the same thread. Subclasses
   // using this trait must invoke DeferredInitFromSubclass() before running the
   // task environment.
@@ -88,11 +95,11 @@ class ScopedTaskEnvironment {
     SYSTEM_TIME,
 
     // Delayed tasks use a mock clock which only advances when reaching "idle"
-    // during RunLoop::Run() call on the main thread or a FastForward*() call to
-    // this ScopedTaskEnvironment. "idle" is defined as the main thread and
-    // thread pool being out of ready tasks. When idle, time advances to the
-    // soonest delay -- between main thread and thread pool delayed tasks --
-    // according to the semantics of the current Run*() or FastForward*().
+    // during a RunLoop::Run() call on the main thread or a FastForward*() call
+    // to this TaskEnvironment. "idle" is defined as the main thread and thread
+    // pool being out of ready tasks. In that situation : time advances to the
+    // soonest delay between main thread and thread pool delayed tasks,
+    // according to the semantics of the current Run*() or FastForward*() call.
     //
     // This also mocks Time/TimeTicks::Now() with the same mock clock.
     //
@@ -138,7 +145,8 @@ class ScopedTaskEnvironment {
     // tests.
     MULTIPLE_THREADS,
     // No thread pool will be initialized. Useful for tests that want to run
-    // single threaded.
+    // single threaded. Prefer using SingleThreadTaskEnvironment over this
+    // trait.
     MAIN_THREAD_ONLY,
     DEFAULT = MULTIPLE_THREADS
   };
@@ -157,8 +165,8 @@ class ScopedTaskEnvironment {
   template <class... ArgTypes,
             class CheckArgumentsAreValid = std::enable_if_t<
                 trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
-  NOINLINE ScopedTaskEnvironment(ArgTypes... args)
-      : ScopedTaskEnvironment(
+  NOINLINE TaskEnvironment(ArgTypes... args)
+      : TaskEnvironment(
             trait_helpers::GetEnum<TimeSource, TimeSource::DEFAULT>(args...),
             trait_helpers::GetEnum<MainThreadType, MainThreadType::DEFAULT>(
                 args...),
@@ -171,7 +179,7 @@ class ScopedTaskEnvironment {
 
   // Waits until no undelayed ThreadPool tasks remain. Then, unregisters the
   // ThreadPoolInstance and the (Thread|Sequenced)TaskRunnerHandle.
-  virtual ~ScopedTaskEnvironment();
+  virtual ~TaskEnvironment();
 
   // Returns a TaskRunner that schedules tasks on the main thread.
   scoped_refptr<base::SingleThreadTaskRunner> GetMainThreadTaskRunner();
@@ -229,8 +237,8 @@ class ScopedTaskEnvironment {
 
   // Only valid for instances using TimeSource::MOCK_TIME. Returns the current
   // virtual tick time (based on a realistic Now(), sampled when this
-  // ScopedTaskEnvironment was created, and manually advanced from that point
-  // on). This is always equivalent to base::TimeTicks::Now() under
+  // TaskEnvironment was created, and manually advanced from that point on).
+  // This is always equivalent to base::TimeTicks::Now() under
   // TimeSource::MOCK_TIME.
   base::TimeTicks NowTicks() const;
 
@@ -255,7 +263,7 @@ class ScopedTaskEnvironment {
   void DescribePendingMainThreadTasks() const;
 
  protected:
-  explicit ScopedTaskEnvironment(ScopedTaskEnvironment&& other);
+  explicit TaskEnvironment(TaskEnvironment&& other);
 
   constexpr MainThreadType main_thread_type() const {
     return main_thread_type_;
@@ -265,7 +273,7 @@ class ScopedTaskEnvironment {
     return thread_pool_execution_mode_;
   }
 
-  // Returns the TimeDomain driving this ScopedTaskEnvironment.
+  // Returns the TimeDomain driving this TaskEnvironment.
   sequence_manager::TimeDomain* GetTimeDomain() const;
 
   sequence_manager::SequenceManager* sequence_manager() const;
@@ -287,12 +295,12 @@ class ScopedTaskEnvironment {
 
   // The template constructor has to be in the header but it delegates to this
   // constructor to initialize all other members out-of-line.
-  ScopedTaskEnvironment(TimeSource time_source,
-                        MainThreadType main_thread_type,
-                        ThreadPoolExecutionMode thread_pool_execution_mode,
-                        ThreadingMode threading_mode,
-                        bool subclass_creates_default_taskrunner,
-                        trait_helpers::NotATraitTag tag);
+  TaskEnvironment(TimeSource time_source,
+                  MainThreadType main_thread_type,
+                  ThreadPoolExecutionMode thread_pool_execution_mode,
+                  ThreadingMode threading_mode,
+                  bool subclass_creates_default_taskrunner,
+                  trait_helpers::NotATraitTag tag);
 
   const MainThreadType main_thread_type_;
   const ThreadPoolExecutionMode thread_pool_execution_mode_;
@@ -337,7 +345,23 @@ class ScopedTaskEnvironment {
   // |sequence_manager_|.
   THREAD_CHECKER(main_thread_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedTaskEnvironment);
+  DISALLOW_COPY_AND_ASSIGN(TaskEnvironment);
+};
+
+// TODO(gab): Mass migrate users and remove this.
+class ScopedTaskEnvironment : public TaskEnvironment {
+ public:
+  using TaskEnvironment::TaskEnvironment;
+};
+
+// SingleThreadTaskEnvironment takes the same traits as TaskEnvironment and is
+// used the exact same way. It's a short-form for
+//   TaskEnvironment{TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY, ...};
+class SingleThreadTaskEnvironment : public TaskEnvironment {
+ public:
+  template <class... ArgTypes>
+  SingleThreadTaskEnvironment(ArgTypes... args)
+      : TaskEnvironment(ThreadingMode::MAIN_THREAD_ONLY, args...) {}
 };
 
 }  // namespace test

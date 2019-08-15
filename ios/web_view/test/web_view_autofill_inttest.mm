@@ -233,8 +233,8 @@ TEST_F(WebViewAutofillTest, TestSuggestionFetchFillClear) {
   test::EvaluateJavaScript(web_view_, focus_script, &focus_error);
   ASSERT_NSEQ(nil, focus_error);
 
-  [autofill_controller_ fillSuggestion:fetched_suggestion
-                     completionHandler:nil];
+  [autofill_controller_ acceptSuggestion:fetched_suggestion
+                       completionHandler:nil];
   NSString* filled_script =
       [NSString stringWithFormat:@"document.getElementById('%@').value",
                                  kTestAddressFieldID];

@@ -125,9 +125,6 @@
 <translation id="5634636535844844681">Chromium 僅支援 Windows 7 以上版本的作業系統。</translation>
 <translation id="5680901439334282664">登入 Chromium</translation>
 <translation id="5698481217667032250">將 Chromium 的介面文字設為這種語言</translation>
-<translation id="5756484659843248772">這是 Chromium 作業系統 UI 的顯示語言</translation>
-<translation id="5768914737813585044">將 Chromium 作業系統的介面文字設為這種語言</translation>
-<translation id="5796460469508169315">Chromium 即將準備就緒。</translation>
 <translation id="5820394555380036790">Chromium 作業系統</translation>
 <translation id="5862307444128926510">歡迎使用 Chromium</translation>
 <translation id="5877064549588274448">版本已變更。請重新啟動裝置以套用變更。</translation>
@@ -190,12 +187,6 @@ Chromium 無法復原你的設定。</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">新視窗</translation>
 <translation id="734373864078049451">你瀏覽的網頁、書籤和其他 Chromium 設定都在這裡。</translation>
-<translation id="7344413941077984497">如要設定「<ph name="NEW_PROFILE_NAME" />」可瀏覽哪些網站，您可以前往 <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> 調整限制與設定。如果您未變更預設設定，「<ph name="NEW_PROFILE_NAME" />」將可瀏覽網路上的所有網站。
-
-如要禁止「<ph name="NEW_PROFILE_NAME" />」存取您的帳戶，當您不使用 Chromium 時，請務必鎖定您的設定檔。方法是按一下瀏覽器右上角的設定檔名稱，然後選取 [結束並執行 Childlock]。
-<ph name="BEGIN_LINK_2" />瞭解詳情<ph name="END_LINK_2" />
-
-如需進一步的操作說明，請登入您的 <ph name="ACCOUNT_EMAIL" /> 帳戶，查看系統寄給您的電子郵件。</translation>
 <translation id="7349591376906416160">你的系統管理員已設定由 Chromium 開啟 <ph name="ALTERNATIVE_BROWSER_NAME" /> 以存取 <ph name="TARGET_URL_HOSTNAME" />。</translation>
 <translation id="7448255348454382571">重新啟動 Chromium 作業系統</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium 開發人員版</translation>
@@ -232,6 +223,8 @@ Chromium 無法復原你的設定。</translation>
 <translation id="8417404458978023919">{0,plural, =1{請在 1 天內重新啟動 Chromium}other{請在 # 天內重新啟動 Chromium}}</translation>
 <translation id="8453117565092476964">安裝程式封存檔案已毀損或無效，請重新下載 Chromium。</translation>
 <translation id="8493179195440786826">Chromium 版本過舊</translation>
+<translation id="8494843963476918365">如果這個頁面上未顯示你的設定，請嘗試使用 <ph name="LINK_BEGIN" />
+    Chromium 瀏覽器設定<ph name="LINK_END" />。</translation>
 <translation id="85843667276690461">前往 Chromium 說明頁面</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. 版權所有。</translation>
 <translation id="8619360774459241877">正在啟動 Chromium…</translation>

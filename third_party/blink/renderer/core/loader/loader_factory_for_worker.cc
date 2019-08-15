@@ -47,17 +47,27 @@ std::unique_ptr<WebURLLoader> LoaderFactoryForWorker::CreateURLLoader(
         ->CreateURLLoader(wrapped, CreateTaskRunnerHandle(task_runner));
   }
 
-  // Use |script_loader_factory_| to load types SCRIPT (classic imported
-  // scripts) and SERVICE_WORKER (module main scripts and module imported
-  // scripts). Note that classic main scripts are also SERVICE_WORKER but
-  // loaded by the shadow page on the main thread, not here.
-  if (request.GetRequestContext() == mojom::RequestContextType::SCRIPT ||
-      request.GetRequestContext() ==
-          mojom::RequestContextType::SERVICE_WORKER) {
-    if (web_context_->GetScriptLoaderFactory()) {
-      return web_context_->GetScriptLoaderFactory()->CreateURLLoader(
-          wrapped, CreateTaskRunnerHandle(task_runner));
+  // If |global_scope_| is a service worker, use |script_loader_factory_| for
+  // the following request contexts.
+  // - SERVICE_WORKER for a classic main script, a module main script, or a
+  //   module imported script.
+  // - SCRIPT for a classic imported script.
+  //
+  // Other workers (dedicated workers, shared workers, and worklets) don't have
+  // a loader specific to script loading.
+  if (global_scope_->IsServiceWorkerGlobalScope()) {
+    if (request.GetRequestContext() ==
+            mojom::RequestContextType::SERVICE_WORKER ||
+        request.GetRequestContext() == mojom::RequestContextType::SCRIPT) {
+      // GetScriptLoaderFactory() may return nullptr in tests even for service
+      // workers.
+      if (web_context_->GetScriptLoaderFactory()) {
+        return web_context_->GetScriptLoaderFactory()->CreateURLLoader(
+            wrapped, CreateTaskRunnerHandle(task_runner));
+      }
     }
+  } else {
+    DCHECK(!web_context_->GetScriptLoaderFactory());
   }
 
   return web_context_->GetURLLoaderFactory()->CreateURLLoader(

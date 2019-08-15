@@ -1864,18 +1864,12 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "getRootPaths") {
-    // Obtain the root paths. TODO(lucmult): Remove the + /Downloads once
-    // MyFilesVolume is rolled out.
-    const std::string downloads_path =
-        base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume)
-            ? "/Downloads"
-            : "";
+    // Obtain the root paths.
     const auto downloads_root =
-        util::GetDownloadsMountPointName(profile()) + downloads_path;
+        util::GetDownloadsMountPointName(profile()) + "/Downloads";
 
     base::DictionaryValue dictionary;
     dictionary.SetString("downloads", "/" + downloads_root);
-    dictionary.SetString("downloads_path", downloads_path);
 
     if (!profile()->IsGuestSession()) {
       auto* drive_integration_service =

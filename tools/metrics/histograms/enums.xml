@@ -24307,6 +24307,10 @@ Called by update_net_error_codes.py.-->
       label="ElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop"/>
   <int value="2999"
       label="ElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTopSetPositive"/>
+  <int value="3000" label="XMLHttpRequestSynchronousInMainFrame"/>
+  <int value="3001" label="XMLHttpRequestSynchronousInCrossOriginSubframe"/>
+  <int value="3002" label="XMLHttpRequestSynchronousInSameOriginSubframe"/>
+  <int value="3003" label="XMLHttpRequestSynchronousInWorker"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

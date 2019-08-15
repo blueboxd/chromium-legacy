@@ -31,10 +31,6 @@ class ClickToCallUiControllerMock : public ClickToCallUiController {
 
   MOCK_METHOD1(OnDeviceChosen, void(const SharingDeviceInfo& device));
   MOCK_METHOD1(OnAppChosen, void(const App& app));
-
-  MOCK_METHOD0(GetSyncedDevices, std::vector<SharingDeviceInfo>());
-
-  MOCK_METHOD0(GetApps, std::vector<App>());
 };
 
 class ClickToCallDialogViewMock : public ClickToCallDialogView {
@@ -80,8 +76,8 @@ class ClickToCallDialogViewTest : public ChromeViewsTestBase {
     controller_ =
         std::make_unique<ClickToCallUiControllerMock>(web_contents_.get());
 
-    devices_ = SetUpDevices();
-    apps_ = SetUpApps();
+    controller_->set_devices_for_testing(SetUpDevices());
+    controller_->set_apps_for_testing(SetUpApps());
   }
 
   void TearDown() override {
@@ -102,10 +98,10 @@ class ClickToCallDialogViewTest : public ChromeViewsTestBase {
 
   std::vector<ClickToCallUiController::App> SetUpApps() {
     std::vector<ClickToCallUiController::App> apps;
-    apps.emplace_back(vector_icons::kOpenInNewIcon, base::UTF8ToUTF16("app_1"),
-                      std::string());
-    apps.emplace_back(vector_icons::kOpenInNewIcon, base::UTF8ToUTF16("app_2"),
-                      std::string());
+    apps.emplace_back(&vector_icons::kOpenInNewIcon, gfx::Image(),
+                      base::UTF8ToUTF16("app_1"), std::string());
+    apps.emplace_back(&vector_icons::kOpenInNewIcon, gfx::Image(),
+                      base::UTF8ToUTF16("app_2"), std::string());
     return apps;
   }
 
@@ -113,15 +109,9 @@ class ClickToCallDialogViewTest : public ChromeViewsTestBase {
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<views::Widget> anchor_widget_;
   std::unique_ptr<ClickToCallUiControllerMock> controller_;
-  std::vector<SharingDeviceInfo> devices_;
-  std::vector<ClickToCallUiController::App> apps_;
 };
 
 TEST_F(ClickToCallDialogViewTest, PopulateDialogView) {
-  EXPECT_CALL(*controller_.get(), GetSyncedDevices())
-      .WillOnce(Return(ByMove(std::move(devices_))));
-  EXPECT_CALL(*controller_.get(), GetApps())
-      .WillOnce(Return(ByMove(std::move(apps_))));
   std::unique_ptr<ClickToCallDialogView> bubble_view_ =
       std::make_unique<ClickToCallDialogViewMock>(
           anchor_widget_->GetContentsView(), nullptr, controller_.get());
@@ -134,10 +124,6 @@ TEST_F(ClickToCallDialogViewTest, DevicePressed) {
   SharingDeviceInfo sharing_device_info(
       "device_guid_2", base::UTF8ToUTF16("device2"),
       sync_pb::SyncEnums::TYPE_PHONE, base::Time::Now(), 1);
-  EXPECT_CALL(*controller_.get(), GetSyncedDevices())
-      .WillOnce(Return(ByMove(std::move(devices_))));
-  EXPECT_CALL(*controller_.get(), GetApps())
-      .WillOnce(Return(ByMove(std::move(apps_))));
   EXPECT_CALL(*controller_.get(),
               OnDeviceChosen(DeviceEquals(&sharing_device_info)));
 
@@ -155,12 +141,8 @@ TEST_F(ClickToCallDialogViewTest, DevicePressed) {
 }
 
 TEST_F(ClickToCallDialogViewTest, AppPressed) {
-  ClickToCallUiController::App app(vector_icons::kOpenInNewIcon,
+  ClickToCallUiController::App app(&vector_icons::kOpenInNewIcon, gfx::Image(),
                                    base::UTF8ToUTF16("app_1"), std::string());
-  EXPECT_CALL(*controller_.get(), GetSyncedDevices())
-      .WillOnce(Return(ByMove(std::move(devices_))));
-  EXPECT_CALL(*controller_.get(), GetApps())
-      .WillOnce(Return(ByMove(std::move(apps_))));
   EXPECT_CALL(*controller_.get(), OnAppChosen(AppEquals(&app)));
 
   std::unique_ptr<ClickToCallDialogView> bubble_view_ =

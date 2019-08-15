@@ -39,6 +39,13 @@
 #include "gpu/command_buffer/service/swap_chain_factory_dxgi.h"
 #endif  // OS_WIN
 
+#if defined(OS_FUCHSIA)
+#include <lib/zx/channel.h>
+#include "components/viz/common/gpu/vulkan_context_provider.h"
+#include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/vulkan/vulkan_implementation.h"
+#endif  // defined(OS_FUCHSIA)
+
 namespace gpu {
 
 // Overrides for flat_set lookups:
@@ -79,6 +86,7 @@ SharedImageFactory::SharedImageFactory(
     gl_backing_factory_ = std::make_unique<SharedImageBackingFactoryGLTexture>(
         gpu_preferences, workarounds, gpu_feature_info, image_factory);
   }
+
   // For X11
 #if (defined(USE_X11) || defined(OS_FUCHSIA)) && BUILDFLAG(ENABLE_VULKAN)
   if (using_vulkan_) {
@@ -113,6 +121,10 @@ SharedImageFactory::SharedImageFactory(
         std::make_unique<SwapChainFactoryDXGI>(use_passthrough);
   }
 #endif  // OS_WIN
+
+#if defined(OS_FUCHSIA)
+  vulkan_context_provider_ = context_state->vk_context_provider();
+#endif  // OS_FUCHSIA
 }
 
 SharedImageFactory::~SharedImageFactory() {
@@ -254,6 +266,44 @@ bool SharedImageFactory::PresentSwapChain(const Mailbox& mailbox) {
   return true;
 }
 #endif  // OS_WIN
+
+#if defined(OS_FUCHSIA)
+bool SharedImageFactory::RegisterSysmemBufferCollection(
+    gfx::SysmemBufferCollectionId id,
+    zx::channel token) {
+  decltype(buffer_collections_)::iterator it;
+  bool inserted;
+  std::tie(it, inserted) =
+      buffer_collections_.insert(std::make_pair(id, nullptr));
+
+  if (!inserted) {
+    DLOG(ERROR) << "RegisterSysmemBufferCollection: Could not register the "
+                   "same buffer collection twice.";
+    return false;
+  }
+
+  // If we don't have Vulkan then just drop the token. Sysmem will inform the
+  // caller about the issue. The empty entry is kept in buffer_collections_, so
+  // the caller can still call ReleaseSysmemBufferCollection().
+  if (!vulkan_context_provider_)
+    return true;
+
+  VkDevice device =
+      vulkan_context_provider_->GetDeviceQueue()->GetVulkanDevice();
+  DCHECK(device != VK_NULL_HANDLE);
+  it->second =
+      vulkan_context_provider_->GetVulkanImplementation()
+          ->RegisterSysmemBufferCollection(device, id, std::move(token));
+
+  return true;
+}
+
+bool SharedImageFactory::ReleaseSysmemBufferCollection(
+    gfx::SysmemBufferCollectionId id) {
+  auto removed = buffer_collections_.erase(id);
+  return removed > 0;
+}
+#endif  // defined(OS_FUCHSIA)
 
 // TODO(ericrk): Move this entirely to SharedImageManager.
 bool SharedImageFactory::OnMemoryDump(

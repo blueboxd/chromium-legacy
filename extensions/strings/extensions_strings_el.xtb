@@ -39,7 +39,6 @@
 <translation id="5456409301717116725">Αυτή η επέκταση περιλαμβάνει το αρχείο κλειδιού "<ph name="KEY_PATH" />". Πιθανότατα δεν θέλετε να προβείτε σε αυτήν την ενέργεια.</translation>
 <translation id="5486326529110362464">Η τιμή εισόδου για το ιδιωτικό κλειδί πρέπει να υπάρχει.</translation>
 <translation id="5627523580512561598">επέκταση <ph name="EXTENSION_NAME" /></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">Ο διαχειριστής αυτού του υπολογιστή απαιτεί την εγκατάσταση της επέκτασης <ph name="EXTENSION_NAME" />. Η εγκατάσταση δεν μπορεί να καταργηθεί.</translation>
 <translation id="6027032947578871493">Άγνωστο προϊόν <ph name="PRODUCT_ID" /> από <ph name="VENDOR_NAME" /> (σειριακός αριθμός <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME" /> από τον πάροχο υπηρεσιών <ph name="VENDOR_ID" /></translation>

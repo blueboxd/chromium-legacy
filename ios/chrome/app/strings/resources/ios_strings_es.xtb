@@ -266,6 +266,7 @@ Tus datos se han cifrado con tu frase de contraseña de sincronización. Introd�
 <translation id="4802417911091824046">El cifrado mediante frase de contraseña no incluye los métodos de pago ni las direcciones de Google Pay.
 
 Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" />.</translation>
+<translation id="4805759445554688327">El número de tarjeta no es válido</translation>
 <translation id="4807020197310989387">1 artículo de la lista de lectura no leído.</translation>
 <translation id="4818522717893377262">Añadir idioma...</translation>
 <translation id="481968316161811770">Cookies y datos de sitios web</translation>
@@ -393,6 +394,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="6476800141292307438">La página se está traduciendo al <ph name="LANGUAGE" />. Encontrarás opciones disponibles cerca de la parte inferior de la pantalla.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
 <translation id="6610002944194042868">Opciones del Traductor</translation>
+<translation id="6628106477656132239">La fecha de vencimiento no es válida</translation>
 <translation id="6642362222295953972">Cambiar a la pestaña existente</translation>
 <translation id="6643016212128521049">Eliminar</translation>
 <translation id="6656103420185847513">Editar carpeta</translation>

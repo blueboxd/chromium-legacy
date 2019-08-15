@@ -37,6 +37,7 @@
 <translation id="1419738280318246476">Buka kunci peranti untuk melaksanakan tindakan pemberitahuan</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1455242230282523554">Tunjukkan tetapan bahasa</translation>
+<translation id="1460620680449458626">Kelantangan diredamkan.</translation>
 <translation id="1467432559032391204">Kiri</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Tunjukkan tetapan pemberitahuan. Pemberitahuan dimatikan untuk satu apl}other{Tunjukkan tetapan pemberitahuan. Pemberitahuan dimatikan untuk # apl}}</translation>
@@ -159,6 +160,7 @@
 <translation id="3236488194889173876">Tiada rangkaian mudah alih tersedia</translation>
 <translation id="3249513730522716925">Tetingkap <ph name="WINDOW_TITLE" /> dialihkan daripada Meja <ph name="ACTIVE_DESK" /> ke Meja <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Apakah yang boleh anda lakukan?</translation>
+<translation id="3277674767125718685">Kelantangan dihidupkan.</translation>
 <translation id="3294437725009624529">Tetamu</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> masih dapat log masuk nanti.</translation>
 <translation id="3321628682574733415">Kod ibu bapa salah</translation>
@@ -507,6 +509,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Pengecas berkuasa rendah disambungkan</translation>
 <translation id="8683506306463609433">Pengesanan prestasi aktif</translation>
+<translation id="8721053961083920564">Togol Kelantangan. <ph name="STATE_TEXT" /></translation>
 <translation id="8734991477317290293">Papan kekunci mungkin sedang cuba mencuri ketukan kekunci anda</translation>
 <translation id="8735953464173050365">Tunjukkan tetapan papan kekunci. <ph name="KEYBOARD_NAME" /> dipilih</translation>
 <translation id="875593634123171288">Tunjukkan tetapan VPN</translation>

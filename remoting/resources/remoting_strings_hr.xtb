@@ -8,14 +8,6 @@
 <translation id="1199593201721843963">Onemogući daljinske veze</translation>
 <translation id="1291443878853470558">Ako želite da aplikacija Chromoting ima pristup ovom računalu, morate omogućiti daljinski pristup.</translation>
 <translation id="1297009705180977556">Pogreška pri povezivanju s računalom <ph name="HOSTNAME" /></translation>
-<translation id="1300633907480909701">Sigurno pristupajte svojim računalima s uređaja sa sustavom Android.
-
-• Na svim svojim računalima postavite daljinski pristup pomoću aplikacije Udaljena radna površina Chrome iz Chrome web-trgovine: https://chrome.google.com/remotedesktop.
-• Otvorite tu aplikaciju na uređaju sa sustavom Android i dodirnite svoje računalo povezano s mrežom da biste se povezali.
-
-Udaljena računala čije tipkovnice nisu postavljene na američki engleski mogu primiti netočan tekstni unos. Podrška za ostale tipkovnice stiže uskoro!
-
-Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http://goo.gl/SyrVzj) i Chromeovim pravilima o privatnosti (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(ta značajka još nije dostupna za vaše računalo)</translation>
 <translation id="1342297293546459414">Gledajte dijeljeno računalo i upravljajte njime.</translation>
 <translation id="1389790901665088353">Preuzimanje programa za instalaciju hosta Udaljene radne površine Chrome</translation>
@@ -28,7 +20,6 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="1643640058022401035">Napuštanjem ove stranice završit ćete svoju sesiju aplikacije Chromoting.</translation>
 <translation id="1654128982815600832">Omogućavanje daljinskih veza za ovo računalo…</translation>
 <translation id="170207782578677537">Nisam uspio registrirati ovo računalo.</translation>
-<translation id="1727412735341161734">Udaljena radna površina Chrome</translation>
 <translation id="174018511426417793">Nije registrirano nijedno računalo. Da biste omogućili daljinske veze s računalom, instalirajte Udaljenu radnu površinu Chrome pa kliknite "<ph name="BUTTON_NAME" />".</translation>
 <translation id="1742469581923031760">Povezivanje…</translation>
 <translation id="1770394049404108959">Ne mogu otvoriti aplikaciju.</translation>
@@ -46,13 +37,6 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="2078880767960296260">Postupak hosta</translation>
 <translation id="20876857123010370">Način dodirne podloge</translation>
 <translation id="2089514346391228378">Na ovom su računalu omogućene daljinske veze.</translation>
-<translation id="2118549242412205620">Sigurno pristupajte svojim računalima s uređaja sa sustavom Android.
-
-• Na svim svojim računalima postavite daljinski pristup pomoću aplikacije Udaljena radna površina Chrome iz Chrome web-trgovine: https://chrome.google.com/remotedesktop.
-• Otvorite tu aplikaciju na uređaju sa sustavom Android i dodirnite svoje računalo povezano s mrežom da biste se povezali.
-
-Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http://goo.gl/SyrVzj) i Chromeovim pravilima o privatnosti (http://goo.gl/0uXE5d).</translation>
-<translation id="2124408767156847088">Sigurno pristupajte svojim računalima s uređaja sa sustavom Android.</translation>
 <translation id="2208514473086078157">Postavke pravila ne dopuštaju dijeljenje ovog računala kao hosta za Udaljenu radnu površinu Chrome. Obratite se administratoru sustava za pomoć.</translation>
 <translation id="2220529011494928058">Prijavite poteškoću</translation>
 <translation id="2221097377466213233">Upotrijebite desni Ctrl za tipku Win (⌘ na Macu)</translation>
@@ -91,11 +75,6 @@ Ako opcija "<ph name="SERVICE_SCRIPT_NAME" />" već postoji i okvir je potvrđen
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">Došlo je mrežne pogreške. Ponovo ćemo pokrenuti aplikaciju kad se vaš uređaj opet poveže s mrežom.</translation>
 <translation id="2891243864890517178">Za Mac (OS X Yosemite 10.10 i novije verzije)</translation>
-<translation id="289405675947420287">Sigurno pristupajte računalu s iOS uređaja. Brzo je, jednostavno i besplatno.
-
-• Na računalu kojemu želite daljinski pristupiti preuzmite aplikaciju Udaljena radna površina Chrome iz Chrome web-trgovine.
-• Instalirajte softver Udaljena radna površina Chrome i slijedite upute da biste dovršili postavljanje.
-• Na iOS uređaju otvorite aplikaciju i dodirnite bilo koje od svojih online računala da biste se povezali.</translation>
 <translation id="2894654864775534701">To se računalo trenutačno dijeli pod drugim računom.</translation>
 <translation id="2919669478609886916">Ovaj uređaj trenutačno dijelite s drugim korisnikom. Želite li nastaviti dijeljenje?</translation>
 <translation id="2921543551052660690">Prethodno ste se prijavili kao <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Da biste pristupali svojim računalima putem tog računa, <ph name="LINK_BEGIN" />prijavite se na Chromium<ph name="LINK_END" /> tim računom i ponovo instalirajte Chromoting.</translation>
@@ -109,7 +88,6 @@ Ako opcija "<ph name="SERVICE_SCRIPT_NAME" />" već postoji i okvir je potvrđen
 <translation id="310979712355504754">Izbriši sve</translation>
 <translation id="3150823315463303127">Host nije uspio pročitati pravila.</translation>
 <translation id="3171922709365450819">Klijent ne podržava taj uređaj jer je potrebna autentifikacija treće strane.</translation>
-<translation id="3194245623920924351">Udaljena radna površina Chrome</translation>
 <translation id="3197730452537982411">Udaljena radna površina</translation>
 <translation id="324272851072175193">Pošalji te upute e-poštom</translation>
 <translation id="3258789396564295715">Ovom računalu možete sigurno pristupiti pomoću Udaljene radne površine Chrome.</translation>
@@ -174,13 +152,6 @@ Ako opcija "<ph name="SERVICE_SCRIPT_NAME" />" već postoji i okvir je potvrđen
 <translation id="4660011489602794167">Prikaži tipkovnicu</translation>
 <translation id="4703302905453407178">Obavezna je komponenta prestala funkcionirati. Prijavite problem razvojnim programerima.</translation>
 <translation id="4703799847237267011">Vaša sesija aplikacije Chromoting završila je.</translation>
-<translation id="4706355010316049867">Chrome
-Udaljena
-Radna površina
-Pristup
-Podrška
-Računalo
-PC</translation>
 <translation id="4736223761657662401">Povijest veza</translation>
 <translation id="4741792197137897469">Autentifikacija nije uspjela. Prijavite se ponovo u Chrome.</translation>
 <translation id="477305884757156764">Aplikacija je prespora.</translation>
@@ -252,7 +223,6 @@ PC</translation>
 <translation id="6381670701864002291">Nešto drugo.</translation>
 <translation id="6398765197997659313">Izađi iz cijelog zaslona</translation>
 <translation id="6441316101718669559">Ova platforma ne podržava integraciju radne površine. Aplikacija se može upotrebljavati, ali uz lošiji korisnički doživljaj.</translation>
-<translation id="6502629188777329097">Siguran pristup računalu</translation>
 <translation id="652218476070540101">U tijeku je ažuriranje PIN-a za ovo računalo…</translation>
 <translation id="6527303717912515753">Podijeli</translation>
 <translation id="6541219117979389420">Zapisnici aplikacija mogu uključivati osobne podatke, uključujući vaš identitet (e-adresu) te nazive i svojstva datoteka i mapa na Google disku.</translation>
@@ -286,7 +256,6 @@ PC</translation>
 <translation id="7116737094673640201">Dobro došli na Udaljenu radnu površinu Chrome</translation>
 <translation id="7144878232160441200">Pokušaj ponovo</translation>
 <translation id="7149517134817561223">Aplikacija za izdavanje naredbi hostu Udaljene radne površine Chrome.</translation>
-<translation id="7213491505512310433">Poboljšanja stabilnosti i ispravci programskih pogrešaka.</translation>
 <translation id="7215059001581613786">Unesite PIN koji se sastoji od šest ili više znamenki.</translation>
 <translation id="7312846573060934304">Host je izvan mreže.</translation>
 <translation id="7319983568955948908">Zaustavi dijeljenje</translation>

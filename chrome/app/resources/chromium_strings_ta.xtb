@@ -125,9 +125,6 @@
 <translation id="5634636535844844681">Windows 7 அல்லது அதற்குப் பிந்தைய பதிப்புகளில் மட்டுமே Chromium இயங்கும்.</translation>
 <translation id="5680901439334282664">Chromium இல் உள்நுழைக</translation>
 <translation id="5698481217667032250">Chromiumஐ இந்த மொழியில் காட்டு</translation>
-<translation id="5756484659843248772">Chromium OS UIயைக் காட்ட இந்த மொழி பயன்படுத்தப்படும்</translation>
-<translation id="5768914737813585044">Chromium OSஐ இந்த மொழியில் காட்டு</translation>
-<translation id="5796460469508169315">Chromium கிட்டத்தட்ட தயாராகிவிட்டது.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Chromium க்கு வரவேற்கிறோம்</translation>
 <translation id="5877064549588274448">சேனல் மாற்றப்பட்டது. மாற்றங்களைச் செயல்படுத்த உங்கள் சாதனத்தை மீண்டும் தொடங்கவும்.</translation>
@@ -190,12 +187,6 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">புதிய சாளரம்</translation>
 <translation id="734373864078049451">உங்களின் இணையம், புக்மார்க்குகள் மற்றும் பிற Chromium உருப்படிகள் இங்கே உள்ளன.</translation>
-<translation id="7344413941077984497"><ph name="NEW_PROFILE_NAME" /> எந்த இணையதளங்களைப் பார்க்கலாம் என்பதை அமைக்க, <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />க்குச் சென்று கட்டுப்பாடுகளையும் அமைப்புகளையும் உள்ளமைக்கலாம். இயல்புநிலை அமைப்புகளை மாற்றவில்லை எனில், <ph name="NEW_PROFILE_NAME" /> இணையத்தில் எல்லா தளங்களிலும் உலாவ முடியும்.
-
-உங்கள் கணக்கை அணுகாதபடி <ph name="NEW_PROFILE_NAME" />ஐத் தடுக்க, நீங்கள் Chromiumஐப் பயன்படுத்தாத போது தவறாமல் உங்கள் சுயவிவரத்தைப் பூட்டவும். இதைச் செய்ய, உலாவியின் மேல் வலது மூலையில் உள்ள சுயவிவரப் பெயரைக் கிளிக் செய்து, "வெளியேறி, குழந்தைப்பூட்டை இயக்கு" என்பதைத் தேர்ந்தெடுக்கவும்.
-<ph name="BEGIN_LINK_2" />மேலும் அறிக<ph name="END_LINK_2" />
-
-தொடர்ச்சியான வழிமுறைகளுக்கு, <ph name="ACCOUNT_EMAIL" /> இல் உங்கள் மின்னஞ்சலைப் பார்க்கவும்.</translation>
 <translation id="7349591376906416160"><ph name="ALTERNATIVE_BROWSER_NAME" /> மூலம் <ph name="TARGET_URL_HOSTNAME" /> இணைப்பைப் பார்ப்பதற்கு உங்கள் சிஸ்டம் நிர்வாகி Chromiumமை உள்ளமைத்துள்ளார்.</translation>
 <translation id="7448255348454382571">Chromium OSஸை மீண்டும் தொடங்கவும்</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - டெவெலப்பர்களுக்கான Chromium</translation>
@@ -232,6 +223,8 @@
 <translation id="8417404458978023919">{0,plural, =1{ஒரு நாளுக்குள் Chromiumமை மீண்டும் தொடங்கவும்}other{# நாட்களுக்குள் Chromiumமை மீண்டும் தொடங்கவும்}}</translation>
 <translation id="8453117565092476964">நிறுவி காப்பகம் சிதைந்துள்ளது அல்லது தவறானது. Chromium ஐ மீண்டும் பதிவிறக்கவும்.</translation>
 <translation id="8493179195440786826">Chromium காலாவதியானது</translation>
+<translation id="8494843963476918365">இந்தப் பக்கத்தில் ஏதேனும் ஓர் அமைப்பைப் பார்க்க முடியவில்லையெனில் எங்களின் <ph name="LINK_BEGIN" />
+    Chromium உலாவி அமைப்புகளை<ph name="LINK_END" /> முயன்று பார்க்கவும்.</translation>
 <translation id="85843667276690461">Chromium ஐப் பயன்படுத்தி உதவி பெறுக</translation>
 <translation id="8586442755830160949">பதிப்புரிமை <ph name="YEAR" /> Chromium உருவாக்குநர்கள். அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.</translation>
 <translation id="8619360774459241877">Chromiumமைத் தொடங்குகிறது...</translation>

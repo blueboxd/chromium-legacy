@@ -13,7 +13,6 @@
 #include "ash/system/message_center/ash_popup_alignment_delegate.h"
 #include "ash/system/message_center/message_center_ui_controller.h"
 #include "ash/system/message_center/message_center_ui_delegate.h"
-#include "ash/system/message_center/unified_message_center_bubble.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_tray_view.h"
@@ -163,7 +162,6 @@ UnifiedSystemTray::~UnifiedSystemTray() {
   // Close bubble immediately when the bubble is closed on dtor.
   if (bubble_)
     bubble_->CloseNow();
-  message_center_bubble_.reset();
   bubble_.reset();
 }
 
@@ -317,15 +315,10 @@ void UnifiedSystemTray::ShowBubbleInternal(bool show_by_click) {
   slider_bubble_controller_->CloseBubble();
 
   bubble_ = std::make_unique<UnifiedSystemTrayBubble>(this, show_by_click);
-
-  if (features::IsUnifiedMessageCenterRefactorEnabled())
-    message_center_bubble_ = std::make_unique<UnifiedMessageCenterBubble>(this);
-
   SetIsActive(true);
 }
 
 void UnifiedSystemTray::HideBubbleInternal() {
-  message_center_bubble_.reset();
   bubble_.reset();
   SetIsActive(false);
 }

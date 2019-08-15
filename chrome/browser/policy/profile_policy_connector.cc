@@ -22,6 +22,7 @@
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service_impl.h"
 #include "components/policy/core/common/schema_registry_tracking_policy_provider.h"
+#include "components/user_manager/user.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part.h"
@@ -31,7 +32,6 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 #include "chrome/browser/chromeos/policy/login_profile_policy_provider.h"
-#include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #endif
 
@@ -50,6 +50,7 @@ void ProfilePolicyConnector::Init(
     bool force_immediate_load) {
   configuration_policy_provider_ = configuration_policy_provider;
   policy_store_ = policy_store;
+  user_ = user;
 
 #if defined(OS_CHROMEOS)
   auto* browser_policy_connector =
@@ -117,7 +118,8 @@ void ProfilePolicyConnector::Init(
   }
 #endif
 
-  policy_service_ = std::make_unique<PolicyServiceImpl>(policy_providers_);
+  policy_service_ = std::make_unique<PolicyServiceImpl>(
+      policy_providers_, /*enterprise_users_default_delegate=*/this);
 
 #if defined(OS_CHROMEOS)
   if (is_primary_user_) {
@@ -138,6 +140,20 @@ void ProfilePolicyConnector::InitForTesting(
 
 void ProfilePolicyConnector::OverrideIsManagedForTesting(bool is_managed) {
   is_managed_override_.reset(new bool(is_managed));
+}
+
+bool ProfilePolicyConnector::ShouldApplyEnterpriseUsersDefault() {
+#if defined(OS_CHROMEOS)
+  if (!user_) {
+    // This can be the sign-in screen or lock screen Profile.
+    return false;
+  }
+
+  if (user_->IsChild() || user_->IsSupervised())
+    return false;
+#endif
+
+  return IsManaged();
 }
 
 void ProfilePolicyConnector::Shutdown() {

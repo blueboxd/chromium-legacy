@@ -65,14 +65,17 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         private final String mNetworkIdentifier;
         // Indicates if this network is using DNS-over-TLS.
         private final boolean mIsPrivateDnsActive;
+        // Indicates the DNS-over-TLS server in use, if specified.
+        private final String mPrivateDnsServerName;
 
         public NetworkState(boolean connected, int type, int subtype, String networkIdentifier,
-                boolean isPrivateDnsActive) {
+                boolean isPrivateDnsActive, String privateDnsServerName) {
             mConnected = connected;
             mType = type;
             mSubtype = subtype;
             mNetworkIdentifier = networkIdentifier == null ? "" : networkIdentifier;
             mIsPrivateDnsActive = isPrivateDnsActive;
+            mPrivateDnsServerName = privateDnsServerName == null ? "" : privateDnsServerName;
         }
 
         public boolean isConnected() {
@@ -164,6 +167,13 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         public boolean isPrivateDnsActive() {
             return mIsPrivateDnsActive;
         }
+
+        /**
+         * Returns the DNS-over-TLS server in use, if specified.
+         */
+        public String getPrivateDnsServerName() {
+            return mPrivateDnsServerName;
+        }
     }
 
     /** Queries the ConnectivityManager for information about the current connection. */
@@ -232,14 +242,18 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             }
             networkInfo = processActiveNetworkInfo(networkInfo);
             if (networkInfo == null) {
-                return new NetworkState(false, -1, -1, null, false);
+                return new NetworkState(false, -1, -1, null, false, "");
             }
             if (network != null) {
-                return new NetworkState(true, networkInfo.getType(), networkInfo.getSubtype(),
-                        String.valueOf(networkToNetId(network)),
-                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
-                                && AndroidNetworkLibrary.isPrivateDnsActive(
-                                           mConnectivityManager.getLinkProperties(network)));
+                DnsStatus dnsStatus = AndroidNetworkLibrary.getDnsStatus(network);
+                if (dnsStatus == null) {
+                    return new NetworkState(true, networkInfo.getType(), networkInfo.getSubtype(),
+                            String.valueOf(networkToNetId(network)), false, "");
+                } else {
+                    return new NetworkState(true, networkInfo.getType(), networkInfo.getSubtype(),
+                            String.valueOf(networkToNetId(network)),
+                            dnsStatus.getPrivateDnsActive(), dnsStatus.getPrivateDnsServerName());
+                }
             }
             assert Build.VERSION.SDK_INT < Build.VERSION_CODES.M;
             // If Wifi, then fetch SSID also
@@ -247,14 +261,14 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
                 // Since Android 4.2 the SSID can be retrieved from NetworkInfo.getExtraInfo().
                 if (networkInfo.getExtraInfo() != null && !"".equals(networkInfo.getExtraInfo())) {
                     return new NetworkState(true, networkInfo.getType(), networkInfo.getSubtype(),
-                            networkInfo.getExtraInfo(), false);
+                            networkInfo.getExtraInfo(), false, "");
                 }
                 // Fetch WiFi SSID directly from WifiManagerDelegate if not in NetworkInfo.
                 return new NetworkState(true, networkInfo.getType(), networkInfo.getSubtype(),
-                        wifiManagerDelegate.getWifiSsid(), false);
+                        wifiManagerDelegate.getWifiSsid(), false, "");
             }
             return new NetworkState(
-                    true, networkInfo.getType(), networkInfo.getSubtype(), null, false);
+                    true, networkInfo.getType(), networkInfo.getSubtype(), null, false, "");
         }
 
         // Fetches NetworkInfo and records UMA for NullPointerExceptions.
@@ -1128,7 +1142,9 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         NetworkState networkState = getCurrentNetworkState();
         if (networkState.getConnectionType() != mNetworkState.getConnectionType()
                 || !networkState.getNetworkIdentifier().equals(mNetworkState.getNetworkIdentifier())
-                || networkState.isPrivateDnsActive() != mNetworkState.isPrivateDnsActive()) {
+                || networkState.isPrivateDnsActive() != mNetworkState.isPrivateDnsActive()
+                || !networkState.getPrivateDnsServerName().equals(
+                        mNetworkState.getPrivateDnsServerName())) {
             mObserver.onConnectionTypeChanged(networkState.getConnectionType());
         }
         if (networkState.getConnectionType() != mNetworkState.getConnectionType()

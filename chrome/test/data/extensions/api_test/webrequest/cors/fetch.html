@@ -1,0 +1,13 @@
+<!--
+ * Copyright 2019 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+-->
+<script>
+const hostname = 'cors.example.com';
+const origin = location.protocol + '//' + hostname + ':' + location.port;
+const path = '/extensions/api_test/webrequest/cors/accept';
+const url = origin + path;
+
+fetch(url);
+</script>

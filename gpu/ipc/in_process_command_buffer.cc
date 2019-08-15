@@ -240,6 +240,17 @@ class InProcessCommandBuffer::SharedImageInterface
     NOTREACHED();
   }
 
+#if defined(OS_FUCHSIA)
+  void RegisterSysmemBufferCollection(gfx::SysmemBufferCollectionId id,
+                                      zx::channel token) override {
+    NOTREACHED();
+  }
+  void ReleaseSysmemBufferCollection(
+      gfx::SysmemBufferCollectionId id) override {
+    NOTREACHED();
+  }
+#endif  // defined(OS_FUCHSIA)
+
   void UpdateSharedImage(const SyncToken& sync_token,
                          const Mailbox& mailbox) override {
     UpdateSharedImage(sync_token, nullptr, mailbox);

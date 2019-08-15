@@ -11,15 +11,12 @@
 #include "base/bind.h"
 #include "base/process/launch.h"
 #include "base/task/post_task.h"
-#include "base/time/clock.h"
-#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/power/ml/adaptive_screen_brightness_ukm_logger.h"
 #include "chrome/browser/chromeos/power/ml/adaptive_screen_brightness_ukm_logger_impl.h"
-#include "chrome/browser/chromeos/power/ml/real_boot_clock.h"
 #include "chrome/browser/chromeos/power/ml/recent_events_counter.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -112,12 +109,8 @@ AdaptiveScreenBrightnessManager::AdaptiveScreenBrightnessManager(
     AccessibilityManager* accessibility_manager,
     MagnificationManager* magnification_manager,
     viz::mojom::VideoDetectorObserverRequest request,
-    std::unique_ptr<base::RepeatingTimer> periodic_timer,
-    base::Clock* clock,
-    std::unique_ptr<BootClock> boot_clock)
-    : clock_(clock),
-      boot_clock_(std::move(boot_clock)),
-      periodic_timer_(std::move(periodic_timer)),
+    std::unique_ptr<base::RepeatingTimer> periodic_timer)
+    : periodic_timer_(std::move(periodic_timer)),
       ukm_logger_(std::move(ukm_logger)),
       user_activity_observer_(this),
       power_manager_client_observer_(this),
@@ -180,8 +173,7 @@ AdaptiveScreenBrightnessManager::CreateInstance() {
           std::make_unique<AdaptiveScreenBrightnessUkmLoggerImpl>(), detector,
           power_manager_client, accessibility_manager, magnification_manager,
           mojo::MakeRequest(&video_observer_screen_brightness_logger),
-          std::make_unique<base::RepeatingTimer>(),
-          base::DefaultClock::GetInstance(), std::make_unique<RealBootClock>());
+          std::make_unique<base::RepeatingTimer>());
   aura::Env::GetInstance()
       ->context_factory_private()
       ->GetHostFrameSinkManager()
@@ -195,7 +187,7 @@ void AdaptiveScreenBrightnessManager::OnUserActivity(
     const ui::Event* const event) {
   if (!event)
     return;
-  const base::TimeDelta time_since_boot = boot_clock_->GetTimeSinceBoot();
+  const base::TimeDelta time_since_boot = boot_clock_.GetTimeSinceBoot();
   // Update |start_activity_time_since_boot_| if the time since the last
   // activity is at least kInactivityDuration. An absense of activity for this
   // length of time indicates that one activity period has ended and the next
@@ -294,7 +286,7 @@ void AdaptiveScreenBrightnessManager::TabletModeEventReceived(
 
 void AdaptiveScreenBrightnessManager::OnVideoActivityStarted() {
   is_video_playing_ = true;
-  const base::TimeDelta time_since_boot = boot_clock_->GetTimeSinceBoot();
+  const base::TimeDelta time_since_boot = boot_clock_.GetTimeSinceBoot();
   if (!last_activity_time_since_boot_.has_value() ||
       time_since_boot - *last_activity_time_since_boot_ >=
           kInactivityDuration) {
@@ -305,7 +297,7 @@ void AdaptiveScreenBrightnessManager::OnVideoActivityStarted() {
 
 void AdaptiveScreenBrightnessManager::OnVideoActivityEnded() {
   is_video_playing_ = false;
-  last_activity_time_since_boot_ = boot_clock_->GetTimeSinceBoot();
+  last_activity_time_since_boot_ = boot_clock_.GetTimeSinceBoot();
 }
 
 void AdaptiveScreenBrightnessManager::OnTimerFired() {
@@ -352,7 +344,7 @@ void AdaptiveScreenBrightnessManager::LogEvent() {
     return;
   }
 
-  const base::TimeDelta time_since_boot = boot_clock_->GetTimeSinceBoot();
+  const base::TimeDelta time_since_boot = boot_clock_.GetTimeSinceBoot();
 
   ScreenBrightnessEvent screen_brightness;
   ScreenBrightnessEvent::Event* const event = screen_brightness.mutable_event();
@@ -372,7 +364,7 @@ void AdaptiveScreenBrightnessManager::LogEvent() {
   ScreenBrightnessEvent::Features::ActivityData* const activity_data =
       features->mutable_activity_data();
 
-  const base::Time now = clock_->Now();
+  const base::Time now = base::Time::Now();
   activity_data->set_time_of_day_sec((now - now.LocalMidnight()).InSeconds());
 
   base::Time::Exploded exploded;

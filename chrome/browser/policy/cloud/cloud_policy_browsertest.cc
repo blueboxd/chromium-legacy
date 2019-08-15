@@ -291,6 +291,13 @@ class CloudPolicyTest : public InProcessBrowserTest,
     return profile_connector->policy_service();
   }
 
+  void ForceManagedState() {
+    browser()
+        ->profile()
+        ->GetProfilePolicyConnector()
+        ->OverrideIsManagedForTesting(true);
+  }
+
   invalidation::FakeInvalidationService* GetInvalidationService() {
     return static_cast<invalidation::FakeInvalidationService*>(
         static_cast<invalidation::ProfileInvalidationProvider*>(
@@ -329,6 +336,7 @@ class CloudPolicyTest : public InProcessBrowserTest,
 };
 
 IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicy) {
+  ForceManagedState();
   PolicyService* policy_service = GetPolicyService();
   {
     base::RunLoop run_loop;
@@ -339,8 +347,9 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicy) {
 
   PolicyMap default_policy;
   GetExpectedDefaultPolicy(&default_policy);
-  EXPECT_TRUE(default_policy.Equals(policy_service->GetPolicies(
-      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))));
+  const auto& chrome_policies = policy_service->GetPolicies(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
+  EXPECT_TRUE(default_policy.Equals(chrome_policies));
 
   ASSERT_NO_FATAL_FAILURE(SetServerPolicy(GetTestPolicy("google.com", 0)));
   PolicyMap expected;
@@ -358,6 +367,7 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicy) {
 #if defined(OS_CHROMEOS)
 // ENTERPRISE_DEFAULT policies only are supported on Chrome OS currently.
 IN_PROC_BROWSER_TEST_F(CloudPolicyTest, EnsureDefaultPoliciesSet) {
+  ForceManagedState();
   PolicyService* policy_service = GetPolicyService();
   {
     base::RunLoop run_loop;
@@ -379,6 +389,7 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, EnsureDefaultPoliciesSet) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(CloudPolicyTest, InvalidatePolicy) {
+  ForceManagedState();
   PolicyService* policy_service = GetPolicyService();
   policy_service->AddObserver(POLICY_DOMAIN_CHROME, this);
 
@@ -416,6 +427,7 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, InvalidatePolicy) {
 
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicyWithRotatedKey) {
+  ForceManagedState();
   PolicyService* policy_service = GetPolicyService();
   {
     base::RunLoop run_loop;

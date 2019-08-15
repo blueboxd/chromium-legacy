@@ -457,8 +457,7 @@ void ExternalVkImageBacking::Destroy() {
   if (texture_) {
     // Ensure that a context is current before removing the ref and calling
     // glDeleteTextures.
-    if (!gl::g_current_gl_context)
-      context_state()->MakeCurrent(nullptr, true /* need_gl */);
+    context_state()->MakeCurrent(nullptr, true /* need_gl */);
     texture_->RemoveLightweightRef(have_context());
   }
 }

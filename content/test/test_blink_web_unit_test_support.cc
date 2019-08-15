@@ -346,7 +346,7 @@ blink::InterfaceProvider* TestBlinkWebUnitTestSupport::GetInterfaceProvider() {
 void TestBlinkWebUnitTestSupport::BindClipboardHost(
     mojo::ScopedMessagePipeHandle handle) {
   mock_clipboard_host_->Bind(
-      blink::mojom::ClipboardHostRequest(std::move(handle)));
+      mojo::PendingReceiver<blink::mojom::ClipboardHost>(std::move(handle)));
 }
 
 // static

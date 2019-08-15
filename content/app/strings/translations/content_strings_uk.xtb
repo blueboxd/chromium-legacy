@@ -87,6 +87,7 @@
 <translation id="3960700977367013758">смуга прокрутки</translation>
 <translation id="4103419683916926126">Мілісекунди</translation>
 <translation id="4151657705144244502">зображення</translation>
+<translation id="4160057747563657758">номер телефону</translation>
 <translation id="4193965531860883258">передмова</translation>
 <translation id="4201051445878709314">Показати попередній місяць</translation>
 <translation id="421884353938374759">вибір кольору</translation>
@@ -129,7 +130,7 @@
 <translation id="5466621249238537318">Виберіть один або декілька файлів.</translation>
 <translation id="5468998798572797635">вийти з повноекранного режиму</translation>
 <translation id="5516424706154626233">засіб вибору дати</translation>
-<translation id="5537725057119320332">Акторський склад</translation>
+<translation id="5537725057119320332">Трансляція екрана</translation>
 <translation id="5546461542133609677">увімкнути звук</translation>
 <translation id="561939826962581046">час</translation>
 <translation id="5630795885300617244">Двічі торкніться ліворуч або праворуч, щоб пропустити 10 с</translation>
@@ -243,6 +244,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> КБ</translation>
 <translation id="8987927404178983737">Місяць</translation>
 <translation id="901493112792887934">поточний час у секундах</translation>
+<translation id="901834265349196618">електронна адреса</translation>
 <translation id="9048119486235211610">навігація</translation>
 <translation id="9062295712474918030">документ</translation>
 <translation id="9062307380734144336">Виберіть, щоб перемикати між опціями "відтворити" та "призупинити"</translation>

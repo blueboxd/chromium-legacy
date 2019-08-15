@@ -8,14 +8,6 @@
 <translation id="1199593201721843963">Inhabilitar conexiones remotas</translation>
 <translation id="1291443878853470558">Si quieres utilizar Chromoting para acceder a este ordenador, debes habilitar las conexiones remotas.</translation>
 <translation id="1297009705180977556">No se ha podido establecer conexión con <ph name="HOSTNAME" /></translation>
-<translation id="1300633907480909701">Accede de forma segura a tus ordenadores desde tu dispositivo Android.
-
-• En todos tus ordenadores, configura el acceso remoto mediante la aplicación Escritorio Remoto de Chrome de Chrome Web Store: https://chrome.google.com/remotedesktop
-• En tu dispositivo Android, abre la aplicación y toca cualquiera de tus ordenadores online para conectarte.
-
-Los ordenadores remotos con teclados que no estén en inglés norteamericano pueden recibir entradas de texto incorrectas. En breve se proporcionará asistencia para otros diseños de teclado.
-
-Para obtener información sobre la privacidad, consulta la Política de Privacidad de Google (http://goo.gl/SyrVzj) y la Política de Privacidad de Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(esta función aún no está disponible para tu ordenador)</translation>
 <translation id="1342297293546459414">Permite ver y controlar un ordenador compartido.</translation>
 <translation id="1389790901665088353">Descargar programa de instalación del host de Escritorio Remoto de Chrome</translation>
@@ -28,7 +20,6 @@ Para obtener información sobre la privacidad, consulta la Política de Privacid
 <translation id="1643640058022401035">Si abandonas esta página, finalizará tu sesión en Chromoting.</translation>
 <translation id="1654128982815600832">Habilitando conexiones remotas con este ordenador...</translation>
 <translation id="170207782578677537">No se ha podido registrar este ordenador.</translation>
-<translation id="1727412735341161734">Escritorio Remoto de Chrome</translation>
 <translation id="174018511426417793">No tienes ningún ordenador registrado. Para habilitar conexiones remotas con un ordenador, instala Escritorio Remoto de Chrome en él y haz clic en <ph name="BUTTON_NAME" />.</translation>
 <translation id="1742469581923031760">Conectando...</translation>
 <translation id="1770394049404108959">No puedo abrir la aplicación.</translation>
@@ -46,13 +37,6 @@ Para obtener información sobre la privacidad, consulta la Política de Privacid
 <translation id="2078880767960296260">Proceso de host</translation>
 <translation id="20876857123010370">Modo de panel táctil</translation>
 <translation id="2089514346391228378">Se han habilitado las conexiones remotas con este ordenador.</translation>
-<translation id="2118549242412205620">Accede de forma segura a tus ordenadores desde tu dispositivo Android.
-
-• En todos tus ordenadores, configura el acceso remoto mediante la aplicación Escritorio Remoto de Chrome de Chrome Web Store: https://chrome.google.com/remotedesktop
-• En tu dispositivo Android, abre la aplicación y toca cualquiera de tus ordenadores online para conectarte.
-
-Para obtener información sobre la privacidad, consulta la Política de Privacidad de Google (http://goo.gl/SyrVzj) y la Política de Privacidad de Chrome (http://goo.gl/0uXE5d).</translation>
-<translation id="2124408767156847088">Accede de forma segura a tus ordenadores desde tu dispositivo Android.</translation>
 <translation id="2208514473086078157">La configuración de la política no permite compartir este ordenador como un host de Escritorio Remoto de Chrome. Ponte en contacto con el administrador del sistema para obtener asistencia.</translation>
 <translation id="2220529011494928058">Notificar un problema</translation>
 <translation id="2221097377466213233">Utilizar Ctrl derecho para tecla Windows (⌘ en Mac)</translation>
@@ -91,11 +75,6 @@ Si "<ph name="SERVICE_SCRIPT_NAME" />" ya estaba marcado, es posible que tengas 
 <translation id="2851754573186462851">Flujo de aplicaciones de Chromium</translation>
 <translation id="2888969873284818612">Se ha producido un error de red. La aplicación se reiniciará cuando el dispositivo vuelva a estar conectado a Internet.</translation>
 <translation id="2891243864890517178">Para Mac (OS X Yosemite 10.10 y versiones superiores)</translation>
-<translation id="289405675947420287">Accede a tu ordenador desde tu dispositivo iOS de forma segura, rápida, sencilla y gratuita.
-
-• Descarga la aplicación Escritorio Remoto de Chrome desde Chrome Web Store en el ordenador al que quieras acceder de forma remota.
-• Instala el software Escritorio Remoto de Chrome y sigue las instrucciones para completar la configuración.
-• En tu dispositivo iOS, abre la aplicación y toca cualquiera de tus ordenadores online para establecer la conexión.</translation>
 <translation id="2894654864775534701">Actualmente, este ordenador está compartido con otra cuenta.</translation>
 <translation id="2919669478609886916">Actualmente estás compartiendo este ordenador con otro usuario. ¿Quieres seguir compartiéndolo?</translation>
 <translation id="2921543551052660690">Anteriormente, iniciaste sesión como <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Para acceder a los ordenadores de esa cuenta, <ph name="LINK_BEGIN" />inicia sesión en Chromium<ph name="LINK_END" /> con dicha cuenta y vuelve a instalar Chromoting.</translation>
@@ -109,7 +88,6 @@ Si "<ph name="SERVICE_SCRIPT_NAME" />" ya estaba marcado, es posible que tengas 
 <translation id="310979712355504754">Eliminar todos</translation>
 <translation id="3150823315463303127">El host no ha podido leer la política.</translation>
 <translation id="3171922709365450819">Este cliente no admite el dispositivo porque necesita autenticación de terceros.</translation>
-<translation id="3194245623920924351">Escritorio Remoto de Chrome</translation>
 <translation id="3197730452537982411">Escritorio remoto</translation>
 <translation id="324272851072175193">Enviar estas instrucciones por correo electrónico</translation>
 <translation id="3258789396564295715">Puedes acceder de forma segura a este ordenador con Escritorio Remoto de Chrome.</translation>
@@ -174,13 +152,6 @@ Si "<ph name="SERVICE_SCRIPT_NAME" />" ya estaba marcado, es posible que tengas 
 <translation id="4660011489602794167">Mostrar teclado</translation>
 <translation id="4703302905453407178">Un componente obligatorio ha dejado de funcionar. Informa de este problema a los desarrolladores.</translation>
 <translation id="4703799847237267011">Ha finalizado tu sesión en Chromoting.</translation>
-<translation id="4706355010316049867">Chrome
-Remoto
-Escritorio
-Acceso
-Asistencia
-Ordenador
-PC</translation>
 <translation id="4736223761657662401">Historial de conexiones</translation>
 <translation id="4741792197137897469">Error de autenticación. Vuelve a iniciar sesión en Chrome.</translation>
 <translation id="477305884757156764">La aplicación es demasiado lenta.</translation>
@@ -252,7 +223,6 @@ PC</translation>
 <translation id="6381670701864002291">Otro problema.</translation>
 <translation id="6398765197997659313">Salir del modo de pantalla completa</translation>
 <translation id="6441316101718669559">La integración del escritorio no se admite en esta plataforma. Puedes seguir utilizando la aplicación, pero la experiencia de usuario se verá afectada.</translation>
-<translation id="6502629188777329097">Accede de forma segura a tu PC</translation>
 <translation id="652218476070540101">Se está actualizando el PIN de este ordenador...</translation>
 <translation id="6527303717912515753">Compartir</translation>
 <translation id="6541219117979389420">Los registros de aplicaciones pueden contener información privada, incluidos tu identidad (dirección de correo electrónico) y los nombres y las propiedades de los archivos y de las carpetas de Google Drive.</translation>
@@ -286,7 +256,6 @@ PC</translation>
 <translation id="7116737094673640201">Te damos la bienvenida a Escritorio Remoto de Chrome</translation>
 <translation id="7144878232160441200">Volver a intentar</translation>
 <translation id="7149517134817561223">Aplicación para enviar comandos al host del Escritorio Remoto de Chrome.</translation>
-<translation id="7213491505512310433">Mejoras de estabilidad y corrección de errores.</translation>
 <translation id="7215059001581613786">Introduce un PIN que tenga como mínimo seis dígitos.</translation>
 <translation id="7312846573060934304">El host no tiene conexión.</translation>
 <translation id="7319983568955948908">Dejar de compartir</translation>

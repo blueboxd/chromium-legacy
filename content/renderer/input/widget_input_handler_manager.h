@@ -110,8 +110,9 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   void FallbackCursorModeLockCursor(bool left, bool right, bool up, bool down);
   void FallbackCursorModeSetCursorVisibility(bool visible);
 
-  // Called to inform us of navigation, which resets UMA metrics for input
-  // timing.
+  // Called when the RenderWidget is notified of a navigation. Resets
+  // the input handler to suppress input until a frame is presented, and
+  // resets the UMA recorder for time of first input.
   void DidNavigate();
 
   // Called to inform us of a lifecycle update
@@ -119,6 +120,12 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
 
   // Called to inform us the the compositor has committed a frame.
   void CompositorDidCommit();
+
+  // Allow web tests to have input events processed before a frame is
+  // committed.
+  // TODO(schenney): Fix this somehow, forcing web_tests to wait for
+  // hit test regions like other test infrastructure.
+  void AllowEarlyInputForTesting() { allow_early_input_for_testing_ = true; }
 
  protected:
   friend class base::RefCountedThreadSafe<WidgetInputHandlerManager>;
@@ -157,16 +164,12 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
       const blink::WebGestureEvent& gesture_event,
       const cc::InputHandlerScrollResult& scroll_result);
 
-  // Logs UMA for the first real input event, to gather data on
-  // how often input occurs before a page is presented to the
-  // screen. It is a separate function to allow multiple sites to
-  // log to the same histogram.
-  void LogInputTimingUMA();
-
   // Returns the task runner for the thread that receives input. i.e. the
   // "Mojo-bound" thread.
   const scoped_refptr<base::SingleThreadTaskRunner>& InputThreadTaskRunner()
       const;
+
+  void LogInputTimingUMA();
 
   // Only valid to be called on the main thread.
   base::WeakPtr<RenderWidget> render_widget_;
@@ -200,11 +203,22 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   // WebWidget (Popups, Plugins).
   bool uses_input_handler_ = false;
 
-  // State tracking which lifecycle and commit events we have seen
+  // State tracking which lifecycle and commit events we have seen.
+  // We suppress all events until the user can see the content based on this
+  // lifecycle state. Events are suppressed when the lifecycle state is
+  // InitialInputTiming::kBeforeLifecycle or InitialInputTiming::kBeforeCommit.
+  // Move events are still processed to allow tracking of mouse position.
+  // Metrics also report the lifecycle state when the first non-move event is
+  // seen.
   InitialInputTiming current_lifecycle_state_ =
       InitialInputTiming::kBeforeLifecycle;
 
-  // Control of UMA. We emit one UMA metric per instantiation telling us
+  // Allow input suspension to be disabled for tests that do not wait for the
+  // first commit. Over time, these tests should be fixed so that this flag
+  // can be removed. crbug.com/987626
+  bool allow_early_input_for_testing_ = false;
+
+  // Control of UMA. We emit one UMA metric per navigation telling us
   // whether any non-move input arrived before we starting updating the page or
   // displaying content to the user.
   bool have_emitted_uma_ = false;

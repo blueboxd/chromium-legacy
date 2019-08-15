@@ -188,6 +188,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
 
   void SetIsHidden(bool);
   void SetFilterQuality(SkFilterQuality);
+  SkFilterQuality FilterQuality() const { return filter_quality_; }
 
   // Whether the target for draw operations has format GL_RGBA, but is
   // emulating format GL_RGB. When the target's storage is first

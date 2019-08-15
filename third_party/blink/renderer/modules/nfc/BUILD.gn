@@ -6,14 +6,10 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("nfc") {
   sources = [
-    "navigator_nfc.cc",
-    "navigator_nfc.h",
     "ndef_message.cc",
     "ndef_message.h",
     "ndef_record.cc",
     "ndef_record.h",
-    "nfc.cc",
-    "nfc.h",
     "nfc_constants.cc",
     "nfc_constants.h",
     "nfc_error_event.cc",

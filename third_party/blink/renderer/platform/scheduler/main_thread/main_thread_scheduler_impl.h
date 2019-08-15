@@ -61,6 +61,9 @@ class ConvertableToTraceFormat;
 
 namespace blink {
 namespace scheduler {
+namespace frame_scheduler_impl_unittest {
+class FrameSchedulerImplTest;
+}  // namespace frame_scheduler_impl_unittest
 namespace main_thread_scheduler_impl_unittest {
 class MainThreadSchedulerImplForTest;
 class MainThreadSchedulerImplTest;
@@ -124,6 +127,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     // (crbug.com/860545).
     bool use_resource_fetch_priority;
     bool use_resource_priorities_only_during_loading;
+
+    // Prioritize compositing and loading tasks until first contentful paint.
+    // (crbug.com/971191)
+    bool prioritize_compositing_and_loading_during_early_loading;
 
     // Contains a mapping from net::RequestPriority to TaskQueue::QueuePriority
     // when use_resource_fetch_priority is enabled.
@@ -365,6 +372,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     return task_queue_throttler_.get();
   }
 
+  void OnFirstContentfulPaint();
   void OnFirstMeaningfulPaint();
 
   void OnShutdownTaskQueue(const scoped_refptr<MainThreadTaskQueue>& queue);
@@ -407,6 +415,15 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   base::WeakPtr<MainThreadSchedulerImpl> GetWeakPtr();
 
+  base::sequence_manager::TaskQueue::QueuePriority compositor_priority() const {
+    return main_thread_only().current_policy.compositor_priority();
+  }
+
+  bool should_prioritize_loading_with_compositing() const {
+    return main_thread_only()
+        .current_policy.should_prioritize_loading_with_compositing();
+  }
+
  protected:
   scoped_refptr<MainThreadTaskQueue> ControlTaskQueue();
   scoped_refptr<MainThreadTaskQueue> DefaultTaskQueue();
@@ -432,6 +449,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   friend class MainThreadMetricsHelper;
 
   friend class MainThreadMetricsHelperTest;
+  friend class frame_scheduler_impl_unittest::FrameSchedulerImplTest;
   friend class main_thread_scheduler_impl_unittest::
       MainThreadSchedulerImplForTest;
   friend class main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest;
@@ -540,6 +558,13 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     bool& frozen_when_backgrounded() { return frozen_when_backgrounded_; }
     bool frozen_when_backgrounded() const { return frozen_when_backgrounded_; }
 
+    bool& should_prioritize_loading_with_compositing() {
+      return should_prioritize_loading_with_compositing_;
+    }
+    bool should_prioritize_loading_with_compositing() const {
+      return should_prioritize_loading_with_compositing_;
+    }
+
     base::sequence_manager::TaskQueue::QueuePriority& compositor_priority() {
       return compositor_priority_;
     }
@@ -555,6 +580,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       return policies_ == other.policies_ && rail_mode_ == other.rail_mode_ &&
              should_disable_throttling_ == other.should_disable_throttling_ &&
              frozen_when_backgrounded_ == other.frozen_when_backgrounded_ &&
+             should_prioritize_loading_with_compositing_ ==
+                 other.should_prioritize_loading_with_compositing_ &&
              compositor_priority_ == other.compositor_priority_ &&
              use_case_ == other.use_case_;
     }
@@ -565,6 +592,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     RAILMode rail_mode_;
     bool should_disable_throttling_;
     bool frozen_when_backgrounded_;
+    bool should_prioritize_loading_with_compositing_;
 
     // Priority of task queues belonging to the compositor class (Check
     // MainThread::QueueClass).
@@ -924,6 +952,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     TraceableState<bool, TracingCategoryName::kInfo> default_gesture_prevented;
     TraceableState<bool, TracingCategoryName::kInfo>
         have_seen_a_blocking_gesture;
+    TraceableState<bool, TracingCategoryName::kInfo>
+        waiting_for_contentful_paint;
     TraceableState<bool, TracingCategoryName::kInfo>
         waiting_for_meaningful_paint;
     TraceableState<bool, TracingCategoryName::kInfo>

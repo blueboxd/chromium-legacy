@@ -123,9 +123,6 @@
 <translation id="5634636535844844681">Для работы Chromium необходима ОС Windows 7 или более поздней версии.</translation>
 <translation id="5680901439334282664">войдите в Chromium</translation>
 <translation id="5698481217667032250">Отображать Chromium на этом языке</translation>
-<translation id="5756484659843248772">На этом языке отображается интерфейс Chromium OS</translation>
-<translation id="5768914737813585044">Отображать Chromium OS на этом языке</translation>
-<translation id="5796460469508169315">Chromium почти готов к работе</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Добро пожаловать в Chromium</translation>
 <translation id="5877064549588274448">Канал изменен. Чтобы изменения вступили в силу, перезапустите устройство.</translation>
@@ -186,12 +183,6 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Новое окно</translation>
 <translation id="734373864078049451">Все веб-страницы, закладки и другие данные Chromium можно найти здесь.</translation>
-<translation id="7344413941077984497">Чтобы ограничить пользователю <ph name="NEW_PROFILE_NAME" /> доступ к каким-либо страницам, перейдите по этой ссылке: <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Если вы оставите настройки по умолчанию, <ph name="NEW_PROFILE_NAME" /> сможет открывать все сайты.
-
-Чтобы пользователь <ph name="NEW_PROFILE_NAME" /> не получил доступ к вашему аккаунту, при выходе из Chromium нажмите на свое имя профиля в правом верхнем углу экрана и выберите "Выйти и заблокировать".
-<ph name="BEGIN_LINK_2" />Подробнее…<ph name="END_LINK_2" />
-
-Дальнейшие инструкции отправлены на адрес <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7349591376906416160">Ваш системный администратор задал настройки, согласно которым Chromium должен запускать <ph name="ALTERNATIVE_BROWSER_NAME" /> для доступа к сайту <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7448255348454382571">Перезапуск Chromium OS</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium для разработчиков</translation>
@@ -228,6 +219,8 @@
 <translation id="8417404458978023919">{0,plural, =1{Перезапустите Chromium в течение дня}one{Перезапустите Chromium в течение # дня}few{Перезапустите Chromium в течение # дней}many{Перезапустите Chromium в течение # дней}other{Перезапустите Chromium в течение # дня}}</translation>
 <translation id="8453117565092476964">Установочный архив поврежден. Скачайте Chromium ещё раз.</translation>
 <translation id="8493179195440786826">Версия Chromium устарела</translation>
+<translation id="8494843963476918365">Если нужного параметра нет на этой странице, откройте <ph name="LINK_BEGIN" />
+    настройки браузера Chromium<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Помощь по использованию Chromium</translation>
 <translation id="8586442755830160949">© The Chromium Authors, <ph name="YEAR" /> . Все права защищены.</translation>
 <translation id="8619360774459241877">Запуск Chromium...</translation>

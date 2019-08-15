@@ -5542,10 +5542,12 @@ void RenderFrameHostImpl::ClearAllWebUI() {
   web_ui_.reset();
 }
 
-const blink::mojom::ImageDownloaderPtr&
+const mojo::Remote<blink::mojom::ImageDownloader>&
 RenderFrameHostImpl::GetMojoImageDownloader() {
-  if (!mojo_image_downloader_.get() && GetRemoteInterfaces())
-    GetRemoteInterfaces()->GetInterface(&mojo_image_downloader_);
+  if (!mojo_image_downloader_.is_bound() && GetRemoteInterfaces()) {
+    GetRemoteInterfaces()->GetInterface(
+        mojo_image_downloader_.BindNewPipeAndPassReceiver());
+  }
   return mojo_image_downloader_;
 }
 

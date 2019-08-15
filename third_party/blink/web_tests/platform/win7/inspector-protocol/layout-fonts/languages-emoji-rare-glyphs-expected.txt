@@ -36,8 +36,18 @@
 "Khmer UI" : 26,
 "Times New Roman" : 1
 
-⇦⇧⇨⇩
-#text_presentation_arrows:
-"Cambria Math" : 4
+𐌲𐌿𐍄𐌹𐍃𐌺
+#gothic:
+"Segoe UI Symbol" : 6
+
+ܐܬܘܪܝܐ
+#syriac:
+"Estrangelo Edessa" : 6
+
+⇦⇧⇨⇩￩￪￫￬⟀
+#text_presentation_arrows_maths:
+"MS PGothic" : 4,
+"Cambria Math" : 4,
+"Arial" : 1
 
 

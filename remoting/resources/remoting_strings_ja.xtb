@@ -8,14 +8,6 @@
 <translation id="1199593201721843963">リモート接続を無効にする</translation>
 <translation id="1291443878853470558">Chromoting を使用してこのパソコンにアクセスするには、リモート接続を有効にする必要があります。</translation>
 <translation id="1297009705180977556"><ph name="HOSTNAME" /> への接続中にエラーが発生しました</translation>
-<translation id="1300633907480909701">Androidデバイスからパソコンに安全にアクセスできます。
-
-• パソコンごとに、Chromeリモートデスクトップアプリを使ってリモートアクセスを設定します。このアプリはChromeウェブストアからインストールできます: https://chrome.google.com/remotedesktop
-• Androidデバイスでアプリを開き、オンラインになっているパソコンをタップして接続します。
-
-US英語以外のキーボードを使用しているリモートパソコンでは、テキストが正確に入力されない可能性があります。US英語以外のキーボード配列は、近日中にサポートされる予定です。
-
-プライバシーについては、Googleプライバシーポリシー（http://goo.gl/SyrVzj）とChromeプライバシーポリシー（http://goo.gl/0uXE5d）をご覧ください。</translation>
 <translation id="1324095856329524885">（お使いのパソコンはこの機能に未対応です）</translation>
 <translation id="1342297293546459414">共有パソコンの画面を見ながら操作します。</translation>
 <translation id="1389790901665088353">Chrome リモート デスクトップ ホスト インストーラのダウンロード</translation>
@@ -28,7 +20,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="1643640058022401035">このページを閉じると、Chromoting セッションが終了します。</translation>
 <translation id="1654128982815600832">このパソコンのリモート接続を有効にしています...</translation>
 <translation id="170207782578677537">このパソコンを登録できませんでした。</translation>
-<translation id="1727412735341161734">Chrome リモート デスクトップ</translation>
 <translation id="174018511426417793">パソコンが登録されていません。パソコンへのリモート接続を有効にするには、対象となるパソコンに Chrome リモート デスクトップをインストールし、[<ph name="BUTTON_NAME" />] をクリックしてください。</translation>
 <translation id="1742469581923031760">接続しています...</translation>
 <translation id="1770394049404108959">アプリケーションを開けない。</translation>
@@ -46,13 +37,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="2078880767960296260">ホスト プロセス</translation>
 <translation id="20876857123010370">トラックパッド モード</translation>
 <translation id="2089514346391228378">このパソコンのリモート接続が有効になりました。</translation>
-<translation id="2118549242412205620">Androidデバイスからパソコンに安全にアクセスできます。
-
-• パソコンごとに、Chromeリモート デスクトップアプリを使ってリモートアクセスを設定します。このアプリはChromeウェブストアからインストールできます: https://chrome.google.com/remotedesktop
-• Androidデバイスでアプリを開き、オンラインになっているパソコンをタップして接続します。
-
-詳しくは、Googleプライバシーポリシー（http://goo.gl/SyrVzj）とChromeプライバシーポリシー（http://goo.gl/0uXE5d）をご覧ください。</translation>
-<translation id="2124408767156847088">Androidデバイスからパソコンに安全にアクセス。</translation>
 <translation id="2208514473086078157">ポリシー設定により、Chrome リモート デスクトップのホストとしてこのパソコンを共有することはできません。詳しくはシステム管理者にお問い合わせください。</translation>
 <translation id="2220529011494928058">問題を報告</translation>
 <translation id="2221097377466213233">右 Ctrl キーを Win キー（Mac の場合は ⌘）として使用</translation>
@@ -91,11 +75,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">ネットワーク エラーが発生しました。デバイスが再度オンラインになったときにアプリを再開します。</translation>
 <translation id="2891243864890517178">Mac 版（OS X Yosemite 10.10 以上）</translation>
-<translation id="289405675947420287">無料のツールを使って、iOS デバイスからお使いのパソコンにすばやく安全にアクセスできます。
-
-• リモート アクセスを行うパソコンで、Chrome ウェブストアから Chrome リモート デスクトップ アプリをダウンロードします。
-• Chrome リモート デスクトップ ソフトウェアをインストールし、案内に従って設定を完了します。
-• iOS デバイスでアプリを開き、オンラインになっているパソコンの中から接続先のパソコンを見つけてタップします。</translation>
 <translation id="2894654864775534701">このパソコンは現在、別のアカウントで共有されています。</translation>
 <translation id="2919669478609886916">現在このパソコンを別のユーザーと共有しています。共有を継続しますか？</translation>
 <translation id="2921543551052660690">以前に <ph name="USER_NAME" />（<ph name="USER_EMAIL" />）としてログインしています。このアカウントでパソコンにアクセスするには、このアカウントで <ph name="LINK_BEGIN" />Chromium にログイン<ph name="LINK_END" />し、Chromoting を再インストールしてください。</translation>
@@ -109,7 +88,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="310979712355504754">すべて削除</translation>
 <translation id="3150823315463303127">ホストでポリシーを読み取れませんでした。</translation>
 <translation id="3171922709365450819">このデバイスは第三者の認証を必要とするため、このクライアントではサポートされていません。</translation>
-<translation id="3194245623920924351">Chrome リモート デスクトップ</translation>
 <translation id="3197730452537982411">リモートデスクトップ</translation>
 <translation id="324272851072175193">手順をメールで送信</translation>
 <translation id="3258789396564295715">Chrome リモート デスクトップを使用して、このパソコンに安全にアクセスできます。</translation>
@@ -174,13 +152,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="4660011489602794167">キーボードを表示</translation>
 <translation id="4703302905453407178">必須コンポーネントが停止しました。デベロッパーにこの問題を報告してください。</translation>
 <translation id="4703799847237267011">Chromoting セッションが終了しました。</translation>
-<translation id="4706355010316049867">Chrome
-リモート
-デスクトップ
-アクセス
-対応
-パソコン
-PC</translation>
 <translation id="4736223761657662401">接続履歴</translation>
 <translation id="4741792197137897469">認証できませんでした。Chrome にもう一度ログインしてください。</translation>
 <translation id="477305884757156764">アプリケーションの動作が遅すぎる。</translation>
@@ -252,7 +223,6 @@ PC</translation>
 <translation id="6381670701864002291">その他の問題。</translation>
 <translation id="6398765197997659313">全画面表示を終了</translation>
 <translation id="6441316101718669559">このプラットフォームでデスクトップの統合はサポートされていません。アプリケーションは引き続き使用できますが、ユーザー エクスペリエンスは低下します。</translation>
-<translation id="6502629188777329097">パソコンに安全にアクセス</translation>
 <translation id="652218476070540101">このパソコン用の PIN を更新しています...</translation>
 <translation id="6527303717912515753">共有</translation>
 <translation id="6541219117979389420">アプリケーション ログには、メールアドレスのような個人情報をはじめ、Google ドライブのファイルやフォルダの名前、プロパティといったプライバシーにかかわる情報が含まれる可能性があります。</translation>
@@ -286,7 +256,6 @@ PC</translation>
 <translation id="7116737094673640201">Chrome リモート デスクトップへようこそ</translation>
 <translation id="7144878232160441200">再読み込み</translation>
 <translation id="7149517134817561223">Chrome リモート デスクトップのホストにコマンドを発行するアプリケーション。</translation>
-<translation id="7213491505512310433">安定性の向上とバグの修正。</translation>
 <translation id="7215059001581613786">PIN は 6 桁以上で入力してください。</translation>
 <translation id="7312846573060934304">ホストはオフラインです。</translation>
 <translation id="7319983568955948908">共有を停止</translation>

@@ -115,6 +115,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
       const WTF::String& name,
       WebScopedVirtualTimePauser::VirtualTaskDuration duration) override;
+  void OnFirstContentfulPaint() override;
   void OnFirstMeaningfulPaint() override;
   void AsValueInto(base::trace_event::TracedValue* state) const;
   bool IsExemptFromBudgetBasedThrottling() const override;
@@ -333,6 +334,9 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   // Delegate::UpdateActiveSchedulerTrackedFeatures.
   uint64_t last_uploaded_active_features_ = 0;
   bool feature_report_scheduled_ = false;
+  base::sequence_manager::TaskQueue::QueuePriority
+      default_loading_task_priority_ =
+          base::sequence_manager::TaskQueue::QueuePriority::kNormalPriority;
 
   // These are the states of the Page.
   // They should be accessed via GetPageScheduler()->SetPageState().

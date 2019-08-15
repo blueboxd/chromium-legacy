@@ -24,14 +24,14 @@ CookieStore* GlobalCookieStoreImpl<WorkerGlobalScope>::BuildCookieStore(
       &cookie_manager_ptr,
       execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
 
-  blink::mojom::blink::CookieStorePtr cookie_store_ptr;
-  interface_provider->GetInterface(mojo::MakeRequest(
-      &cookie_store_ptr,
-      execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+  mojo::Remote<blink::mojom::blink::CookieStore> cookie_store_remote;
+  interface_provider->GetInterface(
+      cookie_store_remote.BindNewPipeAndPassReceiver(
+          execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
 
   return MakeGarbageCollected<CookieStore>(execution_context,
                                            std::move(cookie_manager_ptr),
-                                           std::move(cookie_store_ptr));
+                                           std::move(cookie_store_remote));
 }
 
 CookieStore* ServiceWorkerGlobalScopeCookieStore::cookieStore(

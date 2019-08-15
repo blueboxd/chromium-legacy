@@ -170,9 +170,9 @@ void GamepadControllerBindings::SetDualRumbleVibrationActuator(int index,
 
 GamepadController::MonitorImpl::MonitorImpl(
     GamepadController* controller,
-    device::mojom::GamepadMonitorRequest request)
-    : controller_(controller), binding_(this), observer_(nullptr) {
-  binding_.Bind(std::move(request));
+    mojo::PendingReceiver<device::mojom::GamepadMonitor> receiver)
+    : controller_(controller) {
+  receiver_.Bind(std::move(receiver));
 }
 
 GamepadController::MonitorImpl::~MonitorImpl() = default;
@@ -192,9 +192,9 @@ void GamepadController::MonitorImpl::GamepadStopPolling(
 }
 
 void GamepadController::MonitorImpl::SetObserver(
-    device::mojom::GamepadObserverPtr observer) {
-  observer_ = std::move(observer);
-  observer_.set_connection_error_handler(
+    mojo::PendingRemote<device::mojom::GamepadObserver> observer) {
+  observer_remote_.Bind(std::move(observer));
+  observer_remote_.set_disconnect_handler(
       base::BindOnce(&GamepadController::OnConnectionError,
                      base::Unretained(controller_), base::Unretained(this)));
 
@@ -212,8 +212,8 @@ void GamepadController::MonitorImpl::SetObserver(
 void GamepadController::MonitorImpl::DispatchConnected(
     int index,
     const device::Gamepad& pad) {
-  if (observer_) {
-    observer_->GamepadConnected(index, pad);
+  if (observer_remote_) {
+    observer_remote_->GamepadConnected(index, pad);
   } else {
     // Record that there wasn't an observer to get the GamepadConnected RPC so
     // we can send it when SetObserver gets called.
@@ -224,8 +224,8 @@ void GamepadController::MonitorImpl::DispatchConnected(
 void GamepadController::MonitorImpl::DispatchDisconnected(
     int index,
     const device::Gamepad& pad) {
-  if (observer_)
-    observer_->GamepadDisconnected(index, pad);
+  if (observer_remote_)
+    observer_remote_->GamepadDisconnected(index, pad);
 }
 
 void GamepadController::MonitorImpl::Reset() {

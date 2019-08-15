@@ -22,6 +22,7 @@ class View;
 
 class Browser;
 class HoverButton;
+enum class SharingClickToCallDialogType;
 
 class ClickToCallDialogView : public SharingDialog,
                               public views::ButtonListener,
@@ -64,6 +65,8 @@ class ClickToCallDialogView : public SharingDialog,
   FRIEND_TEST_ALL_PREFIXES(ClickToCallDialogViewTest, DevicePressed);
   FRIEND_TEST_ALL_PREFIXES(ClickToCallDialogViewTest, AppPressed);
 
+  SharingClickToCallDialogType GetDialogType() const;
+
   // views::BubbleDialogDelegateView:
   void Init() override;
 
@@ -78,8 +81,6 @@ class ClickToCallDialogView : public SharingDialog,
   // Contains references to device and app buttons in
   // the order they appear.
   std::vector<HoverButton*> dialog_buttons_;
-  std::vector<SharingDeviceInfo> devices_;
-  std::vector<ClickToCallUiController::App> apps_;
   Browser* browser_ = nullptr;
   bool send_failed_ = false;
 

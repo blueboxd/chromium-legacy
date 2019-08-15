@@ -509,6 +509,28 @@ bool DnsServerSupportsDoh(const IPAddress& dns_server) {
          upgradable_servers->end();
 }
 
+bool HasDoHUpgradeableServer(std::vector<IPEndPoint> nameservers) {
+  for (const auto& dns_server : nameservers) {
+    if (DnsServerSupportsDoh(dns_server.address()))
+      return true;
+  }
+  return false;
+}
+
+bool DotServerSupportsDoh(std::string dot_server) {
+  static const base::NoDestructor<std::unordered_set<std::string>>
+      upgradable_servers(std::initializer_list<std::string>({
+          // Google Public DNS
+          "dns.google",
+          // Cloudflare DNS
+          "1dot1dot1dot1.cloudflare-dns.com",
+          "cloudflare-dns.com",
+          // Quad9 DNS
+          "dns.quad9.net",
+      }));
+  return upgradable_servers->find(dot_server) != upgradable_servers->end();
+}
+
 void NetLogHostCacheEntry(const NetLogWithSource& net_log,
                           NetLogEventType type,
                           NetLogEventPhase phase,
@@ -2945,6 +2967,10 @@ void HostResolverManager::RecordTotalTime(bool speculative,
         UMA_HISTOGRAM_MEDIUM_TIMES("Net.DNS.TotalTimeTyped.SystemPrivate",
                                    duration);
         break;
+      case MODE_FOR_HISTOGRAM_SYSTEM_PRIVATE_DNS_SUPPORTS_DOH:
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Net.DNS.TotalTimeTyped.SystemPrivateSupportsDoh", duration);
+        break;
       case MODE_FOR_HISTOGRAM_ASYNC_DNS:
         UMA_HISTOGRAM_MEDIUM_TIMES("Net.DNS.TotalTimeTyped.Async", duration);
         break;
@@ -3015,15 +3041,25 @@ bool HostResolverManager::HaveTestProcOverride() {
   return !proc_params_.resolver_proc && HostResolverProc::GetDefault();
 }
 
-void HostResolverManager::PushDnsTasks(
-    bool proc_task_allowed,
-    DnsConfig::SecureDnsMode secure_dns_mode,
-    bool insecure_tasks_allowed,
-    ResolveHostParameters::CacheUsage cache_usage,
-    std::deque<TaskType>* out_tasks) {
+void HostResolverManager::PushCacheLookups(bool secure,
+                                           bool insecure,
+                                           std::deque<TaskType>* out_tasks) {
+  if (secure && insecure) {
+    out_tasks->push_back(TaskType::CACHE_LOOKUP);
+  } else if (secure) {
+    out_tasks->push_back(TaskType::SECURE_CACHE_LOOKUP);
+  } else if (insecure) {
+    out_tasks->push_back(TaskType::INSECURE_CACHE_LOOKUP);
+  }  // else do nothing
+}
+
+void HostResolverManager::PushDnsTasks(bool proc_task_allowed,
+                                       DnsConfig::SecureDnsMode secure_dns_mode,
+                                       bool insecure_tasks_allowed,
+                                       bool allow_cache,
+                                       bool prioritize_local_lookups,
+                                       std::deque<TaskType>* out_tasks) {
   DCHECK(HaveDnsConfig());
-  bool allow_cache =
-      cache_usage != ResolveHostParameters::CacheUsage::DISALLOWED;
   // If a catch-all DNS block has been set for unit tests, we shouldn't send
   // DnsTasks. It is still necessary to call this method, however, so that the
   // correct cache tasks for the secure dns mode are added.
@@ -3032,45 +3068,40 @@ void HostResolverManager::PushDnsTasks(
   switch (secure_dns_mode) {
     case DnsConfig::SecureDnsMode::SECURE:
       DCHECK(dns_client_->GetConfig()->dns_over_https_servers.size() != 0);
-      if (allow_cache)
-        out_tasks->push_back(TaskType::SECURE_CACHE_LOOKUP);
+      PushCacheLookups(allow_cache /* secure */, false /* insecure */,
+                       out_tasks);
       if (dns_tasks_allowed)
         out_tasks->push_back(TaskType::SECURE_DNS);
       break;
     case DnsConfig::SecureDnsMode::AUTOMATIC:
-      // TODO(crbug.com/985589): For a DnsTask in AUTOMATIC mode, the async
-      // resolver should only send insecure requests if it is enabled on this
-      // platform.
       if (!HasAvailableDohServer()) {
         // Don't run a secure DnsTask if there are no available DoH servers.
-        if (allow_cache)
-          out_tasks->push_back(TaskType::CACHE_LOOKUP);
+        PushCacheLookups(allow_cache /* secure */, allow_cache /* insecure */,
+                         out_tasks);
         if (dns_tasks_allowed && insecure_tasks_allowed)
           out_tasks->push_back(TaskType::DNS);
-      } else if (cache_usage == HostResolver::ResolveHostParameters::
-                                    CacheUsage::STALE_ALLOWED) {
-        // If stale results are allowed, the cache should be checked for both
-        // secure and insecure results prior to running a secure DnsTask.
-        out_tasks->push_back(TaskType::CACHE_LOOKUP);
+      } else if (prioritize_local_lookups) {
+        PushCacheLookups(allow_cache /* secure */, allow_cache /* insecure */,
+                         out_tasks);
         if (dns_tasks_allowed) {
           out_tasks->push_back(TaskType::SECURE_DNS);
           if (insecure_tasks_allowed)
             out_tasks->push_back(TaskType::DNS);
         }
       } else {
-        if (allow_cache)
-          out_tasks->push_back(TaskType::SECURE_CACHE_LOOKUP);
+        PushCacheLookups(allow_cache /* secure */, false /* insecure */,
+                         out_tasks);
         if (dns_tasks_allowed)
           out_tasks->push_back(TaskType::SECURE_DNS);
-        if (allow_cache)
-          out_tasks->push_back(TaskType::INSECURE_CACHE_LOOKUP);
+        PushCacheLookups(false /* secure */, allow_cache /* insecure */,
+                         out_tasks);
         if (dns_tasks_allowed && insecure_tasks_allowed)
           out_tasks->push_back(TaskType::DNS);
       }
       break;
     case DnsConfig::SecureDnsMode::OFF:
-      if (allow_cache)
-        out_tasks->push_back(TaskType::CACHE_LOOKUP);
+      PushCacheLookups(allow_cache /* secure */, allow_cache /* insecure */,
+                       out_tasks);
       if (dns_tasks_allowed && insecure_tasks_allowed)
         out_tasks->push_back(TaskType::DNS);
       break;
@@ -3108,10 +3139,18 @@ void HostResolverManager::CreateTaskSequence(
   // A cache lookup should generally be performed first. For jobs involving a
   // DnsTask, this task will be removed before DnsTasks and other related tasks
   // are added to the sequence.
-  if (cache_usage != ResolveHostParameters::CacheUsage::DISALLOWED)
-    out_tasks->push_front(TaskType::CACHE_LOOKUP);
+  bool allow_cache =
+      cache_usage != ResolveHostParameters::CacheUsage::DISALLOWED;
+  PushCacheLookups(allow_cache /* secure */, allow_cache /* insecure */,
+                   out_tasks);
 
   // Determine what type of task a future Job should start.
+  bool prioritize_local_lookups =
+      cache_usage ==
+      HostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED;
+  bool insecure_dns_tasks_allowed =
+      insecure_dns_client_enabled_ && HaveDnsConfig() &&
+      !dns_client_->GetConfig()->dns_over_tls_active;
   switch (source) {
     case HostResolverSource::ANY:
       // Force address queries with canonname to use ProcTask to counter poor
@@ -3133,8 +3172,8 @@ void HostResolverManager::CreateTaskSequence(
             out_tasks->pop_front();
           PushDnsTasks(
               proc_task_allowed, *out_effective_secure_dns_mode,
-              insecure_dns_client_enabled_ && !bypass_insecure_dns_client_,
-              cache_usage, out_tasks);
+              insecure_dns_tasks_allowed && !bypass_insecure_dns_client_,
+              allow_cache, prioritize_local_lookups, out_tasks);
         } else if (proc_task_allowed) {
           out_tasks->push_back(TaskType::PROC);
         }
@@ -3156,8 +3195,8 @@ void HostResolverManager::CreateTaskSequence(
         if (!out_tasks->empty())
           out_tasks->pop_front();
         PushDnsTasks(false /* proc_task_allowed */,
-                     *out_effective_secure_dns_mode,
-                     insecure_dns_client_enabled_, cache_usage, out_tasks);
+                     *out_effective_secure_dns_mode, insecure_dns_tasks_allowed,
+                     allow_cache, prioritize_local_lookups, out_tasks);
       }
       break;
     case HostResolverSource::MULTICAST_DNS:
@@ -3481,36 +3520,31 @@ int HostResolverManager::GetOrCreateMdnsClient(MDnsClient** out_client) {
 #endif
 }
 
-// TODO(crbug.com/985589): Update these metrics for DoH.
+// TODO(crbug.com/985589): Update these metrics when DoH upgrade starts
+// starts happening in practice.
 void HostResolverManager::UpdateModeForHistogram(const DnsConfig& dns_config) {
-  // Resolving with Async DNS resolver?
-  if (HaveDnsConfig() && insecure_dns_client_enabled_) {
-    mode_for_histogram_ = MODE_FOR_HISTOGRAM_ASYNC_DNS;
-    for (const auto& dns_server : dns_client_->GetConfig()->nameservers) {
-      if (DnsServerSupportsDoh(dns_server.address())) {
+  if (HaveDnsConfig()) {
+    const DnsConfig* config = dns_client_->GetConfig();
+    if (config->dns_over_tls_active) {
+      mode_for_histogram_ = MODE_FOR_HISTOGRAM_SYSTEM_PRIVATE_DNS;
+      if ((config->dns_over_tls_hostname.empty() &&
+           HasDoHUpgradeableServer(config->nameservers)) ||
+          DotServerSupportsDoh(config->dns_over_tls_hostname))
+        mode_for_histogram_ =
+            MODE_FOR_HISTOGRAM_SYSTEM_PRIVATE_DNS_SUPPORTS_DOH;
+      return;
+    }
+    if (insecure_dns_client_enabled_) {
+      mode_for_histogram_ = MODE_FOR_HISTOGRAM_ASYNC_DNS;
+      if (HasDoHUpgradeableServer(config->nameservers))
         mode_for_histogram_ = MODE_FOR_HISTOGRAM_ASYNC_DNS_PRIVATE_SUPPORTS_DOH;
-        break;
-      }
+      return;
     }
-  } else {
-    mode_for_histogram_ = MODE_FOR_HISTOGRAM_SYSTEM;
-    for (const auto& dns_server : dns_config.nameservers) {
-      if (DnsServerSupportsDoh(dns_server.address())) {
-        mode_for_histogram_ = MODE_FOR_HISTOGRAM_SYSTEM_SUPPORTS_DOH;
-        break;
-      }
-    }
-#if defined(OS_ANDROID)
-    if (base::android::BuildInfo::GetInstance()->sdk_int() >=
-        base::android::SDK_VERSION_P) {
-      std::vector<IPEndPoint> dns_servers;
-      if (net::android::GetDnsServers(&dns_servers) ==
-          internal::CONFIG_PARSE_POSIX_PRIVATE_DNS_ACTIVE) {
-        mode_for_histogram_ = MODE_FOR_HISTOGRAM_SYSTEM_PRIVATE_DNS;
-      }
-    }
-#endif  // defined(OS_ANDROID)
   }
+
+  mode_for_histogram_ = MODE_FOR_HISTOGRAM_SYSTEM;
+  if (HasDoHUpgradeableServer(dns_config.nameservers))
+    mode_for_histogram_ = MODE_FOR_HISTOGRAM_SYSTEM_SUPPORTS_DOH;
 }
 
 void HostResolverManager::InvalidateCaches() {

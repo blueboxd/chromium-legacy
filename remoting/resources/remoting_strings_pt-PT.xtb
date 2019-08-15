@@ -8,14 +8,6 @@
 <translation id="1199593201721843963">Desativar ligações remotas</translation>
 <translation id="1291443878853470558">Se pretende utilizar o Chromoting para aceder a este computador, é necessário ativar as ligações remotas.</translation>
 <translation id="1297009705180977556">Erro ao ligar a <ph name="HOSTNAME" /></translation>
-<translation id="1300633907480909701">Aceda aos seus computadores em segurança a partir do seu dispositivo Android.
-
-• Em cada um dos computadores, configure o acesso remoto com a aplicação Ambiente de Trabalho Remoto do Chrome da Web Store do Chrome: https://chrome.google.com/remotedesktop
-• No seu dispositivo Android, abra a aplicação e toque em qualquer um dos computadores online para ligar.
-
-Os computadores remotos com teclados sem ser em inglês podem receber entrada de texto incorreta. O suporte de outros esquemas de teclado estará disponível em breve!
-
-Para mais informações acerca da privacidade, consulte a Política de Privacidade da Google (http://goo.gl/SyrVzj) e a Política de Privacidade do Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(esta funcionalidade ainda não está disponível para o seu computador)</translation>
 <translation id="1342297293546459414">Ver e controlar um computador partilhado.</translation>
 <translation id="1389790901665088353">Transferir o instalador do anfitrião do Ambiente de Trabalho Remoto do Chrome</translation>
@@ -28,7 +20,6 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="1643640058022401035">Se sair desta página, terminará a sessão do Chromoting.</translation>
 <translation id="1654128982815600832">A ativar as ligações remotas neste computador…</translation>
 <translation id="170207782578677537">Falha ao registar o computador.</translation>
-<translation id="1727412735341161734">Ambiente de Trabalho Remoto do Chrome</translation>
 <translation id="174018511426417793">Não existem computadores registados. Para ativar as ligações remotas a um computador, instale o Ambiente de Trabalho Remoto do Chrome aí e clique em “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">A ligar...</translation>
 <translation id="1770394049404108959">Não consigo abrir a aplicação.</translation>
@@ -46,13 +37,6 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="2078880767960296260">Processo do Anfitrião</translation>
 <translation id="20876857123010370">Modo de trackpad</translation>
 <translation id="2089514346391228378">Foram ativadas as ligações remotas neste computador.</translation>
-<translation id="2118549242412205620">Aceda aos seus computadores em segurança a partir do seu dispositivo Android.
-
-• Em cada um dos computadores, configure o acesso remoto com a aplicação Ambiente de Trabalho Remoto do Chrome da Web Store do Chrome: https://chrome.google.com/remotedesktop
-• No seu dispositivo Android, abra a aplicação e toque em qualquer um dos computadores online para ligar.
-
-Para mais informações acerca da privacidade, consulte a Política de Privacidade da Google (http://goo.gl/SyrVzj) e a Política de Privacidade do Chrome (http://goo.gl/0uXE5d).</translation>
-<translation id="2124408767156847088">Aceda aos seus computadores em segurança a partir do seu dispositivo Android.</translation>
 <translation id="2208514473086078157">As definições da política não permitem a partilha deste computador como um anfitrião do Ambiente de Trabalho Remoto do Chrome. Contacte o gestor do sistema para obter assistência.</translation>
 <translation id="2220529011494928058">Comunicar um problema</translation>
 <translation id="2221097377466213233">Utilizar a tecla Ctrl direita para a tecla Win (⌘ no Mac)</translation>
@@ -91,11 +75,6 @@ Se o "<ph name="SERVICE_SCRIPT_NAME" />" já está presente e já foi verificado
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">Ocorreu um erro de rede. Quando o dispositivo estiver online novamente, reiniciamos a aplicação.</translation>
 <translation id="2891243864890517178">Para Mac (OS X Yosemite 10.10 e superior)</translation>
-<translation id="289405675947420287">Aceda ao seu computador em segurança a partir do seu dispositivo iOS. É rápido, simples e gratuito.
-
-• No computador ao qual pretende aceder remotamente, transfira a aplicação Ambiente de Trabalho Remoto do Chrome a partir da Web Store do Chrome.
-• Instale o software Ambiente de Trabalho Remoto do Chrome e siga as instruções para concluir a configuração.
-• No dispositivo iOS, abra a aplicação e toque em qualquer um dos computadores online para estabelecer ligação.</translation>
 <translation id="2894654864775534701">Atualmente, este computador é partilhado através de outra conta.</translation>
 <translation id="2919669478609886916">Está atualmente a partilhar este computador com outro utilizador. Pretende continuar a partilhar?</translation>
 <translation id="2921543551052660690">Iniciou sessão anteriormente como <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Para aceder aos computadores nessa conta, <ph name="LINK_BEGIN" />inicie sessão no Chromium<ph name="LINK_END" /> com essa conta e reinstale o Chromoting.</translation>
@@ -109,7 +88,6 @@ Se o "<ph name="SERVICE_SCRIPT_NAME" />" já está presente e já foi verificado
 <translation id="310979712355504754">Eliminar todos</translation>
 <translation id="3150823315463303127">O anfitrião não conseguiu ler a política.</translation>
 <translation id="3171922709365450819">Este dispositivo não é compatível com este cliente, uma vez que requer autenticação de terceiros.</translation>
-<translation id="3194245623920924351">Ambiente de Trabalho Remoto</translation>
 <translation id="3197730452537982411">Ambiente de Trabalho Remoto</translation>
 <translation id="324272851072175193">Enviar estas instruções por email</translation>
 <translation id="3258789396564295715">Pode aceder com segurança ao computador utilizando o Ambiente de Trabalho Remoto do Chrome.</translation>
@@ -174,13 +152,6 @@ Se o "<ph name="SERVICE_SCRIPT_NAME" />" já está presente e já foi verificado
 <translation id="4660011489602794167">Mostrar teclado</translation>
 <translation id="4703302905453407178">Um componente necessário deixou de funcionar. Comunique este problema aos programadores.</translation>
 <translation id="4703799847237267011">A sessão do Chromoting terminou.</translation>
-<translation id="4706355010316049867">Chrome
-Remoto
-Ambiente de trabalho
-Acesso
-Apoio técnico
-Computador
-PC</translation>
 <translation id="4736223761657662401">Histórico de Ligações</translation>
 <translation id="4741792197137897469">Falha na autenticação. Inicie sessão novamente no Chrome.</translation>
 <translation id="477305884757156764">A aplicação está demasiado lenta.</translation>
@@ -252,7 +223,6 @@ PC</translation>
 <translation id="6381670701864002291">Outro.</translation>
 <translation id="6398765197997659313">Sair do modo de ecrã inteiro</translation>
 <translation id="6441316101718669559">A integração do ambiente de trabalho não é suportada nesta plataforma. Pode continuar a utilizar a aplicação, mas a experiência de utilizador não é a ideal.</translation>
-<translation id="6502629188777329097">Aceda ao seu computador</translation>
 <translation id="652218476070540101">O PIN para este computador está a ser atualizado...</translation>
 <translation id="6527303717912515753">Partilhar</translation>
 <translation id="6541219117979389420">Os registos da aplicação podem incluir informações privadas, incluindo a sua identidade (endereço de email) e os nomes e as propriedades dos ficheiros e das pastas no Google Drive.</translation>
@@ -286,7 +256,6 @@ PC</translation>
 <translation id="7116737094673640201">Bem-vindo ao Ambiente de Trabalho Remoto do Chrome</translation>
 <translation id="7144878232160441200">Repetir</translation>
 <translation id="7149517134817561223">Aplicação para emitir comandos para o anfitrião do Ambiente de Trabalho Remoto do Chrome.</translation>
-<translation id="7213491505512310433">Melhorias de estabilidade e correção de erros.</translation>
 <translation id="7215059001581613786">Introduza um PIN com seis ou mais dígitos.</translation>
 <translation id="7312846573060934304">O anfitrião está offline.</translation>
 <translation id="7319983568955948908">Terminar Partilha</translation>

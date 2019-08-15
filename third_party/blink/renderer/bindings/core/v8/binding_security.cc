@@ -118,8 +118,14 @@ bool CanAccessWindowInternal(const LocalDOMWindow* accessing_window,
         can_access ? WebFeature::kDocumentDomainEnabledCrossOriginAccess
                    : WebFeature::kDocumentDomainBlockedCrossOriginAccess);
   }
-  if (!can_access)
+  if (!can_access) {
+    // TODO(dtapuska): Adjust this security check to consult the feature
+    // policies. But for now There shouldn't yet be an agent cluster failure
+    // yet.
+    SECURITY_CHECK(detail != SecurityOrigin::AccessResultDomainDetail::
+                                 kDomainNotRelevantAgentClusterMismatch);
     return false;
+  }
 
   // Notify the loader's client if the initial document has been accessed.
   LocalFrame* target_frame = local_target_window->GetFrame();

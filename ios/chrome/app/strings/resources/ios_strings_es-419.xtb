@@ -266,6 +266,7 @@ Tus datos están encriptados con tu frase de contraseña para sincronización. D
 <translation id="4802417911091824046">La encriptación de la frase de contraseña no incluye formas de pago ni direcciones de Google Pay.
 
 Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /></translation>
+<translation id="4805759445554688327">El número de la tarjeta no es válido</translation>
 <translation id="4807020197310989387">1 artículo sin leer en tu lista de lectura</translation>
 <translation id="4818522717893377262">Agregar idioma…</translation>
 <translation id="481968316161811770">Cookies, datos del sitio</translation>
@@ -393,6 +394,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6476800141292307438">Se está traduciendo la página al <ph name="LANGUAGE" />. Las opciones disponibles se encuentran cerca de la parte inferior de la pantalla.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
 <translation id="6610002944194042868">Opciones de traducción</translation>
+<translation id="6628106477656132239">La fecha de vencimiento no es válida</translation>
 <translation id="6642362222295953972">Cambiar a la pestaña existente</translation>
 <translation id="6643016212128521049">Borrar</translation>
 <translation id="6656103420185847513">Editar carpeta</translation>

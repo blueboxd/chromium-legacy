@@ -39,7 +39,6 @@
 <translation id="5456409301717116725">ఈ పొడిగింపు '<ph name="KEY_PATH" />' కీ ఫైల్‌ను కలిగి ఉంది. బహుశా మీరు దాన్ని చేయకూడదు.</translation>
 <translation id="5486326529110362464">ప్రైవేట్ కీ కోసం ఇన్‌పుట్ విలువ తప్పనిసరిగా ఉండాలి.</translation>
 <translation id="5627523580512561598">పొడిగింపు <ph name="EXTENSION_NAME" /></translation>
-<translation id="5960890139610307736">పొడిగింపు వీక్షణ: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692"><ph name="EXTENSION_NAME" />ని ఇన్‌స్టాల్ చేయడం ఈ మెషిన్‌ నిర్వాహకుడికి అవసరం. ఇది అన్ఇన్‌స్టాల్ చేయబడదు.</translation>
 <translation id="6027032947578871493"><ph name="VENDOR_NAME" /> నుండి తెలియని ఉత్పత్తి <ph name="PRODUCT_ID" /> (క్రమ సంఖ్య <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721"><ph name="VENDOR_ID" /> విక్రేత నుండి <ph name="PRODUCT_NAME" /></translation>

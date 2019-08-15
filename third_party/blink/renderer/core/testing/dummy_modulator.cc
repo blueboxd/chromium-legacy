@@ -21,16 +21,16 @@ class EmptyModuleRecordResolver final : public ModuleRecordResolver {
   void UnregisterModuleScript(const ModuleScript*) override {}
 
   const ModuleScript* GetModuleScriptFromModuleRecord(
-      const ModuleRecord&) const override {
+      v8::Local<v8::Module>) const override {
     NOTREACHED();
     return nullptr;
   }
 
-  ModuleRecord Resolve(const String& specifier,
-                       const ModuleRecord& referrer,
-                       ExceptionState&) override {
+  v8::Local<v8::Module> Resolve(const String& specifier,
+                                v8::Local<v8::Module> referrer,
+                                ExceptionState&) override {
     NOTREACHED();
-    return ModuleRecord();
+    return v8::Local<v8::Module>();
   }
 };
 
@@ -144,7 +144,7 @@ const ImportMap* DummyModulator::GetImportMapForTest() const {
 }
 
 ModuleImportMeta DummyModulator::HostGetImportMetaProperties(
-    ModuleRecord) const {
+    v8::Local<v8::Module>) const {
   NOTREACHED();
   return ModuleImportMeta(String());
 }

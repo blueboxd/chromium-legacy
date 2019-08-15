@@ -2046,7 +2046,8 @@ void AXLayoutObject::AddChildren() {
     return;
 
   if (auto* element = DynamicTo<Element>(GetNode())) {
-    if (!IsHTMLMapElement(*element) &&   // Handled in AddImageMapChildren (img)
+    if (!IsA<HTMLMapElement>(
+            *element) &&                 // Handled in AddImageMapChildren (img)
         !IsHTMLRubyElement(*element) &&  // Special layout handling
         !IsHTMLTableElement(*element) &&  // thead/tfoot move around
         !element->IsPseudoElement()) {    // Not visited in layout traversal

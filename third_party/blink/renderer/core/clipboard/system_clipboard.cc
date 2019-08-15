@@ -6,7 +6,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -39,7 +38,7 @@ SystemClipboard& SystemClipboard::GetInstance() {
 
 SystemClipboard::SystemClipboard() {
   Platform::Current()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&clipboard_));
+      clipboard_.BindNewPipeAndPassReceiver());
 }
 
 bool SystemClipboard::IsSelectionMode() const {

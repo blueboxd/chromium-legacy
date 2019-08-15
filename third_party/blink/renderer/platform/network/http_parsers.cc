@@ -212,7 +212,7 @@ bool ParseHTTPRefresh(const String& refresh,
   }
 }
 
-double ParseDate(const String& value) {
+base::Optional<base::Time> ParseDate(const String& value) {
   return ParseDateFromNullTerminatedCharacters(value.Utf8().c_str());
 }
 

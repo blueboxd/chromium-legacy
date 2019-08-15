@@ -326,7 +326,6 @@
 <translation id="4880520557730313061">แก้ไขอัตโนมัติ</translation>
 <translation id="4881695831933465202">เปิด</translation>
 <translation id="4886021172213954916">แป้นพิมพ์ภาษาทมิฬ (เครื่องพิมพ์ดีด)</translation>
-<translation id="4892969127351273348">เปิดด้วย <ph name="APP_NAME" /> ไม่ได้</translation>
 <translation id="4905417359854579806">พร้อมสำรอง <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">คงที่</translation>
 <translation id="4935975195727477204">ดอกทานตะวัน</translation>
@@ -366,7 +365,6 @@
 <translation id="5218183485292899140">ฝรั่งเศสแบบสวิส</translation>
 <translation id="5234764350956374838">ปิด</translation>
 <translation id="5241298539944515331">แป้นพิมพ์ภาษาเวียดนาม (VIQR)</translation>
-<translation id="52446585071384036">หากต้องการเปิดไฟล์ด้วย <ph name="APP_NAME" />ให้คัดลอกไฟล์ไปที่โฟลเดอร์ "ไฟล์ Linux" ก่อน</translation>
 <translation id="5253070652067921974">สร้างโดย</translation>
 <translation id="5257456363153333584">แมลงปอ</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />เข้าถึงไฟล์ได้จากทุกที่ แม้ขณะออฟไลน์<ph name="MARKUP_2" />

@@ -39,7 +39,6 @@
 <translation id="5456409301717116725">Tämä laajennus sisältää avaintiedoston <ph name="KEY_PATH" />. Et todennäköisesti halua sitä.</translation>
 <translation id="5486326529110362464">Yksityisen avaimen syötearvoa ei ole olemassa.</translation>
 <translation id="5627523580512561598">laajennus <ph name="EXTENSION_NAME" /></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">Tämän laitteen järjestelmänvalvoja on määrittänyt, että laitteessa täytyy olla <ph name="EXTENSION_NAME" />. Laajennusta ei voi poistaa.</translation>
 <translation id="6027032947578871493">Tuntematon laite <ph name="PRODUCT_ID" /> toimittajalta <ph name="VENDOR_NAME" /> (sarjanumero <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME" /> toimittajalta <ph name="VENDOR_ID" /></translation>

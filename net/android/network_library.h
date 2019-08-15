@@ -91,13 +91,17 @@ NET_EXPORT_PRIVATE std::string GetWifiSSID();
 // empty value is returned.
 NET_EXPORT_PRIVATE base::Optional<int32_t> GetWifiSignalLevel();
 
-// Gets the DNS servers and puts them in |dns_servers|.
+// Gets the DNS servers and puts them in |dns_servers|. Sets
+// |dns_over_tls_active| and |dns_over_tls_hostname| based on the private DNS
+// settings. |dns_over_tls_hostname| will only be non-empty if
+// |dns_over_tls_active| is true.
 // Only callable on Marshmallow and newer releases.
 // Returns CONFIG_PARSE_POSIX_OK upon success,
-// CONFIG_PARSE_POSIX_NO_NAMESERVERS if no DNS servers found, or
-// CONFIG_PARSE_POSIX_PRIVATE_DNS_ACTIVE if private DNS active.
+// CONFIG_PARSE_POSIX_NO_NAMESERVERS if no DNS servers found.
 NET_EXPORT_PRIVATE internal::ConfigParsePosixResult GetDnsServers(
-    std::vector<IPEndPoint>* dns_servers);
+    std::vector<IPEndPoint>* dns_servers,
+    bool* dns_over_tls_active,
+    std::string* dns_over_tls_hostname);
 
 // Apply TrafficStats tag |tag| and UID |uid| to |socket|. Future network
 // traffic used by |socket| will be attributed to |uid| and |tag|.

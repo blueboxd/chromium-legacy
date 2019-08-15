@@ -78,6 +78,12 @@ bool SharedImageStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateSwapChain, OnCreateSwapChain)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_PresentSwapChain, OnPresentSwapChain)
 #endif  // OS_WIN
+#if defined(OS_FUCHSIA)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_RegisterSysmemBufferCollection,
+                        OnRegisterSysmemBufferCollection)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_ReleaseSysmemBufferCollection,
+                        OnReleaseSysmemBufferCollection)
+#endif  // OS_FUCHSIA
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -316,6 +322,31 @@ void SharedImageStub::OnPresentSwapChain(const Mailbox& mailbox,
   sync_point_client_state_->ReleaseFenceSync(release_id);
 }
 #endif  // OS_WIN
+
+#if defined(OS_FUCHSIA)
+void SharedImageStub::OnRegisterSysmemBufferCollection(
+    gfx::SysmemBufferCollectionId id,
+    zx::channel token) {
+  if (!id || !token) {
+    OnError();
+    return;
+  }
+
+  if (!factory_->RegisterSysmemBufferCollection(id, std::move(token))) {
+    OnError();
+  }
+}
+
+void SharedImageStub::OnReleaseSysmemBufferCollection(
+    gfx::SysmemBufferCollectionId id) {
+  if (!factory_->ReleaseSysmemBufferCollection(id)) {
+    DLOG(ERROR) << "SharedImageStub: Trying to release unknown "
+                   "SysmemBufferCollectionId.";
+    OnError();
+    return;
+  }
+}
+#endif  // defined(OS_FUCHSIA)
 
 void SharedImageStub::OnRegisterSharedImageUploadBuffer(
     base::ReadOnlySharedMemoryRegion shm) {

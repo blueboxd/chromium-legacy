@@ -2,112 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TestBrowserThreadBundle is a convenience class which allows usage of these
-// APIs within its scope:
-// - Same APIs as base::test::ScopedTaskEnvironment.
-// - content::BrowserThread.
-//
-// Only tests that need the BrowserThread API should instantiate a
-// TestBrowserThreadBundle. Use base::test::ScopedTaskEnvironment otherwise.
-//
-// By default, BrowserThread::UI/IO are backed by a single shared MessageLoop on
-// the main thread. If a test truly needs BrowserThread::IO tasks to run on a
-// separate thread, it can pass the REAL_IO_THREAD option to the constructor.
-// ThreadPool tasks always run on dedicated threads.
-//
-// To synchronously run tasks from the shared MessageLoop:
-//
-// ... until there are no undelayed tasks in the shared MessageLoop:
-//    base::RunLoop::RunUntilIdle();
-//
-// ... until there are no undelayed tasks in the shared MessageLoop, in
-// ThreadPool (excluding tasks not posted from the shared MessageLoop's
-// thread or ThreadPool):
-//    content::RunAllTasksUntilIdle();
-//
-// ... until a condition is met:
-//    base::RunLoop run_loop;
-//    // Runs until a task running in the shared MessageLoop calls
-//    // run_loop.Quit() or runs run_loop.QuitClosure() (&run_loop or
-//    // run_loop.QuitClosure() must be kept somewhere accessible by that task).
-//    run_loop.Run();
-//
-// To wait until there are no pending undelayed tasks in ThreadPool, without
-// running tasks from the shared MessageLoop:
-//    base::ThreadPoolInstance::Get()->FlushForTesting();
-//
-// The destructor of TestBrowserThreadBundle runs remaining UI/IO tasks and
-// remaining thread pool tasks.
-//
-// If a test needs to pump IO messages on the main thread, it should use the
-// IO_MAINLOOP option. Most of the time, IO_MAINLOOP avoids needing to use a
-// REAL_IO_THREAD.
-//
-// For some tests it is important to emulate real browser startup. During real
-// browser startup, the main MessageLoop and the ThreadPool are created
-// before browser threads. Passing DONT_CREATE_BROWSER_THREADS to constructor
-// will delay creating browser threads until the test explicitly calls
-// CreateBrowserThreads().
-//
-// DONT_CREATE_BROWSER_THREADS should only be used when the options specify at
-// least one real thread other than the main thread.
-//
-// Basic usage:
-//
-//   class MyTestFixture : public testing::Test {
-//    public:
-//     (...)
-//
-//    protected:
-//     // Must be the first member (or at least before any member that cares
-//     // about tasks) to be initialized first and destroyed last. protected
-//     // instead of private visibility will allow controlling the task
-//     // environment (e.g. clock) once such features are added (see
-//     // base::test::ScopedTaskEnvironment for details), until then it at least
-//     // doesn't hurt :).
-//     content::TestBrowserThreadBundle test_browser_thread_bundle_;
-//
-//     // Other members go here (or further below in private section.)
-//   };
-//
-// To add a TestBrowserThreadBundle to a ChromeFooBase test fixture when its
-// FooBase base class already provides a base::test::ScopedTaskEnvironment:
-//   class FooBase {
-//    public:
-//     // Constructs a FooBase with |traits| being forwarded to its
-//     // ScopedTaskEnvironment.
-//     template <typename... TaskEnvironmentTraits>
-//     explicit FooBase(TaskEnvironmentTraits... traits)
-//         : scoped_task_environment_(
-//               base::in_place,
-//               traits...) {}
-//
-//     // Alternatively a subclass may pass this tag to ask this FooBase not to
-//     // instantiate a ScopedTaskEnvironment. The subclass is then responsible
-//     // to instantiate one before FooBase::SetUp().
-//     struct SubclassManagesTaskEnvironment {};
-//     FooBase(SubclassManagesTaskEnvironment tag);
-//
-//    protected:
-//     // Use this protected member directly from the test body to drive tasks
-//     // posted within a FooBase-based test.
-//     base::Optional<base::test::ScopedTaskEnvironment>
-//         scoped_task_environment_;
-//   };
-//
-//   class ChromeFooBase : public FooBase {
-//    public:
-//     explicit ChromeFooBase(TaskEnvironmentTraits... traits)
-//         : FooBase(FooBase::SubclassManagesTaskEnvironment()),
-//           thread_bundle_(traits...) {}
-//
-//    protected:
-//     // Use this protected member directly to drive tasks posted within a
-//     // ChromeFooBase-based test.
-//     content::TestBrowserThreadBundle thread_bundle_;
-//   };
-// See views::ViewsTestBase / ChromeViewsTestBase for a real-world example.
-
 #ifndef CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_BUNDLE_H_
 #define CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_BUNDLE_H_
 
@@ -130,9 +24,111 @@ namespace content {
 
 class TestBrowserThread;
 
-// Note: to drive these threads (e.g. run all tasks until idle or FastForwardBy)
-// see base::test::ScopedTaskEnvironment which this is a subclass of.
-class TestBrowserThreadBundle : public base::test::ScopedTaskEnvironment {
+// BrowserTaskEnvironment is a convenience class which allows usage of these
+// APIs within its scope:
+// - Same APIs as base::test::TaskEnvironment.
+// - content::BrowserThread.
+// - Public APIs of base::test::TaskEnvironment.
+// TODO(gab): Rename this header to browser_task_environment.h and migrate all
+// users.
+//
+// Only tests that need the BrowserThread API should instantiate a
+// BrowserTaskEnvironment. Use base::test::SingleThhreadTaskEnvironment or
+// base::test::TaskEnvironment otherwise.
+//
+// By default, BrowserThread::UI/IO are backed by a single shared message loop
+// on the main thread. If a test truly needs BrowserThread::IO tasks to run on a
+// separate thread, it can pass the REAL_IO_THREAD option to the constructor.
+// ThreadPool tasks always run on dedicated threads.
+//
+// To synchronously run tasks from the shared message loop:
+//
+// ... until there are no undelayed tasks in the shared message loop:
+//    base::RunLoop::RunUntilIdle();
+//
+// ... until there are no undelayed tasks in the shared message loop, in
+// ThreadPool (excluding tasks not posted from the shared message loop's thread
+// or ThreadPool): browser_task_environment.RunUntilIdle();
+//
+// ... until a condition is met:
+//    base::RunLoop run_loop;
+//    // Runs until a task running in the shared message loop calls
+//    // run_loop.Quit() or runs run_loop.QuitClosure() (&run_loop or
+//    // run_loop.QuitClosure() must be kept somewhere accessible by that task).
+//    run_loop.Run();
+//
+// To wait until there are no pending undelayed tasks in ThreadPool, without
+// running tasks from the shared message loop (this is rarely needed):
+//    base::ThreadPoolInstance::Get()->FlushForTesting();
+//
+// The destructor of BrowserTaskEnvironment runs remaining UI/IO tasks and
+// remaining thread pool tasks.
+//
+// If a test needs to pump IO messages on the main thread, it should use the
+// IO_MAINLOOP option. Most of the time, IO_MAINLOOP avoids needing to use a
+// REAL_IO_THREAD.
+//
+// For some tests it is important to emulate real browser startup. During real
+// browser startup, the main message loop and the ThreadPool are created before
+// browser threads. Passing DONT_CREATE_BROWSER_THREADS to the constructor will
+// delay creating BrowserThreads until the test explicitly calls
+// CreateBrowserThreads().
+//
+// DONT_CREATE_BROWSER_THREADS should only be used in conjunction with
+// REAL_IO_THREAD.
+//
+// Basic usage:
+//
+//   class MyTestFixture : public testing::Test {
+//    public:
+//     (...)
+//
+//    protected:
+//     // Must be the first member (or at least before any member that cares
+//     // about tasks) to be initialized first and destroyed last. protected
+//     // instead of private visibility will allow controlling the task
+//     // environment (e.g. clock --see base::test::TaskEnvironment for
+//     // details).
+//     content::BrowserTaskEnvironment browser_task_environment_;
+//
+//     // Other members go here (or further below in private section.)
+//   };
+//
+// To add a BrowserTaskEnvironment to a ChromeFooBase test fixture when its
+// FooBase base class already provides a base::test::TaskEnvironment:
+//   class FooBase {
+//    public:
+//     // Constructs a FooBase with |traits| being forwarded to its
+//     // TaskEnvironment.
+//     template <typename... TaskEnvironmentTraits>
+//     explicit FooBase(TaskEnvironmentTraits... traits)
+//         : task_environment_(base::in_place, traits...) {}
+//
+//     // Alternatively a subclass may pass this tag to ask this FooBase not to
+//     // instantiate a TaskEnvironment. The subclass is then responsible
+//     // to instantiate one before FooBase::SetUp().
+//     struct SubclassManagesTaskEnvironment {};
+//     FooBase(SubclassManagesTaskEnvironment tag);
+//
+//    protected:
+//     // Use this protected member directly from the test body to drive tasks
+//     // posted within a FooBase-based test.
+//     base::Optional<base::test::TaskEnvironment> task_environment_;
+//   };
+//
+//   class ChromeFooBase : public FooBase {
+//    public:
+//     explicit ChromeFooBase(TaskEnvironmentTraits... traits)
+//         : FooBase(FooBase::SubclassManagesTaskEnvironment()),
+//           browser_task_environment_(traits...) {}
+//
+//    protected:
+//     // Use this protected member directly to drive tasks posted within a
+//     // ChromeFooBase-based test.
+//     content::BrowserTaskEnvironment browser_task_environment_;
+//   };
+// See views::ViewsTestBase / ChromeViewsTestBase for a real-world example.
+class BrowserTaskEnvironment : public base::test::TaskEnvironment {
  public:
   enum Options { REAL_IO_THREAD };
 
@@ -143,21 +139,21 @@ class TestBrowserThreadBundle : public base::test::ScopedTaskEnvironment {
   static constexpr MainThreadType IO_MAINLOOP = MainThreadType::IO;
 
   struct ValidTraits {
-    ValidTraits(ScopedTaskEnvironment::ValidTrait);
+    ValidTraits(TaskEnvironment::ValidTrait);
     ValidTraits(Options);
   };
 
   // Constructor which accepts zero or more traits to configure the
-  // ScopedTaskEnvironment and optionally request a real IO thread. Unlike
-  // ScopedTaskEnvironment the default MainThreadType for
-  // TestBrowserThreadBundle is MainThreadType::UI.
+  // TaskEnvironment and optionally request a real IO thread. Unlike
+  // TaskEnvironment the default MainThreadType for
+  // BrowserTaskEnvironment is MainThreadType::UI.
   template <
       class... ArgTypes,
       class CheckArgumentsAreValid = std::enable_if_t<
           base::trait_helpers::AreValidTraits<ValidTraits, ArgTypes...>::value>>
-  NOINLINE TestBrowserThreadBundle(const ArgTypes... args)
-      : TestBrowserThreadBundle(
-            base::test::ScopedTaskEnvironment(
+  NOINLINE BrowserTaskEnvironment(const ArgTypes... args)
+      : BrowserTaskEnvironment(
+            base::test::TaskEnvironment(
                 SubclassCreatesDefaultTaskRunner{},
                 base::trait_helpers::GetEnum<MainThreadType,
                                              MainThreadType::UI>(args...),
@@ -166,35 +162,18 @@ class TestBrowserThreadBundle : public base::test::ScopedTaskEnvironment {
             UseRealIOThread(
                 base::trait_helpers::GetOptionalEnum<Options>(args...))) {}
 
-  // Runs all tasks posted to ThreadPool and main thread until idle.
-  // Note: At the moment, this will not process BrowserThread::IO if this
-  // TestBrowserThreadBundle is using a REAL_IO_THREAD.
-  // TODO(robliao): fix this by making ThreadPool aware of all MessageLoops.
-  //
-  // Note that this is not the cleanest way to run until idle as it will return
-  // early if it depends on an async condition that isn't guaranteed to have
-  // occurred yet. The best way to run until a condition is met is with RunLoop:
-  //
-  //   void KickoffAsyncFoo(base::OnceClosure on_done);
-  //
-  //   base::RunLoop run_loop;
-  //   KickoffAsyncFoo(run_loop.QuitClosure());
-  //   run_loop.Run();
-  //
-
   // Flush the IO thread. Replacement for RunLoop::RunUntilIdle() for tests that
-  // have a REAL_IO_THREAD. As with RunUntilIdle() above, prefer using
+  // have a REAL_IO_THREAD. As with TaskEnvironment::RunUntilIdle() prefer using
   // RunLoop+QuitClosure() to await an async condition.
   void RunIOThreadUntilIdle();
 
-  ~TestBrowserThreadBundle() override;
+  ~BrowserTaskEnvironment() override;
 
  private:
   // The template constructor has to be in the header but it delegates to this
   // constructor to initialize all other members out-of-line.
-  TestBrowserThreadBundle(
-      base::test::ScopedTaskEnvironment&& scoped_task_environment,
-      bool real_io_thread);
+  BrowserTaskEnvironment(base::test::TaskEnvironment&& scoped_task_environment,
+                         bool real_io_thread);
 
   void Init();
 
@@ -216,7 +195,13 @@ class TestBrowserThreadBundle : public base::test::ScopedTaskEnvironment {
   std::unique_ptr<base::win::ScopedCOMInitializer> com_initializer_;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(TestBrowserThreadBundle);
+  DISALLOW_COPY_AND_ASSIGN(BrowserTaskEnvironment);
+};
+
+// TODO(gab): Mass migrate users and remove this.
+class TestBrowserThreadBundle : public BrowserTaskEnvironment {
+ public:
+  using BrowserTaskEnvironment::BrowserTaskEnvironment;
 };
 
 }  // namespace content

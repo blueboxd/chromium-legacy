@@ -13,7 +13,6 @@
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
-#include "ash/system/unified/unified_system_tray_view.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -45,7 +44,6 @@ UnifiedMessageCenterBubble::UnifiedMessageCenterBubble(UnifiedSystemTray* tray)
   bubble_view_->InitializeAndShowBubble();
 
   tray->tray_event_filter()->AddBubble(this);
-  tray->bubble()->unified_view()->AddObserver(this);
 
   UpdatePosition();
 
@@ -56,13 +54,13 @@ UnifiedMessageCenterBubble::UnifiedMessageCenterBubble(UnifiedSystemTray* tray)
 
 UnifiedMessageCenterBubble::~UnifiedMessageCenterBubble() {
   tray_->tray_event_filter()->RemoveBubble(this);
-  tray_->bubble()->unified_view()->RemoveObserver(this);
+
   if (bubble_widget_) {
     CHECK(message_center_view_);
     message_center_view_->RemoveObserver(this);
 
     bubble_widget_->RemoveObserver(this);
-    bubble_widget_->CloseNow();
+    bubble_widget_->Close();
   }
 }
 
@@ -104,16 +102,15 @@ void UnifiedMessageCenterBubble::OnViewVisibilityChanged(
     bubble_widget_->Hide();
 }
 
-void UnifiedMessageCenterBubble::OnViewPreferredSizeChanged(
-    views::View* observed_view) {
-  UpdatePosition();
-  bubble_view_->Layout();
-}
-
 void UnifiedMessageCenterBubble::OnWidgetDestroying(views::Widget* widget) {
   CHECK_EQ(bubble_widget_, widget);
   bubble_widget_->RemoveObserver(this);
   bubble_widget_ = nullptr;
+}
+
+void UnifiedMessageCenterBubble::OnExpandedAmountChanged() {
+  UpdatePosition();
+  bubble_view_->Layout();
 }
 
 }  // namespace ash

@@ -8,14 +8,6 @@
 <translation id="1199593201721843963">Desactiva les connexions remotes</translation>
 <translation id="1291443878853470558">Heu d'activar les connexions remotes si voleu utilitzar Chromoting per accedir a aquest ordinador.</translation>
 <translation id="1297009705180977556">S'ha produït un error en connectar amb <ph name="HOSTNAME" /></translation>
-<translation id="1300633907480909701">Accediu de manera segura als vostres ordinadors des del dispositiu Android.
-
-• A tots els ordinadors que feu servir, podeu configurar l'accés remot amb l'aplicació d'escriptori remot de Chrome disponible a Chrome Web Store: https://chrome.google.com/remotedesktop
-• Al dispositiu Android, obriu l'aplicació i toqueu qualsevol dels vostres ordinadors en línia per establir la connexió.
-
-És possible que els ordinadors remots amb teclats que no estiguin en anglès dels EUA rebin una introducció de text incorrecta. Ben aviat també s'admetran altres dissenys de teclat.
-
-Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de Google (http://goo.gl/SyrVzj) i la Política de privadesa de Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(aquesta funció encara no està disponible al vostre ordinador)</translation>
 <translation id="1342297293546459414">Vegeu i controleu un ordinador compartit.</translation>
 <translation id="1389790901665088353">Baixeu l'instal·lador de l'amfitrió d'Escriptori remot de Chrome</translation>
@@ -28,7 +20,6 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="1643640058022401035">Si sortiu d'aquesta pàgina, la sessió de Chromoting finalitzarà.</translation>
 <translation id="1654128982815600832">S'estan activant les connexions remotes en aquest ordinador...</translation>
 <translation id="170207782578677537">No s'ha pogut registrar aquest ordinador.</translation>
-<translation id="1727412735341161734">Escriptori remot de Chrome</translation>
 <translation id="174018511426417793">No teniu cap ordinador registrat. Per activar les connexions remotes a un ordinador, instal·leu-hi l'escriptori remot de Chrome i feu clic a <ph name="BUTTON_NAME" />.</translation>
 <translation id="1742469581923031760">S'està connectant...</translation>
 <translation id="1770394049404108959">No puc obrir l'aplicació.</translation>
@@ -46,13 +37,6 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="2078880767960296260">Procés de l'amfitrió</translation>
 <translation id="20876857123010370">Mode de ratolí tàctil</translation>
 <translation id="2089514346391228378">S'han activat les connexions remotes en aquest ordinador.</translation>
-<translation id="2118549242412205620">Accediu de manera segura als vostres ordinadors des del dispositiu Android.
-
-• A tots els ordinadors que feu servir, podeu configurar l'accés remot amb l'aplicació d'escriptori remot de Chrome disponible a Chrome Web Store:  https://chrome.google.com/remotedesktop
-• Al dispositiu Android, obriu l'aplicació i toqueu qualsevol dels vostres ordinadors en línia per establir la connexió.
-
-Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de Google (http://goo.gl/SyrVzj) i la Política de privadesa de Chrome (http://goo.gl/0uXE5d).</translation>
-<translation id="2124408767156847088">Accediu de manera segura als vostres ordinadors des del dispositiu Android.</translation>
 <translation id="2208514473086078157">La configuració de la política no permet compartir aquest ordinador com a amfitrió de l'escriptori remot de Chrome. Contacteu amb l'administrador del sistema per obtenir assistència.</translation>
 <translation id="2220529011494928058">Informa d'un problema</translation>
 <translation id="2221097377466213233">Utilitza la tecla de Ctrl dreta com a tecla de Windows (⌘ a Mac)</translation>
@@ -91,11 +75,6 @@ Si l'script <ph name="SERVICE_SCRIPT_NAME" /> ja existeix i s'ha marcat la casel
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">S'ha produït un error a la xarxa. Reiniciarem l'aplicació quan el dispositiu torni a estar en línia.</translation>
 <translation id="2891243864890517178">Per a Mac (OS X Yosemite 10.10 i versions posteriors)</translation>
-<translation id="289405675947420287">Accedeix de manera segura al teu ordinador des d'un dispositiu iOS. És ràpid, senzill i gratuït.
-
-• Baixa l'aplicació Escriptori remot de Chrome des de Chrome Web Store a l'ordinador al qual vulguis accedir de manera remota.
-• Instal·la el programari Escriptori remot de Chrome i segueix les instruccions per completar-ne la configuració.
-• Al dispositiu iOS, obre l'aplicació i toca qualsevol dels teus ordinadors en línia per establir la connexió.</translation>
 <translation id="2894654864775534701">Aquest ordinador es comparteix actualment mitjançant un altre compte.</translation>
 <translation id="2919669478609886916">Esteu compartint aquest ordinador amb un altre usuari. Voleu continuar compartint-lo?</translation>
 <translation id="2921543551052660690">Heu iniciat la sessió anteriorment com a <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Per accedir als ordinadors d'aquest compte, <ph name="LINK_BEGIN" />inicieu la sessió a Chromium<ph name="LINK_END" /> amb el compte en qüestió i torneu a instal·lar Chromoting.</translation>
@@ -109,7 +88,6 @@ Si l'script <ph name="SERVICE_SCRIPT_NAME" /> ja existeix i s'ha marcat la casel
 <translation id="310979712355504754">Suprimeix-ho tot</translation>
 <translation id="3150823315463303127">L'amfitrió no ha pogut llegir la política.</translation>
 <translation id="3171922709365450819">El client no admet aquest dispositiu perquè requereix autenticació externa.</translation>
-<translation id="3194245623920924351">Escriptori remot de Chrome</translation>
 <translation id="3197730452537982411">Escriptori remot</translation>
 <translation id="324272851072175193">Envia aquestes instruccions per correu electrònic</translation>
 <translation id="3258789396564295715">Podeu accedir de manera segura a aquest ordinador mitjançant l'escriptori remot de Chrome.</translation>
@@ -174,13 +152,6 @@ Si l'script <ph name="SERVICE_SCRIPT_NAME" /> ja existeix i s'ha marcat la casel
 <translation id="4660011489602794167">Mostra el teclat</translation>
 <translation id="4703302905453407178">Un component obligatori ha deixat de funcionar. Informeu-ne els desenvolupadors.</translation>
 <translation id="4703799847237267011">La vostra sessió de Chromoting ha finalitzat.</translation>
-<translation id="4706355010316049867">Chrome
-Remot
-Escriptori
-Accés
-Assistència
-Ordinador
-PC</translation>
 <translation id="4736223761657662401">Historial de connexions</translation>
 <translation id="4741792197137897469">L'autenticació ha fallat. Torneu a iniciar la sessió a Chrome.</translation>
 <translation id="477305884757156764">L'aplicació és massa lenta.</translation>
@@ -252,7 +223,6 @@ PC</translation>
 <translation id="6381670701864002291">Altres motius.</translation>
 <translation id="6398765197997659313">Surt del mode de pantalla completa</translation>
 <translation id="6441316101718669559">Aquesta plataforma no admet la integració de l'escriptori. Podeu continuar utilitzant l'aplicació, però l'experiència de l'usuari no serà tan bona.</translation>
-<translation id="6502629188777329097">Accedeix al teu ordinador</translation>
 <translation id="652218476070540101">S'està actualitzant el PIN d'aquest ordinador...</translation>
 <translation id="6527303717912515753">Comparteix</translation>
 <translation id="6541219117979389420">Els registres de l'aplicació poden incloure informació privada, com ara la vostra identitat (adreça electrònica) i els noms i les propietats dels fitxers i de les carpetes de Google Drive.</translation>
@@ -286,7 +256,6 @@ PC</translation>
 <translation id="7116737094673640201">Et donem la benvinguda a Escriptori remot de Chrome</translation>
 <translation id="7144878232160441200">Torna-ho a provar</translation>
 <translation id="7149517134817561223">Aplicació que ha d'emetre les ordres per a l'amfitrió de l'escriptori remot de Chrome.</translation>
-<translation id="7213491505512310433">Millores d'estabilitat i correcció d'errors.</translation>
 <translation id="7215059001581613786">Introduïu un PIN que tingui sis dígits o més.</translation>
 <translation id="7312846573060934304">L'amfitrió no està connectat</translation>
 <translation id="7319983568955948908">Deixa de compartir</translation>

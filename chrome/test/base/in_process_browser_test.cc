@@ -298,6 +298,11 @@ void InProcessBrowserTest::SetUpDefaultCommandLine(
   test_launcher_utils::PrepareBrowserCommandLineForBrowserTests(
       command_line, open_about_blank_on_browser_launch_);
 
+  // Allow input before the compositor has committed a frame, to dodge
+  // flakiness. crbug.com/987626 concerns fixing these tests to wait for
+  // the compositor to commit hit testing data before sending events.
+  command_line->AppendSwitch(switches::kAllowPreCommitInput);
+
   // TODO(pkotwicz): Investigate if we can remove this switch.
   if (exit_when_last_browser_closes_)
     command_line->AppendSwitch(switches::kDisableZeroBrowsersOpenForTests);

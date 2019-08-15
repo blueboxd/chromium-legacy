@@ -518,7 +518,7 @@ void ArcApps::LoadIconFromVM(const std::string app_id,
   if (prefs) {
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
     if (app_info) {
-      constexpr bool quantize_to_supported_scale_factor = false;
+      constexpr bool quantize_to_supported_scale_factor = true;
       base::OnceCallback<void(apps::ArcApps::AppConnectionHolder*)> pending =
           base::BindOnce(
               &LoadIcon0, icon_compression,
@@ -547,7 +547,7 @@ void ArcApps::LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
                                 IconEffects icon_effects,
                                 LoadIconCallback callback) {
   // Use overloaded Chrome icon for Play Store that is adapted to Chrome style.
-  constexpr bool quantize_to_supported_scale_factor = false;
+  constexpr bool quantize_to_supported_scale_factor = true;
   int size_hint_in_px = apps_util::ConvertDipToPx(
       size_hint_in_dip, quantize_to_supported_scale_factor);
   int resource_id = (size_hint_in_px <= 32) ? IDR_ARC_SUPPORT_ICON_32

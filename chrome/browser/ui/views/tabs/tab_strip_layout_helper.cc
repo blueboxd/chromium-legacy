@@ -185,19 +185,8 @@ void TabStripLayoutHelper::MoveTab(
   const int new_slot_index = GetSlotIndexForTabModelIndex(new_index);
   slots_.insert(slots_.begin() + new_slot_index, std::move(moving_tab));
 
-  if (group_at_prev_index.has_value()) {
-    const int prev_group_slot_index =
-        GetSlotIndexForGroupHeader(group_at_prev_index.value());
-    TabSlot moving_group_header = std::move(slots_[prev_group_slot_index]);
-
-    slots_.erase(slots_.begin() + prev_group_slot_index);
-    std::vector<int> tabs_in_group =
-        controller_->ListTabsInGroup(group_at_prev_index.value());
-    const int first_tab_slot_index =
-        GetSlotIndexForTabModelIndex(tabs_in_group[0]);
-    slots_.insert(slots_.begin() + first_tab_slot_index,
-                  std::move(moving_group_header));
-  }
+  if (group_at_prev_index.has_value())
+    UpdateGroupHeaderIndex(group_at_prev_index.value());
 }
 
 void TabStripLayoutHelper::SetTabPinnedness(
@@ -228,6 +217,17 @@ void TabStripLayoutHelper::RemoveGroupHeader(TabGroupId group) {
   const int slot_index = GetSlotIndexForGroupHeader(group);
   slots_[slot_index].animation->NotifyCloseCompleted();
   slots_.erase(slots_.begin() + slot_index);
+}
+
+void TabStripLayoutHelper::UpdateGroupHeaderIndex(TabGroupId group) {
+  const int slot_index = GetSlotIndexForGroupHeader(group);
+  TabSlot header_slot = std::move(slots_[slot_index]);
+
+  slots_.erase(slots_.begin() + slot_index);
+  std::vector<int> tabs_in_group = controller_->ListTabsInGroup(group);
+  const int first_tab_slot_index =
+      GetSlotIndexForTabModelIndex(tabs_in_group[0]);
+  slots_.insert(slots_.begin() + first_tab_slot_index, std::move(header_slot));
 }
 
 void TabStripLayoutHelper::SetActiveTab(int prev_active_index,

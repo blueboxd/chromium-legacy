@@ -68,7 +68,6 @@
 
           Si esta opción de configuración está inhabilitada o no se configura, el host de asistencia remota se ejecutará en el contexto del usuario, y los usuarios remotos no podrán interactuar con las ventanas con permisos elevados en el escritorio.</translation>
 <translation id="1096105751829466145">Proveedor de búsqueda predeterminado</translation>
-<translation id="1099024407376270611">Verifica en "Navegación segura" la reputación de las URL que visita el usuario en tiempo real</translation>
 <translation id="1099282607296956954">Permite el aislamiento de todos los sitios</translation>
 <translation id="1100570158310952027">
       La política especifica una lista de orígenes (URL) o patrones de nombres de host
@@ -416,22 +415,6 @@
       Advertencia: No se recomienda delegar el control de la versión de <ph name="PRODUCT_OS_NAME" /> a una Aplicación de kiosko ya que puede evitar que el dispositivo reciba actualizaciones de software y correcciones de seguridad críticas. Delegar el control de la versión de <ph name="PRODUCT_OS_NAME" /> puede poner en riesgo a los usuarios.</translation>
 <translation id="1675002386741412210">Compatible con:</translation>
 <translation id="1700811900332333712">Permite que el dispositivo solicite Powerwash</translation>
-<translation id="1704516734140344991">Configura la disponibilidad y el comportamiento de la función de actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      Se pueden especificar opciones de configuración particulares en las propiedades de JSON:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Si se establece como <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, los usuarios podrán activar el flujo de Powerwash para instalar la actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Si se establece como <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, los usuarios podrán invocar el flujo de actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> que preserva el estado en todo el dispositivo (lo que incluye la inscripción de empresas), pero pierde los datos del usuario. Este flujo de actualización está disponible a partir de la versión 68.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Controla cómo se ejecutan las actualizaciones automáticas del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> para el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> vulnerable. Todos los flujos conservan el estado del dispositivo local.
-        Si se establece como 1 o no se establece, no se aplicarán las actualizaciones del firmware TPM.
-        Si se establece como 2, se actualizará el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> en el próximo reinicio después de que el usuario reconozca la actualización.
-        Si se establece como 3, se actualizará el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> en el próximo reinicio.
-        Si se establece como 4, se actualizará el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> después de la inscripción, antes del acceso del usuario.
-        Esta opción está disponible a partir de la versión 74.
-
-      Si no se establece la política, no estará disponible la función de actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.</translation>
 <translation id="1708496595873025510">Establece la restricción en la obtención del valor de inicialización de las variaciones.</translation>
 <translation id="1717817358640580294">Si no se establece, en caso de que "Limpiar Chrome" detecte software no deseado, es posible que informe metadatos sobre el análisis a Google en conformidad con la política establecida por SafeBrowsingExtendedReportingEnabled. Además, "Limpiar Chrome" le preguntará al usuario si quiere borrar el software no deseado y si desea compartir los resultados de la limpieza con Google a fin de colaborar con futuras detecciones de ese tipo de software. Estos resultados contienen metadatos de archivos, extensiones instaladas automáticamente y claves de registro, como se describe en el Informe de privacidad de Chrome.
 
@@ -818,6 +801,22 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2463034609187171371">Permitir los paquetes de encriptación DHE en TLS</translation>
 <translation id="2463365186486772703">Configuración regional de la aplicación</translation>
 <translation id="2466131534462628618">La autenticación de portal cautivo ignora el proxy</translation>
+<translation id="2466697858869282874">Configura la disponibilidad y el comportamiento de la función de actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Se pueden especificar opciones de configuración particulares en las propiedades de JSON:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Si se establece como <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, los usuarios podrán activar el flujo de Powerwash para instalar la actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Si se establece como <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, los usuarios podrán invocar el flujo de actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> que preserva el estado en todo el dispositivo (lo que incluye la inscripción de empresas), pero pierde los datos del usuario. Este flujo de actualización está disponible a partir de la versión 68.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Controla cómo se ejecutan las actualizaciones automáticas del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> para el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> vulnerable. Todos los flujos conservan el estado del dispositivo local.
+        Si se establece como 1 o no se establece, no se aplicarán las actualizaciones del firmware TPM.
+        Si se establece como 2, se actualizará el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> en el próximo reinicio después de que el usuario reconozca la actualización.
+        Si se establece como 3, se actualizará el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> en el próximo reinicio.
+        Si se establece como 4, se actualizará el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> después de la inscripción, antes del acceso del usuario.
+        Esta opción está disponible a partir de la versión 75.
+
+      Si no se establece la política, no estará disponible la función de actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.</translation>
 <translation id="2471748297300970300">Si se inhabilita, impide que aparezcan advertencias de seguridad cuando se inicia Chrome con marcas de la línea de comandos potencialmente peligrosas.
 
           Si se inhabilita o no se establece, se muestran advertencias de seguridad cuando se usan algunas marcas de la línea de comandos para iniciar Chrome.
@@ -1821,6 +1820,13 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Cuando no se configura esta política, se usa la ruta predeterminada para el perfil de roaming.</translation>
 <translation id="4239720644496144453">Las apps de Android no usan caché. Si varios usuarios instalan la misma app de Android, se descargará una para cada usuario.</translation>
+<translation id="4241202391219483189">Esta política controla si el usuario puede importar y quitar Certificados de CA a través del Administrador de certificados.
+
+      Si se establece esta política como ''Permitir que los usuarios administren todos los certificados'' o no se establece, los usuarios podrán editar la configuración de confianza para todos los Certificados de CA, importar certificados o quitarlos.
+
+      Si se establece esta política como ''Permitir que los usuarios administren los certificados de usuario'', los usuarios solo podrán administrar los certificados que hayan importado, pero no podrán cambiar la configuración de confianza de los certificados integrados.
+
+      Si se establece esta política como ''No permitir que los usuarios administren certificados'', los usuarios no podrán administrar los Certificados de CA; solo podrán visualizarlos.</translation>
 <translation id="4243336580717651045">Habilita la recopilación de datos anónimos con clave de URL en <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien esta configuración.
 
       La recopilación de datos anónimos con clave de URL envía a Google las URL de las páginas que visita el usuario para mejorar la experiencia de búsqueda y navegación.
@@ -1896,6 +1902,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Actualmente, esta función está inhabilitada en el lado del servidor.</translation>
 <translation id="4363057787588706121">Permitir la combinación de políticas de listas con diferentes fuentes</translation>
+<translation id="4363101430102811068">Habilita la detección de filtraciones en las credenciales que se ingresan</translation>
 <translation id="4363136876356691536">Si esta política se configura como verdadera, las opciones de accesibilidad aparecerán siempre en el menú de la bandeja del sistema.
 
           Si se configura como falsa, las opciones de accesibilidad no aparecerán nunca en el menú de la bandeja del sistema.
@@ -2047,10 +2054,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Si esta política no se establece, <ph name="PRODUCT_NAME" /> no delegará las credenciales de usuario aunque un servidor se detecte como intranet.</translation>
 <translation id="4752880493649142945">Certificado de cliente para conectarse a RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4756984056524699088">Permite que el usuario acceda con permisos de administrador a los contenedores de Crostini.
-
-      Si se establece esta política como verdadera o no se establece, se otorgará acceso con permisos de administrador al usuario para los contenedores de Crostini.
-      Si se establece como falsa, no se otorgará acceso con permisos de administrador al usuario para ningún contenedor de Crostini, ya sea existente o nuevo.</translation>
 <translation id="4759650396863318477">Te permite establecer el período, en milisegundos, en el que se notifica a los usuarios que deben reiniciar <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> para aplicar una actualización pendiente.
 
       En este período, se le informará reiteradamente al usuario acerca de la necesidad de la actualización. En dispositivos <ph name="PRODUCT_OS_NAME" />, se muestra una notificación de reinicio en la bandeja del sistema, en conformidad con la política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. En navegadores <ph name="PRODUCT_NAME" />, el menú de la app indica que se debe reiniciar después de transcurrido un tercio del período de la notificación. Esta notificación cambia de color tras dos tercios del período de la notificación y una vez más cuando finaliza este período. Las notificaciones adicionales que habilita la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> siguen el mismo patrón.
@@ -2200,9 +2203,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si inhabilitas esta configuración o no se establece, solo se usarán las entradas de listas de la fuente con la prioridad más alta. El resto de las fuentes aparecerá en conflicto, pero se ignorará.</translation>
 <translation id="5141670636904227950">Establece el tipo de lupa predeterminado habilitado en la pantalla de acceso.</translation>
 <translation id="5142301680741828703">Siempre procesar los siguientes patrones de URL en <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5146261336206349846">Si se habilita esta política, se verificarán en "Navegación segura" todas las URL que visite el usuario en tiempo real.
+<translation id="5146261336206349846">Si se habilita esta política, la función Navegación segura verificará todas las URL que visite el usuario en tiempo real.
 
-      Si se inhabilita o no se establece, se aplicarán las verificaciones predeterminadas de "Navegación segura".</translation>
+      Si se inhabilita o no se establece, se aplicarán las verificaciones predeterminadas de Navegación segura.</translation>
 <translation id="5148753489738115745">Te permite especificar los parámetros adicionales que se utilizan cuando <ph name="PRODUCT_FRAME_NAME" /> inicia <ph name="PRODUCT_NAME" />.
 
           Si no se configura esta política, se utilizará la línea de comandos predeterminada.</translation>
@@ -2898,6 +2901,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si esta política se establece en "False", no se informará sobre los usuarios.</translation>
 <translation id="6394350458541421998">Esta política se eliminó a partir de la versión 29 de <ph name="PRODUCT_OS_NAME" />. Utiliza la política PresentationScreenDimDelayScale en su lugar.</translation>
 <translation id="6401669939808766804">Salir de la cuenta de usuario</translation>
+<translation id="6403746242226534223">Verifica en Navegación segura la reputación de las URL que visita el usuario en tiempo real</translation>
 <translation id="6406448383934634215">Si se selecciona "Abrir una lista de URL" como acción de inicio, esto te permitirá especificar la lista de URL que se abren. Si no se establece, no se abrirá ninguna URL en el inicio.
 
           Esta política solo funciona si la política "RestoreOnStartup" está establecida en "RestoreOnStartupIsURLs".
@@ -2974,6 +2978,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6544897973797372144">Si esta política se establece en Verdadera y la política ChromeOsReleaseChannel no se especifica, los usuarios del dominio de inscripción podrán cambiar el canal de versiones del dispositivo. Si esta política se establece en Falsa, el dispositivo se bloqueará en cualquier canal que se haya establecido anteriormente.
 
       El canal seleccionado por el usuario será reemplazado por la política ChromeOsReleaseChannel, pero si el canal de la política es más estable que el que fue instalado en el dispositivo, el canal solo cambiará después de que la versión del canal más estable alcance un número de versión más alto que la instalada en el dispositivo.</translation>
+<translation id="6549567350270907557">Si se habilita esta configuración, los usuarios podrán verificar que una filtración de datos no afecte las credenciales ingresadas en <ph name="PRODUCT_NAME" />.
+
+              Si se habilita o inhabilita esta política, los usuarios no podrán cambiarla ni anularla en <ph name="PRODUCT_NAME" />. Si no se configura, se permitirá que se compruebe que no haya habido filtraciones (aunque el usuario podrá desactivar esta acción).</translation>
 <translation id="6553143066970470539">Porcentaje del brillo de pantalla</translation>
 <translation id="6559057113164934677">No permitir que ningún sitio acceda a la cámara ni al micrófono</translation>
 <translation id="6561396069801924653">Mostrar opciones de accesibilidad en el menú de la bandeja del sistema</translation>
@@ -3961,6 +3968,10 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Para obtener más información acerca de la política <ph name="IEEM_SITELIST_POLICY" /> de Internet Explorer, accede al siguiente sitio: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Abrir siempre archivos PDF de forma externa</translation>
+<translation id="8405691014775178834">Permite que el usuario acceda con permisos de administrador a los contenedores de Crostini.
+
+      Si se establece esta política como verdadera o no se establece, el usuario tendrá acceso con permisos de administrador a los contenedores de Crostini.
+      Si se establece como falsa, el usuario no tendrá acceso con permisos de administrador a ningún contenedor de Crostini, ya sea existente o nuevo.</translation>
 <translation id="8417305981081876834">Establecer la longitud máxima del PIN de pantalla bloqueada</translation>
 <translation id="841977920223099909">Activador de advertencia de la protección de la contraseña</translation>
 <translation id="8424255554404582727">Establecer la rotación predeterminada de la pantalla que se volverá a aplicar en cada reinicio</translation>
@@ -4218,6 +4229,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           El valor de la política debe especificarse en milisegundos. Los valores se establecerán para que sean inferiores a la demora de inactividad.</translation>
 <translation id="891435090623616439">codificada como cadena JSON; para obtener detalles, se puede consultar <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8917070657147922192">Permite que los usuarios administren los Certificados de CA instalados</translation>
 <translation id="8934944553121392674">Controla a qué impresoras de <ph name="DEVICE_PRINTERS_POLICY" /> pueden acceder los usuarios.
 
       Designa la política de acceso que se usa para la configuración de impresoras en lote. Si se selecciona <ph name="PRINTERS_ALLOW_ALL" />, se muestran todas las impresoras. Si se selecciona <ph name="PRINTERS_BLACKLIST" />, se usa <ph name="DEVICE_PRINTERS_BLACKLIST" /> para restringir el acceso a las impresoras especificadas. Si se selecciona <ph name="PRINTERS_WHITELIST" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> designa solo las impresoras que se pueden seleccionar.

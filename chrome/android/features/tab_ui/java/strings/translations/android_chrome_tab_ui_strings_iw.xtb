@@ -1,4 +1,25 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
+<translation id="125153950246128346">יש להקיש כדי לראות כרטיסייה אחרת</translation>
+<translation id="1869137256605757565">{TABS_COUNT,plural, =1{כרטיסייה אחת (<ph name="TABS_COUNT_ONE" />)}two{<ph name="TABS_COUNT_MANY" /> כרטיסיות}many{<ph name="TABS_COUNT_MANY" /> כרטיסיות}other{<ph name="TABS_COUNT_MANY" /> כרטיסיות}}</translation>
+<translation id="257674075312929031">קבוצה</translation>
+<translation id="2613747923081026172">יצירת קבוצה</translation>
+<translation id="2845873210977809562">הכרטיסיות שנפתחו סגורות</translation>
+<translation id="2977480621796371840">הסרה מהקבוצה</translation>
+<translation id="4648718555153979859">הכרטיסיות שלך מסודרות כאן בקבוצה</translation>
+<translation id="5073204694187207510">הסתרת רשת מסך מלא</translation>
+<translation id="5082793167783849073">כדי להשוות במהירות בין דפים, אפשר ליצור קבוצה. כדי להתחיל, צריך ללחוץ לחיצה ארוכה על קישור.</translation>
+<translation id="5497272504048921382">כרטיסיות שנפתחו</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> כרטיסיות מקובצות</translation>
+<translation id="5586306159936941448">ניתן לגרור כרטיסייה אחת אל כרטיסייה אחרת כדי לקבץ אותן יחד</translation>
+<translation id="58326064309361797">ניתן לגרור כרטיסיות כדי לקבץ אותן</translation>
+<translation id="6193448654517602979">בחירת כרטיסיות</translation>
+<translation id="6615455863669487791">הראה לי</translation>
+<translation id="6803423358608456383">כרטיסיות שנפתחו בחצי מהגובה</translation>
+<translation id="7559245342362162951">הצגת כרטיסיות הקבוצה ברשת מסך מלא</translation>
+<translation id="8582216581279205169">כרטיסיות שנפתחו בגובה מלא</translation>
+<translation id="9150694013019234766">מעבר בין כרטיסיות בקבוצת הכרטיסיות שבחלק התחתון של המסך</translation>
+<translation id="9169594135889675189">הוספת כרטיסיה חדשה לקבוצה</translation>
+<translation id="959682366969460160">ארגון הפריטים</translation>
 </translationbundle>

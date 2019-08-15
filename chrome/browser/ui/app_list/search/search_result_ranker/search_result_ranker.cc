@@ -258,7 +258,7 @@ void SearchResultRanker::FetchRankings(const base::string16& query) {
   if (results_list_group_ranker_) {
     group_ranks_.clear();
     group_ranks_ = results_list_group_ranker_->Rank();
-  } else if (query.size() > 0 && query_based_mixed_types_ranker_) {
+  } else if (query_based_mixed_types_ranker_) {
     query_mixed_ranks_.clear();
     query_mixed_ranks_ =
         query_based_mixed_types_ranker_->Rank(base::UTF16ToUTF8(query));

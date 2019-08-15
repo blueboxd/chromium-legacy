@@ -37,6 +37,7 @@
 <translation id="1419738280318246476">Sblocca il dispositivo per eseguire l'azione di notifica</translation>
 <translation id="1426410128494586442">Sì</translation>
 <translation id="1455242230282523554">Mostra impostazioni lingua</translation>
+<translation id="1460620680449458626">Il volume è disattivato.</translation>
 <translation id="1467432559032391204">Sinistra</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Mostra impostazioni di notifica. Le notifiche sono disattivate per un'app}other{Mostra impostazioni di notifica. Le notifiche sono disattivate per # app}}</translation>
@@ -159,6 +160,7 @@
 <translation id="3236488194889173876">Nessuna rete mobile disponibile</translation>
 <translation id="3249513730522716925">La finestra <ph name="WINDOW_TITLE" /> è stata spostata dal desktop <ph name="ACTIVE_DESK" /> al desktop <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Cosa sai fare?</translation>
+<translation id="3277674767125718685">Il volume è attivo.</translation>
 <translation id="3294437725009624529">Ospite</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> può ancora accedere in seguito.</translation>
 <translation id="3321628682574733415">Codice genitore errato</translation>
@@ -507,6 +509,7 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Caricabatterie a basso consumo collegato</translation>
 <translation id="8683506306463609433">Traccia delle prestazioni attiva</translation>
+<translation id="8721053961083920564">Attiva/disattiva volume. <ph name="STATE_TEXT" /></translation>
 <translation id="8734991477317290293">Potrebbe essere un tentativo di rubare i tasti premuti</translation>
 <translation id="8735953464173050365">Mostra impostazioni tastiera. La selezione attiva è <ph name="KEYBOARD_NAME" /></translation>
 <translation id="875593634123171288">Mostra impostazioni VPN</translation>

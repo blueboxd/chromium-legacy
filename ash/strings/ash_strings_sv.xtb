@@ -37,6 +37,7 @@
 <translation id="1419738280318246476">Lås upp enheten så att aviseringen kan göras</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1455242230282523554">Visa språkinställningar</translation>
+<translation id="1460620680449458626">Ljudet är av.</translation>
 <translation id="1467432559032391204">Vänster</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Visa aviseringsinställningar. Aviseringar har inaktiverats för 1 app}other{Visa aviseringsinställningar. Aviseringar har inaktiverats för # appar}}</translation>
@@ -159,6 +160,7 @@
 <translation id="3236488194889173876">Det finns inget tillgängligt mobilnätverk</translation>
 <translation id="3249513730522716925">Fönstret <ph name="WINDOW_TITLE" /> flyttades från skrivbordet <ph name="ACTIVE_DESK" /> till skrivbordet <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Vad kan du göra?</translation>
+<translation id="3277674767125718685">Ljudet är på.</translation>
 <translation id="3294437725009624529">Gäst</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan ändå logga in igen senare.</translation>
 <translation id="3321628682574733415">Felaktig föräldrakod</translation>
@@ -506,6 +508,7 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Laddare med låg effekt ansluten</translation>
 <translation id="8683506306463609433">Prestandaspårning är aktiv</translation>
+<translation id="8721053961083920564">Ljud på/av. <ph name="STATE_TEXT" /></translation>
 <translation id="8734991477317290293">Det kan försöka stjäla dina tangenttryckningar</translation>
 <translation id="8735953464173050365">Visa tangentbordsinställningar. Inställt på <ph name="KEYBOARD_NAME" /></translation>
 <translation id="875593634123171288">Visa VPN-inställningar</translation>

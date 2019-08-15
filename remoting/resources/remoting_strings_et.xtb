@@ -8,14 +8,6 @@
 <translation id="1199593201721843963">Keela kaugühendused</translation>
 <translation id="1291443878853470558">Kui soovite rakendusega Chromoting arvuti juurde pääseda, siis lubage kaugühendused.</translation>
 <translation id="1297009705180977556">Viga hostiga <ph name="HOSTNAME" /> ühendamisel</translation>
-<translation id="1300633907480909701">Hankige oma Android-seadmest turvaliselt juurdepääs oma arvutitele.
-
-• Seadistage igas arvutis kaugjuurdepääs, kasutades Chrome Remote Desktopi rakendust, mille saate alla laadida Chrome'i veebipoest: https://chrome.google.com/remotedesktop
-• Android-seadmes avage rakendus ja puudutage ühenduse loomiseks mõnda võrgus olevat arvutit.
-
-Kaugarvutid, mis ei kasuta Ameerika inglise keele klaviatuuri, võivad saada vale tekstisisendi. Peagi hakkame toetama teisi klaviatuuripaigutusi.
-
-Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo.gl/SyrVzj) ja Chrome'i privaatsuseeskirjadest (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(see funktsioon ei ole veel teie arvutis saadaval)</translation>
 <translation id="1342297293546459414">Vaadake ja juhtige jagatud arvutit.</translation>
 <translation id="1389790901665088353">Chrome Remote Desktopi hosti installiprogrammi allalaadimine</translation>
@@ -28,7 +20,6 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="1643640058022401035">Lehelt lahkudes katkeb teie rakenduse Chromoting seanss.</translation>
 <translation id="1654128982815600832">Arvuti kaugühenduste lubamine …</translation>
 <translation id="170207782578677537">Arvuti registreerimine ebaõnnestus.</translation>
-<translation id="1727412735341161734">Chrome Remote Desktop</translation>
 <translation id="174018511426417793">Ühtki arvutit ei ole registreeritud. Arvutis kaugühenduste lubamiseks installige Chrome Remote Desktop ja klõpsake nupul „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Ühendamine ...</translation>
 <translation id="1770394049404108959">Ma ei saa seda rakendust avada.</translation>
@@ -46,13 +37,6 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="2078880767960296260">Hosti protsess</translation>
 <translation id="20876857123010370">Puuteplaadirežiim</translation>
 <translation id="2089514346391228378">Selles arvutis on lubatud kaugühendused.</translation>
-<translation id="2118549242412205620">Hankige oma Android-seadmest turvaliselt juurdepääs oma arvutitele.
-
-• Seadistage igas arvutis kaugjuurdepääs, kasutades Chrome Remote Desktopi rakendust, mille saate alla laadida Chrome'i veebipoest: https://chrome.google.com/remotedesktop
-• Android-seadmes avage rakendus ja puudutage ühenduse loomiseks mõnda võrgus olevat arvutit.
-
-Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo.gl/SyrVzj) ja Chrome'i privaatsuseeskirjadest (http://goo.gl/0uXE5d).</translation>
-<translation id="2124408767156847088">Hankige oma Android-seadmest turvaliselt juurdepääs oma arvutitele.</translation>
 <translation id="2208514473086078157">Reegli seaded ei luba jagada seda arvutit Chrome Remote Desktopi hostina. Abi saamiseks võtke ühendust süsteemiülemaga</translation>
 <translation id="2220529011494928058">Probleemist teatamine</translation>
 <translation id="2221097377466213233">Kasuta Windowsis parempoolset juhtklahvi Ctrl (Maci puhul klahv ⌘)</translation>
@@ -91,11 +75,6 @@ Kui „<ph name="SERVICE_SCRIPT_NAME" />” on juba olemas ja märgitud, tuleb t
 <translation id="2851754573186462851">Chromiumi rakenduste voogesitus</translation>
 <translation id="2888969873284818612">Ilmnes võrguviga. Rakendus taaskäivitatakse, kui seadmes on taas võrguühendus.</translation>
 <translation id="2891243864890517178">Maci jaoks (OS X Yosemite 10.10 ja uuemad versioonid)</translation>
-<translation id="289405675947420287">Hankige oma iOS-i seadmest turvaliselt juurdepääs oma arvutile. See on kiire, lihtne ja tasuta.
-
-• Laadige rakendus Chrome Remote Desktop Chrome'i veebipoest alla arvutis, millele soovite kaugjuurdepääsu.
-• Installige Chrome Remote Desktopi tarkvara ja järgige juhiseid seadistuse lõpuleviimiseks.
-• Avage oma iOS-seadmes rakendus ja puudutage ühendamiseks mõne võrgus oleva arvuti nime.</translation>
 <translation id="2894654864775534701">Seda arvutit jagatakse praegu teise kontoga.</translation>
 <translation id="2919669478609886916">Jagate seda seadet praegu teise kasutajaga. Kas soovite jagamist jätkata?</translation>
 <translation id="2921543551052660690">Olete varem sisse loginud kasutajana <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Sellel kontol oma arvutitele juurdepääsemiseks <ph name="LINK_BEGIN" />logige Chromiumi sisse<ph name="LINK_END" /> selle kontoga ja installige chromootimine uuesti.</translation>
@@ -109,7 +88,6 @@ Kui „<ph name="SERVICE_SCRIPT_NAME" />” on juba olemas ja märgitud, tuleb t
 <translation id="310979712355504754">Kustuta kõik</translation>
 <translation id="3150823315463303127">Hostil ei õnnestunud eeskirju lugeda.</translation>
 <translation id="3171922709365450819">See klient ei toeta seda seadet, kuna see nõuab kolmanda osapoole autentimist.</translation>
-<translation id="3194245623920924351">Chrome Remote Desktop</translation>
 <translation id="3197730452537982411">Remote Desktop</translation>
 <translation id="324272851072175193">Saada need juhised meiliga</translation>
 <translation id="3258789396564295715">Pääsete turvaliselt arvuti juurde Chrome Remote Desktopi abil.</translation>
@@ -174,13 +152,6 @@ Kui „<ph name="SERVICE_SCRIPT_NAME" />” on juba olemas ja märgitud, tuleb t
 <translation id="4660011489602794167">Kuva klaviatuur</translation>
 <translation id="4703302905453407178">Nõutav komponent peatas töö. Teavitage sellest probleemist arendajaid.</translation>
 <translation id="4703799847237267011">Teie rakenduse Chromoting seanss on lõppenud.</translation>
-<translation id="4706355010316049867">Chrome
-Remote
-Desktop
-Juurdepääs
-Tugi
-Arvuti
-Lauaarvuti</translation>
 <translation id="4736223761657662401">Ühenduse ajalugu</translation>
 <translation id="4741792197137897469">Autentimine ebaõnnestus. Logige uuesti Chrome'i sisse.</translation>
 <translation id="477305884757156764">Rakendus on liiga aeglane.</translation>
@@ -252,7 +223,6 @@ Lauaarvuti</translation>
 <translation id="6381670701864002291">Midagi muud.</translation>
 <translation id="6398765197997659313">Välju täisekraanilt</translation>
 <translation id="6441316101718669559">Sellel platvormil ei toetata töölaua integreerimist. Saate rakendust kasutada, kuid kasutuskogemus on kehvem.</translation>
-<translation id="6502629188777329097">Turvaline juurdepääs arvutile</translation>
 <translation id="652218476070540101">Selle arvuti PIN-koodi värskendatakse ...</translation>
 <translation id="6527303717912515753">Jaga</translation>
 <translation id="6541219117979389420">Rakenduse logid võivad sisaldada privaatset teavet, sh teie identiteeti (e-posti aadress) ja Google Drive'is olevate failide ning kaustade atribuute ja nimesid.</translation>
@@ -286,7 +256,6 @@ Lauaarvuti</translation>
 <translation id="7116737094673640201">Tere tulemast kasutama Chrome Remote Desktopi!</translation>
 <translation id="7144878232160441200">Proovi uuesti</translation>
 <translation id="7149517134817561223">Rakendus, millega saate Chrome Remote Desktopi hostile käske saata.</translation>
-<translation id="7213491505512310433">Stabiilsuse täiustused ja veaparandused</translation>
 <translation id="7215059001581613786">Sisestage vähemalt kuuest numbrist koosnev PIN-kood.</translation>
 <translation id="7312846573060934304">Host pole võrgus.</translation>
 <translation id="7319983568955948908">Lõpeta jagamine</translation>

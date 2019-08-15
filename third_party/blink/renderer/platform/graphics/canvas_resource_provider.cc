@@ -30,6 +30,7 @@ class CanvasResourceProviderTexture : public CanvasResourceProvider {
   CanvasResourceProviderTexture(
       const IntSize& size,
       unsigned msaa_sample_count,
+      const SkFilterQuality& filter_quality,
       const CanvasColorParams color_params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
           context_provider_wrapper,
@@ -37,6 +38,7 @@ class CanvasResourceProviderTexture : public CanvasResourceProvider {
       bool is_origin_top_left)
       : CanvasResourceProvider(kTexture,
                                size,
+                               filter_quality,
                                color_params,
                                std::move(context_provider_wrapper),
                                std::move(resource_dispatcher)),
@@ -142,6 +144,7 @@ class CanvasResourceProviderTextureGpuMemoryBuffer final
   CanvasResourceProviderTextureGpuMemoryBuffer(
       const IntSize& size,
       unsigned msaa_sample_count,
+      const SkFilterQuality& filter_quality,
       const CanvasColorParams color_params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
           context_provider_wrapper,
@@ -149,6 +152,7 @@ class CanvasResourceProviderTextureGpuMemoryBuffer final
       bool is_origin_top_left)
       : CanvasResourceProviderTexture(size,
                                       msaa_sample_count,
+                                      filter_quality,
                                       color_params,
                                       std::move(context_provider_wrapper),
                                       std::move(resource_dispatcher),
@@ -213,12 +217,14 @@ class CanvasResourceProviderBitmap : public CanvasResourceProvider {
  public:
   CanvasResourceProviderBitmap(
       const IntSize& size,
+      const SkFilterQuality& filter_quality,
       const CanvasColorParams color_params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
           context_provider_wrapper,
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
       : CanvasResourceProvider(kBitmap,
                                size,
+                               filter_quality,
                                color_params,
                                std::move(context_provider_wrapper),
                                std::move(resource_dispatcher)) {}
@@ -257,11 +263,13 @@ class CanvasResourceProviderBitmapGpuMemoryBuffer final
  public:
   CanvasResourceProviderBitmapGpuMemoryBuffer(
       const IntSize& size,
+      const SkFilterQuality& filter_quality,
       const CanvasColorParams color_params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
           context_provider_wrapper,
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
       : CanvasResourceProviderBitmap(size,
+                                     filter_quality,
                                      color_params,
                                      std::move(context_provider_wrapper),
                                      std::move(resource_dispatcher)) {
@@ -313,9 +321,11 @@ class CanvasResourceProviderSharedBitmap : public CanvasResourceProviderBitmap {
  public:
   CanvasResourceProviderSharedBitmap(
       const IntSize& size,
+      const SkFilterQuality& filter_quality,
       const CanvasColorParams color_params,
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
       : CanvasResourceProviderBitmap(size,
+                                     filter_quality,
                                      color_params,
                                      nullptr,  // context_provider_wrapper
                                      std::move(resource_dispatcher)) {
@@ -364,6 +374,7 @@ class CanvasResourceProviderDirectGpuMemoryBuffer final
   CanvasResourceProviderDirectGpuMemoryBuffer(
       const IntSize& size,
       unsigned msaa_sample_count,
+      const SkFilterQuality& filter_quality,
       const CanvasColorParams color_params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
           context_provider_wrapper,
@@ -371,6 +382,7 @@ class CanvasResourceProviderDirectGpuMemoryBuffer final
       bool is_origin_top_left)
       : CanvasResourceProvider(kDirectGpuMemoryBuffer,
                                size,
+                               filter_quality,
                                color_params,
                                std::move(context_provider_wrapper),
                                std::move(resource_dispatcher)),
@@ -460,6 +472,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   CanvasResourceProviderSharedImage(
       const IntSize& size,
       unsigned msaa_sample_count,
+      const SkFilterQuality& filter_quality,
       const CanvasColorParams color_params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
           context_provider_wrapper,
@@ -470,6 +483,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       : CanvasResourceProvider(
             kSharedImage,
             size,
+            filter_quality,
             CanvasColorParams(color_params, true /* force_rgba */),
             std::move(context_provider_wrapper),
             std::move(resource_dispatcher)),
@@ -725,12 +739,14 @@ class CanvasResourceProviderPassThrough final : public CanvasResourceProvider {
  public:
   CanvasResourceProviderPassThrough(
       const IntSize& size,
+      const SkFilterQuality& filter_quality,
       const CanvasColorParams color_params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
           context_provider_wrapper,
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
       : CanvasResourceProvider(kPassThrough,
                                size,
+                               filter_quality,
                                color_params,
                                std::move(context_provider_wrapper),
                                std::move(resource_dispatcher)) {}
@@ -885,6 +901,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::CreateForCanvas(
     ResourceUsage usage,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     unsigned msaa_sample_count,
+    SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
     PresentationMode presentation_mode,
     base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
@@ -892,8 +909,8 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::CreateForCanvas(
   base::UmaHistogramEnumeration("Blink.Canvas.ResourceProviderUsage", usage);
 
   std::unique_ptr<CanvasResourceProvider> provider = Create(
-      size, usage, context_provider_wrapper, msaa_sample_count, color_params,
-      presentation_mode, resource_dispatcher, is_origin_top_left);
+      size, usage, context_provider_wrapper, msaa_sample_count, filter_quality,
+      color_params, presentation_mode, resource_dispatcher, is_origin_top_left);
 
   if (provider && provider->IsValid()) {
     base::UmaHistogramBoolean("Blink.Canvas.ResourceProviderIsAccelerated",
@@ -910,6 +927,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     ResourceUsage usage,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     unsigned msaa_sample_count,
+    SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
     PresentationMode presentation_mode,
     base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
@@ -939,7 +957,8 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
         if (!is_swap_chain_allowed)
           continue;
         provider = std::make_unique<CanvasResourceProviderPassThrough>(
-            size, color_params, context_provider_wrapper, resource_dispatcher);
+            size, filter_quality, color_params, context_provider_wrapper,
+            resource_dispatcher);
         break;
       case CanvasResourceType::kTextureGpuMemoryBuffer:
         if (!is_gpu_memory_buffer_image_allowed)
@@ -949,8 +968,9 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
                       color_params.GetBufferFormat()));
         provider =
             std::make_unique<CanvasResourceProviderTextureGpuMemoryBuffer>(
-                size, msaa_sample_count, color_params, context_provider_wrapper,
-                resource_dispatcher, is_origin_top_left);
+                size, msaa_sample_count, filter_quality, color_params,
+                context_provider_wrapper, resource_dispatcher,
+                is_origin_top_left);
         break;
       case CanvasResourceType::kDirect2DGpuMemoryBuffer:
         if (!is_gpu_memory_buffer_image_allowed)
@@ -960,8 +980,9 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
                       color_params.GetBufferFormat()));
         provider =
             std::make_unique<CanvasResourceProviderDirectGpuMemoryBuffer>(
-                size, msaa_sample_count, color_params, context_provider_wrapper,
-                resource_dispatcher, is_origin_top_left);
+                size, msaa_sample_count, filter_quality, color_params,
+                context_provider_wrapper, resource_dispatcher,
+                is_origin_top_left);
         break;
       case CanvasResourceType::kDirect3DGpuMemoryBuffer:
         if (!is_gpu_memory_buffer_image_allowed)
@@ -970,7 +991,8 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
                   gpu::InternalFormatForGpuMemoryBufferFormat(
                       color_params.GetBufferFormat()));
         provider = std::make_unique<CanvasResourceProviderPassThrough>(
-            size, color_params, context_provider_wrapper, resource_dispatcher);
+            size, filter_quality, color_params, context_provider_wrapper,
+            resource_dispatcher);
         break;
       case CanvasResourceType::kBitmapGpuMemoryBuffer:
         if (!is_gpu_memory_buffer_image_allowed ||
@@ -979,25 +1001,26 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
         }
         provider =
             std::make_unique<CanvasResourceProviderBitmapGpuMemoryBuffer>(
-                size, color_params, context_provider_wrapper,
+                size, filter_quality, color_params, context_provider_wrapper,
                 resource_dispatcher);
         break;
       case CanvasResourceType::kSharedBitmap:
         if (!resource_dispatcher)
           continue;
         provider = std::make_unique<CanvasResourceProviderSharedBitmap>(
-            size, color_params, resource_dispatcher);
+            size, filter_quality, color_params, resource_dispatcher);
         break;
       case CanvasResourceType::kTexture:
         if (!context_provider_wrapper)
           continue;
         provider = std::make_unique<CanvasResourceProviderTexture>(
-            size, msaa_sample_count, color_params, context_provider_wrapper,
-            resource_dispatcher, is_origin_top_left);
+            size, msaa_sample_count, filter_quality, color_params,
+            context_provider_wrapper, resource_dispatcher, is_origin_top_left);
         break;
       case CanvasResourceType::kBitmap:
         provider = std::make_unique<CanvasResourceProviderBitmap>(
-            size, color_params, context_provider_wrapper, resource_dispatcher);
+            size, filter_quality, color_params, context_provider_wrapper,
+            resource_dispatcher);
         break;
       case CanvasResourceType::kSharedImage: {
         const bool usage_wants_single_buffered =
@@ -1019,9 +1042,9 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
         const bool maybe_single_buffered =
             usage_wants_single_buffered && can_use_overlays;
         provider = std::make_unique<CanvasResourceProviderSharedImage>(
-            size, msaa_sample_count, color_params, context_provider_wrapper,
-            resource_dispatcher, is_origin_top_left, is_overlay_candidate,
-            maybe_single_buffered);
+            size, msaa_sample_count, filter_quality, color_params,
+            context_provider_wrapper, resource_dispatcher, is_origin_top_left,
+            is_overlay_candidate, maybe_single_buffered);
       } break;
     }
     if (!provider->IsValid())
@@ -1046,26 +1069,29 @@ CanvasResourceProvider::CreateForTesting(
     case CanvasResourceProvider::kSharedBitmap:
       DCHECK(resource_dispatcher);
       return std::make_unique<CanvasResourceProviderSharedBitmap>(
-          size, color_params, resource_dispatcher);
+          size, kLow_SkFilterQuality, color_params, resource_dispatcher);
     case CanvasResourceProvider::kTexture:
       DCHECK(context_provider_wrapper);
       return std::make_unique<CanvasResourceProviderTexture>(
-          size, msaa_sample_count, color_params, context_provider_wrapper,
-          resource_dispatcher, is_origin_top_left);
+          size, msaa_sample_count, kLow_SkFilterQuality, color_params,
+          context_provider_wrapper, resource_dispatcher, is_origin_top_left);
     case CanvasResourceProvider::kBitmap:
       return std::make_unique<CanvasResourceProviderBitmap>(
-          size, color_params, context_provider_wrapper, resource_dispatcher);
+          size, kLow_SkFilterQuality, color_params, context_provider_wrapper,
+          resource_dispatcher);
     case CanvasResourceProvider::kSharedImage:
       return std::make_unique<CanvasResourceProviderSharedImage>(
-          size, msaa_sample_count, color_params, context_provider_wrapper,
-          resource_dispatcher, is_origin_top_left, false, false);
+          size, msaa_sample_count, kLow_SkFilterQuality, color_params,
+          context_provider_wrapper, resource_dispatcher, is_origin_top_left,
+          false, false);
     case CanvasResourceProvider::kTextureGpuMemoryBuffer:
       return std::make_unique<CanvasResourceProviderTextureGpuMemoryBuffer>(
-          size, msaa_sample_count, color_params, context_provider_wrapper,
-          resource_dispatcher, is_origin_top_left);
+          size, msaa_sample_count, kLow_SkFilterQuality, color_params,
+          context_provider_wrapper, resource_dispatcher, is_origin_top_left);
     case CanvasResourceProvider::kBitmapGpuMemoryBuffer:
       return std::make_unique<CanvasResourceProviderBitmapGpuMemoryBuffer>(
-          size, color_params, context_provider_wrapper, resource_dispatcher);
+          size, kLow_SkFilterQuality, color_params, context_provider_wrapper,
+          resource_dispatcher);
     default:
       NOTREACHED();
       return nullptr;
@@ -1192,6 +1218,7 @@ void CanvasResourceProvider::CanvasImageProvider::CleanupLockedImages() {
 CanvasResourceProvider::CanvasResourceProvider(
     const ResourceProviderType& type,
     const IntSize& size,
+    const SkFilterQuality& filter_quality,
     const CanvasColorParams& color_params,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
@@ -1199,6 +1226,7 @@ CanvasResourceProvider::CanvasResourceProvider(
       context_provider_wrapper_(std::move(context_provider_wrapper)),
       resource_dispatcher_(resource_dispatcher),
       size_(size),
+      filter_quality_(filter_quality),
       color_params_(color_params),
       snapshot_paint_image_id_(cc::PaintImage::GetNextId()) {
   if (context_provider_wrapper_)

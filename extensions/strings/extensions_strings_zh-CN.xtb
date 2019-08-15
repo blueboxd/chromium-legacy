@@ -39,7 +39,6 @@
 <translation id="5456409301717116725">此扩展程序包含密钥文件“<ph name="KEY_PATH" />”，您最好不要执行此操作。</translation>
 <translation id="5486326529110362464">请输入私有密钥值。</translation>
 <translation id="5627523580512561598">扩展程序“<ph name="EXTENSION_NAME" />”</translation>
-<translation id="5960890139610307736">ExtensionView：<ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">此设备的管理员要求安装“<ph name="EXTENSION_NAME" />”，因此不能卸载该扩展程序。</translation>
 <translation id="6027032947578871493">来自<ph name="VENDOR_NAME" />的未知产品 <ph name="PRODUCT_ID" />（序列号为 <ph name="SERIAL_NUMBER" />）</translation>
 <translation id="6068932090455285721">来自供应商 <ph name="VENDOR_ID" /> 的<ph name="PRODUCT_NAME" /></translation>

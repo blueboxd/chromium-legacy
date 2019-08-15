@@ -70,7 +70,6 @@
 
           この設定が無効な場合や設定されていない場合、リモート アシスタンス ホストはユーザーのコンテキストで実行され、リモート ユーザーはデスクトップ上の権限昇格ウィンドウとやり取りできません。</translation>
 <translation id="1096105751829466145">デフォルトの検索プロバイダ</translation>
-<translation id="1099024407376270611">アクセス先の URL に関するセーフ ブラウジングの評価をリアルタイムで確認する</translation>
 <translation id="1099282607296956954">すべてのサイトに対してサイト分離を有効にする</translation>
 <translation id="1100570158310952027">
       保護されていない発行元に関するセキュリティ制限の適用対象外となる
@@ -417,22 +416,6 @@
       警告: <ph name="PRODUCT_OS_NAME" /> のバージョンの制御をキオスクアプリに委ねることはおすすめしません。このようにした場合、デバイスでソフトウェアのアップデートや重要なセキュリティ修正を取得できなくなる可能性があります。つまり、<ph name="PRODUCT_OS_NAME" /> のバージョンの制御を委ねると、ユーザーが危険にさらされる恐れがあります。</translation>
 <translation id="1675002386741412210">サポート対象:</translation>
 <translation id="1700811900332333712">デバイスに Powerwash のリクエストを許可する</translation>
-<translation id="1704516734140344991"><ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェア アップデート機能を利用可能にするかどうか、利用可能にする場合はその動作を設定します。
-
-      個々の設定は JSON プロパティで指定できます。
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" /> に設定されている場合、ユーザーは <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェア アップデートをインストールするために Powerwash のフローを開始できます。
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" /> に設定されている場合、ユーザーはデバイス全体の状態（企業の登録を含む）を保持する <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェア アップデートのフローを開始できますが、ユーザーデータは失われます。このアップデート フローはバージョン 68 より利用可能です。
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: 脆弱性のある <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェアに対して自動的な <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェア アップデートをどのように実行するかを制御します。すべてのフローはローカル デバイスの状態を保持します。
-        1 に設定または未設定の場合、TPM ファームウェア アップデートは実行されません。
-        2 に設定した場合、<ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェアは、ユーザーがアップデートを確認した後に、次の再起動で更新されます。
-        3 に設定した場合、<ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェアは次の再起動で更新されます。
-        4 に設定した場合、<ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェアは登録後、ユーザーのログイン前に更新されます。
-        このオプションはバージョン 74 より利用可能です。
-
-      このポリシーが設定されていない場合、<ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェア アップデート機能は利用できません。</translation>
 <translation id="1708496595873025510">バリエーション シードの取得に制限を設定する</translation>
 <translation id="1717817358640580294">このポリシーが未設定の場合、Chrome クリーンアップで望ましくないソフトウェアが検出されると、SafeBrowsingExtendedReportingEnabled で設定されているポリシーに基づいて、スキャンに関するメタデータのレポートが Google に送信される可能性があります。ユーザーは望ましくないソフトウェアをクリーンアップするかどうかを選択できます。また、望ましくないソフトウェアの検出精度を向上するために、クリーンアップの結果を Google と共有するかどうかも選択できます。これらの結果には、Chrome のプライバシー ホワイトペーパーで説明されているとおり、ファイルのメタデータのほか自動インストールされた拡張機能とレジストリキーが含まれます。
 
@@ -818,6 +801,22 @@
 <translation id="2463034609187171371">TLS の DHE 暗号スイートを有効にする</translation>
 <translation id="2463365186486772703">アプリケーションの言語/地域</translation>
 <translation id="2466131534462628618">キャプティブ ポータル認証でプロキシを無視する</translation>
+<translation id="2466697858869282874"><ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェア アップデート機能を利用可能にするかどうか、利用可能にする場合はその動作を設定します。
+
+      個々の設定は JSON プロパティで指定できます。
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" /> に設定されている場合、ユーザーは <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェア アップデートをインストールするために Powerwash のフローを開始できます。
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" /> に設定されている場合、ユーザーはデバイス全体の状態（企業の登録を含む）を保持する <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェア アップデートのフローを開始できますが、ユーザーデータは失われます。このアップデート フローはバージョン 68 より利用可能です。
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: 脆弱性のある <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェアに対して自動的な <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェア アップデートをどのように実行するかを制御します。すべてのフローではローカル デバイスの状態が保持されます。
+        1 に設定するか未設定のままにした場合、TPM ファームウェア アップデートは実行されません。
+        2 に設定した場合、<ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェアは、ユーザーがアップデートを適用した後、次の再起動で更新されます。
+        3 に設定した場合、<ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェアは次の再起動で更新されます。
+        4 に設定した場合、<ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェアは登録後、ユーザーのログイン前に更新されます。
+        このオプションはバージョン 75 より利用可能です。
+
+      このポリシーが設定されていない場合、<ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェア アップデート機能は利用できません。</translation>
 <translation id="2471748297300970300">無効の場合、危険性のあるコマンドライン フラグ付きで Chrome が起動したときにセキュリティ警告は表示されません。
 
           有効または未設定の場合は、Chrome の起動にコマンドライン フラグが使用されるとセキュリティ警告が表示されます。
@@ -1812,6 +1811,13 @@
 
       このポリシーが未設定の場合、デフォルトのローミング プロフィール パスが使用されます。</translation>
 <translation id="4239720644496144453">キャッシュは Android アプリには使用されません。複数のユーザーが同じ Android アプリをインストールする場合、アプリはユーザーごとに新しくダウンロードされます。</translation>
+<translation id="4241202391219483189">このポリシーでは、証明書マネージャーによる CA 証明書の取り込みや削除をユーザーに許可するかどうかを制御します。
+
+      このポリシーが「すべての証明書の管理をユーザーに許可する」に設定されているか未設定の場合、ユーザーは、すべての CA 証明書の信頼設定の編集、ユーザーが取り込んだ証明書の削除、証明書の取り込みを行うことができます。
+
+      このポリシーが「ユーザー証明書の管理をユーザーに許可する」に設定されている場合、ユーザーは、ユーザーが取り込んだ証明書のみを管理でき、組み込みの証明書の信頼設定を変更することはできません。
+
+      このポリシーが「証明書の管理をユーザーに許可しない」に設定されている場合、ユーザーは CA 証明書を管理できず、CA 証明書の表示のみ可能となります。</translation>
 <translation id="4243336580717651045"><ph name="PRODUCT_NAME" /> で URL キーによる匿名化データの収集を有効にし、ユーザーがこの設定を変更できないようにします。
 
       URL キーによる匿名化データの収集では、検索とブラウジングを改善する目的で、ユーザーがアクセスしたページの URL を Google に送信します。
@@ -1887,6 +1893,7 @@
 
           現在、この機能はサーバー側で無効になっています。</translation>
 <translation id="4363057787588706121">ソースの異なるリストポリシーの統合を許可する</translation>
+<translation id="4363101430102811068">入力された認証情報に対して漏洩の検出を有効にする</translation>
 <translation id="4363136876356691536">このポリシーが true の場合、通知領域（システムトレイ）メニューにユーザー補助オプションが常に表示されます。
 
           このポリシーが false の場合、通知領域（システムトレイ）メニューにユーザー補助オプションは表示されません。
@@ -2038,10 +2045,6 @@
 
           このポリシーが未設定の場合、サーバーがイントラネット上で検出されたとしても、<ph name="PRODUCT_NAME" /> はユーザーの認証情報を委任しません。</translation>
 <translation id="4752880493649142945">RemoteAccessHostTokenValidationUrl への接続用のクライアント証明書</translation>
-<translation id="4756984056524699088">このユーザーに対して Crostini コンテナへのルートアクセスを許可します。
-
-      このポリシーが true または未設定の場合、Crostini コンテナへのルートアクセスがユーザーに許可されます。
-      このポリシーが false の場合、Crostini コンテナ（新規、既存の両方）へのルートアクセスはユーザーに許可されません。</translation>
 <translation id="4759650396863318477">保留中のアップデートを適用するために <ph name="PRODUCT_NAME" /> または <ph name="PRODUCT_OS_NAME" /> デバイスの再起動が必要であることをユーザーに通知する期間をミリ秒単位で設定します。
 
       指定した期間中は、アップデートが必要であることがユーザーに繰り返し通知されます。<ph name="PRODUCT_OS_NAME" /> デバイスの場合は、<ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> ポリシーに従ってシステムトレイに再起動を促す通知が表示されます。<ph name="PRODUCT_NAME" /> ブラウザの場合は、通知期間の 3 分の 1 が経過した時点で、再起動が必要であること表すためにアプリメニューの色が変わります。この通知の色は、通知期間の 3 分の 2 が経過した時点と、通知期間が最後まで経過した時点でさらに変わります。<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> ポリシーによって追加の通知を有効にしている場合は、同じスケジュールで通知が表示されます。
@@ -2194,7 +2197,7 @@
 <translation id="5142301680741828703"><ph name="PRODUCT_FRAME_NAME" /> で次の URL パターンを常に表示する</translation>
 <translation id="5146261336206349846">このポリシーが有効に設定されている場合、アクセス先の URL はすべてリアルタイムでセーフ ブラウジングと照合されます。
 
-      このポリシーが無効に設定されているか未設定の場合は、消費者側のセーフ ブラウジングのチェックが適用されます。</translation>
+      このポリシーが無効に設定されているか未設定の場合は、デフォルトのセーフ ブラウジングのチェックが適用されます。</translation>
 <translation id="5148753489738115745"><ph name="PRODUCT_FRAME_NAME" /> により <ph name="PRODUCT_NAME" /> が起動される際に使用される追加パラメータを指定することができます。
 
           このポリシーを設定していない場合、デフォルト コマンド ラインが使用されます。</translation>
@@ -2891,6 +2894,7 @@
       このポリシーが False に設定されている場合、ユーザーは報告されません。</translation>
 <translation id="6394350458541421998">このポリシーは <ph name="PRODUCT_OS_NAME" /> バージョン 29 で廃止されました。PresentationScreenDimDelayScale ポリシーを代わりに使用してください。</translation>
 <translation id="6401669939808766804">ユーザーをログアウトする</translation>
+<translation id="6403746242226534223">アクセス先の URL に関するセーフ ブラウジングの評価をリアルタイムで確認する</translation>
 <translation id="6406448383934634215">起動時の動作として [URL のリストを開く] が選択されている場合に、開かれる URL のリストを指定できます。このポリシーを未設定のままにした場合、起動時に URL は開かれません。
 
           このポリシーは、RestoreOnStartup ポリシーが「RestoreOnStartupIsURLs」に設定されている場合にのみ機能します。
@@ -2966,6 +2970,9 @@
 <translation id="6544897973797372144">このポリシーを true に設定し、ChromeOsReleaseChannel ポリシーを指定していない場合、登録したドメインのユーザーに、デバイスのリリース チャンネルの変更を許可します。このポリシーを false に設定すると、デバイスは、最後に設定されたチャンネルに固定されます。
 
       ユーザーが選択したチャンネルよりも ChromeOsReleaseChannel ポリシーが優先されます。ただし、ポリシーのチャンネルが、デバイスにインストールされたチャンネルよりも安定している場合、ポリシーのチャンネルのバージョン番号がデバイスにインストールされているチャンネルよりも大きくなったときのみチャンネルが切り替わります。</translation>
+<translation id="6549567350270907557">この設定が有効な場合、ユーザーは <ph name="PRODUCT_NAME" /> で入力済みの認証情報が漏洩内容に含まれていなかったかを確認できます。
+
+              このポリシーが有効または無効に設定されている場合、ユーザーは <ph name="PRODUCT_NAME" /> で設定を変更したりオーバーライドしたりすることはできません。このポリシーが未設定の場合、漏洩チェックは実行可能ですが、ユーザーがオフにすることもできます。</translation>
 <translation id="6553143066970470539">画面の明るさの割合（%）</translation>
 <translation id="6559057113164934677">カメラやマイクへのアクセスをどのサイトにも許可しない</translation>
 <translation id="6561396069801924653">システム トレイ メニューにユーザー補助オプションを表示</translation>
@@ -3933,6 +3940,10 @@
 
       Internet Explorer の <ph name="IEEM_SITELIST_POLICY" /> ポリシーについて詳しくは、https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode をご覧ください。</translation>
 <translation id="8402079500086185021">PDF ファイルを常に外部アプリで開く</translation>
+<translation id="8405691014775178834">このユーザーに対して Crostini コンテナへのルートアクセスを許可します。
+
+      このポリシーが true または未設定の場合、Crostini コンテナへのルートアクセスがユーザーに許可されます。
+      このポリシーが false の場合、Crostini コンテナ（新規、既存の両方）へのルートアクセスはユーザーに許可されません。</translation>
 <translation id="8417305981081876834">ロック画面の PIN の最大桁数を設定する</translation>
 <translation id="841977920223099909">パスワード保護について警告する場合のトリガー</translation>
 <translation id="8424255554404582727">再起動のたびにデフォルトのディスプレイ回転方法を再適用する</translation>
@@ -4183,6 +4194,7 @@
 
           ポリシーの値はミリ秒単位で指定してください。アイドル時間より長い値は指定できません。</translation>
 <translation id="891435090623616439">JSON 文字列としてのエンコードについて詳しくは、<ph name="COMPLEX_POLICIES_URL" /> をご覧ください</translation>
+<translation id="8917070657147922192">インストール済み CA 証明書の管理をユーザーに許可する。</translation>
 <translation id="8934944553121392674">ユーザーが <ph name="DEVICE_PRINTERS_POLICY" /> のどのプリンタを使用できるかを制御します。
 
       このポリシーは、プリンタの一括設定で使用するアクセス ポリシーを指定するものです。<ph name="PRINTERS_ALLOW_ALL" /> が選択されている場合は、すべてのプリンタが表示されます。<ph name="PRINTERS_BLACKLIST" /> が選択されている場合は、<ph name="DEVICE_PRINTERS_BLACKLIST" /> に基づき、指定されたプリンタへのアクセスが制限されます。<ph name="PRINTERS_WHITELIST" /> が選択されている場合は、<ph name="DEVICE_PRINTERS_WHITELIST" />

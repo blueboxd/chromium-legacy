@@ -77,7 +77,7 @@ class TrackEventJSONExporter : public JSONTraceExporter {
     std::unordered_map<uint32_t, std::string> interned_event_categories_;
     std::unordered_map<uint32_t, std::pair<std::string, std::string>>
         interned_source_locations_;
-    std::unordered_map<uint32_t, std::string> interned_legacy_event_names_;
+    std::unordered_map<uint32_t, std::string> interned_event_names_;
     std::unordered_map<uint32_t, std::string> interned_debug_annotation_names_;
 
     struct Frame {

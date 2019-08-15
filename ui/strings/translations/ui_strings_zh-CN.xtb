@@ -23,7 +23,7 @@
 <translation id="1710340000377843106">现在</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 分钟}other{# 分钟}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
-<translation id="1801827354178857021">期间</translation>
+<translation id="1801827354178857021">句号</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 个月}other{# 个月}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1812519734428420144">星级：<ph name="RATING_SCORE" /></translation>
@@ -157,6 +157,7 @@
 <translation id="6620110761915583480">保存文件</translation>
 <translation id="6699343763173986273">媒体下一曲</translation>
 <translation id="673773751041746814">删除</translation>
+<translation id="6779314412797872738">要在此处向您的 Android 手机发送电话号码，请在这两台设备的设置中<ph name="TROUBLESHOOT_LINK" />。</translation>
 <translation id="6786750046913594791">关闭文件夹</translation>
 <translation id="6808150112686056157">媒体停止</translation>
 <translation id="6845383723252244143">选择文件夹</translation>

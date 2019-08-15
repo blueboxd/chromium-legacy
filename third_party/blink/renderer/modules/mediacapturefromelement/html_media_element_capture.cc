@@ -269,6 +269,12 @@ MediaStream* HTMLMediaElementCapture::captureStream(
     return nullptr;
   }
 
+  if (!script_state->ContextIsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      "The context has been destroyed");
+    return nullptr;
+  }
+
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (!element.currentSrc().IsEmpty() && !element.IsMediaDataCorsSameOrigin()) {
     exception_state.ThrowSecurityError(
@@ -296,6 +302,7 @@ MediaStream* HTMLMediaElementCapture::captureStream(
   }
 
   LocalFrame* frame = ToLocalFrameIfNotDetached(script_state->GetContext());
+  DCHECK(frame);
   if (element.HasVideo()) {
     CreateHTMLVideoElementCapturer(frame, &web_stream,
                                    element.GetWebMediaPlayer(),

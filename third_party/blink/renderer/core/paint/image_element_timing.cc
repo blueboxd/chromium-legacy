@@ -85,6 +85,11 @@ void ImageElementTiming::NotifyBackgroundImageFinished(
     insertion_result.stored_value->value = base::TimeTicks::Now();
 }
 
+base::TimeTicks ImageElementTiming::GetBackgroundImageLoadTime(
+    const StyleFetchedImage* style_image) {
+  return background_image_timestamps_.at(style_image);
+}
+
 void ImageElementTiming::NotifyImagePainted(
     const LayoutObject* layout_object,
     const ImageResourceContent* cached_image,

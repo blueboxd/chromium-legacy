@@ -878,6 +878,10 @@ SchedulingLifecycleState FrameSchedulerImpl::CalculateLifecycleState(
   return SchedulingLifecycleState::kNotThrottled;
 }
 
+void FrameSchedulerImpl::OnFirstContentfulPaint() {
+  main_thread_scheduler_->OnFirstContentfulPaint();
+}
+
 void FrameSchedulerImpl::OnFirstMeaningfulPaint() {
   main_thread_scheduler_->OnFirstMeaningfulPaint();
 }
@@ -922,9 +926,8 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
 
   auto queue_priority_pair = resource_loading_task_queue_priorities_.find(
       base::WrapRefCounted(task_queue));
-  if (queue_priority_pair != resource_loading_task_queue_priorities_.end()) {
+  if (queue_priority_pair != resource_loading_task_queue_priorities_.end())
     return queue_priority_pair->value;
-  }
 
   base::Optional<TaskQueue::QueuePriority> fixed_priority =
       task_queue->FixedPriority();
@@ -959,12 +962,14 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
   // A hidden page with no audio.
   if (parent_page_scheduler_->IsBackgrounded()) {
     if (main_thread_scheduler_->scheduling_settings()
-            .low_priority_background_page)
+            .low_priority_background_page) {
       return TaskQueue::QueuePriority::kLowPriority;
+    }
 
     if (main_thread_scheduler_->scheduling_settings()
-            .best_effort_background_page)
+            .best_effort_background_page) {
       return TaskQueue::QueuePriority::kBestEffortPriority;
+    }
   }
 
   // If the page is loading or if the priority experiments should take place at
@@ -975,8 +980,9 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
     // Low priority feature enabled for hidden frame.
     if (main_thread_scheduler_->scheduling_settings()
             .low_priority_hidden_frame &&
-        !IsFrameVisible())
+        !IsFrameVisible()) {
       return TaskQueue::QueuePriority::kLowPriority;
+    }
 
     bool is_subframe = GetFrameType() == FrameScheduler::FrameType::kSubframe;
     bool is_throttleable_task_queue =
@@ -985,20 +991,23 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
 
     // Low priority feature enabled for sub-frame.
     if (main_thread_scheduler_->scheduling_settings().low_priority_subframe &&
-        is_subframe)
+        is_subframe) {
       return TaskQueue::QueuePriority::kLowPriority;
+    }
 
     // Low priority feature enabled for sub-frame throttleable task queues.
     if (main_thread_scheduler_->scheduling_settings()
             .low_priority_subframe_throttleable &&
-        is_subframe && is_throttleable_task_queue)
+        is_subframe && is_throttleable_task_queue) {
       return TaskQueue::QueuePriority::kLowPriority;
+    }
 
     // Low priority feature enabled for throttleable task queues.
     if (main_thread_scheduler_->scheduling_settings()
             .low_priority_throttleable &&
-        is_throttleable_task_queue)
+        is_throttleable_task_queue) {
       return TaskQueue::QueuePriority::kLowPriority;
+    }
   }
 
   // Ad frame experiment.
@@ -1025,10 +1034,22 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
     }
   }
 
-  return task_queue->queue_type() ==
-                 MainThreadTaskQueue::QueueType::kFrameLoadingControl
-             ? TaskQueue::QueuePriority::kHighPriority
-             : TaskQueue::QueuePriority::kNormalPriority;
+  if (task_queue->queue_class() == MainThreadTaskQueue::QueueClass::kLoading) {
+    if (task_queue->queue_type() ==
+        MainThreadTaskQueue::QueueType::kFrameLoadingControl) {
+      return main_thread_scheduler_
+                     ->should_prioritize_loading_with_compositing()
+                 ? TaskQueue::QueuePriority::kVeryHighPriority
+                 : TaskQueue::QueuePriority::kHighPriority;
+    }
+
+    if (main_thread_scheduler_->should_prioritize_loading_with_compositing())
+      return main_thread_scheduler_->compositor_priority();
+  }
+
+  DCHECK_NE(task_queue->queue_type(),
+            MainThreadTaskQueue::QueueType::kFrameLoadingControl);
+  return TaskQueue::QueuePriority::kNormalPriority;
 }
 
 std::unique_ptr<blink::mojom::blink::PauseSubresourceLoadingHandle>

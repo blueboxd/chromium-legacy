@@ -17,61 +17,70 @@ class TickClock;
 
 namespace net {
 
-// Inherit from this class if a ScopedTaskEnvironment is needed in a test.
+// Inherit from this class if a TaskEnvironment is needed in a test.
 // Use in class hierachies where inheritance from ::testing::Test at the same
 // time is not desirable or possible (for example, when inheriting from
 // PlatformTest at the same time).
-class WithScopedTaskEnvironment {
+class WithTaskEnvironment {
  protected:
   // Always uses MainThreadType::IO, |time_source| may optionally be provided
   // to mock time.
-  explicit WithScopedTaskEnvironment(
-      base::test::ScopedTaskEnvironment::TimeSource time_source =
-          base::test::ScopedTaskEnvironment::TimeSource::DEFAULT)
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO,
-            time_source) {}
+  explicit WithTaskEnvironment(
+      base::test::TaskEnvironment::TimeSource time_source =
+          base::test::TaskEnvironment::TimeSource::DEFAULT)
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO,
+                          time_source) {}
 
   bool MainThreadIsIdle() const WARN_UNUSED_RESULT {
-    return scoped_task_environment_.MainThreadIsIdle();
+    return task_environment_.MainThreadIsIdle();
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   void FastForwardBy(base::TimeDelta delta) {
-    scoped_task_environment_.FastForwardBy(delta);
+    task_environment_.FastForwardBy(delta);
   }
 
   void FastForwardUntilNoTasksRemain() {
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
   }
 
   const base::TickClock* GetMockTickClock() WARN_UNUSED_RESULT {
-    return scoped_task_environment_.GetMockTickClock();
+    return task_environment_.GetMockTickClock();
   }
 
   size_t GetPendingMainThreadTaskCount() const WARN_UNUSED_RESULT {
-    return scoped_task_environment_.GetPendingMainThreadTaskCount();
+    return task_environment_.GetPendingMainThreadTaskCount();
   }
 
   base::TimeDelta NextMainThreadPendingTaskDelay() const WARN_UNUSED_RESULT {
-    return scoped_task_environment_.NextMainThreadPendingTaskDelay();
+    return task_environment_.NextMainThreadPendingTaskDelay();
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
-  DISALLOW_COPY_AND_ASSIGN(WithScopedTaskEnvironment);
+  DISALLOW_COPY_AND_ASSIGN(WithTaskEnvironment);
 };
 
 // Inherit from this class instead of ::testing::Test directly if a
-// ScopedTaskEnvironment is needed in a test.
-class TestWithScopedTaskEnvironment : public ::testing::Test,
-                                      public WithScopedTaskEnvironment {
+// TaskEnvironment is needed in a test.
+class TestWithTaskEnvironment : public ::testing::Test,
+                                public WithTaskEnvironment {
  protected:
-  using WithScopedTaskEnvironment::WithScopedTaskEnvironment;
+  using WithTaskEnvironment::WithTaskEnvironment;
 
-  DISALLOW_COPY_AND_ASSIGN(TestWithScopedTaskEnvironment);
+  DISALLOW_COPY_AND_ASSIGN(TestWithTaskEnvironment);
+};
+
+// TODO(gab): Migrate callers off the old names and remove these.
+class WithScopedTaskEnvironment : public WithTaskEnvironment {
+ protected:
+  using WithTaskEnvironment::WithTaskEnvironment;
+};
+class TestWithScopedTaskEnvironment : public TestWithTaskEnvironment {
+ protected:
+  using TestWithTaskEnvironment::TestWithTaskEnvironment;
 };
 
 }  // namespace net

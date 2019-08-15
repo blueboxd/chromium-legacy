@@ -133,13 +133,12 @@ v8::MaybeLocal<v8::Value> ValueWrapperSyntheticModuleScript::EvaluationSteps(
   v8::Isolate* isolate = context->GetIsolate();
   ScriptState* script_state = ScriptState::From(context);
   Modulator* modulator = Modulator::From(script_state);
-  ModuleRecord record = ModuleRecord(isolate, module, KURL());
   ModuleRecordResolver* module_record_resolver =
       modulator->GetModuleRecordResolver();
   const ValueWrapperSyntheticModuleScript*
       value_wrapper_synthetic_module_script =
           static_cast<const ValueWrapperSyntheticModuleScript*>(
-              module_record_resolver->GetModuleScriptFromModuleRecord(record));
+              module_record_resolver->GetModuleScriptFromModuleRecord(module));
   module->SetSyntheticModuleExport(
       V8String(isolate, "default"),
       value_wrapper_synthetic_module_script->export_value_.NewLocal(isolate));

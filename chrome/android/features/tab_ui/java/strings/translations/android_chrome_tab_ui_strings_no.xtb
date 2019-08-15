@@ -1,4 +1,25 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
+<translation id="125153950246128346">Trykk for å se en annen fane</translation>
+<translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> fane}other{<ph name="TABS_COUNT_MANY" /> faner}}</translation>
+<translation id="257674075312929031">Gruppe</translation>
+<translation id="2613747923081026172">Opprett en gruppe</translation>
+<translation id="2845873210977809562">Åpnede faner ble lukket</translation>
+<translation id="2977480621796371840">Fjern fra gruppen</translation>
+<translation id="4648718555153979859">Fanene dine er gruppert sammen her</translation>
+<translation id="5073204694187207510">Skjul fullskjermrutenett</translation>
+<translation id="5082793167783849073">Sammenlign sider raskt ved å lage en gruppe. For å begynne, trykk og hold på en link.</translation>
+<translation id="5497272504048921382">Åpnede faner</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> faner er gruppert.</translation>
+<translation id="5586306159936941448">Dra en fane oppå en annen fane for å gruppere dem</translation>
+<translation id="58326064309361797">Dra faner for å gruppere dem</translation>
+<translation id="6193448654517602979">Velg faner</translation>
+<translation id="6615455863669487791">Vis meg</translation>
+<translation id="6803423358608456383">Åpnede faner i halv høyde</translation>
+<translation id="7559245342362162951">Vis gruppens faner i fullskjermrutenett</translation>
+<translation id="8582216581279205169">Åpnede faner i full høyde</translation>
+<translation id="9150694013019234766">Bytt mellom faner i fanegruppen på nedre del av skjermen</translation>
+<translation id="9169594135889675189">Legg til ny fane i gruppen</translation>
+<translation id="959682366969460160">Få orden på ting</translation>
 </translationbundle>

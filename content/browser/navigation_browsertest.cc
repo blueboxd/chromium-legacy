@@ -42,6 +42,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -2160,6 +2161,14 @@ IN_PROC_BROWSER_TEST_P(TextFragmentAnchorBrowserTest, EnabledOnUserNavigation) {
   WebContents* main_contents = shell()->web_contents();
   TestNavigationObserver observer(main_contents);
   RenderFrameSubmissionObserver frame_observer(main_contents);
+
+  RenderWidgetHostImpl* host = RenderWidgetHostImpl::From(
+      main_contents->GetRenderViewHost()->GetWidget());
+
+  // We need to wait until hit test data is available.
+  HitTestRegionObserver hittest_observer(host->GetFrameSinkId());
+  hittest_observer.WaitForHitTestData();
+
   ClickElementWithId(main_contents, "link");
   observer.Wait();
   EXPECT_EQ(target_text_url, main_contents->GetLastCommittedURL());

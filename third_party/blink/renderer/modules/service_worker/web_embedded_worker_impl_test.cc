@@ -17,7 +17,6 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
@@ -39,36 +38,6 @@ namespace blink {
 namespace {
 
 const char* kNotFoundScriptURL = "https://www.example.com/sw-404.js";
-
-// Fake network provider for service worker execution contexts.
-class FakeServiceWorkerNetworkProvider final
-    : public WebServiceWorkerNetworkProvider {
- public:
-  FakeServiceWorkerNetworkProvider() = default;
-  ~FakeServiceWorkerNetworkProvider() override = default;
-
-  void WillSendRequest(blink::WebURLRequest& request) override {}
-
-  // Returns a loader from the mock factory. In production code, this uses the
-  // factory provided at worker startup to load non-installed scripts via
-  // ServiceWorkerScriptLoaderFactory.
-  std::unique_ptr<WebURLLoader> CreateURLLoader(
-      const WebURLRequest& request,
-      std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>) override {
-    return Platform::Current()->GetURLLoaderMockFactory()->CreateURLLoader();
-  }
-
-  blink::mojom::ControllerServiceWorkerMode GetControllerServiceWorkerMode()
-      override {
-    return blink::mojom::ControllerServiceWorkerMode::kNoController;
-  }
-
-  int64_t ControllerServiceWorkerID() override {
-    return mojom::blink::kInvalidServiceWorkerVersionId;
-  }
-
-  void DispatchNetworkQuiet() override {}
-};
 
 // A fake WebURLLoader which is used for off-main-thread script fetch tests.
 class FakeWebURLLoader final : public WebURLLoader {

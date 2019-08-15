@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_COOKIE_STORE_COOKIE_STORE_H_
 
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-blink.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom-blink.h"
 #include "third_party/blink/public/platform/web_canonical_cookie.h"
@@ -34,9 +35,10 @@ class CookieStore final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(CookieStore);
 
  public:
-  CookieStore(ExecutionContext*,
-              network::mojom::blink::RestrictedCookieManagerPtr backend,
-              blink::mojom::blink::CookieStorePtr subscription_backend);
+  CookieStore(
+      ExecutionContext*,
+      network::mojom::blink::RestrictedCookieManagerPtr backend,
+      mojo::Remote<blink::mojom::blink::CookieStore> subscription_backend);
   // Needed because of the network::mojom::blink::RestrictedCookieManagerPtr
   ~CookieStore() override;
 
@@ -150,7 +152,7 @@ class CookieStore final : public EventTargetWithInlineData,
   //
   // This pipe is always connected in service worker execution contexts, and
   // never connected in document contexts.
-  blink::mojom::blink::CookieStorePtr subscription_backend_;
+  mojo::Remote<blink::mojom::blink::CookieStore> subscription_backend_;
 
   // Wraps a Mojo pipe used to receive cookie change notifications.
   //

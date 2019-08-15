@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/mediasession/media_session.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -78,7 +79,7 @@ class MODULES_EXPORT MediaSession final
   double declared_playback_rate_ = 0.0;
   Member<MediaMetadata> metadata_;
   HeapHashMap<String, Member<V8MediaSessionActionHandler>> action_handlers_;
-  mojom::blink::MediaSessionServicePtr service_;
+  mojo::Remote<mojom::blink::MediaSessionService> service_;
   mojo::Receiver<blink::mojom::blink::MediaSessionClient> client_receiver_{
       this};
 };

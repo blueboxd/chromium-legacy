@@ -190,7 +190,8 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderTexture) {
 
   auto provider = CanvasResourceProvider::Create(
       kSize, CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
-      context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
+      context_provider_wrapper_, 0 /* msaa_sample_count */,
+      kLow_SkFilterQuality, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,
       nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
 
@@ -217,7 +218,8 @@ TEST_F(CanvasResourceProviderTest,
   auto provider = CanvasResourceProvider::Create(
       kSize,
       CanvasResourceProvider::ResourceUsage::kSoftwareCompositedResourceUsage,
-      context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
+      context_provider_wrapper_, 0 /* msaa_sample_count */,
+      kLow_SkFilterQuality, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,
       nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
 
@@ -353,7 +355,8 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderBitmap) {
 
   auto provider = CanvasResourceProvider::Create(
       kSize, CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage,
-      context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
+      context_provider_wrapper_, 0 /* msaa_sample_count */,
+      kLow_SkFilterQuality, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,
       nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
 
@@ -383,7 +386,8 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderSharedBitmap) {
   auto provider = CanvasResourceProvider::Create(
       kSize,
       CanvasResourceProvider::ResourceUsage::kSoftwareCompositedResourceUsage,
-      context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
+      context_provider_wrapper_, 0 /* msaa_sample_count */,
+      kLow_SkFilterQuality, kColorParams,
       CanvasResourceProvider::kDefaultPresentationMode,
       resource_dispatcher.GetWeakPtr(), true /* is_origin_top_left */);
 
@@ -413,7 +417,8 @@ TEST_F(CanvasResourceProviderTest,
   auto provider = CanvasResourceProvider::Create(
       kSize,
       CanvasResourceProvider::ResourceUsage::kAcceleratedDirect2DResourceUsage,
-      context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
+      context_provider_wrapper_, 0 /* msaa_sample_count */,
+      kLow_SkFilterQuality, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,
       nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
 
@@ -442,7 +447,8 @@ TEST_F(CanvasResourceProviderTest,
   auto provider = CanvasResourceProvider::Create(
       kSize,
       CanvasResourceProvider::ResourceUsage::kAcceleratedDirect3DResourceUsage,
-      context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
+      context_provider_wrapper_, 0 /* msaa_sample_count */,
+      kLow_SkFilterQuality, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,
       nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
 

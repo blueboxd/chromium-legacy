@@ -318,7 +318,7 @@ base::string16 AccessibilityTreeFormatterMac::ProcessTreeForOutput(
                                 NSAccessibilityValueAttribute, nil];
   string s_value;
   dict.GetString(SysNSStringToUTF8(NSAccessibilityRoleAttribute), &s_value);
-  WriteAttribute(true, base::UTF8ToUTF16(s_value), &line);
+  WriteAttribute(true, s_value, &line);
 
   string subroleAttribute = SysNSStringToUTF8(NSAccessibilitySubroleAttribute);
   if (dict.GetString(subroleAttribute, &s_value)) {

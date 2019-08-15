@@ -157,12 +157,13 @@
 <translation id="6620110761915583480">ఫైల్‌ను సేవ్ చేయి</translation>
 <translation id="6699343763173986273">మీడియా తరువాత ట్రాక్</translation>
 <translation id="673773751041746814">తొలగింపు</translation>
+<translation id="6779314412797872738">దీని నుండి మీ ఫోన్‌కు Android నంబర్‌ను పంపడానికి, రెండు పరికరాలలోని సెట్టింగ్‌లలో "<ph name="TROUBLESHOOT_LINK" />".</translation>
 <translation id="6786750046913594791">ఫోల్డర్‌ను మూసివేయండి</translation>
 <translation id="6808150112686056157">మీడియా ఆపివేయి</translation>
 <translation id="6845383723252244143">ఫోల్డర్‌ను ఎంచుకో</translation>
 <translation id="6845533974506654842">నొక్కండి</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 గంట మిగిలి ఉంది}other{# గంటలు మిగిలి ఉన్నాయి}}</translation>
-<translation id="688711909580084195">శీర్షికలేని వెబ్‌పేజీ</translation>
+<translation id="688711909580084195">శీర్షిక లేని వెబ్‌పేజీ</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{1 సంవత్సరం మిగిలి ఉంది}other{# సంవత్సరాలు మిగిలి ఉన్నాయి}}</translation>
 <translation id="6945221475159498467">ఎంచుకోండి</translation>
@@ -175,7 +176,7 @@
 <translation id="7319740667687257810">లాంఛ‌ర్‌, పాక్షిక వీక్షణ</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 నిమి. క్రితం}other{# నిమి. క్రితం}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">మీ ఫోన్ కనెక్షన్‌ను సరిచూసుకుని ఉంటే, ఆపై మళ్లీ ప్రయత్నించండి</translation>
+<translation id="7399254631220132461">మీ ఫోన్ కనెక్షన్‌ను సరిచూసుకుని, ఆపై మళ్లీ ప్రయత్నించండి</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 నిమిషం మిగిలి ఉంది}other{# నిమిషాలు మిగిలి ఉన్నాయి}}</translation>
 <translation id="7430878839542012341">మీ చరిత్ర నుండి ఈ శోధనను తొలగించాలా?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

@@ -236,6 +236,9 @@ bool CanvasResourceDispatcher::PrepareFrame(
   viz::TransferableResource resource;
   auto frame_resource = std::make_unique<FrameResource>();
 
+  bool nearest_neighbor =
+      canvas_resource->FilterQuality() == kNone_SkFilterQuality;
+
   canvas_resource->PrepareTransferableResource(
       &resource, &frame_resource->release_callback, kVerifiedSyncToken);
   resource.id = next_resource_id_;
@@ -260,11 +263,7 @@ bool CanvasResourceDispatcher::PrepareFrame(
   constexpr gfx::PointF uv_top_left(0.f, 0.f);
   constexpr gfx::PointF uv_bottom_right(1.f, 1.f);
   constexpr float vertex_opacity[4] = {1.f, 1.f, 1.f, 1.f};
-  // TODO(crbug.com/645994): this should be true when using style
-  // "image-rendering: pixelated".
-  // TODO(crbug.com/645590): filter should respect the image-rendering CSS
-  // property of associated canvas element.
-  constexpr bool kNearestNeighbor = false;
+
   // Accelerated resources have the origin of coordinates in the upper left
   // corner while canvases have it in the lower left corner. The DrawQuad is
   // marked as vertically flipped unless someone else has done the flip for us.
@@ -273,7 +272,7 @@ bool CanvasResourceDispatcher::PrepareFrame(
   quad->SetAll(sqs, bounds, bounds, needs_blending, resource.id,
                canvas_resource_size, kPremultipliedAlpha, uv_top_left,
                uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity, yflipped,
-               kNearestNeighbor, /*secure_output_only=*/false,
+               nearest_neighbor, /*secure_output_only=*/false,
                gfx::ProtectedVideoType::kClear);
 
   frame->render_pass_list.push_back(std::move(pass));

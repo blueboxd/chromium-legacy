@@ -1,4 +1,25 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
+<translation id="125153950246128346">Tippen, um einen anderen Tab zu sehen</translation>
+<translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> Tab}other{<ph name="TABS_COUNT_MANY" /> Tabs}}</translation>
+<translation id="257674075312929031">Gruppe</translation>
+<translation id="2613747923081026172">Gruppe erstellen</translation>
+<translation id="2845873210977809562">Geöffnete Tabs geschlossen</translation>
+<translation id="2977480621796371840">Aus Gruppe entfernen</translation>
+<translation id="4648718555153979859">Ihre Tabs werden hier in Gruppen zusammengefasst</translation>
+<translation id="5073204694187207510">Vollbildraster ausblenden</translation>
+<translation id="5082793167783849073">Sie können Seiten schnell miteinander vergleichen, indem Sie eine Gruppe erstellen. Berühren und halten Sie einen Link, um den Vorgang zu starten.</translation>
+<translation id="5497272504048921382">Geöffnete Tabs</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> Tabs gruppiert</translation>
+<translation id="5586306159936941448">Tab zum Gruppieren auf einen anderen Tab ziehen</translation>
+<translation id="58326064309361797">Tabs zum Gruppieren ziehen</translation>
+<translation id="6193448654517602979">Tabs auswählen</translation>
+<translation id="6615455863669487791">Zeigen</translation>
+<translation id="6803423358608456383">Geöffnete Tabs halb geöffnet</translation>
+<translation id="7559245342362162951">Tabs der Gruppe in Vollbildraster anzeigen</translation>
+<translation id="8582216581279205169">Geöffnete Tabs ganz geöffnet</translation>
+<translation id="9150694013019234766">Am unteren Bildschirmrand können Sie zwischen den Tabs in Ihrer Tabgruppe wechseln</translation>
+<translation id="9169594135889675189">Der Gruppe einen neuen Tab hinzufügen</translation>
+<translation id="959682366969460160">Besser organisiert</translation>
 </translationbundle>

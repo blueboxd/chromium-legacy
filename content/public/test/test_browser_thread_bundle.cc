@@ -31,7 +31,7 @@
 
 namespace content {
 
-TestBrowserThreadBundle::~TestBrowserThreadBundle() {
+BrowserTaskEnvironment::~BrowserTaskEnvironment() {
   // This is required to ensure we run all remaining MessageLoop and
   // ThreadPool tasks in an atomic step. This is a bit different than
   // production where the main thread is not flushed after it's done running
@@ -64,17 +64,17 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
 #endif
 }
 
-TestBrowserThreadBundle::TestBrowserThreadBundle(
-    base::test::ScopedTaskEnvironment&& scoped_task_environment,
+BrowserTaskEnvironment::BrowserTaskEnvironment(
+    base::test::TaskEnvironment&& task_environment,
     bool real_io_thread)
-    : base::test::ScopedTaskEnvironment(std::move(scoped_task_environment)),
+    : base::test::TaskEnvironment(std::move(task_environment)),
       real_io_thread_(real_io_thread) {
   Init();
 }
 
-void TestBrowserThreadBundle::Init() {
+void BrowserTaskEnvironment::Init() {
   // Check that the UI thread hasn't already been initialized. This will fail if
-  // multiple TestBrowserThreadBundles are initialized in the same scope.
+  // multiple BrowserTaskEnvironments are initialized in the same scope.
   CHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI));
 
   CHECK(!real_io_thread_ || !HasIOMainLoop()) << "Can't have two IO threads";
@@ -129,7 +129,7 @@ void TestBrowserThreadBundle::Init() {
   BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
 }
 
-void TestBrowserThreadBundle::RunIOThreadUntilIdle() {
+void BrowserTaskEnvironment::RunIOThreadUntilIdle() {
   // Use a RunLoop to run until idle if already on BrowserThread::IO (which is
   // the main thread unless using REAL_IO_THREAD).
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));

@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
 #include "third_party/blink/public/mojom/manifest/manifest_manager.mojom-blink.h"
@@ -82,7 +82,8 @@ class MODULES_EXPORT ManifestManager
                                const String& data);
   void ResolveCallbacks(ResolveState state);
 
-  void BindToRequest(mojom::blink::ManifestManagerRequest request);
+  void BindReceiver(
+      mojo::PendingReceiver<mojom::blink::ManifestManager> receiver);
 
   void Dispose();
 
@@ -111,7 +112,7 @@ class MODULES_EXPORT ManifestManager
 
   Vector<InternalRequestManifestCallback> pending_callbacks_;
 
-  mojo::BindingSet<mojom::blink::ManifestManager> bindings_;
+  mojo::ReceiverSet<mojom::blink::ManifestManager> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestManager);
 };

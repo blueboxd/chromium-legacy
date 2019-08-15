@@ -1155,8 +1155,10 @@ class ErrorPageOfflineTest : public ErrorPageTest {
 
     policy::PolicyMap policy_map;
 #if defined(OS_CHROMEOS)
-    if (enroll_)
-      SetEnterpriseUsersDefaults(&policy_map);
+    if (enroll_) {
+      policy_map.ApplyEnterpriseUsersDefaults(
+          policy::GetEnterpriseUsersDefaults());
+    }
 #endif
     if (set_allow_dinosaur_easter_egg_) {
       policy_map.Set(

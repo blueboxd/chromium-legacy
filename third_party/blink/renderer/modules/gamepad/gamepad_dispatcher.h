@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "device/gamepad/public/mojom/gamepad.mojom-blink.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/web_gamepad_listener.h"
 #include "third_party/blink/renderer/core/frame/platform_event_dispatcher.h"
 
@@ -63,7 +64,8 @@ class GamepadDispatcher final
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<GamepadSharedMemoryReader> reader_;
-  device::mojom::blink::GamepadHapticsManagerPtr gamepad_haptics_manager_;
+  mojo::Remote<device::mojom::blink::GamepadHapticsManager>
+      gamepad_haptics_manager_remote_;
 };
 
 }  // namespace blink

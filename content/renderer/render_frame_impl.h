@@ -63,6 +63,7 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -1768,7 +1769,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
 #if defined(OS_MACOSX)
   // Return the mojo interface for making ClipboardHost calls.
-  blink::mojom::ClipboardHostPtr clipboard_host_;
+  mojo::Remote<blink::mojom::ClipboardHost> clipboard_host_;
 #endif
 
   // The origins for which a legacy TLS version warning has been printed. The

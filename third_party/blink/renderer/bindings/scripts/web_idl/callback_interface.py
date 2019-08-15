@@ -33,6 +33,17 @@ class CallbackInterface(UserDefinedType, WithExtendedAttributes,
             WithComponent.__init__(self, component)
             WithDebugInfo.__init__(self, debug_info)
 
+    def __init__(self, ir):
+        assert isinstance(ir, CallbackInterface.IR)
+
+        UserDefinedType.__init__(self, ir.identifier)
+        WithExtendedAttributes.__init__(self,
+                                        ir.extended_attributes.make_copy())
+        WithCodeGeneratorInfo.__init__(self,
+                                       ir.code_generator_info.make_copy())
+        WithComponent.__init__(self, components=ir.components)
+        WithDebugInfo.__init__(self, ir.debug_info.make_copy())
+
     @property
     def inherited_callback_interface(self):
         """

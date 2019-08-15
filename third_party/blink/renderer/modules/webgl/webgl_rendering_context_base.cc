@@ -788,7 +788,8 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
       CanvasResourceProvider::Create(
           size,
           CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
-          SharedGpuContext::ContextProviderWrapper(), 0, ColorParams(),
+          SharedGpuContext::ContextProviderWrapper(), 0,
+          GetDrawingBuffer()->FilterQuality(), ColorParams(),
           CanvasResourceProvider::kDefaultPresentationMode,
           nullptr /* canvas_resource_dispatcher */, is_origin_top_left_);
   if (!resource_provider || !resource_provider->IsValid())
@@ -7955,8 +7956,9 @@ CanvasResourceProvider* WebGLRenderingContextBase::
   // TODO(fserb): why is this software?
   std::unique_ptr<CanvasResourceProvider> temp(CanvasResourceProvider::Create(
       size, CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage,
-      nullptr,              // context_provider_wrapper
-      0,                    // msaa_sample_count,
+      nullptr,  // context_provider_wrapper
+      0,        // msaa_sample_count,
+      kLow_SkFilterQuality,
       CanvasColorParams(),  // TODO: should this use the canvas's colorspace?
       CanvasResourceProvider::kDefaultPresentationMode,
       nullptr));  // canvas_resource_dispatcher

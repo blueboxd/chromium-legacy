@@ -22,8 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 namespace content {
@@ -92,14 +91,14 @@ void BackgroundFetchServiceImpl::CreateOnIoThread(
     url::Origin origin,
     int render_frame_tree_node_id,
     WebContents::Getter wc_getter,
-    blink::mojom::BackgroundFetchServiceRequest request) {
+    mojo::PendingReceiver<blink::mojom::BackgroundFetchService> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<BackgroundFetchServiceImpl>(
           std::move(background_fetch_context), std::move(origin),
           render_frame_tree_node_id, std::move(wc_getter)),
-      std::move(request));
+      std::move(receiver));
 }
 
 BackgroundFetchServiceImpl::BackgroundFetchServiceImpl(

@@ -1778,6 +1778,8 @@ AtkObject* GetTable(AtkTableCell* cell) {
   return nullptr;
 }
 
+using AtkTableCellIface = struct _AtkTableCellIface;
+
 void Init(AtkTableCellIface* iface) {
   iface->get_column_span = GetColumnSpan;
   iface->get_column_header_cells = GetColumnHeaderCells;
@@ -1973,27 +1975,57 @@ void Detach(AXPlatformNodeAuraLinuxObject* atk_object) {
 
 }  //  namespace atk_object
 
-static PROTECTED_MEMORY_SECTION
-    base::ProtectedMemory<AtkTableCellInterface::GetTypeFunc>
-        g_atk_table_cell_get_type;
+using GetTypeFunc = GType (*)();
+using GetColumnHeaderCellsFunc = GPtrArray* (*)(AtkTableCell* cell);
+using GetRowHeaderCellsFunc = GPtrArray* (*)(AtkTableCell* cell);
+using GetRowColumnSpanFunc = bool (*)(AtkTableCell* cell,
+                                      gint* row,
+                                      gint* column,
+                                      gint* row_span,
+                                      gint* col_span);
 
-static PROTECTED_MEMORY_SECTION
-    base::ProtectedMemory<AtkTableCellInterface::GetColumnHeaderCellsFunc>
-        g_atk_table_cell_get_column_header_cells;
+static PROTECTED_MEMORY_SECTION base::ProtectedMemory<GetTypeFunc>
+    g_atk_table_cell_get_type;
 
-static PROTECTED_MEMORY_SECTION
-    base::ProtectedMemory<AtkTableCellInterface::GetRowHeaderCellsFunc>
-        g_atk_table_cell_get_row_header_cells;
+static PROTECTED_MEMORY_SECTION base::ProtectedMemory<GetColumnHeaderCellsFunc>
+    g_atk_table_cell_get_column_header_cells;
 
-static PROTECTED_MEMORY_SECTION
-    base::ProtectedMemory<AtkTableCellInterface::GetRowColumnSpanFunc>
-        g_atk_table_cell_get_row_column_span;
+static PROTECTED_MEMORY_SECTION base::ProtectedMemory<GetRowHeaderCellsFunc>
+    g_atk_table_cell_get_row_header_cells;
+
+static PROTECTED_MEMORY_SECTION base::ProtectedMemory<GetRowColumnSpanFunc>
+    g_atk_table_cell_get_row_column_span;
 
 }  // namespace
 
 // static
-base::Optional<AtkTableCellInterface> AtkTableCellInterface::Get() {
-  static base::Optional<AtkTableCellInterface> interface = base::nullopt;
+GType AtkTableCellInterface::GetType() {
+  return base::UnsanitizedCfiCall(g_atk_table_cell_get_type)();
+}
+
+// static
+GPtrArray* AtkTableCellInterface::GetColumnHeaderCells(AtkTableCell* cell) {
+  return base::UnsanitizedCfiCall(g_atk_table_cell_get_column_header_cells)(
+      cell);
+}
+
+// static
+GPtrArray* AtkTableCellInterface::GetRowHeaderCells(AtkTableCell* cell) {
+  return base::UnsanitizedCfiCall(g_atk_table_cell_get_row_header_cells)(cell);
+}
+
+// static
+bool AtkTableCellInterface::GetRowColumnSpan(AtkTableCell* cell,
+                                             gint* row,
+                                             gint* column,
+                                             gint* row_span,
+                                             gint* col_span) {
+  return base::UnsanitizedCfiCall(g_atk_table_cell_get_row_column_span)(
+      cell, row, column, row_span, col_span);
+}
+
+// static
+bool AtkTableCellInterface::Exists() {
   static base::ProtectedMemory<GetTypeFunc>::Initializer
       init_atk_table_cell_get_type(
           &g_atk_table_cell_get_type,
@@ -2014,17 +2046,7 @@ base::Optional<AtkTableCellInterface> AtkTableCellInterface::Get() {
           &g_atk_table_cell_get_row_column_span,
           reinterpret_cast<GetRowColumnSpanFunc>(
               dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_column_span")));
-
-  if (interface.has_value())
-    return **interface->GetType ? interface : base::nullopt;
-
-  interface.emplace();
-  interface->GetType = &g_atk_table_cell_get_type;
-  interface->GetColumnHeaderCells = &g_atk_table_cell_get_column_header_cells;
-  interface->GetRowHeaderCells = &g_atk_table_cell_get_row_header_cells;
-  interface->GetRowColumnSpan = &g_atk_table_cell_get_row_column_span;
-  interface->initialized = true;
-  return **interface->GetType ? interface : base::nullopt;
+  return *g_atk_table_cell_get_type;
 }
 
 void AXPlatformNodeAuraLinux::EnsureGTypeInit() {
@@ -2145,11 +2167,9 @@ GType AXPlatformNodeAuraLinux::GetAccessibilityGType() {
 
   if (interface_mask_ & (1 << ATK_TABLE_CELL_INTERFACE)) {
     // Run-time check to ensure AtkTableCell is supported (requires ATK 2.12).
-    auto interface = AtkTableCellInterface::Get();
-    if (interface.has_value()) {
-      g_type_add_interface_static(
-          type, base::UnsanitizedCfiCall(*interface->GetType)(),
-          &atk_table_cell::Info);
+    if (AtkTableCellInterface::Exists()) {
+      g_type_add_interface_static(type, AtkTableCellInterface::GetType(),
+                                  &atk_table_cell::Info);
     }
   }
 

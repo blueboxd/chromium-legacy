@@ -106,7 +106,6 @@ group("closure_compile") {
   if (is_chromeos) {
     deps += [
       "android_apps_page:closure_compile",
-      "app_management_page:closure_compile",
       "bluetooth_page:closure_compile",
       "chromeos:closure_compile",
       "crostini_page:closure_compile",

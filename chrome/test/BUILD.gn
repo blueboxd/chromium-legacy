@@ -3925,6 +3925,7 @@ test("unit_tests") {
       "../browser/sharing/click_to_call/click_to_call_utils_unittest.cc",
       "../browser/sharing/shared_clipboard/shared_clipboard_context_menu_observer_unittest.cc",
       "../browser/sharing/shared_clipboard/shared_clipboard_ui_controller_unittest.cc",
+      "../browser/sharing/shared_clipboard/shared_clipboard_utils_unittest.cc",
       "../browser/ui/autofill/payments/local_card_migration_bubble_controller_impl_unittest.cc",
       "../browser/ui/autofill/payments/save_card_bubble_controller_impl_unittest.cc",
       "../browser/ui/bluetooth/bluetooth_chooser_controller_unittest.cc",

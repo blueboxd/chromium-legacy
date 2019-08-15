@@ -8,7 +8,7 @@
 <translation id="1507010443238049608">Chromium ఫీచర్‌లు మరియు పనితీరును మెరుగుపరచడంలో సహాయపడండి</translation>
 <translation id="1617663976202781617">Chromium సింక్ నుండి పొందే డేటా</translation>
 <translation id="1736662517232558588">Chromium డేటా తీసేసింది</translation>
-<translation id="1838412507805038478">Chromium ఈ వెబ్‌సైట్ ప్రమాణపత్రాన్ని <ph name="ISSUER" /> జారీ చేసినట్లు ధృవీకరించింది.</translation>
+<translation id="1838412507805038478">Chromium ఈ వెబ్‌సైట్ స‌ర్టిఫికెట్‌ను <ph name="ISSUER" /> జారీ చేసినట్లు ధృవీకరించింది.</translation>
 <translation id="1843424232666537147">మీ ఇంటర్నెట్ డేటాను నిర్వహించడంలో మరియు మీరు వెబ్ పేజీలను త్వరగా లోడ్ చేయగలగడంలో మీకు సహాయపడే ఫీచర్‌లు Chromiumలో ఉన్నాయి.
 <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">మీరు మీ కంప్యూటర్‌లో తెరిచిన ట్యాబ్‌లను ఇక్కడి నుండే యాక్సెస్ చేయండి. మీ కంప్యూటర్‌లో Chromiumను తెరిచి, మెనూకు వెళ్లి, “Chromiumకు సైన్ ఇన్ చేయి…” ఎంచుకోండి</translation>
@@ -16,7 +16,7 @@
 <translation id="2178608107313874732">Chromium ప్రస్తుతం మీ కెమెరాను ఉపయోగించలేదు</translation>
 <translation id="2195025571279539885">ఈ సైట్‌లోని <ph name="LANGUAGE_NAME" /> పేజీలను మీరు తర్వాతిసారి సందర్శించినప్పుడు, వీటిని అనువదించే సదుపాయాన్ని Chromium అందించాలని కోరుకుంటున్నారా?</translation>
 <translation id="2590893390871230428">మీ Chromium డేటాను సింక్ చేయండి</translation>
-<translation id="2647554856022461007">Chromium మీ బ్రౌజింగ్ అనుభవాన్ని మెరుగుపరచడానికి వెబ్ సేవలను ఉపయోగించవచ్చు. మీరు ఈ సేవలను ఐచ్ఛికంగా నిలిపివేయవచ్చు. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
+<translation id="2647554856022461007">Chromium మీ బ్రౌజింగ్ అనుభవాన్ని మెరుగుపరచడానికి వెబ్ సేవ‌లు ఉపయోగించవచ్చు. మీరు ఈ సేవ‌లు ఐచ్ఛికంగా నిలిపివేయవచ్చు. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="2730884209570016437">మీ కెమెరాను మరొక అప్లికేషన్‌ ఉపయోగిస్తున్నందున Chromium దాన్ని ఉపయోగించలేదు</translation>
 <translation id="2915596697727466327">Chromium మీ పాస్‌వర్డ్‌లను ప్రమాణీకరణ ఉన్న వారు మాత్రమే యాక్సెస్ చేస్తున్నట్లు నిర్ధారించడం కోసం ఫేస్ IDని ఉపయోగిస్తుంది.</translation>
 <translation id="3256316712990552818">Chromiumకి కాపీ చేయబడింది</translation>
@@ -40,7 +40,7 @@
 <translation id="6604711459180487467">మీ స్థానం ఆధారంగా Chromiumలో మెరుగైన అనుభవాన్ని పొందండి.</translation>
 <translation id="6626296268883197964">ఈ యాప్‌ని ఉపయోగించడం ద్వారా, మీరు Chromium <ph name="BEGIN_LINK_TOS" />సేవా నిబంధనలు<ph name="END_LINK_TOS" /> మరియు <ph name="BEGIN_LINK_PRIVACY" />గోప్యతా ప్రకటన<ph name="END_LINK_PRIVACY" />ని అంగీకరిస్తున్నారు.</translation>
 <translation id="7099326575020694068">Chromium విభజన వీక్షణ మోడ్‌లో మీ కెమెరాను ఉపయోగించలేదు</translation>
-<translation id="7208566199746267865">Chromium మీ ఖాతాలను వెబ్‌లో అందించడం ద్వారా మీకు సమయాన్ని ఆదా చేస్తుంది. మీరు సెట్టింగ్‌లలో ఖాతాలను జోడించవచ్చు లేదా తీసివేయవచ్చు.</translation>
+<translation id="7208566199746267865">మీ ఖాతాలను వెబ్‌లో అందించడం ద్వారా Chromium, మీ సమయాన్ని ఆదా చేస్తుంది. మీరు సెట్టింగ్‌ల్లో ఖాతాలను జోడించవచ్చు లేదా తీసివేయవచ్చు.</translation>
 <translation id="7269362888766543920">కొన్ని యాడ్-ఆన్‌లు Chromium క్రాష్ అయ్యేలా చేశాయి. దయచేసి వాటిని అన్‌ఇన్‌స్టాల్ చేయడానికి ప్రయత్నించండి.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">ఎంచుకోబడిన డేటా Chromium నుండి, సింక్ చేసిన‌ పరికరాల నుండి తీసివేయబడింది. history.google.comలో మీ Google ఖాతా, ఇతర Google సేవలకు సంబంధించిన శోధనలు, కార్య‌క‌లాపాల వంటి ఇతర రకాల బ్రౌజింగ్ చరిత్రను కలిగి ఉండవచ్చు.</translation>
@@ -54,5 +54,6 @@
 <translation id="8586442755830160949">కాపీరైట్ <ph name="YEAR" /> Chromium రచయితలు. అన్ని హ‌క్కులు రిజ‌ర్వ్ చేయ‌బ‌డ్డాయి.</translation>
 <translation id="8809780021347235332">చిత్రాలను సేవ్ చేసేందుకు, Chromium మీ ఫోటోలను ఉపయోగించేలా అనుమతించడానికి సెట్టింగ్‌లపై నొక్కండి</translation>
 <translation id="9022552996538154597">Chromiumకు సైన్ ఇన్ చేయండి</translation>
+<translation id="9217078088703304241"><ph name="BEGIN_LINK" />అప్‌డేట్ చేయబడిన Chromium సేవా నిబంధనలను సమీక్షించండి.<ph name="END_LINK" /></translation>
 <translation id="985602178874221306">Chromium రచయితలు</translation>
 </translationbundle>

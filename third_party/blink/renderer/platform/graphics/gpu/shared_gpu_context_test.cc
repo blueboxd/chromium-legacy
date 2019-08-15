@@ -146,7 +146,8 @@ TEST_F(SharedGpuContextTest, AccelerateImageBufferSurfaceAutoRecovery) {
           CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
           SharedGpuContext::ContextProviderWrapper(),
           0,  // msaa_sample_count
-          CanvasColorParams(), CanvasResourceProvider::kDefaultPresentationMode,
+          kLow_SkFilterQuality, CanvasColorParams(),
+          CanvasResourceProvider::kDefaultPresentationMode,
           nullptr  // canvas_resource_dispatcher
       );
   EXPECT_TRUE(resource_provider && resource_provider->IsValid());
@@ -190,7 +191,8 @@ TEST_F(BadSharedGpuContextTest, AccelerateImageBufferSurfaceCreationFails) {
           CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
           SharedGpuContext::ContextProviderWrapper(),
           0,  // msaa_sample_count
-          CanvasColorParams(), CanvasResourceProvider::kDefaultPresentationMode,
+          kLow_SkFilterQuality, CanvasColorParams(),
+          CanvasResourceProvider::kDefaultPresentationMode,
           nullptr  // canvas_resource_dispatcher
       );
   EXPECT_FALSE(!resource_provider);
@@ -225,7 +227,8 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCaching) {
           CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
           SharedGpuContext::ContextProviderWrapper(),
           0,  // msaa_sample_count
-          CanvasColorParams(), CanvasResourceProvider::kDefaultPresentationMode,
+          kLow_SkFilterQuality, CanvasColorParams(),
+          CanvasResourceProvider::kDefaultPresentationMode,
           nullptr  // canvas_resource_dispatcher
       );
   EXPECT_TRUE(resource_provider && resource_provider->IsValid());
@@ -270,7 +273,8 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
           CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
           SharedGpuContext::ContextProviderWrapper(),
           0,  // msaa_sample_count
-          CanvasColorParams(), CanvasResourceProvider::kDefaultPresentationMode,
+          kLow_SkFilterQuality, CanvasColorParams(),
+          CanvasResourceProvider::kDefaultPresentationMode,
           nullptr  // canvas_resource_dispatcher
       );
   EXPECT_TRUE(resource_provider && resource_provider->IsValid());
@@ -305,7 +309,8 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
       size, CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
       SharedGpuContext::ContextProviderWrapper(),
       0,  // msaa_sample_count
-      CanvasColorParams(), CanvasResourceProvider::kDefaultPresentationMode,
+      kLow_SkFilterQuality, CanvasColorParams(),
+      CanvasResourceProvider::kDefaultPresentationMode,
       nullptr  // canvas_resource_dispatcher
   );
 

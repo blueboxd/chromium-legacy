@@ -161,7 +161,6 @@ void ActiveDirectoryPolicyManager::PublishPolicy() {
   // TODO(tnagel): Rename CloudPolicyStore to PolicyStore and make the source
   // configurable, then drop PolicyMap::SetSourceForAll().
   policy_map.SetSourceForAll(POLICY_SOURCE_ACTIVE_DIRECTORY);
-  SetEnterpriseUsersDefaults(&policy_map);
 
   // Expand e.g. ${MACHINE_NAME} for a selected set of policies.
   ExpandVariables(&policy_map);

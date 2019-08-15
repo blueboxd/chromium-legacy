@@ -36,6 +36,13 @@ class VulkanSurface;
 class VulkanInstance;
 struct VulkanYCbCrInfo;
 
+#if defined(OS_FUCHSIA)
+class SysmemBufferCollection {
+ public:
+  virtual ~SysmemBufferCollection() {}
+};
+#endif  // defined(OS_FUCHSIA)
+
 // Base class which provides functions for creating vulkan objects for different
 // platforms that use platform-specific extensions (e.g. for creation of
 // VkSurfaceKHR objects). It also provides helper/utility functions.
@@ -133,6 +140,18 @@ class VULKAN_EXPORT VulkanImplementation {
       base::android::ScopedHardwareBufferHandle ahb_handle,
       VulkanYCbCrInfo* ycbcr_info) = 0;
 #endif
+
+#if defined(OS_FUCHSIA)
+  // Registers as sysmem buffer collection. The collection can be released by
+  // destroying the returned SysmemBufferCollection object. Once a collection is
+  // registered the individual buffers in the collection can be referenced by
+  // using the |id| as |buffer_collection_id| in |gmb_handle| passed to
+  // CreateImageFromGpuMemoryHandle().
+  virtual std::unique_ptr<SysmemBufferCollection>
+  RegisterSysmemBufferCollection(VkDevice device,
+                                 gfx::SysmemBufferCollectionId id,
+                                 zx::channel token) = 0;
+#endif  // defined(OS_FUCHSIA)
 
   bool use_swiftshader() const { return use_swiftshader_; }
   bool allow_protected_memory() const { return allow_protected_memory_; }

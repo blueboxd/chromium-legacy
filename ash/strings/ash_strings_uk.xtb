@@ -37,6 +37,7 @@
 <translation id="1419738280318246476">Щоб виконати дію зі сповіщенням, розблокуйте пристрій</translation>
 <translation id="1426410128494586442">Так</translation>
 <translation id="1455242230282523554">Показати налаштування мови</translation>
+<translation id="1460620680449458626">Гучність вимкнено.</translation>
 <translation id="1467432559032391204">Ліворуч</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Показати налаштування сповіщень. Сповіщення вимкнено для додатка}one{Показати налаштування сповіщень. Сповіщення вимкнено для # додатка}few{Показати налаштування сповіщень. Сповіщення вимкнено для # додатків}many{Показати налаштування сповіщень. Сповіщення вимкнено для # додатків}other{Показати налаштування сповіщень. Сповіщення вимкнено для # додатка}}</translation>
@@ -159,6 +160,7 @@
 <translation id="3236488194889173876">Немає мобільних мереж</translation>
 <translation id="3249513730522716925">Вікно "<ph name="WINDOW_TITLE" />" переміщено з робочого столу "<ph name="ACTIVE_DESK" />" на робочий стіл "<ph name="TARGET_DESK" />"</translation>
 <translation id="3255483164551725916">Що ти можеш?</translation>
+<translation id="3277674767125718685">Гучність увімкнено.</translation>
 <translation id="3294437725009624529">Гість</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> усе одно зможе ввійти в обліковий запис.</translation>
 <translation id="3321628682574733415">Неправильний код доступу батьків</translation>
@@ -179,7 +181,7 @@
 <translation id="3573179567135747900">Повернутися до мови "<ph name="FROM_LOCALE" />" (потрібно перезавантажитися)</translation>
 <translation id="3576141592585647168">Змінення часового поясу</translation>
 <translation id="3595596368722241419">Акумулятор заряджено</translation>
-<translation id="3604801046548457007">Робочий стіл "<ph name="DESK_TITILE" />" створено</translation>
+<translation id="3604801046548457007">Створено робочий стіл "<ph name="DESK_TITILE" />"</translation>
 <translation id="3606978283550408104">Брайлівський дисплей під’єднано.</translation>
 <translation id="3621202678540785336">Вхід</translation>
 <translation id="3626281679859535460">Яскравість</translation>
@@ -292,7 +294,7 @@
 <translation id="5496819745535887422">Адміністратор відновлює пристрій до попереднього стану. Після перезапуску всі дані буде видалено.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Завершення сеансу</translation>
-<translation id="5537725057119320332">Акторський склад</translation>
+<translation id="5537725057119320332">Трансляція екрана</translation>
 <translation id="5548285847212963613">За допомогою розширення <ph name="EXTENSION_NAME" /> можна під’єднуватися до цієї мережі.</translation>
 <translation id="554893713779400387">Перемкнути диктування</translation>
 <translation id="5571066253365925590">Bluetooth увімкнено</translation>
@@ -506,6 +508,7 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Зарядний пристрій низької потужності підключено</translation>
 <translation id="8683506306463609433">Відстеження ефективності активне</translation>
+<translation id="8721053961083920564">Увімкнути або вимкнути гучність. <ph name="STATE_TEXT" /></translation>
 <translation id="8734991477317290293">Можливо, це спроба викрасти введенні символи.</translation>
 <translation id="8735953464173050365">Показати налаштування клавіатури. Вибрано: <ph name="KEYBOARD_NAME" /></translation>
 <translation id="875593634123171288">Показати налаштування VPN</translation>

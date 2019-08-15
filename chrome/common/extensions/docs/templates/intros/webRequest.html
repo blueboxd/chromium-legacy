@@ -128,6 +128,16 @@ need to specify <code>'extraHeaders'</code> in <code>opt_extraInfoSpec</code>.
 </p>
 
 <p>
+<span class="availability">Starting from Chrome 76</span>, the following request
+header is <strong>not provided</strong> and cannot be modified or removed
+without specifying <code>'extraHeaders'</code> in
+<code>opt_extraInfoSpec</code>:
+<ul>
+  <li>Origin</li>
+</ul>
+</p>
+
+<p>
 <span class="availability">Starting from Chrome 72</span>, the following request
 headers are <strong>not provided</strong> and cannot be modified or removed
 without specifying <code>'extraHeaders'</code> in

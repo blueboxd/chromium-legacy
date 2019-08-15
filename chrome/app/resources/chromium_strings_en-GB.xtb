@@ -127,9 +127,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5634636535844844681">Chromium requires Windows 7 or higher.</translation>
 <translation id="5680901439334282664">sign in to Chromium</translation>
 <translation id="5698481217667032250">Display Chromium in this language</translation>
-<translation id="5756484659843248772">This language is used to display the Chromium OS UI</translation>
-<translation id="5768914737813585044">Display Chromium OS in this language</translation>
-<translation id="5796460469508169315">Chromium is almost ready.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Welcome to Chromium</translation>
 <translation id="5877064549588274448">Channel changed. Restart your device to apply changes.</translation>
@@ -192,12 +189,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">New window</translation>
 <translation id="734373864078049451">Your web, bookmarks and other Chromium stuff live here.</translation>
-<translation id="7344413941077984497">To set which websites <ph name="NEW_PROFILE_NAME" /> can view, you can configure restrictions and settings by visiting <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. If you do not change the default settings, <ph name="NEW_PROFILE_NAME" /> can browse everything on the web.
-
-To prevent <ph name="NEW_PROFILE_NAME" /> from accessing your account, make sure that you lock your profile when you're not using Chromium. To do this, click your profile name in the upper-right corner of the browser, and select "Exit and child lock."
-<ph name="BEGIN_LINK_2" />Learn more<ph name="END_LINK_2" />
-
-Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.</translation>
 <translation id="7349591376906416160">Your system administrator has configured Chromium to open <ph name="ALTERNATIVE_BROWSER_NAME" /> to access <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7448255348454382571">Restart Chromium OS</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium Dev</translation>
@@ -234,6 +225,8 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="8417404458978023919">{0,plural, =1{Relaunch Chromium within a day}other{Relaunch Chromium within # days}}</translation>
 <translation id="8453117565092476964">The installer archive is corrupted or invalid. Please download Chromium again.</translation>
 <translation id="8493179195440786826">Chromium is Out of Date</translation>
+<translation id="8494843963476918365">If a setting doesn't show on this page, try your <ph name="LINK_BEGIN" />
+    Chromium browser settings<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Get help with using Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
 <translation id="8619360774459241877">Launching Chromium...</translation>

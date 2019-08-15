@@ -29,6 +29,7 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/renderer/platform/instrumentation/memory_pressure_listener.h"
@@ -566,7 +567,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   ResourceLoaderOptions options_;
 
-  double response_timestamp_;
+  base::Time response_timestamp_;
 
   TaskHandle async_finish_pending_clients_task_;
 

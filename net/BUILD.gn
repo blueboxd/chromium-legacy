@@ -3286,6 +3286,7 @@ if (is_android) {
       "android/java/src/org/chromium/net/AndroidKeyStore.java",
       "android/java/src/org/chromium/net/AndroidNetworkLibrary.java",
       "android/java/src/org/chromium/net/AndroidTrafficStats.java",
+      "android/java/src/org/chromium/net/DnsStatus.java",
       "android/java/src/org/chromium/net/GURLUtils.java",
       "android/java/src/org/chromium/net/HttpNegotiateAuthenticator.java",
       "android/java/src/org/chromium/net/HttpUtil.java",

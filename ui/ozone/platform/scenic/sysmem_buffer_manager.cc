@@ -32,17 +32,33 @@ scoped_refptr<SysmemBufferCollection> SysmemBufferManager::CreateCollection(
                           num_buffers)) {
     return nullptr;
   }
+  RegisterCollection(result.get());
+  return result;
+}
 
+scoped_refptr<SysmemBufferCollection>
+SysmemBufferManager::ImportSysmemBufferCollection(
+    VkDevice vk_device,
+    gfx::SysmemBufferCollectionId id,
+    zx::channel token) {
+  auto result = base::MakeRefCounted<SysmemBufferCollection>(id);
+  if (!result->Initialize(allocator_.get(), vk_device, std::move(token))) {
+    return nullptr;
+  }
+  RegisterCollection(result.get());
+  return result;
+}
+
+void SysmemBufferManager::RegisterCollection(
+    SysmemBufferCollection* collection) {
   {
     base::AutoLock auto_lock(collections_lock_);
-    collections_[result->id()] = result.get();
+    collections_[collection->id()] = collection;
   }
 
-  result->SetOnDeletedCallback(
+  collection->SetOnDeletedCallback(
       base::BindOnce(&SysmemBufferManager::OnCollectionDestroyed,
-                     base::Unretained(this), result->id()));
-
-  return result;
+                     base::Unretained(this), collection->id()));
 }
 
 scoped_refptr<SysmemBufferCollection> SysmemBufferManager::GetCollectionById(

@@ -159,8 +159,7 @@
     // Navigate 2 folders deep, because navigating in directory tree might
     // triggers further metadata fetches.
     await remoteCall.navigateWithDirectoryTree(
-        appId, RootPath.DOWNLOADS_PATH + '/photos1/folder1',
-        'My files/Downloads');
+        appId, '/Downloads/photos1/folder1', 'My files');
 
     // Fetch the metadata stats.
     const metadataStats =

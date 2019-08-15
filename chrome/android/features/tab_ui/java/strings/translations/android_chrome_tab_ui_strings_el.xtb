@@ -1,4 +1,25 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
+<translation id="125153950246128346">Πατήστε για να δείτε μια άλλη καρτέλα</translation>
+<translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> καρτέλα}other{<ph name="TABS_COUNT_MANY" /> καρτέλες}}</translation>
+<translation id="257674075312929031">Ομάδα</translation>
+<translation id="2613747923081026172">Δημιουργία ομάδας</translation>
+<translation id="2845873210977809562">Οι ανοιγμένες καρτέλες έκλεισαν</translation>
+<translation id="2977480621796371840">Κατάργηση από την ομάδα</translation>
+<translation id="4648718555153979859">Οι καρτέλες σας ομαδοποιούνται εδώ</translation>
+<translation id="5073204694187207510">Απόκρυψη πλέγματος πλήρους οθόνης</translation>
+<translation id="5082793167783849073">Συγκρίνετε γρήγορα σελίδες δημιουργώντας μια ομάδα. Για να ξεκινήσετε, αγγίξτε παρατεταμένα κάποιον σύνδεσμο.</translation>
+<translation id="5497272504048921382">Ανοιγμένες καρτέλες</translation>
+<translation id="5580090775658607195">Ομαδοποιήθηκαν <ph name="TAB_COUNT" /> καρτέλες</translation>
+<translation id="5586306159936941448">Σύρετε μια καρτέλα σε μια άλλη καρτέλα για να τις ομαδοποιήσετε.</translation>
+<translation id="58326064309361797">Σύρετε καρτέλες για να τις ομαδοποιήσετε.</translation>
+<translation id="6193448654517602979">Επιλογή καρτελών</translation>
+<translation id="6615455863669487791">Εμφάνιση</translation>
+<translation id="6803423358608456383">Ανοιγμένες καρτέλες στο μισό ύψος</translation>
+<translation id="7559245342362162951">Εμφάνιση καρτελών ομάδας σε πλέγμα πλήρους οθόνης</translation>
+<translation id="8582216581279205169">Ανοιγμένες καρτέλες σε πλήρες ύψος</translation>
+<translation id="9150694013019234766">Κάντε εναλλαγή μεταξύ των καρτελών στην ομάδα καρτελών σας κοντά στο κάτω μέρος της οθόνης</translation>
+<translation id="9169594135889675189">Προσθήκη νέας καρτέλας στην ομάδα</translation>
+<translation id="959682366969460160">Οργανωθείτε</translation>
 </translationbundle>

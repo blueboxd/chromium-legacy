@@ -295,7 +295,7 @@
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> के लिए खोज नतीजे दिखाए जा रहे हैं.</translation>
 <translation id="4631887759990505102">कलाकार</translation>
 <translation id="4656293982926141856">यह कंप्यूटर</translation>
-<translation id="4669606053856530811">'<ph name="SOURCE_NAME" />' के सदस्यों को तब तक ऐक्सेस नहीं मिलेगा जब तक कि ये आइटम उनके साथ शेयर नहीं किए जाते.</translation>
+<translation id="4669606053856530811">'<ph name="SOURCE_NAME" />' के सदस्यों को तब तक एक्सेस नहीं मिलेगा जब तक कि ये आइटम उनके साथ शेयर नहीं किए जाते.</translation>
 <translation id="4690246192099372265">स्वीडिश</translation>
 <translation id="4693155481716051732">सुशी</translation>
 <translation id="4694604912444486114">बंदर</translation>
@@ -326,7 +326,6 @@
 <translation id="4880520557730313061">अपने-आप एडजस्ट करें</translation>
 <translation id="4881695831933465202">खोलें</translation>
 <translation id="4886021172213954916">तमिल कीबोर्ड (टाइपराइटर)</translation>
-<translation id="4892969127351273348"><ph name="APP_NAME" /> के साथ नहीं खोला जा सकता</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> का बैक अप लेने के लिए तैयार है</translation>
 <translation id="4924638091161556692">निश्चित</translation>
 <translation id="4935975195727477204">जीनिया का फूल</translation>
@@ -366,7 +365,6 @@
 <translation id="5218183485292899140">स्विस फ़्रेंच</translation>
 <translation id="5234764350956374838">खारिज करें</translation>
 <translation id="5241298539944515331">वियतनामी कीबोर्ड (VIQR)</translation>
-<translation id="52446585071384036"><ph name="APP_NAME" /> वाली फ़ाइलें खोलने के लिए, पहले Linux फ़ाइल फ़ोल्डर में कॉपी करें.</translation>
 <translation id="5253070652067921974">निर्माता</translation>
 <translation id="5257456363153333584">ड्रेगनफ़्लाय</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />फ़ाइलें हर कहीं से ऐक्सेस करें, यहां तक कि ऑफ़लाइन भी.<ph name="MARKUP_2" />
@@ -582,7 +580,7 @@
 <translation id="7765158879357617694">ले जाएं</translation>
 <translation id="7774365994322694683">पक्षी</translation>
 <translation id="7788080748068240085">"<ph name="FILE_NAME" />" को ऑफ़लाइन सेव करने के लिए आपको <ph name="TOTAL_FILE_SIZE" /> की और ज़्यादा जगह खाली करनी होगी :<ph name="MARKUP_1" />
-    <ph name="MARKUP_2" />उन फ़ाइलों को अनपिन करें जिन्हें अब आप ऑफ़लाइन ऐक्सेस नहीं करना चाहते हैं<ph name="MARKUP_3" />
+    <ph name="MARKUP_2" />उन फ़ाइलों को अनपिन करें जिन्हें अब आप ऑफ़लाइन एक्सेस नहीं करना चाहते हैं<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />अपने डाउनलोड फ़ोल्डर से फ़ाइलें मिटाएं<ph name="MARKUP_5" /></translation>
 <translation id="7794058097940213561">डिवाइस स्‍वरूपित करें</translation>
 <translation id="7799329977874311193">HTML दस्‍तावेज़</translation>
@@ -685,7 +683,7 @@
 <translation id="8803496343472038847">रूसी फ़ोनेटिक कीबोर्ड</translation>
 <translation id="8808686172382650546">बिल्ली</translation>
 <translation id="8810671769985673465">ज़िप नहीं किया जा सका, आइटम मौजूद हैं : "<ph name="FILE_NAME" />"</translation>
-<translation id="8834164572807951958">'<ph name="DESTINATION_NAME" />' के सदस्यों को इन आइटम की कॉपी का ऐक्सेस मिल जाएगा.</translation>
+<translation id="8834164572807951958">'<ph name="DESTINATION_NAME" />' के सदस्यों को इन आइटम की कॉपी का एक्सेस मिल जाएगा.</translation>
 <translation id="885381502874625531">बेलारूसियन कीबोर्ड</translation>
 <translation id="8860454412039442620">Excel स्‍प्रैडशीट</translation>
 <translation id="8900820606136623064">हंगेरियन</translation>

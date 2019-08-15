@@ -223,13 +223,13 @@ class TrackEventJsonExporterTest : public testing::Test {
         CreateInternedName<perfetto::protos::EventCategory>(iid, value);
   }
 
-  void AddInternedLegacyEventName(
+  void AddInternedEventName(
       uint32_t iid,
       const std::string& value,
       std::vector<perfetto::protos::TracePacket>* output) {
     output->emplace_back();
-    *output->back().mutable_interned_data()->add_legacy_event_names() =
-        CreateInternedName<perfetto::protos::LegacyEventName>(iid, value);
+    *output->back().mutable_interned_data()->add_event_names() =
+        CreateInternedName<perfetto::protos::EventName>(iid, value);
   }
 
   void AddInternedDebugAnnotationName(
@@ -321,7 +321,7 @@ class TrackEventJsonExporterTest : public testing::Test {
   }
 
   perfetto::protos::TrackEvent::LegacyEvent CreateLegacyEvent(
-      uint32_t name_iid,  // interned LegacyEventName.
+      uint32_t name_iid,  // interned EventName.
       uint32_t flags,
       int32_t phase,
       int32_t pid = kPid,
@@ -705,7 +705,7 @@ TEST_F(TrackEventJsonExporterTest, MultipleThreadDescriptors) {
 
 TEST_F(TrackEventJsonExporterTest, JustInternedData) {
   std::vector<perfetto::protos::TracePacket> trace_packet_protos;
-  AddInternedLegacyEventName(2, "legacy_event_name", &trace_packet_protos);
+  AddInternedEventName(2, "event_name", &trace_packet_protos);
   AddInternedEventCategory(2, "event_category", &trace_packet_protos);
   trace_packet_protos.back().set_incremental_state_cleared(true);
   AddInternedEventCategory(3, "event_category", &trace_packet_protos);
@@ -724,9 +724,9 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventBasicTest) {
 
   // Add the required intern state plus one extra unused interned string.
   // Ensuring we reset the state with the first packet.
-  AddInternedLegacyEventName(2, "legacy_event_name_2", &trace_packet_protos);
+  AddInternedEventName(2, "event_name_2", &trace_packet_protos);
   trace_packet_protos.back().set_incremental_state_cleared(true);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
   AddInternedEventCategory(2, "event_category_2", &trace_packet_protos);
   AddInternedEventCategory(4, "event_category_4", &trace_packet_protos);
@@ -745,11 +745,10 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventBasicTest) {
 
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
-  EXPECT_EQ("legacy_event_name_3", events[0]->name);
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
+  EXPECT_EQ("event_name_3", events[0]->name);
   EXPECT_EQ("event_category_3,event_category_4", events[0]->category);
   EXPECT_EQ(4, events[0]->timestamp);
   EXPECT_EQ(5, events[0]->thread_timestamp);
@@ -786,10 +785,9 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventFilledInState) {
   // Since there was no ThreadDescriptor or interned data this event should be
   // completely dropped, but to enable potentially partial trace exports we
   // shouldn't expect a crash.
-  ASSERT_EQ(
-      0u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(0u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
 
   // This provides the pid & tid, as well as the timestamps reference points.
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
@@ -803,17 +801,16 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventFilledInState) {
   EXPECT_DCHECK_DEATH(FinalizePackets(trace_packet_protos));
 
   // Now with the interned data.
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
   // Again swap the TrackEvent to the end.
   std::swap(trace_packet_protos[1], trace_packet_protos[3]);
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
-  EXPECT_EQ("legacy_event_name_3", events[0]->name);
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
+  EXPECT_EQ("event_name_3", events[0]->name);
   EXPECT_EQ("event_category_3", events[0]->category);
   EXPECT_EQ(kReferenceTimeUs + 4, events[0]->timestamp);
   EXPECT_EQ(kReferenceThreadTimeUs + 6, events[0]->thread_timestamp);
@@ -829,7 +826,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventTimestampDelta) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
 
   trace_packet_protos.emplace_back();
@@ -847,10 +844,9 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventTimestampDelta) {
       666);
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      3u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(3u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   EXPECT_EQ(kReferenceTimeUs + 4, events[0]->timestamp);
   EXPECT_EQ(kReferenceThreadTimeUs + 6, events[0]->thread_timestamp);
   EXPECT_EQ(kReferenceTimeUs + 4 * 2, events[1]->timestamp);
@@ -867,7 +863,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventPhase) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
 
   trace_packet_protos.emplace_back();
@@ -886,10 +882,9 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventPhase) {
 
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      2u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(2u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   EXPECT_EQ(TRACE_EVENT_PHASE_COMPLETE, events[0]->phase);
   EXPECT_EQ(TRACE_EVENT_PHASE_INSTANT, events[1]->phase);
 }
@@ -902,7 +897,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventDuration) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
 
   trace_packet_protos.emplace_back();
@@ -916,10 +911,9 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventDuration) {
 
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   EXPECT_EQ(kLegacyDuration, events[0]->duration);
   EXPECT_EQ(kLegacyThreadDuration, events[0]->thread_duration);
 }
@@ -932,7 +926,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventId) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
 
   trace_packet_protos.emplace_back();
@@ -963,10 +957,9 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventId) {
           /* name_iid = */ 3, 0, TRACE_EVENT_PHASE_MARK);
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      4u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(4u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   EXPECT_EQ(kLegacyIdStr, events[0]->id);
   EXPECT_TRUE(events[0]->local_id2.empty());
   EXPECT_TRUE(events[0]->global_id2.empty());
@@ -1013,7 +1006,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventIdScope) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
 
   trace_packet_protos.emplace_back();
@@ -1028,19 +1021,17 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventIdScope) {
 
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   EXPECT_TRUE(events[0]->scope.empty());
 
   track_event->mutable_legacy_event()->set_id_scope(kLegacyScope);
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   EXPECT_EQ(kLegacyScope, events[0]->scope);
 }
 
@@ -1052,7 +1043,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventAsyncTts) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
 
   trace_packet_protos.emplace_back();
@@ -1066,10 +1057,9 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventAsyncTts) {
 
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   EXPECT_THAT(
       unparsed_trace_data_,
       ::testing::Not(::testing::ContainsRegex(".*\"use_async_tts\":.*")));
@@ -1082,10 +1072,9 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventAsyncTts) {
 
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   EXPECT_THAT(unparsed_trace_data_,
               ::testing::ContainsRegex(".*\"use_async_tts\":1.*"));
 }
@@ -1098,7 +1087,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventBindId) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
 
   trace_packet_protos.emplace_back();
@@ -1113,19 +1102,17 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventBindId) {
 
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   EXPECT_TRUE(events[0]->bind_id.empty());
 
   track_event->mutable_legacy_event()->set_bind_id(kLegacyBindId);
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   EXPECT_EQ(kLegacyBindIdStr, events[0]->bind_id);
 }
 
@@ -1137,7 +1124,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventBindToEnclosing) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
 
   trace_packet_protos.emplace_back();
@@ -1151,10 +1138,9 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventBindToEnclosing) {
 
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   EXPECT_THAT(unparsed_trace_data_,
               ::testing::Not(::testing::ContainsRegex(".*\"bp\":.*")));
 
@@ -1166,10 +1152,9 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventBindToEnclosing) {
 
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   EXPECT_THAT(unparsed_trace_data_,
               ::testing::ContainsRegex(".*\"bp\":\"e\".*"));
 }
@@ -1182,7 +1167,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventFlowEvents) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
 
   trace_packet_protos.emplace_back();
@@ -1209,10 +1194,9 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventFlowEvents) {
           kLegacyPhase);
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      3u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(3u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   EXPECT_TRUE(events[0]->flow_in);
   EXPECT_TRUE(events[0]->flow_out);
   EXPECT_TRUE(events[1]->flow_in);
@@ -1229,7 +1213,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventInstantEventScope) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
 
   trace_packet_protos.emplace_back();
@@ -1262,10 +1246,9 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventInstantEventScope) {
       ->clear_instant_event_scope();
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      4u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(4u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   // For whatever reason trace_analyzer() does not extract the instant event
   // scope so look for it in the unparsed data in the order we added them.
   EXPECT_THAT(unparsed_trace_data_,
@@ -1286,7 +1269,7 @@ TEST_F(TrackEventJsonExporterTest, TaskExecutionAddedAsArgs) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
   trace_packet_protos.emplace_back();
   auto* track_event = trace_packet_protos.back().mutable_track_event();
@@ -1308,10 +1291,9 @@ TEST_F(TrackEventJsonExporterTest, TaskExecutionAddedAsArgs) {
 
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   ASSERT_TRUE(events[0]->HasArg("src_file"));
   ASSERT_TRUE(events[0]->HasArg("src_func"));
   EXPECT_EQ("file_name", events[0]->GetKnownArgAsString("src_file"));
@@ -1324,10 +1306,9 @@ TEST_F(TrackEventJsonExporterTest, TaskExecutionAddedAsArgs) {
       ->clear_function_name();
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   ASSERT_TRUE(events[0]->HasArg("src"));
   EXPECT_EQ("file_name", events[0]->GetKnownArgAsString("src"));
 }
@@ -1340,7 +1321,7 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationRequiresName) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
   trace_packet_protos.emplace_back();
   auto* track_event = trace_packet_protos.back().mutable_track_event();
@@ -1366,7 +1347,7 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationBoolValue) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
   AddInternedDebugAnnotationName(2, "bool_2", &trace_packet_protos);
   AddInternedDebugAnnotationName(3, "bool_3", &trace_packet_protos);
@@ -1389,10 +1370,9 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationBoolValue) {
 
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   ASSERT_TRUE(events[0]->HasArg("bool_2"));
   EXPECT_TRUE(events[0]->GetKnownArgAsBool("bool_2"));
   ASSERT_TRUE(events[0]->HasArg("bool_3"));
@@ -1407,7 +1387,7 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationUintValue) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
   AddInternedDebugAnnotationName(2, "uint", &trace_packet_protos);
   trace_packet_protos.emplace_back();
@@ -1425,10 +1405,9 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationUintValue) {
 
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   ASSERT_TRUE(events[0]->HasArg("uint"));
   EXPECT_EQ(std::numeric_limits<uint64_t>::max(),
             events[0]->GetKnownArgAsDouble("uint"));
@@ -1442,7 +1421,7 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationIntValue) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
   AddInternedDebugAnnotationName(2, "int", &trace_packet_protos);
   trace_packet_protos.emplace_back();
@@ -1460,10 +1439,9 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationIntValue) {
 
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   ASSERT_TRUE(events[0]->HasArg("int"));
   EXPECT_EQ(std::numeric_limits<int64_t>::max(),
             events[0]->GetKnownArgAsDouble("int"));
@@ -1477,7 +1455,7 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationDoubleValue) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
   AddInternedDebugAnnotationName(1, "double_min", &trace_packet_protos);
   AddInternedDebugAnnotationName(3, "double_max", &trace_packet_protos);
@@ -1501,10 +1479,9 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationDoubleValue) {
 
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
 
   // NaN and +/- Inf aren't allowed by json.
   ASSERT_TRUE(events[0]->HasArg("double_min"));
@@ -1523,7 +1500,7 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationStringValue) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
   AddInternedDebugAnnotationName(2, "string", &trace_packet_protos);
   trace_packet_protos.emplace_back();
@@ -1541,10 +1518,9 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationStringValue) {
 
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   ASSERT_TRUE(events[0]->HasArg("string"));
   EXPECT_EQ("foo", events[0]->GetKnownArgAsString("string"));
 }
@@ -1557,7 +1533,7 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationPointerValue) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
   AddInternedDebugAnnotationName(2, "pointer", &trace_packet_protos);
   trace_packet_protos.emplace_back();
@@ -1575,10 +1551,9 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationPointerValue) {
 
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   ASSERT_TRUE(events[0]->HasArg("pointer"));
   EXPECT_EQ("0x1", events[0]->GetKnownArgAsString("pointer"));
 }
@@ -1591,7 +1566,7 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationComplexNestedValue) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
   AddInternedDebugAnnotationName(2, "top_level_dict", &trace_packet_protos);
   trace_packet_protos.emplace_back();
@@ -1619,10 +1594,9 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationComplexNestedValue) {
 
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   ASSERT_TRUE(events[0]->HasArg("top_level_dict"));
   auto value = events[0]->GetKnownArgAsValue("top_level_dict");
   ASSERT_TRUE(value);
@@ -1659,7 +1633,7 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationLegacyJsonValue) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
+  AddInternedEventName(3, "event_name_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
   AddInternedDebugAnnotationName(2, "legacy_json", &trace_packet_protos);
   trace_packet_protos.emplace_back();
@@ -1677,10 +1651,9 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationLegacyJsonValue) {
 
   FinalizePackets(trace_packet_protos);
 
-  ASSERT_EQ(
-      1u, trace_analyzer()->FindEvents(
-              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
-              &events));
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("event_name_3"),
+                    &events));
   ASSERT_TRUE(events[0]->HasArg("legacy_json"));
   auto value = events[0]->GetKnownArgAsValue("legacy_json");
   ASSERT_TRUE(value);
@@ -1829,7 +1802,7 @@ TEST_F(TrackEventJsonExporterTest, ComplexLongSequenceWithDroppedPackets) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(1, "sequence_1", &trace_packet_protos);
+  AddInternedEventName(1, "sequence_1", &trace_packet_protos);
   AddInternedEventCategory(1, "event_category_1", &trace_packet_protos);
   trace_packet_protos.emplace_back();
   auto* track_event = trace_packet_protos.back().mutable_track_event();
@@ -1854,7 +1827,7 @@ TEST_F(TrackEventJsonExporterTest, ComplexLongSequenceWithDroppedPackets) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(2, "sequence_2", &trace_packet_protos);
+  AddInternedEventName(2, "sequence_2", &trace_packet_protos);
   AddInternedEventCategory(2, "event_category_2", &trace_packet_protos);
 
   trace_packet_protos.emplace_back();
@@ -1881,7 +1854,7 @@ TEST_F(TrackEventJsonExporterTest, ComplexLongSequenceWithDroppedPackets) {
       /* thread_name = */ base::nullopt, kReferenceTimeUs + 4 * 3,
       kReferenceThreadTimeUs + 3 * 3, &trace_packet_protos);
   trace_packet_protos.back().set_incremental_state_cleared(true);
-  AddInternedLegacyEventName(2, "sequence_2", &trace_packet_protos);
+  AddInternedEventName(2, "sequence_2", &trace_packet_protos);
   AddInternedEventCategory(2, "event_category_2", &trace_packet_protos);
 
   trace_packet_protos.emplace_back();
@@ -1899,7 +1872,7 @@ TEST_F(TrackEventJsonExporterTest, ComplexLongSequenceWithDroppedPackets) {
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedLegacyEventName(3, "sequence_3", &trace_packet_protos);
+  AddInternedEventName(3, "sequence_3", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
   trace_packet_protos.emplace_back();
   track_event = trace_packet_protos.back().mutable_track_event();

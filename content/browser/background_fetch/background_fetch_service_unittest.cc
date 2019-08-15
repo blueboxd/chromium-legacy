@@ -105,7 +105,7 @@ class BackgroundFetchServiceTest
   };
 
   // Synchronous wrapper for BackgroundFetchServiceImpl::Fetch().
-  blink::mojom::BackgroundFetchRegistrationServicePtr Fetch(
+  mojo::Remote<blink::mojom::BackgroundFetchRegistrationService> Fetch(
       int64_t service_worker_registration_id,
       const std::string& developer_id,
       std::vector<blink::mojom::FetchAPIRequestPtr> requests,
@@ -129,11 +129,11 @@ class BackgroundFetchServiceTest
 
     if (*out_error != blink::mojom::BackgroundFetchError::NONE) {
       DCHECK(!(*out_registration)->registration_interface);
-      return nullptr;
+      return mojo::Remote<blink::mojom::BackgroundFetchRegistrationService>();
     }
 
     DCHECK((*out_registration)->registration_interface);
-    return blink::mojom::BackgroundFetchRegistrationServicePtr(
+    return mojo::Remote<blink::mojom::BackgroundFetchRegistrationService>(
         std::move((*out_registration)->registration_interface));
   }
 
@@ -184,7 +184,7 @@ class BackgroundFetchServiceTest
 
   // Synchronous wrapper for BackgroundFetchServiceImpl::MatchRequests.
   void MatchAllRequests(
-      const blink::mojom::BackgroundFetchRegistrationServicePtr&
+      const mojo::Remote<blink::mojom::BackgroundFetchRegistrationService>&
           registration_service,
       std::vector<blink::mojom::BackgroundFetchSettledFetchPtr>* out_fetches) {
     DCHECK(registration_service);
@@ -200,10 +200,11 @@ class BackgroundFetchServiceTest
   }
 
   // Synchronous wrapper for BackgroundFetchServiceImpl::UpdateUI().
-  void UpdateUI(const blink::mojom::BackgroundFetchRegistrationServicePtr&
-                    registration_service,
-                const std::string& title,
-                blink::mojom::BackgroundFetchError* out_error) {
+  void UpdateUI(
+      const mojo::Remote<blink::mojom::BackgroundFetchRegistrationService>&
+          registration_service,
+      const std::string& title,
+      blink::mojom::BackgroundFetchError* out_error) {
     DCHECK(registration_service);
     DCHECK(out_error);
 
@@ -217,9 +218,10 @@ class BackgroundFetchServiceTest
   }
 
   // Synchronous wrapper for BackgroundFetchServiceImpl::Abort().
-  void Abort(const blink::mojom::BackgroundFetchRegistrationServicePtr&
-                 registration_service,
-             blink::mojom::BackgroundFetchError* out_error) {
+  void Abort(
+      const mojo::Remote<blink::mojom::BackgroundFetchRegistrationService>&
+          registration_service,
+      blink::mojom::BackgroundFetchError* out_error) {
     DCHECK(registration_service);
     DCHECK(out_error);
 
@@ -598,7 +600,8 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
 
   // Create the registration with the given |requests|.
   blink::mojom::BackgroundFetchRegistrationPtr registration;
-  blink::mojom::BackgroundFetchRegistrationServicePtr registration_service;
+  mojo::Remote<blink::mojom::BackgroundFetchRegistrationService>
+      registration_service;
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
 
@@ -705,7 +708,8 @@ TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
 
   // Create the registration with the given |requests|.
   blink::mojom::BackgroundFetchRegistrationPtr registration;
-  blink::mojom::BackgroundFetchRegistrationServicePtr registration_service;
+  mojo::Remote<blink::mojom::BackgroundFetchRegistrationService>
+      registration_service;
 
   {
     auto options = blink::mojom::BackgroundFetchOptions::New();
@@ -873,7 +877,8 @@ TEST_F(BackgroundFetchServiceTest, AbortEventDispatch) {
           .Build()));
 
   // Create the registration with the given |requests|.
-  blink::mojom::BackgroundFetchRegistrationServicePtr registration_service;
+  mojo::Remote<blink::mojom::BackgroundFetchRegistrationService>
+      registration_service;
   {
     auto options = blink::mojom::BackgroundFetchOptions::New();
 

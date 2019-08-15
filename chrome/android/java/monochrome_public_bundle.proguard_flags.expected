@@ -342,20 +342,6 @@
 }
 
 ################################################################################
-# ../../components/background_task_scheduler/android/proguard.flags
-################################################################################
-# Copyright 2018 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
-# Classes are created via reflection and persisted across app updates, so their
-# class names must not be obfuscated, and constructors kept.
--if class ** implements org.chromium.components.background_task_scheduler.BackgroundTask
--keep class <1> {
-  public <init>();
-}
-
-################################################################################
 # ../../third_party/gvr-android-sdk/proguard-gvr-chromium.txt
 ################################################################################
 -dontwarn com.google.common.logging.nano.Vr$**

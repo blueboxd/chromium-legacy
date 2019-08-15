@@ -67,7 +67,6 @@
 
           Als deze instelling is uitgeschakeld of niet geconfigureerd, wordt de host voor ondersteuning op afstand uitgevoerd in de context van de gebruiker en kan de externe gebruiker geen vensters met een verhoogde bevoegdheid op de desktop gebruiken.</translation>
 <translation id="1096105751829466145">Standaardzoekprovider</translation>
-<translation id="1099024407376270611">Safe Browsing-reputatie van bezochte URL's in realtime controleren</translation>
 <translation id="1099282607296956954">Site-isolatie inschakelen voor elke site</translation>
 <translation id="1100570158310952027">
       Dit beleid definieert een lijst met beginpunten (URL's) of hostnaampatronen (zoals
@@ -419,22 +418,6 @@
       Waarschuwing: Het wordt niet aanbevolen het beheer van de <ph name="PRODUCT_OS_NAME" />-versie te delegeren aan een kiosk-app, omdat het apparaat hierdoor mogelijk geen software-updates en essentiële beveiligingsoplossingen ontvangt. Als je het beheer van de <ph name="PRODUCT_OS_NAME" />-versie delegeert, kunnen gebruikers gevaar lopen.</translation>
 <translation id="1675002386741412210">Ondersteund op:</translation>
 <translation id="1700811900332333712">Geef het apparaat toestemming om Powerwash te activeren</translation>
-<translation id="1704516734140344991">Hiermee configureer je de beschikbaarheid en het gedrag van de updatefunctionaliteit voor <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware.
-
-      Afzonderlijke instellingen kunnen worden gespecificeerd in json-eigenschappen:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Als dit is ingesteld op <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, kunnen gebruikers het Powerwash-proces activeren om een <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware-update te installeren.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Als dit is ingesteld op <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, kunnen gebruikers het <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware-updateproces aanroepen, waarbij de status voor het hele apparaat (waaronder zakelijke aanmelding) blijft behouden maar gebruikersgegevens verloren gaan. Dit updateproces is beschikbaar vanaf versie 68.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Hiermee bepaal je hoe automatische <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware-updates worden afgedwongen voor kwetsbare <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware. Bij alle processen blijft de lokale apparaatstatus behouden.
-        Als dit wordt ingesteld op 1 of niet wordt ingesteld, worden TPM-firmware-updates niet afgedwongen.
-        Als dit wordt ingesteld op 2, wordt <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware geüpdatet bij de volgende keer opnieuw opstarten nadat de gebruiker de update bevestigt.
-        Als dit wordt ingesteld op 3, wordt <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware geüpdatet bij de volgende keer opnieuw opstarten.
-        Als dit wordt ingesteld op 4, wordt <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware geüpdatet nadat het apparaat is geregistreerd, voordat de gebruiker inlogt.
-        Deze optie is beschikbaar vanaf versie 74.
-
-      Als het beleid niet wordt ingesteld, is de <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware-updatefunctionaliteit niet beschikbaar.</translation>
 <translation id="1708496595873025510">De beperking voor het ophalen van de seed voor varianten instellen</translation>
 <translation id="1717817358640580294">Als deze optie niet is ingesteld en er ongewenste software door Chrome Cleanup wordt gedetecteerd, worden er mogelijk metadata over de scan naar Google verzonden, overeenkomstig het beleid dat is ingesteld met SafeBrowsingExtendedReportingEnabled. Chrome Cleanup vraagt de gebruiker vervolgens of de ongewenste software moet worden opgeschoond. De gebruiker kan ervoor kiezen om de resultaten van de opschoonbewerking met Google te delen en bij te dragen aan de toekomstige detectie van ongewenste software. Deze resultaten bevatten metadata van bestanden, automatisch geïnstalleerde extensies en registersleutels zoals beschreven in de whitepaper over het privacybeleid voor Chrome.
 
@@ -839,6 +822,22 @@
 <translation id="2463034609187171371">DHE-coderingssuites inschakelen in TLS</translation>
 <translation id="2463365186486772703">Landinstelling voor applicatie</translation>
 <translation id="2466131534462628618">Captive portal-verificatie negeert proxyserver</translation>
+<translation id="2466697858869282874">Hiermee configureer je de beschikbaarheid en het gedrag van de updatefunctionaliteit voor <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware.
+
+      Afzonderlijke instellingen kunnen worden gespecificeerd in json-eigenschappen:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Als dit is ingesteld op <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, kunnen gebruikers het Powerwash-proces activeren om een <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware-update te installeren.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Als dit is ingesteld op <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, kunnen gebruikers het <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware-updateproces aanroepen, waarbij de status voor het hele apparaat (waaronder zakelijke aanmelding) blijft behouden maar gebruikersgegevens verloren gaan. Dit updateproces is beschikbaar vanaf versie 68.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Hiermee bepaal je hoe automatische <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware-updates worden afgedwongen voor kwetsbare <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware. Bij alle processen blijft de lokale apparaatstatus behouden.
+        Als dit wordt ingesteld op 1 of niet wordt ingesteld, worden TPM-firmware-updates niet afgedwongen.
+        Als dit wordt ingesteld op 2, wordt <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware geüpdatet bij de volgende keer opnieuw opstarten nadat de gebruiker de update bevestigt.
+        Als dit wordt ingesteld op 3, wordt <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware geüpdatet bij de volgende keer opnieuw opstarten.
+        Als dit wordt ingesteld op 4, wordt <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware geüpdatet nadat het apparaat is geregistreerd, voordat de gebruiker inlogt.
+        Deze optie is beschikbaar vanaf versie 75.
+
+      Als het beleid niet wordt ingesteld, is de <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware-updatefunctionaliteit niet beschikbaar.</translation>
 <translation id="2471748297300970300">Als dit beleid is uitgeschakeld, worden er geen beveiligingswaarschuwingen weergegeven wanneer Chrome wordt gestart met bepaalde mogelijk schadelijke opdrachtregelmarkeringen.
 
           Als dit beleid is ingeschakeld of niet is ingesteld, worden waarschuwingen uitgeschakeld wanneer bepaalde opdrachtregelmarkeringen worden gebruikt om Chrome te starten.
@@ -1854,6 +1853,13 @@
 
       Als dit beleid niet is ingesteld, wordt het standaardpad voor roaming-profielen gebruikt.</translation>
 <translation id="4239720644496144453">Het cachegeheugen wordt niet gebruikt voor Android-apps. Als meerdere gebruikers dezelfde Android-app installeren, wordt deze voor elke gebruiker opnieuw gedownload.</translation>
+<translation id="4241202391219483189">Dit beleid bepaalt of gebruikers CA-certificaten kunnen importeren en verwijderen via Certificaatbeheer.
+
+      Als dit beleid is ingesteld op 'Gebruikers toestaan alle certificaten te beheren' of als het niet is ingesteld, kunnen gebruikers vertrouwensinstellingen bewerken voor alle CA-certificaten, door de gebruiker geïmporteerde certificaten verwijderen en certificaten importeren.
+
+      Als dit beleid is ingesteld op 'Gebruikers toestaan gebruikerscertificaten te beheren', kunnen gebruikers alleen door de gebruiker geïmporteerde certificaten beheren en kunnen zij de vertrouwensinstellingen van ingebouwde certificaten niet wijzigen.
+
+      Als dit beleid is ingesteld op 'Gebruikers niet toestaan certificaten te beheren', kunnen gebruikers geen CA-certificaten beheren. Ze kunnen CA-certificaten alleen bekijken.</translation>
 <translation id="4243336580717651045">Hiermee worden aan URL's gekoppelde, geanonimiseerde gegevens verzameld in <ph name="PRODUCT_NAME" /> en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
       Bij het verzamelen van aan URL's gekoppelde, geanonimiseerde gegevens worden de URL's van pagina's die de gebruiker bezoekt, verzonden naar Google, met als doel het zoeken en browsen te verbeteren.
@@ -1929,6 +1935,7 @@
 
           Deze functie is momenteel uitgeschakeld aan de serverzijde.</translation>
 <translation id="4363057787588706121">Toestaan dat lijstbeleid van verschillende bronnen kan worden samengevoegd</translation>
+<translation id="4363101430102811068">Gegevenslekdetectie voor ingevoerde gegevens inschakelen</translation>
 <translation id="4363136876356691536">Als dit beleid is ingesteld op True, worden toegankelijkheidsopties altijd weergegeven in het systeemvakmenu.
 
           Als dit beleid is ingesteld op False, worden toegankelijkheidsopties nooit weergegeven in het systeemvakmenu.
@@ -2088,10 +2095,6 @@
 
           Als je dit beleid niet instelt, delegeert <ph name="PRODUCT_NAME" /> geen gebruikersreferenties, zelfs niet als een server wordt gedetecteerd als intranet.</translation>
 <translation id="4752880493649142945">Clientcertificaat voor verbinding maken met RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4756984056524699088">De gebruiker toestemming geven voor roottoegang tot Crostini-containers.
-
-      Als het beleid is ingesteld op 'true' of niet is ingesteld, krijgt de gebruiker toestemming voor roottoegang tot Crostini-containers.
-      Als het beleid is ingesteld op 'false', krijgt de gebruiker geen toestemming voor toegang tot zowel bestaande als nieuwe Crostini-containers.</translation>
 <translation id="4759650396863318477">Hiermee kun je de periode in milliseconden instellen waarin gebruikers een melding ontvangen dat <ph name="PRODUCT_NAME" /> opnieuw moet worden gestart of dat een <ph name="PRODUCT_OS_NAME" />-apparaat opnieuw moet worden opgestart om een in behandeling zijnde update toe te passen.
 
       Gedurende deze periode krijgt de gebruiker regelmatig de melding dat er een update moet worden uitgevoerd. In het geval van <ph name="PRODUCT_OS_NAME" />-apparaten wordt een melding over opnieuw opstarten weergegeven in het systeemvak, in overeenstemming met het <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />-beleid. In het geval van <ph name="PRODUCT_NAME" />-browsers wordt het app-menu gewijzigd om aan te geven dat er opnieuw moet worden opgestart zodra een derde van de meldingsperiode is verstreken. Deze melding krijgt een andere kleur zodra twee derde van de meldingsperiode is verstreken en dit gebeurt nogmaals als de volledige periode is verstreken. Hetzelfde schema wordt gehanteerd voor aanvullende meldingen die door het <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-beleid zijn ingeschakeld.
@@ -2972,6 +2975,7 @@
       Als het beleid is ingesteld op 'false', worden de gebruikers niet gemeld.</translation>
 <translation id="6394350458541421998">Dit beleid wordt niet meer gebruikt sinds <ph name="PRODUCT_OS_NAME" /> versie 29. Gebruik het beleid PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">De gebruiker uitloggen</translation>
+<translation id="6403746242226534223">Safe Browsing-reputatie van bezochte URL's in realtime controleren</translation>
 <translation id="6406448383934634215">Als 'Een lijst met URL's openen' voor het opstarten is geselecteerd, kun je hier de lijst met URL's specificeren die worden geopend. Als je dit niet selecteert, worden er geen URL's geopend na het starten.
 
           Dit beleid functioneert alleen als het beleid RestoreOnStartup is ingesteld op RestoreOnStartupIsURLs.
@@ -3048,6 +3052,9 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
 <translation id="6544897973797372144">Als dit beleid is ingesteld op 'True' en het beleid ChromeOsReleaseChannel niet is ingesteld, mogen gebruikers van het registrerende domein het releasekanaal van het apparaat wijzigen. Als dit beleid is ingesteld op 'False', wordt het apparaat vergrendeld op het laatst ingestelde kanaal.
 
       Het door de gebruiker geselecteerde kanaal wordt overschreven door het beleid ChromeOsReleaseChannel. Als het beleidskanaal echter stabieler is dan het kanaal dat is geïnstalleerd op het apparaat, wordt het kanaal pas gewijzigd nadat de versie van het stabielere kanaal een hoger versienummer bereikt dan de versie die op het apparaat is geïnstalleerd.</translation>
+<translation id="6549567350270907557">Als deze instelling is ingeschakeld, kunnen gebruikers <ph name="PRODUCT_NAME" /> laten controleren of de ingevoerde gegevens deel uitmaken van een gegevenslek.
+
+              Als dit beleid is in- of uitgeschakeld, kunnen gebruikers het niet wijzigen of overschrijven in <ph name="PRODUCT_NAME" />. Als dit beleid niet is ingesteld, is controle op gegevenslekken toegestaan (maar kan de gebruiker dit uitschakelen).</translation>
 <translation id="6553143066970470539">Percentage voor helderheid van scherm</translation>
 <translation id="6559057113164934677">Niet toestaan dat sites toegang krijgen tot de camera en microfoon</translation>
 <translation id="6561396069801924653">Toegankelijkheidsopties weergeven in het systeemvakmenu</translation>
@@ -4043,6 +4050,10 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 
       Raadpleeg deze link voor meer informatie over het beleid <ph name="IEEM_SITELIST_POLICY" /> van Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Pdf-bestanden altijd extern openen</translation>
+<translation id="8405691014775178834">De gebruiker toestemming geven voor roottoegang tot Crostini-containers.
+
+      Als het beleid is ingesteld op 'true' of niet is ingesteld, krijgt de gebruiker toestemming voor roottoegang tot Crostini-containers.
+      Als het beleid is ingesteld op 'false', krijgt de gebruiker geen toestemming voor toegang tot zowel bestaande als nieuwe Crostini-containers.</translation>
 <translation id="8417305981081876834">De maximumlengte van de pincode voor het vergrendelingsscherm instellen</translation>
 <translation id="841977920223099909">Waarschuwingstrigger voor wachtwoordbeveiliging</translation>
 <translation id="8424255554404582727">Standaard displayrotatie instellen, wordt telkens toegepast na opnieuw opstarten</translation>
@@ -4287,6 +4298,7 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 
           De beleidswaarde moet worden opgegeven in milliseconden. Waarden moeten lager zijn dan de inactieve vertraging.</translation>
 <translation id="891435090623616439">gecodeerd als een JSON-tekenreeks. Ga voor meer informatie naar <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8917070657147922192">Gebruikers toestaan geïnstalleerde CA-certificaten te beheren.</translation>
 <translation id="8934944553121392674">Hiermee wordt beheerd welke printers uit <ph name="DEVICE_PRINTERS_POLICY" /> beschikbaar zijn voor gebruikers.
 
       Hiermee wordt aangegeven welk toegangsbeleid wordt gebruikt voor bulksgewijze printerconfiguratie. Als <ph name="PRINTERS_ALLOW_ALL" /> is geselecteerd, worden alle printers weergegeven. Als <ph name="PRINTERS_BLACKLIST" /> is geselecteerd, wordt <ph name="DEVICE_PRINTERS_BLACKLIST" /> gebruikt om de toegang tot de opgegeven printers te beperken. Als <ph name="PRINTERS_WHITELIST" /> is geselecteerd, geeft <ph name="DEVICE_PRINTERS_WHITELIST" /> alleen die printers aan die kunnen worden geselecteerd.

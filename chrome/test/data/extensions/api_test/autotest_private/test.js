@@ -525,6 +525,11 @@ var policyTests = [
             "deviceLocalAccountPolicies":{},
             "extensionPolicies":{}
           }
+        Object.keys(policydata.chromePolicies).forEach(policy => {
+          if(policydata.chromePolicies[policy].source ===
+              "sourceEnterpriseDefault")
+            delete policydata.chromePolicies[policy];
+        })
         chrome.test.assertEq(expectedPolicy, policydata);
         chrome.test.succeed();
       }));

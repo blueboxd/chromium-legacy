@@ -6,6 +6,7 @@
 
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/boxed_v8_module.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -23,13 +24,19 @@ namespace {
 
 class TestModuleRecordResolver final : public ModuleRecordResolver {
  public:
-  TestModuleRecordResolver() = default;
+  TestModuleRecordResolver(v8::Isolate* isolate) : isolate_(isolate) {}
   ~TestModuleRecordResolver() override = default;
 
   size_t ResolveCount() const { return specifiers_.size(); }
   const Vector<String>& Specifiers() const { return specifiers_; }
-  void PushModuleRecord(ModuleRecord module_record) {
-    module_records_.push_back(module_record);
+  void PrepareMockResolveResult(v8::Local<v8::Module> module) {
+    module_records_.push_back(
+        MakeGarbageCollected<BoxedV8Module>(isolate_, module));
+  }
+
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(module_records_);
+    ModuleRecordResolver::Trace(visitor);
   }
 
  private:
@@ -37,26 +44,28 @@ class TestModuleRecordResolver final : public ModuleRecordResolver {
 
   void RegisterModuleScript(const ModuleScript*) override { NOTREACHED(); }
   void UnregisterModuleScript(const ModuleScript*) override { NOTREACHED(); }
+
   const ModuleScript* GetModuleScriptFromModuleRecord(
-      const ModuleRecord&) const override {
+      v8::Local<v8::Module>) const override {
     NOTREACHED();
     return nullptr;
   }
 
-  ModuleRecord Resolve(const String& specifier,
-                       const ModuleRecord&,
-                       ExceptionState&) override {
+  v8::Local<v8::Module> Resolve(const String& specifier,
+                                v8::Local<v8::Module> module,
+                                ExceptionState&) override {
     specifiers_.push_back(specifier);
-    return module_records_.TakeFirst();
+    return module_records_.TakeFirst()->NewLocal(isolate_);
   }
 
+  v8::Isolate* isolate_;
   Vector<String> specifiers_;
-  Deque<ModuleRecord> module_records_;
+  HeapDeque<Member<BoxedV8Module>> module_records_;
 };
 
 class ModuleRecordTestModulator final : public DummyModulator {
  public:
-  ModuleRecordTestModulator();
+  ModuleRecordTestModulator(v8::Isolate* isolate);
   ~ModuleRecordTestModulator() override = default;
 
   void Trace(blink::Visitor*) override;
@@ -75,8 +84,8 @@ class ModuleRecordTestModulator final : public DummyModulator {
   Member<TestModuleRecordResolver> resolver_;
 };
 
-ModuleRecordTestModulator::ModuleRecordTestModulator()
-    : resolver_(MakeGarbageCollected<TestModuleRecordResolver>()) {}
+ModuleRecordTestModulator::ModuleRecordTestModulator(v8::Isolate* isolate)
+    : resolver_(MakeGarbageCollected<TestModuleRecordResolver>(isolate)) {}
 
 void ModuleRecordTestModulator::Trace(blink::Visitor* visitor) {
   visitor->Trace(resolver_);
@@ -173,7 +182,8 @@ TEST(ModuleRecordTest, moduleRequests) {
 TEST(ModuleRecordTest, instantiateNoDeps) {
   V8TestingScope scope;
 
-  auto* modulator = MakeGarbageCollected<ModuleRecordTestModulator>();
+  auto* modulator =
+      MakeGarbageCollected<ModuleRecordTestModulator>(scope.GetIsolate());
   auto* resolver = modulator->GetTestModuleRecordResolver();
 
   Modulator::SetModulator(scope.GetScriptState(), modulator);
@@ -194,7 +204,8 @@ TEST(ModuleRecordTest, instantiateNoDeps) {
 TEST(ModuleRecordTest, instantiateWithDeps) {
   V8TestingScope scope;
 
-  auto* modulator = MakeGarbageCollected<ModuleRecordTestModulator>();
+  auto* modulator =
+      MakeGarbageCollected<ModuleRecordTestModulator>(scope.GetIsolate());
   auto* resolver = modulator->GetTestModuleRecordResolver();
 
   Modulator::SetModulator(scope.GetScriptState(), modulator);
@@ -205,9 +216,7 @@ TEST(ModuleRecordTest, instantiateWithDeps) {
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module_a.IsEmpty());
-  // TODO(rikaf) : Replace ModuleRecord with GCed
-  resolver->PushModuleRecord(
-      ModuleRecord(scope.GetIsolate(), module_a, js_url_a));
+  resolver->PrepareMockResolveResult(module_a);
 
   const KURL js_url_b("https://example.com/b.js");
   v8::Local<v8::Module> module_b = ModuleRecord::Compile(
@@ -215,9 +224,7 @@ TEST(ModuleRecordTest, instantiateWithDeps) {
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module_b.IsEmpty());
-  // TODO(rikaf) : Replace ModuleRecord with GCed
-  resolver->PushModuleRecord(
-      ModuleRecord(scope.GetIsolate(), module_b, js_url_b));
+  resolver->PrepareMockResolveResult(module_b);
 
   const KURL js_url_c("https://example.com/c.js");
   v8::Local<v8::Module> module = ModuleRecord::Compile(
@@ -234,10 +241,11 @@ TEST(ModuleRecordTest, instantiateWithDeps) {
   EXPECT_EQ("b", resolver->Specifiers()[1]);
 }
 
-TEST(ModuleRecordTest, EvaluationErrrorIsRemembered) {
+TEST(ModuleRecordTest, EvaluationErrorIsRemembered) {
   V8TestingScope scope;
 
-  auto* modulator = MakeGarbageCollected<ModuleRecordTestModulator>();
+  auto* modulator =
+      MakeGarbageCollected<ModuleRecordTestModulator>(scope.GetIsolate());
   auto* resolver = modulator->GetTestModuleRecordResolver();
 
   Modulator::SetModulator(scope.GetScriptState(), modulator);
@@ -255,10 +263,7 @@ TEST(ModuleRecordTest, EvaluationErrrorIsRemembered) {
       ModuleRecord::Evaluate(scope.GetScriptState(), module_failure, js_url_f);
   EXPECT_FALSE(evaluation_error.IsEmpty());
 
-  // TODO(rikaf): Replace module_failure_record with GCed.
-  ModuleRecord module_failure_record =
-      ModuleRecord(scope.GetIsolate(), module_failure, js_url_f);
-  resolver->PushModuleRecord(module_failure_record);
+  resolver->PrepareMockResolveResult(module_failure);
 
   const KURL js_url_c("https://example.com/c.js");
   v8::Local<v8::Module> module = ModuleRecord::Compile(
@@ -282,7 +287,8 @@ TEST(ModuleRecordTest, EvaluationErrrorIsRemembered) {
 TEST(ModuleRecordTest, Evaluate) {
   V8TestingScope scope;
 
-  auto* modulator = MakeGarbageCollected<ModuleRecordTestModulator>();
+  auto* modulator =
+      MakeGarbageCollected<ModuleRecordTestModulator>(scope.GetIsolate());
   Modulator::SetModulator(scope.GetScriptState(), modulator);
 
   const KURL js_url("https://example.com/foo.js");
@@ -318,7 +324,8 @@ TEST(ModuleRecordTest, Evaluate) {
 TEST(ModuleRecordTest, EvaluateCaptureError) {
   V8TestingScope scope;
 
-  auto* modulator = MakeGarbageCollected<ModuleRecordTestModulator>();
+  auto* modulator =
+      MakeGarbageCollected<ModuleRecordTestModulator>(scope.GetIsolate());
   Modulator::SetModulator(scope.GetScriptState(), modulator);
 
   const KURL js_url("https://example.com/foo.js");

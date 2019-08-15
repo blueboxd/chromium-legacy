@@ -1,4 +1,25 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
+<translation id="125153950246128346">અન્ય ટૅબ જોવા માટે ટૅપ કરો</translation>
+<translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> ટૅબ}one{<ph name="TABS_COUNT_MANY" /> ટૅબ}other{<ph name="TABS_COUNT_MANY" /> ટૅબ}}</translation>
+<translation id="257674075312929031">જૂથ</translation>
+<translation id="2613747923081026172">ગ્રૂપ બનાવો</translation>
+<translation id="2845873210977809562">ખોલેલા ટૅબ બંધ કર્યા</translation>
+<translation id="2977480621796371840">ગ્રૂપમાંથી દૂર કરો</translation>
+<translation id="4648718555153979859">તમારા ટૅબ અહીં એકસાથે ગ્રૂપ કરવામાં આવ્યા છે</translation>
+<translation id="5073204694187207510">પૂર્ણસ્ક્રીન ગ્રિડને છુપાવો</translation>
+<translation id="5082793167783849073">ગ્રૂપ બનાવીને ઝડપથી પેજની સરખામણી કરો. શરૂ કરવા માટે, લિંકને સ્પર્શ કરી રાખો.</translation>
+<translation id="5497272504048921382">ખુલેલા ટૅબ</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> ટૅબનું ગ્રૂપ બનાવ્યું</translation>
+<translation id="5586306159936941448">ટૅબનું ગ્રૂપ બનાવવા માટે એક ટૅબને બીજા ટૅબ પર ખેંચો</translation>
+<translation id="58326064309361797">ટૅબનું ગ્રૂપ બનાવવા માટે તેને ખેંચો</translation>
+<translation id="6193448654517602979">ટૅબ પસંદ કરો</translation>
+<translation id="6615455863669487791">મને બતાવો</translation>
+<translation id="6803423358608456383">અડધી ઊંચાઈએ ખોલેલા ટૅબ</translation>
+<translation id="7559245342362162951">ગ્રુપના ટૅબને પૂર્ણસ્ક્રીન ગ્રિડમાં બતાવો</translation>
+<translation id="8582216581279205169">પૂર્ણ ઊંચાઈએ ખોલેલા ટૅબ</translation>
+<translation id="9150694013019234766">સ્ક્રીનના નીચેના ભાગમાં, તમારા ટૅબ ગ્રૂપમાં એકથી વધુ ટૅબની વચ્ચે સ્વિચ કરો</translation>
+<translation id="9169594135889675189">ગ્રૂપમાં નવું ટૅબ ઉમેરો</translation>
+<translation id="959682366969460160">સંગઠિત રહો</translation>
 </translationbundle>

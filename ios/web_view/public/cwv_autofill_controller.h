@@ -57,11 +57,13 @@ CWV_EXPORT
                               completionHandler;
 
 // Takes the |suggestion| and finds the form matching its |formName| and
-// |fieldIdentifier| property. If found, autofills the values in to the page.
+// |fieldIdentifier| property and executes the appropriate action.
+// If |suggestion| is a form suggestion, the form will be autofilled.
+// Else, the |suggestions|'s action will be taken.
 // No-op if no such form and field can be found in the current page.
 // |completionHandler| will only be called on success.
-- (void)fillSuggestion:(CWVAutofillSuggestion*)suggestion
-     completionHandler:(nullable void (^)(void))completionHandler;
+- (void)acceptSuggestion:(CWVAutofillSuggestion*)suggestion
+       completionHandler:(nullable void (^)(void))completionHandler;
 
 // Deletes a suggestion from the data store.
 // Returns YES if suggestion exists and can be deleted.

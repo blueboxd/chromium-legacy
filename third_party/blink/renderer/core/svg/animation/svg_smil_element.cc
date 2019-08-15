@@ -47,30 +47,6 @@
 
 namespace blink {
 
-class RepeatEvent final : public Event {
- public:
-  RepeatEvent(const AtomicString& type, int repeat)
-      : RepeatEvent(type, Bubbles::kNo, Cancelable::kNo, repeat) {}
-  RepeatEvent(const AtomicString& type,
-              Bubbles bubbles,
-              Cancelable cancelable,
-              int repeat = -1)
-      : Event(type, bubbles, cancelable), repeat_(repeat) {}
-  ~RepeatEvent() override = default;
-
-  int Repeat() const { return repeat_; }
-
-  void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }
-
- private:
-  int repeat_;
-};
-
-inline RepeatEvent* ToRepeatEvent(Event* event) {
-  SECURITY_DCHECK(!event || event->type() == "repeatn");
-  return static_cast<RepeatEvent*>(event);
-}
-
 // This is used for duration type time values that can't be negative.
 static const double kInvalidCachedTime = -1.;
 
@@ -121,9 +97,6 @@ bool ConditionEventListener::Matches(const EventListener& listener) const {
 void ConditionEventListener::Invoke(ExecutionContext*, Event* event) {
   if (!animation_)
     return;
-  if (event->type() == "repeatn" &&
-      ToRepeatEvent(event)->Repeat() != condition_->Repeat())
-    return;
   animation_->IntervalIsDirty();
   animation_->AddInstanceTime(condition_->GetBeginOrEnd(),
                               animation_->Elapsed() + condition_->Offset());
@@ -134,7 +107,7 @@ SVGSMILElement::Condition::Condition(Type type,
                                      const AtomicString& base_id,
                                      const AtomicString& name,
                                      SMILTime offset,
-                                     int repeat)
+                                     unsigned repeat)
     : type_(type),
       begin_or_end_(begin_or_end),
       base_id_(base_id),
@@ -152,7 +125,7 @@ void SVGSMILElement::Condition::Trace(blink::Visitor* visitor) {
 
 void SVGSMILElement::Condition::ConnectSyncBase(SVGSMILElement& timed_element) {
   DCHECK(!base_id_.IsEmpty());
-  DCHECK_EQ(type_, kSyncbase);
+  DCHECK_EQ(type_, kSyncBase);
   auto* svg_smil_element =
       DynamicTo<SVGSMILElement>(SVGURIReference::ObserveTarget(
           base_id_observer_, timed_element.GetTreeScope(), base_id_,
@@ -168,7 +141,7 @@ void SVGSMILElement::Condition::ConnectSyncBase(SVGSMILElement& timed_element) {
 
 void SVGSMILElement::Condition::DisconnectSyncBase(
     SVGSMILElement& timed_element) {
-  DCHECK_EQ(type_, kSyncbase);
+  DCHECK_EQ(type_, kSyncBase);
   SVGURIReference::UnobserveTarget(base_id_observer_);
   if (!base_element_)
     return;
@@ -228,6 +201,7 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tag_name, Document& doc)
       fill_(kFillRemove),
       last_percent_(0),
       last_repeat_(0),
+      last_syncbase_repeat_(0),
       next_progress_time_(0),
       document_order_index_(0),
       cached_dur_(kInvalidCachedTime),
@@ -306,6 +280,7 @@ void SVGSMILElement::Reset() {
   previous_interval_begin_ = SMILTime::Unresolved();
   last_percent_ = 0;
   last_repeat_ = 0;
+  last_syncbase_repeat_ = 0;
   next_progress_time_ = 0;
   ResolveFirstInterval();
 }
@@ -460,14 +435,14 @@ bool SVGSMILElement::ParseCondition(const String& value,
         name_string.Substring(7, name_string.length() - 8).ToUIntStrict(&ok);
     if (!ok)
       return false;
-    name_string = "repeatn";
-    type = Condition::kEventBase;
+    name_string = "repeat";
+    type = Condition::kSyncBase;
   } else if (name_string == "begin" || name_string == "end") {
     if (base_id.IsEmpty())
       return false;
     UseCounter::Count(&GetDocument(),
                       WebFeature::kSVGSMILBeginOrEndSyncbaseValue);
-    type = Condition::kSyncbase;
+    type = Condition::kSyncBase;
   } else if (name_string.StartsWith("accesskey(")) {
     // FIXME: accesskey() support.
     type = Condition::kAccessKey;
@@ -591,7 +566,7 @@ void SVGSMILElement::ConnectSyncBaseConditions() {
     DisconnectSyncBaseConditions();
   sync_base_conditions_connected_ = true;
   for (Condition* condition : conditions_) {
-    if (condition->GetType() == Condition::kSyncbase)
+    if (condition->GetType() == Condition::kSyncBase)
       condition->ConnectSyncBase(*this);
   }
 }
@@ -601,7 +576,7 @@ void SVGSMILElement::DisconnectSyncBaseConditions() {
     return;
   sync_base_conditions_connected_ = false;
   for (Condition* condition : conditions_) {
-    if (condition->GetType() == Condition::kSyncbase)
+    if (condition->GetType() == Condition::kSyncBase)
       condition->DisconnectSyncBase(*this);
   }
 }
@@ -1141,20 +1116,14 @@ void SVGSMILElement::TriggerPendingEvents(double elapsed) {
   if (GetActiveState() == kInactive)
     ScheduleEvent(event_type_names::kBeginEvent);
 
-  unsigned repeat = CalculateAnimationRepeat(elapsed);
-  if (repeat) {
-    for (unsigned repeat_event_count = 1; repeat_event_count < repeat;
-         repeat_event_count++)
-      ScheduleRepeatEvents(repeat_event_count);
-    if (GetActiveState() == kInactive)
-      ScheduleRepeatEvents(repeat);
-  }
+  if (CalculateAnimationRepeat(elapsed))
+    ScheduleEvent(event_type_names::kRepeatEvent);
 
   if (GetActiveState() == kInactive || GetActiveState() == kFrozen)
     ScheduleEvent(event_type_names::kEndEvent);
 }
 
-void SVGSMILElement::UpdateSyncbases() {
+void SVGSMILElement::UpdateSyncBases() {
   if (!interval_has_changed_)
     return;
   interval_has_changed_ = false;
@@ -1207,6 +1176,13 @@ void SVGSMILElement::Progress(double elapsed, bool seek_to_time) {
     interval_has_changed_ = true;
   }
 
+  // Copy over the value from last frame
+  last_syncbase_repeat_ = last_repeat_;
+  if (seek_to_time) {
+    interval_has_changed_ = true;
+    last_repeat_ = repeat;
+  }
+
   ActiveState old_active_state = GetActiveState();
   active_state_ = DetermineActiveState(elapsed);
 
@@ -1217,7 +1193,7 @@ void SVGSMILElement::Progress(double elapsed, bool seek_to_time) {
     }
 
     if (repeat && repeat != last_repeat_)
-      ScheduleRepeatEvents(repeat);
+      ScheduleRepeatEvents();
 
     last_percent_ = percent;
     last_repeat_ = repeat;
@@ -1234,7 +1210,7 @@ void SVGSMILElement::NotifyDependentsIntervalChanged(
     const SMILInterval& interval) {
   DCHECK(interval.begin.IsFinite());
   // |loopBreaker| is used to avoid infinite recursions which may be caused by:
-  // |notifyDependentsIntervalChanged| -> |createInstanceTimesFromSyncbase| ->
+  // |notifyDependentsIntervalChanged| -> |createInstanceTimesFromSyncBase| ->
   // |add{Begin,End}Time| -> |{begin,end}TimeChanged| ->
   // |notifyDependentsIntervalChanged|
   //
@@ -1247,27 +1223,43 @@ void SVGSMILElement::NotifyDependentsIntervalChanged(
     return;
 
   for (SVGSMILElement* element : sync_base_dependents_)
-    element->CreateInstanceTimesFromSyncbase(*this, interval);
+    element->CreateInstanceTimesFromSyncBase(this, interval);
 
   loop_breaker.erase(this);
 }
 
-void SVGSMILElement::CreateInstanceTimesFromSyncbase(
-    SVGSMILElement& sync_base,
-    const SMILInterval& interval) {
+void SVGSMILElement::CreateInstanceTimesFromSyncBase(
+    SVGSMILElement* timed_element,
+    const SMILInterval& new_interval) {
   // FIXME: To be really correct, this should handle updating exising interval
   // by changing the associated times instead of creating new ones.
   for (Condition* condition : conditions_) {
-    if (condition->GetType() == Condition::kSyncbase &&
-        condition->SyncBaseEquals(sync_base)) {
-      DCHECK(condition->GetName() == "begin" || condition->GetName() == "end");
+    if (condition->IsSyncBaseFor(timed_element)) {
+      // TODO(edvardt): This is a lot of string compares, which is slow, it
+      // might be a good idea to change it for an enum and maybe make Condition
+      // into a union?
+      DCHECK(condition->GetName() == "begin" || condition->GetName() == "end" ||
+             condition->GetName() == "repeat");
+
       // No nested time containers in SVG, no need for crazy time space
       // conversions. Phew!
-      SMILTime time = 0;
-      if (condition->GetName() == "begin")
-        time = interval.begin + condition->Offset();
-      else
-        time = interval.end + condition->Offset();
+      SMILTime time = SMILTime::Unresolved();
+      if (condition->GetName() == "begin") {
+        time = new_interval.begin + condition->Offset();
+      } else if (condition->GetName() == "end") {
+        time = new_interval.end + condition->Offset();
+      } else {
+        if (condition->Repeat() == 0)
+          continue;
+        const unsigned max_repeat = timed_element->last_repeat_;
+        const unsigned min_repeat = timed_element->last_syncbase_repeat_;
+        if (min_repeat <= condition->Repeat() &&
+            condition->Repeat() <= max_repeat) {
+          // TODO(edvardt): Fire this at the time of the actual repeat.
+          // (Now it's fired at the end of the frame, which isn'taccurate.)
+          time = Elapsed() + condition->Offset();
+        }
+      }
       if (!time.IsFinite())
         continue;
       AddInstanceTime(condition->GetBeginOrEnd(), time);
@@ -1278,7 +1270,7 @@ void SVGSMILElement::CreateInstanceTimesFromSyncbase(
 void SVGSMILElement::AddSyncBaseDependent(SVGSMILElement& animation) {
   sync_base_dependents_.insert(&animation);
   if (interval_.begin.IsFinite())
-    animation.CreateInstanceTimesFromSyncbase(*this, interval_);
+    animation.CreateInstanceTimesFromSyncBase(this, interval_);
 }
 
 void SVGSMILElement::RemoveSyncBaseDependent(SVGSMILElement& animation) {
@@ -1294,8 +1286,7 @@ void SVGSMILElement::EndedActiveInterval() {
   ClearTimesWithDynamicOrigins(end_times_);
 }
 
-void SVGSMILElement::ScheduleRepeatEvents(unsigned count) {
-  repeat_event_count_list_.push_back(count);
+void SVGSMILElement::ScheduleRepeatEvents() {
   ScheduleEvent(event_type_names::kRepeatEvent);
   ScheduleEvent(AtomicString("repeatn"));
 }
@@ -1312,14 +1303,7 @@ void SVGSMILElement::DispatchPendingEvent(const AtomicString& event_type) {
          event_type == event_type_names::kBeginEvent ||
          event_type == event_type_names::kRepeatEvent ||
          event_type == "repeatn");
-  if (event_type == "repeatn") {
-    unsigned repeat_event_count = repeat_event_count_list_.front();
-    repeat_event_count_list_.EraseAt(0);
-    DispatchEvent(
-        *MakeGarbageCollected<RepeatEvent>(event_type, repeat_event_count));
-  } else {
-    DispatchEvent(*Event::Create(event_type));
-  }
+  DispatchEvent(*Event::Create(event_type));
 }
 
 bool SVGSMILElement::HasValidTarget() {

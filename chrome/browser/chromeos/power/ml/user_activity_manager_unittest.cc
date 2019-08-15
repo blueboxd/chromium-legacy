@@ -15,10 +15,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/power/ml/fake_boot_clock.h"
 #include "chrome/browser/chromeos/power/ml/idle_event_notifier.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/model.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
@@ -188,10 +186,6 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
         &delegate_, &user_activity_detector_, PowerManagerClient::Get(),
         &session_manager_, mojo::MakeRequest(&observer), &fake_user_manager_,
         &model_);
-    activity_logger_->SetTaskRunnerForTesting(
-        thread_bundle()->GetMainThreadTaskRunner(),
-        std::make_unique<FakeBootClock>(thread_bundle(),
-                                        base::TimeDelta::FromSeconds(10)));
   }
 
   void TearDown() override {

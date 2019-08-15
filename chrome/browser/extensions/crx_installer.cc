@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/lazy_instance.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/grit/generated_resources.h"
@@ -170,7 +172,9 @@ CrxInstaller::~CrxInstaller() {
 void CrxInstaller::InstallCrx(const base::FilePath& source_file) {
   crx_file::VerifierFormat format =
       off_store_install_allow_reason_ == OffStoreInstallDisallowed
-          ? GetWebstoreVerifierFormat()
+          ? GetWebstoreVerifierFormat(
+                base::CommandLine::ForCurrentProcess()->HasSwitch(
+                    ::switches::kAppsGalleryURL))
           : GetExternalVerifierFormat();
   InstallCrxFile(CRXFileInfo(source_file, format));
 }

@@ -1,4 +1,25 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
+<translation id="125153950246128346">Atinge pentru a vedea altă filă</translation>
+<translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> filă}few{<ph name="TABS_COUNT_MANY" /> file}other{<ph name="TABS_COUNT_MANY" /> de file}}</translation>
+<translation id="257674075312929031">Grup</translation>
+<translation id="2613747923081026172">Creează grupul</translation>
+<translation id="2845873210977809562">Filele deschise au fost închise</translation>
+<translation id="2977480621796371840">Elimină din grup</translation>
+<translation id="4648718555153979859">Filele tale sunt grupate aici</translation>
+<translation id="5073204694187207510">Ascunde grila pe ecran complet</translation>
+<translation id="5082793167783849073">Compară rapid paginile făcând un grup. Pentru a începe, atinge lung un link.</translation>
+<translation id="5497272504048921382">File deschise</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> file au fost grupate</translation>
+<translation id="5586306159936941448">Trage o filă peste o altă filă pentru a le grupa</translation>
+<translation id="58326064309361797">Trage filele pentru a le grupa</translation>
+<translation id="6193448654517602979">Selectează file</translation>
+<translation id="6615455863669487791">Afișați</translation>
+<translation id="6803423358608456383">Filele deschise la jumătate din înălțime</translation>
+<translation id="7559245342362162951">Arată filele grupului în grilă pe ecran complet</translation>
+<translation id="8582216581279205169">Filele deschise la înălțimea completă</translation>
+<translation id="9150694013019234766">Comută între filele din grupul de file în partea de jos a ecranului</translation>
+<translation id="9169594135889675189">Adaugă o filă nouă în grup</translation>
+<translation id="959682366969460160">Organizează-te</translation>
 </translationbundle>

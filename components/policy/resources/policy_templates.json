@@ -245,12 +245,12 @@
 #   types are assumed. The array must not be empty.
 #
 # Enterprise defaults for user policy:
-#   For managed users on Chrome OS (i.e. users receiving user policy from the
+#   For managed users (i.e. users receiving user policy from the
 #   cloud), if the optional key 'default_for_enterprise_users' is set, its value
 #   is applied as mandatory policy unless a different setting is received from
-#   the cloud. This default value handling is automatically enforced by the
-#   policy stack when filling the PolicyMap (specifically, by the generated
-#   function SetEnterpriseUsersDefaults).
+#   any other source. This default value handling is automatically enforced by
+#   the policy stack when filling the PolicyMap (specifically, by the generated
+#   function ApplyEnterpriseUsersDefaults).
 #
 # Enterprise defaults for device policy:
 #   The optional key 'default_for_managed_devices_doc_only' can be used to

@@ -504,7 +504,7 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
     if (!interned_data) {
       interned_data = trace_packet->set_interned_data();
     }
-    auto* name_entry = interned_data->add_legacy_event_names();
+    auto* name_entry = interned_data->add_event_names();
     name_entry->set_iid(interned_name.id);
     name_entry->set_name(copy_strings && !is_java_event &&
                                  privacy_filtering_enabled_

@@ -190,6 +190,18 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
     return;
   }
 
+  // This is to workaround an Android bug where not specifying a damage region
+  // is assumed to mean nothing is damaged. See crbug.com/993977.
+  for (size_t i = 0; i < pending_surfaces_count_; ++i) {
+    const auto& surface_state = surface_list_[i];
+    if (!surface_state.hardware_buffer)
+      continue;
+
+    pending_transaction_->SetDamageRect(
+        *surface_state.surface,
+        gfx::Rect(GetBufferSize(surface_state.hardware_buffer)));
+  }
+
   // Surfaces which are present in the current frame but not in the next frame
   // need to be explicitly updated in order to get a release fence for them in
   // the next transaction.

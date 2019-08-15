@@ -92,7 +92,7 @@ void SMILAnimationSandwich::SendEvents(double elapsed, bool seek_to_time) {
   }
 
   for (auto& animation : active_) {
-    animation->UpdateSyncbases();
+    animation->UpdateSyncBases();
   }
 
   for (auto& animation : active_) {

@@ -1,4 +1,25 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
+<translation id="125153950246128346">Tap to see another tab</translation>
+<translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> tab}other{<ph name="TABS_COUNT_MANY" /> tabs}}</translation>
+<translation id="257674075312929031">Group</translation>
+<translation id="2613747923081026172">Create group</translation>
+<translation id="2845873210977809562">Opened tabs closed</translation>
+<translation id="2977480621796371840">Remove from group</translation>
+<translation id="4648718555153979859">Your tabs are grouped together here</translation>
+<translation id="5073204694187207510">Hide full-screen grid</translation>
+<translation id="5082793167783849073">Quickly compare pages by making a group. To start, touch and hold a link.</translation>
+<translation id="5497272504048921382">Opened tabs</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> tabs grouped</translation>
+<translation id="5586306159936941448">Drag a tab onto another tab to group them</translation>
+<translation id="58326064309361797">Drag tabs to group them</translation>
+<translation id="6193448654517602979">Select tabs</translation>
+<translation id="6615455863669487791">Show me</translation>
+<translation id="6803423358608456383">Opened tabs at half height</translation>
+<translation id="7559245342362162951">Show group's tabs in full-screen grid</translation>
+<translation id="8582216581279205169">Opened tabs at full height</translation>
+<translation id="9150694013019234766">Switch between tabs in your tab group near bottom of screen</translation>
+<translation id="9169594135889675189">Add new tab to group</translation>
+<translation id="959682366969460160">Get organised</translation>
 </translationbundle>

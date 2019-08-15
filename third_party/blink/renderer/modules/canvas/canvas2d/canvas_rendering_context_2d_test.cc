@@ -310,6 +310,7 @@ class FakeCanvasResourceProvider : public CanvasResourceProvider {
                              AccelerationHint hint)
       : CanvasResourceProvider(CanvasResourceProvider::kBitmap,
                                size,
+                               kLow_SkFilterQuality,
                                color_params,
                                nullptr,
                                nullptr),

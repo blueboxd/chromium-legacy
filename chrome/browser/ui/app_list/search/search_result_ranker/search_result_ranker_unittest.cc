@@ -105,27 +105,24 @@ class SearchResultRankerTest : public testing::Test {
     Wait();
   }
 
-  std::unique_ptr<SearchResultRanker> MakeRanker(
-      bool query_based_mixed_types_enabled,
-      bool app_ranker_enabled,
-      const std::map<std::string, std::string>& params = {}) {
-    if (query_based_mixed_types_enabled) {
-      scoped_feature_list_.InitWithFeaturesAndParameters(
-          {{app_list_features::kEnableQueryBasedMixedTypesRanker, params}},
-          {app_list_features::kEnableAppRanker});
-    } else if (app_ranker_enabled) {
-      scoped_feature_list_.InitWithFeaturesAndParameters(
-          {{app_list_features::kEnableAppRanker, params}},
-          {app_list_features::kEnableQueryBasedMixedTypesRanker});
-    } else {
-      scoped_feature_list_.InitWithFeaturesAndParameters(
-          {}, {app_list_features::kEnableQueryBasedMixedTypesRanker,
-               app_list_features::kEnableAppRanker});
-    }
+  void DisableAllFeatures() {
+    scoped_feature_list_.InitWithFeaturesAndParameters({}, all_feature_flags_);
+  }
 
-    auto ranker = std::make_unique<SearchResultRanker>(
+  void EnableOneFeature(const base::Feature& feature,
+                        const std::map<std::string, std::string>& params = {}) {
+    std::vector<base::Feature> disabled;
+    for (const auto& f : all_feature_flags_) {
+      if (f.name != feature.name)
+        disabled.push_back(f);
+    }
+    scoped_feature_list_.InitWithFeaturesAndParameters({{feature, params}},
+                                                       disabled);
+  }
+
+  std::unique_ptr<SearchResultRanker> MakeRanker() {
+    return std::make_unique<SearchResultRanker>(
         profile_.get(), history_service_.get(), dd_service_.connector());
-    return ranker;
   }
 
   Mixer::SortedResults MakeSearchResults(const std::vector<std::string>& ids,
@@ -159,11 +156,19 @@ class SearchResultRankerTest : public testing::Test {
   std::unique_ptr<Profile> profile_;
 
  private:
+  // All the relevant feature flags for the SearchResultRanker. New experiments
+  // should add their flag here.
+  std::vector<base::Feature> all_feature_flags_ = {
+      app_list_features::kEnableAppRanker,
+      app_list_features::kEnableQueryBasedMixedTypesRanker,
+      app_list_features::kEnableZeroStateMixedTypesRanker};
+
   DISALLOW_COPY_AND_ASSIGN(SearchResultRankerTest);
 };
 
 TEST_F(SearchResultRankerTest, MixedTypesRankersAreDisabledWithFlag) {
-  auto ranker = MakeRanker(false, false);
+  DisableAllFeatures();
+  auto ranker = MakeRanker();
   ranker->InitializeRankers();
   Wait();
 
@@ -189,9 +194,10 @@ TEST_F(SearchResultRankerTest, MixedTypesRankersAreDisabledWithFlag) {
 }
 
 TEST_F(SearchResultRankerTest, CategoryModelImprovesScores) {
-  auto ranker = MakeRanker(
-      true, false,
+  EnableOneFeature(
+      app_list_features::kEnableQueryBasedMixedTypesRanker,
       {{"use_category_model", "true"}, {"boost_coefficient", "1.0"}});
+  auto ranker = MakeRanker();
   ranker->InitializeRankers();
   Wait();
 
@@ -228,8 +234,9 @@ TEST_F(SearchResultRankerTest, AppModelImprovesScores) {
       }
     })";
 
-  auto ranker = MakeRanker(
-      false, true, {{"use_recurrence_ranker", "true"}, {"config", json}});
+  EnableOneFeature(app_list_features::kEnableAppRanker,
+                   {{"use_recurrence_ranker", "true"}, {"config", json}});
+  auto ranker = MakeRanker();
   ranker->InitializeRankers();
   Wait();
 
@@ -265,8 +272,11 @@ TEST_F(SearchResultRankerTest, DefaultQueryMixedModelImprovesScores) {
   // Without the |use_category_model| parameter, the ranker defaults to the item
   // model.  With the |config| parameter, the ranker uses the default predictor
   // for the RecurrenceRanker.
+  EnableOneFeature(app_list_features::kEnableQueryBasedMixedTypesRanker,
+                   {{"boost_coefficient", "1.0"}});
+
   base::RunLoop run_loop;
-  auto ranker = MakeRanker(true, false, {{"boost_coefficient", "1.0"}});
+  auto ranker = MakeRanker();
   ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
   ranker->InitializeRankers();
   run_loop.Run();
@@ -303,6 +313,9 @@ TEST_F(SearchResultRankerTest, DefaultQueryMixedModelImprovesScores) {
 // URL IDs should ignore the query and fragment, and URLs for google docs should
 // ignore a trailing /view or /edit.
 TEST_F(SearchResultRankerTest, QueryMixedModelNormalizesUrlIds) {
+  EnableOneFeature(app_list_features::kEnableQueryBasedMixedTypesRanker,
+                   {{"boost_coefficient", "1.0"}});
+
   // We want |url_1| and |_3| to be equivalent to |url_2| and |_4|. So, train on
   // 1 and 3 but rank 2 and 4. Even with zero relevance, they should be at the
   // top of the rankings.
@@ -312,7 +325,7 @@ TEST_F(SearchResultRankerTest, QueryMixedModelNormalizesUrlIds) {
   const std::string& url_4 = "some.domain.com";
 
   base::RunLoop run_loop;
-  auto ranker = MakeRanker(true, false, {{"boost_coefficient", "1.0"}});
+  auto ranker = MakeRanker();
   ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
   ranker->InitializeRankers();
   run_loop.Run();
@@ -363,9 +376,11 @@ TEST_F(SearchResultRankerTest, QueryMixedModelConfigDeployment) {
       }
     })";
 
+  EnableOneFeature(app_list_features::kEnableQueryBasedMixedTypesRanker,
+                   {{"boost_coefficient", "1.0"}, {"config", json}});
+
   base::RunLoop run_loop;
-  auto ranker =
-      MakeRanker(true, false, {{"boost_coefficient", "1.0"}, {"config", json}});
+  auto ranker = MakeRanker();
   ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
   ranker->InitializeRankers();
   run_loop.Run();
@@ -391,9 +406,11 @@ TEST_F(SearchResultRankerTest, QueryMixedModelDeletesURLCorrectly) {
       }
     })";
 
+  EnableOneFeature(app_list_features::kEnableQueryBasedMixedTypesRanker,
+                   {{"boost_coefficient", "1.0"}, {"config", json}});
+
   base::RunLoop run_loop;
-  auto ranker =
-      MakeRanker(true, false, {{"boost_coefficient", "1.0"}, {"config", json}});
+  auto ranker = MakeRanker();
   ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
   ranker->InitializeRankers();
   run_loop.Run();

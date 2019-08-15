@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/manifest/manifest_manager.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest_observer.mojom.h"
 
@@ -60,7 +61,7 @@ class ManifestManagerHost : public WebContentsObserver,
   void ManifestUrlChanged(const base::Optional<GURL>& manifest_url) override;
 
   RenderFrameHost* manifest_manager_frame_ = nullptr;
-  blink::mojom::ManifestManagerPtr manifest_manager_;
+  mojo::Remote<blink::mojom::ManifestManager> manifest_manager_;
   CallbackMap callbacks_;
 
   WebContentsFrameBindingSet<blink::mojom::ManifestUrlChangeObserver>

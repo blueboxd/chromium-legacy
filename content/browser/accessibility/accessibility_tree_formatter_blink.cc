@@ -381,7 +381,7 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
 
   base::string16 role_value;
   dict.GetString("internalRole", &role_value);
-  WriteAttribute(true, base::UTF16ToUTF8(role_value), &line);
+  WriteAttribute(true, role_value, &line);
 
   for (int state_index = static_cast<int32_t>(ax::mojom::State::kNone);
        state_index <= static_cast<int32_t>(ax::mojom::State::kMaxValue);

@@ -125,9 +125,6 @@
 <translation id="5634636535844844681">Το Chromium απαιτεί Windows 7 ή νεότερη έκδοση.</translation>
 <translation id="5680901439334282664">σύνδεση στο Chromium</translation>
 <translation id="5698481217667032250">Να εμφανίζεται το Chromium σε αυτήν τη γλώσσα</translation>
-<translation id="5756484659843248772">Αυτή η γλώσσα χρησιμοποιείται για την προβολή της διεπαφής Chromium OS</translation>
-<translation id="5768914737813585044">Να εμφανίζεται το Chromium OS σε αυτήν τη γλώσσα</translation>
-<translation id="5796460469508169315">Το Chromium είναι σχεδόν έτοιμο.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Καλώς ήρθατε στο Chromium</translation>
 <translation id="5877064549588274448">Το κανάλι έχει αλλάξει. Επανεκκινήστε τη συσκευή σας για να εφαρμόσετε τις αλλαγές.</translation>
@@ -190,12 +187,6 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Νέο παράθυρο</translation>
 <translation id="734373864078049451">Εδώ μπορείτε να βρείτε τις ιστοσελίδες, τους σελιδοδείκτες σας και άλλα δεδομένα του Chromium.</translation>
-<translation id="7344413941077984497">Για να ορίσετε ποιους ιστότοπους μπορεί να δει ο χρήστης <ph name="NEW_PROFILE_NAME" />, μπορείτε να διαμορφώσετε περιορισμούς και ρυθμίσεις μεταβαίνοντας στη διεύθυνση <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Εάν δεν αλλάξετε τις προεπιλεγμένες ρυθμίσεις, ο χρήστης <ph name="NEW_PROFILE_NAME" /> μπορεί να περιηγηθεί παντού στον ιστό.
-
-Για να παρεμποδίσετε την πρόσβαση του χρήστη <ph name="NEW_PROFILE_NAME" /> στον λογαριασμό σας, βεβαιωθείτε ότι έχετε κλειδώσει το προφίλ σας, όταν δεν χρησιμοποιείτε το Chromium. Για να το κάνετε αυτό, κάντε κλικ στο όνομα του προφίλ σας στην επάνω δεξιά γωνία του προγράμματος περιήγησης και επιλέξτε "Έξοδος και κλείδωμα για παιδιά"/
-<ph name="BEGIN_LINK_2" />Μάθετε περισσότερα<ph name="END_LINK_2" />
-
-Ελέγξτε το ηλεκτρονικό ταχυδρομείο σας στη διεύθυνση <ph name="ACCOUNT_EMAIL" /> για περαιτέρω οδηγίες.</translation>
 <translation id="7349591376906416160">Ο διαχειριστής συστήματος έχει διαμορφώσει το Chromium ώστε να ανοίγει το <ph name="ALTERNATIVE_BROWSER_NAME" /> για την πρόσβαση σε <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7448255348454382571">Επανεκκίνηση Chromium OS</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
@@ -232,6 +223,8 @@
 <translation id="8417404458978023919">{0,plural, =1{Επανεκκίνηση του Chromium σε μία ημέρα}other{Επανεκκίνηση του Chromium σε # ημέρες}}</translation>
 <translation id="8453117565092476964">Το αρχείο του προγράμματος εγκατάστασης είναι κατεστραμμένο ή μη έγκυρο. Κατεβάστε το Chromium ξανά.</translation>
 <translation id="8493179195440786826">Το Chromium δεν είναι ενημερωμένο</translation>
+<translation id="8494843963476918365">Εάν μια ρύθμιση δεν εμφανίζεται σε αυτήν τη σελίδα, δοκιμάστε τις <ph name="LINK_BEGIN" />
+    ρυθμίσεις του προγράμματος περιήγησης Chromium<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Λήψη βοήθειας σχετικά με τη χρήση του Chromium</translation>
 <translation id="8586442755830160949">Πνευματικά δικαιώματα <ph name="YEAR" /> Οι συντάκτες του Chromium. Με επιφύλαξη παντός δικαιώματος.</translation>
 <translation id="8619360774459241877">Εκκίνηση του Chromium…</translation>

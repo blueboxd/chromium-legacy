@@ -100,7 +100,7 @@ interface GamepadMonitor {
   [Sync]
   GamepadStopPolling() => ();
 
-  SetObserver(GamepadObserver gamepad_observer);
+  SetObserver(pending_remote<GamepadObserver> gamepad_observer);
 };
 
 struct GamepadEffectParameters {

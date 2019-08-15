@@ -69,7 +69,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
           이 설정을 사용 중지하거나 설정하지 않으면 원격 지원 호스트가 사용자의 컨텍스트에서 실행되며 원격 사용자는 데스크톱에서 관리자 창으로 상호 작용할 수 없습니다.</translation>
 <translation id="1096105751829466145">기본 검색 공급자</translation>
-<translation id="1099024407376270611">방문한 URL의 세이프 브라우징 평판 실시간 확인</translation>
 <translation id="1099282607296956954">모든 사이트에 사이트 격리 사용 설정</translation>
 <translation id="1100570158310952027">
       이 정책에서는 안전하지 않은 출처의 보안 제한이 적용되지 않을
@@ -422,22 +421,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       경고: <ph name="PRODUCT_OS_NAME" /> 버전의 컨트롤을 키오스크 앱에 위임하면 기기가 소프트웨어 업데이트나 주요 보안 수정사항을 받지 못하게 될 수 있으므로 권장되지 않습니다. <ph name="PRODUCT_OS_NAME" /> 버전의 컨트롤을 위임하면 사용자가 위험에 처할 수 있습니다.</translation>
 <translation id="1675002386741412210">지원:</translation>
 <translation id="1700811900332333712">기기가 파워워시를 요청하도록 허용</translation>
-<translation id="1704516734140344991"><ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어 업데이트 기능의 사용 가능 여부 및 동작을 설정합니다.
-
-      개별 설정을 JSON 속성으로 지정할 수 있습니다.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />(으)로 설정된 경우 사용자는 파워워시 절차를 실행하여 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어 업데이트를 설치할 수 있습니다.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />(으)로 설정된 경우 사용자는 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어 업데이트 절차를 호출할 수 있습니다. 이 절차에서는 엔터프라이즈 등록을 포함한 기기 전체 상태가 유지되지만 사용자 데이터가 손실됩니다. 이 업데이트 절차는 버전 68부터 사용할 수 있습니다.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: 자동 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어 업데이트가 취약한 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어를 대상으로 적용되는 방식을 결정합니다. 모든 절차에서 로컬 기기 상태가 유지됩니다.
-        1로 설정되거나 설정되지 않은 경우 TPM 펌웨어 업데이트가 적용되지 않습니다.
-        2로 설정된 경우 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어는 사용자가 업데이트를 확인한 다음 재부팅이 이루어질 때 업데이트됩니다.
-        3으로 설정된 경우 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어가 다음 재부팅 때 업데이트됩니다.
-        4로 설정된 경우 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어가 등록 후 사용자 로그인에 앞서 업데이트됩니다.
-        이 옵션은 버전 74부터 사용할 수 있습니다.
-
-      정책이 설정되지 않은 경우 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어 업데이트 기능을 사용할 수 없습니다.</translation>
 <translation id="1708496595873025510">버전 시드 가져오기 제한 설정</translation>
 <translation id="1717817358640580294">이 정책이 설정되지 않은 경우 Chrome 정리도구가 원치 않은 소프트웨어를 발견하면 SafeBrowsingExtendedReportingEnabled에서 설정한 정책에 따라 Google에 검사 관련 메타데이터를 보고할 수 있습니다. 그런 다음 Chrome 정리도구가 사용자에게 원치 않은 소프트웨어를 삭제할 것인지 묻습니다. 사용자는 Google과 정리 결과를 공유하여 향후 원치 않은 소프트웨어 감지를 도울 것인지 여부를 선택할 수 있습니다. 이러한 결과에는 Chrome 개인정보 보호 백서에 명시된 바와 같이 파일 메타데이터, 자동 설치된 확장 프로그램, 레지스트리 키가 포함됩니다.
 
@@ -843,6 +826,22 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="2463034609187171371">TLS에서 DHE 암호화 기술을 사용 설정합니다.</translation>
 <translation id="2463365186486772703">애플리케이션 언어</translation>
 <translation id="2466131534462628618">캡티브 포털 승인에서 프록시를 무시함</translation>
+<translation id="2466697858869282874"><ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어 업데이트 기능의 사용 가능 여부 및 동작을 설정합니다.
+
+      개별 설정을 JSON 속성으로 지정할 수 있습니다.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />(으)로 설정된 경우 사용자는 파워워시 절차를 실행하여 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어 업데이트를 설치할 수 있습니다.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />(으)로 설정된 경우 사용자는 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어 업데이트 절차를 호출할 수 있습니다. 이 절차에서는 엔터프라이즈 등록을 포함한 기기 전체 상태가 유지되지만 사용자 데이터가 손실됩니다. 이 업데이트 절차는 버전 68부터 사용할 수 있습니다.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: 자동 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어 업데이트가 취약한 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어를 대상으로 적용되는 방식을 결정합니다. 모든 절차에서 로컬 기기 상태가 유지됩니다.
+        1로 설정되거나 설정되지 않은 경우 TPM 펌웨어 업데이트가 적용되지 않습니다.
+        2로 설정된 경우 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어는 사용자가 업데이트를 확인한 다음 재부팅이 이루어질 때 업데이트됩니다.
+        3으로 설정된 경우 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어가 다음 재부팅 때 업데이트됩니다.
+        4로 설정된 경우 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어가 등록 후 사용자 로그인에 앞서 업데이트됩니다.
+        이 옵션은 버전 75부터 사용할 수 있습니다.
+
+      정책이 설정되지 않은 경우 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어 업데이트 기능을 사용할 수 없습니다.</translation>
 <translation id="2471748297300970300">이 정책이 사용 중지되면 위험할 가능성이 있는 명령줄 플래그와 함께 Chrome이 실행되었을 때 보안 경고가 표시되지 못하게 차단합니다.
 
           이 정책이 사용되거나 설정되지 않으면 Chrome을 실행할 때 특정 명령줄 플래그가 사용되면 보안 경고가 표시됩니다.
@@ -1869,6 +1868,13 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       이 정책을 설정하지 않은 경우 기본 로밍 프로필 경로가 사용됩니다.</translation>
 <translation id="4239720644496144453">이 캐시는 Android 앱에 사용되지 않습니다. 여러 사용자가 동일한 Android 앱을 설치하는 경우 앱이 각 사용자마다 새로 다운로드됩니다.</translation>
+<translation id="4241202391219483189">이 정책은 사용자가 인증서 관리자를 통해 CA 인증서를 가져오거나 삭제할 수 있는지 결정합니다.
+
+      정책을 '사용자가 모든 인증서를 관리하도록 허용'으로 설정하거나 설정하지 않으면 사용자는 모든 CA 인증서의 신뢰 설정을 수정하고 사용자가 가져온 인증서를 삭제하고 인증서를 가져올 수 있습니다.
+
+      정책을 '사용자가 자신의 인증서를 관리하도록 허용'으로 설정하면 사용자는 자신이 가져온 인증서만을 관리할 수 있으며 내장 인증서의 신뢰 설정을 변경할 수 없습니다.
+
+      정책을 '사용자가 인증서를 관리하도록 허용 안함'으로 설정하면 사용자는 인증서를 관리할 수 없고 확인만 가능합니다.</translation>
 <translation id="4243336580717651045"><ph name="PRODUCT_NAME" />에서 URL로 입력되며 익명으로 처리되는 데이터 수집을 사용 설정하고 사용자가 이 설정을 변경하지 못하게 합니다.
 
       URL로 입력되며 익명으로 처리되는 데이터 수집이 진행되면 검색 및 탐색을 개선하기 위해 사용자가 방문하는 페이지의 URL이 Google로 전송됩니다.
@@ -1944,6 +1950,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
           이 기능은 현재 서버 측에서 사용 중지되어 있습니다.</translation>
 <translation id="4363057787588706121">출처가 서로 다른 목록 정책의 병합을 허용합니다.</translation>
+<translation id="4363101430102811068">입력된 사용자 인증 정보에 대한 유출 감지를 사용 설정</translation>
 <translation id="4363136876356691536">이 정책을 true로 설정하면 작업 표시줄 메뉴에 접근성 옵션이 항상 표시됩니다.
 
           정책을 false로 설정하면 작업 표시줄 메뉴에 접근성 옵션이 표시되지 않습니다.
@@ -2103,10 +2110,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
           이 정책이 설정되어 있지 않으면 서버가 인트라넷으로 감지된 경우에도 <ph name="PRODUCT_NAME" />이(가) 사용자 자격증명을 위임하지 않습니다.</translation>
 <translation id="4752880493649142945">RemoteAccessHostTokenValidationUrl에 연결하기 위한 클라이언트 인증서</translation>
-<translation id="4756984056524699088">이 사용자에게 Crostini 컨테이너에 대한 루트 액세스 권한을 허용합니다.
-
-      이 정책이 True로 설정되어 있거나 설정되어 있지 않은 경우 Crostini 컨테이너에 대한 루트 액세스 권한이 사용자에게 부여됩니다.
-      False로 설정되어 있는 경우 기존 및 신규 Crostini 컨테이너에 대한 루트 액세스 권한 모두가 사용자에게 부여되지 않습니다.</translation>
 <translation id="4759650396863318477"><ph name="PRODUCT_NAME" />을(를) 재실행할 필요가 있거나 대기 중인 업데이트 적용을 위해 <ph name="PRODUCT_OS_NAME" /> 기기를 다시 시작해야 한다는 알림 기간을 밀리초 간격으로 설정할 수 있습니다.
 
       이 기간 동안 업데이트를 해야 한다는 알림이 사용자에게 반복적으로 표시됩니다. <ph name="PRODUCT_OS_NAME" /> 기기의 경우 <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> 정책에 따라 재시작 알림이 작업 표시줄에 표시됩니다. <ph name="PRODUCT_NAME" /> 브라우저의 경우 알림 기간 중 3분의 1이 지나면 앱 메뉴가 변경되면서 재실행이 필요하다는 알림이 표시됩니다. 알림 기간 중 3분의 2가 지나면 알림 색상이 바뀌며 알림 기간이 모두 지나면 다시 한번 바뀝니다. <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 정책을 통해 사용 설정되는 추가 알림도 이와 동일한 일정을 따릅니다.
@@ -3000,6 +3003,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책이 false로 설정된 경우 사용자 목록이 보고되지 않습니다.</translation>
 <translation id="6394350458541421998">이 정책은 <ph name="PRODUCT_OS_NAME" /> 버전 29를 기준으로 지원 중단되었습니다. 대신 PresentationScreenDimDelayScale 정책을 사용해 주시기 바랍니다.</translation>
 <translation id="6401669939808766804">사용자 로그아웃</translation>
+<translation id="6403746242226534223">방문한 URL의 세이프 브라우징 평판 실시간 확인</translation>
 <translation id="6406448383934634215">시작 시 액션으로 'URL 목록 열기'를 선택하면 열릴 URL 목록을 지정할 수 있습니다. 이 정책이 설정되지 않으면 시작 시 어떤 URL도 열리지 않습니다.
 
           이 정책은 'RestoreOnStartup' 정책이 'RestoreOnStartupIsURLs'로 설정된 경우에만 작동합니다.
@@ -3076,6 +3080,9 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="6544897973797372144">정책이 True로 설정되어 있고 ChromeOsReleaseChannel 정책이 지정되지 않은 경우 등록된 도메인의 사용자가 기기의 배포 채널을 변경할 수 있도록 허용됩니다. 정책이 false로 설정되어 있으면 마지막에 설정한 채널을 기기가 사용합니다.
 
       사용자가 선택한 채널은 ChromeOsReleaseChannel 정책이 무시할 수 있지만 정책 채널이 기기에 설치된 채널보다 더 안정적인 경우 더 안정적인 채널이 기기에 설치된 채널보다 더 많아질 때 채널이 전환됩니다.</translation>
+<translation id="6549567350270907557">이 설정을 사용 설정하면 입력된 사용자 인증 정보가 유출된 데이터에 포함되었는지 <ph name="PRODUCT_NAME" />에서 확인하도록 할 수 있습니다.
+
+              이 정책을 사용 설정 또는 중지하면 사용자는 <ph name="PRODUCT_NAME" />에서 이 정책을 변경하거나 재정의할 수 없습니다. 정책이 설정되지 않으면 유출 검사가 허용되지만 사용자가 언제든지 사용 중지할 수 있습니다.</translation>
 <translation id="6553143066970470539">화면 밝기 퍼센트</translation>
 <translation id="6559057113164934677">카메라 및 마이크에 대한 모든 사이트의 액세스 허용 안함</translation>
 <translation id="6561396069801924653">작업 표시줄 메뉴에 접근성 옵션 표시</translation>
@@ -4083,6 +4090,10 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
       Internet Explorer의 <ph name="IEEM_SITELIST_POLICY" /> 정책에 관한 자세한 내용은 다음 페이지에서 확인하세요. https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">항상 외부 앱으로 PDF 파일 열기</translation>
+<translation id="8405691014775178834">이 사용자에게 Crostini 컨테이너에 대한 루트 액세스 권한을 허용합니다.
+
+      이 정책이 True로 설정되어 있거나 설정되어 있지 않은 경우 Crostini 컨테이너에 대한 루트 액세스 권한이 사용자에게 부여됩니다.
+      False로 설정된 경우 기존 및 신규 Crostini 컨테이너에 대한 루트 액세스 권한 모두가 사용자에게 부여되지 않습니다.</translation>
 <translation id="8417305981081876834">잠금 화면 PIN 최대 길이 설정</translation>
 <translation id="841977920223099909">비밀번호 보호 경고 실행</translation>
 <translation id="8424255554404582727">기본 디스플레이 회전 설정, 재부팅할 때마다 다시 적용됨</translation>
@@ -4342,6 +4353,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
           정책 값은 밀리초 단위로 지정해야 하며, 유휴 지연 시간보다 작도록 값이 잘립니다.</translation>
 <translation id="891435090623616439">JSON 문자열로 인코딩됨, 자세한 내용은 <ph name="COMPLEX_POLICIES_URL" /> 참조</translation>
+<translation id="8917070657147922192">사용자가 설치된 CA 인증을 관리하도록 허용합니다.</translation>
 <translation id="8934944553121392674"><ph name="DEVICE_PRINTERS_POLICY" />에 명시된 프린터 중 어떤 프린터를 사용자에게 제공할지 관리합니다.
 
       일괄 프린터 설정에 사용할 액세스 정책을 지정합니다. <ph name="PRINTERS_ALLOW_ALL" />을(를) 선택하면 모든 프린터가 표시됩니다. <ph name="PRINTERS_BLACKLIST" />을(를) 선택하면 <ph name="DEVICE_PRINTERS_BLACKLIST" />이(가) 사용되어 특정 프린터에 관한 액세스 권한이 제한됩니다. <ph name="PRINTERS_WHITELIST" />을(를) 선택하면 <ph name="DEVICE_PRINTERS_WHITELIST" />이(가) 사용되어 선택 가능한 프린터만 지정됩니다.

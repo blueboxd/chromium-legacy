@@ -199,7 +199,7 @@ base::string16 AccessibilityTreeFormatterAndroid::ProcessTreeForOutput(
 
   base::string16 class_value;
   dict.GetString("class", &class_value);
-  WriteAttribute(true, base::UTF16ToUTF8(class_value), &line);
+  WriteAttribute(true, class_value, &line);
 
   std::string role_description;
   dict.GetString("role_description", &role_description);

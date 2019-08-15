@@ -1,4 +1,25 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
+<translation id="125153950246128346">Koppintson másik lap megtekintéséhez</translation>
+<translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> lap}other{<ph name="TABS_COUNT_MANY" /> lap}}</translation>
+<translation id="257674075312929031">Csoport</translation>
+<translation id="2613747923081026172">Csoport létrehozása</translation>
+<translation id="2845873210977809562">Megnyitott lapok bezárva</translation>
+<translation id="2977480621796371840">Eltávolítás a csoportból</translation>
+<translation id="4648718555153979859">A lapok itt vannak csoportosítva</translation>
+<translation id="5073204694187207510">Teljes képernyős rács elrejtése</translation>
+<translation id="5082793167783849073">Csoport kialakításával gyorsan összehasonlíthat oldalakat. A kezdéshez tartsa lenyomva ujját a kívánt linken.</translation>
+<translation id="5497272504048921382">Megnyitott lapok</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> lap csoportosítva</translation>
+<translation id="5586306159936941448">A lapokat egymásra húzva csoportosíthatja</translation>
+<translation id="58326064309361797">A lapokat húzással csoportosíthatja</translation>
+<translation id="6193448654517602979">Lapok kiválasztása</translation>
+<translation id="6615455863669487791">Megjelenítés</translation>
+<translation id="6803423358608456383">Félmagasságban megnyitott lapok</translation>
+<translation id="7559245342362162951">A csoportban lévő lapok teljes képernyős rácsszerkezetben való megjelenítése</translation>
+<translation id="8582216581279205169">Teljes magasságban megnyitott lapok</translation>
+<translation id="9150694013019234766">Válthat a képernyő aljánál lévő lapcsoport lapjai között</translation>
+<translation id="9169594135889675189">Új lap hozzáadása a csoporthoz</translation>
+<translation id="959682366969460160">Könnyebb rendszerezés</translation>
 </translationbundle>

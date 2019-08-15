@@ -128,9 +128,6 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="5634636535844844681">Za Chromium potrebujete Windows 7 ali novejši.</translation>
 <translation id="5680901439334282664">se prijavite v Chromium</translation>
 <translation id="5698481217667032250">Prikaži Chromium v tem jeziku</translation>
-<translation id="5756484659843248772">Ta jezik se uporablja za prikaz uporabniškega vmesnika za Chromium OS</translation>
-<translation id="5768914737813585044">Prikaži Chromium OS v tem jeziku</translation>
-<translation id="5796460469508169315">Chromium je skoraj pripravljen.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Pozdravljeni v Chromiumu</translation>
 <translation id="5877064549588274448">Kanal spremenjen. Znova zaženite napravo, da uveljavite spremembe.</translation>
@@ -193,12 +190,6 @@ Chromium ne more obnoviti vaših nastavitev.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Novo okno</translation>
 <translation id="734373864078049451">Tu so shranjeni vaš splet, zaznamki in druge stvari v Chromiumu.</translation>
-<translation id="7344413941077984497">Če želite nastaviti, katera spletna mesta si lahko ogleda <ph name="NEW_PROFILE_NAME" />, lahko na <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> konfigurirate omejitve in nastavitve. Če privzetih nastavitev ne spremenite, lahko <ph name="NEW_PROFILE_NAME" /> brska po spletu brez omejitev.
-
-Če želite preprečiti, da bi <ph name="NEW_PROFILE_NAME" /> dostopal(-a) do vašega računa, zaklenite profil, ko ne uporabljate Chromiuma. To storite tako, da v zgornjem desnem kotu brskalnika kliknete ime profila in izberete »Izhod in zaklepanje pred otroki«.
-<ph name="BEGIN_LINK_2" />Več o tem<ph name="END_LINK_2" />
-
-Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7349591376906416160">Skrbnik sistema je Chromium nastavil tako, da za dostop do <ph name="TARGET_URL_HOSTNAME" /> odpre brskalnik <ph name="ALTERNATIVE_BROWSER_NAME" />.</translation>
 <translation id="7448255348454382571">Vnovičen zagon OS-a Chromium</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – različica Chromiuma za razvijalce</translation>
@@ -235,6 +226,8 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 <translation id="8417404458978023919">{0,plural, =1{Chromium znova zaženite v enem dnevu}one{Chromium znova zaženite v # dnevu}two{Chromium znova zaženite v # dnevih}few{Chromium znova zaženite v # dnevih}other{Chromium znova zaženite v # dnevih}}</translation>
 <translation id="8453117565092476964">Arhiv namestitvenega programa je poškodovan ali neveljaven. Znova prenesite Chromium.</translation>
 <translation id="8493179195440786826">Chromium je zastarel</translation>
+<translation id="8494843963476918365">Če nastavitev ni prikazana na tej strani, poskusite <ph name="LINK_BEGIN" />
+    nastavitve brskalnika Chromium<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Pomoč pri uporabi Chromiuma</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Ustvarjalci Chromiuma. Vse pravice pridržane.</translation>
 <translation id="8619360774459241877">Zagon Chromiuma …</translation>

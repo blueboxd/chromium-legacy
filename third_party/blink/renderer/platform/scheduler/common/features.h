@@ -171,6 +171,11 @@ const base::Feature kLowPriorityForCrossOriginOnlyWhenLoading{
 const base::Feature kThrottleAndFreezeTaskTypes{
     "ThrottleAndFreezeTaskTypes", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Prioritizes loading and compositing tasks while loading.
+const base::Feature kPrioritizeCompositingAndLoadingDuringEarlyLoading{
+    "PrioritizeCompositingAndLoadingDuringEarlyLoading",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Parameters for |kThrottleAndFreezeTaskTypes|.
 extern const char PLATFORM_EXPORT kThrottleableTaskTypesListParam[];
 extern const char PLATFORM_EXPORT kFreezableTaskTypesListParam[];

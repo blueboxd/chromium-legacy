@@ -1851,7 +1851,7 @@ TEST_F(AXPositionTest, CreatePositionAtPreviousFormatStartWithNullPosition) {
 
 TEST_F(AXPositionTest, CreatePositionAtPreviousFormatStartWithTreePosition) {
   TestPositionType tree_position = AXNodePosition::CreateTreePosition(
-      tree_.data().tree_id, inline_box1_.id, 0 /* child_index */);
+      tree_.data().tree_id, static_text1_.id, 0 /* child_index */);
   ASSERT_NE(nullptr, tree_position);
   TestPositionType test_position =
       tree_position->CreatePreviousFormatStartPosition(
@@ -1859,16 +1859,14 @@ TEST_F(AXPositionTest, CreatePositionAtPreviousFormatStartWithTreePosition) {
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTreePosition());
   EXPECT_EQ(button_.id, test_position->anchor_id());
-  EXPECT_EQ(0, test_position->child_index());
+  EXPECT_EQ(AXNodePosition::BEFORE_TEXT, test_position->child_index());
 
-  // AXBoundaryBehavior::StopIfAlreadyAtBoundary shouldn't move, since it's
-  // already at a boundary.
   test_position = test_position->CreatePreviousFormatStartPosition(
       AXBoundaryBehavior::StopIfAlreadyAtBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTreePosition());
   EXPECT_EQ(button_.id, test_position->anchor_id());
-  EXPECT_EQ(0, test_position->child_index());
+  EXPECT_EQ(AXNodePosition::BEFORE_TEXT, test_position->child_index());
 
   // AXBoundaryBehavior::CrossBoundary should return a null position when it
   // reaches the start of the document
@@ -1889,7 +1887,7 @@ TEST_F(AXPositionTest, CreatePositionAtPreviousFormatStartWithTextPosition) {
           AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTextPosition());
-  EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
+  EXPECT_EQ(button_.id, test_position->anchor_id());
   EXPECT_EQ(0, test_position->text_offset());
 
   // AXBoundaryBehavior::StopIfAlreadyAtBoundary shouldn't move, since it's
@@ -1898,16 +1896,15 @@ TEST_F(AXPositionTest, CreatePositionAtPreviousFormatStartWithTextPosition) {
       AXBoundaryBehavior::StopIfAlreadyAtBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTextPosition());
-  EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
+  EXPECT_EQ(button_.id, test_position->anchor_id());
   EXPECT_EQ(0, test_position->text_offset());
 
-  // This time, it should move due to AXBoundaryBehavior::CrossBoundary
+  // This time, it should be a null position, since it's the first text node
+  // in the document.
   test_position = test_position->CreatePreviousFormatStartPosition(
       AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, test_position);
-  EXPECT_TRUE(test_position->IsTextPosition());
-  EXPECT_EQ(button_.id, test_position->anchor_id());
-  EXPECT_EQ(0, test_position->text_offset());
+  EXPECT_TRUE(test_position->IsNullPosition());
 }
 
 TEST_F(AXPositionTest, CreatePositionAtNextFormatEndWithNullPosition) {
@@ -1941,10 +1938,12 @@ TEST_F(AXPositionTest, CreatePositionAtNextFormatEndWithTreePosition) {
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTreePosition());
   EXPECT_EQ(line_break_.id, test_position->anchor_id());
-  EXPECT_EQ(0, test_position->child_index());
+  EXPECT_EQ(AXNodePosition::BEFORE_TEXT, test_position->child_index());
 
   // AXBoundaryBehavior::CrossBoundary should return a null position when it
   // reaches the end of the document
+  test_position = test_position->CreateNextFormatEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
   test_position = test_position->CreateNextFormatEndPosition(
       AXBoundaryBehavior::CrossBoundary);
   test_position = test_position->CreateNextFormatEndPosition(
@@ -1987,7 +1986,7 @@ TEST_F(AXPositionTest, CreatePositionAtNextFormatEndWithTextPosition) {
       AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTextPosition());
-  EXPECT_EQ(inline_box2_.id, test_position->anchor_id());
+  EXPECT_EQ(static_text2_.id, test_position->anchor_id());
   EXPECT_EQ(6, test_position->text_offset());
 }
 
@@ -3971,7 +3970,7 @@ INSTANTIATE_TEST_SUITE_P(
         CreatePositionAtTextBoundaryTestParam{
             AXTextBoundary::kFormatChange, AXTextBoundaryDirection::kForwards,
             AXBoundaryBehavior::CrossBoundary,
-            "TextPosition anchor_id=9 text_offset=6 affinity=downstream "
+            "TextPosition anchor_id=8 text_offset=6 affinity=downstream "
             "annotated_text=Line 2<>"},
         CreatePositionAtTextBoundaryTestParam{
             AXTextBoundary::kLineEnd, AXTextBoundaryDirection::kBackwards,

@@ -10,7 +10,8 @@
 #include "base/macros.h"
 #include "device/gamepad/public/mojom/gamepad.mojom-blink.h"
 #include "device/gamepad/public/mojom/gamepad_hardware_buffer.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/buffer.h"
 
 namespace base {
@@ -55,8 +56,8 @@ class GamepadSharedMemoryReader : public device::mojom::blink::GamepadObserver {
 
   bool ever_interacted_with_ = false;
 
-  mojo::Binding<device::mojom::blink::GamepadObserver> binding_;
-  device::mojom::blink::GamepadMonitorPtr gamepad_monitor_;
+  mojo::Receiver<device::mojom::blink::GamepadObserver> receiver_{this};
+  mojo::Remote<device::mojom::blink::GamepadMonitor> gamepad_monitor_remote_;
   blink::WebGamepadListener* listener_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadSharedMemoryReader);

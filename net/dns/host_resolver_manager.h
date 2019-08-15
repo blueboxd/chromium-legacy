@@ -233,6 +233,9 @@ class NET_EXPORT HostResolverManager
     // Using the system resolver, which is using DNS servers which offer
     // DNS-over-HTTPS service.
     MODE_FOR_HISTOGRAM_SYSTEM_SUPPORTS_DOH,
+    // Using private DNS via the system resolver, which is using DoT servers
+    // which offer DNS-over-HTTPS service.
+    MODE_FOR_HISTOGRAM_SYSTEM_PRIVATE_DNS_SUPPORTS_DOH,
     // Using Chromium DNS resolver.
     MODE_FOR_HISTOGRAM_ASYNC_DNS,
     // Using Chromium DNS resolver which is using DNS servers which offer
@@ -350,12 +353,20 @@ class NET_EXPORT HostResolverManager
   // DnsTasks should be issued in this case.
   bool HaveTestProcOverride();
 
+  // Pushes a cache lookup task depending on what sections of the cache can
+  // be checked at this time
+  void PushCacheLookups(bool secure,
+                        bool insecure,
+                        std::deque<TaskType>* out_tasks);
+
   // Helper method to add DnsTasks and related tasks based on the SecureDnsMode
-  // and fallback parameters.
+  // and fallback parameters. If |prioritize_local_lookups| is true, then we
+  // may push an insecure cache lookup ahead of a secure DnsTask.
   void PushDnsTasks(bool proc_task_allowed,
                     SecureDnsMode secure_dns_mode,
                     bool insecure_tasks_allowed,
-                    ResolveHostParameters::CacheUsage cache_usage,
+                    bool allow_cache,
+                    bool prioritize_local_lookups,
                     std::deque<TaskType>* out_tasks);
 
   // Initialized the sequence of tasks to run to resolve a request. The sequence

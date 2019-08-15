@@ -87,12 +87,6 @@
 <translation id="3080151273017101988">Να συνεχίζεται η εκτέλεση εφαρμογών παρασκηνίου όταν το Google Chrome είναι κλειστό</translation>
 <translation id="3089968997497233615">Υπάρχει μια νέα, ασφαλέστερη έκδοση του Google Chrome.</translation>
 <translation id="3149510190863420837">Εφαρμογές Chrome</translation>
-<translation id="3251381707915721925">Για να ορίσετε ποιους ιστότοπους μπορεί να δει ο χρήστης <ph name="NEW_PROFILE_NAME" />, μπορείτε να διαμορφώσετε περιορισμούς και ρυθμίσεις μεταβαίνοντας στη διεύθυνση <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Εάν δεν αλλάξετε τις προεπιλεγμένες ρυθμίσεις, ο χρήστης <ph name="NEW_PROFILE_NAME" /> μπορεί να περιηγηθεί παντού στον ιστό.
-
-Για να παρεμποδίσετε την πρόσβαση του χρήστη <ph name="NEW_PROFILE_NAME" /> στον λογαριασμό σας, βεβαιωθείτε ότι έχετε κλειδώσει το προφίλ σας, όταν δεν χρησιμοποιείτε το Chrome. Για να το κάνετε αυτό, κάντε κλικ στο όνομα του προφίλ σας στην επάνω δεξιά γωνία του προγράμματος περιήγησης και επιλέξτε "Έξοδος και κλείδωμα για παιδιά"/
-<ph name="BEGIN_LINK_2" />Μάθετε περισσότερα<ph name="END_LINK_2" />
-
-Ελέγξτε το ηλεκτρονικό ταχυδρομείο σας στη διεύθυνση <ph name="ACCOUNT_EMAIL" /> για περαιτέρω οδηγίες.</translation>
 <translation id="3282568296779691940">Σύνδεση στο Chrome</translation>
 <translation id="3340978935015468852">ρυθμίσεις</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -190,6 +184,8 @@
 <translation id="6291549208091401781">Το Google Chrome είναι ήδη εγκατεστημένο για όλους τους χρήστες στον υπολογιστή σας.</translation>
 <translation id="6338556085225130112">Ενημέρωση Google Chrome</translation>
 <translation id="6368958679917195344">Το Chrome OS έγινε πραγματικότητα χάρη στην ύπαρξη πρόσθετων <ph name="BEGIN_LINK_CROS_OSS" />λογισμικών ανοικτού κώδικα<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="6400930858680434649">Εάν μια ρύθμιση δεν εμφανίζεται σε αυτήν τη σελίδα, δοκιμάστε τις <ph name="LINK_BEGIN" />
+    ρυθμίσεις του προγράμματος περιήγησης Chrome<ph name="LINK_END" />.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Ενημέρωση του Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Χρησιμοποιείτε το προφίλ <ph name="PROFILE_EMAIL" /> για το συγχρονισμό του περιεχομένου σας στο Chrome. Για να ενημερώσετε τις προτιμήσεις συγχρονισμού ή για να χρησιμοποιήστε το Chrome χωρίς Λογαριασμό Google, μεταβείτε στην περιοχή <ph name="SETTINGS_LINK" />.</translation>
@@ -222,7 +218,6 @@
 <translation id="7486227612705979895">Το Chrome θα αποκτήσει πρόσβαση στο Drive, για να κάνει προτάσεις στη γραμμή διευθύνσεων</translation>
 <translation id="7531671357096394523">Κλείστε όλα τα αντίγραφα του Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
-<translation id="7552219221109926349">Να εμφανίζεται το Chrome OS σε αυτήν τη γλώσσα</translation>
 <translation id="7589360514048265910">Αυτός ο υπολογιστής δεν θα λαμβάνει πλέον ενημερώσεις του Google Chrome επειδή το Mac OS X 10.9 δεν υποστηρίζεται πλέον.</translation>
 <translation id="7592736734348559088">Το Google Chrome δεν κατάφερε να συγχρονίσει τα δεδομένα σας επειδή τα στοιχεία σύνδεσης στο λογαριασμό σας δεν έχουν ενημερωθεί.</translation>
 <translation id="7626032353295482388">Καλώς ήρθατε στο Chrome</translation>
@@ -240,7 +235,6 @@
 <translation id="7896673875602241923">Κάποιο άτομο συνδέθηκε προηγουμένως στο Chrome σε αυτόν τον υπολογιστή ως <ph name="ACCOUNT_EMAIL_LAST" />. Δημιουργήστε έναν νέο χρήστη Chrome, για να διατηρείτε τις πληροφορίες σας ξεχωριστά.</translation>
 <translation id="7908168227788431038">Η ενημέρωση σχεδόν ολοκληρώθηκε! Εκτελέστε ξανά το Google Chrome για να ολοκληρωθεί η ενημέρωση.</translation>
 <translation id="7962410387636238736">Αυτός ο υπολογιστής δεν θα λαμβάνει πια ενημερώσεις Google Chrome, επειδή δεν υποστηρίζονται πλέον τα Windows XP και Windows Vista</translation>
-<translation id="8005540215158006229">Το Chrome είναι σχεδόν έτοιμο.</translation>
 <translation id="8008534537613507642">Επανεγκατάσταση του Chrome</translation>
 <translation id="8013993649590906847">Εάν μια εικόνα δεν έχει κάποια χρήσιμη περιγραφή, το Chrome θα προσπαθήσει να σας προσφέρει μια περιγραφή. Για τη δημιουργία περιγραφών, αποστέλλονται εικόνες στην Google.</translation>
 <translation id="8030318113982266900">Ενημέρωση της συσκευής σας στο κανάλι <ph name="CHANNEL_NAME" />…</translation>
@@ -273,7 +267,6 @@
 <translation id="870251953148363156">Ενημέρωση &amp;του Google Chrome</translation>
 <translation id="873133009373065397">Το Google Chrome δεν μπορεί να καθορίσει ή να ορίσει το προεπιλεγμένο πρόγραμμα περιήγησης</translation>
 <translation id="8736674169840206667">Ο διαχειριστής σας απαιτεί να επανεκκινήσετε το Chrome, προκειμένου να εφαρμοστεί μια ενημέρωση</translation>
-<translation id="8788264404293392165">Αυτή η γλώσσα χρησιμοποιείται για την προβολή της διεπαφής Chrome OS</translation>
 <translation id="8823341990149967727">Το Chrome δεν είναι ενημερωμένο</translation>
 <translation id="884296878221830158">Επίσης, ελέγχει τη σελίδα που εμφανίζεται κατά την εκκίνηση του Chrome ή όταν κάνετε κλικ στο κουμπί αρχικής σελίδας.</translation>
 <translation id="8862326446509486874">Δεν έχετε τα απαραίτητα δικαιώματα για εγκατάσταση σε επίπεδο συστήματος. Δοκιμάστε να εκτελέσετε ξανά το πρόγραμμα εγκατάστασης ως Διαχειριστής.</translation>

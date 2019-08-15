@@ -255,7 +255,7 @@ void ModulatorImplBase::ResolveDynamically(
 
 // <specdef href="https://html.spec.whatwg.org/C/#hostgetimportmetaproperties">
 ModuleImportMeta ModulatorImplBase::HostGetImportMetaProperties(
-    ModuleRecord record) const {
+    v8::Local<v8::Module> record) const {
   // <spec step="1">Let module script be moduleRecord.[[HostDefined]].</spec>
   const ModuleScript* module_script =
       module_record_resolver_->GetModuleScriptFromModuleRecord(record);
@@ -378,7 +378,7 @@ ScriptValue ModulatorImplBase::ExecuteModule(
     // <spec step="7">Otherwise:</spec>
 
     // <spec step="7.1">Let record be script's record.</spec>
-    const v8::Local<v8::Module>& record = module_script->V8Module();
+    v8::Local<v8::Module> record = module_script->V8Module();
     CHECK(!record.IsEmpty());
 
     // <spec step="7.2">Set evaluationStatus to ModuleRecord::Evaluate().

@@ -13,7 +13,7 @@
 <translation id="2872961005593481000">Encerrar</translation>
 <translation id="3008341117444806826">ATUALIZAR</translation>
 <translation id="3838338534323494292">Nova palavra-passe</translation>
-<translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> gere este dispositivo e tem acesso a todas as atividades do utilizador, incluindo páginas Web visitadas, palavras-passe e emails.</translation>
+<translation id="4003259559679196451">O domínio <ph name="ENROLLMENT_DOMAIN" /> gere este dispositivo e tem acesso a todas as atividades do utilizador, incluindo páginas Web visitadas, palavras-passe e emails.</translation>
 <translation id="4227825898293920515">A palavra-passe expira daqui a <ph name="TIME" /></translation>
 <translation id="4429881212383817840">A permissão Kerberos expira em breve</translation>
 <translation id="445059817448385655">Palavra-passe antiga</translation>

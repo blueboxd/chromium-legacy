@@ -15,11 +15,22 @@ BROWSING_TEST_SUITES = {
     'v8.browsing_mobile': ['Total:duration', 'V8-Only:duration']
 }
 
-BENCHMARK_TEST_SUITES = {
-    'speedometer2': ['RunsPerMinute'],
-    'octane': ['Total.Score'],
-    'jetstream' : ['Score']
-}
+PRESS_BENCHMARKS = [
+    {
+        'test_suite': 'speedometer2',
+        'measurement': 'RunsPerMinute',
+        'test_case': 'Speedometer2'
+    },
+    {
+        'test_suite': 'octane',
+        'measurement': 'Total.Score',
+    },
+    {
+        'test_suite': 'jetstream',
+        'measurement': 'Score',
+    }
+]
+
 
 def GetV8BrowsingMobile():
   # The describe API doesn't currently work with v8.browsing_mobile, so use
@@ -54,15 +65,10 @@ def IterTestPaths():
         page_category = '_'.join(test_case_parts[0:2])
 
         for measurement in measurements:
-          # The v2 API doesn't support v8.browsing_mobile, so fall back on the v1
-          # API for now.
+          # The v2 API doesn't support v8.browsing_mobile, so fall back on the
+          # v1 API for now.
           yield '/'.join(
               [bot_path, test_suite, measurement, page_category, page])
 
-    for test_suite, measurements in BENCHMARK_TEST_SUITES.iteritems():
-      for measurement in measurements:
-        yield timeseries.Key(
-            test_suite=test_suite,
-            measurement=measurement,
-            bot=bot,
-            test_case='')
+    for series in PRESS_BENCHMARKS:
+      yield timeseries.Key.FromDict(series, bot=bot)

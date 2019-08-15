@@ -373,4 +373,18 @@ void SharedImageInterfaceProxy::PresentSwapChain(const SyncToken& sync_token,
 #endif  // OS_WIN
 }
 
+#if defined(OS_FUCHSIA)
+void SharedImageInterfaceProxy::RegisterSysmemBufferCollection(
+    gfx::SysmemBufferCollectionId id,
+    zx::channel token) {
+  host_->Send(
+      new GpuChannelMsg_RegisterSysmemBufferCollection(route_id_, id, token));
+}
+
+void SharedImageInterfaceProxy::ReleaseSysmemBufferCollection(
+    gfx::SysmemBufferCollectionId id) {
+  host_->Send(new GpuChannelMsg_ReleaseSysmemBufferCollection(route_id_, id));
+}
+#endif  // defined(OS_FUCHSIA)
+
 }  // namespace gpu

@@ -82,11 +82,10 @@ class SharedClipboardUiControllerTest : public testing::Test {
     SharingDeviceInfo sharing_device_info(
         kReceiverGuid, base::UTF8ToUTF16(kReceiverName),
         sync_pb::SyncEnums::TYPE_PHONE, base::Time::Now(), 1);
-    SharedClipboardUiController::DeviceSelected(
-        web_contents_.get(), base::UTF8ToUTF16(kText), sharing_device_info);
-    shared_clipboard_sharing_dialog_controller_ =
-        SharedClipboardUiController::GetOrCreateFromWebContents(
-            web_contents_.get());
+    controller_ = SharedClipboardUiController::GetOrCreateFromWebContents(
+        web_contents_.get());
+    controller_->OnDeviceSelected(base::UTF8ToUTF16(kText),
+                                  sharing_device_info);
   }
 
  protected:
@@ -98,8 +97,7 @@ class SharedClipboardUiControllerTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   std::unique_ptr<content::WebContents> web_contents_;
-  SharedClipboardUiController* shared_clipboard_sharing_dialog_controller_ =
-      nullptr;
+  SharedClipboardUiController* controller_ = nullptr;
 };
 }  // namespace
 
@@ -120,13 +118,12 @@ TEST_F(SharedClipboardUiControllerTest, OnDeviceChosen) {
   EXPECT_CALL(*service(),
               SendMessageToDevice(Eq(kReceiverGuid), Eq(kSharingMessageTTL),
                                   ProtoEquals(sharing_message), _));
-  shared_clipboard_sharing_dialog_controller_->OnDeviceChosen(
-      sharing_device_info);
+  controller_->OnDeviceChosen(sharing_device_info);
 }
 
 // Check the call to sharing service to get all synced devices.
 TEST_F(SharedClipboardUiControllerTest, GetSyncedDevices) {
   EXPECT_CALL(*service(), GetDeviceCandidates(Eq(static_cast<int>(
-                              SharingDeviceCapability::kNone))));
-  shared_clipboard_sharing_dialog_controller_->GetSyncedDevices();
+                              SharingDeviceCapability::kSharedClipboard))));
+  controller_->UpdateAndShowDialog();
 }

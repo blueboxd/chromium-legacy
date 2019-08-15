@@ -11,8 +11,6 @@
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_internal.h"
-#import "ios/web_view/public/cwv_credit_card_verifier_data_source.h"
-#import "ios/web_view/public/cwv_credit_card_verifier_delegate.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -82,17 +80,17 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
 }  // namespace ios_web_view
 
 @implementation CWVCreditCardVerifier {
+  // Used to interface with |_unmaskingController|.
+  std::unique_ptr<ios_web_view::WebViewCardUnmaskPromptView> _unmaskingView;
   // The main class that is wrapped by this class.
   std::unique_ptr<autofill::CardUnmaskPromptControllerImpl>
       _unmaskingController;
-  // Used to interface with |_unmaskingController|.
-  std::unique_ptr<ios_web_view::WebViewCardUnmaskPromptView> _unmaskingView;
-  // Data source to provide risk data.
-  __weak id<CWVCreditCardVerifierDataSource> _dataSource;
-  // Delegate to receive callbacks.
-  __weak id<CWVCreditCardVerifierDelegate> _delegate;
+  // Completion handler to be called when verification completes.
+  void (^_Nullable _completionHandler)(NSError* _Nullable);
   // The callback to invoke for returning risk data.
   base::OnceCallback<void(const std::string&)> _riskDataCallback;
+  // Verification was attempted at least once.
+  BOOL _verificationAttempted;
 }
 
 @synthesize creditCard = _creditCard;
@@ -118,7 +116,12 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
 }
 
 - (void)dealloc {
-  _unmaskingController->OnUnmaskDialogClosed();
+  // autofill::CardUnmaskPromptControllerImpl::OnUnmaskDialogClosed, despite its
+  // name, should only be called if the user does not attempt any verification
+  // at all.
+  if (!_verificationAttempted) {
+    _unmaskingController->OnUnmaskDialogClosed();
+  }
 }
 
 #pragma mark - Public Methods
@@ -163,19 +166,15 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
       expirationMonth:(nullable NSString*)expirationMonth
        expirationYear:(nullable NSString*)expirationYear
          storeLocally:(BOOL)storeLocally
-           dataSource:(__weak id<CWVCreditCardVerifierDataSource>)dataSource
-             delegate:
-                 (nullable __weak id<CWVCreditCardVerifierDelegate>)delegate {
-  _dataSource = dataSource;
-  _delegate = delegate;
+             riskData:(NSString*)riskData
+    completionHandler:(void (^)(NSError* _Nullable error))completionHandler {
+  _verificationAttempted = YES;
+  _completionHandler = completionHandler;
 
   // It is possible for |_riskDataCallback| to be null when a failed
   // verification attempt is retried.
-  if (!_riskDataCallback.is_null()) {
-    [_dataSource creditCardVerifier:self
-        getRiskDataWithCompletionHandler:^(NSString* _Nonnull riskData) {
-          std::move(_riskDataCallback).Run(base::SysNSStringToUTF8(riskData));
-        }];
+  if (_riskDataCallback) {
+    std::move(_riskDataCallback).Run(base::SysNSStringToUTF8(riskData));
   }
 
   _unmaskingController->OnUnmaskPromptAccepted(
@@ -200,8 +199,7 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
 
 - (void)didReceiveVerificationResultWithErrorMessage:(NSString*)errorMessage
                                         retryAllowed:(BOOL)retryAllowed {
-  if ([_delegate respondsToSelector:@selector
-                 (creditCardVerifier:didFinishVerificationWithError:)]) {
+  if (_completionHandler) {
     NSError* error;
     autofill::AutofillClient::PaymentsRpcResult result =
         _unmaskingController->GetVerificationResult();
@@ -215,8 +213,8 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
                                   code:CWVConvertPaymentsRPCResult(result)
                               userInfo:userInfo];
     }
-
-    [_delegate creditCardVerifier:self didFinishVerificationWithError:error];
+    _completionHandler(error);
+    _completionHandler = nil;
   }
 }
 

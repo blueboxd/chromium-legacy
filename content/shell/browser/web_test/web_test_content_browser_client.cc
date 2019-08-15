@@ -157,16 +157,24 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
       ui_task_runner);
   registry->AddInterface(base::BindRepeating(&MojoWebTestHelper::Create));
   registry->AddInterface(
-      base::BindRepeating(&WebTestContentBrowserClient::BindClipboardHost,
-                          base::Unretained(this)),
+      base::BindRepeating(
+          &WebTestContentBrowserClient::BindClipboardHostForRequest,
+          base::Unretained(this)),
       ui_task_runner);
 }
 
-void WebTestContentBrowserClient::BindClipboardHost(
+void WebTestContentBrowserClient::BindClipboardHostForRequest(
     blink::mojom::ClipboardHostRequest request) {
+  // Implicit conversion from ClipboardHostRequest to
+  // mojo::PendingReceiver<blink::mojom::ClipboardHost>.
+  BindClipboardHost(std::move(request));
+}
+
+void WebTestContentBrowserClient::BindClipboardHost(
+    mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver) {
   if (!mock_clipboard_host_)
     mock_clipboard_host_ = std::make_unique<MockClipboardHost>();
-  mock_clipboard_host_->Bind(std::move(request));
+  mock_clipboard_host_->Bind(std::move(receiver));
 }
 
 void WebTestContentBrowserClient::OverrideWebkitPrefs(

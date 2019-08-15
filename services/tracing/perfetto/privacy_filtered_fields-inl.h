@@ -46,9 +46,9 @@ constexpr MessageInfo kTrackEvent = {kTrackEventIndices,
 constexpr int kEventCategoryIndices[] = {1, 2, -1};
 constexpr MessageInfo kEventCategory = {kEventCategoryIndices, nullptr};
 
-// Proto Message: LegacyEventName
-constexpr int kLegacyEventNameIndices[] = {1, 2, -1};
-constexpr MessageInfo kLegacyEventName = {kLegacyEventNameIndices, nullptr};
+// Proto Message: EventName
+constexpr int kEventNameIndices[] = {1, 2, -1};
+constexpr MessageInfo kEventName = {kEventNameIndices, nullptr};
 
 // Proto Message: SourceLocation
 constexpr int kSourceLocationIndices[] = {1, 2, 3, -1};
@@ -78,7 +78,7 @@ constexpr MessageInfo kMapping = {kMappingIndices, nullptr};
 // Proto Message: InternedData
 constexpr int kInternedDataIndices[] = {1, 2, 4, 6, 7, 16, 17, 19, -1};
 constexpr MessageInfo const* kInternedDataComplexMessages[] = {
-    &kEventCategory, &kLegacyEventName, &kSourceLocation,      &kFrame,
+    &kEventCategory, &kEventName,       &kSourceLocation,      &kFrame,
     &kCallstack,     &kInternedBuildId, &kInternedMappingPath, &kMapping};
 constexpr MessageInfo kInternedData = {kInternedDataIndices,
                                        kInternedDataComplexMessages};

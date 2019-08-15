@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/image_element_timing.h"
 #include "third_party/blink/renderer/core/paint/largest_contentful_paint_calculator.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -63,7 +64,9 @@ static bool LargeImageFirst(const base::WeakPtr<ImageRecord>& a,
 ImagePaintTimingDetector::ImagePaintTimingDetector(
     LocalFrameView* frame_view,
     PaintTimingCallbackManager* callback_manager)
-    : frame_view_(frame_view), callback_manager_(callback_manager) {}
+    : records_manager_(frame_view),
+      frame_view_(frame_view),
+      callback_manager_(callback_manager) {}
 
 void ImagePaintTimingDetector::PopulateTraceValue(
     TracedValue& value,
@@ -211,7 +214,8 @@ void ImagePaintTimingDetector::RecordImage(
     const LayoutObject& object,
     const IntSize& intrinsic_size,
     const ImageResourceContent& cached_image,
-    const PropertyTreeState& current_paint_chunk_properties) {
+    const PropertyTreeState& current_paint_chunk_properties,
+    const StyleFetchedImage* style_image) {
   Node* node = object.GetNode();
   if (!node)
     return;
@@ -224,7 +228,7 @@ void ImagePaintTimingDetector::RecordImage(
   if (is_recored_visible_image &&
       !records_manager_.IsVisibleImageLoaded(record_id) &&
       cached_image.IsLoaded()) {
-    records_manager_.OnImageLoaded(record_id, frame_index_);
+    records_manager_.OnImageLoaded(record_id, frame_index_, style_image);
     need_update_timing_at_frame_end_ = true;
     if (base::Optional<PaintTimingVisualizer>& visualizer =
             frame_view_->GetPaintTimingDetector().Visualizer()) {
@@ -266,7 +270,7 @@ void ImagePaintTimingDetector::RecordImage(
   } else {
     records_manager_.RecordVisible(record_id, rect_size);
     if (cached_image.IsLoaded()) {
-      records_manager_.OnImageLoaded(record_id, frame_index_);
+      records_manager_.OnImageLoaded(record_id, frame_index_, style_image);
       need_update_timing_at_frame_end_ = true;
     }
   }
@@ -279,18 +283,25 @@ void ImagePaintTimingDetector::NotifyImageFinished(
   records_manager_.NotifyImageFinished(record_id);
 }
 
-ImageRecordsManager::ImageRecordsManager()
-    : size_ordered_set_(&LargeImageFirst) {}
+ImageRecordsManager::ImageRecordsManager(LocalFrameView* frame_view)
+    : size_ordered_set_(&LargeImageFirst), frame_view_(frame_view) {}
 
 void ImageRecordsManager::OnImageLoaded(const RecordId& record_id,
-                                        unsigned current_frame_index) {
+                                        unsigned current_frame_index,
+                                        const StyleFetchedImage* style_image) {
   base::WeakPtr<ImageRecord> record = FindVisibleRecord(record_id);
   DCHECK(record);
-  // TODO(crbug.com/986891): some background images are not being tracked
-  // properly, so we cannot add a DCHECK that |image_finished_times| contains
-  // |record_id|. Once that bug is fixed, we should add that check, as otherwise
-  // we'll be exposing a loadTime of 0.
-  record->load_time = image_finished_times_.at(record_id);
+  if (!style_image) {
+    record->load_time = image_finished_times_.at(record_id);
+    DCHECK(!record->load_time.is_null());
+  } else {
+    Document* document = frame_view_->GetFrame().GetDocument();
+    if (document && document->domWindow() &&
+        RuntimeEnabledFeatures::ElementTimingEnabled(document)) {
+      record->load_time = ImageElementTiming::From(*document->domWindow())
+                              .GetBackgroundImageLoadTime(style_image);
+    }
+  }
   OnImageLoadedInternal(record, current_frame_index);
 }
 

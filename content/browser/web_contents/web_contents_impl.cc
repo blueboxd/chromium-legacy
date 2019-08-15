@@ -4174,7 +4174,7 @@ int WebContentsImpl::DownloadImage(
     WebContents::ImageDownloadCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   static int next_image_download_id = 0;
-  const blink::mojom::ImageDownloaderPtr& mojo_image_downloader =
+  const mojo::Remote<blink::mojom::ImageDownloader>& mojo_image_downloader =
       GetMainFrame()->GetMojoImageDownloader();
   const int download_id = ++next_image_download_id;
   if (!mojo_image_downloader) {

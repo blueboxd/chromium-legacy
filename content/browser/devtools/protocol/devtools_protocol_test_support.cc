@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/security_style_explanations.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
@@ -30,6 +31,11 @@ DevToolsProtocolTest::DevToolsProtocolTest()
       agent_host_can_close_(false) {}
 
 DevToolsProtocolTest::~DevToolsProtocolTest() = default;
+
+void DevToolsProtocolTest::SetUpCommandLine(base::CommandLine* command_line) {
+  ContentBrowserTest::SetUpCommandLine(command_line);
+  command_line->AppendSwitch(switches::kAllowPreCommitInput);
+}
 
 void DevToolsProtocolTest::SetUpOnMainThread() {
   host_resolver()->AddRule("*", "127.0.0.1");

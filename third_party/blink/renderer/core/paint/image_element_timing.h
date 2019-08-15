@@ -45,6 +45,7 @@ class CORE_EXPORT ImageElementTiming final
   void NotifyImageFinished(const LayoutObject&, const ImageResourceContent*);
 
   void NotifyBackgroundImageFinished(const StyleFetchedImage*);
+  base::TimeTicks GetBackgroundImageLoadTime(const StyleFetchedImage*);
 
   // Called when the LayoutObject has been painted. This method might queue a
   // swap promise to compute and report paint timestamps.

@@ -70,7 +70,7 @@ public interface TabCreatorManager {
          * @return            Whether a Tab was created successfully.
          */
         public abstract boolean createTabWithWebContents(
-                Tab parent, WebContents webContents, @TabLaunchType int type, String url);
+                @Nullable Tab parent, WebContents webContents, @TabLaunchType int type, String url);
 
         /**
          * Creates a tab around the native web contents pointer.

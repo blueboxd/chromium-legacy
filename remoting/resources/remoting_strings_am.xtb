@@ -8,14 +8,6 @@
 <translation id="1199593201721843963">የርቀት ግንኙነቶችን አሰናክል</translation>
 <translation id="1291443878853470558">Chromotingን ተጠቅመው ይህንን ኮምፒውተር መድረስ ከፈለጉ የርቀት ግንኙነቶችን ማንቃት አለብዎት።</translation>
 <translation id="1297009705180977556">ከ<ph name="HOSTNAME" /> ጋር መገናኘት ላይ ስህተት</translation>
-<translation id="1300633907480909701">ከእርስዎ የAndroid መሣሪያ ሆነው ደህንነቱ በተጠበቀ ሁኔታ ኮምፒውተሮችዎን ይድረሱባቸው።
-
-• በእያንዳንዱ ኮምፒውተርዎች ላይ ከChrome የድር መደብር የመጣውን የChrome ርቀት ዴስክቶፕ መተግበሪያ በመጠቀም የርቀት መዳረሻን ያዋቅሩ፦ https://chrome.google.com/remotedesktop
-• በእርስዎ የAndroid መሣሪያ ላይ መተግበሪያውን ይክፈቱና ከየትኛውም የመስመር ላይ ኮምፒውተርዎ ጋር ለመገናኘት መታ ያድርጉት።
-
-የቁልፍ ሰሌዳቸው የአሜሪካ-እንግሊዝኛ ያልሆኑ የርቀት ኮምፒውተሮች ትክክል ያልሆነ የጽሑፍ ግቤት ሊደርሳቸው ይችላል። የሌሎች ቁልፍ ሰሌዳ አቀማመጦች ድጋፍ በቅርቡ ይመጣል!
-
-ስለግላዊነት መረጃ ለማግኘት እባክዎ የGoogle ግላዊነት መመሪያን (http://goo.gl/SyrVzj) እና የChrome ግላዊነት መመሪያን (http://goo.gl/0uXE5d) ይመልከቱ።</translation>
 <translation id="1324095856329524885">(ይህ ባህሪ ገና ለኮምፒውተርዎ አይገኝም)</translation>
 <translation id="1342297293546459414">አንድ የተጋራ ኮምፒውተር ይመልከቱ እና ይቆጣጠሩ።</translation>
 <translation id="1389790901665088353">Chrome የርቀት ዴስክቶፕ አስተናጋጅ ጫኚ ያውርዱ</translation>
@@ -28,7 +20,6 @@
 <translation id="1643640058022401035">ከዚህ ገጽ መውጣት የChromoting ክፍለ-ጊዜዎን ያጠናቅቀዋል።</translation>
 <translation id="1654128982815600832">ለዚህ ኮምፒውተር የርቀት ግንኙነቶችን በማንቃት ላይ…</translation>
 <translation id="170207782578677537">ይህንን ኮምፒውተር መመዝገብ አልተሳካም።</translation>
-<translation id="1727412735341161734">Chrome የርቀት ዴስክቶፕ</translation>
 <translation id="174018511426417793">ምንም የተመዘገቡ ኮምፒውተሮች የለዎትም። ከአንድ ኮምፒውተር ጋር የርቀት ግንኙነቶችን ለማንቃት Chrome የርቀት ዴስክቶፕን እዚያው ይጫኑና «<ph name="BUTTON_NAME" />»ን ይጫኑ።</translation>
 <translation id="1742469581923031760">በመገናኘት ላይ...</translation>
 <translation id="1770394049404108959">መተግበሪያውን መክፈት አልችልም።</translation>
@@ -46,13 +37,6 @@
 <translation id="2078880767960296260">የአስተናጋጅ ሂደት</translation>
 <translation id="20876857123010370">የትራክፓድ ሁነታ</translation>
 <translation id="2089514346391228378">ለዚህ ኮምፒውተር የርቀት ግንኙነቶች ነቅተዋል።</translation>
-<translation id="2118549242412205620">ከእርስዎ የAndroid መሣሪያ ሆነው ደህንነቱ በተጠበቀ ሁኔታ ኮምፒውተሮችዎን ይድረሱባቸው።
-
-• በእያንዳንዱ ኮምፒውተርዎች ላይ ከChrome የድር መደብር የመጣውን የChrome ርቀት ዴስክቶፕ መተግበሪያ በመጠቀም የርቀት መዳረሻን ያዋቅሩ፦ https://chrome.google.com/remotedesktop
-• በእርስዎ የAndroid መሣሪያ ላይ መተግበሪያውን ይክፈቱና ከየትኛው የመስመር ላይ ኮምፒውተርዎ ጋር ለመገናኘት መታ ያድርጉት።
-
-ስለግላዊነት መረጃ ለማግኘት እባክዎ የGoogle ግላዊነት መመሪያን (http://goo.gl/SyrVzj) እና የChrome ግላዊነት መመሪያን (http://goo.gl/0uXE5d) ይመልከቱ።</translation>
-<translation id="2124408767156847088">ከእርስዎ የAndroid መሣሪያ ሆነው ደህንነቱ በተጠበቀ ሁኔታ ኮምፒውተሮችዎን ይድረሱባቸው።</translation>
 <translation id="2208514473086078157">የመምሪያ ቅንብሮች ይህን ኮምፒውተር እንደ የChrome ርቀት ዴስክቶፕ አስተናጋጅ አድርጎ ማጋራት አይፈቅዱም። እርዳታ እንዲያገኙ የስርዓት አስተዳዳሪዎን ያግኙ።</translation>
 <translation id="2220529011494928058">ችግር ሪፖርት አድርግ</translation>
 <translation id="2221097377466213233">ለWin ቁልፍ Ctrlን ይጠቀሙ (Mac ላይ ⌘)</translation>
@@ -91,11 +75,6 @@
 <translation id="2851754573186462851">የChromium መተግበሪያ ዥረት</translation>
 <translation id="2888969873284818612">አንድ የአውታረ መረብ ስህተት ተከስቷል። መሣሪያዎችዎ ዳግም መስመር ላይ ሲሆኑ መተግበሪያውን ዳግም እናስጀምረዋለን።</translation>
 <translation id="2891243864890517178">ለMac (OS X Yosemite 10.10 እና ከዚያ በላይ)</translation>
-<translation id="289405675947420287">ኮምፒውተርዎን ከiOS መሣሪያዎ ሆነው ደህንነቱ በተጠበቀ መልኩ ይድረሱበት። ፈጣን፣ ቀላል እና ነጻ ነው።
-
-• በርቀት ሊደርሱበት በሚፈልጉት ኮምፒውተር ላይ የChrome ርቀት ዴስክቶፕ መተግበሪያውን በChrome ድር መደብር ላይ ያግኙት።
-• የChrome ርቀት ዴስክቶፕ ሶፍትዌሩን ይጫኑትና ማዋቀር ለማጠናቀቅ መመሪያዎቹን ይከተሉ።
-• በእርስዎ iOS መሣሪያ ላይ መተግበሪያውን ይክፈቱና ለመገናኘት ማንኛውም የመስመር ላይ ኮምፒውተሮችዎን መታ ያድርጉ።</translation>
 <translation id="2894654864775534701">ይህ ኮምፒውተር በተለየ መለያ ስር አሁን ላይ ተጋርቷል።</translation>
 <translation id="2919669478609886916">በአሁኑ ጊዜ ይህንን ማሽን ከሌላ ተጠቃሚ ጋር እየተጋሩ ነዎት። ማጋራቱን መቀጠል ይፈልጋሉ?</translation>
 <translation id="2921543551052660690">ከዚህ ቀደም እንደ <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) ሆነው ገብተዋል። በዚያ መለያ ውስጥ የእርስዎን ኮምፒውተሮች ለመድረስ በዚያ መለያ <ph name="LINK_BEGIN" />ወደ Chromium ይግቡ<ph name="LINK_END" />ና Chromotingን ዳግም ይጫኑት።</translation>
@@ -109,7 +88,6 @@
 <translation id="310979712355504754">ሁሉንም ይሰርዙ</translation>
 <translation id="3150823315463303127">አስተናጋጅ መመሪያውን ለማንበብ አልተሳካም።</translation>
 <translation id="3171922709365450819">ይህ መሣሪያ የሶስተኛ ወገን ማረጋገጥ ስለሚያስፈልገው በዚህ ደንበኛ አይደገፍም።</translation>
-<translation id="3194245623920924351">Chrome የርቀት ዴስክቶፕ</translation>
 <translation id="3197730452537982411">የርቀት ዴስክቶፕ</translation>
 <translation id="324272851072175193">እነዚህን መመሪያዎች በኢሜይል ላክ</translation>
 <translation id="3258789396564295715">Chrome የርቀት ዴስክቶፕን ተጠቅመው ይህንን ኮምፒውተር ደህንነቱ በተጠበቀ መልኩ ሊደርሱበት ይችላሉ።</translation>
@@ -174,13 +152,6 @@
 <translation id="4660011489602794167">የቁልፍ ሰሌዳን አሳይ</translation>
 <translation id="4703302905453407178">የሚያስፈልግ ክፍለ-አካል መሥራቱን አቁሟል። እባክዎ ይህን ችግር ለገንቢዎቹ ሪፖርት ያድርጉት።</translation>
 <translation id="4703799847237267011">የChromoting ክፍለ-ጊዜዎ ተጠናቅቋል።</translation>
-<translation id="4706355010316049867">Chrome
-የርቀት
-ዴስክቶፕ
-መዳረሻ
-ድጋፍ
-ኮምፒዩተር
-ፒሲ</translation>
 <translation id="4736223761657662401">የግንኙነት ታሪክ</translation>
 <translation id="4741792197137897469">ማረጋገጥ አልተሳካም። እባክዎ እንደገና ወደ Chrome ይግቡ።</translation>
 <translation id="477305884757156764">መተግበሪያው ከልክ በላይ ቀርፋፋ ነው።</translation>
@@ -252,7 +223,6 @@
 <translation id="6381670701864002291">ሌላ ነገር።</translation>
 <translation id="6398765197997659313">ከሙሉ ማሳያ መስኮት ይውጡ</translation>
 <translation id="6441316101718669559">የዴስክቶፕ ውህደት በዚህ የመሣሪያ ስርዓት ላይ አይደገፍም። አሁንም መተግበሪያውን መጠቀም ይችላሉ፣ ነገር ግን የተጠቃሚ ተሞክሮው የወረደ ይሆናል።</translation>
-<translation id="6502629188777329097">ኮምፒውተርዎን ደህንነቱ በተጠበቀ ሁኔታ ይድረሱበት</translation>
 <translation id="652218476070540101">የዚህ ኮምፒውተር ፒን እየተዘመነ ነው…</translation>
 <translation id="6527303717912515753">አጋራ</translation>
 <translation id="6541219117979389420">የመተግበሪያ ምዝግብ ማስታወሻዎች እንደ የእርስዎ ማንነት (የኢሜይል አድራሻ) እና በGoogle Drive ውስጥ ያሉ የፋይሎች እና አቃፊዎች ስሞችን እና አቃፊዎችን ጨምሮ የግል መረጃን ሊያካትቱ ይችላሉ።</translation>
@@ -286,7 +256,6 @@
 <translation id="7116737094673640201">እንኳን ወደ Chrome የርቀት ዴስክቶፕ በደህና መጡ</translation>
 <translation id="7144878232160441200">እንደገና ሞክር</translation>
 <translation id="7149517134817561223">ለChrome የርቀት ዴስክቶፕ አስተናጋጅ ትዕዛዞችን የሚሰጥ መተግበሪያ።</translation>
-<translation id="7213491505512310433">የማረጋገያ ማሻሻያዎች እና የሳንካ ጥገናዎች።</translation>
 <translation id="7215059001581613786">እባክዎ ስድስት ወይም ከዚያ በላይ የሆነ አኃዝ ያለው ፒን ያስገቡ።</translation>
 <translation id="7312846573060934304">አስተናጋጅ ከመስመር ውጪ ነው።</translation>
 <translation id="7319983568955948908">ማጋራት አቁም</translation>

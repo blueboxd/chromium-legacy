@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/unguessable_token.h"
+#include "gpu/vulkan/vulkan_implementation.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_pixmap_handle.h"
@@ -35,10 +36,16 @@ class SysmemBufferManager {
       gfx::BufferUsage usage,
       size_t num_buffers);
 
+  scoped_refptr<SysmemBufferCollection> ImportSysmemBufferCollection(
+      VkDevice vk_device,
+      gfx::SysmemBufferCollectionId id,
+      zx::channel token);
+
   scoped_refptr<SysmemBufferCollection> GetCollectionById(
       gfx::SysmemBufferCollectionId id);
 
  private:
+  void RegisterCollection(SysmemBufferCollection* collection);
   void OnCollectionDestroyed(gfx::SysmemBufferCollectionId id);
 
   fuchsia::sysmem::AllocatorSyncPtr allocator_;

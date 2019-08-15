@@ -8,14 +8,6 @@
 <translation id="1199593201721843963">원격 연결 사용중지</translation>
 <translation id="1291443878853470558">Chromoting을 사용하여 컴퓨터에 액세스하려면 원격 연결을 사용하도록 설정해야 합니다.</translation>
 <translation id="1297009705180977556"><ph name="HOSTNAME" /> 연결 중 오류가 발생했습니다</translation>
-<translation id="1300633907480909701">Android 기기에서 컴퓨터에 안전하게 액세스하세요.
-
-• Chrome 웹 스토어의 Chrome 원격 데스크톱 앱(https://chrome.google.com/remotedesktop)을 사용하여 각 컴퓨터에서 원격 액세스를 설정합니다.
-• Android 기기에서 앱을 열고 연결할 온라인 컴퓨터를 탭합니다.
-
-원격 컴퓨터에서 미국식 영어 키보드를 사용하지 않는 경우 잘못된 텍스트가 입력될 수 있습니다. 미국식 영어 이외의 키보드 레이아웃은 곧 지원될 예정입니다.
-
-개인정보 보호에 대한 자세한 내용은 Google 개인정보처리방침(http://goo.gl/SyrVzj)과 Chrome 개인정보처리방침(http://goo.gl/0uXE5d)을 참조하세요.</translation>
 <translation id="1324095856329524885">(이 컴퓨터에서 사용할 수 없는 기능입니다.)</translation>
 <translation id="1342297293546459414">공유한 컴퓨터를 보고 제어합니다.</translation>
 <translation id="1389790901665088353">Chrome 원격 데스크톱 호스트 설치 프로그램 다운로드</translation>
@@ -28,7 +20,6 @@
 <translation id="1643640058022401035">이 페이지를 닫으면 Chromoting 세션이 종료됩니다.</translation>
 <translation id="1654128982815600832">컴퓨터의 원격 연결을 사용하도록 설정 중...</translation>
 <translation id="170207782578677537">컴퓨터를 등록하는 데 실패했습니다.</translation>
-<translation id="1727412735341161734">Chrome 원격 데스크톱</translation>
 <translation id="174018511426417793">등록된 컴퓨터가 없습니다. 컴퓨터에 원격 연결을 사용하려면 Chrome 원격 데스크톱을 설치하고 '<ph name="BUTTON_NAME" />' 버튼을 클릭하세요.</translation>
 <translation id="1742469581923031760">연결 중...</translation>
 <translation id="1770394049404108959">애플리케이션이 열리지 않음</translation>
@@ -46,13 +37,6 @@
 <translation id="2078880767960296260">호스트 프로세스</translation>
 <translation id="20876857123010370">트랙패드 모드</translation>
 <translation id="2089514346391228378">컴퓨터의 원격 연결을 사용하도록 설정했습니다.</translation>
-<translation id="2118549242412205620">Android 기기에서 컴퓨터에 안전하게 액세스하세요.
-
-• Chrome 웹 스토어의 Chrome 원격 데스크톱 앱(https://chrome.google.com/remotedesktop)을 사용하여 각 컴퓨터에서 원격 액세스를 설정할 수 있습니다.
-• Android 기기에서 앱을 열고 연결할 온라인 컴퓨터를 탭합니다.
-
-개인정보 보호에 대한 자세한 내용은 Google 개인정보처리방침(http://goo.gl/SyrVzj)과 Chrome 개인정보처리방침(http://goo.gl/0uXE5d)을 참조하세요.</translation>
-<translation id="2124408767156847088">Android 기기에서 컴퓨터에 안전하게 액세스하세요.</translation>
 <translation id="2208514473086078157">정책 설정에서 이 컴퓨터를 Chrome 원격 데스크톱 호스트로 공유하는 것을 허용하지 않습니다. 도움이 필요하면 시스템 관리자에게 문의하세요.</translation>
 <translation id="2220529011494928058">문제 신고</translation>
 <translation id="2221097377466213233">오른쪽 Ctrl를 Win 키로 사용(Mac의 경우 ⌘)</translation>
@@ -91,11 +75,6 @@
 <translation id="2851754573186462851">Chromium 앱 스트리밍</translation>
 <translation id="2888969873284818612">네트워크 오류가 발생했습니다. 기기가 다시 온라인 상태가 되면 앱을 다시 시작하겠습니다.</translation>
 <translation id="2891243864890517178">Mac용(OS X Yosemite 10.10 이상)</translation>
-<translation id="289405675947420287">iOS 기기에서 컴퓨터에 안전하게 액세스하세요. 빠르고 간편하게 무료로 이용할 수 있습니다.
-
-• Chrome 웹 스토어에서 원격으로 액세스하려는 컴퓨터에 Chrome 원격 데스크톱 앱을 다운로드합니다.
-• Chrome 원격 데스크톱 소프트웨어를 설치하고 안내에 따라 설정을 완료합니다.
-• iOS 기기에서 앱을 열고 연결할 온라인 컴퓨터를 탭합니다.</translation>
 <translation id="2894654864775534701">이 컴퓨터는 현재 다른 계정으로 공유되어 있습니다.</translation>
 <translation id="2919669478609886916">현재 이 컴퓨터를 다른 사용자와 공유하고 있습니다. 계속 공유하시겠습니까?</translation>
 <translation id="2921543551052660690">이전에 <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)(으)로 로그인한 적이 있습니다. 이 계정으로 컴퓨터에 액세스하려면 이 계정을 사용해 <ph name="LINK_BEGIN" />Chromium에 로그인<ph name="LINK_END" />하고 Chromoting을 다시 설치하세요.</translation>
@@ -109,7 +88,6 @@
 <translation id="310979712355504754">모두 삭제</translation>
 <translation id="3150823315463303127">호스트에서 정책을 확인하지 못했습니다.</translation>
 <translation id="3171922709365450819">이 클라이언트에서는 타사 승인이 필요하기 때문에 이 기기를 지원하지 않습니다.</translation>
-<translation id="3194245623920924351">Chrome 원격 데스크톱</translation>
 <translation id="3197730452537982411">원격 데스크톱</translation>
 <translation id="324272851072175193">이 도움말을 이메일로 보내기</translation>
 <translation id="3258789396564295715">Chrome 원격 데스크톱을 사용하여 컴퓨터에 안전하게 액세스할 수 있습니다.</translation>
@@ -174,13 +152,6 @@
 <translation id="4660011489602794167">키보드 표시</translation>
 <translation id="4703302905453407178">필수 구성 요소가 작동이 중지되었습니다. 개발자에게 문제를 신고해 주세요.</translation>
 <translation id="4703799847237267011">Chromoting 세션이 종료되었습니다.</translation>
-<translation id="4706355010316049867">Chrome
-원격
-데스크톱
-액세스
-지원
-컴퓨터
-PC</translation>
 <translation id="4736223761657662401">연결 기록</translation>
 <translation id="4741792197137897469">인증에 실패했습니다. Chrome에 다시 로그인하세요.</translation>
 <translation id="477305884757156764">애플리케이션이 너무 느림</translation>
@@ -252,7 +223,6 @@ PC</translation>
 <translation id="6381670701864002291">기타 문제</translation>
 <translation id="6398765197997659313">전체화면 닫기</translation>
 <translation id="6441316101718669559">데스크톱 통합이 이 플랫폼에서 지원되지 않습니다. 애플리케이션을 사용할 수는 있지만, 사용자 환경이 저하될 수 있습니다.</translation>
-<translation id="6502629188777329097">컴퓨터에 안전하게 액세스하기</translation>
 <translation id="652218476070540101">컴퓨터의 PIN을 업데이트 중…</translation>
 <translation id="6527303717912515753">공유</translation>
 <translation id="6541219117979389420">애플리케이션 로그는 사용자의 ID(이메일 주소)와 Google 드라이브에 있는 파일 및 폴더의 이름과 속성 등의 비공개 정보를 포함할 수 있습니다.</translation>
@@ -286,7 +256,6 @@ PC</translation>
 <translation id="7116737094673640201">Chrome 원격 데스크톱에 오신 것을 환영합니다.</translation>
 <translation id="7144878232160441200">다시 시도</translation>
 <translation id="7149517134817561223">애플리케이션에서 Chrome 원격 데스크톱 호스트로 명령을 전송합니다.</translation>
-<translation id="7213491505512310433">안정성 향상 및 버그 수정</translation>
 <translation id="7215059001581613786">6자리 이상의 숫자로 구성된 PIN을 입력하세요.</translation>
 <translation id="7312846573060934304">호스트가 오프라인 상태입니다.</translation>
 <translation id="7319983568955948908">공유 중지</translation>

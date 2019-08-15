@@ -193,7 +193,7 @@ HTMLMapElement* TreeScope::GetImageMap(const String& url) const {
   if (hash_pos == kNotFound)
     return nullptr;
   String name = url.Substring(hash_pos + 1);
-  return ToHTMLMapElement(
+  return To<HTMLMapElement>(
       image_maps_by_name_->GetElementByMapName(AtomicString(name), *this));
 }
 

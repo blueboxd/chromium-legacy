@@ -24,19 +24,28 @@
 
 namespace content {
 
-ClipboardHostImpl::ClipboardHostImpl(blink::mojom::ClipboardHostRequest request)
-    : binding_(this, std::move(request)),
+ClipboardHostImpl::ClipboardHostImpl(
+    mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver)
+    : receiver_(this, std::move(receiver)),
       clipboard_(ui::Clipboard::GetForCurrentThread()),
       clipboard_writer_(
           new ui::ScopedClipboardWriter(ui::ClipboardType::kCopyPaste)) {}
 
-void ClipboardHostImpl::Create(blink::mojom::ClipboardHostRequest request) {
+void ClipboardHostImpl::CreateForRequest(
+    blink::mojom::ClipboardHostRequest request) {
+  // Implicit conversion from ClipboardHostRequest to
+  // mojo::PendingReceiver<blink::mojom::ClipboardHost>.
+  Create(std::move(request));
+}
+
+void ClipboardHostImpl::Create(
+    mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver) {
   // Clipboard implementations do interesting things, like run nested message
   // loops. Since StrongBinding<T> synchronously destroys on failure, that can
   // result in some unfortunate use-after-frees after the nested message loops
   // exit.
-  auto* host = new ClipboardHostImpl(std::move(request));
-  host->binding_.set_connection_error_handler(base::BindOnce(
+  auto* host = new ClipboardHostImpl(std::move(receiver));
+  host->receiver_.set_disconnect_handler(base::BindOnce(
       [](ClipboardHostImpl* host) {
         base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, host);
       },

@@ -68,6 +68,7 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
     kDomainMatchNecessary,
     kDomainMatchUnnecessary,
     kDomainMismatch,
+    kDomainNotRelevantAgentClusterMismatch,
   };
 
   // SecurityOrigin::Create() resolves |url| to its SecurityOrigin. When |url|

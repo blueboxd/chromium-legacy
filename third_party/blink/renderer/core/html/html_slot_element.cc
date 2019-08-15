@@ -438,7 +438,7 @@ void HTMLSlotElement::NotifySlottedNodesOfFlatTreeChange(
       new_slotted.size() + 1 > kLCSTableSizeLimit) {
     // Since DP takes O(N^2), we don't use DP if the size is larger than the
     // pre-defined limit.
-    NotifySlottedNodesOfFlatTreeChangeNaive(new_slotted);
+    NotifySlottedNodesOfFlatTreeChangeNaive(old_slotted, new_slotted);
   } else {
     NotifySlottedNodesOfFlatTreeChangeByDynamicProgramming(old_slotted,
                                                            new_slotted);
@@ -459,10 +459,77 @@ void HTMLSlotElement::DidSlotChangeAfterRenaming() {
 }
 
 void HTMLSlotElement::NotifySlottedNodesOfFlatTreeChangeNaive(
-    const HeapVector<Member<Node>>& new_slotted) {
-  // TODO(hayato): Use some heuristic to avoid reattaching all nodes
-  for (auto& node : new_slotted)
-    node->FlatTreeParentChanged();
+    const HeapVector<Member<Node>>& old_assigned_nodes,
+    const HeapVector<Member<Node>>& new_assigned_nodes) {
+  // Use naive heuristic to minimize the number of reattaching nodes in
+  // |new_assigned_nodes|. Though this algorithm is not perfect, it works well
+  // in some common cases, such as:
+
+  // Case 1) Appending a node:
+  // old assigned nodes: [a, b ...., z]
+  // new assigned nodes: [a, b ...., z, A]
+  // => The algorithm reattaches only node |A|.
+
+  // Case 2) Prepending a node:
+  // - old assigned nodes: [a, b, ..., z]
+  // - new assigned nodes: [A, a, b, ..., z]
+  // => The algorithm reattaches only node |A|.
+
+  // Case 3) Removing the first node:
+  // - old assigned nodes: [a, b, ..., z]
+  // - new assigned nodes: [b, ..., z]
+  // => The algorithm does not reattach any node.
+
+  // Case 4) Removing the last node:
+  // - old assigned nodes: [a, b, ..., z]
+  // - new assigned nodes: [a, b, ...]
+  // => The algorithm does not reattach any node.
+
+  // Case 5) Rotating children:
+  // - old assigned nodes: [a, b, ..., z]
+  // - new assigned nodes: [b, ..., z, a]
+  // => The algorithm reattaches all nodes. It doesn't work well for this case.
+
+  // TODO(hayato): Further improvement would be possible.
+  // An algorighm can be somewhat like vdom library's diffiling node lists,
+  // such as
+  // https://github.com/Polymer/lit-html/blob/34f621406867fbfd3a90f145420f0dbb7e8ab341/src/directives/repeat.ts#L141
+
+  wtf_size_t i = 0;
+  wtf_size_t j = 0;
+  for (; i < old_assigned_nodes.size() && j < new_assigned_nodes.size();
+       ++i, ++j) {
+    if (old_assigned_nodes.size() < new_assigned_nodes.size()) {
+      // If |new_assigned_nodes| is larger than |old_assigned_nodes|, reattach
+      // all nodes in |new_assigned_nodes| that were different from
+      // |old_assigned_nodes[i]|.
+      while (j < new_assigned_nodes.size() &&
+             old_assigned_nodes[i] != new_assigned_nodes[j]) {
+        new_assigned_nodes[j]->FlatTreeParentChanged();
+        ++j;
+      }
+      if (j == new_assigned_nodes.size())
+        break;
+    } else if (old_assigned_nodes.size() > new_assigned_nodes.size()) {
+      // If |old_assigned_nodes| is larger than |old_assigned_nodes|, skip all
+      // nodes in |old_assigned_nodes| that were different from
+      // new_assigned_nodes[j].
+      while (i < old_assigned_nodes.size() &&
+             old_assigned_nodes[i] != new_assigned_nodes[j]) {
+        ++i;
+      }
+    } else if (old_assigned_nodes[i] != new_assigned_nodes[j]) {
+      // If both assigned nodes are the same length, reattach all nodes
+      // in |new_assigned_nodes| that were different from the old one at the
+      // same position.
+      new_assigned_nodes[j]->FlatTreeParentChanged();
+    }
+  }
+
+  // We need to reattach all remaining new assigned nodes.
+  for (; j < new_assigned_nodes.size(); ++j) {
+    new_assigned_nodes[j]->FlatTreeParentChanged();
+  }
 }
 
 void HTMLSlotElement::

@@ -88,7 +88,8 @@ class ServiceWorkerFetchContextImpl final
 
   // Responsible for regular loads from the service worker (i.e., Fetch API).
   std::unique_ptr<blink::WebURLLoaderFactory> web_url_loader_factory_;
-  // Responsible for handling importScripts().
+  // Responsible for script loads from the service worker (i.e., the
+  // classic/module main script, module imported scripts, or importScripts()).
   std::unique_ptr<blink::WebURLLoaderFactory> web_script_loader_factory_;
 
   std::unique_ptr<URLLoaderThrottleProvider> throttle_provider_;

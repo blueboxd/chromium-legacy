@@ -119,8 +119,6 @@ generated_modules_callback_function_files = [
   "$bindings_modules_v8_output_dir/v8_lock_granted_callback.h",
   "$bindings_modules_v8_output_dir/v8_media_session_action_handler.cc",
   "$bindings_modules_v8_output_dir/v8_media_session_action_handler.h",
-  "$bindings_modules_v8_output_dir/v8_message_callback.cc",
-  "$bindings_modules_v8_output_dir/v8_message_callback.h",
   "$bindings_modules_v8_output_dir/v8_navigator_user_media_error_callback.cc",
   "$bindings_modules_v8_output_dir/v8_navigator_user_media_error_callback.h",
   "$bindings_modules_v8_output_dir/v8_navigator_user_media_success_callback.cc",

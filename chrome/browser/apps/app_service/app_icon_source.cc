@@ -78,7 +78,7 @@ void AppIconSource::StartDataRequest(
     LoadDefaultImage(callback);
     return;
   }
-  constexpr bool quantize_to_supported_scale_factor = false;
+  constexpr bool quantize_to_supported_scale_factor = true;
   int size_in_dip =
       apps_util::ConvertPxToDip(size, quantize_to_supported_scale_factor);
 

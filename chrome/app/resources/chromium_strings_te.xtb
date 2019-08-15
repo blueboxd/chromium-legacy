@@ -14,7 +14,7 @@
 <translation id="151962892725702025">మీ డొమైన్ కోసం సింక్‌ అందుబాటులో లేనందున, Chromium OS, మీ డేటాను సింక్ చేయ‌లేక‌పోయింది.</translation>
 <translation id="1524282610922162960">Chromium ట్యాబ్‌ను షేర్ చేయండి</translation>
 <translation id="1668054258064581266">Chromium నుండి మీ ఖాతాను తీసివేసిన తర్వాత, ప్రభావవంతం కావడానికి మీరు మీ తెరిచిన ట్యాబ్‌లను మళ్లీ లోడ్ చేయాల్సి రావచ్చు.</translation>
-<translation id="1688750314291223739">వెబ్‌కు మీ వ్యక్తిగతీకరించిన బ్రౌజర్ ఫీచర్‌లను సేవ్ చేసి, వాటిని ఏదైనా కంప్యూటర్‌లోని Chromium నుండి యాక్సెస్ చేయడానికి సింక్‌ను సెటప్ చేయండి.</translation>
+<translation id="1688750314291223739">వెబ్‌కు మీ వ్యక్తిగతీకరించిన బ్రౌజర్ ఫీచ‌ర్‌ల‌ను సేవ్ చేయడానికి సింక్‌ను సెటప్ చేయండి మరియు వాటిని ఏదైనా కంప్యూటర్‌లోని Chromium నుండి యాక్సెస్‌ చేయండి.</translation>
 <translation id="1708666629004767631">Chromium యొక్క కొత్త సురక్షితమైన వెర్షన్ అందుబాటులో ఉంది.</translation>
 <translation id="1766096484055239003">అప్‌డేట్‌ను వర్తింపజేయడం కోసం మీరు Chromiumను పునఃప్రారంభించాలని మీ నిర్వాహకుడు కోరుతున్నారు</translation>
 <translation id="1774152462503052664">నేపథ్యంలో Chromiumని అమలు చేయడానికి అనుమతించు</translation>
@@ -40,7 +40,7 @@
 <translation id="2560420686485554789">ఫైల్‌లను డౌన్‌లోడ్ చేయడానికి Chromiumకు నిల్వ యాక్సెస్ అవసరం</translation>
 <translation id="2572494885440352020">Chromium సహాయకం</translation>
 <translation id="2587578672395088481">అప్‌డేట్‌ను వర్తింపజేయడానికి Chromium OSను పునఃప్రారంభించాలి.</translation>
-<translation id="2647554856022461007">Chromium మీ బ్రౌజింగ్ అనుభవాన్ని మెరుగుపరచడానికి వెబ్ సేవలను ఉపయోగించవచ్చు. మీరు ఈ సేవలను ఐచ్ఛికంగా నిలిపివేయవచ్చు. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
+<translation id="2647554856022461007">Chromium మీ బ్రౌజింగ్ అనుభవాన్ని మెరుగుపరచడానికి వెబ్ సేవ‌లు ఉపయోగించవచ్చు. మీరు ఈ సేవ‌లు ఐచ్ఛికంగా నిలిపివేయవచ్చు. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">ఇన‌స్ట‌లేష‌న్‌ సమయంలో ఆపరేటింగ్ సిస్టమ్ ఎర్ర‌ర్‌ సంభవించింది. దయచేసి Chromiumను మళ్లీ డౌన్‌లోడ్ చేయండి.</translation>
 <translation id="2711502716910134313">Chromium ట్యాబ్</translation>
 <translation id="2718390899429598676">అదనపు భద్రత కోసం, Chromium మీ డేటాను ఎన్‌క్రిప్ట్ చేస్తుంది.</translation>
@@ -76,7 +76,7 @@
 <translation id="3639635944603682591">ఈ వ్యక్తి బ్రౌజింగ్ డేటా‌ ఈ పరికరం నుండి తొలగించబడుతుంది. డేటాను పునరుద్ధరించడానికి, <ph name="USER_EMAIL" />గా Chromiumకు సైన్ ఇన్ చేయండి.</translation>
 <translation id="3713809861844741608">కొత్త Chromium &amp;ట్యాబ్‌లో లింక్‌ని తెరువు</translation>
 <translation id="3728336900324680424">చిరునామా బార్‌లో సూచనలు చేయడానికి Chromium మీ డిస్క్‌ను యాక్సెస్ చేస్తుంది</translation>
-<translation id="378917192836375108">Chromium వెబ్‌లో ఫోన్ నంబర్ క్లిక్ చేయడానికి, Skypeతో కాల్ చేయడానికి మిమ్మల్ని అనుమతిస్తుంది!</translation>
+<translation id="378917192836375108">Chromium వెబ్‌లో ఫోన్ నంబర్ క్లిక్ చేయడానికి మరియు Skypeతో కాల్ చేయడానికి మిమ్మల్ని అనుమతిస్తుంది!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="388648406173476553">Chromiumను అనుకూలీకరించండి మరియు నియంత్రించండి. మీరు గమనించాల్సిన విషయం ఒకటి ఉంది - వివరాల కోసం క్లిక్ చేయండి.</translation>
 <translation id="3889543394854987837">Chromiumను తెరిచి, బ్రౌజింగ్‌ను ప్రారంభించడానికి మీ పేరును క్లిక్ చేయండి.</translation>
@@ -123,9 +123,6 @@
 <translation id="5634636535844844681">Chromiumకి Windows 7 లేదా అంతకంటే ఆధునికమైనది ఉండటం ఆవశ్యకం.</translation>
 <translation id="5680901439334282664">Chromiumకు సైన్ ఇన్ చేయండి</translation>
 <translation id="5698481217667032250">Chromiumను ఈ భాషలో ప్రదర్శించు</translation>
-<translation id="5756484659843248772">Chromium OS UI చూపడానికి ఈ భాష ఉపయోగించబడింది</translation>
-<translation id="5768914737813585044">Chromium OSను ఈ భాషలో ప్రదర్శించు</translation>
-<translation id="5796460469508169315">Chromium దాదాపు సిద్ధంగా ఉంది.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Chromiumకు స్వాగతం</translation>
 <translation id="5877064549588274448">ఛానెల్ మార్చబడింది. మార్పులను వర్తింపజేయడానికి మీ పరికరాన్ని పునఃప్రారంభించండి.</translation>
@@ -151,7 +148,7 @@
 <translation id="6334986366598267305">ఇప్పుడు మీ Google ఖాతాతో, షేర్ చేయ‌బ‌డిన కంప్యూట‌ర్‌ల‌లో Chromiumను సులభంగా ఉపయోగించవచ్చు.</translation>
 <translation id="6373523479360886564">మీరు ఖచ్చితంగా Chromiumను అన్ఇన్‌స్టాల్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="6400072781405947421">Chromiumకి ఇప్పుడు Mac OS X 10.9లో మద్దతు లేనందున ఇది సరిగ్గా పని చేయకపోవచ్చు.</translation>
-<translation id="6403826409255603130">Chromium అనేది మెరుపు వేగంతో వెబ్‌పేజీలను, యాప్‌ల‌ను అమలు చేసే వెబ్ బ్రౌజర్. ఇది వేగవంతమైనది, స్థిరమైనది, ఉపయోగించడానికి సులభమైనది. Chromiumలో రూపొందించిన మాల్‌వేర్‌ మరియు ఫిషింగ్ రక్షణతో మరింత సురక్షితంగా వెబ్‌లో బ్రౌజ్ చేయండి.</translation>
+<translation id="6403826409255603130">Chromium అనేది మెరుపు వేగంతో వెబ్‌పేజీలను మరియు యాప్‌ల‌ను అమలు చేసే వెబ్ బ్రౌజర్. ఇది వేగవంతమైనది, స్థిరమైనది మరియు ఉపయోగించడానికి సులభమైనది. Chromiumలో రూపొందించిన మాల్‌వేర్‌ మరియు ఫిషింగ్ రక్షణతో మరింత సురక్షితంగా వెబ్‌లో బ్రౌజ్ చేయండి.</translation>
 <translation id="6434250628340475518">Chromium OS సిస్టమ్</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium 1 సెకనులో పునఃప్రారంభమవుతుంది}other{Chromium # సెకన్లలో పునఃప్రారంభమవుతుంది}}</translation>
 <translation id="6475912303565314141">ఇది మీరు Chromiumని ప్రారంభించేటప్పుడు చూపబడే పేజీని కూడా నియంత్రిస్తుంది.</translation>
@@ -186,12 +183,6 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">కొత్త విండో</translation>
 <translation id="734373864078049451">మీ వెబ్, బుక్‌మార్క్‌లు మరియు ఇతర Chromium అంశాలు ఇక్కడ చూపబడతాయి.</translation>
-<translation id="7344413941077984497"><ph name="NEW_PROFILE_NAME" /> వీక్షించగల వెబ్‌సైట్‌లను సెట్ చేయడానికి, మీరు <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />ను సందర్శించడం ద్వారా పరిమితులు, సెట్టింగ్‌లను కాన్ఫిగర్ చేయవచ్చు. మీరు డిఫాల్ట్ సెట్టింగ్‌లను మార్చకపోతే, <ph name="NEW_PROFILE_NAME" /> వెబ్‌లో అన్నీ బ్రౌజ్ చేయగలరు.
-
-<ph name="NEW_PROFILE_NAME" />, మీ ఖాతా యాక్సెస్‌ చేయనీయకుండా నిరోధించడానికి, మీరు Chromiumను ఉపయోగించనప్పుడు మీ ప్రొపైల్‌ను లాక్ చేసి ఉంచేట్లు చూసుకోండి. దీన్ని చేయడానికి, బ్రౌజర్ ఎగువ కుడి మూలన ఉన్న మీ ప్రొఫైల్ పేరును క్లిక్ చేసి, ఆపై "నిష్క్రమించి, చైల్డ్ లాక్ చేయి" ఎంపికను ఎంచుకోండి.
-<ph name="BEGIN_LINK_2" />మరింత తెలుసుకోండి<ph name="END_LINK_2" />
-
-దయచేసి తదుపరి సూచనల కోసం <ph name="ACCOUNT_EMAIL" />లో మీ ఇమెయిల్‌ను చూడండి.</translation>
 <translation id="7349591376906416160"><ph name="TARGET_URL_HOSTNAME" />ను యాక్సెస్ చేయడం కోసం <ph name="ALTERNATIVE_BROWSER_NAME" />ను తెరిచే విధంగా Chromiumను మీ సిస్టమ్ నిర్వాహకుడు కాన్ఫిగర్ చేసారు.</translation>
 <translation id="7448255348454382571">Chromium OSని మళ్లీ ప్రారంభించండి</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
@@ -228,6 +219,8 @@
 <translation id="8417404458978023919">{0,plural, =1{ఒక రోజులోపు Chromiumను తిరిగి ప్రారంభించండి}other{# రోజులలోపు Chromiumను తిరిగి ప్రారంభించండి}}</translation>
 <translation id="8453117565092476964">ఇన్‌స్టాలర్ ఆర్కైవ్ పాడైంది లేదా చెల్లదు. దయచేసి Chromiumను మళ్లీ డౌన్‌లోడ్ చేయండి.</translation>
 <translation id="8493179195440786826">Chromium కాలం చెల్లినది</translation>
+<translation id="8494843963476918365">ఈ పేజీలో సెట్టింగ్ కనబడకపోతే, మీ <ph name="LINK_BEGIN" />
+    Chromium బ్రౌజర్ సెట్టింగ్‌లు<ph name="LINK_END" />లో ప్రయత్నించండి.</translation>
 <translation id="85843667276690461">Chromiumను ఉపయోగించడం గురించి సహాయాన్ని పొందండి</translation>
 <translation id="8586442755830160949">కాపీరైట్ <ph name="YEAR" /> Chromium రచయితలు. అన్ని హ‌క్కులు రిజ‌ర్వ్ చేయ‌బ‌డ్డాయి.</translation>
 <translation id="8619360774459241877">Chromiumని ప్రారంభిస్తోంది...</translation>

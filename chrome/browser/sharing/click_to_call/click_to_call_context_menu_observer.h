@@ -19,7 +19,7 @@
 
 class RenderViewContextMenuProxy;
 
-class SharingService;
+class ClickToCallUiController;
 
 class ClickToCallContextMenuObserver : public RenderViewContextMenuObserver {
  public:
@@ -60,13 +60,11 @@ class ClickToCallContextMenuObserver : public RenderViewContextMenuObserver {
 
   RenderViewContextMenuProxy* proxy_ = nullptr;
 
-  SharingService* sharing_service_ = nullptr;
+  ClickToCallUiController* controller_ = nullptr;
 
   SubMenuDelegate sub_menu_delegate_{this};
 
   GURL url_;
-
-  std::vector<SharingDeviceInfo> devices_;
 
   std::unique_ptr<ui::SimpleMenuModel> sub_menu_model_;
 

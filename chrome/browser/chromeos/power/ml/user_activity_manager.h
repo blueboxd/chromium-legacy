@@ -11,6 +11,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chrome/browser/chromeos/power/ml/boot_clock.h"
 #include "chrome/browser/chromeos/power/ml/idle_event_notifier.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/model.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
@@ -31,8 +32,6 @@
 namespace chromeos {
 namespace power {
 namespace ml {
-
-class BootClock;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -143,11 +142,6 @@ class UserActivityManager : public ui::UserActivityObserver,
   void MaybeLogEvent(UserActivityEvent::Event::Type type,
                      UserActivityEvent::Event::Reason reason);
 
-  // Set the task runner for testing purpose.
-  void SetTaskRunnerForTesting(
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      std::unique_ptr<BootClock> test_boot_clock);
-
   // We could have two consecutive idle events (i.e. two ScreenDimImminent)
   // without a final event logged in between. This could happen when the 1st
   // screen dim is deferred and after another idle period, powerd decides to
@@ -186,8 +180,7 @@ class UserActivityManager : public ui::UserActivityObserver,
   // Features extracted when receives an idle event.
   UserActivityEvent::Features features_;
 
-  // It is RealBootClock, but will be set to FakeBootClock for tests.
-  std::unique_ptr<BootClock> boot_clock_;
+  BootClock boot_clock_;
 
   UserActivityUkmLogger* const ukm_logger_;
 

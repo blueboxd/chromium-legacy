@@ -259,7 +259,8 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     return;
   }
 
-  if (IsHTMLLegendElement(element) && style.Display() != EDisplay::kContents) {
+  if (IsA<HTMLLegendElement>(element) &&
+      style.Display() != EDisplay::kContents) {
     // Allow any blockified display value for legends. Note that according to
     // the spec, this shouldn't affect computed style (like we do here).
     // Instead, the display override should be determined during box creation,

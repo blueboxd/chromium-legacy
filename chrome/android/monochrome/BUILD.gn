@@ -13,6 +13,10 @@ android_library("monochrome_license_provider_java") {
     "//chrome/android:chrome_java",
     "//components/about_ui/android:aboutui_java",
   ]
+
+  # Don't instrument this file as there exist another copy
+  # //android_webview:webview_license_provider_java
+  jacoco_never_instrument = true
 }
 
 group("monochrome_apk_checker") {

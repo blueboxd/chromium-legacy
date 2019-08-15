@@ -591,7 +591,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsA<HTMLLabelElement>(*GetNode()))
     return ax::mojom::Role::kLabelText;
 
-  if (IsHTMLLegendElement(*GetNode()))
+  if (IsA<HTMLLegendElement>(*GetNode()))
     return ax::mojom::Role::kLegend;
 
   if (IsHTMLRubyElement(*GetNode()))
@@ -2458,7 +2458,7 @@ bool AXNodeObject::CanHaveChildren() const {
   if (!GetNode() && !IsAXLayoutObject())
     return false;
 
-  if (GetNode() && IsHTMLMapElement(GetNode()))
+  if (GetNode() && IsA<HTMLMapElement>(GetNode()))
     return false;  // Does not have a role, so check here
 
   switch (native_role_) {

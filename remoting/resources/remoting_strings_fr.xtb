@@ -8,14 +8,6 @@
 <translation id="1199593201721843963">Désactiver les connexions à distance</translation>
 <translation id="1291443878853470558">Si vous souhaitez utiliser Google Chromoting pour accéder à cet ordinateur, vous devez activer les connexions à distance.</translation>
 <translation id="1297009705180977556">Erreur de connexion à <ph name="HOSTNAME" /></translation>
-<translation id="1300633907480909701">Accédez à vos ordinateurs en toute sécurité depuis votre appareil Android.
-
-• Sur chacun de vos ordinateurs, configurez l'accès à distance à l'aide de l'application Chrome Bureau à distance, disponible sur le Chrome Web Store : https://chrome.google.com/remotedesktop.
-• Sur votre appareil Android, ouvrez l'application, puis appuyez sur l'un de vos ordinateurs en ligne afin de vous y connecter.
-
-Le texte saisi sur les ordinateurs à distance non dotés d'un clavier en anglais des États-Unis risque d'être incorrect. Les autres claviers seront bientôt compatibles.
-
-Pour en savoir plus sur la confidentialité, veuillez consulter les règles de confidentialité de Google (http://goo.gl/SyrVzj) et l'avis de confidentialité de Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">Cette fonctionnalité n'est pas encore disponible pour votre ordinateur.</translation>
 <translation id="1342297293546459414">Voir et contrôler un ordinateur partagé</translation>
 <translation id="1389790901665088353">Télécharger le programme d'installation de l'hôte Bureau à distance Google Chrome</translation>
@@ -28,7 +20,6 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="1643640058022401035">En quittant cette page, vous mettrez fin à la session Google Chromoting.</translation>
 <translation id="1654128982815600832">Activation des connexions à distance pour cet ordinateur en cours…</translation>
 <translation id="170207782578677537">Échec de l'enregistrement de cet ordinateur.</translation>
-<translation id="1727412735341161734">Bureau à distance Chrome</translation>
 <translation id="174018511426417793">Aucun ordinateur n'est enregistré. Pour activer les connexions à distance à un ordinateur, installez l'application Bureau à distance Google Chrome sur celui-ci, puis cliquez sur "<ph name="BUTTON_NAME" />".</translation>
 <translation id="1742469581923031760">Connexion en cours…</translation>
 <translation id="1770394049404108959">Je n'arrive pas à ouvrir l'application.</translation>
@@ -46,13 +37,6 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="2078880767960296260">Processus relatif à l'hôte</translation>
 <translation id="20876857123010370">Mode Pavé tactile</translation>
 <translation id="2089514346391228378">Les connexions à distance ont été activées pour cet ordinateur.</translation>
-<translation id="2118549242412205620">Accédez à vos ordinateurs en toute sécurité depuis votre appareil Android.
-
-• Sur chacun de vos ordinateurs, configurez l'accès à distance à l'aide de l'application Chrome Bureau à distance, qui est disponible sur le Chrome Web Store : https://chrome.google.com/remotedesktop.
-• Sur votre appareil Android, ouvrez l'application, puis appuyez sur l'un de vos ordinateurs en ligne afin de vous y connecter.
-
-Pour en savoir plus sur la confidentialité, veuillez consulter les règles de confidentialité de Google (http://goo.gl/SyrVzj) et l'avis de confidentialité de Chrome (http://goo.gl/0uXE5d).</translation>
-<translation id="2124408767156847088">Accédez à vos ordinateurs en toute sécurité depuis votre appareil Android</translation>
 <translation id="2208514473086078157">Les paramètres des règles n'autorisent pas le partage de cet ordinateur en tant qu'hôte du bureau à distance Google Chrome. Veuillez contacter votre administrateur système pour obtenir de l'aide.</translation>
 <translation id="2220529011494928058">Signaler un problème</translation>
 <translation id="2221097377466213233">Utiliser la touche Ctrl de droite comme touche Windows (ou ⌘ sur un Mac)</translation>
@@ -91,11 +75,6 @@ Si le script "<ph name="SERVICE_SCRIPT_NAME" />" y figure déjà et est coché, 
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">Une erreur réseau s'est produite. L'application va être redémarrée lorsque votre appareil sera de nouveau en ligne.</translation>
 <translation id="2891243864890517178">Pour Mac (OS X Yosemite 10.10 ou version ultérieure)</translation>
-<translation id="289405675947420287">Accédez à votre ordinateur en toute sécurité depuis votre appareil iOS. C'est rapide, simple et gratuit.
-
-• Téléchargez l'application Bureau à distance Chrome, qui est disponible sur le Chrome Web Store, sur l'ordinateur auquel vous souhaitez accéder à distance.
-• Installez le logiciel Bureau à distance Chrome, puis suivez les instructions pour effectuer la configuration.
-• Sur votre appareil iOS, ouvrez l'application, puis appuyez sur l'un de vos ordinateurs en ligne afin de vous y connecter.</translation>
 <translation id="2894654864775534701">Cet ordinateur est actuellement partagé sous un autre compte.</translation>
 <translation id="2919669478609886916">Vous partagez actuellement cette machine avec un autre utilisateur. Voulez-vous continuer ce partage ?</translation>
 <translation id="2921543551052660690">Vous vous êtes auparavant connecté avec le nom d'utilisateur "<ph name="USER_NAME" />" (<ph name="USER_EMAIL" />). Pour accéder à vos ordinateurs avec ce compte, <ph name="LINK_BEGIN" />connectez-vous à Chromium<ph name="LINK_END" /> avec ce compte, puis réinstallez Chromoting.</translation>
@@ -109,7 +88,6 @@ Si le script "<ph name="SERVICE_SCRIPT_NAME" />" y figure déjà et est coché, 
 <translation id="310979712355504754">Tout supprimer</translation>
 <translation id="3150823315463303127">L'hôte n'est pas parvenu à lire les règles.</translation>
 <translation id="3171922709365450819">Cet appareil n'est pas accepté par ce client, car il requiert une authentification tierce.</translation>
-<translation id="3194245623920924351">Bureau à distance Chrome</translation>
 <translation id="3197730452537982411">Bureau à distance</translation>
 <translation id="324272851072175193">Envoyer ces instructions par e-mail</translation>
 <translation id="3258789396564295715">Vous pouvez accéder à cet ordinateur en toute sécurité via le bureau à distance Google Chrome.</translation>
@@ -174,13 +152,6 @@ Si le script "<ph name="SERVICE_SCRIPT_NAME" />" y figure déjà et est coché, 
 <translation id="4660011489602794167">Afficher le clavier</translation>
 <translation id="4703302905453407178">Un composant requis a cessé de fonctionner. Veuillez signaler le problème aux développeurs.</translation>
 <translation id="4703799847237267011">La session Google Chromoting est terminée.</translation>
-<translation id="4706355010316049867">Chrome
-Bureau
-Distance
-Accès
-Assistance
-Ordinateur
-PC</translation>
 <translation id="4736223761657662401">Historique des connexions</translation>
 <translation id="4741792197137897469">Échec de l'authentification. Veuillez vous connecter de nouveau à Chrome.</translation>
 <translation id="477305884757156764">L'application est trop lente.</translation>
@@ -252,7 +223,6 @@ PC</translation>
 <translation id="6381670701864002291">Autre</translation>
 <translation id="6398765197997659313">Quitter le mode plein écran</translation>
 <translation id="6441316101718669559">L'intégration du Bureau est impossible sur cette plate-forme. Vous pouvez toujours utiliser l'application, mais avec une expérience utilisateur de moindre qualité.</translation>
-<translation id="6502629188777329097">Accès sécurisé à l'ordinateur</translation>
 <translation id="652218476070540101">Mise à jour du code d'accès pour cet ordinateur en cours…</translation>
 <translation id="6527303717912515753">Partager</translation>
 <translation id="6541219117979389420">Les journaux des applications peuvent inclure des informations confidentielles, y compris votre identité (adresse e-mail), ainsi que le nom et les propriétés des fichiers et des dossiers dans Google Drive.</translation>
@@ -286,7 +256,6 @@ PC</translation>
 <translation id="7116737094673640201">Bienvenue dans le bureau à distance Chrome</translation>
 <translation id="7144878232160441200">Réessayer</translation>
 <translation id="7149517134817561223">Demande pour émettre des commandes à l'hôte du Bureau à distance Chrome</translation>
-<translation id="7213491505512310433">Amélioration de la stabilité et correction de bugs.</translation>
 <translation id="7215059001581613786">Veuillez saisir un code d'accès composé d'au moins six chiffres.</translation>
 <translation id="7312846573060934304">L'hôte est hors ligne</translation>
 <translation id="7319983568955948908">Arrêter le partage</translation>

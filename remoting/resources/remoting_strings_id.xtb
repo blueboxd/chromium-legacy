@@ -8,14 +8,6 @@
 <translation id="1199593201721843963">Nonaktifkan sambungan jarak jauh</translation>
 <translation id="1291443878853470558">Anda harus mengaktifkan sambungan jarak jauh jika ingin menggunakan Chromoting untuk mengakses komputer ini.</translation>
 <translation id="1297009705180977556">Terjadi error saat menghubungkan ke <ph name="HOSTNAME" /></translation>
-<translation id="1300633907480909701">Akses komputer dari perangkat Android Anda dengan aman.
-
-• Di tiap komputer, siapkan akses jarak jauh menggunakan aplikasi Chrome Desktop Jarak Jauh dari Chrome Webstore: https://chrome.google.com/remotedesktop
-• Agar tersambung, pada perangkat Android, buka aplikasi dan ketuk di komputer yang terhubung ke internet.
-
-Komputer jarak jauh dengan keyboard non Inggris-AS mungkin menerima masukan teks yang tidak benar. Dukungan untuk tata letak keyboard lainnya akan segera hadir!
-
-Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/SyrVzj) dan Kebijakan Privasi Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(Fitur ini belum tersedia untuk komputer Anda)</translation>
 <translation id="1342297293546459414">Melihat dan mengontrol komputer bersama.</translation>
 <translation id="1389790901665088353">Download Pemasang Host Chrome Desktop Jarak Jauh</translation>
@@ -28,7 +20,6 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="1643640058022401035">Dengan meninggalkan halaman ini, Anda akan mengakhiri sesi Chromoting.</translation>
 <translation id="1654128982815600832">Mengaktifkan sambungan jarak jauh untuk komputer ini...</translation>
 <translation id="170207782578677537">Gagal mendaftarkan komputer ini.</translation>
-<translation id="1727412735341161734">Chrome Desktop Jarak Jauh</translation>
 <translation id="174018511426417793">Anda tidak memiliki komputer yang terdaftar. Untuk mengaktifkan sambungan jarak jauh ke komputer, instal Chrome Desktop Jarak Jauh di komputer tersebut, lalu klik “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Menyambungkan...</translation>
 <translation id="1770394049404108959">Saya tidak dapat membuka aplikasi ini.</translation>
@@ -46,13 +37,6 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="2078880767960296260">Proses Host</translation>
 <translation id="20876857123010370">Mode trackpad</translation>
 <translation id="2089514346391228378">Sambungan jarak jauh untuk komputer ini telah diaktifkan.</translation>
-<translation id="2118549242412205620">Akses komputer dari perangkat Android Anda dengan aman.
-
-• Di tiap komputer, siapkan akses jarak jauh menggunakan aplikasi Chrome Desktop Jarak Jauh dari Chrome Webstore: https://chrome.google.com/remotedesktop
-• Agar tersambung, pada perangkat Android, buka aplikasi dan ketuk di komputer yang terhubung ke internet.
-
-Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/SyrVzj) dan Kebijakan Privasi Chrome (http://goo.gl/0uXE5d).</translation>
-<translation id="2124408767156847088">Akses komputer dari perangkat Android Anda dengan aman.</translation>
 <translation id="2208514473086078157">Setelan kebijakan tidak mengizinkan berbagi komputer ini sebagai inang Chrome Desktop Jarak Jauh. Hubungi administrator sistem Anda untuk mendapatkan bantuan.</translation>
 <translation id="2220529011494928058">Laporkan masalah</translation>
 <translation id="2221097377466213233">Gunakan Ctrl kanan untuk tombol Win (⌘ di Mac)</translation>
@@ -91,11 +75,6 @@ Jika '<ph name="SERVICE_SCRIPT_NAME" />' sudah ada dan dicentang, Anda mungkin p
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">Terjadi kesalahan jaringan. Kami akan memulai ulang aplikasi saat perangkat Anda kembali online.</translation>
 <translation id="2891243864890517178">Untuk Mac (OS X Yosemite 10.10 dan versi lebih baru)</translation>
-<translation id="289405675947420287">Akses komputer dari perangkat iOS dengan aman. Cepat, mudah, dan gratis.
-
-• Download aplikasi Chrome Desktop Jarak Jauh dari Chrome Webstore di komputer yang ingin diakses dari jarak jauh.
-• Instal software Chrome Desktop Jarak Jauh dan ikuti petunjuknya untuk menyelesaikan penyiapan.
-• Pada perangkat iOS, buka aplikasi dan ketuk komputer online mana pun agar terhubung.</translation>
 <translation id="2894654864775534701">Saat ini komputer ini dibagikan dengan akun lain.</translation>
 <translation id="2919669478609886916">Saat ini Anda sedang berbagi mesin ini dengan pengguna lain. Apakah Anda ingin terus berbagi?</translation>
 <translation id="2921543551052660690">Sebelumnya, Anda telah login sebagai <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Untuk mengakses komputer menggunakan akun tersebut, <ph name="LINK_BEGIN" />masuk ke Chromium<ph name="LINK_END" /> dengan akun tersebut dan instal kembali Chromoting.</translation>
@@ -109,7 +88,6 @@ Jika '<ph name="SERVICE_SCRIPT_NAME" />' sudah ada dan dicentang, Anda mungkin p
 <translation id="310979712355504754">Hapus semua</translation>
 <translation id="3150823315463303127">Hosting gagal membaca kebijakan.</translation>
 <translation id="3171922709365450819">Perangkat ini tidak didukung oleh klien ini karena memerlukan autentikasi pihak ketiga.</translation>
-<translation id="3194245623920924351">Chrome Desktop Jarak Jauh</translation>
 <translation id="3197730452537982411">Desktop Jarak Jauh</translation>
 <translation id="324272851072175193">Kirimkan petunjuk berikut melalui email</translation>
 <translation id="3258789396564295715">Mungkin Anda dapat mengakses komputer ini dengan aman menggunakan Chrome Desktop Jarak Jauh.</translation>
@@ -174,13 +152,6 @@ Jika '<ph name="SERVICE_SCRIPT_NAME" />' sudah ada dan dicentang, Anda mungkin p
 <translation id="4660011489602794167">Tampilkan keyboard</translation>
 <translation id="4703302905453407178">Komponen wajib berhenti bekerja. Laporkan masalah ini kepada pengembang.</translation>
 <translation id="4703799847237267011">Sesi Chromoting Anda berakhir.</translation>
-<translation id="4706355010316049867">Chrome
-Jarak Jauh
-Desktop
-Akses
-Dukungan
-Komputer
-PC</translation>
 <translation id="4736223761657662401">Histori Sambungan</translation>
 <translation id="4741792197137897469">Autentikasi gagal. Login ke Chrome lagi.</translation>
 <translation id="477305884757156764">Aplikasi ini terlalu lambat.</translation>
@@ -252,7 +223,6 @@ PC</translation>
 <translation id="6381670701864002291">Lainnya.</translation>
 <translation id="6398765197997659313">Keluar dari tampilan layar penuh</translation>
 <translation id="6441316101718669559">Penggabungan desktop tidak didukung pada platform ini. Anda masih dapat menggunakan aplikasi, namun pengalaman pengguna akan terdegradasi.</translation>
-<translation id="6502629188777329097">Akses komputer Anda dengan aman</translation>
 <translation id="652218476070540101">PIN untuk komputer ini sedang diperbarui...</translation>
 <translation id="6527303717912515753">Bagikan</translation>
 <translation id="6541219117979389420">Log aplikasi dapat mencakup informasi pribadi, termasuk identitas Anda (alamat email) serta nama dan properti file dan folder di Google Drive.</translation>
@@ -286,7 +256,6 @@ PC</translation>
 <translation id="7116737094673640201">Selamat Datang di Chrome Desktop Jarak Jauh</translation>
 <translation id="7144878232160441200">Coba lagi</translation>
 <translation id="7149517134817561223">Aplikasi guna mengeluarkan perintah untuk host Chrome Desktop Jarak Jauh.</translation>
-<translation id="7213491505512310433">Peningkatan stabilitas dan perbaikan bug.</translation>
 <translation id="7215059001581613786">Masukkan PIN, minimal enam digit atau lebih.</translation>
 <translation id="7312846573060934304">Hosting offline.</translation>
 <translation id="7319983568955948908">Hentikan Berbagi</translation>

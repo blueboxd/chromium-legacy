@@ -1617,4 +1617,62 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   //     {L"* ", L"item ", L"one\n", L"* ", L"item ", L"two"});
 }
 
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       EntireMarkupSuccessiveMoveByFormat) {
+  AssertMoveByUnitForMarkup(
+      TextUnit_Format,
+      "plain text <b>bold text <i>bold and italic text</i></b><i><b> more bold "
+      "and italic text</b> italic text</i> plain text",
+      {L"plain text ", L"bold text ",
+       L"bold and italic text more bold and italic text", L" italic text",
+       L" plain text"});
+
+  AssertMoveByUnitForMarkup(TextUnit_Format, "before <img src='test'> after",
+                            {L"before ", L" after"});
+
+  AssertMoveByUnitForMarkup(TextUnit_Format,
+                            "before <a href='test'>link</a> after",
+                            {L"before ", L"link", L" after"});
+
+  AssertMoveByUnitForMarkup(TextUnit_Format,
+                            "before <a href='test'><b>link </b></a>    after",
+                            {L"before ", L"link ", L"after"});
+
+  AssertMoveByUnitForMarkup(TextUnit_Format,
+                            "before <b><a href='test'>link </a></b>    after",
+                            {L"before ", L"link ", L"after"});
+
+  AssertMoveByUnitForMarkup(
+      TextUnit_Format, "before <a href='test'>link </a>    after <b>bold</b>",
+      {L"before ", L"link ", L"after ", L"bold"});
+
+  AssertMoveByUnitForMarkup(
+      TextUnit_Format,
+      "before <a style='font-weight:bold' href='test'>link </a>    after",
+      {L"before ", L"link ", L"after"});
+
+  AssertMoveByUnitForMarkup(
+      TextUnit_Format,
+      "before <a style='font-weight:bold' href='test'>link 1</a><a "
+      "style='font-weight:bold' href='test'>link 2</a> after",
+      {L"before ", L"link 1link 2", L" after"});
+
+  AssertMoveByUnitForMarkup(
+      TextUnit_Format,
+      "before <span style='font-weight:bold'>text </span>    after",
+      {L"before ", L"text ", L"after"});
+
+  AssertMoveByUnitForMarkup(
+      TextUnit_Format,
+      "before <span style='font-weight:bold'>text 1</span><span "
+      "style='font-weight:bold'>text 2</span> after",
+      {L"before ", L"text 1text 2", L" after"});
+
+  AssertMoveByUnitForMarkup(
+      TextUnit_Format,
+      "before <span style='font-weight:bold'>bold text</span><span "
+      "style='font-style: italic'>italic text</span> after",
+      {L"before ", L"bold text", L"italic text", L" after"});
+}
+
 }  // namespace content

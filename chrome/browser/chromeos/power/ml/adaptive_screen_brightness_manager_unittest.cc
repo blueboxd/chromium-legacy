@@ -8,13 +8,11 @@
 #include <vector>
 
 #include "base/test/test_mock_time_task_runner.h"
-#include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/power/ml/adaptive_screen_brightness_ukm_logger.h"
-#include "chrome/browser/chromeos/power/ml/fake_boot_clock.h"
 #include "chrome/browser/chromeos/power/ml/screen_brightness_event.pb.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -103,10 +101,7 @@ class AdaptiveScreenBrightnessManagerTest
         std::make_unique<AdaptiveScreenBrightnessManager>(
             std::move(logger), &user_activity_detector_,
             FakePowerManagerClient::Get(), nullptr, nullptr,
-            mojo::MakeRequest(&observer), std::move(periodic_timer),
-            const_cast<base::Clock*>(thread_bundle()->GetMockClock()),
-            std::make_unique<FakeBootClock>(thread_bundle(),
-                                            base::TimeDelta::FromSeconds(10)));
+            mojo::MakeRequest(&observer), std::move(periodic_timer));
   }
 
   void TearDown() override {

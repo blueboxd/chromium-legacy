@@ -238,10 +238,10 @@ class PLATFORM_EXPORT ResourceResponse final {
   bool CacheControlContainsMustRevalidate() const;
   bool HasCacheValidatorFields() const;
   double CacheControlMaxAge() const;
-  double Date() const;
+  base::Optional<base::Time> Date() const;
   double Age() const;
-  double Expires() const;
-  double LastModified() const;
+  base::Optional<base::Time> Expires() const;
+  base::Optional<base::Time> LastModified() const;
   // Will always return values >= 0.
   double CacheControlStaleWhileRevalidate() const;
 
@@ -544,9 +544,9 @@ class PLATFORM_EXPORT ResourceResponse final {
   mutable CacheControlHeader cache_control_header_;
 
   mutable double age_ = 0.0;
-  mutable double date_ = 0.0;
-  mutable double expires_ = 0.0;
-  mutable double last_modified_ = 0.0;
+  mutable base::Optional<base::Time> date_;
+  mutable base::Optional<base::Time> expires_;
+  mutable base::Optional<base::Time> last_modified_;
 
   // The id of the appcache this response was retrieved from, or zero if
   // the response was not retrieved from an appcache.

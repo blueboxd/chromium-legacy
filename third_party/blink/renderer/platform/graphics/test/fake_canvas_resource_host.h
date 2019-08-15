@@ -51,7 +51,8 @@ class FakeCanvasResourceHost : public CanvasResourceHost {
     } else {
       provider = CanvasResourceProvider::Create(
           size_, usage, SharedGpuContext::ContextProviderWrapper(), 0,
-          CanvasColorParams(), presentation_mode, nullptr);
+          kLow_SkFilterQuality, CanvasColorParams(), presentation_mode,
+          nullptr);
     }
 
     ReplaceResourceProvider(std::move(provider));

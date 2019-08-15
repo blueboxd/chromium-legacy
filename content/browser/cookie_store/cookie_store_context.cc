@@ -75,8 +75,9 @@ void CookieStoreContext::ListenToCookieChanges(
               std::move(success_callback))));
 }
 
-void CookieStoreContext::CreateService(blink::mojom::CookieStoreRequest request,
-                                       const url::Origin& origin) {
+void CookieStoreContext::CreateService(
+    mojo::PendingReceiver<blink::mojom::CookieStore> receiver,
+    const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 #if DCHECK_IS_ON()
   DCHECK(initialize_called_) << __func__ << " called before Initialize()";
@@ -84,7 +85,7 @@ void CookieStoreContext::CreateService(blink::mojom::CookieStoreRequest request,
 
   base::PostTask(FROM_HERE, {BrowserThread::IO},
                  base::BindOnce(&CookieStoreContext::CreateServiceOnIOThread,
-                                this, std::move(request), origin));
+                                this, std::move(receiver), origin));
 }
 
 void CookieStoreContext::InitializeOnIOThread(
@@ -110,12 +111,12 @@ void CookieStoreContext::ListenToCookieChangesOnIOThread(
 }
 
 void CookieStoreContext::CreateServiceOnIOThread(
-    blink::mojom::CookieStoreRequest request,
+    mojo::PendingReceiver<blink::mojom::CookieStore> receiver,
     const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(cookie_store_manager_);
 
-  cookie_store_manager_->CreateService(std::move(request), origin);
+  cookie_store_manager_->CreateService(std::move(receiver), origin);
 }
 
 }  // namespace content

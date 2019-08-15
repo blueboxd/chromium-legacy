@@ -106,7 +106,7 @@ UpdateDataProvider::GetData(bool install_immediately,
     crx_component->requires_network_encryption = true;
     crx_component->crx_format_requirement =
         extension->from_webstore()
-            ? GetWebstoreVerifierFormat()
+            ? GetWebstoreVerifierFormat(false)
             : GetPolicyVerifierFormat(
                   extension_prefs->InsecureExtensionUpdatesEnabled());
     crx_component->installer = base::MakeRefCounted<ExtensionInstaller>(

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
+<translation id="1482734542997480527">Pinapamahalaan ng <ph name="ENROLLMENT_DOMAIN" /> ang device na ito at puwedeng masubaybayan ang iyong aktibidad.</translation>
 <translation id="1510238584712386396">Launcher</translation>
 <translation id="1734367976349034509">Ang device na ito ay pinamamahalaan ng enterprise</translation>
 <translation id="1930797645656624981">Serbisyo ng Pamamaraan ng Pag-input ng Chrome OS</translation>
@@ -12,6 +13,7 @@
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="3008341117444806826">I-REFRESH</translation>
 <translation id="3838338534323494292">Bagong password</translation>
+<translation id="4003259559679196451">Pinapamahalaan ng <ph name="ENROLLMENT_DOMAIN" /> ang device na ito at mayroon itong access sa lahat ng aktibidad ng user, kabilang ang mga webpage na binisita, mga password, at email.</translation>
 <translation id="4227825898293920515">Mag-e-expire ang password sa loob ng <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Mag-e-expire na ang ticket ng Kerberos</translation>
 <translation id="445059817448385655">Lumang password</translation>

@@ -103,6 +103,11 @@ const base::Feature kOffMainThreadDedicatedWorkerScriptFetch{
     "OffMainThreadDedicatedWorkerScriptFetch",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Start service workers on the IO thread.
+// https://crbug.com/692909
+const base::Feature kOffMainThreadServiceWorkerStartup{
+    "OffMainThreadServiceWorkerStartup", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable browser-initiated dedicated worker script loading
 // (PlzDedicatedWorker). https://crbug.com/906991
 const base::Feature kPlzDedicatedWorker{"PlzDedicatedWorker",

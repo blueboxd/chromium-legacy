@@ -49,7 +49,7 @@ class CORE_EXPORT PromiseHandlerWithValue : public PromiseHandlerBase {
 // A convenience wrapper for promise->Then() for when all paths are
 // PromiseHandlers. It avoids having to call BindToV8Function()
 // explicitly. If |on_rejected| is null then behaves like single-argument
-// Then(). If |on_fulfilled| is null then it calls Catch().
+// Then(). If |on_fulfilled| is null then it behaves like Catch().
 v8::Local<v8::Promise> StreamThenPromise(
     v8::Local<v8::Context>,
     v8::Local<v8::Promise>,

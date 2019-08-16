@@ -796,12 +796,19 @@ void RenderThreadImpl::Init() {
   registry->AddInterface(base::BindRepeating(CreateResourceUsageReporter,
                                              weak_factory_.GetWeakPtr()),
                          base::ThreadTaskRunnerHandle::Get());
-  // TODO(bashi): Use the IO task runner to start service worker on the IO
-  // thread.
-  registry->AddInterface(
-      base::BindRepeating(&EmbeddedWorkerInstanceClientImpl::Create,
-                          GetWebMainThreadScheduler()->DefaultTaskRunner()),
-      GetWebMainThreadScheduler()->DefaultTaskRunner());
+
+  if (base::FeatureList::IsEnabled(
+          blink::features::kOffMainThreadServiceWorkerStartup)) {
+    registry->AddInterface(
+        base::BindRepeating(&EmbeddedWorkerInstanceClientImpl::Create,
+                            GetIOTaskRunner()),
+        GetIOTaskRunner());
+  } else {
+    registry->AddInterface(
+        base::BindRepeating(&EmbeddedWorkerInstanceClientImpl::Create,
+                            GetWebMainThreadScheduler()->DefaultTaskRunner()),
+        GetWebMainThreadScheduler()->DefaultTaskRunner());
+  }
 
   GetServiceManagerConnection()->AddConnectionFilter(
       std::make_unique<SimpleConnectionFilter>(std::move(registry)));

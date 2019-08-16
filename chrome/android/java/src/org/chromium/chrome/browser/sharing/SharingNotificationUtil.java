@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.sharing;
 import android.app.Notification;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.annotation.DrawableRes;
 import android.support.v4.app.NotificationCompat;
 
@@ -36,11 +38,12 @@ public final class SharingNotificationUtil {
      * @param contentIntent The notification content intent.
      * @param contentTitle The notification title text.
      * @param contentText The notification content text.
-     * @param smallIcon The small notification icon.
+     * @param smallIconId The small notification icon resource id.
+     * @param largeIconId The large notification icon resource id, 0 if not used.
      */
     public static void showNotification(@SystemNotificationType int type, String group, int id,
             PendingIntentProvider contentIntent, String contentTitle, String contentText,
-            @DrawableRes int smallIcon) {
+            @DrawableRes int smallIconId, @DrawableRes int largeIconId) {
         Context context = ContextUtils.getApplicationContext();
         Resources resources = context.getResources();
         ChromeNotificationBuilder builder =
@@ -57,9 +60,13 @@ public final class SharingNotificationUtil {
                         .setGroup(group)
                         .setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH)
                         .setVibrate(new long[0])
-                        .setSmallIcon(smallIcon)
+                        .setSmallIcon(smallIconId)
                         .setAutoCancel(true)
                         .setDefaults(Notification.DEFAULT_ALL);
+        if (largeIconId != 0) {
+            Bitmap largeIcon = BitmapFactory.decodeResource(resources, largeIconId);
+            if (largeIcon != null) builder.setLargeIcon(largeIcon);
+        }
         ChromeNotification notification = builder.buildChromeNotification();
 
         new NotificationManagerProxyImpl(context).notify(notification);

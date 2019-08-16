@@ -34,6 +34,7 @@
 #include "net/websockets/websocket_frame.h"  // for WebSocketFrameHeader::OpCode
 #include "net/websockets/websocket_handshake_request_info.h"
 #include "net/websockets/websocket_handshake_response_info.h"
+#include "services/network/websocket_factory.h"
 
 namespace network {
 namespace {
@@ -134,8 +135,6 @@ void WebSocket::WebSocketEventHandler::OnCreateURLRequest(
     net::URLRequest* url_request) {
   url_request->SetUserData(WebSocket::kUserDataKey,
                            std::make_unique<UnownedPointer>(impl_));
-  impl_->delegate_->OnCreateURLRequest(impl_->child_id_, impl_->frame_id_,
-                                       url_request);
 }
 
 void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
@@ -260,11 +259,9 @@ void WebSocket::WebSocketEventHandler::OnFailChannel(
 
 void WebSocket::WebSocketEventHandler::OnStartOpeningHandshake(
     std::unique_ptr<net::WebSocketHandshakeRequestInfo> request) {
-  bool can_read_raw_cookies = impl_->delegate_->CanReadRawCookies(request->url);
-
   DVLOG(3) << "WebSocketEventHandler::OnStartOpeningHandshake @"
            << reinterpret_cast<void*>(this)
-           << " can_read_raw_cookies =" << can_read_raw_cookies;
+           << " can_read_raw_cookies =" << impl_->has_raw_headers_access_;
 
   mojom::WebSocketHandshakeRequestPtr request_to_pass(
       mojom::WebSocketHandshakeRequest::New());
@@ -273,7 +270,7 @@ void WebSocket::WebSocketEventHandler::OnStartOpeningHandshake(
       "GET %s HTTP/1.1\r\n", request_to_pass->url.spec().c_str());
   net::HttpRequestHeaders::Iterator it(request->headers);
   while (it.GetNext()) {
-    if (!can_read_raw_cookies &&
+    if (!impl_->has_raw_headers_access_ &&
         base::EqualsCaseInsensitiveASCII(it.name(),
                                          net::HttpRequestHeaders::kCookie)) {
       continue;
@@ -294,11 +291,9 @@ void WebSocket::WebSocketEventHandler::OnStartOpeningHandshake(
 
 void WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
     std::unique_ptr<net::WebSocketHandshakeResponseInfo> response) {
-  bool can_read_raw_cookies =
-      impl_->delegate_->CanReadRawCookies(response->url);
   DVLOG(3) << "WebSocketEventHandler::OnFinishOpeningHandshake "
            << reinterpret_cast<void*>(this)
-           << " CanReadRawCookies=" << can_read_raw_cookies;
+           << " CanReadRawCookies=" << impl_->has_raw_headers_access_;
 
   mojom::WebSocketHandshakeResponsePtr response_to_pass(
       mojom::WebSocketHandshakeResponse::New());
@@ -312,7 +307,7 @@ void WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
   std::string headers_text =
       base::StrCat({response->headers->GetStatusLine(), "\r\n"});
   while (response->headers->EnumerateHeaderLines(&iter, &name, &value)) {
-    if (can_read_raw_cookies ||
+    if (impl_->has_raw_headers_access_ ||
         !net::HttpResponseHeaders::IsCookieResponseHeader(name)) {
       // We drop cookie-related headers such as "set-cookie" when the
       // renderer doesn't have access.
@@ -335,9 +330,11 @@ void WebSocket::WebSocketEventHandler::OnSSLCertificateError(
   DVLOG(3) << "WebSocketEventHandler::OnSSLCertificateError"
            << reinterpret_cast<void*>(this) << " url=" << url.spec()
            << " cert_status=" << ssl_info.cert_status << " fatal=" << fatal;
-  impl_->delegate_->OnSSLCertificateError(std::move(callbacks), url,
-                                          impl_->child_id_, impl_->frame_id_,
-                                          net_error, ssl_info, fatal);
+  impl_->factory_->OnSSLCertificateError(
+      base::BindOnce(&WebSocket::OnSSLCertificateErrorResponse,
+                     impl_->weak_ptr_factory_.GetWeakPtr(),
+                     std::move(callbacks), ssl_info),
+      url, impl_->child_id_, impl_->frame_id_, net_error, ssl_info, fatal);
 }
 
 int WebSocket::WebSocketEventHandler::OnAuthRequired(
@@ -362,7 +359,7 @@ int WebSocket::WebSocketEventHandler::OnAuthRequired(
 }
 
 WebSocket::WebSocket(
-    std::unique_ptr<Delegate> delegate,
+    WebSocketFactory* factory,
     const GURL& url,
     const std::vector<std::string>& requested_protocols,
     const GURL& site_for_cookies,
@@ -371,12 +368,13 @@ WebSocket::WebSocket(
     int32_t frame_id,
     const url::Origin& origin,
     uint32_t options,
+    HasRawHeadersAccess has_raw_headers_access,
     mojom::WebSocketHandshakeClientPtr handshake_client,
     mojom::AuthenticationHandlerPtr auth_handler,
     mojom::TrustedHeaderClientPtr header_client,
     WebSocketThrottler::PendingConnection pending_connection_tracker,
     base::TimeDelta delay)
-    : delegate_(std::move(delegate)),
+    : factory_(factory),
       binding_(this),
       handshake_client_(std::move(handshake_client)),
       auth_handler_(std::move(auth_handler)),
@@ -387,6 +385,7 @@ WebSocket::WebSocket(
       child_id_(child_id),
       frame_id_(frame_id),
       origin_(std::move(origin)),
+      has_raw_headers_access_(has_raw_headers_access),
       writable_watcher_(FROM_HERE,
                         mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                         base::ThreadTaskRunnerHandle::Get()) {
@@ -418,17 +417,15 @@ WebSocket::WebSocket(
              std::move(additional_headers));
 }
 
-WebSocket::~WebSocket() {}
-
-// static
-const void* const WebSocket::kUserDataKey = &WebSocket::kUserDataKey;
-
-void WebSocket::GoAway() {
+WebSocket::~WebSocket() {
   if (channel_ && handshake_succeeded_) {
     StartClosingHandshake(static_cast<uint16_t>(net::kWebSocketErrorGoingAway),
                           "");
   }
 }
+
+// static
+const void* const WebSocket::kUserDataKey = &WebSocket::kUserDataKey;
 
 void WebSocket::SendFrame(bool fin,
                           mojom::WebSocketMessageType type,
@@ -531,7 +528,7 @@ WebSocket* WebSocket::ForRequest(const net::URLRequest& request) {
 void WebSocket::OnConnectionError() {
   DVLOG(3) << "WebSocket::OnConnectionError @" << reinterpret_cast<void*>(this);
 
-  delegate_->OnLostConnectionToClient(this);
+  factory_->Remove(this);
 }
 
 void WebSocket::AddChannel(
@@ -549,7 +546,7 @@ void WebSocket::AddChannel(
   std::unique_ptr<net::WebSocketEventInterface> event_interface(
       new WebSocketEventHandler(this));
   channel_.reset(new net::WebSocketChannel(std::move(event_interface),
-                                           delegate_->GetURLRequestContext()));
+                                           factory_->GetURLRequestContext()));
 
   net::HttpRequestHeaders headers_to_pass;
   for (const auto& header : additional_headers) {
@@ -624,6 +621,18 @@ bool WebSocket::SendDataFrame(DataFrame* data_frame) {
     return false;
   }
   return true;
+}
+
+void WebSocket::OnSSLCertificateErrorResponse(
+    std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks,
+    const net::SSLInfo& ssl_info,
+    int net_error) {
+  if (net_error == net::OK) {
+    callbacks->ContinueSSLRequest();
+    return;
+  }
+
+  callbacks->CancelSSLRequest(net_error, &ssl_info);
 }
 
 void WebSocket::OnAuthRequiredComplete(

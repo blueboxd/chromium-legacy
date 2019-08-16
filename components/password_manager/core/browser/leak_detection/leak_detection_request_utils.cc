@@ -10,14 +10,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
-#include "components/password_manager/core/browser/leak_detection/leak_detection_api.pb.h"
 #include "components/password_manager/core/browser/leak_detection/single_lookup_response.h"
 
 namespace password_manager {
 namespace {
-
-using google::internal::identity::passwords::leak::check::v1::
-    LookupSingleLeakRequest;
 
 // Despite the function is short, it executes long. That's why it should be done
 // asynchronously.
@@ -31,27 +27,6 @@ LookupSingleLeakData PrepareLookupSingleLeakData(const std::string& username,
 }
 
 }  // namespace
-
-LookupSingleLeakRequest MakeLookupSingleLeakRequest(
-    base::StringPiece username,
-    base::StringPiece password) {
-
-  // Encrypted lookup hash of (username: "test", password: "test") credential.
-  static constexpr char kTestEncryptedLookupHash[] = {
-      2,    8,    -93, 58,   107, -84, -43, 83,   83,   65, -77,
-      47,   -110, -93, 117,  -69, -55, 75,  -114, 39,   10, 9,
-      -103, -67,  69,  -117, -18, 11,  37,  -56,  -124, 33, -96};
-
-  LookupSingleLeakRequest request;
-  // TODO(crbug.com/086298): Implement correct hash computation of username and
-  // password.
-  request.set_username_hash_prefix(
-      BucketizeUsername(CanonicalizeUsername(username)));
-  request.set_username_hash_prefix_length(kUsernameHashPrefixLength);
-  request.set_encrypted_lookup_hash(
-      std::string(kTestEncryptedLookupHash, sizeof(kTestEncryptedLookupHash)));
-  return request;
-}
 
 void PrepareSingleLeakRequestData(const std::string& username,
                                   const std::string& password,

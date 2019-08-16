@@ -50,7 +50,7 @@ void ResourceMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   for (auto const& kv :
-       GetDelegate()->GetResourceTracker().unfinished_resources())
+       GetDelegate().GetResourceTracker().unfinished_resources())
     RecordResourceHistograms(kv.second);
 }
 

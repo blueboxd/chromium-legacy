@@ -643,10 +643,16 @@ void ServiceWorkerUpdateCheckTestUtils::SetComparedScriptInfoForVersion(
         paused_state,
     ServiceWorkerVersion* version) {
   std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo> info_map;
-  info_map[script_url] = ServiceWorkerUpdateChecker::ComparedScriptInfo(
-      resource_id, compare_result, std::move(paused_state),
-      /*failure_info=*/nullptr);
-  version->set_compared_script_info_map(std::move(info_map));
+  info_map.emplace(script_url,
+                   ServiceWorkerUpdateChecker::ComparedScriptInfo(
+                       resource_id, compare_result, std::move(paused_state),
+                       /*failure_info=*/nullptr));
+  version->PrepareForUpdate(
+      std::move(info_map),
+      (compare_result ==
+       ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent)
+          ? script_url
+          : GURL());
 }
 
 void ServiceWorkerUpdateCheckTestUtils::

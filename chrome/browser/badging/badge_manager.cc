@@ -64,26 +64,10 @@ void BadgeManager::BindBadgeForRequest(
 void BadgeManager::BindRequest(
     mojo::PendingReceiver<blink::mojom::BadgeService> receiver,
     content::RenderFrameHost* frame) {
-  // TODO(crbug.com/983929): Remove these CHECKs once the cause of the bug has
-  // been determined.
-  CHECK(receiver);
-  CHECK(frame);
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(frame);
-  CHECK(web_contents);
-
-  CHECK(web_contents->GetBrowserContext());
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  CHECK(profile);
-
+  Profile* profile = Profile::FromBrowserContext(
+      content::WebContents::FromRenderFrameHost(frame)->GetBrowserContext());
   badging::BadgeManager* badge_manager =
       badging::BadgeManagerFactory::GetInstance()->GetForProfile(profile);
-  CHECK(badge_manager);
-
-  CHECK(frame->GetProcess());
-  CHECK(frame->GetProcess()->GetID());
-  CHECK(frame->GetRoutingID());
   BindingContext context(frame->GetProcess()->GetID(), frame->GetRoutingID());
 
   badge_manager->receivers_.Add(badge_manager, std::move(receiver),

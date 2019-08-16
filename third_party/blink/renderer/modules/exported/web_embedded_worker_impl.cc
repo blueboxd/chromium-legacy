@@ -287,8 +287,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
       kV8CacheOptionsFullCodeWithoutHeatCheck;
 
   worker_thread_ = std::make_unique<ServiceWorkerThread>(
-      ServiceWorkerGlobalScopeProxy::Create(*this, *worker_context_client_,
-                                            initiator_thread_task_runner),
+      std::make_unique<ServiceWorkerGlobalScopeProxy>(
+          *this, *worker_context_client_, initiator_thread_task_runner),
       std::move(installed_scripts_manager_), std::move(cache_storage_info_),
       initiator_thread_task_runner);
 

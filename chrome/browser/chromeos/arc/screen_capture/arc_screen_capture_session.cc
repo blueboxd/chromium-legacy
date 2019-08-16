@@ -34,6 +34,8 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/linux/client_native_pixmap_factory_dmabuf.h"
 
+namespace arc {
+
 namespace {
 // Callback into Android to force screen updates if the queue gets this big.
 constexpr size_t kQueueSizeToForceUpdate = 4;
@@ -42,9 +44,14 @@ constexpr size_t kQueueSizeToDropFrames = 8;
 // Bytes per pixel, Android returns stride in pixel units, Chrome uses it in
 // bytes.
 constexpr size_t kBytesPerPixel = 4;
-}  // namespace
 
-namespace arc {
+scoped_refptr<viz::ContextProvider> GetContextProvider() {
+  return aura::Env::GetInstance()
+      ->context_factory()
+      ->SharedMainThreadContextProvider();
+}
+
+}  // namespace
 
 struct ArcScreenCaptureSession::PendingBuffer {
   PendingBuffer(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_buffer,
@@ -117,9 +124,7 @@ mojom::ScreenCaptureSessionPtr ArcScreenCaptureSession::Initialize(
     LOG(ERROR) << "Unable to find layer for the desktop window";
     return nullptr;
   }
-  auto context_provider = aura::Env::GetInstance()
-                              ->context_factory()
-                              ->SharedMainThreadContextProvider();
+  auto context_provider = GetContextProvider();
   gl_helper_ = std::make_unique<viz::GLHelper>(
       context_provider->ContextGL(), context_provider->ContextSupport());
   gfx::Size desktop_size =
@@ -182,10 +187,7 @@ void ArcScreenCaptureSession::SetOutputBuffer(
     std::move(callback).Run();
     return;
   }
-  gpu::gles2::GLES2Interface* gl = aura::Env::GetInstance()
-                                       ->context_factory()
-                                       ->SharedMainThreadContextProvider()
-                                       ->ContextGL();
+  gpu::gles2::GLES2Interface* gl = GetContextProvider()->ContextGL();
   if (!gl) {
     LOG(ERROR) << "Unable to get the GL context";
     std::move(callback).Run();
@@ -248,35 +250,32 @@ void ArcScreenCaptureSession::SetOutputBuffer(
 }
 
 void ArcScreenCaptureSession::QueryCompleted(
-    std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
     GLuint query_id,
-    GLuint texture,
-    GLuint id,
-    SetOutputBufferCallback callback) {
+    std::unique_ptr<PendingBuffer> pending_buffer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::move(callback).Run();
-  gpu::gles2::GLES2Interface* gl = aura::Env::GetInstance()
-                                       ->context_factory()
-                                       ->SharedMainThreadContextProvider()
-                                       ->ContextGL();
+
+  // Notify ARC++ that the buffer is ready.
+  std::move(pending_buffer->callback_).Run();
+
+  gpu::gles2::GLES2Interface* gl = GetContextProvider()->ContextGL();
   if (!gl) {
     LOG(ERROR) << "Unable to get the GL context";
     return;
   }
-  gl->BindTexture(GL_TEXTURE_2D, texture);
-  gl->ReleaseTexImage2DCHROMIUM(GL_TEXTURE_2D, id);
-  gl->DeleteTextures(1, &texture);
-  gl->DestroyImageCHROMIUM(id);
+
+  // Return resources for ARC++ buffer. The GpuMemoryBuffer will go out of
+  // scope and be destroyed too.
+  gl->BindTexture(GL_TEXTURE_2D, pending_buffer->texture_);
+  gl->ReleaseTexImage2DCHROMIUM(GL_TEXTURE_2D, pending_buffer->image_id_);
+  gl->DeleteTextures(1, &pending_buffer->texture_);
+  gl->DestroyImageCHROMIUM(pending_buffer->image_id_);
   gl->DeleteQueriesEXT(1, &query_id);
 }
 
 void ArcScreenCaptureSession::OnDesktopCaptured(
     std::unique_ptr<viz::CopyOutputResult> result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  gpu::gles2::GLES2Interface* gl = aura::Env::GetInstance()
-                                       ->context_factory()
-                                       ->SharedMainThreadContextProvider()
-                                       ->ContextGL();
+  gpu::gles2::GLES2Interface* gl = GetContextProvider()->ContextGL();
   if (!gl) {
     LOG(ERROR) << "Unable to get the GL context";
     return;
@@ -310,10 +309,9 @@ void ArcScreenCaptureSession::OnDesktopCaptured(
 void ArcScreenCaptureSession::CopyDesktopTextureToGpuBuffer(
     std::unique_ptr<DesktopTexture> desktop_texture,
     std::unique_ptr<PendingBuffer> pending_buffer) {
-  gpu::gles2::GLES2Interface* gl = aura::Env::GetInstance()
-                                       ->context_factory()
-                                       ->SharedMainThreadContextProvider()
-                                       ->ContextGL();
+  auto context_provider = GetContextProvider();
+  gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
+
   if (!gl) {
     LOG(ERROR) << "Unable to get the GL context";
     return;
@@ -325,21 +323,19 @@ void ArcScreenCaptureSession::CopyDesktopTextureToGpuBuffer(
                  gfx::Vector2dF(), pending_buffer->texture_,
                  gfx::Rect(0, 0, size_.width(), size_.height()));
   gl->EndQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM);
+
+  // Return CopyOutputResult resources after texture copy happens.
   gl->DeleteTextures(1, &desktop_texture->texture_);
   if (desktop_texture->release_callback_) {
-    desktop_texture->release_callback_->Run(gpu::SyncToken(), false);
+    gpu::SyncToken sync_token;
+    gl->GenSyncTokenCHROMIUM(sync_token.GetData());
+    desktop_texture->release_callback_->Run(sync_token, false);
   }
-  aura::Env::GetInstance()
-      ->context_factory()
-      ->SharedMainThreadContextProvider()
-      ->ContextSupport()
-      ->SignalQuery(
-          query_id,
-          base::BindOnce(&ArcScreenCaptureSession::QueryCompleted,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         std::move(pending_buffer->gpu_buffer_), query_id,
-                         pending_buffer->texture_, pending_buffer->image_id_,
-                         std::move(pending_buffer->callback_)));
+
+  context_provider->ContextSupport()->SignalQuery(
+      query_id, base::BindOnce(&ArcScreenCaptureSession::QueryCompleted,
+                               weak_ptr_factory_.GetWeakPtr(), query_id,
+                               std::move(pending_buffer)));
 }
 
 void ArcScreenCaptureSession::OnAnimationStep(base::TimeTicks timestamp) {

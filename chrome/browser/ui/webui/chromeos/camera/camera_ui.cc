@@ -45,8 +45,8 @@ content::WebUIDataSource* CreateCameraUIHTMLSource() {
                           IDR_CAMERA_CAMERA_METADATA_MOJOM_LITE_JS);
   source->AddResourcePath("src/js/mojo/camera_metadata_tags.mojom-lite.js",
                           IDR_CAMERA_CAMERA_METADATA_TAGS_MOJOM_LITE_JS);
-  source->AddResourcePath("src/js/mojo/cros_image_capture.mojom-lite.js",
-                          IDR_CAMERA_CROS_IMAGE_CAPTURE_MOJOM_LITE_JS);
+  source->AddResourcePath("src/js/mojo/camera_app.mojom-lite.js",
+                          IDR_CAMERA_APP_MOJOM_LITE_JS);
   source->AddResourcePath("src/js/mojo/mojo_bindings_lite.js",
                           IDR_MOJO_MOJO_BINDINGS_LITE_JS);
 

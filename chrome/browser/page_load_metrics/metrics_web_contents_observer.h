@@ -126,6 +126,12 @@ class MetricsWebContentsObserver
                       const net::CanonicalCookie& cookie,
                       bool blocked_by_policy) override;
 
+  // These methods are forwarded from the ChromeRenderMessageFilter.
+  void OnDomStorageAccessed(const GURL& url,
+                            const GURL& first_party_url,
+                            bool local,
+                            bool blocked_by_policy);
+
   // These methods are forwarded from the MetricsNavigationThrottle.
   void WillStartNavigationRequest(content::NavigationHandle* navigation_handle);
   void WillProcessNavigationResponse(

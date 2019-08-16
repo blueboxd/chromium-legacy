@@ -498,9 +498,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void IncrementPendingUpdateHintCount();
   void DecrementPendingUpdateHintCount();
 
-  void set_compared_script_info_map(
+  // ServiceWorkerImportedScriptUpdateCheck:
+  // Called on versions created for an update check. Called if the check
+  // determined an update exists before starting the worker for an install
+  // event.
+  void PrepareForUpdate(
       std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
-          compared_script_info_map);
+          compared_script_info_map,
+      const GURL& updated_script_url);
   const std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>&
   compared_script_info_map() const;
   ServiceWorkerUpdateChecker::ComparedScriptInfo TakeComparedScriptInfo(
@@ -513,6 +518,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Called when a controlled client's state changes in a way that might effect
   // whether the service worker should be kept at foreground priority.
   void UpdateForegroundPriority();
+
+  // Adds a message to service worker internals UI page if the internal page is
+  // opened. Use this method only for events which can't be logged on the
+  // worker's DevTools console, e.g., the worker is not responding. For regular
+  // events use EmbeddedWorkerInstance's AddMessageToConsole().
+  void MaybeReportConsoleMessageToInternals(
+      blink::mojom::ConsoleMessageLevel message_level,
+      const std::string& message);
 
   // TODO(crbug.com/951571): Remove once the bug is debugged.
   const base::debug::StackTrace& redundant_state_callstack() const {
@@ -949,6 +962,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // when ServiceWorkerImportedScriptUpdateCheck is enabled.
   std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
       compared_script_info_map_;
+
+  // ServiceWorkerImportedScriptUpdateCheck:
+  // If this version was created for an update check that found an update,
+  // |updated_script_url_| is the URL of the script for which a byte-for-byte
+  // change was found. Otherwise, it's the empty GURL.
+  GURL updated_script_url_;
 
   // This holds a mojo interface pointer info to this instance until
   // InitializeGlobalScope() is called.

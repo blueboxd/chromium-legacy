@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/passwords/credential_leak_dialog_view.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/ui/passwords/credential_leak_dialog_controller.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
@@ -100,6 +101,19 @@ base::string16 CredentialLeakDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(
       button == ui::DIALOG_BUTTON_OK ? IDS_CREDENTIAL_LEAK_OK : IDS_CLOSE);
+}
+
+void CredentialLeakDialogView::WindowClosing() {
+  if (controller_) {
+    controller_->OnCloseDialog();
+  }
+}
+
+bool CredentialLeakDialogView::Accept() {
+  if (controller_) {
+    controller_->OnCheckPasswords();
+  }
+  return true;
 }
 
 void CredentialLeakDialogView::InitWindow() {

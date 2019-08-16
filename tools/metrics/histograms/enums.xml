@@ -9571,6 +9571,11 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="GOOGLE_LOCATION_SERVICE"/>
 </enum>
 
+<enum name="ContactsPickerDialogAction">
+  <int value="0" label="Cancel"/>
+  <int value="1" label="Contact(s) selected"/>
+</enum>
+
 <enum name="ContentIndexCategory">
   <summary>
     The type of a Content Index entry. Corresponds to
@@ -35153,6 +35158,7 @@ from previous Chrome versions.
   <int value="-835331907" label="TabOutlinesInLowContrastThemes:disabled"/>
   <int value="-834661509" label="ModalPermissionPrompts:disabled"/>
   <int value="-832561975" label="enable-picture-in-picture"/>
+  <int value="-828612322" label="BundledHTTPExchanges:enabled"/>
   <int value="-825942229" label="tab-management-experiment-type-elderberry"/>
   <int value="-824199802" label="ContextualSearchSimplifiedServer:enabled"/>
   <int value="-823165021" label="MaterialDesignUserMenu:enabled"/>
@@ -37189,6 +37195,7 @@ from previous Chrome versions.
   <int value="2047981703" label="IntentPicker:enabled"/>
   <int value="2049432745" label="VaapiWebPImageDecodeAcceleration:enabled"/>
   <int value="2051403297" label="ShowBluetoothDeviceBattery:disabled"/>
+  <int value="2053273256" label="BundledHTTPExchanges:disabled"/>
   <int value="2056572020" label="EnableUsernameCorrection:disabled"/>
   <int value="2058148069" label="UseMessagesStagingUrl:enabled"/>
   <int value="2058283872" label="CCTModuleCache:disabled"/>

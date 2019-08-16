@@ -8,22 +8,6 @@
 #include "base/callback.h"
 #include "base/strings/string_piece_forward.h"
 
-namespace google {
-namespace internal {
-namespace identity {
-namespace passwords {
-namespace leak {
-namespace check {
-namespace v1 {
-class LookupSingleLeakRequest;
-}  // namespace v1
-}  // namespace check
-}  // namespace leak
-}  // namespace passwords
-}  // namespace identity
-}  // namespace internal
-}  // namespace google
-
 namespace password_manager {
 
 struct SingleLookupResponse;
@@ -46,12 +30,6 @@ struct LookupSingleLeakData {
 
 using SingleLeakRequestDataCallback =
     base::OnceCallback<void(LookupSingleLeakData)>;
-
-// Constructs a LookupSingleLeakRequest from the provided |username| and
-// |password|.
-google::internal::identity::passwords::leak::check::v1::LookupSingleLeakRequest
-MakeLookupSingleLeakRequest(base::StringPiece username,
-                            base::StringPiece password);
 
 // Asynchronously creates a data payload for single credential check.
 // Callback is invoked on the calling thread with the protobuf and the

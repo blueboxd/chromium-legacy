@@ -74,7 +74,7 @@ LoadingPredictorPageLoadMetricsObserver::OnHidden(
 void LoadingPredictorPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  predictors::NavigationID navigation_id(GetDelegate()->GetWebContents());
+  predictors::NavigationID navigation_id(GetDelegate().GetWebContents());
 
   collector_->RecordFirstContentfulPaint(
       navigation_id, extra_info.navigation_start +

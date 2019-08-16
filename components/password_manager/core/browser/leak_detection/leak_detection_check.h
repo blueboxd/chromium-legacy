@@ -25,7 +25,7 @@ class LeakDetectionCheck {
 
   // Starts checking |username| and |password| pair asynchronously.
   // |url| is used later for presentation in the UI but not for actual business
-  // logic.
+  // logic. The method should be called only once per lifetime of the object.
   virtual void Start(const GURL& url,
                      base::StringPiece16 username,
                      base::StringPiece16 password) = 0;

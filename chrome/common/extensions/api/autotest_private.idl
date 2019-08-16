@@ -104,7 +104,7 @@ namespace autotestPrivate {
   callback LoginStatusCallback = void (LoginStatusDict status);
 
   // |all_policies| will be the full list of policies as returned by the
-  // GetAllPolicyValuesAsArray function.
+  // DictionaryPolicyConversions.ToValue function.
   callback AllEnterprisePoliciesCallback = void (any all_policies);
 
   dictionary ExtensionInfoDict {

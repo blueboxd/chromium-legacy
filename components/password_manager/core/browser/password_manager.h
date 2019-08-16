@@ -21,7 +21,7 @@
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 #include "components/password_manager/core/browser/form_submission_observer.h"
-#include "components/password_manager/core/browser/leak_detection/leak_detection_request_factory.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/leak_detection_delegate.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
@@ -175,7 +175,7 @@ class PasswordManager : public FormSubmissionObserver {
     return GetSubmittedManager();
   }
 #if !defined(OS_IOS)
-  void set_leak_factory(std::unique_ptr<LeakDetectionRequestFactory> factory) {
+  void set_leak_factory(std::unique_ptr<LeakDetectionCheckFactory> factory) {
     leak_delegate_.set_leak_factory(std::move(factory));
   }
 #endif  // !defined(OS_IOS)

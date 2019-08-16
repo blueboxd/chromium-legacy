@@ -39,8 +39,7 @@ namespace ash {
 namespace {
 
 // Whether the shelf is oriented on the side, not on the bottom.
-bool IsSideShelf(aura::Window* root_window) {
-  Shelf* shelf = Shelf::ForWindow(root_window);
+bool IsSideShelf(Shelf* shelf) {
   switch (shelf->alignment()) {
     case SHELF_ALIGNMENT_BOTTOM:
     case SHELF_ALIGNMENT_BOTTOM_LOCKED:
@@ -52,6 +51,23 @@ bool IsSideShelf(aura::Window* root_window) {
   return false;
 }
 
+// Whether the shelf background type indicates that shelf has rounded corners.
+bool IsShelfBackgroundTypeWithRoundedCorners(
+    ShelfBackgroundType background_type) {
+  switch (background_type) {
+    case SHELF_BACKGROUND_DEFAULT:
+    case SHELF_BACKGROUND_APP_LIST:
+    case SHELF_BACKGROUND_OVERVIEW:
+      return true;
+    case SHELF_BACKGROUND_MAXIMIZED:
+    case SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST:
+    case SHELF_BACKGROUND_OOBE:
+    case SHELF_BACKGROUND_LOGIN:
+    case SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER:
+      return false;
+  }
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -59,7 +75,7 @@ bool IsSideShelf(aura::Window* root_window) {
 
 AppListPresenterDelegateImpl::AppListPresenterDelegateImpl(
     AppListControllerImpl* controller)
-    : controller_(controller), display_observer_(this) {
+    : controller_(controller), display_observer_(this), shelf_observer_(this) {
   display_observer_.Add(display::Screen::GetScreen());
 }
 
@@ -97,8 +113,16 @@ void AppListPresenterDelegateImpl::ShowForDisplay(int64_t display_id) {
   Shell::GetPrimaryRootWindowController()
       ->GetShelfLayoutManager()
       ->UpdateAutoHideState();
-  view_->Show(IsSideShelf(view_->GetWidget()->GetNativeView()->GetRootWindow()),
-              IsTabletMode());
+
+  Shelf* shelf =
+      Shelf::ForWindow(view_->GetWidget()->GetNativeView()->GetRootWindow());
+  if (!shelf_observer_.IsObserving(shelf))
+    shelf_observer_.Add(shelf);
+
+  view_->set_shelf_has_rounded_corners(
+      IsShelfBackgroundTypeWithRoundedCorners(shelf->GetBackgroundType()));
+  view_->Show(IsSideShelf(shelf), IsTabletMode());
+
   Shell::Get()->AddPreTargetHandler(this);
   controller_->ViewShown(display_id);
 }
@@ -112,6 +136,8 @@ void AppListPresenterDelegateImpl::OnClosing() {
 }
 
 void AppListPresenterDelegateImpl::OnClosed() {
+  if (!is_visible_)
+    shelf_observer_.RemoveAll();
   controller_->ViewClosed();
 }
 
@@ -150,6 +176,13 @@ void AppListPresenterDelegateImpl::OnDisplayMetricsChanged(
 
   view_->OnParentWindowBoundsChanged();
   SnapAppListBoundsToDisplayEdge();
+}
+
+void AppListPresenterDelegateImpl::OnBackgroundTypeChanged(
+    ShelfBackgroundType background_type,
+    AnimationChangeType change_type) {
+  view_->set_shelf_has_rounded_corners(
+      IsShelfBackgroundTypeWithRoundedCorners(background_type));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1499,10 +1499,7 @@ size_t V4L2JpegEncodeAccelerator::EncodedInstanceDmaBuf::FinalizeJpegImage(
   size_t idx = 0;
 
   auto output_gmb_handle = CreateGpuMemoryBufferHandle(output_frame.get());
-  if (output_gmb_handle.is_null()) {
-    VLOGF(1) << "Failed to create GpuMemoryBufferHandle";
-    return 0;
-  }
+  DCHECK(!output_gmb_handle.is_null());
   auto output_gmb_buffer =
       gpu_memory_buffer_support_->CreateGpuMemoryBufferImplFromHandle(
           std::move(output_gmb_handle), output_frame->coded_size(),

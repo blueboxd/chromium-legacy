@@ -75,7 +75,7 @@ public class ClickToCallMessageHandler {
                 NotificationConstants.GROUP_CLICK_TO_CALL,
                 NotificationConstants.NOTIFICATION_ID_CLICK_TO_CALL, contentIntent, phoneNumber,
                 context.getResources().getString(R.string.click_to_call_notification_text),
-                R.drawable.ic_phone_googblue_36dp);
+                R.drawable.ic_phone_googblue_36dp, /*largeIconId=*/0);
     }
 
     /**

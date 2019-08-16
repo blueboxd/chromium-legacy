@@ -18,6 +18,7 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/preconnect_manager.h"
@@ -46,6 +47,33 @@
 using content::BrowserThread;
 
 namespace {
+
+void OnDomStorageAccessedUI(int process_id,
+                            int routing_id,
+                            const GURL& origin_url,
+                            const GURL& top_origin_url,
+                            bool local,
+                            bool blocked_by_policy) {
+  content::RenderFrameHost* frame =
+      content::RenderFrameHost::FromID(process_id, routing_id);
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(frame);
+
+  if (!web_contents)
+    return;
+
+  TabSpecificContentSettings* tab_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  if (tab_settings)
+    tab_settings->OnDomStorageAccessed(origin_url, local, blocked_by_policy);
+
+  page_load_metrics::MetricsWebContentsObserver* metrics_observer =
+      page_load_metrics::MetricsWebContentsObserver::FromWebContents(
+          web_contents);
+  if (metrics_observer)
+    metrics_observer->OnDomStorageAccessed(origin_url, top_origin_url, local,
+                                           blocked_by_policy);
+}
 
 const uint32_t kRenderFilteredMessageClasses[] = {
     ChromeMsgStart, NetworkHintsMsgStart,
@@ -196,8 +224,8 @@ void ChromeRenderMessageFilter::OnAllowDOMStorage(int render_frame_id,
       cookie_settings_->IsCookieAccessAllowed(origin_url, top_origin_url);
   // Record access to DOM storage for potential display in UI.
   base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&TabSpecificContentSettings::DOMStorageAccessed,
-                                render_process_id_, render_frame_id, origin_url,
+                 base::BindOnce(&OnDomStorageAccessedUI, render_process_id_,
+                                render_frame_id, origin_url, top_origin_url,
                                 local, !*allowed));
 }
 

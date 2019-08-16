@@ -259,6 +259,9 @@ cca.views.Camera.prototype.restart = function() {
         Promise.resolve(!cca.state.get('taking') || this.endTake_()),
       ])
       .finally(() => {
+        // We should close all mojo connections since any communication to a
+        // closed stream should be avoided.
+        cca.mojo.closeConnections();
         this.preview_.stop();
         this.start_();
         return this.started_;

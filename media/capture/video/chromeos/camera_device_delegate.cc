@@ -24,7 +24,6 @@
 #include "media/capture/video/chromeos/camera_device_context.h"
 #include "media/capture/video/chromeos/camera_hal_delegate.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
-#include "media/capture/video/chromeos/reprocess_manager.h"
 #include "media/capture/video/chromeos/request_manager.h"
 
 namespace media {
@@ -162,11 +161,11 @@ CameraDeviceDelegate::CameraDeviceDelegate(
     VideoCaptureDeviceDescriptor device_descriptor,
     scoped_refptr<CameraHalDelegate> camera_hal_delegate,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner,
-    ReprocessManager* reprocess_manager)
+    CameraAppDeviceImpl* camera_app_device)
     : device_descriptor_(device_descriptor),
       camera_hal_delegate_(std::move(camera_hal_delegate)),
       ipc_task_runner_(std::move(ipc_task_runner)),
-      reprocess_manager_(reprocess_manager),
+      camera_app_device_(camera_app_device),
       weak_ptr_factory_(this) {}
 
 CameraDeviceDelegate::~CameraDeviceDelegate() = default;
@@ -220,8 +219,6 @@ void CameraDeviceDelegate::AllocateAndStart(
 void CameraDeviceDelegate::StopAndDeAllocate(
     base::OnceClosure device_close_callback) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
-
-  reprocess_manager_->Flush(device_descriptor_.device_id);
 
   if (!device_context_ ||
       device_context_->GetState() == CameraDeviceContext::State::kStopped ||
@@ -782,13 +779,16 @@ void CameraDeviceDelegate::OnConstructedDefaultPreviewRequestSettings(
         FROM_HERE, "Failed to get default request settings");
     return;
   }
-  reprocess_manager_->GetFpsRange(
-      device_descriptor_.device_id,
-      chrome_capture_params_.requested_format.frame_size.width(),
-      chrome_capture_params_.requested_format.frame_size.height(),
-      media::BindToCurrentLoop(
-          base::BindOnce(&CameraDeviceDelegate::OnGotFpsRange, GetWeakPtr(),
-                         std::move(settings))));
+
+  if (camera_app_device_) {
+    camera_app_device_->GetFpsRange(
+        chrome_capture_params_.requested_format.frame_size,
+        media::BindToCurrentLoop(
+            base::BindOnce(&CameraDeviceDelegate::OnGotFpsRange, GetWeakPtr(),
+                           std::move(settings))));
+  } else {
+    OnGotFpsRange(std::move(settings), {});
+  }
 }
 
 void CameraDeviceDelegate::OnConstructedDefaultStillCaptureRequestSettings(
@@ -796,15 +796,21 @@ void CameraDeviceDelegate::OnConstructedDefaultStillCaptureRequestSettings(
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
   while (!take_photo_callbacks_.empty()) {
-    reprocess_manager_->ConsumeReprocessOptions(
-        device_descriptor_.device_id,
-        base::BindOnce(
-            &TakePhotoCallbackBundle, std::move(take_photo_callbacks_.front()),
-            base::BindOnce(&Camera3AController::SetAutoFocusModeForStillCapture,
-                           camera_3a_controller_->GetWeakPtr())),
-        media::BindToCurrentLoop(base::BindOnce(&RequestManager::TakePhoto,
-                                                request_manager_->GetWeakPtr(),
-                                                settings.Clone())));
+    auto take_photo_callback = base::BindOnce(
+        &TakePhotoCallbackBundle, std::move(take_photo_callbacks_.front()),
+        base::BindOnce(&Camera3AController::SetAutoFocusModeForStillCapture,
+                       camera_3a_controller_->GetWeakPtr()));
+    if (camera_app_device_) {
+      camera_app_device_->ConsumeReprocessOptions(
+          std::move(take_photo_callback),
+          media::BindToCurrentLoop(base::BindOnce(
+              &RequestManager::TakePhoto, request_manager_->GetWeakPtr(),
+              settings.Clone())));
+    } else {
+      request_manager_->TakePhoto(
+          settings.Clone(), CameraAppDeviceImpl::GetSingleShotReprocessOptions(
+                                std::move(take_photo_callback)));
+    }
     take_photo_callbacks_.pop();
   }
 }

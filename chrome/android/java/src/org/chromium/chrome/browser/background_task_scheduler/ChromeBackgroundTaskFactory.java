@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.background_task_scheduler;
 
 import org.chromium.base.Log;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.background_sync.BackgroundSyncBackgroundTask;
 import org.chromium.chrome.browser.background_sync.PeriodicBackgroundSyncChromeWakeUpTask;
 import org.chromium.chrome.browser.component_updater.UpdateTask;
@@ -22,6 +23,7 @@ import org.chromium.chrome.browser.services.gcm.GCMBackgroundTask;
 import org.chromium.chrome.browser.webapps.WebApkUpdateTask;
 import org.chromium.components.background_task_scheduler.BackgroundTask;
 import org.chromium.components.background_task_scheduler.BackgroundTaskFactory;
+import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
 
 /**
@@ -30,7 +32,16 @@ import org.chromium.components.background_task_scheduler.TaskIds;
  */
 public class ChromeBackgroundTaskFactory implements BackgroundTaskFactory {
     private static final String TAG = "ChromeBkgrdTaskF";
-    public ChromeBackgroundTaskFactory() {}
+    private ChromeBackgroundTaskFactory() {}
+
+    private static class LazyHolder {
+        static final ChromeBackgroundTaskFactory INSTANCE = new ChromeBackgroundTaskFactory();
+    }
+
+    @CalledByNative
+    public static void setAsDefault() {
+        BackgroundTaskSchedulerFactory.setBackgroundTaskFactory(LazyHolder.INSTANCE);
+    }
 
     @Override
     public BackgroundTask getBackgroundTaskFromTaskId(int taskId) {

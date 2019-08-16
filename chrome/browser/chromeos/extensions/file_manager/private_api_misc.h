@@ -330,7 +330,7 @@ class FileManagerPrivateInternalSharePathsWithCrostiniFunction
 
  private:
   ResponseAction Run() override;
-  void SharePathsCallback(bool success, std::string failure_reason);
+  void SharePathsCallback(bool success, const std::string& failure_reason);
   DISALLOW_COPY_AND_ASSIGN(
       FileManagerPrivateInternalSharePathsWithCrostiniFunction);
 };
@@ -351,7 +351,7 @@ class FileManagerPrivateInternalUnsharePathWithCrostiniFunction
 
  private:
   ResponseAction Run() override;
-  void UnsharePathCallback(bool success, std::string failure_reason);
+  void UnsharePathCallback(bool success, const std::string& failure_reason);
   DISALLOW_COPY_AND_ASSIGN(
       FileManagerPrivateInternalUnsharePathWithCrostiniFunction);
 };

@@ -78,13 +78,11 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
            const RestrictedCookieManager* restricted_cookie_manager,
            const GURL& url,
            const GURL& site_for_cookies,
-           const url::Origin& top_frame_origin,
            net::CookieOptions options,
            mojom::CookieChangeListenerPtr mojo_listener)
       : restricted_cookie_manager_(restricted_cookie_manager),
         url_(url),
         site_for_cookies_(site_for_cookies),
-        top_frame_origin_(top_frame_origin),
         options_(options),
         mojo_listener_(std::move(mojo_listener)) {
     // TODO(pwnall): add a constructor w/options to net::CookieChangeDispatcher.
@@ -121,7 +119,7 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
     // being deleted at a later time, which can happen due to eviction or due to
     // the user explicitly deleting all cookies.
     if (!restricted_cookie_manager_->cookie_settings()->IsCookieAccessAllowed(
-            url_, site_for_cookies_, top_frame_origin_))
+            url_, site_for_cookies_))
       return;
 
     mojo_listener_->OnCookieChange(cookie, ToCookieChangeCause(cause));
@@ -137,12 +135,8 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
   // The URL whose cookies this listener is interested in.
   const GURL url_;
 
-  // Site context in which we're used; used to determine if a cookie is accessed
-  // in a third-party context.
+  // Site context in which we're used; used for permission-checking.
   const GURL site_for_cookies_;
-
-  // Site context in which we're used; used to check content settings.
-  const url::Origin top_frame_origin_;
 
   // CanonicalCookie::IncludeForRequestURL options for this listener's interest.
   const net::CookieOptions options_;
@@ -189,7 +183,6 @@ RestrictedCookieManager::~RestrictedCookieManager() {
 void RestrictedCookieManager::GetAllForUrl(
     const GURL& url,
     const GURL& site_for_cookies,
-    const url::Origin& top_frame_origin,
     mojom::CookieManagerGetOptionsPtr options,
     GetAllForUrlCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -211,14 +204,12 @@ void RestrictedCookieManager::GetAllForUrl(
       url, net_options,
       base::BindOnce(&RestrictedCookieManager::CookieListToGetAllForUrlCallback,
                      weak_ptr_factory_.GetWeakPtr(), url, site_for_cookies,
-                     top_frame_origin, net_options, std::move(options),
-                     std::move(callback)));
+                     net_options, std::move(options), std::move(callback)));
 }
 
 void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
     const GURL& url,
     const GURL& site_for_cookies,
-    const url::Origin& top_frame_origin,
     const net::CookieOptions& net_options,
     mojom::CookieManagerGetOptionsPtr options,
     GetAllForUrlCallback callback,
@@ -226,8 +217,8 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
     const net::CookieStatusList& excluded_cookies) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  bool blocked = !cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies,
-                                                          top_frame_origin);
+  bool blocked =
+      !cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies);
 
   std::vector<net::CanonicalCookie> result;
   std::vector<net::CookieWithStatus> result_with_status;
@@ -303,7 +294,6 @@ void RestrictedCookieManager::SetCanonicalCookie(
     const net::CanonicalCookie& cookie,
     const GURL& url,
     const GURL& site_for_cookies,
-    const url::Origin& top_frame_origin,
     SetCanonicalCookieCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!ValidateAccessToCookiesAt(url)) {
@@ -312,8 +302,8 @@ void RestrictedCookieManager::SetCanonicalCookie(
   }
 
   // TODO(morlovich): Try to validate site_for_cookies as well.
-  bool blocked = !cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies,
-                                                          top_frame_origin);
+  bool blocked =
+      !cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies);
 
   if (blocked) {
     if (network_context_client_) {
@@ -386,7 +376,6 @@ void RestrictedCookieManager::SetCanonicalCookieResult(
 void RestrictedCookieManager::AddChangeListener(
     const GURL& url,
     const GURL& site_for_cookies,
-    const url::Origin& top_frame_origin,
     mojom::CookieChangeListenerPtr mojo_listener,
     AddChangeListenerCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -397,9 +386,9 @@ void RestrictedCookieManager::AddChangeListener(
 
   net::CookieOptions net_options =
       MakeOptionsForGet(role_, url, site_for_cookies);
-  auto listener = std::make_unique<Listener>(
-      cookie_store_, this, url, site_for_cookies, top_frame_origin, net_options,
-      std::move(mojo_listener));
+  auto listener =
+      std::make_unique<Listener>(cookie_store_, this, url, site_for_cookies,
+                                 net_options, std::move(mojo_listener));
 
   listener->mojo_listener().set_connection_error_handler(
       base::BindOnce(&RestrictedCookieManager::RemoveChangeListener,
@@ -417,7 +406,6 @@ void RestrictedCookieManager::AddChangeListener(
 void RestrictedCookieManager::SetCookieFromString(
     const GURL& url,
     const GURL& site_for_cookies,
-    const url::Origin& top_frame_origin,
     const std::string& cookie,
     SetCookieFromStringCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -433,7 +421,7 @@ void RestrictedCookieManager::SetCookieFromString(
   // Further checks (origin_, settings), as well as logging done by
   // SetCanonicalCookie()
   SetCanonicalCookie(
-      *parsed_cookie, url, site_for_cookies, top_frame_origin,
+      *parsed_cookie, url, site_for_cookies,
       base::BindOnce([](SetCookieFromStringCallback user_callback,
                         bool success) { std::move(user_callback).Run(); },
                      std::move(callback)));
@@ -442,7 +430,6 @@ void RestrictedCookieManager::SetCookieFromString(
 void RestrictedCookieManager::GetCookiesString(
     const GURL& url,
     const GURL& site_for_cookies,
-    const url::Origin& top_frame_origin,
     GetCookiesStringCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Checks done by GetAllForUrl.
@@ -451,8 +438,7 @@ void RestrictedCookieManager::GetCookiesString(
   auto match_options = mojom::CookieManagerGetOptions::New();
   match_options->name = "";
   match_options->match_type = mojom::CookieMatchType::STARTS_WITH;
-  GetAllForUrl(url, site_for_cookies, top_frame_origin,
-               std::move(match_options),
+  GetAllForUrl(url, site_for_cookies, std::move(match_options),
                base::BindOnce(
                    [](GetCookiesStringCallback user_callback,
                       const std::vector<net::CanonicalCookie>& cookies) {
@@ -465,15 +451,14 @@ void RestrictedCookieManager::GetCookiesString(
 void RestrictedCookieManager::CookiesEnabledFor(
     const GURL& url,
     const GURL& site_for_cookies,
-    const url::Origin& top_frame_origin,
     CookiesEnabledForCallback callback) {
   if (!ValidateAccessToCookiesAt(url)) {
     std::move(callback).Run(false);
     return;
   }
 
-  std::move(callback).Run(cookie_settings_->IsCookieAccessAllowed(
-      url, site_for_cookies, top_frame_origin));
+  std::move(callback).Run(
+      cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies));
 }
 
 void RestrictedCookieManager::RemoveChangeListener(Listener* listener) {

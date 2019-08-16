@@ -244,7 +244,11 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
 }
 
 void ManagePasswordsUIController::OnCredentialLeak(const GURL& origin) {
-  auto* raw_controller = new CredentialLeakDialogControllerImpl();
+  // Existing dialog shouldn't be closed.
+  if (dialog_controller_) {
+    return;
+  }
+  auto* raw_controller = new CredentialLeakDialogControllerImpl(this);
   dialog_controller_.reset(raw_controller);
   raw_controller->ShowCredentialLeakPrompt(
       CreateCredentialLeakPrompt(raw_controller));
@@ -455,6 +459,11 @@ void ManagePasswordsUIController::NavigateToPasswordManagerAccountDashboard(
       referrer);
 }
 
+void ManagePasswordsUIController::NavigateToPasswordCheckup() {
+  NavigateToPasswordCheckupPage(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+}
+
 void ManagePasswordsUIController::EnableSync(const AccountInfo& account,
                                              bool is_default_promo_account) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
@@ -471,6 +480,10 @@ void ManagePasswordsUIController::OnDialogHidden() {
     passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
     UpdateBubbleAndIconVisibility();
   }
+}
+
+void ManagePasswordsUIController::OnLeakDialogHidden() {
+  dialog_controller_.reset();
 }
 
 bool ManagePasswordsUIController::AuthenticateUser() {

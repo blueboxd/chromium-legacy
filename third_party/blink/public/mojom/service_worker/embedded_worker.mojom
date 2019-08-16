@@ -59,6 +59,17 @@ struct EmbeddedWorkerStartParams {
   // browser process is responsible for delaying execution.
   bool pause_after_download;
 
+  // The URL of the service worker script that should skip throttles when
+  // loaded, because the browser process has already started loading it and
+  // already throttled the request. For more detail, during the service worker
+  // update check, the browser process fetches the scripts of the incumbent
+  // service worker. If an update is found in a script, the browser pauses the
+  // load for that script and starts the new service worker. When this service
+  // worker requests that script, the browser will resume the load.
+  //
+  // If there is no such script, this is the empty URL.
+  url.mojom.Url script_url_to_skip_throttling;
+
   // True if starting the worker should wait until DevTools gets ready.
   bool wait_for_debugger;
 

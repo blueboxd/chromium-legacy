@@ -13,14 +13,12 @@
 #include "base/process/process_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/public/graph/system_node.h"
 
 namespace performance_manager {
 
 class SystemNodeImpl : public PublicNodeImpl<SystemNodeImpl, SystemNode>,
                        public TypedNodeBase<SystemNodeImpl,
-                                            GraphImplObserver,
                                             SystemNode,
                                             SystemNodeObserver> {
  public:

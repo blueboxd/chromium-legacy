@@ -14,7 +14,6 @@
 #include "chrome/browser/performance_manager/graph/node_attached_data.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/graph/properties.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/public/graph/process_node.h"
 #include "chrome/browser/performance_manager/public/render_process_host_proxy.h"
 
@@ -37,7 +36,6 @@ class WorkerNodeImpl;
 class ProcessNodeImpl
     : public PublicNodeImpl<ProcessNodeImpl, ProcessNode>,
       public TypedNodeBase<ProcessNodeImpl,
-                           GraphImplObserver,
                            ProcessNode,
                            ProcessNodeObserver>,
       public resource_coordinator::mojom::ProcessCoordinationUnit {
@@ -155,12 +153,10 @@ class ProcessNodeImpl
 
   ObservedProperty::NotifiesAlways<
       base::TimeDelta,
-      &GraphImplObserver::OnExpectedTaskQueueingDurationSample,
       &ProcessNodeObserver::OnExpectedTaskQueueingDurationSample>
       expected_task_queueing_duration_;
   ObservedProperty::NotifiesOnlyOnChanges<
       bool,
-      &GraphImplObserver::OnMainThreadTaskLoadIsLow,
       &ProcessNodeObserver::OnMainThreadTaskLoadIsLow>
       main_thread_task_load_is_low_{false};
   double cpu_usage_ = 0;

@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+FAIL Date returned by lastModified is current at page load assert_approx_equals: expected 1565945123 +/- 2.5 but got 1565948723
+PASS Date returned by lastModified is in the form "MM/DD/YYYY hh:mm:ss".
+FAIL Date returned by lastModified is in the user's local time zone. assert_approx_equals: Hours and minutes should match local time. expected 2723 +/- 2 but got 6323
+FAIL Date returned by lastModified is current after timeout. assert_approx_equals: (initial value was 1565948723) expected 1565945127 +/- 2.5 but got 1565948727
+Harness: the test ran to completion.
+

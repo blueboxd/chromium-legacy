@@ -94,6 +94,11 @@ VideoCaptureServiceImpl::VideoCaptureServiceImpl(
 VideoCaptureServiceImpl::~VideoCaptureServiceImpl() {
   factory_bindings_.CloseAllBindings();
   device_factory_.reset();
+
+#if defined(OS_CHROMEOS)
+  camera_app_device_bridge_.reset();
+#endif  // defined (OS_CHROMEOS)
+
   if (gpu_dependencies_context_) {
     gpu_dependencies_context_->GetTaskRunner()->DeleteSoon(
         FROM_HERE, std::move(gpu_dependencies_context_));
@@ -110,10 +115,10 @@ void VideoCaptureServiceImpl::InjectGpuDependencies(
                                 accelerator_factory.PassInterface()));
 }
 
-void VideoCaptureServiceImpl::BindCrosImageCapture(
-    mojo::PendingReceiver<cros::mojom::CrosImageCapture> receiver) {
-  CHECK(device_factory_);
-  device_factory_->BindCrosImageCaptureRequest(std::move(receiver));
+void VideoCaptureServiceImpl::ConnectToCameraAppDeviceBridge(
+    mojo::PendingReceiver<cros::mojom::CameraAppDeviceBridge> receiver) {
+  DCHECK(camera_app_device_bridge_);
+  camera_app_device_bridge_->BindReceiver(std::move(receiver));
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -156,9 +161,18 @@ void VideoCaptureServiceImpl::LazyInitializeDeviceFactory() {
   // The task runner passed to CreateFactory is used for things that need to
   // happen on a "UI thread equivalent", e.g. obtaining screen rotation on
   // Chrome OS.
+#if defined(OS_CHROMEOS)
+  camera_app_device_bridge_ =
+      std::make_unique<media::CameraAppDeviceBridgeImpl>();
+  std::unique_ptr<media::VideoCaptureDeviceFactory> media_device_factory =
+      media::CreateVideoCaptureDeviceFactory(ui_task_runner_,
+                                             camera_app_device_bridge_.get());
+  camera_app_device_bridge_->SetIsSupported(
+      media_device_factory->IsSupportedCameraAppDeviceBridge());
+#else
   std::unique_ptr<media::VideoCaptureDeviceFactory> media_device_factory =
       media::CreateVideoCaptureDeviceFactory(ui_task_runner_);
-  DCHECK(media_device_factory);
+#endif  // defined(OS_CHROMEOS)
 
   auto video_capture_system = std::make_unique<media::VideoCaptureSystemImpl>(
       std::move(media_device_factory));

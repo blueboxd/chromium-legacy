@@ -21,9 +21,13 @@
 #include "chromeos/dbus/seneschal/seneschal_service.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+class PrefService;
 class Profile;
 
 namespace guest_os {
+
+using SuccessCallback =
+    base::OnceCallback<void(bool success, const std::string& failure_reason)>;
 
 struct SharedPathInfo {
   explicit SharedPathInfo(const std::string& vm_name);
@@ -41,13 +45,13 @@ class GuestOsSharePath : public KeyedService,
                          public drivefs::DriveFsHostObserver {
  public:
   using SharePathCallback =
-      base::OnceCallback<void(const base::FilePath&, bool, std::string)>;
+      base::OnceCallback<void(const base::FilePath&, bool, const std::string&)>;
   using SeneschalCallback =
       base::RepeatingCallback<void(const std::string& operation,
                                    const base::FilePath& cros_path,
                                    const base::FilePath& container_path,
                                    bool result,
-                                   std::string failure_reason)>;
+                                   const std::string& failure_reason)>;
   class Observer {
    public:
     virtual void OnUnshare(const std::string& vm_name,
@@ -86,7 +90,7 @@ class GuestOsSharePath : public KeyedService,
   void SharePaths(const std::string& vm_name,
                   std::vector<base::FilePath> paths,
                   bool persist,
-                  base::OnceCallback<void(bool, std::string)> callback);
+                  SuccessCallback callback);
 
   // Unshare specified |path| with |vm_name|.  If |unpersist| is set, the path
   // is removed from prefs, and will not be shared at container startup.
@@ -94,7 +98,7 @@ class GuestOsSharePath : public KeyedService,
   void UnsharePath(const std::string& vm_name,
                    const base::FilePath& path,
                    bool unpersist,
-                   base::OnceCallback<void(bool, std::string)> callback);
+                   SuccessCallback callback);
 
   // Returns true the first time it is called on this service.
   bool GetAndSetFirstForSession();
@@ -105,9 +109,8 @@ class GuestOsSharePath : public KeyedService,
 
   // Share all paths configured in prefs for the specified VM.
   // Called at container startup.  Callback is invoked once complete.
-  void SharePersistedPaths(
-      const std::string& vm_name,
-      base::OnceCallback<void(bool, std::string)> callback);
+  void SharePersistedPaths(const std::string& vm_name,
+                           SuccessCallback callback);
 
   // Save |path| into prefs for |vm_name|.
   void RegisterPersistedPath(const std::string& vm_name,
@@ -145,10 +148,9 @@ class GuestOsSharePath : public KeyedService,
                               bool persist,
                               SharePathCallback callback);
 
-  void CallSeneschalUnsharePath(
-      const std::string& vm_name,
-      const base::FilePath& path,
-      base::OnceCallback<void(bool, std::string)> callback);
+  void CallSeneschalUnsharePath(const std::string& vm_name,
+                                const base::FilePath& path,
+                                SuccessCallback callback);
 
   void StartFileWatcher(const base::FilePath& path);
 

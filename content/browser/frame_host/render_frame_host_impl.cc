@@ -5085,7 +5085,8 @@ void RenderFrameHostImpl::CommitNavigation(
           bypass_redirect_checks);
     }
 
-    if (bundled_exchanges_handle_) {
+    if (bundled_exchanges_handle_ &&
+        bundled_exchanges_handle_->IsReadyForLoading()) {
       mojo::Remote<network::mojom::URLLoaderFactory> fallback_factory(
           std::move(pending_default_factory));
       bundled_exchanges_handle_->CreateURLLoaderFactory(

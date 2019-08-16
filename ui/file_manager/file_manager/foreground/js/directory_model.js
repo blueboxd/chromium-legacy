@@ -1217,24 +1217,32 @@ class DirectoryModel extends cr.EventTarget {
         }
       }
     }
-    // If a new file backed provided volume is mounted,
-    // then redirect to it in the focused window.
-    // Note, that this is a temporary solution for https://crbug.com/427776.
-    // If crostini is mounted, redirect if it is the currently selected dir.
     if (event.added.length !== 1) {
       return;
     }
-    if ((window.isFocused() &&
+    // Redirect to newly mounted volume when:
+    // * There is no directory currently selected, meaning it's the first volume
+    //   to appear.
+    // * A new file backed provided volume is mounted, then redirect to it in
+    //   the focused window, because this means a zip file has been mounted.
+    //   Note, that this is a temporary solution for https://crbug.com/427776.
+    // * Crostini is mounted, redirect if it is the currently selected dir.
+    if (!currentDir ||
+        (window.isFocused() &&
          event.added[0].volumeType ===
              VolumeManagerCommon.VolumeType.PROVIDED &&
          event.added[0].source === VolumeManagerCommon.Source.FILE) ||
         (event.added[0].volumeType ===
              VolumeManagerCommon.VolumeType.CROSTINI &&
          this.getCurrentRootType() === VolumeManagerCommon.RootType.CROSTINI)) {
+      // Resolving a display root on FSP volumes is instant, despite the
+      // asynchronous call.
       event.added[0].resolveDisplayRoot().then((displayRoot) => {
-        // Resolving a display root on FSP volumes is instant, despite the
-        // asynchronous call.
-        this.changeDirectoryEntry(event.added[0].displayRoot);
+        // Only change directory if "currentDir" hasn't changed during the
+        // display root resolution.
+        if (currentDir === this.getCurrentDirEntry()) {
+          this.changeDirectoryEntry(event.added[0].displayRoot);
+        }
       });
     }
   }

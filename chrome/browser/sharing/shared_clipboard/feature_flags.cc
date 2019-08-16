@@ -5,7 +5,7 @@
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 
 const base::Feature kSharedClipboardReceiver{"SharedClipboardReceiver",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSharedClipboardUI{"SharedClipboardUI",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

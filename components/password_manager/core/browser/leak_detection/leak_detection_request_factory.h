@@ -6,24 +6,51 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LEAK_DETECTION_LEAK_DETECTION_REQUEST_FACTORY_H_
 
 #include <memory>
+#include <string>
 
-#include "base/memory/scoped_refptr.h"
-
-namespace signin {
-class IdentityManager;
-}  // namespace signin
+#include "base/callback_forward.h"
 
 namespace network {
-class SharedURLLoaderFactory;
+namespace mojom {
+class URLLoaderFactory;
+}  // namespace mojom
 }  // namespace network
 
 namespace password_manager {
 
-class LeakDetectionCheck;
-class LeakDetectionDelegateInterface;
+struct SingleLookupResponse;
 
-// The interface for creating instances of requests for checking if
-// {username, password} pair was leaked in the internet.
+// Interface for the class making the network requests for leak detection.
+class LeakDetectionRequestInterface {
+ public:
+  using LookupSingleLeakCallback =
+      base::OnceCallback<void(std::unique_ptr<SingleLookupResponse>)>;
+
+  LeakDetectionRequestInterface() = default;
+  virtual ~LeakDetectionRequestInterface() = default;
+
+  // Neither copyable nor movable.
+  LeakDetectionRequestInterface(const LeakDetectionRequestInterface&) = delete;
+  LeakDetectionRequestInterface& operator=(
+      const LeakDetectionRequestInterface&) = delete;
+  LeakDetectionRequestInterface(LeakDetectionRequestInterface&&) = delete;
+  LeakDetectionRequestInterface& operator=(LeakDetectionRequestInterface&&) =
+      delete;
+
+  // Initiates a leak lookup network request for the credential corresponding to
+  // |username_hash_prefix| and |encrypted_payload|. |access_token| is required
+  // to authenticate the request. Invokes |callback| on completion, unless this
+  // instance is deleted beforehand. If the request failed, |callback| is
+  // invoked with |nullptr|, otherwise a SingleLookupResponse is returned.
+  virtual void LookupSingleLeak(
+      network::mojom::URLLoaderFactory* url_loader_factory,
+      const std::string& access_token,
+      std::string username_hash_prefix,
+      std::string encrypted_payload,
+      LookupSingleLeakCallback callback) = 0;
+};
+
+// The factory for creating instances of  network requests for leak detection.
 class LeakDetectionRequestFactory {
  public:
   LeakDetectionRequestFactory() = default;
@@ -37,15 +64,8 @@ class LeakDetectionRequestFactory {
   LeakDetectionRequestFactory& operator=(LeakDetectionRequestFactory&&) =
       delete;
 
-  // The leak check is available only for signed-in users and if the feature is
-  // available.
-  // |delegate| gets the results for the fetch.
-  // |identity_manager| is used to obtain the token.
-  virtual std::unique_ptr<LeakDetectionCheck> TryCreateLeakCheck(
-      LeakDetectionDelegateInterface* delegate,
-      signin::IdentityManager* identity_manager,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-      const = 0;
+  virtual std::unique_ptr<LeakDetectionRequestInterface> CreateNetworkRequest()
+      const;
 };
 
 }  // namespace password_manager

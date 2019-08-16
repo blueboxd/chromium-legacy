@@ -555,11 +555,7 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
         PictureBuffer(kDummyPictureBufferId, frame->coded_size()));
     gfx::GpuMemoryBufferHandle gmb_handle =
         CreateGpuMemoryBufferHandle(frame.get());
-    if (gmb_handle.is_null()) {
-      NOTIFY_ERROR(kPlatformFailureError,
-                   "Failed to create GMB handle from video frame");
-      return nullptr;
-    }
+    DCHECK(!gmb_handle.is_null());
 
     auto buffer_format = VideoPixelFormatToGfxBufferFormat(frame->format());
     if (!buffer_format) {

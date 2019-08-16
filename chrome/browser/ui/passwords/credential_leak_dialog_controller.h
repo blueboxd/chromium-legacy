@@ -10,6 +10,13 @@
 // An interface used by the credential leak dialog for setting and retrieving
 // the state.
 class CredentialLeakDialogController : public PasswordBaseDialogController {
+ public:
+  // Called when user clicks "Check passwords" in the credential leak dialog.
+  virtual void OnCheckPasswords() = 0;
+
+  // Called when the dialog was closed by user clicking one of the buttons.
+  virtual void OnCloseDialog() = 0;
+
  protected:
   ~CredentialLeakDialogController() override = default;
 };

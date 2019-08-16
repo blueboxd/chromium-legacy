@@ -24,6 +24,7 @@ class ShortcutsBackend;
 class TemplateURLService;
 
 namespace network {
+struct ResourceResponseHead;
 class SharedURLLoaderFactory;
 class SimpleURLLoader;
 }

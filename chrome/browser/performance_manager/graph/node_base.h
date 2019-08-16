@@ -24,8 +24,6 @@
 
 namespace performance_manager {
 
-// TODO(chrisha): Remove this when GraphImplObserver is killed.
-class GraphImplObserver;
 class Node;
 
 // NodeBase implements shared functionality among different types of graph
@@ -36,9 +34,6 @@ class Node;
 // All methods not documented otherwise are single-threaded.
 class NodeBase {
  public:
-  using ObserverList =
-      typename base::ObserverList<GraphImplObserver>::Unchecked;
-
   // Used as a unique key to safely allow downcasting from a public node type
   // to NodeBase via "GetImplType" and "GetImpl". The implementations are
   // provided by PublicNodeImpl below.
@@ -59,17 +54,6 @@ class NodeBase {
   // zero for nullptr. This should never be used to look up nodes, only to
   // provide a stable ID for serialization.
   static int64_t GetSerializationId(NodeBase* node);
-
-  // TODO(chrisha): Remove these functions once we've moved to typed observers.
-  void AddObserver(GraphImplObserver* observer) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    observers_.AddObserver(observer);
-  }
-  void RemoveObserver(GraphImplObserver* observer) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    observers_.RemoveObserver(observer);
-  }
-  const ObserverList& observers() const { return observers_; }
 
   // Helper functions for casting from a node type to its underlying NodeBase.
   // This CHECKs that the cast is valid. These functions work happily with
@@ -107,9 +91,6 @@ class NodeBase {
   SEQUENCE_CHECKER(sequence_checker_);
 
  private:
-  // TODO(chrisha): Remove this once we've moved to typed observers.
-  ObserverList observers_;
-
   DISALLOW_COPY_AND_ASSIGN(NodeBase);
 };
 
@@ -131,13 +112,11 @@ class PublicNodeImpl : public PublicNodeClass {
 };
 
 template <class NodeImplClass,
-          class NodeImplObserverClass,
           class NodeClass,
           class NodeObserverClass>
 class TypedNodeBase : public NodeBase {
  public:
   using ObservedProperty = ObservedPropertyImpl<NodeImplClass,
-                                                NodeImplObserverClass,
                                                 NodeClass,
                                                 NodeObserverClass>;
 

@@ -13,6 +13,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 #include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
+#include "chrome/browser/ui/passwords/passwords_leak_dialog_delegate.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/common/buildflags.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -47,6 +48,7 @@ class ManagePasswordsUIController
     : public content::WebContentsObserver,
       public content::WebContentsUserData<ManagePasswordsUIController>,
       public password_manager::PasswordStore::Observer,
+      public PasswordsLeakDialogDelegate,
       public PasswordsModelDelegate,
       public PasswordsClientUIDelegate {
  public:
@@ -193,6 +195,10 @@ class ManagePasswordsUIController
 
  private:
   friend class content::WebContentsUserData<ManagePasswordsUIController>;
+
+  // PasswordsLeakDialogDelegate:
+  void NavigateToPasswordCheckup() override;
+  void OnLeakDialogHidden() override;
 
   enum BubbleStatus {
     NOT_SHOWN,

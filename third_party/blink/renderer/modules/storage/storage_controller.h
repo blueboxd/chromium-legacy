@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/sequence_checker.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -54,10 +56,10 @@ class MODULES_EXPORT StorageController {
                                    StorageArea::StorageType type);
 
   // Visible for testing.
-  StorageController(
-      scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
-      mojom::blink::StoragePartitionServicePtr storage_partition_service,
-      size_t total_cache_limit);
+  StorageController(scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
+                    mojo::PendingRemote<mojom::blink::StoragePartitionService>
+                        storage_partition_service,
+                    size_t total_cache_limit);
 
   // Creates a MakeGarbageCollected<StorageNamespace> for Session storage, and
   // holds a weak reference for accounting & clearing. If there is already a
@@ -98,7 +100,8 @@ class MODULES_EXPORT StorageController {
   Persistent<StorageNamespace> local_storage_namespace_;
   size_t total_cache_limit_;
 
-  mojom::blink::StoragePartitionServicePtr storage_partition_service_;
+  mojo::Remote<mojom::blink::StoragePartitionService>
+      storage_partition_service_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

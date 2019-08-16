@@ -332,7 +332,7 @@ class MockDocumentValidationMessageClient
 
 class MockApplicationCacheHost final : public ApplicationCacheHostForFrame {
  public:
-  MockApplicationCacheHost(DocumentLoader* loader)
+  explicit MockApplicationCacheHost(DocumentLoader* loader)
       : ApplicationCacheHostForFrame(loader,
                                      /*interface_broker=*/nullptr,
                                      /*task_runner=*/nullptr) {}
@@ -882,7 +882,7 @@ TEST_F(DocumentTest, SandboxDisablesAppCache) {
 
   GetDocument().Loader()->SetApplicationCacheHostForTesting(
       MakeGarbageCollected<MockApplicationCacheHost>(GetDocument().Loader()));
-  ApplicationCacheHost* appcache_host =
+  ApplicationCacheHostForFrame* appcache_host =
       GetDocument().Loader()->GetApplicationCacheHost();
   appcache_host->SelectCacheWithManifest(
       KURL("https://test.com/foobar/manifest"));

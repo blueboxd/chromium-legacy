@@ -110,6 +110,10 @@ enum {
   // This bit is set if the response has a peer signature algorithm.
   RESPONSE_INFO_HAS_PEER_SIGNATURE_ALGORITHM = 1 << 25,
 
+  // This bit is set if the response is a prefetch whose reuse should be
+  // restricted in some way.
+  RESPONSE_INFO_RESTRICTED_PREFETCH = 1 << 26,
+
   // TODO(darin): Add other bits to indicate alternate request methods.
   // For now, we don't support storing those.
 };
@@ -124,6 +128,7 @@ HttpResponseInfo::HttpResponseInfo()
       was_fetched_via_proxy(false),
       did_use_http_auth(false),
       unused_since_prefetch(false),
+      restricted_prefetch(false),
       async_revalidation_requested(false),
       connection_info(CONNECTION_INFO_UNKNOWN) {}
 
@@ -287,6 +292,8 @@ bool HttpResponseInfo::InitFromPickle(const base::Pickle& pickle,
 
   unused_since_prefetch = (flags & RESPONSE_INFO_UNUSED_SINCE_PREFETCH) != 0;
 
+  restricted_prefetch = (flags & RESPONSE_INFO_RESTRICTED_PREFETCH) != 0;
+
   ssl_info.pkp_bypassed = (flags & RESPONSE_INFO_PKP_BYPASSED) != 0;
 
   // Read peer_signature_algorithm.
@@ -336,6 +343,8 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
     flags |= RESPONSE_INFO_USE_HTTP_AUTHENTICATION;
   if (unused_since_prefetch)
     flags |= RESPONSE_INFO_UNUSED_SINCE_PREFETCH;
+  if (restricted_prefetch)
+    flags |= RESPONSE_INFO_RESTRICTED_PREFETCH;
   if (ssl_info.pkp_bypassed)
     flags |= RESPONSE_INFO_PKP_BYPASSED;
   if (!stale_revalidate_timeout.is_null())

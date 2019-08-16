@@ -74,7 +74,7 @@
   function openFile_(name, options, callback, error) {
     window.webkitRequestFileSystem(TEMPORARY, 1024, function (fs) {
       fs.root.getFile(name, options, callback, error);
-    }, error);
+    });
   }
 
   function setFileSystem() {
@@ -113,7 +113,6 @@
       open.result.close();
       success_();
     }
-    open.onerror = failure_;
   }
 
   function hasIndexedDb() {
@@ -123,7 +122,6 @@
       open.result.close();
       domAutomationController.send(hasStore);
     }
-    open.onerror = failure_;
   }
 
   function setHistory() {

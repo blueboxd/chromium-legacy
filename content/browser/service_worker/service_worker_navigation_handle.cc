@@ -26,8 +26,9 @@ ServiceWorkerNavigationHandle::ServiceWorkerNavigationHandle(
 
 ServiceWorkerNavigationHandle::~ServiceWorkerNavigationHandle() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Delete the ServiceWorkerNavigationHandleCore on the IO thread.
-  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, core_);
+  // Delete the ServiceWorkerNavigationHandleCore on the core thread.
+  BrowserThread::DeleteSoon(ServiceWorkerContextWrapper::GetCoreThreadId(),
+                            FROM_HERE, core_);
 }
 
 void ServiceWorkerNavigationHandle::OnCreatedProviderHost(
@@ -47,8 +48,8 @@ void ServiceWorkerNavigationHandle::OnBeginNavigationCommit(
   // We may have failed to pre-create the provider host.
   if (!provider_info_)
     return;
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
+      FROM_HERE,
       base::BindOnce(
           &ServiceWorkerNavigationHandleCore::OnBeginNavigationCommit,
           base::Unretained(core_), render_process_id, render_frame_id));
@@ -57,8 +58,8 @@ void ServiceWorkerNavigationHandle::OnBeginNavigationCommit(
 
 void ServiceWorkerNavigationHandle::OnBeginWorkerCommit() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
+      FROM_HERE,
       base::BindOnce(&ServiceWorkerNavigationHandleCore::OnBeginWorkerCommit,
                      base::Unretained(core_)));
 }

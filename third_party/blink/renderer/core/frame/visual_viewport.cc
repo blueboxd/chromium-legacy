@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
@@ -933,6 +934,14 @@ IntRect VisualViewport::VisibleContentRect(
 scoped_refptr<base::SingleThreadTaskRunner> VisualViewport::GetTimerTaskRunner()
     const {
   return MainFrame()->GetTaskRunner(TaskType::kInternalDefault);
+}
+
+WebColorScheme VisualViewport::UsedColorScheme() const {
+  if (LocalFrame* main_frame = MainFrame()) {
+    if (Document* main_document = main_frame->GetDocument())
+      return main_document->GetLayoutView()->StyleRef().UsedColorScheme();
+  }
+  return ComputedStyle::InitialStyle().UsedColorScheme();
 }
 
 void VisualViewport::UpdateScrollOffset(const ScrollOffset& position,

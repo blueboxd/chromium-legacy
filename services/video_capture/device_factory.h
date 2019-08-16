@@ -7,18 +7,10 @@
 
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
 
-#if defined(OS_CHROMEOS)
-#include "media/capture/video/chromeos/mojom/cros_image_capture.mojom.h"
-#endif  // defined(OS_CHROMEOS)
-
 namespace video_capture {
 
 class DeviceFactory : public mojom::DeviceFactory {
  public:
-#if defined(OS_CHROMEOS)
-  virtual void BindCrosImageCaptureRequest(
-      cros::mojom::CrosImageCaptureRequest request) = 0;
-#endif  // defined(OS_CHROMEOS)
 };
 
 }  // namespace video_capture

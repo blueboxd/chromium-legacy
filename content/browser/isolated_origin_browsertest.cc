@@ -1173,7 +1173,7 @@ class StoragePartitonInterceptor
  public:
   StoragePartitonInterceptor(
       RenderProcessHostImpl* rph,
-      blink::mojom::StoragePartitionServiceRequest request,
+      mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver,
       const url::Origin& origin_to_inject)
       : origin_to_inject_(origin_to_inject) {
     StoragePartitionImpl* storage_partition =
@@ -1181,13 +1181,13 @@ class StoragePartitonInterceptor
 
     // Bind the real StoragePartitionService implementation.
     mojo::BindingId binding_id =
-        storage_partition->Bind(rph->GetID(), std::move(request));
+        storage_partition->Bind(rph->GetID(), std::move(receiver));
 
     // Now replace it with this object and keep a pointer to the real
     // implementation.
     storage_partition_service_ =
-        storage_partition->bindings_for_testing().SwapImplForTesting(binding_id,
-                                                                     this);
+        storage_partition->receivers_for_testing().SwapImplForTesting(
+            binding_id, this);
 
     // Register the |this| as a RenderProcessHostObserver, so it can be
     // correctly cleaned up when the process exits.
@@ -1231,10 +1231,10 @@ class StoragePartitonInterceptor
 void CreateTestStoragePartitionService(
     const url::Origin& origin_to_inject,
     RenderProcessHostImpl* rph,
-    blink::mojom::StoragePartitionServiceRequest request) {
+    mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver) {
   // This object will register as RenderProcessHostObserver, so it will
   // clean itself automatically on process exit.
-  new StoragePartitonInterceptor(rph, std::move(request), origin_to_inject);
+  new StoragePartitonInterceptor(rph, std::move(receiver), origin_to_inject);
 }
 
 // Verify that an isolated renderer process cannot read localStorage of an

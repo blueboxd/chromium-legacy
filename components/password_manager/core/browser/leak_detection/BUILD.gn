@@ -14,8 +14,8 @@ fuzzable_proto_library("proto") {
 source_set("leak_detection_interface_headers") {
   sources = [
     "leak_detection_check.h",
+    "leak_detection_check_factory.h",
     "leak_detection_delegate_interface.h",
-    "leak_detection_request_factory.h",
   ]
   deps = [
     "//base",
@@ -30,11 +30,13 @@ jumbo_source_set("leak_detection") {
     "encryption_utils.cc",
     "encryption_utils.h",
     "leak_detection_check.h",
+    "leak_detection_check_factory.h",
+    "leak_detection_check_factory_impl.cc",
+    "leak_detection_check_factory_impl.h",
     "leak_detection_request.cc",
     "leak_detection_request.h",
+    "leak_detection_request_factory.cc",
     "leak_detection_request_factory.h",
-    "leak_detection_request_factory_impl.cc",
-    "leak_detection_request_factory_impl.h",
     "leak_detection_request_utils.cc",
     "leak_detection_request_utils.h",
     "single_lookup_response.cc",
@@ -75,7 +77,7 @@ jumbo_source_set("unit_tests") {
   sources = [
     "authenticated_leak_check_unittest.cc",
     "encryption_utils_unittest.cc",
-    "leak_detection_request_factory_impl_unittest.cc",
+    "leak_detection_check_factory_impl_unittest.cc",
     "leak_detection_request_unittest.cc",
     "leak_detection_request_utils_unittest.cc",
   ]

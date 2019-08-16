@@ -7,8 +7,8 @@
 
 #include <memory>
 
+#include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
-#include "components/password_manager/core/browser/leak_detection/leak_detection_request_factory.h"
 
 namespace autofill {
 struct PasswordForm;
@@ -32,7 +32,7 @@ class LeakDetectionDelegate : public LeakDetectionDelegateInterface {
   LeakDetectionDelegate& operator=(LeakDetectionDelegate&&) = delete;
 
 #if defined(UNIT_TEST)
-  void set_leak_factory(std::unique_ptr<LeakDetectionRequestFactory> factory) {
+  void set_leak_factory(std::unique_ptr<LeakDetectionCheckFactory> factory) {
     leak_factory_ = std::move(factory);
   }
 
@@ -50,7 +50,7 @@ class LeakDetectionDelegate : public LeakDetectionDelegateInterface {
 
   PasswordManagerClient* client_;
   // The factory that creates objects for performing a leak check up.
-  std::unique_ptr<LeakDetectionRequestFactory> leak_factory_;
+  std::unique_ptr<LeakDetectionCheckFactory> leak_factory_;
 
   // Current leak check-up being performed in the background.
   std::unique_ptr<LeakDetectionCheck> leak_check_;

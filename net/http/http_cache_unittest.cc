@@ -1420,6 +1420,92 @@ TEST_F(HttpCacheTest, SimpleGET_UnusedSincePrefetch) {
   EXPECT_TRUE(response_info.was_cached);
 }
 
+// Tests that requests made with the LOAD_RESTRICTED_PREFETCH load flag result
+// in HttpResponseInfo entries with the |restricted_prefetch| flag set. Also
+// tests that responses with |restricted_prefetch| flag set can only be used by
+// requests that have the LOAD_CAN_USE_RESTRICTED_PREFETCH load flag.
+TEST_F(HttpCacheTest, SimpleGET_RestrictedPrefetchIsRestrictedUntilReuse) {
+  MockHttpCache cache;
+  HttpResponseInfo response_info;
+
+  // A normal load does not have |restricted_prefetch| set.
+  RunTransactionTestWithResponseInfoAndGetTiming(
+      cache.http_cache(), kTypicalGET_Transaction, &response_info,
+      BoundTestNetLog().bound(), nullptr);
+  EXPECT_FALSE(response_info.restricted_prefetch);
+  EXPECT_FALSE(response_info.was_cached);
+  EXPECT_TRUE(response_info.network_accessed);
+
+  // A restricted prefetch is marked as |restricted_prefetch|.
+  MockTransaction prefetch_transaction(kSimpleGET_Transaction);
+  prefetch_transaction.load_flags |= LOAD_PREFETCH;
+  prefetch_transaction.load_flags |= LOAD_RESTRICTED_PREFETCH;
+  RunTransactionTestWithResponseInfoAndGetTiming(
+      cache.http_cache(), prefetch_transaction, &response_info,
+      BoundTestNetLog().bound(), nullptr);
+  EXPECT_TRUE(response_info.restricted_prefetch);
+  EXPECT_FALSE(response_info.was_cached);
+  EXPECT_TRUE(response_info.network_accessed);
+
+  // Requests that are marked as able to reuse restricted prefetches can do so
+  // correctly. Once it is reused, it is no longer considered as or marked
+  // restricted.
+  MockTransaction can_use_restricted_prefetch_transaction(
+      kSimpleGET_Transaction);
+  can_use_restricted_prefetch_transaction.load_flags |=
+      LOAD_CAN_USE_RESTRICTED_PREFETCH;
+  RunTransactionTestWithResponseInfoAndGetTiming(
+      cache.http_cache(), can_use_restricted_prefetch_transaction,
+      &response_info, BoundTestNetLog().bound(), nullptr);
+  EXPECT_FALSE(response_info.restricted_prefetch);
+  EXPECT_TRUE(response_info.was_cached);
+  EXPECT_FALSE(response_info.network_accessed);
+
+  // Later reuse is still no longer marked restricted.
+  RunTransactionTestWithResponseInfoAndGetTiming(
+      cache.http_cache(), kSimpleGET_Transaction, &response_info,
+      BoundTestNetLog().bound(), nullptr);
+  EXPECT_FALSE(response_info.restricted_prefetch);
+  EXPECT_TRUE(response_info.was_cached);
+  EXPECT_FALSE(response_info.network_accessed);
+}
+
+TEST_F(HttpCacheTest, SimpleGET_RestrictedPrefetchReuseIsLimited) {
+  MockHttpCache cache;
+  HttpResponseInfo response_info;
+
+  // A restricted prefetch is marked as |restricted_prefetch|.
+  MockTransaction prefetch_transaction(kSimpleGET_Transaction);
+  prefetch_transaction.load_flags |= LOAD_PREFETCH;
+  prefetch_transaction.load_flags |= LOAD_RESTRICTED_PREFETCH;
+  RunTransactionTestWithResponseInfoAndGetTiming(
+      cache.http_cache(), prefetch_transaction, &response_info,
+      BoundTestNetLog().bound(), nullptr);
+  EXPECT_TRUE(response_info.restricted_prefetch);
+  EXPECT_FALSE(response_info.was_cached);
+  EXPECT_TRUE(response_info.network_accessed);
+
+  // Requests that cannot reuse restricted prefetches fail to do so. The network
+  // is accessed and the resulting response is not marked as
+  // |restricted_prefetch|.
+  RunTransactionTestWithResponseInfoAndGetTiming(
+      cache.http_cache(), kSimpleGET_Transaction, &response_info,
+      BoundTestNetLog().bound(), nullptr);
+  EXPECT_FALSE(response_info.restricted_prefetch);
+  EXPECT_FALSE(response_info.was_cached);
+  EXPECT_TRUE(response_info.network_accessed);
+
+  // Future requests that are not marked as able to reuse restricted prefetches
+  // can use the entry in the cache now, since it has been evicted in favor of
+  // an unrestricted one.
+  RunTransactionTestWithResponseInfoAndGetTiming(
+      cache.http_cache(), kSimpleGET_Transaction, &response_info,
+      BoundTestNetLog().bound(), nullptr);
+  EXPECT_FALSE(response_info.restricted_prefetch);
+  EXPECT_TRUE(response_info.was_cached);
+  EXPECT_FALSE(response_info.network_accessed);
+}
+
 static void PreserveRequestHeaders_Handler(const HttpRequestInfo* request,
                                            std::string* response_status,
                                            std::string* response_headers,

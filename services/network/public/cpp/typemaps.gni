@@ -15,6 +15,7 @@ typemaps = [
   "//services/network/public/cpp/host_resolver.typemap",
   "//services/network/public/cpp/ip_address.typemap",
   "//services/network/public/cpp/ip_endpoint.typemap",
+  "//services/network/public/cpp/load_timing_info.typemap",
   "//services/network/public/cpp/mutable_network_traffic_annotation_tag.typemap",
   "//services/network/public/cpp/mutable_partial_network_traffic_annotation_tag.typemap",
   "//services/network/public/cpp/net_log.typemap",
@@ -26,8 +27,8 @@ typemaps = [
   "//services/network/public/cpp/p2p.typemap",
   "//services/network/public/cpp/proxy_config.typemap",
   "//services/network/public/cpp/proxy_config_with_annotation.typemap",
+  "//services/network/public/cpp/url_response_head.typemap",
   "//services/network/public/cpp/url_loader_completion_status.typemap",
   "//services/network/public/cpp/url_request.typemap",
   "//services/network/public/cpp/url_request_redirect_info.typemap",
-  "//services/network/public/cpp/url_response_head.typemap",
 ]

@@ -25,32 +25,80 @@ cca.mojo.PhotoCapabilities = function() {};
 cca.mojo.PhotoCapabilities.prototype.supportedEffects;
 
 /**
- * The mojo interface of CrOS Image Capture API. It provides a singleton
+ * The mojo interface of CrOS Camera App API. It provides a singleton
  * instance.
  */
 cca.mojo.MojoInterface = class {
   /** @public */
   constructor() {
     /**
-     * @type {cros.mojom.CrosImageCaptureRemote} A interface remote that used to
-     *     construct the mojo interface.
+     * @type {cros.mojom.CameraAppDeviceProviderRemote} An interface remote that
+     *     used to construct the mojo interface.
      */
-    this.remote = cros.mojom.CrosImageCapture.getRemote();
+    this.deviceProvider = cros.mojom.CameraAppDeviceProvider.getRemote();
+
+    /**
+     * @type {Map<string, Promise<cros.mojom.CameraAppDeviceRemote>>} A map
+     *     that stores the promise of remote that could be used to communicate
+     *     with camera device through mojo interface.
+     */
+    this.devices_ = new Map();
   }
 
   /**
-   * Gets the mojo interface remote which could be used to communicate with
-   * Chrome.
-   * @return {cros.mojom.CrosImageCaptureRemote} The mojo interface remote.
+   * Gets the singleton instance.
+   * @return {cca.mojo.MojoInterface} The singleton instance of this object.
    */
-  static getRemote() {
+  static getInstance() {
     if (!cca.mojo.MojoInterface.instance_) {
       /**
        * @type {cca.mojo.MojoInterface} The singleton instance of this object.
        */
       cca.mojo.MojoInterface.instance_ = new cca.mojo.MojoInterface();
     }
-    return cca.mojo.MojoInterface.instance_.remote;
+    return cca.mojo.MojoInterface.instance_;
+  }
+
+  /**
+   * Gets the mojo interface remote which could be used to get the
+   * CameraAppDevice from Chrome.
+   * @return {cros.mojom.CameraAppDeviceProviderRemote} The mojo interface
+   *     remote.
+   */
+  getDeviceProvider() {
+    return this.deviceProvider;
+  }
+
+  /**
+   * Gets the mojo interface remote which could be used to communicate with
+   * Camera device in Chrome.
+   * @param {string} deviceId The id of the target camera device.
+   * @return {Promise<cros.mojom.CameraAppDeviceRemote>} The mojo interface
+   *     remote of the camera device.
+   */
+  getDevice(deviceId) {
+    if (this.devices_.has(deviceId)) {
+      return this.devices_.get(deviceId);
+    }
+
+    let device = this.deviceProvider.getCameraAppDevice(deviceId).then(
+        ({status, device}) => {
+          if (status !== cros.mojom.GetCameraAppDeviceStatus.SUCCESS) {
+            console.error(
+                'Failed to get CameraAppDevice, error code: ', status);
+            // TODO(wtlee): Handle by different status.
+          }
+          return device;
+        });
+    this.devices_.set(deviceId, device);
+    return device;
+  }
+
+  /**
+   * Closes all mojo connections to devices.
+   */
+  closeConnections() {
+    this.devices_.clear();
   }
 };
 
@@ -139,11 +187,17 @@ cca.mojo.ImageCapture.prototype.getPhotoCapabilities = async function() {
   const portraitModeTag =
       /** @type{cros.mojom.CameraMetadataTag} */ (-0x80000000);
 
+  let device =
+      await cca.mojo.MojoInterface.getInstance().getDevice(this.deviceId_);
+  if (device === null) {
+    throw new Error('Fail to construct device remote.');
+  }
+
   let [/** @type {cca.mojo.PhotoCapabilities} */capabilities,
        {/** @type {cros.mojom.CameraInfo} */cameraInfo},
   ] = await Promise.all([
     this.capture_.getPhotoCapabilities(),
-    cca.mojo.MojoInterface.getRemote().getCameraInfo(this.deviceId_),
+    device.getCameraInfo(),
   ]);
 
   if (cameraInfo === null) {
@@ -173,16 +227,20 @@ cca.mojo.ImageCapture.prototype.takePhoto = function(
   const takes = [];
   if (photoEffects) {
     photoEffects.forEach((effect) => {
-      takes.push((cca.mojo.MojoInterface.getRemote().setReprocessOption(
-                      this.deviceId_, effect))
-                     .then(({status, blob}) => {
-                       if (status != 0) {
-                         throw new Error('Mojo image capture error: ' + status);
-                       }
-                       const {data, mimeType} = blob;
-                       return new Blob(
-                           [new Uint8Array(data)], {type: mimeType});
-                     }));
+      const take = (async () => {
+        let device = await cca.mojo.MojoInterface.getInstance().getDevice(
+            this.deviceId_);
+        if (device === null) {
+          throw new Error('Failed to construct the device connection.');
+        }
+        let {status, blob} = await device.setReprocessOption(effect);
+        if (status !== 0) {
+          throw new Error('Mojo image capture error: ' + status);
+        }
+        const {data, mimeType} = blob;
+        return new Blob([new Uint8Array(data)], {type: mimeType});
+      })();
+      takes.push(take);
     });
   }
   takes.splice(0, 0, this.capture_.takePhoto(photoSettings));
@@ -201,12 +259,12 @@ cca.mojo.getPhotoResolutions = async function(deviceId) {
   const typeOutputStream = 0;
   const numElementPerEntry = 4;
 
-  let {cameraInfo} =
-      await cca.mojo.MojoInterface.getRemote().getCameraInfo(deviceId);
-  if (cameraInfo === null) {
-    throw new Error('No photo resolutions is found for given device id.');
+  let device = await cca.mojo.MojoInterface.getInstance().getDevice(deviceId);
+  if (device === null) {
+    throw new Error('Failed to construct the device connection.');
   }
 
+  let {cameraInfo} = await device.getCameraInfo();
   const staticMetadata = cameraInfo.staticCameraCharacteristics;
   const streamConfigs = cca.mojo.getMetadataData_(
       staticMetadata,
@@ -243,11 +301,12 @@ cca.mojo.getVideoConfigs = async function(deviceId) {
   const oneSecondInNs = 1000000000;
   const numElementPerEntry = 4;
 
-  let {cameraInfo} =
-      await cca.mojo.MojoInterface.getRemote().getCameraInfo(deviceId);
-  if (cameraInfo === null) {
-    throw new Error('No video configs is found for given device id.');
+  let device = await cca.mojo.MojoInterface.getInstance().getDevice(deviceId);
+  if (device === null) {
+    throw new Error('Failed to construct the device connection.');
   }
+
+  let {cameraInfo} = await device.getCameraInfo();
   const staticMetadata = cameraInfo.staticCameraCharacteristics;
   const minFrameDurationConfigs = cca.mojo.getMetadataData_(
       staticMetadata,
@@ -280,11 +339,12 @@ cca.mojo.getVideoConfigs = async function(deviceId) {
  * @return {Promise<cros.mojom.CameraFacing>} Promise of device facing.
  */
 cca.mojo.getCameraFacing = async function(deviceId) {
-  let {cameraInfo} =
-      await cca.mojo.MojoInterface.getRemote().getCameraInfo(deviceId);
-  if (cameraInfo === null) {
-    throw new Error('No camera facing is found for given device id.');
+  let device = await cca.mojo.MojoInterface.getInstance().getDevice(deviceId);
+  if (device === null) {
+    throw new Error('Failed to construct the device connection.');
   }
+
+  let {cameraInfo} = await device.getCameraInfo();
   return cameraInfo.facing;
 };
 
@@ -298,12 +358,12 @@ cca.mojo.getCameraFacing = async function(deviceId) {
 cca.mojo.getSupportedFpsRanges = async function(deviceId) {
   const numElementPerEntry = 2;
 
-  let {cameraInfo} =
-      await cca.mojo.MojoInterface.getRemote().getCameraInfo(deviceId);
-  if (cameraInfo === null) {
-    throw new Error('No supported Fps Ranges is found for given device id.');
+  let device = await cca.mojo.MojoInterface.getInstance().getDevice(deviceId);
+  if (device === null) {
+    throw new Error('Failed to construct the device connection.');
   }
 
+  let {cameraInfo} = await device.getCameraInfo();
   const staticMetadata = cameraInfo.staticCameraCharacteristics;
   const availableFpsRanges = cca.mojo.getMetadataData_(
       staticMetadata,
@@ -326,7 +386,7 @@ cca.mojo.getSupportedFpsRanges = async function(deviceId) {
 };
 
 /**
- * Gets user media with custom negotiation through CrosImageCapture API,
+ * Gets user media with custom negotiation through CrOS Camera App API,
  * such as frame rate range negotiation.
  * @param {string} deviceId The renderer-facing device Id of the target camera
  *     which could be retrieved from MediaDeviceInfo.deviceId.
@@ -373,8 +433,14 @@ cca.mojo.getUserMedia = async function(deviceId, constraints) {
     // |constraints| , we assume the app wants to use default frame rate range.
     // We set the frame rate range to an invalid range (e.g. 0 fps) so that it
     // will fallback to use the default one.
-    const {isSuccess} = await cca.mojo.MojoInterface.getRemote().setFpsRange(
-        deviceId, streamWidth, streamHeight, minFrameRate, maxFrameRate);
+    let device = await cca.mojo.MojoInterface.getInstance().getDevice(deviceId);
+    if (device === null) {
+      throw new Error('Failed to construct the device connection.');
+    }
+
+    const {isSuccess} = await device.setFpsRange(
+        {'width': streamWidth, 'height': streamHeight},
+        {'start': minFrameRate, 'end': maxFrameRate});
 
     if (!isSuccess && hasSpecifiedFrameRateRange) {
       console.error('Failed to negotiate the frame rate range.');
@@ -383,4 +449,11 @@ cca.mojo.getUserMedia = async function(deviceId, constraints) {
     // Ignore HALv1 Error.
   }
   return navigator.mediaDevices.getUserMedia(constraints);
+};
+
+/**
+ * Closes all mojo devices connections.
+ */
+cca.mojo.closeConnections = function() {
+  cca.mojo.MojoInterface.getInstance().closeConnections();
 };

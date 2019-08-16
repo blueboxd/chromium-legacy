@@ -103,6 +103,7 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
       std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
           paused_state);
 
+  const GURL& updated_script_url() const { return updated_script_url_; }
   bool network_accessed() const { return network_accessed_; }
 
  private:
@@ -111,11 +112,16 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
                     ServiceWorkerUpdatedScriptLoader::BrowserContextGetter
                         browser_context_getter);
 
+  const GURL main_script_url_;
+  const int64_t main_script_resource_id_;
+
   std::vector<ServiceWorkerDatabase::ResourceRecord> scripts_to_compare_;
   size_t next_script_index_to_compare_ = 0;
   std::map<GURL, ComparedScriptInfo> script_check_results_;
-  const GURL main_script_url_;
-  const int64_t main_script_resource_id_;
+
+  // The URL of the script for which a byte-for-byte change was found, or else
+  // the empty GURL if there is no such script.
+  GURL updated_script_url_;
 
   // The version which triggered this update.
   scoped_refptr<ServiceWorkerVersion> version_to_update_;

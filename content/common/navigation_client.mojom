@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "services/network/public/mojom/url_response_head.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "content/common/frame_messages.mojom";

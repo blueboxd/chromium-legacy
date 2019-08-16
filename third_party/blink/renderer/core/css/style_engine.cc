@@ -1767,17 +1767,17 @@ void StyleEngine::RecalcStyle(const StyleRecalcChange change) {
   DCHECK(GetDocument().documentElement());
   DCHECK(GetDocument().ChildNeedsStyleRecalc() || change.RecalcDescendants());
 
-  Element& root_element = style_recalc_root_.RootElement();
-  if (change.RecalcChildren() ||
-      &root_element == GetDocument().documentElement()) {
-    GetDocument().documentElement()->RecalcStyle(change);
-  } else {
-    Element* parent = root_element.ParentOrShadowHostElement();
-    DCHECK(parent);
-    SelectorFilterAncestorScope filter_scope(*parent);
-    root_element.RecalcStyle(change);
+  Element* root_element = &style_recalc_root_.RootElement();
+  Element* parent = root_element->ParentOrShadowHostElement();
+  if (change.RecalcChildren()) {
+    root_element = GetDocument().documentElement();
+    parent = nullptr;
   }
-  for (ContainerNode* ancestor = root_element.ParentOrShadowHostNode();
+
+  SelectorFilterRootScope filter_scope(parent);
+  root_element->RecalcStyle(change);
+
+  for (ContainerNode* ancestor = root_element->ParentOrShadowHostNode();
        ancestor; ancestor = ancestor->ParentOrShadowHostNode()) {
     if (auto* ancestor_element = DynamicTo<Element>(ancestor))
       ancestor_element->RecalcStyleForTraversalRootAncestor();
@@ -1790,6 +1790,10 @@ void StyleEngine::RebuildLayoutTree() {
   DCHECK(GetDocument().documentElement());
   DCHECK(!InRebuildLayoutTree());
   in_layout_tree_rebuild_ = true;
+
+  // We need a root scope here in case we recalc style for ::first-letter
+  // elements as part of UpdateFirstLetterPseudoElement.
+  SelectorFilterRootScope filter_scope(nullptr);
 
   Element& root_element = layout_tree_rebuild_root_.RootElement();
   {

@@ -383,8 +383,6 @@ void ServiceWorkerRegisterJob::OnUpdateCheckFinished(
 
   ServiceWorkerMetrics::RecordByteForByteUpdateCheckStatus(
       blink::ServiceWorkerStatusCode::kOk, /*has_found_update=*/true);
-  compared_script_info_map_ = update_checker_->TakeComparedResults();
-  update_checker_.reset();
   StartWorkerForUpdate();
 }
 
@@ -474,14 +472,17 @@ void ServiceWorkerRegisterJob::StartWorkerForUpdate() {
   new_version()->set_force_bypass_cache_for_scripts(force_bypass_cache_);
 
   if (need_to_pause_after_download) {
+    DCHECK(!blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled());
     new_version()->SetToPauseAfterDownload(
         base::BindOnce(&ServiceWorkerRegisterJob::OnPausedAfterDownload,
                        weak_factory_.GetWeakPtr()));
   }
 
-  if (!compared_script_info_map_.empty()) {
-    new_version()->set_compared_script_info_map(
-        std::move(compared_script_info_map_));
+  if (update_checker_) {
+    DCHECK(blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled());
+    new_version()->PrepareForUpdate(update_checker_->TakeComparedResults(),
+                                    update_checker_->updated_script_url());
+    update_checker_.reset();
   }
 
   new_version()->StartWorker(

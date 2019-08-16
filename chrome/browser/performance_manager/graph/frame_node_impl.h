@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/public/graph/frame_node.h"
 #include "url/gurl.h"
 
@@ -47,7 +46,6 @@ class WorkerNodeImpl;
 class FrameNodeImpl
     : public PublicNodeImpl<FrameNodeImpl, FrameNode>,
       public TypedNodeBase<FrameNodeImpl,
-                           GraphImplObserver,
                            FrameNode,
                            FrameNodeObserver>,
       public resource_coordinator::mojom::DocumentCoordinationUnit {
@@ -149,7 +147,6 @@ class FrameNodeImpl
     void Reset(FrameNodeImpl* frame_node, const GURL& url_in);
 
     ObservedProperty::NotifiesOnlyOnChanges<GURL,
-                                            &GraphImplObserver::OnURLChanged,
                                             &FrameNodeObserver::OnURLChanged>
         url;
     bool has_nonempty_beforeunload = false;
@@ -158,7 +155,6 @@ class FrameNodeImpl
     // connections.
     ObservedProperty::NotifiesOnlyOnChanges<
         bool,
-        &GraphImplObserver::OnNetworkAlmostIdleChanged,
         &FrameNodeObserver::OnNetworkAlmostIdleChanged>
         network_almost_idle{false};
   };
@@ -201,7 +197,6 @@ class FrameNodeImpl
   // Does *not* change when a navigation is committed.
   ObservedProperty::NotifiesOnlyOnChanges<
       LifecycleState,
-      &GraphImplObserver::OnLifecycleStateChanged,
       &FrameNodeObserver::OnFrameLifecycleStateChanged>
       lifecycle_state_{LifecycleState::kRunning};
 
@@ -210,7 +205,6 @@ class FrameNodeImpl
 
   ObservedProperty::NotifiesOnlyOnChanges<
       bool,
-      &GraphImplObserver::OnIsCurrentChanged,
       &FrameNodeObserver::OnIsCurrentChanged>
       is_current_{false};
 

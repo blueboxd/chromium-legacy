@@ -17,7 +17,7 @@ class ServiceWorkerNavigationHandleCore;
 
 // This class is used to manage the lifetime of ServiceWorkerProviderHosts
 // created for main resource requests (navigations and web workers). This is a
-// UI thread class, with a pendant class on the IO thread, the
+// UI thread class, with a pendant class on the core thread, the
 // ServiceWorkerNavigationHandleCore.
 //
 // The lifetime of the ServiceWorkerNavigationHandle, the
@@ -27,7 +27,7 @@ class ServiceWorkerNavigationHandleCore;
 //   populating the member service worker provider info. This also leads to the
 //   creation of a ServiceWorkerNavigationHandleCore.
 //
-//   2) When the navigation request is sent to the IO thread, we include a
+//   2) When the navigation request is sent to the core thread, we include a
 //   pointer to the ServiceWorkerNavigationHandleCore.
 //
 //   3) If we pre-create a ServiceWorkerProviderHost for this navigation, it
@@ -46,7 +46,7 @@ class ServiceWorkerNavigationHandleCore;
 //   destroyed. The destructor of the ServiceWorkerNavigationHandle destroys
 //   the provider info which in turn leads to the destruction of an unclaimed
 //   ServiceWorkerProviderHost, and posts a task to destroy the
-//   ServiceWorkerNavigationHandleCore on the IO thread.
+//   ServiceWorkerNavigationHandleCore on the core thread.
 //
 // TODO(falken): Rename ServiceWorkerMainResourceHandle.
 class CONTENT_EXPORT ServiceWorkerNavigationHandle {
@@ -92,8 +92,6 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandle {
  private:
   blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info_;
 
-  // TODO(leonhsl): Use std::unique_ptr<ServiceWorkerNavigationHandleCore,
-  // BrowserThread::DeleteOnIOThread> instead.
   ServiceWorkerNavigationHandleCore* core_;
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
   base::WeakPtrFactory<ServiceWorkerNavigationHandle> weak_factory_{this};

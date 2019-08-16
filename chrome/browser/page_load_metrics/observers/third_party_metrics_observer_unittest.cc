@@ -9,9 +9,14 @@
 #include "net/cookies/canonical_cookie.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-const char kReadCookieHistogram[] = "PageLoad.Clients.ThirdParty.Origins.Read";
+const char kReadCookieHistogram[] =
+    "PageLoad.Clients.ThirdParty.Origins.CookieRead";
 const char kWriteCookieHistogram[] =
-    "PageLoad.Clients.ThirdParty.Origins.Write";
+    "PageLoad.Clients.ThirdParty.Origins.CookieWrite";
+const char kAccessLocalStorageHistogram[] =
+    "PageLoad.Clients.ThirdParty.Origins.LocalStorageAccess";
+const char kAccessSessionStorageHistogram[] =
+    "PageLoad.Clients.ThirdParty.Origins.SessionStorageAccess";
 
 class ThirdPartyMetricsObserverTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness {
@@ -206,3 +211,122 @@ TEST_F(ThirdPartyMetricsObserverTest, ReadAndChangeCookies_BothRecorded) {
   histogram_tester().ExpectUniqueSample(kReadCookieHistogram, 1, 1);
   histogram_tester().ExpectUniqueSample(kWriteCookieHistogram, 1, 1);
 }
+
+TEST_F(ThirdPartyMetricsObserverTest, NoDomStorageAccess_NoneRecorded) {
+  NavigateAndCommit(GURL("https://top.com"));
+  NavigateToUntrackedUrl();
+
+  histogram_tester().ExpectUniqueSample(kAccessLocalStorageHistogram, 0, 1);
+  histogram_tester().ExpectUniqueSample(kAccessSessionStorageHistogram, 0, 1);
+}
+
+TEST_F(ThirdPartyMetricsObserverTest,
+       LocalAndSessionStorageAccess_BothRecorded) {
+  NavigateAndCommit(GURL("https://top.com"));
+
+  SimulateDomStorageAccess(GURL("https://a.com"), GURL("https://top.com"),
+                           true /* local */, false /* blocked_by_policy */);
+  SimulateDomStorageAccess(GURL("https://a.com"), GURL("https://top.com"),
+                           false /* local */, false /* blocked_by_policy */);
+  NavigateToUntrackedUrl();
+
+  histogram_tester().ExpectUniqueSample(kAccessLocalStorageHistogram, 1, 1);
+  histogram_tester().ExpectUniqueSample(kAccessSessionStorageHistogram, 1, 1);
+}
+
+class ThirdPartyDomStorageAccessMetricsObserverTest
+    : public ThirdPartyMetricsObserverTest,
+      public ::testing::WithParamInterface<bool /* is_local_access */> {
+ public:
+  bool IsLocal() const { return GetParam(); }
+
+  const char* DomStorageHistogramName() const {
+    return IsLocal() ? kAccessLocalStorageHistogram
+                     : kAccessSessionStorageHistogram;
+  }
+};
+
+TEST_P(ThirdPartyDomStorageAccessMetricsObserverTest,
+       BlockedDomStorageAccess_NotRecorded) {
+  NavigateAndCommit(GURL("https://top.com"));
+
+  // If there are any blocked_by_policy access, nothing should be recorded. Even
+  // if there are subsequent non-blocked third-party access.
+  SimulateDomStorageAccess(GURL("https://a.com"), GURL("https://top.com"),
+                           IsLocal(), true /* blocked_by_policy */);
+  SimulateDomStorageAccess(GURL("https://a.com"), GURL("https://top.com"),
+                           IsLocal(), false /* blocked_by_policy */);
+
+  NavigateToUntrackedUrl();
+
+  histogram_tester().ExpectTotalCount(DomStorageHistogramName(), 0);
+}
+
+TEST_P(ThirdPartyDomStorageAccessMetricsObserverTest,
+       NoRegistrableDomainDomStorageAccess_OneRecorded) {
+  NavigateAndCommit(GURL("https://top.com"));
+
+  SimulateDomStorageAccess(GURL("data:,Hello%2C%20World!"),
+                           GURL("https://top.com"), IsLocal(),
+                           false /* blocked_by_policy */);
+  NavigateToUntrackedUrl();
+
+  histogram_tester().ExpectUniqueSample(DomStorageHistogramName(), 1, 1);
+}
+
+TEST_P(ThirdPartyDomStorageAccessMetricsObserverTest,
+       OnlyFirstPartyDomStorageAccess_NotRecorded) {
+  NavigateAndCommit(GURL("https://top.com"));
+
+  SimulateDomStorageAccess(GURL("https://top.com"), GURL("https://top.com"),
+                           IsLocal(), false /* blocked_by_policy */);
+  NavigateToUntrackedUrl();
+
+  histogram_tester().ExpectUniqueSample(DomStorageHistogramName(), 0, 1);
+}
+
+TEST_P(ThirdPartyDomStorageAccessMetricsObserverTest,
+       OneDomStorageAccess_OneRecorded) {
+  NavigateAndCommit(GURL("https://top.com"));
+
+  SimulateDomStorageAccess(GURL("https://a.com"), GURL("https://top.com"),
+                           IsLocal(), false /* blocked_by_policy */);
+  NavigateToUntrackedUrl();
+
+  histogram_tester().ExpectUniqueSample(DomStorageHistogramName(), 1, 1);
+}
+
+TEST_P(ThirdPartyDomStorageAccessMetricsObserverTest,
+       SameRegistrableDomainDifferentOrigin_TwoRecorded) {
+  NavigateAndCommit(GURL("https://top.com"));
+
+  SimulateDomStorageAccess(GURL("https://a.com"), GURL("https://top.com"),
+                           IsLocal(), false /* blocked_by_policy */);
+  SimulateDomStorageAccess(GURL("https://sub.a.com"), GURL("https://top.com"),
+                           IsLocal(), false /* blocked_by_policy */);
+
+  NavigateToUntrackedUrl();
+
+  histogram_tester().ExpectUniqueSample(DomStorageHistogramName(), 2, 1);
+}
+
+TEST_P(ThirdPartyDomStorageAccessMetricsObserverTest,
+       DomStorageAccessMultipleThirdParties_MultipleRecorded) {
+  NavigateAndCommit(GURL("https://top.com"));
+
+  // Simulate third-party DOM storage access from two different origins.
+  SimulateDomStorageAccess(GURL("https://a.com"), GURL("https://top.com"),
+                           IsLocal(), false /* blocked_by_policy */);
+  SimulateDomStorageAccess(GURL("https://a.com"), GURL("https://top.com"),
+                           IsLocal(), false /* blocked_by_policy */);
+  SimulateDomStorageAccess(GURL("https://b.com"), GURL("https://top.com"),
+                           IsLocal(), false /* blocked_by_policy */);
+  NavigateToUntrackedUrl();
+
+  histogram_tester().ExpectUniqueSample(DomStorageHistogramName(), 2, 1);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    ThirdPartyDomStorageAccessMetricsObserverTest,
+    ::testing::Values(false, true));

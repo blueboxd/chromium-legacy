@@ -229,17 +229,14 @@ void LayeredNetworkDelegate::OnCanAccessFileInternal(
 
 bool LayeredNetworkDelegate::OnForcePrivacyMode(
     const GURL& url,
-    const GURL& site_for_cookies,
-    const base::Optional<url::Origin>& top_frame_origin) const {
-  return OnForcePrivacyModeInternal(url, site_for_cookies, top_frame_origin) ||
-         nested_network_delegate_->ForcePrivacyMode(url, site_for_cookies,
-                                                    top_frame_origin);
+    const GURL& site_for_cookies) const {
+  return OnForcePrivacyModeInternal(url, site_for_cookies) ||
+         nested_network_delegate_->ForcePrivacyMode(url, site_for_cookies);
 }
 
 bool LayeredNetworkDelegate::OnForcePrivacyModeInternal(
     const GURL& url,
-    const GURL& site_for_cookies,
-    const base::Optional<url::Origin>& top_frame_origin) const {
+    const GURL& site_for_cookies) const {
   return false;
 }
 

@@ -107,11 +107,13 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
     mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
         subresource_loader_updater,
+    const GURL& script_url_to_skip_throttling,
     scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner)
     : service_worker_version_id_(service_worker_version_id),
       service_worker_scope_(service_worker_scope),
       script_url_(script_url),
       is_starting_installed_worker_(is_starting_installed_worker),
+      script_url_to_skip_throttling_(script_url_to_skip_throttling),
       renderer_preferences_(std::move(renderer_preferences)),
       preference_watcher_request_(std::move(preference_watcher_request)),
       initiator_thread_task_runner_(std::move(initiator_thread_task_runner)),
@@ -395,7 +397,7 @@ ServiceWorkerContextClient::CreateWorkerFetchContextOnInitiatorThread() {
 
   return base::MakeRefCounted<ServiceWorkerFetchContextImpl>(
       *renderer_preferences_, script_url_, loader_factories_->PassInterface(),
-      std::move(script_loader_factory_info),
+      std::move(script_loader_factory_info), script_url_to_skip_throttling_,
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
           URLLoaderThrottleProviderType::kWorker),
       GetContentClient()

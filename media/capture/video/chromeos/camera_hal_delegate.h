@@ -24,8 +24,8 @@
 
 namespace media {
 
+class CameraAppDeviceBridgeImpl;
 class CameraBufferFactory;
-class ReprocessManager;
 
 // CameraHalDelegate is the component which does Mojo IPCs to the camera HAL
 // process on Chrome OS to access the module-level camera functionalities such
@@ -59,7 +59,7 @@ class CAPTURE_EXPORT CameraHalDelegate final
       scoped_refptr<base::SingleThreadTaskRunner>
           task_runner_for_screen_observer,
       const VideoCaptureDeviceDescriptor& device_descriptor,
-      ReprocessManager* reprocess_manager);
+      CameraAppDeviceBridgeImpl* app_device_bridge);
   void GetSupportedFormats(
       const VideoCaptureDeviceDescriptor& device_descriptor,
       VideoCaptureFormats* supported_formats);

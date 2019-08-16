@@ -117,6 +117,9 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
                                                : user_input_scrollable_y_;
   }
   bool ScheduleAnimation() override { return true; }
+  WebColorScheme UsedColorScheme() const override {
+    return ComputedStyle::InitialStyle().UsedColorScheme();
+  }
 
   ScrollOffset ClampedScrollOffset(const ScrollOffset& offset) {
     ScrollOffset min_offset = MinimumScrollOffset();

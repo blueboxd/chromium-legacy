@@ -61,14 +61,15 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
         mGcmNetworkManager = (ShadowGcmNetworkManager) Shadow.extract(
                 GcmNetworkManager.getInstance(ContextUtils.getApplicationContext()));
         BackgroundTaskSchedulerGcmNetworkManager.setClockForTesting(mClock);
+        BackgroundTaskSchedulerFactory.setBackgroundTaskFactory(new TestBackgroundTaskFactory());
     }
 
     @Test
     @Feature({"BackgroundTaskScheduler"})
     public void testOneOffTaskWithDeadline() {
-        TaskInfo oneOffTaskInfo = TaskInfo.createOneOffTask(TaskIds.TEST, TestBackgroundTask.class,
-                                                  TIME_200_MIN_TO_MS)
-                                          .build();
+        TaskInfo.TimingInfo timingInfo =
+                TaskInfo.OneOffInfo.create().setWindowEndTimeMs(TIME_200_MIN_TO_MS).build();
+        TaskInfo oneOffTaskInfo = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
         Task task = BackgroundTaskSchedulerGcmNetworkManager.createTaskFromTaskInfo(oneOffTaskInfo);
         assertTrue(task instanceof OneoffTask);
         OneoffTask oneOffTask = (OneoffTask) task;
@@ -80,10 +81,11 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
     @Test
     @Feature({"BackgroundTaskScheduler"})
     public void testOneOffTaskWithDeadlineAndExpiration() {
-        TaskInfo oneOffTaskInfo = TaskInfo.createOneOffTask(TaskIds.TEST, TestBackgroundTask.class,
-                                                  TIME_200_MIN_TO_MS)
-                                          .setExpiresAfterWindowEndTime(true)
-                                          .build();
+        TaskInfo.TimingInfo timingInfo = TaskInfo.OneOffInfo.create()
+                                                 .setWindowEndTimeMs(TIME_200_MIN_TO_MS)
+                                                 .setExpiresAfterWindowEndTime(true)
+                                                 .build();
+        TaskInfo oneOffTaskInfo = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
         Task task = BackgroundTaskSchedulerGcmNetworkManager.createTaskFromTaskInfo(oneOffTaskInfo);
         assertTrue(task instanceof OneoffTask);
         OneoffTask oneOffTask = (OneoffTask) task;
@@ -98,9 +100,11 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
     @Test
     @Feature({"BackgroundTaskScheduler"})
     public void testOneOffTaskWithWindow() {
-        TaskInfo oneOffTaskInfo = TaskInfo.createOneOffTask(TaskIds.TEST, TestBackgroundTask.class,
-                                                  TIME_100_MIN_TO_MS, TIME_200_MIN_TO_MS)
-                                          .build();
+        TaskInfo.TimingInfo timingInfo = TaskInfo.OneOffInfo.create()
+                                                 .setWindowStartTimeMs(TIME_100_MIN_TO_MS)
+                                                 .setWindowEndTimeMs(TIME_200_MIN_TO_MS)
+                                                 .build();
+        TaskInfo oneOffTaskInfo = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
         Task task = BackgroundTaskSchedulerGcmNetworkManager.createTaskFromTaskInfo(oneOffTaskInfo);
         assertTrue(task instanceof OneoffTask);
         OneoffTask oneOffTask = (OneoffTask) task;
@@ -112,10 +116,12 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
     @Test
     @Feature({"BackgroundTaskScheduler"})
     public void testOneOffTaskWithWindowAndExpiration() {
-        TaskInfo oneOffTaskInfo = TaskInfo.createOneOffTask(TaskIds.TEST, TestBackgroundTask.class,
-                                                  TIME_100_MIN_TO_MS, TIME_200_MIN_TO_MS)
-                                          .setExpiresAfterWindowEndTime(true)
-                                          .build();
+        TaskInfo.TimingInfo timingInfo = TaskInfo.OneOffInfo.create()
+                                                 .setWindowStartTimeMs(TIME_100_MIN_TO_MS)
+                                                 .setWindowEndTimeMs(TIME_200_MIN_TO_MS)
+                                                 .setExpiresAfterWindowEndTime(true)
+                                                 .build();
+        TaskInfo oneOffTaskInfo = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
         Task task = BackgroundTaskSchedulerGcmNetworkManager.createTaskFromTaskInfo(oneOffTaskInfo);
         assertTrue(task instanceof OneoffTask);
         OneoffTask oneOffTask = (OneoffTask) task;
@@ -130,9 +136,9 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
     @Test
     @Feature({"BackgroundTaskScheduler"})
     public void testPeriodicTaskWithoutFlex() {
-        TaskInfo periodicTaskInfo = TaskInfo.createPeriodicTask(TaskIds.TEST,
-                                                    TestBackgroundTask.class, TIME_200_MIN_TO_MS)
-                                            .build();
+        TaskInfo.TimingInfo timingInfo =
+                TaskInfo.PeriodicInfo.create().setIntervalMs(TIME_200_MIN_TO_MS).build();
+        TaskInfo periodicTaskInfo = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
         Task task =
                 BackgroundTaskSchedulerGcmNetworkManager.createTaskFromTaskInfo(periodicTaskInfo);
         assertEquals(Integer.toString(TaskIds.TEST), task.getTag());
@@ -144,10 +150,11 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
     @Test
     @Feature({"BackgroundTaskScheduler"})
     public void testPeriodicTaskWithFlex() {
-        TaskInfo periodicTaskInfo =
-                TaskInfo.createPeriodicTask(TaskIds.TEST, TestBackgroundTask.class,
-                                TIME_200_MIN_TO_MS, TimeUnit.MINUTES.toMillis(50))
-                        .build();
+        TaskInfo.TimingInfo timingInfo = TaskInfo.PeriodicInfo.create()
+                                                 .setIntervalMs(TIME_200_MIN_TO_MS)
+                                                 .setFlexMs(TimeUnit.MINUTES.toMillis(50))
+                                                 .build();
+        TaskInfo periodicTaskInfo = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
         Task task =
                 BackgroundTaskSchedulerGcmNetworkManager.createTaskFromTaskInfo(periodicTaskInfo);
         assertEquals(Integer.toString(TaskIds.TEST), task.getTag());
@@ -164,10 +171,10 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
         userExtras.putString("foo", "bar");
         userExtras.putBoolean("bools", true);
         userExtras.putLong("longs", 1342543L);
-        TaskInfo oneOffTaskInfo = TaskInfo.createOneOffTask(TaskIds.TEST, TestBackgroundTask.class,
-                                                  TIME_200_MIN_TO_MS)
-                                          .setExtras(userExtras)
-                                          .build();
+        TaskInfo.TimingInfo timingInfo =
+                TaskInfo.OneOffInfo.create().setWindowEndTimeMs(TIME_200_MIN_TO_MS).build();
+        TaskInfo oneOffTaskInfo =
+                TaskInfo.createTask(TaskIds.TEST, timingInfo).setExtras(userExtras).build();
         Task task = BackgroundTaskSchedulerGcmNetworkManager.createTaskFromTaskInfo(oneOffTaskInfo);
         assertEquals(Integer.toString(TaskIds.TEST), task.getTag());
         assertTrue(task instanceof OneoffTask);
@@ -185,8 +192,9 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
     @Test
     @Feature({"BackgroundTaskScheduler"})
     public void testTaskInfoWithManyConstraints() {
-        TaskInfo.Builder taskBuilder = TaskInfo.createOneOffTask(
-                TaskIds.TEST, TestBackgroundTask.class, TIME_200_MIN_TO_MS);
+        TaskInfo.TimingInfo timingInfo =
+                TaskInfo.OneOffInfo.create().setWindowEndTimeMs(TIME_200_MIN_TO_MS).build();
+        TaskInfo.Builder taskBuilder = TaskInfo.createTask(TaskIds.TEST, timingInfo);
 
         Task task = BackgroundTaskSchedulerGcmNetworkManager.createTaskFromTaskInfo(
                 taskBuilder.setIsPersisted(true).build());
@@ -221,8 +229,6 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
     @Test
     @Feature({"BackgroundTaskScheduler"})
     public void testGetBackgroundTaskFromTaskParams() {
-        BackgroundTaskSchedulerFactory.setBackgroundTaskFactory(new TestBackgroundTaskFactory());
-
         TaskParams params = new TaskParams(Integer.toString(TaskIds.TEST), new Bundle());
         BackgroundTask backgroundTask = BackgroundTaskSchedulerFactory.getBackgroundTaskFromTaskId(
                 Integer.valueOf(params.getTag()));
@@ -234,9 +240,9 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
     @Test
     @Feature({"BackgroundTaskScheduler"})
     public void testSchedule() {
-        TaskInfo oneOffTaskInfo =
-                TaskInfo.createOneOffTask(TaskIds.TEST, TestBackgroundTask.class, TIME_24_H_TO_MS)
-                        .build();
+        TaskInfo.TimingInfo timingInfo =
+                TaskInfo.OneOffInfo.create().setWindowEndTimeMs(TIME_24_H_TO_MS).build();
+        TaskInfo oneOffTaskInfo = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
 
         assertNull(mGcmNetworkManager.getScheduledTask());
 
@@ -263,9 +269,9 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
         Shadows.shadowOf(GoogleApiAvailability.getInstance())
                 .setIsGooglePlayServicesAvailable(ConnectionResult.SERVICE_MISSING);
 
-        TaskInfo oneOffTaskInfo =
-                TaskInfo.createOneOffTask(TaskIds.TEST, TestBackgroundTask.class, TIME_24_H_TO_MS)
-                        .build();
+        TaskInfo.TimingInfo timingInfo =
+                TaskInfo.OneOffInfo.create().setWindowEndTimeMs(TIME_24_H_TO_MS).build();
+        TaskInfo oneOffTaskInfo = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
 
         assertFalse(new BackgroundTaskSchedulerGcmNetworkManager().schedule(
                 ContextUtils.getApplicationContext(), oneOffTaskInfo));
@@ -274,9 +280,9 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
     @Test
     @Feature("BackgroundTaskScheduler")
     public void testCancel() {
-        TaskInfo oneOffTaskInfo =
-                TaskInfo.createOneOffTask(TaskIds.TEST, TestBackgroundTask.class, TIME_24_H_TO_MS)
-                        .build();
+        TaskInfo.TimingInfo timingInfo =
+                TaskInfo.OneOffInfo.create().setWindowEndTimeMs(TIME_24_H_TO_MS).build();
+        TaskInfo oneOffTaskInfo = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
 
         BackgroundTaskSchedulerDelegate delegate = new BackgroundTaskSchedulerGcmNetworkManager();
 
@@ -294,9 +300,9 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
         Shadows.shadowOf(GoogleApiAvailability.getInstance())
                 .setIsGooglePlayServicesAvailable(ConnectionResult.SERVICE_MISSING);
 
-        TaskInfo oneOffTaskInfo =
-                TaskInfo.createOneOffTask(TaskIds.TEST, TestBackgroundTask.class, TIME_24_H_TO_MS)
-                        .build();
+        TaskInfo.TimingInfo timingInfo =
+                TaskInfo.OneOffInfo.create().setWindowEndTimeMs(TIME_24_H_TO_MS).build();
+        TaskInfo oneOffTaskInfo = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
 
         // Ensure there was a previously scheduled task.
         mGcmNetworkManager.schedule(

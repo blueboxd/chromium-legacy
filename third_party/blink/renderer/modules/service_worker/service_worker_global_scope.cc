@@ -181,6 +181,9 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     mojom::blink::CacheStoragePtrInfo cache_storage_info,
     base::TimeTicks time_origin) {
+  DCHECK_EQ(creation_params->off_main_thread_fetch_option,
+            OffMainThreadWorkerScriptFetchOption::kEnabled);
+
   // If the script is being loaded via script streaming, the script is not yet
   // loaded.
   if (thread->GetInstalledScriptsManager() &&
@@ -194,38 +197,9 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
     DCHECK(creation_params->origin_trial_tokens->IsEmpty());
   }
 
-  // Off-the-main-thread worker script fetch (including installed service worker
-  // case):
-  // Initialize() is called after script fetch.
-  if (creation_params->off_main_thread_fetch_option ==
-      OffMainThreadWorkerScriptFetchOption::kEnabled) {
-    return MakeGarbageCollected<ServiceWorkerGlobalScope>(
-        std::move(creation_params), thread, std::move(cache_storage_info),
-        time_origin);
-  }
-
-  // Legacy on-the-main-thread worker script fetch (to be removed):
-  KURL response_url = creation_params->script_url;
-  network::mojom::ReferrerPolicy response_referrer_policy =
-      creation_params->referrer_policy;
-  network::mojom::IPAddressSpace response_address_space =
-      *creation_params->response_address_space;
-  std::unique_ptr<Vector<String>> response_origin_trial_tokens =
-      std::move(creation_params->origin_trial_tokens);
-  // Contrary to the name, |outside_content_security_policy_headers| contains
-  // worker script's response CSP headers in this case.
-  // TODO(nhiroki): Introduce inside's csp headers field in
-  // GlobalScopeCreationParams or deprecate this code path by enabling
-  // off-the-main-thread worker script fetch by default.
-  Vector<CSPHeaderAndType> response_csp_headers =
-      creation_params->outside_content_security_policy_headers;
-  auto* global_scope = MakeGarbageCollected<ServiceWorkerGlobalScope>(
+  return MakeGarbageCollected<ServiceWorkerGlobalScope>(
       std::move(creation_params), thread, std::move(cache_storage_info),
       time_origin);
-  global_scope->Initialize(response_url, response_referrer_policy,
-                           response_address_space, response_csp_headers,
-                           response_origin_trial_tokens.get());
-  return global_scope;
 }
 
 ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(

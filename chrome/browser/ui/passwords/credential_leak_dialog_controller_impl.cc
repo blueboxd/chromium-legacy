@@ -6,12 +6,15 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
+#include "chrome/browser/ui/passwords/passwords_leak_dialog_delegate.h"
 
-CredentialLeakDialogControllerImpl::CredentialLeakDialogControllerImpl()
-    : credential_leak_dialog_(nullptr) {}
+CredentialLeakDialogControllerImpl::CredentialLeakDialogControllerImpl(
+    PasswordsLeakDialogDelegate* delegate)
+    : credential_leak_dialog_(nullptr), delegate_(delegate) {}
 
-CredentialLeakDialogControllerImpl::~CredentialLeakDialogControllerImpl() =
-    default;
+CredentialLeakDialogControllerImpl::~CredentialLeakDialogControllerImpl() {
+  ResetDialog();
+}
 
 void CredentialLeakDialogControllerImpl::ShowCredentialLeakPrompt(
     CredentialLeakPrompt* dialog) {
@@ -22,4 +25,25 @@ void CredentialLeakDialogControllerImpl::ShowCredentialLeakPrompt(
 
 bool CredentialLeakDialogControllerImpl::IsShowingAccountChooser() const {
   return false;
+}
+
+void CredentialLeakDialogControllerImpl::OnCheckPasswords() {
+  delegate_->NavigateToPasswordCheckup();
+  ResetDialog();
+  OnCloseDialog();
+}
+
+void CredentialLeakDialogControllerImpl::OnCloseDialog() {
+  // TODO(crbug.com/986317): Add logging metrics util.
+  if (credential_leak_dialog_) {
+    credential_leak_dialog_ = nullptr;
+  }
+  delegate_->OnLeakDialogHidden();
+}
+
+void CredentialLeakDialogControllerImpl::ResetDialog() {
+  if (credential_leak_dialog_) {
+    credential_leak_dialog_->ControllerGone();
+    credential_leak_dialog_ = nullptr;
+  }
 }

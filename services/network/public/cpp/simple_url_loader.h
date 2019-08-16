@@ -15,6 +15,7 @@
 #include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "services/network/public/cpp/resource_response.h"
 
 class GURL;
 
@@ -35,7 +36,6 @@ struct RedirectInfo;
 
 namespace network {
 struct ResourceRequest;
-struct ResourceResponseHead;
 namespace mojom {
 class URLLoaderFactory;
 }

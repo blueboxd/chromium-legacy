@@ -44,14 +44,7 @@ class StarViewTest : public InProcessBrowserTest {
 
 // Verify that clicking the bookmark star a second time hides the bookmark
 // bubble.
-#if defined(OS_MACOSX)
-// TODO(robliao): https://crbug.com/824418  Focusing or input is not completely
-// working on Mac.
-#define MAYBE_HideOnSecondClick DISABLED_HideOnSecondClick
-#else
-#define MAYBE_HideOnSecondClick HideOnSecondClick
-#endif
-IN_PROC_BROWSER_TEST_F(StarViewTest, MAYBE_HideOnSecondClick) {
+IN_PROC_BROWSER_TEST_F(StarViewTest, HideOnSecondClick) {
   BrowserView* browser_view =
       reinterpret_cast<BrowserView*>(browser()->window());
   views::View* star_view = browser_view->toolbar()->location_bar()->star_view();

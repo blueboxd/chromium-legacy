@@ -1197,7 +1197,7 @@ void StoragePartitionImpl::OpenLocalStorage(
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
   DCHECK(initialized_);
-  int process_id = bindings_.dispatch_context();
+  int process_id = receivers_.current_context();
   // TODO(943887): Replace HasSecurityState() call with something that can
   // preserve security state after process shutdown. The security state check
   // is a temporary solution to avoid crashes when this method is run after the
@@ -1208,7 +1208,7 @@ void StoragePartitionImpl::OpenLocalStorage(
   if (!policy->CanAccessDataForOrigin(process_id, origin) &&
       policy->HasSecurityState(process_id)) {
     SYSLOG(WARNING) << "Killing renderer: illegal localStorage request.";
-    bindings_.ReportBadMessage("Access denied for localStorage request");
+    receivers_.ReportBadMessage("Access denied for localStorage request");
     return;
   }
   dom_storage_context_->OpenLocalStorage(origin, std::move(receiver));
@@ -1218,9 +1218,9 @@ void StoragePartitionImpl::OpenSessionStorage(
     const std::string& namespace_id,
     mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver) {
   DCHECK(initialized_);
-  int process_id = bindings_.dispatch_context();
+  int process_id = receivers_.current_context();
   dom_storage_context_->OpenSessionStorage(process_id, namespace_id,
-                                           bindings_.GetBadMessageCallback(),
+                                           receivers_.GetBadMessageCallback(),
                                            std::move(receiver));
 }
 
@@ -1724,14 +1724,14 @@ BrowserContext* StoragePartitionImpl::browser_context() const {
 
 mojo::BindingId StoragePartitionImpl::Bind(
     int process_id,
-    mojo::InterfaceRequest<blink::mojom::StoragePartitionService> request) {
+    mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver) {
   DCHECK(initialized_);
-  return bindings_.AddBinding(this, std::move(request), process_id);
+  return receivers_.Add(this, std::move(receiver), process_id);
 }
 
 void StoragePartitionImpl::Unbind(mojo::BindingId binding_id) {
   DCHECK(initialized_);
-  bindings_.RemoveBinding(binding_id);
+  receivers_.Remove(binding_id);
 }
 
 void StoragePartitionImpl::OverrideQuotaManagerForTesting(

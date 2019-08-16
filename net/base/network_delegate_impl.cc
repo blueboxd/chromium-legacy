@@ -93,8 +93,7 @@ bool NetworkDelegateImpl::OnCanAccessFile(
 
 bool NetworkDelegateImpl::OnForcePrivacyMode(
     const GURL& url,
-    const GURL& site_for_cookies,
-    const base::Optional<url::Origin>& top_frame_origin) const {
+    const GURL& site_for_cookies) const {
   return false;
 }
 

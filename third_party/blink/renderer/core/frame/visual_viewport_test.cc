@@ -2705,5 +2705,29 @@ TEST_P(VisualViewportTest, InSubtreeOfPageScale) {
   }
 }
 
+TEST_F(VisualViewportSimTest, UsedColorSchemeFromRootElement) {
+  ScopedCSSColorSchemeForTest color_scheme_enabled(true);
+
+  WebView().GetSettings()->SetPreferredColorScheme(PreferredColorScheme::kDark);
+  WebView().MainFrameWidget()->Resize(WebSize(400, 600));
+
+  const VisualViewport& visual_viewport =
+      WebView().GetPage()->GetVisualViewport();
+
+  EXPECT_EQ(WebColorScheme::kLight, visual_viewport.UsedColorScheme());
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            html { color-scheme: dark }
+          </style>
+      )HTML");
+  Compositor().BeginFrame();
+
+  EXPECT_EQ(WebColorScheme::kDark, visual_viewport.UsedColorScheme());
+}
+
 }  // namespace
 }  // namespace blink

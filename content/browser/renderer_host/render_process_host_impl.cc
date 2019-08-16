@@ -2031,8 +2031,13 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
               storage_partition_impl_->GetBackgroundSyncContext())));
   AddUIThreadInterface(
       registry.get(),
-      base::BindRepeating(&RenderProcessHostImpl::CreateStoragePartitionService,
-                          base::Unretained(this)));
+      base::BindRepeating(
+          [](RenderProcessHostImpl* impl,
+             blink::mojom::StoragePartitionServiceRequest request) {
+            // An implicit conversion to PendinReceiver<T> will be used below.
+            impl->CreateStoragePartitionService(std::move(request));
+          },
+          base::Unretained(this)));
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(
@@ -2268,14 +2273,14 @@ void RenderProcessHostImpl::BindCompositingModeReporter(
 }
 
 void RenderProcessHostImpl::CreateStoragePartitionService(
-    blink::mojom::StoragePartitionServiceRequest request) {
+    mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver) {
   if (!GetStoragePartitionServiceRequestHandler().is_null()) {
-    GetStoragePartitionServiceRequestHandler().Run(this, std::move(request));
+    GetStoragePartitionServiceRequestHandler().Run(this, std::move(receiver));
     return;
   }
 
   storage_partition_binding_ids_.insert(
-      storage_partition_impl_->Bind(id_, std::move(request)));
+      storage_partition_impl_->Bind(id_, std::move(receiver)));
 }
 
 void RenderProcessHostImpl::CreateBroadcastChannelProvider(

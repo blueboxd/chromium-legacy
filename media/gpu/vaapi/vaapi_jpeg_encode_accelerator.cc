@@ -142,11 +142,7 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
   // Construct GBM Handle from VideoFrame.
   gfx::GpuMemoryBufferHandle input_gmb_handle =
       CreateGpuMemoryBufferHandle(input_frame.get());
-  if (input_gmb_handle.is_null()) {
-    VLOGF(1) << "Failed to create input gmb handle";
-    notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
-    return;
-  }
+  DCHECK(!input_gmb_handle.is_null());
 
   // Create pixmap for input handle and create VA surface.
   auto num_planes_input = VideoFrame::NumPlanes(input_frame->format());
@@ -229,11 +225,7 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
   // size is the 2D image size, we should use (buffer_size, 1) as the R8 gmb's
   // size, where buffer_size can be obtained from the first plane's size.
   auto output_gmb_handle = CreateGpuMemoryBufferHandle(output_frame.get());
-  if (output_gmb_handle.is_null()) {
-    VLOGF(1) << "Failed to create GpuMemoryBufferHandle";
-    notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
-    return;
-  }
+  DCHECK(!output_gmb_handle.is_null());
   const gfx::Size output_gmb_buffer_size(
       base::checked_cast<int32_t>(output_frame->layout().planes()[0].size), 1);
   auto output_gmb_buffer =

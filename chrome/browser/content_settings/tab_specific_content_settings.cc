@@ -152,19 +152,6 @@ void TabSpecificContentSettings::WebDatabaseAccessed(
 }
 
 // static
-void TabSpecificContentSettings::DOMStorageAccessed(int render_process_id,
-                                                    int render_frame_id,
-                                                    const GURL& url,
-                                                    bool local,
-                                                    bool blocked_by_policy) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  TabSpecificContentSettings* settings = GetForFrame(
-      render_process_id, render_frame_id);
-  if (settings)
-    settings->OnLocalStorageAccessed(url, local, blocked_by_policy);
-}
-
-// static
 void TabSpecificContentSettings::IndexedDBAccessed(
     int render_process_id,
     int render_frame_id,
@@ -364,6 +351,24 @@ void TabSpecificContentSettings::OnContentAllowed(ContentSettingsType type) {
     content_settings::UpdateLocationBarUiForWebContents(web_contents());
 }
 
+void TabSpecificContentSettings::OnDomStorageAccessed(const GURL& url,
+                                                      bool local,
+                                                      bool blocked_by_policy) {
+  LocalSharedObjectsContainer& container = blocked_by_policy
+                                               ? blocked_local_shared_objects_
+                                               : allowed_local_shared_objects_;
+  CannedBrowsingDataLocalStorageHelper* helper =
+      local ? container.local_storages() : container.session_storages();
+  helper->Add(url::Origin::Create(url));
+
+  if (blocked_by_policy)
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
+  else
+    OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
+
+  NotifySiteDataObservers();
+}
+
 void TabSpecificContentSettings::OnCookiesRead(
     const GURL& url,
     const GURL& frame_url,
@@ -427,24 +432,6 @@ void TabSpecificContentSettings::OnCacheStorageAccessed(
         url::Origin::Create(url));
     OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
-
-  NotifySiteDataObservers();
-}
-
-void TabSpecificContentSettings::OnLocalStorageAccessed(
-    const GURL& url,
-    bool local,
-    bool blocked_by_policy) {
-  LocalSharedObjectsContainer& container = blocked_by_policy ?
-      blocked_local_shared_objects_ : allowed_local_shared_objects_;
-  CannedBrowsingDataLocalStorageHelper* helper =
-      local ? container.local_storages() : container.session_storages();
-  helper->Add(url::Origin::Create(url));
-
-  if (blocked_by_policy)
-    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
-  else
-    OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
 
   NotifySiteDataObservers();
 }

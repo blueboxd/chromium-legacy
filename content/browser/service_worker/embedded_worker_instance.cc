@@ -28,6 +28,7 @@
 #include "content/browser/service_worker/service_worker_script_loader_factory.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/content_switches_internal.h"
+#include "content/common/renderer.mojom.h"
 #include "content/common/url_schemes.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -188,7 +189,8 @@ void SetupOnUIThread(int embedded_worker_id,
   // the process. If the process dies, |client_|'s connection error callback
   // will be called on the IO thread.
   if (request.is_pending()) {
-    BindInterface(rph, std::move(request));
+    rph->GetRendererInterface()->SetUpEmbeddedWorkerChannelForServiceWorker(
+        std::move(request));
   }
 
   // Register to DevTools and update params accordingly.
@@ -706,8 +708,9 @@ void EmbeddedWorkerInstance::StopIfNotAttachedToDevTools() {
       // Check ShouldNotifyWorkerStopIgnored not to show the same message
       // multiple times in DevTools.
       if (devtools_proxy_->ShouldNotifyWorkerStopIgnored()) {
-        AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kVerbose,
-                            kServiceWorkerTerminationCanceledMesage);
+        owner_version_->MaybeReportConsoleMessageToInternals(
+            blink::mojom::ConsoleMessageLevel::kVerbose,
+            kServiceWorkerTerminationCanceledMesage);
         devtools_proxy_->WorkerStopIgnoredNotified();
       }
     }
@@ -739,6 +742,7 @@ EmbeddedWorkerInstance::EmbeddedWorkerInstance(
       network_accessed_for_script_(false),
       foreground_notified_(false),
       ui_task_runner_(base::CreateSequencedTaskRunner({BrowserThread::UI})) {
+  DCHECK(owner_version_);
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(context_);
 }

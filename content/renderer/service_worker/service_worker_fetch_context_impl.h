@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_FETCH_CONTEXT_IMPL_H_
 #define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_FETCH_CONTEXT_IMPL_H_
 
+#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -20,7 +21,7 @@ class ResourceDispatcher;
 class URLLoaderThrottleProvider;
 class WebSocketHandshakeThrottleProvider;
 
-class ServiceWorkerFetchContextImpl final
+class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
     : public blink::WebWorkerFetchContext,
       public blink::mojom::ServiceWorkerSubresourceLoaderUpdater,
       public blink::mojom::RendererPreferenceWatcher {
@@ -32,6 +33,9 @@ class ServiceWorkerFetchContextImpl final
   // |script_loader_factory_info| is used for importScripts() from the service
   // worker when InstalledScriptsManager doesn't have the requested script. It
   // is a ServiceWorkerScriptLoaderFactory, which loads and installs the script.
+  // |script_url_to_skip_throttling| is a URL which is already throttled in the
+  // browser process so that it doesn't need to be throttled in the renderer
+  // again.
   ServiceWorkerFetchContextImpl(
       const blink::mojom::RendererPreferences& renderer_preferences,
       const GURL& worker_script_url,
@@ -39,6 +43,7 @@ class ServiceWorkerFetchContextImpl final
           url_loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           script_loader_factory_info,
+      const GURL& script_url_to_skip_throttling,
       std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
       std::unique_ptr<WebSocketHandshakeThrottleProvider>
           websocket_handshake_throttle_provider,
@@ -82,6 +87,11 @@ class ServiceWorkerFetchContextImpl final
   // Consumed on the worker thread to create |web_script_loader_factory_|.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo>
       script_loader_factory_info_;
+
+  // A script URL that should skip throttling when loaded because it's already
+  // being loaded in the browser process and went through throttles there. It's
+  // valid only once and set to invalid GURL once the script is served.
+  GURL script_url_to_skip_throttling_;
 
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;

@@ -134,7 +134,8 @@ void CrostiniHandler::HandleRemoveCrostiniSharedPath(
       vm_name, base::FilePath(path),
       /*unpersist=*/true,
       base::BindOnce(
-          [](const std::string& path, bool result, std::string failure_reason) {
+          [](const std::string& path, bool result,
+             const std::string& failure_reason) {
             if (!result) {
               LOG(ERROR) << "Error unsharing " << path << ": "
                          << failure_reason;

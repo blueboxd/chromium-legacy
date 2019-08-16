@@ -16,7 +16,6 @@ namespace performance_manager {
 // ObserverType pointers. This is templated on the observer type to allow
 // easy testing.
 template <typename NodeImplType,
-          typename ImplObserverType,
           typename NodeType,
           typename ObserverType>
 class ObservedPropertyImpl {
@@ -25,7 +24,6 @@ class ObservedPropertyImpl {
   // periodically, and for which a notification should be sent every time a
   // new sample is recorded, even if identical in value to the last.
   template <typename PropertyType,
-            void (ImplObserverType::*ImplNotifyFunctionPtr)(NodeImplType*),
             void (ObserverType::*NotifyFunctionPtr)(const NodeType*)>
   class NotifiesAlways {
    public:
@@ -38,8 +36,6 @@ class ObservedPropertyImpl {
     // Sets the property and sends a notification.
     void SetAndNotify(NodeImplType* node, PropertyType value) {
       value_ = value;
-      for (auto& observer : node->observers())
-        ((observer).*(ImplNotifyFunctionPtr))(node);
       for (auto* observer : node->GetObservers())
         ((observer)->*(NotifyFunctionPtr))(node);
     }
@@ -55,7 +51,6 @@ class ObservedPropertyImpl {
   // changes. Calls to SetAndMaybeNotify do not notify if the provided value is
   // the same as the current value.
   template <typename PropertyType,
-            void (ImplObserverType::*ImplNotifyFunctionPtr)(NodeImplType*),
             void (ObserverType::*NotifyFunctionPtr)(const NodeType*)>
   class NotifiesOnlyOnChanges {
    public:
@@ -71,8 +66,6 @@ class ObservedPropertyImpl {
       if (value_ == value)
         return false;
       value_ = value;
-      for (auto& observer : node->observers())
-        ((observer).*(ImplNotifyFunctionPtr))(node);
       for (auto* observer : node->GetObservers())
         ((observer)->*(NotifyFunctionPtr))(node);
       return true;

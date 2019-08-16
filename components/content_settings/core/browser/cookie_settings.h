@@ -107,6 +107,12 @@ class CookieSettings : public CookieSettingsBase,
   // called.
   void ShutdownOnUIThread() override;
 
+  // content_settings::CookieSettingsBase:
+  void GetCookieSetting(const GURL& url,
+                        const GURL& first_party_url,
+                        content_settings::SettingSource* source,
+                        ContentSetting* cookie_setting) const override;
+
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   void AddObserver(Observer* obs) { observers_.AddObserver(obs); }
@@ -115,13 +121,6 @@ class CookieSettings : public CookieSettingsBase,
 
  private:
   ~CookieSettings() override;
-
-  // content_settings::CookieSettingsBase:
-  void GetCookieSettingInternal(const GURL& url,
-                                const GURL& first_party_url,
-                                bool is_third_party_request,
-                                content_settings::SettingSource* source,
-                                ContentSetting* cookie_setting) const override;
 
   void OnCookiePreferencesChanged();
 

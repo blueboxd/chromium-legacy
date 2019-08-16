@@ -40,6 +40,7 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -274,6 +275,15 @@ struct CrossThreadCopier<mojo::InterfaceRequest<Interface>> {
   using Type = mojo::InterfaceRequest<Interface>;
   static Type Copy(Type request) {
     return request;  // This is in fact a move.
+  }
+};
+
+template <typename Interface>
+struct CrossThreadCopier<mojo::PendingReceiver<Interface>> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = mojo::PendingReceiver<Interface>;
+  static Type Copy(Type receiver) {
+    return receiver;  // This is in fact a move.
   }
 };
 

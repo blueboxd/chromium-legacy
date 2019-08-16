@@ -11,6 +11,7 @@ PASS PerformanceEventTiming interface: existence and properties of interface pro
 PASS PerformanceEventTiming interface: attribute processingStart
 PASS PerformanceEventTiming interface: attribute processingEnd
 PASS PerformanceEventTiming interface: attribute cancelable
+PASS PerformanceEventTiming interface: operation toJSON()
 FAIL EventCounts interface: existence and properties of interface object assert_own_property: self does not have own property "EventCounts" expected property "EventCounts" missing
 FAIL EventCounts interface object length assert_own_property: self does not have own property "EventCounts" expected property "EventCounts" missing
 FAIL EventCounts interface object name assert_own_property: self does not have own property "EventCounts" expected property "EventCounts" missing

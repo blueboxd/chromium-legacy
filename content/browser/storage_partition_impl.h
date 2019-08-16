@@ -35,8 +35,8 @@
 #include "content/browser/worker_host/shared_worker_service_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/storage_partition.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -223,12 +223,12 @@ class CONTENT_EXPORT StoragePartitionImpl
   // it binds in the renderer process. Returns the id of the created binding.
   mojo::BindingId Bind(
       int process_id,
-      mojo::InterfaceRequest<blink::mojom::StoragePartitionService> request);
+      mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver);
 
   // Remove a binding created by a previous Bind() call.
   void Unbind(mojo::BindingId binding_id);
 
-  auto& bindings_for_testing() { return bindings_; }
+  auto& receivers_for_testing() { return receivers_; }
 
   // When this StoragePartition is for guests (e.g., for a <webview> tag), this
   // is the site URL to use when creating a SiteInstance for a service worker.
@@ -404,10 +404,10 @@ class CONTENT_EXPORT StoragePartitionImpl
       proto_database_provider_;
   scoped_refptr<ContentIndexContextImpl> content_index_context_;
 
-  // BindingSet for StoragePartitionService, using the process id as the
+  // ReceiverSet for StoragePartitionService, using the process id as the
   // binding context type. The process id can subsequently be used during
   // interface method calls to enforce security checks.
-  mojo::BindingSet<blink::mojom::StoragePartitionService, int> bindings_;
+  mojo::ReceiverSet<blink::mojom::StoragePartitionService, int> receivers_;
 
   // This is the NetworkContext used to
   // make requests for the StoragePartition. When the network service is

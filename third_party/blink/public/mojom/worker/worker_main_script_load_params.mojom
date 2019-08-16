@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "services/network/public/mojom/url_response_head.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 
 // NetworkService (PlzWorker):

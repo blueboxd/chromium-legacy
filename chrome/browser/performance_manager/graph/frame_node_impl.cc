@@ -103,8 +103,6 @@ void FrameNodeImpl::SetIsAdFrame() {
 
 void FrameNodeImpl::OnNonPersistentNotificationCreated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : observers())
-    observer.OnNonPersistentNotificationCreated(this);
   for (auto* observer : GetObservers())
     observer->OnNonPersistentNotificationCreated(this);
 }

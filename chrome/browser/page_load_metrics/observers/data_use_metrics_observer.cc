@@ -44,12 +44,12 @@ void DataUseMetricsObserver::OnResourceDataUseObserved(
     received_data_length += resource->delta_bytes;
     chrome_data_use_measurement->RecordContentTypeMetric(
         resource->mime_type, resource->is_main_frame_resource,
-        GetDelegate()->GetVisibilityTracker().currently_in_foreground(),
+        GetDelegate().GetVisibilityTracker().currently_in_foreground(),
         resource->delta_bytes);
   }
   if (!received_data_length)
     return;
   chrome_data_use_measurement->ReportUserTrafficDataUse(
-      GetDelegate()->GetVisibilityTracker().currently_in_foreground(),
+      GetDelegate().GetVisibilityTracker().currently_in_foreground(),
       received_data_length);
 }

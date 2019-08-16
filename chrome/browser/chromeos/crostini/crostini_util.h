@@ -33,10 +33,8 @@ struct LinuxPackageInfo;
 // A unique identifier for our containers. This is <vm_name, container_name>.
 using ContainerId = std::pair<std::string, std::string>;
 
-// TODO(joelhockey): Update guest_os::SharePath::SharePathCallback to be
-// <void(bool success, const std::string& failure_reason)> and use it here.
 using LaunchCrostiniAppCallback =
-    base::OnceCallback<void(bool success, std::string failure_reason)>;
+    base::OnceCallback<void(bool success, const std::string& failure_reason)>;
 
 // Return" (<vm_name>, <container_name>)".
 std::string ContainerIdToString(const ContainerId& container_id);

@@ -105,16 +105,6 @@ class TabSpecificContentSettings
                                   const GURL& url,
                                   bool blocked_by_policy);
 
-  // Called when a specific DOM storage area in the current page was
-  // accessed. If access was blocked due to the user's content settings,
-  // |blocked_by_policy| should be true, and this function should invoke
-  // OnContentBlocked.
-  static void DOMStorageAccessed(int render_process_id,
-                                 int render_frame_id,
-                                 const GURL& url,
-                                 bool local,
-                                 bool blocked_by_policy);
-
   // Called when a specific indexed db factory in the current page was
   // accessed. If access was blocked due to the user's content settings,
   // |blocked_by_policy| should be true, and this function should invoke
@@ -293,15 +283,18 @@ class TabSpecificContentSettings
                                   const base::string16& details);
   void OnContentAllowed(ContentSettingsType type);
 
+  // These methods are invoked on the UI thread forwarded from the
+  // ChromeRenderMessageFilter.
+  void OnDomStorageAccessed(const GURL& url,
+                            bool local,
+                            bool blocked_by_policy);
+
   // These methods are invoked on the UI thread by the static functions above.
   // Only public for tests.
   void OnFileSystemAccessed(const GURL& url,
                             bool blocked_by_policy);
   void OnIndexedDBAccessed(const GURL& url, bool blocked_by_policy);
   void OnCacheStorageAccessed(const GURL& url, bool blocked_by_policy);
-  void OnLocalStorageAccessed(const GURL& url,
-                              bool local,
-                              bool blocked_by_policy);
   void OnServiceWorkerAccessed(const GURL& scope,
                                bool blocked_by_policy_javascript,
                                bool blocked_by_policy_cookie);

@@ -67,7 +67,7 @@ void OnVmRestartedForSeneschal(
 }
 
 void OnSeneschalUnsharePathResponse(
-    base::OnceCallback<void(bool, std::string)> callback,
+    guest_os::SuccessCallback callback,
     base::Optional<vm_tools::seneschal::UnsharePathResponse> response) {
   if (!response) {
     std::move(callback).Run(false, "System error");
@@ -81,7 +81,7 @@ void LogErrorResult(const std::string& operation,
                     const base::FilePath& cros_path,
                     const base::FilePath& container_path,
                     bool result,
-                    std::string failure_reason) {
+                    const std::string& failure_reason) {
   if (!result) {
     LOG(WARNING) << "Error " << operation << " " << cros_path << ": "
                  << failure_reason;
@@ -91,8 +91,7 @@ void LogErrorResult(const std::string& operation,
 // Barrier Closure that captures the first instance of error.
 class ErrorCapture {
  public:
-  ErrorCapture(int num_callbacks_left,
-               base::OnceCallback<void(bool, std::string)> callback)
+  ErrorCapture(int num_callbacks_left, guest_os::SuccessCallback callback)
       : num_callbacks_left_(num_callbacks_left),
         callback_(std::move(callback)) {
     DCHECK_GE(num_callbacks_left, 0);
@@ -103,7 +102,7 @@ class ErrorCapture {
   void Run(const base::FilePath& cros_path,
            const base::FilePath& container_path,
            bool success,
-           std::string failure_reason) {
+           const std::string& failure_reason) {
     if (!success) {
       LOG(WARNING) << "Error SharePath=" << cros_path.value()
                    << ", FailureReason=" << failure_reason;
@@ -119,7 +118,7 @@ class ErrorCapture {
 
  private:
   int num_callbacks_left_;
-  base::OnceCallback<void(bool, std::string)> callback_;
+  guest_os::SuccessCallback callback_;
   bool success_ = true;
   std::string first_failure_reason_;
 };  // class
@@ -338,10 +337,9 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
       base::BindOnce(&OnSeneschalSharePathResponse, std::move(callback)));
 }
 
-void GuestOsSharePath::CallSeneschalUnsharePath(
-    const std::string& vm_name,
-    const base::FilePath& path,
-    base::OnceCallback<void(bool, std::string)> callback) {
+void GuestOsSharePath::CallSeneschalUnsharePath(const std::string& vm_name,
+                                                const base::FilePath& path,
+                                                SuccessCallback callback) {
   vm_tools::seneschal::UnsharePathRequest request;
 
   // Return success if VM is not currently running.
@@ -399,13 +397,12 @@ void GuestOsSharePath::SharePath(const std::string& vm_name,
   CallSeneschalSharePath(vm_name, path, persist, std::move(callback));
 }
 
-void GuestOsSharePath::SharePaths(
-    const std::string& vm_name,
-    std::vector<base::FilePath> paths,
-    bool persist,
-    base::OnceCallback<void(bool, std::string)> callback) {
+void GuestOsSharePath::SharePaths(const std::string& vm_name,
+                                  std::vector<base::FilePath> paths,
+                                  bool persist,
+                                  SuccessCallback callback) {
   base::RepeatingCallback<void(const base::FilePath&, const base::FilePath&,
-                               bool, std::string)>
+                               bool, const std::string&)>
       barrier = base::BindRepeating(
           &ErrorCapture::Run,
           base::Owned(new ErrorCapture(paths.size(), std::move(callback))));
@@ -415,11 +412,10 @@ void GuestOsSharePath::SharePaths(
   }
 }
 
-void GuestOsSharePath::UnsharePath(
-    const std::string& vm_name,
-    const base::FilePath& path,
-    bool unpersist,
-    base::OnceCallback<void(bool, std::string)> callback) {
+void GuestOsSharePath::UnsharePath(const std::string& vm_name,
+                                   const base::FilePath& path,
+                                   bool unpersist,
+                                   SuccessCallback callback) {
   if (auto* info = FindSharedPathInfo(path)) {
     info->vm_names.erase(vm_name);
     if (info->vm_names.empty()) {
@@ -471,9 +467,8 @@ std::vector<base::FilePath> GuestOsSharePath::GetPersistedSharedPaths(
   return result;
 }
 
-void GuestOsSharePath::SharePersistedPaths(
-    const std::string& vm_name,
-    base::OnceCallback<void(bool, std::string)> callback) {
+void GuestOsSharePath::SharePersistedPaths(const std::string& vm_name,
+                                           SuccessCallback callback) {
   SharePaths(vm_name, GetPersistedSharedPaths(vm_name),
              /*persist=*/false, std::move(callback));
 }

@@ -28,6 +28,7 @@
 #include "net/dns/mock_host_resolver.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/background_task_scheduler/chrome_background_task_factory.h"
 #include "chrome/test/base/android/android_browser_test.h"
 #else
 #include "chrome/test/base/in_process_browser_test.h"
@@ -91,6 +92,10 @@ class PaymentRequestCanMakePaymentTestBase : public PlatformBrowserTest,
     autofill::PersonalDataManager* personal_data_manager =
         autofill::PersonalDataManagerFactory::GetForProfile(profile);
     personal_data_manager->SetSyncServiceForTest(&sync_service_);
+
+#if defined(OS_ANDROID)
+    ChromeBackgroundTaskFactory::SetAsDefault();
+#endif
 
     payment_request_controller_.SetUpOnMainThread();
   }

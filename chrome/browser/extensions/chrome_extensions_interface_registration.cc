@@ -35,10 +35,11 @@
 #include "content/public/browser/media_device_id.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/media_perception_private/media_perception_api_delegate.h"
-#include "media/capture/video/chromeos/mojom/cros_image_capture.mojom.h"
-#include "media/capture/video/chromeos/renderer_facing_cros_image_capture.h"
+#include "media/capture/video/chromeos/camera_app_device_provider_impl.h"
+#include "media/capture/video/chromeos/camera_app_helper_impl.h"
+#include "media/capture/video/chromeos/mojom/camera_app.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #endif
@@ -86,17 +87,17 @@ void TriggerCameraIntent(content::BrowserContext* context,
   intent_helper->OnCameraIntentHandled(intent_id, is_success, captured_data);
 }
 
-// Binds CrosImageCaptureRequest to a proxy which translates the source id into
-// video device id and then forward the request to video capture service.
-void BindRendererFacingCrosImageCapture(
-    cros::mojom::CrosImageCaptureRequest request,
+// Connects to CameraAppDeviceProvider which could be used to get
+// CameraAppDevice from video capture service through CameraAppDeviceBridge.
+void ConnectToCameraAppDeviceProvider(
+    cros::mojom::CameraAppDeviceProviderRequest request,
     content::RenderFrameHost* source) {
-  cros::mojom::CrosImageCapturePtr proxy_ptr;
-  auto proxy_request = mojo::MakeRequest(&proxy_ptr);
+  mojo::PendingRemote<cros::mojom::CameraAppDeviceBridge> device_bridge;
+  auto device_bridge_receiver = device_bridge.InitWithNewPipeAndPassReceiver();
 
-  // Bind the interface through the Video Capture service.
-  content::GetVideoCaptureService().BindCrosImageCapture(
-      std::move(proxy_request));
+  // Connects to CameraAppDeviceBridge from video_capture service.
+  content::GetVideoCaptureService().ConnectToCameraAppDeviceBridge(
+      std::move(device_bridge_receiver));
 
   auto security_origin = source->GetLastCommittedOrigin();
   auto media_device_id_salt =
@@ -105,14 +106,22 @@ void BindRendererFacingCrosImageCapture(
   auto mapping_callback =
       base::BindRepeating(&TranslateVideoDeviceId, media_device_id_salt,
                           std::move(security_origin));
+
+  auto camera_app_device_provider =
+      std::make_unique<media::CameraAppDeviceProviderImpl>(
+          std::move(device_bridge), std::move(mapping_callback));
+  mojo::MakeStrongBinding(std::move(camera_app_device_provider),
+                          std::move(request));
+}
+
+// Connects to CameraAppHelper that could handle camera intents.
+void ConnectToCameraAppHelper(cros::mojom::CameraAppHelperRequest request,
+                              content::RenderFrameHost* source) {
   auto intent_callback = base::BindRepeating(
       &TriggerCameraIntent, source->GetProcess()->GetBrowserContext());
-
-  // Bind origin request to proxy implementation.
-  auto api_proxy = std::make_unique<media::RendererFacingCrosImageCapture>(
-      std::move(proxy_ptr), std::move(mapping_callback),
-      std::move(intent_callback));
-  mojo::MakeStrongBinding(std::move(api_proxy), std::move(request));
+  auto camera_app_helper =
+      std::make_unique<media::CameraAppHelperImpl>(std::move(intent_callback));
+  mojo::MakeStrongBinding(std::move(camera_app_helper), std::move(request));
 }
 #endif
 
@@ -164,7 +173,8 @@ void RegisterChromeInterfacesForExtension(
   if (extension->id().compare(extension_misc::kChromeCameraAppId) == 0 ||
       extension->id().compare(extension_misc::kChromeCameraAppDevId) == 0) {
     registry->AddInterface(
-        base::BindRepeating(&BindRendererFacingCrosImageCapture));
+        base::BindRepeating(&ConnectToCameraAppDeviceProvider));
+    registry->AddInterface(base::BindRepeating(&ConnectToCameraAppHelper));
   }
 #endif
 }

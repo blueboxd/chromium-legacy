@@ -10,6 +10,8 @@
 
 namespace blink {
 
+class ApplicationCache;
+class DocumentLoader;
 class LocalFrame;
 
 class CORE_EXPORT ApplicationCacheHostForFrame : public ApplicationCacheHost {
@@ -21,23 +23,24 @@ class CORE_EXPORT ApplicationCacheHostForFrame : public ApplicationCacheHost {
 
   // ApplicationCacheHost:
   void Detach() override;
-  bool Update() override;
-  bool SwapCache() override;
-  void SetApplicationCache(ApplicationCache*) override;
-  void StopDeferringEvents() override;
 
+  bool Update();
+  bool SwapCache();
+  void SetApplicationCache(ApplicationCache*);
+  void StopDeferringEvents();
+
+  // blink::mojom::AppCacheFrontend:
   void LogMessage(mojom::blink::ConsoleMessageLevel log_level,
                   const String& message) override;
-
   void SetSubresourceFactory(
       network::mojom::blink::URLLoaderFactoryPtr url_loader_factory) override;
 
   void WillStartLoadingMainResource(DocumentLoader* loader,
                                     const KURL& url,
-                                    const String& method) override;
-  void SelectCacheWithoutManifest() override;
-  void SelectCacheWithManifest(const KURL& manifest_url) override;
-  void DidReceiveResponseForMainResource(const ResourceResponse&) override;
+                                    const String& method);
+  virtual void SelectCacheWithoutManifest();
+  void SelectCacheWithManifest(const KURL& manifest_url);
+  void DidReceiveResponseForMainResource(const ResourceResponse&);
 
   void Trace(blink::Visitor*) override;
 

@@ -59,6 +59,10 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactory {
       std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors,
       DeviceDescriptorsCallback result_callback);
 
+#if defined(OS_CHROMEOS)
+  virtual bool IsSupportedCameraAppDeviceBridge();
+#endif  // defined(OS_CHROMEOS)
+
  protected:
   base::ThreadChecker thread_checker_;
 

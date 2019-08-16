@@ -7,7 +7,8 @@
 
 #include "base/task/post_task.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -15,6 +16,8 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/uuid.h"
+
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace blink {
 namespace {
@@ -54,20 +57,24 @@ TEST_F(StorageNamespaceTest, BasicStorageAreas) {
   Persistent<FakeAreaSource> source_area =
       MakeGarbageCollected<FakeAreaSource>(kPageUrl);
 
-  mojom::blink::StoragePartitionServicePtr storage_partition_service_ptr;
+  mojo::PendingRemote<mojom::blink::StoragePartitionService>
+      storage_partition_service_remote;
   PostCrossThreadTask(
       *base::CreateSequencedTaskRunner({base::ThreadPool()}), FROM_HERE,
       CrossThreadBindOnce(
-          [](mojom::blink::StoragePartitionServiceRequest request) {
-            mojo::MakeStrongBinding(
+          [](mojo::PendingReceiver<mojom::blink::StoragePartitionService>
+                 receiver) {
+            mojo::MakeSelfOwnedReceiver(
                 std::make_unique<NoopStoragePartitionService>(),
-                std::move(request));
+                std::move(receiver));
           },
-          WTF::Passed(MakeRequest(&storage_partition_service_ptr))));
+          WTF::Passed(storage_partition_service_remote
+                          .InitWithNewPipeAndPassReceiver())));
 
   StorageController controller(scheduler::GetSingleThreadTaskRunnerForTesting(),
-                               std::move(storage_partition_service_ptr),
+                               std::move(storage_partition_service_remote),
                                kTestCacheLimit);
+
   StorageNamespace* localStorage =
       MakeGarbageCollected<StorageNamespace>(&controller);
   StorageNamespace* sessionStorage = MakeGarbageCollected<StorageNamespace>(

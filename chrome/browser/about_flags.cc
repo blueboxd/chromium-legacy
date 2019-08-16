@@ -4329,6 +4329,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDnsOverHttpsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kDnsOverHttps)},
 
+    {"bundled-exchanges", flag_descriptions::kBundledHTTPExchangesName,
+     flag_descriptions::kBundledHTTPExchangesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kBundledHTTPExchanges)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

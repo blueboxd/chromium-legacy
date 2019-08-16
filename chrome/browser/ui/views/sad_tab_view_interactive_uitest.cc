@@ -166,10 +166,7 @@ IN_PROC_BROWSER_TEST_F(SadTabViewInteractiveUITest,
   ASSERT_TRUE(IsFocusedViewInsideBrowserToolbar());
 }
 
-#if defined(OS_MACOSX)
-// Focusing or input is not completely working on Mac: http://crbug.com/824418
-#define MAYBE_ReloadMultipleSadTabs DISABLED_ReloadMultipleSadTabs
-#elif defined(OS_WIN) && defined(OFFICIAL_BUILD)
+#if defined(OS_WIN) && defined(OFFICIAL_BUILD)
 // Test seems to fail only in official Windows builds: http://crbug.com/848049
 #define MAYBE_ReloadMultipleSadTabs DISABLED_ReloadMultipleSadTabs
 #else

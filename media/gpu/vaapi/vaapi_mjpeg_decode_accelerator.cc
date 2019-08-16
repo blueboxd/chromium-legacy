@@ -265,10 +265,11 @@ bool VaapiMjpegDecodeAccelerator::OutputPictureLibYuvOnTaskRunner(
       VLOGF(1) << "Unsupported format: " << video_frame->format();
       return false;
     }
+    auto gmb_handle = CreateGpuMemoryBufferHandle(video_frame.get());
+    DCHECK(!gmb_handle.is_null());
     std::unique_ptr<gpu::GpuMemoryBufferImpl> gmb =
         gpu_memory_buffer_support_->CreateGpuMemoryBufferImplFromHandle(
-            CreateGpuMemoryBufferHandle(video_frame.get()),
-            video_frame->coded_size(), *gfx_format,
+            std::move(gmb_handle), video_frame->coded_size(), *gfx_format,
             gfx::BufferUsage::SCANOUT_CPU_READ_WRITE, base::DoNothing());
     if (!gmb) {
       VLOGF(1) << "Failed to create GPU memory buffer";

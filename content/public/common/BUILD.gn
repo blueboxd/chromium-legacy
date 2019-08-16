@@ -363,7 +363,6 @@ mojom("interfaces") {
   sources = [
     "drop_data.mojom",
     "fullscreen_video_element.mojom",
-    "load_timing_info.mojom",
     "resource_load_info.mojom",
     "resource_usage_reporter.mojom",
     "transferrable_url_loader.mojom",

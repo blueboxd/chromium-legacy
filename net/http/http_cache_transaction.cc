@@ -1513,6 +1513,20 @@ int HttpCache::Transaction::DoCacheReadResponseComplete(int result) {
     }
   }
 
+  if (response_.restricted_prefetch &&
+      !(request_->load_flags & LOAD_CAN_USE_RESTRICTED_PREFETCH)) {
+    TransitionToState(STATE_SEND_REQUEST);
+    return OK;
+  }
+
+  // When a restricted prefetch is reused, we lift its reuse restriction. This
+  // is done by DoCacheToggleUnusedSincePrefetch(), because when a restricted
+  // prefetch is reused, |unused_since_prefetch| must be set as well.
+  bool restricted_prefetch_reuse =
+      response_.restricted_prefetch &&
+      request_->load_flags & LOAD_CAN_USE_RESTRICTED_PREFETCH;
+  DCHECK(!restricted_prefetch_reuse || response_.unused_since_prefetch);
+
   if (response_.unused_since_prefetch !=
       !!(request_->load_flags & LOAD_PREFETCH)) {
     // Either this is the first use of an entry since it was prefetched XOR
@@ -1530,7 +1544,14 @@ int HttpCache::Transaction::DoCacheToggleUnusedSincePrefetch() {
   TRACE_EVENT0("io", "HttpCacheTransaction::DoCacheToggleUnusedSincePrefetch");
   // Write back the toggled value for the next use of this entry.
   response_.unused_since_prefetch = !response_.unused_since_prefetch;
-
+  // TODO(crbug.com/939317): Instead of toggling |unused_since_prefetch| and
+  // |restricted_prefetch| here, writing them to the cache, and untoggling for
+  // the current transaction, we should instead make a copy of |response_| with
+  // the modified properties to write to disk, and use that here.
+  if (response_.restricted_prefetch &&
+      request_->load_flags & LOAD_CAN_USE_RESTRICTED_PREFETCH) {
+    response_.restricted_prefetch = false;
+  }
   // TODO(jkarlin): If DoUpdateCachedResponse is also called for this
   // transaction then metadata will be written to cache twice. If prefetching
   // becomes more common, consider combining the writes.
@@ -1707,6 +1728,7 @@ int HttpCache::Transaction::DoSendRequestComplete(int result) {
   response_.network_accessed = response->network_accessed;
   response_.was_fetched_via_proxy = response->was_fetched_via_proxy;
   response_.proxy_server = response->proxy_server;
+  response_.restricted_prefetch = response->restricted_prefetch;
 
   // Do not record requests that have network errors or restarts.
   UpdateCacheEntryStatus(CacheEntryStatus::ENTRY_OTHER);
@@ -1845,6 +1867,7 @@ int HttpCache::Transaction::DoUpdateCachedResponse() {
   response_.request_time = new_response_->request_time;
   response_.network_accessed = new_response_->network_accessed;
   response_.unused_since_prefetch = new_response_->unused_since_prefetch;
+  response_.restricted_prefetch = new_response_->restricted_prefetch;
   response_.ssl_info = new_response_->ssl_info;
   if (new_response_->vary_data.is_valid()) {
     response_.vary_data = new_response_->vary_data;

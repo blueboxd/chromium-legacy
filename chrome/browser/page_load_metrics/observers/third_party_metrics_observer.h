@@ -35,6 +35,10 @@ class ThirdPartyMetricsObserver
                       const GURL& first_party_url,
                       const net::CanonicalCookie& cookie,
                       bool blocked_by_policy) override;
+  void OnDomStorageAccessed(const GURL& url,
+                            const GURL& first_party_url,
+                            bool local,
+                            bool blocked_by_policy) override;
 
  private:
   enum class AccessType { kRead, kWrite };
@@ -43,6 +47,14 @@ class ThirdPartyMetricsObserver
     explicit CookieAccessTypes(AccessType access_type);
     bool read = false;
     bool write = false;
+  };
+
+  enum class StorageType { kLocalStorage, kSessionStorage };
+
+  struct StorageAccessTypes {
+    explicit StorageAccessTypes(StorageType storage_type);
+    bool local_storage = false;
+    bool session_storage = false;
   };
 
   void OnCookieAccess(const GURL& url,
@@ -57,12 +69,17 @@ class ThirdPartyMetricsObserver
   // happens when the URL request's registrable domain differs from the main
   // frame's. URLs which have no registrable domain are not considered third
   // party.
-  std::map<std::string, CookieAccessTypes> third_party_access_types_;
+  std::map<std::string, CookieAccessTypes> third_party_cookie_access_types_;
 
-  // If the page has any blocked_by_policy cookie reads or writes (e.g., block
-  // third-party cookies is enabled) then we don't want to record any cookie
+  // A map of third parties that have accessed storage other than cookies. A
+  // third party access happens when the context's origin differs from the main
+  // frame's.
+  std::map<url::Origin, StorageAccessTypes> third_party_storage_access_types_;
+
+  // If the page has any blocked_by_policy cookie or DOM storage access (e.g.,
+  // block third-party cookies is enabled) then we don't want to record any
   // metrics for the page.
-  bool page_has_blocked_cookies_ = false;
+  bool should_record_metrics_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(ThirdPartyMetricsObserver);
 };

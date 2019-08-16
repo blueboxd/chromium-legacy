@@ -1702,6 +1702,12 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_PASSWORDS_AUTOSIGNIN_CHECKBOX_LABEL},
       {"passwordsAutosigninDescription",
        IDS_SETTINGS_PASSWORDS_AUTOSIGNIN_CHECKBOX_DESC},
+      // TODO(crbug.com/986322): Replace label and description when the
+      // wording is final.
+      {"passwordsLeakDetectionLabel",
+       IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_LABEL},
+      {"passwordsLeakDetectionDescription",
+       IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_DESC},
       {"savedPasswordsHeading", IDS_SETTINGS_PASSWORDS_SAVED_HEADING},
       {"passwordExceptionsHeading", IDS_SETTINGS_PASSWORDS_EXCEPTIONS_HEADING},
       {"deletePasswordException", IDS_SETTINGS_PASSWORDS_DELETE_EXCEPTION},
@@ -1779,6 +1785,10 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
               ProfileSyncServiceFactory::GetForProfile(profile),
               /*is_test_mode=*/false,
               /*log_manager=*/nullptr));
+
+  html_source->AddBoolean(
+      "passwordsLeakDetectionEnabled",
+      base::FeatureList::IsEnabled(password_manager::features::kLeakDetection));
 
   ui::Accelerator undoAccelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
   html_source->AddString(

@@ -11,22 +11,22 @@
 #include "base/single_thread_task_runner.h"
 #include "components/chromeos_camera/common/mjpeg_decode_accelerator.mojom.h"
 #include "media/capture/video/chromeos/camera_hal_delegate.h"
-#include "media/capture/video/chromeos/mojom/cros_image_capture.mojom.h"
 #include "media/capture/video/video_capture_device_factory.h"
 
 namespace media {
 
+class CameraAppDeviceBridgeImpl;
+
 using MojoMjpegDecodeAcceleratorFactoryCB = base::RepeatingCallback<void(
     chromeos_camera::mojom::MjpegDecodeAcceleratorRequest)>;
-
-class ReprocessManager;
 
 class CAPTURE_EXPORT VideoCaptureDeviceFactoryChromeOS final
     : public VideoCaptureDeviceFactory {
  public:
   explicit VideoCaptureDeviceFactoryChromeOS(
       scoped_refptr<base::SingleThreadTaskRunner>
-          task_runner_for_screen_observer);
+          task_runner_for_screen_observer,
+      CameraAppDeviceBridgeImpl* camera_app_device_bridge);
 
   ~VideoCaptureDeviceFactoryChromeOS() override;
 
@@ -39,20 +39,15 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryChromeOS final
   void GetDeviceDescriptors(
       VideoCaptureDeviceDescriptors* device_descriptors) final;
 
+  bool IsSupportedCameraAppDeviceBridge() override;
+
   static gpu::GpuMemoryBufferManager* GetBufferManager();
   static void SetGpuBufferManager(gpu::GpuMemoryBufferManager* buffer_manager);
-
-  void BindCrosImageCaptureRequest(
-      cros::mojom::CrosImageCaptureRequest request);
 
  private:
   // Initializes the factory. The factory is functional only after this call
   // succeeds.
   bool Init();
-
-  // Gets camera info for the given |device_id|. Returns null CameraInfoPtr on
-  // error.
-  cros::mojom::CameraInfoPtr GetCameraInfo(const std::string& device_id);
 
   const scoped_refptr<base::SingleThreadTaskRunner>
       task_runner_for_screen_observer_;
@@ -67,7 +62,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryChromeOS final
   // |camera_hal_ipc_thread_|.
   scoped_refptr<CameraHalDelegate> camera_hal_delegate_;
 
-  std::unique_ptr<ReprocessManager> reprocess_manager_;
+  CameraAppDeviceBridgeImpl* camera_app_device_bridge_;  // Weak.
 
   bool initialized_;
 

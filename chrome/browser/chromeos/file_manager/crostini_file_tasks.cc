@@ -86,14 +86,14 @@ void OnAppIconsLoaded(Profile* profile,
 
 void OnTaskComplete(FileTaskFinishedCallback done,
                     bool success,
-                    std::string failure_reason) {
+                    const std::string& failure_reason) {
   if (!success) {
     LOG(ERROR) << "Crostini task error: " << failure_reason;
   }
   std::move(done).Run(
       success ? extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT
               : extensions::api::file_manager_private::TASK_RESULT_FAILED,
-      std::move(failure_reason));
+      failure_reason);
 }
 
 }  // namespace

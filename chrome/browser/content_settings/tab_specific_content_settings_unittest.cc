@@ -263,9 +263,8 @@ TEST_F(TabSpecificContentSettingsTest, SiteDataObserver) {
                                               blocked_by_policy);
   content_settings->OnIndexedDBAccessed(GURL("http://google.com"),
                                         blocked_by_policy);
-  content_settings->OnLocalStorageAccessed(GURL("http://google.com"),
-                                           true,
-                                           blocked_by_policy);
+  content_settings->OnDomStorageAccessed(GURL("http://google.com"), true,
+                                         blocked_by_policy);
   content_settings->OnWebDatabaseAccessed(GURL("http://google.com"),
                                           blocked_by_policy);
 }
@@ -284,8 +283,8 @@ TEST_F(TabSpecificContentSettingsTest, LocalSharedObjectsContainer) {
                                          blocked_by_policy);
   content_settings->OnIndexedDBAccessed(GURL("https://localhost"),
                                         blocked_by_policy);
-  content_settings->OnLocalStorageAccessed(GURL("http://maps.google.com:8080"),
-                                           true, blocked_by_policy);
+  content_settings->OnDomStorageAccessed(GURL("http://maps.google.com:8080"),
+                                         true, blocked_by_policy);
   content_settings->OnWebDatabaseAccessed(GURL("http://192.168.0.1"),
                                           blocked_by_policy);
   content_settings->OnSharedWorkerAccessed(

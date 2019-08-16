@@ -1587,6 +1587,8 @@ class CORE_EXPORT Document : public ContainerNode,
     return !pending_javascript_urls_.IsEmpty();
   }
 
+  bool NeedsLayoutTreeRebuild() const;
+
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
 

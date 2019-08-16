@@ -17,6 +17,7 @@ import android.widget.RelativeLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
@@ -43,6 +44,12 @@ public class PickerCategoryView extends RelativeLayout
         implements View.OnClickListener, RecyclerView.RecyclerListener,
                    SelectionDelegate.SelectionObserver<ContactDetails>,
                    SelectableListToolbar.SearchDelegate, TopView.SelectAllToggleCallback {
+    // These values are written to logs.  New enum values can be added, but existing
+    // enums must never be renumbered or deleted and reused.
+    private static final int ACTION_CANCEL = 0;
+    private static final int ACTION_CONTACTS_SELECTED = 1;
+    private static final int ACTION_BOUNDARY = 2;
+
     // Constants for the RoundedIconGenerator.
     private static final int ICON_SIZE_DP = 36;
     private static final int ICON_CORNER_RADIUS_DP = 20;
@@ -177,7 +184,8 @@ public class PickerCategoryView extends RelativeLayout
         mDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
-                executeAction(ContactsPickerListener.ContactsPickerAction.CANCEL, null);
+                executeAction(
+                        ContactsPickerListener.ContactsPickerAction.CANCEL, null, ACTION_CANCEL);
             }
         });
 
@@ -277,7 +285,7 @@ public class PickerCategoryView extends RelativeLayout
         } else if (id == R.id.search) {
             onStartSearch();
         } else {
-            executeAction(ContactsPickerListener.ContactsPickerAction.CANCEL, null);
+            executeAction(ContactsPickerListener.ContactsPickerAction.CANCEL, null, ACTION_CANCEL);
         }
     }
 
@@ -348,19 +356,38 @@ public class PickerCategoryView extends RelativeLayout
                     getContactPropertyValues(includeTel, PickerAdapter.includesTelephones(),
                             contactDetails.getPhoneNumbers())));
         }
-        executeAction(ContactsPickerListener.ContactsPickerAction.CONTACTS_SELECTED, contacts);
+        executeAction(ContactsPickerListener.ContactsPickerAction.CONTACTS_SELECTED, contacts,
+                ACTION_CONTACTS_SELECTED);
     }
 
     /**
      * Report back what the user selected in the dialog, report UMA and clean up.
      * @param action The action taken.
      * @param contacts The contacts that were selected (if any).
+     * @param umaId The UMA value to record with the action.
      */
     private void executeAction(@ContactsPickerListener.ContactsPickerAction int action,
-            List<ContactsPickerListener.Contact> contacts) {
+            List<ContactsPickerListener.Contact> contacts, int umaId) {
         mListener.onContactsPickerUserAction(action, contacts);
         mDialog.dismiss();
         UiUtils.onContactsPickerDismissed();
+        recordFinalUmaStats(umaId, contacts != null ? contacts.size() : 0);
+    }
+
+    /**
+     * Record UMA statistics (what action was taken in the dialog and other performance stats).
+     * @param action The action the user took in the dialog.
+     * @param selectCount The number of contacts selected.
+     */
+    private void recordFinalUmaStats(int action, int selectCount) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.ContactsPicker.DialogAction", action, ACTION_BOUNDARY);
+        int contactCount = mPickerAdapter.getAllContacts().size();
+        RecordHistogram.recordCountHistogram("Android.ContactsPicker.ContactCount", contactCount);
+        RecordHistogram.recordCountHistogram("Android.ContactsPicker.SelectCount", selectCount);
+        int percentageShared = 100 * selectCount / contactCount;
+        RecordHistogram.recordPercentageHistogram(
+                "Android.ContactsPicker.SelectPercentage", percentageShared);
     }
 
     @VisibleForTesting

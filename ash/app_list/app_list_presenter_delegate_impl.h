@@ -9,6 +9,7 @@
 
 #include "ash/app_list/presenter/app_list_presenter_delegate.h"
 #include "ash/ash_export.h"
+#include "ash/shelf/shelf_observer.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "ui/display/display_observer.h"
@@ -31,6 +32,7 @@ class LocatedEvent;
 namespace ash {
 
 class AppListControllerImpl;
+class Shelf;
 
 // Responsible for laying out the app list UI as well as updating the Shelf
 // launch icon as the state of the app list changes. Listens to shell events
@@ -39,7 +41,8 @@ class AppListControllerImpl;
 class ASH_EXPORT AppListPresenterDelegateImpl
     : public app_list::AppListPresenterDelegate,
       public ui::EventHandler,
-      public display::DisplayObserver {
+      public display::DisplayObserver,
+      public ShelfObserver {
  public:
   explicit AppListPresenterDelegateImpl(AppListControllerImpl* controller);
   ~AppListPresenterDelegateImpl() override;
@@ -60,6 +63,10 @@ class ASH_EXPORT AppListPresenterDelegateImpl
   // DisplayObserver overrides:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
+
+  // ShelfObserver:
+  void OnBackgroundTypeChanged(ShelfBackgroundType background_type,
+                               AnimationChangeType change_type) override;
 
  private:
   void ProcessLocatedEvent(ui::LocatedEvent* event);
@@ -87,6 +94,9 @@ class ASH_EXPORT AppListPresenterDelegateImpl
 
   // An observer that notifies AppListView when the display has changed.
   ScopedObserver<display::Screen, display::DisplayObserver> display_observer_;
+
+  // An observer that notifies AppListView when the shelf state has changed.
+  ScopedObserver<Shelf, AppListPresenterDelegateImpl> shelf_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateImpl);
 };

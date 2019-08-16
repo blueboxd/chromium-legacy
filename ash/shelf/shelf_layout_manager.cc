@@ -529,25 +529,28 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
     return SHELF_BACKGROUND_LOGIN;
   }
 
+  const bool in_split_view_mode =
+      Shell::Get()->split_view_controller() &&
+      Shell::Get()->split_view_controller()->InSplitViewMode();
+  const bool maximized =
+      in_split_view_mode ||
+      (state_.visibility_state != SHELF_AUTO_HIDE &&
+       state_.window_state == WorkspaceWindowState::kMaximized &&
+       !Shell::Get()
+            ->home_screen_controller()
+            ->home_launcher_gesture_handler()
+            ->GetActiveWindow());
   if (IsHomeScreenAvailable()) {
     // If the home launcher is shown, being animated, or dragged, show the
     // default background.
     if (is_home_launcher_shown_ || is_home_launcher_target_position_shown_)
       return SHELF_BACKGROUND_DEFAULT;
   } else if (is_app_list_visible_) {
-    return SHELF_BACKGROUND_APP_LIST;
+    return maximized ? SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST
+                     : SHELF_BACKGROUND_APP_LIST;
   }
 
-  const bool in_split_view_mode =
-      Shell::Get()->split_view_controller() &&
-      Shell::Get()->split_view_controller()->InSplitViewMode();
-  if (in_split_view_mode ||
-      (state_.visibility_state != SHELF_AUTO_HIDE &&
-       state_.window_state == WorkspaceWindowState::kMaximized &&
-       !Shell::Get()
-            ->home_screen_controller()
-            ->home_launcher_gesture_handler()
-            ->GetActiveWindow())) {
+  if (maximized) {
     return SHELF_BACKGROUND_MAXIMIZED;
   }
 

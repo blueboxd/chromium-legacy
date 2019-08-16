@@ -492,6 +492,8 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Leak detection failed: signed out";
     case STRING_LEAK_DETECTION_TOKEN_REQUEST_ERROR:
       return "Leak detection failed: can't get a token";
+    case STRING_LEAK_DETECTION_ENCRYPTION_ERROR:
+      return "Leak detection failed: encryption";
     case STRING_LEAK_DETECTION_INVALID_SERVER_RESPONSE_ERROR:
       return "Leak detection failed: invalid server response";
     case SavePasswordProgressLogger::

@@ -507,7 +507,7 @@ class ${testFixture} : public ${typedefCppFixture} {
 
   var outputLine = pendingOutput.length + 3;
   output(`
-#line ${testFLine} "${testFile}"
+#line ${testFLine} "${fullTestFilePath}"
 ${testF}(${testFixture}, ${testFunction}) {
 #line ${outputLine} "${outputFile}"`);
 

@@ -33,6 +33,7 @@
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
+#include "ui/views/window/non_client_view.h"
 
 class Browser;
 
@@ -91,6 +92,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   base::string16 GetWindowTitle() const override;
   void Init() override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  std::unique_ptr<views::View> CreateFootnoteView() override;
 
   // views::WidgetDelegate methods.
   View* GetInitiallyFocusedView() override;
@@ -332,6 +334,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // indices.
   void UpdateLanguageNames(base::string16* original_language_name,
                            base::string16* target_language_name);
+
+  void UpdateInsets(TranslateBubbleModel::ViewState state);
 
   static TranslateBubbleView* translate_bubble_view_;
 

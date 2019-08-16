@@ -81,9 +81,9 @@ ServiceWorkerUpdateChecker::ServiceWorkerUpdateChecker(
     blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
     base::TimeDelta time_since_last_check,
     ServiceWorkerContextCore* context)
-    : scripts_to_compare_(std::move(scripts_to_compare)),
-      main_script_url_(main_script_url),
+    : main_script_url_(main_script_url),
       main_script_resource_id_(main_script_resource_id),
+      scripts_to_compare_(std::move(scripts_to_compare)),
       version_to_update_(std::move(version_to_update)),
       loader_factory_(std::move(loader_factory)),
       force_bypass_cache_(force_bypass_cache),
@@ -134,15 +134,16 @@ void ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished(
     return;
   }
 
-  script_check_results_[script_url] =
+  script_check_results_.emplace(
+      script_url,
       ComparedScriptInfo(old_resource_id, result, std::move(paused_state),
-                         std::move(failure_info));
+                         std::move(failure_info)));
   if (running_checker_->network_accessed())
     network_accessed_ = true;
 
-  running_checker_.reset();
-
   if (ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent == result) {
+    updated_script_url_ = script_url;
+
     // Found an updated script. Stop the comparison of scripts here and
     // return to ServiceWorkerRegisterJob to continue the update.
     // Note that running |callback_| will delete |this|.

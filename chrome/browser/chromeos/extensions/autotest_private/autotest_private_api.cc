@@ -521,10 +521,11 @@ ExtensionFunction::ResponseAction
 AutotestPrivateGetAllEnterprisePoliciesFunction::Run() {
   DVLOG(1) << "AutotestPrivateGetAllEnterprisePoliciesFunction";
 
-  base::Value all_policies_array = policy::GetAllPolicyValuesAsDictionary(
-      browser_context(), true /* with_user_policies */,
-      false /* convert_values */, true /* with_device_data */,
-      false /* pretty_print */, true /* convert_types */);
+  base::Value all_policies_array = policy::DictionaryPolicyConversions()
+                                       .WithBrowserContext(browser_context())
+                                       .EnableDeviceLocalAccountPolicies(true)
+                                       .EnableDeviceInfo(true)
+                                       .ToValue();
 
   return RespondNow(OneArgument(
       base::Value::ToUniquePtrValue(std::move(all_policies_array))));

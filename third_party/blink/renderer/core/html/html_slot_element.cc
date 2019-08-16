@@ -434,6 +434,32 @@ void HTMLSlotElement::NotifySlottedNodesOfFlatTreeChange(
     return;
   probe::DidPerformSlotDistribution(this);
 
+  // It is very important to minimize the number of reattaching nodes in
+  // |new_assigned_nodes| here. The following *works*, in terms of the
+  // correctness of the rendering,
+  //
+  // for (auto& node: new_slotted) {
+  //   node->FlatTreeParentChanged();
+  // }
+  //
+  // However, reattaching all ndoes is not good in terms of performance.
+  // Reattach is very expensive operation.
+  //
+  // A possible approach is: Find the Longest Commons Subsequence (LCS) between
+  // |old_slotted| and |new_slotted|, and reattach nodes in |new_slotted| which
+  // LCS does not include.
+  //
+  // Note that a relative order between nodes which are not reattached should be
+  // preserved in old and new. For example,
+  //
+  // - old: [1, 4, 2, 3]
+  // - new: [3, 1, 2]
+  //
+  // This case, we must reattach 3 here, as the best possible solution.  If we
+  // don't reattach 3, 3's LayoutObject will have an invalid next sibling
+  // pointer.  We don't have any chance to update their sibling pointers (3's
+  // next and 1's previous).  Sibling pointers between 1 and 2 are correctly
+  // updated when we reattach 4, which is done in another code path.
   if (old_slotted.size() + 1 > kLCSTableSizeLimit ||
       new_slotted.size() + 1 > kLCSTableSizeLimit) {
     // Since DP takes O(N^2), we don't use DP if the size is larger than the
@@ -461,74 +487,110 @@ void HTMLSlotElement::DidSlotChangeAfterRenaming() {
 void HTMLSlotElement::NotifySlottedNodesOfFlatTreeChangeNaive(
     const HeapVector<Member<Node>>& old_assigned_nodes,
     const HeapVector<Member<Node>>& new_assigned_nodes) {
-  // Use naive heuristic to minimize the number of reattaching nodes in
-  // |new_assigned_nodes|. Though this algorithm is not perfect, it works well
-  // in some common cases, such as:
+  // Use O(N) naive greedy algorithm to find a *suboptimal* longest common
+  // subsequence (LCS), and reattach nodes which are not in suboptimal LCS.  We
+  // run a greedy algorithm twice in both directions (scan forward and scan
+  // backward), and use the better result.  Though this greedy algorithm is not
+  // perfect, it works well in some common cases, such as:
 
-  // Case 1) Appending a node:
+  // Inserting a node:
   // old assigned nodes: [a, b ...., z]
   // new assigned nodes: [a, b ...., z, A]
   // => The algorithm reattaches only node |A|.
 
-  // Case 2) Prepending a node:
-  // - old assigned nodes: [a, b, ..., z]
-  // - new assigned nodes: [A, a, b, ..., z]
-  // => The algorithm reattaches only node |A|.
-
-  // Case 3) Removing the first node:
-  // - old assigned nodes: [a, b, ..., z]
-  // - new assigned nodes: [b, ..., z]
+  // Removing a node:
+  // - old assigned nodes: [a, b, ..., m, n, o, ..., z]
+  // - new assigned nodes: [a, b, ..., m, o, ... , z]
   // => The algorithm does not reattach any node.
 
-  // Case 4) Removing the last node:
-  // - old assigned nodes: [a, b, ..., z]
-  // - new assigned nodes: [a, b, ...]
-  // => The algorithm does not reattach any node.
-
-  // Case 5) Rotating children:
+  // Moving a node:
   // - old assigned nodes: [a, b, ..., z]
   // - new assigned nodes: [b, ..., z, a]
-  // => The algorithm reattaches all nodes. It doesn't work well for this case.
+  // => The algorithm reattaches only node |a|.
 
-  // TODO(hayato): Further improvement would be possible.
-  // An algorighm can be somewhat like vdom library's diffiling node lists,
-  // such as
-  // https://github.com/Polymer/lit-html/blob/34f621406867fbfd3a90f145420f0dbb7e8ab341/src/directives/repeat.ts#L141
+  // Swapping the first node and the last node
+  // - old assigned nodes: [a, b, ..., y, z]
+  // - new assigned nodes: [z, b, ..., y, a]
+  // => Ideally, we should reattach only |a| and |z|, however, the algorithm
+  // does not work well here, reattaching [a, b, ...., y] (or [b, ... y, z]).
+  // We could reconsider to support this case if a compelling case arises.
+
+  // TODO(hayato): Consider to write an unit test for the algorithm.  We
+  // probably want to make the algorithm templatized so we can test it
+  // easily.  Like, Vec<T> greedy_suboptimal_lcs(Vec<T> old, Vec<T> new)
+
+  HeapHashMap<Member<Node>, wtf_size_t> old_index_map;
+  for (wtf_size_t i = 0; i < old_assigned_nodes.size(); ++i) {
+    old_index_map.insert(old_assigned_nodes[i], i);
+  }
+
+  // Scan forward
+  HeapVector<Member<Node>> forward_result;
 
   wtf_size_t i = 0;
   wtf_size_t j = 0;
-  for (; i < old_assigned_nodes.size() && j < new_assigned_nodes.size();
-       ++i, ++j) {
-    if (old_assigned_nodes.size() < new_assigned_nodes.size()) {
-      // If |new_assigned_nodes| is larger than |old_assigned_nodes|, reattach
-      // all nodes in |new_assigned_nodes| that were different from
-      // |old_assigned_nodes[i]|.
-      while (j < new_assigned_nodes.size() &&
-             old_assigned_nodes[i] != new_assigned_nodes[j]) {
-        new_assigned_nodes[j]->FlatTreeParentChanged();
-        ++j;
-      }
-      if (j == new_assigned_nodes.size())
-        break;
-    } else if (old_assigned_nodes.size() > new_assigned_nodes.size()) {
-      // If |old_assigned_nodes| is larger than |old_assigned_nodes|, skip all
-      // nodes in |old_assigned_nodes| that were different from
-      // new_assigned_nodes[j].
-      while (i < old_assigned_nodes.size() &&
-             old_assigned_nodes[i] != new_assigned_nodes[j]) {
-        ++i;
-      }
-    } else if (old_assigned_nodes[i] != new_assigned_nodes[j]) {
-      // If both assigned nodes are the same length, reattach all nodes
-      // in |new_assigned_nodes| that were different from the old one at the
-      // same position.
-      new_assigned_nodes[j]->FlatTreeParentChanged();
+
+  while (i < old_assigned_nodes.size() && j < new_assigned_nodes.size()) {
+    auto& new_node = new_assigned_nodes[j];
+    if (old_assigned_nodes[i] == new_node) {
+      ++i;
+      ++j;
+      continue;
     }
+    if (old_index_map.Contains(new_node)) {
+      wtf_size_t old_index = old_index_map.at(new_node);
+      if (old_index > i) {
+        i = old_index_map.at(new_node) + 1;
+        ++j;
+        continue;
+      }
+    }
+    forward_result.push_back(new_node);
+    ++j;
   }
 
-  // We need to reattach all remaining new assigned nodes.
   for (; j < new_assigned_nodes.size(); ++j) {
-    new_assigned_nodes[j]->FlatTreeParentChanged();
+    forward_result.push_back(new_assigned_nodes[j]);
+  }
+
+  // Scan backward
+  HeapVector<Member<Node>> backward_result;
+
+  i = old_assigned_nodes.size();
+  j = new_assigned_nodes.size();
+
+  while (i > 0 && j > 0) {
+    auto& new_node = new_assigned_nodes[j - 1];
+    if (old_assigned_nodes[i - 1] == new_node) {
+      --i;
+      --j;
+      continue;
+    }
+    if (old_index_map.Contains(new_node)) {
+      wtf_size_t old_index = old_index_map.at(new_node);
+      if (old_index < i - 1) {
+        i = old_index;
+        --j;
+        continue;
+      }
+    }
+    backward_result.push_back(new_node);
+    --j;
+  }
+
+  for (; j > 0; --j) {
+    backward_result.push_back(new_assigned_nodes[j - 1]);
+  }
+
+  // Reattach nodes
+  if (forward_result.size() <= backward_result.size()) {
+    for (auto& node : forward_result) {
+      node->FlatTreeParentChanged();
+    }
+  } else {
+    for (auto& node : backward_result) {
+      node->FlatTreeParentChanged();
+    }
   }
 }
 

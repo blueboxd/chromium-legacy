@@ -103,16 +103,12 @@ void PageNodeImpl::SetUkmSourceId(ukm::SourceId ukm_source_id) {
 
 void PageNodeImpl::OnFaviconUpdated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : observers())
-    observer.OnFaviconUpdated(this);
   for (auto* observer : GetObservers())
     observer->OnFaviconUpdated(this);
 }
 
 void PageNodeImpl::OnTitleUpdated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : observers())
-    observer.OnTitleUpdated(this);
   for (auto* observer : GetObservers())
     observer->OnTitleUpdated(this);
 }
@@ -125,8 +121,6 @@ void PageNodeImpl::OnMainFrameNavigationCommitted(
   navigation_committed_time_ = navigation_committed_time;
   main_frame_url_ = url;
   navigation_id_ = navigation_id;
-  for (auto& observer : observers())
-    observer.OnMainFrameNavigationCommitted(this);
   for (auto* observer : GetObservers())
     observer->OnMainFrameNavigationCommitted(this);
 }

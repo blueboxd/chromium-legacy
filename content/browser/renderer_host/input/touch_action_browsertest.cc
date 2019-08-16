@@ -170,9 +170,8 @@ class TouchActionBrowserTest : public ContentBrowserTest,
     ignore_result(watcher.WaitAndGetTitle());
 
     // We need to wait until hit test data is available. We use our own
-    // HitTestRegionObserver here, rather than
-    // WaitForHitTestDataOrChildSurfaceReady, because we have the
-    // RenderWidgetHostImpl available.
+    // HitTestRegionObserver here because we have the RenderWidgetHostImpl
+    // available.
     HitTestRegionObserver observer(host->GetFrameSinkId());
     observer.WaitForHitTestData();
   }

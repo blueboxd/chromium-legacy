@@ -218,7 +218,7 @@ void CrostiniExportImport::ExportAfterSharing(
     CrostiniManager::CrostiniResultCallback callback,
     const base::FilePath& container_path,
     bool result,
-    const std::string failure_reason) {
+    const std::string& failure_reason) {
   if (!result) {
     LOG(ERROR) << "Error sharing for export " << container_path.value() << ": "
                << failure_reason;
@@ -363,7 +363,7 @@ void CrostiniExportImport::ImportAfterSharing(
     CrostiniManager::CrostiniResultCallback callback,
     const base::FilePath& container_path,
     bool result,
-    const std::string failure_reason) {
+    const std::string& failure_reason) {
   if (!result) {
     LOG(ERROR) << "Error sharing for import " << container_path.value() << ": "
                << failure_reason;

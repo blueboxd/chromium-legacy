@@ -46,7 +46,7 @@ An archive of all packages built so far is at https://is.gd/chromeclang
       -b linux_chromium_chromeos_asan_rel_ng -b linux_chromium_msan_rel_ng \
       -b linux_chromium_chromeos_msan_rel_ng -b linux-chromeos-dbg \
       -b win-asan -b chromeos-amd64-generic-cfi-thin-lto-rel \
-      -b linux_chromium_compile_dbg_32_ng &&
+      -b linux_chromium_compile_dbg_32_ng -b win7-rel &&
     git cl try -B luci.chrome.try -b iphone-device -b ipad-device
     ```
 

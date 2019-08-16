@@ -22,9 +22,12 @@ class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandle;
 
 // This class is created on the UI thread, but should only be accessed from the
-// IO thread afterwards. It is the IO thread pendant of
+// service worker core thread afterwards. It is the core thread pendant of
 // ServiceWorkerNavigationHandle. See the ServiceWorkerNavigationHandle header
 // for more details about the lifetime of both classes.
+//
+// TODO(crbug.com/824858): Merge this class into ServiceWorkerNavigationHandle
+// when the core thread moves to the UI thread.
 class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
  public:
   ServiceWorkerNavigationHandleCore(

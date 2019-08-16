@@ -124,6 +124,7 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kRequestedFileSystemTemporary,
           WebFeature::kRequestedFileSystemPersistent,
           WebFeature::kSMSReceiverStart,
+          WebFeature::kRequestFileSystem,
       }));
   return *opt_in_features;
 }

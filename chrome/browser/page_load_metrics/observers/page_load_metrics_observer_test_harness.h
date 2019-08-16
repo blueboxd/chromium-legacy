@@ -124,6 +124,12 @@ class PageLoadMetricsObserverTestHarness
                             const net::CanonicalCookie& cookie,
                             bool blocked_by_policy);
 
+  // Simulate accessing the local storage or session storage.
+  void SimulateDomStorageAccess(const GURL& url,
+                                const GURL& first_party_url,
+                                bool local,
+                                bool blocked_by_policy);
+
   const base::HistogramTester& histogram_tester() const;
 
   MetricsWebContentsObserver* observer() const;

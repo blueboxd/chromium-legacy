@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/graph/node_attached_data.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/public/graph/page_node.h"
 #include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "url/gurl.h"
@@ -24,7 +23,6 @@ class FrameNodeImpl;
 
 class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
                      public TypedNodeBase<PageNodeImpl,
-                                          GraphImplObserver,
                                           PageNode,
                                           PageNodeObserver> {
  public:
@@ -237,41 +235,35 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   // PageAlmostIdleDecorator.
   ObservedProperty::NotifiesOnlyOnChanges<
       bool,
-      &GraphImplObserver::OnPageAlmostIdleChanged,
       &PageNodeObserver::OnPageAlmostIdleChanged>
       page_almost_idle_{false};
   // Whether or not the page is visible. Driven by browser instrumentation.
   // Initialized on construction.
   ObservedProperty::NotifiesOnlyOnChanges<
       bool,
-      &GraphImplObserver::OnIsVisibleChanged,
       &PageNodeObserver::OnIsVisibleChanged>
       is_visible_{false};
   // Whether or not the page is audible. Driven by browser instrumentation.
   // Initialized on construction.
   ObservedProperty::NotifiesOnlyOnChanges<
       bool,
-      &GraphImplObserver::OnIsAudibleChanged,
       &PageNodeObserver::OnIsAudibleChanged>
       is_audible_{false};
   // The loading state. This is driven by instrumentation in the browser
   // process.
   ObservedProperty::NotifiesOnlyOnChanges<
       bool,
-      &GraphImplObserver::OnIsLoadingChanged,
       &PageNodeObserver::OnIsLoadingChanged>
       is_loading_{false};
   // The UKM source ID associated with the URL of the main frame of this page.
   ObservedProperty::NotifiesOnlyOnChanges<
       ukm::SourceId,
-      &GraphImplObserver::OnUkmSourceIdChanged,
       &PageNodeObserver::OnUkmSourceIdChanged>
       ukm_source_id_{ukm::kInvalidSourceId};
   // The lifecycle state of this page. This is aggregated from the lifecycle
   // state of each frame in the frame tree.
   ObservedProperty::NotifiesOnlyOnChanges<
       LifecycleState,
-      &GraphImplObserver::OnLifecycleStateChanged,
       &PageNodeObserver::OnPageLifecycleStateChanged>
       lifecycle_state_{LifecycleState::kRunning};
 

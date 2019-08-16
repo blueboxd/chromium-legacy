@@ -205,8 +205,6 @@ const RenderProcessHostProxy& ProcessNodeImpl::GetRenderProcessHostProxy()
 }
 
 void ProcessNodeImpl::OnAllFramesInProcessFrozen() {
-  for (auto& observer : observers())
-    observer.OnAllFramesInProcessFrozen(this);
   for (auto* observer : GetObservers())
     observer->OnAllFramesInProcessFrozen(this);
 }

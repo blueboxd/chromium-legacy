@@ -957,6 +957,12 @@
   <message name="IDS_SETTINGS_PASSWORDS_AUTOSIGNIN_CHECKBOX_DESC" desc="Text that describes the 'Auto Sign-in' functionality to users.">
     Automatically sign in to websites using stored credentials. If disabled, you will be asked for confirmation every time before signing in to a website.
   </message>
+  <message name="IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_LABEL" desc="Label for a checkbox that allows users to choose whether chrome should check that credentials have been part of a leak.">
+    Password protection
+  </message>
+  <message name="IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_DESC" desc="Text that describes the 'Password Leak Detection' functionality to users">
+    Show a warning when you use an unsafe password that was a part of data breach. It is available for signed-in users only.
+  </message>
   <message name="IDS_SETTINGS_PASSWORDS_SAVED_HEADING" desc="The title for a list of username/site/password items. These items are already saved by the browser and can be deleted/edited.">
     Saved Passwords
   </message>

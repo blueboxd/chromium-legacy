@@ -1155,8 +1155,8 @@ net::PrivacyMode URLRequest::DeterminePrivacyMode() const {
   // with the network service - remove it.
   bool enable_privacy_mode = !g_default_can_use_cookies;
   if (network_delegate_) {
-    enable_privacy_mode = network_delegate_->ForcePrivacyMode(
-        url(), site_for_cookies_, network_isolation_key_.GetTopFrameOrigin());
+    enable_privacy_mode =
+        network_delegate_->ForcePrivacyMode(url(), site_for_cookies_);
   }
   return enable_privacy_mode ? PRIVACY_MODE_ENABLED : PRIVACY_MODE_DISABLED;
 }

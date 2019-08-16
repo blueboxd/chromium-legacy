@@ -75,7 +75,7 @@ class GuestOsSharePathTest : public testing::Test {
       const std::string& expected_failure_reason,
       const base::FilePath& container_path,
       bool success,
-      std::string failure_reason) {
+      const std::string& failure_reason) {
     const base::DictionaryValue* prefs =
         profile()->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
     EXPECT_TRUE(prefs->HasKey(shared_path_.value()));
@@ -122,7 +122,7 @@ class GuestOsSharePathTest : public testing::Test {
       const base::FilePath& cros_path,
       const base::FilePath& container_path,
       bool success,
-      std::string failure_reason) {
+      const std::string& failure_reason) {
     EXPECT_EQ(expected_operation, operation);
     EXPECT_EQ(expected_path, cros_path);
     SharePathCallback(
@@ -132,7 +132,8 @@ class GuestOsSharePathTest : public testing::Test {
         failure_reason);
   }
 
-  void SharePersistedPathsCallback(bool success, std::string failure_reason) {
+  void SharePersistedPathsCallback(bool success,
+                                   const std::string& failure_reason) {
     EXPECT_TRUE(success);
     EXPECT_EQ(profile()
                   ->GetPrefs()
@@ -159,7 +160,7 @@ class GuestOsSharePathTest : public testing::Test {
       Success expected_success,
       const std::string& expected_failure_reason,
       bool success,
-      std::string failure_reason) {
+      const std::string& failure_reason) {
     const base::DictionaryValue* prefs =
         profile()->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
     if (expected_persist == Persist::YES) {
@@ -190,7 +191,7 @@ class GuestOsSharePathTest : public testing::Test {
       const base::FilePath& cros_path,
       const base::FilePath& container_path,
       bool success,
-      std::string failure_reason) {
+      const std::string& failure_reason) {
     EXPECT_EQ(expected_operation, operation);
     EXPECT_EQ(expected_path, cros_path);
     UnsharePathCallback(cros_path, expected_persist,

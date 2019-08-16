@@ -1,20 +1,20 @@
 # Enterprise policies
 
-Under enterprise management organization admins can configure the way
+Under enterprise management, organization admins can configure the way a
 ChromeOS device / browser operates using policies.
 
-On most operating systems policies are applied to specific users / all users
+On most operating systems, policies are applied to specific users / all users
 of the browser, but on ChromeOS there are also policies that control the device
 itself.
 
-On all platforms cloud-based policies are fetched and applied when a managed
+On all platforms, cloud-based policies are fetched and applied when a managed
 user signs in.
 
 [TOC]
 
 ## Policy sources
 
-On different operating systems there can be different methods for enterprise
+On different operating systems, there can be different methods for an enterprise
 to propagate policies for all users (including non-managed ones):
 
 **Windows** Policies can be set up via Windows Registry ([GPO](https://en.wikipedia.org/wiki/Group_Policy)).
@@ -23,12 +23,11 @@ to propagate policies for all users (including non-managed ones):
 
 **Linux** Policies can be set via files in specific directories:
 
-Base directory is `/etc/chromium/policies` for Chromium builds,
+The base directory is `/etc/chromium/policies` for Chromium builds,
  `/etc/opt/chrome/policies/` for official Chrome builds.
-Base directory contains two subdirectories: `managed/` for mandatory policies
-and `recommended/` for recommended policies. All files inside these
-directories are treated as JSON files containing
-policies.
+The base directory contains two subdirectories: `managed/` for mandatory
+policies and `recommended/` for recommended policies. All files inside these
+directories are treated as JSON files containing policies.
 
 On these systems it is also possible to set machine-wide cloud-based policies.
 
@@ -67,16 +66,16 @@ which users can sign in on the device.
 Implementation-wise, these policies can have complex structure, and are
 usually accessed via
 [DeviceSettingsProvider](https://cs.chromium.org/chromium/src/chrome/browser/chromeos/settings/device_settings_provider.h)
-or it's wrapper [CrosSettings](https://cs.chromium.org/chromium/src/chrome/browser/chromeos/settings/cros_settings.h).
+or its wrapper [CrosSettings](https://cs.chromium.org/chromium/src/chrome/browser/chromeos/settings/cros_settings.h).
 
 ## User policies
 
-User policies are defined in the [policy templates file](https://cs.chromium.org/chromium/src/components/policy/resources/policy_templates.json)ббб,
+User policies are defined in the [policy templates file](https://cs.chromium.org/chromium/src/components/policy/resources/policy_templates.json);
 only entries without `'device_only': True` are user policies.
 
 User policies are bound to user accounts, so a personal account on
 an enterprise-enrolled device would be affected only by device policy, while
-an enterprise-owned account on personal device would only be affected by user
+an enterprise-owned account on a personal device would only be affected by user
 policy for that account.
 
 ### ChromeOS
@@ -92,15 +91,15 @@ users.
 
 ## Extension policies
 
-Organization admins can [configure particular extensions](http://dev.chromium.org/administrators/configuring-policy-for-extensions)
+Organization admins can [configure particular extensions](https://www.chromium.org/administrators/configuring-policy-for-extensions)
 for the user. Such extensions have to define the schema of the configuration
 in their manifest.
 
-When Chrome OS device is cloud-managed, there is a limit on policy size.
+When a Chrome OS device is cloud-managed, there is a limit on policy size.
 As such configuration can be relatively large, it is not provided as a part
-of user policy. Instead, user policy would only include URL and hash signature
-for external data, and browser would fetch that data, validate signature,
-validate data against schema from extension manifest and provide the
+of user policy. Instead, user policy will only include URL and hash signature
+for external data, and browser will fetch that data, validate its signature,
+validate the data against the schema from extension manifest, and provide the
 extension with such configuration.
 
 The same approach is used for other large objects that can be set via
@@ -108,4 +107,4 @@ policies (e.g. background wallpapers or printer configuration).
 
 ## Adding new policies
 
-See [adding new policies HowTo](http://dev.chromium.org/developers/how-tos/enterprise/adding-new-policies)
+See [adding new policies HowTo](https://www.chromium.org/developers/how-tos/enterprise/adding-new-policies).

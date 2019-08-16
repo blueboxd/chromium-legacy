@@ -187,17 +187,22 @@ void DocumentTimeline::ServiceAnimations(TimingUpdateReason reason) {
 void DocumentTimeline::ScheduleNextService() {
   DCHECK_EQ(outdated_animation_count_, 0U);
 
-  double time_to_next_effect = std::numeric_limits<double>::infinity();
+  base::Optional<AnimationTimeDelta> time_to_next_effect;
   for (const auto& animation : animations_needing_update_) {
     time_to_next_effect =
-        std::min(time_to_next_effect, animation->TimeToEffectChange());
+        time_to_next_effect
+            ? std::min(time_to_next_effect, animation->TimeToEffectChange())
+            : animation->TimeToEffectChange();
   }
 
-  if (time_to_next_effect < kMinimumDelay) {
+  if (!time_to_next_effect)
+    return;
+  double next_effect_delay = time_to_next_effect.value().InSecondsF();
+  if (next_effect_delay < kMinimumDelay) {
     timing_->ServiceOnNextFrame();
-  } else if (time_to_next_effect != std::numeric_limits<double>::infinity()) {
+  } else {
     timing_->WakeAfter(
-        base::TimeDelta::FromSecondsD(time_to_next_effect - kMinimumDelay));
+        base::TimeDelta::FromSecondsD(next_effect_delay - kMinimumDelay));
   }
 }
 

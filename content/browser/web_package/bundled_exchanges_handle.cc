@@ -152,14 +152,19 @@ class BundledExchangesHandle::PrimaryURLRedirectLoader final
   DISALLOW_COPY_AND_ASSIGN(PrimaryURLRedirectLoader);
 };
 
+BundledExchangesHandle::BundledExchangesHandle()
+    : BundledExchangesHandle(BundledExchangesSource()) {}
+
 BundledExchangesHandle::BundledExchangesHandle(
     const BundledExchangesSource& bundled_exchanges_source)
-    : source_(bundled_exchanges_source),
-      reader_(
-          std::make_unique<BundledExchangesReader>(bundled_exchanges_source)) {
+    : source_(bundled_exchanges_source) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  reader_->ReadMetadata(base::BindOnce(&BundledExchangesHandle::OnMetadataReady,
-                                       weak_factory_.GetWeakPtr()));
+  if (bundled_exchanges_source.IsValid()) {
+    reader_ =
+        std::make_unique<BundledExchangesReader>(bundled_exchanges_source);
+    reader_->ReadMetadata(base::BindOnce(
+        &BundledExchangesHandle::OnMetadataReady, weak_factory_.GetWeakPtr()));
+  }
 }
 
 BundledExchangesHandle::~BundledExchangesHandle() {
@@ -184,6 +189,10 @@ void BundledExchangesHandle::CreateURLLoaderFactory(
 
   url_loader_factory_->SetFallbackFactory(std::move(fallback_factory));
   url_loader_factory_->Clone(std::move(receiver));
+}
+
+bool BundledExchangesHandle::IsReadyForLoading() {
+  return !!url_loader_factory_;
 }
 
 void BundledExchangesHandle::CreatePrimaryURLLoader(
@@ -228,8 +237,14 @@ void BundledExchangesHandle::MayRedirectPrimaryURLLoader() {
   if (!redirect_loader_ || (!primary_url_.is_valid() && !metadata_error_))
     return;
 
-  redirect_loader_->OnReadyToRedirect(std::move(primary_url_),
-                                      std::move(metadata_error_));
+  if (source_.is_trusted) {
+    redirect_loader_->OnReadyToRedirect(std::move(primary_url_),
+                                        std::move(metadata_error_));
+  } else {
+    // TODO(crbug.com/966753): Use an alternative URL that is based on the
+    // BundledExchanges' origin rather than |primary_url_|.
+    NOTIMPLEMENTED();
+  }
   redirect_loader_.reset();
 }
 

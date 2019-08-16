@@ -293,7 +293,7 @@ class PageLoadMetricsObserver {
   // Gets/Sets the delegate. The delegate must outlive the observer and is
   // normally set when the observer is first registered for the page load. The
   // delegate can only be set once.
-  PageLoadMetricsObserverDelegate* GetDelegate() const;
+  const PageLoadMetricsObserverDelegate& GetDelegate() const;
   void SetDelegate(PageLoadMetricsObserverDelegate*);
 
   // The page load started, with the given navigation handle.
@@ -545,6 +545,13 @@ class PageLoadMetricsObserver {
                               const GURL& first_party_url,
                               const net::CanonicalCookie& cookie,
                               bool blocked_by_policy) {}
+
+  // Called when a DOM storage is accessed via Window.localStorage or
+  // Window.sessionStorage.
+  virtual void OnDomStorageAccessed(const GURL& url,
+                                    const GURL& first_party_url,
+                                    bool local,
+                                    bool blocked_by_policy) {}
 
   // Called when the event corresponding to |event_key| occurs in this page
   // load.

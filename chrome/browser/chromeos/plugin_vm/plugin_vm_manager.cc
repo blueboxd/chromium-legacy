@@ -330,7 +330,7 @@ void PluginVmManager::OnDefaultSharedDirExists(const base::FilePath& dir,
     guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePath(
         kPluginVmName, dir, false,
         base::BindOnce([](const base::FilePath& dir, bool success,
-                          std::string failure_reason) {
+                          const std::string& failure_reason) {
           if (!success) {
             LOG(ERROR) << "Error sharing PluginVm default dir " << dir.value()
                        << ": " << failure_reason;

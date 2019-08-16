@@ -1998,7 +1998,7 @@ TEST_F(BackgroundSyncManagerTest, WaitsFullDelayTime) {
   test_clock_.Advance(
       test_background_sync_manager()->delayed_one_shot_sync_task_delta() -
       base::TimeDelta::FromSeconds(1));
-  test_background_sync_manager()->RunOneShotSyncDelayedTask();
+  FireReadyEvents();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(GetRegistration(sync_options_1_));
   EXPECT_EQ(base::TimeDelta::FromSeconds(1),

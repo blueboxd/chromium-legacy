@@ -14,10 +14,6 @@
 #include "services/video_capture/public/mojom/devices_changed_observer.mojom.h"
 #include "services/video_capture/public/mojom/virtual_device.mojom.h"
 
-#if defined(OS_CHROMEOS)
-#include "media/capture/video/chromeos/mojom/cros_image_capture.mojom.h"
-#endif  // defined(OS_CHROMEOS)
-
 namespace video_capture {
 
 // Decorator that adds support for virtual devices to a given DeviceFactory.
@@ -43,12 +39,6 @@ class VirtualDeviceEnabledDeviceFactory : public DeviceFactory {
   void RegisterVirtualDevicesChangedObserver(
       mojom::DevicesChangedObserverPtr observer,
       bool raise_event_if_virtual_devices_already_present) override;
-
-#if defined(OS_CHROMEOS)
-  void BindCrosImageCaptureRequest(
-      cros::mojom::CrosImageCaptureRequest request) override;
-#endif  // defined(OS_CHROMEOS)
-
  private:
   class VirtualDeviceEntry;
 

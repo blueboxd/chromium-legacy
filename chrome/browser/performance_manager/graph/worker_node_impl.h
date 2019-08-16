@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/public/graph/worker_node.h"
 
 namespace performance_manager {
@@ -22,7 +21,6 @@ class ProcessNodeImpl;
 
 class WorkerNodeImpl : public PublicNodeImpl<WorkerNodeImpl, WorkerNode>,
                        public TypedNodeBase<WorkerNodeImpl,
-                                            GraphImplObserver,
                                             WorkerNode,
                                             WorkerNodeObserver> {
  public:

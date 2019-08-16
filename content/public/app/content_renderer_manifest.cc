@@ -21,7 +21,6 @@ const service_manager::Manifest& GetContentRendererManifest() {
               std::set<const char*>{
                   "blink.mojom.CodeCacheHost",
                   "blink.mojom.CrashMemoryMetricsReporter",
-                  "blink.mojom.EmbeddedWorkerInstanceClient",
                   "blink.mojom.LeakDetector",
                   "blink.mojom.OomIntervention",
                   "blink.mojom.SharedWorkerFactory",

@@ -14,7 +14,6 @@
 #include "services/video_capture/public/mojom/devices_changed_observer.mojom.h"
 
 #if defined(OS_CHROMEOS)
-#include "media/capture/video/chromeos/mojom/cros_image_capture.mojom.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -55,12 +54,6 @@ class DeviceFactoryMediaToMojoAdapter : public DeviceFactory {
   void RegisterVirtualDevicesChangedObserver(
       mojom::DevicesChangedObserverPtr observer,
       bool raise_event_if_virtual_devices_already_present) override;
-
-#if defined(OS_CHROMEOS)
-  void BindCrosImageCaptureRequest(
-      cros::mojom::CrosImageCaptureRequest request) override;
-#endif  // defined(OS_CHROMEOS)
-
  private:
   struct ActiveDeviceEntry {
     ActiveDeviceEntry();

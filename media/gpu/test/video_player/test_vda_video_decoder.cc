@@ -227,6 +227,7 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
         gfx::GpuMemoryBufferHandle handle;
 #if BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
         handle = CreateGpuMemoryBufferHandle(video_frame.get());
+        DCHECK(!handle.is_null());
 #else
         NOTREACHED();
 #endif

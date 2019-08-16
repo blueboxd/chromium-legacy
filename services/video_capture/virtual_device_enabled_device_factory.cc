@@ -243,13 +243,4 @@ void VirtualDeviceEnabledDeviceFactory::OnDevicesChangedObserverDisconnected(
   devices_changed_observers_.erase(iter);
 }
 
-#if defined(OS_CHROMEOS)
-void VirtualDeviceEnabledDeviceFactory::BindCrosImageCaptureRequest(
-    cros::mojom::CrosImageCaptureRequest request) {
-  CHECK(device_factory_);
-
-  device_factory_->BindCrosImageCaptureRequest(std::move(request));
-}
-#endif  // defined(OS_CHROMEOS)
-
 }  // namespace video_capture

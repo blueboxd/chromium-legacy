@@ -16,7 +16,8 @@
 #include "services/video_capture/public/mojom/video_capture_service.mojom.h"
 
 #if defined(OS_CHROMEOS)
-#include "media/capture/video/chromeos/mojom/cros_image_capture.mojom.h"
+#include "media/capture/video/chromeos/camera_app_device_bridge_impl.h"
+#include "media/capture/video/chromeos/mojom/camera_app.mojom.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace video_capture {
@@ -35,8 +36,9 @@ class VideoCaptureServiceImpl : public mojom::VideoCaptureService {
 #if defined(OS_CHROMEOS)
   void InjectGpuDependencies(
       mojom::AcceleratorFactoryPtr accelerator_factory) override;
-  void BindCrosImageCapture(
-      mojo::PendingReceiver<cros::mojom::CrosImageCapture> receiver) override;
+  void ConnectToCameraAppDeviceBridge(
+      mojo::PendingReceiver<cros::mojom::CameraAppDeviceBridge> receiver)
+      override;
 #endif  // defined(OS_CHROMEOS)
   void ConnectToDeviceFactory(mojom::DeviceFactoryRequest request) override;
   void ConnectToVideoSourceProvider(
@@ -58,6 +60,11 @@ class VideoCaptureServiceImpl : public mojom::VideoCaptureService {
   std::unique_ptr<VirtualDeviceEnabledDeviceFactory> device_factory_;
   std::unique_ptr<VideoSourceProviderImpl> video_source_provider_;
   std::unique_ptr<GpuDependenciesContext> gpu_dependencies_context_;
+
+#if defined(OS_CHROMEOS)
+  // Bridge for Chrome OS camera app and camera devices.
+  std::unique_ptr<media::CameraAppDeviceBridgeImpl> camera_app_device_bridge_;
+#endif  // defined(OS_CHROMEOS)
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 

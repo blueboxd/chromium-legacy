@@ -768,7 +768,7 @@ FileManagerPrivateInternalSharePathsWithCrostiniFunction::Run() {
 }
 
 void FileManagerPrivateInternalSharePathsWithCrostiniFunction::
-    SharePathsCallback(bool success, std::string failure_reason) {
+    SharePathsCallback(bool success, const std::string& failure_reason) {
   Respond(success ? NoArguments() : Error(failure_reason));
 }
 
@@ -796,7 +796,7 @@ FileManagerPrivateInternalUnsharePathWithCrostiniFunction::Run() {
 }
 
 void FileManagerPrivateInternalUnsharePathWithCrostiniFunction::
-    UnsharePathCallback(bool success, std::string failure_reason) {
+    UnsharePathCallback(bool success, const std::string& failure_reason) {
   Respond(success ? NoArguments() : Error(failure_reason));
 }
 

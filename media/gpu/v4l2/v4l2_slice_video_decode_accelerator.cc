@@ -532,18 +532,32 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
   DCHECK_GT(num_pictures, 0u);
   DCHECK(!pic_size.IsEmpty());
 
-  // Since VdaVideoDeecoder doesn't allocate PictureBuffer with size adjusted by
+  // Since VdaVideoDecoder doesn't allocate PictureBuffer with size adjusted by
   // itself, we have to adjust here.
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
-  format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  format.fmt.pix_mp.pixelformat = output_format_fourcc_;
+  format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+
+  if (device_->Ioctl(VIDIOC_G_FMT, &format) != 0) {
+    VPLOGF(1) << "Failed getting OUTPUT format";
+    NOTIFY_ERROR(PLATFORM_FAILURE);
+    return false;
+  }
+
   format.fmt.pix_mp.width = pic_size.width();
   format.fmt.pix_mp.height = pic_size.height();
-  format.fmt.pix_mp.num_planes = output_planes_count_;
 
   if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
-    VPLOGF(1) << "Failed setting format to: " << output_format_fourcc_;
+    VPLOGF(1) << "Failed setting OUTPUT format to: " << input_format_fourcc_;
+    NOTIFY_ERROR(PLATFORM_FAILURE);
+    return false;
+  }
+
+  // Get the coded size from the CAPTURE queue
+  memset(&format, 0, sizeof(format));
+  format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+  if (device_->Ioctl(VIDIOC_G_FMT, &format) != 0) {
+    VPLOGF(1) << "Failed getting CAPTURE format";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }

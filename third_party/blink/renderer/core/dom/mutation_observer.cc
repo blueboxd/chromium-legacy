@@ -239,10 +239,13 @@ void MutationObserver::Activate() {
 
 void MutationObserver::EnqueueMutationRecord(MutationRecord* mutation) {
   DCHECK(IsMainThread());
+  ExecutionContext* execution_context = delegate_->GetExecutionContext();
+  // This might get called when the execution context is gone. crbug.com/982850
+  if (!execution_context)
+    return;
   records_.push_back(mutation);
   Activate();
-  probe::AsyncTaskScheduled(delegate_->GetExecutionContext(), mutation->type(),
-                            mutation);
+  probe::AsyncTaskScheduled(execution_context, mutation->type(), mutation);
 }
 
 void MutationObserver::SetHasTransientRegistration() {

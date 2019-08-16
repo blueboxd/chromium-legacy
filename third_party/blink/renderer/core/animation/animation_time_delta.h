@@ -93,6 +93,8 @@ bool CORE_EXPORT operator!=(const AnimationTimeDelta& lhs,
                             const AnimationTimeDelta& rhs);
 bool CORE_EXPORT operator>(const AnimationTimeDelta& lhs,
                            const AnimationTimeDelta& rhs);
+bool CORE_EXPORT operator<(const AnimationTimeDelta& lhs,
+                           const AnimationTimeDelta& rhs);
 bool CORE_EXPORT operator>=(const AnimationTimeDelta& lhs,
                             const AnimationTimeDelta& rhs);
 bool CORE_EXPORT operator<=(const AnimationTimeDelta& lhs,

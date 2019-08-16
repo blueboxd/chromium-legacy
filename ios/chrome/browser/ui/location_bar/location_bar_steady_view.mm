@@ -332,7 +332,8 @@ const CGFloat kbadgeViewAnimationDuration = 0.2;
     ];
 
     self.badgeViewFullScreenDisabledConstraints = @[
-      [self.badgeView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+      [self.badgeView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor
+                                                   constant:5],
       [self.badgeView.trailingAnchor
           constraintLessThanOrEqualToAnchor:self.locationContainerView
                                                 .leadingAnchor],

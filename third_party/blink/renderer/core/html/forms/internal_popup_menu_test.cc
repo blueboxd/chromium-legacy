@@ -47,6 +47,33 @@ TEST(InternalPopupMenuTest, WriteDocumentInStyleDirtyTree) {
   static_cast<PagePopupClient*>(menu)->WriteDocument(buffer.get());
 }
 
+TEST(InternalPopupMenuTest, ShowSelectDisplayNone) {
+  auto dummy_page_holder_ =
+      std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Document& document = dummy_page_holder_->GetDocument();
+  document.body()->SetInnerHTMLFromString(R"HTML(
+    <div id="container">
+      <select id="select">
+        <option>1</option>
+        <option>2</option>
+      </select>
+    </div>
+  )HTML");
+  document.View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  auto* div = document.getElementById("container");
+  HTMLSelectElement* select =
+      ToHTMLSelectElement(document.getElementById("select"));
+  ASSERT_TRUE(select);
+  auto* menu = MakeGarbageCollected<InternalPopupMenu>(
+      MakeGarbageCollected<EmptyChromeClient>(), *select);
+
+  div->SetInlineStyleProperty(CSSPropertyID::kDisplay, "none");
+
+  // This call should not cause a crash.
+  menu->Show();
+}
+
 #endif  // defined(OS_ANDROID)
 
 }  // namespace blink

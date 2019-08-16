@@ -162,7 +162,7 @@ void SecurityStatePageLoadMetricsObserver::OnComplete(
   base::UmaHistogramCustomTimes(
       security_state::GetSecurityLevelHistogramName(kTimeOnPagePrefix,
                                                     current_security_level_),
-      GetDelegate()->GetVisibilityTracker().GetForegroundDuration(),
+      GetDelegate().GetVisibilityTracker().GetForegroundDuration(),
       base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1), 100);
   base::UmaHistogramEnumeration(kSecurityLevelOnComplete,
                                 current_security_level_,

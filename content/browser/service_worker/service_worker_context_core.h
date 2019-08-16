@@ -174,6 +174,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // Runs the callback with true if there is a ProviderHost for |origin| of type
   // blink::mojom::ServiceWorkerProviderType::kForWindow which is a main
   // (top-level) frame. Reserved clients are ignored.
+  // TODO(crbug.com/824858): Make this synchronously return bool when the core
+  // thread is UI.
   void HasMainFrameProviderHost(const GURL& origin,
                                 BoolCallback callback) const;
 

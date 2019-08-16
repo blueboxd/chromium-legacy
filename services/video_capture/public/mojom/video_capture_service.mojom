@@ -11,7 +11,7 @@ import "services/video_capture/public/mojom/testing_controls.mojom";
 import "services/video_capture/public/mojom/video_source_provider.mojom";
 
 [EnableIf=is_chromeos]
-import "media/capture/video/chromeos/mojom/cros_image_capture.mojom";
+import "media/capture/video/chromeos/mojom/camera_app.mojom";
 
 [EnableIf=is_chromeos]
 interface AcceleratorFactory {
@@ -33,9 +33,10 @@ interface VideoCaptureService  {
   [EnableIf=is_chromeos]
   InjectGpuDependencies(AcceleratorFactory accelerator_factory);
 
-  // Binds a Chrome OS camera capture interface.
+  // Binds a bridge for Chrome OS camera app and device.
   [EnableIf=is_chromeos]
-  BindCrosImageCapture(pending_receiver<cros.mojom.CrosImageCapture> receiver);
+  ConnectToCameraAppDeviceBridge(
+      pending_receiver<cros.mojom.CameraAppDeviceBridge> receiver);
 
   // Legacy API. Supports one client per device.
   ConnectToDeviceFactory(DeviceFactory& request);

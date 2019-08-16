@@ -1740,10 +1740,10 @@ TEST_F(StyleEngineTest, MarkForWhitespaceReattachment) {
   EXPECT_TRUE(GetStyleEngine().NeedsWhitespaceReattachment(d1));
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
-  EXPECT_FALSE(GetDocument().documentElement()->ChildNeedsReattachLayoutTree());
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeRebuild());
 
   GetStyleEngine().MarkForWhitespaceReattachment();
-  EXPECT_FALSE(GetDocument().documentElement()->ChildNeedsReattachLayoutTree());
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeRebuild());
 
   UpdateAllLifecyclePhases();
 
@@ -1752,10 +1752,10 @@ TEST_F(StyleEngineTest, MarkForWhitespaceReattachment) {
   EXPECT_TRUE(GetStyleEngine().NeedsWhitespaceReattachment(d2));
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
-  EXPECT_FALSE(GetDocument().documentElement()->ChildNeedsReattachLayoutTree());
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeRebuild());
 
   GetStyleEngine().MarkForWhitespaceReattachment();
-  EXPECT_FALSE(GetDocument().documentElement()->ChildNeedsReattachLayoutTree());
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeRebuild());
 
   UpdateAllLifecyclePhases();
 
@@ -1763,10 +1763,10 @@ TEST_F(StyleEngineTest, MarkForWhitespaceReattachment) {
   EXPECT_TRUE(GetStyleEngine().NeedsWhitespaceReattachment(d3));
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
-  EXPECT_FALSE(GetDocument().documentElement()->ChildNeedsReattachLayoutTree());
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeRebuild());
 
   GetStyleEngine().MarkForWhitespaceReattachment();
-  EXPECT_TRUE(GetDocument().documentElement()->ChildNeedsReattachLayoutTree());
+  EXPECT_TRUE(GetDocument().NeedsLayoutTreeRebuild());
 }
 
 TEST_F(StyleEngineTest, FirstLetterRemoved) {
@@ -2074,6 +2074,22 @@ TEST_F(StyleEngineTest, PseudoElementBaseComputedStyle) {
   // create new instances which means the pointers will be different here.
   EXPECT_EQ(base_computed_style, animations->base_computed_style_);
 #endif
+}
+
+TEST_F(StyleEngineTest, NeedsLayoutTreeRebuild) {
+  UpdateAllLifecyclePhases();
+
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdate());
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeRebuild());
+
+  GetDocument().documentElement()->SetInlineStyleProperty(
+      CSSPropertyID::kDisplay, "none");
+
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  GetDocument().GetStyleEngine().RecalcStyle({});
+
+  EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
+  EXPECT_TRUE(GetDocument().NeedsLayoutTreeRebuild());
 }
 
 }  // namespace blink

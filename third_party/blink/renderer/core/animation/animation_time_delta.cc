@@ -20,6 +20,10 @@ bool CORE_EXPORT operator>(const AnimationTimeDelta& lhs,
                            const AnimationTimeDelta& rhs) {
   return lhs.InSecondsF() > rhs.InSecondsF();
 }
+bool CORE_EXPORT operator<(const AnimationTimeDelta& lhs,
+                           const AnimationTimeDelta& rhs) {
+  return !(lhs >= rhs);
+}
 bool CORE_EXPORT operator>=(const AnimationTimeDelta& lhs,
                             const AnimationTimeDelta& rhs) {
   return lhs.InSecondsF() >= rhs.InSecondsF();

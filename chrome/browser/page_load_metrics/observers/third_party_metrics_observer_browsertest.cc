@@ -14,9 +14,14 @@
 
 namespace {
 
-const char kReadCookieHistogram[] = "PageLoad.Clients.ThirdParty.Origins.Read";
+const char kReadCookieHistogram[] =
+    "PageLoad.Clients.ThirdParty.Origins.CookieRead";
 const char kWriteCookieHistogram[] =
-    "PageLoad.Clients.ThirdParty.Origins.Write";
+    "PageLoad.Clients.ThirdParty.Origins.CookieWrite";
+const char kAccessLocalStorageHistogram[] =
+    "PageLoad.Clients.ThirdParty.Origins.LocalStorageAccess";
+const char kAccessSessionStorageHistogram[] =
+    "PageLoad.Clients.ThirdParty.Origins.SessionStorageAccess";
 
 class ThirdPartyMetricsObserverBrowserTest : public InProcessBrowserTest {
  protected:
@@ -39,22 +44,25 @@ class ThirdPartyMetricsObserverBrowserTest : public InProcessBrowserTest {
 
   void NavigateFrameTo(const std::string& host, const std::string& path) {
     GURL page = embedded_test_server()->GetURL(host, path);
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    EXPECT_TRUE(NavigateIframeToURL(web_contents, "test", page));
+    EXPECT_TRUE(NavigateIframeToURL(web_contents(), "test", page));
+  }
+
+  content::WebContents* web_contents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
   DISALLOW_COPY_AND_ASSIGN(ThirdPartyMetricsObserverBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
-                       NoCookiesReadOrWritten) {
+IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest, NoStorageEvent) {
   base::HistogramTester histogram_tester;
   NavigateToPageWithFrame("a.com");
   NavigateToUntrackedUrl();
 
   histogram_tester.ExpectUniqueSample(kReadCookieHistogram, 0, 1);
   histogram_tester.ExpectUniqueSample(kWriteCookieHistogram, 0, 1);
+  histogram_tester.ExpectUniqueSample(kAccessLocalStorageHistogram, 0, 1);
+  histogram_tester.ExpectUniqueSample(kAccessSessionStorageHistogram, 0, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
@@ -99,10 +107,8 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
   base::HistogramTester histogram_tester;
   NavigateToPageWithFrame("a.com");  // Same origin cookie read.
   NavigateFrameTo("a.com", "/empty.html");
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
   content::RenderFrameHost* frame =
-      ChildFrameAt(web_contents->GetMainFrame(), 0);
+      ChildFrameAt(web_contents()->GetMainFrame(), 0);
 
   // Write a first-party cookie.
   EXPECT_TRUE(content::ExecJs(frame, "document.cookie = 'foo=bar';"));
@@ -120,10 +126,8 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
   base::HistogramTester histogram_tester;
   NavigateToPageWithFrame("a.com");  // Same origin cookie read.
   NavigateFrameTo("b.com", "/empty.html");
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
   content::RenderFrameHost* frame =
-      ChildFrameAt(web_contents->GetMainFrame(), 0);
+      ChildFrameAt(web_contents()->GetMainFrame(), 0);
 
   // Write a third-party cookie.
   EXPECT_TRUE(content::ExecJs(frame, "document.cookie = 'foo=bar';"));
@@ -141,10 +145,8 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
   base::HistogramTester histogram_tester;
   NavigateToPageWithFrame("a.com");  // Same origin cookie read.
   NavigateFrameTo("b.com", "/empty.html");
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
   content::RenderFrameHost* frame =
-      ChildFrameAt(web_contents->GetMainFrame(), 0);
+      ChildFrameAt(web_contents()->GetMainFrame(), 0);
 
   // Read a third-party cookie.
   EXPECT_TRUE(content::ExecJs(frame, "let x = document.cookie;"));
@@ -160,10 +162,8 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
   base::HistogramTester histogram_tester;
   NavigateToPageWithFrame("a.com");  // Same origin cookie read.
   NavigateFrameTo("b.com", "/empty.html");
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
   content::RenderFrameHost* frame =
-      ChildFrameAt(web_contents->GetMainFrame(), 0);
+      ChildFrameAt(web_contents()->GetMainFrame(), 0);
 
   // Write a third-party cookie.
   EXPECT_TRUE(content::ExecJs(frame, "document.cookie = 'foo=bar';"));
@@ -172,5 +172,83 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
   histogram_tester.ExpectUniqueSample(kReadCookieHistogram, 0, 1);
   histogram_tester.ExpectUniqueSample(kWriteCookieHistogram, 1, 1);
 }
+
+class ThirdPartyDomStorageAccessMetricsObserverBrowserTest
+    : public ThirdPartyMetricsObserverBrowserTest,
+      public ::testing::WithParamInterface<bool /* is_local_access */> {
+ public:
+  void InvokeStorageAccessOnFrame(content::RenderFrameHost* frame) const {
+    if (GetParam()) {
+      EXPECT_TRUE(content::ExecJs(frame, "window.localStorage;"));
+    } else {
+      EXPECT_TRUE(content::ExecJs(frame, "window.sessionStorage;"));
+    }
+  }
+
+  const char* DomStorageHistogramName() const {
+    return GetParam() ? kAccessLocalStorageHistogram
+                      : kAccessSessionStorageHistogram;
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(ThirdPartyDomStorageAccessMetricsObserverBrowserTest,
+                       FirstPartyDomStorageAccess) {
+  base::HistogramTester histogram_tester;
+  NavigateToPageWithFrame("a.com");
+  NavigateFrameTo("a.com", "/empty.html");
+  InvokeStorageAccessOnFrame(ChildFrameAt(web_contents()->GetMainFrame(), 0));
+
+  NavigateToUntrackedUrl();
+
+  histogram_tester.ExpectUniqueSample(DomStorageHistogramName(), 0, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(ThirdPartyDomStorageAccessMetricsObserverBrowserTest,
+                       ThirdPartyDomStorageAccess) {
+  base::HistogramTester histogram_tester;
+  NavigateToPageWithFrame("a.com");
+  NavigateFrameTo("b.com", "/empty.html");
+  InvokeStorageAccessOnFrame(ChildFrameAt(web_contents()->GetMainFrame(), 0));
+
+  NavigateToUntrackedUrl();
+
+  histogram_tester.ExpectUniqueSample(DomStorageHistogramName(), 1, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(ThirdPartyDomStorageAccessMetricsObserverBrowserTest,
+                       DuplicateThirdPartyDomStorageAccess) {
+  base::HistogramTester histogram_tester;
+  NavigateToPageWithFrame("a.com");
+  NavigateFrameTo("b.com", "/empty.html");
+  InvokeStorageAccessOnFrame(ChildFrameAt(web_contents()->GetMainFrame(), 0));
+
+  NavigateFrameTo("c.com", "/empty.html");
+  NavigateFrameTo("b.com", "/empty.html");
+  InvokeStorageAccessOnFrame(ChildFrameAt(web_contents()->GetMainFrame(), 0));
+
+  NavigateToUntrackedUrl();
+
+  histogram_tester.ExpectUniqueSample(DomStorageHistogramName(), 1, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(ThirdPartyDomStorageAccessMetricsObserverBrowserTest,
+                       MultipleThirdPartyDomStorageAccess) {
+  base::HistogramTester histogram_tester;
+  NavigateToPageWithFrame("a.com");
+  NavigateFrameTo("b.com", "/empty.html");
+  InvokeStorageAccessOnFrame(ChildFrameAt(web_contents()->GetMainFrame(), 0));
+
+  NavigateFrameTo("c.com", "/empty.html");
+  InvokeStorageAccessOnFrame(ChildFrameAt(web_contents()->GetMainFrame(), 0));
+
+  NavigateToUntrackedUrl();
+
+  histogram_tester.ExpectUniqueSample(DomStorageHistogramName(), 2, 1);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    ThirdPartyDomStorageAccessMetricsObserverBrowserTest,
+    ::testing::Values(false, true));
 
 }  // namespace

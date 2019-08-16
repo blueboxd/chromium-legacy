@@ -24,10 +24,10 @@ class Display;
 
 namespace media {
 
+class CameraAppDeviceImpl;
 class CameraHalDelegate;
 class CameraDeviceContext;
 class CameraDeviceDelegate;
-class ReprocessManager;
 
 // Implementation of VideoCaptureDevice for ChromeOS with CrOS camera HALv3.
 class CAPTURE_EXPORT VideoCaptureDeviceChromeOSHalv3 final
@@ -38,7 +38,8 @@ class CAPTURE_EXPORT VideoCaptureDeviceChromeOSHalv3 final
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       const VideoCaptureDeviceDescriptor& device_descriptor,
       scoped_refptr<CameraHalDelegate> camera_hal_delegate,
-      ReprocessManager* reprocess_manager);
+      CameraAppDeviceImpl* camera_app_device,
+      base::OnceClosure cleanup_callback);
 
   ~VideoCaptureDeviceChromeOSHalv3() final;
 
@@ -95,7 +96,9 @@ class CAPTURE_EXPORT VideoCaptureDeviceChromeOSHalv3 final
   const bool rotates_with_device_;
   int rotation_;
 
-  ReprocessManager* reprocess_manager_;  // weak
+  CameraAppDeviceImpl* camera_app_device_;  // Weak.
+
+  base::OnceClosure cleanup_callback_;
 
   scoped_refptr<PowerManagerClientProxy> power_manager_client_proxy_;
 

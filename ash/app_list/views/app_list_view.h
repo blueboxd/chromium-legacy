@@ -309,6 +309,12 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   bool is_side_shelf() const { return is_side_shelf_; }
 
+  void set_shelf_has_rounded_corners(bool shelf_has_rounded_corners) {
+    shelf_has_rounded_corners_ = shelf_has_rounded_corners;
+  }
+
+  bool shelf_has_rounded_corners() const { return shelf_has_rounded_corners_; }
+
   bool is_in_drag() const { return is_in_drag_; }
 
   void set_onscreen_keyboard_shown(bool onscreen_keyboard_shown) {
@@ -452,6 +458,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   bool is_tablet_mode_ = false;
   // Whether the shelf is oriented on the side.
   bool is_side_shelf_ = false;
+
+  // Whether the shelf has rounded corners.
+  bool shelf_has_rounded_corners_ = false;
 
   // True if the user is in the process of gesture-dragging on opened app list,
   // or dragging the app list from shelf.

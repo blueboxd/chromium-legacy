@@ -80,6 +80,10 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // - |subresource_loader_updater| is a mojo receiver that will be bound to
   //   ServiceWorkerFetchContextImpl. This interface is used to update
   //   subresource loader factories.
+  // - |script_url_to_skip_throttling| is the URL of the service worker script
+  //   that already started being loaded by the browser process due to the
+  //   update check, or the empty URL if there is no such script. See also
+  //   comments in EmbeddedWorkerStartParams::script_url_to_skip_throttling.
   ServiceWorkerContextClient(
       int64_t service_worker_version_id,
       const GURL& service_worker_scope,
@@ -97,6 +101,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
       mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
           subresource_loader_updater,
+      const GURL& script_url_to_skip_throttling,
       scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner);
   // Called on the initiator thread.
   ~ServiceWorkerContextClient() override;
@@ -198,6 +203,9 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // True if this service worker was already installed at worker
   // startup time.
   const bool is_starting_installed_worker_;
+
+  // See comments in EmbeddedWorkerStartParams::script_url_to_skip_throttling.
+  const GURL script_url_to_skip_throttling_;
 
   blink::mojom::RendererPreferencesPtr renderer_preferences_;
   // Passed on creation of ServiceWorkerFetchContext.

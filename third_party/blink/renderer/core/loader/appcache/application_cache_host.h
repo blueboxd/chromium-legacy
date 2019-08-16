@@ -49,12 +49,7 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
-class ApplicationCache;
-class DocumentLoader;
 
-// TODO(nhiroki): Move virtual functions in this class into
-// ApplicationCacheHostForFrame after making DocumentLoader own only
-// ApplicationCacheHostForFrame (not own ApplicationCacheHostForSharedWorker).
 class CORE_EXPORT ApplicationCacheHost
     : public GarbageCollectedFinalized<ApplicationCacheHost>,
       public mojom::blink::AppCacheFrontend {
@@ -89,13 +84,7 @@ class CORE_EXPORT ApplicationCacheHost
   };
 
   mojom::blink::AppCacheStatus GetStatus() const;
-  virtual bool Update() { return false; }
-  virtual bool SwapCache() { return false; }
   void Abort();
-
-  virtual void SetApplicationCache(ApplicationCache*) {}
-
-  virtual void StopDeferringEvents() {}
 
   void FillResourceList(Vector<mojom::blink::AppCacheResourceInfo>*);
   CacheInfo ApplicationCacheInfo();
@@ -118,12 +107,6 @@ class CORE_EXPORT ApplicationCacheHost
   void SetSubresourceFactory(
       network::mojom::blink::URLLoaderFactoryPtr url_loader_factory) override {}
 
-  virtual void WillStartLoadingMainResource(DocumentLoader* loader,
-                                            const KURL& url,
-                                            const String& method) {}
-  virtual void SelectCacheWithoutManifest() {}
-  virtual void SelectCacheWithManifest(const KURL& manifest_url) {}
-  virtual void DidReceiveResponseForMainResource(const ResourceResponse&) {}
   virtual void Trace(blink::Visitor*) {}
 
  protected:

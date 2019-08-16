@@ -109,7 +109,7 @@ void AndroidPageLoadMetricsObserver::OnLoadedResource(
 void AndroidPageLoadMetricsObserver::ReportNewNavigation() {
   DCHECK_GE(navigation_id_, 0);
   base::android::ScopedJavaLocalRef<jobject> java_web_contents =
-      GetDelegate()->GetWebContents()->GetJavaWebContents();
+      GetDelegate().GetWebContents()->GetJavaWebContents();
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_PageLoadMetrics_onNewNavigation(env, java_web_contents,
                                        static_cast<jlong>(navigation_id_));
@@ -120,7 +120,7 @@ void AndroidPageLoadMetricsObserver::ReportNetworkQualityEstimate(
     int64_t http_rtt_ms,
     int64_t transport_rtt_ms) {
   base::android::ScopedJavaLocalRef<jobject> java_web_contents =
-      GetDelegate()->GetWebContents()->GetJavaWebContents();
+      GetDelegate().GetWebContents()->GetJavaWebContents();
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_PageLoadMetrics_onNetworkQualityEstimate(
       env, java_web_contents, static_cast<jlong>(navigation_id_),
@@ -132,7 +132,7 @@ void AndroidPageLoadMetricsObserver::ReportFirstContentfulPaint(
     int64_t navigation_start_tick,
     int64_t first_contentful_paint_ms) {
   base::android::ScopedJavaLocalRef<jobject> java_web_contents =
-      GetDelegate()->GetWebContents()->GetJavaWebContents();
+      GetDelegate().GetWebContents()->GetJavaWebContents();
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_PageLoadMetrics_onFirstContentfulPaint(
       env, java_web_contents, static_cast<jlong>(navigation_id_),
@@ -144,7 +144,7 @@ void AndroidPageLoadMetricsObserver::ReportFirstMeaningfulPaint(
     int64_t navigation_start_tick,
     int64_t first_meaningful_paint_ms) {
   base::android::ScopedJavaLocalRef<jobject> java_web_contents =
-      GetDelegate()->GetWebContents()->GetJavaWebContents();
+      GetDelegate().GetWebContents()->GetJavaWebContents();
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_PageLoadMetrics_onFirstMeaningfulPaint(
       env, java_web_contents, static_cast<jlong>(navigation_id_),
@@ -156,7 +156,7 @@ void AndroidPageLoadMetricsObserver::ReportLoadEventStart(
     int64_t navigation_start_tick,
     int64_t load_event_start_ms) {
   base::android::ScopedJavaLocalRef<jobject> java_web_contents =
-      GetDelegate()->GetWebContents()->GetJavaWebContents();
+      GetDelegate().GetWebContents()->GetJavaWebContents();
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_PageLoadMetrics_onLoadEventStart(
       env, java_web_contents, static_cast<jlong>(navigation_id_),
@@ -173,7 +173,7 @@ void AndroidPageLoadMetricsObserver::ReportLoadedMainResource(
     int64_t send_start_ms,
     int64_t send_end_ms) {
   base::android::ScopedJavaLocalRef<jobject> java_web_contents =
-      GetDelegate()->GetWebContents()->GetJavaWebContents();
+      GetDelegate().GetWebContents()->GetJavaWebContents();
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_PageLoadMetrics_onLoadedMainResource(
       env, java_web_contents, static_cast<jlong>(navigation_id_),

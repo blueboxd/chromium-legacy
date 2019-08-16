@@ -33,6 +33,8 @@ class CORE_EXPORT InternalPopupMenu final : public PopupMenu,
   void Dispose();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(InternalPopupMenuTest, ShowSelectDisplayNone);
+
   class ItemIterationContext;
   void AddOption(ItemIterationContext&, HTMLOptionElement&);
   void AddOptGroup(ItemIterationContext&, HTMLOptGroupElement&);

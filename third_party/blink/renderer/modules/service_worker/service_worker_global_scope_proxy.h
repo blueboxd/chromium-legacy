@@ -68,15 +68,10 @@ class WebServiceWorkerContextClient;
 class ServiceWorkerGlobalScopeProxy final : public WebServiceWorkerContextProxy,
                                             public WorkerReportingProxy {
  public:
-  static std::unique_ptr<ServiceWorkerGlobalScopeProxy> Create(
-      WebEmbeddedWorkerImpl&,
-      WebServiceWorkerContextClient&,
-      scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner);
-
-  ServiceWorkerGlobalScopeProxy(
-      WebEmbeddedWorkerImpl&,
-      WebServiceWorkerContextClient&,
-      scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner);
+  ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl&,
+                                WebServiceWorkerContextClient&,
+                                scoped_refptr<base::SingleThreadTaskRunner>
+                                    parent_thread_default_task_runner);
   ~ServiceWorkerGlobalScopeProxy() override;
 
   // WebServiceWorkerContextProxy overrides:
@@ -151,7 +146,8 @@ class ServiceWorkerGlobalScopeProxy final : public WebServiceWorkerContextProxy,
   // as part of its finalization.
   WebEmbeddedWorkerImpl* embedded_worker_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner>
+      parent_thread_default_task_runner_;
 
   WebServiceWorkerContextClient* client_;
 

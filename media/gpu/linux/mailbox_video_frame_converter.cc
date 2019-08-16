@@ -181,6 +181,7 @@ void MailboxVideoFrameConverter::GenerateMailbox(VideoFrame* origin_frame,
   };
 #if defined(USE_OZONE)
   gfx::GpuMemoryBufferHandle handle = CreateGpuMemoryBufferHandle(origin_frame);
+  DCHECK(!handle.is_null());
   pixmap = ui::OzonePlatform::GetInstance()
                ->GetSurfaceFactoryOzone()
                ->CreateNativePixmapFromHandle(

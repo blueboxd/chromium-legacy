@@ -25,7 +25,7 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
-#include "components/password_manager/core/browser/leak_detection/leak_detection_request_factory.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
@@ -95,7 +95,7 @@ class MockLeakDetectionCheck : public LeakDetectionCheck {
                void(const GURL&, base::StringPiece16, base::StringPiece16));
 };
 
-class MockLeakDetectionRequestFactory : public LeakDetectionRequestFactory {
+class MockLeakDetectionCheckFactory : public LeakDetectionCheckFactory {
  public:
   MOCK_CONST_METHOD3(TryCreateLeakCheck,
                      std::unique_ptr<LeakDetectionCheck>(
@@ -3855,8 +3855,8 @@ TEST_F(PasswordManagerTest, FillingAndSavingFallbacksOnNonPasswordForm) {
 // Check that on successful login the credentials are checked for leak.
 TEST_F(PasswordManagerTest, StartLeakDetection) {
   auto mock_factory =
-      std::make_unique<testing::StrictMock<MockLeakDetectionRequestFactory>>();
-  MockLeakDetectionRequestFactory* weak_factory = mock_factory.get();
+      std::make_unique<testing::StrictMock<MockLeakDetectionCheckFactory>>();
+  MockLeakDetectionCheckFactory* weak_factory = mock_factory.get();
   manager()->set_leak_factory(std::move(mock_factory));
 
   const PasswordForm form = MakeSimpleForm();

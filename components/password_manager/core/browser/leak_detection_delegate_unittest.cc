@@ -49,7 +49,7 @@ class MockLeakDetectionCheck : public LeakDetectionCheck {
                void(const GURL&, base::StringPiece16, base::StringPiece16));
 };
 
-class MockLeakDetectionRequestFactory : public LeakDetectionRequestFactory {
+class MockLeakDetectionCheckFactory : public LeakDetectionCheckFactory {
  public:
   MOCK_CONST_METHOD3(TryCreateLeakCheck,
                      std::unique_ptr<LeakDetectionCheck>(
@@ -63,8 +63,8 @@ class MockLeakDetectionRequestFactory : public LeakDetectionRequestFactory {
 class LeakDetectionDelegateTest : public testing::Test {
  public:
   LeakDetectionDelegateTest() : delegate_(&client_) {
-    auto mock_factory = std::make_unique<
-        testing::StrictMock<MockLeakDetectionRequestFactory>>();
+    auto mock_factory =
+        std::make_unique<testing::StrictMock<MockLeakDetectionCheckFactory>>();
     mock_factory_ = mock_factory.get();
     delegate_.set_leak_factory(std::move(mock_factory));
     prefs_ = std::make_unique<TestingPrefServiceSimple>();
@@ -75,7 +75,7 @@ class LeakDetectionDelegateTest : public testing::Test {
   ~LeakDetectionDelegateTest() override = default;
 
   MockPasswordManagerClient& client() { return client_; }
-  MockLeakDetectionRequestFactory& factory() { return *mock_factory_; }
+  MockLeakDetectionCheckFactory& factory() { return *mock_factory_; }
   LeakDetectionDelegate& delegate() { return delegate_; }
 
  protected:
@@ -83,7 +83,7 @@ class LeakDetectionDelegateTest : public testing::Test {
 
  private:
   MockPasswordManagerClient client_;
-  MockLeakDetectionRequestFactory* mock_factory_ = nullptr;
+  MockLeakDetectionCheckFactory* mock_factory_ = nullptr;
   LeakDetectionDelegate delegate_;
 };
 

@@ -26,6 +26,7 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
         url_loader_factory_info,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         script_loader_factory_info,
+    const GURL& script_url_to_skip_throttling,
     std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
     std::unique_ptr<WebSocketHandshakeThrottleProvider>
         websocket_handshake_throttle_provider,
@@ -36,6 +37,7 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
       worker_script_url_(worker_script_url),
       url_loader_factory_info_(std::move(url_loader_factory_info)),
       script_loader_factory_info_(std::move(script_loader_factory_info)),
+      script_url_to_skip_throttling_(script_url_to_skip_throttling),
       throttle_provider_(std::move(throttle_provider)),
       websocket_handshake_throttle_provider_(
           std::move(websocket_handshake_throttle_provider)),
@@ -106,10 +108,27 @@ void ServiceWorkerFetchContextImpl::WillSendRequest(
   }
   auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_originated_from_service_worker(true);
-  if (throttle_provider_) {
+
+  const bool needs_to_skip_throttling =
+      static_cast<GURL>(request.Url()) == script_url_to_skip_throttling_ &&
+      (request.GetRequestContext() ==
+           blink::mojom::RequestContextType::SERVICE_WORKER ||
+       request.GetRequestContext() == blink::mojom::RequestContextType::SCRIPT);
+  if (needs_to_skip_throttling) {
+    // Throttling is needed when the skipped script is loaded again because it's
+    // served from ServiceWorkerInstalledScriptLoader after the second time,
+    // while at the first time the script comes from
+    // ServiceWorkerUpdatedScriptLoader which uses ThrottlingURLLoader in the
+    // browser process. See also comments at
+    // EmbeddedWorkerStartParams::script_url_to_skip_throttling.
+    // TODO(https://crbug.com/993641): need to simplify throttling for service
+    // worker scripts.
+    script_url_to_skip_throttling_ = GURL();
+  } else if (throttle_provider_) {
     extra_data->set_url_loader_throttles(throttle_provider_->CreateThrottles(
         MSG_ROUTING_NONE, request, WebURLRequestToResourceType(request)));
   }
+
   request.SetExtraData(std::move(extra_data));
 
   if (!renderer_preferences_.enable_referrers) {

@@ -314,6 +314,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "bundled-exchanges",
+    "owners": [ "toyoshim", "ksakamoto", "horo", "kinuko" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "BundledConnectionHelp",
     "owners": [ "carlosil" ],
     "expiry_milestone": 76

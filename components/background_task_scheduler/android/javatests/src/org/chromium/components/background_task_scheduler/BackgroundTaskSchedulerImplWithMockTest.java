@@ -42,9 +42,11 @@ public class BackgroundTaskSchedulerImplWithMockTest {
     @Test
     @SmallTest
     public void testOneOffTaskScheduling() {
-        TaskInfo oneOffTask = TaskInfo.createOneOffTask(TaskIds.TEST, TestBackgroundTask.class,
-                                              TimeUnit.MINUTES.toMillis(TEST_MINUTES))
-                                      .build();
+        TaskInfo.TimingInfo timingInfo =
+                TaskInfo.OneOffInfo.create()
+                        .setWindowEndTimeMs(TimeUnit.MINUTES.toMillis(TEST_MINUTES))
+                        .build();
+        TaskInfo oneOffTask = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
 
         MockBackgroundTaskSchedulerDelegate delegate = new MockBackgroundTaskSchedulerDelegate();
         BackgroundTaskScheduler taskScheduler = new BackgroundTaskSchedulerImpl(delegate);
@@ -59,9 +61,11 @@ public class BackgroundTaskSchedulerImplWithMockTest {
     @Test
     @SmallTest
     public void testPeriodicTaskScheduling() {
-        TaskInfo periodicTask = TaskInfo.createPeriodicTask(TaskIds.TEST, TestBackgroundTask.class,
-                                                TimeUnit.MINUTES.toMillis(TEST_MINUTES))
-                                        .build();
+        TaskInfo.TimingInfo timingInfo =
+                TaskInfo.PeriodicInfo.create()
+                        .setIntervalMs(TimeUnit.MINUTES.toMillis(TEST_MINUTES))
+                        .build();
+        TaskInfo periodicTask = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
 
         MockBackgroundTaskSchedulerDelegate delegate = new MockBackgroundTaskSchedulerDelegate();
         BackgroundTaskScheduler taskScheduler = new BackgroundTaskSchedulerImpl(delegate);

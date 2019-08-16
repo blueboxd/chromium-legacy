@@ -75,13 +75,17 @@ template("collect_idl_files") {
 }
 
 collect_idl_files("web_idl_in_core") {
-  # all IDL files in 'core' component
+  # All IDL files in 'core' component.
   inputs = core_static_interface_idl_files +
            core_generated_interface_idl_files + core_all_dependency_idl_files
 
-  # We exclude |core_global_constructors_generated_idl_files| to avoid
-  # unnecessary dependencies.
+  # The hack of "constructor attributes" for the old bindings generator is not
+  # necessary for the new one.
   inputs -= core_global_constructors_generated_idl_files
+
+  # Supplemental IDL definitions to support the migration from the old bindings
+  # generator to the new one.
+  inputs += [ "${bindings_scripts_dir}/web_idl/migration_adapter.idl" ]
 
   component = "core"
   output = "${bindings_output_dir}/web_idl_in_core.pickle"
@@ -92,7 +96,7 @@ collect_idl_files("web_idl_in_core") {
 }
 
 collect_idl_files("web_idl_in_modules") {
-  # all IDL files in 'modules' component
+  # All IDL files in 'modules' component.
   inputs = modules_definition_idl_files + modules_static_interface_idl_files +
            modules_static_dependency_idl_files
   component = "modules"

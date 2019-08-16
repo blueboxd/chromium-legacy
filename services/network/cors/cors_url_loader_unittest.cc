@@ -1826,6 +1826,74 @@ TEST_F(CorsURLLoaderTest, TrustedParamsWithUntrustedFactoryFailsBeforeCORS) {
   }
 }
 
+// Test that when a request has LOAD_RESTRICTED_PREFETCH and a
+// NetworkIsolationKey, CorsURLLoaderFactory does not reject the request.
+TEST_F(CorsURLLoaderTest, RestrictedPrefetchSucceedsWithNIK) {
+  ResetFactory(base::nullopt, kRendererProcessId, true);
+
+  BadMessageTestHelper bad_message_helper;
+
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
+  request.method = net::HttpRequestHeaders::kGetMethod;
+  request.url = GURL("http://other.com/foo.png");
+  request.request_initiator = url::Origin::Create(GURL("http://example.com"));
+  request.load_flags |= net::LOAD_RESTRICTED_PREFETCH;
+  request.trusted_params = ResourceRequest::TrustedParams();
+
+  // Fill up the |trusted_params| NetworkIsolationKey member.
+  url::Origin request_origin = url::Origin::Create(request.url);
+  request.trusted_params->network_isolation_key =
+      net::NetworkIsolationKey(request_origin, request_origin);
+
+  CreateLoaderAndStart(request);
+
+  NotifyLoaderClientOnReceiveResponse(
+      {"Access-Control-Allow-Origin: http://example.com"});
+  NotifyLoaderClientOnComplete(net::OK);
+
+  RunUntilComplete();
+
+  EXPECT_TRUE(IsNetworkLoaderStarted());
+  EXPECT_TRUE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::OK, client().completion_status().error_code);
+  EXPECT_TRUE(GetRequest().headers.HasHeader(net::HttpRequestHeaders::kOrigin));
+}
+
+// Test that when a request has LOAD_RESTRICTED_PREFETCH but no
+// NetworkIsolationKey, CorsURLLoaderFactory rejects the request. This is
+// because the LOAD_RESTRICTED_PREFETCH flag must only appear on requests that
+// make use of their TrustedParams' |network_isolation_key|.
+TEST_F(CorsURLLoaderTest, RestrictedPrefetchFailsWithoutNIK) {
+  ResetFactory(base::nullopt, kRendererProcessId, true);
+
+  BadMessageTestHelper bad_message_helper;
+
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
+  request.method = net::HttpRequestHeaders::kGetMethod;
+  request.url = GURL("http://other.com/foo.png");
+  request.request_initiator = url::Origin::Create(GURL("http://example.com"));
+  request.load_flags |= net::LOAD_RESTRICTED_PREFETCH;
+  request.trusted_params = ResourceRequest::TrustedParams();
+
+  CreateLoaderAndStart(request);
+
+  RunUntilComplete();
+  EXPECT_FALSE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
+  EXPECT_THAT(
+      bad_message_helper.bad_message_reports(),
+      ::testing::ElementsAre("CorsURLLoaderFactory: Request with "
+                             "LOAD_RESTRICTED_PREFETCH flag is not trusted"));
+}
+
 }  // namespace
 
 }  // namespace cors

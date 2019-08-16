@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/websockets/websocket_event_interface.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -26,45 +27,21 @@
 class GURL;
 
 namespace net {
-class URLRequestContext;
-class WebSocketChannel;
 class SSLInfo;
+class WebSocketChannel;
 }  // namespace net
 
 namespace network {
 
+class WebSocketFactory;
+
 // Host of net::WebSocketChannel.
 class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
  public:
-  class Delegate {
-   public:
-    enum class BadMessageReason {
-      kUnexpectedAddChannelRequest,
-      kUnexpectedSendFrame,
-    };
-    virtual ~Delegate() {}
+  using HasRawHeadersAccess =
+      util::StrongAlias<class HasRawHeadersAccessTag, bool>;
 
-    virtual net::URLRequestContext* GetURLRequestContext() = 0;
-    // This function may delete |impl|.
-    virtual void OnLostConnectionToClient(WebSocket* impl) = 0;
-    virtual void OnSSLCertificateError(
-        std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks>
-            callbacks,
-        const GURL& url,
-        int child_id,
-        int frame_id,
-        int net_error,
-        const net::SSLInfo& ssl_info,
-        bool fatal) = 0;
-    // This function may delete |impl|.
-    virtual void ReportBadMessage(BadMessageReason reason, WebSocket* impl) = 0;
-    virtual bool CanReadRawCookies(const GURL& url) = 0;
-    virtual void OnCreateURLRequest(int child_id,
-                                    int frame_id,
-                                    net::URLRequest* request) = 0;
-  };
-
-  WebSocket(std::unique_ptr<Delegate> delegate,
+  WebSocket(WebSocketFactory* factory,
             const GURL& url,
             const std::vector<std::string>& requested_protocols,
             const GURL& site_for_cookies,
@@ -73,16 +50,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
             int32_t render_frame_id,
             const url::Origin& origin,
             uint32_t options,
+            HasRawHeadersAccess has_raw_cookie_access,
             mojom::WebSocketHandshakeClientPtr handshake_client,
             mojom::AuthenticationHandlerPtr auth_handler,
             mojom::TrustedHeaderClientPtr header_client,
             WebSocketThrottler::PendingConnection pending_connection_tracker,
             base::TimeDelta delay);
   ~WebSocket() override;
-
-  // The renderer process is going away.
-  // This function is virtual for testing.
-  virtual void GoAway();
 
   // mojom::WebSocket methods:
   void SendFrame(bool fin,
@@ -138,6 +112,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
                   const std::vector<std::string>& requested_protocols,
                   const GURL& site_for_cookies,
                   std::vector<mojom::HttpHeaderPtr> additional_headers);
+  void OnSSLCertificateErrorResponse(
+      std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks>
+          callbacks,
+      const net::SSLInfo& ssl_info,
+      int net_error);
   void OnAuthRequiredComplete(
       base::OnceCallback<void(const net::AuthCredentials*)> callback,
       const base::Optional<net::AuthCredentials>& credential);
@@ -162,7 +141,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   // Returns false if mojo error occurs.
   bool SendDataFrame(DataFrame*);
 
-  std::unique_ptr<Delegate> delegate_;
+  // |factory_| owns |this|.
+  WebSocketFactory* const factory_;
   mojo::Binding<mojom::WebSocket> binding_;
 
   mojom::WebSocketHandshakeClientPtr handshake_client_;
@@ -189,6 +169,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   // handshake_succeeded_ is used by WebSocketManager to manage counters for
   // per-renderer WebSocket throttling.
   bool handshake_succeeded_ = false;
+  const HasRawHeadersAccess has_raw_headers_access_;
 
   // Datapipe fields to receive.
   mojo::ScopedDataPipeProducerHandle writable_;

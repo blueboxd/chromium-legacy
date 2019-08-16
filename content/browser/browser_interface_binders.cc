@@ -87,27 +87,39 @@ void PopulateBinderMap(SharedWorkerHost* host,
 
 // Service workers
 ServiceWorkerRunningInfo GetContextForHost(ServiceWorkerProviderHost* host) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+
   // TODO(crbug.com/993409): pass Origin instead of GURL
   return {host->running_hosted_version()->script_origin().GetURL(),
           host->running_hosted_version()->version_id(), host->process_id()};
 }
 
 void PopulateServiceWorkerBinders(ServiceWorkerProviderHost* host,
-                                  service_manager::BinderMap* map) {}
+                                  service_manager::BinderMap* map) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+}
 
 void PopulateBinderMapWithContext(
     ServiceWorkerProviderHost* host,
     service_manager::BinderMapWithContext<const ServiceWorkerRunningInfo&>*
         map) {
-  // Using a task runner since ServiceWorkerProviderHost lives on the IO thread,
-  // and CreateForWorker() needs to be called on the UI thread.
-  map->Add<blink::mojom::BackgroundFetchService>(
-      base::BindRepeating(&BackgroundFetchServiceImpl::CreateForWorker),
-      base::CreateSingleThreadTaskRunnerWithTraits(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+
+  // Use a task runner if ServiceWorkerProviderHost lives on the IO
+  // thread, as CreateForWorker() needs to be called on the UI thread.
+  if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+    map->Add<blink::mojom::BackgroundFetchService>(
+        base::BindRepeating(&BackgroundFetchServiceImpl::CreateForWorker));
+  } else {
+    map->Add<blink::mojom::BackgroundFetchService>(
+        base::BindRepeating(&BackgroundFetchServiceImpl::CreateForWorker),
+        base::CreateSingleThreadTaskRunnerWithTraits(BrowserThread::UI));
+  }
 }
 
 void PopulateBinderMap(ServiceWorkerProviderHost* host,
                        service_manager::BinderMap* map) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
   PopulateServiceWorkerBinders(host, map);
 }
 

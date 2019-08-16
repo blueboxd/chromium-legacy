@@ -5,14 +5,23 @@
 #ifndef SERVICES_NETWORK_WEBSOCKET_FACTORY_H_
 #define SERVICES_NETWORK_WEBSOCKET_FACTORY_H_
 
+#include <set>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "services/network/websocket.h"
 #include "services/network/websocket_throttler.h"
+
+class GURL;
+
+namespace net {
+class SSLInfo;
+}  // namespace net
 
 namespace url {
 class Origin;
@@ -21,6 +30,7 @@ class Origin;
 namespace network {
 
 class NetworkContext;
+class WebSocket;
 
 class WebSocketFactory final {
  public:
@@ -39,11 +49,22 @@ class WebSocketFactory final {
                        mojom::AuthenticationHandlerPtr auth_handler,
                        mojom::TrustedHeaderClientPtr header_client);
 
+  // Returns a URLRequestContext associated with this factory.
+  net::URLRequestContext* GetURLRequestContext();
+
+  // Called when a WebSocket sees a SSL certificate error.
+  void OnSSLCertificateError(base::OnceCallback<void(int)> callback,
+                             const GURL& url,
+                             int process_id,
+                             int render_frame_id,
+                             int net_error,
+                             const net::SSLInfo& ssl_info,
+                             bool fatal);
+
+  // Removes and deletes |impl|.
+  void Remove(WebSocket* impl);
+
  private:
-  class Delegate;
-
-  void OnLostConnectionToClient(WebSocket* impl);
-
   // The connections held by this factory.
   std::set<std::unique_ptr<WebSocket>, base::UniquePtrComparator> connections_;
 

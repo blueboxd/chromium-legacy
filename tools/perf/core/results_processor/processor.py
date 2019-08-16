@@ -9,7 +9,9 @@ entry point to start the processing of results.
 """
 
 import argparse
+import datetime
 import os
+import re
 
 from telemetry import command_line
 from telemetry.core import util
@@ -37,8 +39,14 @@ def ArgumentParser():
   group.add_argument(
       '--output-dir', default=util.GetBaseDir(), metavar='DIR_PATH',
       help=' '.join([
-          'Path to a directory where to write output artifacts.',
+          'Path to a directory where to write final results.',
           'Default: %(default)s.']))
+  group.add_argument(
+      '--intermediate-dir', metavar='DIR_PATH',
+      help=' '.join([
+          'Path to a directory where to store intermediate results.',
+          'If not provided, the default is to create a new directory',
+          'within "{output_dir}/artifacts/".']))
   group.add_argument(
       '--reset-results', action='store_true',
       help='Remove any previous files in the output directory. The default '
@@ -78,6 +86,15 @@ def ProcessOptions(options):
     return
 
   options.output_dir = os.path.expanduser(options.output_dir)
+
+  if not options.intermediate_dir:
+    if options.results_label:
+      filesafe_label = re.sub(r'\W+', '_', options.results_label)
+    else:
+      filesafe_label = 'run'
+    start_time = datetime.datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
+    options.intermediate_dir = os.path.join(
+        options.output_dir, 'artifacts', '%s_%s' % (filesafe_label, start_time))
 
   if options.upload_results:
     options.upload_bucket = cloud_storage.BUCKET_ALIASES.get(

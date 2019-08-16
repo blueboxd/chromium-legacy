@@ -72,9 +72,6 @@ scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {
 
 PerformanceManager::~PerformanceManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  for (auto& observer : observers_)
-    graph_.UnregisterObserver(observer.get());
 }
 
 // static
@@ -189,13 +186,6 @@ void PerformanceManager::BatchDeleteNodes(
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&PerformanceManager::BatchDeleteNodesImpl,
                                 base::Unretained(this), std::move(nodes)));
-}
-
-void PerformanceManager::RegisterObserver(
-    std::unique_ptr<GraphImplObserver> observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  graph_.RegisterObserver(observer.get());
-  observers_.push_back(std::move(observer));
 }
 
 PerformanceManager::PerformanceManager() : task_runner_(CreateTaskRunner()) {

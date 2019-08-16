@@ -202,13 +202,4 @@ void DeviceFactoryMediaToMojoAdapter::OnClientConnectionErrorOrClose(
   active_devices_by_id_.erase(device_id);
 }
 
-#if defined(OS_CHROMEOS)
-void DeviceFactoryMediaToMojoAdapter::BindCrosImageCaptureRequest(
-    cros::mojom::CrosImageCaptureRequest request) {
-  CHECK(capture_system_);
-
-  capture_system_->BindCrosImageCaptureRequest(std::move(request));
-}
-#endif  // defined(OS_CHROMEOS)
-
 }  // namespace video_capture

@@ -2280,11 +2280,17 @@ bool Document::NeedsLayoutTreeUpdate() const {
     return true;
   if (GetLayoutView() && GetLayoutView()->WasNotifiedOfSubtreeChange())
     return true;
-  if (documentElement() && documentElement()->ChildNeedsReattachLayoutTree()) {
+  if (NeedsLayoutTreeRebuild()) {
     DCHECK(InStyleRecalc());
     return true;
   }
   return false;
+}
+
+bool Document::NeedsLayoutTreeRebuild() const {
+  return documentElement() &&
+         (documentElement()->NeedsReattachLayoutTree() ||
+          documentElement()->ChildNeedsReattachLayoutTree());
 }
 
 bool Document::NeedsFullLayoutTreeUpdate() const {
@@ -2746,19 +2752,14 @@ void Document::UpdateStyle() {
 
   lifecycle_.AdvanceTo(DocumentLifecycle::kInStyleRecalc);
 
-#if DCHECK_IS_ON()
-  if (documentElement()) {
-    // All of layout tree dirtiness and rebuilding needs to happen on a stable
-    // flat tree. We have an invariant that all of that happens in this method
-    // as a result of style recalc and the following layout tree rebuild.
-    //
-    // NeedsReattachLayoutTree() marks dirty up the flat tree ancestors. Re-
-    // slotting on a dirty tree could break ancestor chains and fail to update
-    // the tree properly.
-    DCHECK(!documentElement()->ChildNeedsReattachLayoutTree());
-    DCHECK(!documentElement()->NeedsReattachLayoutTree());
-  }
-#endif
+  // All of layout tree dirtiness and rebuilding needs to happen on a stable
+  // flat tree. We have an invariant that all of that happens in this method
+  // as a result of style recalc and the following layout tree rebuild.
+  //
+  // NeedsReattachLayoutTree() marks dirty up the flat tree ancestors. Re-
+  // slotting on a dirty tree could break ancestor chains and fail to update the
+  // tree properly.
+  DCHECK(!NeedsLayoutTreeRebuild());
 
   NthIndexCache nth_index_cache(*this);
 
@@ -2799,8 +2800,7 @@ void Document::UpdateStyle() {
         ViewportDefiningElementDidChange();
     }
     GetStyleEngine().MarkForWhitespaceReattachment();
-    if (document_element->NeedsReattachLayoutTree() ||
-        document_element->ChildNeedsReattachLayoutTree()) {
+    if (NeedsLayoutTreeRebuild()) {
       TRACE_EVENT0("blink,blink_style", "Document::rebuildLayoutTree");
       SCOPED_BLINK_UMA_HISTOGRAM_TIMER_HIGHRES("Style.RebuildLayoutTreeTime");
       GetStyleEngine().RebuildLayoutTree();

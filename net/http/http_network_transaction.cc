@@ -193,8 +193,14 @@ int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
     can_send_early_data_ = true;
   }
 
-  if (request_->load_flags & LOAD_PREFETCH)
+  if (request_->load_flags & LOAD_PREFETCH) {
     response_.unused_since_prefetch = true;
+  }
+
+  if (request_->load_flags & LOAD_RESTRICTED_PREFETCH) {
+    DCHECK(response_.unused_since_prefetch);
+    response_.restricted_prefetch = true;
+  }
 
   next_state_ = STATE_NOTIFY_BEFORE_CREATE_STREAM;
   int rv = DoLoop(OK);

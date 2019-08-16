@@ -35,8 +35,6 @@ void WorkerNodeImpl::AddClientFrame(FrameNodeImpl* frame_node) {
 
   frame_node->AddChildWorker(this);
 
-  for (auto& observer : observers())
-    observer.OnClientFrameAdded(this, frame_node);
   for (auto* observer : GetObservers())
     observer->OnClientFrameAdded(this, frame_node);
 }
@@ -44,8 +42,6 @@ void WorkerNodeImpl::AddClientFrame(FrameNodeImpl* frame_node) {
 void WorkerNodeImpl::RemoveClientFrame(FrameNodeImpl* frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  for (auto& observer : observers())
-    observer.OnBeforeClientFrameRemoved(this, frame_node);
   for (auto* observer : GetObservers())
     observer->OnBeforeClientFrameRemoved(this, frame_node);
 
@@ -79,8 +75,6 @@ void WorkerNodeImpl::AddClientWorker(WorkerNodeImpl* worker_node) {
 
   worker_node->AddChildWorker(this);
 
-  for (auto& observer : observers())
-    observer.OnClientWorkerAdded(this, worker_node);
   for (auto* observer : GetObservers())
     observer->OnClientWorkerAdded(this, worker_node);
 }
@@ -88,8 +82,6 @@ void WorkerNodeImpl::AddClientWorker(WorkerNodeImpl* worker_node) {
 void WorkerNodeImpl::RemoveClientWorker(WorkerNodeImpl* worker_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  for (auto& observer : observers())
-    observer.OnBeforeClientWorkerRemoved(this, worker_node);
   for (auto* observer : GetObservers())
     observer->OnBeforeClientWorkerRemoved(this, worker_node);
 

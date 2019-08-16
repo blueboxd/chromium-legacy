@@ -9,12 +9,14 @@
 #include "chrome/browser/ui/passwords/credential_leak_dialog_controller.h"
 
 class CredentialLeakPrompt;
+class PasswordsLeakDialogDelegate;
 
 // A UI controller responsible for the credential leak dialog.
 class CredentialLeakDialogControllerImpl
     : public CredentialLeakDialogController {
  public:
-  CredentialLeakDialogControllerImpl();
+  explicit CredentialLeakDialogControllerImpl(
+      PasswordsLeakDialogDelegate* delegate);
   ~CredentialLeakDialogControllerImpl() override;
 
   // Pop up the credential leak dialog.
@@ -22,9 +24,15 @@ class CredentialLeakDialogControllerImpl
 
   // CredentialLeakDialogController:
   bool IsShowingAccountChooser() const override;
+  void OnCheckPasswords() override;
+  void OnCloseDialog() override;
 
  private:
+  // Release |credential_leak_dialog_| and close the open dialog.
+  void ResetDialog();
+
   CredentialLeakPrompt* credential_leak_dialog_;
+  PasswordsLeakDialogDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialLeakDialogControllerImpl);
 };

@@ -245,6 +245,10 @@ const char kBundledConnectionHelpDescription[] =
     "an interstitial after clicking the 'Learn More' link on a previous "
     "interstitial.";
 
+const char kBundledHTTPExchangesName[] = "Bundled HTTP Exchanges";
+const char kBundledHTTPExchangesDescription[] =
+    "Enables experimental supports for Bundled HTTP Exchanges core navigation.";
+
 const char kBypassAppBannerEngagementChecksName[] =
     "Bypass user engagement checks";
 const char kBypassAppBannerEngagementChecksDescription[] =

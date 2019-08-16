@@ -33,12 +33,6 @@ def main():
     was_error_reported = [False]
 
     def report_error(message):
-        # Incomplete IDL compiler produces a lot of errors, which break trybots.
-        # So, we ignore all the errors for the time being.
-        # TODO(bindings-team): Remove the following lines and enable the error
-        # report.
-        if True:  # pylint: disable=using-constant-test
-            return
         was_error_reported[0] = True
         sys.stderr.writelines([message, '\n'])
 

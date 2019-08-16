@@ -128,7 +128,7 @@ class CrostiniPackageService : public KeyedService,
       const base::FilePath& package_path,
       CrostiniManager::GetLinuxPackageInfoCallback callback,
       bool share_success,
-      std::string share_failure_reason);
+      const std::string& share_failure_reason);
 
   // Wraps the callback provided in GetLinuxPackageInfo().
   void OnGetLinuxPackageInfo(

@@ -489,7 +489,8 @@ DisplayResourceProvider::LockForRead(ResourceId id) {
       }
       resource->SetLocallyUsed();
     }
-    if (mailbox.IsSharedImage() && enable_shared_images_) {
+    if (mailbox.IsSharedImage() && enable_shared_images_ &&
+        resource->lock_for_read_count == 0) {
       gl->BeginSharedImageAccessDirectCHROMIUM(
           resource->gl_id, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
     }
@@ -531,7 +532,8 @@ void DisplayResourceProvider::UnlockForRead(ResourceId id) {
   ChildResource* resource = &it->second;
   DCHECK_GT(resource->lock_for_read_count, 0);
   if (resource->transferable.mailbox_holder.mailbox.IsSharedImage() &&
-      resource->is_gpu_resource_type() && enable_shared_images_) {
+      resource->is_gpu_resource_type() && enable_shared_images_ &&
+      resource->lock_for_read_count == 1) {
     DCHECK(resource->gl_id);
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);

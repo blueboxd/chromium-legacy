@@ -26,7 +26,6 @@ struct DesktopMediaID;
 }  // namespace content
 
 namespace gfx {
-class GpuMemoryBuffer;
 class ClientNativePixmapFactory;
 class Size;
 }  // namespace gfx
@@ -82,11 +81,8 @@ class ArcScreenCaptureSession : public mojom::ScreenCaptureSession,
   // Callback for when we perform CopyOutputRequests.
   void OnDesktopCaptured(std::unique_ptr<viz::CopyOutputResult> result);
   // Callback for completion of GL commands.
-  void QueryCompleted(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
-                      GLuint query_id,
-                      GLuint texture,
-                      GLuint id,
-                      SetOutputBufferCallback callback);
+  void QueryCompleted(GLuint query_id,
+                      std::unique_ptr<PendingBuffer> pending_buffer);
   // Callback for a user clicking Stop on the notification for screen capture.
   void NotificationStop();
 

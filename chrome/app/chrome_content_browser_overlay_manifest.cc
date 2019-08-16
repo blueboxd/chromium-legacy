@@ -57,7 +57,7 @@
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"  // nogncheck
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
-#include "media/capture/video/chromeos/mojom/cros_image_capture.mojom.h"
+#include "media/capture/video/chromeos/mojom/camera_app.mojom.h"
 #endif
 
 #if defined(OS_WIN)
@@ -183,7 +183,8 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 chromeos::ime::mojom::InputEngineManager,
                 chromeos::machine_learning::mojom::PageHandler,
                 chromeos::media_perception::mojom::MediaPerception,
-                cros::mojom::CrosImageCapture,
+                cros::mojom::CameraAppDeviceProvider,
+                cros::mojom::CameraAppHelper,
 #endif
                 contextual_search::mojom::ContextualSearchJsApiService,
                 dom_distiller::mojom::DistillabilityService,

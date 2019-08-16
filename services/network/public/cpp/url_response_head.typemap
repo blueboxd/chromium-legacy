@@ -4,7 +4,11 @@
 
 mojom = "//services/network/public/mojom/url_loader.mojom"
 public_headers = [ "//services/network/public/cpp/resource_response.h" ]
-traits_headers = [ "//services/network/public/cpp/network_ipc_param_traits.h" ]
+traits_headers =
+    [ "//services/network/public/cpp/url_response_head_mojom_traits.h" ]
+sources = [
+  "//services/network/public/cpp/url_response_head_mojom_traits.cc",
+]
 public_deps = [
   "//services/network/public/cpp:cpp_base",
 ]

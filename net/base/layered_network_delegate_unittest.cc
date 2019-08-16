@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "net/base/auth.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate_impl.h"
@@ -138,10 +137,8 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
     return false;
   }
 
-  bool OnForcePrivacyMode(
-      const GURL& url,
-      const GURL& site_for_cookies,
-      const base::Optional<url::Origin>& top_frame_origin) const override {
+  bool OnForcePrivacyMode(const GURL& url,
+                          const GURL& site_for_cookies) const override {
     IncrementAndCompareCounter("on_force_privacy_mode_count");
     return false;
   }
@@ -214,7 +211,7 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     EXPECT_FALSE(
         OnCanSetCookie(*request, net::CanonicalCookie(), nullptr, true));
     EXPECT_FALSE(OnCanAccessFile(*request, base::FilePath(), base::FilePath()));
-    EXPECT_FALSE(OnForcePrivacyMode(GURL(), GURL(), base::nullopt));
+    EXPECT_FALSE(OnForcePrivacyMode(GURL(), GURL()));
     EXPECT_FALSE(OnCancelURLRequestWithPolicyViolatingReferrerHeader(
         *request, GURL(), GURL()));
   }
@@ -328,10 +325,8 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     EXPECT_EQ(1, (*counters_)["on_can_access_file_count"]);
   }
 
-  bool OnForcePrivacyModeInternal(
-      const GURL& url,
-      const GURL& site_for_cookies,
-      const base::Optional<url::Origin>& top_frame_origin) const override {
+  bool OnForcePrivacyModeInternal(const GURL& url,
+                                  const GURL& site_for_cookies) const override {
     ++(*counters_)["on_force_privacy_mode_count"];
     EXPECT_EQ(1, (*counters_)["on_force_privacy_mode_count"]);
     return false;

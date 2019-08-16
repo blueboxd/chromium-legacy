@@ -13,6 +13,7 @@ js2gtest("interactive_ui_tests_js_webui") {
     "bookmarks/bookmarks_focus_test.js",
     "cr_elements/cr_elements_focus_test.js",
     "cr_elements/cr_elements_v3_focus_test.js",
+    "cr_focus_outline_manager_test.js",
     "cr_focus_row_behavior_interactive_test.js",
     "extensions/cr_extensions_interactive_ui_tests.js",
     "history/history_focus_test.js",

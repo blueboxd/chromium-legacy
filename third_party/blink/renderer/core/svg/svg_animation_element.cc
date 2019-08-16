@@ -166,7 +166,7 @@ void SVGAnimationElement::ParseAttribute(
   }
 
   if (name == svg_names::kKeyTimesAttr) {
-    if (!ParseKeyTimes(params.new_value, key_times_, true)) {
+    if (!ParseKeyTimes(params.new_value, key_times_from_attribute_, true)) {
       ReportAttributeParsingError(SVGParseStatus::kParsingFailed, name,
                                   params.new_value);
     }
@@ -338,35 +338,38 @@ void SVGAnimationElement::CalculateKeyTimesForCalcModePaced() {
 
   unsigned values_count = values_.size();
   DCHECK_GE(values_count, 1u);
-  if (values_count == 1)
+  if (values_count == 1) {
+    // Don't swap lists.
+    use_paced_key_times_ = false;
     return;
+  }
+  // Clear the list and use it, even if the rest of the function fail
+  use_paced_key_times_ = true;
+  key_times_for_paced_.clear();
 
-  // FIXME, webkit.org/b/109010: m_keyTimes should not be modified in this
-  // function.
-  key_times_.clear();
-
-  Vector<float> key_times_for_paced;
+  Vector<float> calculated_key_times;
   float total_distance = 0;
-  key_times_for_paced.push_back(0);
+  calculated_key_times.push_back(0);
   for (unsigned n = 0; n < values_count - 1; ++n) {
     // Distance in any units
     float distance = CalculateDistance(values_[n], values_[n + 1]);
-    if (distance < 0)
+    if (distance < 0) {
       return;
+    }
     total_distance += distance;
-    key_times_for_paced.push_back(distance);
+    calculated_key_times.push_back(distance);
   }
-  if (!total_distance)
+  if (!total_distance) {
     return;
+  }
 
   // Normalize.
-  for (unsigned n = 1; n < key_times_for_paced.size() - 1; ++n)
-    key_times_for_paced[n] =
-        key_times_for_paced[n - 1] + key_times_for_paced[n] / total_distance;
-  key_times_for_paced[key_times_for_paced.size() - 1] = 1;
-
-  // Use key times calculated based on pacing instead of the user provided ones.
-  key_times_ = key_times_for_paced;
+  for (unsigned n = 1; n < calculated_key_times.size() - 1; ++n) {
+    calculated_key_times[n] =
+        calculated_key_times[n - 1] + calculated_key_times[n] / total_distance;
+  }
+  calculated_key_times.back() = 1.0f;
+  key_times_for_paced_.swap(calculated_key_times);
 }
 
 static inline double SolveEpsilon(double duration) {
@@ -375,14 +378,14 @@ static inline double SolveEpsilon(double duration) {
 
 unsigned SVGAnimationElement::CalculateKeyTimesIndex(float percent) const {
   unsigned index;
-  unsigned key_times_count = key_times_.size();
+  unsigned key_times_count = KeyTimes().size();
   // For linear and spline animations, the last value must be '1'. In those
   // cases we don't need to consider the last value, since |percent| is never
   // greater than one.
   if (key_times_count && GetCalcMode() != kCalcModeDiscrete)
     key_times_count--;
   for (index = 1; index < key_times_count; ++index) {
-    if (key_times_[index] > percent)
+    if (KeyTimes()[index] > percent)
       break;
   }
   return --index;
@@ -404,8 +407,8 @@ float SVGAnimationElement::CalculatePercentForSpline(
 float SVGAnimationElement::CalculatePercentFromKeyPoints(float percent) const {
   DCHECK(!key_points_.IsEmpty());
   DCHECK_NE(GetCalcMode(), kCalcModePaced);
-  DCHECK_GT(key_times_.size(), 1u);
-  DCHECK_EQ(key_points_.size(), key_times_.size());
+  DCHECK_GT(KeyTimes().size(), 1u);
+  DCHECK_EQ(key_points_.size(), KeyTimes().size());
 
   if (percent == 1)
     return key_points_[key_points_.size() - 1];
@@ -416,9 +419,9 @@ float SVGAnimationElement::CalculatePercentFromKeyPoints(float percent) const {
   if (GetCalcMode() == kCalcModeDiscrete)
     return from_key_point;
 
-  DCHECK_LT(index + 1, key_times_.size());
-  float from_percent = key_times_[index];
-  float to_percent = key_times_[index + 1];
+  DCHECK_LT(index + 1, KeyTimes().size());
+  float from_percent = KeyTimes()[index];
+  float to_percent = KeyTimes()[index + 1];
   float to_key_point = key_points_[index + 1];
   float key_point_percent =
       (percent - from_percent) / (to_percent - from_percent);
@@ -431,8 +434,8 @@ float SVGAnimationElement::CalculatePercentFromKeyPoints(float percent) const {
 }
 
 float SVGAnimationElement::CalculatePercentForFromTo(float percent) const {
-  if (GetCalcMode() == kCalcModeDiscrete && key_times_.size() == 2)
-    return percent > key_times_[1] ? 1 : 0;
+  if (GetCalcMode() == kCalcModeDiscrete && KeyTimes().size() == 2)
+    return percent > KeyTimes()[1] ? 1 : 0;
 
   return percent;
 }
@@ -442,7 +445,7 @@ void SVGAnimationElement::CurrentValuesFromKeyPoints(float percent,
                                                      String& from,
                                                      String& to) const {
   DCHECK(!key_points_.IsEmpty());
-  DCHECK_EQ(key_points_.size(), key_times_.size());
+  DCHECK_EQ(key_points_.size(), KeyTimes().size());
   DCHECK_NE(GetCalcMode(), kCalcModePaced);
   effective_percent = CalculatePercentFromKeyPoints(percent);
   unsigned index =
@@ -477,9 +480,9 @@ void SVGAnimationElement::CurrentValuesForValuesAnimation(
   if (!key_points_.IsEmpty() && calc_mode != kCalcModePaced)
     return CurrentValuesFromKeyPoints(percent, effective_percent, from, to);
 
-  unsigned key_times_count = key_times_.size();
+  unsigned key_times_count = KeyTimes().size();
   DCHECK(!key_times_count || values_count == key_times_count);
-  DCHECK(!key_times_count || (key_times_count > 1 && !key_times_[0]));
+  DCHECK(!key_times_count || (key_times_count > 1 && !KeyTimes()[0]));
 
   unsigned index = CalculateKeyTimesIndex(percent);
   if (calc_mode == kCalcModeDiscrete) {
@@ -494,8 +497,8 @@ void SVGAnimationElement::CurrentValuesForValuesAnimation(
   float from_percent;
   float to_percent;
   if (key_times_count) {
-    from_percent = key_times_[index];
-    to_percent = key_times_[index + 1];
+    from_percent = KeyTimes()[index];
+    to_percent = KeyTimes()[index + 1];
   } else {
     index = static_cast<unsigned>(floorf(percent * (values_count - 1)));
     from_percent = static_cast<float>(index) / (values_count - 1);
@@ -523,7 +526,7 @@ void SVGAnimationElement::StartedActiveInterval() {
 
   // These validations are appropriate for all animation modes.
   if (FastHasAttribute(svg_names::kKeyPointsAttr) &&
-      key_points_.size() != key_times_.size())
+      key_points_.size() != KeyTimes().size())
     return;
 
   AnimationMode animation_mode = GetAnimationMode();
@@ -536,7 +539,7 @@ void SVGAnimationElement::StartedActiveInterval() {
         (animation_mode == kValuesAnimation &&
          values_.size() - 1 != splines_count) ||
         (FastHasAttribute(svg_names::kKeyTimesAttr) &&
-         key_times_.size() - 1 != splines_count))
+         KeyTimes().size() - 1 != splines_count))
       return;
   }
 
@@ -550,7 +553,7 @@ void SVGAnimationElement::StartedActiveInterval() {
        animation_mode == kByAnimation) &&
       (FastHasAttribute(svg_names::kKeyPointsAttr) &&
        FastHasAttribute(svg_names::kKeyTimesAttr) &&
-       (key_times_.size() < 2 || key_times_.size() != key_points_.size())))
+       (KeyTimes().size() < 2 || KeyTimes().size() != key_points_.size())))
     return;
   if (animation_mode == kFromToAnimation) {
     animation_valid_ = CalculateFromAndToValues(from, to);
@@ -569,15 +572,15 @@ void SVGAnimationElement::StartedActiveInterval() {
         (calc_mode == kCalcModePaced ||
          !FastHasAttribute(svg_names::kKeyTimesAttr) ||
          FastHasAttribute(svg_names::kKeyPointsAttr) ||
-         (values_.size() == key_times_.size())) &&
-        (calc_mode == kCalcModeDiscrete || !key_times_.size() ||
-         key_times_.back() == 1) &&
+         (values_.size() == KeyTimes().size())) &&
+        (calc_mode == kCalcModeDiscrete || !KeyTimes().size() ||
+         KeyTimes().back() == 1) &&
         (calc_mode != kCalcModeSpline ||
          ((key_splines_.size() &&
            (key_splines_.size() == values_.size() - 1)) ||
           key_splines_.size() == key_points_.size() - 1)) &&
         (!FastHasAttribute(svg_names::kKeyPointsAttr) ||
-         (key_times_.size() > 1 && key_times_.size() == key_points_.size()));
+         (KeyTimes().size() > 1 && KeyTimes().size() == key_points_.size()));
     if (animation_valid_)
       animation_valid_ = CalculateToAtEndOfDurationValue(values_.back());
     if (calc_mode == kCalcModePaced && animation_valid_)
@@ -586,7 +589,7 @@ void SVGAnimationElement::StartedActiveInterval() {
     animation_valid_ =
         calc_mode == kCalcModePaced ||
         !FastHasAttribute(svg_names::kKeyPointsAttr) ||
-        (key_times_.size() > 1 && key_times_.size() == key_points_.size());
+        (KeyTimes().size() > 1 && KeyTimes().size() == key_points_.size());
   }
 
   if (animation_valid_ && (IsAdditive() || IsAccumulated()))
@@ -617,7 +620,7 @@ void SVGAnimationElement::UpdateAnimation(float percent,
   } else if (!key_points_.IsEmpty() && calc_mode != kCalcModePaced)
     effective_percent = CalculatePercentFromKeyPoints(percent);
   else if (key_points_.IsEmpty() && calc_mode == kCalcModeSpline &&
-           key_times_.size() > 1)
+           KeyTimes().size() > 1)
     effective_percent =
         CalculatePercentForSpline(percent, CalculateKeyTimesIndex(percent));
   else if (animation_mode == kFromToAnimation || animation_mode == kToAnimation)

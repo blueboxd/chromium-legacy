@@ -156,6 +156,9 @@ extern const char kBrowserTaskSchedulerDescription[];
 extern const char kBundledConnectionHelpName[];
 extern const char kBundledConnectionHelpDescription[];
 
+extern const char kBundledHTTPExchangesName[];
+extern const char kBundledHTTPExchangesDescription[];
+
 extern const char kBypassAppBannerEngagementChecksName[];
 extern const char kBypassAppBannerEngagementChecksDescription[];
 

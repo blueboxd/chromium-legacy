@@ -184,7 +184,7 @@ void CrostiniPackageService::OnSharePathForGetLinuxPackageInfo(
     const base::FilePath& package_path,
     CrostiniManager::GetLinuxPackageInfoCallback callback,
     bool share_success,
-    std::string share_failure_reason) {
+    const std::string& share_failure_reason) {
   if (!share_success) {
     LinuxPackageInfo info;
     info.success = false;

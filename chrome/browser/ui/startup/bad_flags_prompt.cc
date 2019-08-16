@@ -154,6 +154,7 @@ static const char* kBadFlags[] = {
 // "stability and security will suffer".
 static const base::Feature* kBadFeatureFlagsInAboutFlags[] = {
     &features::kAllowSignedHTTPExchangeCertsWithoutExtension,
+    &features::kBundledHTTPExchanges,
 #if defined(OS_ANDROID)
     &chrome::android::kCommandLineOnNonRooted,
 #endif  // OS_ANDROID

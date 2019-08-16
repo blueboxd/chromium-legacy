@@ -60,17 +60,8 @@
 
 namespace blink {
 
-std::unique_ptr<ServiceWorkerGlobalScopeProxy>
-ServiceWorkerGlobalScopeProxy::Create(
-    WebEmbeddedWorkerImpl& embedded_worker,
-    WebServiceWorkerContextClient& client,
-    scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner) {
-  return std::make_unique<ServiceWorkerGlobalScopeProxy>(
-      embedded_worker, client, std::move(parent_task_runner));
-}
-
 ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy() {
-  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+  DCHECK(parent_thread_default_task_runner_->BelongsToCurrentThread());
   // Verify that the proxy has been detached.
   DCHECK(!embedded_worker_);
 }
@@ -261,7 +252,7 @@ void ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() {
   // ServiceWorkerGlobalScope expects us to terminate the thread, so request
   // that here.
   PostCrossThreadTask(
-      *parent_task_runner_, FROM_HERE,
+      *parent_thread_default_task_runner_, FROM_HERE,
       CrossThreadBindOnce(&WebEmbeddedWorkerImpl::TerminateWorkerContext,
                           CrossThreadUnretained(embedded_worker_)));
 
@@ -311,23 +302,25 @@ void ServiceWorkerGlobalScopeProxy::RequestTermination(
 ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(
     WebEmbeddedWorkerImpl& embedded_worker,
     WebServiceWorkerContextClient& client,
-    scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner>
+        parent_thread_default_task_runner)
     : embedded_worker_(&embedded_worker),
-      parent_task_runner_(std::move(parent_task_runner)),
+      parent_thread_default_task_runner_(
+          std::move(parent_thread_default_task_runner)),
       client_(&client),
       worker_global_scope_(nullptr) {
   DETACH_FROM_THREAD(worker_thread_checker_);
-  DCHECK(parent_task_runner_);
+  DCHECK(parent_thread_default_task_runner_);
 }
 
 void ServiceWorkerGlobalScopeProxy::Detach() {
-  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+  DCHECK(parent_thread_default_task_runner_->BelongsToCurrentThread());
   embedded_worker_ = nullptr;
   client_ = nullptr;
 }
 
 void ServiceWorkerGlobalScopeProxy::TerminateWorkerContext() {
-  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+  DCHECK(parent_thread_default_task_runner_->BelongsToCurrentThread());
   embedded_worker_->TerminateWorkerContext();
 }
 

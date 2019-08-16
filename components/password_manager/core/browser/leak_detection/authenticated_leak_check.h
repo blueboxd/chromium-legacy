@@ -9,8 +9,9 @@
 #include <string>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
-#include "components/password_manager/core/browser/leak_detection/leak_detection_request.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_request_factory.h"
 #include "url/gurl.h"
 
 class GoogleServiceAuthError;
@@ -20,7 +21,6 @@ class SharedURLLoaderFactory;
 }  // namespace network
 
 namespace signin {
-class AccessTokenFetcher;
 struct AccessTokenInfo;
 class IdentityManager;
 }  // namespace signin
@@ -28,6 +28,7 @@ class IdentityManager;
 namespace password_manager {
 
 class LeakDetectionDelegateInterface;
+struct LookupSingleLeakData;
 struct SingleLookupResponse;
 
 // Performs a leak-check for {username, password} for Chrome signed-in users.
@@ -50,13 +51,27 @@ class AuthenticatedLeakCheck : public LeakDetectionCheck {
              base::StringPiece16 password) override;
 
 #if defined(UNIT_TEST)
-  const std::string& access_token() const { return access_token_; }
+  void set_network_factory(
+      std::unique_ptr<LeakDetectionRequestFactory> factory) {
+    network_request_factory_ = std::move(factory);
+  }
 #endif  // defined(UNIT_TEST)
 
  private:
+  class RequestPayloadHelper;
+
   // Called when the token request is done.
   void OnAccessTokenRequestCompleted(GoogleServiceAuthError error,
                                      signin::AccessTokenInfo access_token_info);
+
+  // Called when the payload for the request is precomputed.
+  void OnRequestDataReady(LookupSingleLeakData data);
+
+  // Does the network request to check the credentials.
+  void DoLeakRequest(
+      LookupSingleLeakData data,
+      std::string access_token,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   // Called when the single leak lookup request is done. |response| is null in
   // case of an invalid server response, or contains a valid
@@ -65,25 +80,22 @@ class AuthenticatedLeakCheck : public LeakDetectionCheck {
       std::unique_ptr<SingleLookupResponse> response);
 
   // Delegate for the instance. Should outlive |this|.
-  LeakDetectionDelegateInterface* delegate_;
-  // Identity manager for the profile.
-  signin::IdentityManager* identity_manager_;
-  // URL loader factory required for the network request to the identity
-  // endpoint.
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  // Actual request for the needed token.
-  std::unique_ptr<signin::AccessTokenFetcher> token_fetcher_;
+  LeakDetectionDelegateInterface* const delegate_;
+  // Helper class to asynchronously prepare the data for the request.
+  std::unique_ptr<RequestPayloadHelper> payload_helper_;
   // Class used to initiate a request to the identity leak lookup endpoint. This
   // is only instantiated if a valid |access_token_| could be obtained.
-  std::unique_ptr<LeakDetectionRequest> request_;
+  std::unique_ptr<LeakDetectionRequestInterface> request_;
+  // A factory for creating a |request_|.
+  std::unique_ptr<LeakDetectionRequestFactory> network_request_factory_;
   // |url| passed to Start().
   GURL url_;
   // |username| passed to Start().
   std::string username_;
-  // |password| passed to Start().
-  std::string password_;
-  // The token to be used for request.
-  std::string access_token_;
+  // Encryption key used during the request.
+  std::string encryption_key_;
+  // Weak pointers for different callbacks.
+  base::WeakPtrFactory<AuthenticatedLeakCheck> weak_ptr_factory_;
 };
 
 }  // namespace password_manager

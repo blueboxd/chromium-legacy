@@ -15,6 +15,9 @@ extern const base::FilePath::CharType kLoginDataFileName[];
 // URL to the password manager account dashboard.
 extern const char kPasswordManagerAccountDashboardURL[];
 
+// URL to the password manager checkup page.
+extern const char kPasswordManagerCheckupURL[];
+
 // URL to the help center article about Smart Lock;
 // TODO(crbug.com/862269): remove when "Smart Lock" is completely gone.
 extern const char kPasswordManagerHelpCenterSmartLock[];

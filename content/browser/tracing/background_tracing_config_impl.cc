@@ -490,8 +490,9 @@ TraceConfig BackgroundTracingConfigImpl::GetConfigForCategoryPreset(
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_SERVICEWORKER:
       return TraceConfig(
           "benchmark,toplevel,ipc,base,ServiceWorker,CacheStorage,Blob,"
-          "loading,mojom,navigation,renderer,blink,blink_gc,blink.user_timing,"
-          "fonts,disabled-by-default-cpu_profiler,disabled-by-default-network",
+          "IndexedDB,loading,mojom,navigation,renderer,blink,blink_gc,blink."
+          "user_timing,fonts,disabled-by-default-cpu_profiler,"
+          "disabled-by-default-network",
           record_mode);
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_POWER:
       return TraceConfig(

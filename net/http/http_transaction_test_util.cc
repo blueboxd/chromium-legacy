@@ -501,6 +501,11 @@ int MockNetworkTransaction::StartInternal(const HttpRequestInfo* request,
   if (request_->load_flags & LOAD_PREFETCH)
     response_.unused_since_prefetch = true;
 
+  if (request_->load_flags & LOAD_RESTRICTED_PREFETCH) {
+    DCHECK(response_.unused_since_prefetch);
+    response_.restricted_prefetch = true;
+  }
+
   // Pause and resume.
   if (!before_network_start_callback_.is_null()) {
     bool defer = false;

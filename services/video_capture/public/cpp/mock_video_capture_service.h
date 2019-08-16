@@ -30,8 +30,8 @@ class MockVideoCaptureService
       DoInjectGpuDependencies,
       void(video_capture::mojom::AcceleratorFactoryPtr& accelerator_factory));
 
-  void BindCrosImageCapture(
-      mojo::PendingReceiver<cros::mojom::CrosImageCapture>) override {}
+  void ConnectToCameraAppDeviceBridge(
+      mojo::PendingReceiver<cros::mojom::CameraAppDeviceBridge>) override {}
 #endif  // defined(OS_CHROMEOS
 
   void BindControlsForTesting(

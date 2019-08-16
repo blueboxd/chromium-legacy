@@ -30,6 +30,7 @@ class NavigationLoaderInterceptor;
 // basic sequence can pass.
 class BundledExchangesHandle final {
  public:
+  BundledExchangesHandle();
   explicit BundledExchangesHandle(const BundledExchangesSource& source);
   ~BundledExchangesHandle();
 
@@ -42,6 +43,9 @@ class BundledExchangesHandle final {
   void CreateURLLoaderFactory(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       mojo::Remote<network::mojom::URLLoaderFactory> fallback_factory);
+
+  // Checks if a valid BundledExchanges is attached, opened, and ready for use.
+  bool IsReadyForLoading();
 
  private:
   class PrimaryURLRedirectLoader;

@@ -157,6 +157,11 @@ class NET_EXPORT HttpResponseInfo {
   // used since.
   bool unused_since_prefetch;
 
+  // True if the response is a prefetch whose reuse is "restricted". This means
+  // it can only be reused from the cache by requests that are marked as able to
+  // use restricted prefetches.
+  bool restricted_prefetch;
+
   // True if this resource is stale and needs async revalidation.
   // This value is not persisted by Persist(); it is only ever set when the
   // response is retrieved from the cache.

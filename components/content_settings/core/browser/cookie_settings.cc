@@ -17,6 +17,8 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/buildflags/buildflags.h"
+#include "net/base/net_errors.h"
+#include "net/base/static_cookie_policy.h"
 #include "url/gurl.h"
 
 namespace content_settings {
@@ -121,12 +123,10 @@ void CookieSettings::ShutdownOnUIThread() {
   pref_change_registrar_.RemoveAll();
 }
 
-void CookieSettings::GetCookieSettingInternal(
-    const GURL& url,
-    const GURL& first_party_url,
-    bool is_third_party_request,
-    content_settings::SettingSource* source,
-    ContentSetting* cookie_setting) const {
+void CookieSettings::GetCookieSetting(const GURL& url,
+                                      const GURL& first_party_url,
+                                      content_settings::SettingSource* source,
+                                      ContentSetting* cookie_setting) const {
   DCHECK(cookie_setting);
   // Auto-allow in extensions or for WebUI embedded in a secure origin.
   if (first_party_url.SchemeIs(kChromeUIScheme) &&
@@ -158,11 +158,14 @@ void CookieSettings::GetCookieSettingInternal(
                      info.secondary_pattern.MatchesAllHosts() &&
                      ShouldBlockThirdPartyCookies() &&
                      !first_party_url.SchemeIs(extension_scheme_);
+  net::StaticCookiePolicy policy(
+      net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES);
 
   // We should always have a value, at least from the default provider.
   DCHECK(value);
   ContentSetting setting = ValueToContentSetting(value.get());
-  bool block = block_third && is_third_party_request;
+  bool block =
+      block_third && policy.CanAccessCookies(url, first_party_url) != net::OK;
   *cookie_setting = block ? CONTENT_SETTING_BLOCK : setting;
 }
 

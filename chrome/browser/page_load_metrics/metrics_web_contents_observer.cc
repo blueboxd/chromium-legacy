@@ -384,6 +384,16 @@ void MetricsWebContentsObserver::OnCookieChange(
                                     blocked_by_policy);
 }
 
+void MetricsWebContentsObserver::OnDomStorageAccessed(
+    const GURL& url,
+    const GURL& first_party_url,
+    bool local,
+    bool blocked_by_policy) {
+  if (committed_load_)
+    committed_load_->OnDomStorageAccessed(url, first_party_url, local,
+                                          blocked_by_policy);
+}
+
 const PageLoadExtraInfo
 MetricsWebContentsObserver::GetPageLoadExtraInfoForCommittedLoad() {
   DCHECK(committed_load_);

@@ -532,19 +532,19 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
       request_start_to_receive_headers_end_ms);
 
   if (!main_frame_timing_->request_start.is_null() &&
-      !GetDelegate()->GetNavigationStart().is_null()) {
+      !GetDelegate().GetNavigationStart().is_null()) {
     base::TimeDelta navigation_start_to_request_start =
-        main_frame_timing_->request_start - GetDelegate()->GetNavigationStart();
+        main_frame_timing_->request_start - GetDelegate().GetNavigationStart();
 
     builder->SetMainFrameResource_NavigationStartToRequestStart(
         navigation_start_to_request_start.InMilliseconds());
   }
 
   if (!main_frame_timing_->receive_headers_start.is_null() &&
-      !GetDelegate()->GetNavigationStart().is_null()) {
+      !GetDelegate().GetNavigationStart().is_null()) {
     base::TimeDelta navigation_start_to_receive_headers_start =
         main_frame_timing_->receive_headers_start -
-        GetDelegate()->GetNavigationStart();
+        GetDelegate().GetNavigationStart();
     builder->SetMainFrameResource_NavigationStartToReceiveHeadersStart(
         navigation_start_to_receive_headers_start.InMilliseconds());
   }
@@ -659,7 +659,7 @@ void UkmPageLoadMetricsObserver::OnTimingUpdate(
 void UkmPageLoadMetricsObserver::OnCpuTimingUpdate(
     content::RenderFrameHost* subframe_rfh,
     const page_load_metrics::mojom::CpuTiming& timing) {
-  if (GetDelegate()->GetVisibilityTracker().currently_in_foreground())
+  if (GetDelegate().GetVisibilityTracker().currently_in_foreground())
     total_foreground_cpu_time_ += timing.task_time;
 }
 

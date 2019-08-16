@@ -32,6 +32,12 @@ struct CONTENT_EXPORT BundledExchangesSource {
   // exchange provided by the BundledExchanges.
   bool Match(const GURL& url) const;
 
+  // A flag to represent if this source can be trusted, i.e. using the URL in
+  // the BundledExchanges as the origin for the content. Otherwise, we will use
+  // the origin that serves the BundledExchanges itself. For instance, if the
+  // BundledExchanges is in a local file system, file:// should be the origin.
+  bool is_trusted = false;
+
   const base::FilePath file_path;
 };
 

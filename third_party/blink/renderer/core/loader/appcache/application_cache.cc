@@ -41,7 +41,7 @@
 namespace blink {
 
 ApplicationCache::ApplicationCache(LocalFrame* frame) : DOMWindowClient(frame) {
-  ApplicationCacheHost* cache_host = GetApplicationCacheHost();
+  ApplicationCacheHostForFrame* cache_host = GetApplicationCacheHost();
   if (cache_host)
     cache_host->SetApplicationCache(this);
 }
@@ -80,7 +80,7 @@ uint16_t ApplicationCache::status() const {
                 "");
 
   RecordAPIUseType();
-  ApplicationCacheHost* cache_host = GetApplicationCacheHost();
+  ApplicationCacheHostForFrame* cache_host = GetApplicationCacheHost();
   if (!cache_host) {
     return static_cast<uint16_t>(
         mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED);
@@ -90,7 +90,7 @@ uint16_t ApplicationCache::status() const {
 
 void ApplicationCache::update(ExceptionState& exception_state) {
   RecordAPIUseType();
-  ApplicationCacheHost* cache_host = GetApplicationCacheHost();
+  ApplicationCacheHostForFrame* cache_host = GetApplicationCacheHost();
   if (!cache_host || !cache_host->Update()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -100,7 +100,7 @@ void ApplicationCache::update(ExceptionState& exception_state) {
 
 void ApplicationCache::swapCache(ExceptionState& exception_state) {
   RecordAPIUseType();
-  ApplicationCacheHost* cache_host = GetApplicationCacheHost();
+  ApplicationCacheHostForFrame* cache_host = GetApplicationCacheHost();
   if (!cache_host || !cache_host->SwapCache()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -109,7 +109,7 @@ void ApplicationCache::swapCache(ExceptionState& exception_state) {
 }
 
 void ApplicationCache::abort() {
-  ApplicationCacheHost* cache_host = GetApplicationCacheHost();
+  ApplicationCacheHostForFrame* cache_host = GetApplicationCacheHost();
   if (cache_host)
     cache_host->Abort();
 }

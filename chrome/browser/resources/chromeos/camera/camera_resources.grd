@@ -68,8 +68,8 @@
           file="${root_gen_dir}/media/capture/video/chromeos/mojom/camera_metadata_tags.mojom-lite.js"
           use_base_dir="false"
           type="BINDATA"/>
-      <include name="IDR_CAMERA_CROS_IMAGE_CAPTURE_MOJOM_LITE_JS"
-          file="${root_gen_dir}/media/capture/video/chromeos/mojom/cros_image_capture.mojom-lite.js"
+      <include name="IDR_CAMERA_APP_MOJOM_LITE_JS"
+          file="${root_gen_dir}/media/capture/video/chromeos/mojom/camera_app.mojom-lite.js"
           use_base_dir="false"
           type="BINDATA"/>
 

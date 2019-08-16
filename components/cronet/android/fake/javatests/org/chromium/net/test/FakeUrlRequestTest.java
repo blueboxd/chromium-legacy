@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.net.CronetEngine;
 import org.chromium.net.InlineExecutionProhibitedException;
 import org.chromium.net.TestUrlRequestCallback;
@@ -407,6 +408,7 @@ public class FakeUrlRequestTest {
         callback.blockForDone();
     }
 
+    @DisabledTest(message = "crbug.com/994722")
     @Test
     @SmallTest
     public void testStatusIdleWhenWaitingForRedirect() {
@@ -710,6 +712,7 @@ public class FakeUrlRequestTest {
         }
     }
 
+    @DisabledTest(message = "crbug.com/994722")
     @Test
     @SmallTest
     public void testReadWhileRedirectingFails() {
@@ -733,6 +736,7 @@ public class FakeUrlRequestTest {
         callback.blockForDone();
     }
 
+    @DisabledTest(message = "crbug.com/994722")
     @Test
     @SmallTest
     public void testShuttingDownCronetEngineWithActiveRequestFails() {

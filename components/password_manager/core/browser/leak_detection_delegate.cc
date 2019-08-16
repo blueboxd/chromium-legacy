@@ -7,7 +7,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
-#include "components/password_manager/core/browser/leak_detection/leak_detection_request_factory_impl.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory_impl.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -20,7 +20,7 @@ using Logger = autofill::SavePasswordProgressLogger;
 
 LeakDetectionDelegate::LeakDetectionDelegate(PasswordManagerClient* client)
     : client_(client),
-      leak_factory_(std::make_unique<LeakDetectionRequestFactoryImpl>()) {}
+      leak_factory_(std::make_unique<LeakDetectionCheckFactoryImpl>()) {}
 
 LeakDetectionDelegate::~LeakDetectionDelegate() = default;
 
@@ -58,6 +58,9 @@ void LeakDetectionDelegate::OnError(LeakDetectionError error) {
         logger.LogMessage(Logger::STRING_LEAK_DETECTION_SIGNED_OUT_ERROR);
         break;
       case LeakDetectionError::kTokenRequestFailure:
+        logger.LogMessage(Logger::STRING_LEAK_DETECTION_TOKEN_REQUEST_ERROR);
+        break;
+      case LeakDetectionError::kHashingFailure:
         logger.LogMessage(Logger::STRING_LEAK_DETECTION_TOKEN_REQUEST_ERROR);
         break;
       case LeakDetectionError::kInvalidServerResponse:

@@ -232,6 +232,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[password_manager::prefs::kCredentialsEnableAutosignin] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[password_manager::prefs::kPasswordLeakDetectionEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Privacy page
   (*s_whitelist)[::prefs::kSigninAllowedOnNextStartup] =

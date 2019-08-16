@@ -22,8 +22,7 @@ void CookieJar::SetCookie(const String& value) {
 
   RequestRestrictedCookieManagerIfNeeded();
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.CookieJar.SyncCookiesSetTime");
-  backend_->SetCookieFromString(cookie_url, document_->SiteForCookies(),
-                                document_->TopFrameOrigin(), value);
+  backend_->SetCookieFromString(cookie_url, document_->SiteForCookies(), value);
 }
 
 String CookieJar::Cookies() {
@@ -34,8 +33,7 @@ String CookieJar::Cookies() {
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.CookieJar.SyncCookiesTime");
   RequestRestrictedCookieManagerIfNeeded();
   String value;
-  backend_->GetCookiesString(cookie_url, document_->SiteForCookies(),
-                             document_->TopFrameOrigin(), &value);
+  backend_->GetCookiesString(cookie_url, document_->SiteForCookies(), &value);
   return value;
 }
 
@@ -47,7 +45,7 @@ bool CookieJar::CookiesEnabled() {
   RequestRestrictedCookieManagerIfNeeded();
   bool cookies_enabled = false;
   backend_->CookiesEnabledFor(cookie_url, document_->SiteForCookies(),
-                              document_->TopFrameOrigin(), &cookies_enabled);
+                              &cookies_enabled);
   return cookies_enabled;
 }
 

@@ -242,6 +242,10 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
     }
 
     @Override
+    // This will return how many items the RecyclerView should show, which can be a subset of
+    // contacts when in search mode. This function also includes the Select All checkbox (which is
+    // not a contact, obviously). To get the total number of contacts use getAllContacts().size()
+    // instead.
     public int getItemCount() {
         if (mSearchResults != null) return mSearchResults.size();
         if (mContactDetails == null || mContactDetails.size() == 0) return 0;

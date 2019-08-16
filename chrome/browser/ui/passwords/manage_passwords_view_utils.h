@@ -109,4 +109,7 @@ void NavigateToManagePasswordsPage(
     Browser* browser,
     password_manager::ManagePasswordsReferrer referrer);
 
+// Navigates to Passwords Checkup page.
+void NavigateToPasswordCheckupPage(Profile* profile);
+
 #endif  // CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_VIEW_UTILS_H_

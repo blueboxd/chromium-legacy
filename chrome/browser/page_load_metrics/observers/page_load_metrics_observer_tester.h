@@ -101,6 +101,12 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
                             const net::CanonicalCookie& cookie,
                             bool blocked_by_policy);
 
+  // Simulate accessing the local storage or session storage.
+  void SimulateDomStorageAccess(const GURL& url,
+                                const GURL& first_party_url,
+                                bool local,
+                                bool blocked_by_policy);
+
   MetricsWebContentsObserver* observer() const;
 
   // Gets the PageLoadExtraInfo for the committed_load_ in observer_.

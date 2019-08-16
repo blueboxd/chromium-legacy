@@ -25,7 +25,7 @@ public class DnsStatus {
             List<InetAddress> dnsServers, boolean privateDnsActive, String privateDnsServerName) {
         mDnsServers = dnsServers;
         mPrivateDnsActive = privateDnsActive;
-        mPrivateDnsServerName = privateDnsServerName;
+        mPrivateDnsServerName = (privateDnsServerName != null) ? privateDnsServerName : "";
     }
 
     @CalledByNative

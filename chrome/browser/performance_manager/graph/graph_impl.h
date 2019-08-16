@@ -26,7 +26,6 @@
 namespace performance_manager {
 
 class FrameNodeImpl;
-class GraphImplObserver;
 class Node;
 class NodeBase;
 class PageNodeImpl;
@@ -82,13 +81,6 @@ class GraphImpl : public Graph {
   }
   ukm::UkmRecorder* ukm_recorder() const { return ukm_recorder_; }
 
-  // Register |observer| on the graph.
-  void RegisterObserver(GraphImplObserver* observer);
-
-  // Unregister |observer| from observing graph changes. Note that this does not
-  // unregister |observer| from any nodes it's subscribed to.
-  void UnregisterObserver(GraphImplObserver* observer);
-
   SystemNodeImpl* FindOrCreateSystemNodeImpl();
   std::vector<ProcessNodeImpl*> GetAllProcessNodeImpls() const;
   std::vector<FrameNodeImpl*> GetAllFrameNodeImpls() const;
@@ -101,10 +93,6 @@ class GraphImpl : public Graph {
 
   // Returns true if |node| is in this graph.
   bool NodeInGraph(const NodeBase* node);
-
-  std::vector<GraphImplObserver*>& observers_for_testing() {
-    return observers_;
-  }
 
   // Management functions for node owners, any node added to the graph must be
   // removed from the graph before it's deleted.
@@ -154,7 +142,6 @@ class GraphImpl : public Graph {
   std::unique_ptr<SystemNodeImpl> system_node_;
   NodeSet nodes_;
   ProcessByPidMap processes_by_pid_;
-  std::vector<GraphImplObserver*> observers_;
   ukm::UkmRecorder* ukm_recorder_ = nullptr;
 
   // Typed observers.

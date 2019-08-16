@@ -24,11 +24,12 @@ namespace {
 const size_t kStorageControllerTotalCacheLimitInBytesLowEnd = 1 * 1024 * 1024;
 const size_t kStorageControllerTotalCacheLimitInBytes = 5 * 1024 * 1024;
 
-mojom::blink::StoragePartitionServicePtr GetAndCreateStorageInterface() {
-  mojom::blink::StoragePartitionServicePtr ptr;
+mojo::PendingRemote<mojom::blink::StoragePartitionService>
+GetAndCreateStorageInterface() {
+  mojo::PendingRemote<mojom::blink::StoragePartitionService> pending_remote;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&ptr));
-  return ptr;
+      pending_remote.InitWithNewPipeAndPassReceiver());
+  return pending_remote;
 }
 }  // namespace
 
@@ -55,7 +56,8 @@ bool StorageController::CanAccessStorageArea(LocalFrame* frame,
 
 StorageController::StorageController(
     scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
-    mojom::blink::StoragePartitionServicePtr storage_partition_service,
+    mojo::PendingRemote<mojom::blink::StoragePartitionService>
+        storage_partition_service,
     size_t total_cache_limit)
     : ipc_runner_(std::move(ipc_runner)),
       namespaces_(MakeGarbageCollected<

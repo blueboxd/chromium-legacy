@@ -202,6 +202,7 @@ public class ManageSyncPreferencesTest {
         assertPaymentsIntegrationEnabled(true);
     }
 
+    @DisabledTest(message = "crbug.com/994726")
     @Test
     @SmallTest
     @Feature({"Sync"})

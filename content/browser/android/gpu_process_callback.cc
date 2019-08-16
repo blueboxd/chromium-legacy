@@ -41,6 +41,8 @@ JNI_GpuProcessCallback_GetViewSurface(
   gl::ScopedJavaSurface surface_view =
       gpu::GpuSurfaceTracker::GetInstance()->AcquireJavaSurface(
           surface_id, &can_be_used_with_surface_control);
+  if (surface_view.IsEmpty())
+    return nullptr;
   return JNI_SurfaceWrapper_create(env, surface_view.j_surface(),
                                    can_be_used_with_surface_control);
 }

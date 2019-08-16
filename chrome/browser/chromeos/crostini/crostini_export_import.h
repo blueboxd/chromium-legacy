@@ -160,7 +160,7 @@ class CrostiniExportImport : public KeyedService,
                           CrostiniManager::CrostiniResultCallback callback,
                           const base::FilePath& container_path,
                           bool result,
-                          const std::string failure_reason);
+                          const std::string& failure_reason);
   void OnExportComplete(const base::Time& start,
                         const ContainerId& container_id,
                         CrostiniManager::CrostiniResultCallback callback,
@@ -170,7 +170,7 @@ class CrostiniExportImport : public KeyedService,
                           CrostiniManager::CrostiniResultCallback callback,
                           const base::FilePath& container_path,
                           bool result,
-                          const std::string failure_reason);
+                          const std::string& failure_reason);
   void OnImportComplete(const base::Time& start,
                         const ContainerId& container_id,
                         CrostiniManager::CrostiniResultCallback callback,

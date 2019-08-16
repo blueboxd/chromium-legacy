@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "services/network/public/mojom/url_response_head.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "url/mojom/url.mojom";
 

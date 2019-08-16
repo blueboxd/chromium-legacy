@@ -19,7 +19,6 @@
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "chrome/browser/performance_manager/graph/worker_node_impl.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
 
 namespace ukm {
 class UkmEntryBuilder;
@@ -83,10 +82,6 @@ GraphImpl::~GraphImpl() {
   DCHECK(process_node_observers_.empty());
   DCHECK(system_node_observers_.empty());
 
-  // All observers should have been removed before the graph is deleted.
-  // TODO(chrisha): This will disappear, as new observers are allowed to stay
-  // attached at graph death.
-  DCHECK(observers_.empty());
   // All process nodes should have been removed already.
   DCHECK(processes_by_pid_.empty());
 
@@ -203,20 +198,6 @@ std::vector<const WorkerNode*> GraphImpl::GetAllWorkerNodes() const {
   return GetAllNodesOfType<WorkerNodeImpl, const WorkerNode*>();
 }
 
-void GraphImpl::RegisterObserver(GraphImplObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  observer->SetGraph(this);
-  AddObserverImpl(&observers_, observer);
-  observer->OnRegistered();
-}
-
-void GraphImpl::UnregisterObserver(GraphImplObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RemoveObserverImpl(&observers_, observer);
-  observer->OnUnregistered();
-  observer->SetGraph(nullptr);
-}
-
 ukm::UkmRecorder* GraphImpl::GetUkmRecorder() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return ukm_recorder();
@@ -238,34 +219,6 @@ GraphImpl* GraphImpl::FromGraph(const Graph* graph) {
 
 void GraphImpl::OnNodeAdded(NodeBase* node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // This handles legacy GraphImplObserver implementation.
-  for (auto* observer : observers_) {
-    if (observer->ShouldObserve(node)) {
-      // TODO(chrisha): Remove this logic once all observers have been migrated.
-      switch (node->type()) {
-        case NodeTypeEnum::kFrame: {
-          FrameNodeImpl::FromNodeBase(node)->AddObserver(observer);
-        } break;
-        case NodeTypeEnum::kPage: {
-          PageNodeImpl::FromNodeBase(node)->AddObserver(observer);
-        } break;
-        case NodeTypeEnum::kProcess: {
-          ProcessNodeImpl::FromNodeBase(node)->AddObserver(observer);
-        } break;
-        case NodeTypeEnum::kSystem: {
-          SystemNodeImpl::FromNodeBase(node)->AddObserver(observer);
-        } break;
-        case NodeTypeEnum::kWorker: {
-          WorkerNodeImpl::FromNodeBase(node)->AddObserver(observer);
-        } break;
-        case NodeTypeEnum::kInvalidType: {
-          NOTREACHED();
-        } break;
-      }
-      observer->OnNodeAdded(node);
-    }
-  }
 
   // This handles the strongly typed observer notifications.
   switch (node->type()) {
@@ -334,10 +287,6 @@ void GraphImpl::OnBeforeNodeRemoved(NodeBase* node) {
       NOTREACHED();
     } break;
   }
-
-  // Dispatch to the legacy observers.
-  for (auto& observer : node->observers())
-    observer.OnBeforeNodeRemoved(node);
 
   // Leave the graph only after the OnBeforeNodeRemoved notification so that the
   // node still observes the graph invariant during that callback.

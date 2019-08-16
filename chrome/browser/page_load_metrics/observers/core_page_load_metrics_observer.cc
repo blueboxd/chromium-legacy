@@ -933,7 +933,7 @@ void CorePageLoadMetricsObserver::RecordByteAndResourceHistograms(
 
   size_t unfinished_bytes = 0;
   for (auto const& kv :
-       GetDelegate()->GetResourceTracker().unfinished_resources())
+       GetDelegate().GetResourceTracker().unfinished_resources())
     unfinished_bytes += kv.second->received_data_length;
   PAGE_BYTES_HISTOGRAM(internal::kHistogramPageLoadUnfinishedBytes,
                        unfinished_bytes);

@@ -84,20 +84,13 @@ class BackgroundTaskSchedulerGcmNetworkManager implements BackgroundTaskSchedule
     @VisibleForTesting
     static Task createTaskFromTaskInfo(@NonNull TaskInfo taskInfo) {
         Bundle taskExtras = new Bundle();
-        if (!taskInfo.isPeriodic() && taskInfo.getOneOffInfo().expiresAfterWindowEndTime()) {
-            taskExtras.putLong(BACKGROUND_TASK_DEADLINE_KEY, getDeadlineTime(taskInfo));
-        }
         taskExtras.putBundle(BACKGROUND_TASK_EXTRAS_KEY, taskInfo.getExtras());
 
-        Task.Builder builder;
-        if (taskInfo.isPeriodic()) {
-            builder = getPeriodicTaskBuilder(taskInfo.getPeriodicInfo());
-        } else {
-            builder = getOneOffTaskBuilder(taskInfo.getOneOffInfo());
-        }
+        TaskBuilderVisitor taskBuilderVisitor = new TaskBuilderVisitor(taskExtras);
+        taskInfo.getTimingInfo().accept(taskBuilderVisitor);
+        Task.Builder builder = taskBuilderVisitor.getBuilder();
 
-        builder.setExtras(taskExtras)
-                .setPersisted(taskInfo.isPersisted())
+        builder.setPersisted(taskInfo.isPersisted())
                 .setRequiredNetwork(getGcmNetworkManagerNetworkTypeFromTypeFromTaskNetworkType(
                         taskInfo.getRequiredNetworkType()))
                 .setRequiresCharging(taskInfo.requiresCharging())
@@ -108,27 +101,49 @@ class BackgroundTaskSchedulerGcmNetworkManager implements BackgroundTaskSchedule
         return builder.build();
     }
 
-    private static Task.Builder getPeriodicTaskBuilder(TaskInfo.PeriodicInfo periodicInfo) {
-        PeriodicTask.Builder builder = new PeriodicTask.Builder();
-        builder.setPeriod(TimeUnit.MILLISECONDS.toSeconds(periodicInfo.getIntervalMs()));
-        if (periodicInfo.hasFlex()) {
-            builder.setFlex(TimeUnit.MILLISECONDS.toSeconds(periodicInfo.getFlexMs()));
-        }
-        return builder;
-    }
+    private static class TaskBuilderVisitor implements TaskInfo.TimingInfoVisitor {
+        private Task.Builder mBuilder;
+        private final Bundle mTaskExtras;
 
-    private static Task.Builder getOneOffTaskBuilder(TaskInfo.OneOffInfo oneOffInfo) {
-        OneoffTask.Builder builder = new OneoffTask.Builder();
-        long windowStartSeconds = oneOffInfo.hasWindowStartTimeConstraint()
-                ? TimeUnit.MILLISECONDS.toSeconds(oneOffInfo.getWindowStartTimeMs())
-                : 0;
-        long windowEndTimeMs = oneOffInfo.getWindowEndTimeMs();
-        if (oneOffInfo.expiresAfterWindowEndTime()) {
-            windowEndTimeMs += DEADLINE_DELTA_MS;
+        TaskBuilderVisitor(Bundle taskExtras) {
+            mTaskExtras = taskExtras;
         }
-        builder.setExecutionWindow(
-                windowStartSeconds, TimeUnit.MILLISECONDS.toSeconds(windowEndTimeMs));
-        return builder;
+
+        // Only valid after a TimingInfo object was visited.
+        Task.Builder getBuilder() {
+            return mBuilder;
+        }
+
+        @Override
+        public void visit(TaskInfo.OneOffInfo oneOffInfo) {
+            if (oneOffInfo.expiresAfterWindowEndTime()) {
+                mTaskExtras.putLong(BACKGROUND_TASK_DEADLINE_KEY,
+                        sClock.currentTimeMillis() + oneOffInfo.getWindowEndTimeMs());
+            }
+
+            OneoffTask.Builder builder = new OneoffTask.Builder();
+            long windowStartSeconds = oneOffInfo.hasWindowStartTimeConstraint()
+                    ? TimeUnit.MILLISECONDS.toSeconds(oneOffInfo.getWindowStartTimeMs())
+                    : 0;
+            long windowEndTimeMs = oneOffInfo.getWindowEndTimeMs();
+            if (oneOffInfo.expiresAfterWindowEndTime()) {
+                windowEndTimeMs += DEADLINE_DELTA_MS;
+            }
+            builder.setExecutionWindow(
+                    windowStartSeconds, TimeUnit.MILLISECONDS.toSeconds(windowEndTimeMs));
+            builder.setExtras(mTaskExtras);
+            mBuilder = builder;
+        }
+
+        @Override
+        public void visit(TaskInfo.PeriodicInfo periodicInfo) {
+            PeriodicTask.Builder builder = new PeriodicTask.Builder();
+            builder.setPeriod(TimeUnit.MILLISECONDS.toSeconds(periodicInfo.getIntervalMs()));
+            if (periodicInfo.hasFlex()) {
+                builder.setFlex(TimeUnit.MILLISECONDS.toSeconds(periodicInfo.getFlexMs()));
+            }
+            mBuilder = builder;
+        }
     }
 
     private static int getGcmNetworkManagerNetworkTypeFromTypeFromTaskNetworkType(

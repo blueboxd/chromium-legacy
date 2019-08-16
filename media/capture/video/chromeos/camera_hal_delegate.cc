@@ -19,10 +19,10 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/system/system_monitor.h"
+#include "media/capture/video/chromeos/camera_app_device_bridge_impl.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
-#include "media/capture/video/chromeos/reprocess_manager.h"
 #include "media/capture/video/chromeos/video_capture_device_chromeos_halv3.h"
 
 namespace media {
@@ -129,21 +129,37 @@ void CameraHalDelegate::Reset() {
 std::unique_ptr<VideoCaptureDevice> CameraHalDelegate::CreateDevice(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_screen_observer,
     const VideoCaptureDeviceDescriptor& device_descriptor,
-    ReprocessManager* reprocess_manager) {
+    CameraAppDeviceBridgeImpl* camera_app_device_bridge) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::unique_ptr<VideoCaptureDevice> capture_device;
   if (!UpdateBuiltInCameraInfo()) {
-    return capture_device;
+    return nullptr;
   }
   int camera_id = GetCameraIdFromDeviceId(device_descriptor.device_id);
   if (camera_id == -1) {
     LOG(ERROR) << "Invalid camera device: " << device_descriptor.device_id;
-    return capture_device;
+    return nullptr;
   }
-  capture_device.reset(new VideoCaptureDeviceChromeOSHalv3(
-      std::move(task_runner_for_screen_observer), device_descriptor, this,
-      reprocess_manager));
-  return capture_device;
+
+  if (camera_app_device_bridge) {
+    auto* camera_app_device = camera_app_device_bridge->GetCameraAppDevice(
+        device_descriptor.device_id);
+    // Since the cleanup callback will be triggered when VideoCaptureDevice died
+    // and |camera_app_device_bridge| is actually owned by
+    // VideoCaptureServiceImpl, it should be safe to assume
+    // |camera_app_device_bridge| is still valid here.
+    auto cleanup_callback = base::BindOnce(
+        [](const std::string& device_id, CameraAppDeviceBridgeImpl* bridge) {
+          bridge->OnDeviceClosed(device_id);
+        },
+        device_descriptor.device_id, camera_app_device_bridge);
+    return std::make_unique<VideoCaptureDeviceChromeOSHalv3>(
+        std::move(task_runner_for_screen_observer), device_descriptor, this,
+        camera_app_device, std::move(cleanup_callback));
+  } else {
+    return std::make_unique<VideoCaptureDeviceChromeOSHalv3>(
+        std::move(task_runner_for_screen_observer), device_descriptor, this,
+        nullptr, base::DoNothing());
+  }
 }
 
 void CameraHalDelegate::GetSupportedFormats(

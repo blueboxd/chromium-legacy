@@ -112,10 +112,12 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   Animation* GetAnimation() override { return this; }
 
   // timeToEffectChange returns:
-  //  infinity  - if this animation is no longer in effect
-  //  0         - if this animation requires an update on the next frame
-  //  n         - if this animation requires an update after 'n' units of time
-  double TimeToEffectChange();
+  //  nullopt                  - if this animation is no longer in effect
+  //  AnimationTimeDelta()     - if this animation requires an update on the
+  //                             next frame
+  //  AnimationTimeDelta() > 0 - if this animation requires an update
+  //                             after 'n' units of time
+  base::Optional<AnimationTimeDelta> TimeToEffectChange();
 
   void cancel();
 

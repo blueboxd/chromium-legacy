@@ -48,7 +48,6 @@ import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.vr.OnExitVrRequestListener;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
-import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.embedder_support.application.FontPreloadingWorkaround;
 import org.chromium.components.module_installer.ModuleInstaller;
 import org.chromium.ui.base.ResourceBundle;
@@ -126,8 +125,7 @@ public class ChromeApplication extends Application {
             ModuleInstaller.getInstance().recordModuleAvailability();
 
             // Set Chrome factory for mapping BackgroundTask classes to TaskIds.
-            BackgroundTaskSchedulerFactory.setBackgroundTaskFactory(
-                    new ChromeBackgroundTaskFactory());
+            ChromeBackgroundTaskFactory.setAsDefault();
         }
 
         // Write installed modules to crash keys. This needs to be done as early as possible so that

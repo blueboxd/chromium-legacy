@@ -127,13 +127,6 @@ class PerformanceManager {
     return task_runner_;
   }
 
-  // This allows an observer to be passed to this class, and bound to the
-  // lifetime of the performance manager. This will disappear post
-  // resource_coordinator migration, so do not use this unless you know what
-  // you're doing! Must be called from the performance manager sequence.
-  // TODO(chrisha): Kill this dead.
-  void RegisterObserver(std::unique_ptr<GraphImplObserver> observer);
-
  private:
   using InterfaceRegistry = service_manager::BinderRegistryWithArgs<
       const service_manager::BindSourceInfo&>;
@@ -166,9 +159,6 @@ class PerformanceManager {
   // The performance task runner.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   GraphImpl graph_;
-
-  // The registered graph observers.
-  std::vector<std::unique_ptr<GraphImplObserver>> observers_;
 
   // Provided to |graph_|.
   // TODO(siggi): This no longer needs to go through mojo.

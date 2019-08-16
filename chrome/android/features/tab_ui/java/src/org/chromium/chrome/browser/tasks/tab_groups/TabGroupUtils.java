@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_groups;
 import android.support.annotation.StringRes;
 import android.view.View;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -130,5 +131,10 @@ public class TabGroupUtils {
         assert tabs != null && tabs.size() != 0;
 
         return tabModel.indexOf(tabs.get(tabs.size() - 1));
+    }
+
+    @VisibleForTesting
+    public static void triggerAssertionForTesting() {
+        assert false;
     }
 }

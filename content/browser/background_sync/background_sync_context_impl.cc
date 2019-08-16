@@ -241,7 +241,7 @@ void BackgroundSyncContextImpl::FireBackgroundSyncEventsOnIOThread(
   }
 
   background_sync_manager_->FireReadyEvents(
-      sync_type,
+      sync_type, /* reschedule= */ false,
       base::BindOnce(
           &BackgroundSyncContextImpl::DidFireBackgroundSyncEventsOnIOThread,
           this, std::move(done_closure)));

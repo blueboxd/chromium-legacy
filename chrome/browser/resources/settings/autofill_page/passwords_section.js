@@ -101,6 +101,12 @@ Polymer({
     },
 
     /** @private */
+    passwordsLeakDetectionEnabled_: {
+      type: Boolean,
+      value: loadTimeData.getBoolean('passwordsLeakDetectionEnabled'),
+    },
+
+    /** @private */
     showExportPasswords_: {
       type: Boolean,
       computed: 'hasPasswords_(savedPasswords.splices)',

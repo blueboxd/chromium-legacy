@@ -113,11 +113,13 @@ void OnSharePathForLaunchApplication(
     bool display_scaled,
     crostini::LaunchCrostiniAppCallback callback,
     bool success,
-    std::string failure_reason) {
+    const std::string& failure_reason) {
   if (!success) {
     OnLaunchFailed(app_id);
     return std::move(callback).Run(
-        success, success ? "" : "Failed to share paths to launch " + app_id);
+        success, success ? ""
+                         : "Failed to share paths to launch " + app_id + ":" +
+                               failure_reason);
   }
   crostini::CrostiniManager::GetForProfile(profile)->LaunchContainerApplication(
       registration.VmName(), registration.ContainerName(),

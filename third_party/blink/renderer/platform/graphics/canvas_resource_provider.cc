@@ -721,7 +721,11 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
 
   void EnsureWriteAccess() {
     DCHECK(resource_);
-    DCHECK(resource_->HasOneRef() || IsSingleBuffered())
+    // In software mode, we don't need write access to the resource during
+    // drawing since it is executed on cpu memory managed by skia. We ensure
+    // exclusive access to the resource when the results are copied onto the
+    // GMB in EndWriteAccess.
+    DCHECK(resource_->HasOneRef() || IsSingleBuffered() || !is_accelerated_)
         << "Write access requires exclusive access to the resource";
     DCHECK(!resource()->is_cross_thread())
         << "Write access is only allowed on the owning thread";

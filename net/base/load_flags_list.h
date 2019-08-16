@@ -105,3 +105,15 @@ LOAD_FLAG(SKIP_VARY_CHECK, 1 << 16)
 // does not complete in 60 seconds, the cache treat the stale resource as
 // invalid, as it did not specify stale-while-revalidate.
 LOAD_FLAG(SUPPORT_ASYNC_REVALIDATION, 1 << 17)
+
+// Indicates that a prefetch request's cached response should be restricted in
+// in terms of reuse. The cached response can only be reused by requests with
+// the LOAD_CAN_USE_RESTRICTED_PREFETCH load flag.
+LOAD_FLAG(RESTRICTED_PREFETCH, 1 << 18)
+
+// This flag must be set on requests that are allowed to reuse cache entries
+// that are marked as RESTRICTED_PREFETCH. Requests without this flag cannot
+// reuse restricted prefetch responses in the cache. Restricted response reuse
+// is considered privileged, and therefore this flag must only be set from a
+// trusted process.
+LOAD_FLAG(CAN_USE_RESTRICTED_PREFETCH, 1 << 19)

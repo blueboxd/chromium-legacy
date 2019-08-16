@@ -2,11 +2,73 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-class CalculatedMetric {
-  constructor(insertAtOriginalMetricName, name, value) {
-    this.insertAtOriginalMetricName = insertAtOriginalMetricName;
+class Metric {
+  constructor(name, value) {
     this.name = name;
     this.value = value;
+  }
+
+  toString() {
+    return '{"' + this.name + '":"' + this.value + '"}';
+  }
+}
+
+// Represents a companion dictionary to an RTCStats object of an RTCStatsReport.
+// The CalculatedStats object contains additional metrics associated with the
+// original RTCStats object. Typically, the RTCStats object contains
+// accumulative counters, but in chrome://webrc-internals/ we also want graphs
+// for the average rate over the last second, so we have CalculatedStats
+// containing calculated Metrics.
+class CalculatedStats {
+  constructor(id) {
+    this.id = id;
+    // A map Original Name -> Array of Metrics, where Original Name refers to
+    // the name of the metric in the original RTCStats object, and the Metrics
+    // are calculated metrics. For example, if the original RTCStats report
+    // contains framesReceived, and from that we've calculated
+    // [framesReceived/s] and [framesReceived-framesDecoded], then there will be
+    // a mapping from "framesReceived" to an array of two Metric objects,
+    // "[framesReceived/s]" and "[framesReceived-framesDecoded]".
+    this.calculatedMetricsByOriginalName = new Map();
+  }
+
+  addCalculatedMetric(originalName, metric) {
+    let calculatedMetrics =
+        this.calculatedMetricsByOriginalName.get(originalName);
+    if (!calculatedMetrics) {
+      calculatedMetrics = [];
+      this.calculatedMetricsByOriginalName.set(originalName, calculatedMetrics);
+    }
+    calculatedMetrics.push(metric);
+  }
+
+  // Gets the calculated metrics associated with |originalName| in the order
+  // that they were added, or an empty list if there are no associated metrics.
+  getCalculatedMetrics(originalName) {
+    let calculatedMetrics =
+        this.calculatedMetricsByOriginalName.get(originalName);
+    if (!calculatedMetrics) {
+      return [];
+    }
+    return calculatedMetrics;
+  }
+
+  toString() {
+    let str = '{id:"' + this.id + '"';
+    for (let originalName of this.calculatedMetricsByOriginalName.keys()) {
+      const calculatedMetrics =
+          this.calculatedMetricsByOriginalName.get(originalName);
+      str += ',' + originalName + ':[';
+      for (let i = 0; i < calculatedMetrics.length; i++) {
+        str += calculatedMetrics[i].toString();
+        if (i + 1 < calculatedMetrics.length) {
+          str += ',';
+        }
+        str += ']';
+      }
+    }
+    str += '}';
+    return str;
   }
 }
 
@@ -15,6 +77,7 @@ class StatsReport {
     // Represents an RTCStatsReport. It is a Map RTCStats.id -> RTCStats.
     // https://w3c.github.io/webrtc-pc/#dom-rtcstatsreport
     this.statsById = new Map();
+    // RTCStats.id -> CalculatedStats
     this.calculatedStatsById = new Map();
   }
 
@@ -67,15 +130,15 @@ class StatsReport {
         }
         internalReport.stats.values.push(metricName);
         internalReport.stats.values.push(stats[metricName]);
-        const calculatedMetric =
-            this.getCalculatedMetricByOriginalName(stats.id, metricName);
-        if (calculatedMetric) {
+        const calculatedMetrics =
+            this.getCalculatedMetrics(stats.id, metricName);
+        calculatedMetrics.forEach(calculatedMetric => {
           internalReport.stats.values.push(calculatedMetric.name);
           // Treat calculated metrics that are undefined as 0 to ensure graphs
           // can be created anyway.
           internalReport.stats.values.push(
               calculatedMetric.value ? calculatedMetric.value : 0);
-        }
+        });
       });
       result.push(internalReport);
     }
@@ -95,7 +158,7 @@ class StatsReport {
       if (str2 != '') {
         str2 += ',';
       }
-      str2 += JSON.stringify(stats);
+      str2 += stats.toString();
     }
     return '[original:' + str + '],calculated:[' + str2 + ']';
   }
@@ -114,19 +177,21 @@ class StatsReport {
     return result;
   }
 
-  setCalculatedMetric(id, insertAtOriginalMetricName, name, value) {
+  addCalculatedMetric(id, insertAtOriginalMetricName, name, value) {
     let calculatedStats = this.calculatedStatsById.get(id);
     if (!calculatedStats) {
-      calculatedStats = {};
+      calculatedStats = new CalculatedStats(id);
       this.calculatedStatsById.set(id, calculatedStats);
     }
-    calculatedStats[insertAtOriginalMetricName] =
-        new CalculatedMetric(insertAtOriginalMetricName, name, value);
+    calculatedStats.addCalculatedMetric(
+        insertAtOriginalMetricName, new Metric(name, value));
   }
 
-  getCalculatedMetricByOriginalName(id, originalMetricName) {
+  getCalculatedMetrics(id, originalMetricName) {
     const calculatedStats = this.calculatedStatsById.get(id);
-    return calculatedStats ? calculatedStats[originalMetricName] : undefined;
+    return calculatedStats ?
+        calculatedStats.getCalculatedMetrics(originalMetricName) :
+        [];
   }
 }
 
@@ -292,7 +357,7 @@ class StatsRatesCalculator {
                       const previousStats = this.previousReport.get(stats.id);
                       result = transformation(result, stats, previousStats);
                     }
-                    this.currentReport.setCalculatedMetric(
+                    this.currentReport.addCalculatedMetric(
                         stats.id, accumulativeMetric, resultName, result);
                   }
                 });

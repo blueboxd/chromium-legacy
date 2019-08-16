@@ -147,10 +147,7 @@ scoped_refptr<gfx::NativePixmapDmaBuf> CreateNativePixmapDmaBuf(
   // Create a native pixmap from the frame's memory buffer handle.
   gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle =
       CreateGpuMemoryBufferHandle(video_frame);
-  if (gpu_memory_buffer_handle.is_null()) {
-    VLOGF(1) << "Failed to create GPU memory handle from video frame";
-    return nullptr;
-  }
+  DCHECK(!gpu_memory_buffer_handle.is_null());
 
   auto buffer_format =
       VideoPixelFormatToGfxBufferFormat(video_frame->layout().format());

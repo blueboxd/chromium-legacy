@@ -60,7 +60,9 @@ scoped_refptr<TextureRef> TextureRef::CreatePreallocated(
 
 gfx::GpuMemoryBufferHandle TextureRef::ExportGpuMemoryBufferHandle() const {
 #if defined(OS_CHROMEOS)
-  return CreateGpuMemoryBufferHandle(frame_.get());
+  auto handle = CreateGpuMemoryBufferHandle(frame_.get());
+  DCHECK(!handle.is_null());
+  return handle;
 #else
   return gfx::GpuMemoryBufferHandle();
 #endif

@@ -53,6 +53,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "net/base/network_isolation_key.h"
@@ -383,7 +384,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // service.
   using StoragePartitionServiceRequestHandler = base::RepeatingCallback<void(
       RenderProcessHostImpl* rph,
-      blink::mojom::StoragePartitionServiceRequest request)>;
+      mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver)>;
   static void SetStoragePartitionServiceRequestHandlerForTesting(
       StoragePartitionServiceRequestHandler handler);
 
@@ -569,7 +570,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void BindCompositingModeReporter(
       viz::mojom::CompositingModeReporterRequest request);
   void CreateStoragePartitionService(
-      blink::mojom::StoragePartitionServiceRequest request);
+      mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver);
   void CreateBroadcastChannelProvider(
       blink::mojom::BroadcastChannelProviderRequest request);
   void CreateRendererHost(mojom::RendererHostAssociatedRequest request);

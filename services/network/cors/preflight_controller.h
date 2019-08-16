@@ -25,6 +25,8 @@
 
 namespace network {
 
+struct ResourceResponseHead;
+
 namespace cors {
 
 // A class to manage CORS-preflight, making a CORS-preflight request, checking

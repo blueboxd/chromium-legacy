@@ -771,23 +771,6 @@ NavigationRequest::NavigationRequest(
                            frame_tree_node_->frame_tree_node_id(), "url",
                            common_params_->url.possibly_invalid_spec());
 
-  // Setup for navigation to the BundledExchanges.
-  if (GetContentClient()->browser()->CanAcceptUntrustedExchangesIfNeeded() &&
-      common_params_->url.SchemeIsFile() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kTrustableBundledExchangesFile)) {
-    // A user intends navigation to the BundledExchanges for testing.
-    const base::FilePath specified_path =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-            switches::kTrustableBundledExchangesFile);
-    base::FilePath url_path;
-    if (net::FileURLToFilePath(common_params_->url, &url_path) &&
-        url_path == specified_path) {
-      bundled_exchanges_handle_ = std::make_unique<BundledExchangesHandle>(
-          BundledExchangesSource(specified_path));
-    }
-  }
-
   if (frame_entry) {
     frame_entry_item_sequence_number_ = frame_entry->item_sequence_number();
     frame_entry_document_sequence_number_ =
@@ -1854,6 +1837,28 @@ void NavigationRequest::OnStartChecksComplete(
           static_cast<ChromeAppCacheService*>(partition->GetAppCacheService()),
           ChildProcessHost::kInvalidUniqueID));
     }
+  }
+
+  // Initialize the BundledExchangesHandle.
+  if (GetContentClient()->browser()->CanAcceptUntrustedExchangesIfNeeded() &&
+      common_params_->url.SchemeIsFile() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTrustableBundledExchangesFile)) {
+    // Fast path for testing navigation to a trustable BundledExchanges source.
+    const base::FilePath specified_path =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+            switches::kTrustableBundledExchangesFile);
+    base::FilePath url_path;
+    if (net::FileURLToFilePath(common_params_->url, &url_path) &&
+        url_path == specified_path) {
+      BundledExchangesSource source(specified_path);
+      source.is_trusted = true;
+      bundled_exchanges_handle_ =
+          std::make_unique<BundledExchangesHandle>(source);
+    }
+  } else if (base::FeatureList::IsEnabled(features::kBundledHTTPExchanges)) {
+    // Production path behind the feature flag.
+    bundled_exchanges_handle_ = std::make_unique<BundledExchangesHandle>();
   }
 
   // Mark the fetch_start (Navigation Timing API).

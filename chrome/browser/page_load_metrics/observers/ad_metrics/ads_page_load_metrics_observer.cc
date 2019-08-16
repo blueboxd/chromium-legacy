@@ -170,7 +170,7 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
   // Ensure that this RenderFrameHost is a subframe.
   DCHECK(render_frame_host->GetParent());
 
-  GetDelegate()->GetWebContents()->GetController().LoadErrorPage(
+  GetDelegate().GetWebContents()->GetController().LoadErrorPage(
       render_frame_host, render_frame_host->GetLastCommittedURL(),
       heavy_ads::PrepareHeavyAdPage(), net::ERR_BLOCKED_BY_CLIENT);
 
@@ -188,7 +188,7 @@ void AdsPageLoadMetricsObserver::OnCpuTimingUpdate(
   DCHECK(!timing.task_time.is_zero());
 
   // If the page is backgrounded, don't update CPU times.
-  if (!GetDelegate()->GetVisibilityTracker().currently_in_foreground())
+  if (!GetDelegate().GetVisibilityTracker().currently_in_foreground())
     return;
 
   // Get the current time, considered to be when this update occurred.
@@ -313,7 +313,7 @@ void AdsPageLoadMetricsObserver::FrameReceivedFirstUserActivation(
       FindFrameData(render_frame_host->GetFrameTreeNodeId());
   if (ancestor_data) {
     ancestor_data->SetReceivedUserActivation(
-        GetDelegate()->GetVisibilityTracker().GetForegroundDuration());
+        GetDelegate().GetVisibilityTracker().GetForegroundDuration());
   }
 }
 
@@ -326,7 +326,7 @@ AdsPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
   if (extra_info.did_commit) {
     if (timing.response_start) {
       time_commit_ =
-          GetDelegate()->GetNavigationStart() + *timing.response_start;
+          GetDelegate().GetNavigationStart() + *timing.response_start;
     }
     RecordHistograms(extra_info.source_id);
   }
@@ -338,7 +338,7 @@ void AdsPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (info.did_commit && timing.response_start)
-    time_commit_ = GetDelegate()->GetNavigationStart() + *timing.response_start;
+    time_commit_ = GetDelegate().GetNavigationStart() + *timing.response_start;
   RecordHistograms(info.source_id);
 }
 
@@ -356,10 +356,10 @@ void AdsPageLoadMetricsObserver::OnPageInteractive(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (timing.interactive_timing->interactive) {
-    time_interactive_ = GetDelegate()->GetNavigationStart() +
+    time_interactive_ = GetDelegate().GetNavigationStart() +
                         *timing.interactive_timing->interactive;
     pre_interactive_duration_ =
-        GetDelegate()->GetVisibilityTracker().GetForegroundDuration();
+        GetDelegate().GetVisibilityTracker().GetForegroundDuration();
     page_ad_bytes_at_interactive_ = aggregate_frame_data_->ad_network_bytes();
   }
 }
@@ -397,7 +397,7 @@ void AdsPageLoadMetricsObserver::MediaStartedPlaying(
     const content::WebContentsObserver::MediaPlayerInfo& video_type,
     content::RenderFrameHost* render_frame_host) {
   aggregate_frame_data_->set_media_status(FrameData::MediaStatus::kPlayed);
-  if (render_frame_host == GetDelegate()->GetWebContents()->GetMainFrame())
+  if (render_frame_host == GetDelegate().GetWebContents()->GetMainFrame())
     main_frame_data_->set_media_status(FrameData::MediaStatus::kPlayed);
 
   FrameData* ancestor_data =
@@ -429,7 +429,7 @@ void AdsPageLoadMetricsObserver::OnFrameDeleted(
                            render_frame_host->GetFrameTreeNodeId()) {
     RecordPerFrameHistogramsForAdTagging(*ancestor_data);
     RecordPerFrameHistogramsForCpuUsage(*ancestor_data);
-    ancestor_data->RecordAdFrameLoadUkmEvent(GetDelegate()->GetSourceId());
+    ancestor_data->RecordAdFrameLoadUkmEvent(GetDelegate().GetSourceId());
     DCHECK(id_and_data->second != ad_frames_data_storage_.end());
     ad_frames_data_storage_.erase(id_and_data->second);
   }
@@ -458,7 +458,7 @@ int AdsPageLoadMetricsObserver::GetUnaccountedAdBytes(
   content::GlobalRequestID global_request_id(process_id, resource->request_id);
 
   // Resource just started loading.
-  if (!GetDelegate()->GetResourceTracker().HasPreviousUpdateForResource(
+  if (!GetDelegate().GetResourceTracker().HasPreviousUpdateForResource(
           global_request_id))
     return 0;
 
@@ -466,7 +466,7 @@ int AdsPageLoadMetricsObserver::GetUnaccountedAdBytes(
   // but was not before, we need to account for all the previously received
   // bytes.
   auto const& previous_update =
-      GetDelegate()->GetResourceTracker().GetPreviousUpdateForResource(
+      GetDelegate().GetResourceTracker().GetPreviousUpdateForResource(
           global_request_id);
   bool is_new_ad = !previous_update->reported_as_ad_resource;
   return is_new_ad ? resource->received_data_length - resource->delta_bytes : 0;
@@ -478,12 +478,12 @@ void AdsPageLoadMetricsObserver::ProcessResourceForPage(
   auto mime_type = FrameData::GetResourceMimeType(resource);
   int unaccounted_ad_bytes = GetUnaccountedAdBytes(process_id, resource);
   aggregate_frame_data_->ProcessResourceLoadInFrame(
-      resource, process_id, GetDelegate()->GetResourceTracker());
+      resource, process_id, GetDelegate().GetResourceTracker());
   if (unaccounted_ad_bytes)
     aggregate_frame_data_->AdjustAdBytes(unaccounted_ad_bytes, mime_type);
   if (resource->is_main_frame_resource) {
     main_frame_data_->ProcessResourceLoadInFrame(
-        resource, process_id, GetDelegate()->GetResourceTracker());
+        resource, process_id, GetDelegate().GetResourceTracker());
     if (unaccounted_ad_bytes)
       main_frame_data_->AdjustAdBytes(unaccounted_ad_bytes, mime_type);
   }
@@ -534,7 +534,7 @@ void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
     ancestor_data->AdjustAdBytes(unaccounted_ad_bytes, mime_type);
   ancestor_data->ProcessResourceLoadInFrame(
       resource, render_frame_host->GetProcess()->GetID(),
-      GetDelegate()->GetResourceTracker());
+      GetDelegate().GetResourceTracker());
   MaybeTriggerHeavyAdIntervention(render_frame_host, ancestor_data);
 }
 
@@ -612,7 +612,7 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForCpuUsage(
     const FrameData& ad_frame_data) {
   // Get the relevant durations, set pre-interactive if the page never hit it.
   base::TimeDelta total_duration =
-      GetDelegate()->GetVisibilityTracker().GetForegroundDuration();
+      GetDelegate().GetVisibilityTracker().GetForegroundDuration();
   if (time_interactive_.is_null())
     pre_interactive_duration_ = total_duration;
   base::TimeDelta post_interactive_duration =
@@ -649,7 +649,7 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForCpuUsage(
         ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.PeakWindowStartTime",
                       PAGE_LOAD_HISTOGRAM, visibility,
                       ad_frame_data.peak_window_start_time().value() -
-                          GetDelegate()->GetNavigationStart());
+                          GetDelegate().GetNavigationStart());
       }
     }
 
@@ -713,7 +713,7 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForCpuUsage() {
 
   // Get the relevant durations, set pre-interactive if the page never hit it.
   base::TimeDelta total_duration =
-      GetDelegate()->GetVisibilityTracker().GetForegroundDuration();
+      GetDelegate().GetVisibilityTracker().GetForegroundDuration();
   if (time_interactive_.is_null())
     pre_interactive_duration_ = total_duration;
 
@@ -746,7 +746,7 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForCpuUsage() {
       ADS_HISTOGRAM("Cpu.FullPage.PeakWindowStartTime", PAGE_LOAD_HISTOGRAM,
                     visibility,
                     aggregate_frame_data_->peak_window_start_time().value() -
-                        GetDelegate()->GetNavigationStart());
+                        GetDelegate().GetNavigationStart());
     }
   }
   if (pre_interactive_duration_.InMilliseconds() > 0) {

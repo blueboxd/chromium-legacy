@@ -165,13 +165,11 @@ bool NetworkDelegate::CanAccessFile(const URLRequest& request,
   return OnCanAccessFile(request, original_path, absolute_path);
 }
 
-bool NetworkDelegate::ForcePrivacyMode(
-    const GURL& url,
-    const GURL& site_for_cookies,
-    const base::Optional<url::Origin>& top_frame_origin) const {
+bool NetworkDelegate::ForcePrivacyMode(const GURL& url,
+                                       const GURL& site_for_cookies) const {
   TRACE_EVENT0(NetTracingCategory(), "NetworkDelegate::ForcePrivacyMode");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return OnForcePrivacyMode(url, site_for_cookies, top_frame_origin);
+  return OnForcePrivacyMode(url, site_for_cookies);
 }
 
 bool NetworkDelegate::CancelURLRequestWithPolicyViolatingReferrerHeader(

@@ -862,14 +862,6 @@ def main():
               'i686': 'x86',
           }[target_arch]])
 
-      # NDK r16 "helpfully" installs libc++ as libstdc++ "so the compiler will
-      # pick it up by default". Only these days, the compiler tries to find
-      # libc++ instead. See https://crbug.com/902270.
-      shutil.copy(os.path.join(toolchain_dir, 'sysroot/usr/lib/libstdc++.a'),
-                  os.path.join(toolchain_dir, 'sysroot/usr/lib/libc++.a'))
-      shutil.copy(os.path.join(toolchain_dir, 'sysroot/usr/lib/libstdc++.so'),
-                  os.path.join(toolchain_dir, 'sysroot/usr/lib/libc++.so'))
-
       # Build compiler-rt runtimes needed for Android in a separate build tree.
       build_dir = os.path.join(LLVM_BUILD_DIR, 'android-' + target_arch)
       if not os.path.exists(build_dir):

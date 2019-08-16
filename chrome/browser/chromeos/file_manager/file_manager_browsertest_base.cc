@@ -1724,7 +1724,7 @@ bool FileManagerBrowserTestBase::GetTabletMode() const {
 }
 
 bool FileManagerBrowserTestBase::GetEnableMyFilesVolume() const {
-  return false;
+  return true;
 }
 
 bool FileManagerBrowserTestBase::GetEnableDriveFs() const {

@@ -20,7 +20,6 @@
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_device_context.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
-#include "media/capture/video/chromeos/mojom/cros_image_capture.mojom.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -877,7 +876,7 @@ void RequestManager::SubmitCapturedJpegBuffer(uint32_t frame_number,
   if (blob) {
     int task_status = kReprocessSuccess;
     if (stream_buffer_manager_->IsReprocessSupported()) {
-      task_status = ReprocessManager::GetReprocessReturnCode(
+      task_status = CameraAppDeviceImpl::GetReprocessReturnCode(
           pending_result.reprocess_effect, &pending_result.metadata);
     }
     std::move(pending_result.still_capture_callback)

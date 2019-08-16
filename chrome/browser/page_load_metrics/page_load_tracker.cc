@@ -494,6 +494,16 @@ void PageLoadTracker::OnCookieChange(const GURL& url,
   }
 }
 
+void PageLoadTracker::OnDomStorageAccessed(const GURL& url,
+                                           const GURL& first_party_url,
+                                           bool local,
+                                           bool blocked_by_policy) {
+  for (const auto& observer : observers_) {
+    observer->OnDomStorageAccessed(url, first_party_url, local,
+                                   blocked_by_policy);
+  }
+}
+
 void PageLoadTracker::StopTracking() {
   did_stop_tracking_ = true;
   observers_.clear();

@@ -70,10 +70,13 @@ class ServiceWorkerGlobalScopeProxy final : public WebServiceWorkerContextProxy,
  public:
   static std::unique_ptr<ServiceWorkerGlobalScopeProxy> Create(
       WebEmbeddedWorkerImpl&,
-      WebServiceWorkerContextClient&);
+      WebServiceWorkerContextClient&,
+      scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner);
 
-  ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl&,
-                                WebServiceWorkerContextClient&);
+  ServiceWorkerGlobalScopeProxy(
+      WebEmbeddedWorkerImpl&,
+      WebServiceWorkerContextClient&,
+      scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner);
   ~ServiceWorkerGlobalScopeProxy() override;
 
   // WebServiceWorkerContextProxy overrides:

@@ -433,11 +433,18 @@ void WorkerThread::ChildThreadTerminatedOnWorkerThread(WorkerThread* child) {
 }
 
 WorkerThread::WorkerThread(WorkerReportingProxy& worker_reporting_proxy)
+    : WorkerThread(worker_reporting_proxy, Thread::Current()->GetTaskRunner()) {
+}
+
+WorkerThread::WorkerThread(WorkerReportingProxy& worker_reporting_proxy,
+                           scoped_refptr<base::SingleThreadTaskRunner>
+                               parent_thread_default_task_runner)
     : time_origin_(base::TimeTicks::Now()),
       worker_thread_id_(GetNextWorkerThreadId()),
       forcible_termination_delay_(kForcibleTerminationDelay),
       worker_reporting_proxy_(worker_reporting_proxy),
-      parent_thread_default_task_runner_(Thread::Current()->GetTaskRunner()),
+      parent_thread_default_task_runner_(
+          std::move(parent_thread_default_task_runner)),
       shutdown_event_(RefCountedWaitableEvent::Create()) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   MutexLocker lock(ThreadSetMutex());

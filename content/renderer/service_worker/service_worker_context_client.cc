@@ -170,7 +170,7 @@ void ServiceWorkerContextClient::StartWorkerContextOnInitiatorThread(
     const blink::WebEmbeddedWorkerStartData& start_data) {
   DCHECK(initiator_thread_task_runner_->RunsTasksInCurrentSequence());
   worker_ = std::move(worker);
-  worker_->StartWorkerContext(start_data);
+  worker_->StartWorkerContext(start_data, initiator_thread_task_runner_);
 }
 
 blink::WebEmbeddedWorker& ServiceWorkerContextClient::worker() {

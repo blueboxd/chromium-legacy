@@ -72,7 +72,9 @@ class BLINK_EXPORT WebEmbeddedWorker {
   virtual ~WebEmbeddedWorker() = default;
 
   // Starts and terminates WorkerThread and WorkerGlobalScope.
-  virtual void StartWorkerContext(const WebEmbeddedWorkerStartData&) = 0;
+  virtual void StartWorkerContext(const WebEmbeddedWorkerStartData&,
+                                  scoped_refptr<base::SingleThreadTaskRunner>
+                                      initiator_thread_task_runner) = 0;
   virtual void TerminateWorkerContext() = 0;
 
   // Resumes starting a worker startup that was paused via

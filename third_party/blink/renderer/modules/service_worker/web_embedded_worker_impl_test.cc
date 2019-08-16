@@ -258,7 +258,7 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
 }  // namespace
 
 TEST_F(WebEmbeddedWorkerImplTest, TerminateSoonAfterStart) {
-  worker_->StartWorkerContext(start_data_);
+  worker_->StartWorkerContext(start_data_, Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
 
   worker_->TerminateWorkerContext();
@@ -269,7 +269,7 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateSoonAfterStart) {
 TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileWaitingForDebugger) {
   start_data_.wait_for_debugger_mode =
       WebEmbeddedWorkerStartData::kWaitForDebugger;
-  worker_->StartWorkerContext(start_data_);
+  worker_->StartWorkerContext(start_data_, Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
 
   worker_->TerminateWorkerContext();
@@ -282,7 +282,7 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileLoadingScript) {
               IsScriptInstalled(KURL(start_data_.script_url)))
       .Times(testing::AtLeast(1))
       .WillRepeatedly(testing::Return(false));
-  worker_->StartWorkerContext(start_data_);
+  worker_->StartWorkerContext(start_data_, Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
   testing::Mock::VerifyAndClearExpectations(mock_installed_scripts_manager_);
 
@@ -307,7 +307,7 @@ TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
       .Times(testing::AtLeast(1))
       .WillRepeatedly(testing::Return(false));
   // Start worker and load the script.
-  worker_->StartWorkerContext(start_data_);
+  worker_->StartWorkerContext(start_data_, Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
   testing::Mock::VerifyAndClearExpectations(mock_installed_scripts_manager_);
 

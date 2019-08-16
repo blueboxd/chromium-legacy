@@ -49,7 +49,9 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
   // Persistent.
   ServiceWorkerThread(std::unique_ptr<ServiceWorkerGlobalScopeProxy>,
                       std::unique_ptr<ServiceWorkerInstalledScriptsManager>,
-                      mojom::blink::CacheStoragePtrInfo cache_storage_info);
+                      mojom::blink::CacheStoragePtrInfo cache_storage_info,
+                      scoped_refptr<base::SingleThreadTaskRunner>
+                          parent_thread_default_task_runner);
   ~ServiceWorkerThread() override;
 
   WorkerBackingThread& GetWorkerBackingThread() override {

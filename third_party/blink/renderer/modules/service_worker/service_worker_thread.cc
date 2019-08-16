@@ -49,8 +49,11 @@ ServiceWorkerThread::ServiceWorkerThread(
     std::unique_ptr<ServiceWorkerGlobalScopeProxy> global_scope_proxy,
     std::unique_ptr<ServiceWorkerInstalledScriptsManager>
         installed_scripts_manager,
-    mojom::blink::CacheStoragePtrInfo cache_storage_info)
-    : WorkerThread(*global_scope_proxy),
+    mojom::blink::CacheStoragePtrInfo cache_storage_info,
+    scoped_refptr<base::SingleThreadTaskRunner>
+        parent_thread_default_task_runner)
+    : WorkerThread(*global_scope_proxy,
+                   std::move(parent_thread_default_task_runner)),
       global_scope_proxy_(std::move(global_scope_proxy)),
       worker_backing_thread_(std::make_unique<WorkerBackingThread>(
           ThreadCreationParams(GetThreadType()))),

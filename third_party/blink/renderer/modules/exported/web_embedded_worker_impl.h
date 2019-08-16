@@ -70,7 +70,9 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final : public WebEmbeddedWorker {
   ~WebEmbeddedWorkerImpl() override;
 
   // WebEmbeddedWorker overrides.
-  void StartWorkerContext(const WebEmbeddedWorkerStartData&) override;
+  void StartWorkerContext(const WebEmbeddedWorkerStartData&,
+                          scoped_refptr<base::SingleThreadTaskRunner>
+                              initiator_thread_task_runner) override;
   void TerminateWorkerContext() override;
   void ResumeAfterDownload() override;
   void AddMessageToConsole(const WebConsoleMessage&) override;
@@ -82,7 +84,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final : public WebEmbeddedWorker {
   void WaitForShutdownForTesting();
 
  private:
-  void StartWorkerThread();
+  void StartWorkerThread(scoped_refptr<base::SingleThreadTaskRunner>);
 
   // Creates a cross-thread copyable outside settings object for top-level
   // worker script fetch.

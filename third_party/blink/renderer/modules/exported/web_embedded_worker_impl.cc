@@ -156,7 +156,8 @@ WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl() {
 }
 
 void WebEmbeddedWorkerImpl::StartWorkerContext(
-    const WebEmbeddedWorkerStartData& data) {
+    const WebEmbeddedWorkerStartData& data,
+    scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner) {
   DCHECK(!asked_to_terminate_);
   DCHECK_EQ(pause_after_download_state_, kDontPauseAfterDownload);
   worker_start_data_ = data;
@@ -182,7 +183,7 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
 
   devtools_worker_token_ = data.devtools_worker_token;
   wait_for_debugger_mode_ = worker_start_data_.wait_for_debugger_mode;
-  StartWorkerThread();
+  StartWorkerThread(std::move(initiator_thread_task_runner));
 }
 
 void WebEmbeddedWorkerImpl::TerminateWorkerContext() {
@@ -217,7 +218,8 @@ void WebEmbeddedWorkerImpl::AddMessageToConsole(
   // parent context so there is no drop-in replacement.
 }
 
-void WebEmbeddedWorkerImpl::StartWorkerThread() {
+void WebEmbeddedWorkerImpl::StartWorkerThread(
+    scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner) {
   DCHECK(!asked_to_terminate_);
 
   // For now we don't use global scope name for service workers.
@@ -285,8 +287,10 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
       kV8CacheOptionsFullCodeWithoutHeatCheck;
 
   worker_thread_ = std::make_unique<ServiceWorkerThread>(
-      ServiceWorkerGlobalScopeProxy::Create(*this, *worker_context_client_),
-      std::move(installed_scripts_manager_), std::move(cache_storage_info_));
+      ServiceWorkerGlobalScopeProxy::Create(*this, *worker_context_client_,
+                                            initiator_thread_task_runner),
+      std::move(installed_scripts_manager_), std::move(cache_storage_info_),
+      initiator_thread_task_runner);
 
   auto devtools_params = std::make_unique<WorkerDevToolsParams>();
   devtools_params->devtools_worker_token = devtools_worker_token_;

@@ -251,6 +251,12 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
 
  protected:
   explicit WorkerThread(WorkerReportingProxy&);
+  // For service workers. When service workers are started on the IO thread
+  // Thread::Current() wouldn't be available so we need to pass the parent
+  // thread default task runner explicitly.
+  WorkerThread(WorkerReportingProxy&,
+               scoped_refptr<base::SingleThreadTaskRunner>
+                   parent_thread_default_task_runner);
 
   virtual WebThreadType GetThreadType() const = 0;
 

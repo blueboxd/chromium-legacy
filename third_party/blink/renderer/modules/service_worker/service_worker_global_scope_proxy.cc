@@ -61,10 +61,12 @@
 namespace blink {
 
 std::unique_ptr<ServiceWorkerGlobalScopeProxy>
-ServiceWorkerGlobalScopeProxy::Create(WebEmbeddedWorkerImpl& embedded_worker,
-                                      WebServiceWorkerContextClient& client) {
-  return std::make_unique<ServiceWorkerGlobalScopeProxy>(embedded_worker,
-                                                         client);
+ServiceWorkerGlobalScopeProxy::Create(
+    WebEmbeddedWorkerImpl& embedded_worker,
+    WebServiceWorkerContextClient& client,
+    scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner) {
+  return std::make_unique<ServiceWorkerGlobalScopeProxy>(
+      embedded_worker, client, std::move(parent_task_runner));
 }
 
 ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy() {
@@ -308,12 +310,14 @@ void ServiceWorkerGlobalScopeProxy::RequestTermination(
 
 ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(
     WebEmbeddedWorkerImpl& embedded_worker,
-    WebServiceWorkerContextClient& client)
+    WebServiceWorkerContextClient& client,
+    scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner)
     : embedded_worker_(&embedded_worker),
+      parent_task_runner_(std::move(parent_task_runner)),
       client_(&client),
       worker_global_scope_(nullptr) {
   DETACH_FROM_THREAD(worker_thread_checker_);
-  parent_task_runner_ = Thread::Current()->GetTaskRunner();
+  DCHECK(parent_task_runner_);
 }
 
 void ServiceWorkerGlobalScopeProxy::Detach() {

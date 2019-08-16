@@ -13,8 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
-#include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/ui/page_action/page_action_icon_container.h"
+#include "components/sync_device_info/device_info.h"
 #include "ui/gfx/image/image.h"
 
 class BrowserWindow;
@@ -55,7 +55,7 @@ class SharingUiController {
   virtual base::string16 GetTitle() = 0;
 
   // Called when user chooses a synced device to complete the task.
-  virtual void OnDeviceChosen(const SharingDeviceInfo& device) = 0;
+  virtual void OnDeviceChosen(const syncer::DeviceInfo& device) = 0;
 
   // Called when user chooses a local app to complete the task.
   virtual void OnAppChosen(const App& app) = 0;
@@ -78,10 +78,13 @@ class SharingUiController {
   bool send_failed() const { return send_failed_; }
   content::WebContents* web_contents() const { return web_contents_; }
   const std::vector<App>& apps() const { return apps_; }
-  const std::vector<SharingDeviceInfo>& devices() const { return devices_; }
+  const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices() const {
+    return devices_;
+  }
 
   void set_apps_for_testing(std::vector<App> apps) { apps_ = std::move(apps); }
-  void set_devices_for_testing(std::vector<SharingDeviceInfo> devices) {
+  void set_devices_for_testing(
+      std::vector<std::unique_ptr<syncer::DeviceInfo>> devices) {
     devices_ = std::move(devices);
   }
 
@@ -91,7 +94,7 @@ class SharingUiController {
   virtual void DoUpdateApps(UpdateAppsCallback callback) = 0;
 
   void SendMessageToDevice(
-      const SharingDeviceInfo& device,
+      const syncer::DeviceInfo& device,
       chrome_browser_sharing::SharingMessage sharing_message);
 
  private:
@@ -117,7 +120,7 @@ class SharingUiController {
 
   // Currently used apps and devices since the last call to UpdateAndShowDialog.
   std::vector<App> apps_;
-  std::vector<SharingDeviceInfo> devices_;
+  std::vector<std::unique_ptr<syncer::DeviceInfo>> devices_;
 
   // ID of the last shown dialog used to ignore events from old dialogs.
   int last_dialog_id_ = 0;

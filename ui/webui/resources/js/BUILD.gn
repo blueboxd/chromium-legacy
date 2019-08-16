@@ -141,6 +141,7 @@ js_library("find_shortcut_behavior") {
 js_modulizer("modulize") {
   input_files = [
     "assert.js",
+    "icon.js",
     "i18n_behavior.js",
     "load_time_data.js",
     "parse_html_subset.js",
@@ -158,6 +159,7 @@ js_type_check("closure_compile_modules") {
     ":assert.m",
     ":cr.m",
     ":i18n_behavior.m",
+    ":icon.m",
     ":load_time_data.m",
     ":parse_html_subset.m",
     ":promise_resolver.m",
@@ -178,6 +180,13 @@ js_library("cr.m") {
     ":promise_resolver.m",
   ]
   externs_list = [ "$externs_path/chrome_send.js" ]
+}
+
+js_library("icon.m") {
+  sources = [
+    "$root_gen_dir/ui/webui/resources/js/icon.m.js",
+  ]
+  extra_deps = [ ":modulize" ]
 }
 
 js_library("i18n_behavior.m") {

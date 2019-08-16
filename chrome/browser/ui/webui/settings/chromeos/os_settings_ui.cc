@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/network_config_service.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
@@ -41,12 +42,10 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/os_settings_resources.h"
 #include "chrome/grit/os_settings_resources_map.h"
-#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/unified_consent/feature.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 namespace settings {
@@ -161,9 +160,7 @@ void OSSettingsUI::AddSettingsPageUIHandler(
 
 void OSSettingsUI::BindCrosNetworkConfig(
     network_config::mojom::CrosNetworkConfigRequest request) {
-  content::BrowserContext::GetConnectorFor(
-      web_ui()->GetWebContents()->GetBrowserContext())
-      ->BindInterface(network_config::mojom::kServiceName, std::move(request));
+  ash::GetNetworkConfigService(std::move(request));
 }
 
 }  // namespace settings

@@ -32,7 +32,9 @@ CastActivityRecord::CastActivityRecord(
                      session_tracker,
                      data_decoder),
       media_sink_service_(media_sink_service),
-      activity_manager_(owner) {}
+      activity_manager_(owner) {
+  route_.set_controller_type(RouteControllerType::kGeneric);
+}
 
 CastActivityRecord::~CastActivityRecord() = default;
 

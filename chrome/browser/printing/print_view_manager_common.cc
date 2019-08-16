@@ -38,21 +38,6 @@ bool StoreFullPagePlugin(content::WebContents** result,
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-// If we have a single full-page embedded mime handler view guest, print the
-// guest's WebContents instead.
-content::WebContents* GetWebContentsToUse(content::WebContents* contents) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  guest_view::GuestViewManager* guest_view_manager =
-      guest_view::GuestViewManager::FromBrowserContext(
-          contents->GetBrowserContext());
-  if (guest_view_manager) {
-    guest_view_manager->ForEachGuest(
-        contents, base::BindRepeating(&StoreFullPagePlugin, &contents));
-  }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-  return contents;
-}
-
 // Pick the right RenderFrameHost based on the WebContentses.
 content::RenderFrameHost* GetRenderFrameHostToUse(
     content::WebContents* original_contents,
@@ -116,6 +101,19 @@ content::RenderFrameHost* GetFrameToPrint(content::WebContents* contents) {
   return (focused_frame && focused_frame->HasSelection())
              ? focused_frame
              : contents->GetMainFrame();
+}
+
+content::WebContents* GetWebContentsToUse(content::WebContents* contents) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  guest_view::GuestViewManager* guest_view_manager =
+      guest_view::GuestViewManager::FromBrowserContext(
+          contents->GetBrowserContext());
+  if (guest_view_manager) {
+    guest_view_manager->ForEachGuest(
+        contents, base::BindRepeating(&StoreFullPagePlugin, &contents));
+  }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+  return contents;
 }
 
 }  // namespace printing

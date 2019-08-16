@@ -15,25 +15,8 @@ source_set("cpp") {
   ]
 }
 
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//chromeos/services/network_config/public/mojom",
-    "//services/service_manager/public/cpp",
-  ]
-}
-
 source_set("test_support") {
   testonly = true
-
-  public_deps = [
-    ":cpp",
-  ]
 
   sources = [
     "cros_network_config_test_helper.cc",
@@ -42,10 +25,16 @@ source_set("test_support") {
     "cros_network_config_test_observer.h",
   ]
 
-  deps = [
+  public_deps = [
+    "//base",
     "//chromeos/network:test_support",
-    "//chromeos/services/network_config",
     "//chromeos/services/network_config/public/mojom",
-    "//services/service_manager/public/cpp",
+    "//mojo/public/cpp/bindings",
+  ]
+
+  deps = [
+    "//chromeos/network",
+    "//chromeos/services/network_config",
+    "//chromeos/services/network_config:in_process_instance",
   ]
 }

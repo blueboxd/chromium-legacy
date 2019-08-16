@@ -36,6 +36,10 @@ String ToString(CSSMathOperator op) {
       return "*";
     case CSSMathOperator::kDivide:
       return "/";
+    case CSSMathOperator::kMin:
+      return "min";
+    case CSSMathOperator::kMax:
+      return "max";
     default:
       NOTREACHED();
       return String();

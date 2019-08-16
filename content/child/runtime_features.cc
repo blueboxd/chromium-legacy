@@ -284,10 +284,6 @@ void SetIndividualRuntimeFeatures(
   WebRuntimeFeatures::EnablePaymentRequest(
       base::FeatureList::IsEnabled(features::kWebPayments));
 
-  WebRuntimeFeatures::EnablePaymentRequestHasEnrolledInstrument(
-      base::FeatureList::IsEnabled(
-          features::kPaymentRequestHasEnrolledInstrument));
-
   if (base::FeatureList::IsEnabled(features::kServiceWorkerPaymentApps))
     WebRuntimeFeatures::EnablePaymentApp(true);
 
@@ -477,6 +473,9 @@ void SetIndividualRuntimeFeatures(
 
   WebRuntimeFeatures::EnableUpdateHoverAtBeginFrame(
       base::FeatureList::IsEnabled(features::kUpdateHoverAtBeginFrame));
+
+  WebRuntimeFeatures::EnableFractionalScrollOffsets(
+      base::FeatureList::IsEnabled(features::kFractionalScrollOffsets));
 
   // TODO(yashard): Remove |enable_experimental_web_platform_features| flag
   // since the feature should have been enabled when it is set to experimental

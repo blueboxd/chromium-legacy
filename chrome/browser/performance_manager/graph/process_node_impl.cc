@@ -13,8 +13,11 @@
 
 namespace performance_manager {
 
-ProcessNodeImpl::ProcessNodeImpl(GraphImpl* graph)
-    : TypedNodeBase(graph), binding_(this) {
+ProcessNodeImpl::ProcessNodeImpl(GraphImpl* graph,
+                                 RenderProcessHostProxy render_process_proxy)
+    : TypedNodeBase(graph),
+      binding_(this),
+      render_process_host_proxy_(std::move(render_process_proxy)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -193,6 +196,12 @@ base::TimeDelta ProcessNodeImpl::GetCumulativeCpuUsage() const {
 uint64_t ProcessNodeImpl::GetPrivateFootprintKb() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return private_footprint_kb();
+}
+
+const RenderProcessHostProxy& ProcessNodeImpl::GetRenderProcessHostProxy()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return render_process_host_proxy();
 }
 
 void ProcessNodeImpl::OnAllFramesInProcessFrozen() {

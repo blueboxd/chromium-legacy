@@ -2236,24 +2236,66 @@ EVENT_TYPE(SOCKS5_HANDSHAKE_READ)
 //
 // ** GSSAPI Context Description
 //
-// A serialization of the GSSAPI context. It takes the following form:
+// Properties of the GSSAPI security context being negotiated or that was
+// negotiated.
+//
 //   {
-//     "source"  : <GSS Display Name for the source of the authentication
-//                  attempt.  In practice this is always the user's identity.>
-//     "target"  : <GSS Display Name for the target of the authentication
-//                  attempt.  This the target server or proxy service
-//                  principal.>
-//     "open"    : <Boolean indicating whether the context is "open", which
-//                  means that the handshake is still in progress. In
-//                  particular, the flags, lifetime, and mechanism fields are
-//                  not considered final until "open" is false.
-//     "lifetime": <A decimal string indicating the lifetime in seconds of the
-//                  authentication context. The identity as established by this
-//                  handshake is only valid for this long since the time at
-//                  which it was established.>
-//     "mechanism":<OID indicating inner authentication mechanism.>
-//     "flags"    :<Flags. See RFC 2744 Section 5.19 for meanings. Flag
-//                  bitmasks can be found in RFC 2744 Appendix A.>
+//     "source"   : <GSS Display Name for the source of the authentication
+//                   attempt. In practice this is always the user's identity.>
+//     "target"   : <GSS Display Name for the target of the authentication
+//                   attempt. This the target server or proxy service
+//                   principal.>
+//     "open"     : <Boolean indicating whether the context is |open|, which
+//                   means that the handshake is still in progress. In
+//                   particular, the flags, lifetime, and mechanism fields are
+//                   not considered final until |open| is false.
+//     "lifetime" : <A decimal string indicating the lifetime in seconds of the
+//                   authentication context. The identity as established by this
+//                   handshake is only valid for this long since the time at
+//                   which it was established.>
+//     "mechanism": <OID indicating inner authentication mechanism.>
+//     "flags"    : <GSSAPI Context Flags.>
+//   }
+//
+// ** SSPI SECURITY_STATUS
+//
+// SSPI functions invoked during Negotiate authentication on Windows return
+// SECURITY_STATUS values. These values are documented alongside the functions
+// that return them. Of these //net uses AcquireCredentialsHandle, and
+// InitializeSecurityContext.
+//
+//   {
+//     "net_error" : <net::Error value corresponding to the |security_status|
+//                    value.>
+//     "security_status": <The |SECURITY_STATUS| value indicating the result of
+//                    the operation.>
+//   }
+//
+// ** SSPI Context Flags
+//
+// Bitmask indicating properties of the negotiated security context. Values may
+// be only advisory if the |open| flag of the enclosing security context is
+// True. I.e. flags are not final until the security context is closed.
+//
+//   {
+//     "flags"     : <Bitmask in hexadecimal. See documentation for
+//                    QueryContextAttributes for a description of the flags.>
+//     "delegated" : <True if credentials were delegated to the target.>
+//     "mutual"    : <True if mutual authentication was successful.>
+//   }
+//
+// ** SSPI Context Description
+//
+// Properties of the SSPI security context being negotiated or that was
+// negotiated.
+//
+//   {
+//     "source"    : <Source security principal. I.e. the user's identity.>
+//     "target"    : <Target server's security principal name.>
+//     "open"      : <True if the handshake is complete. Does not imply success
+//                    or failure.>
+//     "mechanism" : <SSPI security package name for the selected mechanism.>
+//     "flags"     : <SSPI Context Flags.>
 //   }
 
 // Lifetime event for HttpAuthController.
@@ -2331,15 +2373,35 @@ EVENT_TYPE(AUTH_LIBRARY_BIND_FAILED)
 //   }
 EVENT_TYPE(AUTH_LIBRARY_IMPORT_NAME)
 
+// Invocation of SSPI AcquireCredentialsHandle.
+//
+// The END phase has the following parameters:
+//   {
+//     "domain": <Domain of user>
+//     "user"  : <Username>
+//     "status": <SSPI SECURITY_STATUS value.>
+//   }
+//
+// Note that "domain" and "user" are only present if the authentication
+// handshake is using explicit credentials. In the case of ambient credentials
+// the user identity is not known until the handshake is complete.
+EVENT_TYPE(AUTH_LIBRARY_ACQUIRE_CREDS)
+
 // Initialize security context.
 //
 // This operation involves invoking an external library which may perform disk,
 // IPC, and network IO as a part of its work.
 //
-// The END phase has the following parameters.
+// On Posix platforms, the END phase has the following parameters.
 //   {
 //     "context": <GSSAPI Context Description>,
-//     "status":  <GSSAPI Status if the operation failed>
+//     "status" : <GSSAPI Status if the operation failed>
+//   }
+//
+// On Windows, the END phase has the following parameters.
+//   {
+//     "context": <SSPI Context Description>
+//     "status" : <SSPI SECURITY_STATUS>
 //   }
 EVENT_TYPE(AUTH_LIBRARY_INIT_SEC_CTX)
 

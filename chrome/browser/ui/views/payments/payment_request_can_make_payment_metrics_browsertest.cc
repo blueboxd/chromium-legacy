@@ -7,7 +7,6 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
@@ -16,7 +15,6 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/payments/core/journey_logger.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "url/gurl.h"
 
@@ -25,10 +23,7 @@ namespace payments {
 class PaymentRequestCanMakePaymentMetricsTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestCanMakePaymentMetricsTest() {
-    feature_list_.InitAndEnableFeature(
-        ::features::kPaymentRequestHasEnrolledInstrument);
-  }
+  PaymentRequestCanMakePaymentMetricsTest() = default;
 
   void SetupInitialAddressAndCreditCard() {
     autofill::AutofillProfile billing_address =
@@ -56,8 +51,6 @@ class PaymentRequestCanMakePaymentMetricsTest
   }
 
  private:
-  base::test::ScopedFeatureList feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestCanMakePaymentMetricsTest);
 };
 

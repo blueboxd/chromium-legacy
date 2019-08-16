@@ -4,7 +4,8 @@
 
 #include "ash/system/tray/tray_popup_item_style.h"
 
-#include "ash/system/tray/tray_constants.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
@@ -24,7 +25,10 @@ constexpr int kDisabledAlpha = 0x61;
 SkColor TrayPopupItemStyle::GetIconColor(ColorStyle color_style,
                                          bool use_unified_theme) {
   const SkColor kBaseIconColor =
-      use_unified_theme ? kIconOnDarkBackgroundColor : gfx::kChromeIconGrey;
+      use_unified_theme ? AshColorProvider::Get()->GetContentLayerColor(
+                              AshColorProvider::ContentLayerType::kIconPrimary,
+                              AshColorProvider::AshColorMode::kDark)
+                        : gfx::kChromeIconGrey;
   switch (color_style) {
     case ColorStyle::ACTIVE:
       return kBaseIconColor;
@@ -54,9 +58,12 @@ TrayPopupItemStyle::TrayPopupItemStyle(FontStyle font_style,
 TrayPopupItemStyle::~TrayPopupItemStyle() = default;
 
 SkColor TrayPopupItemStyle::GetTextColor() const {
-  const SkColor kBaseTextColor = use_unified_theme_
-                                     ? kUnifiedMenuTextColor
-                                     : SkColorSetA(SK_ColorBLACK, 0xDE);
+  const SkColor kBaseTextColor =
+      use_unified_theme_
+          ? AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+                AshColorProvider::ContentLayerType::kTextPrimary,
+                kUnifiedMenuTextColor)
+          : SkColorSetA(SK_ColorBLACK, 0xDE);
 
   switch (color_style_) {
     case ColorStyle::ACTIVE:
@@ -98,7 +105,9 @@ void TrayPopupItemStyle::SetupLabel(views::Label* label) const {
                                                gfx::Font::Weight::MEDIUM));
       label->SetEnabledColor(
           use_unified_theme_
-              ? kUnifiedMenuTextColor
+              ? AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+                    AshColorProvider::ContentLayerType::kTextPrimary,
+                    kUnifiedMenuTextColor)
               : label->GetNativeTheme()->GetSystemColor(
                     ui::NativeTheme::kColorId_ProminentButtonColor));
       label->SetAutoColorReadabilityEnabled(false);

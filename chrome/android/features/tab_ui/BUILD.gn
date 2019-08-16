@@ -76,12 +76,10 @@ android_resources("java_resources") {
 }
 
 android_library("java") {
-  # Add this flag to prevent build hooks to be included in this module
-  # as it's already included in the base module
-  no_build_hooks = true
-
   java_files = [
     "java/src/org/chromium/chrome/browser/tasks/TasksSurfaceCoordinator.java",
+    "java/src/org/chromium/chrome/browser/tasks/TasksView.java",
+    "java/src/org/chromium/chrome/browser/tasks/TasksViewBinder.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_groups/TabGroupUtils.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/ClosableTabGridViewHolder.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/MultiThumbnailCardProvider.java",
@@ -140,7 +138,10 @@ android_library("java") {
     "//chrome/android:chrome_strings_grd",
     "//chrome/android:ui_locale_string_resources",
     "//chrome/android/features/start_surface/internal:java",
+    "//chrome/android/public/profiles:java",
     "//chrome/app:java_strings_grd",
+    "//chrome/lib/lifecycle/public/android:java",
+    "//chrome/lib/util/public/android:java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/feature_engagement:feature_engagement_java",
     "//components/policy/android:policy_java",
@@ -148,6 +149,7 @@ android_library("java") {
     "//content/public/android:content_java_resources",
     "//third_party/android_deps:android_arch_lifecycle_common_java",
     "//third_party/android_deps:android_arch_lifecycle_runtime_java",
+    "//third_party/android_deps:android_arch_lifecycle_viewmodel_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//third_party/android_deps:com_android_support_support_annotations_java",

@@ -4,6 +4,7 @@
 
 #include "ash/system/network/active_network_icon.h"
 
+#include "ash/public/cpp/network_config_service.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -13,8 +14,6 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
-#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -41,30 +40,15 @@ bool IsTrayIcon(network_icon::IconType icon_type) {
 
 }  // namespace
 
-ActiveNetworkIcon::ActiveNetworkIcon(service_manager::Connector* connector,
-                                     TrayNetworkStateModel* model)
+ActiveNetworkIcon::ActiveNetworkIcon(TrayNetworkStateModel* model)
     : model_(model), weak_ptr_factory_(this) {
-  if (connector)  // May be null in tests.
-    BindCrosNetworkConfig(connector);
   model_->AddObserver(this);
+  GetNetworkConfigService(
+      remote_cros_network_config_.BindNewPipeAndPassReceiver());
 }
 
 ActiveNetworkIcon::~ActiveNetworkIcon() {
   model_->RemoveObserver(this);
-}
-
-void ActiveNetworkIcon::BindCrosNetworkConfig(
-    service_manager::Connector* connector) {
-  // Ensure binding is reset in case this is called after a failure.
-  cros_network_config_ptr_.reset();
-
-  connector->BindInterface(chromeos::network_config::mojom::kServiceName,
-                           &cros_network_config_ptr_);
-
-  // If the connection is lost (e.g. due to a crash), attempt to rebind it.
-  cros_network_config_ptr_.set_connection_error_handler(
-      base::BindOnce(&ActiveNetworkIcon::BindCrosNetworkConfig,
-                     base::Unretained(this), connector));
 }
 
 void ActiveNetworkIcon::GetConnectionStatusStrings(Type type,
@@ -335,7 +319,7 @@ void ActiveNetworkIcon::NetworkListChanged() {
 }
 
 void ActiveNetworkIcon::PurgeNetworkIconCache() {
-  cros_network_config_ptr_->GetNetworkStateList(
+  remote_cros_network_config_->GetNetworkStateList(
       NetworkFilter::New(FilterType::kVisible, NetworkType::kAll,
                          /*limit=*/0),
       base::BindOnce(

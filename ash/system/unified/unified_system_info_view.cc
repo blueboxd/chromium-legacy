@@ -21,7 +21,6 @@
 #include "ash/system/power/power_status.h"
 #include "ash/system/supervised/supervised_icon_string.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
@@ -41,6 +40,9 @@
 #include "ui/views/layout/fill_layout.h"
 
 namespace ash {
+
+using ContentLayerType = AshColorProvider::ContentLayerType;
+using AshColorMode = AshColorProvider::AshColorMode;
 
 namespace {
 
@@ -95,7 +97,9 @@ DateView::DateView(UnifiedSystemTrayController* controller)
 
   label_->SetAutoColorReadabilityEnabled(false);
   label_->SetSubpixelRenderingEnabled(false);
-  label_->SetEnabledColor(kUnifiedMenuTextColor);
+  label_->SetEnabledColor(
+      AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+          ContentLayerType::kTextPrimary, kUnifiedMenuTextColor));
   Update();
 
   Shell::Get()->system_tray_model()->clock()->AddObserver(this);
@@ -227,7 +231,8 @@ void BatteryView::Update() {
 void BatteryView::ConfigureLabel(views::Label* label) {
   label->SetAutoColorReadabilityEnabled(false);
   label->SetSubpixelRenderingEnabled(false);
-  label->SetEnabledColor(kUnifiedMenuSecondaryTextColor);
+  label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      ContentLayerType::kTextSecondary, AshColorMode::kDark));
 }
 
 // A base class of the views showing device management state.
@@ -258,12 +263,15 @@ ManagedStateView::ManagedStateView(views::ButtonListener* listener,
   auto* label = new views::Label;
   label->SetAutoColorReadabilityEnabled(false);
   label->SetSubpixelRenderingEnabled(false);
-  label->SetEnabledColor(kUnifiedMenuSecondaryTextColor);
+  label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      ContentLayerType::kTextSecondary, AshColorMode::kDark));
   label->SetText(l10n_util::GetStringUTF16(label_id));
   AddChildView(label);
 
   auto* image = new views::ImageView;
-  image->SetImage(gfx::CreateVectorIcon(icon, kUnifiedMenuSecondaryTextColor));
+  image->SetImage(gfx::CreateVectorIcon(
+      icon, AshColorProvider::Get()->GetContentLayerColor(
+                ContentLayerType::kIconSecondary, AshColorMode::kDark)));
   image->SetPreferredSize(
       gfx::Size(kUnifiedSystemInfoHeight, kUnifiedSystemInfoHeight));
   AddChildView(image);
@@ -390,10 +398,8 @@ UnifiedSystemInfoView::UnifiedSystemInfoView(
 
   if (PowerStatus::Get()->IsBatteryPresent()) {
     auto* separator = new views::Separator();
-    separator->SetColor(
-        AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
-            AshColorProvider::ControlsLayerType::kSeparator,
-            kSeparatorOnDarkBackgroundColor));
+    separator->SetColor(AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+        ContentLayerType::kSeparator, kSeparatorOnDarkBackgroundColor));
     separator->SetPreferredHeight(kUnifiedSystemInfoHeight);
     AddChildView(separator);
 

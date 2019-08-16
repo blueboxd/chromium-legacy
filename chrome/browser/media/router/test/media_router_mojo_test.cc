@@ -13,6 +13,7 @@
 #include "extensions/common/extension_builder.h"
 
 using testing::_;
+using testing::ByRef;
 using testing::Invoke;
 using testing::Not;
 using testing::Pointee;
@@ -35,7 +36,7 @@ const int kTimeoutMillis = 5 * 1000;
 const uint8_t kBinaryMessage[] = {0x01, 0x02, 0x03, 0x04};
 
 MATCHER_P(Equals, value, "") {
-  return arg.Equals(value);
+  return arg.Equals(value.get());
 }
 
 // Creates a media route whose ID is |kRouteId|.
@@ -444,7 +445,8 @@ void MediaRouterMojoTest::TestCreateMediaRouteController() {
 
   // The MediaRouteController should be registered with the MediaRouteProvider
   // as a MediaStatusObserver, and should also notify its own observers.
-  EXPECT_CALL(controller_observer, OnMediaStatusUpdated(Equals(media_status)));
+  EXPECT_CALL(controller_observer,
+              OnMediaStatusUpdated(Equals(ByRef(media_status))));
   route_controller_as_observer->OnMediaStatusUpdated(media_status.Clone());
 
   base::RunLoop().RunUntilIdle();

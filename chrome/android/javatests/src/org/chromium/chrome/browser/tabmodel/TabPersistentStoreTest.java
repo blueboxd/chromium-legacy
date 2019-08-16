@@ -144,7 +144,13 @@ public class TabPersistentStoreTest {
         private MockTabCreator mRegularCreator;
         private MockTabCreator mIncognitoCreator;
 
+        public MockTabCreatorManager() {}
+
         public MockTabCreatorManager(TabModelSelector selector) {
+            initialize(selector);
+        }
+
+        public void initialize(TabModelSelector selector) {
             mRegularCreator = new MockTabCreator(false, selector);
             mIncognitoCreator = new MockTabCreator(true, selector);
         }
@@ -162,11 +168,11 @@ public class TabPersistentStoreTest {
             implements TabModelDelegate {
         final TabPersistentStore mTabPersistentStore;
         final MockTabPersistentStoreObserver mTabPersistentStoreObserver;
-        private final MockTabCreatorManager mTabCreatorManager;
         private final TabModelOrderController mTabModelOrderController;
 
         public TestTabModelSelector() throws Exception {
-            mTabCreatorManager = new MockTabCreatorManager(this);
+            super(new MockTabCreatorManager());
+            ((MockTabCreatorManager) getTabCreatorManager()).initialize(this);
             mTabPersistentStoreObserver = new MockTabPersistentStoreObserver();
             mTabPersistentStore =
                     TestThreadUtils.runOnUiThreadBlocking(new Callable<TabPersistentStore>() {
@@ -174,9 +180,9 @@ public class TabPersistentStoreTest {
                         public TabPersistentStore call() {
                             TabPersistencePolicy persistencePolicy =
                                     new TabbedModeTabPersistencePolicy(0, true);
-                            return new TabPersistentStore(
-                                    persistencePolicy, TestTabModelSelector.this,
-                                    mTabCreatorManager, mTabPersistentStoreObserver);
+                            return new TabPersistentStore(persistencePolicy,
+                                    TestTabModelSelector.this, getTabCreatorManager(),
+                                    mTabPersistentStoreObserver);
                         }
                     });
             mTabModelOrderController = new TabModelOrderControllerImpl(this);
@@ -184,24 +190,19 @@ public class TabPersistentStoreTest {
             Callable<TabModelImpl> callable = new Callable<TabModelImpl>() {
                 @Override
                 public TabModelImpl call() {
-                    return new TabModelImpl(false, false, mTabCreatorManager.getTabCreator(false),
-                            mTabCreatorManager.getTabCreator(true), null, mTabModelOrderController,
-                            null, mTabPersistentStore, TestTabModelSelector.this, true);
+                    return new TabModelImpl(false, false,
+                            getTabCreatorManager().getTabCreator(false),
+                            getTabCreatorManager().getTabCreator(true), null,
+                            mTabModelOrderController, null, mTabPersistentStore,
+                            TestTabModelSelector.this, true);
                 }
             };
             TabModelImpl regularTabModel = TestThreadUtils.runOnUiThreadBlocking(callable);
             TabModel incognitoTabModel = new IncognitoTabModel(
-                    new IncognitoTabModelImplCreator(mTabCreatorManager.getTabCreator(false),
-                            mTabCreatorManager.getTabCreator(true),
-                            null, mTabModelOrderController, null, mTabPersistentStore, this));
+                    new IncognitoTabModelImplCreator(getTabCreatorManager().getTabCreator(false),
+                            getTabCreatorManager().getTabCreator(true), null,
+                            mTabModelOrderController, null, mTabPersistentStore, this));
             initialize(false, regularTabModel, incognitoTabModel);
-        }
-
-        @Override
-        public Tab openNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent,
-                boolean incognito) {
-            return mTabCreatorManager.getTabCreator(incognito).createNewTab(
-                    loadUrlParams, type, parent);
         }
 
         @Override

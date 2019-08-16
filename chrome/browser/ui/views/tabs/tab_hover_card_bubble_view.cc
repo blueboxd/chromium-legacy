@@ -252,8 +252,8 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
         value, starting_bubble_bounds_, target_bubble_bounds_);
 
     if (current_bubble_bounds_ == target_bubble_bounds_) {
-      bubble_delegate_->SetAnchorView(desired_anchor_view_);
-      AnimationEnded(animation);
+      if (desired_anchor_view_)
+        bubble_delegate_->SetAnchorView(desired_anchor_view_);
     }
     bubble_delegate_->GetWidget()->SetBounds(current_bubble_bounds_);
   }
@@ -264,7 +264,6 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
 
   void AnimationCanceled(const gfx::Animation* animation) override {
     AnimationEnded(animation);
-    slide_animation_->Stop();
   }
 
   TabHoverCardBubbleView* const bubble_delegate_;
@@ -342,6 +341,10 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   title_label_->SetProperty(views::kMarginsKey,
                             gfx::Insets(kHorizontalMargin, kVerticalMargin,
                                         kLineSpacing, kVerticalMargin));
+  title_label_->SetProperty(views::kFlexBehaviorKey,
+                            views::FlexSpecification::ForSizeRule(
+                                views::MinimumFlexSizeRule::kScaleToMinimum,
+                                views::MaximumFlexSizeRule::kPreferred));
   domain_label_->SetProperty(views::kMarginsKey,
                              gfx::Insets(kLineSpacing, kVerticalMargin,
                                          kHorizontalMargin, kVerticalMargin));
@@ -393,6 +396,13 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
   if (preview_image_)
     preview_image_->SetVisible(!tab->IsActive());
 
+  // If we're not anchored, need to do this before updating card content.
+  bool anchor_view_set = false;
+  if (!GetAnchorView()) {
+    SetAnchorView(tab);
+    anchor_view_set = true;
+  }
+
   UpdateCardContent(tab);
   // If widget is already visible and anchored to the correct tab we should not
   // try to reset the anchor view or reshow.
@@ -407,7 +417,8 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
   if (widget_->IsVisible() && !disable_animations_for_testing_) {
     slide_animation_delegate_->AnimateToAnchorView(tab);
   } else {
-    SetAnchorView(tab);
+    if (!anchor_view_set)
+      SetAnchorView(tab);
     // Store the current bubble bounds now to be used when animating to a new
     // view. We do this now since the anchor view is needed to get bubble
     // bounds and could be deleting later when using the bounds to animate.

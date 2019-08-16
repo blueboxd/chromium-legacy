@@ -1754,18 +1754,6 @@
           'gtest_tests': 'linux_chromeos_gtests',
         },
       },
-      'linux-chromeos-oobe-code-coverage': {
-        'mixins': [
-          'code-coverage',
-          'linux-xenial',
-        ],
-        'additional_compile_targets': [
-          'gn_all',
-        ],
-        'test_suites': {
-          'gtest_tests': 'linux_chromeos_gtests',
-        },
-      },
       'linux-chromium-tests-staging-builder': {
         'additional_compile_targets': [
           'all'

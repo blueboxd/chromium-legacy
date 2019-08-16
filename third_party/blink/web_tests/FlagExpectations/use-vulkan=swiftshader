@@ -1,7 +1,3 @@
-# Opacity Filters need rebaseline.
-crbug.com/935580 compositing/masks/mask-with-added-filters.html [ Skip ]
-crbug.com/935580 compositing/masks/mask-with-removed-filters.html [ Skip ]
-
 # Flaky BlinkTestController::OnPixelDumpCaptured Crash. We want to still run to
 # detect failures other than the crash.
 crbug.com/963542 media/alpha-video-playback.html [ Skip ]
@@ -25,15 +21,12 @@ crbug.com/972621 compositing/culling/filter-occlusion-blur-large.html [ Skip ]
 crbug.com/972621 compositing/culling/scrolled-within-boxshadow.html [ Skip ]
 crbug.com/972621 compositing/culling/translated-boxshadow.html [ Skip ]
 crbug.com/972621 compositing/culling/unscrolled-within-boxshadow.html [ Skip ]
-crbug.com/972621 compositing/fixed-background-after-style-recalc.html [ Skip ]
 crbug.com/972621 compositing/geometry/clipping-foreground.html [ Skip ]
 crbug.com/972621 compositing/geometry/foreground-layer.html [ Skip ]
 crbug.com/972621 compositing/geometry/vertical-scroll-composited.html [ Skip ]
 crbug.com/972621 compositing/iframes/composited-iframe-alignment.html [ Skip ]
-crbug.com/972621 compositing/lots-of-img-layers.html [ Skip ]
 crbug.com/972621 compositing/overflow/border-radius-above-composited-subframe.html [ Skip ]
 crbug.com/972621 compositing/overflow/border-radius-composited-subframe.html [ Skip ]
-crbug.com/972621 compositing/overflow/mask-with-filter.html [ Skip ]
 crbug.com/972621 compositing/overflow/scrollbar-layer-placement-negative-z-index-child-positioned.html [ Skip ]
 crbug.com/972621 compositing/overflow/scrollbar-layer-placement.html [ Skip ]
 crbug.com/972621 compositing/shadows/shadow-drawing.html [ Skip ]
@@ -149,3 +142,6 @@ crbug.com/977289 css3/filters/blur-filter-page-scroll-self.html [ Skip ]
 crbug.com/977289 css3/filters/effect-reference-add-hw.html [ Skip ]
 crbug.com/977289 css3/filters/effect-reference-source-alpha-hw.html [ Skip ]
 crbug.com/977289 css3/filters/effect-reference-subregion-hidpi-hw.html [ Skip ]
+
+# Times out.
+crbug.com/994331 compositing/lots-of-img-layers.html [ Skip ]

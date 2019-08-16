@@ -43,7 +43,6 @@ Bug(none) mhtml/cid_in_html_resource.html [ Skip ]
 Bug(none) virtual/omt-worker-fetch [ Skip ]
 
 # Flaky tests:
-Bug(none) external/wpt/html/cross-origin/null.tentative.html [ Skip ]
 Bug(none) external/wpt/mediacapture-image/MediaStreamTrack-applyConstraints.html [ Skip ]
 Bug(none) external/wpt/mediacapture-image/MediaStreamTrack-getSettings.html [ Skip ]
 Bug(none) media/video-buffered-unknown-duration.html [ Skip ]

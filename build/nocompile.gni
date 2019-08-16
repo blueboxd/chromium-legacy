@@ -101,10 +101,11 @@ if (enable_nocompile_tests) {
         "-Wthread-safety",
         "-I" + rebase_path("//", root_build_dir),
         "-I" + rebase_path(root_gen_dir, root_build_dir),
-
-        # TODO(https://crbug.com/989932): Track build/config/compiler/BUILD.gn
-        "-Wno-implicit-int-float-conversion",
       ]
+      if (llvm_force_head_revision) {
+        # TODO(https://crbug.com/989932): Track build/config/compiler/BUILD.gn
+        args += [ "-Wno-implicit-int-float-conversion" ]
+      }
       if (sysroot != "") {
         args += [
           "--sysroot",

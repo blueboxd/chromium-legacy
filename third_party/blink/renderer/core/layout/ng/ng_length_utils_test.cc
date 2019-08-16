@@ -115,11 +115,10 @@ class NGLengthUtilsTestWithNode : public NGLayoutTest {
     LayoutBox* body = ToLayoutBox(GetDocument().body()->GetLayoutObject());
     body->SetStyle(style_);
     body->SetPreferredLogicalWidthsDirty();
-    NGBlockNode node(body);
 
     NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
                                 ComputePadding(constraint_space, *style_);
-    return ::blink::ComputeBlockSizeForFragment(constraint_space, node,
+    return ::blink::ComputeBlockSizeForFragment(constraint_space, *style_,
                                                 border_padding, content_size);
   }
 

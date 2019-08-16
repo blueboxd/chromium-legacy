@@ -252,8 +252,8 @@ void StackingNotificationCounterView::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawSharpLine(
       gfx::PointF(bounds.bottom_left() - gfx::Vector2d(0, 1)),
       gfx::PointF(bounds.bottom_right() - gfx::Vector2d(0, 1)),
-      AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
-          AshColorProvider::ControlsLayerType::kSeparator,
+      AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+          AshColorProvider::ContentLayerType::kSeparator,
           kSeparatorOnLightBackgroundColor));
 }
 

@@ -2117,6 +2117,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "fractional-scroll-offsets",
+    "owners": [ "bokan" ],
+    "expiry_milestone": 81
+  },
+  {
     "name": "gaia-action-buttons",
     "owners": [ "jeroendh", "rsorokin" ],
     "expiry_milestone": 79
@@ -2149,8 +2154,8 @@
   },
   {
     "name": "handwriting-gesture",
-    "owners": [ "shend" ],
-    "expiry_milestone": 76
+    "owners": [ "essential-inputs-team@google.com" ],
+    "expiry_milestone": 80
   },
   {
     "name": "happiness-tracking-surveys-for-desktop",

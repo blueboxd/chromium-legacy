@@ -4,13 +4,20 @@
 
 #include "chrome/browser/metrics/browser_activity_watcher.h"
 
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 
 BrowserActivityWatcher::BrowserActivityWatcher(
-    const base::RepeatingClosure& on_browser_list_change)
-    : on_browser_list_change_(on_browser_list_change) {
+    const base::RepeatingClosure& on_browser_activity)
+    : on_browser_activity_(on_browser_activity) {
   BrowserList::AddObserver(this);
+
+  for (Browser* browser : *BrowserList::GetInstance()) {
+    if (browser->tab_strip_model())
+      browser->tab_strip_model()->AddObserver(this);
+  }
 }
 
 BrowserActivityWatcher::~BrowserActivityWatcher() {
@@ -18,9 +25,22 @@ BrowserActivityWatcher::~BrowserActivityWatcher() {
 }
 
 void BrowserActivityWatcher::OnBrowserAdded(Browser* browser) {
-  on_browser_list_change_.Run();
+  if (browser->tab_strip_model())
+    browser->tab_strip_model()->AddObserver(this);
+
+  on_browser_activity_.Run();
 }
 
 void BrowserActivityWatcher::OnBrowserRemoved(Browser* browser) {
-  on_browser_list_change_.Run();
+  if (browser->tab_strip_model())
+    browser->tab_strip_model()->RemoveObserver(this);
+
+  on_browser_activity_.Run();
+}
+
+void BrowserActivityWatcher::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  on_browser_activity_.Run();
 }

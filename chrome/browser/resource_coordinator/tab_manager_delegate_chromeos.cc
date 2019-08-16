@@ -498,7 +498,8 @@ void TabManagerDelegate::AdjustOomPriorities() {
     return;
 
   arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
-  if (arc_process_service) {
+  // TODO(b/135633925): Design and implement OOM handling for ARCVM.
+  if (arc_process_service && !arc::IsArcVmEnabled()) {
     arc_process_service->RequestAppProcessList(
         base::BindOnce(&TabManagerDelegate::AdjustOomPrioritiesImpl,
                        weak_ptr_factory_.GetWeakPtr()));

@@ -18,6 +18,7 @@
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "chrome/browser/performance_manager/graph/worker_node_impl.h"
+#include "chrome/browser/performance_manager/public/render_process_host_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
@@ -83,6 +84,18 @@ struct TestNodeWrapper<FrameNodeImpl>::Factory {
     return std::make_unique<FrameNodeImpl>(
         graph, process_node, page_node, parent_frame_node, frame_tree_node_id,
         token, browsing_instance_id, site_instance_id);
+  }
+};
+
+// A specialized factory function for ProcessNodes which will provide an empty
+// RenderProcessHostProxy when it's not needed.
+template <>
+struct TestNodeWrapper<ProcessNodeImpl>::Factory {
+  static std::unique_ptr<ProcessNodeImpl> Create(
+      GraphImpl* graph,
+      RenderProcessHostProxy proxy = RenderProcessHostProxy()) {
+    // Provide an empty RenderProcessHostProxy by default.
+    return std::make_unique<ProcessNodeImpl>(graph, std::move(proxy));
   }
 };
 

@@ -85,6 +85,8 @@ android_library("custom_tabs_support_java") {
   deps = [
     ":custom_tabs_support_resources",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:com_android_support_collections_java",
+    "//third_party/android_deps:com_android_support_interpolator_java",
     "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
   ]

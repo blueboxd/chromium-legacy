@@ -54,6 +54,7 @@ HeadlessDevToolsClientImpl::HeadlessDevToolsClientImpl()
       dom_snapshot_domain_(this),
       dom_storage_domain_(this),
       emulation_domain_(this),
+      fetch_domain_(this),
       headless_experimental_domain_(this),
       heap_profiler_domain_(this),
       indexeddb_domain_(this),
@@ -367,6 +368,10 @@ dom_storage::Domain* HeadlessDevToolsClientImpl::GetDOMStorage() {
 
 emulation::Domain* HeadlessDevToolsClientImpl::GetEmulation() {
   return &emulation_domain_;
+}
+
+fetch::Domain* HeadlessDevToolsClientImpl::GetFetch() {
+  return &fetch_domain_;
 }
 
 headless_experimental::Domain*

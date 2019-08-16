@@ -92,6 +92,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_NativeMessagingLaunch) {
       switches::kNativeMessagingConnectHost,
       ScopedTestNativeMessagingHost::
           kSupportsNativeInitiatedConnectionsHostName);
+  command_line.AppendSwitchASCII(switches::kNativeMessagingConnectId,
+                                 "test-connect-id");
 
   StartupBrowserCreator::ProcessCommandLineAlreadyRunning(command_line, {},
                                                           profile()->GetPath());

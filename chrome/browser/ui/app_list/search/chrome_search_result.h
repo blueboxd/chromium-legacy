@@ -53,6 +53,7 @@ class ChromeSearchResult {
   DisplayLocation display_location() const {
     return metadata_->display_location;
   }
+  float position_priority() const { return metadata_->position_priority; }
   const Actions& actions() const { return metadata_->actions; }
   double display_score() const { return metadata_->display_score; }
   bool is_installing() const { return metadata_->is_installing; }
@@ -81,6 +82,7 @@ class ChromeSearchResult {
   void SetResultType(ResultType result_type);
   void SetDisplayIndex(DisplayIndex display_index);
   void SetDisplayLocation(DisplayLocation display_location);
+  void SetPositionPriority(float position_priority);
   void SetDisplayScore(double display_score);
   void SetActions(const Actions& actions);
   void SetIsOmniboxSearch(bool is_omnibox_search);

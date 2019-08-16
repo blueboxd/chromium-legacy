@@ -371,7 +371,14 @@ const FrameNode* PageNodeImpl::GetMainFrameNode() const {
   return GetMainFrameNodeImpl();
 }
 
-const WebContentsProxy& PageNodeImpl::GetContentProxy() const {
+const base::flat_set<const FrameNode*> PageNodeImpl::GetMainFrameNodes() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::flat_set<const FrameNode*> main_frame_nodes(main_frame_nodes_.begin(),
+                                                    main_frame_nodes_.end());
+  return main_frame_nodes;
+}
+
+const WebContentsProxy& PageNodeImpl::GetContentsProxy() const {
   return contents_proxy();
 }
 

@@ -85,11 +85,9 @@ class PreviewsHints {
       std::vector<std::string>* out_resource_patterns_to_block) const;
 
   // Logs UMA for whether the HintCache has a matching Hint and also a matching
-  // PageHint for |url|. Records the client's current |ect| as well. This is
-  // useful for measuring the effectiveness of the page hints provided by Cacao.
-  void LogHintCacheMatch(const GURL& url,
-                         bool is_committed,
-                         net::EffectiveConnectionType ect) const;
+  // PageHint for |url|. This is useful for measuring the effectiveness of the
+  // page hints provided by Cacao.
+  void LogHintCacheMatch(const GURL& url, bool is_committed) const;
 
  private:
   friend class PreviewsHintsTest;

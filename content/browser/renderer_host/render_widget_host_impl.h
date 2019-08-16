@@ -1200,7 +1200,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   std::unique_ptr<FrameTokenMessageQueue> frame_token_message_queue_;
 
-  bool enable_surface_synchronization_ = false;
   bool enable_viz_ = false;
 
   // If the |associated_widget_input_handler_| is set it should always be

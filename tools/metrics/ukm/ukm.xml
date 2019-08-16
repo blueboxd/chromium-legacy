@@ -1962,6 +1962,26 @@ be describing additional metrics about the same event.
       observer state. An int in the range [0,100].
     </summary>
   </metric>
+  <metric name="Layout">
+    <summary>
+      The time taken for layout for the main frame in microseconds during the
+      sampled frame.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="LayoutPercentage">
+    <summary>
+      The percentage of the main frame time used in layout work. An int in the
+      range [0,100].
+    </summary>
+  </metric>
   <metric name="MainFrame">
     <summary>
       The time between a BeginMainFrame and the commit of paint results for the
@@ -2218,6 +2238,20 @@ be describing additional metrics about the same event.
       int in the range [0,100].
     </summary>
   </metric>
+  <metric name="Style">
+    <summary>
+      The time taken for style update for the main frame in microseconds during
+      the sampled frame.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="StyleAndLayout">
     <summary>
       The time taken for style and layout for the main frame in microseconds
@@ -2281,6 +2315,12 @@ be describing additional metrics about the same event.
     <summary>
       The percentage of the main frame time used in style and layout work. An
       int in the range [0,100].
+    </summary>
+  </metric>
+  <metric name="StylePercentage">
+    <summary>
+      The percentage of the main frame time used in style work. An int in the
+      range [0,100].
     </summary>
   </metric>
   <metric name="UpdateLayers">

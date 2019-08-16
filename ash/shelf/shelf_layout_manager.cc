@@ -112,7 +112,7 @@ bool IsTabletModeEnabled() {
 bool IsHomeScreenAvailable() {
   // Shell could be destroying. Shell destroys HomeScreenController before
   // closing all windows.
-  if (!Shell::Get()->home_screen_controller())
+  if (!Shell::Get() || !Shell::Get()->home_screen_controller())
     return false;
 
   return Shell::Get()->home_screen_controller()->IsHomeScreenAvailable();
@@ -529,15 +529,13 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
     return SHELF_BACKGROUND_LOGIN;
   }
 
-  if (is_app_list_visible_) {
-    if (!IsHomeScreenAvailable())
-      return SHELF_BACKGROUND_APP_LIST;
-
-    // When the home screen is available, it is always visible. If the home
-    // screen is either fullscreen or being animated or dragged, show the
-    // transparent background.
+  if (IsHomeScreenAvailable()) {
+    // If the home launcher is shown, being animated, or dragged, show the
+    // default background.
     if (is_home_launcher_shown_ || is_home_launcher_target_position_shown_)
       return SHELF_BACKGROUND_DEFAULT;
+  } else if (is_app_list_visible_) {
+    return SHELF_BACKGROUND_APP_LIST;
   }
 
   const bool in_split_view_mode =
@@ -1179,13 +1177,32 @@ void ShelfLayoutManager::CalculateTargetBounds(
 
   // This needs to happen after calling UpdateTargetBoundsForGesture(), because
   // that can change the size of the shelf.
-  target_bounds->shelf_bounds_in_shelf = SelectValueForShelfAlignment(
-      gfx::Rect(0, 0, shelf_width - status_size.width(),
-                target_bounds->shelf_bounds.height()),
-      gfx::Rect(0, 0, target_bounds->shelf_bounds.width(),
-                shelf_height - status_size.height()),
-      gfx::Rect(0, 0, target_bounds->shelf_bounds.width(),
-                shelf_height - status_size.height()));
+  if (chromeos::switches::ShouldShowScrollableShelf()) {
+    target_bounds->shelf_bounds_in_shelf = SelectValueForShelfAlignment(
+        gfx::Rect(target_bounds->nav_bounds_in_shelf.right(), 0,
+                  shelf_width - status_size.width() -
+                      target_bounds->nav_bounds_in_shelf.width() -
+                      ShelfConstants::home_button_edge_spacing(),
+                  target_bounds->shelf_bounds.height()),
+        gfx::Rect(0, target_bounds->nav_bounds_in_shelf.height(),
+                  target_bounds->shelf_bounds.width(),
+                  shelf_height - status_size.height() -
+                      target_bounds->nav_bounds_in_shelf.height() -
+                      ShelfConstants::home_button_edge_spacing()),
+        gfx::Rect(0, target_bounds->nav_bounds_in_shelf.height(),
+                  target_bounds->shelf_bounds.width(),
+                  shelf_height - status_size.height() -
+                      target_bounds->nav_bounds_in_shelf.height() -
+                      ShelfConstants::home_button_edge_spacing()));
+  } else {
+    target_bounds->shelf_bounds_in_shelf = SelectValueForShelfAlignment(
+        gfx::Rect(0, 0, shelf_width - status_size.width(),
+                  target_bounds->shelf_bounds.height()),
+        gfx::Rect(0, 0, target_bounds->shelf_bounds.width(),
+                  shelf_height - status_size.height()),
+        gfx::Rect(0, 0, target_bounds->shelf_bounds.width(),
+                  shelf_height - status_size.height()));
+  }
 }
 
 void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea(

@@ -58,10 +58,17 @@ class ASH_EXPORT AshColorProvider {
   // Types of Controls layer.
   enum class ControlsLayerType {
     kHairlineBorder,
-    kSeparator,
     kActiveControlBackground,
     kInactiveControlBackground,
     kFocusRing,
+  };
+
+  enum class ContentLayerType {
+    kSeparator,
+    kTextPrimary,
+    kTextSecondary,
+    kIconPrimary,
+    kIconSecondary,
   };
 
   // Attributes of ripple, includes the base color, opacity of inkdrop and
@@ -110,6 +117,13 @@ class ASH_EXPORT AshColorProvider {
   SkColor GetControlsLayerColor(ControlsLayerType type,
                                 AshColorMode given_color_mode) const;
 
+  // Gets color of Content layer. See details at the corresponding function of
+  // Base layer.
+  SkColor DeprecatedGetContentLayerColor(ContentLayerType type,
+                                         SkColor default_color) const;
+  SkColor GetContentLayerColor(ContentLayerType type,
+                               AshColorMode given_color_mode) const;
+
   // Gets the attributes of ripple on |bg_color|. |bg_color| is the background
   // color of the UI element that wants to show inkdrop.
   RippleAttributes GetRippleAttributes(SkColor bg_color) const;
@@ -138,6 +152,12 @@ class ASH_EXPORT AshColorProvider {
   // be removed.
   SkColor GetControlsLayerColorImpl(ControlsLayerType type,
                                     AshColorMode color_mode) const;
+
+  // Gets Content layer color on |type| and |color_mode|. This function will be
+  // merged into GetContentLayerColor after DeprecatedGetContentLayerColor got
+  // be removed.
+  SkColor GetContentLayerColorImpl(ContentLayerType type,
+                                   AshColorMode color_mode) const;
 
   // Current color mode of system UI.
   AshColorMode color_mode_ = AshColorMode::kDefault;

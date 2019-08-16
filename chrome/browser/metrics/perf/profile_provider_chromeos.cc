@@ -4,7 +4,6 @@
 
 #include "chrome/browser/metrics/perf/profile_provider_chromeos.h"
 
-#include "base/allocator/buildflags.h"
 #include "base/bind.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
@@ -42,7 +41,7 @@ ProfileProvider::~ProfileProvider() {
 }
 
 void ProfileProvider::Init() {
-#if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR) && BUILDFLAG(USE_NEW_TCMALLOC)
+#if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
   if (base::FeatureList::IsEnabled(heap_profiling::kOOPHeapProfilingFeature)) {
     HeapCollectionMode mode = HeapCollector::CollectionModeFromString(
         base::GetFieldTrialParamValueByFeature(

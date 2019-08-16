@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace base {
 class UnguessableToken;
@@ -23,6 +24,7 @@ class ScriptPromiseResolver;
 class ScriptState;
 class Serial;
 class SerialOptions;
+class SerialOutputSignals;
 class SerialPortUnderlyingSink;
 class SerialPortUnderlyingSource;
 class WritableStream;
@@ -40,6 +42,8 @@ class SerialPort final : public ScriptWrappable,
   ScriptPromise open(ScriptState*, const SerialOptions* options);
   ReadableStream* readable(ScriptState*, ExceptionState&);
   WritableStream* writable(ScriptState*, ExceptionState&);
+  ScriptPromise getSignals(ScriptState*);
+  ScriptPromise setSignals(ScriptState*, const SerialOutputSignals*);
   void close();
 
   const base::UnguessableToken& token() const { return info_->token; }
@@ -67,6 +71,9 @@ class SerialPort final : public ScriptWrappable,
                                 mojo::ScopedDataPipeConsumerHandle);
   void InitializeWritableStream(ScriptState*,
                                 mojo::ScopedDataPipeProducerHandle);
+  void OnGetSignals(ScriptPromiseResolver*,
+                    device::mojom::blink::SerialPortControlSignalsPtr);
+  void OnSetSignals(ScriptPromiseResolver*, bool success);
 
   mojom::blink::SerialPortInfoPtr info_;
   Member<Serial> parent_;
@@ -82,6 +89,9 @@ class SerialPort final : public ScriptWrappable,
 
   // Resolver for the Promise returned by open().
   Member<ScriptPromiseResolver> open_resolver_;
+  // Resolvers for the Promises returned by getSignals() and setSignals() to
+  // reject them on Mojo connection failure.
+  HeapHashSet<Member<ScriptPromiseResolver>> signal_resolvers_;
 };
 
 }  // namespace blink

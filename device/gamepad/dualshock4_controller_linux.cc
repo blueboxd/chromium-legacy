@@ -13,9 +13,11 @@ Dualshock4ControllerLinux::Dualshock4ControllerLinux(const base::ScopedFD& fd)
 
 Dualshock4ControllerLinux::~Dualshock4ControllerLinux() = default;
 
-size_t Dualshock4ControllerLinux::WriteOutputReport(void* report,
-                                                    size_t report_length) {
-  ssize_t bytes_written = HANDLE_EINTR(write(fd_, report, report_length));
+size_t Dualshock4ControllerLinux::WriteOutputReport(
+    base::span<const uint8_t> report) {
+  DCHECK_GE(report.size_bytes(), 1U);
+  ssize_t bytes_written =
+      HANDLE_EINTR(write(fd_, report.data(), report.size_bytes()));
   return bytes_written < 0 ? 0 : static_cast<size_t>(bytes_written);
 }
 

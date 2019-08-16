@@ -32,6 +32,9 @@ class ColorPickerView : public views::View {
 
   base::Optional<SkColor> GetSelectedColor() const;
 
+  // views::View:
+  views::View* GetSelectedViewForGroup(int group) override;
+
   views::Button* GetElementAtIndexForTesting(int index);
 
  private:

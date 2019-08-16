@@ -13,7 +13,7 @@
 #endif
 
 namespace {
-// The presented view outer horizontal margins.
+// The presented view outer margins.
 const CGFloat kPresentedViewMargin = 10.0;
 // The presented view maximum width.
 const CGFloat kPresentedViewMaxWidth = 394.0;
@@ -41,19 +41,22 @@ const CGFloat kContainerBackgroundColorAlpha = 0.5;
 
 - (CGRect)frameForPresentedView {
   DCHECK(self.modalPositioner);
-  CGFloat containerWidth = CGRectGetWidth(self.containerView.bounds);
-  CGFloat containerHeight = CGRectGetHeight(self.containerView.bounds);
+  CGRect safeAreaBounds = self.containerView.safeAreaLayoutGuide.layoutFrame;
+  CGFloat safeAreaWidth = CGRectGetWidth(safeAreaBounds);
+  CGFloat safeAreaHeight = CGRectGetHeight(safeAreaBounds);
 
   // Calculate the frame width.
-  CGFloat maxAvailableWidth = containerWidth - 2 * kPresentedViewMargin;
+  CGFloat maxAvailableWidth = safeAreaWidth - 2 * kPresentedViewMargin;
   CGFloat frameWidth = fmin(maxAvailableWidth, kPresentedViewMaxWidth);
 
   CGFloat modalTargetHeight = [self.modalPositioner modalHeight];
-  CGFloat maxAvailableHeight = containerHeight - 2 * kPresentedViewMargin;
+  CGFloat maxAvailableHeight = safeAreaHeight - 2 * kPresentedViewMargin;
   CGFloat frameHeight = fmin(maxAvailableHeight, modalTargetHeight);
 
   // Based on the container width calculate the values in order to center the
   // frame in the X and Y axis.
+  CGFloat containerWidth = CGRectGetWidth(self.containerView.bounds);
+  CGFloat containerHeight = CGRectGetHeight(self.containerView.bounds);
   CGFloat modalXPosition = (containerWidth / 2) - (frameWidth / 2);
   CGFloat modalYPosition = (containerHeight / 2) - (frameHeight / 2);
 

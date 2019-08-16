@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -43,6 +44,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -87,6 +89,10 @@ public class UrlOverridingTest {
     private static final String FALLBACK_LANDING_PATH = BASE_PATH + "hello.html";
     private static final String OPEN_WINDOW_FROM_USER_GESTURE_PAGE =
             BASE_PATH + "open_window_from_user_gesture.html";
+    private static final String OPEN_WINDOW_FROM_LINK_USER_GESTURE_PAGE =
+            BASE_PATH + "open_window_from_link_user_gesture.html";
+    private static final String OPEN_WINDOW_FROM_SVG_USER_GESTURE_PAGE =
+            BASE_PATH + "open_window_from_svg_user_gesture.html";
     private static final String NAVIGATION_FROM_JAVA_REDIRECTION_PAGE =
             BASE_PATH + "navigation_from_java_redirection.html";
 
@@ -148,6 +154,14 @@ public class UrlOverridingTest {
             boolean createsNewTab, final boolean shouldLaunchExternalIntent,
             final String expectedFinalUrl, final boolean shouldFailNavigation)
             throws InterruptedException {
+        loadUrlAndWaitForIntentUrl(url, needClick, createsNewTab, shouldLaunchExternalIntent,
+                expectedFinalUrl, shouldFailNavigation, null);
+    }
+
+    private void loadUrlAndWaitForIntentUrl(final String url, boolean needClick,
+            boolean createsNewTab, final boolean shouldLaunchExternalIntent,
+            final String expectedFinalUrl, final boolean shouldFailNavigation, String clickTargetId)
+            throws InterruptedException {
         final CallbackHelper finishCallback = new CallbackHelper();
         final CallbackHelper failCallback = new CallbackHelper();
         final CallbackHelper destroyedCallback = new CallbackHelper();
@@ -194,7 +208,16 @@ public class UrlOverridingTest {
         SystemClock.sleep(1);
         mActivityTestRule.getActivity().onUserInteraction();
         if (needClick) {
-            TouchCommon.singleClickView(tab.getView());
+            if (clickTargetId == null) {
+                TouchCommon.singleClickView(tab.getView());
+            } else {
+                try {
+                    DOMUtils.clickNode(mActivityTestRule.getWebContents(), clickTargetId);
+                } catch (TimeoutException e) {
+                    Assert.fail("Failed to click on the target node.");
+                    return;
+                }
+            }
         }
 
         if (shouldFailNavigation) {
@@ -386,6 +409,28 @@ public class UrlOverridingTest {
                 !(mActivityTestRule.getActivity().getCurrentTabModel() instanceof SingleTabModel);
         loadUrlAndWaitForIntentUrl(mTestServer.getURL(OPEN_WINDOW_FROM_USER_GESTURE_PAGE), true,
                 opensNewTab, true, null, false);
+    }
+
+    @Test
+    @SmallTest
+    @RetryOnFailure
+    @DisabledTest(message = "crbug.com/993149")
+    public void testOpenWindowFromLinkUserGesture() throws InterruptedException {
+        boolean opensNewTab =
+                !(mActivityTestRule.getActivity().getCurrentTabModel() instanceof SingleTabModel);
+        loadUrlAndWaitForIntentUrl(mTestServer.getURL(OPEN_WINDOW_FROM_LINK_USER_GESTURE_PAGE),
+                true, opensNewTab, true, null, false, "link");
+    }
+
+    @Test
+    @SmallTest
+    @RetryOnFailure
+    @DisabledTest(message = "crbug.com/993149")
+    public void testOpenWindowFromSvgUserGesture() throws InterruptedException {
+        boolean opensNewTab =
+                !(mActivityTestRule.getActivity().getCurrentTabModel() instanceof SingleTabModel);
+        loadUrlAndWaitForIntentUrl(mTestServer.getURL(OPEN_WINDOW_FROM_SVG_USER_GESTURE_PAGE), true,
+                opensNewTab, true, null, false, "link");
     }
 
     @Test

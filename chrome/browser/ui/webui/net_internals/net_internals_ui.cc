@@ -435,10 +435,10 @@ void NetInternalsMessageHandler::OnStoreDebugLogs(bool combined,
   if (file_manager::util::IsUnderNonNativeLocalPath(profile, path))
     path = prefs->GetDefaultDownloadDirectoryForProfile();
   base::FilePath policies_path = path.Append("policies.json");
-  std::string json_policies = policy::GetAllPolicyValuesAsJSON(
-      web_ui()->GetWebContents()->GetBrowserContext(),
-      true /* with_user_policies */, false /* with_device_data */,
-      true /* is_pretty_print */);
+  std::string json_policies =
+      policy::DictionaryPolicyConversions()
+          .WithBrowserContext(web_ui()->GetWebContents()->GetBrowserContext())
+          .ToJSON();
   base::PostTaskAndReply(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,

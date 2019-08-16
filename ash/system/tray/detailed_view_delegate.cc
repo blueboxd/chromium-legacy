@@ -27,6 +27,9 @@
 
 namespace ash {
 
+using ContentLayerType = AshColorProvider::ContentLayerType;
+using AshColorMode = AshColorProvider::AshColorMode;
+
 namespace {
 
 void ConfigureTitleTriView(TriView* tri_view, TriView::Container container) {
@@ -64,8 +67,10 @@ void ConfigureTitleTriView(TriView* tri_view, TriView::Container container) {
 class BackButton : public CustomShapeButton {
  public:
   BackButton(views::ButtonListener* listener) : CustomShapeButton(listener) {
-    gfx::ImageSkia image = gfx::CreateVectorIcon(kUnifiedMenuArrowBackIcon,
-                                                 kIconOnDarkBackgroundColor);
+    gfx::ImageSkia image = gfx::CreateVectorIcon(
+        kUnifiedMenuArrowBackIcon,
+        AshColorProvider::Get()->GetContentLayerColor(
+            ContentLayerType::kIconPrimary, AshColorMode::kDark));
     SetImage(views::Button::STATE_NORMAL, image);
     SetImageHorizontalAlignment(ALIGN_RIGHT);
     SetImageVerticalAlignment(ALIGN_MIDDLE);
@@ -147,9 +152,8 @@ TriView* DetailedViewDelegate::CreateTitleRow(int string_id) {
 
 views::View* DetailedViewDelegate::CreateTitleSeparator() {
   views::Separator* separator = new views::Separator();
-  separator->SetColor(AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
-      AshColorProvider::ControlsLayerType::kSeparator,
-      kSeparatorOnDarkBackgroundColor));
+  separator->SetColor(AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+      ContentLayerType::kSeparator, kSeparatorOnDarkBackgroundColor));
   separator->SetBorder(views::CreateEmptyBorder(
       kTitleRowProgressBarHeight - views::Separator::kThickness, 0, 0, 0));
   return separator;
@@ -161,9 +165,8 @@ void DetailedViewDelegate::ShowStickyHeaderSeparator(views::View* view,
     view->SetBorder(views::CreatePaddedBorder(
         views::CreateSolidSidedBorder(
             0, 0, kTraySeparatorWidth, 0,
-            AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
-                AshColorProvider::ControlsLayerType::kSeparator,
-                kSeparatorOnDarkBackgroundColor)),
+            AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+                ContentLayerType::kSeparator, kSeparatorOnDarkBackgroundColor)),
         gfx::Insets(kMenuSeparatorVerticalPadding, 0,
                     kMenuSeparatorVerticalPadding - kTraySeparatorWidth, 0)));
   } else {
@@ -175,9 +178,8 @@ void DetailedViewDelegate::ShowStickyHeaderSeparator(views::View* view,
 
 views::Separator* DetailedViewDelegate::CreateListSubHeaderSeparator() {
   views::Separator* separator = new views::Separator();
-  separator->SetColor(AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
-      AshColorProvider::ControlsLayerType::kSeparator,
-      kSeparatorOnDarkBackgroundColor));
+  separator->SetColor(AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+      ContentLayerType::kSeparator, kSeparatorOnDarkBackgroundColor));
   separator->SetBorder(views::CreateEmptyBorder(
       kMenuSeparatorVerticalPadding - views::Separator::kThickness, 0, 0, 0));
   return separator;
@@ -193,7 +195,10 @@ HoverHighlightView* DetailedViewDelegate::CreateScrollListItem(
     item->AddLabelRow(text);
   else
     item->AddIconAndLabel(
-        gfx::CreateVectorIcon(icon, kIconOnDarkBackgroundColor), text);
+        gfx::CreateVectorIcon(
+            icon, AshColorProvider::Get()->GetContentLayerColor(
+                      ContentLayerType::kIconPrimary, AshColorMode::kDark)),
+        text);
   return item;
 }
 

@@ -18,22 +18,6 @@
 #include "services/network/public/cpp/resource_response.h"
 
 namespace safe_browsing {
-namespace {
-
-// Runs |task| on the thread specified by |thread_id| if already on that thread,
-// otherwise posts a task to that thread.
-void RunOrPostTaskIfNecessary(const base::Location& from_here,
-                              content::BrowserThread::ID thread_id,
-                              base::OnceClosure task) {
-  if (content::BrowserThread::CurrentlyOn(thread_id)) {
-    std::move(task).Run();
-    return;
-  }
-
-  base::PostTask(from_here, {thread_id}, std::move(task));
-}
-
-}  // namespace
 
 // TODO(http://crbug.com/824843): Remove this if safe browsing is moved to the
 // UI thread.
@@ -45,13 +29,11 @@ class BrowserURLLoaderThrottle::CheckerOnIO
       content::ResourceContext* resource_context,
       int frame_tree_node_id,
       base::RepeatingCallback<content::WebContents*()> web_contents_getter,
-      content::BrowserThread::ID throttle_thread_id,
       base::WeakPtr<BrowserURLLoaderThrottle> throttle)
       : delegate_getter_(std::move(delegate_getter)),
         resource_context_(resource_context),
         frame_tree_node_id_(frame_tree_node_id),
         web_contents_getter_(web_contents_getter),
-        throttle_thread_id_(throttle_thread_id),
         throttle_(std::move(throttle)) {}
 
   // Starts the initial safe browsing check. This check and future checks may be
@@ -73,8 +55,8 @@ class BrowserURLLoaderThrottle::CheckerOnIO
                        -1 /* render_process_id */, -1 /* render_frame_id */,
                        originated_from_service_worker);
     if (skip_checks_) {
-      RunOrPostTaskIfNecessary(
-          FROM_HERE, throttle_thread_id_,
+      base::PostTask(
+          FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(&BrowserURLLoaderThrottle::SkipChecks, throttle_));
       return;
     }
@@ -90,8 +72,8 @@ class BrowserURLLoaderThrottle::CheckerOnIO
   void CheckUrl(const GURL& url, const std::string& method) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     if (skip_checks_) {
-      RunOrPostTaskIfNecessary(
-          FROM_HERE, throttle_thread_id_,
+      base::PostTask(
+          FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(&BrowserURLLoaderThrottle::SkipChecks, throttle_));
       return;
     }
@@ -117,8 +99,8 @@ class BrowserURLLoaderThrottle::CheckerOnIO
       return;
     }
 
-    RunOrPostTaskIfNecessary(
-        FROM_HERE, throttle_thread_id_,
+    base::PostTask(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&BrowserURLLoaderThrottle::NotifySlowCheck, throttle_));
 
     // In this case |proceed| and |showed_interstitial| should be ignored. The
@@ -133,8 +115,8 @@ class BrowserURLLoaderThrottle::CheckerOnIO
   void OnCompleteCheck(bool slow_check,
                        bool proceed,
                        bool showed_interstitial) {
-    RunOrPostTaskIfNecessary(
-        FROM_HERE, throttle_thread_id_,
+    base::PostTask(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&BrowserURLLoaderThrottle::OnCompleteCheck, throttle_,
                        slow_check, proceed, showed_interstitial));
   }
@@ -147,7 +129,6 @@ class BrowserURLLoaderThrottle::CheckerOnIO
   int frame_tree_node_id_;
   base::RepeatingCallback<content::WebContents*()> web_contents_getter_;
   bool skip_checks_ = false;
-  content::BrowserThread::ID throttle_thread_id_;
   base::WeakPtr<BrowserURLLoaderThrottle> throttle_;
 };
 
@@ -168,14 +149,14 @@ BrowserURLLoaderThrottle::BrowserURLLoaderThrottle(
     const base::Callback<content::WebContents*()>& web_contents_getter,
     int frame_tree_node_id,
     content::ResourceContext* resource_context) {
-  content::BrowserThread::ID thread_id;
-  CHECK(content::BrowserThread::GetCurrentThreadIdentifier(&thread_id));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   io_checker_ = std::make_unique<CheckerOnIO>(
       std::move(delegate_getter), resource_context, frame_tree_node_id,
-      web_contents_getter, thread_id, weak_factory_.GetWeakPtr());
+      web_contents_getter, weak_factory_.GetWeakPtr());
 }
 
 BrowserURLLoaderThrottle::~BrowserURLLoaderThrottle() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (deferred_)
     TRACE_EVENT_ASYNC_END0("safe_browsing", "Deferred", this);
 
@@ -188,13 +169,14 @@ BrowserURLLoaderThrottle::~BrowserURLLoaderThrottle() {
 void BrowserURLLoaderThrottle::WillStartRequest(
     network::ResourceRequest* request,
     bool* defer) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(0u, pending_checks_);
   DCHECK(!blocked_);
 
   original_url_ = request->url;
   pending_checks_++;
-  RunOrPostTaskIfNecessary(
-      FROM_HERE, content::BrowserThread::IO,
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &BrowserURLLoaderThrottle::CheckerOnIO::Start,
           io_checker_->AsWeakPtr(), request->headers, request->load_flags,
@@ -209,6 +191,7 @@ void BrowserURLLoaderThrottle::WillRedirectRequest(
     bool* defer,
     std::vector<std::string>* /* to_be_removed_headers */,
     net::HttpRequestHeaders* /* modified_headers */) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (blocked_) {
     // OnCheckUrlResult() has set |blocked_| to true and called
     // |delegate_->CancelWithError|, but this method is called before the
@@ -221,8 +204,8 @@ void BrowserURLLoaderThrottle::WillRedirectRequest(
     return;
 
   pending_checks_++;
-  RunOrPostTaskIfNecessary(
-      FROM_HERE, content::BrowserThread::IO,
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&BrowserURLLoaderThrottle::CheckerOnIO::CheckUrl,
                      io_checker_->AsWeakPtr(), redirect_info->new_url,
                      redirect_info->new_method));
@@ -232,6 +215,7 @@ void BrowserURLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
     network::ResourceResponseHead* response_head,
     bool* defer) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (blocked_) {
     // OnCheckUrlResult() has set |blocked_| to true and called
     // |delegate_->CancelWithError|, but this method is called before the
@@ -254,6 +238,7 @@ void BrowserURLLoaderThrottle::WillProcessResponse(
 void BrowserURLLoaderThrottle::OnCompleteCheck(bool slow_check,
                                                bool proceed,
                                                bool showed_interstitial) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!blocked_);
 
   DCHECK_LT(0u, pending_checks_);
@@ -291,6 +276,7 @@ void BrowserURLLoaderThrottle::OnCompleteCheck(bool slow_check,
 }
 
 void BrowserURLLoaderThrottle::SkipChecks() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Future checks for redirects will be skipped.
   skip_checks_ = true;
 
@@ -300,6 +286,7 @@ void BrowserURLLoaderThrottle::SkipChecks() {
 }
 
 void BrowserURLLoaderThrottle::NotifySlowCheck() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   pending_slow_checks_++;
 
   // Pending slow checks indicate that the resource may be unsafe. In that case,
@@ -312,9 +299,8 @@ void BrowserURLLoaderThrottle::NotifySlowCheck() {
 }
 
 void BrowserURLLoaderThrottle::DeleteCheckerOnIO() {
-  RunOrPostTaskIfNecessary(FROM_HERE, content::BrowserThread::IO,
-                           base::BindOnce([](std::unique_ptr<CheckerOnIO>) {},
-                                          std::move(io_checker_)));
+  content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
+                                     std::move(io_checker_));
 }
 
 }  // namespace safe_browsing

@@ -28,6 +28,25 @@ namespace autotestPrivate {
     Attention
   };
 
+  // A mapping of apps::mojom::Type
+  enum AppType {
+    Arc,
+    BuiltIn,
+    Crostini,
+    Extension,
+    Web
+  };
+
+  // A mapping of apps::mojom::Readiness
+  enum AppReadiness {
+    Ready,
+    DisabledByBlacklist,
+    DisabledByPolicy,
+    DisabledByUser,
+    Terminated,
+    UninstalledByUser
+  };
+
   // A subset of Window State types in ash::WindowStateType. We may add more
   // into the set in the future.
   enum WindowStateType {
@@ -230,6 +249,19 @@ namespace autotestPrivate {
   callback IsTabletModeEnabledCallback = void (boolean enabled);
 
   callback SetTabletModeEnabledCallback = void(boolean enabled);
+
+  dictionary App {
+    DOMString appId;
+    DOMString name;
+    DOMString shortName;
+    AppType? type;
+    AppReadiness? readiness;
+    DOMString[] additionalSearchTerms;
+    boolean? showInLauncher;
+    boolean? showInSearch;
+  };
+
+  callback GetAllInstalledAppsCallback = void (App[] apps);
 
   dictionary ShelfItem {
     DOMString appId;
@@ -444,6 +476,9 @@ namespace autotestPrivate {
     // |callback|: Called when the operation has completed.
     static void setTabletModeEnabled(boolean enabled,
         SetTabletModeEnabledCallback callback);
+
+    // Get the list of all installed applications
+    static void getAllInstalledApps(GetAllInstalledAppsCallback callback);
 
     // Get the list of all shelf items
     static void getShelfItems(GetShelfItemsCallback callback);

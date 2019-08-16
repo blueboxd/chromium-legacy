@@ -4,18 +4,24 @@
 
 #include "fuchsia/engine/browser/context_impl.h"
 
-#include <lib/zx/object.h>
+#include <lib/zx/channel.h>
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "fuchsia/engine/browser/frame_impl.h"
-#include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/common.h"
 
 ContextImpl::ContextImpl(content::BrowserContext* browser_context)
-    : browser_context_(browser_context) {}
+    : browser_context_(browser_context),
+      cookie_manager_(base::BindRepeating(
+          &content::StoragePartition::GetNetworkContext,
+          base::Unretained(content::BrowserContext::GetDefaultStoragePartition(
+              browser_context_)))) {}
 
 ContextImpl::~ContextImpl() = default;
 
@@ -40,6 +46,11 @@ void ContextImpl::CreateFrame(
 
   frames_.insert(std::make_unique<FrameImpl>(std::move(web_contents), this,
                                              std::move(frame)));
+}
+
+void ContextImpl::GetCookieManager(
+    fidl::InterfaceRequest<fuchsia::web::CookieManager> request) {
+  cookie_manager_bindings_.AddBinding(&cookie_manager_, std::move(request));
 }
 
 void ContextImpl::GetRemoteDebuggingPort(

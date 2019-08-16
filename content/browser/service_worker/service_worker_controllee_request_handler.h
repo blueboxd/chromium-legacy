@@ -33,6 +33,9 @@ class ServiceWorkerVersion;
 
 // Handles main resource requests for service worker clients (documents and
 // shared workers).
+//
+// TODO(crbug.com/824858): Merge into ServiceWorkerNavigationLoaderInterceptor
+// after the service worker core thread changes to the UI thread.
 class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
  public:
   // If |skip_service_worker| is true, service workers are bypassed for
@@ -44,13 +47,12 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
       bool skip_service_worker);
   ~ServiceWorkerControlleeRequestHandler();
 
-  // NavigationLoaderInterceptor overrides:
-
   // This could get called multiple times during the lifetime in redirect
   // cases. (In fallback-to-network cases we basically forward the request
   // to the request to the next request handler)
   void MaybeCreateLoader(
       const network::ResourceRequest& tentative_request,
+      BrowserContext* browser_context,
       ResourceContext* resource_context,
       NavigationLoaderInterceptor::LoaderCallback callback,
       NavigationLoaderInterceptor::FallbackCallback fallback_callback);
@@ -106,6 +108,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
   const bool skip_service_worker_;
 
   std::unique_ptr<ServiceWorkerNavigationLoaderWrapper> loader_wrapper_;
+  BrowserContext* browser_context_;
   ResourceContext* resource_context_;
   GURL stripped_url_;
   bool force_update_started_;

@@ -67,6 +67,12 @@
     <color name="dropdown_divider_color">#E5E5E5</color>
     <color name="dropdown_dark_divider_color">#C0C0C0</color>
 
+    <!-- Snackbar colors -->
+    <color name="snackbar_background_color" tools:ignore="UnusedResources">@color/modern_primary_color</color>
+
+    <!-- Bottom sheet colors -->
+    <color name="sheet_bg_color" tools:ignore="UnusedResources">@color/modern_primary_color</color>
+
     <!-- Ripple colors for clickable widgets -->
     <color name="ripple_color_blue">@color/modern_blue_600</color>
 

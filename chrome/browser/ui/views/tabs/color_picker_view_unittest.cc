@@ -15,8 +15,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/events/event.h"
+#include "ui/events/keycodes/dom/dom_codes.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 
@@ -46,8 +49,7 @@ class ColorPickerViewTest : public ChromeViewsTestBase {
     ChromeViewsTestBase::TearDown();
   }
 
-  void ClickColorAtIndex(int index) {
-    views::Button* element = color_picker_->GetElementAtIndexForTesting(index);
+  void ClickColorElement(views::Button* element) {
     gfx::Point center = element->GetLocalBounds().CenterPoint();
     gfx::Point root_center = center;
     views::View::ConvertPointToWidget(color_picker_, &root_center);
@@ -61,6 +63,10 @@ class ColorPickerViewTest : public ChromeViewsTestBase {
                                   base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON,
                                   0);
     element->OnMouseReleased(released_event);
+  }
+
+  void ClickColorAtIndex(int index) {
+    ClickColorElement(color_picker_->GetElementAtIndexForTesting(index));
   }
 
   ColorPickerView* color_picker_;
@@ -93,4 +99,30 @@ TEST_F(ColorPickerViewTest, ClickingTwiceDeselects) {
   ClickColorAtIndex(0);
   ClickColorAtIndex(0);
   EXPECT_FALSE(color_picker_->GetSelectedColor().has_value());
+}
+
+TEST_F(ColorPickerViewTest, KeyboardFocusBehavesLikeRadioButtons) {
+  views::FocusManager* focus_manager = color_picker_->GetFocusManager();
+
+  // When no color is selected, focus should start on the first.
+  focus_manager->AdvanceFocus(false);
+  EXPECT_EQ(color_picker_->GetElementAtIndexForTesting(0),
+            focus_manager->GetFocusedView());
+
+  // Pressing arrow keys should cycle through the elements.
+  ui::KeyEvent arrow_event(
+      ui::EventType::ET_KEY_PRESSED,
+      ui::DomCodeToUsLayoutKeyboardCode(ui::DomCode::ARROW_RIGHT),
+      ui::DomCode::ARROW_RIGHT, ui::EF_NONE);
+  EXPECT_FALSE(focus_manager->OnKeyEvent(arrow_event));
+  EXPECT_EQ(color_picker_->GetElementAtIndexForTesting(1),
+            focus_manager->GetFocusedView());
+
+  focus_manager->ClearFocus();
+  ClickColorAtIndex(1);
+
+  // Re-entering should restore focus to the currently selected color.
+  focus_manager->AdvanceFocus(false);
+  EXPECT_EQ(color_picker_->GetElementAtIndexForTesting(1),
+            focus_manager->GetFocusedView());
 }

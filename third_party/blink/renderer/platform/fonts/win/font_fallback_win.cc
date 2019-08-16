@@ -47,6 +47,10 @@ namespace blink {
 
 namespace {
 
+const char kArial[] = "Arial";
+const char kCourierNew[] = "Courier New";
+const char kTimesNewRoman[] = "Times New Roman";
+
 static inline bool IsFontPresent(const UChar* font_name,
                                  SkFontMgr* font_manager) {
   String family = font_name;
@@ -541,6 +545,30 @@ const UChar* GetFallbackFamily(UChar32 character,
   if (script_checked)
     *script_checked = script;
   return family;
+}
+
+const String GetOutOfProcessFallbackFamily(
+    UChar32 character,
+    FontDescription::GenericFamilyType generic_family,
+    String bcp47_language_tag,
+    FontFallbackPriority,
+    const mojom::blink::DWriteFontProxyPtr& service) {
+  String base_family_name_approximation;
+  switch (generic_family) {
+    case FontDescription::kMonospaceFamily:
+      base_family_name_approximation = kCourierNew;
+      break;
+    case FontDescription::kSansSerifFamily:
+      base_family_name_approximation = kArial;
+      break;
+    default:
+      base_family_name_approximation = kTimesNewRoman;
+  }
+  String fallback_family_name;
+  service->FallbackFamilyNameForCodepoint(base_family_name_approximation,
+                                          bcp47_language_tag, character,
+                                          &fallback_family_name);
+  return fallback_family_name;
 }
 
 }  // namespace blink

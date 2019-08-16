@@ -541,11 +541,18 @@ class CONTENT_EXPORT ContentBrowserClient {
   // A null |wc_getter| callback indicates this is for starting a service
   // worker, which is not necessarily associated with a particular tab.
   // This is called on the IO thread.
-  virtual bool AllowServiceWorker(
+  virtual bool AllowServiceWorkerOnIO(
       const GURL& scope,
       const GURL& first_party,
       const GURL& script_url,
       ResourceContext* context,
+      base::RepeatingCallback<WebContents*()> wc_getter);
+  // Same but for the UI thread.
+  virtual bool AllowServiceWorkerOnUI(
+      const GURL& scope,
+      const GURL& first_party,
+      const GURL& script_url,
+      BrowserContext* context,
       base::RepeatingCallback<WebContents*()> wc_getter);
 
   // Allow the embedder to control if a Shared Worker can be connected from a

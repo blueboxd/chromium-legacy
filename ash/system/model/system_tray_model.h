@@ -10,10 +10,6 @@
 #include "ash/public/cpp/system_tray.h"
 #include "base/macros.h"
 
-namespace service_manager {
-class Connector;
-}
-
 namespace ash {
 
 class ActiveNetworkIcon;
@@ -30,7 +26,7 @@ class VirtualKeyboardModel;
 // Top level model of SystemTray.
 class SystemTrayModel : public SystemTray {
  public:
-  explicit SystemTrayModel(service_manager::Connector* connector);
+  SystemTrayModel();
   ~SystemTrayModel() override;
 
   // SystemTray:

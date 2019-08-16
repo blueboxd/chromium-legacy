@@ -51,6 +51,8 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/account_id/account_id.h"
 #endif
 
@@ -521,24 +523,41 @@ void Navigate(NavigateParams* params) {
     return;
   }
 #if defined(OS_CHROMEOS)
-  if (source_browser && source_browser != params->browser) {
-    // When the newly created browser was spawned by a browser which visits
-    // another user's desktop, it should be shown on the same desktop as the
-    // originating one. (This is part of the desktop separation per profile).
-    auto* window_manager = MultiUserWindowManagerHelper::GetWindowManager();
-    // Some unit tests have no client instantiated.
-    if (window_manager) {
-      aura::Window* src_window = source_browser->window()->GetNativeWindow();
-      aura::Window* new_window = params->browser->window()->GetNativeWindow();
-      const AccountId& src_account_id =
-          window_manager->GetUserPresentingWindow(src_window);
-      if (src_account_id !=
-          window_manager->GetUserPresentingWindow(new_window)) {
-        // Once the window gets presented, it should be shown on the same
-        // desktop as the desktop of the creating browser. Note that this
-        // command will not show the window if it wasn't shown yet by the
-        // browser creation.
-        window_manager->ShowWindowForUser(new_window, src_account_id);
+  if (source_browser) {
+    // If OS Settings is accessed in any means other than explicitly typing the
+    // URL into the URL bar, open OS Settings in its own standalone surface.
+    if (chromeos::features::IsSplitSettingsEnabled() &&
+        params->url.host() == chrome::kChromeUIOSSettingsHost &&
+        !PageTransitionCoreTypeIs(params->transition,
+                                  ui::PageTransition::PAGE_TRANSITION_TYPED)) {
+      chrome::SettingsWindowManager* settings_window_manager =
+          chrome::SettingsWindowManager::GetInstance();
+      if (!settings_window_manager->IsSettingsBrowser(source_browser)) {
+        settings_window_manager->ShowChromePageForProfile(
+            GetSourceProfile(params), params->url);
+        return;
+      }
+    }
+
+    if (source_browser != params->browser) {
+      // When the newly created browser was spawned by a browser which visits
+      // another user's desktop, it should be shown on the same desktop as the
+      // originating one. (This is part of the desktop separation per profile).
+      auto* window_manager = MultiUserWindowManagerHelper::GetWindowManager();
+      // Some unit tests have no client instantiated.
+      if (window_manager) {
+        aura::Window* src_window = source_browser->window()->GetNativeWindow();
+        aura::Window* new_window = params->browser->window()->GetNativeWindow();
+        const AccountId& src_account_id =
+            window_manager->GetUserPresentingWindow(src_window);
+        if (src_account_id !=
+            window_manager->GetUserPresentingWindow(new_window)) {
+          // Once the window gets presented, it should be shown on the same
+          // desktop as the desktop of the creating browser. Note that this
+          // command will not show the window if it wasn't shown yet by the
+          // browser creation.
+          window_manager->ShowWindowForUser(new_window, src_account_id);
+        }
       }
     }
   }
@@ -712,13 +731,6 @@ void Navigate(NavigateParams* params) {
       if (should_close_this_tab)
         params->source_contents->Close();
     }
-  }
-
-  if (params->disposition != WindowOpenDisposition::CURRENT_TAB) {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_TAB_ADDED,
-        content::Source<content::WebContentsDelegate>(params->browser),
-        content::Details<WebContents>(contents_to_navigate_or_insert));
   }
 
   params->navigated_or_inserted_contents = contents_to_navigate_or_insert;

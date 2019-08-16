@@ -101,9 +101,12 @@ def GetImageList(
     scale_image_path = os.path.join(scale_path[0], scale_factor, scale_path[1])
     if os.path.isfile(scale_image_path):
       # HTML/CSS always uses forward slashed paths.
-      scale_image_name = re.sub('(?P<path>(.*/)?)(?P<file>[^/]*)',
-                                '\\g<path>' + scale_factor + '/\\g<file>',
-                                filename)
+      parts = filename.rsplit('/', 1)
+      if len(parts) == 1:
+        path = ''
+      else:
+        path = parts[0] + '/'
+      scale_image_name = path + scale_factor + '/' + parts[-1]
       images.append((scale_factor, scale_image_name))
   return images
 

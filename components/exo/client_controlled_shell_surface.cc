@@ -97,6 +97,7 @@ class ClientControlledStateDelegate
     if (!screen->GetDisplayWithDisplayId(display_id, &target_display))
       return;
 
+    // TODO(oshima): Remove the conversion here and one in zcr_remote_shell.
     gfx::Rect bounds_in_screen(bounds_in_display);
     bounds_in_screen.Offset(target_display.bounds().OffsetFromOrigin());
 
@@ -693,8 +694,14 @@ void ClientControlledShellSurface::OnSetFrameColors(SkColor active_color,
 
 void ClientControlledShellSurface::OnWindowAddedToRootWindow(
     aura::Window* window) {
-  if (client_controlled_state_->set_bounds_locally())
+  // Window dragging across display moves the window to target display when
+  // dropped, but the actual window bounds comes later from android.  Update the
+  // window bounds now so that the window stays where it is expected to be. (it
+  // may still move if the android sends different bounds).
+  if (client_controlled_state_->set_bounds_locally() ||
+      !GetWindowState()->is_dragged()) {
     return;
+  }
 
   ScopedLockedToRoot scoped_locked_to_root(widget_);
   UpdateWidgetBounds();

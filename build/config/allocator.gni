@@ -7,8 +7,4 @@ declare_args() {
   # TODO(thakis): Move this elsewhere, probably
   # base/allocator/partition_allocator/buildflags.gni
   use_partition_alloc = !is_ios
-
-  # Use the new tcmalloc. It's relevant only when use_allocator == "tcmalloc".
-  # TODO(https://crbug.com/989976): Remove this.
-  use_new_tcmalloc = true
 }

@@ -162,7 +162,7 @@ class StructureUnittest(unittest.TestCase):
     uncompress_size += struct.unpack('<h', compressed[6:8])[0] << 4*8
     self.assertEqual(actual_size, uncompress_size)
 
-    self.assertEqual('This has been mock compressed!', compressed[8:])
+    self.assertEqual(b'This has been mock compressed!', compressed[8:])
 
   def testNotCompressed(self):
     test_data_root = util.PathFromRoot('grit/testdata')

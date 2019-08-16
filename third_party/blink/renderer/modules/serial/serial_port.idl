@@ -15,7 +15,10 @@
 
     [CallWith=ScriptState, MeasureAs=SerialPortOpen]
     Promise<void> open(SerialOptions options);
-
+    [CallWith=ScriptState]
+    Promise<SerialInputSignals> getSignals();
+    [CallWith=ScriptState]
+    Promise<void> setSignals(SerialOutputSignals signals);
     [MeasureAs=SerialPortClose]
     void close();
 };

@@ -45,6 +45,7 @@ CONTENT_EXPORT extern const base::Feature kExpensiveBackgroundTimerThrottling;
 CONTENT_EXPORT extern const base::Feature kExtendedMouseButtons;
 CONTENT_EXPORT extern const base::Feature kFeaturePolicyForSandbox;
 CONTENT_EXPORT extern const base::Feature kFontSrcLocalMatching;
+CONTENT_EXPORT extern const base::Feature kFractionalScrollOffsets;
 CONTENT_EXPORT extern const base::Feature kGuestViewCrossProcessFrames;
 CONTENT_EXPORT extern const base::Feature kHistoryManipulationIntervention;
 CONTENT_EXPORT extern const base::Feature kIdleDetection;
@@ -80,7 +81,6 @@ CONTENT_EXPORT extern const base::Feature kPassiveDocumentWheelEventListeners;
 CONTENT_EXPORT extern const base::Feature kPassiveEventListenersDueToFling;
 CONTENT_EXPORT extern const base::Feature
     kPauseExecutionContextOnBackgroundFreeze;
-CONTENT_EXPORT extern const base::Feature kPaymentRequestHasEnrolledInstrument;
 CONTENT_EXPORT extern const base::Feature kPeriodicBackgroundSync;
 CONTENT_EXPORT extern const base::Feature kPerNavigationMojoInterface;
 CONTENT_EXPORT extern const base::Feature kPepper3DImageChromium;
@@ -106,6 +106,7 @@ CONTENT_EXPORT extern const base::Feature kScrollAnchorSerialization;
 CONTENT_EXPORT extern const base::Feature
     kSendBeaconThrowForBlobWithNonSimpleType;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerLongRunningMessage;
+CONTENT_EXPORT extern const base::Feature kServiceWorkerOnUI;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerPaymentApps;
 CONTENT_EXPORT extern const base::Feature kSharedArrayBuffer;
 CONTENT_EXPORT extern const base::Feature

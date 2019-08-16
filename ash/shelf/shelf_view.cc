@@ -541,6 +541,42 @@ bool ShelfView::OnKeyPressed(const ui::KeyEvent& event) {
   return views::View::OnKeyPressed(event);
 }
 
+void ShelfView::OnMouseEvent(ui::MouseEvent* event) {
+  gfx::Point location_in_screen(event->location());
+  View::ConvertPointToScreen(this, &location_in_screen);
+
+  switch (event->type()) {
+    case ui::ET_MOUSEWHEEL:
+      event->SetHandled();
+      shelf_->ProcessMouseWheelEvent(*event->AsMouseWheelEvent());
+      break;
+    case ui::ET_MOUSE_PRESSED:
+      if (!event->IsOnlyLeftMouseButton()) {
+        if (event->IsOnlyRightMouseButton()) {
+          ShowContextMenuForViewImpl(this, location_in_screen,
+                                     ui::MENU_SOURCE_MOUSE);
+          event->SetHandled();
+        }
+        return;
+      }
+
+      FALLTHROUGH;
+    case ui::ET_MOUSE_DRAGGED:
+    case ui::ET_MOUSE_RELEASED:
+      // Convert the event location from current view to screen, since dragging
+      // the shelf by mouse can open the fullscreen app list. Updating the
+      // bounds of the app list during dragging is based on screen coordinate
+      // space.
+      event->set_location(location_in_screen);
+
+      event->SetHandled();
+      shelf_->ProcessMouseEvent(*event->AsMouseEvent());
+      break;
+    default:
+      break;
+  }
+}
+
 views::FocusTraversable* ShelfView::GetPaneFocusTraversable() {
   return this;
 }
@@ -846,6 +882,29 @@ views::View* ShelfView::FindFirstOrLastFocusableChild(bool last) {
   return last ? FindLastFocusableChild() : FindFirstFocusableChild();
 }
 
+void ShelfView::HandleGestureEvent(ui::GestureEvent* event) {
+  // Convert the event location from current view to screen, since swiping up on
+  // the shelf can open the fullscreen app list. Updating the bounds of the app
+  // list during dragging is based on screen coordinate space.
+  gfx::Point location_in_screen(event->location());
+  View::ConvertPointToScreen(this, &location_in_screen);
+  event->set_location(location_in_screen);
+
+  if (shelf_->ProcessGestureEvent(*event)) {
+    event->StopPropagation();
+    return;
+  }
+
+  // If the event hasn't been processed yet and the overflow shelf is showing,
+  // give the bubble a chance to process the event.
+  if (is_overflow_mode()) {
+    if (main_shelf_->overflow_bubble()->bubble_view()->ProcessGestureEvent(
+            *event)) {
+      event->StopPropagation();
+    }
+  }
+}
+
 // static
 void ShelfView::ConfigureChildView(views::View* view) {
   view->SetPaintToLayer();
@@ -856,8 +915,6 @@ void ShelfView::CalculateIdealBounds() {
   DCHECK(model()->item_count() == view_model()->view_size());
 
   const int button_spacing = ShelfConstants::button_spacing();
-  const int available_size = shelf()->PrimaryAxisValue(width(), height());
-
   const int separator_index = GetSeparatorIndex();
   const AppCenteringStrategy app_centering_strategy =
       CalculateAppCenteringStrategy();
@@ -873,7 +930,11 @@ void ShelfView::CalculateIdealBounds() {
 
   int x = 0;
   int y = 0;
-  if (!is_overflow_mode()) {
+
+  // When scrollable shelf is enabled, the padding is handled in
+  // ScrollableShelfView.
+  if (!is_overflow_mode() && !chromeos::switches::ShouldShowScrollableShelf()) {
+    const int available_size = shelf()->PrimaryAxisValue(width(), height());
 
     // Add the minimum padding required after the home button.
     x += shelf()->PrimaryAxisValue(kAppIconGroupMargin, 0);
@@ -1026,12 +1087,20 @@ int ShelfView::GetSeparatorIndex() const {
 }
 
 ShelfView::AppCenteringStrategy ShelfView::CalculateAppCenteringStrategy() {
+  AppCenteringStrategy strategy;
+
+  // When the scrollable shelf is enabled, overflow mode is disabled. Meanwhile,
+  // centering padding is calculated in ScrollableShelfView, which means that
+  // |center_on_screen| is always false.
+  if (chromeos::switches::ShouldShowScrollableShelf()) {
+    last_visible_index_ = view_model()->view_size() - 1;
+    return strategy;
+  }
+
   // There are two possibilities. Either all the apps fit when centered
   // on the whole screen width, in which case we do that. Or, when space
   // becomes a little tight (which happens especially when the status area
   // is wider because of extra panels), we center apps on the available space.
-
-  AppCenteringStrategy strategy;
   // This is only relevant for the main shelf.
   if (is_overflow_mode())
     return strategy;
@@ -1935,42 +2004,6 @@ void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
     HandleGestureEvent(event);
 }
 
-void ShelfView::OnMouseEvent(ui::MouseEvent* event) {
-  gfx::Point location_in_screen(event->location());
-  View::ConvertPointToScreen(this, &location_in_screen);
-
-  switch (event->type()) {
-    case ui::ET_MOUSEWHEEL:
-      event->SetHandled();
-      shelf_->ProcessMouseWheelEvent(*event->AsMouseWheelEvent());
-      break;
-    case ui::ET_MOUSE_PRESSED:
-      if (!event->IsOnlyLeftMouseButton()) {
-        if (event->IsOnlyRightMouseButton()) {
-          ShowContextMenuForViewImpl(this, location_in_screen,
-                                     ui::MENU_SOURCE_MOUSE);
-          event->SetHandled();
-        }
-        return;
-      }
-
-      FALLTHROUGH;
-    case ui::ET_MOUSE_DRAGGED:
-    case ui::ET_MOUSE_RELEASED:
-      // Convert the event location from current view to screen, since dragging
-      // the shelf by mouse can open the fullscreen app list. Updating the
-      // bounds of the app list during dragging is based on screen coordinate
-      // space.
-      event->set_location(location_in_screen);
-
-      event->SetHandled();
-      shelf_->ProcessMouseEvent(*event->AsMouseEvent());
-      break;
-    default:
-      break;
-  }
-}
-
 void ShelfView::ShelfItemAdded(int model_index) {
   {
     base::AutoReset<bool> cancelling_drag(&cancelling_drag_model_changed_,
@@ -2376,25 +2409,6 @@ bool ShelfView::ShouldHandleGestures(const ui::GestureEvent& event) const {
   }
 
   return true;
-}
-
-void ShelfView::HandleGestureEvent(ui::GestureEvent* event) {
-  // Convert the event location from current view to screen, since swiping up on
-  // the shelf can open the fullscreen app list. Updating the bounds of the app
-  // list during dragging is based on screen coordinate space.
-  gfx::Point location_in_screen(event->location());
-  View::ConvertPointToScreen(this, &location_in_screen);
-  event->set_location(location_in_screen);
-  if (shelf_->ProcessGestureEvent(*event))
-    event->StopPropagation();
-  else if (is_overflow_mode()) {
-    // If the event hasn't been processed yet and the overflow shelf is showing,
-    // give the bubble a chance to process the event.
-    if (main_shelf_->overflow_bubble()->bubble_view()->ProcessGestureEvent(
-            *event)) {
-      event->StopPropagation();
-    }
-  }
 }
 
 }  // namespace ash

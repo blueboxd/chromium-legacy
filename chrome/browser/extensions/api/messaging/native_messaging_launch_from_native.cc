@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/strings/string_util.h"
 #include "chrome/browser/extensions/api/messaging/native_message_port.h"
 #include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
@@ -94,9 +95,21 @@ ScopedAllowNativeAppConnectionForTest::
   g_allow_native_app_connection_for_test = nullptr;
 }
 
+bool IsValidConnectionId(const base::StringPiece connection_id) {
+  return connection_id.size() <= 20 &&
+         base::ContainsOnlyChars(
+             connection_id,
+             "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-");
+}
+
 void LaunchNativeMessageHostFromNativeApp(const std::string& extension_id,
                                           const std::string& host_id,
+                                          const std::string& connection_id,
                                           Profile* profile) {
+  if (!IsValidConnectionId(connection_id)) {
+    // TODO(crbug.com/967262): Report errors to the native messaging host.
+    return;
+  }
   if (!ExtensionSupportsConnectionFromNativeApp(extension_id, host_id, profile,
                                                 /* log_errors = */ true)) {
     // TODO(crbug.com/967262): Report errors to the native messaging host.
@@ -112,7 +125,7 @@ void LaunchNativeMessageHostFromNativeApp(const std::string& extension_id,
       NativeProcessLauncher::CreateDefault(
           /* allow_user_level = */ true, /* native_view = */ nullptr,
           profile->GetPath(),
-          /* require_native_initiated_connections = */ true));
+          /* require_native_initiated_connections = */ true, connection_id));
   auto native_message_port = std::make_unique<extensions::NativeMessagePort>(
       message_service->GetChannelDelegate(), port_id,
       std::move(native_message_host));

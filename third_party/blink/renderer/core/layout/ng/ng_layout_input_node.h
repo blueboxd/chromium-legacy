@@ -111,7 +111,6 @@ class CORE_EXPORT NGLayoutInputNode {
     DCHECK(IsListMarker());
     return ToLayoutNGListMarker(box_)->NeedsOccupyWholeLine();
   }
-  bool IsTableCell() const { return IsBlock() && box_->IsTableCell(); }
   bool IsFieldsetContainer() const {
     return IsBlock() && box_->IsLayoutNGFieldset();
   }
@@ -159,9 +158,6 @@ class CORE_EXPORT NGLayoutInputNode {
   void IntrinsicSize(base::Optional<LayoutUnit>* computed_inline_size,
                      base::Optional<LayoutUnit>* computed_block_size,
                      LogicalSize* aspect_ratio) const;
-
-  LayoutUnit IntrinsicPaddingBlockStart() const;
-  LayoutUnit IntrinsicPaddingBlockEnd() const;
 
   // Returns the next sibling.
   NGLayoutInputNode NextSibling();

@@ -288,30 +288,3 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
       return gfx::kPlaceholderColor;
   }
 }
-
-// static
-SkColor ThemeProperties::GetDefaultColor(PropertyLookupPair lookup_pair) {
-  return GetDefaultColor(lookup_pair.property_id, lookup_pair.is_incognito);
-}
-
-// static
-ThemeProperties::PropertyLookupPair ThemeProperties::GetLookupID(int input_id) {
-  // Mapping of incognito property ids to their corresponding non-incognito
-  // property ids.
-  base::flat_map<int, int> incognito_property_map({
-      {COLOR_FRAME_INCOGNITO, COLOR_FRAME},
-      {COLOR_FRAME_INCOGNITO_INACTIVE, COLOR_FRAME_INACTIVE},
-      {COLOR_BACKGROUND_TAB_INCOGNITO, COLOR_BACKGROUND_TAB},
-      {COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE, COLOR_BACKGROUND_TAB_INACTIVE},
-      {COLOR_BACKGROUND_TAB_TEXT_INCOGNITO, COLOR_BACKGROUND_TAB_TEXT},
-      {COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE,
-       COLOR_BACKGROUND_TAB_TEXT_INACTIVE},
-      {TINT_FRAME_INCOGNITO, TINT_FRAME},
-      {TINT_FRAME_INCOGNITO_INACTIVE, TINT_FRAME_INACTIVE},
-  });
-
-  const auto found_entry = incognito_property_map.find(input_id);
-  if (found_entry != incognito_property_map.end())
-    return {found_entry->second, true};
-  return {input_id, false};
-}

@@ -38,13 +38,10 @@ class ASH_EXPORT UnifiedMessageCenterBubble : public TrayBubbleBase,
   // views::ViewObserver:
   void OnViewVisibilityChanged(views::View* observed_view,
                                views::View* starting_view) override;
+  void OnViewPreferredSizeChanged(views::View* observed_view) override;
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
-
-  // Called when the system tray expanded amount is changed. Required to
-  // position the message center right above the tray when it is moving.
-  void OnExpandedAmountChanged();
 
  private:
   UnifiedSystemTray* const tray_;

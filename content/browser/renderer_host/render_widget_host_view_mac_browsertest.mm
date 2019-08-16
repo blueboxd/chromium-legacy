@@ -48,7 +48,10 @@
 }
 
 - (void)waitWithTimeout:(NSTimeInterval)timeout {
-  run_loop_->RunWithTimeout(base::TimeDelta::FromSecondsD(timeout));
+  base::RunLoop::ScopedRunTimeoutForTest run_timeout(
+      base::TimeDelta::FromSecondsD(timeout), run_loop_->QuitClosure());
+  run_loop_->Run();
+
   [self reset];
 }
 

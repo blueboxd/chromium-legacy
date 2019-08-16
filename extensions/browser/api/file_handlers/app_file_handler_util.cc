@@ -11,6 +11,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
+#include "components/services/app_service/public/cpp/file_handler_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -37,7 +38,7 @@ const char kSecurityError[] = "Security error";
 
 namespace {
 
-bool FileHandlerCanHandleFileWithExtension(const FileHandlerInfo& handler,
+bool FileHandlerCanHandleFileWithExtension(const apps::FileHandlerInfo& handler,
                                            const base::FilePath& path) {
   for (auto extension = handler.extensions.cbegin();
        extension != handler.extensions.cend(); ++extension) {
@@ -66,7 +67,7 @@ bool FileHandlerCanHandleFileWithExtension(const FileHandlerInfo& handler,
   return false;
 }
 
-bool FileHandlerCanHandleFileWithMimeType(const FileHandlerInfo& handler,
+bool FileHandlerCanHandleFileWithMimeType(const apps::FileHandlerInfo& handler,
                                           const std::string& mime_type) {
   for (auto type = handler.types.cbegin(); type != handler.types.cend();
        ++type) {
@@ -208,8 +209,8 @@ void WritableFileChecker::OnPrepareFileDone(const base::FilePath& path,
 
 }  // namespace
 
-const FileHandlerInfo* FileHandlerForId(const Extension& app,
-                                        const std::string& handler_id) {
+const apps::FileHandlerInfo* FileHandlerForId(const Extension& app,
+                                              const std::string& handler_id) {
   const FileHandlersInfo* file_handlers = FileHandlers::GetFileHandlers(&app);
   if (!file_handlers)
     return NULL;
@@ -234,7 +235,7 @@ std::vector<FileHandlerMatch> FindFileHandlerMatchesForEntries(
   if (!file_handlers)
     return matches;
 
-  for (const FileHandlerInfo& handler : *file_handlers) {
+  for (const apps::FileHandlerInfo& handler : *file_handlers) {
     bool handles_all_types = true;
     FileHandlerMatch match;
 
@@ -268,7 +269,7 @@ std::vector<FileHandlerMatch> FindFileHandlerMatchesForEntries(
   return matches;
 }
 
-bool FileHandlerCanHandleEntry(const FileHandlerInfo& handler,
+bool FileHandlerCanHandleEntry(const apps::FileHandlerInfo& handler,
                                const EntryInfo& entry) {
   if (entry.is_directory)
     return handler.include_directories;

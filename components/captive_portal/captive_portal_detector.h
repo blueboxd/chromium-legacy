@@ -6,13 +6,11 @@
 #define COMPONENTS_CAPTIVE_PORTAL_CAPTIVE_PORTAL_DETECTOR_H_
 
 #include <memory>
-#include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/captive_portal/captive_portal_export.h"
@@ -20,6 +18,10 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+
+#if defined(OS_CHROMEOS)
+#include "base/memory/weak_ptr.h"
+#endif
 
 class GURL;
 
@@ -112,7 +114,9 @@ class CAPTIVE_PORTAL_EXPORT CaptivePortalDetector {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
+#if defined(OS_CHROMEOS)
   base::WeakPtrFactory<CaptivePortalDetector> weak_factory_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalDetector);
 };

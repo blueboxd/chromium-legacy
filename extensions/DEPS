@@ -4,6 +4,7 @@ include_rules = [
   "+components/crx_file",
   "+components/guest_view",
   "+components/prefs",
+  "+components/services/app_service/public",
   "+components/url_matcher",
   "+components/version_info",
   "-content",

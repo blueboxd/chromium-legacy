@@ -8,10 +8,12 @@
 #include "base/macros.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 
+class SharingService;
+
 // Handles incoming messages for the shared clipboard feature.
 class SharedClipboardMessageHandler : public SharingMessageHandler {
  public:
-  SharedClipboardMessageHandler();
+  explicit SharedClipboardMessageHandler(SharingService* sharing_service);
   ~SharedClipboardMessageHandler() override;
 
   // SharingMessageHandler implementation:
@@ -19,6 +21,8 @@ class SharedClipboardMessageHandler : public SharingMessageHandler {
       const chrome_browser_sharing::SharingMessage& message) override;
 
  private:
+  SharingService* sharing_service_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(SharedClipboardMessageHandler);
 };
 

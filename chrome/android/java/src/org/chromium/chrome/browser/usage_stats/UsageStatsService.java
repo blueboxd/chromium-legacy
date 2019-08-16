@@ -209,6 +209,18 @@ public class UsageStatsService {
         });
     }
 
+    public void onHistoryDeletedForDomains(List<String> fqdns) {
+        ThreadUtils.assertOnUiThread();
+        UsageStatsMetricsReporter.reportMetricsEvent(UsageStatsMetricsEvent.CLEAR_HISTORY_DOMAIN);
+        mClient.notifyHistoryDeletion(fqdns);
+        mEventTracker.clearDomains(fqdns).except((exception) -> {
+            // Retry once; if the subsequent attempt fails, log the failure and move on.
+            mEventTracker.clearDomains(fqdns).except((exceptionInner) -> {
+                Log.e(TAG, "Failed to clear domain events for history deletion");
+            });
+        });
+    }
+
     // The below methods are dummies that are only being retained to avoid breaking the downstream
     // build. TODO(pnoland): remove these once the downstream change that converts to using promises
     // lands.

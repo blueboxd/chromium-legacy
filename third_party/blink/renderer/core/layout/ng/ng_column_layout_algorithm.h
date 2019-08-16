@@ -44,7 +44,8 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
 
   NGConstraintSpace CreateConstraintSpaceForColumns(
       const LogicalSize& column_size,
-      bool separate_leading_margins) const;
+      bool separate_leading_margins,
+      bool balance_columns) const;
   NGConstraintSpace CreateConstraintSpaceForBalancing(
       const LogicalSize& column_size) const;
   NGConstraintSpace CreateConstraintSpaceForMinMax() const;

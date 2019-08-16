@@ -5,13 +5,15 @@
 #ifndef COMPONENTS_PDF_RENDERER_PDF_AX_ACTION_TARGET_H_
 #define COMPONENTS_PDF_RENDERER_PDF_AX_ACTION_TARGET_H_
 
-#include "components/pdf/renderer/pdf_accessibility_tree.h"
-#include "content/public/renderer/plugin_ax_tree_source.h"
-#include "ppapi/c/private/ppp_pdf.h"
 #include "ui/accessibility/ax_action_target.h"
-#include "ui/accessibility/ax_node.h"
+
+namespace ui {
+class AXNode;
+}
 
 namespace pdf {
+
+class PdfAccessibilityTree;
 
 // Abstracts an AXNode, representing a PDF node, for dispatching
 // accessibility actions.
@@ -51,9 +53,6 @@ class PdfAXActionTarget : public ui::AXActionTarget {
   bool ScrollToGlobalPoint(const gfx::Point& point) const override;
 
  private:
-  PP_PdfAccessibilityScrollAlignment ConvertAXScrollToPdfScrollAlignment(
-      ax::mojom::ScrollAlignment scroll_alignment) const;
-
   const ui::AXNode& target_plugin_node_;
   pdf::PdfAccessibilityTree* pdf_accessibility_tree_source_;
 };

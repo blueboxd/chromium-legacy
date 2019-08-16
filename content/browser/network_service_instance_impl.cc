@@ -17,6 +17,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "build/build_config.h"
@@ -91,7 +92,9 @@ network::mojom::NetworkServiceParamsPtr CreateNetworkServiceParams() {
   return network_service_params;
 }
 
-void CreateNetworkServiceOnIO(network::mojom::NetworkServiceRequest request) {
+void CreateNetworkServiceOnIOForTesting(
+    network::mojom::NetworkServiceRequest request,
+    base::WaitableEvent* completion_event) {
   if (GetLocalNetworkService()) {
     GetLocalNetworkService()->Bind(std::move(request));
     return;
@@ -99,6 +102,8 @@ void CreateNetworkServiceOnIO(network::mojom::NetworkServiceRequest request) {
 
   GetLocalNetworkService() =
       std::make_unique<network::NetworkService>(nullptr, std::move(request));
+  if (completion_event)
+    completion_event->Signal();
 }
 
 void BindNetworkChangeManagerRequest(
@@ -157,16 +162,6 @@ net::NetLogCaptureMode GetNetCaptureModeFromCommandLine(
 }  // namespace
 
 network::mojom::NetworkService* GetNetworkService() {
-  service_manager::Connector* connector = nullptr;
-  if (GetSystemConnector() &&  // null in unit tests.
-      !g_force_create_network_service_directly) {
-    connector = GetSystemConnector();
-  }
-  return GetNetworkServiceFromConnector(connector);
-}
-
-CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
-    service_manager::Connector* connector) {
   if (!g_network_service_ptr)
     g_network_service_ptr = new network::mojom::NetworkServicePtr;
   static NetworkServiceClient* g_client;
@@ -181,16 +176,27 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
       auto request = mojo::MakeRequest(g_network_service_ptr);
       auto leaked_pipe = request.PassMessagePipe().release();
     } else {
-      if (connector) {
-        connector->BindInterface(mojom::kNetworkServiceName,
-                                 g_network_service_ptr);
+      if (GetSystemConnector() &&  // null in unit tests.
+          !g_force_create_network_service_directly) {
+        GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
+                                            g_network_service_ptr);
         g_network_service_ptr->set_connection_error_handler(
             base::BindOnce(&OnNetworkServiceCrash));
       } else {
-        base::PostTask(
-            FROM_HERE, {BrowserThread::IO},
-            base::BindOnce(CreateNetworkServiceOnIO,
-                           mojo::MakeRequest(g_network_service_ptr)));
+        // This should only be reached in unit tests.
+        if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+          CreateNetworkServiceOnIOForTesting(
+              mojo::MakeRequest(g_network_service_ptr),
+              /*completion_event=*/nullptr);
+        } else {
+          base::WaitableEvent event;
+          base::PostTaskWithTraits(
+              FROM_HERE, {BrowserThread::IO},
+              base::BindOnce(CreateNetworkServiceOnIOForTesting,
+                             mojo::MakeRequest(g_network_service_ptr),
+                             base::Unretained(&event)));
+          event.Wait();
+        }
       }
 
       network::mojom::NetworkServiceClientPtr client_ptr;

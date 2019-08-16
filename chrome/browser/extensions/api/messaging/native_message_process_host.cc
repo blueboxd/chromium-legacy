@@ -107,7 +107,8 @@ std::unique_ptr<NativeMessageHost> NativeMessageHost::Create(
           allow_user_level, native_view,
           GetProfilePathIfEnabled(Profile::FromBrowserContext(browser_context),
                                   source_extension_id, native_host_name),
-          /* require_native_initiated_connections = */ false));
+          /* require_native_initiated_connections = */ false,
+          /* connect_id = */ ""));
 }
 
 // static

@@ -121,6 +121,26 @@ void MediaRouteController::SetVolume(float volume) {
       MediaRouteProviderWakeReason::ROUTE_CONTROLLER_COMMAND);
 }
 
+void MediaRouteController::NextTrack() {
+  if (request_manager_->mojo_connections_ready()) {
+    mojo_media_controller_->NextTrack();
+    return;
+  }
+  request_manager_->RunOrDefer(
+      base::BindOnce(&MediaRouteController::NextTrack, AsWeakPtr()),
+      MediaRouteProviderWakeReason::ROUTE_CONTROLLER_COMMAND);
+}
+
+void MediaRouteController::PreviousTrack() {
+  if (request_manager_->mojo_connections_ready()) {
+    mojo_media_controller_->PreviousTrack();
+    return;
+  }
+  request_manager_->RunOrDefer(
+      base::BindOnce(&MediaRouteController::PreviousTrack, AsWeakPtr()),
+      MediaRouteProviderWakeReason::ROUTE_CONTROLLER_COMMAND);
+}
+
 void MediaRouteController::OnMediaStatusUpdated(mojom::MediaStatusPtr status) {
   DCHECK(is_valid_);
   current_media_status_ = std::move(status);

@@ -276,6 +276,13 @@ Status WebViewImpl::SendCommand(const std::string& cmd,
   return client_->SendCommand(cmd, params);
 }
 
+Status WebViewImpl::SendCommandFromWebSocket(
+    const std::string& cmd,
+    const base::DictionaryValue& params,
+    const int client_cmd_id) {
+  return client_->SendCommandFromWebSocket(cmd, params, client_cmd_id);
+}
+
 Status WebViewImpl::SendCommandAndGetResult(
         const std::string& cmd,
         const base::DictionaryValue& params,

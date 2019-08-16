@@ -22,6 +22,7 @@
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 
 namespace base {
 class FilePath;
@@ -51,7 +52,8 @@ class TopHostProvider;
 class PrefService;
 
 class OptimizationGuideHintsManager
-    : public optimization_guide::OptimizationGuideServiceObserver {
+    : public optimization_guide::OptimizationGuideServiceObserver,
+      public network::NetworkQualityTracker::EffectiveConnectionTypeObserver {
  public:
   OptimizationGuideHintsManager(
       optimization_guide::OptimizationGuideService* optimization_guide_service,
@@ -117,6 +119,11 @@ class OptimizationGuideHintsManager
 
   // Overrides |clock_| for testing.
   void SetClockForTesting(const base::Clock* clock);
+
+  // network::NetworkQualityTracker::EffectiveConnectionTypeObserver
+  // implementation:
+  void OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType type) override;
 
  private:
   // Processes the hints component.
@@ -245,6 +252,10 @@ class OptimizationGuideHintsManager
   // The clock used to schedule fetching from the remote Optimization Guide
   // Service.
   const base::Clock* clock_;
+
+  // The current estimate of the EffectiveConnectionType.
+  net::EffectiveConnectionType current_effective_connection_type_ =
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
   // Used in testing to subscribe to an update event in this class.
   base::OnceClosure next_update_closure_;

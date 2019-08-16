@@ -34,7 +34,6 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "third_party/zlib/zlib.h"
 #include "url/buildflags.h"
-#include "url/url_util.h"
 
 #if !BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
 #include "base/i18n/icu_util.h"  // nogncheck
@@ -74,7 +73,6 @@ void NativeInit() {
 
   if (!base::ThreadPoolInstance::Get())
     base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Cronet");
-  url::Initialize();
 }
 
 }  // namespace

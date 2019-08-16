@@ -36,6 +36,7 @@
 #include "chrome/test/chromedriver/element_util.h"
 #include "chrome/test/chromedriver/key_converter.h"
 #include "chrome/test/chromedriver/keycode_text_conversion.h"
+#include "chrome/test/chromedriver/net/command_id.h"
 #include "chrome/test/chromedriver/net/timeout.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/util.h"
@@ -1664,6 +1665,28 @@ Status ExecuteSendCommand(Session* session,
     return Status(kInvalidArgument, "params not passed");
   }
   return web_view->SendCommand(cmd, *cmdParams);
+}
+
+Status ExecuteSendCommandFromWebSocket(Session* session,
+                                       WebView* web_view,
+                                       const base::DictionaryValue& params,
+                                       std::unique_ptr<base::Value>* value,
+                                       Timeout* timeout) {
+  std::string cmd;
+  if (!params.GetString("method", &cmd)) {
+    return Status(kInvalidArgument, "command not passed");
+  }
+  const base::DictionaryValue* cmdParams;
+  if (!params.GetDictionary("params", &cmdParams)) {
+    return Status(kInvalidArgument, "params not passed");
+  }
+  int client_cmd_id;
+  if (!params.GetInteger("id", &client_cmd_id) ||
+      !CommandId::IsClientCommandId(client_cmd_id)) {
+    return Status(kInvalidArgument, "command id must be negative");
+  }
+
+  return web_view->SendCommandFromWebSocket(cmd, *cmdParams, client_cmd_id);
 }
 
 Status ExecuteSendCommandAndGetResult(Session* session,

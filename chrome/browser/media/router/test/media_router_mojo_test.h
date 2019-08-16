@@ -228,6 +228,8 @@ class MockMediaController : public mojom::MediaController {
   MOCK_METHOD1(SetMute, void(bool mute));
   MOCK_METHOD1(SetVolume, void(float volume));
   MOCK_METHOD1(Seek, void(base::TimeDelta time));
+  MOCK_METHOD0(NextTrack, void());
+  MOCK_METHOD0(PreviousTrack, void());
 
  private:
   mojo::Binding<mojom::MediaController> binding_;

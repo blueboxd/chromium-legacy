@@ -403,31 +403,26 @@ bool PreviewsHints::GetResourceLoadingHints(
 }
 
 void PreviewsHints::LogHintCacheMatch(const GURL& url,
-                                      bool is_committed,
-                                      net::EffectiveConnectionType ect) const {
+                                      bool is_committed) const {
   DCHECK(hint_cache_);
 
-  if (hint_cache_->HasHint(url.host())) {
-    if (!is_committed) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "Previews.OptimizationGuide.HintCache.HasHint.BeforeCommit", ect,
-          net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION(
-          "Previews.OptimizationGuide.HintCache.HasHint.AtCommit", ect,
-          net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST);
-      const optimization_guide::proto::Hint* hint =
-          hint_cache_->GetHintIfLoaded(url.host());
-      if (hint) {
-        UMA_HISTOGRAM_ENUMERATION(
-            "Previews.OptimizationGuide.HintCache.HostMatch.AtCommit", ect,
-            net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST);
-        if (optimization_guide::FindPageHintForURL(url, hint)) {
-          UMA_HISTOGRAM_ENUMERATION(
-              "Previews.OptimizationGuide.HintCache.PageMatch.AtCommit", ect,
-              net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST);
-        }
-      }
+  bool has_hint = hint_cache_->HasHint(url.host());
+  if (!is_committed) {
+    UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintCache.HasHint.BeforeCommit",
+                          has_hint);
+    return;
+  }
+
+  UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintCache.HasHint.AtCommit",
+                        has_hint);
+  if (has_hint) {
+    const optimization_guide::proto::Hint* hint =
+        hint_cache_->GetHintIfLoaded(url.host());
+    UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintCache.HostMatch.AtCommit",
+                          hint);
+    if (hint) {
+      UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintCache.PageMatch.AtCommit",
+                            optimization_guide::FindPageHintForURL(url, hint));
     }
   }
 }

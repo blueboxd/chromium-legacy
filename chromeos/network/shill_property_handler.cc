@@ -137,6 +137,11 @@ bool ShillPropertyHandler::IsTechnologyEnabling(
   return enabling_technologies_.count(technology) != 0;
 }
 
+bool ShillPropertyHandler::IsTechnologyDisabling(
+    const std::string& technology) const {
+  return disabling_technologies_.count(technology) != 0;
+}
+
 bool ShillPropertyHandler::IsTechnologyProhibited(
     const std::string& technology) const {
   return prohibited_technologies_.count(technology) != 0;
@@ -161,18 +166,19 @@ void ShillPropertyHandler::SetTechnologyEnabled(
       return;
     }
     enabling_technologies_.insert(technology);
+    disabling_technologies_.erase(technology);
     shill_manager_->EnableTechnology(
         technology, base::DoNothing(),
         base::Bind(&ShillPropertyHandler::EnableTechnologyFailed, AsWeakPtr(),
                    technology, error_callback));
   } else {
-    // Immediately clear locally from enabled and enabling lists.
-    enabled_technologies_.erase(technology);
+    // Clear locally from enabling lists and add to the disabling list.
     enabling_technologies_.erase(technology);
+    disabling_technologies_.insert(technology);
     shill_manager_->DisableTechnology(
         technology, base::DoNothing(),
-        base::Bind(&network_handler::ShillErrorCallbackFunction,
-                   "SetTechnologyEnabled Failed", technology, error_callback));
+        base::Bind(&ShillPropertyHandler::DisableTechnologyFailed, AsWeakPtr(),
+                   technology, error_callback));
   }
 }
 
@@ -460,6 +466,18 @@ void ShillPropertyHandler::UpdateEnabledTechnologies(
   if (new_enabled_technologies == enabled_technologies_)
     return;
   enabled_technologies_.swap(new_enabled_technologies);
+
+  // If any entries in |disabling_technologies_| are disabled, remove them from
+  // the disabling list.
+  for (auto it = disabling_technologies_.begin();
+       it != disabling_technologies_.end();) {
+    base::Value technology_value(*it);
+    if (!base::Contains(technologies.GetList(), technology_value))
+      it = disabling_technologies_.erase(it);
+    else
+      ++it;
+  }
+
   // If any entries in |enabling_technologies_| are enabled, remove them from
   // the enabling list.
   for (auto iter = enabling_technologies_.begin();
@@ -493,6 +511,19 @@ void ShillPropertyHandler::EnableTechnologyFailed(
   network_handler::ShillErrorCallbackFunction(
       "EnableTechnology Failed", technology, error_callback, dbus_error_name,
       dbus_error_message);
+  listener_->TechnologyListChanged();
+}
+
+void ShillPropertyHandler::DisableTechnologyFailed(
+    const std::string& technology,
+    const network_handler::ErrorCallback& error_callback,
+    const std::string& dbus_error_name,
+    const std::string& dbus_error_message) {
+  disabling_technologies_.erase(technology);
+  network_handler::ShillErrorCallbackFunction(
+      "DisableTechnology Failed", technology, error_callback, dbus_error_name,
+      dbus_error_message);
+  listener_->TechnologyListChanged();
 }
 
 void ShillPropertyHandler::GetPropertiesCallback(

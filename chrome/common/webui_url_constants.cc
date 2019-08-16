@@ -165,6 +165,9 @@ const char kChromeUIUsbInternalsHost[] = "usb-internals";
 const char kChromeUIUserActionsHost[] = "user-actions";
 const char kChromeUIVersionHost[] = "version";
 const char kChromeUIVersionURL[] = "chrome://version/";
+const char kChromeUIWebFooterExperimentHost[] = "web-footer-experiment";
+const char kChromeUIWebFooterExperimentURL[] =
+    "chrome://web-footer-experiment/";
 const char kChromeUIWelcomeHost[] = "welcome";
 const char kChromeUIWelcomeURL[] = "chrome://welcome/";
 

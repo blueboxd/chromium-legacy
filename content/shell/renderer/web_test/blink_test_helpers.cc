@@ -139,7 +139,6 @@ void ApplyWebTestDefaultPreferences(WebPreferences* prefs) {
       command_line.HasSwitch(switches::kEnableAccelerated2DCanvas);
   prefs->mock_scrollbars_enabled = false;
   prefs->smart_insert_delete_enabled = true;
-  prefs->minimum_accelerated_2d_canvas_size = 0;
   prefs->viewport_enabled = command_line.HasSwitch(switches::kEnableViewport);
   prefs->default_minimum_page_scale_factor = 1.f;
   prefs->default_maximum_page_scale_factor = 4.f;

@@ -7,6 +7,7 @@
 #include <unicode/uscript.h>
 
 #include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -129,6 +130,7 @@ class HarfBuzzShaperTest : public testing::Test {
     return result;
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   FontCachePurgePreventer font_cache_purge_preventer;
   FontDescription font_description;
   Font font;

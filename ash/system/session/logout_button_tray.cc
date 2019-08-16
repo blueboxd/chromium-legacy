@@ -12,6 +12,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/session/logout_confirmation_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
@@ -142,9 +143,12 @@ void LogoutButtonTray::UpdateButtonTextAndImage() {
   } else {
     button_->SetText(base::string16());
     button_->SetAccessibleName(title);
-    button_->SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kShelfLogoutIcon, kIconOnDarkBackgroundColor));
+    button_->SetImage(views::Button::STATE_NORMAL,
+                      gfx::CreateVectorIcon(
+                          kShelfLogoutIcon,
+                          AshColorProvider::Get()->GetContentLayerColor(
+                              AshColorProvider::ContentLayerType::kIconPrimary,
+                              AshColorProvider::AshColorMode::kDark)));
     button_->SetMinSize(gfx::Size(kTrayItemSize, kTrayItemSize));
   }
   UpdateVisibility();

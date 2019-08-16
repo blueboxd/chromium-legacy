@@ -98,24 +98,6 @@ namespace {
 constexpr int kDefaultCanvasWidth = 300;
 constexpr int kDefaultCanvasHeight = 150;
 
-#if defined(OS_ANDROID)
-// We estimate that the max limit for android phones is a quarter of that for
-// desktops based on local experimental results on Android One.
-constexpr int kMaxGlobalAcceleratedResourceCount = 25;
-#else
-constexpr int kMaxGlobalAcceleratedResourceCount = 100;
-#endif
-
-// We estimate the max limit of GPU allocated memory for canvases before Chrome
-// becomes laggy by setting the total allocated memory for accelerated canvases
-// to be equivalent to memory used by 100 accelerated canvases, each has a size
-// of 1000*500 and 2d context.
-// Each such canvas occupies 4000000 = 1000 * 500 * 2 * 4 bytes, where 2 is the
-// gpuBufferCount in UpdateMemoryUsage() and 4 means four bytes per pixel per
-// buffer.
-constexpr int kMaxGlobalGPUMemoryUsage =
-    4000000 * kMaxGlobalAcceleratedResourceCount;
-
 // A default value of quality argument for toDataURL and toBlob
 // It is in an invalid range (outside 0.0 - 1.0) so that it will not be
 // misinterpreted as a user-input value
@@ -134,16 +116,10 @@ HTMLCanvasElement::HTMLCanvasElement(Document& document)
       ignore_reset_(false),
       origin_clean_(true),
       surface_layer_bridge_(nullptr),
-      gpu_memory_usage_(0),
-      externally_allocated_memory_(0),
-      gpu_readback_invoked_in_current_frame_(false),
-      gpu_readback_successive_frames_(0) {
+      externally_allocated_memory_(0) {
   UseCounter::Count(document, WebFeature::kHTMLCanvasElement);
   GetDocument().IncrementNumberOfCanvases();
 }
-
-intptr_t HTMLCanvasElement::global_gpu_memory_usage_ = 0;
-unsigned HTMLCanvasElement::global_accelerated_context_count_ = 0;
 
 HTMLCanvasElement::~HTMLCanvasElement() {
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
@@ -175,12 +151,6 @@ void HTMLCanvasElement::Dispose() {
     canvas2d_bridge_->SetCanvasResourceHost(nullptr);
     canvas2d_bridge_ = nullptr;
   }
-
-  if (gpu_memory_usage_) {
-    DCHECK_GT(global_accelerated_context_count_, 0u);
-    global_accelerated_context_count_--;
-  }
-  global_gpu_memory_usage_ -= gpu_memory_usage_;
 
   if (surface_layer_bridge_) {
     if (surface_layer_bridge_->GetCcLayer()) {
@@ -425,24 +395,6 @@ void HTMLCanvasElement::FinalizeFrame() {
     resource_provider->ReleaseLockedImages();
 
   if (canvas2d_bridge_) {
-    // Compute to determine whether disable accleration is needed
-    if (IsAccelerated() &&
-        canvas_heuristic_parameters::kGPUReadbackForcesNoAcceleration &&
-        !RuntimeEnabledFeatures::Canvas2dFixedRenderingModeEnabled() &&
-        !base::FeatureList::IsEnabled(features::kAlwaysAccelerateCanvas)) {
-      if (gpu_readback_invoked_in_current_frame_) {
-        gpu_readback_successive_frames_++;
-        gpu_readback_invoked_in_current_frame_ = false;
-      } else {
-        gpu_readback_successive_frames_ = 0;
-      }
-
-      if (gpu_readback_successive_frames_ >=
-          canvas_heuristic_parameters::kGPUReadbackMinSuccessiveFrames) {
-        DisableAcceleration();
-      }
-    }
-
     if (!LowLatencyEnabled())
       canvas2d_bridge_->FinalizeFrame();
   }
@@ -1066,40 +1018,6 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
   if (GetLayoutBox() && !GetLayoutBox()->HasAcceleratedCompositing())
     return false;
 
-  // With this feature enabled we want to accelerate canvases whenever we can.
-  // This does not include when the context_provider CANNOT accelerated
-  // canvases.
-  if (!base::FeatureList::IsEnabled(features::kAlwaysAccelerateCanvas)) {
-    base::CheckedNumeric<int> checked_canvas_pixel_count = Size().Width();
-    checked_canvas_pixel_count *= Size().Height();
-    if (!checked_canvas_pixel_count.IsValid())
-      return false;
-    int canvas_pixel_count = checked_canvas_pixel_count.ValueOrDie();
-
-    // Do not use acceleration for small canvas.
-    if (criteria != kIgnoreResourceLimitCriteria) {
-      Settings* settings = GetDocument().GetSettings();
-      if (!settings ||
-          canvas_pixel_count < settings->GetMinimumAccelerated2dCanvasSize()) {
-        return false;
-      }
-
-      // When GPU allocated memory runs low (due to having created too many
-      // accelerated canvases), the compositor starves and browser becomes
-      // laggy. Thus, we should stop allocating more GPU memory to new canvases
-      // created when the current memory usage exceeds the threshold.
-      if (global_gpu_memory_usage_ >= kMaxGlobalGPUMemoryUsage)
-        return false;
-
-      // Allocating too many GPU resources can makes us run into the driver's
-      // resource limits. So we need to keep the number of texture resources
-      // under tight control
-      if (global_accelerated_context_count_ >=
-          kMaxGlobalAcceleratedResourceCount)
-        return false;
-    }
-  }
-
   // Avoid creating |contextProvider| until we're sure we want to try use it,
   // since it costs us GPU memory.
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
@@ -1305,13 +1223,6 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     else
       image = GetTransparentImage();
   } else {
-    if (canvas_heuristic_parameters::kDisableAccelerationToAvoidReadbacks &&
-        !RuntimeEnabledFeatures::Canvas2dFixedRenderingModeEnabled() &&
-        hint == kPreferNoAcceleration && canvas2d_bridge_ &&
-        canvas2d_bridge_->IsAccelerated() &&
-        !base::FeatureList::IsEnabled(features::kAlwaysAccelerateCanvas)) {
-      DisableAcceleration();
-    }
     image = RenderingContext()->GetImage(hint);
     if (!image)
       image = GetTransparentImage();
@@ -1503,26 +1414,15 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
 
   const int bytes_per_pixel = ColorParams().BytesPerPixel();
 
-  // Re-computation of gpu memory usage is only carried out when there is a
-  // a change from acceleration to non-accleration or vice versa.
-  if (gpu_buffer_count && !gpu_memory_usage_) {
+  intptr_t gpu_memory_usage = 0;
+  if (gpu_buffer_count) {
     // Switch from non-acceleration mode to acceleration mode
     base::CheckedNumeric<intptr_t> checked_usage =
         gpu_buffer_count * bytes_per_pixel;
     checked_usage *= width();
     checked_usage *= height();
-    intptr_t gpu_memory_usage =
+    gpu_memory_usage =
         checked_usage.ValueOrDefault(std::numeric_limits<intptr_t>::max());
-
-    global_gpu_memory_usage_ += (gpu_memory_usage - gpu_memory_usage_);
-    gpu_memory_usage_ = gpu_memory_usage;
-    global_accelerated_context_count_++;
-  } else if (!gpu_buffer_count && gpu_memory_usage_) {
-    // Switch from acceleration mode to non-acceleration mode
-    DCHECK_GT(global_accelerated_context_count_, 0u);
-    global_accelerated_context_count_--;
-    global_gpu_memory_usage_ -= gpu_memory_usage_;
-    gpu_memory_usage_ = 0;
   }
 
   // Recomputation of externally memory usage computation is carried out
@@ -1531,7 +1431,7 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
       non_gpu_buffer_count * bytes_per_pixel;
   checked_usage *= width();
   checked_usage *= height();
-  checked_usage += gpu_memory_usage_;
+  checked_usage += gpu_memory_usage;
   intptr_t externally_allocated_memory =
       checked_usage.ValueOrDefault(std::numeric_limits<intptr_t>::max());
   // Subtracting two intptr_t that are known to be positive will never

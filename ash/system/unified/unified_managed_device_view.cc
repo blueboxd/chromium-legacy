@@ -8,6 +8,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/enterprise/enterprise_domain_observer.h"
 #include "ash/system/model/enterprise_domain_model.h"
 #include "ash/system/model/system_tray_model.h"
@@ -38,7 +39,9 @@ UnifiedManagedDeviceView::UnifiedManagedDeviceView()
 
   label_->SetAutoColorReadabilityEnabled(false);
   label_->SetSubpixelRenderingEnabled(false);
-  label_->SetEnabledColor(kUnifiedMenuSecondaryTextColor);
+  label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextSecondary,
+      AshColorProvider::AshColorMode::kDark));
   AddChildView(label_);
 
   Shell::Get()->session_controller()->AddObserver(this);
@@ -69,11 +72,13 @@ void UnifiedManagedDeviceView::Update() {
       Shell::Get()->system_tray_model()->enterprise_domain();
   std::string enterprise_domain_name = model->enterprise_display_domain();
 
+  const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kIconSecondary,
+      AshColorProvider::AshColorMode::kDark);
   if (session->ShouldDisplayManagedUI() || model->active_directory_managed() ||
       !enterprise_domain_name.empty()) {
     // Show enterpised managed UI.
-    icon_->SetImage(gfx::CreateVectorIcon(kSystemTrayManagedIcon,
-                                          kIconOnDarkBackgroundSecondaryColor));
+    icon_->SetImage(gfx::CreateVectorIcon(kSystemTrayManagedIcon, icon_color));
 
     if (!enterprise_domain_name.empty()) {
       label_->SetText(l10n_util::GetStringFUTF16(
@@ -87,8 +92,7 @@ void UnifiedManagedDeviceView::Update() {
     SetVisible(true);
   } else if (session->IsUserSupervised()) {
     // Show supervised user UI (locally supervised or Family Link).
-    icon_->SetImage(gfx::CreateVectorIcon(GetSupervisedUserIcon(),
-                                          kIconOnDarkBackgroundSecondaryColor));
+    icon_->SetImage(gfx::CreateVectorIcon(GetSupervisedUserIcon(), icon_color));
     label_->SetText(GetSupervisedUserMessage());
     SetVisible(true);
   } else {

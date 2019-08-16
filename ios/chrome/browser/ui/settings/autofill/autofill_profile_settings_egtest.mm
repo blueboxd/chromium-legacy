@@ -140,7 +140,9 @@ id<GREYMatcher> NavigationBarEditButton() {
   [ChromeEarlGreyUI openSettingsMenu];
   id<GREYMatcher> addressesButton =
       ButtonWithAccessibilityLabelId(IDS_AUTOFILL_ADDRESSES_SETTINGS_TITLE);
-  [[EarlGrey selectElementWithMatcher:addressesButton]
+  [[[EarlGrey selectElementWithMatcher:addressesButton]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+      onElementWithMatcher:grey_kindOfClass([UITableView class])]
       performAction:grey_tap()];
 }
 

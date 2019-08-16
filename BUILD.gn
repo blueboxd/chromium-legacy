@@ -257,8 +257,8 @@ group("gn_all") {
 
   if (use_aura) {
     deps += [
+      "//ui/aura:aura_demo",
       "//ui/aura:aura_unittests",
-      "//ui/aura:demo",
       "//ui/wm:wm_unittests",
     ]
   }

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
+#include "third_party/blink/renderer/platform/geometry/calculation_expression_node.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -39,10 +40,9 @@ CSSMathFunctionValue* CSSMathFunctionValue::Create(
 // static
 CSSMathFunctionValue* CSSMathFunctionValue::Create(const Length& length,
                                                    float zoom) {
-  const CalculationValue& calc = length.GetCalculationValue();
-  return Create(CSSMathExpressionNode::CreateFromPixelsAndPercent(
-                    calc.Pixels() / zoom, calc.Percent()),
-                calc.GetValueRange());
+  DCHECK(length.IsCalculated());
+  auto calc = length.GetCalculationValue().Zoom(zoom);
+  return Create(CSSMathExpressionNode::Create(*calc), calc->GetValueRange());
 }
 
 bool CSSMathFunctionValue::MayHaveRelativeUnit() const {
@@ -122,6 +122,13 @@ bool CSSMathFunctionValue::IsPx() const {
 
 bool CSSMathFunctionValue::IsComputationallyIndependent() const {
   return expression_->IsComputationallyIndependent();
+}
+
+scoped_refptr<CalculationValue> CSSMathFunctionValue::ToCalcValue(
+    const CSSToLengthConversionData& conversion_data) const {
+  return CalculationValue::CreateSimplified(
+      expression_->ToCalculationExpression(conversion_data),
+      PermittedValueRange());
 }
 
 }  // namespace blink

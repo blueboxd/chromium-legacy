@@ -9,6 +9,7 @@ import util
 import command_executor
 from command_executor import Command
 from webelement import WebElement
+from websocket_connection import WebSocketConnection
 
 ELEMENT_KEY_W3C = "element-6066-11e4-a52e-4f735466cecf"
 ELEMENT_KEY = "ELEMENT"
@@ -152,7 +153,9 @@ class ChromeDriver(object):
       devtools_events_to_log=None, accept_insecure_certs=None,
       timeouts=None, test_name=None):
     self._executor = command_executor.CommandExecutor(server_url)
+    self._server_url = server_url
     self.w3c_compliant = False
+    self._websocket = None
 
     options = {}
 
@@ -328,6 +331,13 @@ class ChromeDriver(object):
     params['sessionId'] = self._session_id
     response = self._ExecuteCommand(command, params)
     return self._UnwrapValue(response['value'])
+
+  def CreateWebSocketConnection(self):
+    if self._websocket:
+      return self._websocket
+    else:
+      self._websocket = WebSocketConnection(self._server_url, self._session_id)
+      return self._websocket
 
   def GetWindowHandles(self):
     return self.ExecuteCommand(Command.GET_WINDOW_HANDLES)

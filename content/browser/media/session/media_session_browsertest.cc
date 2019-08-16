@@ -139,8 +139,8 @@ class MediaSessionBrowserTest : public ContentBrowserTest {
   }
 
   MediaSession* SetupMediaImageTest() {
-    NavigateToURL(shell(),
-                  embedded_test_server()->GetURL(kMediaSessionImageTestURL));
+    EXPECT_TRUE(NavigateToURL(
+        shell(), embedded_test_server()->GetURL(kMediaSessionImageTestURL)));
     StartPlaybackAndWait(shell(), kMediaSessionImageTestPageVideoElement);
 
     MediaSession* media_session = MediaSession::Get(shell()->web_contents());
@@ -226,7 +226,8 @@ class MediaSessionBrowserTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MediaSessionNoOpWhenDisabled) {
   DisableInternalMediaSession();
 
-  NavigateToURL(shell(), GetTestUrl("media/session", "media-session.html"));
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            GetTestUrl("media/session", "media-session.html")));
 
   MediaSession* media_session = MediaSession::Get(shell()->web_contents());
   ASSERT_NE(nullptr, media_session);
@@ -243,7 +244,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MediaSessionNoOpWhenDisabled) {
 }
 
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, SimplePlayPause) {
-  NavigateToURL(shell(), GetTestUrl("media/session", "media-session.html"));
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            GetTestUrl("media/session", "media-session.html")));
 
   MediaSession* media_session = MediaSession::Get(shell()->web_contents());
   ASSERT_NE(nullptr, media_session);
@@ -260,7 +262,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, SimplePlayPause) {
 }
 
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MultiplePlayersPlayPause) {
-  NavigateToURL(shell(), GetTestUrl("media/session", "media-session.html"));
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            GetTestUrl("media/session", "media-session.html")));
 
   MediaSession* media_session = MediaSession::Get(shell()->web_contents());
   ASSERT_NE(nullptr, media_session);
@@ -286,7 +289,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MultiplePlayersPlayPause) {
 #define MAYBE_WebContents_Muted WebContents_Muted
 #endif
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MAYBE_WebContents_Muted) {
-  NavigateToURL(shell(), GetTestUrl("media/session", "media-session.html"));
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            GetTestUrl("media/session", "media-session.html")));
 
   shell()->web_contents()->SetAudioMuted(true);
   MediaSession* media_session = MediaSession::Get(shell()->web_contents());
@@ -312,8 +316,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MAYBE_WebContents_Muted) {
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MultipleTabsPlayPause) {
   Shell* other_shell = CreateBrowser();
 
-  NavigateToURL(shell(), GetTestUrl("media/session", "media-session.html"));
-  NavigateToURL(other_shell, GetTestUrl("media/session", "media-session.html"));
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            GetTestUrl("media/session", "media-session.html")));
+  EXPECT_TRUE(NavigateToURL(other_shell,
+                            GetTestUrl("media/session", "media-session.html")));
 
   MediaSession* media_session = MediaSession::Get(shell()->web_contents());
   MediaSession* other_media_session =

@@ -14,8 +14,7 @@ cr.define('cr.ui', function() {
 
   /**
    * This class sets a CSS class name on the HTML element of |doc| when the user
-   * presses the tab key. It removes the class name when the user clicks
-   * anywhere.
+   * presses a key. It removes the class name when the user clicks anywhere.
    *
    * This allows you to write CSS like this:
    *
@@ -34,7 +33,7 @@ cr.define('cr.ui', function() {
      */
     constructor(doc) {
       /**
-       * Whether focus change is triggered by TAB key.
+       * Whether focus change is triggered by a keyboard event.
        * @private {boolean}
        */
       this.focusByKeyboard_ = true;
@@ -51,15 +50,6 @@ cr.define('cr.ui', function() {
 
       doc.addEventListener('keydown', onEvent.bind(this, true), true);
       doc.addEventListener('mousedown', onEvent.bind(this, false), true);
-
-      doc.addEventListener('focusout', event => {
-        window.setTimeout(() => {
-          if (!doc.hasFocus()) {
-            this.focusByKeyboard_ = true;
-            this.updateVisibility();
-          }
-        }, 0);
-      });
 
       this.updateVisibility();
     }

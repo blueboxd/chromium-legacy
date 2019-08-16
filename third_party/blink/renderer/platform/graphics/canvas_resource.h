@@ -108,6 +108,7 @@ class PLATFORM_EXPORT CanvasResource
   }
 
   SkFilterQuality FilterQuality() const { return filter_quality_; }
+  SkImageInfo CreateSkImageInfo() const;
 
  protected:
   CanvasResource(base::WeakPtr<CanvasResourceProvider>,
@@ -336,11 +337,12 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
       const CanvasColorParams&,
       bool is_overlay_candidate,
       bool is_origin_top_left,
-      bool allow_concurrent_read_write_access);
+      bool allow_concurrent_read_write_access,
+      bool is_accelerated);
   ~CanvasResourceSharedImage() override;
 
   bool IsRecycleable() const final { return true; }
-  bool IsAccelerated() const final { return true; }
+  bool IsAccelerated() const final { return is_accelerated_; }
   bool SupportsAcceleratedCompositing() const override { return true; }
   bool IsValid() const final;
   IntSize Size() const final { return size_; }
@@ -360,6 +362,12 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
   }
   void TakeSkImage(sk_sp<SkImage> image) final { NOTREACHED(); }
   void NotifyResourceLost() final;
+  bool NeedsReadLockFences() const final {
+    // If the resource is not accelerated, it will be written to on the CPU. We
+    // need read lock fences to ensure that all reads on the GPU are done when
+    // the resource is returned by the display compositor.
+    return !is_accelerated_;
+  }
 
   GLuint GetTextureIdForReadAccess() const {
     return owning_thread_data().texture_id_for_read_access;
@@ -376,6 +384,7 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
     return owning_thread_data().bitmap_image_read_refs > 0u;
   }
   bool is_lost() const { return owning_thread_data().is_lost; }
+  void CopyRenderingResultsToGpuMemoryBuffer(const sk_sp<SkImage>& image);
 
  private:
   // These members are either only accessed on the owning thread, or are only
@@ -423,7 +432,8 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
                             const CanvasColorParams&,
                             bool is_overlay_candidate,
                             bool is_origin_top_left,
-                            bool allow_concurrent_read_write_access);
+                            bool allow_concurrent_read_write_access,
+                            bool is_accelerated);
   void SetGLFilterIfNeeded();
 
   OwningThreadData& owning_thread_data() {
@@ -454,10 +464,15 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
   // active readers or not.
   bool is_origin_clean_ = true;
 
+  // GMB based software raster path. The resource is written to on the CPU but
+  // passed using the mailbox to the display compositor for use as an overlay.
+  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
+
   // Accessed on any thread.
   const bool is_overlay_candidate_;
   const IntSize size_;
   const bool is_origin_top_left_;
+  const bool is_accelerated_;
   const GLenum texture_target_;
   const base::PlatformThreadId owning_thread_id_;
   const scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner_;

@@ -137,7 +137,8 @@ BrowserViewLayout::BrowserViewLayout(
     views::View* toolbar,
     InfoBarContainerView* infobar_container,
     views::View* contents_container,
-    ImmersiveModeController* immersive_mode_controller)
+    ImmersiveModeController* immersive_mode_controller,
+    views::View* web_footer_experiment)
     : delegate_(std::move(delegate)),
       browser_(browser),
       browser_view_(browser_view),
@@ -149,6 +150,7 @@ BrowserViewLayout::BrowserViewLayout(
       infobar_container_(infobar_container),
       contents_container_(contents_container),
       immersive_mode_controller_(immersive_mode_controller),
+      web_footer_experiment_(web_footer_experiment),
       tab_strip_(tab_strip),
       dialog_host_(std::make_unique<WebContentsModalDialogHostViews>(this)) {}
 
@@ -342,7 +344,12 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   // Top container requires updated toolbar and bookmark bar to compute bounds.
   UpdateTopContainerBounds();
 
-  LayoutContentsContainerView(top, LayoutDownloadShelf(browser_view->height()));
+  // Layout items at the bottom of the view.
+  int bottom = LayoutWebFooterExperiment(browser_view->height());
+  bottom = LayoutDownloadShelf(bottom);
+
+  // Layout the contents container in the remaining space.
+  LayoutContentsContainerView(top, bottom);
 
   if (contents_border_widget_ && contents_border_widget_->IsVisible()) {
     gfx::Point contents_top_left;
@@ -551,6 +558,15 @@ int BrowserViewLayout::GetClientAreaTop() {
   return webui_tab_strip_ && webui_tab_strip_->GetVisible()
              ? webui_tab_strip_->y()
              : toolbar_->y();
+}
+
+int BrowserViewLayout::LayoutWebFooterExperiment(int bottom) {
+  if (!web_footer_experiment_)
+    return bottom;
+  bottom -= 1;
+  web_footer_experiment_->SetBounds(vertical_layout_rect_.x(), bottom,
+                                    vertical_layout_rect_.width(), 1);
+  return bottom;
 }
 
 bool BrowserViewLayout::IsInfobarVisible() const {

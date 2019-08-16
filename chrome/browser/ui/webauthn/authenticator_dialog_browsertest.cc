@@ -38,6 +38,7 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
         AuthenticatorTransport::kNearFieldCommunication,
         AuthenticatorTransport::kInternal,
         AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy};
+    transport_availability.qr_generator_key.emplace(std::array<uint8_t, 32>());
     model->StartFlow(std::move(transport_availability), base::nullopt, nullptr);
 
     // The dialog should immediately close as soon as it is displayed.

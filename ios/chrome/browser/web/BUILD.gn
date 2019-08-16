@@ -377,13 +377,18 @@ source_set("eg2_tests") {
   testonly = true
 
   sources = [
+    "browsing_egtest.mm",
+    "cache_egtest.mm",
     "child_window_open_by_dom_egtest.mm",
     "error_page_egtest.mm",
+    "http_auth_egtest.mm",
     "js_print_egtest.mm",
   ]
 
   deps = [
     "//components/content_settings/core/common",
+    "//components/strings",
+    "//ios/chrome/app/strings",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/net:test_support",
     "//ios/testing:embedded_test_server_support",

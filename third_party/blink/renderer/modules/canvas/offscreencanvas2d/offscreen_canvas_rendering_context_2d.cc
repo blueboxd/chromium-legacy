@@ -526,7 +526,6 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
 
 TextMetrics* OffscreenCanvasRenderingContext2D::measureText(
     const String& text) {
-  base::TimeTicks start_time = base::TimeTicks::Now();
   const Font& font = AccessFont();
 
   TextDirection direction;
@@ -536,15 +535,9 @@ TextMetrics* OffscreenCanvasRenderingContext2D::measureText(
   else
     direction = ToTextDirection(GetState().GetDirection());
 
-  TextMetrics* text_metrics = MakeGarbageCollected<TextMetrics>(
-      font, direction, GetState().GetTextBaseline(), GetState().GetTextAlign(),
-      text);
-  if (bernoulli_distribution_(random_generator_)) {
-    base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
-    base::UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
-        "OffscreenCanvas.TextMetrics.MeasureText", elapsed);
-  }
-  return text_metrics;
+  return MakeGarbageCollected<TextMetrics>(font, direction,
+                                           GetState().GetTextBaseline(),
+                                           GetState().GetTextAlign(), text);
 }
 
 const Font& OffscreenCanvasRenderingContext2D::AccessFont() {

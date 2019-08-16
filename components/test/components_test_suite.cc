@@ -55,7 +55,7 @@ class ComponentsTestSuite : public base::TestSuite {
     mojo::core::Init();
 
     // Before registering any schemes, clear GURL's internal state.
-    url::Shutdown();
+    url::ResetForTests();
 
 #if !defined(OS_IOS)
     gl::GLSurfaceTestSupport::InitializeOneOff();

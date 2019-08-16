@@ -94,11 +94,6 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter',
         ],
       },
-      'linux-chromeos-oobe-code-coverage': {
-        'swarming': {
-          'shards': 21,
-        },
-      },
       # chromium.chromiumos
       'linux-chromeos-dbg': {
         'swarming': {
@@ -1154,11 +1149,6 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter',
         ],
-      },
-      'linux-chromeos-oobe-code-coverage': {
-        'swarming': {
-          'shards': 20,
-        },
       },
       # chromium.chromiumos
       'linux-chromeos-dbg': {

@@ -19,7 +19,9 @@ class Dualshock4ControllerBase : public AbstractHapticGamepad {
   // AbstractHapticGamepad implementation.
   void SetVibration(double strong_magnitude, double weak_magnitude) override;
 
-  virtual size_t WriteOutputReport(void* report, size_t report_length);
+  // Sends an output report to the gamepad. Derived classes should override this
+  // method with a platform-specific implementation.
+  virtual size_t WriteOutputReport(base::span<const uint8_t> report) = 0;
 };
 
 }  // namespace device

@@ -400,10 +400,6 @@
 #include "chromeos/constants/chromeos_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/services/network_config/network_config_service.h"
-#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
-#include "chromeos/services/secure_channel/public/mojom/constants.mojom.h"
-#include "chromeos/services/secure_channel/secure_channel_service.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/user_manager/user_manager.h"
 #include "services/service_manager/public/mojom/interface_provider_spec.mojom.h"
@@ -2316,7 +2312,7 @@ bool ChromeContentBrowserClient::AllowAppCache(
       ->IsCookieAccessAllowed(manifest_url, first_party);
 }
 
-bool ChromeContentBrowserClient::AllowServiceWorker(
+bool ChromeContentBrowserClient::AllowServiceWorkerOnIO(
     const GURL& scope,
     const GURL& first_party_url,
     const GURL& script_url,
@@ -2362,6 +2358,45 @@ bool ChromeContentBrowserClient::AllowServiceWorker(
                        !allow_serviceworker));
   }
   return allow_javascript && allow_serviceworker;
+}
+
+bool ChromeContentBrowserClient::AllowServiceWorkerOnUI(
+    const GURL& scope,
+    const GURL& first_party_url,
+    const GURL& script_url,
+    content::BrowserContext* context,
+    base::RepeatingCallback<content::WebContents*()> wc_getter) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // TODO(crbug.com/824858): Implement the extensions service worker check on
+  // the UI thread.
+  return false;
+#endif
+
+  Profile* profile = Profile::FromBrowserContext(context);
+
+  // Check if JavaScript is allowed.
+  content_settings::SettingInfo info;
+  std::unique_ptr<base::Value> value =
+      HostContentSettingsMapFactory::GetForProfile(profile)->GetWebsiteSetting(
+          first_party_url, first_party_url, CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+          std::string(), &info);
+  ContentSetting setting = content_settings::ValueToContentSetting(value.get());
+  bool allow_javascript = (setting == CONTENT_SETTING_ALLOW);
+
+  // Check if cookies are allowed.
+  bool allow_cookies =
+      CookieSettingsFactory::GetForProfile(profile)->IsCookieAccessAllowed(
+          scope, first_party_url);
+
+  // Record access to database for potential display in UI.
+  // Only post the task if this is for a specific tab.
+  if (!wc_getter.is_null()) {
+    TabSpecificContentSettings::ServiceWorkerAccessed(
+        std::move(wc_getter), scope, !allow_javascript, !allow_cookies);
+  }
+  return allow_javascript && allow_cookies;
 }
 
 bool ChromeContentBrowserClient::AllowSharedWorker(
@@ -3864,20 +3899,6 @@ void ChromeContentBrowserClient::RunServiceInstance(
 #endif
 
 #if defined(OS_CHROMEOS)
-  if (service_name == chromeos::secure_channel::mojom::kServiceName) {
-    service_manager::Service::RunAsyncUntilTermination(
-        std::make_unique<chromeos::secure_channel::SecureChannelService>(
-            std::move(*receiver)));
-    return;
-  }
-
-  if (service_name == chromeos::network_config::mojom::kServiceName) {
-    service_manager::Service::RunAsyncUntilTermination(
-        std::make_unique<chromeos::network_config::NetworkConfigService>(
-            std::move(*receiver)));
-    return;
-  }
-
   auto service = ash_service_registry::HandleServiceRequest(
       service_name, std::move(*receiver));
   if (service)

@@ -1,5 +1,4 @@
 # Tests fail even with a fuzzy pixel diff. They require a re-baseline.
-crbug.com/954328 compositing/lots-of-img-layers.html [ Failure ]
 crbug.com/954328 media/video-layer-crash.html [ Failure ]
 crbug.com/954328 transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 
@@ -22,7 +21,6 @@ crbug.com/972621 compositing/geometry/vertical-scroll-composited.html [ Skip ]
 crbug.com/972621 compositing/iframes/composited-iframe-alignment.html [ Skip ]
 crbug.com/972621 compositing/overflow/border-radius-above-composited-subframe.html [ Skip ]
 crbug.com/972621 compositing/overflow/border-radius-composited-subframe.html [ Skip ]
-crbug.com/972621 compositing/overflow/mask-with-filter.html [ Skip ]
 crbug.com/972621 compositing/overflow/scrollbar-layer-placement-negative-z-index-child-positioned.html [ Skip ]
 crbug.com/972621 compositing/overflow/scrollbar-layer-placement.html [ Skip ]
 crbug.com/972621 compositing/shadows/shadow-drawing.html [ Skip ]
@@ -104,7 +102,6 @@ crbug.com/963542 images/color-profile-layer-filter.html [ Skip ]
 crbug.com/963542 media/alpha-video-playback.html [ Skip ]
 
 # Rebaseline
-crbug.com/972637 compositing/fixed-background-after-style-recalc.html [ Skip ]
 crbug.com/972637 css3/masking/mask-luminance-png.html [ Skip ]
 crbug.com/972637 css3/masking/mask-repeat-space-border.html [ Skip ]
 crbug.com/972637 images/color-profile-animate-rotate.html [ Skip ]
@@ -132,6 +129,7 @@ crbug.com/972637 images/webp-color-profile-lossy.html [ Skip ]
 crbug.com/972637 media/video-poster-scale.html [ Skip ]
 
 # Need a Vulkan native specific baseline.
+crbug.com/993384 compositing/lots-of-img-layers.html [ Skip ]
 crbug.com/993384 css3/blending/background-blend-mode-crossfade-image-gradient.html [ Skip ]
 crbug.com/993384 css3/blending/background-blend-mode-gradient-image.html [ Skip ]
 crbug.com/993384 css3/blending/background-blend-mode-image-color.html [ Skip ]

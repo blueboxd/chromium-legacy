@@ -2307,6 +2307,7 @@
       'keyboard_accessory_junit_tests': {},
       'media_base_junit_tests': {},
       'media_router_junit_tests': {},
+      'module_installer_junit_tests': {},
       'net_junit_tests': {},
       'service_junit_tests': {},
       'ui_junit_tests': {},

@@ -172,6 +172,12 @@ GrContext* CanvasResource::GetGrContext() const {
   return ContextProviderWrapper()->ContextProvider()->GetGrContext();
 }
 
+SkImageInfo CanvasResource::CreateSkImageInfo() const {
+  return SkImageInfo::Make(
+      Size().Width(), Size().Height(), ColorParams().GetSkColorType(),
+      ColorParams().GetSkAlphaType(), ColorParams().GetSkColorSpace());
+}
+
 GLenum CanvasResource::GLFilter() const {
   return filter_quality_ == kNone_SkFilterQuality ? GL_NEAREST : GL_LINEAR;
 }
@@ -686,12 +692,14 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
     const CanvasColorParams& color_params,
     bool is_overlay_candidate,
     bool is_origin_top_left,
-    bool allow_concurrent_read_write_access)
+    bool allow_concurrent_read_write_access,
+    bool is_accelerated)
     : CanvasResource(std::move(provider), filter_quality, color_params),
       context_provider_wrapper_(std::move(context_provider_wrapper)),
       is_overlay_candidate_(is_overlay_candidate),
       size_(size),
       is_origin_top_left_(is_origin_top_left),
+      is_accelerated_(is_accelerated),
       texture_target_(
           is_overlay_candidate_
               ? gpu::GetBufferTextureTarget(
@@ -705,6 +713,20 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
   if (!context_provider_wrapper_)
     return;
 
+  auto* gpu_memory_buffer_manager =
+      Platform::Current()->GetGpuMemoryBufferManager();
+  if (!is_accelerated_) {
+    DCHECK(gpu_memory_buffer_manager);
+
+    gpu_memory_buffer_ = gpu_memory_buffer_manager->CreateGpuMemoryBuffer(
+        gfx::Size(size), ColorParams().GetBufferFormat(),
+        gfx::BufferUsage::SCANOUT_CPU_READ_WRITE, gpu::kNullSurfaceHandle);
+    if (!gpu_memory_buffer_)
+      return;
+
+    gpu_memory_buffer_->SetColorSpace(color_params.GetStorageGfxColorSpace());
+  }
+
   auto* shared_image_interface =
       context_provider_wrapper_->ContextProvider()->SharedImageInterface();
   DCHECK(shared_image_interface);
@@ -717,9 +739,16 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
   if (allow_concurrent_read_write_access)
     flags |= gpu::SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE;
 
-  auto shared_image_mailbox = shared_image_interface->CreateSharedImage(
-      ColorParams().TransferableResourceFormat(), gfx::Size(size),
-      ColorParams().GetStorageGfxColorSpace(), flags);
+  gpu::Mailbox shared_image_mailbox;
+  if (gpu_memory_buffer_) {
+    shared_image_mailbox = shared_image_interface->CreateSharedImage(
+        gpu_memory_buffer_.get(), gpu_memory_buffer_manager,
+        ColorParams().GetStorageGfxColorSpace(), flags);
+  } else {
+    shared_image_mailbox = shared_image_interface->CreateSharedImage(
+        ColorParams().TransferableResourceFormat(), gfx::Size(size),
+        ColorParams().GetStorageGfxColorSpace(), flags);
+  }
 
   // Wait for the mailbox to be ready to be used.
   WaitSyncToken(shared_image_interface->GenUnverifiedSyncToken());
@@ -729,6 +758,11 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
   owning_thread_data().shared_image_mailbox = shared_image_mailbox;
   owning_thread_data().texture_id_for_read_access =
       gl->CreateAndTexStorage2DSharedImageCHROMIUM(shared_image_mailbox.name);
+
+  // For the non-accelerated case, writes are done on the CPU. So we don't need
+  // a texture for writes.
+  if (!is_accelerated_)
+    return;
   if (allow_concurrent_read_write_access) {
     owning_thread_data().texture_id_for_write_access =
         gl->CreateAndTexStorage2DSharedImageCHROMIUM(shared_image_mailbox.name);
@@ -746,12 +780,13 @@ scoped_refptr<CanvasResourceSharedImage> CanvasResourceSharedImage::Create(
     const CanvasColorParams& color_params,
     bool is_overlay_candidate,
     bool is_origin_top_left,
-    bool allow_concurrent_read_write_access) {
+    bool allow_concurrent_read_write_access,
+    bool is_accelerated) {
   TRACE_EVENT0("blink", "CanvasResourceSharedImage::Create");
   auto resource = base::AdoptRef(new CanvasResourceSharedImage(
       size, std::move(context_provider_wrapper), std::move(provider),
       filter_quality, color_params, is_overlay_candidate, is_origin_top_left,
-      allow_concurrent_read_write_access));
+      allow_concurrent_read_write_access, is_accelerated));
   return resource->IsValid() ? resource : nullptr;
 }
 
@@ -806,6 +841,12 @@ void CanvasResourceSharedImage::Abandon() {
 void CanvasResourceSharedImage::WillDraw() {
   DCHECK(!is_cross_thread())
       << "Write access is only allowed on the owning thread";
+
+  // Sync token for software mode is generated from SharedImageInterface each
+  // time the GMB is updated.
+  if (!is_accelerated_)
+    return;
+
   // If skia is accessing the resource, it can modify the texture's filter
   // params. Make sure to set them to the desired value before sending the
   // resource to the display compositor.
@@ -868,6 +909,18 @@ void CanvasResourceSharedImage::Transfer() {
 scoped_refptr<StaticBitmapImage> CanvasResourceSharedImage::Bitmap() {
   TRACE_EVENT0("blink", "CanvasResourceSharedImage::Bitmap");
 
+  SkImageInfo image_info = CreateSkImageInfo();
+  if (!is_accelerated_) {
+    if (!gpu_memory_buffer_->Map())
+      return nullptr;
+
+    SkPixmap pixmap(CreateSkImageInfo(), gpu_memory_buffer_->memory(0),
+                    gpu_memory_buffer_->stride(0));
+    auto sk_image = SkImage::MakeRasterCopy(pixmap);
+    gpu_memory_buffer_->Unmap();
+    return sk_image ? StaticBitmapImage::Create(sk_image) : nullptr;
+  }
+
   // In order to avoid creating multiple representations for this shared image
   // on the same context, the AcceleratedStaticBitmapImage uses the texture id
   // of the resource here. We keep a count of pending shared image releases to
@@ -898,9 +951,6 @@ scoped_refptr<StaticBitmapImage> CanvasResourceSharedImage::Bitmap() {
       has_read_ref_on_texture));
 
   scoped_refptr<StaticBitmapImage> image;
-  SkImageInfo image_info = SkImageInfo::Make(
-      Size().Width(), Size().Height(), ColorParams().GetSkColorType(),
-      ColorParams().GetSkAlphaType(), ColorParams().GetSkColorSpace());
 
   // If its cross thread, then the sync token was already verified. If not, then
   // it doesn't need to be verified.
@@ -922,6 +972,24 @@ scoped_refptr<StaticBitmapImage> CanvasResourceSharedImage::Bitmap() {
 
   DCHECK(image);
   return image;
+}
+
+void CanvasResourceSharedImage::CopyRenderingResultsToGpuMemoryBuffer(
+    const sk_sp<SkImage>& image) {
+  DCHECK(!is_cross_thread());
+
+  if (!ContextProviderWrapper() || !gpu_memory_buffer_->Map())
+    return;
+
+  auto surface = SkSurface::MakeRasterDirect(CreateSkImageInfo(),
+                                             gpu_memory_buffer_->memory(0),
+                                             gpu_memory_buffer_->stride(0));
+  surface->getCanvas()->drawImage(image, 0, 0);
+  auto* sii =
+      ContextProviderWrapper()->ContextProvider()->SharedImageInterface();
+  gpu_memory_buffer_->Unmap();
+  sii->UpdateSharedImage(gpu::SyncToken(), mailbox());
+  owning_thread_data().sync_token = sii->GenUnverifiedSyncToken();
 }
 
 const gpu::Mailbox& CanvasResourceSharedImage::GetOrCreateGpuMailbox(

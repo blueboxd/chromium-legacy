@@ -88,6 +88,19 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
         {NGBaselineAlgorithmType::kFirstLine, baseline_type});
   }
 
+  if (block.IsTableCell()) {
+    const LayoutTableCell& cell = ToLayoutTableCell(block);
+    builder.SetIsTableCell(true);
+    builder.SetIsRestrictedBlockSizeTableCell(
+        !cell.StyleRef().LogicalHeight().IsAuto() ||
+        !cell.Table()->StyleRef().LogicalHeight().IsAuto());
+    builder.SetTableCellBorders({cell.BorderStart(), cell.BorderEnd(),
+                                 cell.BorderBefore(), cell.BorderAfter()});
+    builder.SetTableCellIntrinsicPadding(
+        {LayoutUnit(), LayoutUnit(), LayoutUnit(cell.IntrinsicPaddingBefore()),
+         LayoutUnit(cell.IntrinsicPaddingAfter())});
+  }
+
   builder.SetAvailableSize(available_size);
   builder.SetPercentageResolutionSize(percentage_size);
   builder.SetIsFixedInlineSize(fixed_inline);

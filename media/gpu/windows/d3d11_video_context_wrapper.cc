@@ -26,6 +26,7 @@ struct BufferSubmitter<ID3D11VideoContext1> {
     constexpr UINT max_buffers = 4;
     DCHECK_LE(num_buffers, max_buffers);
     D3D11_VIDEO_DECODER_BUFFER_DESC1 buffers[max_buffers] = {};
+    memset(buffers, 0, sizeof(D3D11_VIDEO_DECODER_BUFFER_DESC1) * max_buffers);
     for (size_t i = 0; i < num_buffers; i++) {
       buffers[i].BufferType = src[i].BufferType;
       buffers[i].DataOffset = src[i].DataOffset;
@@ -49,6 +50,7 @@ struct BufferSubmitter<ID3D11VideoContext> {
     constexpr UINT max_buffers = 4;
     DCHECK_LE(num_buffers, max_buffers);
     D3D11_VIDEO_DECODER_BUFFER_DESC buffers[max_buffers] = {};
+    memset(buffers, 0, sizeof(D3D11_VIDEO_DECODER_BUFFER_DESC) * max_buffers);
     for (size_t i = 0; i < num_buffers; i++) {
       buffers[i].BufferType = src[i].BufferType;
       buffers[i].DataOffset = src[i].DataOffset;

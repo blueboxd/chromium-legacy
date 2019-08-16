@@ -43,8 +43,10 @@ bool CastURLLoaderThrottle::makes_unsafe_redirect() {
   return true;
 }
 
-void CastURLLoaderThrottle::ResumeRequest(int error,
-                                          net::HttpRequestHeaders headers) {
+void CastURLLoaderThrottle::ResumeRequest(
+    int error,
+    net::HttpRequestHeaders headers,
+    net::HttpRequestHeaders cors_exempt_headers) {
   DCHECK(deferred_);
   if (error != net::OK) {
     NOTREACHED() << "Trying to resume a request with unexpected error: "
@@ -52,7 +54,7 @@ void CastURLLoaderThrottle::ResumeRequest(int error,
     return;
   }
   deferred_ = false;
-  delegate_->UpdateDeferredRequestHeaders(headers);
+  delegate_->UpdateDeferredRequestHeaders(headers, cors_exempt_headers);
   delegate_->Resume();
 }
 

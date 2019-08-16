@@ -5,13 +5,10 @@
 package org.chromium.components.module_installer;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.task.AsyncTask;
 
 import java.util.List;
 
 /** A backend for installing dynamic feature modules that contain the actual install logic. */
-@JNINamespace("module_installer")
 /* package */ abstract class ModuleInstallerBackend {
     private final OnFinishedListener mListener;
 
@@ -51,28 +48,6 @@ import java.util.List;
 
     /** To be called when module install has finished. */
     protected void onFinished(boolean success, List<String> moduleNames) {
-        ThreadUtils.assertOnUiThread();
-
-        // Call native to perform additional tasks (e.g., load resources). These
-        // tasks can be blocking, and are done asynchronously (outside the UI
-        // thread). Once done, return to call |mListender.onFinished()| on the
-        // UI thread.
-        // TODO(crbug.com/987252): Add timing metrics.
-        new AsyncTask<Void>() {
-            @Override
-            protected Void doInBackground() {
-                for (String moduleName : moduleNames) {
-                    nativeOnInstallModule(success, moduleName);
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void result) {
-                mListener.onFinished(success, moduleNames);
-            }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        mListener.onFinished(success, moduleNames);
     }
-
-    private static native void nativeOnInstallModule(boolean success, String moduleName);
 }

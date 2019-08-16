@@ -550,6 +550,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
           std::make_unique<KeyboardBrightnessController>()),
       locale_update_controller_(std::make_unique<LocaleUpdateControllerImpl>()),
       media_controller_(std::make_unique<MediaControllerImpl>(connector)),
+      ash_color_provider_(std::make_unique<AshColorProvider>()),
       session_controller_(std::make_unique<SessionControllerImpl>()),
       shell_delegate_(std::move(shell_delegate)),
       shell_state_(std::make_unique<ShellState>()),
@@ -1110,7 +1111,7 @@ void Shell::Init(
   // |system_tray_model_| should be available before
   // |system_notification_controller_| is initialized and Shelf is created by
   // WindowTreeHostManager::InitHosts.
-  system_tray_model_ = std::make_unique<SystemTrayModel>(connector_);
+  system_tray_model_ = std::make_unique<SystemTrayModel>();
   system_notification_controller_ =
       std::make_unique<SystemNotificationController>();
 
@@ -1145,7 +1146,6 @@ void Shell::Init(
   split_view_controller_.reset(new SplitViewController());
   snap_controller_ = std::make_unique<SnapControllerImpl>();
   key_accessibility_enabler_ = std::make_unique<KeyAccessibilityEnabler>();
-  ash_color_provider_ = std::make_unique<AshColorProvider>();
 
   // The compositor thread and main message loop have to be running in
   // order to create mirror window. Run it after the main message loop

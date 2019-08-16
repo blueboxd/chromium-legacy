@@ -24,7 +24,6 @@
 #include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -131,8 +130,8 @@ class ImeTitleView : public views::View, public views::ButtonListener {
     SetBorder(views::CreatePaddedBorder(
         views::CreateSolidSidedBorder(
             0, 0, kMenuSeparatorWidth, 0,
-            AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
-                AshColorProvider::ControlsLayerType::kSeparator,
+            AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+                AshColorProvider::ContentLayerType::kSeparator,
                 kSeparatorOnLightBackgroundColor)),
         gfx::Insets(kMenuSeparatorVerticalPadding - kMenuSeparatorWidth, 0)));
     auto box_layout = std::make_unique<views::BoxLayout>(
@@ -237,8 +236,8 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
     SetBorder(views::CreatePaddedBorder(
         views::CreateSolidSidedBorder(
             kMenuSeparatorWidth, 0, 0, 0,
-            AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
-                AshColorProvider::ControlsLayerType::kSeparator,
+            AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+                AshColorProvider::ContentLayerType::kSeparator,
                 kSeparatorOnLightBackgroundColor)),
         gfx::Insets(kMenuSeparatorVerticalPadding - kMenuSeparatorWidth,
                     kMenuExtraMarginFromLeftEdge)));
@@ -540,8 +539,10 @@ void ImeMenuTray::UpdateTrayLabel() {
   // IME.
   if (chromeos::extension_ime_util::IsArcIME(current_ime.id)) {
     CreateImageView();
-    image_view_->SetImage(
-        gfx::CreateVectorIcon(kShelfGlobeIcon, kIconOnDarkBackgroundColor));
+    image_view_->SetImage(gfx::CreateVectorIcon(
+        kShelfGlobeIcon, AshColorProvider::Get()->GetContentLayerColor(
+                             AshColorProvider::ContentLayerType::kIconPrimary,
+                             AshColorProvider::AshColorMode::kDark)));
     return;
   }
 

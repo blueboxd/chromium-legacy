@@ -85,6 +85,9 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
                                        ? LayoutUnit()
                                        : border_scrollbar_padding_.block_start;
 
+  bool balance_columns =
+      NeedsColumnBalancing(content_box_size.block_size, Style());
+
   // Figure out how much space we've already been able to process in previous
   // fragments, if this multicol container participates in an outer
   // fragmentation context.
@@ -153,7 +156,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
     do {
       // Lay out one column. Each column will become a fragment.
       NGConstraintSpace child_space = CreateConstraintSpaceForColumns(
-          column_size, separate_leading_margins);
+          column_size, separate_leading_margins, balance_columns);
 
       NGFragmentGeometry fragment_geometry =
           CalculateInitialFragmentGeometry(child_space, Node());
@@ -233,9 +236,17 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
     // space shortage). We need at least one soft break opportunity to do
     // this. If forced breaks cause too many breaks, there's no stretch amount
     // that could prevent the actual column count from overflowing.
+    //
+    // TODO(mstensho): Handle this situation also when we're inside another
+    // balanced multicol container, rather than bailing (which we do now, to
+    // avoid infinite loops). If we exhaust the inner column-count in such
+    // cases, that piece of information may have to be propagated to the outer
+    // multicol, and instead stretch there (not here). We have no such mechanism
+    // in place yet.
     if (actual_column_count > used_column_count &&
         actual_column_count > forced_break_count + 1 &&
-        minimal_space_shortage != LayoutUnit::Max()) {
+        minimal_space_shortage != LayoutUnit::Max() &&
+        !ConstraintSpace().IsInsideBalancedColumns()) {
       LayoutUnit new_column_block_size =
           StretchColumnBlockSize(minimal_space_shortage, column_size.block_size,
                                  content_box_size.block_size);
@@ -415,7 +426,8 @@ LayoutUnit NGColumnLayoutAlgorithm::ConstrainColumnBlockSize(
 
 NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForColumns(
     const LogicalSize& column_size,
-    bool separate_leading_margins) const {
+    bool separate_leading_margins,
+    bool balance_columns) const {
   NGConstraintSpaceBuilder space_builder(
       ConstraintSpace(), Style().GetWritingMode(), /* is_new_fc */ true);
   space_builder.SetAvailableSize(column_size);
@@ -436,6 +448,8 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForColumns(
   space_builder.SetIsAnonymous(true);
   space_builder.SetSeparateLeadingFragmentainerMargins(
       separate_leading_margins);
+  if (balance_columns)
+    space_builder.SetIsInsideBalancedColumns();
 
   return space_builder.ToConstraintSpace();
 }
@@ -448,6 +462,7 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForBalancing(
   space_builder.SetPercentageResolutionSize(column_size);
   space_builder.SetIsAnonymous(true);
   space_builder.SetIsIntermediateLayout(true);
+  space_builder.SetIsInsideBalancedColumns();
 
   return space_builder.ToConstraintSpace();
 }

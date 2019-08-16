@@ -17,6 +17,7 @@ android_library("java") {
     "//chrome/android:chrome_java",
     "//services/media_session/public/cpp/android:media_session_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:com_android_support_collections_java",
     "//third_party/android_deps:com_android_support_mediarouter_v7_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
     "//third_party/android_media:android_media_java",

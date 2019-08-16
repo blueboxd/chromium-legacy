@@ -16,14 +16,11 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace gfx {
 class ImageSkia;
 }  // namespace gfx
-
-namespace service_manager {
-class Connector;
-}
 
 namespace ash {
 
@@ -48,8 +45,7 @@ class ASH_EXPORT ActiveNetworkIcon : public TrayNetworkStateModel::Observer {
     kCellular,  // Multiple network icons: cellular icon.
   };
 
-  ActiveNetworkIcon(service_manager::Connector* connector,
-                    TrayNetworkStateModel* model);
+  explicit ActiveNetworkIcon(TrayNetworkStateModel* model);
   ~ActiveNetworkIcon() override;
 
   // Provides the a11y and tooltip strings for |type|. Output parameters can
@@ -66,8 +62,6 @@ class ASH_EXPORT ActiveNetworkIcon : public TrayNetworkStateModel::Observer {
                           bool* animating);
 
  private:
-  void BindCrosNetworkConfig(service_manager::Connector* connector);
-
   gfx::ImageSkia GetSingleImage(network_icon::IconType icon_type,
                                 bool* animating);
   gfx::ImageSkia GetDualImagePrimary(network_icon::IconType icon_type,
@@ -97,8 +91,8 @@ class ASH_EXPORT ActiveNetworkIcon : public TrayNetworkStateModel::Observer {
 
   TrayNetworkStateModel* model_;
 
-  chromeos::network_config::mojom::CrosNetworkConfigPtr
-      cros_network_config_ptr_;
+  mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
+      remote_cros_network_config_;
 
   int cellular_uninitialized_msg_ = 0;
   base::Time uninitialized_state_time_;

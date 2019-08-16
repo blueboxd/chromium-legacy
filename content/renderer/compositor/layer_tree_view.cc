@@ -124,10 +124,6 @@ void LayerTreeView::SetNeedsRedrawRect(gfx::Rect damage_rect) {
   layer_tree_host_->SetNeedsRedrawRect(damage_rect);
 }
 
-bool LayerTreeView::IsSurfaceSynchronizationEnabled() const {
-  return layer_tree_host_->GetSettings().enable_surface_synchronization;
-}
-
 std::unique_ptr<cc::SwapPromiseMonitor>
 LayerTreeView::CreateLatencyInfoSwapPromiseMonitor(ui::LatencyInfo* latency) {
   return std::make_unique<cc::LatencyInfoSwapPromiseMonitor>(

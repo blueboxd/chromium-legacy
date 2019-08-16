@@ -1,0 +1,225 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "fuchsia/engine/browser/cookie_manager_impl.h"
+
+#include <lib/fidl/cpp/binding.h>
+
+#include "base/fuchsia/fuchsia_logging.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "net/cookies/canonical_cookie.h"
+#include "services/network/public/mojom/network_context.mojom.h"
+#include "url/gurl.h"
+
+namespace {
+
+fuchsia::web::Cookie ConvertCanonicalCookie(
+    const net::CanonicalCookie& canonical_cookie,
+    network::mojom::CookieChangeCause cause) {
+  fuchsia::web::CookieId id;
+  id.set_name(canonical_cookie.Name());
+  id.set_domain(canonical_cookie.Domain());
+  id.set_path(canonical_cookie.Path());
+
+  fuchsia::web::Cookie cookie;
+  cookie.set_id(std::move(id));
+  switch (cause) {
+    case network::mojom::CookieChangeCause::INSERTED:
+      cookie.set_value(canonical_cookie.Value());
+      break;
+    case network::mojom::CookieChangeCause::EXPLICIT:
+    case network::mojom::CookieChangeCause::UNKNOWN_DELETION:
+    case network::mojom::CookieChangeCause::OVERWRITE:
+    case network::mojom::CookieChangeCause::EXPIRED:
+    case network::mojom::CookieChangeCause::EVICTED:
+    case network::mojom::CookieChangeCause::EXPIRED_OVERWRITE:
+      break;
+  };
+
+  return cookie;
+}
+
+class CookiesIteratorImpl : public fuchsia::web::CookiesIterator,
+                            public network::mojom::CookieChangeListener {
+ public:
+  // |this| will delete itself when |mojo_request| or |changes| disconnect.
+  CookiesIteratorImpl(
+      mojo::InterfaceRequest<network::mojom::CookieChangeListener> mojo_request,
+      fidl::InterfaceRequest<fuchsia::web::CookiesIterator> changes)
+      : CookiesIteratorImpl(std::move(changes)) {
+    mojo_binding_.Bind(std::move(mojo_request));
+    mojo_binding_.set_connection_error_handler(base::BindOnce(
+        &CookiesIteratorImpl::OnMojoError, base::Unretained(this)));
+  }
+  // |this| will delete itself when |iterator| disconnects, or if a GetNext()
+  // leaves |queued_cookies_| empty.
+  CookiesIteratorImpl(
+      const std::vector<net::CanonicalCookie>& cookies,
+      fidl::InterfaceRequest<fuchsia::web::CookiesIterator> iterator)
+      : CookiesIteratorImpl(std::move(iterator)) {
+    for (const auto& cookie : cookies) {
+      queued_cookies_[cookie.UniqueKey()] = ConvertCanonicalCookie(
+          cookie, network::mojom::CookieChangeCause::INSERTED);
+    }
+  }
+  ~CookiesIteratorImpl() final = default;
+
+  // fuchsia::web::CookiesIterator implementation:
+  void GetNext(GetNextCallback callback) final {
+    DCHECK(!get_next_callback_);
+    get_next_callback_ = std::move(callback);
+    MaybeSendQueuedCookies();
+  }
+
+ private:
+  explicit CookiesIteratorImpl(
+      fidl::InterfaceRequest<fuchsia::web::CookiesIterator> iterator)
+      : mojo_binding_(this), fidl_binding_(this) {
+    fidl_binding_.Bind(std::move(iterator));
+    fidl_binding_.set_error_handler([this](zx_status_t status) {
+      ZX_LOG_IF(ERROR, status != ZX_ERR_PEER_CLOSED, status)
+          << "CookieChangeListener disconnected.";
+      delete this;
+    });
+  }
+
+  void OnMojoError() {
+    LOG(ERROR) << "NetworkService disconnected CookiesIterator.";
+    fidl_binding_.Close(ZX_ERR_UNAVAILABLE);
+    delete this;
+  }
+
+  void MaybeSendQueuedCookies() {
+    // Assuming cookies values never exceed 4KB in size, plus some overhead for
+    // the name, domain and path, and that Zircon messages can be up to 64KB.
+    constexpr int kMaxCookiesPerMessage = 8;
+
+    if (!get_next_callback_)
+      return;
+    if (mojo_binding_.is_bound() && queued_cookies_.empty())
+      return;
+
+    // Build a vector of Cookies to return to the caller.
+    fuchsia::web::CookiesIterator::GetNextCallback callback(
+        std::move(get_next_callback_));
+    std::vector<fuchsia::web::Cookie> cookies;
+    while (!queued_cookies_.empty() && cookies.size() < kMaxCookiesPerMessage) {
+      auto cookie = queued_cookies_.begin();
+      cookies.emplace_back(std::move(cookie->second));
+      queued_cookies_.erase(cookie);
+    }
+    callback(std::move(cookies));
+
+    // If this is a one-off CookieIterator then tear down once |queued_cookies_|
+    // is empty.
+    if (queued_cookies_.empty() && !mojo_binding_.is_bound())
+      delete this;
+  }
+
+  // network::mojom::CookieChangeListener implementation:
+  void OnCookieChange(const net::CanonicalCookie& cookie,
+                      network::mojom::CookieChangeCause cause) final {
+    queued_cookies_[cookie.UniqueKey()] = ConvertCanonicalCookie(cookie, cause);
+    MaybeSendQueuedCookies();
+  }
+
+  mojo::Binding<network::mojom::CookieChangeListener> mojo_binding_;
+  fidl::Binding<fuchsia::web::CookiesIterator> fidl_binding_;
+
+  GetNextCallback get_next_callback_;
+
+  // Map from "unique key"s (see net::CanonicalCookie::UniqueKey()) to the
+  // corresponding fuchsia::web::Cookie.
+  std::map<std::tuple<std::string, std::string, std::string>,
+           fuchsia::web::Cookie>
+      queued_cookies_;
+
+  DISALLOW_COPY_AND_ASSIGN(CookiesIteratorImpl);
+};
+
+void OnCookiesReceived(
+    fidl::InterfaceRequest<fuchsia::web::CookiesIterator> iterator,
+    const std::vector<net::CanonicalCookie>& cookies) {
+  new CookiesIteratorImpl(cookies, std::move(iterator));
+}
+
+void OnCookiesAndExcludedReceived(
+    fidl::InterfaceRequest<fuchsia::web::CookiesIterator> iterator,
+    const std::vector<net::CanonicalCookie>& cookies,
+    const std::vector<net::CookieWithStatus>& excluded_cookies) {
+  // Since CookieOptions::set_return_excluded_cookies() is not used when calling
+  // the Mojo GetCookieList() API, |excluded_cookies| should be empty.
+  DCHECK(excluded_cookies.empty());
+  OnCookiesReceived(std::move(iterator), cookies);
+}
+
+}  // namespace
+
+CookieManagerImpl::CookieManagerImpl(
+    GetNetworkContextCallback get_network_context)
+    : get_network_context_(std::move(get_network_context)) {}
+
+CookieManagerImpl::~CookieManagerImpl() = default;
+
+void CookieManagerImpl::ObserveCookieChanges(
+    fidl::StringPtr url,
+    fidl::StringPtr name,
+    fidl::InterfaceRequest<fuchsia::web::CookiesIterator> changes) {
+  EnsureCookieManager();
+
+  network::mojom::CookieChangeListenerPtr mojo_listener;
+  new CookiesIteratorImpl(mojo::MakeRequest(&mojo_listener),
+                          std::move(changes));
+
+  if (url) {
+    base::Optional<std::string> maybe_name;
+    if (name)
+      maybe_name = *name;
+    cookie_manager_->AddCookieChangeListener(GURL(*url), maybe_name,
+                                             std::move(mojo_listener));
+  } else {
+    cookie_manager_->AddGlobalChangeListener(std::move(mojo_listener));
+  }
+}
+
+void CookieManagerImpl::GetCookieList(
+    fidl::StringPtr url,
+    fidl::StringPtr name,
+    fidl::InterfaceRequest<fuchsia::web::CookiesIterator> iterator) {
+  EnsureCookieManager();
+
+  if (!url && !name) {
+    cookie_manager_->GetAllCookies(
+        base::BindOnce(&OnCookiesReceived, std::move(iterator)));
+  } else {
+    if (!name) {
+      // Include HTTP and 1st-party-only cookies in those returned.
+      net::CookieOptions options;
+      options.set_include_httponly();
+      options.set_same_site_cookie_context(
+          net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+
+      cookie_manager_->GetCookieList(
+          GURL(*url), options,
+          base::BindOnce(&OnCookiesAndExcludedReceived, std::move(iterator)));
+    } else {
+      // TODO(858853): Support filtering by name.
+      iterator.Close(ZX_ERR_NOT_SUPPORTED);
+    }
+  }
+}
+
+void CookieManagerImpl::EnsureCookieManager() {
+  if (cookie_manager_.is_bound())
+    return;
+  get_network_context_.Run()->GetCookieManager(
+      mojo::MakeRequest(&cookie_manager_));
+  cookie_manager_.set_connection_error_handler(
+      base::BindOnce(&CookieManagerImpl::OnMojoError, base::Unretained(this)));
+}
+
+void CookieManagerImpl::OnMojoError() {
+  LOG(ERROR) << "NetworkService disconnected CookieManager.";
+  cookie_manager_.reset();
+}

@@ -20,32 +20,8 @@
   "configuration": "Debug",
   "tests": [
     {
-      "include": "screen_size_dependent_tests.json",
-      "device type": "iPhone 6s Plus",
-      "os": "12.1",
-      "host os": "Mac-10.14.4",
-      "pool":"Chrome",
-      "priority": 30
-    },
-    {
-      "include": "screen_size_dependent_tests.json",
-      "device type": "iPhone 6s",
-      "os": "12.1",
-      "host os": "Mac-10.14.4",
-      "pool":"Chrome",
-      "priority": 30
-    },
-    {
       "include": "common_tests.json",
       "device type": "iPhone 6s",
-      "os": "12.1",
-      "host os": "Mac-10.14.4",
-      "pool":"Chrome",
-      "priority": 30
-    },
-    {
-      "include": "screen_size_dependent_tests.json",
-      "device type": "iPad Air 2",
       "os": "12.1",
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
@@ -70,6 +46,14 @@
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone 6s",
+      "os": "13.0",
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome",
+      "priority": 30
+    },
+    {
+      "include": "screen_size_dependent_tests.json",
+      "device type": "iPhone SE",
       "os": "13.0",
       "host os": "Mac-10.14.4",
       "pool":"Chrome",

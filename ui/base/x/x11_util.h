@@ -33,7 +33,7 @@ namespace gfx {
 class Insets;
 class Point;
 class Rect;
-}
+}  // namespace gfx
 class SkBitmap;
 
 namespace ui {
@@ -205,6 +205,18 @@ void SetWindowRole(XDisplay* display, XID window, const std::string& role);
 // states |state1| and |state2|.
 COMPONENT_EXPORT(UI_BASE_X)
 void SetWMSpecState(XID window, bool enabled, XAtom state1, XAtom state2);
+
+// Sends a NET_WM_MOVERESIZE message to the x11 window manager, enabling the
+// move/resize mode.  As per NET_WM_MOVERESIZE spec, |location| is the position
+// in pixels (relative to the root window) of mouse button press, and
+// |direction| indicates whether this is a move or resize event, and if it is a
+// resize event, which edges of the window the size grip applies to.
+COMPONENT_EXPORT(UI_BASE_X)
+void DoWMMoveResize(XDisplay* display,
+                    XID root_window,
+                    XID window,
+                    const gfx::Point& location_px,
+                    int direction);
 
 // Checks if the window manager has set a specific state.
 COMPONENT_EXPORT(UI_BASE_X)

@@ -11,7 +11,9 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_utils.h"
+#include "ui/compositor/compositor.h"
 #include "ui/events/event.h"
+#include "ui/events/gestures/fling_curve.h"
 
 namespace ash {
 
@@ -39,6 +41,7 @@ OverviewGridPreEventHandler::~OverviewGridPreEventHandler() {
   auto* wallpaper_view = GetWallpaperViewForRoot(grid_->root_window());
   if (wallpaper_view)
     wallpaper_view->RemovePreTargetHandler(this);
+  EndFling();
 }
 
 void OverviewGridPreEventHandler::OnMouseEvent(ui::MouseEvent* event) {
@@ -48,12 +51,21 @@ void OverviewGridPreEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 
 void OverviewGridPreEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
-    case ui::ET_GESTURE_TAP:
+    case ui::ET_GESTURE_TAP: {
       HandleClickOrTap(event);
       break;
+    }
+    case ui::ET_SCROLL_FLING_START: {
+      if (!ShouldUseTabletModeGridLayout())
+        return;
+      HandleFlingScroll(event);
+      event->SetHandled();
+      break;
+    }
     case ui::ET_GESTURE_SCROLL_BEGIN: {
       if (!ShouldUseTabletModeGridLayout())
         return;
+      EndFling();
       grid_->StartScroll();
       event->SetHandled();
       break;
@@ -77,6 +89,29 @@ void OverviewGridPreEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
+void OverviewGridPreEventHandler::OnAnimationStep(base::TimeTicks timestamp) {
+  // Updates |grid_| based on |offset| when |observed_compositor_| begins a new
+  // frame.
+  DCHECK(observed_compositor_);
+  gfx::Vector2dF offset;
+
+  // As a fling progresses, the velocity degenerates, and the difference in
+  // offset is passed into |grid_| as an updated scroll value.
+  bool fling =
+      fling_curve_->ComputeScrollOffset(timestamp, &offset, &fling_velocity_);
+  grid_->UpdateScrollOffset(offset.x() - fling_last_offset_.x());
+  fling_last_offset_ = offset;
+
+  if (!fling)
+    EndFling();
+}
+
+void OverviewGridPreEventHandler::OnCompositingShuttingDown(
+    ui::Compositor* compositor) {
+  DCHECK_EQ(compositor, observed_compositor_);
+  EndFling();
+}
+
 void OverviewGridPreEventHandler::HandleClickOrTap(ui::Event* event) {
   CHECK_EQ(ui::EP_PRETARGET, event->phase());
   // Events that happen while app list is sliding out during overview should
@@ -84,6 +119,25 @@ void OverviewGridPreEventHandler::HandleClickOrTap(ui::Event* event) {
   if (!IsSlidingOutOverviewFromShelf())
     Shell::Get()->overview_controller()->EndOverview();
   event->StopPropagation();
+}
+
+void OverviewGridPreEventHandler::HandleFlingScroll(ui::GestureEvent* event) {
+  fling_velocity_ = gfx::Vector2dF(event->details().velocity_x(),
+                                   event->details().velocity_y());
+  fling_curve_ =
+      std::make_unique<ui::FlingCurve>(fling_velocity_, base::TimeTicks::Now());
+  observed_compositor_ = const_cast<ui::Compositor*>(
+      grid_->root_window()->layer()->GetCompositor());
+  observed_compositor_->AddAnimationObserver(this);
+}
+
+void OverviewGridPreEventHandler::EndFling() {
+  if (!observed_compositor_)
+    return;
+  observed_compositor_->RemoveAnimationObserver(this);
+  observed_compositor_ = nullptr;
+  fling_curve_.reset();
+  grid_->EndScroll();
 }
 
 }  // namespace ash

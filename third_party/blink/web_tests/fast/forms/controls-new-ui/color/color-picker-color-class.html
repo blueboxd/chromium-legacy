@@ -29,7 +29,6 @@ testHSLValueGetters();
 testAsHex();
 testAsRGB();
 testAsHSL();
-testDistance();
 
 function testEquals() {
   test(() => {
@@ -479,29 +478,6 @@ function testAsHSL() {
   test(() => {
     assert_equals('hsl(307,64%,54%)', new Color(ColorFormat.HSL, 307, 64, 54).asHSL());
   }, 'new Color(ColorFormat.HSL, 307, 64, 54).asHSL()');
-}
-
-function testDistance() {
-  test(() => {
-    assert_equals(Color.distance([255, 255, 255], [255, 255, 255]), 0);
-  }, 'Color.distance([255,255,255], [255,255,255])');
-
-  test(() => {
-    assert_equals(Color.distance([120, 100, 50], [120, 100, 50]), 0);
-  }, 'Color.distance([120, 100, 50], [120, 100, 50])');
-
-  test(() => {
-    assert_equals(Color.distance([120, 100, 50], [0, 100, 50]), 120);
-  }, 'Color.distance([120, 100, 50], [0, 100, 50])');
-
-  test(() => {
-    assert_equals(Math.round(Color.distance([255, 255, 255], [0, 0, 0])), 442);
-  }, 'Color.distance([255,255,255], [0, 0, 0])');
-
-  test(() => {
-    assert_equals(Math.round(Color.distance([235, 77, 65], [234, 84, 59])), 9);
-  }, 'Color.distance([235, 77, 65], [234, 84, 59])');
-
 }
 </script>
 </body>

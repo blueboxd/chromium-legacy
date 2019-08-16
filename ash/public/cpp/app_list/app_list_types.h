@@ -266,6 +266,10 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
   // Which index in the UI container should the result be placed in.
   SearchResultDisplayIndex display_index = SearchResultDisplayIndex::kUndefined;
 
+  // A score to settle conflicts between two apps with the same requested
+  // |display_index|.
+  float position_priority = 0.0f;
+
   // A score to determine the result display order.
   double display_score = 0;
 

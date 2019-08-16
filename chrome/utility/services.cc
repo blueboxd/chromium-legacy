@@ -75,9 +75,14 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chromeos/assistant/buildflags.h"  // nogncheck
 #include "chromeos/services/ime/ime_service.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
-#endif
+
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+#include "chromeos/services/assistant/audio_decoder/assistant_audio_decoder_factory.h"  // nogncheck
+#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
@@ -180,6 +185,15 @@ auto RunImeService(
     mojo::PendingReceiver<chromeos::ime::mojom::ImeService> receiver) {
   return std::make_unique<chromeos::ime::ImeService>(std::move(receiver));
 }
+
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+auto RunAssistantAudioDecoder(
+    mojo::PendingReceiver<
+        chromeos::assistant::mojom::AssistantAudioDecoderFactory> receiver) {
+  return std::make_unique<chromeos::assistant::AssistantAudioDecoderFactory>(
+      std::move(receiver));
+}
+#endif
 #endif
 
 }  // namespace
@@ -246,6 +260,9 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
 
 #if defined(OS_CHROMEOS)
     RunImeService,
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+    RunAssistantAudioDecoder,
+#endif
 #endif
   };
   // clang-format on

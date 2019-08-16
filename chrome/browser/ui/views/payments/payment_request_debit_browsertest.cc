@@ -24,10 +24,7 @@ constexpr auto UNKNOWN = ::autofill::CreditCard::CardType::CARD_TYPE_UNKNOWN;
 class PaymentRequestDebitTest : public PaymentRequestBrowserTestBase {
  protected:
   PaymentRequestDebitTest() {
-    std::vector<base::Feature> enabled_features = {
-        features::kReturnGooglePayInBasicCard,
-        ::features::kPaymentRequestHasEnrolledInstrument};
-    features_.InitWithFeatures(enabled_features, /*disabled_feautres=*/{});
+    features_.InitAndEnableFeature(features::kReturnGooglePayInBasicCard);
   }
 
   const std::string& GetOrCreateBillingAddressId() {

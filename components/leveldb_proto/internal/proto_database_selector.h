@@ -29,6 +29,41 @@ class UniqueProtoDatabase;
 class COMPONENT_EXPORT(LEVELDB_PROTO) ProtoDatabaseSelector
     : public base::RefCountedThreadSafe<ProtoDatabaseSelector> {
  public:
+  // These values are logged to UMA. Entries should not be renumbered and
+  // numeric values should never be reused. Please keep in sync with
+  // "ProtoDatabaseInitState" in src/tools/metrics/histograms/enums.xml.
+  enum class ProtoDatabaseInitState {
+    kSharedDbInitAttempted = 0,
+    kFailureUniqueDbCorrupted = 1,
+    kFailureNoDatabaseProvider = 2,
+    kBothUniqueAndSharedFailedOpen = 3,
+    kSharedDbClientMissingInitFailed = 4,
+    kSharedDbClientMissingUniqueReturned = 5,
+    kSharedDbOpenFailed = 6,
+    kUniqueDbMissingSharedReturned = 7,
+    kUniqueDbOpenFailed = 8,
+    kMigrateToSharedAttempted = 9,
+    kMigrateToUniqueAttempted = 10,
+    kMigratedSharedDbOpened = 11,
+    kDeletionOfOldDataFailed = 12,
+    kMigrateToSharedFailed = 13,
+    kMigrateToUniqueFailed = 14,
+    kMigrateToSharedCompleteDeletionFailed = 15,
+    kMigrateToUniqueCompleteDeletionFailed = 16,
+    kMigrateToSharedSuccess = 17,
+    kMigrateToUniqueSuccess = 18,
+    kLegacyInitCalled = 19,
+    kSharedDbMetadataLoadFailed = 20,
+    kSharedDbMetadataWriteFailed = 21,
+    kSharedDbClientCorrupt = 22,
+    kSharedDbClientSuccess = 23,
+    kSharedLevelDbInitFailure = 24,
+    kSharedDbClientMissing = 25,
+    kMaxValue = kSharedDbClientMissing
+  };
+
+  static void RecordInitState(ProtoDatabaseInitState state);
+
   ProtoDatabaseSelector(
       ProtoDbType db_type,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -147,7 +182,7 @@ class COMPONENT_EXPORT(LEVELDB_PROTO) ProtoDatabaseSelector
       bool use_shared_db,
       Callbacks::InitStatusCallback callback,
       bool success);
-  void OnInitDone();
+  void OnInitDone(ProtoDatabaseInitState state);
 
   ProtoDbType db_type_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.usage_stats;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -26,6 +27,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.test.support.DisableHistogramsRule;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -46,6 +48,8 @@ public class EventTrackerTest {
     private ArgumentCaptor<Callback<Boolean>> mWriteCallbackCaptor;
     @Captor
     private ArgumentCaptor<Callback<Boolean>> mDeleteCallbackCaptor;
+    @Captor
+    private ArgumentCaptor<String[]> mDeletedDomainsListCaptor;
 
     private EventTracker mEventTracker;
 
@@ -59,7 +63,7 @@ public class EventTrackerTest {
     @Test
     public void testRangeQueries() {
         resolveLoadCallback();
-        addEntries(100, 2l, 1l);
+        addEntries(100, 2l, 1l, "");
         mEventTracker.queryWebsiteEvents(0l, 50l).then(
                 (result) -> { assertEquals(result.size(), 25); });
         mEventTracker.queryWebsiteEvents(0l, 49l).then(
@@ -75,7 +79,7 @@ public class EventTrackerTest {
     @Test
     public void testClearAll() {
         resolveLoadCallback();
-        addEntries(100, 1l, 0l);
+        addEntries(100, 1l, 0l, "");
         mEventTracker.clearAll().then((dummy) -> {
             mEventTracker.queryWebsiteEvents(0l, 1000l).then(
                     (result) -> { assertEquals(result.size(), 0); });
@@ -88,7 +92,7 @@ public class EventTrackerTest {
     @Test
     public void testClearRange() {
         resolveLoadCallback();
-        addEntries(100, 1l, 0l);
+        addEntries(100, 1l, 0l, "");
         mEventTracker.clearRange(0l, 50l).then((dummy) -> {
             mEventTracker.queryWebsiteEvents(0l, 50l).then(
                     (result) -> { assertEquals(result.size(), 0); });
@@ -102,11 +106,41 @@ public class EventTrackerTest {
         resolveDeleteCallback();
     }
 
-    private void addEntries(int quantity, long stepSize, long startTime) {
+    @Test
+    public void testClearDomains() {
+        resolveLoadCallback();
+        addEntries(10, 1l, 0l, "a.com");
+        addEntries(10, 1l, 10l, "b.com");
+        addEntries(10, 1l, 20l, "c.com");
+        addEntries(10, 1l, 30l, "b.com");
+
+        List<String> deletedDomains = Arrays.asList("b.com");
+        mEventTracker.clearDomains(deletedDomains).then((dummy) -> {
+            mEventTracker.queryWebsiteEvents(0l, 40l).then((result) -> {
+                assertEquals(result.size(), 20);
+                for (WebsiteEvent event : result.subList(0, 10)) {
+                    assertEquals(event.getFqdn(), "a.com");
+                }
+                for (WebsiteEvent event : result.subList(10, 20)) {
+                    assertEquals(event.getFqdn(), "c.com");
+                }
+            });
+            mEventTracker.queryWebsiteEvents(0l, 1000l).then(
+                    (result) -> { assertEquals(result.size(), 20); });
+        });
+
+        verify(mBridge, times(1))
+                .deleteEventsWithMatchingDomains(
+                        mDeletedDomainsListCaptor.capture(), mDeleteCallbackCaptor.capture());
+        resolveDeleteCallback();
+        assertEquals(Arrays.asList(mDeletedDomainsListCaptor.getValue()), deletedDomains);
+    }
+
+    private void addEntries(int quantity, long stepSize, long startTime, String fqdn) {
         for (int i = 0; i < quantity; i++) {
             Promise<Void> writePromise = mEventTracker.addWebsiteEvent(
-                    new WebsiteEvent(startTime, "", WebsiteEvent.EventType.START));
-            verify(mBridge, times(i + 1)).addEvents(any(), mWriteCallbackCaptor.capture());
+                    new WebsiteEvent(startTime, fqdn, WebsiteEvent.EventType.START));
+            verify(mBridge, atLeast(1)).addEvents(any(), mWriteCallbackCaptor.capture());
             resolveWriteCallback();
             startTime += stepSize;
         }

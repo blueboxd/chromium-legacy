@@ -1212,11 +1212,11 @@ bool TestLauncher::Init(CommandLine* command_line) {
     std::string print_test_stdio = command_line->GetSwitchValueASCII(
         switches::kTestLauncherPrintTestStdio);
     if (print_test_stdio == "auto") {
-      print_test_stdio = AUTO;
+      print_test_stdio_ = AUTO;
     } else if (print_test_stdio == "always") {
-      print_test_stdio = ALWAYS;
+      print_test_stdio_ = ALWAYS;
     } else if (print_test_stdio == "never") {
-      print_test_stdio = NEVER;
+      print_test_stdio_ = NEVER;
     } else {
       LOG(WARNING) << "Invalid value of "
                    << switches::kTestLauncherPrintTestStdio << ": "

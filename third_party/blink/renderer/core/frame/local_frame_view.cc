@@ -2834,23 +2834,30 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {
   // later by the second frame adding rects to the dirty region when it lays
   // out.
 
-  frame_->GetDocument()->UpdateStyleAndLayoutTree();
+  {
+    SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
+                             LocalFrameUkmAggregator::kStyle);
+    frame_->GetDocument()->UpdateStyleAndLayoutTree();
 
-  // Update style for all embedded SVG documents underneath this frame, so
-  // that intrinsic size computation for any embedded objects has up-to-date
-  // information before layout.
-  ForAllChildLocalFrameViews([](LocalFrameView& view) {
-    Document& document = *view.GetFrame().GetDocument();
-    if (document.IsSVGDocument())
-      document.UpdateStyleAndLayoutTree();
-  });
+    // Update style for all embedded SVG documents underneath this frame, so
+    // that intrinsic size computation for any embedded objects has up-to-date
+    // information before layout.
+    ForAllChildLocalFrameViews([](LocalFrameView& view) {
+      Document& document = *view.GetFrame().GetDocument();
+      if (document.IsSVGDocument())
+        document.UpdateStyleAndLayoutTree();
+    });
+  }
 
   CHECK(!ShouldThrottleRendering());
   CHECK(frame_->GetDocument()->IsActive());
   CHECK(!nested_layout_count_);
 
-  if (NeedsLayout())
+  if (NeedsLayout()) {
+    SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
+                             LocalFrameUkmAggregator::kLayout);
     UpdateLayout();
+  }
 
   CheckDoesNotNeedLayout();
 
@@ -4284,10 +4291,7 @@ bool LocalFrameView::MapToVisualRectInTopFrameSpace(PhysicalRect& rect) {
 
   PhysicalRect viewport_intersection_rect(
       GetFrame().RemoteViewportIntersection());
-  rect.Intersect(viewport_intersection_rect);
-  if (rect.IsEmpty())
-    return false;
-  return true;
+  return rect.InclusiveIntersect(viewport_intersection_rect);
 }
 
 void LocalFrameView::ApplyTransformForTopFrameSpace(

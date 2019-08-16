@@ -1583,8 +1583,8 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_UNAVAILABLE_MESSAGE" desc="The message shown when a printer can no longer be contacted while being added.">
       <ph name="PRINTER_NAME">$1<ex>Acme Printer</ex></ph> is no longer available
     </message>
-    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_NO_PRINTER_NEARBY" desc="The no-printer-found message shown in the auto discovery dialog.">
-      No printers nearby
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_NO_PRINTER_NEARBY" desc="The message shown when no nearby printers are found.">
+      There are no available printers.
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_SEARCHING_NEARBY_PRINTER" desc="The searching-in-progress message shown in the auto discovery dialog.">
       Searching...

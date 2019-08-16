@@ -33,12 +33,16 @@ mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
   frame_data->time_delta =
       base::TimeDelta::FromNanoseconds(openxr_->GetPredictedDisplayTime());
 
-  gfx::Quaternion orientation;
-  gfx::Point3F position;
+  base::Optional<gfx::Quaternion> orientation;
+  base::Optional<gfx::Point3F> position;
   if (XR_SUCCEEDED(openxr_->GetHeadPose(&orientation, &position))) {
     frame_data->pose = mojom::VRPose::New();
-    frame_data->pose->orientation = orientation;
-    frame_data->pose->position = position;
+
+    if (orientation.has_value())
+      frame_data->pose->orientation = orientation;
+
+    if (position.has_value())
+      frame_data->pose->position = position;
   }
 
   return frame_data;

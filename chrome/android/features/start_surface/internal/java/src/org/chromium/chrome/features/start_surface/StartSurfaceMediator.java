@@ -12,6 +12,7 @@ import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_OVERVIEW;
 
 import android.support.annotation.Nullable;
+import android.view.View;
 
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
@@ -22,7 +23,8 @@ import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** The mediator implements the logic to interact with the surfaces and caller. */
-class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.OverviewModeObserver {
+class StartSurfaceMediator
+        implements StartSurface.Controller, TabSwitcher.OverviewModeObserver, View.OnClickListener {
     /** Interface to control overlay visibility. */
     interface OverlayVisibilityHandler {
         /**
@@ -32,6 +34,16 @@ class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.Overv
         void setContentOverlayVisibility(boolean isVisible);
     }
 
+    /** Interface to initialize a secondary tasks surface for more tabs. */
+    interface SecondaryTasksSurfaceInitializer {
+        /**
+         * Initialize the secondary tasks surface and return the surface controller, which is
+         * TabSwitcher.Controller.
+         * @return The {@link TabSwitcher.Controller} of the secondary tasks surface.
+         */
+        TabSwitcher.Controller initialize();
+    }
+
     private final ObserverList<StartSurface.OverviewModeObserver> mObservers = new ObserverList<>();
     private final TabSwitcher.Controller mController;
     private final OverlayVisibilityHandler mOverlayVisibilityHandler;
@@ -39,17 +51,23 @@ class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.Overv
     private final PropertyModel mPropertyModel;
     @Nullable
     private final ExploreSurfaceCoordinator.FeedSurfaceCreator mFeedSurfaceCreator;
+    @Nullable
+    private final SecondaryTasksSurfaceInitializer mSecondaryTasksSurfaceInitializer;
     private final boolean mOnlyShowExploreSurface;
+    @Nullable
+    private TabSwitcher.Controller mSecondaryTasksSurfaceController;
 
     StartSurfaceMediator(TabSwitcher.Controller controller, TabModelSelector tabModelSelector,
             OverlayVisibilityHandler overlayVisibilityHandler,
             @Nullable PropertyModel propertyModel,
             @Nullable ExploreSurfaceCoordinator.FeedSurfaceCreator feedSurfaceCreator,
+            @Nullable SecondaryTasksSurfaceInitializer secondaryTasksSurfaceInitializer,
             boolean onlyShowExploreSurface) {
         mController = controller;
         mOverlayVisibilityHandler = overlayVisibilityHandler;
         mPropertyModel = propertyModel;
         mFeedSurfaceCreator = feedSurfaceCreator;
+        mSecondaryTasksSurfaceInitializer = secondaryTasksSurfaceInitializer;
         mOnlyShowExploreSurface = onlyShowExploreSurface;
 
         if (mPropertyModel != null) {
@@ -102,13 +120,17 @@ class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.Overv
 
     @Override
     public void hideOverview(boolean animate) {
+        if (mSecondaryTasksSurfaceController != null
+                && mSecondaryTasksSurfaceController.overviewVisible()) {
+            assert mOnlyShowExploreSurface;
+
+            mSecondaryTasksSurfaceController.hideOverview(false);
+        }
         mController.hideOverview(animate);
     }
 
     @Override
     public void showOverview(boolean animate) {
-        mController.showOverview(animate);
-
         // TODO(crbug.com/982018): Animate the bottom bar together with the Tab Grid view.
         if (mPropertyModel != null) {
             if (mOnlyShowExploreSurface) mPropertyModel.set(IS_EXPLORE_SURFACE_VISIBLE, true);
@@ -123,15 +145,27 @@ class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.Overv
             }
             mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
         }
+
+        mController.showOverview(animate);
     }
 
     @Override
     public boolean onBackPressed() {
+        if (mSecondaryTasksSurfaceController != null
+                && mSecondaryTasksSurfaceController.overviewVisible()) {
+            assert mOnlyShowExploreSurface;
+
+            mSecondaryTasksSurfaceController.hideOverview(false);
+            setExploreSurfaceVisibility(true);
+            return true;
+        }
+
         if (mPropertyModel != null && mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)
                 && !mOnlyShowExploreSurface) {
             setExploreSurfaceVisibility(false);
             return true;
         }
+
         return mController.onBackPressed();
     }
 
@@ -168,6 +202,19 @@ class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.Overv
         for (StartSurface.OverviewModeObserver observer : mObservers) {
             observer.finishedHiding();
         }
+    }
+
+    // Implements View.OnClickListener, which listens for the more tabs button.
+    @Override
+    public void onClick(View v) {
+        assert mOnlyShowExploreSurface;
+
+        if (mSecondaryTasksSurfaceController == null) {
+            mSecondaryTasksSurfaceController = mSecondaryTasksSurfaceInitializer.initialize();
+        }
+
+        setExploreSurfaceVisibility(false);
+        mSecondaryTasksSurfaceController.showOverview(false);
     }
 
     /** This interface builds the feed surface coordinator when showing if needed. */

@@ -81,11 +81,13 @@ class UberClique(object):
       lines.append(
         "WARNING: Fell back to English for the following translations:")
       for (id, langs) in self.fallback_translations_.items():
-        lines.append(ReportTranslation(self.cliques_[id][0], langs.keys()))
+        lines.append(
+            ReportTranslation(self.cliques_[id][0], list(langs.keys())))
     if len(self.missing_translations_):
       lines.append("ERROR: The following translations are MISSING:")
       for (id, langs) in self.missing_translations_.items():
-        lines.append(ReportTranslation(self.cliques_[id][0], langs.keys()))
+        lines.append(
+            ReportTranslation(self.cliques_[id][0], list(langs.keys())))
     return '\n'.join(lines)
 
   def MakeClique(self, message, translateable=True):
@@ -186,7 +188,7 @@ class UberClique(object):
   def AllMessageIds(self):
     '''Returns a list of all defined message IDs.
     '''
-    return self.cliques_.keys()
+    return list(self.cliques_.keys())
 
   def AllCliques(self):
     '''Iterates over all cliques.  Note that this can return multiple cliques
@@ -393,7 +395,7 @@ class MessageClique(object):
     if lang == constants.CONSTANT_LANGUAGE:
       return self.CONSTANT_TRANSLATION
 
-    for msglang in self.clique.keys():
+    for msglang in self.clique:
       if lang == msglang:
         return self.clique[msglang]
 

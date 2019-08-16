@@ -91,7 +91,7 @@ class TabLifecycleStateObserver
     base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&TabLifecycleStateObserver::OnLifecycleStateChangedImpl,
-                       page_node->GetContentProxy(),
+                       page_node->GetContentsProxy(),
                        page_node->GetLifecycleState()));
   }
 

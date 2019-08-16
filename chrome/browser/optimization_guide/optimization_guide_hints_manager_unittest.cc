@@ -242,6 +242,8 @@ class OptimizationGuideHintsManagerTest
     hint1->set_version("someversion");
     optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
     page_hint1->set_page_pattern("/news/");
+    page_hint1->set_max_ect_trigger(
+        optimization_guide::proto::EFFECTIVE_CONNECTION_TYPE_3G);
     optimization_guide::proto::Optimization* experimental_opt =
         page_hint1->add_whitelisted_optimizations();
     experimental_opt->set_optimization_type(
@@ -991,6 +993,9 @@ TEST_F(OptimizationGuideHintsManagerTest, CanApplyOptimizationUrlWithNoHost) {
                                   kBlackBlacklistBloomFilterNumBits, &config);
   ProcessHints(config, "1.0.0.0");
 
+  // Set ECT estimate to be "painful".
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(GURL("urlwithnohost"));
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
@@ -1014,6 +1019,9 @@ TEST_F(OptimizationGuideHintsManagerTest,
                                   kBlackBlacklistBloomFilterNumBits, &config);
   ProcessHints(config, "1.0.0.0");
 
+  // Set ECT estimate to be "painful".
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(GURL("https://whatever.com/123"));
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kUnknown,
@@ -1040,6 +1048,9 @@ TEST_F(OptimizationGuideHintsManagerTest,
                                   kBlackBlacklistBloomFilterNumBits, &config);
   ProcessHints(config, "1.0.0.0");
 
+  // Set ECT estimate to be "painful".
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(GURL("https://m.black.com/123"));
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
@@ -1066,9 +1077,69 @@ TEST_F(OptimizationGuideHintsManagerTest,
                                   kBlackBlacklistBloomFilterNumBits, &config);
   ProcessHints(config, "1.0.0.0");
 
+  // Set ECT estimate to be "painful".
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(GURL("https://whatever.com/123"));
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            hints_manager()->CanApplyOptimization(
+                &navigation_handle,
+                optimization_guide::OptimizationTarget::kPainfulPageLoad,
+                optimization_guide::proto::LITE_PAGE_REDIRECT,
+                /*optimization_metadata=*/nullptr));
+}
+
+TEST_F(OptimizationGuideHintsManagerTest, CanApplyOptimizationNoECTEstimate) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::LITE_PAGE_REDIRECT});
+
+  optimization_guide::proto::Configuration config;
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions,
+      kBlackBlacklistBloomFilterNumBits);
+  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
+  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
+                                  blacklist_bloom_filter,
+                                  kBlackBlacklistBloomFilterNumHashFunctions,
+                                  kBlackBlacklistBloomFilterNumBits, &config);
+  ProcessHints(config, "1.0.0.0");
+
+  // Explicitly set ECT estimate to be unknown.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(GURL("https://whatever.com/123"));
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            hints_manager()->CanApplyOptimization(
+                &navigation_handle,
+                optimization_guide::OptimizationTarget::kPainfulPageLoad,
+                optimization_guide::proto::LITE_PAGE_REDIRECT,
+                /*optimization_metadata=*/nullptr));
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       CanApplyOptimizationNoHintToTriggerHigherThan2G) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::LITE_PAGE_REDIRECT});
+
+  optimization_guide::proto::Configuration config;
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions,
+      kBlackBlacklistBloomFilterNumBits);
+  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
+  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
+                                  blacklist_bloom_filter,
+                                  kBlackBlacklistBloomFilterNumHashFunctions,
+                                  kBlackBlacklistBloomFilterNumBits, &config);
+  ProcessHints(config, "1.0.0.0");
+
+  // Explicitly set ECT estimate to be unknown.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G);
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(GURL("https://whatever.com/123"));
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
             hints_manager()->CanApplyOptimization(
                 &navigation_handle,
                 optimization_guide::OptimizationTarget::kPainfulPageLoad,
@@ -1085,6 +1156,9 @@ TEST_F(OptimizationGuideHintsManagerTest,
 
   InitializeWithDefaultConfig("1.0.0.0");
 
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(url_with_hints());
   base::RunLoop run_loop;
@@ -1105,6 +1179,9 @@ TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesNoExp) {
   InitializeWithDefaultConfig("1.0.0.0");
 
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(url_with_hints());
   base::RunLoop run_loop;
@@ -1119,6 +1196,29 @@ TEST_F(OptimizationGuideHintsManagerTest,
                 optimization_guide::OptimizationTarget::kPainfulPageLoad,
                 optimization_guide::proto::NOSCRIPT, &optimization_metadata));
   EXPECT_EQ(1234, optimization_metadata.previews_metadata.inflation_percent());
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       CanApplyOptimizationHasHintButNotSlowEnough) {
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(url_with_hints());
+  base::RunLoop run_loop;
+  hints_manager()->LoadHintForNavigation(&navigation_handle,
+                                         run_loop.QuitClosure());
+  run_loop.Run();
+
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            hints_manager()->CanApplyOptimization(
+                &navigation_handle,
+                optimization_guide::OptimizationTarget::kPainfulPageLoad,
+                optimization_guide::proto::NOSCRIPT, &optimization_metadata));
+  EXPECT_EQ(0, optimization_metadata.previews_metadata.inflation_percent());
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
@@ -1146,6 +1246,9 @@ TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationHasPageHintButNoMatchingOptType) {
   InitializeWithDefaultConfig("1.0.0.0");
 
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(url_with_hints());
   base::RunLoop run_loop;
@@ -1166,6 +1269,9 @@ TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationNoHintForNavigationMetadataClearedAnyway) {
   InitializeWithDefaultConfig("1.0.0.0");
 
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(GURL("https://nohint.com"));
 
@@ -1183,6 +1289,9 @@ TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationHasHintInCacheButNotLoaded) {
   InitializeWithDefaultConfig("1.0.0.0");
 
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(url_with_hints());
 
@@ -1228,7 +1337,56 @@ TEST_F(OptimizationGuideHintsManagerTest,
                                          run_loop.QuitClosure());
   run_loop.Run();
 
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            hints_manager()->CanApplyOptimization(
+                &navigation_handle,
+                optimization_guide::OptimizationTarget::kPainfulPageLoad,
+                optimization_guide::proto::LITE_PAGE_REDIRECT,
+                /*optimization_metadata=*/nullptr));
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       CanApplyOptimizationFilterTakesPrecedenceWithECTComingFromHint) {
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(GURL("https://notfiltered.com/whatever"));
+
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::LITE_PAGE_REDIRECT});
+
+  optimization_guide::proto::Configuration config;
+  optimization_guide::proto::Hint* hint1 = config.add_hints();
+  hint1->set_key("notfiltered.com");
+  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint1->set_version("someversion");
+  optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
+  page_hint1->set_page_pattern("https://notfiltered.com");
+  page_hint1->set_max_ect_trigger(
+      optimization_guide::proto::EFFECTIVE_CONNECTION_TYPE_3G);
+  optimization_guide::proto::Optimization* optimization1 =
+      page_hint1->add_whitelisted_optimizations();
+  optimization1->set_optimization_type(
+      optimization_guide::proto::LITE_PAGE_REDIRECT);
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions,
+      kBlackBlacklistBloomFilterNumBits);
+  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
+  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
+                                  blacklist_bloom_filter,
+                                  kBlackBlacklistBloomFilterNumHashFunctions,
+                                  kBlackBlacklistBloomFilterNumBits, &config);
+  ProcessHints(config, "1.0.0.0");
+
+  base::RunLoop run_loop;
+  hints_manager()->LoadHintForNavigation(&navigation_handle,
+                                         run_loop.QuitClosure());
+  run_loop.Run();
+
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G);
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
             hints_manager()->CanApplyOptimization(
                 &navigation_handle,
                 optimization_guide::OptimizationTarget::kPainfulPageLoad,

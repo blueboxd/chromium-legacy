@@ -264,7 +264,7 @@ BUILDERS = {
       },
     ],
     'dimension': {
-      'os': 'Ubuntu-14.04',
+      'os': 'Ubuntu-16.04',
       'pool': 'chrome.tests',
     },
     'perf_trigger': False,
@@ -311,7 +311,7 @@ BUILDERS = {
       },
     ],
     'dimension': {
-      'os': 'Ubuntu-14.04',
+      'os': 'Ubuntu-16.04',
       'pool': 'chrome.tests',
     },
     'perf_trigger': False,

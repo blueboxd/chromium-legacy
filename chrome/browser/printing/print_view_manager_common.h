@@ -26,6 +26,10 @@ void StartBasicPrint(content::WebContents* contents);
 // frame (this makes print selection work for multiple frames).
 content::RenderFrameHost* GetFrameToPrint(content::WebContents* contents);
 
+// If we have a single full-page embedded mime handler view guest, print the
+// guest's WebContents instead.
+content::WebContents* GetWebContentsToUse(content::WebContents* contents);
+
 }  // namespace printing
 
 #endif  // CHROME_BROWSER_PRINTING_PRINT_VIEW_MANAGER_COMMON_H_

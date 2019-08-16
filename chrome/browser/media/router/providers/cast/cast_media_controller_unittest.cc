@@ -64,18 +64,34 @@ Value GetSupportedMediaCommandsValue(const mojom::MediaStatus& status) {
   return Value(commands);
 }
 
-mojom::MediaStatus CreateSampleMediaStatus() {
-  mojom::MediaStatus status;
-  status.title = "media title";
-  status.can_play_pause = true;
-  status.can_mute = true;
-  status.can_set_volume = false;
-  status.can_seek = false;
-  status.is_muted = false;
-  status.volume = 0.7;
-  status.play_state = mojom::MediaStatus::PlayState::BUFFERING;
-  status.duration = base::TimeDelta::FromSeconds(30);
-  status.current_time = base::TimeDelta::FromSeconds(12);
+Value CreateImagesValue(const std::vector<mojom::MediaImagePtr>& images) {
+  Value image_list(Value::Type::LIST);
+  for (const mojom::MediaImagePtr& image : images) {
+    Value image_value(Value::Type::DICTIONARY);
+    image_value.SetStringKey("url", image->url.spec());
+    // CastMediaController should be able to handle images that are missing the
+    // width or the height.
+    if (image->size) {
+      image_value.SetIntKey("width", image->size->width());
+      image_value.SetIntKey("height", image->size->height());
+    }
+    image_list.GetList().push_back(std::move(image_value));
+  }
+  return image_list;
+}
+
+mojom::MediaStatusPtr CreateSampleMediaStatus() {
+  mojom::MediaStatusPtr status = mojom::MediaStatus::New();
+  status->title = "media title";
+  status->can_play_pause = true;
+  status->can_mute = true;
+  status->can_set_volume = false;
+  status->can_seek = false;
+  status->is_muted = false;
+  status->volume = 0.7;
+  status->play_state = mojom::MediaStatus::PlayState::BUFFERING;
+  status->duration = base::TimeDelta::FromSeconds(30);
+  status->current_time = base::TimeDelta::FromSeconds(12);
   return status;
 }
 
@@ -131,7 +147,7 @@ class CastMediaControllerTest : public testing::Test {
 
   void SetSessionAndMediaStatus() {
     controller_->SetSession(*CreateSampleSession());
-    SetMediaStatus(CreateSampleMediaStatus());
+    SetMediaStatus(*CreateSampleMediaStatus());
   }
 
   void SetMediaStatus(const mojom::MediaStatus& status) {
@@ -140,6 +156,8 @@ class CastMediaControllerTest : public testing::Test {
     status_value.SetKey("media", Value(Value::Type::DICTIONARY));
     status_value.SetPath("media.metadata", Value(Value::Type::DICTIONARY));
     status_value.SetPath("media.metadata.title", Value(status.title));
+    status_value.SetPath("media.metadata.images",
+                         CreateImagesValue(status.images));
     status_value.SetPath("media.duration", Value(status.duration.InSecondsF()));
     status_value.SetPath("currentTime",
                          Value(status.current_time.InSecondsF()));
@@ -238,18 +256,62 @@ TEST_F(CastMediaControllerTest, SendSeekRequest) {
   mojo_controller_->Seek(base::TimeDelta::FromSecondsD(12.34));
 }
 
+TEST_F(CastMediaControllerTest, SendNextTrackRequest) {
+  SetSessionAndMediaStatus();
+  EXPECT_CALL(activity_, SendMediaRequestToReceiver(_))
+      .WillOnce([](const CastInternalMessage& cast_message) {
+        EXPECT_EQ("QUEUE_NEXT", cast_message.v2_message_type());
+        VerifySessionAndMediaSessionIds(cast_message.v2_message_body());
+        return 0;
+      });
+  mojo_controller_->NextTrack();
+}
+
+TEST_F(CastMediaControllerTest, SendPreviousTrackRequest) {
+  SetSessionAndMediaStatus();
+  EXPECT_CALL(activity_, SendMediaRequestToReceiver(_))
+      .WillOnce([](const CastInternalMessage& cast_message) {
+        EXPECT_EQ("QUEUE_PREV", cast_message.v2_message_type());
+        VerifySessionAndMediaSessionIds(cast_message.v2_message_body());
+        return 0;
+      });
+  mojo_controller_->PreviousTrack();
+}
+
 TEST_F(CastMediaControllerTest, UpdateMediaStatus) {
-  const mojom::MediaStatus expected_status = CreateSampleMediaStatus();
+  mojom::MediaStatusPtr expected_status = CreateSampleMediaStatus();
 
   EXPECT_CALL(*status_observer_, OnMediaStatusUpdated(_))
       .WillOnce([&](mojom::MediaStatusPtr status) {
-        EXPECT_EQ(expected_status.title, status->title);
-        EXPECT_EQ(expected_status.can_play_pause, status->can_play_pause);
-        EXPECT_EQ(expected_status.play_state, status->play_state);
-        EXPECT_EQ(expected_status.duration, status->duration);
-        EXPECT_EQ(expected_status.current_time, status->current_time);
+        EXPECT_EQ(expected_status->title, status->title);
+        EXPECT_EQ(expected_status->can_play_pause, status->can_play_pause);
+        EXPECT_EQ(expected_status->play_state, status->play_state);
+        EXPECT_EQ(expected_status->duration, status->duration);
+        EXPECT_EQ(expected_status->current_time, status->current_time);
       });
-  SetMediaStatus(expected_status);
+  SetMediaStatus(*expected_status);
+  VerifyAndClearExpectations();
+}
+
+TEST_F(CastMediaControllerTest, UpdateMediaImages) {
+  mojom::MediaStatusPtr expected_status = CreateSampleMediaStatus();
+  expected_status->images.emplace_back(
+      base::in_place, GURL("https://example.com/1.png"), gfx::Size(123, 456));
+  expected_status->images.emplace_back(
+      base::in_place, GURL("https://example.com/2.png"), gfx::Size(789, 0));
+  const mojom::MediaImage& image1 = *expected_status->images.at(0);
+  const mojom::MediaImage& image2 = *expected_status->images.at(1);
+
+  EXPECT_CALL(*status_observer_, OnMediaStatusUpdated(_))
+      .WillOnce([&](const mojom::MediaStatusPtr& status) {
+        ASSERT_EQ(2u, status->images.size());
+        EXPECT_EQ(image1.url.spec(), status->images.at(0)->url.spec());
+        EXPECT_EQ(image1.size->width(), status->images.at(0)->size->width());
+        EXPECT_EQ(image1.size->height(), status->images.at(0)->size->height());
+        EXPECT_EQ(image2.url.spec(), status->images.at(1)->url.spec());
+        EXPECT_EQ(base::nullopt, status->images.at(1)->size);
+      });
+  SetMediaStatus(*expected_status);
   VerifyAndClearExpectations();
 }
 
@@ -274,10 +336,10 @@ TEST_F(CastMediaControllerTest, UpdateVolumeStatus) {
         EXPECT_FLOAT_EQ(session_volume, status->volume);
         EXPECT_EQ(session_muted, status->is_muted);
       });
-  mojom::MediaStatus updated_status = CreateSampleMediaStatus();
-  updated_status.volume = 0.3;
-  updated_status.is_muted = true;
-  SetMediaStatus(updated_status);
+  mojom::MediaStatusPtr updated_status = CreateSampleMediaStatus();
+  updated_status->volume = 0.3;
+  updated_status->is_muted = true;
+  SetMediaStatus(*updated_status);
   VerifyAndClearExpectations();
 }
 

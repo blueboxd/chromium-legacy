@@ -669,7 +669,9 @@ static void EnforceDotsAtEndpoints(GraphicsContext& context,
   }
 }
 
-void GraphicsContext::DrawLine(const IntPoint& point1, const IntPoint& point2) {
+void GraphicsContext::DrawLine(const IntPoint& point1,
+                               const IntPoint& point2,
+                               const DarkModeFilter::ElementRole role) {
   if (ContextDisabled())
     return;
   DCHECK(canvas_);
@@ -688,8 +690,7 @@ void GraphicsContext::DrawLine(const IntPoint& point1, const IntPoint& point2) {
   // probably worth the speed up of no square root, which also won't be exact.
   FloatSize disp = p2 - p1;
   int length = SkScalarRoundToInt(disp.Width() + disp.Height());
-  const DarkModeFlags flags(this, ImmutableState()->StrokeFlags(length),
-                            DarkModeFilter::ElementRole::kBackground);
+  const DarkModeFlags flags(this, ImmutableState()->StrokeFlags(length), role);
 
   if (pen_style == kDottedStroke) {
     if (StrokeData::StrokeIsDashed(width, pen_style)) {
@@ -742,13 +743,14 @@ void GraphicsContext::DrawLineForText(const FloatPoint& pt, float width) {
       flags = ImmutableState()->FillFlags();
       // Text lines are drawn using the stroke color.
       flags.setColor(StrokeColor().Rgb());
-      DrawRect(r, flags);
+      DrawRect(r, flags, DarkModeFilter::ElementRole::kText);
       return;
     }
     case kDottedStroke:
     case kDashedStroke: {
       int y = floorf(pt.Y() + std::max<float>(StrokeThickness() / 2.0f, 0.5f));
-      DrawLine(IntPoint(pt.X(), y), IntPoint(pt.X() + width, y));
+      DrawLine(IntPoint(pt.X(), y), IntPoint(pt.X() + width, y),
+               DarkModeFilter::ElementRole::kText);
       return;
     }
     case kWavyStroke:
@@ -1046,14 +1048,14 @@ void GraphicsContext::DrawPath(const SkPath& path, const PaintFlags& flags) {
       DarkModeFlags(this, flags, DarkModeFilter::ElementRole::kBackground));
 }
 
-void GraphicsContext::DrawRect(const SkRect& rect, const PaintFlags& flags) {
+void GraphicsContext::DrawRect(const SkRect& rect,
+                               const PaintFlags& flags,
+                               const DarkModeFilter::ElementRole role) {
   if (ContextDisabled())
     return;
   DCHECK(canvas_);
 
-  canvas_->drawRect(
-      rect,
-      DarkModeFlags(this, flags, DarkModeFilter::ElementRole::kBackground));
+  canvas_->drawRect(rect, DarkModeFlags(this, flags, role));
 }
 
 void GraphicsContext::DrawRRect(const SkRRect& rrect, const PaintFlags& flags) {

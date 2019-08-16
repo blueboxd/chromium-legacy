@@ -5,8 +5,8 @@
 #include "ash/system/tray/label_tray_view.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/hover_highlight_view.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/view_click_listener.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -46,8 +46,10 @@ const char* LabelTrayView::GetClassName() const {
 views::View* LabelTrayView::CreateChildView(
     const base::string16& message) const {
   HoverHighlightView* child = new HoverHighlightView(click_listener_);
-  gfx::ImageSkia icon_image =
-      gfx::CreateVectorIcon(icon_, kIconOnLightBackgroundColor);
+  gfx::ImageSkia icon_image = gfx::CreateVectorIcon(
+      icon_, AshColorProvider::Get()->GetContentLayerColor(
+                 AshColorProvider::ContentLayerType::kIconPrimary,
+                 AshColorProvider::AshColorMode::kLight));
   child->AddIconAndLabelForDefaultView(icon_image, message);
   child->text_label()->SetMultiLine(true);
   child->text_label()->SetAllowCharacterBreak(true);

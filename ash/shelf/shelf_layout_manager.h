@@ -418,15 +418,18 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   Shelf* shelf_;
 
   // Whether the app list is visible. This is maintained by
-  // OnAppListVisibilityChanged.
+  // OnAppListVisibilityChanged. Used to determine AppList visibility in
+  // clamshell mode.
   bool is_app_list_visible_ = false;
 
   // Whether the HomeLauncher is being dragged to, or animating to fullscreen.
-  // This is maintained by OnHomeLauncherTargetPositionChanged.
+  // This is maintained by OnHomeLauncherTargetPositionChanged. Used to
+  // determine AppList visibility in tablet mode.
   bool is_home_launcher_target_position_shown_ = false;
 
   // Whether the HomeLauncher is shown. This is maintained by
-  // OnHomeLauncherAnimationComplete.
+  // OnHomeLauncherAnimationComplete. Used to determine AppList visibility in
+  // tablet mode.
   bool is_home_launcher_shown_ = false;
 
   // True to skip updating shelf visibility state.

@@ -8,7 +8,7 @@
 # locally, generate and push the protobuffer to the storage bucket but do not
 # check in the changes.
 
-version_id: 2
+version_id: 3
 
 # See chrome/browser/lookalikes/safety_tips.proto for the full format.
 # These entries must be sorted alphabetically by pattern.

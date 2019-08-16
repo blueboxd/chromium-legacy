@@ -12,6 +12,8 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
 #include "ash/system/network/network_info.h"
@@ -27,7 +29,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
-#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/device_event_log/device_event_log.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -66,6 +68,12 @@ bool IsSecondaryUser() {
       Shell::Get()->session_controller();
   return session_controller->IsActiveUserSessionStarted() &&
          !session_controller->IsUserPrimary();
+}
+
+SkColor GetIconColor() {
+  return AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kIconPrimary,
+      AshColorProvider::AshColorMode::kDark);
 }
 
 }  // namespace
@@ -337,9 +345,8 @@ void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
     // Mobile icons which are not connecting or connected should display a small
     // "X" icon superimposed so that it is clear that they are disconnected.
     network_image = gfx::ImageSkiaOperations::CreateSuperimposedImage(
-        info.image,
-        gfx::CreateVectorIcon(kNetworkMobileNotConnectedXIcon,
-                              info.image.height(), kIconOnDarkBackgroundColor));
+        info.image, gfx::CreateVectorIcon(kNetworkMobileNotConnectedXIcon,
+                                          info.image.height(), GetIconColor()));
   } else {
     network_image = info.image;
   }
@@ -384,7 +391,8 @@ views::View* NetworkListView::CreatePowerStatusView(const NetworkInfo& info) {
   icon_info.charge_percent = info.battery_percentage;
   icon->SetImage(PowerStatus::GetBatteryImage(
       icon_info, kMobileNetworkBatteryIconSize,
-      kIconOnDarkBackgroundColorDisabled, kIconOnDarkBackgroundColor));
+      AshColorProvider::Get()->GetDisabledColor(GetIconColor()),
+      GetIconColor()));
 
   // Show the numeric battery percentage on hover.
   icon->set_tooltip_text(base::FormatPercent(info.battery_percentage));
@@ -399,8 +407,8 @@ views::View* NetworkListView::CreatePolicyView(const NetworkInfo& info) {
     return nullptr;
 
   views::ImageView* controlled_icon = TrayPopupUtils::CreateMainImageView();
-  controlled_icon->SetImage(gfx::CreateVectorIcon(kSystemMenuBusinessIcon,
-                                                  kIconOnDarkBackgroundColor));
+  controlled_icon->SetImage(
+      gfx::CreateVectorIcon(kSystemMenuBusinessIcon, GetIconColor()));
   return controlled_icon;
 }
 
@@ -411,7 +419,7 @@ views::View* NetworkListView::CreateControlledByExtensionView(
 
   views::ImageView* controlled_icon = TrayPopupUtils::CreateMainImageView();
   controlled_icon->SetImage(
-      gfx::CreateVectorIcon(kCaptivePortalIcon, kIconOnDarkBackgroundColor));
+      gfx::CreateVectorIcon(kCaptivePortalIcon, GetIconColor()));
   controlled_icon->set_tooltip_text(l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_EXTENSION_CONTROLLED_WIFI,
       base::UTF8ToUTF16(info.captive_portal_provider_name)));
@@ -533,7 +541,7 @@ TriView* NetworkListView::CreateConnectionWarning() {
   // Set 'info' icon on left side.
   views::ImageView* image_view = TrayPopupUtils::CreateMainImageView();
   image_view->SetImage(
-      gfx::CreateVectorIcon(kSystemMenuInfoIcon, kIconOnDarkBackgroundColor));
+      gfx::CreateVectorIcon(kSystemMenuInfoIcon, GetIconColor()));
   image_view->SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
   connection_warning->AddView(TriView::Container::START, image_view);
 

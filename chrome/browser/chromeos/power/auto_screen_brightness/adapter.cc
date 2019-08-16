@@ -44,6 +44,8 @@ const char* BrightnessChangeCauseToString(
       return "BrightneningThresholdExceeded";
     case Adapter::BrightnessChangeCause::kDarkeningThresholdExceeded:
       return "DarkeningThresholdExceeded";
+    case Adapter::BrightnessChangeCause::kUpdateAfterLidReopen:
+      return "UpdateAfterLidReopen";
     // |kImmediateBrightneningThresholdExceeded| and
     // |kImmediateDarkeningThresholdExceeded| are deprecated, and shouldn't show
     // up.
@@ -103,6 +105,8 @@ void Adapter::Init() {
 }
 
 void Adapter::OnAmbientLightUpdated(int lux) {
+  const base::TimeTicks now = tick_clock_->NowTicks();
+
   // Ambient light data is only used when adapter is initialized to success.
   // |log_als_values_| may not be available to use when adapter is being
   // initialized.
@@ -111,7 +115,21 @@ void Adapter::OnAmbientLightUpdated(int lux) {
 
   DCHECK(log_als_values_);
 
-  const base::TimeTicks now = tick_clock_->NowTicks();
+  // We may have no prior lid event received, if lux value is > 0, then it's
+  // safe to assume the lid is open.
+  if (!is_lid_closed_.has_value())
+    is_lid_closed_ = lux == 0;
+
+  // We do not record ALS value if lid is closed.
+  if (*is_lid_closed_) {
+    VLOG(1) << "ALS ignored while lid-closed";
+    return;
+  }
+
+  if (now - lid_reopen_time_ < lid_open_delay_time_) {
+    VLOG(1) << "ALS ignored soon after lid-reopened";
+    return;
+  }
 
   log_als_values_->SaveToBuffer({ConvertToLog(lux), now});
 
@@ -265,6 +283,20 @@ void Adapter::SuspendDone(const base::TimeDelta& /* sleep_duration */) {
     adapter_disabled_by_user_adjustment_ = false;
 }
 
+void Adapter::LidEventReceived(chromeos::PowerManagerClient::LidState state,
+                               const base::TimeTicks& /* timestamp */) {
+  is_lid_closed_ = state == chromeos::PowerManagerClient::LidState::CLOSED;
+  if (!*is_lid_closed_) {
+    lid_reopen_time_ = tick_clock_->NowTicks();
+    VLOG(1) << "Adapter received lid-reopened event";
+    return;
+  }
+
+  if (log_als_values_) {
+    log_als_values_->ClearBuffer();
+  }
+}
+
 Adapter::Status Adapter::GetStatusForTesting() const {
   return adapter_status_;
 }
@@ -334,16 +366,25 @@ Adapter::Adapter(Profile* profile,
   brightness_monitor_observer_.Add(brightness_monitor);
   modeller_observer_.Add(modeller);
   model_config_loader_observer_.Add(model_config_loader);
+
+  const int lid_open_delay_time_seconds = GetFieldTrialParamByFeatureAsInt(
+      features::kAutoScreenBrightness, "lid_open_delay_time_seconds",
+      lid_open_delay_time_.InSeconds());
+
+  if (lid_open_delay_time_seconds > 0) {
+    lid_open_delay_time_ =
+        base::TimeDelta::FromSeconds(lid_open_delay_time_seconds);
+  }
 }
 
 void Adapter::InitParams(const ModelConfig& model_config) {
+  params_.metrics_key = model_config.metrics_key;
   if (!base::FeatureList::IsEnabled(features::kAutoScreenBrightness) ||
       !model_config.enabled) {
     enabled_by_model_configs_ = false;
     return;
   }
 
-  params_.metrics_key = model_config.metrics_key;
   params_.brightening_log_lux_threshold = GetFieldTrialParamByFeatureAsDouble(
       features::kAutoScreenBrightness, "brightening_log_lux_threshold",
       params_.brightening_log_lux_threshold);
@@ -368,6 +409,7 @@ void Adapter::InitParams(const ModelConfig& model_config) {
   params_.model_curve = static_cast<ModelCurve>(model_curve_as_int);
   params_.auto_brightness_als_horizon = base::TimeDelta::FromSeconds(
       model_config.auto_brightness_als_horizon_seconds);
+
   log_als_values_ = std::make_unique<AmbientLightSampleBuffer>(
       params_.auto_brightness_als_horizon);
 
@@ -534,6 +576,22 @@ Adapter::AdapterDecision Adapter::CanAdjustBrightness(base::TimeTicks now) {
   if (now - als_init_time_ < params_.auto_brightness_als_horizon) {
     decision.no_brightness_change_cause =
         NoBrightnessChangeCause::kWaitingForInitialAls;
+    return decision;
+  }
+
+  if (!lid_reopen_time_.is_null()) {
+    if (now - lid_reopen_time_ < lid_open_delay_time_) {
+      decision.no_brightness_change_cause =
+          NoBrightnessChangeCause::kWaitingForReopenAls;
+      return decision;
+    }
+
+    decision.brightness_change_cause =
+        BrightnessChangeCause::kUpdateAfterLidReopen;
+
+    // Reset |lid_reopen_time_| after the first brightness change following a
+    // lid-open event.
+    lid_reopen_time_ = base::TimeTicks();
     return decision;
   }
 

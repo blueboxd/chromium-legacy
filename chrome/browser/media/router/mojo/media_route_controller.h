@@ -46,6 +46,10 @@ class MediaRouter;
 // A MediaRouteController instance is destroyed when all its observers dispose
 // their references to it. When the associated route is destroyed, Invalidate()
 // is called to make the controller's observers dispose their refptrs.
+//
+// TODO(crbug.com/990500): This class assumes that the controller implementation
+// is provided by the component extension, which is no longer true, and thus can
+// be simplified or removed.
 class MediaRouteController
     : public mojom::MediaStatusObserver,
       public base::RefCounted<MediaRouteController>,
@@ -113,6 +117,8 @@ class MediaRouteController
   virtual void Seek(base::TimeDelta time);
   virtual void SetMute(bool mute);
   virtual void SetVolume(float volume);
+  virtual void NextTrack();
+  virtual void PreviousTrack();
 
   // mojom::MediaStatusObserver:
   // Notifies |observers_| of a status update.

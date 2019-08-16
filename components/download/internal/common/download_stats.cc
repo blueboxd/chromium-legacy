@@ -613,17 +613,11 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
                                int64_t total,
                                bool is_parallelizable,
                                bool is_parallel_download_enabled,
-                               DownloadSource download_source,
-                               bool post_content_length_mismatch) {
+                               DownloadSource download_source) {
   RecordDownloadCountWithSource(INTERRUPTED_COUNT, download_source);
   if (is_parallelizable) {
     RecordParallelizableDownloadCount(INTERRUPTED_COUNT,
                                       is_parallel_download_enabled);
-  }
-
-  if (post_content_length_mismatch) {
-    base::UmaHistogramSparse(
-        "Download.ResumptionAfterContentLengthMismatch.Reason", reason);
   }
 
   std::vector<base::HistogramBase::Sample> samples =
@@ -672,11 +666,6 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
       }
     }
   }
-}
-
-void RecordMaliciousDownloadClassified(DownloadDangerType danger_type) {
-  UMA_HISTOGRAM_ENUMERATION("Download.MaliciousDownloadClassified", danger_type,
-                            DOWNLOAD_DANGER_TYPE_MAX);
 }
 
 void RecordDangerousDownloadAccept(DownloadDangerType danger_type,

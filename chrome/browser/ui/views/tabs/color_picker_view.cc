@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
@@ -29,6 +30,7 @@ class ColorPickerElementView : public views::Button,
         color_name_(color_name) {
     DCHECK(selected_callback_);
 
+    SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     SetAccessibleName(color_name);
 
     SetBorder(
@@ -52,6 +54,23 @@ class ColorPickerElementView : public views::Button,
   bool selected() const { return selected_; }
 
   // views::Button:
+  bool IsGroupFocusTraversable() const override {
+    // Tab should only focus the selected element.
+    return false;
+  }
+
+  views::View* GetSelectedViewForGroup(int group) override {
+    DCHECK(parent());
+    return parent()->GetSelectedViewForGroup(group);
+  }
+
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    views::Button::GetAccessibleNodeData(node_data);
+    node_data->role = ax::mojom::Role::kRadioButton;
+    node_data->SetCheckedState(selected() ? ax::mojom::CheckedState::kTrue
+                                          : ax::mojom::CheckedState::kFalse);
+  }
+
   base::string16 GetTooltipText(const gfx::Point& p) const override {
     return color_name_;
   }
@@ -118,6 +137,13 @@ ColorPickerView::ColorPickerView(
         color.first, color.second)));
   }
 
+  // Our children should take keyboard focus, not us.
+  SetFocusBehavior(views::View::FocusBehavior::NEVER);
+  for (View* view : elements_) {
+    // Group the colors so they can be navigated with arrows.
+    view->SetGroup(0);
+  }
+
   const int element_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
 
@@ -140,6 +166,14 @@ base::Optional<SkColor> ColorPickerView::GetSelectedColor() const {
       return element->color();
   }
   return base::nullopt;
+}
+
+views::View* ColorPickerView::GetSelectedViewForGroup(int group) {
+  for (ColorPickerElementView* element : elements_) {
+    if (element->selected())
+      return element;
+  }
+  return nullptr;
 }
 
 views::Button* ColorPickerView::GetElementAtIndexForTesting(int index) {

@@ -164,9 +164,8 @@ void ServiceWorkerDevToolsAgentHost::WorkerReadyForInspection(
     mojo::PendingReceiver<blink::mojom::DevToolsAgentHost> host_receiver) {
   DCHECK_EQ(WORKER_NOT_READY, state_);
   state_ = WORKER_READY;
-  GetRendererChannel()->SetRenderer(std::move(agent_remote),
-                                    std::move(host_receiver),
-                                    worker_process_id_, nullptr);
+  GetRendererChannel()->SetRenderer(
+      std::move(agent_remote), std::move(host_receiver), worker_process_id_);
   for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
     inspector->TargetReloadedAfterCrash();
   if (!sessions().empty())
@@ -187,8 +186,7 @@ void ServiceWorkerDevToolsAgentHost::WorkerDestroyed() {
   for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
     inspector->TargetCrashed();
   GetRendererChannel()->SetRenderer(mojo::NullRemote(), mojo::NullReceiver(),
-                                    ChildProcessHost::kInvalidUniqueID,
-                                    nullptr);
+                                    ChildProcessHost::kInvalidUniqueID);
   if (!sessions().empty())
     UpdateIsAttached(false);
 }

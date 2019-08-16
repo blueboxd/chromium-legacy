@@ -58,7 +58,7 @@ XrResult xrBeginSession(XrSession session,
                   XR_ERROR_VALIDATION_FAILURE,
                   "XrSessionBeginInfo type invalid");
   RETURN_IF_FALSE(begin_info->primaryViewConfigurationType ==
-                      XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
+                      OpenXrTestHelper::kViewConfigurationType,
                   XR_ERROR_VALIDATION_FAILURE,
                   "XrSessionBeginInfo primaryViewConfigurationType invalid");
 
@@ -241,6 +241,7 @@ XrResult xrEndSession(XrSession session) {
 XrResult xrEnumerateEnvironmentBlendModes(
     XrInstance instance,
     XrSystemId system_id,
+    XrViewConfigurationType view_configuration_type,
     uint32_t environmentBlendModeCapacityInput,
     uint32_t* environmentBlendModeCountOutput,
     XrEnvironmentBlendMode* environmentBlendModes) {
@@ -249,6 +250,10 @@ XrResult xrEnumerateEnvironmentBlendModes(
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSystemId(system_id));
+  RETURN_IF_FALSE(
+      view_configuration_type == OpenXrTestHelper::kViewConfigurationType,
+      XR_ERROR_VALIDATION_FAILURE,
+      "xrEnumerateEnvironmentBlendModes viewConfigurationType invalid");
 
   *environmentBlendModeCountOutput = 1;
 
@@ -278,7 +283,7 @@ XrResult xrEnumerateInstanceExtensionProperties(
       errno_t error = strcpy_s(properties[i].extensionName,
                                OpenXrTestHelper::kExtensions[i]);
       DCHECK(error == 0);
-      properties[i].specVersion = 1;
+      properties[i].extensionVersion = 1;
     }
   }
 
@@ -298,7 +303,7 @@ XrResult xrEnumerateViewConfigurationViews(
   RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSystemId(system_id));
   RETURN_IF_FALSE(
-      view_configuration_type == XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
+      view_configuration_type == OpenXrTestHelper::kViewConfigurationType,
       XR_ERROR_VALIDATION_FAILURE,
       "xrEnumerateViewConfigurationViews viewConfigurationType invalid");
 
@@ -403,7 +408,7 @@ XrResult xrGetSystem(XrInstance instance,
 XrResult xrLocateSpace(XrSpace space,
                        XrSpace baseSpace,
                        XrTime time,
-                       XrSpaceRelation* relation) {
+                       XrSpaceLocation* location) {
   DLOG(INFO) << __FUNCTION__;
   XrResult xr_result;
 
@@ -411,10 +416,10 @@ XrResult xrLocateSpace(XrSpace space,
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSpace(baseSpace));
   RETURN_IF_XR_FAILED(g_test_helper.ValidatePredictedDisplayTime(time));
 
-  g_test_helper.GetPose(&(relation->pose));
+  g_test_helper.GetPose(&(location->pose));
 
-  relation->relationFlags = XR_SPACE_RELATION_ORIENTATION_VALID_BIT |
-                            XR_SPACE_RELATION_POSITION_VALID_BIT;
+  location->locationFlags = XR_SPACE_LOCATION_ORIENTATION_VALID_BIT |
+                            XR_SPACE_LOCATION_POSITION_VALID_BIT;
 
   return XR_SUCCESS;
 }

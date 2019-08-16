@@ -39,6 +39,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
+#include "chrome/browser/chromeos/release_notes/release_notes_storage.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -646,9 +647,9 @@ class InternalDataSource : public AppSearchProvider::DataSource {
  public:
   InternalDataSource(Profile* profile,
                      AppSearchProvider* owner,
-                     bool just_continue_reading)
+                     bool just_suggestion_chips)
       : AppSearchProvider::DataSource(profile, owner),
-        just_continue_reading_(just_continue_reading) {
+        just_suggestion_chips_(just_suggestion_chips) {
     sync_sessions::SessionSyncService* service =
         SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
     if (!service)
@@ -666,6 +667,10 @@ class InternalDataSource : public AppSearchProvider::DataSource {
   // AppSearchProvider::DataSource overrides:
   void AddApps(AppSearchProvider::Apps* apps) override {
     for (const auto& internal_app : GetInternalAppList(profile())) {
+      if (just_suggestion_chips_ && !IsSuggestionChip(internal_app.app_id)) {
+        continue;
+      }
+
       if (!std::strcmp(internal_app.app_id, kInternalAppIdContinueReading)) {
         sync_sessions::SessionSyncService* service =
             SessionSyncServiceFactory::GetInstance()->GetForProfile(profile());
@@ -673,8 +678,6 @@ class InternalDataSource : public AppSearchProvider::DataSource {
                          !owner()->open_tabs_ui_delegate_for_testing())) {
           continue;
         }
-      } else if (just_continue_reading_) {
-        continue;
       }
 
       apps->emplace_back(std::make_unique<AppSearchProvider::App>(
@@ -700,14 +703,15 @@ class InternalDataSource : public AppSearchProvider::DataSource {
   }
 
  private:
-  // Whether InternalDataSource provides just the kInternalAppIdContinueReading
-  // app. If true, other internal apps are provided by AppServiceDataSource.
+  // Whether InternalDataSource provides just internal apps that should be
+  // shown as suggestion chips. If true, other internal apps are provided by
+  // AppServiceDataSource.
   //
   // TODO(crbug.com/826982): move the "foreign session updated subscription"
   // into the App Service? Or if, in terms of UI, "continue reading" is exposed
   // only in the app list search UI, it might make more sense to leave it in
   // this code. See also built_in_chromeos_apps.cc.
-  bool just_continue_reading_;
+  bool just_suggestion_chips_;
 
   std::unique_ptr<base::CallbackList<void()>::Subscription>
       foreign_session_updated_subscription_;
@@ -835,6 +839,9 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
 AppSearchProvider::~AppSearchProvider() {}
 
 void AppSearchProvider::Start(const base::string16& query) {
+  // When the AppSearchProvider initializes, UpdateRecommendedResults is called
+  // three times. We only want to start updating user prefs for release notes
+  // after these first three calls are done.
   query_ = query;
   query_start_time_ = base::TimeTicks::Now();
   // We only need to record app search latency for queries started by user.
@@ -890,16 +897,19 @@ void AppSearchProvider::UpdateRecommendedResults(
     base::string16 title = app->name();
     if (app->id() == kInternalAppIdContinueReading) {
       base::string16 navigation_title;
-      if (HasRecommendableForeignTab(profile_, &navigation_title,
-                                     /*url=*/nullptr,
-                                     open_tabs_ui_delegate_for_testing())) {
-        if (!navigation_title.empty()) {
-          title = navigation_title;
-          app->AddSearchableText(title);
-        }
-      } else {
+      if (!HasRecommendableForeignTab(profile_, &navigation_title,
+                                      /*url=*/nullptr,
+                                      open_tabs_ui_delegate_for_testing())) {
         continue;
+      } else if (!navigation_title.empty()) {
+        title = navigation_title;
+        app->AddSearchableText(title);
       }
+    } else if (app->id() == kReleaseNotesAppId) {
+      auto release_notes_storage =
+          std::make_unique<chromeos::ReleaseNotesStorage>(profile_);
+      if (!release_notes_storage->ShouldShowSuggestionChip())
+        continue;
     }
 
     std::unique_ptr<AppResult> result =

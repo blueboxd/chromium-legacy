@@ -38,6 +38,8 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
@@ -69,10 +71,10 @@
 #include "chrome/common/extensions/api/autotest_private.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/printing/printer_configuration.h"
-#include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
@@ -226,6 +228,64 @@ api::autotest_private::ShelfItemStatus GetShelfItemStatus(
   }
   NOTREACHED();
   return api::autotest_private::ShelfItemStatus::SHELF_ITEM_STATUS_NONE;
+}
+
+api::autotest_private::AppType GetAppType(apps::mojom::AppType type) {
+  switch (type) {
+    case apps::mojom::AppType::kArc:
+      return api::autotest_private::AppType::APP_TYPE_ARC;
+    case apps::mojom::AppType::kBuiltIn:
+      return api::autotest_private::AppType::APP_TYPE_BUILTIN;
+    case apps::mojom::AppType::kCrostini:
+      return api::autotest_private::AppType::APP_TYPE_CROSTINI;
+    case apps::mojom::AppType::kExtension:
+      return api::autotest_private::AppType::APP_TYPE_EXTENSION;
+    case apps::mojom::AppType::kWeb:
+      return api::autotest_private::AppType::APP_TYPE_WEB;
+    case apps::mojom::AppType::kUnknown:
+      return api::autotest_private::AppType::APP_TYPE_NONE;
+  }
+  NOTREACHED();
+  return api::autotest_private::AppType::APP_TYPE_NONE;
+}
+
+api::autotest_private::AppReadiness GetAppReadiness(
+    apps::mojom::Readiness readiness) {
+  switch (readiness) {
+    case apps::mojom::Readiness::kReady:
+      return api::autotest_private::AppReadiness::APP_READINESS_READY;
+    case apps::mojom::Readiness::kDisabledByBlacklist:
+      return api::autotest_private::AppReadiness::
+          APP_READINESS_DISABLEDBYBLACKLIST;
+    case apps::mojom::Readiness::kDisabledByPolicy:
+      return api::autotest_private::AppReadiness::
+          APP_READINESS_DISABLEDBYPOLICY;
+    case apps::mojom::Readiness::kDisabledByUser:
+      return api::autotest_private::AppReadiness::APP_READINESS_DISABLEDBYUSER;
+    case apps::mojom::Readiness::kTerminated:
+      return api::autotest_private::AppReadiness::APP_READINESS_TERMINATED;
+    case apps::mojom::Readiness::kUninstalledByUser:
+      return api::autotest_private::AppReadiness::
+          APP_READINESS_UNINSTALLEDBYUSER;
+    case apps::mojom::Readiness::kUnknown:
+      return api::autotest_private::AppReadiness::APP_READINESS_NONE;
+  }
+  NOTREACHED();
+  return api::autotest_private::AppReadiness::APP_READINESS_NONE;
+}
+
+std::unique_ptr<bool> ConvertMojomOptionalBool(
+    apps::mojom::OptionalBool optional) {
+  switch (optional) {
+    case apps::mojom::OptionalBool::kTrue:
+      return std::make_unique<bool>(true);
+    case apps::mojom::OptionalBool::kFalse:
+      return std::make_unique<bool>(false);
+    case apps::mojom::OptionalBool::kUnknown:
+      return nullptr;
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 // Helper function to set whitelisted user pref based on |pref_name| with any
@@ -1756,6 +1816,46 @@ AutotestPrivateSetTabletModeEnabledFunction::Run() {
   waiter.Wait();
   return RespondNow(OneArgument(
       std::make_unique<base::Value>(ash::TabletMode::Get()->InTabletMode())));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetAllInstalledAppsFunction
+///////////////////////////////////////////////////////////////////////////////
+AutotestPrivateGetAllInstalledAppsFunction::
+    AutotestPrivateGetAllInstalledAppsFunction() = default;
+
+AutotestPrivateGetAllInstalledAppsFunction::
+    ~AutotestPrivateGetAllInstalledAppsFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateGetAllInstalledAppsFunction::Run() {
+  DVLOG(1) << "AutotestPrivateGetAllInstalledAppsFunction";
+
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+
+  if (!proxy)
+    return RespondNow(Error("App Service not available"));
+
+  std::vector<api::autotest_private::App> installed_apps;
+  proxy->AppRegistryCache().ForEachApp([&installed_apps](
+                                           const apps::AppUpdate& update) {
+    api::autotest_private::App app;
+    app.app_id = update.AppId();
+    app.name = update.Name();
+    app.short_name = update.ShortName();
+    app.additional_search_terms = update.AdditionalSearchTerms();
+    app.type = GetAppType(update.AppType());
+    app.readiness = GetAppReadiness(update.Readiness());
+    app.show_in_launcher = ConvertMojomOptionalBool(update.ShowInLauncher());
+    app.show_in_search = ConvertMojomOptionalBool(update.ShowInSearch());
+    installed_apps.emplace_back(std::move(app));
+  });
+
+  return RespondNow(
+      ArgumentList(api::autotest_private::GetAllInstalledApps::Results::Create(
+          installed_apps)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

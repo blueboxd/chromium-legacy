@@ -59,6 +59,7 @@ bool SetSanitizationInfo(crash_reporter::CrashReporterClient* client,
                                      &sanitize_stacks);
   info->annotations_whitelist_address = FromPointerCast<VMAddress>(whitelist);
   info->target_module_address = FromPointerCast<VMAddress>(target_module);
+  info->memory_range_whitelist_address = 0;
   info->sanitize_stacks = sanitize_stacks;
   return whitelist != nullptr || target_module != nullptr || sanitize_stacks;
 }

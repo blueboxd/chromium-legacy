@@ -51,10 +51,9 @@ void HidHapticGamepadWin::DoShutdown() {
   hid_handle_.Close();
 }
 
-size_t HidHapticGamepadWin::WriteOutputReport(void* report,
-                                              size_t report_length) {
-  DCHECK(report);
-  DCHECK_GE(report_length, 1U);
+size_t HidHapticGamepadWin::WriteOutputReport(
+    base::span<const uint8_t> report) {
+  DCHECK_GE(report.size_bytes(), 1U);
   if (!hid_handle_.IsValid())
     return 0;
 
@@ -68,8 +67,9 @@ size_t HidHapticGamepadWin::WriteOutputReport(void* report,
 
   // Set up an asynchronous write.
   DWORD bytes_written = 0;
-  BOOL write_success = ::WriteFile(hid_handle_.Get(), report, report_length,
-                                   &bytes_written, &overlapped);
+  BOOL write_success =
+      ::WriteFile(hid_handle_.Get(), report.data(), report.size_bytes(),
+                  &bytes_written, &overlapped);
   if (!write_success) {
     DWORD error = ::GetLastError();
     if (error == ERROR_IO_PENDING) {

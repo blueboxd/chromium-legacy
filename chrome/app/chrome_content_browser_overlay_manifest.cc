@@ -146,9 +146,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability("xr_device_service", "xr_device_provider")
         .RequireCapability("xr_device_service", "xr_device_test_hook")
 #if defined(OS_CHROMEOS)
-        .RequireCapability(
-            chromeos::network_config::mojom::kServiceName,
-            chromeos::network_config::mojom::kNetworkConfigCapability)
         .ExposeInterfaceFilterCapability_Deprecated(
             "navigation:frame",
             chromeos::network_config::mojom::kNetworkConfigCapability,

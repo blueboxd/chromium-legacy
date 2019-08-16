@@ -702,6 +702,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
         command_line.GetSwitchValueASCII(
             switches::kNativeMessagingConnectExtension),
         command_line.GetSwitchValueASCII(switches::kNativeMessagingConnectHost),
+        command_line.GetSwitchValueASCII(switches::kNativeMessagingConnectId),
         last_used_profile);
   }
 #endif

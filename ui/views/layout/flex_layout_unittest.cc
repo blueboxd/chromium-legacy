@@ -1519,6 +1519,31 @@ TEST_F(FlexLayoutTest, Layout_Flex_TwoChildViews_UnequalWeight_SecondAtMax) {
   EXPECT_EQ(Size(20, 10), child2->size());
 }
 
+// This is a regression test for a case where a view marked as having flex
+// weight but which could not flex larger than its preferred size would cause
+// other views at that weight to not receive available flex space.
+TEST_F(FlexLayoutTest, Layout_Flex_TwoChildViews_FirstViewFillsAvailableSpace) {
+  const FlexSpecification can_flex = FlexSpecification::ForSizeRule(
+      MinimumFlexSizeRule::kPreferred, MaximumFlexSizeRule::kUnbounded);
+  const FlexSpecification cannot_flex = FlexSpecification::ForSizeRule(
+      MinimumFlexSizeRule::kPreferred, MaximumFlexSizeRule::kPreferred);
+
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetInteriorMargin(Insets(5));
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetDefault(views::kMarginsKey, gfx::Insets(5));
+  View* child1 = AddChild(Size(20, 10));
+  View* child2 = AddChild(Size(20, 10));
+  child1->SetProperty(views::kFlexBehaviorKey, can_flex);
+  child2->SetProperty(views::kFlexBehaviorKey, cannot_flex);
+
+  host_->SetSize(Size(70, 20));
+  const std::vector<Rect> expected_bounds{{5, 5, 35, 10}, {45, 5, 20, 10}};
+  EXPECT_EQ(expected_bounds, GetChildBounds());
+}
+
 TEST_F(FlexLayoutTest, Layout_Flex_TwoChildViews_Priority) {
   layout_->SetOrientation(LayoutOrientation::kHorizontal);
   layout_->SetCollapseMargins(true);

@@ -20,11 +20,8 @@
 #include "chromeos/services/secure_channel/public/cpp/client/connection_attempt_impl.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_connection_attempt.h"
-#include "chromeos/services/secure_channel/public/mojom/constants.mojom.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "chromeos/services/secure_channel/secure_channel_initializer.h"
-#include "chromeos/services/secure_channel/secure_channel_service.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -147,12 +144,14 @@ class SecureChannelClientImplTest : public testing::Test {
     test_connection_attempt_delegate_ =
         std::make_unique<TestConnectionAttemptDelegate>();
 
-    service_ = std::make_unique<SecureChannelService>(
-        connector_factory_.RegisterInstance(mojom::kServiceName));
     test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+    service_ = SecureChannelInitializer::Factory::Get()->BuildInstance(
+        test_task_runner_);
 
+    mojo::PendingRemote<mojom::SecureChannel> channel;
+    service_->BindRequest(channel.InitWithNewPipeAndPassReceiver());
     client_ = SecureChannelClientImpl::Factory::Get()->BuildInstance(
-        connector_factory_.GetDefaultConnector(), test_task_runner_);
+        std::move(channel), test_task_runner_);
   }
 
   void TearDown() override {
@@ -212,8 +211,7 @@ class SecureChannelClientImplTest : public testing::Test {
       fake_client_channel_impl_factory_;
   std::unique_ptr<TestConnectionAttemptDelegate>
       test_connection_attempt_delegate_;
-  service_manager::TestConnectorFactory connector_factory_;
-  std::unique_ptr<SecureChannelService> service_;
+  std::unique_ptr<SecureChannelBase> service_;
   scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
 
   std::unique_ptr<SecureChannelClient> client_;

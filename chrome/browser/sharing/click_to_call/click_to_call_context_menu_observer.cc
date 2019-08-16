@@ -5,6 +5,7 @@
 #include "chrome/browser/sharing/click_to_call/click_to_call_context_menu_observer.h"
 
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/sync_device_info/device_info.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
@@ -53,7 +55,8 @@ void ClickToCallContextMenuObserver::InitMenu(
     const content::ContextMenuParams& params) {
   url_ = params.link_url;
   controller_->UpdateDevices();
-  const std::vector<SharingDeviceInfo>& devices = controller_->devices();
+  const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices =
+      controller_->devices();
   LogClickToCallDevicesToShow(kSharingClickToCallUiContextMenu, devices.size());
   if (devices.empty())
     return;
@@ -65,13 +68,13 @@ void ClickToCallContextMenuObserver::InitMenu(
         IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
         l10n_util::GetStringFUTF16(
             IDS_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
-            devices[0].human_readable_name()));
+            base::UTF8ToUTF16(devices[0]->client_name())));
 #else
     proxy_->AddMenuItemWithIcon(
         IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
         l10n_util::GetStringFUTF16(
             IDS_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
-            devices[0].human_readable_name()),
+            base::UTF8ToUTF16(devices[0]->client_name())),
         vector_icons::kCallIcon);
 #endif
   } else {
@@ -98,7 +101,8 @@ void ClickToCallContextMenuObserver::BuildSubMenu() {
   for (const auto& device : controller_->devices()) {
     if (command_id > kSubMenuLastDeviceCommandId)
       break;
-    sub_menu_model_->AddItem(command_id++, device.human_readable_name());
+    sub_menu_model_->AddItem(command_id++,
+                             base::UTF8ToUTF16(device->client_name()));
   }
 }
 
@@ -130,12 +134,13 @@ void ClickToCallContextMenuObserver::ExecuteCommand(int command_id) {
 
 void ClickToCallContextMenuObserver::SendClickToCallMessage(
     int chosen_device_index) {
-  const std::vector<SharingDeviceInfo>& devices = controller_->devices();
+  const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices =
+      controller_->devices();
   if (chosen_device_index >= static_cast<int>(devices.size()))
     return;
 
   LogClickToCallSelectedDeviceIndex(kSharingClickToCallUiContextMenu,
                                     chosen_device_index);
 
-  controller_->OnDeviceSelected(url_, devices[chosen_device_index]);
+  controller_->OnDeviceSelected(url_, *devices[chosen_device_index]);
 }

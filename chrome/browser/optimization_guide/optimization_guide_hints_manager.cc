@@ -545,6 +545,13 @@ OptimizationGuideHintsManager::CanApplyOptimization(
     return optimization_guide::OptimizationGuideDecision::kUnknown;
   }
 
+  // We do not have an estimate for the effective connection type, so just say
+  // it's not painful.
+  if (current_effective_connection_type_ ==
+      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+    return optimization_guide::OptimizationGuideDecision::kFalse;
+  }
+
   const auto& url = navigation_handle->GetURL();
   // If the URL doesn't have a host, we cannot query the hint for it, so just
   // return early.
@@ -552,6 +559,28 @@ OptimizationGuideHintsManager::CanApplyOptimization(
     return optimization_guide::OptimizationGuideDecision::kFalse;
   }
   const auto& host = url.host();
+
+  net::EffectiveConnectionType max_ect_trigger =
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G;
+
+  // TODO(sophiechang): Maybe cache the page hint for a navigation ID so we
+  // don't have to iterate through all page hints every time this is called.
+
+  // Check if we have a hint already loaded for this navigation.
+  const optimization_guide::proto::Hint* loaded_hint =
+      hint_cache_->GetHintIfLoaded(host);
+  const optimization_guide::proto::PageHint* matched_page_hint =
+      loaded_hint ? optimization_guide::FindPageHintForURL(url, loaded_hint)
+                  : nullptr;
+  if (matched_page_hint && matched_page_hint->has_max_ect_trigger()) {
+    max_ect_trigger = optimization_guide::ConvertProtoEffectiveConnectionType(
+        matched_page_hint->max_ect_trigger());
+  }
+
+  // The current network is not slow enough, so this navigation is likely not
+  // going to be painful.
+  if (current_effective_connection_type_ > max_ect_trigger)
+    return optimization_guide::OptimizationGuideDecision::kFalse;
 
   // Check if the URL should be filtered out if we have an optimization filter
   // for the type.
@@ -575,9 +604,6 @@ OptimizationGuideHintsManager::CanApplyOptimization(
     }
   }
 
-  // Now check if we have a hint already loaded for this navigation.
-  const optimization_guide::proto::Hint* loaded_hint =
-      hint_cache_->GetHintIfLoaded(host);
   if (!loaded_hint) {
     // If we do not have a hint already loaded and we do not have one in the
     // cache, we don't know what to do with the URL so just return false.
@@ -586,18 +612,8 @@ OptimizationGuideHintsManager::CanApplyOptimization(
                ? optimization_guide::OptimizationGuideDecision::kUnknown
                : optimization_guide::OptimizationGuideDecision::kFalse;
   }
-
-  // Check if we have a page hint that matches the URL within the hint.
-  // TODO(sophiechang): Maybe cache the page hint for a navigation ID so we
-  // don't have to iterate through all page hints every time this is called.
-  const optimization_guide::proto::PageHint* matched_page_hint =
-      optimization_guide::FindPageHintForURL(url, loaded_hint);
-  if (!matched_page_hint) {
+  if (!matched_page_hint)
     return optimization_guide::OptimizationGuideDecision::kFalse;
-  }
-
-  // TODO(sophiechang): Check whether ECT matches max ECT if targeting painful
-  // page loads.
 
   // Now check if we have any optimizations for it.
   for (const auto& optimization :
@@ -621,4 +637,9 @@ OptimizationGuideHintsManager::CanApplyOptimization(
 
   // We didn't find anything, return false.
   return optimization_guide::OptimizationGuideDecision::kFalse;
+}
+
+void OptimizationGuideHintsManager::OnEffectiveConnectionTypeChanged(
+    net::EffectiveConnectionType effective_connection_type) {
+  current_effective_connection_type_ = effective_connection_type;
 }

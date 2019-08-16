@@ -142,7 +142,7 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
    private:
     MediaRoute route_;
     std::unique_ptr<WiredDisplayPresentationReceiver> receiver_;
-    mojom::MediaStatus status_;
+    mojom::MediaStatusPtr status_;
 
     // |media_controller_request| is retained but not used.
     mojo::PendingReceiver<mojom::MediaController> media_controller_receiver_;

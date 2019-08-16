@@ -131,8 +131,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   // Checks whether support for the specified payment methods exist, either
   // because the user has a registered payment handler or because the browser
   // can do just-in-time registration for a suitable payment handler.
-  // If |legacy_mode| is true, then also checks that an instrument is enrolled.
-  void CanMakePayment(bool legacy_mode, StatusCallback callback);
+  void CanMakePayment(StatusCallback callback);
 
   // Checks whether the user has at least one instrument that satisfies the
   // specified supported payment methods asynchronously.
@@ -309,7 +308,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
 
   // Checks whether support for the specified payment methods exists and call
   // the |callback| to return the result.
-  void CheckCanMakePayment(bool legacy_mode, StatusCallback callback);
+  void CheckCanMakePayment(StatusCallback callback);
 
   // Checks whether the user has at least one instrument that satisfies the
   // specified supported payment methods and call the |callback| to return the
@@ -340,10 +339,6 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   Delegate* delegate_;
   autofill::PersonalDataManager* personal_data_manager_;
   JourneyLogger* journey_logger_;
-
-  // Whether |can_make_payment_callback_| expects the legacy canMakePayment
-  // semantic. Only meaningful when |can_make_payment_callback_| is present.
-  bool can_make_payment_legacy_mode_ = false;
 
   StatusCallback can_make_payment_callback_;
   StatusCallback has_enrolled_instrument_callback_;

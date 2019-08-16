@@ -153,11 +153,14 @@ function MediaStatusAdapter(fields) {
   this.can_mute = false;
   this.can_set_volume = false;
   this.can_seek = false;
+  this.can_skip_to_next_track = false;
+  this.can_skip_to_previous_track = false;
   this.is_muted = false;
   this.play_state = 0;
   this.volume = 0;
   this.duration = null;
   this.current_time = null;
+  this.images = null;
 
   assignFields(this, fields);
 }
@@ -171,11 +174,14 @@ MediaStatusAdapter.prototype.toNewVersion = function() {
     'canMute': this.can_mute,
     'canSetVolume': this.can_set_volume,
     'canSeek': this.can_seek,
+    'canSkipToNextTrack': this.can_skip_to_next_track,
+    'canSkipToPreviousTrack': this.can_skip_to_previous_track,
     'isMuted': this.is_muted,
     'playState': this.play_state,
     'volume': this.volume,
     'duration': this.duration,
     'currentTime': this.current_time,
+    'images': this.images || [],
   });
 };
 

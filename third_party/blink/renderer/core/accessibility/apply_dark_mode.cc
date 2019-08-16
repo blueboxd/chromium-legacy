@@ -16,20 +16,27 @@
 namespace blink {
 namespace {
 
+const int kAlphaThreshold = 100;
+const int kBrightnessThreshold = 128;
+
 // TODO(https://crbug.com/925949): Add detection and classification of
 // background image color. Most sites with dark background images also have a
 // dark background color set, so this is less of a priority than it would be
 // otherwise.
 bool HasLightBackground(const LayoutView& root) {
   const ComputedStyle& style = root.StyleRef();
-  if (style.HasBackground()) {
-    Color color = style.VisitedDependentColor(GetCSSPropertyBackgroundColor());
-    return IsLight(color);
-  }
 
   // If we can't easily determine the background color, default to inverting the
   // page.
-  return true;
+  if (!style.HasBackground())
+    return true;
+
+  Color color = style.VisitedDependentColor(GetCSSPropertyBackgroundColor());
+  if (color.Alpha() < kAlphaThreshold)
+    return true;
+
+  return DarkModeColorClassifier::CalculateColorBrightness(color) >
+         kBrightnessThreshold;
 }
 
 DarkMode GetMode(const Settings& frame_settings) {

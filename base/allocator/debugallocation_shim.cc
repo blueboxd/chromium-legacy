@@ -13,22 +13,8 @@
 #pragma GCC optimize ("no-auto-profile")
 #endif
 
-#include "base/allocator/buildflags.h"
-
-#if BUILDFLAG(USE_NEW_TCMALLOC)
-
 #if defined(TCMALLOC_FOR_DEBUGALLOCATION)
 #include "third_party/tcmalloc/chromium/src/debugallocation.cc"
 #else
 #include "third_party/tcmalloc/chromium/src/tcmalloc.cc"
-#endif
-
-#else
-
-#if defined(TCMALLOC_FOR_DEBUGALLOCATION)
-#include "third_party/tcmalloc/gperftools-2.0/chromium/src/debugallocation.cc"
-#else
-#include "third_party/tcmalloc/gperftools-2.0/chromium/src/tcmalloc.cc"
-#endif
-
 #endif

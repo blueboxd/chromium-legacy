@@ -284,8 +284,9 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
         retrieveCustomButtons(intent, context);
         retrieveToolbarColor(params, context);
         retrieveBottomBarColor(params);
-        mNavigationBarColor = params.navigationBarColor == null ? null
-                : removeTransparencyFromColor(params.navigationBarColor);
+        mNavigationBarColor = params.navigationBarColor == null
+                ? null
+                : ColorUtils.getOpaqueColor(params.navigationBarColor);
         mInitialBackgroundColor = retrieveInitialBackgroundColor(intent);
 
         mEnableUrlBarHiding = IntentUtils.safeGetBooleanExtra(
@@ -480,7 +481,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
             return; // Don't allow toolbar color customization for incognito tabs.
         }
         int color = schemeParams.toolbarColor != null ? schemeParams.toolbarColor : defaultColor;
-        mToolbarColor = removeTransparencyFromColor(color);
+        mToolbarColor = ColorUtils.getOpaqueColor(color);
     }
 
     /**
@@ -494,7 +495,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
         int defaultColor = mToolbarColor;
         int color = schemeParams.secondaryToolbarColor != null ? schemeParams.secondaryToolbarColor
                 : defaultColor;
-        mBottomBarColor = removeTransparencyFromColor(color);
+        mBottomBarColor = ColorUtils.getOpaqueColor(color);
     }
 
     /**
@@ -505,14 +506,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
         int defaultColor = Color.TRANSPARENT;
         int color =
                 IntentUtils.safeGetIntExtra(intent, EXTRA_INITIAL_BACKGROUND_COLOR, defaultColor);
-        return color == Color.TRANSPARENT ? color : removeTransparencyFromColor(color);
-    }
-
-    /**
-     * Removes the alpha channel of the given color and returns the processed value.
-     */
-    private int removeTransparencyFromColor(int color) {
-        return color | 0xFF000000;
+        return color == Color.TRANSPARENT ? color : ColorUtils.getOpaqueColor(color);
     }
 
     private String resolveUrlToLoad(Intent intent) {

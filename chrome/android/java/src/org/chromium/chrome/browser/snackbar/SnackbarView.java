@@ -245,7 +245,8 @@ public class SnackbarView {
             return snackbar.getBackgroundColor();
         }
 
-        return ApiCompatibilityUtils.getColor(view.getResources(), R.color.modern_primary_color);
+        return ApiCompatibilityUtils.getColor(
+                view.getResources(), R.color.snackbar_background_color);
     }
 
     private static int getTextAppearance(Snackbar snackbar) {

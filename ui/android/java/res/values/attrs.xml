@@ -32,7 +32,7 @@
     <declare-styleable name="ChipView">
         <attr name="chipColor" format="color"/>
         <attr name="chipStyle" format="reference"/>
-        <attr name="cornerRadius" format="reference|dimension"/>
+        <attr name="cornerRadius" format="dimension"/>
         <attr name="iconWidth" format="reference|dimension"/>
         <attr name="iconHeight" format="reference|dimension"/>
         <attr name="primaryTextAppearance" format="reference"/>

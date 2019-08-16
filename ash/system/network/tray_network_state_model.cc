@@ -7,11 +7,10 @@
 #include <set>
 #include <string>
 
+#include "ash/public/cpp/network_config_service.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
-#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 
@@ -47,15 +46,20 @@ NetworkStatePropertiesPtr GetConnectingOrConnected(
 
 namespace ash {
 
-TrayNetworkStateModel::TrayNetworkStateModel(
-    service_manager::Connector* connector)
+TrayNetworkStateModel::TrayNetworkStateModel()
     : update_frequency_(kUpdateFrequencyMs) {
   if (ui::ScopedAnimationDurationScaleMode::duration_scale_mode() !=
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION) {
     update_frequency_ = 0;  // Send updates immediately for tests.
   }
-  if (connector)  // May be null in tests.
-    BindCrosNetworkConfig(connector);
+
+  GetNetworkConfigService(
+      remote_cros_network_config_.BindNewPipeAndPassReceiver());
+  chromeos::network_config::mojom::CrosNetworkConfigObserverPtr observer_ptr;
+  cros_network_config_observer_receiver_.Bind(mojo::MakeRequest(&observer_ptr));
+  remote_cros_network_config_->AddObserver(std::move(observer_ptr));
+
+  GetDeviceStateList();
 }
 
 TrayNetworkStateModel::~TrayNetworkStateModel() = default;
@@ -83,9 +87,9 @@ DeviceStateType TrayNetworkStateModel::GetDeviceState(NetworkType type) {
 
 void TrayNetworkStateModel::SetNetworkTypeEnabledState(NetworkType type,
                                                        bool enabled) {
-  DCHECK(cros_network_config_ptr_);
-  cros_network_config_ptr_->SetNetworkTypeEnabledState(type, enabled,
-                                                       base::DoNothing());
+  DCHECK(remote_cros_network_config_);
+  remote_cros_network_config_->SetNetworkTypeEnabledState(type, enabled,
+                                                          base::DoNothing());
 }
 
 // CrosNetworkConfigObserver
@@ -107,28 +111,9 @@ void TrayNetworkStateModel::OnDeviceStateListChanged() {
   GetDeviceStateList();
 }
 
-void TrayNetworkStateModel::BindCrosNetworkConfig(
-    service_manager::Connector* connector) {
-  // Ensure bindings are reset in case this is called after a failure.
-  cros_network_config_observer_binding_.Close();
-  cros_network_config_ptr_.reset();
-
-  connector->BindInterface(chromeos::network_config::mojom::kServiceName,
-                           &cros_network_config_ptr_);
-  chromeos::network_config::mojom::CrosNetworkConfigObserverPtr observer_ptr;
-  cros_network_config_observer_binding_.Bind(mojo::MakeRequest(&observer_ptr));
-  cros_network_config_ptr_->AddObserver(std::move(observer_ptr));
-  GetDeviceStateList();
-
-  // If the connection is lost (e.g. due to a crash), attempt to rebind it.
-  cros_network_config_ptr_.set_connection_error_handler(
-      base::BindOnce(&TrayNetworkStateModel::BindCrosNetworkConfig,
-                     base::Unretained(this), connector));
-}
-
 void TrayNetworkStateModel::GetDeviceStateList() {
-  DCHECK(cros_network_config_ptr_);
-  cros_network_config_ptr_->GetDeviceStateList(base::BindOnce(
+  DCHECK(remote_cros_network_config_);
+  remote_cros_network_config_->GetDeviceStateList(base::BindOnce(
       &TrayNetworkStateModel::OnGetDeviceStateList, base::Unretained(this)));
 }
 
@@ -146,8 +131,8 @@ void TrayNetworkStateModel::OnGetDeviceStateList(
 }
 
 void TrayNetworkStateModel::GetActiveNetworks() {
-  DCHECK(cros_network_config_ptr_);
-  cros_network_config_ptr_->GetNetworkStateList(
+  DCHECK(remote_cros_network_config_);
+  remote_cros_network_config_->GetNetworkStateList(
       NetworkFilter::New(FilterType::kActive, NetworkType::kAll,
                          /*limit=*/0),
       base::BindOnce(&TrayNetworkStateModel::OnActiveNetworksChanged,

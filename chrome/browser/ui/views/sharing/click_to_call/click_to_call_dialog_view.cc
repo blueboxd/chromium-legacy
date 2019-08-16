@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/sync_device_info/device_info.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -174,13 +175,14 @@ void ClickToCallDialogView::ButtonPressed(views::Button* sender,
   if (!sender || sender->tag() < 0)
     return;
   size_t index = static_cast<size_t>(sender->tag());
-  const std::vector<SharingDeviceInfo>& devices = controller_->devices();
+  const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices =
+      controller_->devices();
   const std::vector<ClickToCallUiController::App>& apps = controller_->apps();
   DCHECK(index < devices.size() + apps.size());
 
   if (index < devices.size()) {
     LogClickToCallSelectedDeviceIndex(kSharingClickToCallUiDialog, index);
-    controller_->OnDeviceChosen(devices[index]);
+    controller_->OnDeviceChosen(*devices[index]);
     CloseBubble();
     return;
   }
@@ -195,7 +197,8 @@ void ClickToCallDialogView::ButtonPressed(views::Button* sender,
 }
 
 void ClickToCallDialogView::InitListView() {
-  const std::vector<SharingDeviceInfo>& devices = controller_->devices();
+  const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices =
+      controller_->devices();
   const std::vector<ClickToCallUiController::App>& apps = controller_->apps();
   int tag = 0;
 
@@ -203,8 +206,9 @@ void ClickToCallDialogView::InitListView() {
   LogClickToCallDevicesToShow(kSharingClickToCallUiDialog, devices.size());
   for (const auto& device : devices) {
     auto dialog_button = std::make_unique<HoverButton>(
-        this, CreateDeviceIcon(device.device_type()),
-        device.human_readable_name(), /* subtitle= */ base::string16());
+        this, CreateDeviceIcon(device->device_type()),
+        base::UTF8ToUTF16(device->client_name()),
+        /* subtitle= */ base::string16());
     dialog_button->SetEnabled(true);
     dialog_button->set_tag(tag++);
     dialog_buttons_.push_back(AddChildView(std::move(dialog_button)));

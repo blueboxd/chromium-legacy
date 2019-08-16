@@ -113,6 +113,7 @@ static_library("cdm_paths") {
   ]
   deps = [
     "//base",
+    "//media:media_buildflags",
   ]
 }
 
@@ -148,6 +149,7 @@ source_set("unit_tests") {
   if (enable_library_cdms) {
     sources += [
       "cdm_adapter_unittest.cc",
+      "cdm_paths_unittest.cc",
       "external_clear_key_test_helper.cc",
       "external_clear_key_test_helper.h",
       "mock_helpers.cc",

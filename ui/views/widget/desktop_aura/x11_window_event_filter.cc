@@ -8,7 +8,8 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/hit_test.h"
+#include "ui/base/hit_test_x11.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -20,22 +21,6 @@
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
-
-namespace {
-
-// These constants are defined in the Extended Window Manager Hints
-// standard...and aren't in any header that I can find.
-constexpr int k_NET_WM_MOVERESIZE_SIZE_TOPLEFT = 0;
-constexpr int k_NET_WM_MOVERESIZE_SIZE_TOP = 1;
-constexpr int k_NET_WM_MOVERESIZE_SIZE_TOPRIGHT = 2;
-constexpr int k_NET_WM_MOVERESIZE_SIZE_RIGHT = 3;
-constexpr int k_NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT = 4;
-constexpr int k_NET_WM_MOVERESIZE_SIZE_BOTTOM = 5;
-constexpr int k_NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT = 6;
-constexpr int k_NET_WM_MOVERESIZE_SIZE_LEFT = 7;
-constexpr int k_NET_WM_MOVERESIZE_MOVE = 8;
-
-}  // namespace
 
 namespace views {
 
@@ -67,61 +52,12 @@ void X11WindowEventFilter::LowerWindow() {
 bool X11WindowEventFilter::DispatchHostWindowDragMovement(
     int hittest,
     const gfx::Point& screen_location) {
-  int direction = -1;
-  switch (hittest) {
-    case HTBOTTOM:
-      direction = k_NET_WM_MOVERESIZE_SIZE_BOTTOM;
-      break;
-    case HTBOTTOMLEFT:
-      direction = k_NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT;
-      break;
-    case HTBOTTOMRIGHT:
-      direction = k_NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT;
-      break;
-    case HTCAPTION:
-      direction = k_NET_WM_MOVERESIZE_MOVE;
-      break;
-    case HTLEFT:
-      direction = k_NET_WM_MOVERESIZE_SIZE_LEFT;
-      break;
-    case HTRIGHT:
-      direction = k_NET_WM_MOVERESIZE_SIZE_RIGHT;
-      break;
-    case HTTOP:
-      direction = k_NET_WM_MOVERESIZE_SIZE_TOP;
-      break;
-    case HTTOPLEFT:
-      direction = k_NET_WM_MOVERESIZE_SIZE_TOPLEFT;
-      break;
-    case HTTOPRIGHT:
-      direction = k_NET_WM_MOVERESIZE_SIZE_TOPRIGHT;
-      break;
-    default:
-      return false;
-  }
+  int direction = ui::HitTestToWmMoveResizeDirection(hittest);
+  if (direction == -1)
+    return false;
 
-  // We most likely have an implicit grab right here. We need to dump it
-  // because what we're about to do is tell the window manager
-  // that it's now responsible for moving the window around; it immediately
-  // grabs when it receives the event below.
-  XUngrabPointer(xdisplay_, x11::CurrentTime);
-
-  XEvent event;
-  memset(&event, 0, sizeof(event));
-  event.xclient.type = ClientMessage;
-  event.xclient.display = xdisplay_;
-  event.xclient.window = xwindow_;
-  event.xclient.message_type = gfx::GetAtom("_NET_WM_MOVERESIZE");
-  event.xclient.format = 32;
-  event.xclient.data.l[0] = screen_location.x();
-  event.xclient.data.l[1] = screen_location.y();
-  event.xclient.data.l[2] = direction;
-  event.xclient.data.l[3] = 0;
-  event.xclient.data.l[4] = 0;
-
-  XSendEvent(xdisplay_, x_root_window_, x11::False,
-             SubstructureRedirectMask | SubstructureNotifyMask, &event);
-
+  ui::DoWMMoveResize(xdisplay_, x_root_window_, xwindow_, screen_location,
+                     direction);
   return true;
 }
 

@@ -166,6 +166,8 @@ source_set("automation_client_lib") {
     "log_replay/replay_http_client.h",
     "net/adb_client_socket.cc",
     "net/adb_client_socket.h",
+    "net/command_id.cc",
+    "net/command_id.h",
     "net/net_util.cc",
     "net/net_util.h",
     "net/sync_websocket.h",

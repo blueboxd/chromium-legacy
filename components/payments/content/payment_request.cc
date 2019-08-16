@@ -437,7 +437,7 @@ void PaymentRequest::Complete(mojom::PaymentComplete result) {
   }
 }
 
-void PaymentRequest::CanMakePayment(bool legacy_mode) {
+void PaymentRequest::CanMakePayment() {
   if (!IsInitialized()) {
     log_.Error(errors::kCannotCallCanMakePaymentWithoutInit);
     OnConnectionTerminated();
@@ -451,12 +451,11 @@ void PaymentRequest::CanMakePayment(bool legacy_mode) {
 
   if (!delegate_->GetPrefService()->GetBoolean(kCanMakePaymentEnabled) ||
       !state_) {
-    CanMakePaymentCallback(legacy_mode, /*can_make_payment=*/false);
+    CanMakePaymentCallback(/*can_make_payment=*/false);
   } else {
     state_->CanMakePayment(
-        legacy_mode,
         base::BindOnce(&PaymentRequest::CanMakePaymentCallback,
-                       weak_ptr_factory_.GetWeakPtr(), legacy_mode));
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -700,31 +699,10 @@ void PaymentRequest::RecordFirstAbortReason(
   }
 }
 
-void PaymentRequest::CanMakePaymentCallback(bool legacy_mode,
-                                            bool can_make_payment) {
-  // Only need to enforce query quota in legacy mode. Per-method quota not
-  // supported.
-  if (legacy_mode && spec_ &&
-      !CanMakePaymentQueryFactory::GetInstance()
-           ->GetForContext(web_contents_->GetBrowserContext())
-           ->CanQuery(top_level_origin_, frame_origin_,
-                      spec_->stringified_method_data(),
-                      /*per_method_quota=*/false)) {
-    if (UrlUtil::IsLocalDevelopmentUrl(frame_origin_)) {
-      client_->OnCanMakePayment(
-          can_make_payment
-              ? CanMakePaymentQueryResult::WARNING_CAN_MAKE_PAYMENT
-              : CanMakePaymentQueryResult::WARNING_CANNOT_MAKE_PAYMENT);
-    } else {
-      client_->OnCanMakePayment(
-          CanMakePaymentQueryResult::QUERY_QUOTA_EXCEEDED);
-    }
-  } else {
-    client_->OnCanMakePayment(
-        can_make_payment
-            ? mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT
-            : mojom::CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT);
-  }
+void PaymentRequest::CanMakePaymentCallback(bool can_make_payment) {
+  client_->OnCanMakePayment(
+      can_make_payment ? mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT
+                       : mojom::CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT);
 
   journey_logger_.SetCanMakePaymentValue(can_make_payment);
 

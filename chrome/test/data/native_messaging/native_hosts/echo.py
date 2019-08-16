@@ -28,6 +28,7 @@ def ParseArgs():
   parser = argparse.ArgumentParser()
   parser.add_argument('--parent-window', type=int)
   parser.add_argument('--reconnect-command')
+  parser.add_argument('--native-messaging-connect-id')
   parser.add_argument('origin')
   return parser.parse_args()
 
@@ -94,7 +95,7 @@ def Main():
 
     message = json.dumps({
         'id': message_number, 'echo': text, 'caller_url': caller_url,
-        'args': reconnect_args
+        'args': reconnect_args, 'connect_id': args.native_messaging_connect_id,
     }).encode('utf-8')
     if not WriteMessage(message):
       break

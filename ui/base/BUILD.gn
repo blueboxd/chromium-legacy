@@ -63,6 +63,20 @@ buildflag_header("buildflags") {
   ]
 }
 
+source_set("hit_test") {
+  sources = [
+    "hit_test.cc",
+    "hit_test.h",
+  ]
+
+  if (use_x11 || use_ozone) {
+    sources += [
+      "hit_test_x11.cc",
+      "hit_test_x11.h",
+    ]
+  }
+}
+
 jumbo_component("base") {
   output_name = "ui_base"
 
@@ -166,8 +180,6 @@ jumbo_component("base") {
     "dragdrop/os_exchange_data_provider_mac.mm",
     "dragdrop/os_exchange_data_provider_win.cc",
     "dragdrop/os_exchange_data_provider_win.h",
-    "hit_test.cc",
-    "hit_test.h",
     "l10n/formatter.cc",
     "l10n/formatter.h",
     "l10n/l10n_font_util.cc",
@@ -386,6 +398,7 @@ jumbo_component("base") {
   public_deps = [
     ":buildflags",
     ":features",
+    ":hit_test",
     ":ui_data_pack",
     "//base",
     "//skia",

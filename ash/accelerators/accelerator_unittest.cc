@@ -68,15 +68,9 @@ class AcceleratorTest : public AshTestBase, public OverviewObserver {
     AshTestBase::SetUp();
 
     Shell::Get()->overview_controller()->AddObserver(this);
-
-    chromeos::shill_clients::InitializeFakes();
-    chromeos::NetworkHandler::Initialize();
   }
 
   void TearDown() override {
-    chromeos::NetworkHandler::Shutdown();
-    chromeos::shill_clients::Shutdown();
-
     Shell::Get()->overview_controller()->RemoveObserver(this);
 
     AshTestBase::TearDown();

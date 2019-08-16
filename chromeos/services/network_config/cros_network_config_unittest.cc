@@ -658,9 +658,10 @@ TEST_F(CrosNetworkConfigTest, DeviceListChanged) {
   helper().network_state_handler()->SetTechnologyEnabled(
       NetworkTypePattern::WiFi(), false, network_handler::ErrorCallback());
   base::RunLoop().RunUntilIdle();
-  // This will trigger two device list updates. Once when wifi is disabled,
-  // and once when Device::available_managed_network_path_ changes.
-  EXPECT_EQ(2, observer()->device_state_list_changed());
+  // This will trigger three device list updates. First when wifi is in the
+  // disabling state, next when it's actually disabled, and lastly when
+  // Device::available_managed_network_path_ changes.
+  EXPECT_EQ(3, observer()->device_state_list_changed());
 }
 
 TEST_F(CrosNetworkConfigTest, ActiveNetworksChanged) {

@@ -199,6 +199,7 @@ ServiceWorkerPaymentInstrument::CreateCanMakePaymentEventData() {
 
 void ServiceWorkerPaymentInstrument::OnCanMakePaymentEventSkipped(
     ValidateCanMakePaymentCallback callback) {
+  // |can_make_payment| is true as long as there is a matching payment handler.
   can_make_payment_result_ = true;
   has_enrolled_instrument_result_ = false;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -209,16 +210,9 @@ void ServiceWorkerPaymentInstrument::OnCanMakePaymentEventSkipped(
 void ServiceWorkerPaymentInstrument::OnCanMakePaymentEventResponded(
     ValidateCanMakePaymentCallback callback,
     bool result) {
-  // If hasEnrolledInstrument is supported, always return true for
-  // canMakePayment for any matching payment handler.
-  if (base::FeatureList::IsEnabled(
-          ::features::kPaymentRequestHasEnrolledInstrument)) {
-    can_make_payment_result_ = true;
-    has_enrolled_instrument_result_ = result;
-  } else {
-    can_make_payment_result_ = result;
-    has_enrolled_instrument_result_ = result;
-  }
+  // |can_make_payment| is true as long as there is a matching payment handler.
+  can_make_payment_result_ = true;
+  has_enrolled_instrument_result_ = result;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), this, can_make_payment_result_));
@@ -354,11 +348,7 @@ bool ServiceWorkerPaymentInstrument::IsValidForCanMakePayment() const {
   // This instrument should not be used when can_make_payment_result_ is false,
   // so this interface should not be invoked.
   DCHECK(can_make_payment_result_);
-  if (base::FeatureList::IsEnabled(
-          ::features::kPaymentRequestHasEnrolledInstrument)) {
-    return has_enrolled_instrument_result_;
-  }
-  return true;
+  return has_enrolled_instrument_result_;
 }
 
 void ServiceWorkerPaymentInstrument::RecordUse() {

@@ -74,13 +74,12 @@ config("compiler") {
     assert(false, "Architecture not supported")
   }
   cflags += [
-    "--target=$abi_target",
+    "--target=$abi_target$compile_api_level",
     "-isystem" +
         rebase_path("$android_ndk_root/sysroot/usr/include/$abi_target",
                     root_build_dir),
-    "-D__ANDROID_API__=$compile_api_level",
   ]
-  ldflags += [ "--target=$abi_target" ]
+  ldflags += [ "--target=$abi_target$compile_api_level" ]
 
   # TODO(crbug.com/771171): Remove this define once code that uses it has been
   # updated to no longer need it. This is leftover from older Android NDK

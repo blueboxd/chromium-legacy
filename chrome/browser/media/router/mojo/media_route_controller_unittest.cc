@@ -19,6 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::ByRef;
 using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::StrictMock;
@@ -30,7 +31,7 @@ namespace {
 constexpr char kRouteId[] = "routeId";
 
 MATCHER_P(Equals, value, "") {
-  return arg.Equals(value);
+  return arg.Equals(value.get());
 }
 
 }  // namespace
@@ -160,18 +161,18 @@ TEST_F(MediaRouteControllerTest, NotifyMediaRouteControllerObservers) {
   mojom::MediaStatus status;
   status.title = "test media status";
 
-  EXPECT_CALL(*observer_, OnMediaStatusUpdated(Equals(status)));
-  EXPECT_CALL(*observer1, OnMediaStatusUpdated(Equals(status)));
-  EXPECT_CALL(*observer2, OnMediaStatusUpdated(Equals(status)));
+  EXPECT_CALL(*observer_, OnMediaStatusUpdated(Equals(ByRef(status))));
+  EXPECT_CALL(*observer1, OnMediaStatusUpdated(Equals(ByRef(status))));
+  EXPECT_CALL(*observer2, OnMediaStatusUpdated(Equals(ByRef(status))));
   mojo_media_status_observer_->OnMediaStatusUpdated(status.Clone());
   base::RunLoop().RunUntilIdle();
 
   observer1.reset();
   auto observer3 = CreateObserver();
 
-  EXPECT_CALL(*observer_, OnMediaStatusUpdated(Equals(status)));
-  EXPECT_CALL(*observer2, OnMediaStatusUpdated(Equals(status)));
-  EXPECT_CALL(*observer3, OnMediaStatusUpdated(Equals(status)));
+  EXPECT_CALL(*observer_, OnMediaStatusUpdated(Equals(ByRef(status))));
+  EXPECT_CALL(*observer2, OnMediaStatusUpdated(Equals(ByRef(status))));
+  EXPECT_CALL(*observer3, OnMediaStatusUpdated(Equals(ByRef(status))));
   mojo_media_status_observer_->OnMediaStatusUpdated(status.Clone());
   base::RunLoop().RunUntilIdle();
 }

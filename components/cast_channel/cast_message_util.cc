@@ -60,6 +60,8 @@ const EnumTable<V2MessageType> EnumTable<V2MessageType>::instance(
         {V2MessageType::kQueueRemove, "QUEUE_REMOVE"},
         {V2MessageType::kQueueReorder, "QUEUE_REORDER"},
         {V2MessageType::kQueueUpdate, "QUEUE_UPDATE"},
+        {V2MessageType::kQueueNext, "QUEUE_NEXT"},
+        {V2MessageType::kQueuePrev, "QUEUE_PREV"},
         {V2MessageType::kSeek, "SEEK"},
         {V2MessageType::kSetVolume, "SET_VOLUME"},
         {V2MessageType::kStop, "STOP"},
@@ -467,6 +469,8 @@ bool IsMediaRequestMessageType(V2MessageType type) {
     case V2MessageType::kQueueRemove:
     case V2MessageType::kQueueReorder:
     case V2MessageType::kQueueUpdate:
+    case V2MessageType::kQueueNext:
+    case V2MessageType::kQueuePrev:
     case V2MessageType::kSeek:
     case V2MessageType::kStopMedia:
       return true;

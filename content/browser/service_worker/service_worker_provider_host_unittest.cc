@@ -61,11 +61,21 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
 
   ServiceWorkerTestContentBrowserClient() {}
 
-  bool AllowServiceWorker(
+  bool AllowServiceWorkerOnIO(
       const GURL& scope,
       const GURL& first_party,
       const GURL& script_url,
       content::ResourceContext* context,
+      base::RepeatingCallback<WebContents*()> wc_getter) override {
+    logs_.emplace_back(scope, first_party, script_url);
+    return false;
+  }
+
+  bool AllowServiceWorkerOnUI(
+      const GURL& scope,
+      const GURL& first_party,
+      const GURL& script_url,
+      content::BrowserContext* context,
       base::RepeatingCallback<WebContents*()> wc_getter) override {
     logs_.emplace_back(scope, first_party, script_url);
     return false;

@@ -129,13 +129,18 @@ class DataPipeSink {
 
 // Implementation of blink.mojom.SerialPort.
 class FakeSerialPort {
-  constructor() {}
+  constructor() {
+    this.inputSignals_ = { dcd: false, cts: false, ri: false, dsr: false };
+    this.outputSignals_ = { dtr: false, rts: false };
+  }
 
   bind(request) {
     assert_equals(this.binding, undefined, 'Port is still open');
     this.binding = new mojo.Binding(device.mojom.SerialPort,
                                     this, request);
     this.binding.setConnectionErrorHandler(() => {
+      // OS typically clears DTR on close.
+      this.outputSignals_.dtr = false;
       this.writable_.getWriter().close();
       this.binding = undefined;
     });
@@ -160,6 +165,14 @@ class FakeSerialPort {
     this.client_.onReadError(device.mojom.SerialReceiveError.PARITY_ERROR);
   }
 
+  simulateInputSignals(signals) {
+    this.inputSignals_ = signals;
+  }
+
+  get outputSignals() {
+    return this.outputSignals_;
+  }
+
   waitForErrorCleared() {
     if (this.writable_)
       return Promise.resolve();
@@ -178,6 +191,8 @@ class FakeSerialPort {
     this.client_ = client;
     this.readable_ = new ReadableStream(new DataPipeSource(in_stream));
     this.writable_ = new WritableStream(new DataPipeSink(out_stream));
+    // OS typically sets DTR on open.
+    this.outputSignals_.dtr = true;
     return { success: true };
   }
 
@@ -194,11 +209,17 @@ class FakeSerialPort {
   }
 
   async getControlSignals() {
-    return { signals: { dcd: false, cts: false, ri: false, dsr: false } };
+    return { signals: this.inputSignals_ };
   }
 
   async setControlSignals(signals) {
-    return { success: false };
+    if (signals.hasDtr) {
+      this.outputSignals_.dtr = signals.dtr;
+    }
+    if (signals.hasRts) {
+      this.outputSignals_.rts = signals.rts;
+    }
+    return { success: true };
   }
 
   async configurePort(options) {

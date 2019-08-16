@@ -553,7 +553,7 @@ void Session::CreateVideoEncodeAccelerator(
     mojo_vea.reset(new media::MojoVideoEncodeAccelerator(std::move(vea),
                                                          supported_profiles_));
   }
-  callback.Run(video_encode_thread_, std::move(mojo_vea));
+  callback.Run(base::ThreadTaskRunnerHandle::Get(), std::move(mojo_vea));
 }
 
 void Session::CreateVideoEncodeMemory(

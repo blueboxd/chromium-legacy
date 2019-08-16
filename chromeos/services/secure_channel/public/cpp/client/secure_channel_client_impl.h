@@ -9,14 +9,11 @@
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace base {
 class TaskRunner;
 }  // namespace base
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace chromeos {
 
@@ -31,7 +28,7 @@ class SecureChannelClientImpl : public SecureChannelClient {
     static void SetInstanceForTesting(Factory* test_factory);
     virtual ~Factory();
     virtual std::unique_ptr<SecureChannelClient> BuildInstance(
-        service_manager::Connector* connector,
+        mojo::PendingRemote<mojom::SecureChannel> channel,
         scoped_refptr<base::TaskRunner> task_runner =
             base::ThreadTaskRunnerHandle::Get());
 
@@ -44,7 +41,7 @@ class SecureChannelClientImpl : public SecureChannelClient {
  private:
   friend class SecureChannelClientImplTest;
 
-  SecureChannelClientImpl(service_manager::Connector* connector,
+  SecureChannelClientImpl(mojo::PendingRemote<mojom::SecureChannel> channel,
                           scoped_refptr<base::TaskRunner> task_runner);
 
   // SecureChannelClient:
@@ -78,7 +75,7 @@ class SecureChannelClientImpl : public SecureChannelClient {
 
   scoped_refptr<base::TaskRunner> task_runner_;
 
-  base::WeakPtrFactory<SecureChannelClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<SecureChannelClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SecureChannelClientImpl);
 };

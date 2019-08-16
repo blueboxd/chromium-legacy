@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.components.module_installer.ModuleInterface;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Interface to get access to components concerning tab management.
@@ -29,9 +30,12 @@ public interface TabManagementDelegate {
      * Create the {@link TasksSurface}
      * @param activity The {@link ChromeActivity} that creates this surface.
      * @param isTabCarousel Whether show the Tabs in carousel mode.
+     * @param propertyModel The {@link PropertyModel} contains the {@link TasksSurfaceProperties} to
+     *         communicate with this surface.
      * @return The {@TasksSurface}.
      */
-    TasksSurface createTasksSurface(ChromeActivity activity, boolean isTabCarousel);
+    TasksSurface createTasksSurface(
+            ChromeActivity activity, boolean isTabCarousel, PropertyModel propertyModel);
 
     /**
      * Create the {@link TabSwitcher} to display Tabs in grid.

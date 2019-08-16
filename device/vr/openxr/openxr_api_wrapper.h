@@ -12,9 +12,10 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "device/vr/vr_export.h"
-#include "third_party/openxr/include/openxr/openxr.h"
-#include "third_party/openxr/include/openxr/openxr_platform.h"
+#include "third_party/openxr/src/include/openxr/openxr.h"
+#include "third_party/openxr/src/include/openxr/openxr_platform.h"
 
 namespace gfx {
 class Quaternion;
@@ -45,8 +46,8 @@ class OpenXrApiWrapper {
   XrResult BeginFrame(Microsoft::WRL::ComPtr<ID3D11Texture2D>* texture);
   XrResult EndFrame();
 
-  XrResult GetHeadPose(gfx::Quaternion* orientation,
-                       gfx::Point3F* position) const;
+  XrResult GetHeadPose(base::Optional<gfx::Quaternion>* orientation,
+                       base::Optional<gfx::Point3F>* position) const;
 
   XrTime GetPredictedDisplayTime() const;
 
@@ -73,7 +74,7 @@ class OpenXrApiWrapper {
       std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper);
 
   XrResult BeginSession();
-  XrResult UpdateProjectionLayers(XrTime predicted_display_time);
+  XrResult UpdateProjectionLayers();
 
   bool HasInstance() const;
   bool HasSystem() const;

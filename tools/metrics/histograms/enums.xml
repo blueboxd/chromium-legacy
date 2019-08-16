@@ -2147,6 +2147,9 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Settings"/>
   <int value="2" label="ContinueReading"/>
   <int value="3" label="Camera"/>
+  <int value="4" label="Discover"/>
+  <int value="5" label="PluginVm"/>
+  <int value="6" label="ReleaseNotes"/>
 </enum>
 
 <enum name="AppListLaunchedFrom">
@@ -4551,6 +4554,7 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="ImmediateDarkeningThresholdExceeded"/>
   <int value="3" label="BrightneningThresholdExceeded"/>
   <int value="4" label="DarkeningThresholdExceeded"/>
+  <int value="5" label="UpdateAfterLidReopen"/>
 </enum>
 
 <enum name="AutoScreenBrightnessBrightnessMonitorStatus">
@@ -4584,6 +4588,7 @@ Unknown properties are collapsed to zero. -->
   <int value="7" label="MinimalAlsChange"/>
   <int value="8" label="MissingPersonalCurve"/>
   <int value="9" label="WaitingForTrainedPersonalCurve"/>
+  <int value="10" label="WaitingForReopenAls"/>
 </enum>
 
 <enum name="AutoScreenBrightnessParameterError">
@@ -18741,7 +18746,7 @@ Called by update_net_error_codes.py.-->
   <int value="343"
       label="DELETED_TYPES_PRIVATE_CHROME_DIRECT_SETTING_ON_CHANGE"/>
   <int value="344" label="WEB_VIEW_INTERNAL_ON_MESSAGE"/>
-  <int value="345" label="EXTENSION_VIEW_INTERNAL_ON_LOAD_COMMIT"/>
+  <int value="345" label="DELETED_EXTENSION_VIEW_INTERNAL_ON_LOAD_COMMIT"/>
   <int value="346" label="RUNTIME_ON_REQUEST"/>
   <int value="347" label="RUNTIME_ON_REQUEST_EXTERNAL"/>
   <int value="348" label="CHROME_WEB_VIEW_INTERNAL_ON_CONTEXT_MENU_SHOW"/>
@@ -19845,7 +19850,7 @@ Called by update_net_error_codes.py.-->
   <int value="951" label="FILESYSTEMPROVIDER_GET"/>
   <int value="952" label="FILEMANAGERPRIVATE_SEARCHFILESBYHASHES"/>
   <int value="953" label="DELETED_EASYUNLOCKPRIVATE_SHOWERRORBUBBLE"/>
-  <int value="954" label="EXTENSIONVIEWINTERNAL_NAVIGATE"/>
+  <int value="954" label="DELETED_EXTENSIONVIEWINTERNAL_NAVIGATE"/>
   <int value="955" label="NETWORKING_CONFIG_SETNETWORKFILTER"/>
   <int value="956" label="NETWORKING_CONFIG_FINISHAUTHENTICATION"/>
   <int value="957" label="PLATFORMKEYSINTERNAL_SELECTCLIENTCERTIFICATES"/>
@@ -19950,8 +19955,8 @@ Called by update_net_error_codes.py.-->
   <int value="1052" label="WEBCAMPRIVATE_CLOSEWEBCAM"/>
   <int value="1053" label="SERIAL_SETBREAK"/>
   <int value="1054" label="SERIAL_CLEARBREAK"/>
-  <int value="1055" label="EXTENSIONVIEWINTERNAL_LOADSRC"/>
-  <int value="1056" label="EXTENSIONVIEWINTERNAL_PARSESRC"/>
+  <int value="1055" label="DELETED_EXTENSIONVIEWINTERNAL_LOADSRC"/>
+  <int value="1056" label="DELETED_EXTENSIONVIEWINTERNAL_PARSESRC"/>
   <int value="1057" label="HID_GETUSERSELECTEDDEVICES"/>
   <int value="1058"
       label="FILESYSTEMPROVIDERINTERNAL_GETACTIONSREQUESTEDSUCCESS"/>
@@ -20288,6 +20293,7 @@ Called by update_net_error_codes.py.-->
   <int value="1373" label="LOGINSCREENSTORAGE_RETRIEVECREDENTIALS"/>
   <int value="1374" label="AUTOTESTPRIVATE_GETARCAPPWINDOWSTATE"/>
   <int value="1375" label="AUTOTESTPRIVATE_GETARCAPPWINDOWINFO"/>
+  <int value="1376" label="AUTOTESTPRIVATE_GETALLINSTALLEDAPPS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -34578,6 +34584,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1560729847" label="AutofillCacheQueryResponses:enabled"/>
   <int value="-1560650271" label="WasmCodeCache:disabled"/>
   <int value="-1559789642" label="RunAllFlashInAllowMode:enabled"/>
+  <int value="-1557747651" label="FractionalScrollOffsets:disabled"/>
   <int value="-1557527869" label="LoadingWithMojo:disabled"/>
   <int value="-1555510175" label="PasswordImport:enabled"/>
   <int value="-1553477903" label="ash-disable-text-filtering-in-overview-mode"/>
@@ -36476,6 +36483,7 @@ from previous Chrome versions.
   <int value="1079032226" label="ParallelDownloading:enabled"/>
   <int value="1081546525" label="ash-enable-docked-windows"/>
   <int value="1082054180" label="PersistentWindowBounds:disabled"/>
+  <int value="1083020187" label="FractionalScrollOffsets:enabled"/>
   <int value="1083201516" label="PersistentWindowBounds:enabled"/>
   <int value="1084972292" label="WebXRAnchors:enabled"/>
   <int value="1085130793" label="LongPressBackForHistory:disabled"/>
@@ -37970,7 +37978,7 @@ from previous Chrome versions.
 </enum>
 
 <enum name="MappedCSSProperties">
-<!-- Generated from third_party/blink/renderer/core/frame/use_counter_helper.cc.
+<!-- Generated from third_party/blink/public/mojom/use_counter/css_property_id.mojom.
 Called by update_use_counter_css.py.-->
 
   <int value="1" label="Total Pages Measured"/>
@@ -49649,6 +49657,38 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="SPDY 3.0"/>
   <int value="4" label="SPDY 3.1"/>
   <int value="5" label="SPDY 4.0"/>
+</enum>
+
+<enum name="ProtoDatabaseInitState">
+  <summary>
+    Track the failure and success states of proto database migration.
+  </summary>
+  <int value="0" label="Shared DB init attempted"/>
+  <int value="1" label="Failed: unique DB corruption"/>
+  <int value="2" label="Failed: missing provider"/>
+  <int value="3" label="Failed: open for both unqiue and shared"/>
+  <int value="4" label="Failed: Shared DB client is missing"/>
+  <int value="5" label="Success: Unique DB, no shared db present"/>
+  <int value="6" label="Failed: Shared DB failed to open"/>
+  <int value="7" label="Success: Shared DB no unique db present"/>
+  <int value="8" label="Failed: Unique DB open failed"/>
+  <int value="9" label="Migration to shared attempted"/>
+  <int value="10" label="Migration to unique attempted"/>
+  <int value="11" label="Success: opened migrated shared DB"/>
+  <int value="12" label="Success: failed to delete old data"/>
+  <int value="13" label="Success: failed to migrate, using unique"/>
+  <int value="14" label="Success: failed to migrate, using shared"/>
+  <int value="15" label="Success: migrated to shared, deletion failed"/>
+  <int value="16" label="Success: migrated to unique, deletion failed"/>
+  <int value="17" label="Success: migrated to shared"/>
+  <int value="18" label="Success: migrated to unique"/>
+  <int value="19" label="Legacy init called"/>
+  <int value="20" label="Shared metadata db open failed"/>
+  <int value="21" label="Shared metadata write failed"/>
+  <int value="22" label="Shared db corruption for client"/>
+  <int value="23" label="Shared db client created"/>
+  <int value="24" label="Shared leveldb failed to open"/>
+  <int value="25" label="Shared leveldb does not exist"/>
 </enum>
 
 <enum name="ProvisionalLoadEvent">

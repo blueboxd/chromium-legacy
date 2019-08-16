@@ -369,7 +369,8 @@ public class MediaNotificationManager {
         @VisibleForTesting
         void stopListenerService() {
             // Call stopForeground to guarantee  Android unset the foreground bit.
-            stopForeground(true /* removeNotification */);
+            ForegroundServiceUtils.getInstance().stopForeground(
+                    this, Service.STOP_FOREGROUND_REMOVE);
             stopSelf();
         }
 
@@ -893,7 +894,8 @@ public class MediaNotificationManager {
             mMediaSession = null;
         }
         if (mService != null) {
-            mService.stopForeground(true /* removeNotification */);
+            ForegroundServiceUtils.getInstance().stopForeground(
+                    mService, Service.STOP_FOREGROUND_REMOVE);
             mService.stopSelf();
         }
         mMediaNotificationInfo = null;
@@ -906,7 +908,8 @@ public class MediaNotificationManager {
     }
 
     @NonNull
-    private MediaMetadataCompat createMetadata() {
+    @VisibleForTesting
+    MediaMetadataCompat createMetadata() {
         // Can't return null as {@link MediaSessionCompat#setMetadata()} will crash in some versions
         // of the Android compat library.
         MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
@@ -929,6 +932,10 @@ public class MediaNotificationManager {
             metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART,
                                       mMediaNotificationInfo.mediaSessionImage);
         }
+        if (mMediaNotificationInfo.mediaPosition != null) {
+            metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION,
+                    mMediaNotificationInfo.mediaPosition.getDuration());
+        }
 
         return metadataBuilder.build();
     }
@@ -940,7 +947,8 @@ public class MediaNotificationManager {
         if (mMediaNotificationInfo == null) {
             if (serviceStarting) {
                 finishStartingForegroundService(mService);
-                mService.stopForeground(true /* removeNotification */);
+                ForegroundServiceUtils.getInstance().stopForeground(
+                        mService, Service.STOP_FOREGROUND_REMOVE);
             }
             return;
         }
@@ -964,8 +972,8 @@ public class MediaNotificationManager {
         // While the service is in foreground, the associated notification can't be swipped away.
         // Moving it back to background allows the user to remove the notification.
         if (mMediaNotificationInfo.supportsSwipeAway() && mMediaNotificationInfo.isPaused) {
-            mService.stopForeground(false /* removeNotification */);
-
+            ForegroundServiceUtils.getInstance().stopForeground(
+                    mService, Service.STOP_FOREGROUND_DETACH);
             NotificationManagerProxy manager = new NotificationManagerProxyImpl(getContext());
             manager.notify(notification);
         } else if (!foregroundedService) {
@@ -1041,17 +1049,27 @@ public class MediaNotificationManager {
 
         mMediaSession.setMetadata(createMetadata());
 
+        mMediaSession.setPlaybackState(createPlaybackState());
+    }
+
+    @VisibleForTesting
+    PlaybackStateCompat createPlaybackState() {
         PlaybackStateCompat.Builder playbackStateBuilder =
                 new PlaybackStateCompat.Builder().setActions(computeMediaSessionActions());
-        if (mMediaNotificationInfo.isPaused) {
-            playbackStateBuilder.setState(PlaybackStateCompat.STATE_PAUSED,
-                    PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
+
+        int state = mMediaNotificationInfo.isPaused ? PlaybackStateCompat.STATE_PAUSED
+                                                    : PlaybackStateCompat.STATE_PLAYING;
+
+        if (mMediaNotificationInfo.mediaPosition != null) {
+            playbackStateBuilder.setState(state, mMediaNotificationInfo.mediaPosition.getPosition(),
+                    mMediaNotificationInfo.mediaPosition.getPlaybackRate(),
+                    mMediaNotificationInfo.mediaPosition.getLastUpdatedTime());
         } else {
-            // If notification only supports stop, still pretend
-            playbackStateBuilder.setState(PlaybackStateCompat.STATE_PLAYING,
-                    PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
+            playbackStateBuilder.setState(
+                    state, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
         }
-        mMediaSession.setPlaybackState(playbackStateBuilder.build());
+
+        return playbackStateBuilder.build();
     }
 
     private long computeMediaSessionActions() {

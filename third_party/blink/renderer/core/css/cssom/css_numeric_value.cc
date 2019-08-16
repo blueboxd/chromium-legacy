@@ -127,11 +127,23 @@ CSSNumericValue* CalcToNumericValue(const CSSMathExpressionNode& root) {
     return CSSMathSum::Create(std::move(values));
   }
 
-  // When the node is a binary operator, we return either a CSSMathSum or a
-  // CSSMathProduct.
-  DCHECK(root.IsBinaryOperation());
   CSSNumericValueVector values;
 
+  // When the node is a variadic operation, we return either a CSSMathMin or a
+  // CSSMathMax.
+  if (root.IsVariadicOperation()) {
+    const auto& node = To<CSSMathExpressionVariadicOperation>(root);
+    for (const auto& operand : node.GetOperands())
+      values.push_back(CalcToNumericValue(*operand));
+    if (node.OperatorType() == CSSMathOperator::kMin)
+      return CSSMathMin::Create(std::move(values));
+    DCHECK(node.OperatorType() == CSSMathOperator::kMax);
+    return CSSMathMax::Create(std::move(values));
+  }
+
+  DCHECK(root.IsBinaryOperation());
+  // When the node is a binary operator, we return either a CSSMathSum or a
+  // CSSMathProduct.
   // For cases like calc(1 + 2 + 3), the calc expression tree looks like:
   //       +     //
   //      / \    //
@@ -237,12 +249,15 @@ CSSNumericValue* CSSNumericValue::parse(const String& css_text,
     }
     case kFunctionToken:
       if (range.Peek().FunctionId() == CSSValueID::kCalc ||
-          range.Peek().FunctionId() == CSSValueID::kWebkitCalc) {
+          range.Peek().FunctionId() == CSSValueID::kWebkitCalc ||
+          (RuntimeEnabledFeatures::CSSComparisonFunctionsEnabled() &&
+           (range.Peek().FunctionId() == CSSValueID::kMin ||
+            range.Peek().FunctionId() == CSSValueID::kMax))) {
+        // TODO(crbug.com/825895): Support clamp() after min()/max() are done.
         CSSMathExpressionNode* expression =
             CSSMathExpressionNode::ParseCalc(range);
-        if (!expression)
-          break;
-        return CalcToNumericValue(*expression);
+        if (expression)
+          return CalcToNumericValue(*expression);
       }
       break;
     default:

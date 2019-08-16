@@ -1215,32 +1215,6 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
 
   ValidateStateStack();
 
-  // Heuristic for disabling acceleration based on anticipated texture upload
-  // overhead.
-  // See comments in canvas_heuristic_parameters.h for explanation.
-  if (CanCreateCanvas2dResourceProvider() && IsAccelerated() &&
-      !image_source->IsAccelerated() &&
-      !base::FeatureList::IsEnabled(features::kAlwaysAccelerateCanvas)) {
-    float src_area = src_rect.Width() * src_rect.Height();
-    if (src_area >
-        canvas_heuristic_parameters::kDrawImageTextureUploadHardSizeLimit) {
-      this->DisableAcceleration();
-    } else if (src_area > canvas_heuristic_parameters::
-                              kDrawImageTextureUploadSoftSizeLimit) {
-      SkRect bounds = dst_rect;
-      SkMatrix ctm = DrawingCanvas()->getTotalMatrix();
-      ctm.mapRect(&bounds);
-      float dst_area = dst_rect.Width() * dst_rect.Height();
-      if (src_area >
-          dst_area * canvas_heuristic_parameters::
-                         kDrawImageTextureUploadSoftSizeLimitScaleThreshold) {
-        this->DisableAcceleration();
-      }
-    }
-  }
-
-  ValidateStateStack();
-
   if (!origin_tainted_by_content_ && WouldTaintOrigin(image_source))
     SetOriginTaintedByContent();
 
@@ -1630,12 +1604,6 @@ ImageData* BaseRenderingContext2D::getImageData(
           snapshot, contents, image_data_rect, color_params, IsAccelerated())) {
     exception_state.ThrowRangeError("Out of memory at ImageData creation");
     return nullptr;
-  }
-
-  if (!!snapshot) {
-    // If source image is not null, the ConvertToArrayBufferContents function
-    // must have invoked SkImage::readPixels.
-    DidInvokeGPUReadbackInCurrentFrame();
   }
 
   NeedsFinalizeFrame();

@@ -101,7 +101,7 @@ int IdentifiersFactory::IntIdForNode(Node* node) {
 
 // static
 String IdentifiersFactory::AddProcessIdPrefixTo(uint64_t id) {
-  uint32_t process_id = base::GetUniqueIdForProcess();
+  uint32_t process_id = base::GetUniqueIdForProcess().GetUnsafeValue();
 
   StringBuilder builder;
 

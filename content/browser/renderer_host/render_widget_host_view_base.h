@@ -300,11 +300,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   virtual void OnDidNotProduceFrame(const viz::BeginFrameAck& ack) {}
 
-  // This method exists to allow removing of displayed graphics, after a new
-  // page has been loaded, to prevent the displayed URL from being out of sync
-  // with what is visible on screen.
-  virtual void ClearCompositorFrame() = 0;
-
   // This method will reset the fallback to the first surface after navigation.
   virtual void ResetFallbackToFirstNavigationSurface() = 0;
 

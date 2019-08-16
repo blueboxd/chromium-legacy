@@ -1004,6 +1004,11 @@ const char kFilteringScrollPredictionName[] = "Filtering scroll prediction";
 const char kFilteringScrollPredictionDescription[] =
     "Enable filtering of predicted scroll events";
 
+const char kFractionalScrollOffsetsName[] = "Fractional Scroll Offsets";
+const char kFractionalScrollOffsetsDescription[] =
+    "Enables fractional scroll offsets inside Blink, exposing non-integer "
+    "offsets to web APIs.";
+
 const char kForceEffectiveConnectionTypeName[] =
     "Override effective connection type";
 const char kForceEffectiveConnectionTypeDescription[] =

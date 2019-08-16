@@ -1692,6 +1692,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
   TabStripModel* tab_strip = browser->tab_strip_model();
 
   // Simulate being offline.
+  net::NetworkChangeNotifier::DisableForTest net_change_notifier_disabler_;
   FakeOfflineNetworkChangeNotifier fake_offline_state;
 
   tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);

@@ -2045,7 +2045,7 @@ bool ServiceWorkerVersion::IsStartWorkerAllowed() const {
   // tab, pass a null callback as WebContents getter.
   // resource_context() can return null in unit tests.
   if ((context_->wrapper()->resource_context() &&
-       !GetContentClient()->browser()->AllowServiceWorker(
+       !GetContentClient()->browser()->AllowServiceWorkerOnIO(
            scope_, scope_, script_url_, context_->wrapper()->resource_context(),
            base::NullCallback()))) {
     return false;

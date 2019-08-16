@@ -1582,8 +1582,7 @@ def main(argv):
 
     # Exclude dex files from the test apk that exist within the apk under test.
     # TODO(agrieve): When proguard is enabled, this filtering logic happens
-    #     within proguard_util.py. Move the logic for the proguard case into
-    #     here as well.
+    #     within proguard.py. Move the logic for the proguard case to here.
     tested_apk_library_deps = tested_apk_deps.All('java_library')
     tested_apk_deps_dex_files = [c['dex_path'] for c in tested_apk_library_deps]
     deps_dex_files = [

@@ -242,7 +242,7 @@ class PolicyJson(skeleton_gatherer.SkeletonGatherer):
     '''
     for item_count, (item1) in enumerate(items, 1):
       self._AddIndentedNontranslateableChunk(depth, "{\n")
-      keys = item1.keys()
+      keys = sorted(item1.keys())
       for keys_count, (key) in enumerate(keys, 1):
         if key == 'items':
           self._AddIndentedNontranslateableChunk(depth + 1, "\"items\": [\n")

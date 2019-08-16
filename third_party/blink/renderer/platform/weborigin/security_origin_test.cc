@@ -865,7 +865,7 @@ TEST_F(SecurityOriginTest, NonStandardSchemeWithAndroidWebViewHack) {
   EXPECT_EQ("cow", origin->Protocol());
   EXPECT_EQ("", origin->Host());
   EXPECT_EQ(0, origin->Port());
-  url::Shutdown();
+  url::ResetForTests();
 }
 
 TEST_F(SecurityOriginTest, OpaqueIsolatedCopy) {

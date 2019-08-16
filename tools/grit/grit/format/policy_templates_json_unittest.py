@@ -151,13 +151,10 @@ class PolicyTemplatesJsonUnittest(unittest.TestCase):
   "policy_definitions": [
     {
       "caption": "%s",
+      "desc": "Th\xefP\xefs p\xf4P\xf4l\xefP\xefc\xfdP\xfd d\xf4\xe9P\xf4\xe9s st\xfcP\xfcff.",
+      "example_value": true,
       "features": {"can_be_recommended": true, "dynamic_refresh": true},
       "name": "MainPolicy",
-      "tags": [],
-      "desc": "Th\xefP\xefs p\xf4P\xf4l\xefP\xefc\xfdP\xfd d\xf4\xe9P\xf4\xe9s st\xfcP\xfcff.",
-      "type": "main",
-      "example_value": true,
-      "supported_on": ["chrome_os:29-"],
       "schema": {
         "properties": {
           "default_launch_container": {
@@ -173,7 +170,10 @@ class PolicyTemplatesJsonUnittest(unittest.TestCase):
           }
         },
         "type": "object"
-      }
+      },
+      "supported_on": ["chrome_os:29-"],
+      "tags": [],
+      "type": "main"
     }
   ],
   "policy_atomic_group_definitions": [

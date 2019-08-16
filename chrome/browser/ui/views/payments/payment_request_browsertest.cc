@@ -268,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
 IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
                        BasicCard_NoNetworksSpecified) {
   NavigateTo("/payment_request_payment_method_identifier_test.html");
-  InvokePaymentRequestWithJs("buyBasicCard();");
+  InvokePaymentRequestWithJs("buyHelper([basicCardMethod]);");
 
   std::vector<PaymentRequest*> requests =
       GetPaymentRequests(GetActiveWebContents());

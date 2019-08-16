@@ -8,7 +8,7 @@
 
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/sharing/sharing_device_info.h"
+#include "chrome/browser/sharing/sharing_device_capability.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "components/sync_device_info/device_info.h"
@@ -34,7 +34,7 @@ SharedClipboardUiController::~SharedClipboardUiController() = default;
 
 void SharedClipboardUiController::OnDeviceSelected(
     const base::string16& text,
-    const SharingDeviceInfo& device) {
+    const syncer::DeviceInfo& device) {
   text_ = text;
   OnDeviceChosen(device);
 }
@@ -64,7 +64,7 @@ SharingDialog* SharedClipboardUiController::DoShowDialog(
 }
 
 void SharedClipboardUiController::OnDeviceChosen(
-    const SharingDeviceInfo& device) {
+    const syncer::DeviceInfo& device) {
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_shared_clipboard_message()->set_text(
       base::UTF16ToUTF8(text_));

@@ -13,7 +13,6 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
-#include "content/common/renderer.mojom.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/fake_network_url_loader_factory.h"
@@ -23,75 +22,6 @@
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 
 namespace content {
-
-class EmbeddedWorkerTestHelper::MockRendererInterface : public mojom::Renderer {
- public:
-  // |helper| must outlive this.
-  explicit MockRendererInterface(EmbeddedWorkerTestHelper* helper)
-      : helper_(helper) {}
-
-  void AddBinding(mojom::RendererAssociatedRequest request) {
-    bindings_.AddBinding(this, std::move(request));
-  }
-
- private:
-  void CreateView(mojom::CreateViewParamsPtr) override { NOTREACHED(); }
-  void DestroyView(int32_t) override { NOTREACHED(); }
-  void CreateFrame(mojom::CreateFrameParamsPtr) override { NOTREACHED(); }
-  void SetUpEmbeddedWorkerChannelForServiceWorker(
-      blink::mojom::EmbeddedWorkerInstanceClientRequest client_request)
-      override {
-    helper_->OnInstanceClientRequest(std::move(client_request));
-  }
-  void CreateFrameProxy(
-      int32_t routing_id,
-      int32_t render_view_routing_id,
-      int32_t opener_routing_id,
-      int32_t parent_routing_id,
-      const FrameReplicationState& replicated_state,
-      const base::UnguessableToken& devtools_frame_token) override {
-    NOTREACHED();
-  }
-  void OnNetworkConnectionChanged(
-      net::NetworkChangeNotifier::ConnectionType type,
-      double max_bandwidth_mbps) override {
-    NOTREACHED();
-  }
-  void OnNetworkQualityChanged(net::EffectiveConnectionType type,
-                               base::TimeDelta http_rtt,
-                               base::TimeDelta transport_rtt,
-                               double bandwidth_kbps) override {
-    NOTREACHED();
-  }
-  void SetWebKitSharedTimersSuspended(bool suspend) override { NOTREACHED(); }
-  void SetUserAgent(const std::string& user_agent) override { NOTREACHED(); }
-  void SetUserAgentMetadata(const blink::UserAgentMetadata& metadata) override {
-    NOTREACHED();
-  }
-  void UpdateScrollbarTheme(
-      mojom::UpdateScrollbarThemeParamsPtr params) override {
-    NOTREACHED();
-  }
-  void OnSystemColorsChanged(int32_t aqua_color_variant,
-                             const std::string& highlight_text_color,
-                             const std::string& highlight_color) override {
-    NOTREACHED();
-  }
-  void UpdateSystemColorInfo(
-      mojom::UpdateSystemColorInfoParamsPtr params) override {
-    NOTREACHED();
-  }
-  void PurgePluginListCache(bool reload_pages) override { NOTREACHED(); }
-  void SetProcessState(mojom::RenderProcessState process_state) override {
-    NOTREACHED();
-  }
-  void SetSchedulerKeepActive(bool keep_active) override { NOTREACHED(); }
-  void SetIsLockedToSite() override { NOTREACHED(); }
-  void EnableV8LowMemoryMode() override { NOTREACHED(); }
-
-  EmbeddedWorkerTestHelper* helper_;
-  mojo::AssociatedBindingSet<mojom::Renderer> bindings_;
-};
 
 EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
     const base::FilePath& user_data_directory)
@@ -109,7 +39,7 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
           base::MakeRefCounted<URLLoaderFactoryGetter>()) {
   scoped_refptr<base::SequencedTaskRunner> database_task_runner =
       base::ThreadTaskRunnerHandle::Get();
-  wrapper_->InitOnIO(
+  wrapper_->InitOnCoreThread(
       user_data_directory, std::move(database_task_runner), nullptr, nullptr,
       nullptr, url_loader_factory_getter_.get(),
       blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled()
@@ -120,25 +50,14 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
   wrapper_->process_manager()->SetNewProcessIdForTest(new_render_process_id());
   wrapper_->InitializeResourceContext(browser_context_->GetResourceContext());
 
-  // Install a mocked mojom::Renderer interface to catch requests to
-  // establish Mojo connection for EWInstanceClient.
-  mock_renderer_interface_ = std::make_unique<MockRendererInterface>(this);
-
-  auto renderer_interface_ptr =
-      std::make_unique<mojom::RendererAssociatedPtr>();
-  mock_renderer_interface_->AddBinding(
-      mojo::MakeRequestAssociatedWithDedicatedPipe(
-          renderer_interface_ptr.get()));
-  render_process_host_->OverrideRendererInterfaceForTesting(
-      std::move(renderer_interface_ptr));
-
-  auto new_renderer_interface_ptr =
-      std::make_unique<mojom::RendererAssociatedPtr>();
-  mock_renderer_interface_->AddBinding(
-      mojo::MakeRequestAssociatedWithDedicatedPipe(
-          new_renderer_interface_ptr.get()));
-  new_render_process_host_->OverrideRendererInterfaceForTesting(
-      std::move(new_renderer_interface_ptr));
+  render_process_host_->OverrideBinderForTesting(
+      blink::mojom::EmbeddedWorkerInstanceClient::Name_,
+      base::BindRepeating(&EmbeddedWorkerTestHelper::OnInstanceClientRequest,
+                          base::Unretained(this)));
+  new_render_process_host_->OverrideBinderForTesting(
+      blink::mojom::EmbeddedWorkerInstanceClient::Name_,
+      base::BindRepeating(&EmbeddedWorkerTestHelper::OnInstanceClientRequest,
+                          base::Unretained(this)));
 
   default_network_loader_factory_ =
       std::make_unique<FakeNetworkURLLoaderFactory>();
@@ -170,7 +89,9 @@ void EmbeddedWorkerTestHelper::AddPendingServiceWorker(
 }
 
 void EmbeddedWorkerTestHelper::OnInstanceClientRequest(
-    blink::mojom::EmbeddedWorkerInstanceClientRequest request) {
+    mojo::ScopedMessagePipeHandle request_handle) {
+  blink::mojom::EmbeddedWorkerInstanceClientRequest request(
+      std::move(request_handle));
   std::unique_ptr<FakeEmbeddedWorkerInstanceClient> client;
   if (!pending_embedded_worker_instance_clients_.empty()) {
     // Use the instance client that was registered for this message.

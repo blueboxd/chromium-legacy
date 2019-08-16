@@ -6,6 +6,6 @@
 dictionary PerformanceMeasureOptions {
     any detail;
     (DOMString or DOMHighResTimeStamp) start;
-    // TODO(crbug.com/758385): add |duration| for better ergonomics.
+    DOMHighResTimeStamp duration;
     (DOMString or DOMHighResTimeStamp) end;
 };

@@ -50,7 +50,6 @@ class CONTENT_EXPORT DevToolsRendererChannel
       mojo::PendingRemote<blink::mojom::DevToolsAgent> agent_remote,
       mojo::PendingReceiver<blink::mojom::DevToolsAgentHost> host_receiver,
       int process_id,
-      RenderFrameHostImpl* frame_host,
       base::OnceClosure connection_error = base::NullCallback());
   void SetRendererAssociated(
       mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgent> agent_remote,

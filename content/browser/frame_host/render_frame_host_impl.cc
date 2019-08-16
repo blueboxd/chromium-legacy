@@ -5040,8 +5040,17 @@ void RenderFrameHostImpl::CommitNavigation(
     std::string scheme = common_params->url.scheme();
     const auto& webui_schemes = URLDataManagerBackend::GetWebUISchemes();
     if (base::Contains(webui_schemes, scheme)) {
-      network::mojom::URLLoaderFactoryPtr factory_for_webui =
-          CreateWebUIURLLoaderBinding(this, scheme);
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_for_webui;
+      auto factory_receiver =
+          factory_for_webui.InitWithNewPipeAndPassReceiver();
+      GetContentClient()->browser()->WillCreateURLLoaderFactory(
+          browser_context, this, GetProcess()->GetID(),
+          false /* is_navigation */, false /* is_download */,
+          GetOriginForURLLoaderFactory(navigation_request)
+              .value_or(url::Origin()),
+          &factory_receiver, nullptr /* header_client */,
+          nullptr /* bypass_redirect_checks */);
+      CreateWebUIURLLoaderBinding(this, scheme, std::move(factory_receiver));
       // If the renderer has webui bindings, then don't give it access to
       // network loader for security reasons.
       // http://crbug.com/829412: make an exception for a small whitelist
@@ -5049,7 +5058,7 @@ void RenderFrameHostImpl::CommitNavigation(
       if ((enabled_bindings_ & kWebUIBindingsPolicyMask) &&
           !GetContentClient()->browser()->IsWebUIAllowedToMakeNetworkRequests(
               url::Origin::Create(common_params->url.GetOrigin()))) {
-        pending_default_factory = factory_for_webui.PassInterface();
+        pending_default_factory = std::move(factory_for_webui);
         // WebUIURLLoaderFactory will kill the renderer if it sees a request
         // with a non-chrome scheme. Register a URLLoaderFactory for the about
         // scheme so about:blank doesn't kill the renderer.
@@ -5059,7 +5068,7 @@ void RenderFrameHostImpl::CommitNavigation(
         // This is a webui scheme that doesn't have webui bindings. Give it
         // access to the network loader as it might require it.
         subresource_loader_factories->pending_scheme_specific_factories()
-            .emplace(scheme, factory_for_webui.PassInterface());
+            .emplace(scheme, std::move(factory_for_webui));
       }
     }
 

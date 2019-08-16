@@ -355,6 +355,8 @@ if (enable_openxr) {
     testonly = true
     output_name = "mock_vr_clients/bin/openxr/openxrruntime"
 
+    include_dirs = [ "//third_party/openxr/src/include" ]
+
     sources = [
       "openxr/openxr_util.cc",
       "openxr/openxr_util.h",
@@ -365,8 +367,6 @@ if (enable_openxr) {
       "test/test_hook.h",
     ]
 
-    configs += [ "//third_party/openxr:config" ]
-
     libs = [
       "d3d11.lib",
       "DXGI.lib",
@@ -376,6 +376,7 @@ if (enable_openxr) {
       "//base",
       "//device/vr:json_mock",
       "//device/vr/public/mojom:test_mojom",
+      "//third_party/openxr:openxr_headers",
     ]
   }
 }

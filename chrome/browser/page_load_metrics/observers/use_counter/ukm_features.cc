@@ -123,6 +123,7 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kLazyLoadImageLoadingAttributeEager,
           WebFeature::kRequestedFileSystemTemporary,
           WebFeature::kRequestedFileSystemPersistent,
+          WebFeature::kSMSReceiverStart,
       }));
   return *opt_in_features;
 }

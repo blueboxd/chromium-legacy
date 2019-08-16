@@ -78,6 +78,10 @@ class SyncWebSocketImpl : public SyncWebSocket {
                   base::WaitableEvent* event);
     void CloseOnIO(base::WaitableEvent* event);
 
+    // Determines the intended recipients of the message received
+    void DetermineRecipient(const std::string& message,
+                            bool* send_to_chromedriver);
+
     // OnDestruct is meant to ensure deletion on the IO thread.
     void OnDestruct() const;
 

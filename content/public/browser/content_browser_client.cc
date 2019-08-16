@@ -287,11 +287,20 @@ bool ContentBrowserClient::AllowAppCache(const GURL& manifest_url,
   return true;
 }
 
-bool ContentBrowserClient::AllowServiceWorker(
+bool ContentBrowserClient::AllowServiceWorkerOnIO(
     const GURL& scope,
     const GURL& first_party,
     const GURL& script_url,
     ResourceContext* context,
+    base::RepeatingCallback<WebContents*()> wc_getter) {
+  return true;
+}
+
+bool ContentBrowserClient::AllowServiceWorkerOnUI(
+    const GURL& scope,
+    const GURL& first_party,
+    const GURL& script_url,
+    BrowserContext* context,
     base::RepeatingCallback<WebContents*()> wc_getter) {
   return true;
 }

@@ -69,7 +69,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
                      DeleteCookiesCallback callback) override;
   void AddCookieChangeListener(
       const GURL& url,
-      const std::string& name,
+      const base::Optional<std::string>& name,
       mojom::CookieChangeListenerPtr listener) override;
   void AddGlobalChangeListener(
       mojom::CookieChangeListenerPtr listener) override;

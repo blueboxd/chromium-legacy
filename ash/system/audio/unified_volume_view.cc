@@ -6,6 +6,7 @@
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/audio/unified_volume_slider_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -67,10 +68,12 @@ class MoreButton : public views::Button {
                     2),
         2));
 
+    const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kIconPrimary,
+        AshColorProvider::AshColorMode::kDark);
     auto* headset = new views::ImageView();
     headset->set_can_process_events_within_subtree(false);
-    headset->SetImage(CreateVectorIcon(vector_icons::kHeadsetIcon,
-                                       kIconOnDarkBackgroundColor));
+    headset->SetImage(CreateVectorIcon(vector_icons::kHeadsetIcon, icon_color));
     AddChildView(headset);
 
     auto* more = new views::ImageView();
@@ -79,8 +82,7 @@ class MoreButton : public views::Button {
                              ? SkBitmapOperations::ROTATION_270_CW
                              : SkBitmapOperations::ROTATION_90_CW;
     more->SetImage(gfx::ImageSkiaOperations::CreateRotatedImage(
-        CreateVectorIcon(kUnifiedMenuExpandIcon, kIconOnDarkBackgroundColor),
-        icon_rotation));
+        CreateVectorIcon(kUnifiedMenuExpandIcon, icon_color), icon_rotation));
     AddChildView(more);
 
     SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO));

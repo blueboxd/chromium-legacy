@@ -458,7 +458,7 @@ bool LayoutFlexibleBox::MainAxisIsInlineAxis(const LayoutBox& child) const {
 }
 
 bool LayoutFlexibleBox::IsColumnFlow() const {
-  return StyleRef().IsColumnFlexDirection();
+  return StyleRef().ResolvedIsColumnFlexDirection();
 }
 
 bool LayoutFlexibleBox::IsHorizontalFlow() const {
@@ -1238,6 +1238,7 @@ void LayoutFlexibleBox::ConstructAndAppendFlexItem(
   LayoutUnit margin =
       IsHorizontalFlow() ? child.MarginWidth() : child.MarginHeight();
   algorithm->emplace_back(&child, child_inner_flex_base_size, sizes,
+                          /* cross axis min max sizes */ base::nullopt,
                           border_and_padding, margin);
 }
 

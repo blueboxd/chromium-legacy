@@ -91,6 +91,7 @@ jumbo_source_set("browser_sources") {
     "browser_ppapi_host.h",
     "browser_task_traits.cc",
     "browser_task_traits.h",
+    "browser_thread.cc",
     "browser_thread.h",
     "browser_thread_delegate.h",
     "browser_url_handler.h",

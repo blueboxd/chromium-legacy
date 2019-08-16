@@ -4,6 +4,8 @@
 
 #include "ash/system/unified/rounded_label_button.h"
 
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/unified_system_tray_view.h"
@@ -20,7 +22,8 @@ namespace ash {
 RoundedLabelButton::RoundedLabelButton(views::ButtonListener* listener,
                                        const base::string16& text)
     : views::LabelButton(listener, text) {
-  SetEnabledTextColors(kUnifiedMenuTextColor);
+  SetEnabledTextColors(AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextPrimary, kUnifiedMenuTextColor));
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetBorder(views::CreateEmptyBorder(gfx::Insets()));
   label()->SetSubpixelRenderingEnabled(false);

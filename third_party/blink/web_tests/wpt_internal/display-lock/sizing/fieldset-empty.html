@@ -28,7 +28,7 @@ async function runTest() {
   takeScreenshot();
 }
 
-window.onload = runTest;
+window.onload = requestAnimationFrame(() => requestAnimationFrame(runTest));
 </script>
 
 </html>

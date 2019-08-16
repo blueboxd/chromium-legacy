@@ -73,10 +73,6 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
   void OnURLsDeleted(history::HistoryService* history_service,
                      const history::DeletionInfo& deletion_info) override;
 
-  RecurrenceRanker* get_zero_state_mixed_types_ranker() {
-    return zero_state_mixed_types_ranker_.get();
-  }
-
   // Sets a testing-only closure to inform tests when a JSON config has been
   // parsed.
   void set_json_config_parsed_for_testing(base::OnceClosure closure) {
@@ -96,6 +92,9 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
   // Records the time of the last call to FetchRankings() and is used to
   // limit the number of queries to the models within a short timespan.
   base::Time time_of_last_fetch_;
+
+  // The query last provided to FetchRankings.
+  base::string16 last_query_;
 
   // How much the scores produced by |results_list_group_ranker_| affect the
   // final scores. Controlled by Finch.
@@ -119,8 +118,16 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
   // prevent several delayed tasks from being created.
   bool query_mixed_ranker_save_queued_ = false;
 
-  // Ranks files and previous queries for launcher zero-state.
-  std::unique_ptr<RecurrenceRanker> zero_state_mixed_types_ranker_;
+  // Ranks the kinds of results possible in the zero state results list.
+  std::unique_ptr<RecurrenceRanker> zero_state_group_ranker_;
+  std::map<std::string, float> zero_state_group_ranks_;
+
+  // Coefficients that control the weighting between different parts of the
+  // score of a result in the zero-state results list.
+  float zero_state_item_coeff_ = 1.0f;
+  float zero_state_group_coeff_ = 0.0f;
+  float zero_state_paired_coeff_ = 0.0f;
+  float zero_state_default_group_score_ = 1.0f;
 
   // Ranks apps.
   std::unique_ptr<RecurrenceRanker> app_ranker_;

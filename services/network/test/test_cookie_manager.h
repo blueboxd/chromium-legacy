@@ -35,7 +35,7 @@ class TestCookieManager : public network::mojom::CookieManager {
                      DeleteCookiesCallback callback) override {}
   void AddCookieChangeListener(
       const GURL& url,
-      const std::string& name,
+      const base::Optional<std::string>& name,
       network::mojom::CookieChangeListenerPtr listener) override;
   void AddGlobalChangeListener(
       network::mojom::CookieChangeListenerPtr notification_pointer) override {}

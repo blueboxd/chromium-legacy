@@ -9,20 +9,6 @@
 namespace blink {
 namespace {
 
-// Determine perceived brightness of a color.
-//
-// Based on this algorithm suggested by the W3:
-// https://www.w3.org/TR/AERT/#color-contrast
-//
-// We don't use HSL or HSV here because perceived brightness is a function of
-// hue as well as lightness/value.
-int CalculateColorBrightness(const Color& color) {
-  int weighted_red = color.Red() * 299;
-  int weighted_green = color.Green() * 587;
-  int weighted_blue = color.Blue() * 114;
-  return (weighted_red + weighted_green + weighted_blue) / 1000;
-}
-
 class SimpleColorClassifier : public DarkModeColorClassifier {
  public:
   static std::unique_ptr<SimpleColorClassifier> NeverInvert() {
@@ -83,25 +69,16 @@ class InvertHighBrightnessColorsClassifier : public DarkModeColorClassifier {
 
 }  // namespace
 
-// Values below which a color is considered sufficiently transparent that a
-// lighter color behind it would make the final color as seen by the user light.
-// TODO(https://crbug.com/925949): This is a placeholder value. It should be
-// replaced with a better researched value before launching dark mode.
-const float kOpacityThreshold = 0.4;
-
-// TODO(https://crbug.com/925949): Find a better algorithm for this.
-bool IsLight(const Color& color) {
-  // Use the alpha value as the opacity.
-  float opacity = (color.Alpha() / 255);
-  // Assume the color is light if the background is sufficiently transparent.
-  if (opacity < kOpacityThreshold) {
-    return true;
-  }
-  double hue;
-  double saturation;
-  double lightness;
-  color.GetHSL(hue, saturation, lightness);
-  return lightness > 0.5;
+// Based on this algorithm suggested by the W3:
+// https://www.w3.org/TR/AERT/#color-contrast
+//
+// We don't use HSL or HSV here because perceived brightness is a function of
+// hue as well as lightness/value.
+int DarkModeColorClassifier::CalculateColorBrightness(const Color& color) {
+  int weighted_red = color.Red() * 299;
+  int weighted_green = color.Green() * 587;
+  int weighted_blue = color.Blue() * 114;
+  return (weighted_red + weighted_green + weighted_blue) / 1000;
 }
 
 std::unique_ptr<DarkModeColorClassifier>

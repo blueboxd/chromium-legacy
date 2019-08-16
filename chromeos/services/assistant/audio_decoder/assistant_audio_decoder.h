@@ -17,17 +17,12 @@ class AudioBus;
 class DataSource;
 }  // namespace media
 
-namespace service_manager {
-class ServiceKeepaliveRef;
-}  // namespace service_manager
-
 namespace chromeos {
 namespace assistant {
 
 class AssistantAudioDecoder : public mojom::AssistantAudioDecoder {
  public:
   AssistantAudioDecoder(
-      std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref,
       mojom::AssistantAudioDecoderClientPtr client,
       mojom::AssistantMediaDataSourcePtr data_source);
   ~AssistantAudioDecoder() override;
@@ -52,7 +47,6 @@ class AssistantAudioDecoder : public mojom::AssistantAudioDecoder {
   void OnConnectionError();
   void RunCallbacksAsClosed();
 
-  const std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref_;
   mojom::AssistantAudioDecoderClientPtr client_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

@@ -2883,6 +2883,9 @@
         "test": "media_router_junit_tests"
       },
       {
+        "test": "module_installer_junit_tests"
+      },
+      {
         "test": "net_junit_tests"
       },
       {

@@ -219,7 +219,8 @@ XrResult OpenXrApiWrapper::InitializeSystem() {
   // XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO.
   DCHECK(view_count == kNumViews);
 
-  std::vector<XrViewConfigurationView> view_configs(view_count);
+  std::vector<XrViewConfigurationView> view_configs(
+      view_count, {XR_TYPE_VIEW_CONFIGURATION_VIEW});
   RETURN_IF_XR_FAILED(xrEnumerateViewConfigurationViews(
       instance_, system, kSupportedViewConfiguration, view_count, &view_count,
       view_configs.data()));
@@ -245,12 +246,13 @@ XrResult OpenXrApiWrapper::PickEnvironmentBlendMode(XrSystemId system) {
 
   uint32_t blend_mode_count;
   RETURN_IF_XR_FAILED(xrEnumerateEnvironmentBlendModes(
-      instance_, system, 0, &blend_mode_count, nullptr));
+      instance_, system, kSupportedViewConfiguration, 0, &blend_mode_count,
+      nullptr));
 
   std::vector<XrEnvironmentBlendMode> blend_modes(blend_mode_count);
-  RETURN_IF_XR_FAILED(
-      xrEnumerateEnvironmentBlendModes(instance_, system, blend_mode_count,
-                                       &blend_mode_count, blend_modes.data()));
+  RETURN_IF_XR_FAILED(xrEnumerateEnvironmentBlendModes(
+      instance_, system, kSupportedViewConfiguration, blend_mode_count,
+      &blend_mode_count, blend_modes.data()));
 
   auto* blend_mode_it =
       std::find_first_of(kSupportedBlendMode.begin(), kSupportedBlendMode.end(),
@@ -379,10 +381,8 @@ XrResult OpenXrApiWrapper::CreateGamepadHelper(
   DCHECK(HasSession());
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_LOCAL));
 
-  XrResult xr_result = OpenXrGamepadHelper::GetOpenXrGamepadHelper(
+  return OpenXrGamepadHelper::CreateOpenXrGamepadHelper(
       instance_, session_, local_space_, gamepad_helper);
-
-  return xr_result;
 }
 
 XrResult OpenXrApiWrapper::BeginSession() {
@@ -404,6 +404,7 @@ XrResult OpenXrApiWrapper::BeginFrame(
   XrFrameWaitInfo wait_frame_info = {XR_TYPE_FRAME_WAIT_INFO};
   XrFrameState frame_state = {XR_TYPE_FRAME_STATE};
   RETURN_IF_XR_FAILED(xrWaitFrame(session_, &wait_frame_info, &frame_state));
+  frame_state_ = frame_state;
 
   XrFrameBeginInfo begin_frame_info = {XR_TYPE_FRAME_BEGIN_INFO};
   RETURN_IF_XR_FAILED(xrBeginFrame(session_, &begin_frame_info));
@@ -418,10 +419,9 @@ XrResult OpenXrApiWrapper::BeginFrame(
   wait_info.timeout = XR_INFINITE_DURATION;
 
   RETURN_IF_XR_FAILED(xrWaitSwapchainImage(color_swapchain_, &wait_info));
-  RETURN_IF_XR_FAILED(UpdateProjectionLayers(frame_state.predictedDisplayTime));
+  RETURN_IF_XR_FAILED(UpdateProjectionLayers());
 
   *texture = color_swapchain_images_[color_swapchain_image_index].texture;
-  frame_state_ = frame_state;
 
   return xr_result;
 }
@@ -460,14 +460,15 @@ XrResult OpenXrApiWrapper::EndFrame() {
   return xr_result;
 }
 
-XrResult OpenXrApiWrapper::UpdateProjectionLayers(
-    XrTime predicted_display_time) {
+XrResult OpenXrApiWrapper::UpdateProjectionLayers() {
   XrResult xr_result;
 
   XrViewState view_state = {XR_TYPE_VIEW_STATE};
 
   XrViewLocateInfo view_locate_info = {XR_TYPE_VIEW_LOCATE_INFO};
-  view_locate_info.displayTime = predicted_display_time;
+
+  view_locate_info.viewConfigurationType = kSupportedViewConfiguration;
+  view_locate_info.displayTime = frame_state_.predictedDisplayTime;
   view_locate_info.space = local_space_;
 
   uint32_t view_count = 0;
@@ -511,27 +512,32 @@ XrTime OpenXrApiWrapper::GetPredictedDisplayTime() const {
   return frame_state_.predictedDisplayTime;
 }
 
-XrResult OpenXrApiWrapper::GetHeadPose(gfx::Quaternion* orientation,
-                                       gfx::Point3F* position) const {
+XrResult OpenXrApiWrapper::GetHeadPose(
+    base::Optional<gfx::Quaternion>* orientation,
+    base::Optional<gfx::Point3F>* position) const {
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_LOCAL));
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_VIEW));
 
   XrResult xr_result;
 
-  XrSpaceRelation relation = {XR_TYPE_SPACE_RELATION};
+  XrSpaceLocation location = {XR_TYPE_SPACE_LOCATION};
   RETURN_IF_XR_FAILED(xrLocateSpace(
-      view_space_, local_space_, frame_state_.predictedDisplayTime, &relation));
+      view_space_, local_space_, frame_state_.predictedDisplayTime, &location));
 
-  DCHECK(relation.relationFlags & XR_SPACE_RELATION_ORIENTATION_VALID_BIT);
-  DCHECK(relation.relationFlags & XR_SPACE_RELATION_POSITION_VALID_BIT);
+  if (location.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
+    *orientation = gfx::Quaternion(
+        location.pose.orientation.x, location.pose.orientation.y,
+        location.pose.orientation.z, location.pose.orientation.w);
+  } else {
+    *orientation = base::nullopt;
+  }
 
-  orientation->set_x(relation.pose.orientation.x);
-  orientation->set_y(relation.pose.orientation.y);
-  orientation->set_z(relation.pose.orientation.z);
-  orientation->set_w(relation.pose.orientation.w);
-
-  position->SetPoint(relation.pose.position.x, relation.pose.position.y,
-                     relation.pose.position.z);
+  if (location.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT) {
+    *position = gfx::Point3F(location.pose.position.x, location.pose.position.y,
+                             location.pose.position.z);
+  } else {
+    *position = base::nullopt;
+  }
 
   return xr_result;
 }

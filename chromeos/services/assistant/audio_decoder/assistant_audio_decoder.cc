@@ -14,7 +14,6 @@
 #include "media/base/data_source.h"
 #include "media/filters/audio_file_reader.h"
 #include "media/filters/blocking_url_protocol.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
 
 namespace chromeos {
 namespace assistant {
@@ -31,11 +30,9 @@ void OnError(bool* succeeded) {
 }  // namespace
 
 AssistantAudioDecoder::AssistantAudioDecoder(
-    std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref,
     mojom::AssistantAudioDecoderClientPtr client,
     mojom::AssistantMediaDataSourcePtr data_source)
-    : service_ref_(std::move(service_ref)),
-      client_(std::move(client)),
+    : client_(std::move(client)),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
       data_source_(std::make_unique<IPCDataSource>(std::move(data_source))),
       media_thread_(std::make_unique<base::Thread>("media_thread")),

@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {eventToPromise, whenAttributeIs} from 'chrome://test/test_util.m.js';
+// clang-format on
+
 suite('cr-input', function() {
   let crInput;
   let input;

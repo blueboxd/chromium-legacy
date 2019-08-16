@@ -101,10 +101,6 @@ ThreadWatcherObserver::ThreadWatcherObserver(
                           base::Unretained(this)));
 #endif
 
-  registrar_.Add(this, chrome::NOTIFICATION_TAB_PARENTED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_TAB_CLOSING,
-                 content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,

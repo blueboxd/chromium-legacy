@@ -15,6 +15,10 @@ import sys
 DSYMUTIL_INVOKE = ['xcrun', 'dsymutil']
 STRIP_INVOKE = ['xcrun', 'strip']
 
+# Setting this flag will emit a deterministic binary by stripping dates from the
+# N_OSO field.
+DETERMINISTIC_FLAG = '--deterministic'
+
 # The linker_driver.py is responsible for forwarding a linker invocation to
 # the compiler driver, while processing special arguments itself.
 #
@@ -69,20 +73,28 @@ def Main(args):
   # the arguments being passed to the compiler driver.
   linker_driver_actions = {}
   compiler_driver_args = []
+  deterministic = False
   for arg in args[1:]:
     if arg.startswith(_LINKER_DRIVER_ARG_PREFIX):
       # Convert driver actions into a map of name => lambda to invoke.
       driver_action = ProcessLinkerDriverArg(arg)
       assert driver_action[0] not in linker_driver_actions
       linker_driver_actions[driver_action[0]] = driver_action[1]
+    elif arg == DETERMINISTIC_FLAG:
+      deterministic = True
     else:
       compiler_driver_args.append(arg)
 
   linker_driver_outputs = [_FindLinkerOutput(compiler_driver_args)]
 
   try:
+    # Zero the mtime in OSO fields for deterministic builds.
+    # https://crbug.com/330262.
+    env = os.environ.copy()
+    if deterministic:
+      env['ZERO_AR_DATE'] = '1'
     # Run the linker by invoking the compiler driver.
-    subprocess.check_call(compiler_driver_args)
+    subprocess.check_call(compiler_driver_args, env=env)
 
     # Run the linker driver actions, in the order specified by the actions list.
     for action in _LINKER_DRIVER_ACTIONS:

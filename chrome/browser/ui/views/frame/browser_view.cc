@@ -94,6 +94,7 @@
 #include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
+#include "chrome/browser/ui/views/frame/web_footer_experiment_view.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
 #include "chrome/browser/ui/views/hats/hats_bubble_view.h"
 #include "chrome/browser/ui/views/ime/ime_warning_bubble_view.h"
@@ -2640,11 +2641,19 @@ void BrowserView::InitViews() {
   }
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
+  // See https://crbug.com/993502.
+  views::View* web_footer_experiment = nullptr;
+  if (base::FeatureList::IsEnabled(features::kWebFooterExperiment)) {
+    web_footer_experiment = AddChildView(
+        std::make_unique<WebFooterExperimentView>(browser_->profile()));
+  }
+
   auto browser_view_layout = std::make_unique<BrowserViewLayout>(
       std::make_unique<BrowserViewLayoutDelegateImpl>(this), browser(), this,
       top_container_, tab_strip_region_view_, tabstrip_, webui_tab_strip_view,
       webui_tab_strip_caption_buttons, toolbar_, infobar_container_,
-      contents_container_, immersive_mode_controller_.get());
+      contents_container_, immersive_mode_controller_.get(),
+      web_footer_experiment);
   SetLayoutManager(std::move(browser_view_layout));
 
   EnsureFocusOrder();

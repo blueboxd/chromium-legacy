@@ -76,8 +76,16 @@ Color SelectionColor(const Document& document,
     return style.VisitedDependentColor(color_property);
 
   if (scoped_refptr<ComputedStyle> pseudo_style =
-          GetUncachedSelectionStyle(node))
+          GetUncachedSelectionStyle(node)) {
+    if (document.InForcedColorsMode() &&
+        pseudo_style->ForcedColorAdjust() != EForcedColorAdjust::kNone)
+      return LayoutTheme::GetTheme().SystemColor(CSSValueID::kHighlighttext);
     return pseudo_style->VisitedDependentColor(color_property);
+  }
+
+  if (document.InForcedColorsMode())
+    return LayoutTheme::GetTheme().SystemColor(CSSValueID::kHighlighttext);
+
   if (!LayoutTheme::GetTheme().SupportsSelectionForegroundColors())
     return style.VisitedDependentColor(color_property);
   return document.GetFrame()->Selection().FrameIsFocusedAndActive()
@@ -106,9 +114,15 @@ Color SelectionPaintingUtils::SelectionBackgroundColor(
 
   if (scoped_refptr<ComputedStyle> pseudo_style =
           GetUncachedSelectionStyle(node)) {
+    if (document.InForcedColorsMode() &&
+        pseudo_style->ForcedColorAdjust() != EForcedColorAdjust::kNone)
+      return LayoutTheme::GetTheme().SystemColor(CSSValueID::kHighlight);
     return pseudo_style->VisitedDependentColor(GetCSSPropertyBackgroundColor())
         .BlendWithWhite();
   }
+
+  if (document.InForcedColorsMode())
+    return LayoutTheme::GetTheme().SystemColor(CSSValueID::kHighlight);
 
   return document.GetFrame()->Selection().FrameIsFocusedAndActive()
              ? LayoutTheme::GetTheme().ActiveSelectionBackgroundColor()

@@ -1422,6 +1422,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsLinux | kOsCrOS | kOsWin | kOsAndroid,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSmoothScrolling,
                                switches::kDisableSmoothScrolling)},
+    {"fractional-scroll-offsets",
+     flag_descriptions::kFractionalScrollOffsetsName,
+     flag_descriptions::kFractionalScrollOffsetsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kFractionalScrollOffsets)},
 #if defined(USE_AURA)
     {"overlay-scrollbars", flag_descriptions::kOverlayScrollbarsName,
      flag_descriptions::kOverlayScrollbarsDescription,

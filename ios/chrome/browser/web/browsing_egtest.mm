@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
 #include <map>
@@ -11,22 +10,16 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
-#include "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/chrome/test/earl_grey/scoped_block_popups_pref.h"
 #include "ios/net/url_test_util.h"
-#import "ios/web/public/test/earl_grey/web_view_actions.h"
-#import "ios/web/public/test/earl_grey/web_view_matchers.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ios/web/public/test/http_server/data_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
-#import "ios/web/public/web_state.h"
 #include "net/http/http_response_headers.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -35,7 +28,6 @@
 #error "This file requires ARC support."
 #endif
 
-using chrome_test_util::GetOriginalBrowserState;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::OmniboxContainingText;
 
@@ -340,7 +332,7 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
         assertWithMatcher:chrome_test_util::OmniboxContainingText(
                               URL.GetContent())];
     GREYAssertEqual(web::test::HttpServer::MakeUrl("http://origin/#"),
-                    chrome_test_util::GetCurrentWebState()->GetVisibleURL(),
+                    [ChromeEarlGrey webStateVisibleURL],
                     @"Unexpected URL after going back");
   } else {
     [[EarlGrey selectElementWithMatcher:OmniboxText(URL.GetContent())]

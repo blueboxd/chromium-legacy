@@ -568,7 +568,7 @@ void ServiceWorkerProviderHost::RemoveServiceWorkerObjectHost(
 bool ServiceWorkerProviderHost::AllowServiceWorker(const GURL& scope,
                                                    const GURL& script_url) {
   DCHECK(IsContextAlive());
-  return GetContentClient()->browser()->AllowServiceWorker(
+  return GetContentClient()->browser()->AllowServiceWorkerOnIO(
       scope, site_for_cookies(), script_url,
       context_->wrapper()->resource_context(),
       base::BindRepeating(&WebContentsImpl::FromRenderFrameHostID,

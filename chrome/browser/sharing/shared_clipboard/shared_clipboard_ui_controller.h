@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SHARING_SHARED_CLIPBOARD_SHARED_CLIPBOARD_UI_CONTROLLER_H_
 #define CHROME_BROWSER_SHARING_SHARED_CLIPBOARD_SHARED_CLIPBOARD_UI_CONTROLLER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -18,8 +19,6 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-class SharingDeviceInfo;
-
 class SharedClipboardUiController
     : public SharingUiController,
       public content::WebContentsUserData<SharedClipboardUiController> {
@@ -30,13 +29,13 @@ class SharedClipboardUiController
   ~SharedClipboardUiController() override;
 
   void OnDeviceSelected(const base::string16& text,
-                        const SharingDeviceInfo& device);
+                        const syncer::DeviceInfo& device);
 
   // Overridden from SharingUiController:
   base::string16 GetTitle() override;
   PageActionIconType GetIconType() override;
   int GetRequiredDeviceCapabilities() override;
-  void OnDeviceChosen(const SharingDeviceInfo& device) override;
+  void OnDeviceChosen(const syncer::DeviceInfo& device) override;
   void OnAppChosen(const App& app) override;
 
   // Called by the SharedClipboardDialogView when the help text got clicked.

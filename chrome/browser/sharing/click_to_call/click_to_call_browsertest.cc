@@ -19,7 +19,7 @@
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_device_info.h"
+#include "chrome/browser/sharing/sharing_device_capability.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
@@ -191,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
                        0);
   std::string fcm_token;
-  GetDeviceFCMToken(devices[0].guid(), &fcm_token);
+  GetDeviceFCMToken(devices[0]->guid(), &fcm_token);
   CheckLastSharingMessageSent(fcm_token, GURL(kTelUrl));
 }
 
@@ -248,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
     sub_menu_model->ActivatedAt(device_id);
 
     std::string fcm_token;
-    GetDeviceFCMToken(device.guid(), &fcm_token);
+    GetDeviceFCMToken(device->guid(), &fcm_token);
     CheckLastSharingMessageSent(fcm_token, GURL(kTelUrl));
     device_id++;
   }

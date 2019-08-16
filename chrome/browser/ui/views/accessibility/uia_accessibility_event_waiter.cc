@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_variant.h"
@@ -38,7 +39,9 @@ void UiaAccessibilityEventWaiter::Wait() {
 
 void UiaAccessibilityEventWaiter::WaitWithTimeout(base::TimeDelta timeout) {
   // Pump messages via |shutdown_loop_| until the thread is complete.
-  shutdown_loop_.RunWithTimeout(timeout);
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, shutdown_loop_.QuitClosure(), timeout);
+  shutdown_loop_.Run();
   base::PlatformThread::Join(thread_handle_);
 }
 

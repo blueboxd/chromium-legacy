@@ -1212,6 +1212,10 @@ void BluetoothAdapterBlueZ::OnAdvertisementReceived(std::string device_address,
                                                     uint8_t rssi,
                                                     uint16_t device_appearance,
                                                     ScanRecordPtr scan_record) {
+  // Ignore the packet if it could not be parsed successfully.
+  if (!scan_record)
+    return;
+
   auto service_data_map = ConvertServiceDataMap(scan_record->service_data_map);
   auto manufacturer_data_map =
       ConvertManufacturerDataMap(scan_record->manufacturer_data_map);

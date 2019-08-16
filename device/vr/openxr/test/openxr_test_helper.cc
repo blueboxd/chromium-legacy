@@ -8,7 +8,7 @@
 #include <limits>
 
 #include "device/vr/openxr/openxr_util.h"
-#include "third_party/openxr/include/openxr/openxr_platform.h"
+#include "third_party/openxr/src/include/openxr/openxr_platform.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
 
@@ -26,6 +26,8 @@ const XrViewConfigurationView OpenXrTestHelper::kViewConfigView = {
     OpenXrTestHelper::kSwapCount,    OpenXrTestHelper::kSwapCount};
 XrViewConfigurationView OpenXrTestHelper::kViewConfigurationViews[] = {
     OpenXrTestHelper::kViewConfigView, OpenXrTestHelper::kViewConfigView};
+const XrViewConfigurationType OpenXrTestHelper::kViewConfigurationType =
+    XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
 const XrEnvironmentBlendMode OpenXrTestHelper::kEnvironmentBlendMode =
     XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
 

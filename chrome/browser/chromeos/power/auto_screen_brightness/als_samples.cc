@@ -25,6 +25,10 @@ void AmbientLightSampleBuffer::SaveToBuffer(
   Prune(sample.sample_time);
 }
 
+void AmbientLightSampleBuffer::ClearBuffer() {
+  samples_.clear();
+}
+
 base::Optional<AlsAvgStdDev> AmbientLightSampleBuffer::AverageAmbientWithStdDev(
     base::TimeTicks now) {
   Prune(now);

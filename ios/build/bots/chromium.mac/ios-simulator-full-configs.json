@@ -20,14 +20,6 @@
   "tests": [
     {
       "include": "eg_tests.json",
-      "device type": "iPhone 7",
-      "os": "12.1",
-      "host os": "Mac-10.14.4",
-      "pool":"Chrome",
-      "priority": 30
-    },
-    {
-      "include": "eg_tests.json",
       "device type": "iPad Air 2",
       "os": "12.1",
       "host os": "Mac-10.14.4",
@@ -36,14 +28,6 @@
     },
     {
       "include": "eg_tests.json",
-      "device type": "iPhone X",
-      "os": "12.1",
-      "host os": "Mac-10.14.4",
-      "pool":"Chrome",
-      "priority": 30
-    },
-    {
-      "include": "eg_cq_tests.json",
       "device type": "iPhone X",
       "os": "12.1",
       "host os": "Mac-10.14.4",

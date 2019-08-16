@@ -104,7 +104,7 @@ how are you?
                                             source_rc, source_rc_path,
                                             transl_rc, transl_rc_path)
 
-    values = translations.values()
+    values = list(translations.values())
     output = output_buf.getvalue()
 
     self.failUnless('Ein' in values)

@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/geometry/calculation_expression_node.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
@@ -52,10 +53,13 @@ void TestAccumulatePixelsAndPercent(
     CSSMathExpressionNode* expression,
     float expected_pixels,
     float expected_percent) {
-  PixelsAndPercent value(0, 0);
-  expression->AccumulatePixelsAndPercent(conversion_data, value);
-  EXPECT_EQ(expected_pixels, value.pixels);
-  EXPECT_EQ(expected_percent, value.percent);
+  scoped_refptr<const CalculationExpressionNode> value =
+      expression->ToCalculationExpression(conversion_data);
+  EXPECT_TRUE(value->IsLeaf());
+  EXPECT_EQ(expected_pixels,
+            To<CalculationExpressionLeafNode>(*value).Pixels());
+  EXPECT_EQ(expected_percent,
+            To<CalculationExpressionLeafNode>(*value).Percent());
 }
 
 CSSLengthArray& SetLengthArray(CSSLengthArray& length_array, String text) {

@@ -67,7 +67,7 @@ public class TabModelSelectorObserverTestRule extends ChromeBrowserTestRule {
                                                    .getTargetContext()
                                                    .getApplicationContext());
 
-        mSelector = new TabModelSelectorBase() {
+        mSelector = new TabModelSelectorBase(null) {
             @Override
             public Tab openNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent,
                     boolean incognito) {

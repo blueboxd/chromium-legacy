@@ -142,6 +142,8 @@ class CORE_EXPORT DisplayLockContext final
   // lock is locked any time the state is not kUnlocked or kCommitting.
   bool IsLocked() const { return state_ != kUnlocked && state_ != kCommitting; }
 
+  bool UpdateForced() const { return update_forced_; }
+
   // Called when the layout tree is attached. This is used to verify
   // containment.
   void DidAttachLayoutTree();

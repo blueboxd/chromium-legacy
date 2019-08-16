@@ -109,6 +109,24 @@ SkColor AshColorProvider::GetControlsLayerColor(
   return GetControlsLayerColorImpl(type, color_mode);
 }
 
+SkColor AshColorProvider::DeprecatedGetContentLayerColor(
+    ContentLayerType type,
+    SkColor default_color) const {
+  if (color_mode_ == AshColorMode::kDefault)
+    return default_color;
+
+  return GetContentLayerColorImpl(type, color_mode_);
+}
+
+SkColor AshColorProvider::GetContentLayerColor(
+    ContentLayerType type,
+    AshColorMode given_color_mode) const {
+  AshColorMode color_mode =
+      color_mode_ != AshColorMode::kDefault ? color_mode_ : given_color_mode;
+  DCHECK(color_mode != AshColorMode::kDefault);
+  return GetContentLayerColorImpl(type, color_mode);
+}
+
 AshColorProvider::RippleAttributes AshColorProvider::GetRippleAttributes(
     SkColor bg_color) const {
   const SkColor base_color = color_utils::GetColorWithMaxContrast(bg_color);
@@ -170,7 +188,6 @@ SkColor AshColorProvider::GetControlsLayerColorImpl(
   SkColor light_color, dark_color;
   switch (type) {
     case ControlsLayerType::kHairlineBorder:
-    case ControlsLayerType::kSeparator:
       light_color = SkColorSetA(SK_ColorBLACK, 0x24);  // 14%
       dark_color = SkColorSetA(SK_ColorWHITE, 0x24);
       break;
@@ -182,6 +199,34 @@ SkColor AshColorProvider::GetControlsLayerColorImpl(
     case ControlsLayerType::kFocusRing:
       light_color = gfx::kGoogleBlue600;
       dark_color = gfx::kGoogleBlue300;
+      break;
+  }
+  return color_mode == AshColorMode::kLight ? light_color : dark_color;
+}
+
+SkColor AshColorProvider::GetContentLayerColorImpl(
+    ContentLayerType type,
+    AshColorMode color_mode) const {
+  SkColor light_color, dark_color;
+  switch (type) {
+    case ContentLayerType::kSeparator:
+      light_color = SkColorSetA(SK_ColorBLACK, 0x24);  // 14%
+      dark_color = SkColorSetA(SK_ColorWHITE, 0x24);
+      break;
+    case ContentLayerType::kTextPrimary:
+      light_color = gfx::kGoogleGrey900;
+      dark_color = gfx::kGoogleGrey200;
+      break;
+    case ContentLayerType::kTextSecondary:
+      light_color = gfx::kGoogleGrey700;
+      dark_color = gfx::kGoogleGrey500;
+      break;
+    case ContentLayerType::kIconPrimary:
+      light_color = gfx::kGoogleGrey700;
+      dark_color = gfx::kGoogleGrey200;
+      break;
+    case ContentLayerType::kIconSecondary:
+      light_color = dark_color = gfx::kGoogleGrey500;
       break;
   }
   return color_mode == AshColorMode::kLight ? light_color : dark_color;

@@ -400,7 +400,6 @@ TabStyle::TabColors GM2TabStyle::CalculateColors() const {
 
   SkColor title_color = tab_->controller()->GetTabForegroundColor(
       expected_opacity > 0.5f ? TAB_ACTIVE : TAB_INACTIVE, bg_color);
-  title_color = color_utils::BlendForMinContrast(title_color, bg_color).color;
 
   const SkColor base_hovered_color = theme_provider->GetColor(
       ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_HOVER);

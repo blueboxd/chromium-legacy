@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "ui/base/hit_test_x11.h"
 #include "ui/base/x/x11_pointer_grab.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
@@ -1003,6 +1004,14 @@ bool XWindow::IsTargetedBy(const XEvent& xev) const {
           ? static_cast<XIDeviceEvent*>(xev.xcookie.data)->event
           : xev.xany.window;
   return target_window == xwindow_;
+}
+
+void XWindow::WmMoveResize(int hittest, const gfx::Point& location) const {
+  int direction = HitTestToWmMoveResizeDirection(hittest);
+  if (direction == -1)
+    return;
+
+  DoWMMoveResize(xdisplay_, x_root_window_, xwindow_, location, direction);
 }
 
 // In Ozone, there are no ui::*Event constructors receiving XEvent* as input,

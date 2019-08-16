@@ -12,6 +12,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/network_config_service.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -89,7 +90,6 @@
 #include "chrome/grit/component_extension_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
-#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -483,10 +483,7 @@ void OobeUI::BindPrivilegedHostDeviceSetter(
 
 void OobeUI::BindCrosNetworkConfig(
     chromeos::network_config::mojom::CrosNetworkConfigRequest request) {
-  content::BrowserContext::GetConnectorFor(
-      web_ui()->GetWebContents()->GetBrowserContext())
-      ->BindInterface(chromeos::network_config::mojom::kServiceName,
-                      std::move(request));
+  ash::GetNetworkConfigService(std::move(request));
 }
 
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)

@@ -74,6 +74,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   explicit ServiceWorkerContextWrapper(BrowserContext* browser_context);
 
+  static void RunOrPostTaskOnCoreThread(const base::Location& location,
+                                        base::OnceClosure task);
+
   // Init and Shutdown are for use on the UI thread when the profile,
   // storagepartition is being setup and torn down.
   void Init(const base::FilePath& user_data_directory,
@@ -111,7 +114,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   }
 
   // Temporary for crbug.com/824858. The thread the context core lives on.
-  static BrowserThread::ID GetCoreThreadId() { return BrowserThread::IO; }
+  static bool IsServiceWorkerOnUIEnabled();
+  static BrowserThread::ID GetCoreThreadId();
   static bool OnCoreThread();
 
   // ServiceWorkerContextCoreObserver implementation:
@@ -334,15 +338,16 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   ~ServiceWorkerContextWrapper() override;
 
-  void InitOnIO(const base::FilePath& user_data_directory,
-                scoped_refptr<base::SequencedTaskRunner> database_task_runner,
-                storage::QuotaManagerProxy* quota_manager_proxy,
-                storage::SpecialStoragePolicy* special_storage_policy,
-                ChromeBlobStorageContext* blob_context,
-                URLLoaderFactoryGetter* url_loader_factory_getter,
-                std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-                    non_network_loader_factory_bundle_info_for_update_check);
-  void ShutdownOnIO();
+  void InitOnCoreThread(
+      const base::FilePath& user_data_directory,
+      scoped_refptr<base::SequencedTaskRunner> database_task_runner,
+      storage::QuotaManagerProxy* quota_manager_proxy,
+      storage::SpecialStoragePolicy* special_storage_policy,
+      ChromeBlobStorageContext* blob_context,
+      URLLoaderFactoryGetter* url_loader_factory_getter,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          non_network_loader_factory_bundle_info_for_update_check);
+  void ShutdownOnCoreThread();
 
   // If |include_installing_version| is true, |callback| is called if there is
   // an installing version with no waiting or active version.
@@ -543,7 +548,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   base::ObserverList<ServiceWorkerContextObserver>::Unchecked observer_list_;
 
   const std::unique_ptr<ServiceWorkerProcessManager> process_manager_;
-  // Cleared in ShutdownOnIO():
+  // Cleared in ShutdownOnCoreThread():
   std::unique_ptr<ServiceWorkerContextCore> context_core_;
 
   // Initialized in Init(); true if the user data directory is empty.

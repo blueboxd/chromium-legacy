@@ -58,8 +58,7 @@ class RegexpGatherer(skeleton_gatherer.SkeletonGatherer):
     chunk_start = 0
     for match in regexp.finditer(text_to_parse):
       groups = match.groupdict()
-      keys = groups.keys()
-      keys.sort()
+      keys = sorted(groups.keys())
       self.translatable_chunk_ = False
       for group in keys:
         if group.startswith('id') and groups[group]:

@@ -59,6 +59,11 @@ class SSPILibrary {
                                                     unsigned long* contextAttr,
                                                     PTimeStamp ptsExpiry) = 0;
 
+  virtual SECURITY_STATUS QueryContextAttributesEx(PCtxtHandle phContext,
+                                                   ULONG ulAttribute,
+                                                   PVOID pBuffer,
+                                                   ULONG cbBuffer) = 0;
+
   virtual SECURITY_STATUS QuerySecurityPackageInfo(LPWSTR pszPackageName,
                                                    PSecPkgInfoW *pkgInfo) = 0;
 
@@ -97,6 +102,11 @@ class SSPILibraryDefault : public SSPILibrary {
                                             unsigned long* contextAttr,
                                             PTimeStamp ptsExpiry) override;
 
+  SECURITY_STATUS QueryContextAttributesEx(PCtxtHandle phContext,
+                                           ULONG ulAttribute,
+                                           PVOID pBuffer,
+                                           ULONG cbBuffer) override;
+
   SECURITY_STATUS QuerySecurityPackageInfo(LPWSTR pszPackageName,
                                            PSecPkgInfoW* pkgInfo) override;
 
@@ -130,12 +140,14 @@ class NET_EXPORT_PRIVATE HttpAuthSSPI : public HttpNegotiateAuthSystem {
   void SetDelegation(HttpAuth::DelegationType delegation_type) override;
 
  private:
-  int OnFirstRound(const AuthCredentials* credentials);
+  int OnFirstRound(const AuthCredentials* credentials,
+                   const NetLogWithSource& net_log);
 
   int GetNextSecurityToken(const std::string& spn,
                            const std::string& channing_bindings,
                            const void* in_token,
                            int in_token_len,
+                           const NetLogWithSource& net_log,
                            void** out_token,
                            int* out_token_len);
 

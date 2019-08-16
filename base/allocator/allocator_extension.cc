@@ -7,15 +7,9 @@
 #include "base/logging.h"
 
 #if BUILDFLAG(USE_TCMALLOC)
-#if BUILDFLAG(USE_NEW_TCMALLOC)
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
 #include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
 #include "third_party/tcmalloc/chromium/src/gperftools/malloc_hook.h"
-#else
-#include "third_party/tcmalloc/gperftools-2.0/chromium/src/gperftools/heap-profiler.h"
-#include "third_party/tcmalloc/gperftools-2.0/chromium/src/gperftools/malloc_extension.h"
-#include "third_party/tcmalloc/gperftools-2.0/chromium/src/gperftools/malloc_hook.h"
-#endif
 #endif
 
 namespace base {

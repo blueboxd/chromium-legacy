@@ -142,14 +142,14 @@ _COMMANDS = {
     "GetTimeouts": (Method.GET, "/session/:sessionId/timeouts"),
     "GetTitle": (Method.GET, "/session/:sessionId/title"),
     "GetUrl": (Method.GET, "/session/:sessionId/url"),
-    "GetWindow": (Method.GET, "/session/:sessionId/window_handle"),
+    "GetWindow": command_executor.Command.GET_CURRENT_WINDOW_HANDLE,
     "GetWindowPosition":
     (Method.GET, "/session/:sessionId/window/:windowHandle/position"),
     "GetWindowRect":
     (Method.GET, "/session/:sessionId/window/rect"),
     "GetWindowSize":
     (Method.GET, "/session/:sessionId/window/:windowHandle/size"),
-    "GetWindows": (Method.GET, "/session/:sessionId/window_handles"),
+    "GetWindows": command_executor.Command.GET_WINDOW_HANDLES,
     "GoBack": (Method.POST, "/session/:sessionId/back"),
     "GoForward": (Method.POST, "/session/:sessionId/forward"),
     "HeapSnapshot": (Method.GET, "/session/:sessionId/chromium/heap_snapshot"),
@@ -183,6 +183,8 @@ _COMMANDS = {
     "SendCommand": (Method.POST, "/session/:sessionId/chromium/send_command"),
     "SendCommandAndGetResult":
     (Method.POST, "/session/:sessionId/chromium/send_command_and_get_result"),
+    "SendCommandFromWebSocket":
+    (Method.POST, "session/:sessionId/chromium/send_command_from_websocket"),
     "SetAlertPrompt": (Method.POST, "/session/:sessionId/alert_text"),
     "SetGeolocation": (Method.POST, "/session/:sessionId/location"),
     "SetImplicitWait":
@@ -280,11 +282,12 @@ def _GetAnyElementIds(payload):
   Returns:
     list of ID strings, in order, in this payload
   """
+  element_tag="element-6066-11e4-a52e-4f735466cecf"
   if isinstance(payload, dict):
-    if "ELEMENT" in payload:
-      return [payload["ELEMENT"]]
+    if element_tag in payload:
+      return [payload[element_tag]]
   elif isinstance(payload, list):
-    elements = [item["ELEMENT"] for item in payload if "ELEMENT" in item]
+    elements = [item[element_tag] for item in payload if element_tag in item]
     windows = [item for item in payload if "CDwindow" in item]
     if not elements and not windows:
       return None

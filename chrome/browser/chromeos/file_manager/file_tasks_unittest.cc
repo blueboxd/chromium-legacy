@@ -28,6 +28,7 @@
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/services/app_service/public/cpp/file_handler_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/entry_info.h"
 #include "extensions/browser/extension_prefs.h"
@@ -306,7 +307,7 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackOfficeEditing) {
 // Test IsGoodMatchFileHandler which returns whether a file handle info matches
 // with files as good match or not.
 TEST(FileManagerFileTasksTest, IsGoodMatchFileHandler) {
-  using FileHandlerInfo = extensions::FileHandlerInfo;
+  using FileHandlerInfo = apps::FileHandlerInfo;
 
   std::vector<extensions::EntryInfo> entries_1;
   entries_1.emplace_back(base::FilePath(FILE_PATH_LITERAL("foo.jpg")),

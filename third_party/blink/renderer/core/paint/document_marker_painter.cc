@@ -234,9 +234,10 @@ void DocumentMarkerPainter::PaintDocumentMarker(
 
 TextPaintStyle DocumentMarkerPainter::ComputeTextPaintStyleFrom(
     const ComputedStyle& style,
-    const TextMatchMarker& marker) {
-  const Color text_color =
-      LayoutTheme::GetTheme().PlatformTextSearchColor(marker.IsActiveMatch());
+    const TextMatchMarker& marker,
+    bool in_forced_colors_mode) {
+  const Color text_color = LayoutTheme::GetTheme().PlatformTextSearchColor(
+      marker.IsActiveMatch(), in_forced_colors_mode);
   if (style.VisitedDependentColor(GetCSSPropertyColor()) == text_color)
     return {};
 

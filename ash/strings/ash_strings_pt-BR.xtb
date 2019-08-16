@@ -333,6 +333,7 @@
 <translation id="6043212731627905357">Este monitor não está funcionando bem com seu <ph name="DEVICE_TYPE" /> (o monitor não é compatível).</translation>
 <translation id="6043994281159824495">Sair agora</translation>
 <translation id="6047696787498798094">O compartilhamento de tela será interrompido quando você alternar para outro usuário. Quer continuar?</translation>
+<translation id="6054305421211936131">Fazer login com cartão inteligente</translation>
 <translation id="6062360702481658777">Você sairá automaticamente em <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Não foi possível verificar sua senha. Tente novamente.</translation>
 <translation id="607652042414456612">Seu computador pode ser detectado por dispositivos Bluetooth próximos e aparecerá como "<ph name="NAME" />", com o endereço <ph name="ADDRESS" /></translation>
@@ -361,6 +362,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6459472438155181876">Estendendo tela para <ph name="DISPLAY_NAME" /></translation>
 <translation id="6482559668224714696">Lupa de tela cheia</translation>
 <translation id="6490471652906364588">Dispositivo USB-C (porta da direita)</translation>
+<translation id="649452524636452238">PIN do cartão inteligente</translation>
 <translation id="6501401484702599040">Transmitindo tela para <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Entrada de texto manuscrito</translation>
 <translation id="6528179044667508675">Não perturbe</translation>
@@ -390,6 +392,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6857811139397017780">Ativar <ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">Esta atualização requer o powerwash do seu dispositivo. Saiba mais sobre a última atualização do <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6911468394164995108">Conectar a outra...</translation>
+<translation id="6919251195245069855">Não foi possível reconhecer seu cartão inteligente. Tente novamente.</translation>
 <translation id="6972754398087986839">Primeiros passos</translation>
 <translation id="6981982820502123353">Acessibilidade</translation>
 <translation id="698231206551913481">Todos os arquivos e dados locais associados a este usuário serão excluídos permanentemente quando o usuário for removido.</translation>

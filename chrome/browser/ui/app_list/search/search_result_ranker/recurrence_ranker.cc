@@ -208,9 +208,13 @@ void RecurrenceRanker::OnLoadProtoFromDiskComplete(
                           InitializationStatus::kInitialized);
 
   // If OnLoadFromDisk returned nullptr, no saved ranker proto was available on
-  // disk, and there is nothing to load.
-  if (!proto)
+  // disk, and there is nothing to load. Save a blank ranker to prevent metrics
+  // from reporting no ranker exists on future loads. Use SaveToDisk rather than
+  // MaybeSave because the time of last save is set to the time at construction.
+  if (!proto) {
+    SaveToDisk();
     return;
+  }
 
   if (!proto->has_config_hash() || proto->config_hash() != config_hash_) {
     // The configuration of the saved ranker doesn't match the configuration for

@@ -84,6 +84,7 @@ component("web_engine_core") {
     "//media/fuchsia/mojom",
     "//mojo/public/cpp/bindings",
     "//services/network/public/cpp",
+    "//services/network/public/mojom",
     "//services/service_manager/sandbox",
     "//skia/public/mojom",
     "//third_party/blink/public/common",
@@ -110,6 +111,8 @@ component("web_engine_core") {
   sources = [
     "browser/context_impl.cc",
     "browser/context_impl.h",
+    "browser/cookie_manager_impl.cc",
+    "browser/cookie_manager_impl.h",
     "browser/discarding_event_filter.cc",
     "browser/discarding_event_filter.h",
     "browser/frame_impl.cc",
@@ -237,15 +240,20 @@ test("web_engine_browsertests") {
 
 test("web_engine_unittests") {
   sources = [
+    "browser/cookie_manager_impl_unittest.cc",
     "browser/frame_impl_unittest.cc",
     "context_provider_impl_unittest.cc",
     "fake_context.cc",
     "fake_context.h",
+    "test/run_all_unittests.cc",
   ]
   deps = [
     ":web_engine_core",
-    "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//fuchsia/base:test_support",
+    "//mojo/core/embedder",
+    "//services/network:network_service",
+    "//services/network/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/fuchsia-sdk/sdk:web",

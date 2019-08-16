@@ -12,7 +12,7 @@
     android:layout_height="match_parent"
     android:paddingBottom="8dp"
     android:orientation="vertical"
-    android:background="@color/modern_primary_color">
+    android:background="@color/sheet_bg_color">
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -29,6 +29,9 @@ class StubWebView : public WebView {
   Status Resume(const Timeout* timeout) override;
   Status SendCommand(const std::string& cmd,
                      const base::DictionaryValue& params) override;
+  Status SendCommandFromWebSocket(const std::string& cmd,
+                                  const base::DictionaryValue& params,
+                                  const int client_cmd_id) override;
   Status SendCommandAndGetResult(const std::string& cmd,
                                  const base::DictionaryValue& params,
                                  std::unique_ptr<base::Value>* value) override;

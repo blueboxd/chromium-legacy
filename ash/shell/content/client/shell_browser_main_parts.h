@@ -12,12 +12,6 @@
 #include "content/public/common/main_function_params.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
-namespace chromeos {
-namespace network_config {
-class CrosNetworkConfig;
-}  // namespace network_config
-}  // namespace chromeos
-
 namespace content {
 class BrowserContext;
 struct MainFunctionParams;
@@ -56,9 +50,6 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   content::BrowserContext* browser_context() { return browser_context_.get(); }
 
  private:
-  void InitializeCrosNetworkConfig();
-  void AddNetworkConfigBinding(mojo::ScopedMessagePipeHandle handle);
-
   std::unique_ptr<content::BrowserContext> browser_context_;
   std::unique_ptr<views::ViewsDelegate> views_delegate_;
   std::unique_ptr<WindowWatcher> window_watcher_;
@@ -66,8 +57,6 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
       example_session_controller_client_;
   std::unique_ptr<ExampleAppListClient> example_app_list_client_;
   std::unique_ptr<ash::AshTestHelper> ash_test_helper_;
-  std::unique_ptr<chromeos::network_config::CrosNetworkConfig>
-      cros_network_config_;
   std::unique_ptr<ShellNewWindowDelegate> new_window_delegate_;
   content::MainFunctionParams parameters_;
 

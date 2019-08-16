@@ -14,8 +14,6 @@
 namespace {
 // Duration of button animations, in seconds.
 const CGFloat kButtonAnimationDuration = 0.2;
-// Edge insets of button.
-const CGFloat kButtonEdgeInset = 6;
 // To achieve a circular corner radius, divide length of a side by 2.
 const CGFloat kButtonCircularCornerRadiusDivisor = 2.0;
 }  // namespace
@@ -36,12 +34,6 @@ const CGFloat kButtonCircularCornerRadiusDivisor = 2.0;
   button.badgeType = badgeType;
 
   return button;
-}
-
-- (void)willMoveToSuperview:(UIView*)newSuperview {
-  self.imageEdgeInsets = UIEdgeInsetsMake(kButtonEdgeInset, kButtonEdgeInset,
-                                          kButtonEdgeInset, kButtonEdgeInset);
-  [super willMoveToSuperview:newSuperview];
 }
 
 - (void)layoutSubviews {

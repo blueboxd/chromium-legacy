@@ -184,12 +184,7 @@ CSSPrimitiveValue* CSSPrimitiveValue::CreateFromLength(const Length& length,
                                             UnitType::kPixels);
     case Length::kCalculated: {
       const CalculationValue& calc = length.GetCalculationValue();
-      if (calc.IsExpression()) {
-        // TODO(crbug.com/825895): Implement min() and max().
-        DCHECK(RuntimeEnabledFeatures::CSSComparisonFunctionsEnabled());
-        return nullptr;
-      }
-      if (calc.Pixels() && calc.Percent())
+      if (calc.IsExpression() || (calc.Pixels() && calc.Percent()))
         return CSSMathFunctionValue::Create(length, zoom);
       if (calc.Percent()) {
         double num = calc.Percent();

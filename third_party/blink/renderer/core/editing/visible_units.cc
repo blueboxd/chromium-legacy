@@ -450,6 +450,8 @@ static LayoutUnit BoundingBoxLogicalHeight(LayoutObject* o,
 // the text node. It seems weird to return false in this case.
 bool HasRenderedNonAnonymousDescendantsWithHeight(
     const LayoutObject* layout_object) {
+  if (DisplayLockUtilities::NearestLockedInclusiveAncestor(*layout_object))
+    return false;
   const LayoutObject* stop = layout_object->NextInPreOrderAfterChildren();
   // TODO(editing-dev): Avoid single-character parameter names.
   for (LayoutObject* o = layout_object->SlowFirstChild(); o && o != stop;

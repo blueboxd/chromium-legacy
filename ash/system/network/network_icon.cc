@@ -10,6 +10,7 @@
 #include "ash/public/cpp/network_icon_image_source.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/network/network_icon_animation.h"
 #include "ash/system/network/network_icon_animation_observer.h"
 #include "ash/system/tray/tray_constants.h"
@@ -223,12 +224,14 @@ gfx::ImageSkia* ConnectingWirelessImage(ImageType image_type,
 gfx::ImageSkia ConnectingVpnImage(double animation) {
   float floored_animation_value =
       std::floor(animation * kNumFadeImages) / kNumFadeImages;
+  const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kIconPrimary,
+      AshColorProvider::AshColorMode::kLight);
   return gfx::CreateVectorIcon(
       kNetworkVpnIcon,
       gfx::Tween::ColorValueBetween(
           floored_animation_value,
-          SkColorSetA(kIconOnLightBackgroundColor, kConnectingImageAlpha),
-          kIconOnLightBackgroundColor));
+          SkColorSetA(icon_color, kConnectingImageAlpha), icon_color));
 }
 
 int StrengthIndex(int strength) {
@@ -441,9 +444,11 @@ NetworkIconImpl* FindAndUpdateImageImpl(const NetworkStateProperties* network,
 // Public interface
 
 SkColor GetDefaultColorForIconType(IconType icon_type) {
-  if (icon_type == network_icon::ICON_TYPE_TRAY_OOBE)
-    return kIconOnLightBackgroundColor;
-  return kIconOnDarkBackgroundColor;
+  const bool light_icon = icon_type == network_icon::ICON_TYPE_TRAY_OOBE;
+  return AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kIconPrimary,
+      light_icon ? AshColorProvider::AshColorMode::kLight
+                 : AshColorProvider::AshColorMode::kDark);
 }
 
 const gfx::ImageSkia GetBasicImage(IconType icon_type,

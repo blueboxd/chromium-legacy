@@ -43,6 +43,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -786,22 +787,21 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
       DevToolsWindowTesting::Get(windows[2])->main_web_contents());
   // Try to close second devtools.
   {
-    content::WindowedNotificationObserver cancel_browser(
-        chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
-        content::NotificationService::AllSources());
     chrome::CloseWindow(DevToolsWindowTesting::Get(windows[1])->browser());
     CancelModalDialog();
-    cancel_browser.Wait();
+    base::RunLoop().RunUntilIdle();
+    // The second devtools hasn't closed.
+    EXPECT_EQ(windows[1],
+              DevToolsWindow::GetInstanceForInspectedWebContents(
+                  DevToolsWindowTesting::Get(windows[0])->main_web_contents()));
   }
   // Try to close browser window.
   {
-    content::WindowedNotificationObserver cancel_browser(
-        chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
-        content::NotificationService::AllSources());
     chrome::CloseWindow(browser());
     AcceptModalDialog();
     CancelModalDialog();
-    cancel_browser.Wait();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(browser(), BrowserList::GetInstance()->get(0));
   }
   // Try to exit application.
   {

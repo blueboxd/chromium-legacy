@@ -107,6 +107,8 @@ void AppListPresenterImpl::Show(int64_t display_id,
     SetView(view);
   }
   delegate_->ShowForDisplay(display_id);
+  if (delegate_->IsTabletMode())
+    home_launcher_shown_ = true;
 
   NotifyTargetVisibilityChanged(GetTargetVisibility());
   NotifyVisibilityChanged(GetTargetVisibility(), display_id);
@@ -299,7 +301,9 @@ void AppListPresenterImpl::OnTabletModeChanged(bool started) {
       DCHECK(IsVisible());
       view_->OnTabletModeChanged(true);
     }
-    home_launcher_shown_ = GetWindow() && GetWindow()->HasFocus();
+    // The AppList widget is shown without being focused in tablet mode, so
+    // check for visibility, not focus.
+    home_launcher_shown_ = GetWindow() && GetWindow()->IsVisible();
   } else {
     if (IsVisible())
       view_->OnTabletModeChanged(false);

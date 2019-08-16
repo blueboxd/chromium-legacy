@@ -21,33 +21,19 @@ namespace extensions {
 namespace keys = manifest_keys;
 namespace errors = manifest_errors;
 
-namespace file_handler_verbs {
-
-const char kOpenWith[] = "open_with";
-const char kAddTo[] = "add_to";
-const char kPackWith[] = "pack_with";
-const char kShareWith[] = "share_with";
-
-}  // namespace file_handler_verbs
-
 namespace {
 
 const int kMaxTypeAndExtensionHandlers = 200;
 const char kNotRecognized[] = "'%s' is not a recognized file handler property.";
 
 bool IsSupportedVerb(const std::string& verb) {
-  return verb == file_handler_verbs::kOpenWith ||
-         verb == file_handler_verbs::kAddTo ||
-         verb == file_handler_verbs::kPackWith ||
-         verb == file_handler_verbs::kShareWith;
+  return verb == apps::file_handler_verbs::kOpenWith ||
+         verb == apps::file_handler_verbs::kAddTo ||
+         verb == apps::file_handler_verbs::kPackWith ||
+         verb == apps::file_handler_verbs::kShareWith;
 }
 
 }  // namespace
-
-FileHandlerInfo::FileHandlerInfo()
-    : include_directories(false), verb(file_handler_verbs::kOpenWith) {}
-FileHandlerInfo::FileHandlerInfo(const FileHandlerInfo& other) = default;
-FileHandlerInfo::~FileHandlerInfo() {}
 
 FileHandlerMatch::FileHandlerMatch() = default;
 FileHandlerMatch::~FileHandlerMatch() = default;
@@ -75,7 +61,7 @@ bool LoadFileHandler(const std::string& handler_id,
                      base::string16* error,
                      std::vector<InstallWarning>* install_warnings) {
   DCHECK(error);
-  FileHandlerInfo handler;
+  apps::FileHandlerInfo handler;
 
   handler.id = handler_id;
 
@@ -106,7 +92,7 @@ bool LoadFileHandler(const std::string& handler_id,
     }
   }
 
-  handler.verb = file_handler_verbs::kOpenWith;
+  handler.verb = apps::file_handler_verbs::kOpenWith;
   const base::Value* file_handler =
       handler_info.FindKey(keys::kFileHandlerVerb);
   if (file_handler != nullptr) {

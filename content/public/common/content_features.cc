@@ -160,6 +160,11 @@ const base::Feature kFeaturePolicyForSandbox{"FeaturePolicyForSandbox",
 const base::Feature kFontSrcLocalMatching{"FontSrcLocalMatching",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables scrollers inside Blink to store scroll offsets in fractional
+// floating-point numbers rather than truncating to integers.
+const base::Feature kFractionalScrollOffsets{"FractionalScrollOffsets",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Puts network quality estimate related Web APIs in the holdback mode. When the
 // holdback is enabled the related Web APIs return network quality estimate
 // set by the experiment (regardless of the actual quality).
@@ -332,10 +337,6 @@ const base::Feature kPassiveDocumentWheelEventListeners{
 const base::Feature kPassiveEventListenersDueToFling{
     "PassiveEventListenersDueToFling", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Whether PaymentRequest exposes hasEnrolledInstrument API.
-const base::Feature kPaymentRequestHasEnrolledInstrument = {
-    "PaymentRequestHasEnrolledInstrument", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Whether ExecutionContext is paused (and workers) on background freeze.
 const base::Feature kPauseExecutionContextOnBackgroundFreeze = {
     "PauseExecutionContextOnBackgroundFreeze",
@@ -466,6 +467,12 @@ const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
 // integration with ChromeOS (http://crbug.com/823256).
 const base::Feature kServiceWorkerLongRunningMessage{
     "ServiceWorkerLongRunningMessage", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// If enabled, ServiceWorkerContextCore lives on the UI thread rather than the
+// IO thread.
+// https://crbug.com/824858
+const base::Feature kServiceWorkerOnUI{"ServiceWorkerOnUI",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Service worker based payment apps as defined by w3c here:
 // https://w3c.github.io/webpayments-payment-apps-api/

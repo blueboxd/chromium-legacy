@@ -217,7 +217,8 @@ TEST_F(CanvasResourceProviderTest,
 
   auto provider = CanvasResourceProvider::Create(
       kSize,
-      CanvasResourceProvider::ResourceUsage::kSoftwareCompositedResourceUsage,
+      CanvasResourceProvider::ResourceUsage::
+          kSoftwareCompositedDirect2DResourceUsage,
       context_provider_wrapper_, 0 /* msaa_sample_count */,
       kLow_SkFilterQuality, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,

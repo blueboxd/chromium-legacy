@@ -240,15 +240,31 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  # https://crbug.com/887942#c1\n')
                 sb.append('  ignore_proguard_configs = true\n')
                 break
+            case 'com_android_support_coordinatorlayout':
+                // Reduce binary size. https:crbug.com/954584
+                sb.append('  ignore_proguard_configs = true\n')
+                break
+            case 'com_android_support_design':
+                // Reduce binary size. https:crbug.com/954584
+                sb.append('  ignore_proguard_configs = true\n')
+                break
             case 'com_android_support_support_compat':
             case 'com_android_support_support_media_compat':
                 // Target has AIDL, but we don't support it yet: http://crbug.com/644439
                 sb.append('  ignore_aidl = true\n')
                 break
+            case 'com_android_support_support_vector_drawable':
+                // Target has AIDL, but we don't support it yet: http://crbug.com/644439
+                sb.append('  create_srcjar = false\n')
+                break
             case 'com_android_support_transition':
                 // Not specified in the POM, compileOnly dependency not supposed to be used unless
                 // the library is present: b/70887421
                 sb.append('  deps += [":com_android_support_support_fragment_java"]\n')
+                break
+            case 'com_android_support_versionedparcelable':
+                // Target has AIDL, but we don't support it yet: http://crbug.com/644439
+                sb.append('  ignore_aidl = true\n')
                 break
             case 'com_google_android_gms_play_services_basement':
                 // Deprecated deps jar but still needed by play services basement.

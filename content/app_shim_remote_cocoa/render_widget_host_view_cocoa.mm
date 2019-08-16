@@ -2199,6 +2199,10 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)invalidateTouchBar {
+  // Work around a crash (https://crbug.com/822427).
+  [candidateListTouchBarItem_ setCandidates:@[]
+                           forSelectedRange:NSMakeRange(NSNotFound, 0)
+                                   inString:nil];
   candidateListTouchBarItem_.reset();
   self.touchBar = nil;
 }

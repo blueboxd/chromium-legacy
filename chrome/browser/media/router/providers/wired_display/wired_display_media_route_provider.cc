@@ -326,7 +326,7 @@ Display WiredDisplayMediaRouteProvider::GetPrimaryDisplay() const {
 
 WiredDisplayMediaRouteProvider::Presentation::Presentation(
     const MediaRoute& route)
-    : route_(route) {}
+    : route_(route), status_(base::in_place) {}
 
 WiredDisplayMediaRouteProvider::Presentation::Presentation(
     Presentation&& other) = default;
@@ -335,10 +335,10 @@ WiredDisplayMediaRouteProvider::Presentation::~Presentation() = default;
 
 void WiredDisplayMediaRouteProvider::Presentation::UpdatePresentationTitle(
     const std::string& title) {
-  if (status_.title == title)
+  if (status_->title == title)
     return;
 
-  status_.title = title;
+  status_->title = title;
   if (media_status_observer_)
     media_status_observer_->OnMediaStatusUpdated(status_.Clone());
 }

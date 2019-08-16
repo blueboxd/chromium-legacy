@@ -21,6 +21,8 @@
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/ui/badges/badge_button_action_handler.h"
+#import "ios/chrome/browser/ui/badges/badge_button_factory.h"
 #import "ios/chrome/browser/ui/badges/badge_mediator.h"
 #import "ios/chrome/browser/ui/badges/badge_view_controller.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -168,9 +170,14 @@ const int kLocationAuthorizationStatusCount = 5;
 
   // Create BadgeMediator and set the viewController as its consumer.
   if (IsInfobarUIRebootEnabled()) {
-    self.badgeViewController = [[BadgeViewController alloc] init];
-    self.badgeViewController.dispatcher =
+    BadgeButtonActionHandler* actionHandler =
+        [[BadgeButtonActionHandler alloc] init];
+    actionHandler.dispatcher =
         static_cast<id<InfobarCommands>>(self.dispatcher);
+    BadgeButtonFactory* buttonFactory =
+        [[BadgeButtonFactory alloc] initWithActionHandler:actionHandler];
+    self.badgeViewController =
+        [[BadgeViewController alloc] initWithButtonFactory:buttonFactory];
     [self.viewController addChildViewController:self.badgeViewController];
     [self.viewController setBadgeView:self.badgeViewController.view];
     [self.badgeViewController

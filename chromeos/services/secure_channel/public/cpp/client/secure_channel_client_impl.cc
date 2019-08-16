@@ -8,8 +8,6 @@
 #include "base/no_destructor.h"
 #include "base/task_runner.h"
 #include "chromeos/services/secure_channel/public/cpp/client/connection_attempt_impl.h"
-#include "chromeos/services/secure_channel/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 
@@ -38,17 +36,16 @@ SecureChannelClientImpl::Factory::~Factory() = default;
 
 std::unique_ptr<SecureChannelClient>
 SecureChannelClientImpl::Factory::BuildInstance(
-    service_manager::Connector* connector,
+    mojo::PendingRemote<mojom::SecureChannel> channel,
     scoped_refptr<base::TaskRunner> task_runner) {
-  return base::WrapUnique(new SecureChannelClientImpl(connector, task_runner));
+  return base::WrapUnique(
+      new SecureChannelClientImpl(std::move(channel), task_runner));
 }
 
 SecureChannelClientImpl::SecureChannelClientImpl(
-    service_manager::Connector* connector,
+    mojo::PendingRemote<mojom::SecureChannel> channel,
     scoped_refptr<base::TaskRunner> task_runner)
-    : task_runner_(task_runner), weak_ptr_factory_(this) {
-  connector->BindInterface(mojom::kServiceName, &secure_channel_ptr_);
-}
+    : secure_channel_ptr_(std::move(channel)), task_runner_(task_runner) {}
 
 SecureChannelClientImpl::~SecureChannelClientImpl() = default;
 

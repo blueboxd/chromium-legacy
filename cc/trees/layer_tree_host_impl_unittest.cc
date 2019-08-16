@@ -65,6 +65,7 @@
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
+#include "cc/trees/render_frame_metadata.h"
 #include "cc/trees/render_frame_metadata_observer.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -624,6 +625,12 @@ class LayerTreeHostImplTest : public testing::Test,
     host_impl_->DidDrawAllLayers(frame);
   }
 
+  RenderFrameMetadata StartDrawAndProduceRenderFrameMetadata() {
+    TestFrameData frame;
+    EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+    return host_impl_->MakeRenderFrameMetadata(&frame);
+  }
+
   void TestGPUMemoryForTilings(const gfx::Size& layer_size) {
     std::unique_ptr<FakeRecordingSource> recording_source =
         FakeRecordingSource::CreateFilledRecordingSource(layer_size);
@@ -967,11 +974,6 @@ TEST_F(LayerTreeHostImplTest, ResourcelessDrawWithEmptyViewport) {
   const bool resourceless_software_draw = true;
   host_impl_->OnDraw(identity, viewport, resourceless_software_draw, false);
   ASSERT_EQ(fake_layer_tree_frame_sink->num_sent_frames(), 1u);
-#if defined(OS_ANDROID)
-  EXPECT_EQ(
-      gfx::SizeF(100.f, 100.f),
-      fake_layer_tree_frame_sink->last_sent_frame()->metadata.root_layer_size);
-#endif
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollDeltaNoLayers) {
@@ -4754,12 +4756,6 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
     EXPECT_EQ(1.f, metadata.page_scale_factor);
     EXPECT_EQ(gfx::SizeF(50.f, 50.f), metadata.scrollable_viewport_size);
     EXPECT_EQ(0.5f, metadata.min_page_scale_factor);
-
-#if defined(OS_ANDROID)
-    EXPECT_EQ(4.f, metadata.max_page_scale_factor);
-    EXPECT_EQ(gfx::SizeF(100.f, 100.f), metadata.root_layer_size);
-    EXPECT_FALSE(metadata.root_overflow_y_hidden);
-#endif
   }
 
   // Scrolling should update metadata immediately.
@@ -4781,74 +4777,6 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
     EXPECT_EQ(gfx::Vector2dF(0.f, 10.f), metadata.root_scroll_offset);
   }
 
-  // Root "overflow: hidden" properties should be reflected on the outer
-  // viewport scroll layer.
-  {
-    host_impl_->active_tree()
-        ->OuterViewportScrollLayer()
-        ->test_properties()
-        ->user_scrollable_horizontal = false;
-    host_impl_->active_tree()->BuildPropertyTreesForTesting();
-    viz::CompositorFrameMetadata metadata =
-        host_impl_->MakeCompositorFrameMetadata();
-#if defined(OS_ANDROID)
-    EXPECT_FALSE(metadata.root_overflow_y_hidden);
-#endif
-
-    host_impl_->active_tree()
-        ->OuterViewportScrollLayer()
-        ->test_properties()
-        ->user_scrollable_vertical = false;
-    host_impl_->active_tree()->BuildPropertyTreesForTesting();
-    metadata = host_impl_->MakeCompositorFrameMetadata();
-#if defined(OS_ANDROID)
-    EXPECT_TRUE(metadata.root_overflow_y_hidden);
-#endif
-  }
-
-  // Re-enable scrollability and verify that overflows are no longer hidden.
-  {
-    host_impl_->active_tree()
-        ->OuterViewportScrollLayer()
-        ->test_properties()
-        ->user_scrollable_horizontal = true;
-    host_impl_->active_tree()
-        ->OuterViewportScrollLayer()
-        ->test_properties()
-        ->user_scrollable_vertical = true;
-    host_impl_->active_tree()->BuildPropertyTreesForTesting();
-    viz::CompositorFrameMetadata metadata =
-        host_impl_->MakeCompositorFrameMetadata();
-#if defined(OS_ANDROID)
-    EXPECT_FALSE(metadata.root_overflow_y_hidden);
-#endif
-  }
-
-  // Root "overflow: hidden" properties should also be reflected on the
-  // inner viewport scroll layer.
-  {
-    host_impl_->active_tree()
-        ->InnerViewportScrollLayer()
-        ->test_properties()
-        ->user_scrollable_horizontal = false;
-    host_impl_->active_tree()->BuildPropertyTreesForTesting();
-    viz::CompositorFrameMetadata metadata =
-        host_impl_->MakeCompositorFrameMetadata();
-#if defined(OS_ANDROID)
-    EXPECT_FALSE(metadata.root_overflow_y_hidden);
-#endif
-
-    host_impl_->active_tree()
-        ->InnerViewportScrollLayer()
-        ->test_properties()
-        ->user_scrollable_vertical = false;
-    host_impl_->active_tree()->BuildPropertyTreesForTesting();
-    metadata = host_impl_->MakeCompositorFrameMetadata();
-#if defined(OS_ANDROID)
-    EXPECT_TRUE(metadata.root_overflow_y_hidden);
-#endif
-  }
-
   // Page scale should update metadata correctly (shrinking only the viewport).
   host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
                           InputHandler::TOUCHSCREEN);
@@ -4863,11 +4791,6 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
     EXPECT_EQ(2.f, metadata.page_scale_factor);
     EXPECT_EQ(gfx::SizeF(25.f, 25.f), metadata.scrollable_viewport_size);
     EXPECT_EQ(0.5f, metadata.min_page_scale_factor);
-
-#if defined(OS_ANDROID)
-    EXPECT_EQ(4.f, metadata.max_page_scale_factor);
-    EXPECT_EQ(gfx::SizeF(100.f, 100.f), metadata.root_layer_size);
-#endif
   }
 
   // Likewise if set from the main thread.
@@ -4881,11 +4804,6 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
     EXPECT_EQ(4.f, metadata.page_scale_factor);
     EXPECT_EQ(gfx::SizeF(12.5f, 12.5f), metadata.scrollable_viewport_size);
     EXPECT_EQ(0.5f, metadata.min_page_scale_factor);
-
-#if defined(OS_ANDROID)
-    EXPECT_EQ(4.f, metadata.max_page_scale_factor);
-    EXPECT_EQ(gfx::SizeF(100.f, 100.f), metadata.root_layer_size);
-#endif
   }
 }
 
@@ -10831,10 +10749,6 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  // Ensure the default frame selection bounds are empty.
-  auto* fake_layer_tree_frame_sink =
-      static_cast<FakeLayerTreeFrameSink*>(host_impl_->layer_tree_frame_sink());
-
   // Plumb the layer-local selection bounds.
   gfx::Point selection_top(5, 0);
   gfx::Point selection_bottom(5, 5);
@@ -10846,19 +10760,12 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
   selection.end = selection.start;
   host_impl_->active_tree()->RegisterSelection(selection);
 
-  // Trigger a draw-swap sequence.
   host_impl_->SetNeedsRedraw();
-
-  gfx::Rect full_frame_damage(
-      host_impl_->active_tree()->GetDeviceViewport().size());
-  TestFrameData frame;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-  EXPECT_TRUE(host_impl_->DrawLayers(&frame));
-  host_impl_->DidDrawAllLayers(frame);
+  RenderFrameMetadata metadata = StartDrawAndProduceRenderFrameMetadata();
 
   // Ensure the selection bounds have propagated to the frame metadata.
   const viz::Selection<gfx::SelectionBound>& selection_after =
-      fake_layer_tree_frame_sink->last_sent_frame()->metadata.selection;
+      metadata.selection;
   EXPECT_EQ(selection.start.type, selection_after.start.type());
   EXPECT_EQ(selection.end.type, selection_after.end.type());
   EXPECT_EQ(gfx::PointF(selection_bottom), selection_after.start.edge_bottom());
@@ -10879,10 +10786,6 @@ TEST_F(LayerTreeHostImplTest, HiddenSelectionBoundsStayHidden) {
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  // Ensure the default frame selection bounds are empty.
-  auto* fake_layer_tree_frame_sink =
-      static_cast<FakeLayerTreeFrameSink*>(host_impl_->layer_tree_frame_sink());
-
   // Plumb the layer-local selection bounds.
   gfx::Point selection_top(5, 0);
   gfx::Point selection_bottom(5, 5);
@@ -10898,19 +10801,12 @@ TEST_F(LayerTreeHostImplTest, HiddenSelectionBoundsStayHidden) {
   selection.end = selection.start;
   host_impl_->active_tree()->RegisterSelection(selection);
 
-  // Trigger a draw-swap sequence.
   host_impl_->SetNeedsRedraw();
-
-  gfx::Rect full_frame_damage(
-      host_impl_->active_tree()->GetDeviceViewport().size());
-  TestFrameData frame;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-  EXPECT_TRUE(host_impl_->DrawLayers(&frame));
-  host_impl_->DidDrawAllLayers(frame);
+  RenderFrameMetadata metadata = StartDrawAndProduceRenderFrameMetadata();
 
   // Ensure the selection bounds have propagated to the frame metadata.
   const viz::Selection<gfx::SelectionBound>& selection_after =
-      fake_layer_tree_frame_sink->last_sent_frame()->metadata.selection;
+      metadata.selection;
   EXPECT_EQ(selection.start.type, selection_after.start.type());
   EXPECT_EQ(selection.end.type, selection_after.end.type());
   EXPECT_EQ(gfx::PointF(selection_bottom), selection_after.start.edge_bottom());
@@ -14269,6 +14165,151 @@ class TestRenderFrameMetadataObserver : public RenderFrameMetadataObserver {
   bool increment_counter_;
   base::Optional<RenderFrameMetadata> last_metadata_;
 };
+
+TEST_F(LayerTreeHostImplTest, RenderFrameMetadata) {
+  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
+
+  {
+    // Check initial metadata is correct.
+    RenderFrameMetadata metadata = StartDrawAndProduceRenderFrameMetadata();
+
+    EXPECT_EQ(gfx::Vector2dF(), metadata.root_scroll_offset);
+    EXPECT_EQ(1.f, metadata.page_scale_factor);
+
+#if defined(OS_ANDROID)
+    EXPECT_EQ(gfx::SizeF(50.f, 50.f), metadata.scrollable_viewport_size);
+    EXPECT_EQ(0.5f, metadata.min_page_scale_factor);
+    EXPECT_EQ(4.f, metadata.max_page_scale_factor);
+    EXPECT_EQ(gfx::SizeF(100.f, 100.f), metadata.root_layer_size);
+    EXPECT_FALSE(metadata.root_overflow_y_hidden);
+#endif
+  }
+
+  // Scrolling should update metadata immediately.
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_
+          ->ScrollBegin(BeginState(gfx::Point()).get(), InputHandler::WHEEL)
+          .thread);
+  host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 10)).get());
+  {
+    RenderFrameMetadata metadata = StartDrawAndProduceRenderFrameMetadata();
+    EXPECT_EQ(gfx::Vector2dF(0.f, 10.f), metadata.root_scroll_offset);
+  }
+  host_impl_->ScrollEnd(EndState().get());
+  {
+    RenderFrameMetadata metadata = StartDrawAndProduceRenderFrameMetadata();
+    EXPECT_EQ(gfx::Vector2dF(0.f, 10.f), metadata.root_scroll_offset);
+  }
+
+#if defined(OS_ANDROID)
+  // Root "overflow: hidden" properties should be reflected on the outer
+  // viewport scroll layer.
+  {
+    host_impl_->active_tree()
+        ->OuterViewportScrollLayer()
+        ->test_properties()
+        ->user_scrollable_horizontal = false;
+    host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+    RenderFrameMetadata metadata = StartDrawAndProduceRenderFrameMetadata();
+    EXPECT_FALSE(metadata.root_overflow_y_hidden);
+  }
+
+  {
+    host_impl_->active_tree()
+        ->OuterViewportScrollLayer()
+        ->test_properties()
+        ->user_scrollable_vertical = false;
+    host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+    RenderFrameMetadata metadata = StartDrawAndProduceRenderFrameMetadata();
+    EXPECT_TRUE(metadata.root_overflow_y_hidden);
+  }
+
+  // Re-enable scrollability and verify that overflows are no longer
+  // hidden.
+  {
+    host_impl_->active_tree()
+        ->OuterViewportScrollLayer()
+        ->test_properties()
+        ->user_scrollable_horizontal = true;
+    host_impl_->active_tree()
+        ->OuterViewportScrollLayer()
+        ->test_properties()
+        ->user_scrollable_vertical = true;
+    host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+    RenderFrameMetadata metadata = StartDrawAndProduceRenderFrameMetadata();
+    EXPECT_FALSE(metadata.root_overflow_y_hidden);
+  }
+
+  // Root "overflow: hidden" properties should also be reflected on the
+  // inner viewport scroll layer.
+  {
+    host_impl_->active_tree()
+        ->InnerViewportScrollLayer()
+        ->test_properties()
+        ->user_scrollable_horizontal = false;
+    host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+    RenderFrameMetadata metadata = StartDrawAndProduceRenderFrameMetadata();
+    EXPECT_FALSE(metadata.root_overflow_y_hidden);
+  }
+
+  {
+    host_impl_->active_tree()
+        ->InnerViewportScrollLayer()
+        ->test_properties()
+        ->user_scrollable_vertical = false;
+    host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+    RenderFrameMetadata metadata = StartDrawAndProduceRenderFrameMetadata();
+    EXPECT_TRUE(metadata.root_overflow_y_hidden);
+  }
+#endif
+
+  // Page scale should update metadata correctly (shrinking only the viewport).
+  host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
+                          InputHandler::TOUCHSCREEN);
+  host_impl_->PinchGestureBegin();
+  host_impl_->PinchGestureUpdate(2.f, gfx::Point());
+  host_impl_->PinchGestureEnd(gfx::Point(), true);
+  host_impl_->ScrollEnd(EndState().get());
+  {
+    RenderFrameMetadata metadata = StartDrawAndProduceRenderFrameMetadata();
+
+    EXPECT_EQ(gfx::Vector2dF(0.f, 10.f), metadata.root_scroll_offset);
+    EXPECT_EQ(2.f, metadata.page_scale_factor);
+
+#if defined(OS_ANDROID)
+    EXPECT_EQ(gfx::SizeF(25.f, 25.f), metadata.scrollable_viewport_size);
+    EXPECT_EQ(0.5f, metadata.min_page_scale_factor);
+    EXPECT_EQ(4.f, metadata.max_page_scale_factor);
+    EXPECT_EQ(gfx::SizeF(100.f, 100.f), metadata.root_layer_size);
+#endif
+  }
+
+  // Likewise if set from the main thread.
+  host_impl_->ProcessScrollDeltas();
+  host_impl_->active_tree()->PushPageScaleFromMainThread(4.f, 0.5f, 4.f);
+  host_impl_->active_tree()->SetPageScaleOnActiveTree(4.f);
+  {
+    RenderFrameMetadata metadata = StartDrawAndProduceRenderFrameMetadata();
+
+    EXPECT_EQ(gfx::Vector2dF(0.f, 10.f), metadata.root_scroll_offset);
+    EXPECT_EQ(4.f, metadata.page_scale_factor);
+
+#if defined(OS_ANDROID)
+    EXPECT_EQ(gfx::SizeF(12.5f, 12.5f), metadata.scrollable_viewport_size);
+    EXPECT_EQ(0.5f, metadata.min_page_scale_factor);
+    EXPECT_EQ(4.f, metadata.max_page_scale_factor);
+    EXPECT_EQ(gfx::SizeF(100.f, 100.f), metadata.root_layer_size);
+#endif
+  }
+}
 
 TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToRenderFrameMetadata) {
   const int root_layer_id = 1;

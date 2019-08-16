@@ -59,6 +59,11 @@ const base::Feature kTabHoverCardImages{"TabHoverCardImages",
 const base::Feature kTabOutlinesInLowContrastThemes{
     "TabOutlinesInLowContrastThemes", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables a web-based separator that's only used for performance testing. See
+// https://crbug.com/993502.
+const base::Feature kWebFooterExperiment{"WebFooterExperiment",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 // Enables a web-based toolbar. See https://crbug.com/989131
 const base::Feature kWebUITabStrip{"WebUITabStrip",

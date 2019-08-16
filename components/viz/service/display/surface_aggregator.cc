@@ -1177,8 +1177,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
           << "The root render pass on the root surface can not have backdrop "
              "affecting filters";
 
-      pixel_moving_background_filter_passes_data.push_back(
-          RemapPassId(render_pass->id, surface->surface_id()));
+      pixel_moving_background_filter_passes_data.push_back(render_pass->id);
 
       gfx::Transform transform_to_root_target(
           root_pass_transform, render_pass->transform_to_root_target);

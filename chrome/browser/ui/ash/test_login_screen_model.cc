@@ -22,8 +22,9 @@ void TestLoginScreenModel::EnableAuthForUser(const AccountId& account_id) {}
 void TestLoginScreenModel::DisableAuthForUser(
     const AccountId& account_id,
     const ash::AuthDisabledData& auth_disabled_data) {}
-void TestLoginScreenModel::EnableTapToUnlockForUser(
-    const AccountId& account_id) {}
+void TestLoginScreenModel::SetTapToUnlockEnabledForUser(
+    const AccountId& account_id,
+    bool enabled) {}
 void TestLoginScreenModel::ForceOnlineSignInForUser(
     const AccountId& account_id) {}
 void TestLoginScreenModel::ShowEasyUnlockIcon(

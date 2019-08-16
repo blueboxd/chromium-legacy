@@ -8,6 +8,8 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -36,19 +38,20 @@ public class SharedClipboardMessageHandler {
      * written to the clipboard.
      */
     @CalledByNative
-    private static void showNotification() {
-        // TODO(mvanouwerkerk): Set the correct small icon for the notification.
-        // TODO(mvanouwerkerk): Parameterize title text with machine name.
+    private static void showNotification(String deviceName) {
         Context context = ContextUtils.getApplicationContext();
         PendingIntentProvider contentIntent = PendingIntentProvider.getBroadcast(context,
                 /*requestCode=*/0, new Intent(context, TapReceiver.class),
                 PendingIntent.FLAG_UPDATE_CURRENT);
+        Resources resources = context.getResources();
+        String notificationTitle = TextUtils.isEmpty(deviceName)
+                ? resources.getString(R.string.shared_clipboard_notification_title_unknown_device)
+                : resources.getString(R.string.shared_clipboard_notification_title, deviceName);
         SharingNotificationUtil.showNotification(
                 NotificationUmaTracker.SystemNotificationType.SHARED_CLIPBOARD,
                 NotificationConstants.GROUP_SHARED_CLIPBOARD,
                 NotificationConstants.NOTIFICATION_ID_SHARED_CLIPBOARD, contentIntent,
-                context.getResources().getString(R.string.shared_clipboard_notification_title),
-                context.getResources().getString(R.string.shared_clipboard_notification_text),
-                R.drawable.ic_phone_googblue_36dp);
+                notificationTitle, resources.getString(R.string.shared_clipboard_notification_text),
+                R.drawable.ic_devices_16dp);
     }
 }

@@ -253,8 +253,7 @@ jumbo_static_library("test_support") {
   }
 }
 
-executable("demo") {
-  output_name = "aura_demo"
+executable("aura_demo") {
   testonly = true
 
   sources = [

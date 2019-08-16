@@ -1858,6 +1858,23 @@ base::string16 BrowserAccessibility::GetLocalizedStringForRoleDescription()
     case ax::mojom::Role::kColorWell:
       return content_client->GetLocalizedString(IDS_AX_ROLE_COLOR_WELL);
 
+    case ax::mojom::Role::kDate:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DATE);
+
+    case ax::mojom::Role::kDateTime: {
+      std::string input_type;
+      if (data.GetStringAttribute(ax::mojom::StringAttribute::kInputType,
+                                  &input_type)) {
+        if (input_type == "datetime-local") {
+          return content_client->GetLocalizedString(
+              IDS_AX_ROLE_DATE_TIME_LOCAL);
+        } else if (input_type == "week") {
+          return content_client->GetLocalizedString(IDS_AX_ROLE_WEEK);
+        }
+      }
+      return {};
+    }
+
     case ax::mojom::Role::kDetails:
       return content_client->GetLocalizedString(IDS_AX_ROLE_DETAILS);
 

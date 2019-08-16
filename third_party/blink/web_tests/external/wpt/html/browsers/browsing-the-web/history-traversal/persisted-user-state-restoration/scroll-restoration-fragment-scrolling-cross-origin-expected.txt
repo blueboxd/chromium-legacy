@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Precedence of scroll restoration mode over fragment scrolling in cross-origin history traversal Uncaught ReferenceError: dump is not defined
+Harness: the test ran to completion.
+

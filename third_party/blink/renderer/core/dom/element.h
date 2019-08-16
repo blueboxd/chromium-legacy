@@ -916,7 +916,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   bool StyleRecalcBlockedByDisplayLock(
       DisplayLockContext::LifecycleTarget) const;
 
-  void ActivateDisplayLockIfNeeded();
+  // Activates all activatable locked ancestors for this element. Return true if
+  // we activated at least one previously locked element.
+  bool ActivateDisplayLockIfNeeded();
 
   virtual void SetActive(bool active);
   virtual void SetHovered(bool hovered);

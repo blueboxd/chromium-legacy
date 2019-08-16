@@ -69,7 +69,11 @@ class RecurrenceRankerTest : public testing::Test {
   std::unique_ptr<RecurrenceRanker> MakeSimpleRanker() {
     auto ranker = std::make_unique<RecurrenceRanker>(
         "MyModel", ranker_filepath_, MakeSimpleConfig(), false);
+    // There should be no model file written to disk immediately after
+    // construction, but there should be one once initialization is complete.
+    EXPECT_FALSE(base::PathExists(ranker_filepath_));
     Wait();
+    EXPECT_TRUE(base::PathExists(ranker_filepath_));
     return ranker;
   }
 
@@ -133,10 +137,14 @@ class RecurrenceRankerTest : public testing::Test {
                     bool has_saved = false) {
     // Total count of serialization reports:
     //  - one for either a kLoadOk or kModelReadError
-    //  - one if has_saved is true
+    //  - one if |fresh_model_created| because model is written to disk with a
+    //    kSaveOk on initialization.
+    //  - one if |has_saved| because model is again written to disk with a
+    //    kSaveOk.
     histogram_tester_.ExpectTotalCount(
         "RecurrenceRanker.SerializationStatus.MyModel",
-        static_cast<int>(has_saved) + 1);
+        1 + static_cast<int>(has_saved) +
+            static_cast<int>(fresh_model_created));
 
     // If a model doesn't already exist, a read error is logged.
     if (fresh_model_created) {
@@ -149,11 +157,10 @@ class RecurrenceRankerTest : public testing::Test {
           SerializationStatus::kLoadOk, 1);
     }
 
-    if (has_saved) {
-      histogram_tester_.ExpectBucketCount(
-          "RecurrenceRanker.SerializationStatus.MyModel",
-          SerializationStatus::kSaveOk, 1);
-    }
+    histogram_tester_.ExpectBucketCount(
+        "RecurrenceRanker.SerializationStatus.MyModel",
+        SerializationStatus::kSaveOk,
+        static_cast<int>(has_saved) + static_cast<int>(fresh_model_created));
 
     // Initialising with the fake predictor logs an UMA error, because it should
     // be used only in tests and not in production.
@@ -309,8 +316,8 @@ TEST_F(RecurrenceRankerTest, SaveToDisk) {
   ASSERT_TRUE(ranker->load_from_disk_completed_);
   EXPECT_TRUE(ranker->Rank().empty());
 
-  // Check the ranker file is not created.
-  EXPECT_FALSE(base::PathExists(ranker_filepath_));
+  // Check the ranker file should have been created on initialization.
+  EXPECT_TRUE(base::PathExists(ranker_filepath_));
 
   // Make the ranker do a save.
   ranker->Record("A");

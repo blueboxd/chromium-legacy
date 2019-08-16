@@ -21,7 +21,7 @@ class Dualshock4ControllerWin final : public Dualshock4ControllerBase {
   base::WeakPtr<AbstractHapticGamepad> GetWeakPtr() override;
 
   // Dualshock4ControllerBase implementation.
-  size_t WriteOutputReport(void* report, size_t report_length) override;
+  size_t WriteOutputReport(base::span<const uint8_t> report) override;
 
  private:
   base::win::ScopedHandle hid_handle_;

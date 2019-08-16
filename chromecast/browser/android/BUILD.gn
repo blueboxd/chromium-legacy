@@ -103,6 +103,7 @@ android_library("reactive_android_java") {
   deps = [
     "//base:base_java",
     "//chromecast/base:base_java",
+    "//third_party/android_deps:com_android_support_localbroadcastmanager_java",
     "//third_party/android_deps:com_android_support_support_core_utils_java",
   ]
 }
@@ -166,7 +167,10 @@ android_library("cast_shell_java") {
     "//content/public/android:content_java",
     "//media/base/android:media_java",
     "//net/android:net_java",
+    "//third_party/android_deps:com_android_support_localbroadcastmanager_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
+
+    # TODO(slan): We may need to pass this in as a parameter.
     "//third_party/android_deps:com_android_support_support_core_utils_java",
     "//ui/android:ui_java",
   ]

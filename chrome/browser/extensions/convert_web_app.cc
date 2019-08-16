@@ -62,7 +62,7 @@ std::unique_ptr<base::DictionaryValue> CreateFileHandlersForBookmarkApp(
     file_handler.SetKey(keys::kFileHandlerIncludeDirectories,
                         base::Value(false));
     file_handler.SetKey(keys::kFileHandlerVerb,
-                        base::Value(extensions::file_handler_verbs::kOpenWith));
+                        base::Value(apps::file_handler_verbs::kOpenWith));
 
     base::Value mime_types(base::Value::Type::LIST);
     base::Value file_extensions(base::Value::Type::LIST);

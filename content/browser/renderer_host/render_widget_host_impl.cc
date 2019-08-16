@@ -405,7 +405,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                    weak_factory_.GetWeakPtr()));
   }
 
-  enable_surface_synchronization_ = features::IsSurfaceSynchronizationEnabled();
   enable_viz_ = features::IsVizDisplayCompositorEnabled();
 
   if (!enable_viz_) {
@@ -1161,7 +1160,6 @@ void RenderWidgetHostImpl::DidNavigate() {
   // Stop the flinging after navigating to a new page.
   StopFling();
 
-  DCHECK(enable_surface_synchronization_);
   // Resize messages before navigation are not acked, so reset
   // |visual_properties_ack_pending_| and make sure the next resize will be
   // acked if the last resize before navigation was supposed to be acked.
@@ -2145,12 +2143,8 @@ void RenderWidgetHostImpl::RendererIsResponsive() {
 
 void RenderWidgetHostImpl::ClearDisplayedGraphics() {
   NotifyNewContentRenderingTimeoutForTesting();
-  if (view_) {
-    if (enable_surface_synchronization_)
-      view_->ResetFallbackToFirstNavigationSurface();
-    else
-      view_->ClearCompositorFrame();
-  }
+  if (view_)
+    view_->ResetFallbackToFirstNavigationSurface();
 }
 
 void RenderWidgetHostImpl::OnKeyboardEventAck(
@@ -2985,7 +2979,6 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
     viz::CompositorFrame frame,
     base::Optional<viz::HitTestRegionList> hit_test_region_list,
     uint64_t submit_time) {
-  DCHECK(enable_surface_synchronization_);
   if (view_) {
     // If Surface Synchronization is on, then |new_content_rendering_timeout_|
     // is stopped in DidReceiveFirstFrameAfterNavigation.

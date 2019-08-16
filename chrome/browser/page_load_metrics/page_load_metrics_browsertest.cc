@@ -1171,7 +1171,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                                       1);
   histogram_tester_.ExpectBucketCount(
       internal::kCssPropertiesHistogramName,
-      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+      blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
@@ -1194,7 +1194,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       internal::kAnimatedCssPropertiesHistogramName, 91, 1);
   histogram_tester_.ExpectBucketCount(
       internal::kAnimatedCssPropertiesHistogramName,
-      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+      blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
 class PageLoadMetricsBrowserTestWithAutoupgradesDisabled
@@ -1270,7 +1270,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithAutoupgradesDisabled,
                                       1);
   histogram_tester_.ExpectBucketCount(
       internal::kCssPropertiesHistogramName,
-      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+      blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithAutoupgradesDisabled,
@@ -1300,7 +1300,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithAutoupgradesDisabled,
       internal::kAnimatedCssPropertiesHistogramName, 91, 1);
   histogram_tester_.ExpectBucketCount(
       internal::kAnimatedCssPropertiesHistogramName,
-      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+      blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
@@ -1533,7 +1533,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                                       1);
   histogram_tester_.ExpectBucketCount(
       internal::kCssPropertiesHistogramName,
-      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+      blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
 // Test UseCounter CSS Properties observed in multiple child frames are
@@ -1559,7 +1559,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                                       1);
   histogram_tester_.ExpectBucketCount(
       internal::kCssPropertiesHistogramName,
-      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+      blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
 // Test UseCounter CSS properties observed in a child frame are recorded,
@@ -1584,7 +1584,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       internal::kAnimatedCssPropertiesHistogramName, 91, 1);
   histogram_tester_.ExpectBucketCount(
       internal::kAnimatedCssPropertiesHistogramName,
-      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+      blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
 // Test UseCounter CSS Properties observed in multiple child frames are
@@ -1610,7 +1610,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       internal::kAnimatedCssPropertiesHistogramName, 91, 1);
   histogram_tester_.ExpectBucketCount(
       internal::kAnimatedCssPropertiesHistogramName,
-      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+      blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
 // Test UseCounter Features observed for SVG pages.

@@ -98,7 +98,7 @@ void SharedWorkerDevToolsAgentHost::WorkerReadyForInspection(
   state_ = WORKER_READY;
   GetRendererChannel()->SetRenderer(std::move(agent_remote),
                                     std::move(agent_host_receiver),
-                                    worker_host_->worker_process_id(), nullptr);
+                                    worker_host_->worker_process_id());
   for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
     inspector->TargetReloadedAfterCrash();
 }
@@ -119,8 +119,7 @@ void SharedWorkerDevToolsAgentHost::WorkerDestroyed() {
     inspector->TargetCrashed();
   worker_host_ = nullptr;
   GetRendererChannel()->SetRenderer(mojo::NullRemote(), mojo::NullReceiver(),
-                                    ChildProcessHost::kInvalidUniqueID,
-                                    nullptr);
+                                    ChildProcessHost::kInvalidUniqueID);
 }
 
 }  // namespace content

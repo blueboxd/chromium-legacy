@@ -1112,6 +1112,11 @@ void LayoutTableCell::ScrollbarsChanged(bool horizontal_scrollbar_changed,
                                         ScrollbarChangeContext context) {
   LayoutBlock::ScrollbarsChanged(horizontal_scrollbar_changed,
                                  vertical_scrollbar_changed);
+
+  // The intrinsic-padding adjustment for scrollbars is directly handled by NG.
+  if (IsLayoutNGObject())
+    return;
+
   if (context != kLayout)
     return;
 

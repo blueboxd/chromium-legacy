@@ -77,8 +77,9 @@ class ASH_PUBLIC_EXPORT LoginScreenModel {
       const AccountId& account_id,
       const AuthDisabledData& auth_disabled_data) = 0;
 
-  // Sets the authentication type to tap-to-unlock for the user.
-  virtual void EnableTapToUnlockForUser(const AccountId& account_id) = 0;
+  // Enables or disables the authentication type to tap-to-unlock for the user.
+  virtual void SetTapToUnlockEnabledForUser(const AccountId& account_id,
+                                            bool enabled) = 0;
 
   // Forces online sign-in for the user.
   virtual void ForceOnlineSignInForUser(const AccountId& account_id) = 0;

@@ -123,7 +123,7 @@ void HidHapticGamepadBase::SetVibration(double strong_magnitude,
     std::copy(right_bytes.begin(), right_bytes.end(),
               control_report.begin() + weak_offset_bytes_);
   }
-  WriteOutputReport(control_report.data(), report_length_bytes_);
+  WriteOutputReport(control_report);
 }
 
 }  // namespace device

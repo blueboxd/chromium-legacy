@@ -193,6 +193,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
 
         } else if (item.getTextId() == R.string.bookmark_item_move) {
             BookmarkFolderSelectActivity.startFolderSelectActivity(getContext(), mBookmarkId);
+            RecordUserAction.record("MobileBookmarkManagerMoveToFolder");
 
         } else if (item.getTextId() == R.string.bookmark_item_delete) {
             if (mDelegate != null && mDelegate.getModel() != null) {
@@ -204,6 +205,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
             BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(mBookmarkId);
             mDelegate.openFolder(bookmarkItem.getParentId());
             mDelegate.highlightBookmark(mBookmarkId);
+            RecordUserAction.record("MobileBookmarkManagerShowInFolder");
         } else if (item.getTextId() == R.string.menu_item_move_up) {
             mDelegate.moveUpOne(mBookmarkId);
             RecordUserAction.record("MobileBookmarkManagerMoveUp");
@@ -281,6 +283,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
     public boolean onLongClick(View view) {
         // Override is needed in order to support long-press-to-drag on already-selected items.
         if (isDragActive() && isItemSelected()) return true;
+        RecordUserAction.record("MobileBookmarkManagerLongPressToggleSelect");
         return super.onLongClick(view);
     }
 
@@ -290,6 +293,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
         // Since we override #onLongClick(), we cannot rely on the base class for this behavior.
         if (isDragActive()) {
             toggleSelectionForItem(getItem());
+            RecordUserAction.record("MobileBookmarkManagerTapToggleSelect");
         } else {
             super.onClick(view);
         }

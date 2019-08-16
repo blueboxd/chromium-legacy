@@ -110,6 +110,10 @@ void RecordBrowserWindowFirstPaintCompositingEnded(base::TimeTicks ticks);
 // recorded yet. This method is expected to be called from the UI thread.
 base::TimeTicks MainEntryPointTicks();
 
+// Record metrics for the web-footer experiment. See https://crbug.com/993502.
+void RecordWebFooterDidFirstVisuallyNonEmptyPaint(base::TimeTicks ticks);
+void RecordWebFooterCreation(base::TimeTicks ticks);
+
 }  // namespace startup_metric_utils
 
 #endif  // COMPONENTS_STARTUP_METRIC_UTILS_BROWSER_STARTUP_METRIC_UTILS_H_

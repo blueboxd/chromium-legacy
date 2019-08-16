@@ -45,6 +45,11 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
+const char kCreateWebSocketPath[] =
+    "session/:sessionId/chromium/create_websocket";
+const char kSendCommandFromWebSocket[] =
+    "session/:sessionId/chromium/send_command_from_websocket";
+
 namespace {
 
 const char kLocalStorage[] = "localStorage";
@@ -883,6 +888,16 @@ HttpHandler::HttpHandler(
           kGet, "session/:sessionId/is_loading",
           WrapToCommand("IsLoading", base::BindRepeating(&ExecuteIsLoading))),
 
+      //
+      // Special commands used by internal implementation
+      // Client apps should never use this over a normal
+      // WebDriver http connection
+      //
+
+      CommandMapping(
+          kPost, kSendCommandFromWebSocket,
+          WrapToCommand("SendCommandFromWebSocket",
+                        base::BindRepeating(&ExecuteSendCommandFromWebSocket))),
   };
   command_map_.reset(new CommandMap(commands, commands + base::size(commands)));
 }

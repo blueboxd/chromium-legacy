@@ -241,6 +241,7 @@ jumbo_source_set("browser") {
 
   public_deps = [
     ":accessibility_buildflags",
+    "//base/util/memory_pressure",
     "//base/util/type_safety",
     "//ipc",
     "//media/mojo/mojom:remoting",
@@ -2551,13 +2552,6 @@ jumbo_source_set("browser") {
       # ChromeOS accessibility metrics provider is in chromeos_metrics_provider.
       "accessibility/accessibility_metrics_provider.cc",
       "accessibility/accessibility_metrics_provider.h",
-    ]
-  }
-
-  if (enable_cros_libassistant) {
-    deps += [
-      "//chromeos/services/assistant/public/cpp:audio_decoder_manifest",
-      "//chromeos/services/assistant/public/mojom",
     ]
   }
 

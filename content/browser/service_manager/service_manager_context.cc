@@ -100,13 +100,6 @@
 #include "components/services/font/public/mojom/constants.mojom.h"  // nogncheck
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/assistant/buildflags.h"  // nogncheck
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#include "chromeos/services/assistant/public/mojom/constants.mojom.h"  // nogncheck
-#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#endif
-
 namespace content {
 
 namespace {

@@ -118,6 +118,7 @@ fuzzer_test("paint_op_buffer_fuzzer") {
   libfuzzer_options = [ "max_len=4096" ]
 
   deps = [
+    "//base/test:test_support",
     "//cc:test_support",
     "//cc/paint",
     "//components/viz/test:test_support",

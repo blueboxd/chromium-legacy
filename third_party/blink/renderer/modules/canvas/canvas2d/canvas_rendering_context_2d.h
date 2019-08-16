@@ -170,7 +170,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
     return CanvasRenderingContext::WouldTaintOrigin(source);
   }
   void DisableAcceleration() override;
-  void DidInvokeGPUReadbackInCurrentFrame() override;
 
   int Width() const final;
   int Height() const final;

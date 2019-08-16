@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tabmodel;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,6 +34,12 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
     private final ObserverList<TabModelSelectorObserver> mObservers =
             new ObserverList<TabModelSelectorObserver>();
     private boolean mTabStateInitialized;
+
+    private final TabCreatorManager mTabCreatorManager;
+
+    protected TabModelSelectorBase(TabCreatorManager tabCreatorManager) {
+        mTabCreatorManager = tabCreatorManager;
+    }
 
     protected final void initialize(boolean startIncognito, TabModel... models) {
         // Only normal and incognito supported for now.
@@ -156,6 +163,13 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
     }
 
     @Override
+    public Tab openNewTab(
+            LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent, boolean incognito) {
+        return mTabCreatorManager.getTabCreator(incognito).createNewTab(
+                loadUrlParams, type, parent);
+    }
+
+    @Override
     public boolean closeTab(Tab tab) {
         for (int i = 0; i < getModels().size(); i++) {
             TabModel model = getModelAt(i);
@@ -260,5 +274,9 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
         for (TabModelSelectorObserver listener : mObservers) {
             listener.onNewTabCreated(tab);
         }
+    }
+
+    protected TabCreatorManager getTabCreatorManager() {
+        return mTabCreatorManager;
     }
 }

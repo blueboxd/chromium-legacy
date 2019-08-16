@@ -24,11 +24,7 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
   CSSMathExpressionNode* ExpressionNode() const { return expression_; }
 
   scoped_refptr<CalculationValue> ToCalcValue(
-      const CSSToLengthConversionData& conversion_data) const {
-    PixelsAndPercent value(0, 0);
-    expression_->AccumulatePixelsAndPercent(conversion_data, value);
-    return CalculationValue::Create(value, PermittedValueRange());
-  }
+      const CSSToLengthConversionData& conversion_data) const;
 
   bool MayHaveRelativeUnit() const;
 

@@ -5,7 +5,9 @@
 #include "chrome/browser/chromeos/secure_channel/secure_channel_client_provider.h"
 
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client_impl.h"
-#include "content/public/browser/system_connector.h"
+#include "chromeos/services/secure_channel/secure_channel_base.h"
+#include "chromeos/services/secure_channel/secure_channel_initializer.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace chromeos {
 
@@ -23,9 +25,15 @@ SecureChannelClientProvider* SecureChannelClientProvider::GetInstance() {
 
 SecureChannelClient* SecureChannelClientProvider::GetClient() {
   if (!secure_channel_client_) {
+    static base::NoDestructor<std::unique_ptr<SecureChannelBase>> instance{[] {
+      return SecureChannelInitializer::Factory::Get()->BuildInstance();
+    }()};
+
+    mojo::PendingRemote<mojom::SecureChannel> channel;
+    (*instance)->BindRequest(channel.InitWithNewPipeAndPassReceiver());
     secure_channel_client_ =
         SecureChannelClientImpl::Factory::Get()->BuildInstance(
-            content::GetSystemConnector());
+            std::move(channel));
   }
 
   return secure_channel_client_.get();

@@ -160,6 +160,11 @@ public class UsageStatsBridge {
         mUsageStatsService.onHistoryDeletedInRange(startTimeMs, endTimeMs);
     }
 
+    @CalledByNative
+    private void onHistoryDeletedForDomains(String[] fqdns) {
+        mUsageStatsService.onHistoryDeletedForDomains(new ArrayList<>(Arrays.asList(fqdns)));
+    }
+
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeUsageStatsBridge);
     private native void nativeGetAllEvents(

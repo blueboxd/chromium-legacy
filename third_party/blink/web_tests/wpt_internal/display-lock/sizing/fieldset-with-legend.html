@@ -4,7 +4,6 @@
 <title>Display Locking: fieldset with legend</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<!-- The legend should be ignored when sizing, resulting in the same ref as empty -->
 <link rel="match" href="fieldset-empty-ref.html">
 <script src="/common/reftest-wait.js"></script>
 
@@ -31,7 +30,7 @@ async function runTest() {
   takeScreenshot();
 }
 
-window.onload = runTest;
+window.onload = requestAnimationFrame(() => requestAnimationFrame(runTest));
 </script>
 
 </html>

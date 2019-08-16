@@ -13,6 +13,7 @@
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_navigation_loader.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
@@ -101,6 +102,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeScheduleUpdate() {
 
 void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
     const network::ResourceRequest& tentative_resource_request,
+    BrowserContext* browser_context,
     ResourceContext* resource_context,
     NavigationLoaderInterceptor::LoaderCallback callback,
     NavigationLoaderInterceptor::FallbackCallback fallback_callback) {
@@ -144,6 +146,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
   loader_callback_ = std::move(callback);
   fallback_callback_ = std::move(fallback_callback);
   registration_lookup_start_time_ = base::TimeTicks::Now();
+  browser_context_ = browser_context;
   resource_context_ = resource_context;
 
   // Look up a registration.
@@ -250,9 +253,20 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
     return;
   }
 
-  if (!GetContentClient()->browser()->AllowServiceWorker(
-          registration->scope(), provider_host_->site_for_cookies(), GURL(),
-          resource_context_, provider_host_->web_contents_getter())) {
+  bool allow_service_worker = false;
+  if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+    allow_service_worker =
+        GetContentClient()->browser()->AllowServiceWorkerOnUI(
+            registration->scope(), provider_host_->site_for_cookies(), GURL(),
+            browser_context_, provider_host_->web_contents_getter());
+  } else {
+    allow_service_worker =
+        GetContentClient()->browser()->AllowServiceWorkerOnIO(
+            registration->scope(), provider_host_->site_for_cookies(), GURL(),
+            resource_context_, provider_host_->web_contents_getter());
+  }
+
+  if (!allow_service_worker) {
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::MaybeCreateLoader", this,

@@ -314,6 +314,7 @@ function testCacheWithShadowDomDetachedChild() {
 }
 
 // Verify callFunction works when Object.prototype has user-defined functions.
+// (https://crbug.com/chromedriver/3074)
 function testCallWithFunctionInObject(runner) {
   clearCache();
 
@@ -324,6 +325,25 @@ function testCallWithFunctionInObject(runner) {
   callFunction(func, [{ foo: 1 }]).then((result) => {
     assertEquals(1, result.value.bar.foo);
     delete Object.prototype.f;
+    runner.continueTesting();
+  });
+  runner.waitForAsync();
+}
+
+// Verify array serialization works when Array.prototype.toJSON is defined.
+// (https://crbug.com/chromedriver/3084)
+function testCallWithArrayToJSON(runner) {
+  clearCache();
+
+  Array.prototype.toJSON = () => '["testing"]';
+  function func() {
+    return [1, 2, 3];
+  }
+  callFunction(func, []).then((result) => {
+    assert(result.value instanceof Array);
+    assertEquals(result.value.length, 3);
+    assertEquals(result.value[2], 3);
+    delete Array.prototype.toJSON;
     runner.continueTesting();
   });
   runner.waitForAsync();

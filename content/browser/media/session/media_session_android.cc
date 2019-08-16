@@ -14,6 +14,7 @@
 #include "content/public/android/content_jni_headers/MediaSessionImpl_jni.h"
 #include "content/public/browser/media_session.h"
 #include "services/media_session/public/cpp/media_image.h"
+#include "services/media_session/public/cpp/media_position.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 namespace content {
@@ -141,6 +142,23 @@ void MediaSessionAndroid::MediaSessionImagesChanged(
   Java_MediaSessionImpl_mediaSessionArtworkChanged(
       env, j_local_session,
       media_session::MediaImage::ToJavaArray(env, it->second));
+}
+
+void MediaSessionAndroid::MediaSessionPositionChanged(
+    const base::Optional<media_session::MediaPosition>& position) {
+  ScopedJavaLocalRef<jobject> j_local_session = GetJavaObject();
+  if (j_local_session.is_null())
+    return;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  if (position) {
+    Java_MediaSessionImpl_mediaSessionPositionChanged(
+        env, j_local_session, position->CreateJavaObject(env));
+  } else {
+    Java_MediaSessionImpl_mediaSessionPositionChanged(env, j_local_session,
+                                                      nullptr);
+  }
 }
 
 void MediaSessionAndroid::Resume(

@@ -305,6 +305,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5317780077021120954">Save</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5388358297987318779">Open Image</translation>
+<translation id="5407969256130905701">Discard changes</translation>
 <translation id="5409365236829784218">There are no applications installed that can open this file.</translation>
 <translation id="5416022985862681400">Last 7 days</translation>
 <translation id="5433691172869980887">Username copied</translation>
@@ -510,6 +511,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8458397775385147834">1 item deleted</translation>
 <translation id="8487700953926739672">Available offline</translation>
+<translation id="8490978609246021741">Save changes</translation>
 <translation id="8503813439785031346">Username</translation>
 <translation id="850600235656508448">Open in Incognito</translation>
 <translation id="8517375800490286174">Open-Source Licences</translation>

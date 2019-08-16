@@ -49,22 +49,6 @@ namespace content {
 
 namespace {
 
-void RunOrPostTask(const base::Location& location,
-                   BrowserThread::ID thread_id,
-                   base::OnceClosure task) {
-  if (BrowserThread::CurrentlyOn(thread_id)) {
-    std::move(task).Run();
-    return;
-  }
-  base::PostTask(location, {thread_id}, std::move(task));
-}
-
-void RunOrPostTaskOnCoreThread(const base::Location& location,
-                               base::OnceClosure task) {
-  RunOrPostTask(location, ServiceWorkerContextWrapper::GetCoreThreadId(),
-                std::move(task));
-}
-
 // Value used to set the timeout when starting a long running ServiceWorker. See
 // ServiceWorkerContextWrapper::StartServiceWorkerAndDispatchLongRunningMessage.
 const int kActiveWorkerTimeoutDays = 999;
@@ -195,6 +179,13 @@ void RunOnceClosure(scoped_refptr<ServiceWorkerContextWrapper> ref_holder,
 }  // namespace
 
 // static
+void ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
+    const base::Location& location,
+    base::OnceClosure task) {
+  RunOrPostTaskOnThread(location, GetCoreThreadId(), std::move(task));
+}
+
+// static
 bool ServiceWorkerContext::ScopeMatches(const GURL& scope, const GURL& url) {
   return ServiceWorkerUtils::ScopeMatches(scope, url);
 }
@@ -259,19 +250,20 @@ void ServiceWorkerContextWrapper::Init(
         CreateNonNetworkURLLoaderFactoryBundleInfoForUpdateCheck(
             storage_partition_->browser_context());
   }
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+
+  RunOrPostTaskOnCoreThread(
+      FROM_HERE,
       base::BindOnce(
-          &ServiceWorkerContextWrapper::InitOnIO, this, user_data_directory,
-          std::move(database_task_runner),
+          &ServiceWorkerContextWrapper::InitOnCoreThread, this,
+          user_data_directory, std::move(database_task_runner),
           base::RetainedRef(quota_manager_proxy),
           base::RetainedRef(special_storage_policy),
           base::RetainedRef(blob_context),
           base::RetainedRef(loader_factory_getter),
           std::move(non_network_loader_factory_bundle_info_for_update_check)));
 
-  // The watcher also posts a IO thread task which must run after InitOnIO(), so
-  // start it after posting that task above.
+  // The watcher also runs or posts a core thread task which must run after
+  // InitOnCoreThread(), so start it after posting that task above.
   if (watcher_)
     watcher_->Start();
 }
@@ -285,9 +277,14 @@ void ServiceWorkerContextWrapper::Shutdown() {
     watcher_->Stop();
     watcher_ = nullptr;
   }
+  // TODO(https://crbug.com/824858): Make this RunOrPostTask. Some unit tests
+  // depend on this being a PostTask even if we are already on the core thread
+  // (in many unit tests the IO thread and UI thread are the same), or else the
+  // InitializeResourceContext() call by StoragePartitionImplMap() will run
+  // after the shutdown task and set the resource context back to non-null.
   base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&ServiceWorkerContextWrapper::ShutdownOnIO, this));
+      FROM_HERE, {GetCoreThreadId()},
+      base::BindOnce(&ServiceWorkerContextWrapper::ShutdownOnCoreThread, this));
 }
 
 void ServiceWorkerContextWrapper::InitializeResourceContext(
@@ -330,6 +327,17 @@ ResourceContext* ServiceWorkerContextWrapper::resource_context() {
   return resource_context_;
 }
 
+// static
+bool ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled() {
+  return base::FeatureList::IsEnabled(features::kServiceWorkerOnUI);
+}
+
+// static
+BrowserThread::ID ServiceWorkerContextWrapper::GetCoreThreadId() {
+  return IsServiceWorkerOnUIEnabled() ? BrowserThread::UI : BrowserThread::IO;
+}
+
+// static
 bool ServiceWorkerContextWrapper::OnCoreThread() {
   return BrowserThread::CurrentlyOn(GetCoreThreadId());
 }
@@ -1498,7 +1506,7 @@ ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {
   DCHECK(!resource_context_);
 }
 
-void ServiceWorkerContextWrapper::InitOnIO(
+void ServiceWorkerContextWrapper::InitOnCoreThread(
     const base::FilePath& user_data_directory,
     scoped_refptr<base::SequencedTaskRunner> database_task_runner,
     storage::QuotaManagerProxy* quota_manager_proxy,
@@ -1507,7 +1515,7 @@ void ServiceWorkerContextWrapper::InitOnIO(
     URLLoaderFactoryGetter* loader_factory_getter,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         non_network_loader_factory_bundle_info_for_update_check) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(GetCoreThreadId());
   DCHECK(!context_core_);
 
   if (quota_manager_proxy) {
@@ -1542,9 +1550,12 @@ void ServiceWorkerContextWrapper::FindRegistrationForScopeOnCoreThread(
           std::move(callback_runner)));
 }
 
-void ServiceWorkerContextWrapper::ShutdownOnIO() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  resource_context_ = nullptr;
+void ServiceWorkerContextWrapper::ShutdownOnCoreThread() {
+  DCHECK_CURRENTLY_ON(GetCoreThreadId());
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::IO,
+      base::BindOnce(&ServiceWorkerContextWrapper::InitializeResourceContext,
+                     this, nullptr));
   context_core_.reset();
 }
 

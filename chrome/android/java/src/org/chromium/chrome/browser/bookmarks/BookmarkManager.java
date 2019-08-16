@@ -297,7 +297,7 @@ public class BookmarkManager
      */
     public void onDestroyed() {
         mIsDestroyed = true;
-
+        RecordUserAction.record("MobileBookmarkManagerClose");
         mSelectableListLayout.onDestroyed();
 
         for (BookmarkUIObserver observer : mUIObservers) {
@@ -477,6 +477,7 @@ public class BookmarkManager
 
     @Override
     public void openFolder(BookmarkId folder) {
+        RecordUserAction.record("MobileBookmarkManagerOpenFolder");
         if (mToolbar.isSearching()) mToolbar.hideSearchView();
         setState(BookmarkUIState.createFolderState(folder, mBookmarkModel));
         mRecyclerView.scrollToPosition(0);

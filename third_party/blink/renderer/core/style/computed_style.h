@@ -1251,7 +1251,11 @@ class ComputedStyle : public ComputedStyleBase,
   bool ColumnRuleEquivalent(const ComputedStyle& other_style) const;
 
   // Flex utility functions.
-  bool IsColumnFlexDirection() const {
+  bool ResolvedIsColumnFlexDirection() const {
+    if (Display() == EDisplay::kWebkitBox ||
+        Display() == EDisplay::kWebkitInlineBox) {
+      return BoxOrient() == EBoxOrient::kVertical;
+    }
     return FlexDirection() == EFlexDirection::kColumn ||
            FlexDirection() == EFlexDirection::kColumnReverse;
   }

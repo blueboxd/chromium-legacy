@@ -12,7 +12,7 @@ namespace device {
 
 class OpenXrGamepadHelper {
  public:
-  static XrResult GetOpenXrGamepadHelper(
+  static XrResult CreateOpenXrGamepadHelper(
       XrInstance instance,
       XrSession session,
       XrSpace local_space,
@@ -28,8 +28,12 @@ class OpenXrGamepadHelper {
   XrSession session_;
   XrSpace local_space_;
 
-  std::array<OpenXrController, static_cast<int>(OpenXrControllerType::kCount)>
+  std::array<OpenXrController,
+             static_cast<size_t>(OpenXrControllerType::kCount)>
       controllers_;
+  std::array<XrActiveActionSet,
+             static_cast<size_t>(OpenXrControllerType::kCount)>
+      active_action_sets_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenXrGamepadHelper);
 };

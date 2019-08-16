@@ -106,13 +106,13 @@ const char kPreviewsHost[] = "litepages.googlezip.net";
 const char kBlacklistedHost[] = "blacklisted.com";
 }  // namespace
 
-class PreviewsLitePageServerBrowserTest
-    : public InProcessBrowserTest,
-      public testing::WithParamInterface<bool> {
+class BasePreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
  public:
-  PreviewsLitePageServerBrowserTest() {}
+  BasePreviewsLitePageServerBrowserTest() {}
 
-  ~PreviewsLitePageServerBrowserTest() override {}
+  ~BasePreviewsLitePageServerBrowserTest() override {}
+
+  virtual bool UseURLLoaderImplementation() const = 0;
 
   enum PreviewsServerAction {
     // Previews server will respond with HTTP 200 OK, OFCL=60,
@@ -176,7 +176,7 @@ class PreviewsLitePageServerBrowserTest
         net::EmbeddedTestServer::TYPE_HTTPS);
     https_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     https_server_->RegisterRequestHandler(base::BindRepeating(
-        &PreviewsLitePageServerBrowserTest::HandleRedirectRequest,
+        &BasePreviewsLitePageServerBrowserTest::HandleRedirectRequest,
         base::Unretained(this)));
     ASSERT_TRUE(https_server_->Start());
 
@@ -209,7 +209,7 @@ class PreviewsLitePageServerBrowserTest
         net::EmbeddedTestServer::TYPE_HTTP);
     http_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     http_server_->RegisterRequestHandler(base::BindRepeating(
-        &PreviewsLitePageServerBrowserTest::HandleRedirectRequest,
+        &BasePreviewsLitePageServerBrowserTest::HandleRedirectRequest,
         base::Unretained(this)));
     ASSERT_TRUE(http_server_->Start());
 
@@ -241,7 +241,7 @@ class PreviewsLitePageServerBrowserTest
     previews_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
     previews_server_->RegisterRequestHandler(base::BindRepeating(
-        &PreviewsLitePageServerBrowserTest::HandleResourceRequest,
+        &BasePreviewsLitePageServerBrowserTest::HandleResourceRequest,
         base::Unretained(this)));
     ASSERT_TRUE(previews_server_->Start());
 
@@ -252,7 +252,7 @@ class PreviewsLitePageServerBrowserTest
     slow_http_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTP);
     slow_http_server_->RegisterRequestHandler(base::BindRepeating(
-        &PreviewsLitePageServerBrowserTest::HandleSlowResourceRequest,
+        &BasePreviewsLitePageServerBrowserTest::HandleSlowResourceRequest,
         base::Unretained(this)));
     ASSERT_TRUE(slow_http_server_->Start());
 
@@ -263,7 +263,7 @@ class PreviewsLitePageServerBrowserTest
         net::EmbeddedTestServer::TYPE_HTTPS);
 
     pingback_server_->RegisterRequestHandler(base::BindRepeating(
-        &PreviewsLitePageServerBrowserTest::HandlePingbackRequest,
+        &BasePreviewsLitePageServerBrowserTest::HandlePingbackRequest,
         base::Unretained(this)));
     ASSERT_TRUE(pingback_server_->Start());
 
@@ -293,7 +293,7 @@ class PreviewsLitePageServerBrowserTest
          network::features::kReporting},
         {network::features::kNetworkErrorLogging});
 
-    if (GetParam()) {
+    if (UseURLLoaderImplementation()) {
       url_loader_feature_list_.InitWithFeatures(
           {previews::features::kHTTPSServerPreviewsUsingURLLoader}, {});
     }
@@ -384,7 +384,7 @@ class PreviewsLitePageServerBrowserTest
         PreviewsUITabHelper::FromWebContents(GetWebContents());
     previews::PreviewsUserData* previews_data =
         ui_tab_helper->previews_user_data();
-    if (!GetParam()) {
+    if (!UseURLLoaderImplementation()) {
       EXPECT_TRUE(previews_data->server_lite_page_info());
       EXPECT_EQ(previews_data->server_lite_page_info()->status, status);
     }
@@ -394,7 +394,7 @@ class PreviewsLitePageServerBrowserTest
       return;
     }
 
-    if (!GetParam()) {
+    if (!UseURLLoaderImplementation()) {
       histogram_tester->ExpectTotalCount(
           "Previews.ServerLitePage.Penalty." +
               previews::ServerLitePageStatusToString(status),
@@ -429,7 +429,7 @@ class PreviewsLitePageServerBrowserTest
     content::NavigationEntry* entry =
         GetWebContents()->GetController().GetVisibleEntry();
 
-    if (!GetParam()) {
+    if (!UseURLLoaderImplementation()) {
       // server_lite_page_info does not exist on forward/back navigations.
       if (!(entry->GetTransitionType() & ui::PAGE_TRANSITION_FORWARD_BACK)) {
         EXPECT_TRUE(previews_data->server_lite_page_info());
@@ -909,6 +909,13 @@ class PreviewsLitePageServerBrowserTest
   base::OnceClosure waiting_for_report_closure_;
 };
 
+class PreviewsLitePageServerBrowserTest
+    : public BasePreviewsLitePageServerBrowserTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  bool UseURLLoaderImplementation() const override { return GetParam(); }
+};
+
 // True if testing using the URLLoader Interceptor implementation.
 INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
                          PreviewsLitePageServerBrowserTest,
@@ -1095,7 +1102,7 @@ IN_PROC_BROWSER_TEST_P(
     VerifyPreviewNotLoaded();
     ClearDeciderState();
 
-    if (!GetParam()) {
+    if (!UseURLLoaderImplementation()) {
       // It takes a few redirects to reach the end case. Just make sure at least
       // one sample has been recorded in the correct bucket.
       histogram_tester.ExpectBucketCount(
@@ -1510,7 +1517,7 @@ IN_PROC_BROWSER_TEST_P(
   {
     SCOPED_TRACE("Navigate back");
     GetWebContents()->GetController().GoBack();
-    if (GetParam()) {
+    if (UseURLLoaderImplementation()) {
       VerifyPreviewNotLoaded();
     } else {
       VerifyPreviewLoaded();

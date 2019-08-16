@@ -83,10 +83,11 @@ And the other endpoint is the receiving/callee, represented as:
 mojo::Receiver<math::mojom::Math> receiver_;
 ```
 
-This allows limited bidirectional communication: the sender can make any number
-of calls to the receiver, and the receiver may send a single reply for each
-call. More expressive APIs (that require any number of calls to flow in both
-directions) are often implemented as a pair of message pipes.
+This allows limited bidirectional communication. For one interface, the sender
+(A) may make any number of calls to the receiver (B). (B) may send a single
+reply for each call from (A). More expressive APIs are often implemented as a
+pair of interfaces (with two underlying message pipes), allowing calls to be
+made in either direction between (A) and (B).
 
 Message pipe endpoints are typically created using one of:
 

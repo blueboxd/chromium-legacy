@@ -625,8 +625,12 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
       buffers.size() >= requested_num_pics_,
       "Got an invalid number of picture buffers. (Got " << buffers.size()
       << ", requested " << requested_num_pics_ << ")", INVALID_ARGUMENT, );
-  // requested_pic_size_ can be adjusted by VDA client.
-  requested_pic_size_ = buffers[0].size();
+  // requested_pic_size_ can be adjusted by VDA client. We should update
+  // |requested_pic_size_| by buffers[0].size(). But AMD driver doesn't decode
+  // frames correctly if the surface stride is different from the width of a
+  // coded size.
+  // TODO(b/139460315): Update |requested_pic_size_| by buffers[0].size() once
+  // the AMD driver issue is resolved.
 
   va_surface_format_ = GetVaFormatForVideoCodecProfile(profile_);
   std::vector<VASurfaceID> va_surface_ids;
@@ -649,11 +653,16 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     // If we aren't in BufferAllocationMode::kNone, this |picture| is
     // only used as a copy destination. Therefore, the VaapiWrapper used and
     // owned by |picture| is |vpp_vaapi_wrapper_|.
+
+    // TODO(b/139460315): Create with buffers[i] once the AMD driver issue is
+    // resolved.
+    PictureBuffer buffer = buffers[i];
+    buffer.set_size(requested_pic_size_);
     std::unique_ptr<VaapiPicture> picture = vaapi_picture_factory_->Create(
         (buffer_allocation_mode_ == BufferAllocationMode::kNone)
             ? vaapi_wrapper_
             : vpp_vaapi_wrapper_,
-        make_context_current_cb_, bind_image_cb_, buffers[i]);
+        make_context_current_cb_, bind_image_cb_, buffer);
     RETURN_AND_NOTIFY_ON_FAILURE(picture, "Failed creating a VaapiPicture",
                                  PLATFORM_FAILURE, );
 

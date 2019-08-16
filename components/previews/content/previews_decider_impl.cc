@@ -365,8 +365,7 @@ void PreviewsDeciderImpl::LogHintCacheMatch(const GURL& url,
   if (!previews_opt_guide_)
     return;
 
-  previews_opt_guide_->LogHintCacheMatch(url, is_committed,
-                                         effective_connection_type_);
+  previews_opt_guide_->LogHintCacheMatch(url, is_committed);
 }
 
 bool PreviewsDeciderImpl::ShouldCommitPreview(PreviewsUserData* previews_data,

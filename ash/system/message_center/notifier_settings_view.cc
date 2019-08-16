@@ -15,9 +15,10 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/message_center/message_center_style.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -59,6 +60,8 @@ namespace ash {
 
 using message_center::MessageCenter;
 using message_center::NotifierId;
+using ContentLayerType = AshColorProvider::ContentLayerType;
+using AshColorMode = AshColorProvider::AshColorMode;
 
 namespace {
 
@@ -237,7 +240,9 @@ class ScrollContentsView : public views::View {
 class EmptyNotifierView : public views::View {
  public:
   EmptyNotifierView() {
-    SkColor color = kUnifiedMenuTextColor;
+    const SkColor text_color =
+        AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+            ContentLayerType::kTextPrimary, kUnifiedMenuTextColor);
     auto layout = std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0);
     layout->set_main_axis_alignment(
@@ -249,14 +254,14 @@ class EmptyNotifierView : public views::View {
     views::ImageView* icon = new views::ImageView();
     icon->SetImage(gfx::CreateVectorIcon(kNotificationCenterEmptyIcon,
                                          message_center_style::kEmptyIconSize,
-                                         color));
+                                         text_color));
     icon->SetBorder(
         views::CreateEmptyBorder(message_center_style::kEmptyIconPadding));
     AddChildView(icon);
 
     views::Label* label = new views::Label(
         l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_NO_NOTIFIERS));
-    label->SetEnabledColor(color);
+    label->SetEnabledColor(text_color);
     label->SetAutoColorReadabilityEnabled(false);
     label->SetSubpixelRenderingEnabled(false);
     // "Roboto-Medium, 12sp" is specified in the mock.
@@ -287,7 +292,9 @@ NotifierSettingsView::NotifierButton::NotifierButton(
   auto checkbox =
       std::make_unique<views::Checkbox>(base::string16(), this /* listener */);
   name_view->SetAutoColorReadabilityEnabled(false);
-  name_view->SetEnabledColor(kUnifiedMenuTextColor);
+  name_view->SetEnabledColor(
+      AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+          ContentLayerType::kTextPrimary, kUnifiedMenuTextColor));
   name_view->SetSubpixelRenderingEnabled(false);
   // "Roboto-Regular, 13sp" is specified in the mock.
   name_view->SetFontList(
@@ -322,9 +329,10 @@ NotifierSettingsView::NotifierButton::~NotifierButton() = default;
 void NotifierSettingsView::NotifierButton::UpdateIconImage(
     const gfx::ImageSkia& icon) {
   if (icon.isNull()) {
-    icon_view_->SetImage(gfx::CreateVectorIcon(message_center::kProductIcon,
-                                               kEntryIconSize,
-                                               kIconOnDarkBackgroundColor));
+    icon_view_->SetImage(gfx::CreateVectorIcon(
+        message_center::kProductIcon, kEntryIconSize,
+        AshColorProvider::Get()->GetContentLayerColor(
+            ContentLayerType::kIconPrimary, AshColorMode::kDark)));
   } else {
     icon_view_->SetImage(icon);
     icon_view_->SetImageSize(gfx::Size(kEntryIconSize, kEntryIconSize));
@@ -392,7 +400,9 @@ void NotifierSettingsView::NotifierButton::GridChanged() {
   if (!GetEnabled()) {
     auto policy_enforced_icon = std::make_unique<views::ImageView>();
     policy_enforced_icon->SetImage(gfx::CreateVectorIcon(
-        kSystemMenuBusinessIcon, kEntryIconSize, kIconOnDarkBackgroundColor));
+        kSystemMenuBusinessIcon, kEntryIconSize,
+        AshColorProvider::Get()->GetContentLayerColor(
+            ContentLayerType::kIconPrimary, AshColorMode::kDark)));
     cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::FIXED,
                   kEntryIconSize, 0);
     layout->AddView(std::move(policy_enforced_icon));
@@ -434,12 +444,15 @@ NotifierSettingsView::NotifierSettingsView()
   auto quiet_mode_label =
       std::make_unique<views::Label>(l10n_util::GetStringUTF16(
           IDS_ASH_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP));
+  const SkColor text_color =
+      AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+          ContentLayerType::kTextPrimary, kUnifiedMenuTextColor);
   quiet_mode_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   // "Roboto-Regular, 13sp" is specified in the mock.
   quiet_mode_label->SetFontList(
       gfx::FontList().DeriveWithSizeDelta(kLabelFontSizeDelta));
   quiet_mode_label->SetAutoColorReadabilityEnabled(false);
-  quiet_mode_label->SetEnabledColor(kUnifiedMenuTextColor);
+  quiet_mode_label->SetEnabledColor(text_color);
   quiet_mode_label->SetSubpixelRenderingEnabled(false);
   quiet_mode_label->SetBorder(views::CreateEmptyBorder(kQuietModeLabelPadding));
   auto* quiet_mode_label_ptr =
@@ -464,7 +477,7 @@ NotifierSettingsView::NotifierSettingsView()
   top_label->SetFontList(gfx::FontList().Derive(
       kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
   top_label->SetAutoColorReadabilityEnabled(false);
-  top_label->SetEnabledColor(kUnifiedMenuTextColor);
+  top_label->SetEnabledColor(text_color);
   top_label->SetSubpixelRenderingEnabled(false);
   top_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   top_label->SetMultiLine(true);
@@ -496,14 +509,15 @@ bool NotifierSettingsView::IsScrollable() {
 
 void NotifierSettingsView::SetQuietModeState(bool is_quiet_mode) {
   quiet_mode_toggle_->SetIsOn(is_quiet_mode);
+  const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
+      ContentLayerType::kIconPrimary, AshColorMode::kDark);
   if (is_quiet_mode) {
-    quiet_mode_icon_->SetImage(
-        gfx::CreateVectorIcon(kNotificationCenterDoNotDisturbOnIcon,
-                              kMenuIconSize, kIconOnDarkBackgroundColor));
+    quiet_mode_icon_->SetImage(gfx::CreateVectorIcon(
+        kNotificationCenterDoNotDisturbOnIcon, kMenuIconSize, icon_color));
   } else {
     quiet_mode_icon_->SetImage(gfx::CreateVectorIcon(
         kNotificationCenterDoNotDisturbOffIcon, kMenuIconSize,
-        kIconOnDarkBackgroundColorDisabled));
+        AshColorProvider::Get()->GetDisabledColor(icon_color)));
   }
 }
 

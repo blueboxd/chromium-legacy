@@ -1099,12 +1099,6 @@ void RenderWidgetHostViewMac::OnDidNotProduceFrame(
   browser_compositor_->OnDidNotProduceFrame(ack);
 }
 
-void RenderWidgetHostViewMac::ClearCompositorFrame() {
-  // This method is only used for content rendering timeout when surface sync is
-  // off. However, surface sync is always on on Mac.
-  NOTREACHED();
-}
-
 void RenderWidgetHostViewMac::ResetFallbackToFirstNavigationSurface() {
   browser_compositor_->GetDelegatedFrameHost()
       ->ResetFallbackToFirstNavigationSurface();

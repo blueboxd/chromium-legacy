@@ -61,6 +61,9 @@ struct CommandMapping {
   Command command;
 };
 
+extern const char kCreateWebSocketPath[];
+extern const char kSendCommandFromWebSocket[];
+
 typedef base::Callback<void(std::unique_ptr<net::HttpServerResponseInfo>)>
     HttpResponseSenderFunc;
 

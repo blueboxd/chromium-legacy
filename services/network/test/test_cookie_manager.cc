@@ -28,7 +28,7 @@ void TestCookieManager::SetCanonicalCookie(
 
 void TestCookieManager::AddCookieChangeListener(
     const GURL& url,
-    const std::string& name,
+    const base::Optional<std::string>& name,
     network::mojom::CookieChangeListenerPtr listener) {
   cookie_change_listeners_.push_back(std::move(listener));
 }

@@ -87,7 +87,8 @@ const Performance::UnifiedClock* DefaultUnifiedClock() {
 }
 
 bool IsMeasureOptionsEmpty(const PerformanceMeasureOptions& options) {
-  return !options.hasDetail() && !options.hasEnd() && !options.hasStart();
+  return !options.hasDetail() && !options.hasEnd() && !options.hasStart() &&
+         !options.hasDuration();
 }
 
 }  // namespace
@@ -673,28 +674,27 @@ PerformanceMeasure* Performance::measure(
                          base::Optional<String>(end), exception_state);
 }
 
-// |start_or_options|: while in options type, the value is an object {start,
-// end, detail}, and |end| must be null; while in string or double type, the
-// value is start. So there are two ways we can input the start and end
-// (omitting |script_state| and |measure_name|):
-// 1. measure(start, end)
-// 2. measure({start, end})
+// |MeasureInternal| exists to unify the arguments from different
+// `performance.measure()` overloads into a consistent form, then delegate to
+// |MeasureWithDetail|.
 //
-// For simplicity, the method below unifies these ways into a single form -
-// measure(name, start, end, detail). The mapping between two measure methods
-// (using measure_ to denote the measure after tranformation) goes as follows:
-// 1. measure(start, end): measure_(start, end, null)
-// 2. measure({start, end, detail}, null): measure_(start, end, detail)
-// 3. measure({start, end, detail}, end): invalid
+// |start_or_options| is either a String or a dictionary of options. When it's
+// a String, it represents a starting performance mark. When it's a dictionary,
+// the allowed fields are 'start', 'duration', 'end' and 'detail'. However,
+// there are some combinations of fields and parameters which must raise
+// errors. Specifically, the spec (https://https://w3c.github.io/user-timing/)
+// requires errors to thrown in the following cases:
+//  - If |start_or_options| is a dictionary and 'end_mark' is passed.
+//  - If an options dictionary contains neither a 'start' nor an 'end' field.
+//  - If an options dictionary contains all of 'start', 'duration' and 'end'.
 //
-// When |end| is null in C++, we cannot tell whether |end| is null, undefined or
-// empty in JS from StringOrDouble, so we need |end_is_empty| to help
-// distinguish between (null or undefined) and empty.
+// |end_mark| will be base::nullopt unless the `performance.measure()` overload
+// specified an end mark.
 PerformanceMeasure* Performance::MeasureInternal(
     ScriptState* script_state,
     const AtomicString& measure_name,
     const StringOrPerformanceMeasureOptions& start_or_options,
-    base::Optional<String> end,
+    base::Optional<String> end_mark,
     ExceptionState& exception_state) {
   DCHECK(!start_or_options.IsNull());
   if (RuntimeEnabledFeatures::CustomUserTimingEnabled()) {
@@ -703,10 +703,10 @@ PerformanceMeasure* Performance::MeasureInternal(
         !IsMeasureOptionsEmpty(
             *start_or_options.GetAsPerformanceMeasureOptions())) {
       // measure("name", { start, end }, *)
-      if (end) {
+      if (end_mark) {
         exception_state.ThrowTypeError(
-            "If a PerformanceMeasureOptions object was passed, |end| must be "
-            "null.");
+            "If a non-empty PerformanceMeasureOptions object was passed, "
+            "|end_mark| must not be passed.");
         return nullptr;
       }
       const PerformanceMeasureOptions* options =
@@ -717,9 +717,23 @@ PerformanceMeasure* Performance::MeasureInternal(
             "least one of its 'start' or 'end' properties must be present.");
         return nullptr;
       }
+
+      if (options->hasStart() && options->hasDuration() && options->hasEnd()) {
+        exception_state.ThrowTypeError(
+            "If a non-empty PerformanceMeasureOptions object was passed, it "
+            "must not have all of its 'start', 'duration', and 'end' "
+            "properties defined");
+        return nullptr;
+      }
+
+      base::Optional<double> duration = base::nullopt;
+      if (options->hasDuration()) {
+        duration = options->duration();
+      }
+
       return MeasureWithDetail(script_state, measure_name, options->start(),
-                               options->end(), options->detail(),
-                               exception_state);
+                               std::move(duration), options->end(),
+                               options->detail(), exception_state);
     }
     // measure("name", "mark1", *)
     StringOrDouble converted_start;
@@ -727,12 +741,13 @@ PerformanceMeasure* Performance::MeasureInternal(
       converted_start =
           StringOrDouble::FromString(start_or_options.GetAsString());
     }
-    // We let |end| behave the same whether it's empty, undefined or null in
-    // JS, as long as |end| is null in C++.
+    // We let |end_mark| behave the same whether it's empty, undefined or null
+    // in JS, as long as |end_mark| is null in C++.
     return MeasureWithDetail(
         script_state, measure_name, converted_start,
-        end ? StringOrDouble::FromString(*end)
-            : NativeValueTraits<StringOrDouble>::NullValue(),
+        /* duration = */ base::nullopt,
+        end_mark ? StringOrDouble::FromString(*end_mark)
+                 : NativeValueTraits<StringOrDouble>::NullValue(),
         ScriptValue::CreateNull(script_state), exception_state);
   }
   // For consistency with UserTimingL2: the L2 API took |start| as a string,
@@ -747,8 +762,9 @@ PerformanceMeasure* Performance::MeasureInternal(
   }
 
   MeasureWithDetail(script_state, measure_name, converted_start,
-                    end ? StringOrDouble::FromString(*end)
-                        : NativeValueTraits<StringOrDouble>::NullValue(),
+                    /* duration = */ base::nullopt,
+                    end_mark ? StringOrDouble::FromString(*end_mark)
+                             : NativeValueTraits<StringOrDouble>::NullValue(),
                     ScriptValue::CreateNull(script_state), exception_state);
   // Return nullptr to distinguish from L3.
   return nullptr;
@@ -758,15 +774,16 @@ PerformanceMeasure* Performance::MeasureWithDetail(
     ScriptState* script_state,
     const AtomicString& measure_name,
     const StringOrDouble& start,
+    base::Optional<double> duration,
     const StringOrDouble& end,
     const ScriptValue& detail,
     ExceptionState& exception_state) {
   StringOrDouble original_start = start;
   StringOrDouble original_end = end;
 
-  PerformanceMeasure* performance_measure =
-      GetUserTiming().Measure(script_state, measure_name, original_start,
-                              original_end, detail, exception_state);
+  PerformanceMeasure* performance_measure = GetUserTiming().Measure(
+      script_state, measure_name, original_start, std::move(duration),
+      original_end, detail, exception_state);
   if (performance_measure)
     NotifyObserversOfEntry(*performance_measure);
   return performance_measure;

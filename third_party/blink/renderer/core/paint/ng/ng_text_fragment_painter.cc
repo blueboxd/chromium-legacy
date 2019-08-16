@@ -177,7 +177,8 @@ void PaintDocumentMarkers(GraphicsContext& context,
         if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground) {
           const Color color =
               LayoutTheme::GetTheme().PlatformTextSearchHighlightColor(
-                  text_match_marker.IsActiveMatch());
+                  text_match_marker.IsActiveMatch(),
+                  text_fragment.GetNode()->GetDocument().InForcedColorsMode());
           PaintRect(
               context, PhysicalOffset(box_origin),
               text_fragment.LocalRect(paint_start_offset, paint_end_offset),
@@ -186,8 +187,9 @@ void PaintDocumentMarkers(GraphicsContext& context,
         }
 
         const TextPaintStyle text_style =
-            DocumentMarkerPainter::ComputeTextPaintStyleFrom(style,
-                                                             text_match_marker);
+            DocumentMarkerPainter::ComputeTextPaintStyleFrom(
+                style, text_match_marker,
+                text_fragment.GetNode()->GetDocument().InForcedColorsMode());
         if (text_style.current_color == Color::kTransparent)
           break;
         text_painter->Paint(paint_start_offset, paint_end_offset,

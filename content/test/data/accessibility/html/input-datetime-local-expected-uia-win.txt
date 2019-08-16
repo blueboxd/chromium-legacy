@@ -1,6 +1,6 @@
 document
 ++group
-++++list
+++++textbox LocalizedControlType='local date and time picker'
 ++++++group
 ++++++++group
 ++++++++++spinbutton Name='Month' RangeValue.IsReadOnly=false RangeValue.LargeChange=0.00 RangeValue.SmallChange=0.00 RangeValue.Maximum=12.00 RangeValue.Minimum=1.00 RangeValue.Value=0.00 Value.Value='0'

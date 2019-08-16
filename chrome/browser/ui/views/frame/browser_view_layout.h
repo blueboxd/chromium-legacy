@@ -50,7 +50,8 @@ class BrowserViewLayout : public views::LayoutManager {
                     views::View* toolbar,
                     InfoBarContainerView* infobar_container,
                     views::View* contents_container,
-                    ImmersiveModeController* immersive_mode_controller);
+                    ImmersiveModeController* immersive_mode_controller,
+                    views::View* web_footer_experiment);
   ~BrowserViewLayout() override;
 
   // Sets or updates views that are not available when |this| is initialized.
@@ -126,6 +127,10 @@ class BrowserViewLayout : public views::LayoutManager {
   // Returns the y coordinate of the client area.
   int GetClientAreaTop();
 
+  // Layout the web-footer experiment if enabled, returns the top of the
+  // control. See https://crbug.com/993502.
+  int LayoutWebFooterExperiment(int bottom);
+
   // The delegate interface. May be a mock in tests.
   const std::unique_ptr<BrowserViewLayoutDelegate> delegate_;
 
@@ -146,6 +151,7 @@ class BrowserViewLayout : public views::LayoutManager {
   InfoBarContainerView* const infobar_container_;
   views::View* const contents_container_;
   ImmersiveModeController* const immersive_mode_controller_;
+  views::View* const web_footer_experiment_;
 
   TabStrip* tab_strip_ = nullptr;
   BookmarkBarView* bookmark_bar_ = nullptr;

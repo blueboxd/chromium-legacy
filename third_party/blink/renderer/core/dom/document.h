@@ -1574,6 +1574,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // applied to this document.
   void BindContentSecurityPolicy();
 
+  bool InForcedColorsMode() const;
+
   // Capture the toggle event during parsing either by HTML parser or XML
   // parser.
   void SetToggleDuringParsing(bool toggle_during_parsing) {

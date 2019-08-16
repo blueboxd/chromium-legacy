@@ -494,11 +494,7 @@ void DoAddSchemeWithType(const char* new_scheme,
 
 }  // namespace
 
-void Initialize() {
-  // Deprecated.
-}
-
-void Shutdown() {
+void ResetForTests() {
   *GetSchemeRegistry() = SchemeRegistry();
 }
 

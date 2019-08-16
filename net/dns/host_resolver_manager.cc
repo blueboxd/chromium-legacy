@@ -3041,18 +3041,6 @@ bool HostResolverManager::HaveTestProcOverride() {
   return !proc_params_.resolver_proc && HostResolverProc::GetDefault();
 }
 
-void HostResolverManager::PushCacheLookups(bool secure,
-                                           bool insecure,
-                                           std::deque<TaskType>* out_tasks) {
-  if (secure && insecure) {
-    out_tasks->push_back(TaskType::CACHE_LOOKUP);
-  } else if (secure) {
-    out_tasks->push_back(TaskType::SECURE_CACHE_LOOKUP);
-  } else if (insecure) {
-    out_tasks->push_back(TaskType::INSECURE_CACHE_LOOKUP);
-  }  // else do nothing
-}
-
 void HostResolverManager::PushDnsTasks(bool proc_task_allowed,
                                        DnsConfig::SecureDnsMode secure_dns_mode,
                                        bool insecure_tasks_allowed,
@@ -3067,41 +3055,44 @@ void HostResolverManager::PushDnsTasks(bool proc_task_allowed,
   // Upgrade the insecure DnsTask depending on the secure dns mode.
   switch (secure_dns_mode) {
     case DnsConfig::SecureDnsMode::SECURE:
+      DCHECK(!allow_cache ||
+             out_tasks->front() == TaskType::SECURE_CACHE_LOOKUP);
       DCHECK(dns_client_->GetConfig()->dns_over_https_servers.size() != 0);
-      PushCacheLookups(allow_cache /* secure */, false /* insecure */,
-                       out_tasks);
       if (dns_tasks_allowed)
         out_tasks->push_back(TaskType::SECURE_DNS);
       break;
     case DnsConfig::SecureDnsMode::AUTOMATIC:
+      DCHECK(!allow_cache || out_tasks->front() == TaskType::CACHE_LOOKUP);
       if (!HasAvailableDohServer()) {
         // Don't run a secure DnsTask if there are no available DoH servers.
-        PushCacheLookups(allow_cache /* secure */, allow_cache /* insecure */,
-                         out_tasks);
         if (dns_tasks_allowed && insecure_tasks_allowed)
           out_tasks->push_back(TaskType::DNS);
       } else if (prioritize_local_lookups) {
-        PushCacheLookups(allow_cache /* secure */, allow_cache /* insecure */,
-                         out_tasks);
+        // If local lookups are prioritized, the cache should be checked for
+        // both secure and insecure results prior to running a secure DnsTask.
+        // The task sequence should already contain the appropriate cache task.
         if (dns_tasks_allowed) {
           out_tasks->push_back(TaskType::SECURE_DNS);
           if (insecure_tasks_allowed)
             out_tasks->push_back(TaskType::DNS);
         }
       } else {
-        PushCacheLookups(allow_cache /* secure */, false /* insecure */,
-                         out_tasks);
+        if (allow_cache) {
+          // Remove the initial cache lookup task so that the secure and
+          // insecure lookups can be separated.
+          out_tasks->pop_front();
+          out_tasks->push_back(TaskType::SECURE_CACHE_LOOKUP);
+        }
         if (dns_tasks_allowed)
           out_tasks->push_back(TaskType::SECURE_DNS);
-        PushCacheLookups(false /* secure */, allow_cache /* insecure */,
-                         out_tasks);
+        if (allow_cache)
+          out_tasks->push_back(TaskType::INSECURE_CACHE_LOOKUP);
         if (dns_tasks_allowed && insecure_tasks_allowed)
           out_tasks->push_back(TaskType::DNS);
       }
       break;
     case DnsConfig::SecureDnsMode::OFF:
-      PushCacheLookups(allow_cache /* secure */, allow_cache /* insecure */,
-                       out_tasks);
+      DCHECK(!allow_cache || out_tasks->front() == TaskType::CACHE_LOOKUP);
       if (dns_tasks_allowed && insecure_tasks_allowed)
         out_tasks->push_back(TaskType::DNS);
       break;
@@ -3137,12 +3128,16 @@ void HostResolverManager::CreateTaskSequence(
       GetEffectiveSecureDnsMode(hostname, secure_dns_mode_override);
 
   // A cache lookup should generally be performed first. For jobs involving a
-  // DnsTask, this task will be removed before DnsTasks and other related tasks
-  // are added to the sequence.
+  // DnsTask, this task may be replaced.
   bool allow_cache =
       cache_usage != ResolveHostParameters::CacheUsage::DISALLOWED;
-  PushCacheLookups(allow_cache /* secure */, allow_cache /* insecure */,
-                   out_tasks);
+  if (allow_cache) {
+    if (*out_effective_secure_dns_mode == DnsConfig::SecureDnsMode::SECURE) {
+      out_tasks->push_front(TaskType::SECURE_CACHE_LOOKUP);
+    } else {
+      out_tasks->push_front(TaskType::CACHE_LOOKUP);
+    }
+  }
 
   // Determine what type of task a future Job should start.
   bool prioritize_local_lookups =
@@ -3167,9 +3162,6 @@ void HostResolverManager::CreateTaskSequence(
             IsAddressType(dns_query_type) &&
             *out_effective_secure_dns_mode != DnsConfig::SecureDnsMode::SECURE;
         if (HaveDnsConfig()) {
-          // Remove the initial cache lookup task.
-          if (!out_tasks->empty())
-            out_tasks->pop_front();
           PushDnsTasks(
               proc_task_allowed, *out_effective_secure_dns_mode,
               insecure_dns_tasks_allowed && !bypass_insecure_dns_client_,
@@ -3191,9 +3183,6 @@ void HostResolverManager::CreateTaskSequence(
       break;
     case HostResolverSource::DNS:
       if (HaveDnsConfig()) {
-        // Remove the initial cache lookup task.
-        if (!out_tasks->empty())
-          out_tasks->pop_front();
         PushDnsTasks(false /* proc_task_allowed */,
                      *out_effective_secure_dns_mode, insecure_dns_tasks_allowed,
                      allow_cache, prioritize_local_lookups, out_tasks);

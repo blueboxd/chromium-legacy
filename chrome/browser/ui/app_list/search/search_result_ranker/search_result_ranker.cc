@@ -48,6 +48,8 @@ enum class Model { NONE, APPS, MIXED_TYPES };
 // Returns the model relevant for predicting launches for results with the given
 // |type|.
 Model ModelForType(RankingItemType type) {
+  // TODO(959679): Update this with zero-state item types once zero-state
+  // search providers have been implemented.
   switch (type) {
     case RankingItemType::kFile:
     case RankingItemType::kOmniboxGeneric:
@@ -207,26 +209,33 @@ void SearchResultRanker::InitializeRankers() {
   }
 
   if (app_list_features::IsZeroStateMixedTypesRankerEnabled()) {
+    zero_state_item_coeff_ = base::GetFieldTrialParamByFeatureAsDouble(
+        app_list_features::kEnableZeroStateMixedTypesRanker, "item_coeff",
+        zero_state_item_coeff_);
+    zero_state_group_coeff_ = base::GetFieldTrialParamByFeatureAsDouble(
+        app_list_features::kEnableZeroStateMixedTypesRanker, "group_coeff",
+        zero_state_group_coeff_);
+    zero_state_paired_coeff_ = base::GetFieldTrialParamByFeatureAsDouble(
+        app_list_features::kEnableZeroStateMixedTypesRanker, "paired_coeff",
+        zero_state_paired_coeff_);
+    zero_state_default_group_score_ = base::GetFieldTrialParamByFeatureAsDouble(
+        app_list_features::kEnableZeroStateMixedTypesRanker,
+        "default_group_score", zero_state_default_group_score_);
+
+    // TODO(959679): Setup json deployment.
+    // TODO(959679): Swap to a stochastic model by default and tweak params.
     RecurrenceRankerConfigProto config;
     config.set_min_seconds_between_saves(240u);
     config.set_condition_limit(1u);
     config.set_condition_decay(0.5f);
-
-    config.set_target_limit(base::GetFieldTrialParamByFeatureAsInt(
-        app_list_features::kEnableZeroStateMixedTypesRanker, "target_limit",
-        200));
-    config.set_target_decay(base::GetFieldTrialParamByFeatureAsDouble(
-        app_list_features::kEnableZeroStateMixedTypesRanker, "target_decay",
-        0.8f));
-
-    // Despite not changing any fields, this sets the predictor to the default
-    // predictor.
+    config.set_target_limit(5u);
+    config.set_target_decay(0.8f);
     config.mutable_predictor()->mutable_default_predictor();
 
-    zero_state_mixed_types_ranker_ = std::make_unique<RecurrenceRanker>(
-        "ZeroStateMixedTypes",
-        profile_->GetPath().AppendASCII("zero_state_mixed_types_ranker.proto"),
-        config, chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
+    zero_state_group_ranker_ = std::make_unique<RecurrenceRanker>(
+        "ZeroStateGroups",
+        profile_->GetPath().AppendASCII("zero_state_group_ranker.pb"), config,
+        chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
   }
 
   if (app_list_features::IsAppRankerEnabled() &&
@@ -235,9 +244,9 @@ void SearchResultRanker::InitializeRankers() {
     RecurrenceRankerConfigProto config;
     config.set_min_seconds_between_saves(240u);
     config.set_condition_limit(1u);
-    config.set_condition_decay(0.5f);
+    config.set_condition_decay(0.5);
     config.set_target_limit(200);
-    config.set_target_decay(0.8f);
+    config.set_target_decay(0.8);
     config.mutable_predictor()->mutable_default_predictor();
 
     app_ranker_ = std::make_unique<RecurrenceRanker>(
@@ -254,6 +263,12 @@ void SearchResultRanker::FetchRankings(const base::string16& query) {
   if (now - time_of_last_fetch_ < kMinSecondsBetweenFetches)
     return;
   time_of_last_fetch_ = now;
+  last_query_ = query;
+
+  if (query.empty() && zero_state_group_ranker_) {
+    zero_state_group_ranks_.clear();
+    zero_state_group_ranks_ = zero_state_group_ranker_->Rank();
+  }
 
   if (results_list_group_ranker_) {
     group_ranks_.clear();
@@ -277,7 +292,20 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
     const auto& model = ModelForType(type);
 
     if (model == Model::MIXED_TYPES) {
-      if (results_list_group_ranker_) {
+      if (last_query_.empty() && zero_state_group_ranker_) {
+        const auto& rank_it = zero_state_group_ranks_.find(
+            base::NumberToString(static_cast<int>(type)));
+        const float group_score = (rank_it != zero_state_group_ranks_.end())
+                                      ? rank_it->second
+                                      : zero_state_default_group_score_;
+        const float score =
+            zero_state_item_coeff_ * result.score +
+            zero_state_group_coeff_ * group_score +
+            zero_state_paired_coeff_ * result.score * group_score;
+        result.score =
+            score / (zero_state_item_coeff_ + zero_state_group_coeff_ +
+                     zero_state_paired_coeff_);
+      } else if (results_list_group_ranker_) {
         const auto& rank_it =
             group_ranks_.find(base::NumberToString(static_cast<int>(type)));
         // The ranker only contains entries trained with types relating to files
@@ -325,7 +353,10 @@ void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
 
   auto model = ModelForType(app_launch_data.ranking_item_type);
   if (model == Model::MIXED_TYPES) {
-    if (results_list_group_ranker_) {
+    if (app_launch_data.query.empty() && zero_state_group_ranker_) {
+      zero_state_group_ranker_->Record(base::NumberToString(
+          static_cast<int>(app_launch_data.ranking_item_type)));
+    } else if (results_list_group_ranker_) {
       results_list_group_ranker_->Record(base::NumberToString(
           static_cast<int>(app_launch_data.ranking_item_type)));
     } else if (query_based_mixed_types_ranker_) {
@@ -340,10 +371,6 @@ void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
 
 void SearchResultRanker::OnFilesOpened(
     const std::vector<FileOpenEvent>& file_opens) {
-  if (zero_state_mixed_types_ranker_) {
-    for (const auto& file_open : file_opens)
-      zero_state_mixed_types_ranker_->Record(file_open.path.value());
-  }
   // Log the open type of file open events
   for (const auto& file_open : file_opens)
     UMA_HISTOGRAM_ENUMERATION(kLogFileOpenType,

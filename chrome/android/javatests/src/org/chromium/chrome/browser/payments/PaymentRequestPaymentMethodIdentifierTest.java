@@ -35,8 +35,7 @@ import java.util.concurrent.TimeoutException;
  * A payment integration test for supported payment methods.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=PaymentRequestHasEnrolledInstrument"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PaymentRequestPaymentMethodIdentifierTest implements MainActivityStartCallback {
     // Disable animations to reduce flakiness.
     @ClassRule

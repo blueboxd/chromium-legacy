@@ -353,12 +353,6 @@ class NET_EXPORT HostResolverManager
   // DnsTasks should be issued in this case.
   bool HaveTestProcOverride();
 
-  // Pushes a cache lookup task depending on what sections of the cache can
-  // be checked at this time
-  void PushCacheLookups(bool secure,
-                        bool insecure,
-                        std::deque<TaskType>* out_tasks);
-
   // Helper method to add DnsTasks and related tasks based on the SecureDnsMode
   // and fallback parameters. If |prioritize_local_lookups| is true, then we
   // may push an insecure cache lookup ahead of a secure DnsTask.

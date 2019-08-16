@@ -124,6 +124,9 @@ void AppendDeviceState(
     case NetworkStateHandler::TECHNOLOGY_AVAILABLE:
       state = private_api::DEVICE_STATE_TYPE_DISABLED;
       break;
+    case NetworkStateHandler::TECHNOLOGY_DISABLING:
+      state = private_api::DEVICE_STATE_TYPE_DISABLED;
+      break;
     case NetworkStateHandler::TECHNOLOGY_UNINITIALIZED:
       state = private_api::DEVICE_STATE_TYPE_UNINITIALIZED;
       break;

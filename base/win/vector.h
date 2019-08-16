@@ -31,17 +31,17 @@ namespace internal {
 // See base/win/winrt_foundation_helpers.h for explanation.
 
 template <typename T>
-using Complex =
+using VectorComplex =
     typename ABI::Windows::Foundation::Collections::IVector<T>::T_complex;
 
 template <typename T>
-using Logical = LogicalType<Complex<T>>;
+using VectorLogical = LogicalType<VectorComplex<T>>;
 
 template <typename T>
-using Abi = AbiType<Complex<T>>;
+using VectorAbi = AbiType<VectorComplex<T>>;
 
 template <typename T>
-using Storage = StorageType<Complex<T>>;
+using VectorStorage = StorageType<VectorComplex<T>>;
 
 template <typename T>
 class VectorIterator
@@ -49,10 +49,10 @@ class VectorIterator
           Microsoft::WRL::RuntimeClassFlags<
               Microsoft::WRL::WinRtClassicComMix |
               Microsoft::WRL::InhibitRoOriginateError>,
-          ABI::Windows::Foundation::Collections::IIterator<Logical<T>>> {
+          ABI::Windows::Foundation::Collections::IIterator<VectorLogical<T>>> {
  public:
-  using LogicalT = Logical<T>;
-  using AbiT = Abi<T>;
+  using LogicalT = VectorLogical<T>;
+  using AbiT = VectorAbi<T>;
 
   explicit VectorIterator(
       Microsoft::WRL::ComPtr<
@@ -126,12 +126,12 @@ class VectorView
           Microsoft::WRL::RuntimeClassFlags<
               Microsoft::WRL::WinRtClassicComMix |
               Microsoft::WRL::InhibitRoOriginateError>,
-          ABI::Windows::Foundation::Collections::IVectorView<Logical<T>>,
+          ABI::Windows::Foundation::Collections::IVectorView<VectorLogical<T>>,
           ABI::Windows::Foundation::Collections::VectorChangedEventHandler<
-              Logical<T>>> {
+              VectorLogical<T>>> {
  public:
-  using LogicalT = Logical<T>;
-  using AbiT = Abi<T>;
+  using LogicalT = VectorLogical<T>;
+  using AbiT = VectorAbi<T>;
 
   explicit VectorView(Microsoft::WRL::ComPtr<Vector<LogicalT>> vector)
       : vector_(std::move(vector)) {
@@ -198,15 +198,16 @@ class Vector
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<
               Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
-          ABI::Windows::Foundation::Collections::IVector<internal::Logical<T>>,
+          ABI::Windows::Foundation::Collections::IVector<
+              internal::VectorLogical<T>>,
           ABI::Windows::Foundation::Collections::IObservableVector<
-              internal::Logical<T>>,
+              internal::VectorLogical<T>>,
           ABI::Windows::Foundation::Collections::IIterable<
-              internal::Logical<T>>> {
+              internal::VectorLogical<T>>> {
  public:
-  using LogicalT = internal::Logical<T>;
-  using AbiT = internal::Abi<T>;
-  using StorageT = internal::Storage<T>;
+  using LogicalT = internal::VectorLogical<T>;
+  using AbiT = internal::VectorAbi<T>;
+  using StorageT = internal::VectorStorage<T>;
 
   Vector() = default;
   explicit Vector(const std::vector<StorageT>& vector) : vector_(vector) {}

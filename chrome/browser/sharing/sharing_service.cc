@@ -19,7 +19,6 @@
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
@@ -113,10 +112,19 @@ SharingService::~SharingService() {
     sync_service_->RemoveObserver(this);
 }
 
-std::vector<SharingDeviceInfo> SharingService::GetDeviceCandidates(
-    int required_capabilities) const {
+std::unique_ptr<syncer::DeviceInfo> SharingService::GetDeviceByGuid(
+    const std::string& guid) const {
   if (!IsSyncEnabled())
-    return std::vector<SharingDeviceInfo>();
+    return nullptr;
+
+  return device_info_tracker_->GetDeviceInfo(guid);
+}
+
+std::vector<std::unique_ptr<syncer::DeviceInfo>>
+SharingService::GetDeviceCandidates(int required_capabilities) const {
+  std::vector<std::unique_ptr<syncer::DeviceInfo>> device_candidates;
+  if (!IsSyncEnabled())
+    return device_candidates;
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> all_devices =
       device_info_tracker_->GetAllDeviceInfo();
@@ -133,10 +141,9 @@ std::vector<SharingDeviceInfo> SharingService::GetDeviceCandidates(
             });
 
   std::unordered_set<std::string> device_names;
-  std::vector<SharingDeviceInfo> device_candidates;
   const syncer::DeviceInfo* local_device_info =
       local_device_info_provider_->GetLocalDeviceInfo();
-  for (const auto& device : all_devices) {
+  for (auto& device : all_devices) {
     // If the current device is considered expired for our purposes, stop here
     // since the next devices in the vector are at least as expired than this
     // one.
@@ -158,12 +165,8 @@ std::vector<SharingDeviceInfo> SharingService::GetDeviceCandidates(
 
     // Only insert the first occurrence of each device name.
     auto inserted = device_names.insert(device->client_name());
-    if (inserted.second) {
-      device_candidates.emplace_back(
-          device->guid(), base::UTF8ToUTF16(device->client_name()),
-          device->device_type(), device->last_updated_timestamp(),
-          device_capabilities);
-    }
+    if (inserted.second)
+      device_candidates.push_back(std::move(device));
   }
 
   // TODO(knollr): Remove devices from |sync_prefs_| that are in

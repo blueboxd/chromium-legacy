@@ -179,7 +179,7 @@ void IntersectionGeometry::ComputeGeometry(Element* root_element,
       const PhysicalSize& comparison_size = comparison_rect.size;
       const float area_of_interest =
           comparison_size.width.ToFloat() * comparison_size.height.ToFloat();
-      intersection_ratio_ = intersection_area / area_of_interest;
+      intersection_ratio_ = std::min(intersection_area / area_of_interest, 1.f);
     }
     threshold_index_ =
         FirstThresholdGreaterThan(intersection_ratio_, thresholds);

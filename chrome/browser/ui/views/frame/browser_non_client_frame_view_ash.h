@@ -149,6 +149,9 @@ class BrowserNonClientFrameViewAsh
                            FrameLayoutToggleTabletMode);
   FRIEND_TEST_ALL_PREFIXES(HomeLauncherBrowserNonClientFrameViewAshTest,
                            TabletModeBrowserCaptionButtonVisibility);
+  FRIEND_TEST_ALL_PREFIXES(
+      HomeLauncherBrowserNonClientFrameViewAshTest,
+      CaptionButtonVisibilityForBrowserLaunchedInTabletMode);
   FRIEND_TEST_ALL_PREFIXES(HomeLauncherBrowserNonClientFrameViewAshTest,
                            TabletModeAppCaptionButtonVisibility);
   FRIEND_TEST_ALL_PREFIXES(NonHomeLauncherBrowserNonClientFrameViewAshTest,

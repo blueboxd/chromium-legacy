@@ -58,13 +58,10 @@ class FakeHidHapticGamepad final : public HidHapticGamepadBase {
       : HidHapticGamepadBase(data) {}
   ~FakeHidHapticGamepad() override = default;
 
-  size_t WriteOutputReport(void* report, size_t report_length) override {
-    std::vector<uint8_t> report_bytes(report_length);
-    const uint8_t* report_begin = reinterpret_cast<uint8_t*>(report);
-    const uint8_t* report_end = report_begin + report_length;
-    std::copy(report_begin, report_end, report_bytes.begin());
-    output_reports_.push_back(std::move(report_bytes));
-    return report_length;
+  size_t WriteOutputReport(base::span<const uint8_t> report) override {
+    output_reports_.push_back(
+        std::vector<uint8_t>(report.begin(), report.end()));
+    return report.size_bytes();
   }
 
   base::WeakPtr<AbstractHapticGamepad> GetWeakPtr() override {

@@ -9,11 +9,18 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_auth_multi_round_parse.h"
+#include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_values.h"
+#include "net/log/net_log_with_source.h"
 
 namespace net {
 
@@ -21,18 +28,93 @@ using DelegationType = HttpAuth::DelegationType;
 
 namespace {
 
-int MapAcquireCredentialsStatusToError(SECURITY_STATUS status,
-                                       const SEC_WCHAR* package) {
-  VLOG(1) << "AcquireCredentialsHandle returned 0x" << std::hex << status;
+base::Value SecurityStatusToValue(Error mapped_error, SECURITY_STATUS status) {
+  base::Value params{base::Value::Type::DICTIONARY};
+  params.SetIntKey("net_error", mapped_error);
+  params.SetIntKey("security_status", status);
+  return params;
+}
+
+base::Value AcquireCredentialsHandleParams(const base::string16* domain,
+                                           const base::string16* user,
+                                           Error result,
+                                           SECURITY_STATUS status) {
+  base::Value params{base::Value::Type::DICTIONARY};
+  if (domain && user) {
+    params.SetStringKey("domain", base::UTF16ToUTF8(*domain));
+    params.SetStringKey("user", base::UTF16ToUTF8(*user));
+  }
+  params.SetKey("status", SecurityStatusToValue(result, status));
+  return params;
+}
+
+base::Value ContextFlagsToValue(DWORD flags) {
+  base::Value params{base::Value::Type::DICTIONARY};
+  params.SetStringKey("value", base::StringPrintf("0x%08lx", flags));
+  params.SetBoolKey("delegated",
+                    (flags & ISC_RET_DELEGATE) == ISC_RET_DELEGATE);
+  params.SetBoolKey("mutual",
+                    (flags & ISC_RET_MUTUAL_AUTH) == ISC_RET_MUTUAL_AUTH);
+  return params;
+}
+
+base::Value ContextAttributesToValue(SSPILibrary* library,
+                                     PCtxtHandle handle,
+                                     DWORD attributes) {
+  base::Value params{base::Value::Type::DICTIONARY};
+
+  SecPkgContext_NativeNames native_names = {0};
+  auto qc_result = library->QueryContextAttributesEx(
+      handle, SECPKG_ATTR_NATIVE_NAMES, &native_names, sizeof(native_names));
+  if (qc_result == SEC_E_OK && native_names.sClientName &&
+      native_names.sServerName) {
+    params.SetStringKey("source", native_names.sClientName);
+    params.SetStringKey("target", native_names.sServerName);
+  }
+
+  SecPkgContext_NegotiationInfo negotiation_info = {0};
+  qc_result = library->QueryContextAttributesEx(
+      handle, SECPKG_ATTR_NEGOTIATION_INFO, &negotiation_info,
+      sizeof(negotiation_info));
+  if (qc_result == SEC_E_OK && negotiation_info.PackageInfo &&
+      negotiation_info.PackageInfo->Name) {
+    params.SetStringKey("mechanism", negotiation_info.PackageInfo->Name);
+    params.SetBoolKey("open", negotiation_info.NegotiationState !=
+                                  SECPKG_NEGOTIATION_COMPLETE);
+  }
+
+  SecPkgContext_Authority authority = {0};
+  qc_result = library->QueryContextAttributesEx(handle, SECPKG_ATTR_AUTHORITY,
+                                                &authority, sizeof(authority));
+  if (qc_result == SEC_E_OK && authority.sAuthorityName) {
+    params.SetStringKey("authority", authority.sAuthorityName);
+  }
+
+  params.SetKey("flags", ContextFlagsToValue(attributes));
+  return params;
+}
+
+base::Value InitializeSecurityContextParams(SSPILibrary* library,
+                                            PCtxtHandle handle,
+                                            Error result,
+                                            SECURITY_STATUS status,
+                                            DWORD attributes) {
+  base::Value params{base::Value::Type::DICTIONARY};
+  params.SetKey("status", SecurityStatusToValue(result, status));
+  if (result == OK)
+    params.SetKey("context",
+                  ContextAttributesToValue(library, handle, attributes));
+  return params;
+}
+
+Error MapAcquireCredentialsStatusToError(SECURITY_STATUS status,
+                                         const SEC_WCHAR* package) {
   switch (status) {
     case SEC_E_OK:
       return OK;
     case SEC_E_INSUFFICIENT_MEMORY:
       return ERR_OUT_OF_MEMORY;
     case SEC_E_INTERNAL_ERROR:
-      LOG(WARNING)
-          << "AcquireCredentialsHandle returned unexpected status 0x"
-          << std::hex << status;
       return ERR_UNEXPECTED_SECURITY_LIBRARY_STATUS;
     case SEC_E_NO_CREDENTIALS:
     case SEC_E_NOT_OWNER:
@@ -42,19 +124,17 @@ int MapAcquireCredentialsStatusToError(SECURITY_STATUS status,
       // This indicates that the SSPI configuration does not match expectations
       return ERR_UNSUPPORTED_AUTH_SCHEME;
     default:
-      LOG(WARNING)
-          << "AcquireCredentialsHandle returned undocumented status 0x"
-          << std::hex << status;
       return ERR_UNDOCUMENTED_SECURITY_LIBRARY_STATUS;
   }
 }
 
-int AcquireExplicitCredentials(SSPILibrary* library,
-                               const SEC_WCHAR* package,
-                               const base::string16& domain,
-                               const base::string16& user,
-                               const base::string16& password,
-                               CredHandle* cred) {
+Error AcquireExplicitCredentials(SSPILibrary* library,
+                                 const SEC_WCHAR* package,
+                                 const base::string16& domain,
+                                 const base::string16& user,
+                                 const base::string16& password,
+                                 const NetLogWithSource& net_log,
+                                 CredHandle* cred) {
   SEC_WINNT_AUTH_IDENTITY identity;
   identity.Flags = SEC_WINNT_AUTH_IDENTITY_UNICODE;
   identity.User = reinterpret_cast<unsigned short*>(
@@ -69,6 +149,8 @@ int AcquireExplicitCredentials(SSPILibrary* library,
 
   TimeStamp expiry;
 
+  net_log.BeginEvent(NetLogEventType::AUTH_LIBRARY_ACQUIRE_CREDS);
+
   // Pass the username/password to get the credentials handle.
   SECURITY_STATUS status = library->AcquireCredentialsHandle(
       nullptr,                          // pszPrincipal
@@ -81,12 +163,19 @@ int AcquireExplicitCredentials(SSPILibrary* library,
       cred,                             // phCredential
       &expiry);                         // ptsExpiry
 
-  return MapAcquireCredentialsStatusToError(status, package);
+  auto result = MapAcquireCredentialsStatusToError(status, package);
+  net_log.EndEvent(NetLogEventType::AUTH_LIBRARY_ACQUIRE_CREDS, [&] {
+    return AcquireCredentialsHandleParams(&domain, &user, result, status);
+  });
+  return result;
 }
 
-int AcquireDefaultCredentials(SSPILibrary* library, const SEC_WCHAR* package,
-                              CredHandle* cred) {
+Error AcquireDefaultCredentials(SSPILibrary* library,
+                                const SEC_WCHAR* package,
+                                const NetLogWithSource& net_log,
+                                CredHandle* cred) {
   TimeStamp expiry;
+  net_log.BeginEvent(NetLogEventType::AUTH_LIBRARY_ACQUIRE_CREDS);
 
   // Pass the username/password to get the credentials handle.
   // Note: Since the 5th argument is nullptr, it uses the default
@@ -103,11 +192,14 @@ int AcquireDefaultCredentials(SSPILibrary* library, const SEC_WCHAR* package,
       cred,                             // phCredential
       &expiry);                         // ptsExpiry
 
-  return MapAcquireCredentialsStatusToError(status, package);
+  auto result = MapAcquireCredentialsStatusToError(status, package);
+  net_log.EndEvent(NetLogEventType::AUTH_LIBRARY_ACQUIRE_CREDS, [&] {
+    return AcquireCredentialsHandleParams(nullptr, nullptr, result, status);
+  });
+  return result;
 }
 
-int MapInitializeSecurityContextStatusToError(SECURITY_STATUS status) {
-  VLOG(1) << "InitializeSecurityContext returned 0x" << std::hex << status;
+Error MapInitializeSecurityContextStatusToError(SECURITY_STATUS status) {
   switch (status) {
     case SEC_E_OK:
     case SEC_I_CONTINUE_NEEDED:
@@ -120,9 +212,6 @@ int MapInitializeSecurityContextStatusToError(SECURITY_STATUS status) {
       // These are return codes reported by InitializeSecurityContext
       // but not expected by Chrome (for example, INCOMPLETE_CREDENTIALS
       // and INCOMPLETE_MESSAGE are intended for schannel).
-      LOG(WARNING)
-          << "InitializeSecurityContext returned unexpected status 0x"
-          << std::hex << status;
       return ERR_UNEXPECTED_SECURITY_LIBRARY_STATUS;
     case SEC_E_INSUFFICIENT_MEMORY:
       return ERR_OUT_OF_MEMORY;
@@ -143,15 +232,11 @@ int MapInitializeSecurityContextStatusToError(SECURITY_STATUS status) {
     case SEC_E_TARGET_UNKNOWN:
       return ERR_MISCONFIGURED_AUTH_ENVIRONMENT;
     default:
-      LOG(WARNING)
-          << "InitializeSecurityContext returned undocumented status 0x"
-          << std::hex << status;
       return ERR_UNDOCUMENTED_SECURITY_LIBRARY_STATUS;
   }
 }
 
-int MapQuerySecurityPackageInfoStatusToError(SECURITY_STATUS status) {
-  VLOG(1) << "QuerySecurityPackageInfo returned 0x" << std::hex << status;
+Error MapQuerySecurityPackageInfoStatusToError(SECURITY_STATUS status) {
   switch (status) {
     case SEC_E_OK:
       return OK;
@@ -160,15 +245,11 @@ int MapQuerySecurityPackageInfoStatusToError(SECURITY_STATUS status) {
       // during testing.
       return ERR_UNSUPPORTED_AUTH_SCHEME;
     default:
-      LOG(WARNING)
-          << "QuerySecurityPackageInfo returned undocumented status 0x"
-          << std::hex << status;
       return ERR_UNDOCUMENTED_SECURITY_LIBRARY_STATUS;
   }
 }
 
-int MapFreeContextBufferStatusToError(SECURITY_STATUS status) {
-  VLOG(1) << "FreeContextBuffer returned 0x" << std::hex << status;
+Error MapFreeContextBufferStatusToError(SECURITY_STATUS status) {
   switch (status) {
     case SEC_E_OK:
       return OK;
@@ -178,9 +259,6 @@ int MapFreeContextBufferStatusToError(SECURITY_STATUS status) {
       // only mentions that a non-zero (or non-SEC_E_OK) value is returned
       // if the function fails, and does not indicate what the failure
       // conditions are.
-      LOG(WARNING)
-          << "FreeContextBuffer returned undocumented status 0x"
-          << std::hex << status;
       return ERR_UNDOCUMENTED_SECURITY_LIBRARY_STATUS;
   }
 }
@@ -197,9 +275,9 @@ SECURITY_STATUS SSPILibraryDefault::AcquireCredentialsHandle(
     void* pvGetKeyArgument,
     PCredHandle phCredential,
     PTimeStamp ptsExpiry) {
-  return ::AcquireCredentialsHandle(pszPrincipal, pszPackage, fCredentialUse,
-                                    pvLogonId, pvAuthData, pGetKeyFn,
-                                    pvGetKeyArgument, phCredential, ptsExpiry);
+  return ::AcquireCredentialsHandleW(pszPrincipal, pszPackage, fCredentialUse,
+                                     pvLogonId, pvAuthData, pGetKeyFn,
+                                     pvGetKeyArgument, phCredential, ptsExpiry);
 }
 
 SECURITY_STATUS SSPILibraryDefault::InitializeSecurityContext(
@@ -215,16 +293,28 @@ SECURITY_STATUS SSPILibraryDefault::InitializeSecurityContext(
     PSecBufferDesc pOutput,
     unsigned long* contextAttr,
     PTimeStamp ptsExpiry) {
-  return ::InitializeSecurityContext(phCredential, phContext, pszTargetName,
-                                     fContextReq, Reserved1, TargetDataRep,
-                                     pInput, Reserved2, phNewContext, pOutput,
-                                     contextAttr, ptsExpiry);
+  return ::InitializeSecurityContextW(phCredential, phContext, pszTargetName,
+                                      fContextReq, Reserved1, TargetDataRep,
+                                      pInput, Reserved2, phNewContext, pOutput,
+                                      contextAttr, ptsExpiry);
+}
+
+SECURITY_STATUS SSPILibraryDefault::QueryContextAttributesEx(
+    PCtxtHandle phContext,
+    ULONG ulAttribute,
+    PVOID pBuffer,
+    ULONG cbBuffer) {
+  // TODO(https://crbug.com/992779): QueryContextAttributesExW is not included
+  // in Secur32.Lib in 10.0.18362.0 SDK. This symbol requires switching to using
+  // Windows SDK API sets in mincore.lib or OneCore.Lib. Switch to using
+  // QueryContextAttributesEx when the switch is made.
+  return ::QueryContextAttributes(phContext, ulAttribute, pBuffer);
 }
 
 SECURITY_STATUS SSPILibraryDefault::QuerySecurityPackageInfo(
     LPWSTR pszPackageName,
     PSecPkgInfoW* pkgInfo) {
-  return ::QuerySecurityPackageInfo(pszPackageName, pkgInfo);
+  return ::QuerySecurityPackageInfoW(pszPackageName, pkgInfo);
 }
 
 SECURITY_STATUS SSPILibraryDefault::FreeCredentialsHandle(
@@ -300,11 +390,14 @@ int HttpAuthSSPI::GenerateAuthToken(const AuthCredentials* credentials,
                                     const std::string& spn,
                                     const std::string& channel_bindings,
                                     std::string* auth_token,
-                                    const NetLogWithSource&,
+                                    const NetLogWithSource& net_log,
                                     CompletionOnceCallback /*callback*/) {
   // Initial challenge.
   if (!SecIsValidHandle(&cred_)) {
-    int rv = OnFirstRound(credentials);
+    // ParseChallenge fails early if a non-empty token is received on the first
+    // challenge.
+    DCHECK(decoded_server_auth_token_.empty());
+    int rv = OnFirstRound(credentials, net_log);
     if (rv != OK)
       return rv;
   }
@@ -315,7 +408,7 @@ int HttpAuthSSPI::GenerateAuthToken(const AuthCredentials* credentials,
   int rv = GetNextSecurityToken(
       spn, channel_bindings,
       static_cast<void*>(const_cast<char*>(decoded_server_auth_token_.c_str())),
-      decoded_server_auth_token_.length(), &out_buf, &out_buf_len);
+      decoded_server_auth_token_.length(), net_log, &out_buf, &out_buf_len);
   if (rv != OK)
     return rv;
 
@@ -329,19 +422,21 @@ int HttpAuthSSPI::GenerateAuthToken(const AuthCredentials* credentials,
   return OK;
 }
 
-int HttpAuthSSPI::OnFirstRound(const AuthCredentials* credentials) {
+int HttpAuthSSPI::OnFirstRound(const AuthCredentials* credentials,
+                               const NetLogWithSource& net_log) {
   DCHECK(!SecIsValidHandle(&cred_));
   int rv = OK;
   if (credentials) {
     base::string16 domain;
     base::string16 user;
     SplitDomainAndUser(credentials->username(), &domain, &user);
-    rv = AcquireExplicitCredentials(library_, security_package_, domain,
-                                    user, credentials->password(), &cred_);
+    rv = AcquireExplicitCredentials(library_, security_package_, domain, user,
+                                    credentials->password(), net_log, &cred_);
     if (rv != OK)
       return rv;
   } else {
-    rv = AcquireDefaultCredentials(library_, security_package_, &cred_);
+    rv =
+        AcquireDefaultCredentials(library_, security_package_, net_log, &cred_);
     if (rv != OK)
       return rv;
   }
@@ -353,6 +448,7 @@ int HttpAuthSSPI::GetNextSecurityToken(const std::string& spn,
                                        const std::string& channel_bindings,
                                        const void* in_token,
                                        int in_token_len,
+                                       const NetLogWithSource& net_log,
                                        void** out_token,
                                        int* out_token_len) {
   CtxtHandle* ctxt_ptr = nullptr;
@@ -422,8 +518,10 @@ int HttpAuthSSPI::GetNextSecurityToken(const std::string& spn,
   if (delegation_type_ != DelegationType::kNone)
     context_flags |= (ISC_REQ_DELEGATE | ISC_REQ_MUTUAL_AUTH);
 
+  net_log.BeginEvent(NetLogEventType::AUTH_LIBRARY_INIT_SEC_CTX);
+
   // This returns a token that is passed to the remote server.
-  DWORD context_attribute;
+  DWORD context_attributes = 0;
   base::string16 spn16 = base::ASCIIToUTF16(spn);
   SECURITY_STATUS status = library_->InitializeSecurityContext(
       &cred_,                          // phCredential
@@ -436,9 +534,14 @@ int HttpAuthSSPI::GetNextSecurityToken(const std::string& spn,
       0,                               // Reserved2 (must be 0)
       &ctxt_,                          // phNewContext
       &out_buffer_desc,                // pOutput
-      &context_attribute,              // pfContextAttr
+      &context_attributes,             // pfContextAttr
       nullptr);                        // ptsExpiry
-  int rv = MapInitializeSecurityContextStatusToError(status);
+  Error rv = MapInitializeSecurityContextStatusToError(status);
+  net_log.EndEvent(NetLogEventType::AUTH_LIBRARY_INIT_SEC_CTX, [&] {
+    return InitializeSecurityContextParams(library_, &ctxt_, rv, status,
+                                           context_attributes);
+  });
+
   if (rv != OK) {
     ResetSecurityContext();
     free(out_buffer.pvBuffer);

@@ -55,6 +55,10 @@
 #include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
+#if defined(OS_WIN)
+#include "third_party/blink/public/mojom/dwrite_font_proxy/dwrite_font_proxy.mojom-blink.h"
+#endif
+
 class SkString;
 class SkTypeface;
 
@@ -205,6 +209,20 @@ class PLATFORM_EXPORT FontCache {
   static void SetUseSkiaFontFallback(bool use_skia_font_fallback) {
     use_skia_font_fallback_ = use_skia_font_fallback;
   }
+
+  // On Windows pre 8.1 establish a connection to the DWriteFontProxy service in
+  // order to retrieve family names for fallback lookup.
+  void EnsureServiceConnected();
+
+  scoped_refptr<SimpleFontData> GetFallbackFamilyNameFromHardcodedChoices(
+      const FontDescription&,
+      UChar32 codepoint,
+      FontFallbackPriority fallback_priority);
+
+  scoped_refptr<SimpleFontData> GetDWriteFallbackFamily(
+      const FontDescription&,
+      UChar32 codepoint,
+      FontFallbackPriority fallback_priority);
 #endif  // defined(OS_WIN)
 
   static void AcceptLanguagesChanged(const String&);
@@ -334,6 +352,7 @@ class PLATFORM_EXPORT FontCache {
   // Windows creates an SkFontMgr for unit testing automatically. This flag is
   // to ensure it's not happening in the production from the crash log.
   bool is_test_font_mgr_ = false;
+  mojom::blink::DWriteFontProxyPtr service_;
 #endif  // defined(OS_WIN)
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)

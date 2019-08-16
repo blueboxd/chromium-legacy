@@ -81,9 +81,6 @@ crbug.com/935970 images/image-map-multiple.html [ Skip ]
 crbug.com/935970 media/audio-delete-while-slider-thumb-clicked.html [ Skip ]
 
 # Tests fail even with a fuzzy pixel diff. They require a re-baseline.
-crbug.com/954328 compositing/fixed-background-after-style-recalc.html [ Failure ]
-crbug.com/954328 compositing/overflow/mask-with-filter.html [ Failure ]
-crbug.com/954328 compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
 crbug.com/954328 css3/filters/filter-change-repaint.html [ Failure ]
 crbug.com/954328 css3/filters/filter-repaint-blur.html [ Failure ]
 crbug.com/954328 css3/filters/filter-repaint-child-layers.html [ Failure ]

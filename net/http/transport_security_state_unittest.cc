@@ -2646,6 +2646,10 @@ TEST_F(TransportSecurityStateStaticTest, Preloaded) {
   EXPECT_TRUE(
       state.GetStaticDomainState("www.googlemail.com", &sts_state, &pkp_state));
 
+  // fi.g.co should not force HTTPS because there are still HTTP-only services
+  // on it.
+  EXPECT_FALSE(StaticShouldRedirect("fi.g.co"));
+
   // Other hosts:
 
   EXPECT_TRUE(StaticShouldRedirect("aladdinschools.appspot.com"));

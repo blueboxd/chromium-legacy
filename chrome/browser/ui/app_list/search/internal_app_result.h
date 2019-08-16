@@ -45,6 +45,7 @@ class InternalAppResult : public AppResult {
   // ChromeSearchResult overrides:
   void Open(int event_flags) override;
   void GetContextMenuModel(GetMenuModelCallback callback) override;
+  void OnVisibilityChanged(bool visibility) override;
   SearchResultType GetSearchResultType() const override;
 
   // AppContextMenuDelegate overrides:

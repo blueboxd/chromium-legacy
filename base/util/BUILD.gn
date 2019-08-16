@@ -6,6 +6,7 @@ import("//testing/test.gni")
 
 test("base_util_unittests") {
   deps = [
+    "memory_pressure:unittests",
     "type_safety:tests",
     "values:unittests",
     "//base/test:run_all_base_unittests",

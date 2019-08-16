@@ -399,6 +399,11 @@ const char kNativeMessagingConnectHost[] = "native-messaging-connect-host";
 const char kNativeMessagingConnectExtension[] =
     "native-messaging-connect-extension";
 
+// If set when kNativeMessagingConnectHost and kNativeMessagingConnectExtension
+// are specified, is reflected to the native messaging host as a command line
+// parameter.
+const char kNativeMessagingConnectId[] = "native-messaging-connect-id";
+
 // Disables the default browser check. Useful for UI/browser tests where we
 // want to avoid having the default browser info-bar displayed.
 const char kNoDefaultBrowserCheck[]         = "no-default-browser-check";

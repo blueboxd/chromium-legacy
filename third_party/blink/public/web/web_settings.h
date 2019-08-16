@@ -190,7 +190,6 @@ class WebSettings {
   virtual void SetPresentationRequiresUserGesture(bool) = 0;
   virtual void SetEmbeddedMediaExperienceEnabled(bool) = 0;
   virtual void SetImmersiveModeEnabled(bool) = 0;
-  virtual void SetMinimumAccelerated2dCanvasSize(int) = 0;
   virtual void SetMinimumFontSize(int) = 0;
   virtual void SetMinimumLogicalFontSize(int) = 0;
   virtual void SetMockScrollbarsEnabled(bool) = 0;

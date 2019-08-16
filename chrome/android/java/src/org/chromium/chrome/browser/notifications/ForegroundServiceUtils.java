@@ -7,9 +7,11 @@ package org.chromium.chrome.browser.notifications;
 import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
+import android.support.v4.app.ServiceCompat;
 import android.support.v4.content.ContextCompat;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.AppHooks;
 
@@ -18,6 +20,7 @@ import org.chromium.chrome.browser.AppHooks;
  * compatibility for older Android versions and work around for Android API bugs.
  */
 public class ForegroundServiceUtils {
+    private static final String TAG = "ForegroundService";
     private ForegroundServiceUtils() {}
 
     /**
@@ -66,5 +69,19 @@ public class ForegroundServiceUtils {
 
         // TODO(xingliu): Remove startForeground call from AppHooks when Q sdk is available.
         AppHooks.get().startForeground(service, id, notification, foregroundServiceType);
+    }
+
+    /**
+     * Stops the foreground service. See {@link ServiceCompat#stopForeground(Service, int)}.
+     * @param service The foreground service to stop.
+     * @param flags The flags to stop foreground service.
+     */
+    public void stopForeground(Service service, int flags) {
+        // OnePlus devices may throw NullPointerException, see https://crbug.com/992347.
+        try {
+            ServiceCompat.stopForeground(service, flags);
+        } catch (NullPointerException e) {
+            Log.e(TAG, "Failed to stop foreground service, ", e);
+        }
     }
 }

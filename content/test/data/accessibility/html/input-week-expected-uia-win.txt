@@ -1,6 +1,6 @@
 document
 ++group
-++++list
+++++textbox LocalizedControlType='week picker'
 ++++++group
 ++++++++group
 ++++++++++description Name='Week '

@@ -11,8 +11,8 @@ import "mojo/public/mojom/base/generic_pending_receiver.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/network_types.mojom";
+import "third_party/blink/public/mojom/manifest/manifest.mojom";
 import "third_party/blink/public/mojom/renderer_preferences.mojom";
-import "third_party/blink/public/mojom/service_worker/embedded_worker.mojom";
 import "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
@@ -204,13 +204,6 @@ interface Renderer {
                    int32 opener_routing_id, int32 parent_routing_id,
                    FrameReplicationState replication_state,
                    mojo_base.mojom.UnguessableToken devtools_frame_token);
-
-  // Tells the renderer to create an EmbeddedWorkerInstanceClient, which is what
-  // manages service worker startup and shutdown.
-  // TODO(shimazu): Send all params for starting service worker to reduce the
-  // number of IPCs.
-  SetUpEmbeddedWorkerChannelForServiceWorker(
-      blink.mojom.EmbeddedWorkerInstanceClient& client_request);
 
   // Tells the renderer that the network type has changed so that
   // navigator.onLine and navigator.connection can be updated.

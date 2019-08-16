@@ -5,9 +5,7 @@
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_observer.h"
 
 #include "chromeos/services/network_config/cros_network_config.h"
-#include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 namespace network_config {

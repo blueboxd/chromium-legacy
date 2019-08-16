@@ -2,7 +2,7 @@
   "comments": [
     "Clang tip-of-tree builder for iOS."
   ],
-  "xcode build version": "11m382q",
+  "xcode build version": "10b61",
   "gn_args": [
     "ios_enable_code_signing=false",
     "is_component_build=false",
@@ -23,6 +23,7 @@
       "app": "base_unittests",
       "device type": "iPhone 6s",
       "host os": "Mac-10.14.4",
+      "xcode build version": "11m382q",
       "pool": "Chrome",
       "os": "12.1"
     },
@@ -30,6 +31,7 @@
       "app": "boringssl_crypto_tests",
       "device type": "iPhone 6s",
       "host os": "Mac-10.14.4",
+      "xcode build version": "11m382q",
       "pool": "Chrome",
       "os": "12.1"
     },
@@ -37,6 +39,7 @@
       "app": "boringssl_ssl_tests",
       "device type": "iPhone 6s",
       "host os": "Mac-10.14.4",
+      "xcode build version": "11m382q",
       "pool": "Chrome",
       "os": "12.1"
     },
@@ -44,6 +47,7 @@
       "app": "components_unittests",
       "device type": "iPhone 6s",
       "host os": "Mac-10.14.4",
+      "xcode build version": "11m382q",
       "pool": "Chrome",
       "os": "12.1"
     },
@@ -51,6 +55,7 @@
       "app": "crypto_unittests",
       "device type": "iPhone 6s",
       "host os": "Mac-10.14.4",
+      "xcode build version": "11m382q",
       "pool": "Chrome",
       "os": "12.1"
     },
@@ -58,6 +63,7 @@
       "app": "gfx_unittests",
       "device type": "iPhone 6s",
       "host os": "Mac-10.14.4",
+      "xcode build version": "11m382q",
       "pool": "Chrome",
       "os": "12.1"
     },
@@ -65,6 +71,7 @@
       "app": "google_apis_unittests",
       "device type": "iPhone 6s",
       "host os": "Mac-10.14.4",
+      "xcode build version": "11m382q",
       "pool": "Chrome",
       "os": "12.1"
     },
@@ -72,6 +79,7 @@
       "app": "ios_chrome_unittests",
       "device type": "iPhone 6s",
       "host os": "Mac-10.14.4",
+      "xcode build version": "11m382q",
       "pool": "Chrome",
       "os": "12.1"
     },
@@ -79,6 +87,7 @@
       "app": "ios_net_unittests",
       "device type": "iPhone 6s",
       "host os": "Mac-10.14.4",
+      "xcode build version": "11m382q",
       "pool": "Chrome",
       "os": "12.1"
     },
@@ -86,6 +95,7 @@
       "app": "ios_web_inttests",
       "device type": "iPhone 6s",
       "host os": "Mac-10.14.4",
+      "xcode build version": "11m382q",
       "pool": "Chrome",
       "os": "12.1"
     },
@@ -93,6 +103,7 @@
       "app": "ios_web_unittests",
       "device type": "iPhone 6s",
       "host os": "Mac-10.14.4",
+      "xcode build version": "11m382q",
       "pool": "Chrome",
       "os": "12.1"
     },
@@ -100,6 +111,7 @@
       "app": "ios_web_view_inttests",
       "device type": "iPhone 6s",
       "host os": "Mac-10.14.4",
+      "xcode build version": "11m382q",
       "pool": "Chrome",
       "os": "12.1"
     },
@@ -107,6 +119,7 @@
       "app": "net_unittests",
       "device type": "iPhone 6s",
       "host os": "Mac-10.14.4",
+      "xcode build version": "11m382q",
       "pool": "Chrome",
       "os": "12.1"
     },
@@ -114,6 +127,7 @@
       "app": "skia_unittests",
       "device type": "iPhone 6s",
       "host os": "Mac-10.14.4",
+      "xcode build version": "11m382q",
       "pool": "Chrome",
       "os": "12.1"
     },
@@ -121,6 +135,7 @@
       "app": "sql_unittests",
       "device type": "iPhone 6s",
       "host os": "Mac-10.14.4",
+      "xcode build version": "11m382q",
       "pool": "Chrome",
       "os": "12.1"
     },
@@ -128,6 +143,7 @@
       "app": "ui_base_unittests",
       "device type": "iPhone 6s",
       "host os": "Mac-10.14.4",
+      "xcode build version": "11m382q",
       "pool": "Chrome",
       "os": "12.1"
     },
@@ -135,6 +151,7 @@
       "app": "url_unittests",
       "device type": "iPhone 6s",
       "host os": "Mac-10.14.4",
+      "xcode build version": "11m382q",
       "pool": "Chrome",
       "os": "12.1"
     }

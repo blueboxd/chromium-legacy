@@ -38,7 +38,7 @@ void FieldsetPainter::PaintBoxDecorationBackground(
     const PhysicalOffset& paint_offset) {
   PhysicalRect paint_rect(paint_offset, layout_fieldset_.Size());
   LayoutBox* legend = layout_fieldset_.FindInFlowLegend();
-  if (!legend) {
+  if (!legend || paint_info.DescendantPaintingBlocked()) {
     return BoxPainter(layout_fieldset_)
         .PaintBoxDecorationBackground(paint_info, paint_offset);
   }
@@ -102,7 +102,7 @@ void FieldsetPainter::PaintMask(const PaintInfo& paint_info,
 
   PhysicalRect paint_rect(paint_offset, layout_fieldset_.Size());
   LayoutBox* legend = layout_fieldset_.FindInFlowLegend();
-  if (!legend)
+  if (!legend || paint_info.DescendantPaintingBlocked())
     return BoxPainter(layout_fieldset_).PaintMask(paint_info, paint_offset);
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(

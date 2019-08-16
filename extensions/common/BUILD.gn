@@ -311,6 +311,7 @@ if (enable_extensions) {
     public_deps = [
       ":common_constants",
       ":mojom",
+      "//components/services/app_service/public/cpp:app_file_handling",
       "//content/public/common",
       "//ipc",
       "//skia",

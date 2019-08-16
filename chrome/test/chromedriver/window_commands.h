@@ -218,6 +218,12 @@ Status ExecuteSendCommand(Session* session,
                           std::unique_ptr<base::Value>* value,
                           Timeout* timeout);
 
+Status ExecuteSendCommandFromWebSocket(Session* session,
+                                       WebView* web_view,
+                                       const base::DictionaryValue& params,
+                                       std::unique_ptr<base::Value>* value,
+                                       Timeout* timeout);
+
 Status ExecuteSendCommandAndGetResult(Session* session,
                                       WebView* web_view,
                                       const base::DictionaryValue& params,

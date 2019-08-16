@@ -28,7 +28,8 @@ enum class InternalAppName {
   kCamera = 3,
   kDiscover = 4,
   kPluginVm = 5,
-  kMaxValue = kPluginVm,
+  kReleaseNotes = 6,
+  kMaxValue = kReleaseNotes,
 };
 
 // Metadata about an internal app.
@@ -60,6 +61,9 @@ struct InternalApp {
 // Returns a list of Chrome OS internal apps, which are searchable in launcher
 // for |profile|.
 const std::vector<InternalApp>& GetInternalAppList(const Profile* profile);
+
+// Returns true if the app should only be shown as a suggestion chip.
+bool IsSuggestionChip(const std::string& app_id);
 
 // Returns InternalApp by |app_id|.
 // Returns nullptr if |app_id| does not correspond to an internal app.

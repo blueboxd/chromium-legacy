@@ -74,7 +74,7 @@ class MediaCanPlayTypeTest : public MediaBrowserTest {
   MediaCanPlayTypeTest() : url_("about:blank") {}
 
   void SetUpOnMainThread() override {
-    NavigateToURL(shell(), url_);
+    EXPECT_TRUE(NavigateToURL(shell(), url_));
   }
 
   std::string CanPlay(const std::string& type) {

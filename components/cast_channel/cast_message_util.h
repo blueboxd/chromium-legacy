@@ -68,6 +68,8 @@ enum class V2MessageType {
   kQueueRemove,
   kQueueReorder,
   kQueueUpdate,
+  kQueueNext,
+  kQueuePrev,
   kSeek,
   kSetVolume,
   kStop,

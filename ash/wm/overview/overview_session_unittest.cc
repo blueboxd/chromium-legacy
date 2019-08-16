@@ -2800,7 +2800,7 @@ class OverviewSessionNewLayoutTest : public OverviewSessionTest {
 
   void GenerateScrollSequence(const gfx::Point& start, const gfx::Point& end) {
     GetEventGenerator()->GestureScrollSequence(
-        start, end, base::TimeDelta::FromMilliseconds(10), 10);
+        start, end, base::TimeDelta::FromMilliseconds(100), 1000);
   }
 
  protected:
@@ -2812,6 +2812,9 @@ class OverviewSessionNewLayoutTest : public OverviewSessionTest {
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH));
     GetEventGenerator()->Dispatch(&long_press);
   }
+
+  // TODO(sammiequon): Investigate simulating fling event for testing inertial
+  // scrolling.
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;

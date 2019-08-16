@@ -25,12 +25,16 @@ int GetMilestone() {
   return version_info::GetVersion().components()[0];
 }
 
+constexpr int kTimesToShowSuggestionChip = 1;
+
 }  // namespace
 
 namespace chromeos {
 
 void ReleaseNotesStorage::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kReleaseNotesLastShownMilestone, 0);
+  registry->RegisterIntegerPref(
+      prefs::kReleaseNotesSuggestionChipTimesLeftToShow, 0);
 }
 
 ReleaseNotesStorage::ReleaseNotesStorage(Profile* profile)
@@ -55,9 +59,14 @@ bool ReleaseNotesStorage::ShouldNotify() {
                      base::CompareCase::INSENSITIVE_ASCII) ||
       (ProfileHelper::Get()->GetUserByProfile(profile_)->HasGaiaAccount() &&
        !profile_->GetProfilePolicyConnector()->IsManaged())) {
-    int last_milestone = profile_->GetPrefs()->GetInteger(
+    const int last_milestone = profile_->GetPrefs()->GetInteger(
         prefs::kReleaseNotesLastShownMilestone);
-    return (last_milestone < GetMilestone());
+    if (last_milestone < GetMilestone()) {
+      profile_->GetPrefs()->SetInteger(
+          prefs::kReleaseNotesSuggestionChipTimesLeftToShow,
+          kTimesToShowSuggestionChip);
+      return true;
+    }
   }
   return false;
 }
@@ -65,6 +74,22 @@ bool ReleaseNotesStorage::ShouldNotify() {
 void ReleaseNotesStorage::MarkNotificationShown() {
   profile_->GetPrefs()->SetInteger(prefs::kReleaseNotesLastShownMilestone,
                                    GetMilestone());
+}
+
+bool ReleaseNotesStorage::ShouldShowSuggestionChip() {
+  const int times_left_to_show = profile_->GetPrefs()->GetInteger(
+      prefs::kReleaseNotesSuggestionChipTimesLeftToShow);
+  return times_left_to_show > 0;
+}
+
+void ReleaseNotesStorage::DecreaseTimesLeftToShowSuggestionChip() {
+  const int times_left_to_show = profile_->GetPrefs()->GetInteger(
+      prefs::kReleaseNotesSuggestionChipTimesLeftToShow);
+  if (times_left_to_show == 0)
+    return;
+  profile_->GetPrefs()->SetInteger(
+      prefs::kReleaseNotesSuggestionChipTimesLeftToShow,
+      times_left_to_show - 1);
 }
 
 }  // namespace chromeos

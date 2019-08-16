@@ -27,6 +27,12 @@ namespace network_config {
 class CrosNetworkConfig : public mojom::CrosNetworkConfig,
                           public NetworkStateHandlerObserver {
  public:
+  // Constructs an instance of CrosNetworkConfig with default network subsystem
+  // dependencies appropriate for a production environment.
+  CrosNetworkConfig();
+
+  // Constructs an instance of CrosNetworkConfig with specific network subsystem
+  // dependencies.
   CrosNetworkConfig(
       NetworkStateHandler* network_state_handler,
       NetworkDeviceHandler* network_device_handler,

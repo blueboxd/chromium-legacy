@@ -703,9 +703,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   WebRuntimeFeatures::EnableAccelerated2dCanvas(
       prefs.accelerated_2d_canvas_enabled);
 
-  settings->SetMinimumAccelerated2dCanvasSize(
-      prefs.minimum_accelerated_2d_canvas_size);
-
   // Disable antialiasing for 2d canvas if requested on the command line.
   settings->SetAntialiased2dCanvasEnabled(
       !prefs.antialiased_2d_canvas_disabled);

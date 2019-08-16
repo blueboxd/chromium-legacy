@@ -123,7 +123,8 @@ class Adapter : public AlsReader::Observer,
     kImmediateDarkeningThresholdExceeded = 2,
     kBrightneningThresholdExceeded = 3,
     kDarkeningThresholdExceeded = 4,
-    kMaxValue = kDarkeningThresholdExceeded
+    kUpdateAfterLidReopen = 5,
+    kMaxValue = kUpdateAfterLidReopen
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -150,7 +151,8 @@ class Adapter : public AlsReader::Observer,
     // Adapter should only use a personal curve that has been trained for a min
     // number of iterations.
     kWaitingForTrainedPersonalCurve = 9,
-    kMaxValue = kWaitingForTrainedPersonalCurve
+    kWaitingForReopenAls = 10,
+    kMaxValue = kWaitingForReopenAls
   };
 
   struct AdapterDecision {
@@ -200,6 +202,8 @@ class Adapter : public AlsReader::Observer,
   // chromeos::PowerManagerClient::Observer overrides:
   void PowerManagerBecameAvailable(bool service_is_ready) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void LidEventReceived(chromeos::PowerManagerClient::LidState state,
+                        const base::TimeTicks& timestamp) override;
 
   Status GetStatusForTesting() const;
 
@@ -395,6 +399,19 @@ class Adapter : public AlsReader::Observer,
 
   // Used to record number of model-triggered brightness changes.
   int model_brightness_change_counter_ = 1;
+
+  // If lid is closed then we do not record any ambient light. If a device
+  // has no lid, it is considered as open.
+  base::Optional<bool> is_lid_closed_;
+
+  // Recent lid reopen time following a lid-closed event. Unset after the first
+  // brightness change after a recent lid-open event.
+  base::TimeTicks lid_reopen_time_;
+
+  // ALS data that arrives soon after lid is reopened tends to be inaccurate.
+  // Hence we do not store any ALS data that arrives less than
+  // |lid_open_delay_time_| from |lid_reopen_time_|.
+  base::TimeDelta lid_open_delay_time_ = base::TimeDelta::FromSeconds(2);
 
   DISALLOW_COPY_AND_ASSIGN(Adapter);
 };

@@ -11,15 +11,18 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 
 @class BadgeButtonFactory;
-@protocol InfobarCommands;
 
 // Manages badges to display that are received through BadgeConsumer. Currently
 // only displays the newest badge.
 @interface BadgeViewController
     : UIViewController <BadgeConsumer, FullscreenUIElement>
 
-// The dispatcher for badge button actions.
-@property(nonatomic, weak) id<InfobarCommands> dispatcher;
+// |buttonFactory| must be non-nil.
+- (instancetype)initWithButtonFactory:(BadgeButtonFactory*)buttonFactory
+    NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithNibName:(NSString*)nibNameOrNil
+                         bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
 @end
 

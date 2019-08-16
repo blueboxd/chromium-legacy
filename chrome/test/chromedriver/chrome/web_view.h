@@ -64,6 +64,11 @@ class WebView {
   virtual Status SendCommand(const std::string& cmd,
                              const base::DictionaryValue& params) = 0;
 
+  // Send a command to the DevTools debugger. Received from WebSocket
+  virtual Status SendCommandFromWebSocket(const std::string& cmd,
+                                          const base::DictionaryValue& params,
+                                          const int client_cmd_id) = 0;
+
   // Send a command to the DevTools debugger and wait for the result
   virtual Status SendCommandAndGetResult(
           const std::string& cmd,

@@ -95,11 +95,15 @@ void TestDataSource::ReadFile(
   if (base::StartsWith(url.query(), kModuleQuery,
                        base::CompareCase::INSENSITIVE_ASCII)) {
     std::string js_path = url.query().substr(strlen(kModuleQuery));
+
     base::FilePath file_path =
         src_root_.Append(base::FilePath::FromUTF8Unsafe(js_path));
     // Do some basic validation of the JS file path provided in the query.
     CHECK_EQ(file_path.Extension(), FILE_PATH_LITERAL(".js"));
-    CHECK(base::PathExists(file_path))
+
+    base::FilePath file_path2 =
+        gen_root_.Append(base::FilePath::FromUTF8Unsafe(js_path));
+    CHECK(base::PathExists(file_path) || base::PathExists(file_path2))
         << url.spec() << "=" << file_path.value();
     content = "<script type=\"module\" src=\"" + js_path + "\"></script>";
   } else {

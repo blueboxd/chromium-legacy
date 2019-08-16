@@ -14,10 +14,11 @@
 
 namespace blink {
 
-bool PLATFORM_EXPORT IsLight(const Color& color);
-
 class PLATFORM_EXPORT DarkModeColorClassifier {
  public:
+  // Determine perceived brightness of a color.
+  static int CalculateColorBrightness(const Color& color);
+
   static std::unique_ptr<DarkModeColorClassifier> MakeTextColorClassifier(
       const DarkModeSettings& settings);
   static std::unique_ptr<DarkModeColorClassifier> MakeBackgroundColorClassifier(

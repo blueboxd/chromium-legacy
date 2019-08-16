@@ -226,7 +226,7 @@ class Node(object):
 
       mandatt_option_found = False
       for mandatt in mandatt_list:
-        assert mandatt not in self.DefaultAttributes().keys()
+        assert mandatt not in self.DefaultAttributes()
         if mandatt in self.attrs:
           if not mandatt_option_found:
             mandatt_option_found = True
@@ -247,11 +247,14 @@ class Node(object):
     return ''.join([c for c in self.mixed_content
                     if isinstance(c, six.string_types)])
 
-  def __unicode__(self):
+  def __str__(self):
     '''Returns this node and all nodes below it as an XML document in a Unicode
     string.'''
     header = u'<?xml version="1.0" encoding="UTF-8"?>\n'
     return header + self.FormatXml()
+
+  # Some Python 2 glue.
+  __unicode__ = __str__
 
   def FormatXml(self, indent = u'', one_line = False):
     '''Returns this node and all nodes below it as an XML
@@ -628,7 +631,7 @@ class Node(object):
       # The length of the uncompressed data is also appended to the start,
       # truncated to 6 bytes, little-endian. size_bytes is 8 bytes,
       # need to truncate further to 6.
-      formatter = '%ds %dx %ds' % (6, 2, len(size_bytes) - 8)
+      formatter = b'%ds %dx %ds' % (6, 2, len(size_bytes) - 8)
       return (constants.BROTLI_CONST +
              b''.join(struct.unpack(formatter, size_bytes)) +
              data)

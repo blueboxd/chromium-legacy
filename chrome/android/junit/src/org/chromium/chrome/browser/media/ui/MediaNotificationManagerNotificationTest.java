@@ -15,6 +15,8 @@ import android.app.Notification;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Build;
+import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +28,7 @@ import org.robolectric.shadows.ShadowNotification;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
 import org.chromium.services.media_session.MediaMetadata;
+import org.chromium.services.media_session.MediaPosition;
 
 /**
  * JUnit tests for checking MediaNotificationManager presents correct notification to Android
@@ -227,6 +230,72 @@ public class MediaNotificationManagerNotificationTest extends MediaNotificationM
         if (hasNApis()) {
             assertEquals(Notification.VISIBILITY_PUBLIC, notification.visibility);
         }
+    }
+
+    @Test
+    public void mediaPosition_Present() {
+        MediaPosition position = new MediaPosition(10, 5, 2.0f, 10000);
+        mMediaNotificationInfoBuilder.setPaused(false);
+        mMediaNotificationInfoBuilder.setMediaPosition(position);
+        mMediaNotificationInfoBuilder.setPrivate(false);
+        getManager().mMediaNotificationInfo = mMediaNotificationInfoBuilder.build();
+
+        MediaMetadataCompat metadata = getManager().createMetadata();
+        assertEquals(10, metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION));
+
+        PlaybackStateCompat state = getManager().createPlaybackState();
+        assertEquals(PlaybackStateCompat.STATE_PLAYING, state.getState());
+        assertEquals(2.0f, state.getPlaybackSpeed(), 0);
+        assertEquals(5, state.getPosition());
+        assertEquals(10000, state.getLastPositionUpdateTime());
+    }
+
+    @Test
+    public void mediaPosition_Present_Paused() {
+        MediaPosition position = new MediaPosition(10, 5, 2.0f, 10000);
+        mMediaNotificationInfoBuilder.setPaused(true);
+        mMediaNotificationInfoBuilder.setMediaPosition(position);
+        mMediaNotificationInfoBuilder.setPrivate(false);
+        getManager().mMediaNotificationInfo = mMediaNotificationInfoBuilder.build();
+
+        MediaMetadataCompat metadata = getManager().createMetadata();
+        assertEquals(10, metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION));
+
+        PlaybackStateCompat state = getManager().createPlaybackState();
+        assertEquals(PlaybackStateCompat.STATE_PAUSED, state.getState());
+        assertEquals(2.0f, state.getPlaybackSpeed(), 0);
+        assertEquals(5, state.getPosition());
+        assertEquals(10000, state.getLastPositionUpdateTime());
+    }
+
+    @Test
+    public void mediaPosition_Missing() {
+        mMediaNotificationInfoBuilder.setPaused(false);
+        mMediaNotificationInfoBuilder.setPrivate(false);
+        getManager().mMediaNotificationInfo = mMediaNotificationInfoBuilder.build();
+
+        MediaMetadataCompat metadata = getManager().createMetadata();
+        assertFalse(metadata.containsKey(MediaMetadataCompat.METADATA_KEY_DURATION));
+
+        PlaybackStateCompat state = getManager().createPlaybackState();
+        assertEquals(PlaybackStateCompat.STATE_PLAYING, state.getState());
+        assertEquals(1.0f, state.getPlaybackSpeed(), 0);
+        assertEquals(PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, state.getPosition());
+    }
+
+    @Test
+    public void mediaPosition_Missing_Paused() {
+        mMediaNotificationInfoBuilder.setPaused(true);
+        mMediaNotificationInfoBuilder.setPrivate(false);
+        getManager().mMediaNotificationInfo = mMediaNotificationInfoBuilder.build();
+
+        MediaMetadataCompat metadata = getManager().createMetadata();
+        assertFalse(metadata.containsKey(MediaMetadataCompat.METADATA_KEY_DURATION));
+
+        PlaybackStateCompat state = getManager().createPlaybackState();
+        assertEquals(PlaybackStateCompat.STATE_PAUSED, state.getState());
+        assertEquals(1.0f, state.getPlaybackSpeed(), 0);
+        assertEquals(PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, state.getPosition());
     }
 
     private Notification updateNotificationBuilderAndBuild(MediaNotificationInfo info) {

@@ -40,8 +40,8 @@ struct ServiceWorkerNavigationLoaderInterceptorParams {
 // Lives on the UI thread.
 //
 // The corresponding legacy class is ServiceWorkerControlleeRequestHandler which
-// lives on the IO thread. Currently, this class just delegates to the
-// legacy class by posting tasks to it on the IO thread.
+// lives on the service worker context core thread. Currently, this class just
+// delegates to the legacy class by posting tasks to it on the core thread.
 class ServiceWorkerNavigationLoaderInterceptor final
     : public NavigationLoaderInterceptor {
  public:
@@ -65,11 +65,11 @@ class ServiceWorkerNavigationLoaderInterceptor final
   base::Optional<SubresourceLoaderParams> MaybeCreateSubresourceLoaderParams()
       override;
 
-  // These are called back from the IO thread helper functions:
+  // These are called back from the core thread helper functions:
   void LoaderCallbackWrapper(
       base::Optional<SubresourceLoaderParams> subresource_loader_params,
       LoaderCallback loader_callback,
-      SingleRequestURLLoaderFactory::RequestHandler handler_on_io);
+      SingleRequestURLLoaderFactory::RequestHandler handler_on_core_thread);
   void FallbackCallbackWrapper(FallbackCallback fallback_callback,
                                bool reset_subresource_loader_params);
 
@@ -78,7 +78,7 @@ class ServiceWorkerNavigationLoaderInterceptor final
  private:
   // Given as a callback to NavigationURLLoaderImpl.
   void RequestHandlerWrapper(
-      SingleRequestURLLoaderFactory::RequestHandler handler_on_io,
+      SingleRequestURLLoaderFactory::RequestHandler handler_on_core_thread,
       const network::ResourceRequest& resource_request,
       network::mojom::URLLoaderRequest request,
       network::mojom::URLLoaderClientPtr client);

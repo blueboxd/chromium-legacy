@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/cssom/css_math_min.h"
 
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/cssom/css_numeric_sum_value.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -66,6 +67,32 @@ void CSSMathMin::BuildCSSText(Nested, ParenLess, StringBuilder& result) const {
   }
 
   result.Append(")");
+}
+
+CSSMathExpressionNode* CSSMathMin::ToCalcExpressionNode() const {
+  if (!RuntimeEnabledFeatures::CSSComparisonFunctionsEnabled())
+    return nullptr;
+
+  HeapVector<Member<CSSMathExpressionNode>> operands;
+  operands.ReserveCapacity(NumericValues().size());
+  for (const auto& value : NumericValues()) {
+    CSSMathExpressionNode* operand = value->ToCalcExpressionNode();
+    if (!operand) {
+      // TODO(crbug.com/825895): Remove this when all ToCalcExpressionNode()
+      // overrides are implemented.
+      NOTREACHED();
+      continue;
+    }
+    operands.push_back(value->ToCalcExpressionNode());
+  }
+  if (!operands.size()) {
+    // TODO(crbug.com/825895): Remove this when all ToCalcExpressionNode()
+    // overrides are implemented.
+    NOTREACHED();
+    return nullptr;
+  }
+  return CSSMathExpressionVariadicOperation::Create(std::move(operands),
+                                                    CSSMathOperator::kMin);
 }
 
 }  // namespace blink

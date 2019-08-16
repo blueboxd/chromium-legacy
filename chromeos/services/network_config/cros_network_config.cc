@@ -126,6 +126,9 @@ mojom::DeviceStateType GetMojoDeviceStateType(
       return mojom::DeviceStateType::kUninitialized;
     case NetworkStateHandler::TECHNOLOGY_AVAILABLE:
       return mojom::DeviceStateType::kDisabled;
+    case NetworkStateHandler::TECHNOLOGY_DISABLING:
+      // TODO(jonmann): Add a DeviceStateType::kDisabling.
+      return mojom::DeviceStateType::kDisabled;
     case NetworkStateHandler::TECHNOLOGY_ENABLING:
       return mojom::DeviceStateType::kEnabling;
     case NetworkStateHandler::TECHNOLOGY_ENABLED:
@@ -1238,6 +1241,12 @@ bool NetworkTypeCanBeDisabled(mojom::NetworkType type) {
 }
 
 }  // namespace
+
+CrosNetworkConfig::CrosNetworkConfig()
+    : CrosNetworkConfig(
+          NetworkHandler::Get()->network_state_handler(),
+          NetworkHandler::Get()->network_device_handler(),
+          NetworkHandler::Get()->managed_network_configuration_handler()) {}
 
 CrosNetworkConfig::CrosNetworkConfig(
     NetworkStateHandler* network_state_handler,

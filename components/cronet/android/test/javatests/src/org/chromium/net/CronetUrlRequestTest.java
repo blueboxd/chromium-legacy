@@ -1391,7 +1391,6 @@ public class CronetUrlRequestTest {
                 uploadDataSink.onReadSucceeded(false);
             }
         };
-        dataProvider.addRead("test".getBytes());
         builder.setUploadDataProvider(dataProvider, callback.getExecutor());
         builder.addHeader("Content-Type", "useless/string");
         builder.build().start();

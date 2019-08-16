@@ -19,7 +19,8 @@ def _setup_sys_path():
         # //tools/idl_parser
         os.path.join(root_dir, 'tools'),
         # //third_party/blink/renderer/build/scripts/blinkbuild
-        os.path.join(this_dir, '..', '..', '..', 'build', 'scripts'),
+        os.path.join(root_dir, 'third_party', 'blink', 'renderer', 'build',
+                     'scripts'),
     ] + sys.path
 
 

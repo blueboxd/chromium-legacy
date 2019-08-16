@@ -28,9 +28,6 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   // content::ContentUtilityClient:
   void UtilityThreadStarted() override;
   bool OnMessageReceived(const IPC::Message& message) override;
-  bool HandleServiceRequest(
-      const std::string& service_name,
-      service_manager::mojom::ServiceRequest request) override;
   void RegisterNetworkBinders(
       service_manager::BinderRegistry* registry) override;
   mojo::ServiceFactory* GetMainThreadServiceFactory() override;
@@ -41,10 +38,6 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
       const NetworkBinderCreationCallback& callback);
 
  private:
-  std::unique_ptr<service_manager::Service> MaybeCreateMainThreadService(
-      const std::string& service_name,
-      service_manager::mojom::ServiceRequest request);
-
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
   // Last IPC message handler.
   std::unique_ptr<printing::PrintingHandler> printing_handler_;

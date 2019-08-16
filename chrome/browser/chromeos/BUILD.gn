@@ -140,6 +140,7 @@ source_set("chromeos") {
     "//chromeos/services/multidevice_setup/public/cpp:auth_token_validator",
     "//chromeos/services/multidevice_setup/public/cpp:oobe_completion_tracker",
     "//chromeos/services/multidevice_setup/public/cpp:prefs",
+    "//chromeos/services/secure_channel",
     "//chromeos/services/secure_channel/public/cpp/client",
     "//chromeos/settings",
     "//chromeos/system",

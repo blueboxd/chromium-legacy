@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/public/cpp/voice_interaction_controller.h"
-#include "ash/public/mojom/constants.mojom-forward.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -26,7 +25,6 @@
 #include "chromeos/services/assistant/fake_client.h"
 #include "chromeos/services/assistant/pref_connection_delegate.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
-#include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "components/prefs/testing_pref_service.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"

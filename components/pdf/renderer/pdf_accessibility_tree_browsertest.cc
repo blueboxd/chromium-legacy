@@ -27,12 +27,15 @@ void CompareRect(PP_Rect expected_rect, PP_Rect actual_rect) {
   EXPECT_EQ(expected_rect.size.width, actual_rect.size.width);
 }
 
+// This class overrides content::FakePepperPluginInstance to record received
+// action data when tests make an accessibility action call.
 class ActionHandlingFakePepperPluginInstance
     : public content::FakePepperPluginInstance {
  public:
   ActionHandlingFakePepperPluginInstance() = default;
-  ~ActionHandlingFakePepperPluginInstance() override {}
+  ~ActionHandlingFakePepperPluginInstance() override = default;
 
+  // content::FakePepperPluginInstance:
   void HandleAccessibilityAction(
       const PP_PdfAccessibilityActionData& action_data) override {
     received_action_data_ = action_data;
@@ -48,14 +51,14 @@ class ActionHandlingFakePepperPluginInstance
 
 class FakeRendererPpapiHost : public content::RendererPpapiHost {
  public:
-  FakeRendererPpapiHost(content::RenderFrame* render_frame)
+  explicit FakeRendererPpapiHost(content::RenderFrame* render_frame)
       : FakeRendererPpapiHost(render_frame, nullptr) {}
   FakeRendererPpapiHost(
       content::RenderFrame* render_frame,
       ActionHandlingFakePepperPluginInstance* fake_pepper_plugin_instance)
       : render_frame_(render_frame),
         fake_pepper_plugin_instance_(fake_pepper_plugin_instance) {}
-  ~FakeRendererPpapiHost() override {}
+  ~FakeRendererPpapiHost() override = default;
 
   ppapi::host::PpapiHost* GetPpapiHost() override { return nullptr; }
   bool IsValidInstance(PP_Instance instance) override { return true; }
@@ -116,7 +119,7 @@ class FakeRendererPpapiHost : public content::RendererPpapiHost {
 class PdfAccessibilityTreeTest : public content::RenderViewTest {
  public:
   PdfAccessibilityTreeTest() {}
-  ~PdfAccessibilityTreeTest() override {}
+  ~PdfAccessibilityTreeTest() override = default;
 
   void SetUp() override {
     content::RenderViewTest::SetUp();
@@ -171,7 +174,7 @@ TEST_F(PdfAccessibilityTreeTest, TestEmptyPDFPage) {
 TEST_F(PdfAccessibilityTreeTest, TestAccessibilityDisabledDuringPDFLoad) {
   content::RenderFrame* render_frame = view_->GetMainRenderFrame();
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
-  ASSERT_TRUE(render_frame->GetRenderAccessibility() != nullptr);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
   FakeRendererPpapiHost host(view_->GetMainRenderFrame());
   PP_Instance instance = 0;
@@ -188,37 +191,18 @@ TEST_F(PdfAccessibilityTreeTest, TestAccessibilityDisabledDuringPDFLoad) {
                                                   chars_);
 }
 
-class FakePdfAccessibilityTree : public pdf::PdfAccessibilityTree {
- public:
-  FakePdfAccessibilityTree(content::RendererPpapiHost* host,
-                           PP_Instance instance)
-      : PdfAccessibilityTree(host, instance) {}
-  ~FakePdfAccessibilityTree() override {}
-
-  void HandleAction(const PP_PdfAccessibilityActionData& action_data) {
-    received_action_data = action_data;
-  }
-
-  PP_PdfAccessibilityActionData GetReceivedActionData() {
-    return received_action_data;
-  }
-
- private:
-  PP_PdfAccessibilityActionData received_action_data;
-};
-
 TEST_F(PdfAccessibilityTreeTest, TestActionDataConversion) {
   // This test verifies the AXActionData conversion to
   // PP_AccessibilityActionData.
   content::RenderFrame* render_frame = view_->GetMainRenderFrame();
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
-  ASSERT_TRUE(render_frame->GetRenderAccessibility() != nullptr);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
   ActionHandlingFakePepperPluginInstance fake_pepper_instance;
   FakeRendererPpapiHost host(view_->GetMainRenderFrame(),
                              &fake_pepper_instance);
   PP_Instance instance = 0;
-  FakePdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -228,7 +212,7 @@ TEST_F(PdfAccessibilityTreeTest, TestActionDataConversion) {
   ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
   std::unique_ptr<ui::AXActionTarget> pdf_action_target =
       pdf_accessibility_tree.CreateActionTarget(*root_node);
-  ASSERT_TRUE(pdf_action_target != nullptr);
+  ASSERT_TRUE(pdf_action_target);
   EXPECT_EQ(ui::AXActionTarget::Type::kPdf, pdf_action_target->GetType());
   EXPECT_TRUE(pdf_action_target->ScrollToMakeVisibleWithSubFocus(
       gfx::Rect(0, 0, 50, 50), ax::mojom::ScrollAlignment::kScrollAlignmentLeft,
@@ -274,13 +258,13 @@ TEST_F(PdfAccessibilityTreeTest, TestActionDataConversion) {
 TEST_F(PdfAccessibilityTreeTest, TestEmptyPdfAxActions) {
   content::RenderFrame* render_frame = view_->GetMainRenderFrame();
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
-  ASSERT_TRUE(render_frame->GetRenderAccessibility() != nullptr);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
   ActionHandlingFakePepperPluginInstance fake_pepper_instance;
   FakeRendererPpapiHost host(view_->GetMainRenderFrame(),
                              &fake_pepper_instance);
   PP_Instance instance = 0;
-  FakePdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);

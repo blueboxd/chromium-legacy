@@ -13,9 +13,10 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/system_menu_button.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_detailed_view.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -64,7 +65,10 @@ class ImeListItemView : public ActionableView {
     // |id_label| contains the IME short name (e.g., 'US', 'GB', 'IT').
     views::Label* id_label = TrayPopupUtils::CreateDefaultLabel();
     if (use_unified_theme) {
-      id_label->SetEnabledColor(kUnifiedMenuTextColor);
+      id_label->SetEnabledColor(
+          AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+              AshColorProvider::ContentLayerType::kTextPrimary,
+              kUnifiedMenuTextColor));
       id_label->SetAutoColorReadabilityEnabled(false);
     }
     id_label->SetText(id);
@@ -158,9 +162,11 @@ class KeyboardStatusRow : public views::View {
 
     // The on-screen keyboard image button.
     views::ImageView* keyboard_image = TrayPopupUtils::CreateMainImageView();
-    keyboard_image->SetImage(
-        gfx::CreateVectorIcon(kImeMenuOnScreenKeyboardIcon, kMenuIconSize,
-                              kIconOnLightBackgroundColor));
+    keyboard_image->SetImage(gfx::CreateVectorIcon(
+        kImeMenuOnScreenKeyboardIcon, kMenuIconSize,
+        AshColorProvider::Get()->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kIconPrimary,
+            AshColorProvider::AshColorMode::kLight)));
     tri_view->AddView(TriView::Container::START, keyboard_image);
 
     // The on-screen keyboard label ('On-screen keyboard').
@@ -277,12 +283,14 @@ void ImeListView::AppendImeListAndProperties(
       scroll_content()->AddChildView(
           TrayPopupUtils::CreateListItemSeparator(true));
 
+      const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kIconPrimary,
+          AshColorProvider::AshColorMode::kLight);
       // Adds the property items.
       for (size_t i = 0; i < property_list.size(); i++) {
         ImeListItemView* property_view = new ImeListItemView(
             this, base::string16(), property_list[i].label,
-            property_list[i].checked, kIconOnLightBackgroundColor,
-            use_unified_theme_);
+            property_list[i].checked, icon_color, use_unified_theme_);
         scroll_content()->AddChildView(property_view);
         property_map_[property_view] = property_list[i].key;
       }

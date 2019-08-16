@@ -8,6 +8,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 
+import android.content.Context;
+import android.media.AudioManager;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
@@ -42,12 +44,15 @@ import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
+import org.chromium.media.MediaSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Integration tests for {@link PageViewObserver} and {@link SuspendedTab}
@@ -55,11 +60,16 @@ import java.util.concurrent.ExecutionException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         // Direct all hostnames to EmbeddedTestServer running on 127.0.0.1.
-        ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1", "ignore-certificate-errors"})
+        ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1", "ignore-certificate-errors",
+        MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY})
 @MinAndroidSdkLevel(Build.VERSION_CODES.P)
 public class TabSuspensionTest {
     private static final String STARTING_FQDN = "example.com";
     private static final String DIFFERENT_FQDN = "www.google.com";
+
+    private static final String MEDIA_FILE_TEST_PATH =
+            "/content/test/data/media/session/media-session.html";
+    private static final String VIDEO_ID = "long-video";
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -174,6 +184,34 @@ public class TabSuspensionTest {
         // A single un-suspend should be sufficient even though we triggered suspension twice.
         unsuspendDomain(STARTING_FQDN);
         assertSuspendedTabHidden(mTab);
+    }
+
+    @Test
+    @MediumTest
+    public void testMediaSuspension() throws InterruptedException, TimeoutException {
+        mActivityTestRule.loadUrl(
+                mTestServer.getURLWithHostName(STARTING_FQDN, MEDIA_FILE_TEST_PATH));
+        assertTrue(DOMUtils.isMediaPaused(mTab.getWebContents(), VIDEO_ID));
+        DOMUtils.playMedia(mTab.getWebContents(), VIDEO_ID);
+        DOMUtils.waitForMediaPlay(mTab.getWebContents(), VIDEO_ID);
+        AudioManager audioManager = (AudioManager) mActivityTestRule.getActivity()
+                                            .getApplicationContext()
+                                            .getSystemService(Context.AUDIO_SERVICE);
+        assertTrue(audioManager.isMusicActive());
+
+        suspendDomain(STARTING_FQDN);
+        waitForSuspendedTabToShow(mTab, STARTING_FQDN);
+        DOMUtils.waitForMediaPauseBeforeEnd(mTab.getWebContents(), VIDEO_ID);
+        CriteriaHelper.pollUiThread(() -> {
+            return !audioManager.isMusicActive();
+        }, "No audio should be playing", 5000, 50);
+
+        unsuspendDomain(STARTING_FQDN);
+        assertSuspendedTabHidden(mTab);
+        DOMUtils.waitForMediaPlay(mTab.getWebContents(), VIDEO_ID);
+        CriteriaHelper.pollUiThread(() -> {
+            return audioManager.isMusicActive();
+        }, "Audio should play after un-suspension", 5000, 50);
     }
 
     @Test

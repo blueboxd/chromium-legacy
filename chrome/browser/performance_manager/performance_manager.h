@@ -16,6 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/public/graph/worker_node.h"
+#include "chrome/browser/performance_manager/public/render_process_host_proxy.h"
 #include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "chrome/browser/performance_manager/webui_graph_dump_impl.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
@@ -104,7 +105,8 @@ class PerformanceManager {
       const WebContentsProxy& contents_proxy,
       bool is_visible,
       bool is_audible);
-  std::unique_ptr<ProcessNodeImpl> CreateProcessNode();
+  std::unique_ptr<ProcessNodeImpl> CreateProcessNode(
+      RenderProcessHostProxy proxy);
   std::unique_ptr<WorkerNodeImpl> CreateWorkerNode(
       WorkerNode::WorkerType worker_type,
       ProcessNodeImpl* process_node,

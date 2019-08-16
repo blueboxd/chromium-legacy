@@ -24,6 +24,7 @@ bool ExtensionSupportsConnectionFromNativeApp(const std::string& extension_id,
 // |host_id|.
 void LaunchNativeMessageHostFromNativeApp(const std::string& extension_id,
                                           const std::string& host_id,
+                                          const std::string& connection_id,
                                           Profile* profile);
 
 class ScopedAllowNativeAppConnectionForTest {

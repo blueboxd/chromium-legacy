@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+// #import {keyEventOn, tap} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+// #import {eventToPromise} from 'chrome://test/test_util.m.js';
+// clang-format on
+
 suite('cr-toggle', function() {
   let toggle;
 

@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/badges/badge_view_controller.h"
 
+#include "base/logging.h"
 #import "ios/chrome/browser/ui/badges/badge_button.h"
-#import "ios/chrome/browser/ui/badges/badge_button_action_handler.h"
 #import "ios/chrome/browser/ui/badges/badge_button_factory.h"
 #import "ios/chrome/browser/ui/badges/badge_item.h"
 #import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
@@ -38,14 +38,18 @@
 
 @implementation BadgeViewController
 
+- (instancetype)initWithButtonFactory:(BadgeButtonFactory*)buttonFactory {
+  self = [super initWithNibName:nil bundle:nil];
+  if (self) {
+    DCHECK(buttonFactory);
+    _buttonFactory = buttonFactory;
+    _stackView = [[UIStackView alloc] init];
+  }
+  return self;
+}
+
 - (void)viewDidLoad {
   [super viewDidLoad];
-  BadgeButtonActionHandler* actionHandler =
-      [[BadgeButtonActionHandler alloc] init];
-  actionHandler.dispatcher = self.dispatcher;
-  self.buttonFactory =
-      [[BadgeButtonFactory alloc] initWithActionHandler:actionHandler];
-  self.stackView = [[UIStackView alloc] init];
   self.stackView.translatesAutoresizingMaskIntoConstraints = NO;
   self.stackView.axis = UILayoutConstraintAxisHorizontal;
   [self.view addSubview:self.stackView];

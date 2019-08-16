@@ -5,14 +5,14 @@
 #include "chromeos/services/assistant/audio_decoder/assistant_audio_decoder_factory.h"
 
 #include "chromeos/services/assistant/audio_decoder/assistant_audio_decoder.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace chromeos {
 namespace assistant {
 
 AssistantAudioDecoderFactory::AssistantAudioDecoderFactory(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : service_ref_(std::move(service_ref)) {}
+    mojo::PendingReceiver<mojom::AssistantAudioDecoderFactory> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 AssistantAudioDecoderFactory::~AssistantAudioDecoderFactory() = default;
 
@@ -20,10 +20,10 @@ void AssistantAudioDecoderFactory::CreateAssistantAudioDecoder(
     mojom::AssistantAudioDecoderRequest request,
     mojom::AssistantAudioDecoderClientPtr client,
     mojom::AssistantMediaDataSourcePtr data_source) {
-  mojo::MakeStrongBinding(
-      std::make_unique<AssistantAudioDecoder>(
-          service_ref_->Clone(), std::move(client), std::move(data_source)),
-      std::move(request));
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<AssistantAudioDecoder>(std::move(client),
+                                              std::move(data_source)),
+      mojo::PendingReceiver<mojom::AssistantAudioDecoder>(std::move(request)));
 }
 
 }  // namespace assistant

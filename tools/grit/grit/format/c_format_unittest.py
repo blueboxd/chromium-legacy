@@ -24,7 +24,7 @@ from grit.tool import build
 class CFormatUnittest(unittest.TestCase):
 
   def testMessages(self):
-    root = util.ParseGrdForUnittest("""
+    root = util.ParseGrdForUnittest(u"""
     <messages>
       <message name="IDS_QUESTIONS">Do you want to play questions?</message>
       <message name="IDS_QUOTES">
@@ -36,7 +36,7 @@ No.
 Statement.  Two all.  Game point.
 </message>
       <message name="IDS_NON_ASCII">
-         \xc3\xb5\\xc2\\xa4\\\xc2\xa4\\\\xc3\\xb5\xe4\xa4\xa4
+         \u00f5\\xc2\\xa4\\\u00a4\\\\xc3\\xb5\u4924
       </message>
     </messages>
       """)

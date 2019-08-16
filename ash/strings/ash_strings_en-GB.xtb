@@ -333,6 +333,7 @@
 <translation id="6043212731627905357">This monitor isn't getting along with your <ph name="DEVICE_TYPE" /> (the monitor is not supported).</translation>
 <translation id="6043994281159824495">Sign out now</translation>
 <translation id="6047696787498798094">Screen sharing will stop when you switch to another user. Do you want to continue?</translation>
+<translation id="6054305421211936131">Sign in with smart card</translation>
 <translation id="6062360702481658777">You will automatically be signed out in <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Sorry, your password couldn't be verified. Please try again.</translation>
 <translation id="607652042414456612">Your computer is discoverable to nearby Bluetooth devices and will appear as "<ph name="NAME" />" with address <ph name="ADDRESS" /></translation>
@@ -360,6 +361,7 @@
 <translation id="6459472438155181876">Extending screen to <ph name="DISPLAY_NAME" /></translation>
 <translation id="6482559668224714696">Full-screen magnifier</translation>
 <translation id="6490471652906364588">USB-C device (right port)</translation>
+<translation id="649452524636452238">Smart card PIN</translation>
 <translation id="6501401484702599040">Casting screen to <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Handwriting input</translation>
 <translation id="6528179044667508675">Do not disturb</translation>
@@ -389,6 +391,7 @@
 <translation id="6857811139397017780">Activate <ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">This update requires powerwashing of your device. Learn more about the latest <ph name="SYSTEM_APP_NAME" /> update.</translation>
 <translation id="6911468394164995108">Join other ...</translation>
+<translation id="6919251195245069855">Couldn’t recognise your smart card. Try again.</translation>
 <translation id="6972754398087986839">Get Started</translation>
 <translation id="6981982820502123353">Accessibility</translation>
 <translation id="698231206551913481">All files and local data associated with this user will be permanently deleted once this user is removed.</translation>

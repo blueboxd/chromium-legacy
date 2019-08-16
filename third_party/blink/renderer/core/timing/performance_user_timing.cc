@@ -208,6 +208,7 @@ double UserTiming::GetTimeOrFindMarkTime(const AtomicString& measure_name,
 PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
                                         const AtomicString& measure_name,
                                         const StringOrDouble& start,
+                                        base::Optional<double> duration,
                                         const StringOrDouble& end,
                                         const ScriptValue& detail,
                                         ExceptionState& exception_state) {
@@ -223,6 +224,19 @@ PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
                    : GetTimeOrFindMarkTime(measure_name, end, exception_state);
   if (exception_state.HadException())
     return nullptr;
+
+  if (duration.has_value()) {
+    // When |duration| is specified, we require that exactly one of |start| and
+    // |end| were specified. Then, since |start| + |duration| = |end|, we'll
+    // compute the missing boundary.
+    if (start.IsNull()) {
+      start_time = end_time - duration.value();
+    } else {
+      DCHECK(end.IsNull()) << "When duration is specified, one of 'start' or "
+                              "'end' must be unspecified";
+      end_time = start_time + duration.value();
+    }
+  }
 
   // User timing events are stored as integer milliseconds from the start of
   // navigation, whereas trace events accept double seconds based off of

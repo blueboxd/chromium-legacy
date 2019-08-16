@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "components/services/app_service/public/cpp/file_handler_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -251,7 +252,7 @@ class PlatformAppPathLauncher
       return;
 
     // Find file handler from the platform app for the file being opened.
-    const extensions::FileHandlerInfo* handler = NULL;
+    const FileHandlerInfo* handler = nullptr;
     if (!handler_id_.empty()) {
       handler = FileHandlerForId(*app, handler_id_);
       if (handler) {
@@ -260,7 +261,7 @@ class PlatformAppPathLauncher
             LOG(WARNING)
                 << "Extension does not provide a valid file handler for "
                 << entry_paths_[i].value();
-            handler = NULL;
+            handler = nullptr;
             break;
           }
         }

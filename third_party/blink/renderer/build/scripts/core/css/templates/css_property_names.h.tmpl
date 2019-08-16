@@ -5,6 +5,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PROPERTY_NAMES_H_
 
 #include <stddef.h>
+#include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -85,6 +86,8 @@ class CSSPropertyIDList {
   Iterator begin() const { return Iterator(kIntFirstCSSProperty); }
   Iterator end() const { return Iterator(kIntLastCSSProperty + 1); }
 };
+
+mojom::blink::CSSSampleId GetCSSSampleId(CSSPropertyID id);
 
 }  // namespace blink
 

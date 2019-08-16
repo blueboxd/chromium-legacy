@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<org.chromium.chrome.browser.tasks.TasksView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <LinearLayout
+        android:id="@+id/tab_switcher_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.0"
+            android:layout_gravity="center_vertical"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textAlignment="viewStart"
+            android:textAppearance="@style/TextAppearance.BlackCaption"
+            android:text="@string/tab_switcher_carousel_title" />
+        <org.chromium.ui.widget.ChromeImageButton
+            android:id="@+id/more_tabs"
+            style="@style/ToolbarButton"
+            android:layout_height="wrap_content"
+            android:src="@drawable/breadcrumb_arrow"
+            tools:tint="@color/standard_mode_tint"
+            android:contentDescription="@string/accessibility_tab_switcher_carousel_more_tabs"/>
+    </LinearLayout>
+    <FrameLayout
+        android:id="@+id/tab_switcher_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+</org.chromium.chrome.browser.tasks.TasksView>

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {isChromeOS, isIOS, isLinux, isMac, isWindows} from './cr.m.js';
+
 cr.define('cr.icon', function() {
   /**
    * @return {!Array<number>} The scale factors supported by this platform for
@@ -35,7 +37,7 @@ cr.define('cr.icon', function() {
    * @param {string} s The URL to generate the CSS url for.
    * @return {string} The CSS url string.
    */
-  function getUrlForCss(s) {
+  /* #export */ function getUrlForCss(s) {
     // http://www.w3.org/TR/css3-values/#uris
     // Parentheses, commas, whitespace characters, single quotes (') and double
     // quotes (") appearing in a URI must be escaped with a backslash
@@ -54,7 +56,7 @@ cr.define('cr.icon', function() {
    * @param {string} filePath
    * @return {string}
    */
-  function getFileIconUrl(filePath) {
+  /* #export */ function getFileIconUrl(filePath) {
     const url = new URL('chrome://fileicon/');
     url.searchParams.set('path', filePath);
     url.searchParams.set('scale', window.devicePixelRatio + 'x');
@@ -101,7 +103,7 @@ cr.define('cr.icon', function() {
    * @param {string} path The path of the image.
    * @return {string} The url, or an image set of URLs.
    */
-  function getImage(path) {
+  /* #export */ function getImage(path) {
     const chromeThemePath = 'chrome://theme';
     const isChromeThemeUrl =
         (path.slice(0, chromeThemePath.length) == chromeThemePath);
@@ -128,7 +130,8 @@ cr.define('cr.icon', function() {
    *
    * @return {string} -webkit-image-set for the favicon.
    */
-  function getFavicon(url, isSyncedUrlForHistoryUi, remoteIconUrlForUma = '') {
+  /* #export */ function getFavicon(
+      url, isSyncedUrlForHistoryUi, remoteIconUrlForUma = '') {
     // Note: URL param keys used below must match those in the description of
     // chrome://favicon2 format in components/favicon_base/favicon_url_parser.h.
     const faviconUrl = new URL('chrome://favicon2/');
@@ -151,6 +154,7 @@ cr.define('cr.icon', function() {
     return getImageSet(faviconUrl.toString());
   }
 
+  // #cr_define_end
   return {
     getFavicon: getFavicon,
     getFileIconUrl: getFileIconUrl,

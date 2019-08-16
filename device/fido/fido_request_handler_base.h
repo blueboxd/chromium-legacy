@@ -5,6 +5,7 @@
 #ifndef DEVICE_FIDO_FIDO_REQUEST_HANDLER_BASE_H_
 #define DEVICE_FIDO_FIDO_REQUEST_HANDLER_BASE_H_
 
+#include <array>
 #include <functional>
 #include <map>
 #include <memory>
@@ -80,6 +81,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     bool has_recognized_mac_touch_id_credential = false;
     bool is_ble_powered = false;
     bool can_power_on_ble_adapter = false;
+
+    // A random AES-256 key used that can be used to encrypt a coarse timestamp.
+    // The UI may display a QR code with the resulting ciphertext which, if
+    // decoded and transmitted over BLE by an authenticator, will be accepted
+    // for caBLE pairing.
+    base::Optional<std::array<uint8_t, 32>> qr_generator_key;
 
     // Indicates whether the native Windows WebAuthn API is available.
     // Dispatching to it should be controlled by the embedder.

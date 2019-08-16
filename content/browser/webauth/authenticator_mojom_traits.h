@@ -189,17 +189,17 @@ struct BLINK_COMMON_EXPORT
     return in.version;
   }
 
-  static const device::EidArray& client_eid(
+  static const device::CableEidArray& client_eid(
       const device::CableDiscoveryData& in) {
     return in.client_eid;
   }
 
-  static const device::EidArray& authenticator_eid(
+  static const device::CableEidArray& authenticator_eid(
       const device::CableDiscoveryData& in) {
     return in.authenticator_eid;
   }
 
-  static const device::SessionPreKeyArray& session_pre_key(
+  static const device::CableSessionPreKeyArray& session_pre_key(
       const device::CableDiscoveryData& in) {
     return in.session_pre_key;
   }

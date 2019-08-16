@@ -120,6 +120,11 @@ class APP_LIST_MODEL_EXPORT SearchResult {
     metadata_->display_index = display_index;
   }
 
+  float position_priority() const { return metadata_->position_priority; }
+  void set_position_priority(float position_priority) {
+    metadata_->position_priority = position_priority;
+  }
+
   int result_subtype() const { return metadata_->result_subtype; }
   void set_result_subtype(int result_subtype) {
     metadata_->result_subtype = result_subtype;

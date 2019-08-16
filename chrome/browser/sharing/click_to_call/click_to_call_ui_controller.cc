@@ -9,7 +9,7 @@
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
-#include "chrome/browser/sharing/sharing_device_info.h"
+#include "chrome/browser/sharing/sharing_device_capability.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
@@ -52,7 +52,7 @@ ClickToCallUiController::~ClickToCallUiController() = default;
 
 void ClickToCallUiController::OnDeviceSelected(
     const GURL& url,
-    const SharingDeviceInfo& device) {
+    const syncer::DeviceInfo& device) {
   phone_url_ = url;
   OnDeviceChosen(device);
 }
@@ -87,7 +87,7 @@ void ClickToCallUiController::DoUpdateApps(UpdateAppsCallback callback) {
   std::move(callback).Run(std::move(apps));
 }
 
-void ClickToCallUiController::OnDeviceChosen(const SharingDeviceInfo& device) {
+void ClickToCallUiController::OnDeviceChosen(const syncer::DeviceInfo& device) {
   std::string phone_number_string(phone_url_.GetContent());
   url::RawCanonOutputT<base::char16> unescaped_phone_number;
   url::DecodeURLEscapeSequences(

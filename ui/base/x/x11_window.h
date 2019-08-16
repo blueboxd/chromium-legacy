@@ -107,6 +107,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   void ReleasePointerGrab();
   void StackAtTop();
   bool IsTargetedBy(const XEvent& xev) const;
+  void WmMoveResize(int hittest, const gfx::Point& location) const;
   void ProcessEvent(XEvent* xev);
 
   void SetSize(const gfx::Size& size_in_pixels);

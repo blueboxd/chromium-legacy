@@ -29,16 +29,16 @@ std::unique_ptr<HidHapticGamepadMac> HidHapticGamepadMac::Create(
   return std::make_unique<HidHapticGamepadMac>(device_ref, *haptic_data);
 }
 
-size_t HidHapticGamepadMac::WriteOutputReport(void* report,
-                                              size_t report_length) {
+size_t HidHapticGamepadMac::WriteOutputReport(
+    base::span<const uint8_t> report) {
+  DCHECK_GE(report.size_bytes(), 1U);
   if (!device_ref_)
     return 0;
 
-  const unsigned char* report_data = static_cast<unsigned char*>(report);
   IOReturn success =
-      IOHIDDeviceSetReport(device_ref_, kIOHIDReportTypeOutput, report_data[0],
-                           report_data, report_length);
-  return (success == kIOReturnSuccess) ? report_length : 0;
+      IOHIDDeviceSetReport(device_ref_, kIOHIDReportTypeOutput, report[0],
+                           report.data(), report.size_bytes());
+  return (success == kIOReturnSuccess) ? report.size_bytes() : 0;
 }
 
 base::WeakPtr<AbstractHapticGamepad> HidHapticGamepadMac::GetWeakPtr() {

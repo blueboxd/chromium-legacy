@@ -1,6 +1,3 @@
 # Tests fail even with a fuzzy pixel diff. They require a re-baseline.
-crbug.com/954328 compositing/lots-of-img-layers.html [ Failure ]
 crbug.com/954328 media/video-layer-crash.html [ Failure ]
 crbug.com/954328 transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
-
-crbug.com/918155 compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]

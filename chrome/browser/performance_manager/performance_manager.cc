@@ -169,9 +169,10 @@ std::unique_ptr<PageNodeImpl> PerformanceManager::CreatePageNode(
                                       contents_proxy, is_visible, is_audible);
 }
 
-std::unique_ptr<ProcessNodeImpl> PerformanceManager::CreateProcessNode() {
+std::unique_ptr<ProcessNodeImpl> PerformanceManager::CreateProcessNode(
+    RenderProcessHostProxy proxy) {
   return CreateNodeImpl<ProcessNodeImpl>(
-      base::OnceCallback<void(ProcessNodeImpl*)>());
+      base::OnceCallback<void(ProcessNodeImpl*)>(), proxy);
 }
 
 std::unique_ptr<WorkerNodeImpl> PerformanceManager::CreateWorkerNode(

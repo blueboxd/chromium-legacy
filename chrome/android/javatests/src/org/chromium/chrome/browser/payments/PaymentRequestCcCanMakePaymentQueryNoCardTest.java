@@ -46,17 +46,6 @@ public class PaymentRequestCcCanMakePaymentQueryNoCardTest implements MainActivi
     @Test
     @MediumTest
     @Feature({"Payments"})
-    @CommandLineFlags.Add("disable-features=PaymentRequestHasEnrolledInstrument")
-    public void testLegacyCannotMakePayment() throws InterruptedException, TimeoutException {
-        mPaymentRequestTestRule.openPageAndClickBuyAndWait(
-                mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"false"});
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"Payments"})
-    @CommandLineFlags.Add("enable-features=PaymentRequestHasEnrolledInstrument")
     public void testCanMakePayment() throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(
                 mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
@@ -66,7 +55,6 @@ public class PaymentRequestCcCanMakePaymentQueryNoCardTest implements MainActivi
     @Test
     @MediumTest
     @Feature({"Payments"})
-    @CommandLineFlags.Add("enable-features=PaymentRequestHasEnrolledInstrument")
     public void testHasEnrolledInstrument() throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.openPageAndClickNodeAndWait("has-enrolled-instrument-visa",
                 mPaymentRequestTestRule.getHasEnrolledInstrumentQueryResponded());

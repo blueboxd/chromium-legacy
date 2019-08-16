@@ -34,13 +34,6 @@
 #include "components/services/font/public/cpp/manifest.h"  // nogncheck
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/assistant/buildflags.h"
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#include "chromeos/services/assistant/public/cpp/audio_decoder_manifest.h"  // nogncheck
-#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#endif  // defined(OS_CHROMEOS)
-
 namespace content {
 
 namespace {
@@ -91,12 +84,6 @@ const std::vector<service_manager::Manifest>& GetBuiltinServiceManifests() {
 #if defined(OS_LINUX)
           font_service::GetManifest(),
 #endif
-#if defined(OS_CHROMEOS)
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-          // TODO(https://crbug.com/929340): This doesn't belong here!
-          chromeos::assistant::GetAudioDecoderManifest(),
-#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#endif  // defined(OS_CHROMEOS)
       }};
   return *manifests;
 }

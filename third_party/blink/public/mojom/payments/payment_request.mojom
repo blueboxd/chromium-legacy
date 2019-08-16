@@ -41,12 +41,6 @@ enum PaymentErrorReason {
 enum CanMakePaymentQueryResult {
   CAN_MAKE_PAYMENT,
   CANNOT_MAKE_PAYMENT,
-  QUERY_QUOTA_EXCEEDED,
-
-  // Used only on localhost and file:// schemes to warn web developer that the
-  // query quota has been exceeded, but Chrome is returning an answer anyway.
-  WARNING_CAN_MAKE_PAYMENT,
-  WARNING_CANNOT_MAKE_PAYMENT,
 };
 
 enum HasEnrolledInstrumentQueryResult {
@@ -226,9 +220,8 @@ interface PaymentRequest {
   // Queries whether support for the merchant-specified payment method is
   // available, either because the user has a registered payment handler for
   // that method, or because the browser can do just-in-time registration for a
-  // suitable payment handler. If |legacy_mode| is true, provide the legacy
-  // behavior, which also checks that the user has an enrolled instrument.
-  CanMakePayment(bool legacy_mode);
+  // suitable payment handler.
+  CanMakePayment();
 
   // Queries whether support for the merchant-specified payment method is
   // available and the user has an enrolled instrument for that payment method

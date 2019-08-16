@@ -791,13 +791,21 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id) const {
   return Color();
 }
 
-Color LayoutTheme::PlatformTextSearchHighlightColor(bool active_match) const {
-  if (active_match)
+Color LayoutTheme::PlatformTextSearchHighlightColor(
+    bool active_match,
+    bool in_forced_colors_mode) const {
+  if (active_match) {
+    if (in_forced_colors_mode)
+      return GetTheme().SystemColor(CSSValueID::kHighlight);
     return Color(255, 150, 50);  // Orange.
+  }
   return Color(255, 255, 0);     // Yellow.
 }
 
-Color LayoutTheme::PlatformTextSearchColor(bool active_match) const {
+Color LayoutTheme::PlatformTextSearchColor(bool active_match,
+                                           bool in_forced_colors_mode) const {
+  if (in_forced_colors_mode && active_match)
+    return GetTheme().SystemColor(CSSValueID::kHighlighttext);
   return Color::kBlack;
 }
 

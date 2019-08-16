@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/stl_util.h"
+#include "components/services/app_service/public/cpp/file_handler_info.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
@@ -52,7 +53,7 @@ TEST_F(FileHandlersManifestTest, ValidFileHandlers) {
   ASSERT_TRUE(handlers != NULL);
   ASSERT_EQ(3U, handlers->size());
 
-  FileHandlerInfo handler = handlers->at(0);
+  apps::FileHandlerInfo handler = handlers->at(0);
   EXPECT_EQ("directories", handler.id);
   EXPECT_EQ(0U, handler.types.size());
   EXPECT_EQ(1U, handler.extensions.size());

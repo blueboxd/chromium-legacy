@@ -79,6 +79,7 @@
 #endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/network_config_service.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "chrome/browser/browser_process.h"
@@ -126,7 +127,6 @@
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #else  // !defined(OS_CHROMEOS)
@@ -532,10 +532,7 @@ void SettingsUI::AddSettingsPageUIHandler(
 #if defined(OS_CHROMEOS)
 void SettingsUI::BindCrosNetworkConfig(
     chromeos::network_config::mojom::CrosNetworkConfigRequest request) {
-  content::BrowserContext::GetConnectorFor(
-      web_ui()->GetWebContents()->GetBrowserContext())
-      ->BindInterface(chromeos::network_config::mojom::kServiceName,
-                      std::move(request));
+  ash::GetNetworkConfigService(std::move(request));
 }
 #endif  // defined(OS_CHROMEOS)
 

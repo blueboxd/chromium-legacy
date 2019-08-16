@@ -16,6 +16,7 @@
 #include "chrome/browser/performance_manager/graph/properties.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/public/graph/process_node.h"
+#include "chrome/browser/performance_manager/public/render_process_host_proxy.h"
 
 namespace performance_manager {
 
@@ -43,7 +44,8 @@ class ProcessNodeImpl
  public:
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kProcess; }
 
-  explicit ProcessNodeImpl(GraphImpl* graph);
+  ProcessNodeImpl(GraphImpl*, RenderProcessHostProxy render_process_proxy);
+
   ~ProcessNodeImpl() override;
 
   void Bind(
@@ -92,6 +94,10 @@ class ProcessNodeImpl
     return main_thread_task_load_is_low_.value();
   }
 
+  const RenderProcessHostProxy& render_process_host_proxy() const {
+    return render_process_host_proxy_;
+  }
+
   double cpu_usage() const { return cpu_usage_; }
 
   // Add |frame_node| to this process.
@@ -129,6 +135,7 @@ class ProcessNodeImpl
   double GetCpuUsage() const override;
   base::TimeDelta GetCumulativeCpuUsage() const override;
   uint64_t GetPrivateFootprintKb() const override;
+  const RenderProcessHostProxy& GetRenderProcessHostProxy() const override;
 
   void OnAllFramesInProcessFrozen();
 
@@ -143,6 +150,8 @@ class ProcessNodeImpl
   base::Process process_;
   base::Time launch_time_;
   base::Optional<int32_t> exit_status_;
+
+  const RenderProcessHostProxy render_process_host_proxy_;
 
   ObservedProperty::NotifiesAlways<
       base::TimeDelta,

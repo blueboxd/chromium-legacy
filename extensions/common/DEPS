@@ -2,7 +2,6 @@ include_rules = [
   "+components/crx_file",
   "+components/url_formatter",
   "+components/nacl/common/buildflags.h",
-  "+components/services/app_service/public/mojom",
   "+device/bluetooth",  # For BluetoothPermission
   "+grit/extensions_strings.h",
   "+libxml",

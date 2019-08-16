@@ -31,10 +31,7 @@ _NEGATIVE_FILTER = [
     'CombinedInputActionsTest.testChordControlCutAndPaste',
 
     #https://bugs.chromium.org/p/chromedriver/issues/detail?id=2971
-    'ChromeDevToolsProfilerTest.aSimpleStartStopAndGetProfilerTest',
-    'ChromeDevToolsSecurityTest.loadInsecureWebsite',
     'ChromeDevToolsProfilerTest.sampleProfileEvents',
-    'ChromeDevToolsProfilerTest.sampleSetStartPreciseCoverageTest',
 ]
 
 _READY_TO_RUN_FILTER = [

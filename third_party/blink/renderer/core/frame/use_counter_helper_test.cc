@@ -28,7 +28,8 @@ int GetPageVisitsBucketforHistogram(const std::string& histogram_name) {
   if (histogram_name.find("CSS") == std::string::npos)
     return static_cast<int>(blink::mojom::WebFeature::kPageVisits);
   // For CSS histograms, the page visits bucket should be 1.
-  return blink::mojom::blink::kTotalPagesMeasuredCSSSampleId;
+  return static_cast<int>(
+      blink::mojom::blink::CSSSampleId::kTotalPagesMeasured);
 }
 
 }  // namespace
@@ -473,7 +474,8 @@ TEST_F(UseCounterHelperTest, MaximumCSSSampleId) {
   for (CSSPropertyID property : kCSSPropertyAliasList)
     max_sample_id = std::max(max_sample_id, ToSampleId(property));
 
-  EXPECT_EQ(mojom::blink::kMaximumCSSSampleId, max_sample_id);
+  EXPECT_EQ(static_cast<int>(mojom::blink::CSSSampleId::kMaxValue),
+            max_sample_id);
 }
 
 }  // namespace blink

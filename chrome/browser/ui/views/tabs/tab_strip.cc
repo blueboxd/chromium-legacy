@@ -1721,33 +1721,30 @@ SkColor TabStrip::GetTabForegroundColor(TabState tab_state,
   const bool is_active_frame = ShouldPaintAsActiveFrame();
 
   // This color varies based on the tab and frame active states.
-  SkColor default_color;
-  if (tab_state == TAB_ACTIVE) {
-    default_color = tp->GetColor(ThemeProperties::COLOR_TAB_TEXT);
-  } else {
-    // If there's a custom color for the background-tab inactive-frame case, use
-    // that instead of alpha blending.
-    if (!is_active_frame &&
-        tp->HasCustomColor(
-            ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE)) {
-      return tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE);
-    }
-
-    const int color_id = ThemeProperties::COLOR_BACKGROUND_TAB_TEXT;
-    default_color =
-        tp->HasCustomColor(color_id)
-            ? tp->GetColor(color_id)
-            : color_utils::PickContrastingColor(
-                  gfx::kGoogleGrey400, gfx::kGoogleGrey800, background_color);
+  int color_id = ThemeProperties::COLOR_TAB_TEXT;
+  if (tab_state != TAB_ACTIVE) {
+    color_id = is_active_frame
+                   ? ThemeProperties::COLOR_BACKGROUND_TAB_TEXT
+                   : ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE;
+  }
+  SkColor color = tp->GetColor(color_id);
+  if (tp->HasCustomColor(color_id))
+    return color;
+  if ((color_id == ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE) &&
+      tp->HasCustomColor(ThemeProperties::COLOR_BACKGROUND_TAB_TEXT)) {
+    // If a custom theme sets a background tab text color for active but not
+    // inactive windows, generate the inactive color by blending the active one
+    // at 75% as we do in the default theme.
+    color = tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
+  } else if (tab_state != TAB_ACTIVE) {
+    color = color_utils::PickContrastingColor(
+        gfx::kGoogleGrey400, gfx::kGoogleGrey800, background_color);
   }
 
-  if (!is_active_frame) {
-    default_color =
-        color_utils::AlphaBlend(default_color, background_color, 0.75f);
-  }
+  if (!is_active_frame)
+    color = color_utils::AlphaBlend(color, background_color, 0.75f);
 
-  return color_utils::BlendForMinContrast(default_color, background_color)
-      .color;
+  return color_utils::BlendForMinContrast(color, background_color).color;
 }
 
 // Returns the accessible tab name for the tab.

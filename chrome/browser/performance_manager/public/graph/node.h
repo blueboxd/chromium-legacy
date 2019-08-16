@@ -30,6 +30,13 @@ class Node {
   virtual uintptr_t GetImplType() const = 0;
   virtual const void* GetImpl() const = 0;
 
+  // Returns the serialization ID of the given |node|. This is a stable and
+  // opaque value that will always refer only to this node, and never be reused
+  // over the lifetime of the browser.
+  // TODO(chrisha): Deprecate this, and move the logic inside of the only
+  // client using it.
+  static int64_t GetSerializationId(const Node* node);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(Node);
 };

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_PAGE_NODE_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_PAGE_NODE_H_
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/public/graph/node.h"
 #include "chrome/browser/performance_manager/public/web_contents_proxy.h"
@@ -74,6 +75,10 @@ class PageNode : public Node {
   // are no main frames at the moment, returns nullptr.
   virtual const FrameNode* GetMainFrameNode() const = 0;
 
+  // Returns all of the main frame nodes, both current and otherwise. If there
+  // are no main frames at the moment, returns the empty set.
+  virtual const base::flat_set<const FrameNode*> GetMainFrameNodes() const = 0;
+
   // Returns the URL the main frame last committed a navigation to.
   // See PageNodeObserver::OnMainFrameNavigationCommitted.
   virtual const GURL& GetMainFrameUrl() const = 0;
@@ -81,7 +86,7 @@ class PageNode : public Node {
   // Returns the web contents associated with this page node. It is valid to
   // call this function on any thread but the weak pointer must only be
   // dereferenced on the UI thread.
-  virtual const WebContentsProxy& GetContentProxy() const = 0;
+  virtual const WebContentsProxy& GetContentsProxy() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PageNode);

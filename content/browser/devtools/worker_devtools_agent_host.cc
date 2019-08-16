@@ -35,7 +35,7 @@ WorkerDevToolsAgentHost::WorkerDevToolsAgentHost(
   NotifyCreated();
   GetRendererChannel()->SetRenderer(std::move(agent_remote),
                                     std::move(host_receiver), process_id,
-                                    nullptr, std::move(connection_error));
+                                    std::move(connection_error));
 }
 
 WorkerDevToolsAgentHost::~WorkerDevToolsAgentHost() {}
@@ -43,8 +43,7 @@ WorkerDevToolsAgentHost::~WorkerDevToolsAgentHost() {}
 void WorkerDevToolsAgentHost::Disconnected() {
   ForceDetachAllSessions();
   GetRendererChannel()->SetRenderer(mojo::NullRemote(), mojo::NullReceiver(),
-                                    ChildProcessHost::kInvalidUniqueID,
-                                    nullptr);
+                                    ChildProcessHost::kInvalidUniqueID);
   std::move(destroyed_callback_).Run(this);
   Release();  // Matches AddRef() in constructor.
 }

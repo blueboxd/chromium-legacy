@@ -1420,6 +1420,20 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
   EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 }
 
+// TODO(crbug.com/993974): When the test flake has been addressed, improve
+// performance by consolidating this unit test with
+// |TabletModeBrowserCaptionButtonVisibility|. Do not forget to remove the
+// corresponding |FRIEND_TEST_ALL_PREFIXES| usage from
+// |BrowserNonClientFrameViewAsh|.
+IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
+                       CaptionButtonVisibilityForBrowserLaunchedInTabletMode) {
+  ASSERT_NO_FATAL_FAILURE(
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true));
+  EXPECT_FALSE(GetFrameViewAsh(BrowserView::GetBrowserViewForBrowser(
+                                   CreateBrowser(browser()->profile())))
+                   ->caption_button_container_->GetVisible());
+}
+
 IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
                        TabletModeAppCaptionButtonVisibility) {
   browser()->window()->Close();

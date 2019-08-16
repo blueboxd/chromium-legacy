@@ -224,14 +224,14 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   //
   // TODO(liberato): On re-init, we can probably re-use the device.
   device_ = get_d3d11_device_cb_.Run();
-  usable_feature_level_ = device_->GetFeatureLevel();
-
   if (!device_) {
     // This happens if, for example, if chrome is configured to use
     // D3D9 for ANGLE.
     NotifyError("ANGLE did not provide D3D11 device");
     return;
   }
+
+  usable_feature_level_ = device_->GetFeatureLevel();
   device_->GetImmediateContext(device_context_.ReleaseAndGetAddressOf());
 
   HRESULT hr;

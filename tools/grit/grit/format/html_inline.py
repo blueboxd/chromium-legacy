@@ -84,7 +84,7 @@ def GetDistribution():
     string
   """
   distribution = DIST_DEFAULT
-  if DIST_ENV_VAR in os.environ.keys():
+  if DIST_ENV_VAR in os.environ:
     distribution = os.environ[DIST_ENV_VAR]
     if len(distribution) > 1 and distribution[0] == '_':
       distribution = distribution[1:].lower()
@@ -563,7 +563,7 @@ def InlineToFile(input_filename, output_filename, grd_node):
   """
   inlined_data = InlineToString(input_filename, grd_node)
   with open(output_filename, 'wb') as out_file:
-    out_file.writelines(inlined_data)
+    out_file.write(inlined_data)
 
 
 def GetResourceFilenames(filename,

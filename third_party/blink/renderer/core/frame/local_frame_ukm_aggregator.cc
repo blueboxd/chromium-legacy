@@ -269,6 +269,14 @@ void LocalFrameUkmAggregator::RecordEvent() {
                 absolute_record.interval_duration.InMicroseconds())
             .SetStyleAndLayoutPercentage(percentage);
         break;
+      case kStyle:
+        builder.SetStyle(absolute_record.interval_duration.InMicroseconds())
+            .SetStylePercentage(percentage);
+        break;
+      case kLayout:
+        builder.SetLayout(absolute_record.interval_duration.InMicroseconds())
+            .SetLayoutPercentage(percentage);
+        break;
       case kForcedStyleAndLayout:
         builder
             .SetForcedStyleAndLayout(

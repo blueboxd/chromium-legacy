@@ -78,13 +78,5 @@ specific_include_rules = {
     "+extensions/common",
     "+third_party/blink/public/mojom",
   ],
-  "builtin_service_manifests\.cc": [
-    "+chromeos/services/network_config",
-    "+chromeos/services/secure_channel",
-    "+components/startup_metric_utils/common",
-    "+extensions/buildflags",
-    "+mash/public",
-    "+services/proxy_resolver",
-  ],
 }
 

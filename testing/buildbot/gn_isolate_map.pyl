@@ -1705,6 +1705,10 @@
     "label": "//third_party/minizip:minizip_uncompress_fuzzer",
     "type": "fuzzer",
   },
+  "module_installer_junit_tests": {
+    "label": "//components/module_installer/android:module_installer_junit_tests",
+    "type": "junit_test",
+  },
   "mojo_core_channel_fuzzer": {
     "label": "//mojo/core:mojo_core_channel_fuzzer",
     "type": "fuzzer",

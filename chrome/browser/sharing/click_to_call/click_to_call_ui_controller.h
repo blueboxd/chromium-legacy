@@ -20,8 +20,6 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-class SharingDeviceInfo;
-
 class ClickToCallUiController
     : public SharingUiController,
       public content::WebContentsUserData<ClickToCallUiController> {
@@ -34,13 +32,13 @@ class ClickToCallUiController
 
   ~ClickToCallUiController() override;
 
-  void OnDeviceSelected(const GURL& url, const SharingDeviceInfo& device);
+  void OnDeviceSelected(const GURL& url, const syncer::DeviceInfo& device);
 
   // Overridden from SharingUiController:
   base::string16 GetTitle() override;
   PageActionIconType GetIconType() override;
   int GetRequiredDeviceCapabilities() override;
-  void OnDeviceChosen(const SharingDeviceInfo& device) override;
+  void OnDeviceChosen(const syncer::DeviceInfo& device) override;
   void OnAppChosen(const App& app) override;
 
   // Called by the ClickToCallDialogView when the help text got clicked.

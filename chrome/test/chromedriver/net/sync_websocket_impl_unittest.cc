@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/single_thread_task_runner.h"
@@ -70,6 +71,47 @@ TEST_F(SyncWebSocketImplTest, SendReceive) {
       SyncWebSocket::kOk,
       sock.ReceiveNextMessage(&message, long_timeout()));
   ASSERT_STREQ("hi", message.c_str());
+}
+
+TEST_F(SyncWebSocketImplTest, DetermineRecipient) {
+  SyncWebSocketImpl sock(context_getter_.get());
+  ASSERT_TRUE(sock.Connect(server_.web_socket_url()));
+  std::string message_for_chromedriver = R"({
+        "method": "Target.receivedMessageFromTarget",
+        "params": {
+           "message": "{\"id\": 1}"
+        }
+      })";
+  std::string message_not_for_chromedriver = R"({
+        "method": "Target.receivedMessageFromTarget",
+        "params": {
+           "message": "{\"id\": -1}"
+        }
+      })";
+  sock.Send(message_not_for_chromedriver);
+  sock.Send(message_for_chromedriver);
+  std::string message;
+  ASSERT_EQ(SyncWebSocket::kOk,
+            sock.ReceiveNextMessage(&message, long_timeout()));
+
+  // Getting message id and method
+  base::DictionaryValue* message_dict;
+  base::DictionaryValue* inner_dict;
+  std::string method;
+  std::string inner_message;
+  int id;
+  base::Optional<base::Value> message_value = base::JSONReader::Read(message);
+  ASSERT_TRUE(message_value->GetAsDictionary(&message_dict));
+  ASSERT_TRUE(message_dict->GetString("method", &method));
+  ASSERT_TRUE(message_dict->GetDictionary("params", &inner_dict) &&
+              inner_dict->GetString("message", &inner_message));
+  base::Optional<base::Value> inner_message_value =
+      base::JSONReader::Read(inner_message);
+  ASSERT_TRUE(inner_message_value->GetAsDictionary(&message_dict));
+  ASSERT_TRUE(message_dict->GetInteger("id", &id));
+
+  ASSERT_STREQ(method.c_str(), "Target.receivedMessageFromTarget");
+  ASSERT_EQ(id, 1);
 }
 
 TEST_F(SyncWebSocketImplTest, SendReceiveTimeout) {

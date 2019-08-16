@@ -613,6 +613,18 @@ class AutotestPrivateSetTabletModeEnabledFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+// Returns a list of all installed applications
+class AutotestPrivateGetAllInstalledAppsFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateGetAllInstalledAppsFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getAllInstalledApps",
+                             AUTOTESTPRIVATE_GETALLINSTALLEDAPPS)
+
+ private:
+  ~AutotestPrivateGetAllInstalledAppsFunction() override;
+  ResponseAction Run() override;
+};
+
 // Returns a list of all shelf items
 class AutotestPrivateGetShelfItemsFunction : public ExtensionFunction {
  public:

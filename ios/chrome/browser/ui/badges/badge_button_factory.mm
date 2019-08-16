@@ -7,6 +7,7 @@
 #import "base/logging.h"
 #import "ios/chrome/browser/ui/badges/badge_button.h"
 #import "ios/chrome/browser/ui/badges/badge_button_action_handler.h"
+#import "ios/chrome/browser/ui/badges/badge_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -53,6 +54,8 @@
   [button addTarget:self.actionHandler
                 action:@selector(passwordsBadgeButtonTapped:)
       forControlEvents:UIControlEventTouchUpInside];
+  button.accessibilityIdentifier =
+      kBadgeButtonSavePasswordAccessibilityIdentifier;
   return button;
 }
 
@@ -63,6 +66,8 @@
   [button addTarget:self.actionHandler
                 action:@selector(passwordsBadgeButtonTapped:)
       forControlEvents:UIControlEventTouchUpInside];
+  button.accessibilityIdentifier =
+      kBadgeButtonUpdatePasswordAccessibilityIdentifier;
   return button;
 }
 
@@ -74,6 +79,7 @@
   [button setImage:image forState:UIControlStateDisabled];
   button.accessibilityTraits &= ~UIAccessibilityTraitButton;
   button.enabled = NO;
+  button.accessibilityIdentifier = kBadgeButtonIncognitoAccessibilityIdentifier;
   return button;
 }
 
@@ -83,7 +89,6 @@
   UIImage* image = [[UIImage imageNamed:imageName]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   [button setImage:image forState:UIControlStateNormal];
-  button.translatesAutoresizingMaskIntoConstraints = NO;
   button.imageView.contentMode = UIViewContentModeScaleAspectFit;
   [NSLayoutConstraint
       activateConstraints:@[ [button.widthAnchor

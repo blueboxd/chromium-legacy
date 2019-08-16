@@ -7,6 +7,7 @@ from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
 from .composition_parts import WithIdentifier
 from .idl_type import IdlType
+from .typedef import Typedef
 
 
 class Union(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
@@ -29,18 +30,23 @@ class Union(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
     expected to define an implementation class for each Union instance.
     """
 
-    def __init__(self, identifier, union_types):
+    def __init__(self, identifier, union_types, typedef_backrefs):
         """
         Args:
             union_types: Union types of which this object consists.  All types
                 in |union_types| must have the same flattened_member_types and
                 the same value of does_include_nullable_type.
+            typedef_backrefs: Typedef instances whose typedef'ed type is this
+                union.
         """
         assert isinstance(union_types, (list, tuple))
         assert len(union_types) > 0
         assert all(
             isinstance(union_type, IdlType) and union_type.is_union
             for union_type in union_types)
+        assert isinstance(typedef_backrefs, (list, tuple))
+        assert all(
+            isinstance(typedef, Typedef) for typedef in typedef_backrefs)
 
         flattened_members = union_types[0].flattened_member_types
         does_include_nullable_type = union_types[0].does_include_nullable_type
@@ -84,6 +90,7 @@ class Union(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
         self._nullable_members = tuple(sorted(nullable_members, key=sort_key))
         self._typedef_members = tuple(sorted(typedef_members, key=sort_key))
         self._union_members = tuple(sorted(union_members, key=sort_key))
+        self._typedef_backrefs = tuple(typedef_backrefs)
 
     @property
     def flattened_member_types(self):
@@ -137,3 +144,10 @@ class Union(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
         IdlType(B or C).
         """
         return self._union_members
+
+    @property
+    def aliasing_typedefs(self):
+        """
+        Returns a list of typedefs which are aliases to this union type.
+        """
+        return self._typedef_backrefs

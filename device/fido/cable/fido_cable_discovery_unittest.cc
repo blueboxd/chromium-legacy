@@ -36,40 +36,40 @@ constexpr uint8_t kTestCableVersionNumber = 0x01;
 
 // Constants required for discovering and constructing a Cable device that
 // are given by the relying party via an extension.
-constexpr EidArray kClientEid = {{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
-                                  0x07, 0x08, 0x09, 0x10, 0x11, 0x12, 0x13,
-                                  0x14, 0x15}};
+constexpr CableEidArray kClientEid = {{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
+                                       0x07, 0x08, 0x09, 0x10, 0x11, 0x12, 0x13,
+                                       0x14, 0x15}};
 
 constexpr char kUuidFormattedClientEid[] =
     "00010203-0405-0607-0809-101112131415";
 
-constexpr EidArray kAuthenticatorEid = {{0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-                                         0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-                                         0x01, 0x01, 0x01, 0x01}};
+constexpr CableEidArray kAuthenticatorEid = {
+    {0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+     0x01, 0x01, 0x01, 0x01}};
 
-constexpr EidArray kInvalidAuthenticatorEid = {
+constexpr CableEidArray kInvalidAuthenticatorEid = {
     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
      0x00, 0x00, 0x00, 0x00}};
 
-constexpr SessionPreKeyArray kTestSessionPreKey = {
+constexpr CableSessionPreKeyArray kTestSessionPreKey = {
     {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}};
 
 // TODO(https://crbug.com/837088): Add support for multiple EIDs on Windows.
 #if !defined(OS_WIN)
-constexpr EidArray kSecondaryClientEid = {{0x15, 0x14, 0x13, 0x12, 0x11, 0x10,
-                                           0x09, 0x08, 0x07, 0x06, 0x05, 0x04,
-                                           0x03, 0x02, 0x01, 0x00}};
+constexpr CableEidArray kSecondaryClientEid = {
+    {0x15, 0x14, 0x13, 0x12, 0x11, 0x10, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04,
+     0x03, 0x02, 0x01, 0x00}};
 
 constexpr char kUuidFormattedSecondaryClientEid[] =
     "15141312-1110-0908-0706-050403020100";
 
-constexpr EidArray kSecondaryAuthenticatorEid = {
+constexpr CableEidArray kSecondaryAuthenticatorEid = {
     {0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee,
      0xee, 0xee, 0xee, 0xee}};
 
-constexpr SessionPreKeyArray kSecondarySessionPreKey = {
+constexpr CableSessionPreKeyArray kSecondarySessionPreKey = {
     {0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
      0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
      0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd}};
@@ -165,7 +165,7 @@ class CableMockAdapter : public MockBluetoothAdapter {
                     const AdvertisementErrorCallback&));
 
   void AddNewTestBluetoothDevice(
-      base::span<const uint8_t, kEphemeralIdSize> authenticator_eid) {
+      base::span<const uint8_t, kCableEphemeralIdSize> authenticator_eid) {
     auto mock_device = CreateTestBluetoothDevice();
 
     std::vector<uint8_t> service_data(18);
@@ -189,7 +189,7 @@ class CableMockAdapter : public MockBluetoothAdapter {
   }
 
   void AddNewTestAppleBluetoothDevice(
-      base::span<const uint8_t, kEphemeralIdSize> authenticator_eid) {
+      base::span<const uint8_t, kCableEphemeralIdSize> authenticator_eid) {
     auto mock_device = CreateTestBluetoothDevice();
     // Apple doesn't allow advertising service data, so we advertise a 16 bit
     // UUID plus the EID converted into 128 bit UUID.
@@ -247,7 +247,7 @@ class CableMockAdapter : public MockBluetoothAdapter {
   }
 
   void ExpectDiscoveryWithScanCallback(
-      base::span<const uint8_t, kEphemeralIdSize> eid,
+      base::span<const uint8_t, kCableEphemeralIdSize> eid,
       bool is_apple_device = false) {
     EXPECT_CALL(*this, StartScanWithFilter_(_, _))
         .WillOnce(
@@ -297,7 +297,7 @@ class FakeFidoCableDiscovery : public FidoCableDiscovery {
  private:
   std::unique_ptr<FidoCableHandshakeHandler> CreateHandshakeHandler(
       FidoCableDevice* device,
-      base::span<const uint8_t, kSessionPreKeySize> session_pre_key,
+      base::span<const uint8_t, kCableSessionPreKeySize> session_pre_key,
       base::span<const uint8_t, 8> nonce) override {
     return std::make_unique<FakeHandshakeHandler>(device, nonce,
                                                   session_pre_key);

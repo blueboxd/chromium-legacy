@@ -1,6 +1,6 @@
 document
 ++group
-++++list ControllerFor='{document}'
+++++textbox LocalizedControlType='date picker' ControllerFor='{document}'
 ++++++group
 ++++++++group
 ++++++++++spinbutton Name='Month' RangeValue.IsReadOnly=false RangeValue.LargeChange=0.00 RangeValue.SmallChange=0.00 RangeValue.Maximum=12.00 RangeValue.Minimum=1.00 RangeValue.Value=9.00 Value.Value='09'

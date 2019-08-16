@@ -53,6 +53,13 @@ Status StubWebView::SendCommand(const std::string& cmd,
   return Status(kOk);
 }
 
+Status StubWebView::SendCommandFromWebSocket(
+    const std::string& cmd,
+    const base::DictionaryValue& params,
+    const int client_cmd_id) {
+  return Status(kOk);
+}
+
 Status StubWebView::SendCommandAndGetResult(
         const std::string& cmd,
         const base::DictionaryValue& params,

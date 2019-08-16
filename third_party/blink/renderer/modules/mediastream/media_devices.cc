@@ -27,8 +27,6 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
-using blink::mojom::blink::MediaDeviceType;
-
 namespace blink {
 
 namespace {
@@ -200,7 +198,7 @@ void MediaDevices::ContextDestroyed(ExecutionContext*) {
 }
 
 void MediaDevices::OnDevicesChanged(
-    MediaDeviceType type,
+    mojom::blink::MediaDeviceType type,
     Vector<mojom::blink::MediaDeviceInfoPtr> device_infos) {
   Document* document = To<Document>(GetExecutionContext());
   DCHECK(document);
@@ -277,41 +275,44 @@ void MediaDevices::DevicesEnumerated(
     return;
   }
 
-  DCHECK_EQ(static_cast<wtf_size_t>(MediaDeviceType::NUM_MEDIA_DEVICE_TYPES),
+  DCHECK_EQ(static_cast<wtf_size_t>(
+                mojom::blink::MediaDeviceType::NUM_MEDIA_DEVICE_TYPES),
             enumeration.size());
 
   if (!video_input_capabilities.IsEmpty()) {
-    DCHECK_EQ(
-        enumeration[static_cast<wtf_size_t>(MediaDeviceType::MEDIA_VIDEO_INPUT)]
-            .size(),
-        video_input_capabilities.size());
+    DCHECK_EQ(enumeration[static_cast<wtf_size_t>(
+                              mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT)]
+                  .size(),
+              video_input_capabilities.size());
   }
   if (!audio_input_capabilities.IsEmpty()) {
-    DCHECK_EQ(
-        enumeration[static_cast<wtf_size_t>(MediaDeviceType::MEDIA_AUDIO_INPUT)]
-            .size(),
-        audio_input_capabilities.size());
+    DCHECK_EQ(enumeration[static_cast<wtf_size_t>(
+                              mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT)]
+                  .size(),
+              audio_input_capabilities.size());
   }
 
   MediaDeviceInfoVector media_devices;
   for (wtf_size_t i = 0;
-       i < static_cast<wtf_size_t>(MediaDeviceType::NUM_MEDIA_DEVICE_TYPES);
+       i < static_cast<wtf_size_t>(
+               mojom::blink::MediaDeviceType::NUM_MEDIA_DEVICE_TYPES);
        ++i) {
     for (wtf_size_t j = 0; j < enumeration[i].size(); ++j) {
-      MediaDeviceType device_type = static_cast<MediaDeviceType>(i);
+      mojom::blink::MediaDeviceType device_type =
+          static_cast<mojom::blink::MediaDeviceType>(i);
       mojom::blink::MediaDeviceInfoPtr device_info =
           std::move(enumeration[i][j]);
-      if (device_type == MediaDeviceType::MEDIA_AUDIO_INPUT ||
-          device_type == MediaDeviceType::MEDIA_VIDEO_INPUT) {
+      if (device_type == mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT ||
+          device_type == mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT) {
         InputDeviceInfo* input_device_info =
             InputDeviceInfo::Create(device_info->device_id, device_info->label,
                                     device_info->group_id, device_type);
-        if (device_type == MediaDeviceType::MEDIA_VIDEO_INPUT &&
+        if (device_type == mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT &&
             !video_input_capabilities.IsEmpty()) {
           input_device_info->SetVideoInputCapabilities(
               std::move(video_input_capabilities[j]));
         }
-        if (device_type == MediaDeviceType::MEDIA_AUDIO_INPUT &&
+        if (device_type == mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT &&
             !audio_input_capabilities.IsEmpty()) {
           input_device_info->SetAudioInputCapabilities(
               std::move(audio_input_capabilities[j]));

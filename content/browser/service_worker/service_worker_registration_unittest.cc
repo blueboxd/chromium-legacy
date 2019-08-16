@@ -86,11 +86,20 @@ void SaveStatusCallback(bool* called,
 
 class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
  public:
-  bool AllowServiceWorker(
+  bool AllowServiceWorkerOnIO(
       const GURL& scope,
       const GURL& first_party,
       const GURL& script_url,
       content::ResourceContext* context,
+      base::RepeatingCallback<WebContents*()> wc_getter) override {
+    return false;
+  }
+
+  bool AllowServiceWorkerOnUI(
+      const GURL& scope,
+      const GURL& first_party,
+      const GURL& script_url,
+      content::BrowserContext* context,
       base::RepeatingCallback<WebContents*()> wc_getter) override {
     return false;
   }

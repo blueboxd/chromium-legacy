@@ -12,18 +12,14 @@ namespace cc {
 class RenderFrameMetadata;
 }
 
-namespace viz {
-class CompositorFrameMetadata;
-}
-
 namespace content {
 
-// A subset of the information in Render/CompositorFrameMetadata used in
-// DevTools with Android WebView.
+// A subset of the information in RenderFrameMetadata used in DevTools with
+// Android WebView.
+// TODO(crbug.com/985009): Replace with RenderFrameMetadata.
 struct DevToolsFrameMetadata {
  public:
   explicit DevToolsFrameMetadata(const cc::RenderFrameMetadata& metadata);
-  explicit DevToolsFrameMetadata(const viz::CompositorFrameMetadata& metadata);
 
   float device_scale_factor;
   float page_scale_factor;

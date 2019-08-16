@@ -75,7 +75,7 @@ class DEVICE_GAMEPAD_EXPORT HidHapticGamepadBase
   void SetVibration(double strong_magnitude, double weak_magnitude) override;
 
   // Write the vibration output report to the device.
-  virtual size_t WriteOutputReport(void* report, size_t report_length) = 0;
+  virtual size_t WriteOutputReport(base::span<const uint8_t> report) = 0;
 
  protected:
   HidHapticGamepadBase(const HapticReportData& data);

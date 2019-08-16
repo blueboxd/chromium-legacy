@@ -52,11 +52,11 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
 
   ~ServiceWorkerContextWatcher() override;
 
-  void GetStoredRegistrationsOnIOThread();
-  void OnStoredRegistrationsOnIOThread(
+  void GetStoredRegistrationsOnCoreThread();
+  void OnStoredRegistrationsOnCoreThread(
       blink::ServiceWorkerStatusCode status,
       const std::vector<ServiceWorkerRegistrationInfo>& stored_registrations);
-  void StopOnIOThread();
+  void StopOnCoreThread();
 
   void StoreRegistrationInfo(
       const ServiceWorkerRegistrationInfo& registration,
@@ -84,13 +84,11 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
   void OnNewLiveRegistration(int64_t registration_id,
                              const GURL& scope) override;
   void OnNewLiveVersion(const ServiceWorkerVersionInfo& version_info) override;
-  void OnRunningStateChanged(
-      int64_t version_id,
-      content::EmbeddedWorkerStatus running_status) override;
-  void OnVersionStateChanged(
-      int64_t version_id,
-      const GURL& scope,
-      content::ServiceWorkerVersion::Status status) override;
+  void OnRunningStateChanged(int64_t version_id,
+                             EmbeddedWorkerStatus running_status) override;
+  void OnVersionStateChanged(int64_t version_id,
+                             const GURL& scope,
+                             ServiceWorkerVersion::Status status) override;
   void OnVersionDevToolsRoutingIdChanged(int64_t version_id,
                                          int process_id,
                                          int devtools_agent_route_id) override;

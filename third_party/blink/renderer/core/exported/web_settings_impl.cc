@@ -489,10 +489,6 @@ void WebSettingsImpl::SetPreferCompositingToLCDTextEnabled(bool enabled) {
   dev_tools_emulator_->SetPreferCompositingToLCDTextEnabled(enabled);
 }
 
-void WebSettingsImpl::SetMinimumAccelerated2dCanvasSize(int num_pixels) {
-  settings_->SetMinimumAccelerated2dCanvasSize(num_pixels);
-}
-
 void WebSettingsImpl::SetHideDownloadUI(bool hide) {
   settings_->SetHideDownloadUI(hide);
 }

@@ -101,9 +101,9 @@ class PageTimingMetricsSender {
 
   std::bitset<static_cast<size_t>(blink::mojom::WebFeature::kNumberOfFeatures)>
       features_sent_;
-  std::bitset<static_cast<size_t>(blink::mojom::kMaximumCSSSampleId + 1)>
+  std::bitset<static_cast<size_t>(blink::mojom::CSSSampleId::kMaxValue) + 1>
       css_properties_sent_;
-  std::bitset<static_cast<size_t>(blink::mojom::kMaximumCSSSampleId + 1)>
+  std::bitset<static_cast<size_t>(blink::mojom::CSSSampleId::kMaxValue) + 1>
       animated_css_properties_sent_;
 
   bool have_sent_ipc_ = false;

@@ -728,20 +728,20 @@ TEST_F(NetworkStateHandlerTest, GetVisibleNetworks) {
 }
 
 TEST_F(NetworkStateHandlerTest, TechnologyChanged) {
-  // Disable a technology. Will immediately set the state to AVAILABLE and
+  // Disable a technology. Will immediately set the state to DISABLING and
   // notify observers.
   network_state_handler_->SetTechnologyEnabled(
       NetworkTypePattern::WiFi(), false, network_handler::ErrorCallback());
   EXPECT_EQ(1u, test_observer_->device_list_changed_count());
   EXPECT_EQ(
-      NetworkStateHandler::TECHNOLOGY_AVAILABLE,
+      NetworkStateHandler::TECHNOLOGY_DISABLING,
       network_state_handler_->GetTechnologyState(NetworkTypePattern::WiFi()));
 
-  // Run the message loop. No additional notification should be received when
-  // Shill updates the enabled technologies since the state remains AVAILABLE.
+  // Run the message loop. When Shill updates the enabled technologies since
+  // the state should transition to AVAILABLE and observers should be notified.
   test_observer_->reset_change_counts();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0u, test_observer_->device_list_changed_count());
+  EXPECT_EQ(1u, test_observer_->device_list_changed_count());
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_AVAILABLE,
       network_state_handler_->GetTechnologyState(NetworkTypePattern::WiFi()));

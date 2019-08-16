@@ -16,13 +16,13 @@
 #include "chrome/browser/renderer_context_menu/mock_render_view_context_menu.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
+#include "components/sync_device_info/device_info.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
@@ -59,7 +59,8 @@ class MockSharingService : public SharingService {
   ~MockSharingService() override = default;
 
   MOCK_CONST_METHOD1(GetDeviceCandidates,
-                     std::vector<SharingDeviceInfo>(int required_capabilities));
+                     std::vector<std::unique_ptr<syncer::DeviceInfo>>(
+                         int required_capabilities));
 
   MOCK_METHOD4(SendMessageToDevice,
                void(const std::string& device_guid,
@@ -100,14 +101,16 @@ class SharedClipboardContextMenuObserverTest : public testing::Test {
         base::UTF16ToUTF8(text));
   }
 
-  std::vector<SharingDeviceInfo> CreateMockDevices(int count) {
-    std::vector<SharingDeviceInfo> devices;
+  std::vector<std::unique_ptr<syncer::DeviceInfo>> CreateMockDevices(
+      int count) {
+    std::vector<std::unique_ptr<syncer::DeviceInfo>> devices;
     for (int i = 0; i < count; i++) {
-      devices.emplace_back(
-          base::StrCat({"guid", base::NumberToString(i)}),
-          base::UTF8ToUTF16(base::StrCat({"name", base::NumberToString(i)})),
-          sync_pb::SyncEnums::TYPE_PHONE, base::Time::Now(),
-          static_cast<int>(SharingDeviceCapability::kNone));
+      devices.emplace_back(std::make_unique<syncer::DeviceInfo>(
+          base::StrCat({"guid", base::NumberToString(i)}), "name",
+          "chrome_version", "user_agent",
+          sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
+          /* last_updated_timestamp= */ base::Time::Now(),
+          /* send_tab_to_self_receiving_enabled= */ false));
     }
     return devices;
   }
@@ -149,7 +152,7 @@ TEST_F(SharedClipboardContextMenuObserverTest, NoDevices_DoNotShowMenu) {
 
 TEST_F(SharedClipboardContextMenuObserverTest, SingleDevice_ShowMenu) {
   auto devices = CreateMockDevices(1);
-  auto guid = devices[0].guid();
+  auto guid = devices[0]->guid();
 
   EXPECT_CALL(*service(), GetDeviceCandidates(_))
       .WillOnce(Return(ByMove(std::move(devices))));
@@ -181,7 +184,7 @@ TEST_F(SharedClipboardContextMenuObserverTest, MultipleDevices_ShowMenu) {
   auto devices = CreateMockDevices(device_count);
   std::vector<std::string> guids;
   for (auto& device : devices)
-    guids.push_back(device.guid());
+    guids.push_back(device->guid());
 
   EXPECT_CALL(*service(), GetDeviceCandidates(_))
       .WillOnce(Return(ByMove(std::move(devices))));
@@ -226,7 +229,7 @@ TEST_F(SharedClipboardContextMenuObserverTest,
   auto devices = CreateMockDevices(device_count);
   std::vector<std::string> guids;
   for (auto& device : devices)
-    guids.push_back(device.guid());
+    guids.push_back(device->guid());
 
   EXPECT_CALL(*service(), GetDeviceCandidates(_))
       .WillOnce(Return(ByMove(std::move(devices))));

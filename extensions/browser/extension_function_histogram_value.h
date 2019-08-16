@@ -1436,6 +1436,7 @@ enum HistogramValue {
   LOGINSCREENSTORAGE_RETRIEVECREDENTIALS = 1373,
   AUTOTESTPRIVATE_GETARCAPPWINDOWSTATE = 1374,
   AUTOTESTPRIVATE_GETARCAPPWINDOWINFO = 1375,
+  AUTOTESTPRIVATE_GETALLINSTALLEDAPPS = 1376,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

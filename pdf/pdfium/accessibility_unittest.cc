@@ -158,20 +158,21 @@ TEST_F(AccessibilityTest, GetUnderlyingTextRangeForRect) {
   EXPECT_EQ(char_count, 5u);
 }
 
-// This class is required to just override the ScrollBy
-// functionality for testing in a specific way. It will
-// keep the TestClient class clean for extension by others.
+// This class overrides TestClient to record points received when a scroll
+// call is made by tests.
 class ScrollEnabledTestClient : public TestClient {
  public:
   ScrollEnabledTestClient() = default;
   ~ScrollEnabledTestClient() override = default;
 
-  void ScrollBy(const pp::Point& point) override { recieved_point_ = point; }
+  // Records the point received in a ScrollBy action request from tests.
+  void ScrollBy(const pp::Point& point) override { received_point_ = point; }
 
-  const pp::Point& GetScrollRequestPoints() { return recieved_point_; }
+  // Returns the point received in a ScrollBy action for validation in tests.
+  const pp::Point& GetScrollRequestPoints() const { return received_point_; }
 
  private:
-  pp::Point recieved_point_;
+  pp::Point received_point_;
 };
 
 TEST_F(AccessibilityTest, TestScrollIntoViewActionHandling) {
@@ -191,8 +192,8 @@ TEST_F(AccessibilityTest, TestScrollIntoViewActionHandling) {
   // Simulate a zoom update in the PDFiumEngine.
   engine->ZoomUpdated(1.5);
   engine->HandleAccessibilityAction(action_data);
-  PP_Point expected_point = {180, 0};
-  EXPECT_EQ(expected_point, client.GetScrollRequestPoints());
+  constexpr PP_Point kExpectedPoint = {180, 0};
+  EXPECT_EQ(kExpectedPoint, client.GetScrollRequestPoints());
 }
 
 }  // namespace chrome_pdf

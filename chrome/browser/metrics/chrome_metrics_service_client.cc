@@ -931,10 +931,6 @@ void ChromeMetricsServiceClient::RecordCommandLineMetrics() {
 }
 
 bool ChromeMetricsServiceClient::RegisterForNotifications() {
-  registrar_.Add(this, chrome::NOTIFICATION_TAB_PARENTED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_TAB_CLOSING,
-                 content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
@@ -1009,8 +1005,6 @@ void ChromeMetricsServiceClient::Observe(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   switch (type) {
-    case chrome::NOTIFICATION_TAB_PARENTED:
-    case chrome::NOTIFICATION_TAB_CLOSING:
     case content::NOTIFICATION_LOAD_STOP:
     case content::NOTIFICATION_LOAD_START:
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED:

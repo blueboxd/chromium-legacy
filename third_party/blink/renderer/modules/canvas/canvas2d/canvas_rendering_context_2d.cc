@@ -800,7 +800,6 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
   if (!canvas()->GetDocument().GetFrame())
     return MakeGarbageCollected<TextMetrics>();
 
-  base::TimeTicks start_time = base::TimeTicks::Now();
   canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(canvas());
 
   const Font& font = AccessFont();
@@ -812,15 +811,9 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
   else
     direction = ToTextDirection(GetState().GetDirection(), canvas());
 
-  TextMetrics* text_metrics = MakeGarbageCollected<TextMetrics>(
-      font, direction, GetState().GetTextBaseline(), GetState().GetTextAlign(),
-      text);
-  if (bernoulli_distribution_(random_generator_)) {
-    base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
-    base::UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
-        "Canvas.TextMetrics.MeasureText", elapsed);
-  }
-  return text_metrics;
+  return MakeGarbageCollected<TextMetrics>(font, direction,
+                                           GetState().GetTextBaseline(),
+                                           GetState().GetTextAlign(), text);
 }
 
 void CanvasRenderingContext2D::DrawTextInternal(
@@ -1130,10 +1123,6 @@ unsigned CanvasRenderingContext2D::HitRegionsCount() const {
 // once always accelerate fully lands.
 void CanvasRenderingContext2D::DisableAcceleration() {
   canvas()->DisableAcceleration();
-}
-
-void CanvasRenderingContext2D::DidInvokeGPUReadbackInCurrentFrame() {
-  canvas()->DidInvokeGPUReadbackInCurrentFrame();
 }
 
 bool CanvasRenderingContext2D::IsCanvas2DBufferValid() const {

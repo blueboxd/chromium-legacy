@@ -76,7 +76,9 @@ class FlexItem {
   //   border/scrollbar/padding.
   FlexItem(LayoutBox*,
            LayoutUnit flex_base_content_size,
-           MinMaxSize min_max_sizes,
+           MinMaxSize min_max_main_axis_sizes,
+           // Ignored for legacy, required for NG:
+           base::Optional<MinMaxSize> min_max_cross_axis_sizes,
            LayoutUnit main_axis_border_padding,
            LayoutUnit main_axis_margin);
 
@@ -129,6 +131,7 @@ class FlexItem {
   LayoutBox* box;
   const LayoutUnit flex_base_content_size;
   const MinMaxSize min_max_sizes;
+  const base::Optional<MinMaxSize> min_max_cross_sizes;
   const LayoutUnit hypothetical_main_content_size;
   const LayoutUnit main_axis_border_padding;
   const LayoutUnit main_axis_margin;

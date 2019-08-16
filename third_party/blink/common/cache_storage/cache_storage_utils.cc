@@ -12,7 +12,7 @@ namespace cache_storage {
 
 int64_t CreateTraceId() {
   // The top 32-bits are the unique process identifier.
-  int64_t id = base::GetUniqueIdForProcess();
+  int64_t id = base::GetUniqueIdForProcess().GetUnsafeValue();
   id <<= 32;
 
   // The bottom 32-bits are an atomic number sequence specific to this

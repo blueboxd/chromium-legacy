@@ -3821,9 +3821,11 @@ bool Element::IsMouseFocusable() const {
          !DisplayLockPreventsActivation();
 }
 
-void Element::ActivateDisplayLockIfNeeded() {
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
-    return;
+bool Element::ActivateDisplayLockIfNeeded() {
+  if (!RuntimeEnabledFeatures::DisplayLockingEnabled() ||
+      GetDocument().LockedDisplayLockCount() ==
+          GetDocument().ActivationBlockingDisplayLockCount())
+    return false;
   const_cast<Element*>(this)->UpdateDistributionForFlatTreeTraversal();
 
   HeapVector<std::pair<Member<Element>, Member<Element>>> activatable_targets;
@@ -3834,23 +3836,26 @@ void Element::ActivateDisplayLockIfNeeded() {
     if (auto* context = ancestor_element->GetDisplayLockContext()) {
       // If any of the ancestors is not activatable, we can't activate.
       if (!context->IsActivatable())
-        return;
+        return false;
       activatable_targets.push_back(std::make_pair(
           ancestor_element, &ancestor.GetTreeScope().Retarget(*this)));
     }
   }
 
+  bool activated = false;
   for (const auto& target : activatable_targets) {
     // Dispatch event on activatable ancestor (target.first), with
     // the retargeted element (target.second) as the |activatedElement|.
     if (auto* context = target.first->GetDisplayLockContext()) {
       if (context->ShouldCommitForActivation()) {
+        activated = true;
         target.first->DispatchEvent(
             *MakeGarbageCollected<BeforeActivateEvent>(*target.second));
         context->CommitForActivation();
       }
     }
   }
+  return activated;
 }
 
 bool Element::DisplayLockPreventsActivation() const {

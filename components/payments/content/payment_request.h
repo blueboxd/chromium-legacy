@@ -78,7 +78,7 @@ class PaymentRequest : public mojom::PaymentRequest,
   void NoUpdatedPaymentDetails() override;
   void Abort() override;
   void Complete(mojom::PaymentComplete result) override;
-  void CanMakePayment(bool legacy_mode) override;
+  void CanMakePayment() override;
   void HasEnrolledInstrument(bool per_method_quota) override;
 
   // PaymentHandlerHost::Delegate
@@ -152,9 +152,8 @@ class PaymentRequest : public mojom::PaymentRequest,
   // the first one being the most precise.
   void RecordFirstAbortReason(JourneyLogger::AbortReason completion_status);
 
-  // The callback for PaymentRequestState::CanMakePayment. Checks for query
-  // quota and may send QUERY_QUOTA_EXCEEDED.
-  void CanMakePaymentCallback(bool legacy_mode, bool can_make_payment);
+  // The callback for PaymentRequestState::CanMakePayment.
+  void CanMakePaymentCallback(bool can_make_payment);
 
   // The callback for PaymentRequestState::HasEnrolledInstrument. Checks for
   // query quota and may send QUERY_QUOTA_EXCEEDED.

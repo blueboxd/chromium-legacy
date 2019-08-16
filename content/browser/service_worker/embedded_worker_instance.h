@@ -128,10 +128,11 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // Starts the worker. It is invalid to call this when the worker is not in
   // STOPPED status.
   //
-  // |sent_start_callback| is invoked once the Start IPC is sent, or if an error
-  // prevented that from happening. The callback is not invoked in some cases,
-  // e.g., when Stop() is called and aborts the start procedure. Note that when
-  // the callback is invoked with kOk status, the service worker has not yet
+  // |sent_start_callback| is invoked once the Start IPC is sent, and in some
+  // cases may be invoked if an error prevented that from happening. It's not
+  // invoked in some cases, like if the Mojo connection fails to connect, or
+  // when Stop() is called and aborts the start procedure. Note that when the
+  // callback is invoked with kOk status, the service worker has not yet
   // finished starting. Observe OnStarted()/OnStopped() for when start completed
   // or failed.
   void Start(blink::mojom::EmbeddedWorkerStartParamsPtr params,

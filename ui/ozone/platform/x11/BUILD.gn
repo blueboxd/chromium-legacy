@@ -57,6 +57,7 @@ source_set("x11") {
     "//ui/ozone:ozone_base",
     "//ui/ozone/common",
     "//ui/platform_window",
+    "//ui/platform_window/platform_window_handler",
     "//ui/platform_window/x11",
   ]
 

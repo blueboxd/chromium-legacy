@@ -75,7 +75,7 @@ typedef HANDLE MutexHandle;
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <unistd.h>
+#include "base/process/process_handle.h"
 #define MAX_PATH PATH_MAX
 typedef FILE* FileHandle;
 typedef pthread_mutex_t* MutexHandle;
@@ -174,21 +174,6 @@ base::stack<LogAssertHandlerFunction>& GetLogAssertHandlerStack() {
 
 // A log message handler that gets notified of every log message we process.
 LogMessageHandlerFunction log_message_handler = nullptr;
-
-// Helper functions to wrap platform differences.
-
-int32_t CurrentProcessId() {
-#if defined(OS_WIN)
-  return GetCurrentProcessId();
-#elif defined(OS_FUCHSIA)
-  zx_info_handle_basic_t basic = {};
-  zx_object_get_info(zx_process_self(), ZX_INFO_HANDLE_BASIC, &basic,
-                     sizeof(basic), nullptr, nullptr);
-  return basic.koid;
-#elif defined(OS_POSIX)
-  return getpid();
-#endif
-}
 
 uint64_t TickCount() {
 #if defined(OS_WIN)
@@ -965,7 +950,7 @@ void LogMessage::Init(const char* file, int line) {
   if (g_log_prefix)
     stream_ << g_log_prefix << ':';
   if (g_log_process_id)
-    stream_ << CurrentProcessId() << ':';
+    stream_ << base::GetUniqueIdForProcess() << ':';
   if (g_log_thread_id)
     stream_ << base::PlatformThread::CurrentId() << ':';
   if (g_log_timestamp) {

@@ -847,7 +847,11 @@ void InlineTextBoxPainter::PaintTextMatchMarkerForeground(
     return;
 
   const TextPaintStyle text_style =
-      DocumentMarkerPainter::ComputeTextPaintStyleFrom(style, marker);
+      DocumentMarkerPainter::ComputeTextPaintStyleFrom(
+          style, marker,
+          inline_text_box_.GetLineLayoutItem()
+              .GetDocument()
+              .InForcedColorsMode());
   if (text_style.current_color == Color::kTransparent)
     return;
 
@@ -879,7 +883,8 @@ void InlineTextBoxPainter::PaintTextMatchMarkerBackground(
   TextRun run = inline_text_box_.ConstructTextRun(style);
 
   Color color = LayoutTheme::GetTheme().PlatformTextSearchHighlightColor(
-      marker.IsActiveMatch());
+      marker.IsActiveMatch(),
+      inline_text_box_.GetLineLayoutItem().GetDocument().InForcedColorsMode());
   GraphicsContext& context = paint_info.context;
   GraphicsContextStateSaver state_saver(context);
 

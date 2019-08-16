@@ -4,7 +4,35 @@
 
 #include "components/pdf/renderer/pdf_ax_action_target.h"
 
+#include "components/pdf/renderer/pdf_accessibility_tree.h"
+
 namespace pdf {
+
+namespace {
+
+PP_PdfAccessibilityScrollAlignment ConvertAXScrollToPdfScrollAlignment(
+    ax::mojom::ScrollAlignment scroll_alignment) {
+  switch (scroll_alignment) {
+    case ax::mojom::ScrollAlignment::kScrollAlignmentCenter:
+      return PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_CENTER;
+    case ax::mojom::ScrollAlignment::kScrollAlignmentTop:
+      return PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_TOP;
+    case ax::mojom::ScrollAlignment::kScrollAlignmentBottom:
+      return PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_BOTTOM;
+    case ax::mojom::ScrollAlignment::kScrollAlignmentLeft:
+      return PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_LEFT;
+    case ax::mojom::ScrollAlignment::kScrollAlignmentRight:
+      return PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_RIGHT;
+    case ax::mojom::ScrollAlignment::kScrollAlignmentClosestEdge:
+      return PP_PdfAccessibilityScrollAlignment::
+          PP_PDF_SCROLL_ALIGNMENT_CLOSEST_EDGE;
+    case ax::mojom::ScrollAlignment::kNone:
+    default:
+      return PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_NONE;
+  }
+}
+
+}  // namespace
 
 PdfAXActionTarget::PdfAXActionTarget(const ui::AXNode& plugin_node,
                                      pdf::PdfAccessibilityTree* pdf_tree_source)
@@ -110,29 +138,6 @@ bool PdfAXActionTarget::ScrollToMakeVisibleWithSubFocus(
 
 bool PdfAXActionTarget::ScrollToGlobalPoint(const gfx::Point& point) const {
   return false;
-}
-
-PP_PdfAccessibilityScrollAlignment
-PdfAXActionTarget::ConvertAXScrollToPdfScrollAlignment(
-    ax::mojom::ScrollAlignment scroll_alignment) const {
-  switch (scroll_alignment) {
-    case ax::mojom::ScrollAlignment::kScrollAlignmentCenter:
-      return PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_CENTER;
-    case ax::mojom::ScrollAlignment::kScrollAlignmentTop:
-      return PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_TOP;
-    case ax::mojom::ScrollAlignment::kScrollAlignmentBottom:
-      return PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_BOTTOM;
-    case ax::mojom::ScrollAlignment::kScrollAlignmentLeft:
-      return PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_LEFT;
-    case ax::mojom::ScrollAlignment::kScrollAlignmentRight:
-      return PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_RIGHT;
-    case ax::mojom::ScrollAlignment::kScrollAlignmentClosestEdge:
-      return PP_PdfAccessibilityScrollAlignment::
-          PP_PDF_SCROLL_ALIGNMENT_CLOSEST_EDGE;
-    case ax::mojom::ScrollAlignment::kNone:
-    default:
-      return PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_NONE;
-  }
 }
 
 }  // namespace pdf

@@ -8145,11 +8145,6 @@ class LayerTreeHostTestSubmitFrameMetadata : public LayerTreeHostTest {
 
     EXPECT_EQ(drawn_viewport_, frame.render_pass_list.back()->output_rect);
     EXPECT_EQ(0.5f, frame.metadata.min_page_scale_factor);
-
-#if defined(OS_ANDROID)
-    EXPECT_EQ(4.f, frame.metadata.max_page_scale_factor);
-#endif
-
     EXPECT_EQ(0u, frame.resource_list.size());
     EXPECT_EQ(1u, frame.render_pass_list.size());
 

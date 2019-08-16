@@ -16,7 +16,8 @@
     {
       "app": "ios_chrome_settings_egtests",
       "xcode parallelization": true,
-      "shards": 3
+      "shards": 1,
+      "shard size": 5
     },
     {
       "app": "ios_chrome_translate_egtests",

@@ -120,7 +120,7 @@ scoped_refptr<const NGLayoutResult> NGCustomLayoutAlgorithm::Layout() {
       border_padding_.BlockSum(),
       LayoutUnit::FromDoubleRound(fragment_result_options->autoBlockSize()));
   LayoutUnit block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Node(), border_padding_, auto_block_size);
+      ConstraintSpace(), Style(), border_padding_, auto_block_size);
 
   container_builder_.SetIntrinsicBlockSize(auto_block_size);
   container_builder_.SetBlockSize(block_size);

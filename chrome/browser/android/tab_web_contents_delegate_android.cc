@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
@@ -552,14 +551,8 @@ void JNI_TabWebContentsDelegateAndroid_OnRendererUnresponsive(
   // reports.
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(java_web_contents);
-
-  // TODO(khushalsagar): Temporarily generate all crash dumps for devices
-  // running Q to debug a renderer hang. The number of devices running Q at the
-  // moment is low enough to not overwhelm the crash server.
-  if (base::RandDouble() < 0.01 ||
-      base::android::BuildInfo::GetInstance()->is_at_least_q()) {
+  if (base::RandDouble() < 0.01)
     web_contents->GetMainFrame()->GetProcess()->DumpProcessStack();
-  }
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableHungRendererInfoBar)) {

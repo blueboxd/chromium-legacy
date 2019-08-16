@@ -243,11 +243,10 @@ class ScrollContentsView : public views::View {
     gfx::Canvas* canvas = recorder.canvas();
     cc::PaintFlags flags;
     gfx::ShadowValues shadow;
-    shadow.emplace_back(
-        gfx::Vector2d(0, kShadowOffsetY), kShadowBlur,
-        AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
-            AshColorProvider::ControlsLayerType::kSeparator,
-            kSeparatorOnDarkBackgroundColor));
+    shadow.emplace_back(gfx::Vector2d(0, kShadowOffsetY), kShadowBlur,
+                        AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+                            AshColorProvider::ContentLayerType::kSeparator,
+                            kSeparatorOnDarkBackgroundColor));
     flags.setLooper(gfx::CreateShadowDrawLooper(shadow));
     flags.setAntiAlias(true);
     canvas->ClipRect(shadowed_area, SkClipOp::kDifference);

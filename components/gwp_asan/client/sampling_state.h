@@ -6,6 +6,8 @@
 #define COMPONENTS_GWP_ASAN_CLIENT_SAMPLING_STATE_H_
 
 #include <stddef.h>  // for size_t
+#include <limits>
+#include <random>
 
 #include "base/compiler_specific.h"
 #include "base/rand_util.h"
@@ -36,7 +38,7 @@ class SamplingState {
 
   void Init(size_t sampling_frequency) {
     DCHECK_GT(sampling_frequency, 0U);
-    sampling_frequency_ = sampling_frequency;
+    sampling_probability_ = 1.0 / sampling_frequency;
 
 #if defined(USE_PTHREAD_TLS)
     pthread_key_create(&tls_key_, nullptr);
@@ -60,16 +62,12 @@ class SamplingState {
   }
 
  private:
-  // Sample a single allocations in every chunk of |sampling_frequency_|
-  // allocations.
-  //
-  // TODO(https://crbug.com/919207): Replace with std::geometric_distribution
-  // once the LLVM floating point codegen issue in the linked bug is fixed.
+  // Sample an allocation on every average one out of every
+  // |sampling_frequency_| allocations.
   size_t NextSample() {
-    size_t random = base::RandInt(1, sampling_frequency_ + 1);
-    size_t next_sample = increment_ + random;
-    increment_ = sampling_frequency_ + 1 - random;
-    return next_sample;
+    base::RandomBitGenerator generator;
+    std::geometric_distribution<size_t> distribution(sampling_probability_);
+    return distribution(generator) + 1;
   }
 
 #if !defined(USE_PTHREAD_TLS)
@@ -96,11 +94,7 @@ class SamplingState {
   pthread_key_t tls_key_ = 0;
 #endif
 
-  size_t sampling_frequency_ = 0;
-
-  // Stores the number of allocations we need to skip to reach the end of the
-  // current chunk of |sampling_frequency_| allocations.
-  size_t increment_ = 0;
+  double sampling_probability_ = 0;
 };
 
 #if !defined(USE_PTHREAD_TLS)

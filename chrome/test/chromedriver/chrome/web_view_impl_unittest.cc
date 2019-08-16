@@ -39,6 +39,11 @@ class FakeDevToolsClient : public DevToolsClient {
       const base::DictionaryValue& params) override {
     return SendCommandAndGetResult(method, params, nullptr);
   }
+  Status SendCommandFromWebSocket(const std::string& method,
+                                  const base::DictionaryValue& params,
+                                  const int client_command_id) override {
+    return SendCommandAndGetResult(method, params, nullptr);
+  }
   Status SendCommandWithTimeout(
       const std::string& method,
       const base::DictionaryValue& params,

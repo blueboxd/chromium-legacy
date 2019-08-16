@@ -5168,6 +5168,62 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Secure_InsecureAsyncDisabled) {
   EXPECT_TRUE(!!cache_result);
 }
 
+TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Secure_Local_CacheMiss) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+  DnsConfigOverrides overrides;
+  overrides.secure_dns_mode = DnsConfig::SecureDnsMode::SECURE;
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  HostResolver::ResolveHostParameters source_none_parameters;
+  source_none_parameters.source = HostResolverSource::LOCAL_ONLY;
+
+  // Populate cache with an insecure entry.
+  HostCache::Key cached_insecure_key =
+      HostCache::Key("automatic", DnsQueryType::UNSPECIFIED,
+                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  IPEndPoint kExpectedInsecureIP = CreateExpected("192.168.1.102", 80);
+  PopulateCache(cached_insecure_key, kExpectedInsecureIP);
+
+  // NONE query expected to complete synchronously with a cache miss since
+  // the insecure cache should not be checked.
+  ResolveHostResponseHelper cache_miss_request(resolver_->CreateRequest(
+      HostPortPair("automatic", 80), NetLogWithSource(), source_none_parameters,
+      request_context_.get(), host_cache_.get()));
+  EXPECT_TRUE(cache_miss_request.complete());
+  EXPECT_THAT(cache_miss_request.result_error(), IsError(ERR_DNS_CACHE_MISS));
+  EXPECT_FALSE(cache_miss_request.request()->GetAddressResults());
+  EXPECT_FALSE(cache_miss_request.request()->GetStaleInfo());
+}
+
+TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Secure_Local_CacheHit) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+  DnsConfigOverrides overrides;
+  overrides.secure_dns_mode = DnsConfig::SecureDnsMode::SECURE;
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  HostResolver::ResolveHostParameters source_none_parameters;
+  source_none_parameters.source = HostResolverSource::LOCAL_ONLY;
+
+  // Populate cache with a secure entry.
+  HostCache::Key cached_secure_key =
+      HostCache::Key("secure", DnsQueryType::UNSPECIFIED,
+                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  cached_secure_key.secure = true;
+  IPEndPoint kExpectedSecureIP = CreateExpected("192.168.1.103", 80);
+  PopulateCache(cached_secure_key, kExpectedSecureIP);
+
+  // NONE query expected to complete synchronously with a cache hit from the
+  // secure cache.
+  ResolveHostResponseHelper response_cached(resolver_->CreateRequest(
+      HostPortPair("secure", 80), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  EXPECT_TRUE(response_cached.complete());
+  EXPECT_THAT(response_cached.result_error(), IsOk());
+  EXPECT_THAT(
+      response_cached.request()->GetAddressResults().value().endpoints(),
+      testing::ElementsAre(kExpectedSecureIP));
+}
+
 // Test the case where only a single transaction slot is available.
 TEST_F(HostResolverManagerDnsTest, SerialResolver) {
   CreateSerialResolver();

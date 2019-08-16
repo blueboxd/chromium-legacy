@@ -234,10 +234,6 @@ const char kMixedContentAutoupgradeModeOptionallyBlockable[] =
 const base::Feature kDecodeLossyWebPImagesToYUV{
     "DecodeLossyWebPImagesToYUV", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Use accelerated canvases whenever possible see https://crbug.com/909937
-const base::Feature kAlwaysAccelerateCanvas{"AlwaysAccelerateCanvas",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables usage of render frame observer as the receiver of the resource
 // loading hints in the render process.
 // https://crbug.com/891328.

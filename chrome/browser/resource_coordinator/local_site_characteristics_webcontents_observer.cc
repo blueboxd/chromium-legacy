@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/page_node_impl.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/public/graph/frame_node.h"
+#include "chrome/browser/performance_manager/public/graph/graph.h"
+#include "chrome/browser/performance_manager/public/graph/page_node.h"
 #include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
@@ -36,18 +36,25 @@ performance_manager::TabVisibility ContentVisibilityToRCVisibility(
 }  // namespace
 
 class LocalSiteCharacteristicsWebContentsObserver::GraphObserver
-    : public performance_manager::GraphImplObserverDefaultImpl {
+    : public performance_manager::FrameNode::ObserverDefaultImpl,
+      public performance_manager::GraphOwned {
  public:
-  using NodeBase = performance_manager::NodeBase;
-  using FrameNodeImpl = performance_manager::FrameNodeImpl;
+  using FrameNode = performance_manager::FrameNode;
+  using Graph = performance_manager::Graph;
   using WebContentsProxy = performance_manager::WebContentsProxy;
 
   GraphObserver();
 
-  // GraphObserver implementation.
-  void OnRegistered() override;
-  bool ShouldObserve(const NodeBase* node) override;
-  void OnNonPersistentNotificationCreated(FrameNodeImpl* frame_node) override;
+  // FrameNodeObserver implementation:
+  void OnNonPersistentNotificationCreated(const FrameNode* frame_node) override;
+
+  // GraphOwned implementation:
+  void OnPassedToGraph(Graph* graph) override {
+    graph->AddFrameNodeObserver(this);
+  }
+  void OnTakenFromGraph(Graph* graph) override {
+    graph->RemoveFrameNodeObserver(this);
+  }
 
  private:
   static void DispatchNonPersistentNotificationCreated(
@@ -79,11 +86,10 @@ LocalSiteCharacteristicsWebContentsObserver::
 
 // static
 void LocalSiteCharacteristicsWebContentsObserver::MaybeCreateGraphObserver() {
-  auto* perf_man = performance_manager::PerformanceManager::GetInstance();
-  if (!perf_man)
-    return;
-
-  perf_man->RegisterObserver(std::make_unique<GraphObserver>());
+  if (performance_manager::PerformanceManager::IsAvailable()) {
+    performance_manager::PerformanceManager::PassToGraph(
+        FROM_HERE, std::make_unique<GraphObserver>());
+  }
 }
 
 void LocalSiteCharacteristicsWebContentsObserver::OnVisibilityChanged(
@@ -302,32 +308,15 @@ LocalSiteCharacteristicsWebContentsObserver::GraphObserver::GraphObserver()
 }
 
 void LocalSiteCharacteristicsWebContentsObserver::GraphObserver::
-    OnRegistered() {
+    OnNonPersistentNotificationCreated(const FrameNode* frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  DCHECK(graph()->nodes().empty());
-}
-
-bool LocalSiteCharacteristicsWebContentsObserver::GraphObserver::ShouldObserve(
-    const NodeBase* node) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // Observe all frame nodes.
-  if (node->type() == performance_manager::FrameNodeImpl::Type())
-    return true;
-
-  return false;
-}
-
-void LocalSiteCharacteristicsWebContentsObserver::GraphObserver::
-    OnNonPersistentNotificationCreated(FrameNodeImpl* frame_node) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  performance_manager::PageNodeImpl* page_node = frame_node->page_node();
+  const performance_manager::PageNode* page_node = frame_node->GetPageNode();
   destination_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&GraphObserver::DispatchNonPersistentNotificationCreated,
-                     page_node->contents_proxy(), page_node->navigation_id()));
+                     page_node->GetContentsProxy(),
+                     page_node->GetNavigationID()));
 }
 
 namespace {

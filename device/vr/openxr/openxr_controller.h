@@ -10,9 +10,11 @@
 
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/util/gamepad_builder.h"
-#include "third_party/openxr/include/openxr/openxr.h"
+#include "third_party/openxr/src/include/openxr/openxr.h"
 
 namespace device {
+
+constexpr uint32_t kAxisDimensions = 2;
 
 enum class OpenXrControllerType {
   kLeft = 0,
@@ -39,29 +41,20 @@ class OpenXrController {
   OpenXrController();
   ~OpenXrController();
 
-  XrActionSet GetActionSet() const;
-
   XrResult Initialize(
       OpenXrControllerType type,
       XrInstance instance,
       XrSession session,
       std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings);
 
-  int GetID();
+  XrActionSet GetActionSet() const;
+  uint32_t GetID() const;
+  device::mojom::XRHandedness GetHandness() const;
 
-  device::mojom::XRHandedness GetHandness();
-
-  XrResult GetButton(OpenXrButtonType type, mojom::XRGamepadButtonPtr* data);
-
-  XrResult GetWebVrButtons(std::vector<mojom::XRGamepadButtonPtr>* buttons);
-
-  XrResult GetAxes(OpenXrAxisType type, std::array<double, 2>* axes);
-
-  XrResult GetAllWebVrAxes(std::vector<double>* axes);
-
-  XrResult GetPose(XrTime predicted_display_time,
-                   XrSpace local_space,
-                   mojom::XRGamepad* gamepad_ptr);
+  std::vector<mojom::XRGamepadButtonPtr> GetWebVrButtons() const;
+  std::vector<double> GetWebVrAxes() const;
+  mojom::VRPosePtr GetPose(XrTime predicted_display_time,
+                           XrSpace local_space) const;
 
  private:
   // ActionButton struct is used to store all XrAction that is related to the
@@ -74,7 +67,6 @@ class OpenXrController {
 
   XrResult InitializeMicrosoftMotionControllers(
       XrInstance instance,
-      XrSession session,
       const std::string& type_string,
       std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings);
 
@@ -88,7 +80,7 @@ class OpenXrController {
       std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings);
 
   template <typename T>
-  XrResult QueryState(XrAction action, T* action_state) {
+  XrResult QueryState(XrAction action, T* action_state) const {
     // this function should never be called because each valid XrActionState
     // has its own template function defined below.
     NOTREACHED();
@@ -98,41 +90,43 @@ class OpenXrController {
   template <>
   XrResult QueryState<XrActionStateBoolean>(
       XrAction action,
-      XrActionStateBoolean* action_state) {
+      XrActionStateBoolean* action_state) const {
     action_state->type = XR_TYPE_ACTION_STATE_BOOLEAN;
-    return xrGetActionStateBoolean(action, 0, nullptr, action_state);
-  }
-
-  template <>
-  XrResult QueryState<XrActionStateVector1f>(
-      XrAction action,
-      XrActionStateVector1f* action_state) {
-    action_state->type = XR_TYPE_ACTION_STATE_VECTOR1F;
-    return xrGetActionStateVector1f(action, 0, nullptr, action_state);
+    XrActionStateGetInfo get_info = {XR_TYPE_ACTION_STATE_GET_INFO};
+    get_info.action = action;
+    return xrGetActionStateBoolean(session_, &get_info, action_state);
   }
 
   template <>
   XrResult QueryState<XrActionStateVector2f>(
       XrAction action,
-      XrActionStateVector2f* action_state) {
+      XrActionStateVector2f* action_state) const {
     action_state->type = XR_TYPE_ACTION_STATE_VECTOR2F;
-    return xrGetActionStateVector2f(action, 0, nullptr, action_state);
+    XrActionStateGetInfo get_info = {XR_TYPE_ACTION_STATE_GET_INFO};
+    get_info.action = action;
+    return xrGetActionStateVector2f(session_, &get_info, action_state);
   }
 
   template <>
-  XrResult QueryState<XrActionStatePose>(XrAction action,
-                                         XrActionStatePose* action_state) {
+  XrResult QueryState<XrActionStatePose>(
+      XrAction action,
+      XrActionStatePose* action_state) const {
     action_state->type = XR_TYPE_ACTION_STATE_POSE;
-    return xrGetActionStatePose(action, XR_NULL_PATH, action_state);
+    XrActionStateGetInfo get_info = {XR_TYPE_ACTION_STATE_GET_INFO};
+    get_info.action = action;
+    return xrGetActionStatePose(session_, &get_info, action_state);
   }
 
+  std::vector<double> GetAxis(OpenXrAxisType type) const;
+  mojom::XRGamepadButtonPtr GetButton(OpenXrButtonType type) const;
   mojom::XRGamepadButtonPtr GetGamepadButton(
-      const XrActionStateBoolean& action_state);
+      const XrActionStateBoolean& action_state) const;
 
   OpenXrControllerType type_;
+  XrSession session_;
   XrActionSet action_set_;
-  XrAction palm_pose_action_;
-  XrSpace palm_pose_space_;
+  XrAction grip_pose_action_;
+  XrSpace grip_pose_space_;
 
   std::unordered_map<OpenXrButtonType, ActionButton> button_action_map_;
   std::unordered_map<OpenXrAxisType, XrAction> axis_action_map_;

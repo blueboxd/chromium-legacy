@@ -157,6 +157,10 @@ class GpuIntegrationTest(
   @classmethod
   def _RestartBrowser(cls, reason):
     logging.warning('Restarting browser due to '+ reason)
+    # The Browser may be None at this point if all attempts to start it failed.
+    # This can occur if there is a consistent startup crash. For example caused
+    # by a bad combination of command-line arguments. So reset to the original
+    # options in attempt to successfully launch a browser.
     if cls.browser is None:
       cls.SetBrowserOptions(cls._original_finder_options)
       cls.StartBrowser()

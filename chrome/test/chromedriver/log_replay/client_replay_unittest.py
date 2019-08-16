@@ -58,8 +58,9 @@ _MULTI_SESSION = ('[1531428669.535][INFO]: [b15232d5497ec0d8300a5a1ea56f33ce] '
                   'RESPONSE GetSessions {\n"param2": 42\n}\n' + _COMMAND_ONLY)
 
 _WINDOW_IDS = ["CDwindow-00", "CDwindow-98", "other thing"]
-_ELEMENT_ID = {"ELEMENT": "0.87-1"}
-_ELEMENT_IDS = [{"ELEMENT": "0.87-1"}, {"ELEMENT": "0.87-2"}]
+_ELEMENT_ID = {"element-6066-11e4-a52e-4f735466cecf": "0.87-1"}
+_ELEMENT_IDS = [{"element-6066-11e4-a52e-4f735466cecf": "0.87-1"},
+                {"element-6066-11e4-a52e-4f735466cecf": "0.87-2"}]
 
 
 class ChromeDriverClientReplayUnitTest(unittest.TestCase):

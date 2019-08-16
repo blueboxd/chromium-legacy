@@ -66,10 +66,7 @@ class PaymentRequestCanMakePaymentTestBase : public PlatformBrowserTest,
     ABORT_CALLED,
   };
 
-  PaymentRequestCanMakePaymentTestBase() : payment_request_controller_(this) {
-    feature_list_.InitAndDisableFeature(
-        ::features::kPaymentRequestHasEnrolledInstrument);
-  }
+  PaymentRequestCanMakePaymentTestBase() : payment_request_controller_(this) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // HTTPS server only serves a valid cert for localhost, so this is needed to
@@ -238,6 +235,14 @@ class PaymentRequestCanMakePaymentQueryTest
     WaitForObservedEvent();
   }
 
+  void CallHasEnrolledInstrument() {
+    ResetEventWaiterForSequence({TestEvent::HAS_ENROLLED_INSTRUMENT_CALLED,
+                                 TestEvent::HAS_ENROLLED_INSTRUMENT_RETURNED});
+    ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(),
+                                       "hasEnrolledInstrument();"));
+    WaitForObservedEvent();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestCanMakePaymentQueryTest);
 };
@@ -250,7 +255,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
   AddCreditCard(card);
 
   CallCanMakePayment();
+  ExpectBodyContains({"true"});
 
+  CallHasEnrolledInstrument();
   ExpectBodyContains({"true"});
 }
 
@@ -264,7 +271,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
   AddCreditCard(card);
 
   CallCanMakePayment();
+  ExpectBodyContains({"false"});
 
+  CallHasEnrolledInstrument();
   ExpectBodyContains({"false"});
 }
 
@@ -285,7 +294,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
   AddCreditCard(card);
 
   CallCanMakePayment();
+  ExpectBodyContains({"true"});
 
+  CallHasEnrolledInstrument();
   ExpectBodyContains({"false"});
 }
 
@@ -306,7 +317,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
   AddCreditCard(card);
 
   CallCanMakePayment();
+  ExpectBodyContains({"true"});
 
+  CallHasEnrolledInstrument();
   ExpectBodyContains({"true"});
 }
 
@@ -321,7 +334,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
   AddCreditCard(card);
 
   CallCanMakePayment();
+  ExpectBodyContains({"false"});
 
+  CallHasEnrolledInstrument();
   ExpectBodyContains({"false"});
 }
 
@@ -336,7 +351,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
   AddCreditCard(card);
 
   CallCanMakePayment();
+  ExpectBodyContains({"true"});
 
+  CallHasEnrolledInstrument();
   ExpectBodyContains({"true"});
 }
 
@@ -348,7 +365,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
   AddCreditCard(card);
 
   CallCanMakePayment();
+  ExpectBodyContains({"true"});
 
+  CallHasEnrolledInstrument();
   ExpectBodyContains({"false"});
 }
 
@@ -364,7 +383,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
   AddCreditCard(card);
 
   CallCanMakePayment();
+  ExpectBodyContains({"true"});
 
+  CallHasEnrolledInstrument();
   ExpectBodyContains({"false"});
 }
 
@@ -388,40 +409,88 @@ class PaymentRequestCanMakePaymentQueryCCTest
     WaitForObservedEvent();
   }
 
+  void CallHasEnrolledInstrument(bool visa) {
+    ResetEventWaiterForSequence({TestEvent::HAS_ENROLLED_INSTRUMENT_CALLED,
+                                 TestEvent::HAS_ENROLLED_INSTRUMENT_RETURNED});
+    ASSERT_TRUE(content::ExecuteScript(
+        GetActiveWebContents(), visa ? "hasEnrolledInstrument('visa');"
+                                     : "hasEnrolledInstrument('mastercard');"));
+    WaitForObservedEvent();
+  }
+
  private:
   base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestCanMakePaymentQueryCCTest);
 };
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryCCTest, QueryQuota) {
+// Test that repeated canMakePayment and hasEnrolledInstrument queries are
+// allowed when the payment method specifics don't change.
+IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryCCTest,
+                       QueryQuotaDoesNotApplyToSameMethod) {
   NavigateTo("/payment_request_can_make_payment_query_cc_test.html");
-  // Query "visa" payment method.
-  CallCanMakePayment(/*visa=*/true);
 
-  // User does not have a visa card.
+  CallCanMakePayment(/*visa=*/true);
+  ExpectBodyContains({"true"});
+
+  CallHasEnrolledInstrument(/*visa=*/true);
   ExpectBodyContains({"false"});
 
-  // Query "mastercard" payment method.
   CallCanMakePayment(/*visa=*/false);
+  ExpectBodyContains({"true"});
 
-  // Query quota exceeded.
-  ExpectBodyContains({"NotAllowedError"});
+  CallHasEnrolledInstrument(/*visa=*/true);
+  ExpectBodyContains({"false"});
 
   AddCreditCard(autofill::test::GetCreditCard());  // visa
 
-  // Query "visa" payment method.
   CallCanMakePayment(/*visa=*/true);
-
-  // User now has a visa card. The query is cached, but the result is always
-  // fresh.
   ExpectBodyContains({"true"});
 
-  // Query "mastercard" payment method.
-  CallCanMakePayment(/*visa=*/false);
+  CallHasEnrolledInstrument(/*visa=*/true);
+  ExpectBodyContains({"true"});
 
-  // Query quota exceeded.
+  CallCanMakePayment(/*visa=*/false);
+  ExpectBodyContains({"true"});
+
+  CallHasEnrolledInstrument(/*visa=*/true);
+  ExpectBodyContains({"true"});
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryCCTest,
+                       QueryQuotaAppliesToDifferentMethods) {
+  NavigateTo("/payment_request_can_make_payment_query_cc_test.html");
+
+  CallHasEnrolledInstrument(/*visa=*/true);
+  ExpectBodyContains({"false"});
+
+  CallCanMakePayment(/*visa=*/true);
+  ExpectBodyContains({"true"});
+
+  // Check hasEnrolledInstrument on a different method hits the query quota.
+  CallHasEnrolledInstrument(/*visa=*/false);
   ExpectBodyContains({"NotAllowedError"});
+
+  // canMakePayment doesn't have query quota.
+  CallCanMakePayment(/*visa=*/false);
+  ExpectBodyContains({"true"});
+
+  AddCreditCard(autofill::test::GetCreditCard());  // visa
+
+  CallHasEnrolledInstrument(/*visa=*/true);
+  ExpectBodyContains({"true"});
+
+  CallCanMakePayment(/*visa=*/true);
+  ExpectBodyContains({"true"});
+
+  // Check hasEnrolledInstrument on a different method hits the query quota.
+  CallHasEnrolledInstrument(/*visa=*/false);
+  ExpectBodyContains({"NotAllowedError"});
+
+  // canMakePayment doesn't have query quota and is not affected by enrolled
+  // instrument.
+  CallCanMakePayment(/*visa=*/false);
+  ExpectBodyContains({"true"});
 }
 
 // canMakePayment should return result in incognito mode as in normal mode to
@@ -431,27 +500,36 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryCCTest,
   NavigateTo("/payment_request_can_make_payment_query_cc_test.html");
   SetIncognito(true);
 
-  // Query "visa" payment method.
-  CallCanMakePayment(/*visa=*/true);
-
+  CallHasEnrolledInstrument(/*visa=*/true);
   ExpectBodyContains({"false"});
 
-  // Query "mastercard" payment method.
-  CallCanMakePayment(/*visa=*/false);
+  CallCanMakePayment(/*visa=*/true);
+  ExpectBodyContains({"true"});
 
+  // Check hasEnrolledInstrument on a different method hits the query quota.
+  CallHasEnrolledInstrument(/*visa=*/false);
   ExpectBodyContains({"NotAllowedError"});
+
+  // canMakePayment doesn't have query quota.
+  CallCanMakePayment(/*visa=*/false);
+  ExpectBodyContains({"true"});
 
   AddCreditCard(autofill::test::GetCreditCard());  // visa
 
-  // Query "visa" payment method.
-  CallCanMakePayment(/*visa=*/true);
-
+  CallHasEnrolledInstrument(/*visa=*/true);
   ExpectBodyContains({"true"});
 
-  // Query "mastercard" payment method.
-  CallCanMakePayment(/*visa=*/false);
+  CallCanMakePayment(/*visa=*/true);
+  ExpectBodyContains({"true"});
 
+  // Check hasEnrolledInstrument on a different method hits the query quota.
+  CallHasEnrolledInstrument(/*visa=*/false);
   ExpectBodyContains({"NotAllowedError"});
+
+  // canMakePayment doesn't have query quota and is not affected by enrolled
+  // instrument.
+  CallCanMakePayment(/*visa=*/false);
+  ExpectBodyContains({"true"});
 }
 
 class PaymentRequestCanMakePaymentQueryPMITest
@@ -467,25 +545,35 @@ class PaymentRequestCanMakePaymentQueryPMITest
   };
 
   PaymentRequestCanMakePaymentQueryPMITest() {
-    script_[CheckFor::BASIC_VISA] = "checkBasicVisa();";
-    script_[CheckFor::BASIC_CARD] = "checkBasicCard();";
-    script_[CheckFor::ALICE_PAY] = "checkAlicePay();";
-    script_[CheckFor::BOB_PAY] = "checkBobPay();";
-    script_[CheckFor::BOB_PAY_AND_BASIC_CARD] = "checkBobPayAndBasicCard();";
-    script_[CheckFor::BOB_PAY_AND_VISA] = "checkBobPayAndVisa();";
+    script_[CheckFor::BASIC_VISA] = "[basicVisaMethod]";
+    script_[CheckFor::BASIC_CARD] = "[basicCardMethod]";
+    script_[CheckFor::ALICE_PAY] = "[alicePayMethod]";
+    script_[CheckFor::BOB_PAY] = "[bobPayMethod]";
+    script_[CheckFor::BOB_PAY_AND_BASIC_CARD] =
+        "[bobPayMethod, basicCardMethod]";
+    script_[CheckFor::BOB_PAY_AND_VISA] = "[bobPayMethod, basicVisaMethod]";
   }
 
   void CallCanMakePayment(CheckFor check_for) {
     ResetEventWaiterForSequence({TestEvent::CAN_MAKE_PAYMENT_CALLED,
                                  TestEvent::CAN_MAKE_PAYMENT_RETURNED});
-    ASSERT_TRUE(
-        content::ExecuteScript(GetActiveWebContents(), script_[check_for]));
+    ASSERT_TRUE(content::ExecuteScript(
+        GetActiveWebContents(),
+        "checkCanMakePayment(" + script_[check_for] + ");"));
+    WaitForObservedEvent();
+  }
+
+  void CallHasEnrolledInstrument(CheckFor check_for) {
+    ResetEventWaiterForSequence({TestEvent::HAS_ENROLLED_INSTRUMENT_CALLED,
+                                 TestEvent::HAS_ENROLLED_INSTRUMENT_RETURNED});
+    ASSERT_TRUE(content::ExecuteScript(
+        GetActiveWebContents(),
+        "checkHasEnrolledInstrument(" + script_[check_for] + ");"));
     WaitForObservedEvent();
   }
 
  private:
   base::flat_map<CheckFor, std::string> script_;
-  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestCanMakePaymentQueryPMITest);
 };
@@ -493,33 +581,32 @@ class PaymentRequestCanMakePaymentQueryPMITest
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
                        QueryQuotaForBasicCards) {
   NavigateTo("/payment_request_payment_method_identifier_test.html");
-  // Query "basic-card" payment method with "supportedNetworks": ["visa"] in the
-  // payment method specific data.
-  CallCanMakePayment(CheckFor::BASIC_VISA);
 
-  // User does not have a visa card.
+  // User starts off without having a visa card.
+  CallCanMakePayment(CheckFor::BASIC_VISA);
+  ExpectBodyContains({"true"});
+  CallHasEnrolledInstrument(CheckFor::BASIC_VISA);
   ExpectBodyContains({"false"});
 
   // Query "basic-card" payment method without "supportedNetworks" parameter.
+  // This is considered a different method, so hasEnrolledInstrument() will be
+  // throttled.
   CallCanMakePayment(CheckFor::BASIC_CARD);
-
-  // Query quota exceeded.
+  ExpectBodyContains({"true"});
+  CallHasEnrolledInstrument(CheckFor::BASIC_CARD);
   ExpectBodyContains({"NotAllowedError"});
 
-  AddCreditCard(autofill::test::GetCreditCard());  // visa
+  // Add a visa card to the user profile.
+  AddCreditCard(autofill::test::GetCreditCard());
 
-  // Query "basic-card" payment method with "supportedNetworks": ["visa"] in the
-  // payment method specific data.
   CallCanMakePayment(CheckFor::BASIC_VISA);
-
-  // User now has a visa card. The query is cached, but the result is always
-  // fresh.
+  ExpectBodyContains({"true"});
+  CallHasEnrolledInstrument(CheckFor::BASIC_VISA);
   ExpectBodyContains({"true"});
 
-  // Query "basic-card" payment method without "supportedNetworks" parameter.
   CallCanMakePayment(CheckFor::BASIC_CARD);
-
-  // Query quota exceeded.
+  ExpectBodyContains({"true"});
+  CallHasEnrolledInstrument(CheckFor::BASIC_CARD);
   ExpectBodyContains({"NotAllowedError"});
 }
 
@@ -530,84 +617,98 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
   NavigateTo("/payment_request_payment_method_identifier_test.html");
   SetIncognito(true);
 
-  // Query "basic-card" payment method with "supportedNetworks": ["visa"] in the
-  // payment method specific data.
+  // User starts off without having a visa card.
   CallCanMakePayment(CheckFor::BASIC_VISA);
-
+  ExpectBodyContains({"true"});
+  CallHasEnrolledInstrument(CheckFor::BASIC_VISA);
   ExpectBodyContains({"false"});
 
   // Query "basic-card" payment method without "supportedNetworks" parameter.
+  // This is considered a different method, so hasEnrolledInstrument() will be
+  // throttled.
   CallCanMakePayment(CheckFor::BASIC_CARD);
-
+  ExpectBodyContains({"true"});
+  CallHasEnrolledInstrument(CheckFor::BASIC_CARD);
   ExpectBodyContains({"NotAllowedError"});
 
-  AddCreditCard(autofill::test::GetCreditCard());  // visa
+  // Add a visa card to the user profile.
+  AddCreditCard(autofill::test::GetCreditCard());
 
-  // Query "basic-card" payment method with "supportedNetworks": ["visa"] in the
-  // payment method specific data.
   CallCanMakePayment(CheckFor::BASIC_VISA);
-
+  ExpectBodyContains({"true"});
+  CallHasEnrolledInstrument(CheckFor::BASIC_VISA);
   ExpectBodyContains({"true"});
 
-  // Query "basic-card" payment method without "supportedNetworks" parameter.
   CallCanMakePayment(CheckFor::BASIC_CARD);
-
+  ExpectBodyContains({"true"});
+  CallHasEnrolledInstrument(CheckFor::BASIC_CARD);
   ExpectBodyContains({"NotAllowedError"});
 }
 
-// If the device does not have any payment apps installed, canMakePayment()
-// should return false for them.
+// If the device does not have any payment apps installed, canMakePayment() and
+// hasEnrolledInstrument() should return false for them.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
                        QueryQuotaForPaymentApps) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       features::kWebPaymentsPerMethodCanMakePaymentQuota);
   NavigateTo("/payment_request_payment_method_identifier_test.html");
-  CallCanMakePayment(CheckFor::ALICE_PAY);
 
+  CallCanMakePayment(CheckFor::ALICE_PAY);
+  ExpectBodyContains({"false"});
+  CallHasEnrolledInstrument(CheckFor::ALICE_PAY);
   ExpectBodyContains({"false"});
 
   CallCanMakePayment(CheckFor::BOB_PAY);
-
+  ExpectBodyContains({"false"});
+  CallHasEnrolledInstrument(CheckFor::ALICE_PAY);
   ExpectBodyContains({"false"});
 
   CallCanMakePayment(CheckFor::ALICE_PAY);
-
+  ExpectBodyContains({"false"});
+  CallHasEnrolledInstrument(CheckFor::ALICE_PAY);
   ExpectBodyContains({"false"});
 }
 
-// If the device does not have any payment apps installed, canMakePayment()
-// queries for both payment apps and basic-card depend only on what cards the
-// user has on file.
+// If the device does not have any payment apps installed,
+// hasEnrolledInstrument() queries for both payment apps and basic-card depend
+// only on what cards the user has on file.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
                        QueryQuotaForPaymentAppsAndCards) {
   NavigateTo("/payment_request_payment_method_identifier_test.html");
-  CallCanMakePayment(CheckFor::BOB_PAY_AND_VISA);
 
+  CallCanMakePayment(CheckFor::BOB_PAY_AND_VISA);
+  ExpectBodyContains({"true"});
+  CallHasEnrolledInstrument(CheckFor::BOB_PAY_AND_VISA);
   ExpectBodyContains({"false"});
 
   CallCanMakePayment(CheckFor::BOB_PAY_AND_BASIC_CARD);
-
+  ExpectBodyContains({"true"});
+  CallHasEnrolledInstrument(CheckFor::BOB_PAY_AND_BASIC_CARD);
   ExpectBodyContains({"NotAllowedError"});
 
   AddCreditCard(autofill::test::GetCreditCard2());  // Amex
 
   CallCanMakePayment(CheckFor::BOB_PAY_AND_VISA);
-
+  ExpectBodyContains({"true"});
+  CallHasEnrolledInstrument(CheckFor::BOB_PAY_AND_VISA);
   ExpectBodyContains({"false"});
 
   CallCanMakePayment(CheckFor::BOB_PAY_AND_BASIC_CARD);
-
+  ExpectBodyContains({"true"});
+  CallHasEnrolledInstrument(CheckFor::BOB_PAY_AND_BASIC_CARD);
   ExpectBodyContains({"NotAllowedError"});
 
   AddCreditCard(autofill::test::GetCreditCard());  // Visa
 
   CallCanMakePayment(CheckFor::BOB_PAY_AND_VISA);
-
+  ExpectBodyContains({"true"});
+  CallHasEnrolledInstrument(CheckFor::BOB_PAY_AND_VISA);
   ExpectBodyContains({"true"});
 
   CallCanMakePayment(CheckFor::BOB_PAY_AND_BASIC_CARD);
-
+  ExpectBodyContains({"true"});
+  CallHasEnrolledInstrument(CheckFor::BOB_PAY_AND_BASIC_CARD);
   ExpectBodyContains({"NotAllowedError"});
 }
 
@@ -626,19 +727,23 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
   SetIncognito(true);
 
   CallCanMakePayment(CheckFor::ALICE_PAY);
-
+  ExpectBodyContains({"false"});
+  CallHasEnrolledInstrument(CheckFor::ALICE_PAY);
   ExpectBodyContains({"false"});
 
   CallCanMakePayment(CheckFor::BOB_PAY);
-
+  ExpectBodyContains({"false"});
+  CallHasEnrolledInstrument(CheckFor::BOB_PAY);
   ExpectBodyContains({"false"});
 
   CallCanMakePayment(CheckFor::ALICE_PAY);
-
+  ExpectBodyContains({"false"});
+  CallHasEnrolledInstrument(CheckFor::ALICE_PAY);
   ExpectBodyContains({"false"});
 
   CallCanMakePayment(CheckFor::BOB_PAY);
-
+  ExpectBodyContains({"false"});
+  CallHasEnrolledInstrument(CheckFor::BOB_PAY);
   ExpectBodyContains({"false"});
 }
 
@@ -655,35 +760,42 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
   SetIncognito(true);
 
   CallCanMakePayment(CheckFor::BOB_PAY_AND_VISA);
-
+  ExpectBodyContains({"true"});
+  CallHasEnrolledInstrument(CheckFor::BOB_PAY_AND_VISA);
   ExpectBodyContains({"false"});
 
   CallCanMakePayment(CheckFor::BOB_PAY_AND_BASIC_CARD);
-
+  ExpectBodyContains({"true"});
+  CallHasEnrolledInstrument(CheckFor::BOB_PAY_AND_BASIC_CARD);
   ExpectBodyContains({"NotAllowedError"});
 
   AddCreditCard(autofill::test::GetCreditCard2());  // Amex
 
   CallCanMakePayment(CheckFor::BOB_PAY_AND_VISA);
-
+  ExpectBodyContains({"true"});
+  CallHasEnrolledInstrument(CheckFor::BOB_PAY_AND_VISA);
   ExpectBodyContains({"false"});
 
   CallCanMakePayment(CheckFor::BOB_PAY_AND_BASIC_CARD);
-
+  ExpectBodyContains({"true"});
+  CallHasEnrolledInstrument(CheckFor::BOB_PAY_AND_BASIC_CARD);
   ExpectBodyContains({"NotAllowedError"});
 
   AddCreditCard(autofill::test::GetCreditCard());  // Visa
 
   CallCanMakePayment(CheckFor::BOB_PAY_AND_VISA);
-
+  ExpectBodyContains({"true"});
+  CallHasEnrolledInstrument(CheckFor::BOB_PAY_AND_VISA);
   ExpectBodyContains({"true"});
 
   CallCanMakePayment(CheckFor::BOB_PAY);
-
+  ExpectBodyContains({"false"});
+  CallHasEnrolledInstrument(CheckFor::BOB_PAY);
   ExpectBodyContains({"false"});
 
   CallCanMakePayment(CheckFor::BASIC_VISA);
-
+  ExpectBodyContains({"true"});
+  CallHasEnrolledInstrument(CheckFor::BASIC_VISA);
   ExpectBodyContains({"true"});
 }
 

@@ -127,7 +127,7 @@ class ChromeScaledImage(interface.GathererBase):
     # The file was found in neither the specified context nor the default
     # context, so raise an exception.
     dir = "%s_%s_percent" % (_MakeBraceGlob(layouts),
-                             _MakeBraceGlob(map(str, scales)))
+                             _MakeBraceGlob([str(x) for x in scales]))
     raise exception.FileNotFound(
         'Tried ' + self.grd_node.ToRealPath(os.path.join(dir, self.rc_file)))
 

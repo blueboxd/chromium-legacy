@@ -243,13 +243,13 @@ def GetBinaryInfoFromHeaderInfo(header_info):
   return BINARY_INFO(*info_split[1:])
 
 
-def CreateSymbolDir(options, output_dir):
-  """Create the directory to store breakpad symbols in. On Android, we also
-     create a symlink in case the hash in the binary is missing."""
+def CreateSymbolDir(options, output_dir, relative_hash_dir):
+  """Create the directory to store breakpad symbols in. On Android/Linux, we
+     also create a symlink in case the hash in the binary is missing."""
   mkdir_p(output_dir)
-  if options.platform == 'android':
+  if options.platform == 'android' or options.platform == "linux2":
     try:
-      os.symlink(output_dir, os.path.join(os.path.dirname(output_dir),
+      os.symlink(relative_hash_dir, os.path.join(os.path.dirname(output_dir),
                  '000000000000000000000000000000000'))
     except:
       pass
@@ -299,7 +299,7 @@ def GenerateSymbols(options, binaries):
           with open(potential_symbol_file, 'rt') as f:
             symbol_info = GetBinaryInfoFromHeaderInfo(f.readline())
           if symbol_info == binary_info:
-            CreateSymbolDir(options, output_dir)
+            CreateSymbolDir(options, output_dir, binary_info.hash)
             shutil.copyfile(potential_symbol_file, output_path)
             should_dump_syms = False
             reason = "Found local symbol file."
@@ -316,7 +316,7 @@ def GenerateSymbols(options, binaries):
         with print_lock:
           print "Generating symbols for %s" % binary
 
-      CreateSymbolDir(options, output_dir)
+      CreateSymbolDir(options, output_dir, binary_info.hash)
       try:
         with open(output_path, 'wb') as f:
           subprocess.check_call([dump_syms, '-r', binary], stdout=f)

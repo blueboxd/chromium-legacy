@@ -13,11 +13,8 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
-
-namespace service_manager {
-class Connector;
-}
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace ash {
 
@@ -36,7 +33,7 @@ class ASH_EXPORT TrayNetworkStateModel
     virtual void NetworkListChanged();
   };
 
-  explicit TrayNetworkStateModel(service_manager::Connector* connector);
+  TrayNetworkStateModel();
   ~TrayNetworkStateModel() override;
 
   void AddObserver(Observer* observer);
@@ -50,13 +47,13 @@ class ASH_EXPORT TrayNetworkStateModel
   chromeos::network_config::mojom::DeviceStateType GetDeviceState(
       chromeos::network_config::mojom::NetworkType type);
 
-  // Convenience method to call cros_network_config_ptr_ method.
+  // Convenience method to call the |remote_cros_network_config_| method.
   void SetNetworkTypeEnabledState(
       chromeos::network_config::mojom::NetworkType type,
       bool enabled);
 
   chromeos::network_config::mojom::CrosNetworkConfig* cros_network_config() {
-    return cros_network_config_ptr_.get();
+    return remote_cros_network_config_.get();
   }
 
   const chromeos::network_config::mojom::NetworkStateProperties*
@@ -77,9 +74,6 @@ class ASH_EXPORT TrayNetworkStateModel
   }
 
  private:
-  // For BindCrosNetworkConfig() calls from tests to override the connector:
-  friend class WifiToggleNotificationControllerTest;
-
   // CrosNetworkConfigObserver
   void OnActiveNetworksChanged(
       std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
@@ -89,10 +83,6 @@ class ASH_EXPORT TrayNetworkStateModel
       override;
   void OnNetworkStateListChanged() override;
   void OnDeviceStateListChanged() override;
-
-  // Binds the network_config interface to |connector| and sets up the observer.
-  // Also requests the initial state to set the cached properties.
-  void BindCrosNetworkConfig(service_manager::Connector* connector);
 
   void GetDeviceStateList();
   void OnGetDeviceStateList(
@@ -108,10 +98,10 @@ class ASH_EXPORT TrayNetworkStateModel
   void SendActiveNetworkStateChanged();
   void SendNetworkListChanged();
 
-  chromeos::network_config::mojom::CrosNetworkConfigPtr
-      cros_network_config_ptr_;
-  mojo::Binding<chromeos::network_config::mojom::CrosNetworkConfigObserver>
-      cros_network_config_observer_binding_{this};
+  mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
+      remote_cros_network_config_;
+  mojo::Receiver<chromeos::network_config::mojom::CrosNetworkConfigObserver>
+      cros_network_config_observer_receiver_{this};
 
   base::ObserverList<Observer> observer_list_;
 

@@ -7,17 +7,16 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/network_config_service.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/tray_network_state_model.h"
+#include "ash/test/ash_test_base.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -35,19 +34,22 @@ const char kCellularNetworkGuid[] = "cellular_guid";
 
 }  // namespace
 
-class ActiveNetworkIconTest : public testing::Test {
+class ActiveNetworkIconTest : public AshTestBase {
  public:
   ActiveNetworkIconTest() = default;
   ~ActiveNetworkIconTest() override = default;
 
   void SetUp() override {
-    network_state_model_ = std::make_unique<TrayNetworkStateModel>(
-        network_config_helper_.connector());
-    active_network_icon_ = std::make_unique<ActiveNetworkIcon>(
-        network_config_helper_.connector(), network_state_model_.get());
+    AshTestBase::SetUp();
+    network_state_model_ = std::make_unique<TrayNetworkStateModel>();
+    active_network_icon_ =
+        std::make_unique<ActiveNetworkIcon>(network_state_model_.get());
   }
 
-  void TearDown() override { active_network_icon_.reset(); }
+  void TearDown() override {
+    active_network_icon_.reset();
+    AshTestBase::TearDown();
+  }
 
   void SetupEthernet() {
     if (eth_path_.empty()) {
@@ -155,7 +157,6 @@ class ActiveNetworkIconTest : public testing::Test {
   network_icon::IconType icon_type() { return icon_type_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   chromeos::network_config::CrosNetworkConfigTestHelper network_config_helper_;
   std::unique_ptr<TrayNetworkStateModel> network_state_model_;
   std::unique_ptr<ActiveNetworkIcon> active_network_icon_;

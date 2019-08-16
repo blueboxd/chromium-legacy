@@ -27,6 +27,12 @@ declare_args() {
   # tools as they can cause lots of I/O contention when invoking ninja with a
   # large number of parallel jobs (e.g. when using distributed build like goma).
   bundle_pool_depth = -1
+
+  # This makes the linker set timestamps in Mach-O files to 0. This isn't
+  # enabled by default because this breaks Xcode's lldb. This has been fixed in
+  # https://reviews.llvm.org/rL368199 but that has not yet made it into a public
+  # lldb release.
+  mac_deterministic_build = false
 }
 
 if (current_toolchain == default_toolchain) {
@@ -149,6 +155,10 @@ template("mac_toolchain") {
     # Specify an explicit path for the strip binary.
     _strippath = "$mac_bin_path" + "strip"
     linker_driver += " -Wcrl,strippath," + _strippath
+
+    if (mac_deterministic_build) {
+      linker_driver += " --deterministic"
+    }
 
     # On iOS, the final applications are assembled using lipo (to support fat
     # builds). The correct flags are passed to the linker_driver.py script

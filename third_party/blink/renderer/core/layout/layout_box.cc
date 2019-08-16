@@ -3120,7 +3120,7 @@ bool LayoutBox::ColumnFlexItemHasStretchAlignment() const {
   // auto margins mean we don't stretch. Note that this function will only be
   // used for widths, so we don't have to check marginBefore/marginAfter.
   const auto& parent_style = Parent()->StyleRef();
-  DCHECK(parent_style.IsColumnFlexDirection());
+  DCHECK(parent_style.ResolvedIsColumnFlexDirection());
   if (StyleRef().MarginStart().IsAuto() || StyleRef().MarginEnd().IsAuto())
     return false;
   return StyleRef()
@@ -3141,7 +3141,7 @@ bool LayoutBox::IsStretchingColumnFlexItem() const {
   // spacing (align-content) first.
   if (parent->IsFlexibleBoxIncludingNG() &&
       parent->StyleRef().FlexWrap() == EFlexWrap::kNowrap &&
-      parent->StyleRef().IsColumnFlexDirection() &&
+      parent->StyleRef().ResolvedIsColumnFlexDirection() &&
       ColumnFlexItemHasStretchAlignment())
     return true;
   return false;
@@ -3189,7 +3189,7 @@ bool LayoutBox::SizesLogicalWidthToFitContent(
   if (Parent()->IsFlexibleBoxIncludingNG()) {
     // For multiline columns, we need to apply align-content first, so we can't
     // stretch now.
-    if (!Parent()->StyleRef().IsColumnFlexDirection() ||
+    if (!Parent()->StyleRef().ResolvedIsColumnFlexDirection() ||
         Parent()->StyleRef().FlexWrap() != EFlexWrap::kNowrap)
       return true;
     if (!ColumnFlexItemHasStretchAlignment())

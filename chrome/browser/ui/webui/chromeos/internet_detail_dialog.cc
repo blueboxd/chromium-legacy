@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/network_config_service.h"
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,11 +17,9 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_util.h"
-#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -162,10 +161,7 @@ InternetDetailDialogUI::~InternetDetailDialogUI() {}
 
 void InternetDetailDialogUI::BindCrosNetworkConfig(
     chromeos::network_config::mojom::CrosNetworkConfigRequest request) {
-  content::BrowserContext::GetConnectorFor(
-      web_ui()->GetWebContents()->GetBrowserContext())
-      ->BindInterface(chromeos::network_config::mojom::kServiceName,
-                      std::move(request));
+  ash::GetNetworkConfigService(std::move(request));
 }
 
 }  // namespace chromeos

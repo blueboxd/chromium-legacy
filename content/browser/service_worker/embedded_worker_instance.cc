@@ -28,7 +28,6 @@
 #include "content/browser/service_worker/service_worker_script_loader_factory.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/renderer.mojom.h"
 #include "content/common/url_schemes.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -189,8 +188,7 @@ void SetupOnUIThread(int embedded_worker_id,
   // the process. If the process dies, |client_|'s connection error callback
   // will be called on the IO thread.
   if (request.is_pending()) {
-    rph->GetRendererInterface()->SetUpEmbeddedWorkerChannelForServiceWorker(
-        std::move(request));
+    BindInterface(rph, std::move(request));
   }
 
   // Register to DevTools and update params accordingly.

@@ -1,8 +1,8 @@
 Name: OpenXR SDK
 Short Name: OpenXR
 URL: https://github.com/KhronosGroup/OpenXR-SDK
-Version: 0.90.1
-Revision: e0c6e6794c3155eae791a704d5214df2eeaa46f0
+Version: 1.0.1
+Revision: 46d7cb392019e934e2944bdd317be8ed5176b3f2
 License: Apache 2.0
 License File: src/LICENSE
 Security Critical: yes
@@ -13,9 +13,5 @@ Augmented Reality (AR) and Virtual Reality (VR)—collectively known as
 XR—platforms and devices.
 
 Local Modifications:
-
-
-Getting a new snapshot of the OpenXR loader library requires running the
-third_party/openxr/script/generate_openxr_headers_and_sources.py script and
-checking in the generated files located under third_party/openxr/gen and
-third_party/openxr/include.
+No modifications to upstream files. BUILD.gn contains all of the configurations
+needed to build the OpenXR loader in Chromium.

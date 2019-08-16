@@ -99,6 +99,10 @@ X11WindowOzone::~X11WindowOzone() {
 void X11WindowOzone::Init(const PlatformWindowInitProperties& params) {
   XWindow::Configuration config = ConvertInitPropertiesToXWindowConfig(params);
   x11_window_->Init(config);
+
+  // Set a class property key, which allows |this| to be used for interactive
+  // events, e.g. move or resize.
+  SetWmMoveResizeHandler(this, static_cast<WmMoveResizeHandler*>(this));
 }
 
 void X11WindowOzone::Show() {
@@ -312,6 +316,12 @@ uint32_t X11WindowOzone::DispatchEvent(const PlatformEvent& event) {
         GetBounds().origin(), event->AsLocatedEvent());
   }
   return window_manager_->event_grabber()->DispatchEvent(event);
+}
+
+void X11WindowOzone::DispatchHostWindowDragMovement(
+    int hittest,
+    const gfx::Point& pointer_location) {
+  x11_window_->WmMoveResize(hittest, pointer_location);
 }
 
 void X11WindowOzone::SetWidget(XID xid) {

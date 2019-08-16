@@ -284,7 +284,8 @@ class FakeSecureChannelClientImplFactory
 
   // chromeos::secure_channel::SecureChannelClientImpl::Factory:
   std::unique_ptr<chromeos::secure_channel::SecureChannelClient> BuildInstance(
-      service_manager::Connector* connector,
+      mojo::PendingRemote<chromeos::secure_channel::mojom::SecureChannel>
+          channel,
       scoped_refptr<base::TaskRunner> task_runner) override {
     return std::make_unique<
         chromeos::secure_channel::FakeSecureChannelClient>();

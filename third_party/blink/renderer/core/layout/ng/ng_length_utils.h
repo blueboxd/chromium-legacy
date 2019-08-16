@@ -253,7 +253,7 @@ CORE_EXPORT LayoutUnit ComputeInlineSizeForFragment(
 // Same as ComputeInlineSizeForFragment, but uses height instead of width.
 CORE_EXPORT LayoutUnit
 ComputeBlockSizeForFragment(const NGConstraintSpace&,
-                            const NGBlockNode&,
+                            const ComputedStyle&,
                             const NGBoxStrut& border_padding,
                             LayoutUnit content_size);
 
@@ -368,7 +368,8 @@ inline NGLineBoxStrut ComputeLineBorders(
 CORE_EXPORT NGBoxStrut ComputeBordersForTest(const ComputedStyle& style);
 
 CORE_EXPORT NGBoxStrut ComputeIntrinsicPadding(const NGConstraintSpace&,
-                                               const NGLayoutInputNode);
+                                               const ComputedStyle&,
+                                               const NGBoxStrut& scrollbar);
 
 CORE_EXPORT NGBoxStrut ComputePadding(const NGConstraintSpace&,
                                       const ComputedStyle&);

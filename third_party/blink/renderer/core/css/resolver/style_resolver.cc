@@ -2303,8 +2303,7 @@ void StyleResolver::Trace(blink::Visitor* visitor) {
 }
 
 bool StyleResolver::IsForcedColorsModeEnabled() const {
-  return RuntimeEnabledFeatures::ForcedColorsEnabled() &&
-         GetDocument().GetSettings()->GetForcedColors() != ForcedColors::kNone;
+  return GetDocument().InForcedColorsMode();
 }
 
 }  // namespace blink

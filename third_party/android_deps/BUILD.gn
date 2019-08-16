@@ -5,14 +5,6 @@
 import("//build/config/android/rules.gni")
 
 # Library groups
-# TODO(bjoyce): Empty Java Groups. Remove after upstream review 1541944 lands.
-java_group("com_android_support_collections_java") {
-}
-java_group("com_android_support_drawerlayout_java") {
-}
-java_group("com_android_support_localbroadcastmanager_java") {
-}
-
 java_group("android_support_v4_java") {
   deps = [
     ":com_android_support_support_compat_java",
@@ -95,6 +87,19 @@ android_aar_prebuilt("android_arch_lifecycle_runtime_java") {
   deps = [
     ":android_arch_core_common_java",
     ":android_arch_lifecycle_common_java",
+    ":com_android_support_support_annotations_java",
+  ]
+
+  # https://crbug.com/887942#c1
+  ignore_proguard_configs = true
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("android_arch_lifecycle_viewmodel_java") {
+  aar_path = "libs/android_arch_lifecycle_viewmodel/viewmodel-1.1.1.aar"
+  info_path = "libs/android_arch_lifecycle_viewmodel/android_arch_lifecycle_viewmodel.info"
+  deps = [
+    ":com_android_support_support_annotations_java",
   ]
 
   # https://crbug.com/887942#c1
@@ -163,11 +168,14 @@ android_aar_prebuilt("androidx_test_runner_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_appcompat_v7_java") {
-  aar_path = "libs/com_android_support_appcompat_v7/appcompat-v7-27.0.0.aar"
+  aar_path = "libs/com_android_support_appcompat_v7/appcompat-v7-28.0.0.aar"
   info_path = "libs/com_android_support_appcompat_v7/com_android_support_appcompat_v7.info"
   deps = [
     ":com_android_support_animated_vector_drawable_java",
+    ":com_android_support_collections_java",
+    ":com_android_support_cursoradapter_java",
     ":com_android_support_support_annotations_java",
+    ":com_android_support_support_compat_java",
     ":com_android_support_support_core_utils_java",
     ":com_android_support_support_fragment_java",
     ":com_android_support_support_vector_drawable_java",
@@ -175,8 +183,18 @@ android_aar_prebuilt("com_android_support_appcompat_v7_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("com_android_support_asynclayoutinflater_java") {
+  aar_path = "libs/com_android_support_asynclayoutinflater/asynclayoutinflater-28.0.0.aar"
+  info_path = "libs/com_android_support_asynclayoutinflater/com_android_support_asynclayoutinflater.info"
+  deps = [
+    ":com_android_support_support_annotations_java",
+    ":com_android_support_support_compat_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_cardview_v7_java") {
-  aar_path = "libs/com_android_support_cardview_v7/cardview-v7-27.0.0.aar"
+  aar_path = "libs/com_android_support_cardview_v7/cardview-v7-28.0.0.aar"
   info_path = "libs/com_android_support_cardview_v7/com_android_support_cardview_v7.info"
   deps = [
     ":com_android_support_support_annotations_java",
@@ -184,20 +202,71 @@ android_aar_prebuilt("com_android_support_cardview_v7_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+java_prebuilt("com_android_support_collections_java") {
+  jar_path = "libs/com_android_support_collections/collections-28.0.0.jar"
+  output_name = "com_android_support_collections"
+  supports_android = true
+  deps = [
+    ":com_android_support_support_annotations_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("com_android_support_coordinatorlayout_java") {
+  aar_path =
+      "libs/com_android_support_coordinatorlayout/coordinatorlayout-28.0.0.aar"
+  info_path = "libs/com_android_support_coordinatorlayout/com_android_support_coordinatorlayout.info"
+  deps = [
+    ":com_android_support_customview_java",
+    ":com_android_support_support_annotations_java",
+    ":com_android_support_support_compat_java",
+  ]
+  ignore_proguard_configs = true
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("com_android_support_customview_java") {
+  aar_path = "libs/com_android_support_customview/customview-28.0.0.aar"
+  info_path =
+      "libs/com_android_support_customview/com_android_support_customview.info"
+  deps = [
+    ":com_android_support_support_annotations_java",
+    ":com_android_support_support_compat_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_design_java") {
-  aar_path = "libs/com_android_support_design/design-27.0.0.aar"
+  aar_path = "libs/com_android_support_design/design-28.0.0.aar"
   info_path = "libs/com_android_support_design/com_android_support_design.info"
   deps = [
     ":com_android_support_appcompat_v7_java",
+    ":com_android_support_cardview_v7_java",
     ":com_android_support_recyclerview_v7_java",
-    ":com_android_support_support_v4_java",
+    ":com_android_support_support_annotations_java",
+    ":com_android_support_support_compat_java",
+    ":com_android_support_support_core_ui_java",
+    ":com_android_support_support_core_utils_java",
+    ":com_android_support_support_fragment_java",
     ":com_android_support_transition_java",
+  ]
+  ignore_proguard_configs = true
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("com_android_support_drawerlayout_java") {
+  aar_path = "libs/com_android_support_drawerlayout/drawerlayout-28.0.0.aar"
+  info_path = "libs/com_android_support_drawerlayout/com_android_support_drawerlayout.info"
+  deps = [
+    ":com_android_support_customview_java",
+    ":com_android_support_support_annotations_java",
+    ":com_android_support_support_compat_java",
   ]
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_gridlayout_v7_java") {
-  aar_path = "libs/com_android_support_gridlayout_v7/gridlayout-v7-27.0.0.aar"
+  aar_path = "libs/com_android_support_gridlayout_v7/gridlayout-v7-28.0.0.aar"
   info_path = "libs/com_android_support_gridlayout_v7/com_android_support_gridlayout_v7.info"
   deps = [
     ":com_android_support_support_compat_java",
@@ -206,12 +275,31 @@ android_aar_prebuilt("com_android_support_gridlayout_v7_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("com_android_support_interpolator_java") {
+  aar_path = "libs/com_android_support_interpolator/interpolator-28.0.0.aar"
+  info_path = "libs/com_android_support_interpolator/com_android_support_interpolator.info"
+  deps = [
+    ":com_android_support_support_annotations_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("com_android_support_localbroadcastmanager_java") {
+  aar_path = "libs/com_android_support_localbroadcastmanager/localbroadcastmanager-28.0.0.aar"
+  info_path = "libs/com_android_support_localbroadcastmanager/com_android_support_localbroadcastmanager.info"
+  deps = [
+    ":com_android_support_support_annotations_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_mediarouter_v7_java") {
-  aar_path = "libs/com_android_support_mediarouter_v7/mediarouter-v7-27.0.0.aar"
+  aar_path = "libs/com_android_support_mediarouter_v7/mediarouter-v7-28.0.0.aar"
   info_path = "libs/com_android_support_mediarouter_v7/com_android_support_mediarouter_v7.info"
   deps = [
     ":com_android_support_appcompat_v7_java",
     ":com_android_support_palette_v7_java",
+    ":com_android_support_recyclerview_v7_java",
     ":com_android_support_support_media_compat_java",
   ]
 }
@@ -225,33 +313,35 @@ android_aar_prebuilt("com_android_support_multidex_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_preference_leanback_v17_java") {
-  aar_path = "libs/com_android_support_preference_leanback_v17/preference-leanback-v17-27.0.0.aar"
+  aar_path = "libs/com_android_support_preference_leanback_v17/preference-leanback-v17-28.0.0.aar"
   info_path = "libs/com_android_support_preference_leanback_v17/com_android_support_preference_leanback_v17.info"
   deps = [
     ":com_android_support_appcompat_v7_java",
+    ":com_android_support_collections_java",
     ":com_android_support_leanback_v17_java",
     ":com_android_support_preference_v14_java",
     ":com_android_support_preference_v7_java",
     ":com_android_support_recyclerview_v7_java",
-    ":com_android_support_support_v4_java",
   ]
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_preference_v7_java") {
-  aar_path = "libs/com_android_support_preference_v7/preference-v7-27.0.0.aar"
+  aar_path = "libs/com_android_support_preference_v7/preference-v7-28.0.0.aar"
   info_path = "libs/com_android_support_preference_v7/com_android_support_preference_v7.info"
   deps = [
     ":com_android_support_appcompat_v7_java",
+    ":com_android_support_collections_java",
     ":com_android_support_recyclerview_v7_java",
-    ":com_android_support_support_v4_java",
+    ":com_android_support_support_compat_java",
+    ":com_android_support_support_fragment_java",
   ]
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_recyclerview_v7_java") {
   aar_path =
-      "libs/com_android_support_recyclerview_v7/recyclerview-v7-27.0.0.aar"
+      "libs/com_android_support_recyclerview_v7/recyclerview-v7-28.0.0.aar"
   info_path = "libs/com_android_support_recyclerview_v7/com_android_support_recyclerview_v7.info"
   deps = [
     ":com_android_support_support_annotations_java",
@@ -262,18 +352,20 @@ android_aar_prebuilt("com_android_support_recyclerview_v7_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_android_support_support_annotations_java") {
-  jar_path = "libs/com_android_support_support_annotations/support-annotations-27.0.0.jar"
+  jar_path = "libs/com_android_support_support_annotations/support-annotations-28.0.0.jar"
   output_name = "com_android_support_support_annotations"
   supports_android = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_support_compat_java") {
-  aar_path = "libs/com_android_support_support_compat/support-compat-27.0.0.aar"
+  aar_path = "libs/com_android_support_support_compat/support-compat-28.0.0.aar"
   info_path = "libs/com_android_support_support_compat/com_android_support_support_compat.info"
   deps = [
     ":android_arch_lifecycle_runtime_java",
+    ":com_android_support_collections_java",
     ":com_android_support_support_annotations_java",
+    ":com_android_support_versionedparcelable_java",
   ]
   ignore_aidl = true
 }
@@ -281,19 +373,33 @@ android_aar_prebuilt("com_android_support_support_compat_java") {
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_support_core_ui_java") {
   aar_path =
-      "libs/com_android_support_support_core_ui/support-core-ui-27.0.0.aar"
+      "libs/com_android_support_support_core_ui/support-core-ui-28.0.0.aar"
   info_path = "libs/com_android_support_support_core_ui/com_android_support_support_core_ui.info"
   deps = [
+    ":com_android_support_asynclayoutinflater_java",
+    ":com_android_support_coordinatorlayout_java",
+    ":com_android_support_cursoradapter_java",
+    ":com_android_support_customview_java",
+    ":com_android_support_drawerlayout_java",
+    ":com_android_support_interpolator_java",
+    ":com_android_support_slidingpanelayout_java",
     ":com_android_support_support_annotations_java",
     ":com_android_support_support_compat_java",
+    ":com_android_support_support_core_utils_java",
+    ":com_android_support_swiperefreshlayout_java",
+    ":com_android_support_viewpager_java",
   ]
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_support_core_utils_java") {
-  aar_path = "libs/com_android_support_support_core_utils/support-core-utils-27.0.0.aar"
+  aar_path = "libs/com_android_support_support_core_utils/support-core-utils-28.0.0.aar"
   info_path = "libs/com_android_support_support_core_utils/com_android_support_support_core_utils.info"
   deps = [
+    ":com_android_support_documentfile_java",
+    ":com_android_support_loader_java",
+    ":com_android_support_localbroadcastmanager_java",
+    ":com_android_support_print_java",
     ":com_android_support_support_annotations_java",
     ":com_android_support_support_compat_java",
   ]
@@ -301,17 +407,16 @@ android_aar_prebuilt("com_android_support_support_core_utils_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_support_v13_java") {
-  aar_path = "libs/com_android_support_support_v13/support-v13-27.0.0.aar"
+  aar_path = "libs/com_android_support_support_v13/support-v13-28.0.0.aar"
   info_path = "libs/com_android_support_support_v13/com_android_support_support_v13.info"
   deps = [
-    ":com_android_support_support_annotations_java",
     ":com_android_support_support_v4_java",
   ]
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_support_v4_java") {
-  aar_path = "libs/com_android_support_support_v4/support-v4-27.0.0.aar"
+  aar_path = "libs/com_android_support_support_v4/support-v4-28.0.0.aar"
   info_path =
       "libs/com_android_support_support_v4/com_android_support_support_v4.info"
   deps = [
@@ -320,6 +425,29 @@ android_aar_prebuilt("com_android_support_support_v4_java") {
     ":com_android_support_support_core_utils_java",
     ":com_android_support_support_fragment_java",
     ":com_android_support_support_media_compat_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("com_android_support_swiperefreshlayout_java") {
+  aar_path = "libs/com_android_support_swiperefreshlayout/swiperefreshlayout-28.0.0.aar"
+  info_path = "libs/com_android_support_swiperefreshlayout/com_android_support_swiperefreshlayout.info"
+  deps = [
+    ":com_android_support_interpolator_java",
+    ":com_android_support_support_annotations_java",
+    ":com_android_support_support_compat_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("com_android_support_viewpager_java") {
+  aar_path = "libs/com_android_support_viewpager/viewpager-28.0.0.aar"
+  info_path =
+      "libs/com_android_support_viewpager/com_android_support_viewpager.info"
+  deps = [
+    ":com_android_support_customview_java",
+    ":com_android_support_support_annotations_java",
+    ":com_android_support_support_compat_java",
   ]
 }
 
@@ -600,6 +728,50 @@ java_prebuilt("android_arch_core_common_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("android_arch_core_runtime_java") {
+  aar_path = "libs/android_arch_core_runtime/runtime-1.1.1.aar"
+  info_path = "libs/android_arch_core_runtime/android_arch_core_runtime.info"
+
+  # To remove visibility constraint, add this dependency to
+  # //tools/android/roll/android_deps/build.gradle.
+  visibility = [ ":*" ]
+  deps = [
+    ":android_arch_core_common_java",
+    ":com_android_support_support_annotations_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("android_arch_lifecycle_livedata_java") {
+  aar_path = "libs/android_arch_lifecycle_livedata/livedata-1.1.1.aar"
+  info_path = "libs/android_arch_lifecycle_livedata/android_arch_lifecycle_livedata.info"
+
+  # To remove visibility constraint, add this dependency to
+  # //tools/android/roll/android_deps/build.gradle.
+  visibility = [ ":*" ]
+  deps = [
+    ":android_arch_core_common_java",
+    ":android_arch_core_runtime_java",
+    ":android_arch_lifecycle_livedata_core_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("android_arch_lifecycle_livedata_core_java") {
+  aar_path = "libs/android_arch_lifecycle_livedata_core/livedata-core-1.1.1.aar"
+  info_path = "libs/android_arch_lifecycle_livedata_core/android_arch_lifecycle_livedata_core.info"
+
+  # To remove visibility constraint, add this dependency to
+  # //tools/android/roll/android_deps/build.gradle.
+  visibility = [ ":*" ]
+  deps = [
+    ":android_arch_core_common_java",
+    ":android_arch_core_runtime_java",
+    ":android_arch_lifecycle_common_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("androidx_annotation_annotation_java") {
   jar_path = "libs/androidx_annotation_annotation/annotation-1.0.0.jar"
   output_name = "androidx_annotation_annotation"
@@ -629,7 +801,7 @@ java_prebuilt("androidx_lifecycle_lifecycle_common_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_animated_vector_drawable_java") {
-  aar_path = "libs/com_android_support_animated_vector_drawable/animated-vector-drawable-27.0.0.aar"
+  aar_path = "libs/com_android_support_animated_vector_drawable/animated-vector-drawable-28.0.0.aar"
   info_path = "libs/com_android_support_animated_vector_drawable/com_android_support_animated_vector_drawable.info"
 
   # To remove visibility constraint, add this dependency to
@@ -642,8 +814,34 @@ android_aar_prebuilt("com_android_support_animated_vector_drawable_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("com_android_support_cursoradapter_java") {
+  aar_path = "libs/com_android_support_cursoradapter/cursoradapter-28.0.0.aar"
+  info_path = "libs/com_android_support_cursoradapter/com_android_support_cursoradapter.info"
+
+  # To remove visibility constraint, add this dependency to
+  # //tools/android/roll/android_deps/build.gradle.
+  visibility = [ ":*" ]
+  deps = [
+    ":com_android_support_support_annotations_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("com_android_support_documentfile_java") {
+  aar_path = "libs/com_android_support_documentfile/documentfile-28.0.0.aar"
+  info_path = "libs/com_android_support_documentfile/com_android_support_documentfile.info"
+
+  # To remove visibility constraint, add this dependency to
+  # //tools/android/roll/android_deps/build.gradle.
+  visibility = [ ":*" ]
+  deps = [
+    ":com_android_support_support_annotations_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_leanback_v17_java") {
-  aar_path = "libs/com_android_support_leanback_v17/leanback-v17-27.0.0.aar"
+  aar_path = "libs/com_android_support_leanback_v17/leanback-v17-28.0.0.aar"
   info_path = "libs/com_android_support_leanback_v17/com_android_support_leanback_v17.info"
 
   # To remove visibility constraint, add this dependency to
@@ -659,8 +857,24 @@ android_aar_prebuilt("com_android_support_leanback_v17_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("com_android_support_loader_java") {
+  aar_path = "libs/com_android_support_loader/loader-28.0.0.aar"
+  info_path = "libs/com_android_support_loader/com_android_support_loader.info"
+
+  # To remove visibility constraint, add this dependency to
+  # //tools/android/roll/android_deps/build.gradle.
+  visibility = [ ":*" ]
+  deps = [
+    ":android_arch_lifecycle_livedata_java",
+    ":android_arch_lifecycle_viewmodel_java",
+    ":com_android_support_support_annotations_java",
+    ":com_android_support_support_compat_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_palette_v7_java") {
-  aar_path = "libs/com_android_support_palette_v7/palette-v7-27.0.0.aar"
+  aar_path = "libs/com_android_support_palette_v7/palette-v7-28.0.0.aar"
   info_path =
       "libs/com_android_support_palette_v7/com_android_support_palette_v7.info"
 
@@ -675,30 +889,58 @@ android_aar_prebuilt("com_android_support_palette_v7_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_preference_v14_java") {
-  aar_path = "libs/com_android_support_preference_v14/preference-v14-27.0.0.aar"
+  aar_path = "libs/com_android_support_preference_v14/preference-v14-28.0.0.aar"
   info_path = "libs/com_android_support_preference_v14/com_android_support_preference_v14.info"
 
   # To remove visibility constraint, add this dependency to
   # //tools/android/roll/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
-    ":com_android_support_appcompat_v7_java",
     ":com_android_support_preference_v7_java",
-    ":com_android_support_recyclerview_v7_java",
-    ":com_android_support_support_v4_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("com_android_support_print_java") {
+  aar_path = "libs/com_android_support_print/print-28.0.0.aar"
+  info_path = "libs/com_android_support_print/com_android_support_print.info"
+
+  # To remove visibility constraint, add this dependency to
+  # //tools/android/roll/android_deps/build.gradle.
+  visibility = [ ":*" ]
+  deps = [
+    ":com_android_support_support_annotations_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("com_android_support_slidingpanelayout_java") {
+  aar_path =
+      "libs/com_android_support_slidingpanelayout/slidingpanelayout-28.0.0.aar"
+  info_path = "libs/com_android_support_slidingpanelayout/com_android_support_slidingpanelayout.info"
+
+  # To remove visibility constraint, add this dependency to
+  # //tools/android/roll/android_deps/build.gradle.
+  visibility = [ ":*" ]
+  deps = [
+    ":com_android_support_customview_java",
+    ":com_android_support_support_annotations_java",
+    ":com_android_support_support_compat_java",
   ]
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_support_fragment_java") {
   aar_path =
-      "libs/com_android_support_support_fragment/support-fragment-27.0.0.aar"
+      "libs/com_android_support_support_fragment/support-fragment-28.0.0.aar"
   info_path = "libs/com_android_support_support_fragment/com_android_support_support_fragment.info"
 
   # To remove visibility constraint, add this dependency to
   # //tools/android/roll/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
+    ":android_arch_lifecycle_viewmodel_java",
+    ":com_android_support_loader_java",
     ":com_android_support_support_annotations_java",
     ":com_android_support_support_compat_java",
     ":com_android_support_support_core_ui_java",
@@ -708,7 +950,7 @@ android_aar_prebuilt("com_android_support_support_fragment_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_support_media_compat_java") {
-  aar_path = "libs/com_android_support_support_media_compat/support-media-compat-27.0.0.aar"
+  aar_path = "libs/com_android_support_support_media_compat/support-media-compat-28.0.0.aar"
   info_path = "libs/com_android_support_support_media_compat/com_android_support_support_media_compat.info"
 
   # To remove visibility constraint, add this dependency to
@@ -717,13 +959,14 @@ android_aar_prebuilt("com_android_support_support_media_compat_java") {
   deps = [
     ":com_android_support_support_annotations_java",
     ":com_android_support_support_compat_java",
+    ":com_android_support_versionedparcelable_java",
   ]
   ignore_aidl = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_support_vector_drawable_java") {
-  aar_path = "libs/com_android_support_support_vector_drawable/support-vector-drawable-27.0.0.aar"
+  aar_path = "libs/com_android_support_support_vector_drawable/support-vector-drawable-28.0.0.aar"
   info_path = "libs/com_android_support_support_vector_drawable/com_android_support_support_vector_drawable.info"
 
   # To remove visibility constraint, add this dependency to
@@ -733,11 +976,12 @@ android_aar_prebuilt("com_android_support_support_vector_drawable_java") {
     ":com_android_support_support_annotations_java",
     ":com_android_support_support_compat_java",
   ]
+  create_srcjar = false
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_transition_java") {
-  aar_path = "libs/com_android_support_transition/transition-27.0.0.aar"
+  aar_path = "libs/com_android_support_transition/transition-28.0.0.aar"
   info_path =
       "libs/com_android_support_transition/com_android_support_transition.info"
 
@@ -749,6 +993,21 @@ android_aar_prebuilt("com_android_support_transition_java") {
     ":com_android_support_support_compat_java",
   ]
   deps += [ ":com_android_support_support_fragment_java" ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("com_android_support_versionedparcelable_java") {
+  aar_path = "libs/com_android_support_versionedparcelable/versionedparcelable-28.0.0.aar"
+  info_path = "libs/com_android_support_versionedparcelable/com_android_support_versionedparcelable.info"
+
+  # To remove visibility constraint, add this dependency to
+  # //tools/android/roll/android_deps/build.gradle.
+  visibility = [ ":*" ]
+  deps = [
+    ":com_android_support_collections_java",
+    ":com_android_support_support_annotations_java",
+  ]
+  ignore_aidl = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

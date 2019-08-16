@@ -15,6 +15,10 @@ using UkmFeatureList = UseCounterPageLoadMetricsObserver::UkmFeatureList;
 using WebFeature = blink::mojom::WebFeature;
 using WebFeatureBitSet =
     std::bitset<static_cast<size_t>(WebFeature::kNumberOfFeatures)>;
+
+// TODO(loonybear): Plumb CSS metrics end to end to PageLoadMetrics using the
+// the CSSSampleId enum type defined in [1] and remove this integer type.
+// [1] third_party/blink/public/mojom/use_counter/css_property_id.mojom
 using CSSSampleId = int32_t;
 
 namespace {
@@ -90,14 +94,19 @@ void RecordFeature(blink::mojom::WebFeature feature) {
 }
 
 void RecordCssProperty(CSSSampleId property) {
-  UMA_HISTOGRAM_ENUMERATION(internal::kCssPropertiesHistogramName, property,
-                            blink::mojom::kMaximumCSSSampleId);
+  // TODO(majidvp): remove kMaxValue once property type is switched to be
+  // blink::mojom::CSSSampleId.
+  UMA_HISTOGRAM_ENUMERATION(
+      internal::kCssPropertiesHistogramName, property,
+      static_cast<int>(blink::mojom::CSSSampleId::kMaxValue));
 }
 
 void RecordAnimatedCssProperty(CSSSampleId animated_property) {
-  UMA_HISTOGRAM_ENUMERATION(internal::kAnimatedCssPropertiesHistogramName,
-                            animated_property,
-                            blink::mojom::kMaximumCSSSampleId);
+  // TODO(majidvp): remove kMaxValue once property type is switched to be
+  // blink::mojom::CSSSampleId.
+  UMA_HISTOGRAM_ENUMERATION(
+      internal::kAnimatedCssPropertiesHistogramName, animated_property,
+      static_cast<int>(blink::mojom::CSSSampleId::kMaxValue));
 }
 
 }  // namespace
@@ -120,8 +129,10 @@ UseCounterPageLoadMetricsObserver::OnCommit(
   ukm_features_recorded_.insert(static_cast<size_t>(WebFeature::kPageVisits));
   RecordFeature(WebFeature::kPageVisits);
   RecordMainFrameFeature(WebFeature::kPageVisits);
-  RecordCssProperty(blink::mojom::kTotalPagesMeasuredCSSSampleId);
-  RecordAnimatedCssProperty(blink::mojom::kTotalPagesMeasuredCSSSampleId);
+  RecordCssProperty(
+      static_cast<CSSSampleId>(blink::mojom::CSSSampleId::kTotalPagesMeasured));
+  RecordAnimatedCssProperty(
+      static_cast<CSSSampleId>(blink::mojom::CSSSampleId::kTotalPagesMeasured));
   features_recorded_.set(static_cast<size_t>(WebFeature::kPageVisits));
   main_frame_features_recorded_.set(
       static_cast<size_t>(WebFeature::kPageVisits));
@@ -160,13 +171,15 @@ void UseCounterPageLoadMetricsObserver::OnFeaturesUsageObserved(
 
   for (int css_property : features.css_properties) {
     // Verify that page visit is observed at most once per observer.
-    if (css_property == blink::mojom::kTotalPagesMeasuredCSSSampleId) {
+    if (css_property == static_cast<CSSSampleId>(
+                            blink::mojom::CSSSampleId::kTotalPagesMeasured)) {
       mojo::ReportBadMessage(
-          "kTotalPagesMeasuredCSSSampleId should not be passed to "
+          "CSSSampleId::kTotalPagesMeasured should not be passed to "
           "PageLoadMetricsObserver::OnFeaturesUsageObserved");
       return;
     }
-    if (css_property > blink::mojom::kMaximumCSSSampleId) {
+    if (css_property >
+        static_cast<CSSSampleId>(blink::mojom::CSSSampleId::kMaxValue)) {
       mojo::ReportBadMessage(
           "Invalid CSS property passed to "
           "PageLoadMetricsObserver::OnFeaturesUsageObserved");
@@ -191,13 +204,16 @@ void UseCounterPageLoadMetricsObserver::OnFeaturesUsageObserved(
 
   for (int animated_css_property : features.animated_css_properties) {
     // Verify that page visit is observed at most once per observer.
-    if (animated_css_property == blink::mojom::kTotalPagesMeasuredCSSSampleId) {
+    if (animated_css_property ==
+        static_cast<CSSSampleId>(
+            blink::mojom::CSSSampleId::kTotalPagesMeasured)) {
       mojo::ReportBadMessage(
-          "kTotalPagesMeasuredCSSSampleId should not be passed to "
+          "CSSSampleId::kTotalPagesMeasured should not be passed to "
           "PageLoadMetricsObserver::OnFeaturesUsageObserved");
       return;
     }
-    if (animated_css_property > blink::mojom::kMaximumCSSSampleId) {
+    if (animated_css_property >
+        static_cast<CSSSampleId>(blink::mojom::CSSSampleId::kMaxValue)) {
       mojo::ReportBadMessage(
           "Invalid animated CSS property passed to "
           "PageLoadMetricsObserver::OnFeaturesUsageObserved");

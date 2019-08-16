@@ -39,8 +39,7 @@ import java.util.concurrent.TimeoutException;
  * A payment integration test for the correct log of the CanMakePayment metrics.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=PaymentRequestHasEnrolledInstrument"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStartCallback {
     // Disable animations to reduce flakiness.
     @ClassRule

@@ -1321,8 +1321,7 @@ using GLRendererTypes =
     ::testing::Types<GLRenderer, cc::GLRendererWithExpandedViewport>;
 
 TYPED_TEST_SUITE(IntersectingQuadPixelTest, RendererTypes);
-// TODO(crbug.gom/939442): Enable these tests for SkiaRenderer.
-TYPED_TEST_SUITE(IntersectingVideoQuadPixelTest, GLRendererTypes);
+TYPED_TEST_SUITE(IntersectingVideoQuadPixelTest, GPURendererTypes);
 TYPED_TEST_SUITE(IntersectingQuadSoftwareTest, SoftwareRendererTypes);
 
 TYPED_TEST(IntersectingQuadPixelTest, SolidColorQuads) {
@@ -1534,7 +1533,7 @@ TYPED_TEST(IntersectingVideoQuadPixelTest, YUVVideoQuads) {
       this->child_context_provider_.get());
 
   this->AppendBackgroundAndRunTest(
-      cc::FuzzyPixelOffByOneComparator(false),
+      cc::FuzzyPixelComparator(true, 0.50f, 0.f, 1.2f, 2, 0),
       FILE_PATH_LITERAL("intersecting_blue_green_squares_video.png"));
 }
 

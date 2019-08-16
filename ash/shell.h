@@ -668,6 +668,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<MultiDeviceNotificationPresenter>
       multidevice_notification_presenter_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
+  std::unique_ptr<AshColorProvider> ash_color_provider_;
   std::unique_ptr<SessionControllerImpl> session_controller_;
   std::unique_ptr<NightLightControllerImpl> night_light_controller_;
   std::unique_ptr<PolicyRecommendationRestorer> policy_recommendation_restorer_;
@@ -794,9 +795,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Enables spoken feedback accessibility based on a press and hold of both
   // volume keys.
   std::unique_ptr<KeyAccessibilityEnabler> key_accessibility_enabler_;
-
-  // Color provider for ash.
-  std::unique_ptr<AshColorProvider> ash_color_provider_;
 
   // For testing only: simulate that a modal window is open
   bool simulate_modal_window_open_for_test_ = false;

@@ -7545,7 +7545,9 @@ interface SerialPort
     getter writable
     method close
     method constructor
+    method getSignals
     method open
+    method setSignals
 interface ServiceWorker : EventTarget
     attribute @@toStringTag
     getter onerror

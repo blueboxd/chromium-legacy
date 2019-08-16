@@ -62,6 +62,7 @@ class WebRuntimeFeatures {
       const std::string& name,
       bool enable);
 
+  BLINK_PLATFORM_EXPORT static void EnableFractionalScrollOffsets(bool);
   BLINK_PLATFORM_EXPORT static bool IsFractionalScrollOffsetsEnabled();
 
   BLINK_PLATFORM_EXPORT static void EnableCompositedSelectionUpdate(bool);
@@ -139,8 +140,6 @@ class WebRuntimeFeatures {
       bool);
   BLINK_PLATFORM_EXPORT static void EnablePaymentApp(bool);
   BLINK_PLATFORM_EXPORT static void EnablePaymentRequest(bool);
-  BLINK_PLATFORM_EXPORT static void EnablePaymentRequestHasEnrolledInstrument(
-      bool);
   BLINK_PLATFORM_EXPORT static void EnablePerformanceManagerInstrumentation(
       bool);
   BLINK_PLATFORM_EXPORT static void EnablePeriodicBackgroundSync(bool);

@@ -31,8 +31,7 @@ import java.util.concurrent.TimeoutException;
  * depending on whether Google Pay cards are returned in basic-card.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=PaymentRequestHasEnrolledInstrument"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PaymentRequestCanMakePaymentGooglePayTest implements MainActivityStartCallback {
     // Disable animations to reduce flakiness.
     @ClassRule

@@ -71,18 +71,6 @@ constexpr int kMenuSeparatorWidth = 1;
 // in tray detailed views.
 constexpr int kTraySeparatorWidth = 0;
 
-// Primary colors of icon on light/dark background. Color of disabled icon is
-// 38% of corresponding non-disabled icon.
-constexpr SkColor kIconOnDarkBackgroundColor = gfx::kGoogleGrey200;
-constexpr SkColor kIconOnDarkBackgroundColorDisabled =
-    SkColorSetA(kIconOnDarkBackgroundColor, 0x61);  // 38%
-constexpr SkColor kIconOnLightBackgroundColor = gfx::kGoogleGrey700;
-constexpr SkColor kIconOnLightBackgroundColorDisabled =
-    SkColorSetA(kIconOnLightBackgroundColor, 0x61);  // 38%
-
-// Second color of icon on dark background.
-constexpr SkColor kIconOnDarkBackgroundSecondaryColor = gfx::kGoogleGrey500;
-
 // The size and foreground color of the icons appearing in the material design
 // system tray.
 constexpr int kTrayIconSize = 16;
@@ -112,13 +100,8 @@ extern const int kTrayPopupInkDropInset;
 extern const int kTrayPopupInkDropCornerRadius;
 
 constexpr float kUnifiedMenuBackgroundBlur = 30.f;
-constexpr SkColor kUnifiedMenuTextColor = SkColorSetRGB(0xf1, 0xf3, 0xf4);
-constexpr SkColor kUnifiedMenuSecondaryTextColor =
-    SkColorSetA(kIconOnDarkBackgroundColor, 0xa3);
-constexpr SkColor kUnifiedMenuTextColorDisabled =
-    SkColorSetRGB(0x5f, 0x63, 0x68);
 constexpr SkColor kUnifiedMenuButtonColor =
-    SkColorSetA(kIconOnDarkBackgroundColor, 0x14);
+    SkColorSetA(gfx::kGoogleGrey200, 0x14);
 constexpr SkColor kUnifiedMenuButtonColorActive =
     SkColorSetRGB(0x25, 0x81, 0xdf);
 constexpr SkColor kUnifiedMenuButtonColorDisabled =

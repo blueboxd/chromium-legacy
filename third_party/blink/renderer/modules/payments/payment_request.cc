@@ -87,7 +87,6 @@ using ::payments::mojom::blink::PaymentShippingType;
 using ::payments::mojom::blink::PaymentValidationErrors;
 using ::payments::mojom::blink::PaymentValidationErrorsPtr;
 
-const char kCanMakePaymentDebugName[] = "canMakePayment";
 const char kHasEnrolledInstrumentDebugName[] = "hasEnrolledInstrument";
 
 }  // namespace
@@ -761,9 +760,7 @@ ScriptPromise PaymentRequest::canMakePayment(ScriptState* script_state) {
                                            "Cannot query payment request"));
   }
 
-  bool legacy_mode =
-      !RuntimeEnabledFeatures::PaymentRequestHasEnrolledInstrumentEnabled();
-  payment_provider_->CanMakePayment(legacy_mode);
+  payment_provider_->CanMakePayment();
 
   can_make_payment_resolver_ =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -1377,24 +1374,11 @@ void PaymentRequest::OnCanMakePayment(CanMakePaymentQueryResult result) {
     return;
 
   switch (result) {
-    case CanMakePaymentQueryResult::WARNING_CAN_MAKE_PAYMENT:
-      WarnIgnoringQueryQuotaForCanMakePayment(*GetExecutionContext(),
-                                              kCanMakePaymentDebugName);
-      FALLTHROUGH;
     case CanMakePaymentQueryResult::CAN_MAKE_PAYMENT:
       can_make_payment_resolver_->Resolve(true);
       break;
-    case CanMakePaymentQueryResult::WARNING_CANNOT_MAKE_PAYMENT:
-      WarnIgnoringQueryQuotaForCanMakePayment(*GetExecutionContext(),
-                                              kCanMakePaymentDebugName);
-      FALLTHROUGH;
     case CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT:
       can_make_payment_resolver_->Resolve(false);
-      break;
-    case CanMakePaymentQueryResult::QUERY_QUOTA_EXCEEDED:
-      can_make_payment_resolver_->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotAllowedError,
-          "Not allowed to check whether can make payment"));
       break;
   }
 

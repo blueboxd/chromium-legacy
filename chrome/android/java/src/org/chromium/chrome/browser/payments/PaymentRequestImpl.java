@@ -311,7 +311,6 @@ public class PaymentRequestImpl
 
     private PaymentRequestClient mClient;
     private boolean mIsCanMakePaymentResponsePending;
-    private boolean mUseLegacyCanMakePayment;
     private boolean mIsHasEnrolledInstrumentResponsePending;
     private boolean mHasEnrolledInstrumentUsesPerMethodQuota;
     private boolean mIsCurrentPaymentRequestShowing;
@@ -874,10 +873,9 @@ public class PaymentRequestImpl
         }
 
         if (mIsCanMakePaymentResponsePending) {
-            // New canMakePayment doesn't need to wait for all apps to be queried.
-            if (!mUseLegacyCanMakePayment || queryApps.isEmpty()) {
-                respondCanMakePaymentQuery(mUseLegacyCanMakePayment);
-            }
+            // canMakePayment doesn't need to wait for all apps to be queried because it only needs
+            // to test the existence of a payment handler.
+            respondCanMakePaymentQuery();
         }
 
         if (mIsHasEnrolledInstrumentResponsePending && queryApps.isEmpty()) {
@@ -1920,42 +1918,26 @@ public class PaymentRequestImpl
      * Called by the merchant website to check if the user has complete payment instruments.
      */
     @Override
-    public void canMakePayment(boolean legacyMode) {
+    public void canMakePayment() {
         if (mClient == null) return;
 
         if (mNativeObserverForTest != null) mNativeObserverForTest.onCanMakePaymentCalled();
 
         if (isFinishedQueryingPaymentApps()) {
-            respondCanMakePaymentQuery(legacyMode);
+            respondCanMakePaymentQuery();
         } else {
             mIsCanMakePaymentResponsePending = true;
-            mUseLegacyCanMakePayment = legacyMode;
         }
     }
 
-    private void respondCanMakePaymentQuery(boolean legacyMode) {
+    private void respondCanMakePaymentQuery() {
         if (mClient == null) return;
 
         mIsCanMakePaymentResponsePending = false;
 
-        boolean response = legacyMode ? mHasEnrolledInstrument : mArePaymentMethodsSupported;
-        response &= mDelegate.prefsCanMakePayment();
-
-        // Only need to enforce query quota in legacy mode. Per-method quota not supported.
-        if (legacyMode
-                && !CanMakePaymentQuery.canQuery(mWebContents, mTopLevelOrigin,
-                        mPaymentRequestOrigin, mMethodData, /*perMethodQuota=*/false)) {
-            if (shouldEnforceCanMakePaymentQueryQuota()) {
-                mClient.onCanMakePayment(CanMakePaymentQueryResult.QUERY_QUOTA_EXCEEDED);
-            } else {
-                mClient.onCanMakePayment(response
-                                ? CanMakePaymentQueryResult.WARNING_CAN_MAKE_PAYMENT
-                                : CanMakePaymentQueryResult.WARNING_CANNOT_MAKE_PAYMENT);
-            }
-        } else {
-            mClient.onCanMakePayment(response ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
-                                              : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
-        }
+        boolean response = mArePaymentMethodsSupported && mDelegate.prefsCanMakePayment();
+        mClient.onCanMakePayment(response ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
+                                          : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
 
         mJourneyLogger.setCanMakePaymentValue(response || mIsIncognito);
 
@@ -2118,7 +2100,7 @@ public class PaymentRequestImpl
                 : SectionInformation.NO_SELECTION;
 
         if (mIsCanMakePaymentResponsePending) {
-            respondCanMakePaymentQuery(mUseLegacyCanMakePayment);
+            respondCanMakePaymentQuery();
         }
 
         if (mIsHasEnrolledInstrumentResponsePending) {

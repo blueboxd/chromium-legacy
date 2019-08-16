@@ -5309,7 +5309,7 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
 
     case ax::mojom::Role::kDate:
     case ax::mojom::Role::kDateTime:
-      return L"list";
+      return L"textbox";
 
     case ax::mojom::Role::kDefinition:
       return L"definition";
@@ -5950,7 +5950,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
 
     case ax::mojom::Role::kDate:
     case ax::mojom::Role::kDateTime:
-      return UIA_ListControlTypeId;
+      return UIA_EditControlTypeId;
 
     case ax::mojom::Role::kDefinition:
       return UIA_GroupControlTypeId;

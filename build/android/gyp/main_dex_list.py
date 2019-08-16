@@ -12,7 +12,6 @@ import tempfile
 import zipfile
 
 from util import build_utils
-from util import proguard_util
 
 
 def main(args):

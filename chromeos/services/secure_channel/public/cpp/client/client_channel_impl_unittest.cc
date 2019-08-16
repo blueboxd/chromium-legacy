@@ -23,11 +23,8 @@
 #include "chromeos/services/secure_channel/public/cpp/client/connection_attempt_impl.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel_observer.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_connection_attempt.h"
-#include "chromeos/services/secure_channel/public/mojom/constants.mojom.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "chromeos/services/secure_channel/secure_channel_impl.h"
-#include "chromeos/services/secure_channel/secure_channel_service.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

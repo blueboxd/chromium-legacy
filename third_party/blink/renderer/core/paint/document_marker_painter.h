@@ -38,9 +38,9 @@ class DocumentMarkerPainter {
                                   const ComputedStyle& style,
                                   DocumentMarker::MarkerType marker_type,
                                   const PhysicalRect& local_rect);
-  static TextPaintStyle ComputeTextPaintStyleFrom(
-      const ComputedStyle& style,
-      const TextMatchMarker& marker);
+  static TextPaintStyle ComputeTextPaintStyleFrom(const ComputedStyle& style,
+                                                  const TextMatchMarker& marker,
+                                                  bool in_forced_colors_mode);
 };
 
 }  // namespace blink

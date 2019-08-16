@@ -28,10 +28,6 @@ class NetworkService;
 }
 }  // namespace network
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace content {
 
 // Returns a pointer to the NetworkService, creating / re-creating it as needed.
@@ -41,14 +37,6 @@ namespace content {
 // Otherwise it runs out of process.
 // This method can only be called on the UI thread.
 CONTENT_EXPORT network::mojom::NetworkService* GetNetworkService();
-
-// Similar to GetNetworkService(), but will create the NetworkService from a
-// service manager connector if needed. If network service is disabled,
-// |connector| will be ignored and this method is identical to
-// GetNetworkService().
-// This method can only be called on the UI thread.
-CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
-    service_manager::Connector* connector);
 
 // Only on ChromeOS since it's only used there.
 #if defined(OS_CHROMEOS)

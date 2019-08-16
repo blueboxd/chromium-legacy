@@ -101,12 +101,6 @@ void LoginDataDispatcher::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void LoginDataDispatcher::SetTapToUnlockEnabledForUser(const AccountId& user,
-                                                       bool enabled) {
-  for (auto& observer : observers_)
-    observer.OnTapToUnlockEnabledForUserChanged(user, enabled);
-}
-
 void LoginDataDispatcher::SetUserList(const std::vector<LoginUserInfo>& users) {
   for (auto& observer : observers_)
     observer.OnUsersChanged(users);
@@ -158,8 +152,10 @@ void LoginDataDispatcher::DisableAuthForUser(
     observer.OnAuthDisabledForUser(account_id, auth_disabled_data);
 }
 
-void LoginDataDispatcher::EnableTapToUnlockForUser(const AccountId& user) {
-  SetTapToUnlockEnabledForUser(user, true);
+void LoginDataDispatcher::SetTapToUnlockEnabledForUser(const AccountId& user,
+                                                       bool enabled) {
+  for (auto& observer : observers_)
+    observer.OnTapToUnlockEnabledForUserChanged(user, enabled);
 }
 
 void LoginDataDispatcher::ForceOnlineSignInForUser(const AccountId& user) {

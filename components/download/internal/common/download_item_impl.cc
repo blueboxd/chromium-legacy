@@ -2045,8 +2045,7 @@ void DownloadItemImpl::InterruptWithPartialState(
 
   RecordDownloadInterrupted(reason, GetReceivedBytes(), total_bytes_,
                             job_ && job_->IsParallelizable(),
-                            IsParallelDownloadEnabled(), download_source_,
-                            received_bytes_at_length_mismatch_ > 0);
+                            IsParallelDownloadEnabled(), download_source_);
 
   base::TimeDelta time_since_start = base::Time::Now() - GetStartTime();
   int resulting_file_size = GetReceivedBytes();
@@ -2288,19 +2287,6 @@ void DownloadItemImpl::SetDangerType(DownloadDangerType danger_type) {
     TRACE_EVENT_INSTANT1("download", "DownloadItemSaftyStateUpdated",
                          TRACE_EVENT_SCOPE_THREAD, "danger_type",
                          GetDownloadDangerNames(danger_type).c_str());
-  }
-  // Only record the Malicious UMA stat if it's going from {not malicious} ->
-  // {malicious}.
-  if ((danger_type_ == DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS ||
-       danger_type_ == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
-       danger_type_ == DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT ||
-       danger_type_ == DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT ||
-       danger_type_ == DOWNLOAD_DANGER_TYPE_WHITELISTED_BY_POLICY) &&
-      (danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST ||
-       danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
-       danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT ||
-       danger_type == DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED)) {
-    RecordMaliciousDownloadClassified(danger_type);
   }
   danger_type_ = danger_type;
 }

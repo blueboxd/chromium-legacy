@@ -153,6 +153,9 @@ CORE_EXPORT std::ostream& operator<<(std::ostream&, const EphemeralRange&);
 CORE_EXPORT std::ostream& operator<<(std::ostream&,
                                      const EphemeralRangeInFlatTree&);
 
+CORE_EXPORT EphemeralRangeInFlatTree
+ToEphemeralRangeInFlatTree(const EphemeralRange&);
+
 }  // namespace blink
 
 #endif

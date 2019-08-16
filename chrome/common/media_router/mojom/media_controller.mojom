@@ -32,4 +32,12 @@ interface MediaController {
   // Sets the current playback position. |time| must be less than or equal to
   // the duration of the media. Is a no-op if the media doesn't support seeking.
   Seek(mojo_base.mojom.TimeDelta time);
+
+  // Skips to the next media track, e.g. the next song in a playlist. It is a
+  // no-op if there is no next track.
+  NextTrack();
+
+  // Skips to the previous media track, e.g. the previous song in a playlist. It
+  // is a no-op if there is no previous track.
+  PreviousTrack();
 };

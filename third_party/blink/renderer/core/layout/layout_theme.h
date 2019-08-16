@@ -158,8 +158,10 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   Color PlatformActiveSpellingMarkerHighlightColor() const;
 
   // Highlight and text colors for TextMatches.
-  Color PlatformTextSearchHighlightColor(bool active_match) const;
-  Color PlatformTextSearchColor(bool active_match) const;
+  Color PlatformTextSearchHighlightColor(bool active_match,
+                                         bool in_forced_colors_mode) const;
+  Color PlatformTextSearchColor(bool active_match,
+                                bool in_forced_colors_mode) const;
 
   virtual bool IsFocusRingOutset() const;
   Color FocusRingColor() const;

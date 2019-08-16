@@ -642,23 +642,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
       base::TimeTicks::Now();
   const gfx::Rect mirror_rect(10, 10, 50, 50);
 
-#if defined(OS_ANDROID)
-  const float max_page_scale_factor = 4.6f;
-  const gfx::SizeF root_layer_size(1234.5f, 5432.1f);
-  const bool root_overflow_y_hidden = true;
-  const float bottom_bar_height(1234.5f);
-  const float bottom_bar_shown_ratio(1.0f);
-  Selection<gfx::SelectionBound> selection;
-  selection.start.SetEdge(gfx::PointF(1234.5f, 67891.f),
-                          gfx::PointF(5432.1f, 1987.6f));
-  selection.start.set_visible(true);
-  selection.start.set_type(gfx::SelectionBound::CENTER);
-  selection.end.SetEdge(gfx::PointF(1337.5f, 52124.f),
-                        gfx::PointF(1234.3f, 8765.6f));
-  selection.end.set_visible(false);
-  selection.end.set_type(gfx::SelectionBound::RIGHT);
-#endif  // defined(OS_ANDROID)
-
   CompositorFrameMetadata input;
   input.device_scale_factor = device_scale_factor;
   input.root_scroll_offset = root_scroll_offset;
@@ -679,15 +662,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.top_controls_shown_ratio = top_bar_shown_ratio;
   input.local_surface_id_allocation_time = local_surface_id_allocation_time;
   input.mirror_rect = mirror_rect;
-
-#if defined(OS_ANDROID)
-  input.max_page_scale_factor = max_page_scale_factor;
-  input.root_layer_size = root_layer_size;
-  input.root_overflow_y_hidden = root_overflow_y_hidden;
-  input.bottom_controls_height = bottom_bar_height;
-  input.bottom_controls_shown_ratio = bottom_bar_shown_ratio;
-  input.selection = selection;
-#endif  // defined(OS_ANDROID)
 
   CompositorFrameMetadata output;
   mojo::test::SerializeAndDeserialize<mojom::CompositorFrameMetadata>(&input,
@@ -720,15 +694,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(local_surface_id_allocation_time,
             output.local_surface_id_allocation_time);
   EXPECT_EQ(mirror_rect, output.mirror_rect);
-
-#if defined(OS_ANDROID)
-  EXPECT_EQ(max_page_scale_factor, output.max_page_scale_factor);
-  EXPECT_EQ(root_layer_size, output.root_layer_size);
-  EXPECT_EQ(root_overflow_y_hidden, output.root_overflow_y_hidden);
-  EXPECT_EQ(bottom_bar_height, output.bottom_controls_height);
-  EXPECT_EQ(bottom_bar_shown_ratio, output.bottom_controls_shown_ratio);
-  EXPECT_EQ(selection, output.selection);
-#endif  // defined(OS_ANDROID)
 }
 
 TEST_F(StructTraitsTest, RenderPass) {

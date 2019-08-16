@@ -1688,6 +1688,7 @@ if (!is_android) {
         "../browser/extensions/isolated_app_browsertest.cc",
         "../browser/extensions/lazy_background_page_apitest.cc",
         "../browser/extensions/lazy_background_page_test_util.h",
+        "../browser/extensions/manifest_v3_browsertest.cc",
         "../browser/extensions/mutation_observers_apitest.cc",
         "../browser/extensions/native_bindings_apitest.cc",
         "../browser/extensions/navigation_observer_browsertest.cc",
@@ -1857,7 +1858,6 @@ if (!is_android) {
         "../browser/ui/views/payments/payment_request_completion_status_metrics_browsertest.cc",
         "../browser/ui/views/payments/payment_request_data_url_browsertest.cc",
         "../browser/ui/views/payments/payment_request_debit_browsertest.cc",
-        "../browser/ui/views/payments/payment_request_has_enrolled_instrument_browsertest.cc",
         "../browser/ui/views/payments/payment_request_journey_logger_browsertest.cc",
         "../browser/ui/views/payments/payment_request_missing_fields_metrics_browsertest.cc",
         "../browser/ui/views/payments/payment_request_no_update_with_browsertest.cc",
@@ -3032,6 +3032,7 @@ test("unit_tests") {
     "../browser/performance_manager/persistence/site_data/site_data_writer_unittest.cc",
     "../browser/performance_manager/persistence/site_data/unittest_utils.cc",
     "../browser/performance_manager/persistence/site_data/unittest_utils.h",
+    "../browser/performance_manager/render_process_host_proxy_unittest.cc",
     "../browser/performance_manager/web_contents_proxy_unittest.cc",
     "../browser/performance_manager/webui_graph_dump_impl_unittest.cc",
     "../browser/performance_monitor/metric_evaluator_helper_win_unittest.cc",
@@ -4007,6 +4008,7 @@ test("unit_tests") {
       "../browser/component_updater/metadata_table_chromeos_unittest.cc",
       "../browser/google/google_brand_code_map_chromeos_unittest.cc",
       "../browser/media/webrtc/desktop_media_list_ash_unittest.cc",
+      "../browser/metrics/perf/heap_collector_unittest.cc",
       "../browser/metrics/perf/metric_collector_unittest.cc",
       "../browser/metrics/perf/metric_provider_unittest.cc",
       "../browser/metrics/perf/perf_events_collector_unittest.cc",
@@ -4044,9 +4046,6 @@ test("unit_tests") {
       "//ash/strings",
       "//chrome/browser/resources/chromeos/zip_archiver/cpp:ziparchiver_unittests",
     ]
-    if (use_new_tcmalloc) {
-      sources += [ "../browser/metrics/perf/heap_collector_unittest.cc" ]
-    }
   }
 
   if (use_x11 || use_ozone) {
@@ -4441,7 +4440,7 @@ test("unit_tests") {
         "../browser/chromeos/login/easy_unlock/easy_unlock_auth_attempt_unittest.cc",
         "../browser/chromeos/login/easy_unlock/easy_unlock_notification_controller_chromeos_unittest.cc",
         "../browser/chromeos/login/easy_unlock/easy_unlock_screenlock_state_handler_unittest.cc",
-        "../browser/chromeos/login/easy_unlock/easy_unlock_service_unittest_chromeos.cc",
+        "../browser/chromeos/login/easy_unlock/easy_unlock_service_regular_unittest.cc",
         "../browser/extensions/api/file_system/consent_provider_unittest.cc",
         "../browser/ui/webui/about_ui_unittest.cc",
       ]
@@ -4884,6 +4883,7 @@ test("unit_tests") {
       "../browser/ui/views/hover_button_unittest.cc",
       "../browser/ui/views/infobars/infobar_view_unittest.cc",
       "../browser/ui/views/intent_picker_bubble_view_unittest.cc",
+      "../browser/ui/views/layout/animating_layout_manager_unittest.cc",
       "../browser/ui/views/layout/interpolating_layout_manager_unittest.cc",
       "../browser/ui/views/layout_provider_unittest.cc",
       "../browser/ui/views/location_bar/icon_label_bubble_view_unittest.cc",
@@ -5331,6 +5331,7 @@ if (!is_android) {
       "../browser/ui/translate/translate_bubble_test_utils.h",
       "../browser/ui/views/accessibility/navigation_accessibility_uitest_win.cc",
       "../browser/ui/views/permission_bubble/permission_bubble_views_interactive_uitest_mac.mm",
+      "../browser/ui/views/tabs/tab_spinner_interactive_uitest.cc",
       "../browser/webauth_interactive_uitest.cc",
       "//ui/base/clipboard/clipboard_unittest.cc",
       "base/always_on_top_window_killer_win.cc",

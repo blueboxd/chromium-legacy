@@ -185,6 +185,7 @@ CSSParserTokenRange ConsumeFunction(CSSParserTokenRange& range) {
 
 // TODO(rwlbuis): consider pulling in the parsing logic from
 // CSSCalculationValue.cpp.
+// TODO(xiaochengh): Rename to |MathFunctionParser|.
 class CalcParser {
   STACK_ALLOCATED();
 
@@ -198,6 +199,25 @@ class CalcParser {
       calc_value_ = CSSMathFunctionValue::Create(
           CSSMathExpressionNode::ParseCalc(ConsumeFunction(range_)),
           value_range);
+      return;
+    }
+
+    if (RuntimeEnabledFeatures::CSSComparisonFunctionsEnabled()) {
+      switch (token.FunctionId()) {
+        case CSSValueID::kMin:
+          calc_value_ = CSSMathFunctionValue::Create(
+              CSSMathExpressionNode::ParseMin(ConsumeFunction(range_)),
+              value_range);
+          return;
+        case CSSValueID::kMax:
+          calc_value_ = CSSMathFunctionValue::Create(
+              CSSMathExpressionNode::ParseMax(ConsumeFunction(range_)),
+              value_range);
+          return;
+        default:
+          // TODO(crbug.com/825895): Support clamp() when min()/max() are done.
+          break;
+      }
     }
   }
 

@@ -38,10 +38,10 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
   // Creates the IO thread using the scheduling infrastructure set up in the
   // Create() method. That means that clients have access to TaskRunners
   // associated with the IO thread before that thread is even created. In order
-  // to do so this class will own the TaskEnvironment for the IO thread until
-  // the thread is created, at which point ownership will be transferred and the
-  // |BrowserTaskExecutor| will only communicate with it via TaskRunner
-  // instances.
+  // to do so this class will own the Thread::Delegate for the IO thread
+  // (BrowserIOThreadDelegate) until the thread is created, at which point
+  // ownership will be transferred and the |BrowserTaskExecutor| will only
+  // communicate with it via TaskRunner instances.
   //
   // Browser task queues will initially be disabled, that is tasks posted to
   // them will not run. But the default task runner of the thread (the one you

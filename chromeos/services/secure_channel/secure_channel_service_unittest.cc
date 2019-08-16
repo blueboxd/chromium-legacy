@@ -31,11 +31,9 @@
 #include "chromeos/services/secure_channel/public/mojom/constants.mojom.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "chromeos/services/secure_channel/secure_channel_initializer.h"
-#include "chromeos/services/secure_channel/secure_channel_service.h"
 #include "chromeos/services/secure_channel/timer_factory_impl.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -379,11 +377,8 @@ class SecureChannelServiceTest : public testing::Test {
     ClientConnectionParametersImpl::Factory::SetFactoryForTesting(
         fake_client_connection_parameters_factory_.get());
 
-    service_ = std::make_unique<SecureChannelService>(
-        connector_factory_.RegisterInstance(mojom::kServiceName));
-
-    connector_factory_.GetDefaultConnector()->BindInterface(
-        mojom::kServiceName, &secure_channel_ptr_);
+    service_ = SecureChannelInitializer::Factory::Get()->BuildInstance();
+    service_->BindRequest(mojo::MakeRequest(&secure_channel_ptr_));
     secure_channel_ptr_.FlushForTesting();
   }
 
@@ -865,8 +860,7 @@ class SecureChannelServiceTest : public testing::Test {
 
   size_t num_queued_requests_before_initialization_ = 0u;
 
-  service_manager::TestConnectorFactory connector_factory_;
-  std::unique_ptr<SecureChannelService> service_;
+  std::unique_ptr<SecureChannelBase> service_;
 
   bool is_adapter_powered_;
   bool is_adapter_present_;

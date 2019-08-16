@@ -724,7 +724,7 @@ void FlexLayout::AllocateFlexSpace(
       // them to |expandable_views| so that the remaining space can be allocated
       // later.
       if (expandable_views &&
-          new_size.main() >= flex_child.preferred_size.main()) {
+          new_size.main() > flex_child.preferred_size.main()) {
         (*expandable_views)[flex_order].push_back(view_index);
         new_size.set_main(flex_child.preferred_size.main());
       }

@@ -34,8 +34,7 @@ import java.util.concurrent.TimeoutException;
  * app or a credit card. This user does not have a complete credit card on file.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=PaymentRequestHasEnrolledInstrument"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PaymentRequestCanMakePaymentQueryNoCardTest implements MainActivityStartCallback {
     // Disable animations to reduce flakiness.
     @ClassRule

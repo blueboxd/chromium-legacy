@@ -674,8 +674,6 @@ class CONTENT_EXPORT RenderWidget
 
   void SetMouseCapture(bool capture);
 
-  bool IsSurfaceSynchronizationEnabled() const;
-
   void UseSynchronousResizeModeForTesting(bool enable);
   void SetDeviceScaleFactorForTesting(float factor);
   void SetDeviceColorSpaceForTesting(const gfx::ColorSpace& color_space);

@@ -492,10 +492,11 @@ void HomeLauncherGestureHandler::OnTabletModeEnded() {
 }
 
 void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
-  float home_launcher_opacity = 1.f;
   const bool is_final_state_show = IsFinalStateShow();
-  NotifyHomeLauncherAnimationComplete(is_final_state_show /*shown*/,
-                                      display_.id());
+  base::ScopedClosureRunner notification_runner(base::BindOnce(
+      &HomeLauncherGestureHandler::NotifyHomeLauncherAnimationComplete,
+      base::Unretained(this), is_final_state_show, display_.id()));
+  float home_launcher_opacity = 1.f;
   if (Shell::Get()->overview_controller()->InOverviewSession()) {
     if (overview_active_on_gesture_start_ && is_final_state_show) {
       // Exit overview if event is released on the top half. This will also

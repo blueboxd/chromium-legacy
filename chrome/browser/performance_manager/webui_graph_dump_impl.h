@@ -10,18 +10,23 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
+#include "chrome/browser/performance_manager/public/graph/frame_node.h"
+#include "chrome/browser/performance_manager/public/graph/page_node.h"
+#include "chrome/browser/performance_manager/public/graph/process_node.h"
 #include "chrome/browser/performance_manager/webui_graph_dump.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace performance_manager {
 
-class GraphImpl;
+class Graph;
 
+// TODO(siggi): Add workers to the WebUI graph.
 class WebUIGraphDumpImpl : public mojom::WebUIGraphDump,
-                           public GraphImplObserver {
+                           public FrameNodeObserver,
+                           public PageNodeObserver,
+                           public ProcessNodeObserver {
  public:
-  explicit WebUIGraphDumpImpl(GraphImpl* graph);
+  explicit WebUIGraphDumpImpl(Graph* graph);
   ~WebUIGraphDumpImpl() override;
 
   // Bind this instance to |request| with the |error_handler|.
@@ -32,59 +37,43 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump,
   void SubscribeToChanges(
       mojom::WebUIGraphChangeStreamPtr change_subscriber) override;
 
-  void OnRegistered() override {}
-  void OnUnregistered() override {}
-  bool ShouldObserve(const NodeBase* node) override;
-  void OnNodeAdded(NodeBase* node) override;
-  void OnBeforeNodeRemoved(NodeBase* node) override;
-  void SetGraph(GraphImpl* graph) override;
-
-  // Frame node functions.
-  void OnIsCurrentChanged(FrameNodeImpl* frame_node) override;
-  void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) override;
-  void OnLifecycleStateChanged(FrameNodeImpl* frame_node) override;
-  void OnURLChanged(FrameNodeImpl* frame_node) override;
-  // Event notification.
-  void OnNonPersistentNotificationCreated(FrameNodeImpl* frame_node) override {}
-
-  // Page node functions.
-  void OnIsVisibleChanged(PageNodeImpl* page_node) override;
-  void OnIsAudibleChanged(PageNodeImpl* page_node) override;
-  void OnIsLoadingChanged(PageNodeImpl* page_node) override;
-  void OnUkmSourceIdChanged(PageNodeImpl* page_node) override;
-  void OnLifecycleStateChanged(PageNodeImpl* page_node) override;
-  void OnPageAlmostIdleChanged(PageNodeImpl* page_node) override;
-  // Event notification.
-  void OnFaviconUpdated(PageNodeImpl* page_node) override;
-  // Event notification.
-  void OnTitleUpdated(PageNodeImpl* page_node) override {}
-  // Event notification that also implies the main_frame_url changed.
-  void OnMainFrameNavigationCommitted(PageNodeImpl* page_node) override;
-
-  // Process node functions.
-  void OnExpectedTaskQueueingDurationSample(
-      ProcessNodeImpl* process_node) override;
-  void OnMainThreadTaskLoadIsLow(ProcessNodeImpl* process_node) override;
-  // Event notification.
-  void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_node) override {}
-
-  // System node functions.
+  // FrameNodeObserver implementation:
+  void OnFrameNodeAdded(const FrameNode* frame_node) override;
+  void OnBeforeFrameNodeRemoved(const FrameNode* frame_node) override;
   // Ignored.
-  void OnProcessCPUUsageReady(SystemNodeImpl* system_node) override {}
+  void OnIsCurrentChanged(const FrameNode* frame_node) override {}
+  // Ignored.
+  void OnNetworkAlmostIdleChanged(const FrameNode* frame_node) override {}
+  // Ignored.
+  void OnFrameLifecycleStateChanged(const FrameNode* frame_node) override {}
+  void OnURLChanged(const FrameNode* frame_node) override;
+  void OnNonPersistentNotificationCreated(
+      const FrameNode* frame_node) override {}  // Ignored.
 
-  // Worker node functions.
-  // Ignored. TODO(siggi): Add workers to the WebUI graph.
-  void OnWorkerNodeAdded(WorkerNodeImpl* worker_node) override {}
-  void OnBeforeWorkerNodeRemoved(WorkerNodeImpl* worker_node) override {}
-  void OnClientFrameAdded(WorkerNodeImpl* worker_node,
-                          FrameNodeImpl* client_frame_node) override {}
-  void OnBeforeClientFrameRemoved(WorkerNodeImpl* worker_node,
-                                  FrameNodeImpl* client_frame_node) override {}
-  void OnClientWorkerAdded(WorkerNodeImpl* worker_node,
-                           WorkerNodeImpl* client_worker_node) override {}
-  void OnBeforeClientWorkerRemoved(
-      WorkerNodeImpl* worker_node,
-      WorkerNodeImpl* client_worker_node) override {}
+  // PageNodeObserver implementation:
+  void OnPageNodeAdded(const PageNode* page_node) override;
+  void OnBeforePageNodeRemoved(const PageNode* page_node) override;
+  void OnIsVisibleChanged(const PageNode* page_node) override {}    // Ignored.
+  void OnIsAudibleChanged(const PageNode* page_node) override {}    // Ignored.
+  void OnIsLoadingChanged(const PageNode* page_node) override {}    // Ignored.
+  void OnUkmSourceIdChanged(const PageNode* page_node) override {}  // Ignored.
+  // Ignored.
+  void OnPageLifecycleStateChanged(const PageNode* page_node) override {}
+  // Ignored.
+  void OnPageAlmostIdleChanged(const PageNode* page_node) override {}
+  void OnMainFrameNavigationCommitted(const PageNode* page_node) override;
+  void OnTitleUpdated(const PageNode* page_node) override {}  // Ignored.
+  void OnFaviconUpdated(const PageNode* page_node) override;
+
+  // ProcessNodeObserver implementation:
+  void OnProcessNodeAdded(const ProcessNode* process_node) override;
+  void OnBeforeProcessNodeRemoved(const ProcessNode* process_node) override;
+  void OnExpectedTaskQueueingDurationSample(
+      const ProcessNode* process_node) override {}  // Ignored.
+  // Ignored.
+  void OnMainThreadTaskLoadIsLow(const ProcessNode* process_node) override {}
+  // Ignored.
+  void OnAllFramesInProcessFrozen(const ProcessNode* process_node) override {}
 
  private:
   // The favicon requests happen on the UI thread. This helper class
@@ -93,18 +82,18 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump,
 
   FaviconRequestHelper* EnsureFaviconRequestHelper();
 
-  void StartPageFaviconRequest(PageNodeImpl* page_node);
-  void StartFrameFaviconRequest(FrameNodeImpl* frame_node);
+  void StartPageFaviconRequest(const PageNode* page_node);
+  void StartFrameFaviconRequest(const FrameNode* frame_node);
 
-  void SendFrameNotification(FrameNodeImpl* frame, bool created);
-  void SendPageNotification(PageNodeImpl* page, bool created);
-  void SendProcessNotification(ProcessNodeImpl* process, bool created);
-  void SendDeletionNotification(NodeBase* node);
+  void SendFrameNotification(const FrameNode* frame, bool created);
+  void SendPageNotification(const PageNode* page, bool created);
+  void SendProcessNotification(const ProcessNode* process, bool created);
+  void SendDeletionNotification(const Node* node);
   void SendFaviconNotification(
       int64_t serialization_id,
       scoped_refptr<base::RefCountedMemory> bitmap_data);
 
-  GraphImpl* graph_;
+  Graph* graph_;
 
   std::unique_ptr<FaviconRequestHelper> favicon_request_helper_;
 

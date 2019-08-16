@@ -131,10 +131,9 @@ class EmbeddedWorkerTestHelper {
   // The following are exposed to public so the fake embedded worker and service
   // worker implementations and their subclasses can call them.
 
-  // Called when |request| is received. It takes the object from a previous
-  // AddPending*() call if any and calls Create*() otherwise.
-  void OnInstanceClientRequest(
-      blink::mojom::EmbeddedWorkerInstanceClientRequest request);
+  // Called when |request_handle| is received. It takes the object from a
+  // previous AddPending*() call if any and calls Create*() otherwise.
+  void OnInstanceClientRequest(mojo::ScopedMessagePipeHandle request_handle);
   void OnServiceWorkerRequest(blink::mojom::ServiceWorkerRequest request);
 
   // Called by the fakes to destroy themselves.
@@ -155,15 +154,11 @@ class EmbeddedWorkerTestHelper {
   virtual std::unique_ptr<FakeServiceWorker> CreateServiceWorker();
 
  private:
-  class MockRendererInterface;
-
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<MockRenderProcessHost> render_process_host_;
   std::unique_ptr<MockRenderProcessHost> new_render_process_host_;
 
   scoped_refptr<ServiceWorkerContextWrapper> wrapper_;
-
-  std::unique_ptr<MockRendererInterface> mock_renderer_interface_;
 
   base::queue<std::unique_ptr<FakeEmbeddedWorkerInstanceClient>>
       pending_embedded_worker_instance_clients_;

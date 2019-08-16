@@ -150,7 +150,7 @@ class API_AVAILABLE(macos(10.12.2)) TouchBarNotificationBridge
     command_controller->AddCommandObserver(IDC_BACK, this);
     owner.canGoBack = command_controller->IsCommandEnabled(IDC_BACK);
     command_controller->AddCommandObserver(IDC_FORWARD, this);
-    owner.canGoBack = command_controller->IsCommandEnabled(IDC_FORWARD);
+    owner.canGoForward = command_controller->IsCommandEnabled(IDC_FORWARD);
 
     auto* profile = browser->profile();
     auto* prefs = profile->GetPrefs();

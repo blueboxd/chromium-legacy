@@ -42,7 +42,13 @@ const char CaptivePortalDetector::kDefaultURL[] =
 
 CaptivePortalDetector::CaptivePortalDetector(
     network::mojom::URLLoaderFactory* loader_factory)
-    : loader_factory_(loader_factory), weak_factory_(this) {}
+    : loader_factory_(loader_factory)
+#if defined(OS_CHROMEOS)
+      ,
+      weak_factory_(this)
+#endif
+{
+}
 
 CaptivePortalDetector::~CaptivePortalDetector() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -55,6 +61,7 @@ void CaptivePortalDetector::DetectCaptivePortal(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!FetchingURL());
   DCHECK(detection_callback_.is_null());
+  DCHECK(!detection_callback.is_null());
 
   detection_callback_ = std::move(detection_callback);
 
@@ -95,6 +102,10 @@ void CaptivePortalDetector::StartProbe(
 void CaptivePortalDetector::Cancel() {
   simple_loader_.reset();
   detection_callback_.Reset();
+#if defined(OS_CHROMEOS)
+  // Cancel any pending calls to StartProbe().
+  weak_factory_.InvalidateWeakPtrs();
+#endif
 }
 
 void CaptivePortalDetector::OnSimpleLoaderComplete(

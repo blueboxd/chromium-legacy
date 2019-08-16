@@ -35,6 +35,7 @@
 #include "base/auto_reset.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/input/scroll_snap_data.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
@@ -298,14 +299,12 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
-#include "third_party/blink/renderer/platform/text/date_components.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -5900,10 +5899,9 @@ void Document::setDomain(const String& raw_domain,
   }
 }
 
-// http://www.whatwg.org/specs/web-apps/current-work/#dom-document-lastmodified
+// https://html.spec.whatwg.org/C#dom-document-lastmodified
 String Document::lastModified() const {
-  // TODO(tkent): Use base::Time::LocalExplode() instead of DateComponents.
-  DateComponents date;
+  base::Time::Exploded exploded;
   bool found_date = false;
   AtomicString http_last_modified = override_last_modified_;
   if (http_last_modified.IsEmpty() && frame_) {
@@ -5915,8 +5913,7 @@ String Document::lastModified() const {
   if (!http_last_modified.IsEmpty()) {
     base::Optional<base::Time> date_value = ParseDate(http_last_modified);
     if (date_value) {
-      date.SetMillisecondsSinceEpochForDateTimeLocal(
-          ConvertToLocalTime(date_value.value()).InMillisecondsF());
+      date_value.value().LocalExplode(&exploded);
       found_date = true;
     }
   }
@@ -5924,12 +5921,11 @@ String Document::lastModified() const {
   // specificiation tells us to read the last modification date from the file
   // system.
   if (!found_date) {
-    date.SetMillisecondsSinceEpochForDateTimeLocal(
-        ConvertToLocalTime(base::Time::Now()).InMillisecondsF());
+    base::Time::Now().LocalExplode(&exploded);
   }
-  return String::Format("%02d/%02d/%04d %02d:%02d:%02d", date.Month() + 1,
-                        date.MonthDay(), date.FullYear(), date.Hour(),
-                        date.Minute(), date.Second());
+  return String::Format("%02d/%02d/%04d %02d:%02d:%02d", exploded.month,
+                        exploded.day_of_month, exploded.year, exploded.hour,
+                        exploded.minute, exploded.second);
 }
 
 void Document::SetFindInPageRoot(Element* find_in_page_root) {
@@ -8405,6 +8401,11 @@ TrustedTypePolicyFactory* Document::GetTrustedTypes() const {
 void Document::ColorSchemeChanged() {
   GetStyleEngine().ColorSchemeChanged();
   MediaQueryAffectingValueChanged();
+}
+
+bool Document::InForcedColorsMode() const {
+  return RuntimeEnabledFeatures::ForcedColorsEnabled() &&
+         GetSettings()->GetForcedColors() != ForcedColors::kNone;
 }
 
 void Document::CountUse(mojom::WebFeature feature) const {

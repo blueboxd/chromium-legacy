@@ -96,6 +96,7 @@ class TabListRecyclerView extends RecyclerView {
         }
     }
 
+    private final int mResourceId;
     private ValueAnimator mFadeInAnimator;
     private ValueAnimator mFadeOutAnimator;
     private VisibilityListener mListener;
@@ -114,6 +115,9 @@ class TabListRecyclerView extends RecyclerView {
      */
     public TabListRecyclerView(Context context, AttributeSet attributeSet) {
         super(context, attributeSet);
+
+        // Use this object in case there are multiple instances of this class.
+        mResourceId = this.toString().hashCode();
     }
 
     /**
@@ -206,7 +210,7 @@ class TabListRecyclerView extends RecyclerView {
      * @return The ID for registering and using the dynamic resource in compositor.
      */
     int getResourceId() {
-        return getId();
+        return mResourceId;
     }
 
     long getLastDirtyTimeForTesting() {

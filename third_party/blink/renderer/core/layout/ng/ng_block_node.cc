@@ -229,7 +229,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
 
     // We may have to update the margins on box_; we reuse the layout result
     // even if a percentage margin may have changed.
-    if (UNLIKELY(Style().MayHaveMargin() && !IsTableCell()))
+    if (UNLIKELY(Style().MayHaveMargin() && !constraint_space.IsTableCell()))
       box_->SetMargin(ComputePhysicalMargins(constraint_space, Style()));
 
     // TODO(layoutng): Figure out why these two call can't be inside the
@@ -962,13 +962,6 @@ bool NGBlockNode::UseLogicalBottomMarginEdgeForInlineBlockBaseline() const {
   auto* layout_box = DynamicTo<LayoutBlock>(GetLayoutBox());
   return layout_box &&
          layout_box->UseLogicalBottomMarginEdgeForInlineBlockBaseline();
-}
-
-bool NGBlockNode::IsRestrictedBlockSizeTableCell() const {
-  DCHECK(IsTableCell());
-  const LayoutTableCell* cell = ToLayoutTableCell(GetLayoutBox());
-  return !cell->StyleRef().LogicalHeight().IsAuto() ||
-         !cell->Table()->StyleRef().LogicalHeight().IsAuto();
 }
 
 bool NGBlockNode::IsCustomLayoutLoaded() const {

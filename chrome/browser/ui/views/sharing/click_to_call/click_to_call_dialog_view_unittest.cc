@@ -5,14 +5,17 @@
 #include "chrome/browser/ui/views/sharing/click_to_call/click_to_call_dialog_view.h"
 
 #include <map>
+#include <memory>
 #include <string>
 
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/send_tab_to_self/target_device_info.h"
+#include "components/sync_device_info/device_info.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,7 +32,7 @@ class ClickToCallUiControllerMock : public ClickToCallUiController {
       : ClickToCallUiController(web_contents) {}
   ~ClickToCallUiControllerMock() override = default;
 
-  MOCK_METHOD1(OnDeviceChosen, void(const SharingDeviceInfo& device));
+  MOCK_METHOD1(OnDeviceChosen, void(const syncer::DeviceInfo& device));
   MOCK_METHOD1(OnAppChosen, void(const App& app));
 };
 
@@ -76,7 +79,7 @@ class ClickToCallDialogViewTest : public ChromeViewsTestBase {
     controller_ =
         std::make_unique<ClickToCallUiControllerMock>(web_contents_.get());
 
-    controller_->set_devices_for_testing(SetUpDevices());
+    controller_->set_devices_for_testing(SetUpDevices(3));
     controller_->set_apps_for_testing(SetUpApps());
   }
 
@@ -85,14 +88,16 @@ class ClickToCallDialogViewTest : public ChromeViewsTestBase {
     ChromeViewsTestBase::TearDown();
   }
 
-  std::vector<SharingDeviceInfo> SetUpDevices() {
-    std::vector<SharingDeviceInfo> devices;
-    devices.emplace_back("device_guid_1", base::UTF8ToUTF16("device1"),
-                         sync_pb::SyncEnums::TYPE_PHONE, base::Time::Now(), 1);
-    devices.emplace_back("device_guid_2", base::UTF8ToUTF16("device2"),
-                         sync_pb::SyncEnums::TYPE_PHONE, base::Time::Now(), 1);
-    devices.emplace_back("device_guid_3", base::UTF8ToUTF16("device3"),
-                         sync_pb::SyncEnums::TYPE_PHONE, base::Time::Now(), 1);
+  std::vector<std::unique_ptr<syncer::DeviceInfo>> SetUpDevices(int count) {
+    std::vector<std::unique_ptr<syncer::DeviceInfo>> devices;
+    for (int i = 0; i < count; i++) {
+      devices.emplace_back(std::make_unique<syncer::DeviceInfo>(
+          base::StrCat({"device_guid_", base::NumberToString(i)}),
+          base::StrCat({"device", base::NumberToString(i)}), "chrome_version",
+          "user_agent", sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
+          /* last_updated_timestamp= */ base::Time::Now(),
+          /* send_tab_to_self_receiving_enabled= */ false));
+    }
     return devices;
   }
 
@@ -121,11 +126,12 @@ TEST_F(ClickToCallDialogViewTest, PopulateDialogView) {
 }
 
 TEST_F(ClickToCallDialogViewTest, DevicePressed) {
-  SharingDeviceInfo sharing_device_info(
-      "device_guid_2", base::UTF8ToUTF16("device2"),
-      sync_pb::SyncEnums::TYPE_PHONE, base::Time::Now(), 1);
-  EXPECT_CALL(*controller_.get(),
-              OnDeviceChosen(DeviceEquals(&sharing_device_info)));
+  syncer::DeviceInfo device_info(
+      "device_guid_1", "device1", "chrome_version", "user_agent",
+      sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
+      /* last_updated_timestamp= */ base::Time::Now(),
+      /* send_tab_to_self_receiving_enabled= */ false);
+  EXPECT_CALL(*controller_.get(), OnDeviceChosen(DeviceEquals(&device_info)));
 
   std::unique_ptr<ClickToCallDialogView> bubble_view_ =
       std::make_unique<ClickToCallDialogViewMock>(

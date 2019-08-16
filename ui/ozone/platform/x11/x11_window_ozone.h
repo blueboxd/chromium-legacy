@@ -17,6 +17,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
 
 namespace ui {
 
@@ -26,6 +27,7 @@ struct PlatformWindowInitProperties;
 // PlatformWindow implementation for X11 Ozone. PlatformEvents are ui::Events.
 class X11WindowOzone : public PlatformWindow,
                        public PlatformEventDispatcher,
+                       public WmMoveResizeHandler,
                        public XEventDispatcher,
                        public XWindow::Delegate {
  public:
@@ -86,6 +88,11 @@ class X11WindowOzone : public PlatformWindow,
   // PlatformEventDispatcher:
   bool CanDispatchEvent(const PlatformEvent& event) override;
   uint32_t DispatchEvent(const PlatformEvent& event) override;
+
+  // WmMoveResizeHandler
+  void DispatchHostWindowDragMovement(
+      int hittest,
+      const gfx::Point& pointer_location) override;
 
   void Init(const PlatformWindowInitProperties& params);
   void SetWidget(XID xwindow);

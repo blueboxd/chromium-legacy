@@ -14,7 +14,6 @@
 #include "ios/web/public/init/ios_global_state_configuration.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "url/url_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -30,8 +29,6 @@ void InitializeOnMainThread() {
   create_params.install_at_exit_manager = true;
   ios_global_state::Create(create_params);
   ios_global_state::StartThreadPool();
-
-  url::Initialize();
 
   ios_global_state::BuildSingleThreadTaskExecutor();
   ios_global_state::CreateNetworkChangeNotifier();

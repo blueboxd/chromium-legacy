@@ -172,7 +172,7 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
         nullptr,  // BrowserView.
         top_container_, tab_strip_region_view, tab_strip_, nullptr, nullptr,
         toolbar_, infobar_container_, contents_container_,
-        immersive_mode_controller_.get());
+        immersive_mode_controller_.get(), nullptr);
   }
 
  private:

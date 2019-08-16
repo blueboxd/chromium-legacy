@@ -1,0 +1,60 @@
+<!doctype HTML>
+<html>
+<meta charset="utf8">
+<title>Display Locking: selection activates locked element</title>
+<link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
+<link rel="help" href="https://github.com/WICG/display-locking">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="../resources/utils.js"></script>
+
+<div id="container">
+foo
+  <div id="nonActivatable">
+    bleh
+  </div>
+  <div id="nested">
+    bar
+  </div>
+</div>
+
+<script>
+promise_test(() => {
+  const acquirePromise = Promise.all(
+    [setInvisibleActivatable(container),
+     setInvisible(nonActivatable),
+     setInvisibleActivatable(nested)
+    ]);
+  return new Promise((resolve, reject) => {
+    const eventPromise = new Promise((resolve, reject) => {
+      // #container will get activated first, then #nested (and the event will bubble).
+      container.onbeforeactivate = (e) => {
+        if (e.target == container) {
+          assert_equals(e.activatedElement, container);
+        } else {
+          assert_equals(e.target, nested);
+          assert_equals(e.activatedElement, nested);
+          assert_equals(container.displayLock.locked, false);
+          resolve();
+        }
+      }
+      nested.onbeforeactivate = (e) => {
+        assert_equals(e.target, nested);
+        assert_equals(e.activatedElement, nested);
+      };
+      nonActivatable.onbeforeactivate = reject;
+    });
+
+    acquirePromise.then(() => {
+      window.getSelection().selectAllChildren(container);
+      eventPromise.then(() => {
+        assert_equals(window.getSelection().toString(), "foo\nbar");
+        assert_equals(container.displayLock.locked, false);
+        assert_equals(nonActivatable.displayLock.locked, true);
+        assert_equals(nested.displayLock.locked, false);
+        resolve();
+      });
+    });
+  });
+}, "Activating locked element through selection activates activatable elements");
+</script>

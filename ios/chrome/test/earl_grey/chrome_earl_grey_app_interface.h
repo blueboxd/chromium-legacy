@@ -151,6 +151,9 @@
 // success, or else an NSError indicating why the operation failed.
 + (NSError*)signOutAndClearAccounts;
 
+// Returns the current WebState's VisibleURL.
++ (NSString*)webStateVisibleURL;
+
 #pragma mark - Sync Utilities (EG2)
 
 // Clears the autofill profile for the given |GUID|.

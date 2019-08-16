@@ -171,7 +171,10 @@ class PLATFORM_EXPORT GraphicsContext {
 
   // DrawLine() only operates on horizontal or vertical lines and uses the
   // current stroke settings.
-  void DrawLine(const IntPoint&, const IntPoint&);
+  void DrawLine(const IntPoint&,
+                const IntPoint&,
+                const DarkModeFilter::ElementRole role =
+                    DarkModeFilter::ElementRole::kBackground);
 
   void FillPath(const Path&);
 
@@ -236,7 +239,10 @@ class PLATFORM_EXPORT GraphicsContext {
   // fillRoundedRect().
   void DrawOval(const SkRect&, const PaintFlags&);
   void DrawPath(const SkPath&, const PaintFlags&);
-  void DrawRect(const SkRect&, const PaintFlags&);
+  void DrawRect(const SkRect&,
+                const PaintFlags&,
+                const DarkModeFilter::ElementRole role =
+                    DarkModeFilter::ElementRole::kBackground);
   void DrawRRect(const SkRRect&, const PaintFlags&);
 
   void Clip(const IntRect& rect) { ClipRect(rect); }

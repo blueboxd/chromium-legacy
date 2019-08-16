@@ -19,7 +19,7 @@ class URLUtilTest : public testing::Test {
   URLUtilTest() = default;
   ~URLUtilTest() override {
     // Reset any added schemes.
-    Shutdown();
+    ResetForTests();
   }
 
  private:
@@ -106,7 +106,7 @@ TEST_F(URLUtilTest, ShutdownCleansUpSchemes) {
   AddReferrerScheme(kFooScheme, url::SCHEME_WITH_HOST);
   EXPECT_TRUE(IsReferrerScheme(kFooScheme, Component(0, strlen(kFooScheme))));
 
-  Shutdown();
+  ResetForTests();
   EXPECT_FALSE(IsReferrerScheme(kFooScheme, Component(0, strlen(kFooScheme))));
 }
 

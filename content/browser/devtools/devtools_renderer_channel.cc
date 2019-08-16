@@ -27,7 +27,6 @@ void DevToolsRendererChannel::SetRenderer(
     mojo::PendingRemote<blink::mojom::DevToolsAgent> agent_remote,
     mojo::PendingReceiver<blink::mojom::DevToolsAgentHost> host_receiver,
     int process_id,
-    RenderFrameHostImpl* frame_host,
     base::OnceClosure connection_error) {
   CleanupConnection();
   blink::mojom::DevToolsAgent* agent = nullptr;
@@ -39,7 +38,7 @@ void DevToolsRendererChannel::SetRenderer(
     agent_remote_.set_disconnect_handler(std::move(connection_error));
   if (host_receiver)
     receiver_.Bind(std::move(host_receiver));
-  SetRendererInternal(agent, process_id, frame_host);
+  SetRendererInternal(agent, process_id, nullptr);
 }
 
 void DevToolsRendererChannel::SetRendererAssociated(

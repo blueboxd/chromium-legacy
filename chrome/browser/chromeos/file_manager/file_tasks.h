@@ -106,6 +106,10 @@
 class PrefService;
 class Profile;
 
+namespace apps {
+struct FileHandlerInfo;
+}
+
 namespace extensions {
 struct EntryInfo;
 }
@@ -266,9 +270,8 @@ bool ExecuteFileTask(Profile* profile,
                      FileTaskFinishedCallback done);
 
 // Returns true if a file handler matches with entries as good match.
-bool IsGoodMatchFileHandler(
-    const extensions::FileHandlerInfo& file_handler_info,
-    const std::vector<extensions::EntryInfo>& entries);
+bool IsGoodMatchFileHandler(const apps::FileHandlerInfo& file_handler_info,
+                            const std::vector<extensions::EntryInfo>& entries);
 
 // Finds the file handler tasks (apps declaring "file_handlers" in
 // manifest.json) that can be used with the given entries, appending them to

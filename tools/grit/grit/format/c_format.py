@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import codecs
 import os
 import re
 
@@ -65,10 +66,16 @@ def _FormatMessage(item, lang):
   """Format a single <message> element."""
 
   message = item.ws_at_start + item.Translate(lang) + item.ws_at_end
-  # output message with non-ascii chars escaped as octal numbers
-  # C's grammar allows escaped hexadecimal numbers to be infinite,
-  # but octal is always of the form \OOO
-  message = message.encode('utf-8').encode('string_escape')
+  # Output message with non-ascii chars escaped as octal numbers C's grammar
+  # allows escaped hexadecimal numbers to be infinite, but octal is always of
+  # the form \OOO.  Python 3 doesn't support string-escape, so we have to jump
+  # through some hoops here via codecs.escape_encode.
+  # This basically does:
+  #   - message - the starting string
+  #   - message.encode(...) - convert to bytes
+  #   - codecs.escape_encode(...) - convert non-ASCII bytes to \x## escapes
+  #   - (...).decode() - convert bytes back to a string
+  message = codecs.escape_encode(message.encode('utf-8'))[0].decode('utf-8')
   # an escaped char is (\xHH)+ but only if the initial
   # backslash is not escaped.
   not_a_backslash = r"(^|[^\\])"  # beginning of line or a non-backslash char

@@ -322,6 +322,25 @@ var defaultTests = [
       chrome.test.succeed();
     });
   },
+  // This test verifies that autotetPrivate can correctly query installed apps.
+  function getAllInstalledApps() {
+    chrome.autotestPrivate.getAllInstalledApps(chrome.test.callbackPass(
+      apps => {
+        // Limit apps to chromium to filter out default apps.
+        const chromium = apps.find(
+          app => app.appId == 'mgndgikekgjfcpckkfioiadnlibdjbkf');
+        chrome.test.assertTrue(!!chromium);
+        // Only check that name and shortName are set for Chromium because
+        // their values change if chrome_branded is true.
+        chrome.test.assertTrue(!!chromium.name);
+        chrome.test.assertTrue(!!chromium.shortName);
+        chrome.test.assertEq(chromium.additionalSearchTerms, []);
+        chrome.test.assertEq(chromium.readiness, 'Ready');
+        chrome.test.assertEq(chromium.showInLauncher, true);
+        chrome.test.assertEq(chromium.showInSearch, true);
+        chrome.test.assertEq(chromium.type, 'Extension');
+    }));
+  },
   // This test verifies that only Chromium is available by default.
   function getShelfItems() {
     chrome.autotestPrivate.getShelfItems(chrome.test.callbackPass(items => {

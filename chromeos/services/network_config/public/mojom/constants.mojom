@@ -4,5 +4,4 @@
 
 module chromeos.network_config.mojom;
 
-const string kServiceName = "network_config";
 const string kNetworkConfigCapability = "network_config";

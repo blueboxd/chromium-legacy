@@ -4,15 +4,17 @@
 
 package org.chromium.chrome.browser.tasks;
 
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL;
+
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
  * Coordinator for displaying task-related surfaces (Tab Switcher, MV Tiles, Omnibox, etc.).
@@ -20,28 +22,21 @@ import org.chromium.chrome.tab_ui.R;
  */
 public class TasksSurfaceCoordinator implements TasksSurface {
     private final TabSwitcher mTabSwitcher;
-    private final LinearLayout mLayout;
-    private final FrameLayout mGridContainerLayout;
+    private final TasksView mView;
+    private final PropertyModelChangeProcessor mPropertyModelChangeProcessor;
 
-    public TasksSurfaceCoordinator(ChromeActivity activity, boolean isTabCarousel) {
-        mLayout = (LinearLayout) LayoutInflater.from(activity).inflate(
-                R.layout.tasks_surface_layout, null);
-        mGridContainerLayout = (FrameLayout) mLayout.findViewById(R.id.tab_switcher_container);
-
+    public TasksSurfaceCoordinator(
+            ChromeActivity activity, boolean isTabCarousel, PropertyModel propertyModel) {
+        mView = (TasksView) LayoutInflater.from(activity).inflate(R.layout.tasks_view_layout, null);
+        mPropertyModelChangeProcessor =
+                PropertyModelChangeProcessor.create(propertyModel, mView, TasksViewBinder::bind);
         if (isTabCarousel) {
-            // TODO(crbug.com/982018): Change view according to incognito and dark mode.
-            // TODO(crbug.com/982018): Add the tab switcher section title.
-            mLayout.setLayoutParams(
-                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT));
-            mGridContainerLayout.setLayoutParams(
-                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT));
+            propertyModel.set(IS_TAB_CAROUSEL, true);
             mTabSwitcher = TabManagementModuleProvider.getDelegate().createCarouselTabSwitcher(
-                    activity, mGridContainerLayout);
+                    activity, mView.getTabSwitcherContainer());
         } else {
             mTabSwitcher = TabManagementModuleProvider.getDelegate().createGridTabSwitcher(
-                    activity, mGridContainerLayout);
+                    activity, mView.getTabSwitcherContainer());
         }
     }
 
@@ -62,6 +57,6 @@ public class TasksSurfaceCoordinator implements TasksSurface {
 
     @Override
     public View getView() {
-        return mLayout;
+        return mView;
     }
 }

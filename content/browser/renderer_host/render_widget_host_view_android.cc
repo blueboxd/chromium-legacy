@@ -243,7 +243,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   if (using_browser_compositor_) {
     delegated_frame_host_client_ =
         std::make_unique<DelegatedFrameHostClientAndroid>(this);
-    DCHECK(features::IsSurfaceSynchronizationEnabled());
     delegated_frame_host_ = std::make_unique<ui::DelegatedFrameHostAndroid>(
         &view_, GetHostFrameSinkManager(), delegated_frame_host_client_.get(),
         host()->GetFrameSinkId());
@@ -391,9 +390,6 @@ void RenderWidgetHostViewAndroid::LostFocus() {
 
 void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
     const cc::RenderFrameMetadata& metadata) {
-  if (!features::IsSurfaceSynchronizationEnabled())
-    return;
-
   bool is_transparent = metadata.has_transparent_background;
   SkColor root_background_color = metadata.root_background_color;
 
@@ -1102,11 +1098,9 @@ void RenderWidgetHostViewAndroid::EvictFrameIfNecessary() {
 }
 
 void RenderWidgetHostViewAndroid::UpdateWebViewBackgroundColorIfNecessary() {
-  // Before SurfaceSync, Android WebView had a bug the BG color was always set
-  // to black when fullscreen (see https://crbug.com/961223#c5). As
-  // applications came to rely on this behavior, preserve it here.
-  if (!features::IsSurfaceSynchronizationEnabled())
-    return;
+  // Android WebView had a bug the BG color was always set to black when
+  // fullscreen (see https://crbug.com/961223#c5). As applications came to rely
+  // on this behavior, preserve it here.
   if (!using_browser_compositor_ &&
       host()->delegate()->IsFullscreenForCurrentTab()) {
     SetContentBackgroundColor(SK_ColorBLACK);
@@ -1131,10 +1125,6 @@ void RenderWidgetHostViewAndroid::OnDidNotProduceFrame(
   NOTREACHED();
 }
 
-void RenderWidgetHostViewAndroid::ClearCompositorFrame() {
-  EvictDelegatedFrame();
-}
-
 void RenderWidgetHostViewAndroid::ResetFallbackToFirstNavigationSurface() {
   if (delegated_frame_host_)
     delegated_frame_host_->ResetFallbackToFirstNavigationSurface();
@@ -1145,31 +1135,6 @@ bool RenderWidgetHostViewAndroid::RequestRepaintForTesting() {
                                      base::nullopt);
 }
 
-void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
-    viz::CompositorFrameMetadata metadata) {
-  // TODO(ericrk): Remove this function once surface synchronization feature is
-  // no longer optional.
-  if (features::IsSurfaceSynchronizationEnabled())
-    return;
-
-  if (!view_.parent())
-    return;
-
-    bool is_mobile_optimized = IsMobileOptimizedFrame(
-        metadata.page_scale_factor, metadata.min_page_scale_factor,
-        metadata.max_page_scale_factor, metadata.scrollable_viewport_size,
-        metadata.root_layer_size);
-
-    if (host() && host()->input_router())
-      host()->input_router()->NotifySiteIsMobileOptimized(is_mobile_optimized);
-
-    // This is a subset of OnSwapCompositorFrame() used in the synchronous
-    // compositor flow.
-    OnFrameMetadataUpdated(metadata.Clone(), false);
-
-    // DevTools ScreenCast support for Android WebView.
-    last_devtools_frame_metadata_.emplace(metadata);
-}
 
 void RenderWidgetHostViewAndroid::FrameTokenChangedForSynchronousCompositor(
     uint32_t frame_token,
@@ -1342,87 +1307,6 @@ WebContentsAccessibilityAndroid*
 RenderWidgetHostViewAndroid::GetWebContentsAccessibilityAndroid() const {
   return static_cast<WebContentsAccessibilityAndroid*>(
       web_contents_accessibility_);
-}
-
-void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
-    const viz::CompositorFrameMetadata& metadata,
-    bool is_transparent) {
-  if (features::IsSurfaceSynchronizationEnabled())
-    return;
-
-  bool is_mobile_optimized = IsMobileOptimizedFrame(
-      metadata.page_scale_factor, metadata.min_page_scale_factor,
-      metadata.max_page_scale_factor, metadata.scrollable_viewport_size,
-      metadata.root_layer_size);
-
-  gesture_provider_.SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);
-
-  float dip_scale = view_.GetDipScale();
-  gfx::SizeF root_layer_size_dip = metadata.root_layer_size;
-  gfx::SizeF scrollable_viewport_size_dip = metadata.scrollable_viewport_size;
-  gfx::Vector2dF root_scroll_offset_dip = metadata.root_scroll_offset;
-  if (IsUseZoomForDSFEnabled()) {
-    float pix_to_dip = 1 / dip_scale;
-    root_layer_size_dip.Scale(pix_to_dip);
-    scrollable_viewport_size_dip.Scale(pix_to_dip);
-    root_scroll_offset_dip.Scale(pix_to_dip);
-  }
-
-  float to_pix = IsUseZoomForDSFEnabled() ? 1.f : dip_scale;
-  // Note that the height of browser control is not affected by page scale
-  // factor. Thus, |top_content_offset| in CSS pixels is also in DIPs.
-  float top_content_offset =
-      metadata.top_controls_height * metadata.top_controls_shown_ratio;
-  float top_shown_pix = top_content_offset * to_pix;
-
-  if (ime_adapter_android_) {
-    ime_adapter_android_->UpdateFrameInfo(metadata.selection.start, dip_scale,
-                                          top_shown_pix);
-  }
-
-  auto* wcax = GetWebContentsAccessibilityAndroid();
-  if (wcax)
-    wcax->UpdateFrameInfo(metadata.page_scale_factor);
-
-  if (!gesture_listener_manager_)
-    return;
-
-  if (overscroll_controller_) {
-    overscroll_controller_->OnFrameMetadataUpdated(
-        metadata.page_scale_factor, metadata.device_scale_factor,
-        metadata.scrollable_viewport_size, metadata.root_layer_size,
-        metadata.root_scroll_offset, metadata.root_overflow_y_hidden);
-  }
-
-  UpdateTouchSelectionController(metadata.selection, metadata.page_scale_factor,
-                                 metadata.top_controls_height,
-                                 metadata.top_controls_shown_ratio,
-                                 scrollable_viewport_size_dip);
-  // ViewAndroid::content_offset() must be in dip
-  float top_content_offset_dip = IsUseZoomForDSFEnabled()
-                                     ? top_content_offset / dip_scale
-                                     : top_content_offset;
-  view_.UpdateFrameInfo({scrollable_viewport_size_dip, top_content_offset_dip});
-  bool controls_changed = UpdateControls(
-      view_.GetDipScale(), metadata.top_controls_height,
-      metadata.top_controls_shown_ratio, metadata.bottom_controls_height,
-      metadata.bottom_controls_shown_ratio);
-
-  // All offsets and sizes except |top_shown_pix| are in dip.
-  gesture_listener_manager_->UpdateScrollInfo(
-      root_scroll_offset_dip, metadata.page_scale_factor,
-      metadata.min_page_scale_factor, metadata.max_page_scale_factor,
-      root_layer_size_dip, scrollable_viewport_size_dip, top_content_offset_dip,
-      top_shown_pix, controls_changed);
-
-  SetContentBackgroundColor(is_transparent ? SK_ColorTRANSPARENT
-                                           : metadata.root_background_color);
-
-  page_scale_ = metadata.page_scale_factor;
-  min_page_scale_ = metadata.min_page_scale_factor;
-  max_page_scale_ = metadata.max_page_scale_factor;
-
-  EvictFrameIfNecessary();
 }
 
 void RenderWidgetHostViewAndroid::UpdateTouchSelectionController(
@@ -2185,13 +2069,6 @@ RenderWidgetHostViewAndroid::GetTouchSelectionControllerClientManager() {
 
 const viz::LocalSurfaceIdAllocation&
 RenderWidgetHostViewAndroid::GetLocalSurfaceIdAllocation() const {
-  // Don't return an local surface ID for webview unless we're using
-  // SurfaceSynchronization.
-  if (!using_browser_compositor_ &&
-      !features::IsSurfaceSynchronizationEnabled()) {
-    return viz::ParentLocalSurfaceIdAllocator::
-        InvalidLocalSurfaceIdAllocation();
-  }
   return local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
 }
 
@@ -2589,9 +2466,6 @@ void RenderWidgetHostViewAndroid::DidNavigate() {
 viz::ScopedSurfaceIdAllocator
 RenderWidgetHostViewAndroid::DidUpdateVisualProperties(
     const cc::RenderFrameMetadata& metadata) {
-  if (!features::IsSurfaceSynchronizationEnabled())
-    return RenderWidgetHostViewBase::DidUpdateVisualProperties(metadata);
-
   base::OnceCallback<void()> allocation_task = base::BindOnce(
       &RenderWidgetHostViewAndroid::OnDidUpdateVisualPropertiesComplete,
       weak_ptr_factory_.GetWeakPtr(), metadata);

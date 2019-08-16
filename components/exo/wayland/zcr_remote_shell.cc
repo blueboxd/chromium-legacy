@@ -979,10 +979,16 @@ void HandleRemoteSurfaceBoundsChangedCallback(
   }
   if (wl_resource_get_version(resource) >= 22) {
     // Notify bounds change by local bounds.
-     auto* widget = GetUserDataAs<ShellSurfaceBase>(resource)->GetWidget();
     gfx::Rect bounds_in_display = gfx::Rect(bounds);
-    wm::ConvertRectFromScreen(widget->GetNativeWindow()->parent(),
-                              &bounds_in_display);
+    display::Display display;
+    display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id, &display);
+    // The display ID should be valid.
+    DCHECK(display.is_valid());
+    if (display.is_valid())
+      bounds_in_display.Offset(-display.bounds().OffsetFromOrigin());
+    else
+      LOG(ERROR) << "Invalid Display in send_bounds_changed:" << display_id;
+
     zcr_remote_surface_v1_send_bounds_changed(
         resource, static_cast<uint32_t>(display_id >> 32),
         static_cast<uint32_t>(display_id), bounds_in_display.x(),

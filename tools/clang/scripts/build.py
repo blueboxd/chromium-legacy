@@ -338,6 +338,15 @@ def main():
                       default=sys.platform in ('linux2', 'darwin'))
   args = parser.parse_args()
 
+  # TODO(crbug.com/985289): Remove when rolling past r366427.
+  if args.llvm_force_head_revision:
+    global RELEASE_VERSION
+    RELEASE_VERSION = '10.0.0'
+    old_lib_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang', '9.0.0')
+    if (os.path.isdir(old_lib_dir)):
+      print('Removing old lib dir: ' + old_lib_dir)
+      RmTree(old_lib_dir)
+
   if args.lto_lld and not args.bootstrap:
     print('--lto-lld requires --bootstrap')
     return 1

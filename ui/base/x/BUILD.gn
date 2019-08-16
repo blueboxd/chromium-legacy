@@ -38,6 +38,7 @@ jumbo_component("x") {
     "//base",
     "//base:i18n",
     "//skia",
+    "//ui/base:hit_test",
     "//ui/display/util",
     "//ui/events",
     "//ui/events/devices/x11",

@@ -15,10 +15,6 @@ namespace download {
 namespace stats {
 namespace {
 
-// The maximum tracked file size in KB, larger files will fall into overflow
-// bucket.
-const int64_t kMaxFileSizeKB = 4 * 1024 * 1024; /* 4GB */
-
 // Enum used by UMA metrics to track various reasons of pausing a download.
 enum class PauseReason {
   // The download was paused. The reason can be anything.
@@ -99,35 +95,6 @@ std::string ClientToHistogramSuffix(DownloadClient client) {
     case DownloadClient::BOUNDARY:
       NOTREACHED();
       break;
-  }
-  NOTREACHED();
-  return std::string();
-}
-
-// Converts CompletionType to histogram suffix.
-// Should maps to suffix string in histograms.xml.
-std::string CompletionTypeToHistogramSuffix(CompletionType type) {
-  switch (type) {
-    case CompletionType::SUCCEED:
-      return "Succeed";
-    case CompletionType::FAIL:
-      return "Fail";
-    case CompletionType::ABORT:
-      return "Abort";
-    case CompletionType::TIMEOUT:
-      return "Timeout";
-    case CompletionType::UNKNOWN:
-      return "Unknown";
-    case CompletionType::CANCEL:
-      return "Cancel";
-    case CompletionType::OUT_OF_RETRIES:
-      return "OutOfRetries";
-    case CompletionType::OUT_OF_RESUMPTIONS:
-      return "OutOfResumptions";
-    case CompletionType::UPLOAD_TIMEOUT:
-      return "UploadTimeout";
-    case CompletionType::COUNT:
-      NOTREACHED();
   }
   NOTREACHED();
   return std::string();
@@ -234,14 +201,6 @@ void LogDownloadCompletion(CompletionType type, uint64_t file_size_bytes) {
   // TODO(xingliu): Use DownloadItem::GetStartTime and DownloadItem::GetEndTime
   // to record the completion time to histogram "Download.Service.Finish.Time".
   // Also propagates and records the mime type here.
-
-  // Records the file size.
-  std::string name("Download.Service.Finish.FileSize");
-  uint64_t file_size_kb = file_size_bytes / 1024;
-  base::UmaHistogramCustomCounts(name, file_size_kb, 1, kMaxFileSizeKB, 50);
-
-  name.append(".").append(CompletionTypeToHistogramSuffix(type));
-  base::UmaHistogramCustomCounts(name, file_size_kb, 1, kMaxFileSizeKB, 50);
 }
 
 void LogDownloadPauseReason(const DownloadBlockageStatus& blockage_status,

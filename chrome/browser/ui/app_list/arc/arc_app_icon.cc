@@ -289,9 +289,10 @@ void ArcAppIcon::MaybeRequestIcon(ui::ScaleFactor scale_factor) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context_);
   DCHECK(prefs);
 
-  // ArcAppListPrefs notifies ArcAppModelBuilder via Observer when icon is ready
-  // and ArcAppModelBuilder refreshes the icon of the corresponding item by
-  // calling LoadScaleFactor.
+  // ArcAppListPrefs notifies the ArcAppIconLoader (which is an
+  // ArcAppListPrefs::Observer) when the icon is updated, and
+  // ArcAppIconLoader::OnAppIconUpdated calls ArcAppIcon::LoadForScaleFactor on
+  // the corresponding ArcAppIcon.
   prefs->MaybeRequestIcon(
       mapped_app_id_,
       ArcAppIconDescriptor(resource_size_in_dip_, scale_factor));

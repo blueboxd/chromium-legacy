@@ -27,8 +27,8 @@ namespace content {
 
 // static
 void EmbeddedWorkerInstanceClientImpl::Create(
-    blink::mojom::EmbeddedWorkerInstanceClientRequest request,
-    scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner,
+    blink::mojom::EmbeddedWorkerInstanceClientRequest request) {
   // This won't be leaked because the lifetime will be managed internally.
   // See the class documentation for detail.
   // We can't use MakeStrongBinding because must give the worker thread

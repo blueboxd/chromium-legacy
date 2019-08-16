@@ -62,7 +62,7 @@ constexpr int kTallestFrameHeight = kTallestTabHeight + 19;
 // change default theme assets, if you need themes to recreate their generated
 // images (which are cached), or if you changed how missing values are
 // generated.
-const int kThemePackVersion = 68;
+const int kThemePackVersion = 69;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -1010,11 +1010,6 @@ void BrowserThemePack::AdjustThemePack() {
   // creating these.
   CreateTabBackgroundImagesAndColors(&images_);
 
-  // Generate any missing text colors.  This must be done after generating frame
-  // and tab colors, as generated text colors will try to appropriately contrast
-  // with the frame/tab behind them.
-  GenerateMissingTextColors();
-
   // Make sure the |images_on_file_thread_| has bitmaps for supported
   // scale factors before passing to FILE thread.
   images_on_file_thread_ = images_;
@@ -1679,93 +1674,6 @@ void BrowserThemePack::CreateTabBackgroundImagesAndColors(ImageCache* images) {
     }
   }
   MergeImageCaches(temp_output, images);
-}
-
-void BrowserThemePack::GenerateMissingTextColors() {
-  constexpr int kDefaultSourceTextColorId = TP::COLOR_BACKGROUND_TAB_TEXT;
-
-  // Background Tab
-  GenerateMissingTextColorForID(TP::COLOR_BACKGROUND_TAB_TEXT,
-                                TP::COLOR_BACKGROUND_TAB, TP::COLOR_FRAME,
-                                kDefaultSourceTextColorId);
-
-  // Background Tab - Inactive
-  GenerateMissingTextColorForID(
-      TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE, TP::COLOR_BACKGROUND_TAB_INACTIVE,
-      TP::COLOR_FRAME_INACTIVE, kDefaultSourceTextColorId);
-
-  // Incognito
-  GenerateMissingTextColorForID(TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO,
-                                TP::COLOR_BACKGROUND_TAB_INCOGNITO,
-                                TP::COLOR_FRAME_INCOGNITO,
-                                kDefaultSourceTextColorId);
-
-  // Incognito - Inactive
-  GenerateMissingTextColorForID(
-      TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE,
-      TP::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE,
-      TP::COLOR_FRAME_INCOGNITO_INACTIVE,
-      TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO);
-}
-
-void BrowserThemePack::GenerateMissingTextColorForID(int text_color_id,
-                                                     int tab_color_id,
-                                                     int frame_color_id,
-                                                     int source_color_id) {
-  SkColor text_color, tab_color, frame_color;
-  color_utils::HSL tab_tint;
-
-  const bool has_text_color = GetColor(text_color_id, &text_color);
-  const bool has_tab_color = GetColor(tab_color_id, &tab_color);
-  const bool has_frame_color = GetColor(frame_color_id, &frame_color);
-
-  const bool has_tab_tint = GetTint(TP::TINT_BACKGROUND_TAB, &tab_tint);
-  const bool has_meaningful_tab_tint =
-      has_tab_tint && color_utils::IsHSLShiftMeaningful(tab_tint);
-
-  // If there is no tab color specified (also meaning there is no image), fall
-  // back to the frame color.
-  SkColor bg_color = (has_tab_color ? tab_color : frame_color);
-  const bool has_bg_color =
-      has_tab_color || has_frame_color || has_meaningful_tab_tint;
-
-  // If no bg color is set, we have nothing to blend against, so there's no way
-  // to do this calculation.
-  if (!has_bg_color)
-    return;
-
-  if (has_meaningful_tab_tint && !has_tab_color) {
-    // We need to tint the frame color, so if the theme didn't specify it, grab
-    // the default.
-    if (!has_frame_color) {
-      frame_color = TP::GetDefaultColor(TP::GetLookupID(frame_color_id));
-    }
-    bg_color = color_utils::HSLShift(frame_color, tab_tint);
-  }
-
-  // Determine the text color to start with, in order of preference:
-  // 1) The color specified by the theme (if it exists)
-  // 2) The color passed in to use as a source function (if it exists)
-  // 3) The default color for the text property
-  SkColor blend_source_color;
-  if (has_text_color) {
-    blend_source_color = text_color;
-  } else {
-    SkColor source_text_color;
-    if (GetColor(source_color_id, &source_text_color)) {
-      blend_source_color = source_text_color;
-    } else {
-      // GetDefaultColor() requires incognito-aware lookup, so we first have to
-      // get the appropriate lookup ID information.
-      TP::PropertyLookupPair lookup_pair = TP::GetLookupID(text_color_id);
-
-      blend_source_color = TP::GetDefaultColor(lookup_pair);
-    }
-  }
-
-  SetColor(
-      text_color_id,
-      color_utils::BlendForMinContrast(blend_source_color, bg_color).color);
 }
 
 void BrowserThemePack::GenerateMissingNtpColors() {

@@ -4,6 +4,8 @@
 
 package org.chromium.content.browser;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -12,6 +14,7 @@ import org.chromium.content_public.browser.MediaSessionObserver;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.services.media_session.MediaImage;
 import org.chromium.services.media_session.MediaMetadata;
+import org.chromium.services.media_session.MediaPosition;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -130,6 +133,13 @@ public class MediaSessionImpl extends MediaSession {
 
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
             mObserversIterator.next().mediaSessionArtworkChanged(imagesList);
+        }
+    }
+
+    @CalledByNative
+    private void mediaSessionPositionChanged(@Nullable MediaPosition position) {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().mediaSessionPositionChanged(position);
         }
     }
 

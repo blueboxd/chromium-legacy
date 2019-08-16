@@ -5,6 +5,15 @@
 module media_router.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
+import "url/mojom/url.mojom";
+
+struct MediaImage {
+  // URL of the image.
+  url.mojom.Url url;
+  // |size| is not set if it is unknown.
+  gfx.mojom.Size? size;
+};
 
 // Represents the current state of a media content. This struct should be kept
 // free of details specific to Media Router, so that it can be moved to the
@@ -38,6 +47,10 @@ struct MediaStatus {
   // through its MediaController.
   bool can_seek;
 
+  bool can_skip_to_next_track;
+
+  bool can_skip_to_previous_track;
+
   // Whether the media is playing, paused, or buffering.
   PlayState play_state;
 
@@ -54,6 +67,9 @@ struct MediaStatus {
 
   // Current playback position. Must be less than or equal to |duration|.
   mojo_base.mojom.TimeDelta current_time;
+
+  // Images associated with the media.
+  array<MediaImage> images;
 };
 
 // Interface for being notified whenever the MediaStatus of a media changes.

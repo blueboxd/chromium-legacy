@@ -10,10 +10,12 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_observer.h"
+#include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf_background_animator.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_observer.h"
 #include "base/macros.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/views/widget/widget.h"
 
 namespace app_list {
@@ -136,7 +138,12 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
                        gfx::Rect* hit_test_rect_touch);
 
   // Internal implementation detail. Do not expose outside of tests.
-  ShelfView* shelf_view_for_testing() const { return shelf_view_; }
+  ShelfView* shelf_view_for_testing() const {
+    if (chromeos::switches::ShouldShowScrollableShelf())
+      return scrollable_shelf_view_->shelf_view();
+    return shelf_view_;
+  }
+
   ShelfBackgroundAnimator* background_animator_for_testing() {
     return &background_animator_;
   }
@@ -150,6 +157,9 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   // Shows shelf widget if IsVisible() returns false.
   void ShowIfHidden();
+
+  ShelfView* GetShelfView();
+  const ShelfView* GetShelfView() const;
 
   Shelf* shelf_;
 
@@ -169,7 +179,8 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   // View containing the shelf items within an active user session. Owned by
   // the views hierarchy.
-  ShelfView* shelf_view_;
+  ShelfView* shelf_view_ = nullptr;
+  ScrollableShelfView* scrollable_shelf_view_ = nullptr;
 
   // View containing the shelf items for Login/Lock/OOBE/Add User screens.
   // Owned by the views hierarchy.

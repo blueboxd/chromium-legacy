@@ -10,16 +10,13 @@ import("//build/config/android/rules.gni")
 # build.
 android_library("module_installer_java") {
   java_files = [
-    "java/src-stub/org/chromium/components/module_installer/ModuleActivityObserver.java",
     "java/src-stub/org/chromium/components/module_installer/ModuleInstallerImpl.java",
     "java/src-common/org/chromium/components/module_installer/ModuleInstaller.java",
     "java/src-common/org/chromium/components/module_installer/OnModuleInstallFinishedListener.java",
     "java/src-common/org/chromium/components/module_installer/Module.java",
+    "java/src-common/org/chromium/components/module_installer/ModuleActivityObserver.java",
   ]
-  jar_excluded_patterns = [
-    "*/ModuleInstallerImpl.class",
-    "*/ModuleActivityObserver.class",
-  ]
+  jar_excluded_patterns = [ "*/ModuleInstallerImpl.class" ]
   deps = [
     "//base:base_java",
   ]
@@ -29,10 +26,7 @@ android_library("module_installer_java") {
 # Contains stub implementation to be used for builds not supporting modules
 # (e.g. APKs).
 android_library("module_installer_stub_java") {
-  java_files = [
-    "java/src-stub/org/chromium/components/module_installer/ModuleActivityObserver.java",
-    "java/src-stub/org/chromium/components/module_installer/ModuleInstallerImpl.java",
-  ]
+  java_files = [ "java/src-stub/org/chromium/components/module_installer/ModuleInstallerImpl.java" ]
   deps = [
     ":module_installer_java",
     "//base:base_java",
@@ -48,29 +42,12 @@ android_library("module_installer_impl_java") {
     "java/src-impl/org/chromium/components/module_installer/ModuleInstallerBackend.java",
     "java/src-impl/org/chromium/components/module_installer/FakeModuleInstallerBackend.java",
     "java/src-impl/org/chromium/components/module_installer/PlayCoreModuleInstallerBackend.java",
-    "java/src-impl/org/chromium/components/module_installer/ModuleActivityObserver.java",
   ]
   deps = [
     ":module_installer_java",
     "//base:base_java",
     "//components/crash/android:java",
     "//third_party/google_android_play_core:com_google_android_play_core_java",
-  ]
-}
-
-generate_jni("module_installer_jni_headers") {
-  sources = [
-    "java/src-impl/org/chromium/components/module_installer/ModuleInstallerBackend.java",
-  ]
-}
-
-static_library("module_installer") {
-  sources = [
-    "module_installer_backend.cc",
-  ]
-  deps = [
-    ":module_installer_jni_headers",
-    "//base",
   ]
 }
 
@@ -83,6 +60,15 @@ android_library("module_installer_test_java") {
     "//third_party/junit",
   ]
   jacoco_never_instrument = true
+}
+
+junit_binary("module_installer_junit_tests") {
+  java_files = [ "junit/src/org/chromium/components/module_installer/ModuleActivityObserverTest.java" ]
+  deps = [
+    ":module_installer_impl_java",
+    "//base:base_java",
+    "//base:base_junit_test_support",
+  ]
 }
 
 java_library("module_interface_java") {

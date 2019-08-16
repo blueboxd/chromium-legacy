@@ -182,6 +182,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   FocusTraversable* GetPaneFocusTraversable() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
   const char* GetClassName() const override;
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
@@ -278,6 +279,9 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   views::View* FindFirstOrLastFocusableChild(bool last);
   views::View* FindFirstFocusableChild();
   views::View* FindLastFocusableChild();
+
+  // Handles the gesture event.
+  void HandleGestureEvent(ui::GestureEvent* event);
 
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
@@ -463,7 +467,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
-  void OnMouseEvent(ui::MouseEvent* event) override;
 
   // Overridden from ShelfModelObserver:
   void ShelfItemAdded(int model_index) override;
@@ -538,9 +541,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   void SetDragImageBlur(const gfx::Size& size, int blur_radius);
 
   bool ShouldHandleGestures(const ui::GestureEvent& event) const;
-
-  // Handles the gesture event.
-  void HandleGestureEvent(ui::GestureEvent* event);
 
   // The model; owned by Launcher.
   ShelfModel* model_;

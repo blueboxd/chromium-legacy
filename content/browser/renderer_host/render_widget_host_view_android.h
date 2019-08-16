@@ -162,7 +162,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       viz::CompositorFrame frame,
       base::Optional<viz::HitTestRegionList> hit_test_region_list) override;
   void OnDidNotProduceFrame(const viz::BeginFrameAck& ack) override;
-  void ClearCompositorFrame() override;
   void ResetFallbackToFirstNavigationSurface() override;
   bool RequestRepaintForTesting() override;
   void SetIsInVR(bool is_in_vr) override;
@@ -302,7 +301,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                                 int start_adjust,
                                 int end_adjust);
 
-  void SynchronousFrameMetadata(viz::CompositorFrameMetadata frame_metadata);
   // TODO(ericrk): Ideally we'd reemove |root_scroll_offset| from this function
   // once we have a reliable way to get it through RenderFrameMetadata.
   void FrameTokenChangedForSynchronousCompositor(
@@ -404,10 +402,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void EvictDelegatedFrame();
 
   bool ShouldRouteEvents() const;
-
-  void OnFrameMetadataUpdated(
-      const viz::CompositorFrameMetadata& frame_metadata,
-      bool is_transparent);
 
   void UpdateTouchSelectionController(
       const viz::Selection<gfx::SelectionBound>& selection,

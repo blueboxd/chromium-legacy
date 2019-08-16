@@ -55,7 +55,7 @@ class OriginTest : public ::testing::Test {
     AddStandardScheme("standard-but-noaccess", SchemeType::SCHEME_WITH_HOST);
     AddNoAccessScheme("standard-but-noaccess");
   }
-  void TearDown() override { url::Shutdown(); }
+  void TearDown() override { url::ResetForTests(); }
 
   ::testing::AssertionResult DoEqualityComparisons(const url::Origin& a,
                                                    const url::Origin& b,
@@ -667,7 +667,7 @@ TEST_F(OriginTest, NonStandardSchemeWithAndroidWebViewHack) {
   EXPECT_EQ("cow", origin.scheme());
   EXPECT_EQ("", origin.host());
   EXPECT_EQ(0, origin.port());
-  Shutdown();
+  ResetForTests();
 }
 
 TEST_F(OriginTest, CanBeDerivedFrom) {

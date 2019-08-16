@@ -63,11 +63,14 @@ class ThrottlingURLLoader::ForwardingThrottleDelegate
   }
 
   void UpdateDeferredRequestHeaders(
-      const net::HttpRequestHeaders& modified_request_headers) override {
+      const net::HttpRequestHeaders& modified_request_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_request_headers)
+      override {
     if (!loader_)
       return;
     ScopedDelegateCall scoped_delegate_call(this);
-    loader_->UpdateDeferredRequestHeaders(modified_request_headers);
+    loader_->UpdateDeferredRequestHeaders(modified_request_headers,
+                                          modified_cors_exempt_request_headers);
   }
 
   void UpdateDeferredResponseHead(
@@ -788,11 +791,17 @@ void ThrottlingURLLoader::SetPriority(net::RequestPriority priority) {
 }
 
 void ThrottlingURLLoader::UpdateDeferredRequestHeaders(
-    const net::HttpRequestHeaders& modified_request_headers) {
+    const net::HttpRequestHeaders& modified_request_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_request_headers) {
   if (deferred_stage_ == DEFERRED_START) {
     start_info_->url_request.headers.MergeFrom(modified_request_headers);
+    start_info_->url_request.cors_exempt_headers.MergeFrom(
+        modified_cors_exempt_request_headers);
   } else if (deferred_stage_ == DEFERRED_REDIRECT) {
     modified_headers_.MergeFrom(modified_request_headers);
+    // TODO(juke): Figure out if we need to support |cors_exempt_headers| in
+    // DEFERRED_REDIRECT case.
+    modified_headers_.MergeFrom(modified_cors_exempt_request_headers);
   } else {
     NOTREACHED()
         << "Can only update headers of a request before it's sent out.";

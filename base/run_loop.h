@@ -75,12 +75,6 @@ class BASE_EXPORT RunLoop {
   // RunLoop::Delegate asynchronously.
   void Run();
 
-  // Run the current RunLoop::Delegate. This blocks until either |timeout| has
-  // elapsed or Quit is called. Nesting multiple runloops with and without
-  // timeouts is supported. If an inner loop has a longer timeout than the outer
-  // loop, the outer loop will immediately exit when the inner one does.
-  void RunWithTimeout(TimeDelta timeout);
-
   // Run the current RunLoop::Delegate until it doesn't find any tasks or
   // messages in its queue (it goes idle).
   // WARNING #1: This may run long (flakily timeout) and even never return! Do

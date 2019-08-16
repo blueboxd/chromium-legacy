@@ -331,6 +331,36 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerTechnologyChanged) {
   EXPECT_EQ(0, listener_->errors());
 }
 
+TEST_F(ShillPropertyHandlerTest,
+       ShillPropertyHandlerTechnologyChangedTransitions) {
+  listener_->reset_list_updates();
+  manager_test_->AddTechnology(shill::kTypeWifi, /*enabled=*/true);
+
+  // Disabling WiFi transitions from Disabling -> Disabled.
+  shill_property_handler_->SetTechnologyEnabled(
+      shill::kTypeWifi, /*enabled=*/false, base::DoNothing());
+  EXPECT_TRUE(shill_property_handler_->IsTechnologyDisabling(shill::kTypeWifi));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, listener_->technology_list_updates());
+  EXPECT_FALSE(
+      shill_property_handler_->IsTechnologyDisabling(shill::kTypeWifi));
+  EXPECT_TRUE(shill_property_handler_->IsTechnologyAvailable(shill::kTypeWifi));
+
+  // Enable the technology.
+  listener_->reset_list_updates();
+  shill_property_handler_->SetTechnologyEnabled(
+      shill::kTypeWifi, /*enabled=*/true, base::DoNothing());
+  EXPECT_TRUE(shill_property_handler_->IsTechnologyEnabling(shill::kTypeWifi));
+  EXPECT_FALSE(
+      shill_property_handler_->IsTechnologyDisabling(shill::kTypeWifi));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, listener_->technology_list_updates());
+  EXPECT_TRUE(shill_property_handler_->IsTechnologyEnabled(shill::kTypeWifi));
+  EXPECT_FALSE(shill_property_handler_->IsTechnologyEnabling(shill::kTypeWifi));
+
+  EXPECT_EQ(0, listener_->errors());
+}
+
 TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerDevicePropertyChanged) {
   const size_t kNumShillManagerClientStubImplDevices = 2;
   EXPECT_EQ(kNumShillManagerClientStubImplDevices,

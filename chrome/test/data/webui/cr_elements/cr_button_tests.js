@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+// #import {eventToPromise} from 'chrome://test/test_util.m.js';
+// clang-format on
+
 suite('cr-button', function() {
   let button;
 

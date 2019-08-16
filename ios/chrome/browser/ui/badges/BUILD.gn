@@ -5,6 +5,8 @@
 source_set("public") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "badge_constants.h",
+    "badge_constants.mm",
     "badge_item.h",
     "badge_type.h",
   ]
@@ -31,6 +33,7 @@ source_set("badges") {
     ":public",
     "resources:incognito_badge",
     "//base:base",
+    "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/infobars:badge",
     "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/ui/commands",
@@ -44,5 +47,6 @@ source_set("badges") {
     "//ios/chrome/common/colors",
     "//ios/chrome/common/ui_util",
     "//ios/web/public",
+    "//ui/base",
   ]
 }

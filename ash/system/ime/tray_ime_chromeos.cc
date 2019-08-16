@@ -13,8 +13,8 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/model/system_tray_model.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_detailed_view.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -66,7 +66,10 @@ void IMEDetailedView::CreateExtraTitleRowButtons() {
   if (ime_controller_->managed_by_policy()) {
     controlled_setting_icon_ = TrayPopupUtils::CreateMainImageView();
     controlled_setting_icon_->SetImage(gfx::CreateVectorIcon(
-        kSystemMenuBusinessIcon, kIconOnLightBackgroundColor));
+        kSystemMenuBusinessIcon,
+        AshColorProvider::Get()->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kIconPrimary,
+            AshColorProvider::AshColorMode::kLight)));
     controlled_setting_icon_->set_tooltip_text(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME_MANAGED));
     tri_view()->AddView(TriView::Container::END, controlled_setting_icon_);

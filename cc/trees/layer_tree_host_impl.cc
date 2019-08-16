@@ -2119,35 +2119,11 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
           .allocation_time();
 
-#if defined(OS_ANDROID)
-  metadata.max_page_scale_factor = active_tree_->max_page_scale_factor();
-  metadata.root_layer_size = active_tree_->ScrollableSize();
-
-  if (const auto* outer_viewport_scroll_node = OuterViewportScrollNode()) {
-    metadata.root_overflow_y_hidden =
-        !outer_viewport_scroll_node->user_scrollable_vertical;
+  if (InnerViewportScrollNode()) {
+    // TODO(miletus) : Change the metadata to hold ScrollOffset.
+    metadata.root_scroll_offset =
+        gfx::ScrollOffsetToVector2dF(active_tree_->TotalScrollOffset());
   }
-
-  metadata.bottom_controls_height =
-      browser_controls_offset_manager_->BottomControlsHeight();
-  metadata.bottom_controls_shown_ratio =
-      browser_controls_offset_manager_->BottomControlsShownRatio();
-
-  active_tree_->GetViewportSelection(&metadata.selection);
-#endif
-
-  const auto* inner_viewport_scroll_node = InnerViewportScrollNode();
-  if (!inner_viewport_scroll_node)
-    return metadata;
-
-#if defined(OS_ANDROID)
-  metadata.root_overflow_y_hidden |=
-      !inner_viewport_scroll_node->user_scrollable_vertical;
-#endif
-
-  // TODO(miletus) : Change the metadata to hold ScrollOffset.
-  metadata.root_scroll_offset =
-      gfx::ScrollOffsetToVector2dF(active_tree_->TotalScrollOffset());
 
   return metadata;
 }

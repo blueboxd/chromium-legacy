@@ -11,6 +11,7 @@
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
+#include "chrome/browser/performance_manager/public/render_process_host_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
@@ -54,7 +55,7 @@ class PerformanceManagerTest : public testing::Test {
 
 TEST_F(PerformanceManagerTest, InstantiateNodes) {
   std::unique_ptr<ProcessNodeImpl> process_node =
-      performance_manager()->CreateProcessNode();
+      performance_manager()->CreateProcessNode(RenderProcessHostProxy());
   EXPECT_NE(nullptr, process_node.get());
   std::unique_ptr<PageNodeImpl> page_node =
       performance_manager()->CreatePageNode(WebContentsProxy(), false, false);
@@ -75,7 +76,7 @@ TEST_F(PerformanceManagerTest, InstantiateNodes) {
 TEST_F(PerformanceManagerTest, BatchDeleteNodes) {
   // Create a page node and a small hierarchy of frames.
   std::unique_ptr<ProcessNodeImpl> process_node =
-      performance_manager()->CreateProcessNode();
+      performance_manager()->CreateProcessNode(RenderProcessHostProxy());
   std::unique_ptr<PageNodeImpl> page_node =
       performance_manager()->CreatePageNode(WebContentsProxy(), false, false);
 

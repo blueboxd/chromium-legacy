@@ -1168,7 +1168,7 @@ Your Google account may have other forms of browsing history like searches and a
 
       <!-- Single site settings -->
       <message name="IDS_NO_SAVED_WEBSITE_SETTINGS" desc="Text to display when there are no saved website settings.">
-        No storage data here
+        Files saved by websites appear here
       </message>
 
       <!-- Languages preferences -->
@@ -3456,7 +3456,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
 
       <message name="IDS_STORAGE_CLEAR_BUTTON_TITLE" desc="Title of a button in the storage UI used to clear all storage data. [CHAR-LIMIT=24]">
-        Clear Site Storage…
+        Clear site storage
       </message>
       <message name="IDS_STORAGE_CLEAR_DIALOG_TEXT" desc="Text of the clear storage dialog which give the user a choice to reset the app or delete site storage data.">
         This will clear all <ph name="SIZE_IN_KB">%1$s<ex>101kb</ex></ph> of website storage.
@@ -3847,8 +3847,11 @@ The site does NOT gain access to the camera. The camera images are only visible 
       </message>
 
       <!-- Shared Clipboard -->
-      <message name="IDS_SHARED_CLIPBOARD_NOTIFICATION_TITLE" desc="Title text displayed in a shared clipboard notification.">
+      <message name="IDS_SHARED_CLIPBOARD_NOTIFICATION_TITLE_UNKNOWN_DEVICE" desc="Title text displayed in a shared clipboard notification when the source device name is unknown.">
         Text shared from other device
+      </message>
+      <message name="IDS_SHARED_CLIPBOARD_NOTIFICATION_TITLE" desc="Title text displayed in a shared clipboard notification when the source device name is known.">
+        Text shared from <ph name="DEVICE_NAME">%1$s<ex>Pixel 3</ex></ph>
       </message>
       <message name="IDS_SHARED_CLIPBOARD_NOTIFICATION_TEXT" desc="Content text displayed in a shared clipboard notification.">
         Copied to your clipboard

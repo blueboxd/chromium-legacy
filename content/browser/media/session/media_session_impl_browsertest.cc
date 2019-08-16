@@ -26,6 +26,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_content_type.h"
+#include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/media_session/public/cpp/test/mock_media_session.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -117,8 +118,8 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
     // Navigate to a test page with a a real origin.
     ASSERT_TRUE(embedded_test_server()->Start());
     host_resolver()->AddRule("*", "127.0.0.1");
-    NavigateToURL(
-        shell(), embedded_test_server()->GetURL("example.com", "/title1.html"));
+    EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
+                                           "example.com", "/title1.html")));
 
     media_session_ = MediaSessionImpl::Get(shell()->web_contents());
     mock_audio_focus_delegate_ = new NiceMock<MockAudioFocusDelegate>(
@@ -2435,7 +2436,9 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, Async_Unducking_Suspended) {
 }
 
 IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, MetadataWhenFileUrlScheme) {
-  NavigateToURL(shell(), GURL("file:///"));
+  base::FilePath path = content::GetTestFilePath(nullptr, "title1.html");
+  GURL file_url = net::FilePathToFileURL(path);
+  EXPECT_TRUE(NavigateToURL(shell(), file_url));
 
   media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
@@ -2537,8 +2540,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
     expected_images.push_back(test_image_1);
 
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
-    NavigateToURL(
-        shell(), embedded_test_server()->GetURL("example.com", "/title1.html"));
+    EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
+                                           "example.com", "/title1.html")));
 
     observer.WaitForExpectedImagesOfType(
         media_session::mojom::MediaSessionImageType::kSourceIcon,

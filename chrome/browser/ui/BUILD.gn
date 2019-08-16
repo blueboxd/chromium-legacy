@@ -1326,6 +1326,8 @@ jumbo_split_static_library("ui") {
       "webui/theme_handler.h",
       "webui/theme_source.cc",
       "webui/theme_source.h",
+      "webui/web_footer_experiment_ui.cc",
+      "webui/web_footer_experiment_ui.h",
       "window_sizer/window_sizer.cc",
       "window_sizer/window_sizer.h",
       "zoom/chrome_zoom_level_otr_delegate.cc",
@@ -2733,6 +2735,8 @@ jumbo_split_static_library("ui") {
       "views/frame/web_contents_close_handler.cc",
       "views/frame/web_contents_close_handler.h",
       "views/frame/web_contents_close_handler_delegate.h",
+      "views/frame/web_footer_experiment_view.cc",
+      "views/frame/web_footer_experiment_view.h",
       "views/front_eliding_title_label.cc",
       "views/front_eliding_title_label.h",
       "views/fullscreen_control/fullscreen_control_host.cc",
@@ -2771,6 +2775,8 @@ jumbo_split_static_library("ui") {
       "views/infobars/infobar_view.h",
       "views/javascript_dialog_views.cc",
       "views/javascript_dialog_views.h",
+      "views/layout/animating_layout_manager.cc",
+      "views/layout/animating_layout_manager.h",
       "views/layout/interpolating_layout_manager.cc",
       "views/layout/interpolating_layout_manager.h",
       "views/load_complete_listener.cc",
@@ -3630,6 +3636,7 @@ jumbo_split_static_library("ui") {
       deps += [
         "//chrome/services/app_service/public/cpp:app_update",
         "//chrome/services/app_service/public/cpp:icon_loader",
+        "//components/services/app_service/public/cpp:app_file_handling",
       ]
     }
   }

@@ -74,17 +74,18 @@ namespace internal {
 // See base/win/winrt_foundation_helpers.h for explanation.
 
 template <typename T>
-using Complex =
+using AsyncOperationComplex =
     typename ABI::Windows::Foundation::IAsyncOperation<T>::TResult_complex;
 
 template <typename T>
-using Abi = AbiType<Complex<T>>;
+using AsyncOperationAbi = AbiType<AsyncOperationComplex<T>>;
 
 template <typename T>
-using OptionalStorageT = OptionalStorageType<Complex<T>>;
+using AsyncOperationOptionalStorage =
+    OptionalStorageType<AsyncOperationComplex<T>>;
 
 template <typename T>
-using StorageT = StorageType<Complex<T>>;
+using AsyncOperationStorage = StorageType<AsyncOperationComplex<T>>;
 
 }  // namespace internal
 
@@ -95,9 +96,9 @@ class AsyncOperation
               Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
           ABI::Windows::Foundation::IAsyncOperation<T>> {
  public:
-  using AbiT = internal::Abi<T>;
-  using OptionalStorageT = internal::OptionalStorageT<T>;
-  using StorageT = internal::StorageT<T>;
+  using AbiT = internal::AsyncOperationAbi<T>;
+  using OptionalStorageT = internal::AsyncOperationOptionalStorage<T>;
+  using StorageT = internal::AsyncOperationStorage<T>;
   using Handler = ABI::Windows::Foundation::IAsyncOperationCompletedHandler<T>;
   using ResultCallback = base::OnceCallback<void(StorageT)>;
 

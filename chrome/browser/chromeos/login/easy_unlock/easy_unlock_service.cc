@@ -351,6 +351,8 @@ void EasyUnlockService::AttemptAuth(const AccountId& account_id) {
   const EasyUnlockAuthAttempt::Type auth_attempt_type =
       GetType() == TYPE_REGULAR ? EasyUnlockAuthAttempt::TYPE_UNLOCK
                                 : EasyUnlockAuthAttempt::TYPE_SIGNIN;
+  PA_LOG(VERBOSE) << "User began auth attempt (unlock or sign in attempt).";
+
   if (auth_attempt_) {
     PA_LOG(VERBOSE) << "Already attempting auth, skipping this request.";
     return;
@@ -383,6 +385,7 @@ void EasyUnlockService::AttemptAuth(const AccountId& account_id) {
         SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
             kAuthAttemptCannotStart);
     auth_attempt_.reset();
+    return;
   }
 
   // TODO(tengs): We notify ProximityAuthSystem whenever unlock attempts are

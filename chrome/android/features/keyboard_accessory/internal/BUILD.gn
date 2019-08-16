@@ -21,6 +21,7 @@ android_library("internal_java") {
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:com_android_support_design_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
+    "//third_party/android_deps:com_android_support_viewpager_java",
     "//ui/android:ui_java",
     "//ui/android:ui_utils_java",
   ]

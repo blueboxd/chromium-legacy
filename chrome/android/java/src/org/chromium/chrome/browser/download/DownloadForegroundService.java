@@ -249,7 +249,7 @@ public class DownloadForegroundService extends Service {
     @VisibleForTesting
     void stopForegroundInternal(int flags) {
         Log.w(TAG, "stopForegroundInternal flags: " + flags);
-        ServiceCompat.stopForeground(this, flags);
+        ForegroundServiceUtils.getInstance().stopForeground(this, flags);
     }
 
     @VisibleForTesting

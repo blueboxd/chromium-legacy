@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/public/render_process_host_proxy.h"
 #include "content/public/browser/child_process_termination_info.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
@@ -30,9 +31,10 @@ RenderProcessUserData* RenderProcessUserData::first_ = nullptr;
 
 RenderProcessUserData::RenderProcessUserData(
     content::RenderProcessHost* render_process_host)
-    : host_(render_process_host),
-      process_node_(PerformanceManager::GetInstance()->CreateProcessNode()) {
+    : host_(render_process_host) {
   host_->AddObserver(this);
+  process_node_ = PerformanceManager::GetInstance()->CreateProcessNode(
+      RenderProcessHostProxy(host_->GetID()));
 
   // Push this instance to the list.
   next_ = first_;

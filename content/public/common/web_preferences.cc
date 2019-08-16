@@ -101,7 +101,6 @@ WebPreferences::WebPreferences()
       mock_scrollbars_enabled(false),
       hide_scrollbars(false),
       accelerated_2d_canvas_enabled(false),
-      minimum_accelerated_2d_canvas_size(257 * 256),
       antialiased_2d_canvas_disabled(false),
       antialiased_clips_2d_canvas_enabled(true),
       accelerated_2d_canvas_msaa_sample_count(0),

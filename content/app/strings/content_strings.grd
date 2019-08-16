@@ -275,6 +275,12 @@ below:
       <message name="IDS_AX_ROLE_CONTENT_INFO" desc="Accessibility role description for credits and information about the content of the page, like copyrights and privacy statements">
         content info
       </message>
+      <message name="IDS_AX_ROLE_DATE" desc="Accessibility role description for a date input">
+        date picker
+      </message>
+      <message name="IDS_AX_ROLE_DATE_TIME_LOCAL" desc="Accessibility role description for a datetime-local input">
+        local date and time picker
+      </message>
       <message name="IDS_AX_ROLE_DEFINITION" desc="Accessibility role description for a definition">
         definition
       </message>
@@ -501,6 +507,9 @@ below:
       <message name="IDS_AX_ROLE_WEB_AREA" desc="Accessibility role description for web area">
         HTML content
       </message>
+      <message name="IDS_AX_ROLE_WEEK" desc="Accessibility role description for a week input">
+        week picker
+      </message>
       <if expr="is_android">
         <message name="IDS_AX_ROLE_ALERT" desc="Accessibility role description for an alert">
           alert
@@ -522,9 +531,6 @@ below:
         </message>
         <message name="IDS_AX_ROLE_COMBO_BOX" desc="Accessibility role description for a combo box, an editable text control with an associated drop-down list">
           combo box
-        </message>
-        <message name="IDS_AX_ROLE_DATE" desc="Accessibility role description for a date picker">
-          date picker
         </message>
         <message name="IDS_AX_ROLE_DATE_TIME" desc="Accessibility role description for a date / time picker">
           date and time picker

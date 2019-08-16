@@ -44,16 +44,17 @@ enum NGAdjoiningObjectTypeValue {
 };
 typedef int NGAdjoiningObjectTypes;
 
-// Tables have two passes, a "measure" phase (for determining the table row
-// height), and a "layout" phase.
+// Tables have two passes, a "measure" pass (for determining the table row
+// height), and a "layout" pass.
 // See: https://drafts.csswg.org/css-tables-3/#row-layout
 //
 // This enum is used for communicating to *direct* children of table cells,
-// which layout phase the table cell is in.
-enum class NGTableCellChildLayoutPhase {
+// which layout mode the table cell is in.
+enum class NGTableCellChildLayoutMode {
   kNotTableCellChild,  // The node isn't a table cell child.
-  kMeasure,  // The node is a table cell child, in the "measure" phase.
-  kLayout    // The node is a table cell child, in the "layout" phase.
+  kMeasure,            // A table cell child, in the "measure" mode.
+  kMeasureRestricted,  // A table cell child, in the "restricted-measure" mode.
+  kLayout              // A table cell child, in the "layout" mode.
 };
 
 // Percentages are frequently the same as the available-size, zero, or
@@ -235,6 +236,17 @@ class CORE_EXPORT NGConstraintSpace final {
     return LayoutUnit();
   }
 
+  // Return the borders which should be used for a table-cell.
+  NGBoxStrut TableCellBorders() const {
+    return HasRareData() ? rare_data_->table_cell_borders : NGBoxStrut();
+  }
+
+  // Return the "intrinsic" padding for a table-cell.
+  NGBoxStrut TableCellIntrinsicPadding() const {
+    return HasRareData() ? rare_data_->table_cell_intrinsic_padding
+                         : NGBoxStrut();
+  }
+
   LayoutUnit FragmentainerBlockSize() const {
     return HasRareData() ? rare_data_->fragmentainer_block_size
                          : kIndefiniteSize;
@@ -262,8 +274,12 @@ class CORE_EXPORT NGConstraintSpace final {
   // block-start margins at the beginning of a fragmentainers are to be
   // truncated to 0 if they occur after a soft (unforced) break.
   bool HasSeparateLeadingFragmentainerMargins() const {
-    return bitfields_.has_separate_leading_fragmentainer_margins;
+    return HasRareData() &&
+           rare_data_->has_separate_leading_fragmentainer_margins;
   }
+
+  // Whether the current node is a table-cell.
+  bool IsTableCell() const { return bitfields_.is_table_cell; }
 
   // Whether the fragment produced from layout should be anonymous, (e.g. it
   // may be a column in a multi-column layout). In such cases it shouldn't have
@@ -328,15 +344,23 @@ class CORE_EXPORT NGConstraintSpace final {
     return BlockFragmentationType() != kFragmentNone;
   }
 
-  // Returns if this node is a table cell child, and which table layout phase
-  // is occurring.
-  NGTableCellChildLayoutPhase TableCellChildLayoutPhase() const {
-    return static_cast<NGTableCellChildLayoutPhase>(
-        bitfields_.table_cell_child_layout_phase);
+  // Return true if there's an ancestor multicol container with balanced
+  // columns.
+  bool IsInsideBalancedColumns() const {
+    return HasRareData() && rare_data_->is_inside_balanced_columns;
   }
 
-  bool IsInRestrictedBlockSizeTableCell() const {
-    return bitfields_.is_in_restricted_block_size_table_cell;
+  // Returns if this node is a table cell child, and which table layout mode
+  // is occurring.
+  NGTableCellChildLayoutMode TableCellChildLayoutMode() const {
+    return static_cast<NGTableCellChildLayoutMode>(
+        bitfields_.table_cell_child_layout_mode);
+  }
+
+  // Return true if the block size of the table-cell should be considered
+  // restricted (e.g. height of the cell or its table is non-auto).
+  bool IsRestrictedBlockSizeTableCell() const {
+    return bitfields_.is_restricted_block_size_table_cell;
   }
 
   NGMarginStrut MarginStrut() const {
@@ -532,7 +556,9 @@ class CORE_EXPORT NGConstraintSpace final {
     explicit RareData(const NGBfcOffset bfc_offset)
         : bfc_offset(bfc_offset),
           block_direction_fragmentation_type(
-              static_cast<unsigned>(kFragmentNone)) {}
+              static_cast<unsigned>(kFragmentNone)),
+          has_separate_leading_fragmentainer_margins(false),
+          is_inside_balanced_columns(false) {}
     RareData(const RareData&) = default;
     ~RareData() = default;
 
@@ -546,28 +572,43 @@ class CORE_EXPORT NGConstraintSpace final {
     base::Optional<LayoutUnit> forced_bfc_block_offset;
     LayoutUnit clearance_offset = LayoutUnit::Min();
 
+    NGBoxStrut table_cell_borders;
+    NGBoxStrut table_cell_intrinsic_padding;
+
     LayoutUnit fragmentainer_block_size = kIndefiniteSize;
     LayoutUnit fragmentainer_space_at_bfc_start = kIndefiniteSize;
 
     unsigned block_direction_fragmentation_type : 2;
+    unsigned has_separate_leading_fragmentainer_margins : 1;
+    unsigned is_inside_balanced_columns : 1;
 
     bool MaySkipLayout(const RareData& other) const {
       return margin_strut == other.margin_strut &&
              forced_bfc_block_offset == other.forced_bfc_block_offset &&
+             table_cell_borders == other.table_cell_borders &&
+             table_cell_intrinsic_padding ==
+                 other.table_cell_intrinsic_padding &&
              fragmentainer_block_size == other.fragmentainer_block_size &&
              fragmentainer_space_at_bfc_start ==
                  other.fragmentainer_space_at_bfc_start &&
              block_direction_fragmentation_type ==
-                 other.block_direction_fragmentation_type;
+                 other.block_direction_fragmentation_type &&
+             has_separate_leading_fragmentainer_margins ==
+                 other.has_separate_leading_fragmentainer_margins &&
+             is_inside_balanced_columns == other.is_inside_balanced_columns;
     }
 
     // Must be kept in sync with members checked within |MaySkipLayout|.
     bool IsInitialForMaySkipLayout() const {
       return margin_strut == NGMarginStrut() &&
              forced_bfc_block_offset == base::nullopt &&
+             table_cell_borders == NGBoxStrut() &&
+             table_cell_intrinsic_padding == NGBoxStrut() &&
              fragmentainer_block_size == kIndefiniteSize &&
              fragmentainer_space_at_bfc_start == kIndefiniteSize &&
-             block_direction_fragmentation_type == kFragmentNone;
+             block_direction_fragmentation_type == kFragmentNone &&
+             !has_separate_leading_fragmentainer_margins &&
+             !is_inside_balanced_columns;
     }
   };
 
@@ -585,20 +626,20 @@ class CORE_EXPORT NGConstraintSpace final {
           adjoining_object_types(static_cast<unsigned>(kAdjoiningNone)),
           writing_mode(static_cast<unsigned>(writing_mode)),
           direction(static_cast<unsigned>(TextDirection::kLtr)),
+          is_table_cell(false),
           is_anonymous(false),
           is_new_formatting_context(false),
           is_orthogonal_writing_mode_root(false),
           is_intermediate_layout(false),
           is_fixed_block_size_indefinite(false),
+          is_restricted_block_size_table_cell(false),
           use_first_line_style(false),
-          has_separate_leading_fragmentainer_margins(false),
           ancestor_has_clearance_past_adjoining_floats(false),
           is_shrink_to_fit(false),
           is_fixed_inline_size(false),
           is_fixed_block_size(false),
-          is_in_restricted_block_size_table_cell(false),
-          table_cell_child_layout_phase(static_cast<unsigned>(
-              NGTableCellChildLayoutPhase::kNotTableCellChild)),
+          table_cell_child_layout_mode(static_cast<unsigned>(
+              NGTableCellChildLayoutMode::kNotTableCellChild)),
           percentage_inline_storage(kSameAsAvailable),
           percentage_block_storage(kSameAsAvailable),
           replaced_percentage_block_storage(kSameAsAvailable) {}
@@ -607,6 +648,7 @@ class CORE_EXPORT NGConstraintSpace final {
       return adjoining_object_types == other.adjoining_object_types &&
              writing_mode == other.writing_mode &&
              direction == other.direction &&
+             is_table_cell == other.is_table_cell &&
              is_anonymous == other.is_anonymous &&
              is_new_formatting_context == other.is_new_formatting_context &&
              is_orthogonal_writing_mode_root ==
@@ -614,9 +656,9 @@ class CORE_EXPORT NGConstraintSpace final {
              is_intermediate_layout == other.is_intermediate_layout &&
              is_fixed_block_size_indefinite ==
                  other.is_fixed_block_size_indefinite &&
+             is_restricted_block_size_table_cell ==
+                 other.is_restricted_block_size_table_cell &&
              use_first_line_style == other.use_first_line_style &&
-             has_separate_leading_fragmentainer_margins ==
-                 other.has_separate_leading_fragmentainer_margins &&
              ancestor_has_clearance_past_adjoining_floats ==
                  other.ancestor_has_clearance_past_adjoining_floats &&
              baseline_requests == other.baseline_requests;
@@ -626,10 +668,7 @@ class CORE_EXPORT NGConstraintSpace final {
       return is_shrink_to_fit == other.is_shrink_to_fit &&
              is_fixed_inline_size == other.is_fixed_inline_size &&
              is_fixed_block_size == other.is_fixed_block_size &&
-             is_in_restricted_block_size_table_cell ==
-                 other.is_in_restricted_block_size_table_cell &&
-             table_cell_child_layout_phase ==
-                 other.table_cell_child_layout_phase;
+             table_cell_child_layout_mode == other.table_cell_child_layout_mode;
     }
 
     unsigned has_rare_data : 1;
@@ -637,14 +676,15 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned writing_mode : 3;
     unsigned direction : 1;
 
+    unsigned is_table_cell : 1;
     unsigned is_anonymous : 1;
     unsigned is_new_formatting_context : 1;
     unsigned is_orthogonal_writing_mode_root : 1;
     unsigned is_intermediate_layout : 1;
 
     unsigned is_fixed_block_size_indefinite : 1;
+    unsigned is_restricted_block_size_table_cell : 1;
     unsigned use_first_line_style : 1;
-    unsigned has_separate_leading_fragmentainer_margins : 1;
     unsigned ancestor_has_clearance_past_adjoining_floats : 1;
 
     unsigned baseline_requests : NGBaselineRequestList::kSerializedBits;
@@ -653,8 +693,7 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned is_shrink_to_fit : 1;
     unsigned is_fixed_inline_size : 1;
     unsigned is_fixed_block_size : 1;
-    unsigned is_in_restricted_block_size_table_cell : 1;
-    unsigned table_cell_child_layout_phase : 2;  // NGTableCellChildLayoutPhase
+    unsigned table_cell_child_layout_mode : 2;  // NGTableCellChildLayoutMode
 
     unsigned percentage_inline_storage : 2;           // NGPercentageStorage
     unsigned percentage_block_storage : 2;            // NGPercentageStorage

@@ -76,7 +76,7 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
         public void retry(PaymentValidationErrors errors) {}
 
         @Override
-        public void canMakePayment(boolean legacyMode) {
+        public void canMakePayment() {
             if (mClient != null) {
                 mClient.onCanMakePayment(CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
             }

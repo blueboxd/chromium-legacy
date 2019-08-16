@@ -37,7 +37,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
  protected:
   virtual std::unique_ptr<FidoCableHandshakeHandler> CreateHandshakeHandler(
       FidoCableDevice* device,
-      base::span<const uint8_t, kSessionPreKeySize> session_pre_key,
+      base::span<const uint8_t, kCableSessionPreKeySize> session_pre_key,
       base::span<const uint8_t, 8> nonce);
 
  private:
@@ -62,7 +62,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   void StartCableDiscovery();
   void StartAdvertisement();
   void OnAdvertisementRegistered(
-      const EidArray& client_eid,
+      const CableEidArray& client_eid,
       scoped_refptr<BluetoothAdvertisement> advertisement);
   void OnAdvertisementRegisterError(
       BluetoothAdvertisement::ErrorCode error_code);
@@ -78,7 +78,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   void CableDeviceFound(BluetoothAdapter* adapter, BluetoothDevice* device);
   void ConductEncryptionHandshake(
       std::unique_ptr<FidoCableDevice> device,
-      base::span<const uint8_t, kSessionPreKeySize> session_pre_key,
+      base::span<const uint8_t, kCableSessionPreKeySize> session_pre_key,
       base::span<const uint8_t, 8> nonce);
   void ValidateAuthenticatorHandshakeMessage(
       std::unique_ptr<FidoCableDevice> cable_device,
@@ -96,7 +96,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   // active_authenticator_eids_ contains authenticator EIDs for which a
   // handshake is currently running. Further advertisements for the same EIDs
   // will be ignored.
-  std::set<EidArray> active_authenticator_eids_;
+  std::set<CableEidArray> active_authenticator_eids_;
   // active_devices_ contains the BLE addresses of devices for which a handshake
   // is already running. Further advertisements from these devices will be
   // ignored. However, devices may rotate their BLE address at will so this is
@@ -104,7 +104,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   std::set<std::string> active_devices_;
   size_t advertisement_success_counter_ = 0;
   size_t advertisement_failure_counter_ = 0;
-  std::map<EidArray, scoped_refptr<BluetoothAdvertisement>> advertisements_;
+  std::map<CableEidArray, scoped_refptr<BluetoothAdvertisement>>
+      advertisements_;
   std::vector<std::unique_ptr<FidoCableHandshakeHandler>>
       cable_handshake_handlers_;
   base::WeakPtrFactory<FidoCableDiscovery> weak_factory_{this};

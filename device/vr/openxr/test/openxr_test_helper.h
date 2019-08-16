@@ -12,7 +12,7 @@
 
 #include "base/synchronization/lock.h"
 #include "device/vr/test/test_hook.h"
-#include "third_party/openxr/include/openxr/openxr.h"
+#include "third_party/openxr/src/include/openxr/openxr.h"
 
 class OpenXrTestHelper : public device::ServiceTestHook {
  public:
@@ -69,6 +69,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   static const uint32_t kMaxViewCount;
   static const XrViewConfigurationView kViewConfigView;
   static XrViewConfigurationView kViewConfigurationViews[];
+  static const XrViewConfigurationType kViewConfigurationType;
   static const XrEnvironmentBlendMode kEnvironmentBlendMode;
 
  private:

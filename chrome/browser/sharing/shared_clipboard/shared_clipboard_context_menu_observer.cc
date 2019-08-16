@@ -14,6 +14,7 @@
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/sync_device_info/device_info.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -59,7 +60,8 @@ void SharedClipboardContextMenuObserver::InitMenu(
     const content::ContextMenuParams& params) {
   text_ = params.selection_text;
   controller_->UpdateDevices();
-  const std::vector<SharingDeviceInfo>& devices = controller_->devices();
+  const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices =
+      controller_->devices();
   // TODO(yasmo): add logging
 
   if (devices.empty())
@@ -72,13 +74,13 @@ void SharedClipboardContextMenuObserver::InitMenu(
         IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE,
         l10n_util::GetStringFUTF16(
             IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
-            devices[0].human_readable_name()));
+            base::UTF8ToUTF16(devices[0]->client_name())));
 #else
     proxy_->AddMenuItemWithIcon(
         IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE,
         l10n_util::GetStringFUTF16(
             IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
-            devices[0].human_readable_name()),
+            base::UTF8ToUTF16(devices[0]->client_name())),
         GetContextMenuIcon());
 #endif
   } else {
@@ -104,7 +106,8 @@ void SharedClipboardContextMenuObserver::BuildSubMenu() {
   for (const auto& device : controller_->devices()) {
     if (command_id > kSubMenuLastDeviceCommandId)
       break;
-    sub_menu_model_->AddItem(command_id++, device.human_readable_name());
+    sub_menu_model_->AddItem(command_id++,
+                             base::UTF8ToUTF16(device->client_name()));
   }
 }
 
@@ -137,13 +140,14 @@ void SharedClipboardContextMenuObserver::ExecuteCommand(int command_id) {
 
 void SharedClipboardContextMenuObserver::SendSharedClipboardMessage(
     int chosen_device_index) {
-  const std::vector<SharingDeviceInfo>& devices = controller_->devices();
+  const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices =
+      controller_->devices();
   if (chosen_device_index >= static_cast<int>(devices.size()))
     return;
 
   // TODO(yasmo): Add logging
 
-  controller_->OnDeviceSelected(text_, devices[chosen_device_index]);
+  controller_->OnDeviceSelected(text_, *devices[chosen_device_index]);
 }
 
 gfx::ImageSkia SharedClipboardContextMenuObserver::GetContextMenuIcon() const {

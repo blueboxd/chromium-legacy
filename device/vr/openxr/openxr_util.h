@@ -5,7 +5,7 @@
 #ifndef DEVICE_VR_OPENXR_OPENXR_UTIL_H_
 #define DEVICE_VR_OPENXR_OPENXR_UTIL_H_
 
-#include "third_party/openxr/include/openxr/openxr.h"
+#include "third_party/openxr/src/include/openxr/openxr.h"
 
 namespace device {
 
@@ -20,14 +20,6 @@ namespace device {
     xr_result = (xrcode);           \
     if (XR_FAILED(xr_result))       \
       return xr_result;             \
-  } while (false)
-
-// If xrstate variable is not active, early return XR error code
-// XR_STATE_UNAVAILABLE because its value won't be valid.
-#define RETURN_IF_XR_STATE_IS_NOT_ACTIVE(xrstate) \
-  do {                                            \
-    if (!xrstate.isActive)                        \
-      return XR_STATE_UNAVAILABLE;                \
   } while (false)
 
 #define RETURN_IF_FALSE(condition, error_code, msg) \

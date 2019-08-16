@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
-import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -25,8 +24,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class TabModelSelectorImpl extends TabModelSelectorBase implements TabModelDelegate {
     public static final int CUSTOM_TABS_SELECTOR_INDEX = -1;
-
-    private final TabCreatorManager mTabCreatorManager;
 
     /** Flag set to false when the asynchronous loading of tabs is finished. */
     private final AtomicBoolean mSessionRestoreInProgress =
@@ -65,8 +62,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
      */
     public TabModelSelectorImpl(Activity activity, TabCreatorManager tabCreatorManager,
             TabPersistencePolicy persistencePolicy, boolean supportUndo, boolean isTabbedActivity) {
-        super();
-        mTabCreatorManager = tabCreatorManager;
+        super(tabCreatorManager);
         mUma = new TabModelSelectorUma(activity);
         final TabPersistentStoreObserver persistentStoreObserver =
                 new TabPersistentStoreObserver() {
@@ -78,7 +74,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         mIsUndoSupported = supportUndo;
         mIsTabbedActivityForSync = isTabbedActivity;
         mTabSaver = new TabPersistentStore(
-                persistencePolicy, this, mTabCreatorManager, persistentStoreObserver);
+                persistencePolicy, this, tabCreatorManager, persistentStoreObserver);
         mOrderController = new TabModelOrderControllerImpl(this);
     }
 
@@ -125,9 +121,9 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         mTabContentManager = tabContentProvider;
 
         ChromeTabCreator regularTabCreator =
-                (ChromeTabCreator) mTabCreatorManager.getTabCreator(false);
+                (ChromeTabCreator) getTabCreatorManager().getTabCreator(false);
         ChromeTabCreator incognitoTabCreator =
-                (ChromeTabCreator) mTabCreatorManager.getTabCreator(true);
+                (ChromeTabCreator) getTabCreatorManager().getTabCreator(true);
         TabModelImpl normalModel = new TabModelImpl(false, mIsTabbedActivityForSync,
                 regularTabCreator, incognitoTabCreator, mUma, mOrderController, mTabContentManager,
                 mTabSaver, this, mIsUndoSupported);
@@ -329,13 +325,6 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         mUma.destroy();
         super.destroy();
         mActiveState = false;
-    }
-
-    @Override
-    public Tab openNewTab(
-            LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent, boolean incognito) {
-        return mTabCreatorManager.getTabCreator(incognito).createNewTab(
-                loadUrlParams, type, parent);
     }
 
     /**

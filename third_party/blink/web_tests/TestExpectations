@@ -1406,6 +1406,7 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/mu
 crbug.com/874506 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-margin-child-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-nested-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-nested-005.xht [ Failure ]
+crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-nested-column-rule-001.xht [ Failure ]
 crbug.com/874506 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-nested-margin-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-nested-margin-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-nested-margin-003.xht [ Failure ]
@@ -1624,6 +1625,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-3-multicols
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-auto-height-extra-block-inbetween.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-auto-height.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-auto-height-short-first-row.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_experimental/fast/multicol/nested-balanced-inner-column-count-1-with-forced-break.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-balanced-inner-with-many-breaks-2.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-balanced-inner-with-many-breaks.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-balanced-with-strut-before-first-line.html [ Failure ]
@@ -1875,7 +1877,8 @@ Bug(none) virtual/layout_ng_experimental/fragmentation/scrolling-contents-scroll
 ### virtual/layout_ng_experimental/css3/flexbox/
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/auto-height-column-with-border-and-padding.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/box-sizing-min-max-sizes.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/columns-height-set-via-top-bottom.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/columns-center-with-margins-and-wrap.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/columns-center-with-margins.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align-baseline.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align-end.html [ Failure ]
@@ -1894,7 +1897,6 @@ crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-order.html [ F
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flexbox-baseline-margins.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flexbox-baseline.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flexbox-overflow-auto.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flexitem.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/inline-flexbox-wrap-vertically-width-calculation.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/minimum-size-image.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/multiline-align-content-horizontal-column.html [ Failure ]
@@ -1912,10 +1914,8 @@ crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/percentage-height-r
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/position-absolute-child.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/relayout-align-items.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/relpos-with-percentage-top.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/stretch-input-in-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/style-change.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/true-centering.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/wrapping-column-dynamic-changes.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/writing-modes.html [ Failure ]
 
 ### virtual/layout_ng_experimental/css3/flexbox/mozilla/
@@ -1923,8 +1923,6 @@ crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/mozilla/flexbox-ite
 
 ### virtual/layout_ng_experimental/external/wpt/css/css-flexbox/
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/Flexible-order.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-content-wrap-002.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-content-wrap-004.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-items-001.htm [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-items-003.htm [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-items-004.htm [ Failure ]
@@ -3097,9 +3095,8 @@ crbug.com/849859 virtual/threaded/external/wpt/css/css-animations/CSSAnimation-p
 crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-changes.tentative.html [ Failure ]
 crbug.com/849859 virtual/threaded/external/wpt/css/css-animations/Element-getAnimations-dynamic-changes.tentative.html [ Failure ]
 crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
-crbug.com/875622 external/wpt/css/css-transitions/AnimationEffect-getComputedTiming.tentative.html [ Pass Failure ]
 
-crbug.com/332189 external/wpt/css/css-transitions/no-transition-from-ua-to-blocking-stylesheet.html [ Failure ]
+crbug.com/332189 external/wpt/css/css-transitions/no-transition-from-ua-to-blocking-stylesheet.html [ Pass Failure ]
 
 crbug.com/552085 external/wpt/css/css-cascade/important-prop.html [ Failure ]
 
@@ -3239,7 +3236,41 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-verti
 # Flaky because of timestamps in error messages.
 crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Pass Failure ]
 
+# Random string in the error message
+crbug.com/994214 external/wpt/html/cross-origin-opener-policy/coop-navigated-popup.https.html [ Failure ]
+
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-lists/li-value-reversed-005.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-lists/li-value-reversed-005.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-lists/li-value-reversed-005.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-multicol/multicol-breaking-nobackground-004.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-multicol/multicol-breaking-nobackground-004.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-multicol/multicol-breaking-nobackground-004.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-lists/li-value-reversed-004.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-lists/li-value-reversed-004.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-lists/li-value-reversed-004.html [ Failure ]
+crbug.com/626703 [ Linux ] virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-breaking-nobackground-004.html [ Failure ]
+crbug.com/626703 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-breaking-nobackground-004.html [ Failure ]
+crbug.com/626703 [ Win ] virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-breaking-nobackground-004.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-lists/li-value-reversed-003.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-lists/li-value-reversed-003.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-lists/li-value-reversed-003.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-lists/inline-list-with-table-child.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-lists/inline-list-with-table-child.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-lists/inline-list-with-table-child.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-lists/inline-list-marker.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-lists/inline-list-marker.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-lists/inline-list-marker.html [ Failure ]
+crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-paint-api/parse-input-arguments-018.https.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-lists/inline-block-list-marker.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-lists/inline-block-list-marker.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-lists/inline-block-list-marker.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-lists/inline-list.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-lists/inline-list.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-lists/inline-list.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-lists/inline-block-list.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-lists/inline-block-list.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-lists/inline-block-list.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-ui/appearance-textfield-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-ui/appearance-textfield-001.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-ui/appearance-textfield-001.html [ Failure ]
@@ -3532,13 +3563,6 @@ crbug.com/626703 [ Retina ] external/wpt/html/browsers/the-window-object/apis-fo
 crbug.com/626703 external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Timeout ]
 crbug.com/626703 virtual/audio-service/external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Timeout ]
 crbug.com/626703 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/html/cross-origin/anonymous.tentative.html [ Failure Crash ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/html/cross-origin/anonymous.tentative.html [ Failure Crash ]
-crbug.com/626703 [ Mac10.11 ] external/wpt/html/cross-origin/anonymous.tentative.html [ Failure Crash ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/html/cross-origin/anonymous.tentative.html [ Failure Crash ]
-crbug.com/626703 [ Retina ] external/wpt/html/cross-origin/anonymous.tentative.html [ Failure Crash ]
-crbug.com/626703 [ Win10 ] external/wpt/html/cross-origin/anonymous.tentative.html [ Failure Crash ]
-crbug.com/626703 [ Win7 ] external/wpt/html/cross-origin/anonymous.tentative.html [ Failure Crash ]
 crbug.com/699040 external/wpt/svg/text/reftests/text-xml-space-001.svg [ Failure ]
 crbug.com/626703 external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 virtual/blink-cors/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
@@ -4158,7 +4182,6 @@ crbug.com/626703 external/wpt/css/css-transitions/transition-property-004.html [
 crbug.com/626703 external/wpt/css/css-transitions/transition-property-006.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-transitions/transition-property-018.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-transitions/transition-property-022.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-transitions/transitions-animatable-properties-01.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/css/css-transitions/transition-duration-002.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-transitions/transition-property-024.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-transitions/transition-timing-function-009.html [ Skip ]
@@ -5186,10 +5209,6 @@ crbug.com/766404 [ Mac ] plugins/keyboard-events.html [ Pass Failure ]
 # This was previously skipped on Windows in the section for crbug.com/757165
 crbug.com/775957 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Skip ]
 
-# Canvas tests that are affected by change to Skia GPU rect shadow rendering.
-crbug.com/990918 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Pass Failure ]
-crbug.com/990918 virtual/gpu/fast/canvas/canvas-composite-shadow.html [ Pass Failure ]
-
 # Sheriff failures 2017-09-21
 crbug.com/767469 http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
 crbug.com/767469 virtual/blink-cors/http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
@@ -5415,19 +5434,6 @@ crbug.com/824848 [ Mac ] external/wpt/html/semantics/links/following-hyperlinks/
 crbug.com/824848 [ Win ] external/wpt/html/semantics/links/following-hyperlinks/activation-behavior.window.html [ Pass Failure ]
 crbug.com/824904 inspector-protocol/heap-profiler/heap-objects-tracking.js [ Pass Failure ]
 
-# Sheriff 2018-03-23
-crbug.com/825262 [ Win ] external/wpt/css/css-transitions/properties-value-001.html [ Pass Failure ]
-crbug.com/825262 [ Mac ] external/wpt/css/css-transitions/properties-value-001.html [ Pass Failure ]
-crbug.com/825262 [ Linux ] external/wpt/css/css-transitions/properties-value-001.html [ Pass Failure ]
-crbug.com/825262 [ Win ] external/wpt/css/css-transitions/properties-value-inherit-001.html [ Pass Failure ]
-crbug.com/825262 [ Mac ] external/wpt/css/css-transitions/properties-value-inherit-001.html [ Pass Failure ]
-crbug.com/825262 [ Linux ] external/wpt/css/css-transitions/properties-value-inherit-001.html [ Pass Failure ]
-crbug.com/825262 [ Win ] external/wpt/css/css-transitions/properties-value-inherit-002.html [ Pass Failure ]
-crbug.com/825262 [ Mac ] external/wpt/css/css-transitions/properties-value-inherit-002.html [ Pass Failure ]
-crbug.com/825262 [ Linux ] external/wpt/css/css-transitions/properties-value-inherit-002.html [ Pass Failure ]
-crbug.com/825262 [ Win ] external/wpt/css/css-transitions/properties-value-003.html [ Pass Failure ]
-crbug.com/825262 [ Win7 ] external/wpt/css/css-transitions/properties-value-implicit-001.html [ Pass Failure ]
-
 # Sheriff 2018-03-26
 crbug.com/825733 [ Win ] media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
 crbug.com/825733 [ Win ] virtual/audio-service/media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
@@ -5519,10 +5525,6 @@ crbug.com/841567 fast/scrolling/scrollbar-tickmarks-hittest.html [ Failure Pass 
 crbug.com/615885 external/wpt/content-security-policy/securitypolicyviolation/img-src-redirect-upgrade-reporting.https.html [ Timeout ]
 
 # Flakes 2018-06-04
-
-# Sheriff 2018-06-06
-crbug.com/849975 external/wpt/css/css-animations/Element-getAnimations.tentative.html [ Pass Failure ]
-crbug.com/849975 virtual/threaded/external/wpt/css/css-animations/Element-getAnimations.tentative.html [ Pass Failure ]
 
 # Sheriff 2018-06-07
 crbug.com/850358 http/tests/devtools/editor/text-editor-enter-behaviour.js [ Pass Failure Timeout ]
@@ -5911,9 +5913,6 @@ crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-paint/tim
 # This test is not intended to pass on Plan B.
 crbug.com/740501 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-onnegotiationneeded.html [ Pass Failure Timeout ]
 
-# Sheriff 2019-01-18
-crbug.com/922970 external/wpt/css/css-transitions/CSSTransition-startTime.tentative.html [ Failure Pass ]
-
 crbug.com/910979 http/tests/html/validation-bubble-oopif-clip.html [ Failure Pass ]
 
 # Sheriff 2019-01-22
@@ -6259,8 +6258,6 @@ crbug.com/937546 [ Win7 ] http/tests/security/xss-DENIED-cross-origin-stack-over
 crbug.com/937546 [ Win7 ] virtual/blink-cors/http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Pass Timeout ]
 
 # Sheriff 2019-06-14
-crbug.com/974334 [ Mac ] external/wpt/html/cross-origin/null.tentative.html [ Failure ]
-crbug.com/974334 [ Mac ] external/wpt/html/cross-origin/usecredentials.tentative.html [ Failure ]
 
 # Sheriff 2019-06-20
 crbug.com/977153 [ Mac ] fast/forms/validation-bubble-appearance-wrap.html [ Pass Failure ]
@@ -6310,7 +6307,6 @@ crbug.com/979593 [ Linux Win ] virtual/omt-worker-fetch/external/wpt/service-wor
 
 # Sheriff 2019-07-03
 crbug.com/979490 [ Linux Win ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import-referrer.html [ Pass Timeout ]
-crbug.com/980924 [ Linux Win Debug ] external/wpt/html/cross-origin/null.tentative.html [ Pass Failure ]
 crbug.com/981137 [ Win ] virtual/gpu-rasterization/images/webp-no-color-profile-lossy.html [ Pass Failure ]
 crbug.com/981210 external/wpt/web-animations/interfaces/Animation/oncancel.html [ Pass Failure ]
 

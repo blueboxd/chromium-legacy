@@ -51,6 +51,10 @@ constexpr int kShelfBlurRadius = 30;
 constexpr int kShelfMaxOvershootHeight = 32;
 constexpr float kShelfBlurQuality = 0.33f;
 
+bool IsScrollableShelfEnabled() {
+  return chromeos::switches::ShouldShowScrollableShelf();
+}
+
 // Return the first or last focusable child of |root|.
 views::View* FindFirstOrLastFocusableChild(views::View* root,
                                            bool find_last_child) {
@@ -173,7 +177,8 @@ bool ShelfWidget::DelegateView::CanActivate() const {
   aura::Window* bubble_window = nullptr;
   aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
   if (shelf_widget_->IsShowingOverflowBubble()) {
-    bubble_window = shelf_widget_->shelf_view_->overflow_bubble()
+    bubble_window = shelf_widget_->GetShelfView()
+                        ->overflow_bubble()
                         ->bubble_view()
                         ->GetWidget()
                         ->GetNativeWindow();
@@ -264,7 +269,7 @@ views::View* ShelfWidget::DelegateView::GetDefaultFocusableChild() {
     return FindFirstOrLastFocusableChild(shelf_widget_->login_shelf_view_,
                                          default_last_focusable_child_);
   } else {
-    return shelf_widget_->shelf_view_->FindFirstOrLastFocusableChild(
+    return shelf_widget_->GetShelfView()->FindFirstOrLastFocusableChild(
         default_last_focusable_child_);
   }
 }
@@ -305,7 +310,6 @@ ShelfWidget::ShelfWidget(Shelf* shelf)
                            Shell::Get()->wallpaper_controller()),
       shelf_layout_manager_(new ShelfLayoutManager(this, shelf)),
       delegate_view_(new DelegateView(this)),
-      shelf_view_(new ShelfView(ShelfModel::Get(), shelf_)),
       scoped_session_observer_(this) {
   DCHECK(shelf_);
 }
@@ -339,8 +343,16 @@ void ShelfWidget::Initialize(aura::Window* shelf_container) {
 
   // The shelf view observes the shelf model and creates icons as items are
   // added to the model.
-  shelf_view_->Init();
-  GetContentsView()->AddChildView(shelf_view_);
+  if (IsScrollableShelfEnabled()) {
+    scrollable_shelf_view_ = new ScrollableShelfView(ShelfModel::Get(), shelf_);
+    scrollable_shelf_view_->Init();
+    GetContentsView()->AddChildView(scrollable_shelf_view_);
+  } else {
+    shelf_view_ = new ShelfView(ShelfModel::Get(), shelf_);
+    shelf_view_->Init();
+    GetContentsView()->AddChildView(shelf_view_);
+  }
+
   GetContentsView()->AddChildView(login_shelf_view_);
 
   shelf_layout_manager_->AddObserver(this);
@@ -384,7 +396,7 @@ void ShelfWidget::CreateNavigationWidget(aura::Window* container) {
   DCHECK(container);
   DCHECK(!navigation_widget_);
   navigation_widget_ =
-      std::make_unique<ShelfNavigationWidget>(shelf_, shelf_view_);
+      std::make_unique<ShelfNavigationWidget>(shelf_, GetShelfView());
   navigation_widget_->Initialize(container);
   Shell::Get()->focus_cycler()->AddWidget(navigation_widget_.get());
 }
@@ -392,7 +404,7 @@ void ShelfWidget::CreateNavigationWidget(aura::Window* container) {
 void ShelfWidget::CreateHotseatWidget(aura::Window* container) {
   DCHECK(container);
   DCHECK(!hotseat_widget_);
-  hotseat_widget_ = std::make_unique<HotseatWidget>(shelf_, shelf_view_);
+  hotseat_widget_ = std::make_unique<HotseatWidget>(shelf_, GetShelfView());
   hotseat_widget_->Initialize(container);
   Shell::Get()->focus_cycler()->AddWidget(hotseat_widget_.get());
 }
@@ -425,7 +437,7 @@ void ShelfWidget::OnShelfAlignmentChanged() {
 }
 
 void ShelfWidget::OnTabletModeChanged() {
-  shelf_view_->OnTabletModeChanged();
+  GetShelfView()->OnTabletModeChanged();
 }
 
 void ShelfWidget::PostCreateShelf() {
@@ -441,11 +453,11 @@ bool ShelfWidget::IsShowingAppList() const {
 }
 
 bool ShelfWidget::IsShowingMenu() const {
-  return shelf_view_->IsShowingMenu();
+  return GetShelfView()->IsShowingMenu();
 }
 
 bool ShelfWidget::IsShowingOverflowBubble() const {
-  return shelf_view_->IsShowingOverflowBubble();
+  return GetShelfView()->IsShowingOverflowBubble();
 }
 
 void ShelfWidget::FocusOverflowShelf(bool last_element) {
@@ -475,9 +487,9 @@ gfx::Rect ShelfWidget::GetScreenBoundsOfItemIconForWindow(
   if (id.IsNull())
     return gfx::Rect();
 
-  gfx::Rect bounds(shelf_view_->GetIdealBoundsOfItemIcon(id));
+  gfx::Rect bounds(GetShelfView()->GetIdealBoundsOfItemIcon(id));
   gfx::Point screen_origin;
-  views::View::ConvertPointToScreen(shelf_view_, &screen_origin);
+  views::View::ConvertPointToScreen(GetShelfView(), &screen_origin);
   return gfx::Rect(screen_origin.x() + bounds.x(),
                    screen_origin.y() + bounds.y(), bounds.width(),
                    bounds.height());
@@ -493,7 +505,7 @@ BackButton* ShelfWidget::GetBackButton() const {
 
 app_list::ApplicationDragAndDropHost*
 ShelfWidget::GetDragAndDropHostForAppList() {
-  return shelf_view_;
+  return GetShelfView();
 }
 
 void ShelfWidget::set_default_last_focusable_child(
@@ -504,9 +516,9 @@ void ShelfWidget::set_default_last_focusable_child(
 
 void ShelfWidget::FocusFirstOrLastFocusableChild(bool last) {
   // This is only ever called during an active session.
-  if (!shelf_view_->GetVisible())
+  if (!GetShelfView()->GetVisible())
     return;
-  views::View* to_focus = shelf_view_->FindFirstOrLastFocusableChild(last);
+  views::View* to_focus = GetShelfView()->FindFirstOrLastFocusableChild(last);
 
   Shell::Get()->focus_cycler()->FocusWidget(to_focus->GetWidget());
   to_focus->GetFocusManager()->SetFocusedView(to_focus);
@@ -558,21 +570,21 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
     switch (state) {
       case session_manager::SessionState::ACTIVE:
         login_shelf_view_->SetVisible(false);
-        shelf_view_->SetVisible(true);
+        GetShelfView()->SetVisible(true);
         break;
       case session_manager::SessionState::LOCKED:
       case session_manager::SessionState::LOGIN_SECONDARY:
-        shelf_view_->SetVisible(false);
+        GetShelfView()->SetVisible(false);
         login_shelf_view_->SetVisible(true);
         break;
       case session_manager::SessionState::OOBE:
         login_shelf_view_->SetVisible(true);
-        shelf_view_->SetVisible(false);
+        GetShelfView()->SetVisible(false);
         break;
       case session_manager::SessionState::LOGIN_PRIMARY:
       case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
         login_shelf_view_->SetVisible(true);
-        shelf_view_->SetVisible(false);
+        GetShelfView()->SetVisible(false);
         break;
       default:
         // session_manager::SessionState::UNKNOWN handled in if statement above.
@@ -599,6 +611,21 @@ void ShelfWidget::HideIfShown() {
 void ShelfWidget::ShowIfHidden() {
   if (!IsVisible())
     Show();
+}
+
+ShelfView* ShelfWidget::GetShelfView() {
+  if (IsScrollableShelfEnabled()) {
+    DCHECK(scrollable_shelf_view_);
+    return scrollable_shelf_view_->shelf_view();
+  }
+
+  DCHECK(shelf_view_);
+  return shelf_view_;
+}
+
+const ShelfView* ShelfWidget::GetShelfView() const {
+  return const_cast<const ShelfView*>(
+      const_cast<ShelfWidget*>(this)->GetShelfView());
 }
 
 void ShelfWidget::OnMouseEvent(ui::MouseEvent* event) {

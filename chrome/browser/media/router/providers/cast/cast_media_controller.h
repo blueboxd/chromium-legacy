@@ -20,6 +20,28 @@ namespace media_router {
 class ActivityRecord;
 class CastSession;
 
+enum SupportedMediaCommand {
+  kSupportedMediaCommandPause = 1 << 0,
+  kSupportedMediaCommandSeek = 1 << 1,
+  kSupportedMediaCommandStreamVolume = 1 << 2,
+  kSupportedMediaCommandStreamMute = 1 << 3,
+  kSupportedMediaCommandSkipForward = 1 << 4,
+  kSupportedMediaCommandSkipBackward = 1 << 5,
+  kSupportedMediaCommandQueueNext = 1 << 6,
+  kSupportedMediaCommandQueuePrev = 1 << 7,
+  kSupportedMediaCommandQueueShuffle = 1 << 8,
+  kSupportedMediaCommandSkipAd = 1 << 9,
+  kSupportedMediaCommandQueueRepeatAll = 1 << 10,
+  kSupportedMediaCommandQueueRepeatOne = 1 << 11,
+  kSupportedMediaCommandEditTracks = 1 << 12,
+  kSupportedMediaCommandPlaybackRate = 1 << 13,
+  kSupportedMediaCommandLike = 1 << 14,
+  kSupportedMediaCommandDislike = 1 << 15,
+  kSupportedMediaCommandFollow = 1 << 16,
+  kSupportedMediaCommandUnfollow = 1 << 17,
+  kSupportedMediaCommandStreamTransfer = 1 << 18,
+};
+
 // Per-session object for sending media control commands to a Cast receiver, and
 // notifying an observer of updates on the session's media status.
 class CastMediaController : public mojom::MediaController {
@@ -35,6 +57,8 @@ class CastMediaController : public mojom::MediaController {
   void SetMute(bool mute) override;
   void SetVolume(float volume) override;
   void Seek(base::TimeDelta time) override;
+  void NextTrack() override;
+  void PreviousTrack() override;
 
   // These methods may notify the MediaStatusObserver that the status has been
   // updated.

@@ -40,6 +40,7 @@ public class ModuleInstallerImpl implements ModuleInstaller {
     private final Map<String, List<OnModuleInstallFinishedListener>> mModuleNameListenerMap =
             new HashMap<>();
     private ModuleInstallerBackend mBackend;
+    private ModuleActivityObserver mActivityObserver = new ModuleActivityObserver();
 
     /** Returns the singleton instance. */
     public static ModuleInstaller getInstance() {
@@ -138,7 +139,7 @@ public class ModuleInstallerImpl implements ModuleInstaller {
     private void onFinished(boolean success, List<String> moduleNames) {
         ThreadUtils.assertOnUiThread();
 
-        ModuleActivityObserver.onModuleInstalled();
+        mActivityObserver.onModuleInstalled();
 
         for (String moduleName : moduleNames) {
             List<OnModuleInstallFinishedListener> onFinishedListeners =

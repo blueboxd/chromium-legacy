@@ -6,11 +6,13 @@
 #define FUCHSIA_ENGINE_BROWSER_CONTEXT_IMPL_H_
 
 #include <fuchsia/web/cpp/fidl.h>
+#include <lib/fidl/cpp/binding_set.h>
 #include <memory>
 #include <set>
 
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
+#include "fuchsia/engine/browser/cookie_manager_impl.h"
 #include "fuchsia/engine/browser/web_engine_remote_debugging.h"
 #include "fuchsia/engine/web_engine_export.h"
 
@@ -29,7 +31,7 @@ class WEB_ENGINE_EXPORT ContextImpl : public fuchsia::web::Context {
   explicit ContextImpl(content::BrowserContext* browser_context);
 
   // Tears down the Context, destroying any active Frames in the process.
-  ~ContextImpl() override;
+  ~ContextImpl() final;
 
   content::BrowserContext* browser_context_for_test() {
     return browser_context_;
@@ -47,7 +49,9 @@ class WEB_ENGINE_EXPORT ContextImpl : public fuchsia::web::Context {
   void OnDebugDevToolsPortReady();
 
   // fuchsia::web::Context implementation.
-  void CreateFrame(fidl::InterfaceRequest<fuchsia::web::Frame> frame) override;
+  void CreateFrame(fidl::InterfaceRequest<fuchsia::web::Frame> frame) final;
+  void GetCookieManager(
+      fidl::InterfaceRequest<fuchsia::web::CookieManager> manager) final;
   void GetRemoteDebuggingPort(GetRemoteDebuggingPortCallback callback) override;
 
   // Gets the underlying FrameImpl service object associated with a connected
@@ -56,6 +60,9 @@ class WEB_ENGINE_EXPORT ContextImpl : public fuchsia::web::Context {
 
  private:
   content::BrowserContext* const browser_context_;
+
+  CookieManagerImpl cookie_manager_;
+  fidl::BindingSet<fuchsia::web::CookieManager> cookie_manager_bindings_;
 
   // TODO(crbug.com/893236): Make this false by default, and allow it to be
   // initialized at Context creation time.

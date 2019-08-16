@@ -10,6 +10,7 @@ import org.chromium.chrome.browser.usage_stats.WebsiteEventProtos.Timestamp;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -108,6 +109,23 @@ public class EventTracker {
         return writePromise;
     }
 
+    /** Clear any events that have a domain in fqdns. */
+    public Promise<Void> clearDomains(List<String> fqdns) {
+        final Promise<Void> writePromise = new Promise<>();
+        mRootPromise.then((result) -> {
+            mBridge.deleteEventsWithMatchingDomains(
+                    fqdns.toArray(new String[fqdns.size()]), (didSucceed) -> {
+                        if (didSucceed) {
+                            filterMatchingDomains(fqdns, result);
+                            writePromise.fulfill(null);
+                        } else {
+                            writePromise.reject();
+                        }
+                    });
+        }, (e) -> {});
+        return writePromise;
+    }
+
     private WebsiteEventProtos.WebsiteEvent getProtoEvent(WebsiteEvent event) {
         return WebsiteEventProtos.WebsiteEvent.newBuilder()
                 .setFqdn(event.getFqdn())
@@ -150,5 +168,14 @@ public class EventTracker {
             if (time <= websiteList.get(i).getTimestamp()) return i;
         }
         return websiteList.size();
+    }
+
+    private static void filterMatchingDomains(List<String> fqdns, List<WebsiteEvent> websiteList) {
+        Iterator<WebsiteEvent> eventsIterator = websiteList.iterator();
+        while (eventsIterator.hasNext()) {
+            if (fqdns.contains(eventsIterator.next().getFqdn())) {
+                eventsIterator.remove();
+            }
+        }
     }
 }

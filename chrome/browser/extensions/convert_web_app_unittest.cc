@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/web_application_info.h"
+#include "components/services/app_service/public/cpp/file_handler_info.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_resource.h"
@@ -449,15 +450,14 @@ TEST(ExtensionFromWebApp, FileHandlersAreCorrectlyConverted) {
 
   ASSERT_TRUE(extension.get());
 
-  const std::vector<extensions::FileHandlerInfo> file_handler_info =
+  const std::vector<apps::FileHandlerInfo> file_handler_info =
       *extensions::FileHandlers::GetFileHandlers(extension.get());
 
   EXPECT_EQ(2u, file_handler_info.size());
 
   EXPECT_EQ("https://graphr.n/open-file/?name=Graph", file_handler_info[0].id);
   EXPECT_FALSE(file_handler_info[0].include_directories);
-  EXPECT_EQ(extensions::file_handler_verbs::kOpenWith,
-            file_handler_info[0].verb);
+  EXPECT_EQ(apps::file_handler_verbs::kOpenWith, file_handler_info[0].verb);
   // Extensions should contain SVG, and only SVG
   EXPECT_THAT(file_handler_info[0].extensions,
               testing::UnorderedElementsAre("svg"));
@@ -467,8 +467,7 @@ TEST(ExtensionFromWebApp, FileHandlersAreCorrectlyConverted) {
 
   EXPECT_EQ("https://graphr.n/open-file/?name=Raw", file_handler_info[1].id);
   EXPECT_FALSE(file_handler_info[1].include_directories);
-  EXPECT_EQ(extensions::file_handler_verbs::kOpenWith,
-            file_handler_info[1].verb);
+  EXPECT_EQ(apps::file_handler_verbs::kOpenWith, file_handler_info[1].verb);
   // Extensions should contain csv, and only csv
   EXPECT_THAT(file_handler_info[1].extensions,
               testing::UnorderedElementsAre("csv"));

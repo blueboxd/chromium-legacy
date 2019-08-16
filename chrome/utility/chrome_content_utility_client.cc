@@ -32,15 +32,6 @@
 #include "services/network/url_request_context_builder_mojo.h"
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/assistant/buildflags.h"  // nogncheck
-
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#include "chromeos/services/assistant/audio_decoder/assistant_audio_decoder_service.h"  // nogncheck
-#include "chromeos/services/assistant/public/mojom/constants.mojom.h"  // nogncheck
-#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#endif  // defined(OS_CHROMEOS)
-
 #if BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN)
 #include "chrome/services/printing/pdf_to_emf_converter_factory.h"
 #endif
@@ -53,13 +44,6 @@ namespace {
 
 base::LazyInstance<ChromeContentUtilityClient::NetworkBinderCreationCallback>::
     Leaky g_network_binder_creation_callback = LAZY_INSTANCE_INITIALIZER;
-
-void RunServiceAsyncThenTerminateProcess(
-    std::unique_ptr<service_manager::Service> service) {
-  service_manager::Service::RunAsyncUntilTermination(
-      std::move(service),
-      base::BindOnce([] { content::UtilityThread::Get()->ReleaseProcess(); }));
-}
 
 }  // namespace
 
@@ -114,33 +98,6 @@ bool ChromeContentUtilityClient::OnMessageReceived(
     return true;
 #endif
   return false;
-}
-
-bool ChromeContentUtilityClient::HandleServiceRequest(
-    const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {
-  auto service = MaybeCreateMainThreadService(service_name, std::move(request));
-  if (service) {
-    RunServiceAsyncThenTerminateProcess(std::move(service));
-    return true;
-  }
-
-  return false;
-}
-
-std::unique_ptr<service_manager::Service>
-ChromeContentUtilityClient::MaybeCreateMainThreadService(
-    const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {
-#if defined(OS_CHROMEOS)
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-  if (service_name == chromeos::assistant::mojom::kAudioDecoderServiceName) {
-    return std::make_unique<chromeos::assistant::AssistantAudioDecoderService>(
-        std::move(request));
-  }
-#endif
-#endif
-  return nullptr;
 }
 
 void ChromeContentUtilityClient::RegisterNetworkBinders(

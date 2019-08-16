@@ -584,6 +584,22 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
     case ax::mojom::Role::kColorWell:
       return base::ASCIIToUTF16("color picker");
 
+    case ax::mojom::Role::kDate:
+      return base::ASCIIToUTF16("date picker");
+
+    case ax::mojom::Role::kDateTime: {
+      std::string input_type;
+      if (data.GetStringAttribute(ax::mojom::StringAttribute::kInputType,
+                                  &input_type)) {
+        if (input_type == "datetime-local") {
+          return base::ASCIIToUTF16("local date and time picker");
+        } else if (input_type == "week") {
+          return base::ASCIIToUTF16("week picker");
+        }
+      }
+      return {};
+    }
+
     case ax::mojom::Role::kDetails:
       return base::ASCIIToUTF16("details");
 

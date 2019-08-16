@@ -19,9 +19,12 @@ class MockSSPILibrary : public SSPILibrary {
   MockSSPILibrary();
   ~MockSSPILibrary() override;
 
-  // TODO(cbentzel): Only QuerySecurityPackageInfo and FreeContextBuffer
-  //                 are properly handled currently.
   // SSPILibrary methods:
+
+  // AcquireCredentialsHandle() returns a handle that must be freed using
+  // FreeCredentialsHandle(). The credentials handle records the principal name.
+  //
+  // On return ptsExpiry is set to a constant.
   SECURITY_STATUS AcquireCredentialsHandle(LPWSTR pszPrincipal,
                                            LPWSTR pszPackage,
                                            unsigned long fCredentialUse,
@@ -31,6 +34,26 @@ class MockSSPILibrary : public SSPILibrary {
                                            void* pvGetKeyArgument,
                                            PCredHandle phCredential,
                                            PTimeStamp ptsExpiry) override;
+
+  // InitializeSecurityContext() returns a handle in phContext that must be
+  // freed via FreeContextBuffer() or by passing it into another
+  // InitializeSecurityContext() call.
+  //
+  // On return ptsExpiry is set to a constant.
+  //
+  // The output buffer will contain a token consisting of the ASCII string:
+  //
+  //   "<source principal>'s token #<n> for <target principal>"
+  //
+  // <source principal> is the security principal derived from explicit
+  // credentials that were passed to a prior AcquireCredentialsHandle() call, or
+  // the string "<Default>" if ambient credentials were requested.
+  //
+  // <n> is the 1-based invocation counter for InitializeSecurityContext() for
+  // the same context.
+  //
+  // <target principal> is the contents of the pszTargetName. Note that the
+  // function expects the same target name on every invocation.
   SECURITY_STATUS InitializeSecurityContext(PCredHandle phCredential,
                                             PCtxtHandle phContext,
                                             SEC_WCHAR* pszTargetName,
@@ -43,6 +66,14 @@ class MockSSPILibrary : public SSPILibrary {
                                             PSecBufferDesc pOutput,
                                             unsigned long* contextAttr,
                                             PTimeStamp ptsExpiry) override;
+
+  // QueryContextAttributesEx() supports querying the same attributes as
+  // required by HttpAuthSSPI.
+  SECURITY_STATUS QueryContextAttributesEx(PCtxtHandle phContext,
+                                           ULONG ulAttribute,
+                                           PVOID pBuffer,
+                                           ULONG cbBuffer) override;
+
   SECURITY_STATUS QuerySecurityPackageInfo(LPWSTR pszPackageName,
                                            PSecPkgInfoW* pkgInfo) override;
   SECURITY_STATUS FreeCredentialsHandle(PCredHandle phCredential) override;
@@ -104,6 +135,10 @@ class MockSSPILibrary : public SSPILibrary {
 
   // Set of packages which should be freed.
   std::set<PSecPkgInfoW> expected_freed_packages_;
+
+  // These sets keep track of active credentials and contexts.
+  std::set<CredHandle> active_credentials_;
+  std::set<CtxtHandle> active_contexts_;
 };
 
 using MockAuthLibrary = MockSSPILibrary;

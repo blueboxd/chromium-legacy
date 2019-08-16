@@ -5,22 +5,18 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.content_public.browser.LoadUrlParams;
 
 /**
  * Simple TabModelSelector that assumes that only the regular TabModel type exists.
  */
 public class SingleTabModelSelector extends TabModelSelectorBase {
-    private final Context mApplicationContext;
     private final SingleTabModel mTabModel;
 
-    public SingleTabModelSelector(Activity activity, boolean incognito, boolean blockNewWindows) {
-        mApplicationContext = activity.getApplicationContext();
+    public SingleTabModelSelector(Activity activity, TabCreatorManager tabCreatorManager,
+            boolean incognito, boolean blockNewWindows) {
+        super(tabCreatorManager);
         mTabModel = new SingleTabModel(activity, incognito, blockNewWindows);
         initialize(false, mTabModel);
     }
@@ -49,16 +45,6 @@ public class SingleTabModelSelector extends TabModelSelectorBase {
     @Override
     public boolean isIncognitoSelected() {
         return mTabModel.isIncognito();
-    }
-
-    @Override
-    public Tab openNewTab(
-            LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent, boolean incognito) {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(loadUrlParams.getUrl()));
-        intent.setPackage(mApplicationContext.getPackageName());
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        mApplicationContext.startActivity(intent);
-        return null;
     }
 
     @Override

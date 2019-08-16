@@ -17,6 +17,7 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/util.h"
 #include "chrome/test/chromedriver/chrome/web_view_impl.h"
+#include "chrome/test/chromedriver/net/command_id.h"
 #include "chrome/test/chromedriver/net/sync_websocket.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 
@@ -194,19 +195,27 @@ Status DevToolsClientImpl::SendCommand(
   return SendCommandWithTimeout(method, params, nullptr);
 }
 
+Status DevToolsClientImpl::SendCommandFromWebSocket(
+    const std::string& method,
+    const base::DictionaryValue& params,
+    int client_command_id) {
+  return SendCommandInternal(method, params, nullptr, false, false,
+                             client_command_id, nullptr);
+}
+
 Status DevToolsClientImpl::SendCommandWithTimeout(
     const std::string& method,
     const base::DictionaryValue& params,
     const Timeout* timeout) {
   std::unique_ptr<base::DictionaryValue> result;
-  return SendCommandInternal(method, params, &result, true, true, timeout);
+  return SendCommandInternal(method, params, &result, true, true, 0, timeout);
 }
 
 Status DevToolsClientImpl::SendAsyncCommand(
     const std::string& method,
     const base::DictionaryValue& params) {
   std::unique_ptr<base::DictionaryValue> result;
-  return SendCommandInternal(method, params, &result, false, false, nullptr);
+  return SendCommandInternal(method, params, &result, false, false, 0, nullptr);
 }
 
 Status DevToolsClientImpl::SendCommandAndGetResult(
@@ -222,8 +231,8 @@ Status DevToolsClientImpl::SendCommandAndGetResultWithTimeout(
     const Timeout* timeout,
     std::unique_ptr<base::DictionaryValue>* result) {
   std::unique_ptr<base::DictionaryValue> intermediate_result;
-  Status status = SendCommandInternal(
-      method, params, &intermediate_result, true, true, timeout);
+  Status status = SendCommandInternal(method, params, &intermediate_result,
+                                      true, true, 0, timeout);
   if (status.IsError())
     return status;
   if (!intermediate_result)
@@ -235,7 +244,7 @@ Status DevToolsClientImpl::SendCommandAndGetResultWithTimeout(
 Status DevToolsClientImpl::SendCommandAndIgnoreResponse(
     const std::string& method,
     const base::DictionaryValue& params) {
-  return SendCommandInternal(method, params, nullptr, true, false, nullptr);
+  return SendCommandInternal(method, params, nullptr, true, false, 0, nullptr);
 }
 
 void DevToolsClientImpl::AddListener(DevToolsEventListener* listener) {
@@ -288,11 +297,13 @@ Status DevToolsClientImpl::SendCommandInternal(
     std::unique_ptr<base::DictionaryValue>* result,
     bool expect_response,
     bool wait_for_response,
+    const int client_command_id,
     const Timeout* timeout) {
   if (parent_ == nullptr && !socket_->IsConnected())
     return Status(kDisconnected, "not connected to DevTools");
 
-  int command_id = next_id_++;
+  // |client_command_id| will be 0 for commands sent by ChromeDriver
+  int command_id = client_command_id ? client_command_id : next_id_++;
   base::DictionaryValue command;
   command.SetInteger("id", command_id);
   command.SetString("method", method);
@@ -308,8 +319,9 @@ Status DevToolsClientImpl::SendCommandInternal(
     base::DictionaryValue params2;
     params2.SetString("sessionId", session_id_);
     params2.SetString("message", message);
-    Status status = parent_->SendCommandInternal(
-        "Target.sendMessageToTarget", params2, nullptr, true, false, timeout);
+    Status status =
+        parent_->SendCommandInternal("Target.sendMessageToTarget", params2,
+                                     nullptr, true, false, 0, timeout);
     if (status.IsError())
       return status;
   } else if (!socket_->Send(message)) {

@@ -162,10 +162,10 @@ class StructureNode(base.Node):
     with open(flat_filename, 'wb') as outfile:
       if self.ExpandVariables():
         text = self.gatherer.GetText()
-        file_contents = self._Substitute(text).encode('utf-8')
+        file_contents = self._Substitute(text)
       else:
         file_contents = self.gatherer.GetData('', 'utf-8')
-      outfile.write(file_contents)
+      outfile.write(file_contents.encode('utf-8'))
 
     self._last_flat_filename = flat_filename
     return os.path.basename(flat_filename)

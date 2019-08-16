@@ -156,8 +156,8 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
   min_sdk_version = 21
   deps = [
     "//android_webview:android_webview_java",
-    "//android_webview:android_webview_services_java",
-    "//android_webview:aw_variations_seed_server_aidl",
+    "//android_webview:services_java",
+    "//android_webview:services_variations_seed_server_aidl",
     "//android_webview/test/embedded_test_server:aw_net_java_test_support",
     "//base:base_java",
     "//base:base_java_test_support",

@@ -11439,12 +11439,45 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileBookmarkManagerClose">
+  <owner>twellington@google.com</owner>
+  <owner>chrome-android-app@chromium.org</owner>
+  <description>
+    Recorded when a user closes the Android bookmark manager.
+  </description>
+</action>
+
+<action name="MobileBookmarkManagerDeleteBulk">
+  <owner>twellington@google.com</owner>
+  <owner>chrome-android-app@chromium.org</owner>
+  <description>
+    Recorded when a user deletes all selected bookmarks in the Android bookmark
+    manager.
+  </description>
+</action>
+
 <action name="MobileBookmarkManagerDragReorder">
   <owner>jhimawan@google.com</owner>
   <owner>twellington@google.com</owner>
   <description>
     Recorded when a user drops a bookmark after a drag in the Android bookmark
     manager.
+  </description>
+</action>
+
+<action name="MobileBookmarkManagerEditBookmark">
+  <owner>twellington@google.com</owner>
+  <owner>chrome-android-app@chromium.org</owner>
+  <description>
+    Recorded when a user edits a bookmark in the Android bookmark manager.
+  </description>
+</action>
+
+<action name="MobileBookmarkManagerEditFolder">
+  <owner>twellington@google.com</owner>
+  <owner>chrome-android-app@chromium.org</owner>
+  <description>
+    Recorded when a user edits a folder in the Android bookmark manager.
   </description>
 </action>
 
@@ -11468,12 +11501,57 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileBookmarkManagerEntryOpenedInIncognito">
+  <owner>twellington@google.com</owner>
+  <owner>chrome-android-app@chromium.org</owner>
+  <description>
+    Recorded when all selected bookmarks are opened in new incognito tabs from
+    the Android bookmarks manager.
+  </description>
+</action>
+
+<action name="MobileBookmarkManagerEntryOpenedInNewTab">
+  <owner>twellington@google.com</owner>
+  <owner>chrome-android-app@chromium.org</owner>
+  <description>
+    Recorded when all selected bookmarks are opened in new tabs from the Android
+    bookmarks manager.
+  </description>
+</action>
+
+<action name="MobileBookmarkManagerLongPressToggleSelect">
+  <owner>twellington@google.com</owner>
+  <owner>chrome-android-app@chromium.org</owner>
+  <description>
+    Recorded when a user long presses on a bookmark item to toggle selection in
+    the Android bookmark manager.
+  </description>
+</action>
+
 <action name="MobileBookmarkManagerMoveDown">
   <owner>jhimawan@google.com</owner>
   <owner>twellington@google.com</owner>
   <description>
     Recorded when a user uses the &quot;Move Down&quot; button to reorder
     bookmarks in the Android bookmark manager.
+  </description>
+</action>
+
+<action name="MobileBookmarkManagerMoveToFolder">
+  <owner>twellington@google.com</owner>
+  <owner>chrome-android-app@chromium.org</owner>
+  <description>
+    Recorded when a user moves one bookmark to a new folder in the Android
+    bookmark manager.
+  </description>
+</action>
+
+<action name="MobileBookmarkManagerMoveToFolderBulk">
+  <owner>twellington@google.com</owner>
+  <owner>chrome-android-app@chromium.org</owner>
+  <description>
+    Recorded when a user moves all selected bookmark items to a new folder in
+    the Android bookmark manager.
   </description>
 </action>
 
@@ -11494,6 +11572,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileBookmarkManagerOpenFolder">
+  <owner>twellington@google.com</owner>
+  <owner>chrome-android-app@chromium.org</owner>
+  <description>
+    Recorded when a user opens a folder in the Android bookmark manager.
+  </description>
+</action>
+
 <action name="MobileBookmarkManagerPageOpen">
   <owner>ianwen@chromium.org</owner>
   <description>
@@ -11508,6 +11594,25 @@ should be able to be added at any place in this file.
   <description>
     Action indicating that the selected bookmark entries were deleted from the
     bookmark manager.
+  </description>
+</action>
+
+<action name="MobileBookmarkManagerShowInFolder">
+  <owner>twellington@google.com</owner>
+  <owner>chrome-android-app@chromium.org</owner>
+  <description>
+    Recorded when a user uses the &quot;Show in folder&quot; button from Android
+    bookmark search in order to see the bookmark of interest inside of its
+    parent folder.
+  </description>
+</action>
+
+<action name="MobileBookmarkManagerTapToggleSelect">
+  <owner>twellington@google.com</owner>
+  <owner>chrome-android-app@chromium.org</owner>
+  <description>
+    Recorded when a user taps on an item in order to select it from the Android
+    bookmark manager (this can only occur while in selection mode).
   </description>
 </action>
 
@@ -17371,6 +17476,11 @@ should be able to be added at any place in this file.
 <action name="ReleaseNotes.ShowReleaseNotes">
   <owner>yulunwu@chromium.org</owner>
   <description>Release Notes app was launched.</description>
+</action>
+
+<action name="ReleaseNotes.SuggestionChipLaunched">
+  <owner>yulunwu@chromium.org</owner>
+  <description>Release Notes was launched from suggestion chip.</description>
 </action>
 
 <action name="Reload">

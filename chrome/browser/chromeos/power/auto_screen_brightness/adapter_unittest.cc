@@ -230,6 +230,11 @@ class AdapterTest : public testing::Test {
     thread_bundle_.RunUntilIdle();
   }
 
+  void ReportLidEvent(chromeos::PowerManagerClient::LidState state) {
+    chromeos::FakePowerManagerClient::Get()->SetLidState(
+        state, thread_bundle_.NowTicks());
+  }
+
   // Returns a valid ModelConfig.
   ModelConfig GetTestModelConfig(bool enabled = true) {
     ModelConfig model_config;
@@ -1287,6 +1292,115 @@ TEST_F(AdapterTest, UserAdjustmentEffectContinue) {
   EXPECT_EQ(test_observer_.num_changes(), 2);
   CheckAvgLog({100, 101, 102, 103, 104},
               adapter_->GetCurrentAvgLogAlsForTesting().value());
+}
+
+TEST_F(AdapterTest, LidEvents) {
+  std::map<std::string, std::string> params = default_params_;
+  params["lid_open_delay_time_seconds"] = "3";
+  ModelConfig test_config = GetTestModelConfig();
+  test_config.auto_brightness_als_horizon_seconds = 3;
+
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
+       Model(global_curve_, personal_curve_, 0), test_config, params);
+
+  // |auto_brightness_als_horizon_seconds| is 3.
+  ForwardTimeAndReportAls({1, 2});
+  EXPECT_EQ(test_observer_.num_changes(), 0);
+
+  ForwardTimeAndReportAls({100});
+  EXPECT_EQ(test_observer_.num_changes(), 1);
+  CheckAvgLog({1, 2, 100}, adapter_->GetCurrentAvgLogAlsForTesting().value());
+
+  ReportLidEvent(chromeos::PowerManagerClient::LidState::CLOSED);
+
+  // All ALS values that arrive after lid is closed are ignored.
+  ForwardTimeAndReportAls({0});
+  EXPECT_EQ(test_observer_.num_changes(), 1);
+  CheckAvgLog({1, 2, 100}, adapter_->GetCurrentAvgLogAlsForTesting().value());
+
+  ForwardTimeAndReportAls({200});
+  EXPECT_EQ(test_observer_.num_changes(), 1);
+  CheckAvgLog({1, 2, 100}, adapter_->GetCurrentAvgLogAlsForTesting().value());
+
+  ReportLidEvent(chromeos::PowerManagerClient::LidState::OPEN);
+
+  // ALS readings that arrive in the next 2 seconds will be ignored because
+  // |lid_open_delay_time_seconds| is set to 3 seconds.
+  ForwardTimeAndReportAls({300});
+  EXPECT_EQ(test_observer_.num_changes(), 1);
+  CheckAvgLog({1, 2, 100}, adapter_->GetCurrentAvgLogAlsForTesting().value());
+
+  ForwardTimeAndReportAls({400});
+  EXPECT_EQ(test_observer_.num_changes(), 1);
+  CheckAvgLog({1, 2, 100}, adapter_->GetCurrentAvgLogAlsForTesting().value());
+
+  // Another ALS reading arrives 2 seconds after lid-open. Brightness is changed
+  // immediately. As earlier ALS readings were cleared when lid was closed, only
+  // one ALS reading is used to calculate brightness.
+  ForwardTimeAndReportAls({500});
+  EXPECT_EQ(test_observer_.num_changes(), 2);
+  CheckAvgLog({500}, adapter_->GetCurrentAvgLogAlsForTesting().value());
+
+  // Next two ALS readings won't change brightness because we are waiting for
+  // averaging period |auto_brightness_als_horizon_seconds| to pass.
+  ForwardTimeAndReportAls({600});
+  EXPECT_EQ(test_observer_.num_changes(), 2);
+  CheckAvgLog({500}, adapter_->GetCurrentAvgLogAlsForTesting().value());
+
+  ForwardTimeAndReportAls({700});
+  EXPECT_EQ(test_observer_.num_changes(), 2);
+  CheckAvgLog({500}, adapter_->GetCurrentAvgLogAlsForTesting().value());
+
+  // Averaging period has passed, so brightness is changed.
+  ForwardTimeAndReportAls({800});
+  EXPECT_EQ(test_observer_.num_changes(), 3);
+  CheckAvgLog({600, 700, 800},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
+}
+
+TEST_F(AdapterTest, SuspendDueToLidClosed) {
+  std::map<std::string, std::string> params = default_params_;
+  // UserAdjustmentEffect::kPauseAuto = 1.
+  params["user_adjustment_effect"] = "1";
+  params["lid_open_delay_time_seconds"] = "2";
+
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
+       Model(global_curve_, personal_curve_, 0), GetTestModelConfig(), params);
+
+  // |auto_brightness_als_horizon_seconds| is 5.
+  ForwardTimeAndReportAls({1, 2, 3, 4});
+  EXPECT_EQ(test_observer_.num_changes(), 0);
+
+  ForwardTimeAndReportAls({100});
+  EXPECT_EQ(test_observer_.num_changes(), 1);
+  CheckAvgLog({1, 2, 3, 4, 100},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
+
+  // Lid is closed and triggers a suspend (no need to report suspend here).
+  ReportLidEvent(chromeos::PowerManagerClient::LidState::CLOSED);
+  ForwardTimeAndReportAls({0});
+  EXPECT_EQ(test_observer_.num_changes(), 1);
+  CheckAvgLog({1, 2, 3, 4, 100},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
+
+  ForwardTimeAndReportAls({200});
+  EXPECT_EQ(test_observer_.num_changes(), 1);
+  CheckAvgLog({1, 2, 3, 4, 100},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
+
+  ReportLidEvent(chromeos::PowerManagerClient::LidState::OPEN);
+  ReportSuspendDone();
+
+  // First ALS reading that arrives after lid-open will be ignored because
+  // |lid_open_delay_time_seconds| is set to 2 seconds.
+  ForwardTimeAndReportAls({300});
+  EXPECT_EQ(test_observer_.num_changes(), 1);
+  CheckAvgLog({1, 2, 3, 4, 100},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
+
+  ForwardTimeAndReportAls({400});
+  EXPECT_EQ(test_observer_.num_changes(), 2);
+  CheckAvgLog({400}, adapter_->GetCurrentAvgLogAlsForTesting().value());
 }
 
 }  // namespace auto_screen_brightness

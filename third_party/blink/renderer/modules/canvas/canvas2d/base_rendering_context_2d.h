@@ -373,7 +373,6 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   static const double kCDeviceScaleFactor;
 
   virtual void DisableAcceleration() {}
-  virtual void DidInvokeGPUReadbackInCurrentFrame() {}
 
   virtual bool IsPaint2D() const { return false; }
   virtual void WillOverwriteCanvas() {}

@@ -65,6 +65,8 @@ class EasyUnlockServiceRegular
   ~EasyUnlockServiceRegular() override;
 
  private:
+  friend class EasyUnlockServiceRegularTest;
+
   // Loads the RemoteDevice instances that will be supplied to
   // ProximityAuthSystem.
   void LoadRemoteDevices();

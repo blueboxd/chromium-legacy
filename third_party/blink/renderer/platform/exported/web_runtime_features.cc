@@ -64,6 +64,10 @@ void WebRuntimeFeatures::EnableFeatureFromString(const std::string& name,
   RuntimeEnabledFeatures::SetFeatureEnabledFromString(name, enable);
 }
 
+void WebRuntimeFeatures::EnableFractionalScrollOffsets(bool enable) {
+  RuntimeEnabledFeatures::SetFractionalScrollOffsetsEnabled(enable);
+}
+
 bool WebRuntimeFeatures::IsFractionalScrollOffsetsEnabled() {
   return RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled();
 }
@@ -331,11 +335,6 @@ void WebRuntimeFeatures::EnablePaymentRequest(bool enable) {
     RuntimeEnabledFeatures::SetPaymentMethodChangeEventEnabled(false);
     RuntimeEnabledFeatures::SetPaymentAppEnabled(false);
   }
-}
-
-void WebRuntimeFeatures::EnablePaymentRequestHasEnrolledInstrument(
-    bool enable) {
-  RuntimeEnabledFeatures::SetPaymentRequestHasEnrolledInstrumentEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnablePerformanceManagerInstrumentation(bool enable) {

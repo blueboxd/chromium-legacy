@@ -257,13 +257,15 @@ interface CookieManager {
   // information about the tracked cookie, to make sure that a change to the
   // cookie did not happen right before the listener was registered.
   //
+  // If |name| is omitted then changes are returned for all cookies for |url|.
+  //
   // TODO(rdsmith): Should this have a filter to register for a lot of
   // notifications at once?  Maybe combine with the deletion filter?
-  // TODO(rdsmith): Describe the performance implications of using this meethod.
+  // TODO(rdsmith): Describe the performance implications of using this method.
   // The comments in CookieMonster::AddCallbackForCookie look pretty scary.
   AddCookieChangeListener(
       url.mojom.Url url,
-      string name,
+      string? name,
       CookieChangeListener listener);
 
   // Subscribes the given listener to changes to this CookieManager's cookies.

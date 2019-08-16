@@ -38,6 +38,9 @@
 
 namespace ash {
 
+using ContentLayerType = AshColorProvider::ContentLayerType;
+using AshColorMode = AshColorProvider::AshColorMode;
+
 namespace {
 
 class CloseButton : public TopShortcutButton, public views::ButtonListener {
@@ -84,13 +87,17 @@ AddUserButton::AddUserButton(UserChooserDetailedViewController* controller)
       gfx::Insets(kUnifiedTopShortcutSpacing), kUnifiedTopShortcutSpacing));
 
   auto* icon = new views::ImageView;
-  icon->SetImage(gfx::CreateVectorIcon(kSystemMenuNewUserIcon,
-                                       kIconOnDarkBackgroundColor));
+  icon->SetImage(gfx::CreateVectorIcon(
+      kSystemMenuNewUserIcon,
+      AshColorProvider::Get()->GetContentLayerColor(
+          ContentLayerType::kIconPrimary, AshColorMode::kDark)));
   AddChildView(icon);
 
   auto* label = new views::Label(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
-  label->SetEnabledColor(kUnifiedMenuTextColor);
+  label->SetEnabledColor(
+      AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+          ContentLayerType::kTextPrimary, kUnifiedMenuTextColor));
   label->SetAutoColorReadabilityEnabled(false);
   label->SetSubpixelRenderingEnabled(false);
   AddChildView(label);
@@ -121,9 +128,8 @@ class Separator : public views::View {
     AddChildView(child);
     child->SetBorder(views::CreateSolidSidedBorder(
         0, 0, kUnifiedNotificationSeparatorThickness, 0,
-        AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
-            AshColorProvider::ControlsLayerType::kSeparator,
-            kSeparatorOnDarkBackgroundColor)));
+        AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+            ContentLayerType::kSeparator, kSeparatorOnDarkBackgroundColor)));
   }
 
   DISALLOW_COPY_AND_ASSIGN(Separator);
@@ -131,7 +137,9 @@ class Separator : public views::View {
 
 views::View* CreateAddUserErrorView(const base::string16& message) {
   auto* label = new views::Label(message);
-  label->SetEnabledColor(kUnifiedMenuTextColor);
+  label->SetEnabledColor(
+      AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+          ContentLayerType::kTextPrimary, kUnifiedMenuTextColor));
   label->SetAutoColorReadabilityEnabled(false);
   label->SetSubpixelRenderingEnabled(false);
   label->SetBorder(
@@ -220,13 +228,16 @@ UserItemButton::UserItemButton(int user_index,
       Shell::Get()->session_controller()->GetUserSession(user_index);
 
   name_->SetText(base::UTF8ToUTF16(user_session->user_info.display_name));
-  name_->SetEnabledColor(kUnifiedMenuTextColor);
+  name_->SetEnabledColor(
+      AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+          ContentLayerType::kTextPrimary, kUnifiedMenuTextColor));
   name_->SetAutoColorReadabilityEnabled(false);
   name_->SetSubpixelRenderingEnabled(false);
   vertical_labels->AddChildView(name_);
 
   email_->SetText(base::UTF8ToUTF16(user_session->user_info.display_email));
-  email_->SetEnabledColor(kUnifiedMenuSecondaryTextColor);
+  email_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      ContentLayerType::kTextSecondary, AshColorMode::kDark));
   email_->SetAutoColorReadabilityEnabled(false);
   email_->SetSubpixelRenderingEnabled(false);
   vertical_labels->AddChildView(email_);

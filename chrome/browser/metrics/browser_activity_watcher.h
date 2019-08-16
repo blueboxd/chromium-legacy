@@ -8,23 +8,31 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
 // Helper that fires a callback every time a Browser object is added or removed
-// from the BrowserList. This class primarily exists to encapsulate this
-// behavior and reduce the number of platform-specific macros as Android doesn't
-// use BrowserList.
-class BrowserActivityWatcher : public BrowserListObserver {
+// from the BrowserList, or a browser's tab strip model is modified. This class
+// primarily exists to encapsulate this behavior and reduce the number of
+// platform-specific macros as Android doesn't use BrowserList or TabStripModel.
+class BrowserActivityWatcher : public BrowserListObserver,
+                               public TabStripModelObserver {
  public:
   explicit BrowserActivityWatcher(
-      const base::RepeatingClosure& on_browser_list_change);
+      const base::RepeatingClosure& on_browser_activity);
   ~BrowserActivityWatcher() override;
 
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;
   void OnBrowserRemoved(Browser* browser) override;
 
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
+
  private:
-  base::RepeatingClosure on_browser_list_change_;
+  base::RepeatingClosure on_browser_activity_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActivityWatcher);
 };

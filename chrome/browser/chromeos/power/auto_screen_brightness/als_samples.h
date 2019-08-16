@@ -37,6 +37,9 @@ class AmbientLightSampleBuffer {
   // |sample| must be later than any previously added sample.
   void SaveToBuffer(const Sample& sample);
 
+  // Clears out all the samples in the buffer.
+  void ClearBuffer();
+
   // Returns average and std-dev of ambient lux from the buffer (discarding
   // samples that are now too old). |now| must be no earlier than any previously
   // added sample. If there are no valid samples, returns nullopt.

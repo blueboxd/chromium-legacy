@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/network_config_service.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -27,14 +28,12 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
-#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "components/device_event_log/device_event_log.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -378,9 +377,7 @@ NetworkUI::~NetworkUI() {}
 
 void NetworkUI::BindCrosNetworkConfig(
     network_config::mojom::CrosNetworkConfigRequest request) {
-  content::BrowserContext::GetConnectorFor(
-      web_ui()->GetWebContents()->GetBrowserContext())
-      ->BindInterface(network_config::mojom::kServiceName, std::move(request));
+  ash::GetNetworkConfigService(std::move(request));
 }
 
 }  // namespace chromeos

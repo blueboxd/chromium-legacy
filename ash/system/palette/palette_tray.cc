@@ -24,7 +24,6 @@
 #include "ash/system/palette/palette_welcome_bubble.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -499,8 +498,8 @@ void PaletteTray::ShowBubble(bool show_by_click) {
 
   // Add horizontal separator between the title and tools.
   auto* separator = new views::Separator();
-  separator->SetColor(AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
-      AshColorProvider::ControlsLayerType::kSeparator,
+  separator->SetColor(AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+      AshColorProvider::ContentLayerType::kSeparator,
       kSeparatorOnLightBackgroundColor));
   separator->SetBorder(views::CreateEmptyBorder(gfx::Insets(
       kPaddingBetweenTitleAndSeparator, 0, kMenuSeparatorVerticalPadding, 0)));

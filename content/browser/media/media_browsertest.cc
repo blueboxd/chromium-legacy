@@ -61,7 +61,7 @@ std::string MediaBrowserTest::RunTest(const GURL& gurl,
   TitleWatcher title_watcher(shell()->web_contents(),
                              base::ASCIIToUTF16(expected_title));
   AddTitlesToAwait(&title_watcher);
-  NavigateToURL(shell(), gurl);
+  EXPECT_TRUE(NavigateToURL(shell(), gurl));
   base::string16 result = title_watcher.WaitAndGetTitle();
 
   CleanupTest();
@@ -76,7 +76,7 @@ void MediaBrowserTest::CleanupTest() {
   TitleWatcher clean_title_watcher(shell()->web_contents(), cleaner_title);
   GURL cleaner_url = content::GetFileUrlWithQuery(
       media::GetTestDataFilePath("cleaner.html"), "");
-  NavigateToURL(shell(), cleaner_url);
+  EXPECT_TRUE(NavigateToURL(shell(), cleaner_url));
   base::string16 cleaner_result = clean_title_watcher.WaitAndGetTitle();
   EXPECT_EQ(cleaner_result, cleaner_title);
 #endif
@@ -330,7 +330,7 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoErrorNoSupportedStreams) {
 // Covers tear-down when navigating away as opposed to browser exiting.
 IN_PROC_BROWSER_TEST_F(MediaTest, Navigate) {
   PlayVideo("bear.webm", false);
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
   EXPECT_FALSE(shell()->web_contents()->IsCrashed());
 }
 

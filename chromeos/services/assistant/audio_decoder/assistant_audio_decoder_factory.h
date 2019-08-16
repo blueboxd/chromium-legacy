@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace chromeos {
 namespace assistant {
@@ -17,7 +17,7 @@ class AssistantAudioDecoderFactory
     : public mojom::AssistantAudioDecoderFactory {
  public:
   explicit AssistantAudioDecoderFactory(
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+      mojo::PendingReceiver<mojom::AssistantAudioDecoderFactory> receiver);
   ~AssistantAudioDecoderFactory() override;
 
  private:
@@ -27,7 +27,7 @@ class AssistantAudioDecoderFactory
       mojom::AssistantAudioDecoderClientPtr client,
       mojom::AssistantMediaDataSourcePtr data_source) override;
 
-  const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
+  mojo::Receiver<mojom::AssistantAudioDecoderFactory> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantAudioDecoderFactory);
 };

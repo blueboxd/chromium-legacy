@@ -291,7 +291,8 @@ int16_t CSSPrimitiveValue::ComputeLength(
     const CSSToLengthConversionData&) const;
 
 template <>
-float CSSPrimitiveValue::ComputeLength(const CSSToLengthConversionData&) const;
+CORE_EXPORT float CSSPrimitiveValue::ComputeLength(
+    const CSSToLengthConversionData&) const;
 
 template <>
 double CSSPrimitiveValue::ComputeLength(const CSSToLengthConversionData&) const;

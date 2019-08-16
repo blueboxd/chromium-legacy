@@ -114,10 +114,6 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // See comments in UseLogicalBottomMarginEdgeForInlineBlockBaseline().
   bool UseLogicalBottomMarginEdgeForInlineBlockBaseline() const;
 
-  // Return true if the block size of this table cell should be considered
-  // restricted (e.g. height of the cell or its table is non-auto).
-  bool IsRestrictedBlockSizeTableCell() const;
-
   // Returns true if the custom layout node is in its loaded state (all script
   // for the web-developer defined layout is ready).
   bool IsCustomLayoutLoaded() const;

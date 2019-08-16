@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/css/media_values.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -63,6 +64,65 @@ bool SizesCalcParser::HandleOperator(Vector<CSSParserToken>& stack,
   return true;
 }
 
+bool SizesCalcParser::HandleRightParenthesis(Vector<CSSParserToken>& stack) {
+  // If the token is a right parenthesis:
+  // Until the token at the top of the stack is a left parenthesis or a
+  // function, pop operators off the stack onto the output queue.
+  // Also count the number of commas to get the number of function
+  // parameters if this right parenthesis closes a function.
+  wtf_size_t comma_count = 0;
+  while (!stack.IsEmpty() && stack.back().GetType() != kLeftParenthesisToken &&
+         stack.back().GetType() != kFunctionToken) {
+    if (stack.back().GetType() == kCommaToken)
+      ++comma_count;
+    else
+      AppendOperator(stack.back());
+    stack.pop_back();
+  }
+  // If the stack runs out without finding a left parenthesis, then there
+  // are mismatched parentheses.
+  if (stack.IsEmpty())
+    return false;
+
+  CSSParserToken left_side = stack.back();
+  stack.pop_back();
+
+  if (left_side.GetType() == kLeftParenthesisToken ||
+      left_side.FunctionId() == CSSValueID::kCalc) {
+    // There should be exactly one calculation within calc() or parentheses.
+    return !comma_count;
+  }
+
+  // Break variadic min/max() into binary operations to fit in the reverse
+  // polish notation.
+  CSSMathOperator op = left_side.FunctionId() == CSSValueID::kMin
+                           ? CSSMathOperator::kMin
+                           : CSSMathOperator::kMax;
+  for (wtf_size_t i = 0; i < comma_count; ++i)
+    value_list_.emplace_back(op);
+  return true;
+}
+
+bool SizesCalcParser::HandleComma(Vector<CSSParserToken>& stack,
+                                  const CSSParserToken& token) {
+  if (!RuntimeEnabledFeatures::CSSComparisonFunctionsEnabled())
+    return false;
+  // Treat comma as a binary right-associative operation for now, so that
+  // when reaching the right parenthesis of the function, we can get the
+  // number of parameters by counting the number of commas.
+  while (!stack.IsEmpty() && stack.back().GetType() != kFunctionToken &&
+         stack.back().GetType() != kLeftParenthesisToken &&
+         stack.back().GetType() != kCommaToken) {
+    AppendOperator(stack.back());
+    stack.pop_back();
+  }
+  // Commas are allowed as function parameter separators only
+  if (stack.IsEmpty() || stack.back().GetType() == kLeftParenthesisToken)
+    return false;
+  stack.push_back(token);
+  return true;
+}
+
 void SizesCalcParser::AppendNumber(const CSSParserToken& token) {
   SizesCalcValue value;
   value.value = token.NumericValue();
@@ -82,9 +142,7 @@ bool SizesCalcParser::AppendLength(const CSSParserToken& token) {
 }
 
 void SizesCalcParser::AppendOperator(const CSSParserToken& token) {
-  SizesCalcValue value;
-  value.operation = ParseCSSArithmeticOperator(token);
-  value_list_.push_back(value);
+  value_list_.emplace_back(ParseCSSArithmeticOperator(token));
 }
 
 bool SizesCalcParser::CalcToReversePolishNotation(CSSParserTokenRange range) {
@@ -109,6 +167,14 @@ bool SizesCalcParser::CalcToReversePolishNotation(CSSParserTokenRange range) {
           return false;
         break;
       case kFunctionToken:
+        if (RuntimeEnabledFeatures::CSSComparisonFunctionsEnabled()) {
+          if (token.FunctionId() == CSSValueID::kMin ||
+              token.FunctionId() == CSSValueID::kMax) {
+            // TODO(crbug.com/825895): Add clamp() when min/max are done.
+            stack.push_back(token);
+            break;
+          }
+        }
         if (token.FunctionId() != CSSValueID::kCalc)
           return false;
         // "calc(" is the same as "("
@@ -118,22 +184,12 @@ bool SizesCalcParser::CalcToReversePolishNotation(CSSParserTokenRange range) {
         stack.push_back(token);
         break;
       case kRightParenthesisToken:
-        // If the token is a right parenthesis:
-        // Until the token at the top of the stack is a left parenthesis, pop
-        // operators off the stack onto the output queue.
-        while (!stack.IsEmpty() &&
-               stack.back().GetType() != kLeftParenthesisToken &&
-               stack.back().GetType() != kFunctionToken) {
-          AppendOperator(stack.back());
-          stack.pop_back();
-        }
-        // If the stack runs out without finding a left parenthesis, then there
-        // are mismatched parentheses.
-        if (stack.IsEmpty())
+        if (!HandleRightParenthesis(stack))
           return false;
-        // Pop the left parenthesis from the stack, but not onto the output
-        // queue.
-        stack.pop_back();
+        break;
+      case kCommaToken:
+        if (!HandleComma(stack, token))
+          return false;
         break;
       case kWhitespaceToken:
       case kEOFToken:
@@ -156,7 +212,6 @@ bool SizesCalcParser::CalcToReversePolishNotation(CSSParserTokenRange range) {
       case kColumnToken:
       case kUnicodeRangeToken:
       case kIdentToken:
-      case kCommaToken:
       case kColonToken:
       case kSemicolonToken:
       case kLeftBraceToken:
@@ -220,6 +275,20 @@ static bool OperateOnStack(Vector<SizesCalcValue>& stack,
         return false;
       stack.push_back(SizesCalcValue(left_operand.value / right_operand.value,
                                      left_operand.is_length));
+      break;
+    case CSSMathOperator::kMin:
+      if (right_operand.is_length != left_operand.is_length)
+        return false;
+      is_length = (right_operand.is_length && left_operand.is_length);
+      stack.push_back(SizesCalcValue(
+          std::min(left_operand.value, right_operand.value), is_length));
+      break;
+    case CSSMathOperator::kMax:
+      if (right_operand.is_length != left_operand.is_length)
+        return false;
+      is_length = (right_operand.is_length && left_operand.is_length);
+      stack.push_back(SizesCalcValue(
+          std::max(left_operand.value, right_operand.value), is_length));
       break;
     default:
       return false;

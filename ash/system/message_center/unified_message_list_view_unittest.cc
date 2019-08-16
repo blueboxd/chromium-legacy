@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view.h"
@@ -120,6 +121,12 @@ class UnifiedMessageListViewTest : public AshTestBase,
     notification->set_pinned(pinned);
     MessageCenter::Get()->AddNotification(std::move(notification));
     return id;
+  }
+
+  void OffsetNotificationTimestamp(const std::string& id,
+                                   const int milliseconds) {
+    MessageCenter::Get()->FindVisibleNotificationById(id)->set_timestamp(
+        base::Time::Now() - base::TimeDelta::FromMilliseconds(milliseconds));
   }
 
   void CreateMessageListView() {
@@ -546,6 +553,46 @@ TEST_F(UnifiedMessageListViewTest, UserSwipesAwayNotification) {
   AnimateToEnd();
   EXPECT_GT(previous_height, message_list_view()->GetPreferredSize().height());
   EXPECT_FALSE(message_list_view()->IsAnimating());
+}
+
+TEST_F(UnifiedMessageListViewTest, InitInSortedOrder) {
+  // MessageViews should be ordered, from top down: [ id1, id2, id0 ].
+  auto id0 = AddNotification(true /* pinned */);
+  OffsetNotificationTimestamp(id0, 2000 /* milliseconds */);
+  auto id1 = AddNotification();
+  OffsetNotificationTimestamp(id1, 1000 /* milliseconds */);
+  auto id2 = AddNotification();
+  CreateMessageListView();
+
+  EXPECT_EQ(3u, message_list_view()->children().size());
+  EXPECT_EQ(id1, GetMessageViewAt(0)->notification_id());
+  EXPECT_EQ(id2, GetMessageViewAt(1)->notification_id());
+  EXPECT_EQ(id0, GetMessageViewAt(2)->notification_id());
+}
+
+TEST_F(UnifiedMessageListViewTest, NotificationAddedInSortedOrder) {
+  auto id0 = AddNotification(true /* pinned */);
+  OffsetNotificationTimestamp(id0, 3000 /* milliseconds */);
+  auto id1 = AddNotification();
+  OffsetNotificationTimestamp(id1, 2000 /* milliseconds */);
+  auto id2 = AddNotification();
+  OffsetNotificationTimestamp(id2, 1000 /* milliseconds */);
+  CreateMessageListView();
+
+  // New pinned notification should be added to the end.
+  auto id3 = AddNotification(true /* pinned */);
+  EXPECT_EQ(4u, message_list_view()->children().size());
+  EXPECT_EQ(id3, GetMessageViewAt(3)->notification_id());
+
+  // New non-pinned notification should be added before pinned notifications.
+  auto id4 = AddNotification();
+  EXPECT_EQ(5u, message_list_view()->children().size());
+
+  EXPECT_EQ(id1, GetMessageViewAt(0)->notification_id());
+  EXPECT_EQ(id2, GetMessageViewAt(1)->notification_id());
+  EXPECT_EQ(id4, GetMessageViewAt(2)->notification_id());
+  EXPECT_EQ(id0, GetMessageViewAt(3)->notification_id());
+  EXPECT_EQ(id3, GetMessageViewAt(4)->notification_id());
 }
 
 }  // namespace ash

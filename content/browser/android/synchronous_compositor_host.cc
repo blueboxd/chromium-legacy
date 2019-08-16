@@ -228,7 +228,6 @@ void SynchronousCompositorHost::UpdateFrameMetaData(
   }
   frame_metadata_version_ = version;
   UpdatePresentedFrameToken(frame_metadata.frame_token);
-  rwhva_->SynchronousFrameMetadata(std::move(frame_metadata));
 }
 
 namespace {

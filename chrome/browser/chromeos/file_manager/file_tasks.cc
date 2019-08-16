@@ -44,6 +44,7 @@
 #include "components/drive/drive_api_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/services/app_service/public/cpp/file_handler_info.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
 #include "extensions/browser/entry_info.h"
 #include "extensions/browser/extension_host.h"
@@ -445,9 +446,8 @@ bool ExecuteFileTask(Profile* profile,
   return false;
 }
 
-bool IsGoodMatchFileHandler(
-    const extensions::FileHandlerInfo& file_handler_info,
-    const std::vector<extensions::EntryInfo>& entries) {
+bool IsGoodMatchFileHandler(const apps::FileHandlerInfo& file_handler_info,
+                            const std::vector<extensions::EntryInfo>& entries) {
   if (file_handler_info.extensions.count("*") > 0 ||
       file_handler_info.types.count("*") > 0 ||
       file_handler_info.types.count("*/*") > 0)
@@ -517,7 +517,7 @@ void FindFileHandlerTasks(Profile* profile,
     // entries that corresponds to the app. If there doesn't exist such handler,
     // show the first matching handler of the verb.
     for (const auto& handler_match : file_handlers) {
-      const extensions::FileHandlerInfo* handler = handler_match.handler;
+      const apps::FileHandlerInfo* handler = handler_match.handler;
       bool good_match = IsGoodMatchFileHandler(*handler, entries);
       auto it = handlers_for_entries.find(handler->verb);
       if (it == handlers_for_entries.end() ||
@@ -530,7 +530,7 @@ void FindFileHandlerTasks(Profile* profile,
 
     for (const auto& entry : handlers_for_entries) {
       const extensions::FileHandlerMatch* match = entry.second.first;
-      const extensions::FileHandlerInfo* handler = match->handler;
+      const apps::FileHandlerInfo* handler = match->handler;
       std::string task_id = file_tasks::MakeTaskID(
           extension->id(), file_tasks::TASK_TYPE_FILE_HANDLER, handler->id);
 
@@ -544,16 +544,16 @@ void FindFileHandlerTasks(Profile* profile,
       const bool is_generic_file_handler =
           !IsGoodMatchFileHandler(*handler, entries);
       Verb verb;
-      if (handler->verb == extensions::file_handler_verbs::kAddTo) {
+      if (handler->verb == apps::file_handler_verbs::kAddTo) {
         verb = Verb::VERB_ADD_TO;
-      } else if (handler->verb == extensions::file_handler_verbs::kPackWith) {
+      } else if (handler->verb == apps::file_handler_verbs::kPackWith) {
         verb = Verb::VERB_PACK_WITH;
-      } else if (handler->verb == extensions::file_handler_verbs::kShareWith) {
+      } else if (handler->verb == apps::file_handler_verbs::kShareWith) {
         verb = Verb::VERB_SHARE_WITH;
       } else {
         // Only kOpenWith is a valid remaining verb. Invalid verbs should fall
         // back to it.
-        DCHECK(handler->verb == extensions::file_handler_verbs::kOpenWith);
+        DCHECK(handler->verb == apps::file_handler_verbs::kOpenWith);
         verb = Verb::VERB_OPEN_WITH;
       }
       // If the handler was matched purely on the file name extension then

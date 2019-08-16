@@ -402,7 +402,7 @@ public class SavePasswordsPreferencesTest {
         // The text matches a text view, but the disabled entity is some wrapper two levels up in
         // the view hierarchy, hence the two withParent matchers.
         Espresso.onView(allOf(withText(R.string.save_password_preferences_export_action_title),
-                                withParent(withParent(stateMatcher))))
+                                withParent(withParent(withParent(stateMatcher)))))
                 .check(matches(isDisplayed()));
     }
 

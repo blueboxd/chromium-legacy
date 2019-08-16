@@ -45,7 +45,7 @@ struct MinMaxSize;
 
 class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
  public:
-  LayoutFlexibleBox(Element*);
+  explicit LayoutFlexibleBox(Element*);
   ~LayoutFlexibleBox() override;
 
   const char* GetName() const override { return "LayoutFlexibleBox"; }

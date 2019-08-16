@@ -45,8 +45,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
   // TODO(shimazu): Create a service worker's execution context by this method
   // instead of just creating an instance of EmbeddedWorkerInstanceClient.
   static void Create(
-      blink::mojom::EmbeddedWorkerInstanceClientRequest request,
-      scoped_refptr<base::SingleThreadTaskRunner> initiator_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> initiator_task_runner,
+      blink::mojom::EmbeddedWorkerInstanceClientRequest request);
 
   ~EmbeddedWorkerInstanceClientImpl() override;
 

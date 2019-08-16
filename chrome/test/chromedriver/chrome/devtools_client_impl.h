@@ -91,6 +91,9 @@ class DevToolsClientImpl : public DevToolsClient {
   Status SendCommand(
       const std::string& method,
       const base::DictionaryValue& params) override;
+  Status SendCommandFromWebSocket(const std::string& method,
+                                  const base::DictionaryValue& params,
+                                  int client_command_id) override;
   Status SendCommandWithTimeout(
       const std::string& method,
       const base::DictionaryValue& params,
@@ -142,14 +145,13 @@ class DevToolsClientImpl : public DevToolsClient {
     friend class base::RefCounted<ResponseInfo>;
     ~ResponseInfo();
   };
-
-  Status SendCommandInternal(
-      const std::string& method,
-      const base::DictionaryValue& params,
-      std::unique_ptr<base::DictionaryValue>* result,
-      bool expect_response,
-      bool wait_for_response,
-      const Timeout* timeout);
+  Status SendCommandInternal(const std::string& method,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::DictionaryValue>* result,
+                             bool expect_response,
+                             bool wait_for_response,
+                             int client_command_id,
+                             const Timeout* timeout);
   Status ProcessNextMessage(int expected_id, const Timeout& timeout);
   Status HandleMessage(int expected_id, const std::string& message);
   Status ProcessEvent(const internal::InspectorEvent& event);

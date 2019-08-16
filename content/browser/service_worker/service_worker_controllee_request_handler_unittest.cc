@@ -64,8 +64,8 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
       resource_request.url = request_->url();
       resource_request.resource_type = static_cast<int>(resource_type_);
       resource_request.headers = request()->extra_request_headers();
-      handler_->MaybeCreateLoader(resource_request, nullptr, base::DoNothing(),
-                                  base::DoNothing());
+      handler_->MaybeCreateLoader(resource_request, nullptr, nullptr,
+                                  base::DoNothing(), base::DoNothing());
     }
 
     ServiceWorkerNavigationLoader* loader() { return handler_->loader(); }
@@ -152,11 +152,20 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
 class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
  public:
   ServiceWorkerTestContentBrowserClient() {}
-  bool AllowServiceWorker(
+  bool AllowServiceWorkerOnIO(
       const GURL& scope,
       const GURL& first_party,
       const GURL& script_url,
       content::ResourceContext* context,
+      base::RepeatingCallback<WebContents*()> wc_getter) override {
+    return false;
+  }
+
+  bool AllowServiceWorkerOnUI(
+      const GURL& scope,
+      const GURL& first_party,
+      const GURL& script_url,
+      content::BrowserContext* context,
       base::RepeatingCallback<WebContents*()> wc_getter) override {
     return false;
   }

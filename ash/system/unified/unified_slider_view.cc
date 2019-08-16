@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/unified_slider_view.h"
 
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/top_shortcut_button.h"
@@ -75,10 +76,13 @@ const char* UnifiedSliderButton::GetClassName() const {
 }
 
 void UnifiedSliderButton::SetVectorIcon(const gfx::VectorIcon& icon) {
+  const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kIconPrimary,
+      AshColorProvider::AshColorMode::kDark);
   SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(icon, kIconOnDarkBackgroundColor));
+           gfx::CreateVectorIcon(icon, icon_color));
   SetImage(views::Button::STATE_DISABLED,
-           gfx::CreateVectorIcon(icon, kIconOnDarkBackgroundColor));
+           gfx::CreateVectorIcon(icon, icon_color));
 }
 
 void UnifiedSliderButton::SetToggled(bool toggled) {

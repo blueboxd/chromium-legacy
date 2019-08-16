@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sharing/fake_local_device_info_provider.h"
 #include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_device_info.h"
+#include "chrome/browser/sharing/sharing_device_capability.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_service.h"
@@ -57,7 +57,8 @@ class MockSharingService : public SharingService {
   ~MockSharingService() override = default;
 
   MOCK_CONST_METHOD1(GetDeviceCandidates,
-                     std::vector<SharingDeviceInfo>(int required_capabilities));
+                     std::vector<std::unique_ptr<syncer::DeviceInfo>>(
+                         int required_capabilities));
 
   MOCK_METHOD4(SendMessageToDevice,
                void(const std::string& device_guid,
@@ -107,16 +108,19 @@ MATCHER_P(ProtoEquals, message, "") {
 
 // Check the call to sharing service when a device is chosen.
 TEST_F(ClickToCallUiControllerTest, OnDeviceChosen) {
-  SharingDeviceInfo sharing_device_info(
-      kReceiverGuid, base::UTF8ToUTF16(kReceiverName),
-      sync_pb::SyncEnums::TYPE_PHONE, base::Time::Now(), 1);
+  syncer::DeviceInfo device_info(
+      kReceiverGuid, kReceiverName, "chrome_version", "user_agent",
+      sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
+      /* last_updated_timestamp= */ base::Time::Now(),
+      /* send_tab_to_self_receiving_enabled= */ false);
+
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_click_to_call_message()->set_phone_number(
       kExpectedPhoneNumber);
   EXPECT_CALL(*service(),
               SendMessageToDevice(Eq(kReceiverGuid), Eq(kSharingMessageTTL),
                                   ProtoEquals(sharing_message), _));
-  controller_->OnDeviceChosen(sharing_device_info);
+  controller_->OnDeviceChosen(device_info);
 }
 
 // Check the call to sharing service to get all synced devices.

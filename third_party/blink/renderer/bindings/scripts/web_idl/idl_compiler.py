@@ -279,14 +279,23 @@ class IdlCompiler(object):
                 key_pieces.append('type null')  # something unique
             return '|'.join(key_pieces)
 
-        grouped_unions = {}  # {unique key: list of union types, ...}
+        grouped_unions = {}  # {unique key: list of union types}
         for union_type in all_union_types:
             key = unique_key(union_type)
             grouped_unions.setdefault(key, []).append(union_type)
+
+        grouped_typedefs = {}  # {unique key: list of typedefs to the union}
+        all_typedefs = self._db.find_by_kind(DatabaseBody.Kind.TYPEDEF)
+        for typedef in all_typedefs.itervalues():
+            if not typedef.idl_type.is_union:
+                continue
+            key = unique_key(typedef.idl_type)
+            grouped_typedefs.setdefault(key, []).append(typedef)
 
         for key, union_types in grouped_unions.iteritems():
             self._db.register(
                 DatabaseBody.Kind.UNION,
                 Union(
                     Identifier(key),  # dummy identifier
-                    union_types))
+                    union_types=union_types,
+                    typedef_backrefs=grouped_typedefs.get(key, [])))

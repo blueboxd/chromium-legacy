@@ -23,6 +23,7 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -222,8 +223,9 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         verify(getManager(), never()).updateMediaSession();
         verify(getManager(), never()).updateNotificationBuilder();
 
-        verify(mService, never()).stopForeground(anyBoolean());
-        verify(mService, never()).startForeground(anyInt(), any(Notification.class));
+        verify(mMockForegroundServiceUtils, never()).stopForeground(eq(mService), anyInt());
+        verify(mMockForegroundServiceUtils, never())
+                .startForeground(eq(mService), anyInt(), any(Notification.class), anyInt());
     }
 
     @Test
@@ -234,7 +236,8 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         getManager().mMediaNotificationInfo = mMediaNotificationInfoBuilder.build();
         getManager().updateNotification(false, false);
 
-        verify(mService).stopForeground(false);
+        verify(mMockForegroundServiceUtils)
+                .stopForeground(eq(mService), eq(Service.STOP_FOREGROUND_DETACH));
         assertEquals(1, getShadowNotificationManager().size());
     }
 

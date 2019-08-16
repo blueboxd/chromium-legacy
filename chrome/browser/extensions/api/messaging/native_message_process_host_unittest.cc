@@ -315,6 +315,10 @@ TEST_F(NativeMessagingTest, EchoConnect) {
   const base::Value* args = nullptr;
   ASSERT_TRUE(last_message_parsed_->Get("args", &args));
   EXPECT_TRUE(args->is_none());
+
+  const base::Value* connect_id_value = nullptr;
+  ASSERT_TRUE(last_message_parsed_->Get("connect_id", &connect_id_value));
+  EXPECT_TRUE(connect_id_value->is_none());
 }
 
 // Test send message with a real client. The args passed when launching the
@@ -425,6 +429,10 @@ TEST_F(NativeMessagingTest, ReconnectArgsIfNativeConnectionDisallowed) {
   const base::Value* args_value = nullptr;
   ASSERT_TRUE(last_message_parsed_->Get("args", &args_value));
   EXPECT_TRUE(args_value->is_none());
+
+  const base::Value* connect_id_value = nullptr;
+  ASSERT_TRUE(last_message_parsed_->Get("connect_id", &connect_id_value));
+  EXPECT_TRUE(connect_id_value->is_none());
 }
 
 TEST_F(NativeMessagingTest, UserLevel) {

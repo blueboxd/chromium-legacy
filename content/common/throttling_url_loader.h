@@ -140,7 +140,8 @@ class CONTENT_EXPORT ThrottlingURLLoader
   void Resume();
   void SetPriority(net::RequestPriority priority);
   void UpdateDeferredRequestHeaders(
-      const net::HttpRequestHeaders& modified_request_headers);
+      const net::HttpRequestHeaders& modified_request_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_request_headers);
   void UpdateDeferredResponseHead(
       const network::ResourceResponseHead& new_response_head);
   void PauseReadingBodyFromNet(blink::URLLoaderThrottle* throttle);

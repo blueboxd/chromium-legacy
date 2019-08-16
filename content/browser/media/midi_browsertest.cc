@@ -27,7 +27,7 @@ class MidiBrowserTest : public ContentBrowserTest {
     const base::string16 failed = base::ASCIIToUTF16("fail");
     watcher.AlsoWaitForTitle(failed);
 
-    NavigateToURL(shell(), https_test_server_->GetURL(path));
+    EXPECT_TRUE(NavigateToURL(shell(), https_test_server_->GetURL(path)));
 
     const base::string16 result = watcher.WaitAndGetTitle();
 #if defined(OS_LINUX)

@@ -29,6 +29,12 @@ class ReleaseNotesStorage {
   // Marks the current release as having shown the notification.
   void MarkNotificationShown();
 
+  // Returns true if the Release Notes suggestion chip should be shown.
+  bool ShouldShowSuggestionChip();
+
+  // Decreases the amount of times left to show the suggestion chip.
+  void DecreaseTimesLeftToShowSuggestionChip();
+
  private:
   Profile* const profile_;
 

@@ -83,8 +83,6 @@ class CONTENT_EXPORT LayerTreeView
   void SetRasterizeOnlyVisibleContent();
   void SetNeedsRedrawRect(gfx::Rect damage_rect);
 
-  bool IsSurfaceSynchronizationEnabled() const;
-
   // Indicates that blink needs a BeginFrame, but that nothing might actually be
   // dirty. Calls to this should never be done directly, but should go through
   // WebWidgetClient::ScheduleAnimate() instead, or they can bypass test

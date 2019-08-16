@@ -394,7 +394,7 @@ class HtmlChunks(object):
           sm = _SPECIAL_ELEMENT.match(self.Rest())
           if sm:
             # Get the appropriate group name
-            for group in sm.groupdict().keys():
+            for group in sm.groupdict():
               if sm.groupdict()[group]:
                 break
 
@@ -483,14 +483,11 @@ def HtmlToMessage(html, include_block_tags=False, description=''):
     if type != '':
       name = ('%s_%s' % (type, base)).upper()
 
-    if name in count_names.keys():
-      count_names[name] += 1
-    else:
-      count_names[name] = 1
+    count_names.setdefault(name, 0)
+    count_names[name] += 1
 
     def MakeFinalName(name_ = name, index = count_names[name] - 1):
-      if (type.lower() == 'end' and
-          base in end_names.keys() and len(end_names[base])):
+      if type.lower() == 'end' and end_names.get(base):
         return end_names[base].pop(-1)  # For correct nesting
       if count_names[name_] != 1:
         name_ = '%s_%s' % (name_, _SUFFIXES[index])
@@ -499,7 +496,7 @@ def HtmlToMessage(html, include_block_tags=False, description=''):
         # same type.
         if type == 'begin':
           end_name = ('END_%s_%s' % (base, _SUFFIXES[index])).upper()
-          if base in end_names.keys():
+          if base in end_names:
             end_names[base].append(end_name)
           else:
             end_names[base] = [end_name]
@@ -541,7 +538,7 @@ def HtmlToMessage(html, include_block_tags=False, description=''):
           raise exception.BlockTagInTranslateableChunk(html)
       element_name = 'block'  # for simplification
       # Get the appropriate group name
-      for group in m.groupdict().keys():
+      for group in m.groupdict():
         if m.groupdict()[group]:
           break
       parts.append((MakeNameClosure(element_name, 'begin'),

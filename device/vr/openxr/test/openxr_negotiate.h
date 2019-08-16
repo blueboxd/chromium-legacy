@@ -8,9 +8,9 @@
 #include <d3d11.h>
 #include <unknwn.h>
 
-#include "third_party/openxr/include/openxr/loader_interfaces.h"
-#include "third_party/openxr/include/openxr/openxr.h"
-#include "third_party/openxr/include/openxr/openxr_platform.h"
+#include "third_party/openxr/src/include/openxr/openxr.h"
+#include "third_party/openxr/src/include/openxr/openxr_platform.h"
+#include "third_party/openxr/src/src/common/loader_interfaces.h"
 
 // This file contains functions that are used by the openxr_loader.dll to call
 // into the fake OpenXR Runtime. Used for testing purposes only, so this should
@@ -84,7 +84,7 @@ extern "C" __declspec(dllexport) XrResult xrNegotiateLoaderRuntimeInterface(
     const XrNegotiateLoaderInfo* loaderInfo,
     XrNegotiateRuntimeRequest* runtimeRequest) {
   runtimeRequest->runtimeInterfaceVersion = 1;
-  runtimeRequest->runtimeXrVersion = XR_MAKE_VERSION(0, 1, 0);
+  runtimeRequest->runtimeApiVersion = XR_MAKE_VERSION(1, 0, 1);
   runtimeRequest->getInstanceProcAddr = GetInstanceProcAddress;
 
   return XR_SUCCESS;

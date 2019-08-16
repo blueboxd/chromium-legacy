@@ -261,6 +261,11 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   return nil;
 }
 
++ (NSString*)webStateVisibleURL {
+  return base::SysUTF8ToNSString(
+      chrome_test_util::GetCurrentWebState()->GetVisibleURL().spec());
+}
+
 #pragma mark - Sync Utilities (EG2)
 
 + (void)clearAutofillProfileWithGUID:(NSString*)GUID {

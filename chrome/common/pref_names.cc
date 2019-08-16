@@ -914,9 +914,14 @@ const char kLastChildScreenTimeSaved[] = "last_child_screen_time_saved";
 // Last time that the kChildScreenTime pref was reset.
 const char kLastChildScreenTimeReset[] = "last_child_screen_time_reset";
 
-// Last patch on which patch notes were shown.
+// Last patch on which release notes were shown.
 const char kReleaseNotesLastShownMilestone[] =
     "last_release_notes_shown_milestone";
+
+// Amount of times the release notes suggestion chip should be
+// shown before it disappears.
+const char kReleaseNotesSuggestionChipTimesLeftToShow[] =
+    "times_left_to_show_release_notes_suggestion_chip";
 
 // Boolean pref indicating whether the NTLM authentication protocol should be
 // enabled when mounting an SMB share with a user credential by the Network File

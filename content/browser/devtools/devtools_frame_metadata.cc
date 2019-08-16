@@ -6,7 +6,6 @@
 
 #include "build/build_config.h"
 #include "cc/trees/render_frame_metadata.h"
-#include "components/viz/common/quads/compositor_frame_metadata.h"
 
 namespace content {
 
@@ -20,24 +19,10 @@ DevToolsFrameMetadata::DevToolsFrameMetadata(
       top_controls_height(metadata.top_controls_height),
       top_controls_shown_ratio(metadata.top_controls_shown_ratio),
       scrollable_viewport_size(metadata.scrollable_viewport_size) {}
-
-DevToolsFrameMetadata::DevToolsFrameMetadata(
-    const viz::CompositorFrameMetadata& metadata)
-    : device_scale_factor(metadata.device_scale_factor),
-      page_scale_factor(metadata.page_scale_factor),
-      root_scroll_offset(metadata.root_scroll_offset),
-      top_controls_height(metadata.top_controls_height),
-      top_controls_shown_ratio(metadata.top_controls_shown_ratio),
-      scrollable_viewport_size(metadata.scrollable_viewport_size) {}
 #else
 // On non-Android, this class should never be created.
 DevToolsFrameMetadata::DevToolsFrameMetadata(
     const cc::RenderFrameMetadata& metadata) {
-  NOTREACHED();
-}
-
-DevToolsFrameMetadata::DevToolsFrameMetadata(
-    const viz::CompositorFrameMetadata& metadata) {
   NOTREACHED();
 }
 #endif  // defined(OS_ANDROID)

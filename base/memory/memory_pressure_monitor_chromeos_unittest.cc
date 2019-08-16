@@ -60,6 +60,11 @@ void OnMemoryPressure(
   history->push_back(level);
 }
 
+void RunLoopRunWithTimeout(TimeDelta timeout) {
+  RunLoop run_loop;
+  RunLoop::ScopedRunTimeoutForTest run_timeout(timeout, run_loop.QuitClosure());
+  run_loop.Run();
+}
 }  // namespace
 
 class TestMemoryPressureMonitor : public MemoryPressureMonitor {
@@ -180,35 +185,37 @@ TEST(ChromeOSMemoryPressureMonitorTest, CheckMemoryPressure) {
   // Moderate Pressure.
   ASSERT_TRUE(SetFileContents(available_file, "900"));
   TriggerKernelNotification(write_end.get());
-  RunLoop().RunWithTimeout(base::TimeDelta::FromSeconds(1));
+  // TODO(bgeffon): Use RunLoop::QuitClosure() instead of relying on "spin for
+  // 1 second".
+  RunLoopRunWithTimeout(base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
             monitor->GetCurrentPressureLevel());
 
   // Critical Pressure.
   ASSERT_TRUE(SetFileContents(available_file, "450"));
   TriggerKernelNotification(write_end.get());
-  RunLoop().RunWithTimeout(base::TimeDelta::FromSeconds(1));
+  RunLoopRunWithTimeout(base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
             monitor->GetCurrentPressureLevel());
 
   // Moderate Pressure.
   ASSERT_TRUE(SetFileContents(available_file, "550"));
   TriggerKernelNotification(write_end.get());
-  RunLoop().RunWithTimeout(base::TimeDelta::FromSeconds(1));
+  RunLoopRunWithTimeout(base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
             monitor->GetCurrentPressureLevel());
 
   // No pressure, note: this will not cause any event.
   ASSERT_TRUE(SetFileContents(available_file, "1150"));
   TriggerKernelNotification(write_end.get());
-  RunLoop().RunWithTimeout(base::TimeDelta::FromSeconds(1));
+  RunLoopRunWithTimeout(base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
             monitor->GetCurrentPressureLevel());
 
   // Back into moderate.
   ASSERT_TRUE(SetFileContents(available_file, "950"));
   TriggerKernelNotification(write_end.get());
-  RunLoop().RunWithTimeout(base::TimeDelta::FromSeconds(1));
+  RunLoopRunWithTimeout(base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
             monitor->GetCurrentPressureLevel());
 

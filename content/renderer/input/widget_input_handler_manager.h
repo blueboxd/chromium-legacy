@@ -216,7 +216,8 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   // Allow input suspension to be disabled for tests that do not wait for the
   // first commit. Over time, these tests should be fixed so that this flag
   // can be removed. crbug.com/987626
-  bool allow_early_input_for_testing_ = false;
+  // Currently set true for all code, while crbug/994288 is investigated.
+  bool allow_early_input_for_testing_ = true;
 
   // Control of UMA. We emit one UMA metric per navigation telling us
   // whether any non-move input arrived before we starting updating the page or

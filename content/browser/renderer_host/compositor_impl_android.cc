@@ -413,7 +413,6 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       pending_frames_(0U),
       layer_tree_frame_sink_request_pending_(false) {
   CHECK(features::IsVizDisplayCompositorEnabled());
-  CHECK(features::IsSurfaceSynchronizationEnabled());
   DCHECK(client);
 
   SetRootWindow(root_window);
@@ -548,13 +547,9 @@ void CompositorImpl::CreateLayerTreeHost() {
     settings.initial_debug_state.show_debug_borders.set();
   settings.single_thread_proxy_scheduler = true;
   settings.use_painted_device_scale_factor = true;
-
-  if (features::IsSurfaceSynchronizationEnabled()) {
-    // TODO(crbug.com/933846): LatencyRecovery is causing jank on Android.
-    // Disable in viz mode for now, with plan to disable more widely once
-    // viz launches.
-    settings.enable_latency_recovery = false;
-  }
+  // TODO(crbug.com/933846): LatencyRecovery is causing jank on Android. Disable
+  // for now, with a plan to disable more widely once viz launches.
+  settings.enable_latency_recovery = false;
 
   animation_host_ = cc::AnimationHost::CreateMainInstance();
 

@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/top_shortcut_button.h"
 
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/unified_system_tray_view.h"
@@ -22,8 +23,11 @@ TopShortcutButton::TopShortcutButton(const gfx::VectorIcon& icon,
                                      int accessible_name_id)
     : TopShortcutButton(nullptr /* listener */, accessible_name_id) {
   SetImage(views::Button::STATE_DISABLED,
-           gfx::CreateVectorIcon(icon, kTrayTopShortcutButtonIconSize,
-                                 kIconOnDarkBackgroundColor));
+           gfx::CreateVectorIcon(
+               icon, kTrayTopShortcutButtonIconSize,
+               AshColorProvider::Get()->GetContentLayerColor(
+                   AshColorProvider::ContentLayerType::kIconPrimary,
+                   AshColorProvider::AshColorMode::kDark)));
   SetEnabled(false);
 }
 
@@ -31,12 +35,16 @@ TopShortcutButton::TopShortcutButton(views::ButtonListener* listener,
                                      const gfx::VectorIcon& icon,
                                      int accessible_name_id)
     : TopShortcutButton(listener, accessible_name_id) {
-  SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(icon, kTrayTopShortcutButtonIconSize,
-                                 kIconOnDarkBackgroundColor));
+  const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kIconPrimary,
+      AshColorProvider::AshColorMode::kDark);
+  SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(icon, kTrayTopShortcutButtonIconSize, icon_color));
   SetImage(views::Button::STATE_DISABLED,
-           gfx::CreateVectorIcon(icon, kTrayTopShortcutButtonIconSize,
-                                 kIconOnDarkBackgroundColorDisabled));
+           gfx::CreateVectorIcon(
+               icon, kTrayTopShortcutButtonIconSize,
+               AshColorProvider::Get()->GetDisabledColor(icon_color)));
 }
 
 TopShortcutButton::TopShortcutButton(views::ButtonListener* listener,

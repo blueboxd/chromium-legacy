@@ -51,7 +51,8 @@ class NativeProcessLauncher {
       bool allow_user_level_hosts,
       gfx::NativeView native_view,
       const base::FilePath& profile_directory,
-      bool require_native_initiated_connections);
+      bool require_native_initiated_connections,
+      const std::string& connect_id);
 
   NativeProcessLauncher() {}
   virtual ~NativeProcessLauncher() {}

@@ -31,6 +31,12 @@
     <color name="default_bg_color_elev_3">@color/default_bg_color_dark_elev_3</color>
     <color name="default_bg_color_elev_4">@color/default_bg_color_dark_elev_4</color>
 
+    <!-- Bottom sheet colors -->
+    <color name="sheet_bg_color">@color/default_bg_color_dark_elev_4</color>
+
+    <!-- Snackbar colors -->
+    <color name="snackbar_background_color">@color/default_bg_color_dark_elev_4</color>
+
     <!-- Ripple colors for clickable widgets -->
     <color name="ripple_color_blue">@color/modern_blue_300</color>
 

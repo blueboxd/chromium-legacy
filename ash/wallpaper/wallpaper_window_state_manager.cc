@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
@@ -84,7 +85,10 @@ void WallpaperWindowStateManager::RestoreMinimizedWindows(
     RemoveObserverIfUnreferenced(*iter);
   }
 
-  ActivateMruUnminimizedWindowOnActiveDesk();
+  // If the wallpaper app is closed while the desktop is in overview mode,
+  // do not activate any window, because doing so will disable overview mode.
+  if (!Shell::Get()->overview_controller()->InOverviewSession())
+    ActivateMruUnminimizedWindowOnActiveDesk();
 }
 
 void WallpaperWindowStateManager::RemoveObserverIfUnreferenced(

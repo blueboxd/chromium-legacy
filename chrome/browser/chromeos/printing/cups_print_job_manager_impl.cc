@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -33,6 +34,8 @@
 #include "content/public/browser/notification_service.h"
 #include "printing/backend/cups_connection.h"
 #include "printing/printed_document.h"
+#include "printing/printing_utils.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -312,9 +315,14 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     if (job_details->type() == ::printing::JobEventDetails::DOC_DONE) {
       const ::printing::PrintedDocument* document = job_details->document();
       DCHECK(document);
+      base::string16 title = printing::SimplifyDocumentTitle(document->name());
+      if (title.empty()) {
+        title = printing::SimplifyDocumentTitle(
+            l10n_util::GetStringUTF16(IDS_DEFAULT_PRINT_DOCUMENT_TITLE));
+      }
       CreatePrintJob(base::UTF16ToUTF8(document->settings().device_name()),
-                     base::UTF16ToUTF8(document->settings().title()),
-                     job_details->job_id(), document->page_count());
+                     base::UTF16ToUTF8(title), job_details->job_id(),
+                     document->page_count());
     }
   }
 

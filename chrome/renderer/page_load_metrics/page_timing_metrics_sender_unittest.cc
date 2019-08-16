@@ -257,9 +257,10 @@ TEST_F(PageTimingMetricsSenderTest, SendCssPropertiesInRange) {
   validator_.UpdateExpectPageLoadCssProperties(2);
   // Observe the largest CSS property ID.
   metrics_sender_->DidObserveNewCssPropertyUsage(
-      blink::mojom::kMaximumCSSSampleId, false /*is_animated*/);
+      static_cast<int>(blink::mojom::CSSSampleId::kMaxValue),
+      false /*is_animated*/);
   validator_.UpdateExpectPageLoadCssProperties(
-      blink::mojom::kMaximumCSSSampleId);
+      static_cast<int>(blink::mojom::CSSSampleId::kMaxValue));
   // Fire the timer to trigger sending of features via an SendTiming call.
   metrics_sender_->mock_timer()->Fire();
   validator_.VerifyExpectedCssProperties();

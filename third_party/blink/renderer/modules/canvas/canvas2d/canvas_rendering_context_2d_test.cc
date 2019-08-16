@@ -114,15 +114,6 @@ class CanvasRenderingContext2DTest : public ::testing::Test {
     return static_cast<CanvasRenderingContext2D*>(
         CanvasElement().RenderingContext());
   }
-  intptr_t GetGlobalGPUMemoryUsage() const {
-    return HTMLCanvasElement::GetGlobalGPUMemoryUsage();
-  }
-  unsigned GetGlobalAcceleratedContextCount() const {
-    return HTMLCanvasElement::GetGlobalAcceleratedContextCount();
-  }
-  intptr_t GetCurrentGPUMemoryUsage() const {
-    return CanvasElement().GetGPUMemoryUsage();
-  }
   void DrawSomething() {
     CanvasElement().DidDraw();
     CanvasElement().FinalizeFrame();
@@ -616,23 +607,14 @@ TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas) {
 
   // 800 = 10 * 10 * 4 * 2 where 10*10 is canvas size, 4 is num of bytes per
   // pixel per buffer, and 2 is an estimate of num of gpu buffers required
-  EXPECT_EQ(800, GetCurrentGPUMemoryUsage());
-  EXPECT_EQ(800, GetGlobalGPUMemoryUsage());
-  EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
 
   // Switching accelerated mode to non-accelerated mode
   fake_2d_layer_bridge_ptr->SetIsAccelerated(false);
   CanvasElement().UpdateMemoryUsage();
-  EXPECT_EQ(0, GetCurrentGPUMemoryUsage());
-  EXPECT_EQ(0, GetGlobalGPUMemoryUsage());
-  EXPECT_EQ(0u, GetGlobalAcceleratedContextCount());
 
   // Switching non-accelerated mode to accelerated mode
   fake_2d_layer_bridge_ptr->SetIsAccelerated(true);
   CanvasElement().UpdateMemoryUsage();
-  EXPECT_EQ(800, GetCurrentGPUMemoryUsage());
-  EXPECT_EQ(800, GetGlobalGPUMemoryUsage());
-  EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
 
   // Creating a different accelerated image buffer
   auto* anotherCanvas =
@@ -649,20 +631,13 @@ TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas) {
   anotherCanvas->SetResourceProviderForTesting(
       std::move(fake_resource_provider2), std::move(fake_2d_layer_bridge2),
       size2);
-  EXPECT_EQ(800, GetCurrentGPUMemoryUsage());
-  EXPECT_EQ(1200, GetGlobalGPUMemoryUsage());
-  EXPECT_EQ(2u, GetGlobalAcceleratedContextCount());
 
   // Tear down the first image buffer that resides in current canvas element
   CanvasElement().SetSize(IntSize(20, 20));
   Mock::VerifyAndClearExpectations(fake_2d_layer_bridge_ptr);
-  EXPECT_EQ(400, GetGlobalGPUMemoryUsage());
-  EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
 
   // Tear down the second image buffer
   anotherCanvas->SetSize(IntSize(20, 20));
-  EXPECT_EQ(0, GetGlobalGPUMemoryUsage());
-  EXPECT_EQ(0u, GetGlobalAcceleratedContextCount());
 }
 
 TEST_F(CanvasRenderingContext2DTest, CanvasDisposedBeforeContext) {
@@ -684,52 +659,6 @@ TEST_F(CanvasRenderingContext2DTest, ContextDisposedBeforeCanvas) {
 
   CanvasElement().DetachContext();
   // Passes by not crashing later during teardown
-}
-
-TEST_F(CanvasRenderingContext2DTest,
-       DISABLED_GetImageDataDisablesAcceleration) {
-  ScopedCanvas2dFixedRenderingModeForTest canvas_2d_fixed_rendering_mode(false);
-
-  // This Page is not actually being shown by a compositor, but we act like it
-  // will in order to test behaviour.
-  GetDocument().GetPage()->GetSettings().SetAcceleratedCompositingEnabled(true);
-  CreateContext(kNonOpaque);
-  IntSize size(300, 300);
-  std::unique_ptr<Canvas2DLayerBridge> bridge =
-      MakeBridge(size, Canvas2DLayerBridge::kForceAccelerationForTesting);
-  CanvasElement().SetResourceProviderForTesting(nullptr, std::move(bridge),
-                                                size);
-  DrawSomething();  // Lock-in gpu acceleration
-  EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
-  EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
-  EXPECT_EQ(720000, GetGlobalGPUMemoryUsage());
-
-  DummyExceptionStateForTesting exception_state;
-  for (int i = 0;
-       i < canvas_heuristic_parameters::kGPUReadbackMinSuccessiveFrames - 1;
-       i++) {
-    Context2d()->getImageData(0, 0, 1, 1, exception_state);
-    CanvasElement().FinalizeFrame();
-
-    EXPECT_FALSE(exception_state.HadException());
-    EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
-    EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
-    EXPECT_EQ(720000, GetGlobalGPUMemoryUsage());
-  }
-
-  Context2d()->getImageData(0, 0, 1, 1, exception_state);
-  CanvasElement().FinalizeFrame();
-
-  EXPECT_FALSE(exception_state.HadException());
-  if (canvas_heuristic_parameters::kGPUReadbackForcesNoAcceleration) {
-    EXPECT_FALSE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
-    EXPECT_EQ(0u, GetGlobalAcceleratedContextCount());
-    EXPECT_EQ(0, GetGlobalGPUMemoryUsage());
-  } else {
-    EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
-    EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
-    EXPECT_EQ(720000, GetGlobalGPUMemoryUsage());
-  }
 }
 
 TEST_F(CanvasRenderingContext2DTest,
@@ -764,9 +693,6 @@ TEST_F(CanvasRenderingContext2DTest,
 
   // 800 = 10 * 10 * 4 * 2 where 10*10 is canvas size, 4 is num of bytes per
   // pixel per buffer, and 2 is an estimate of num of gpu buffers required
-  EXPECT_EQ(800, GetCurrentGPUMemoryUsage());
-  EXPECT_EQ(800, GetGlobalGPUMemoryUsage());
-  EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
 
   context->fillRect(10, 10, 100, 100);
   EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
@@ -776,9 +702,6 @@ TEST_F(CanvasRenderingContext2DTest,
 
   context->fillRect(10, 10, 100, 100);
 
-  EXPECT_EQ(0, GetCurrentGPUMemoryUsage());
-  EXPECT_EQ(0, GetGlobalGPUMemoryUsage());
-  EXPECT_EQ(0u, GetGlobalAcceleratedContextCount());
 }
 
 TEST_F(CanvasRenderingContext2DTest,

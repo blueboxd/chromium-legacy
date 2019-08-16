@@ -177,11 +177,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
   ASSERT_FALSE(inner_viewport_scroll_layer->GetMainThreadScrollingReasons());
 }
 
-// TODO(920417): Re-enable this test when main thread scrolling supports
-// fractional scroll offsets.
-TEST_P(ScrollingCoordinatorTest, DISABLED_fastFractionalScrollingDiv) {
-  ScopedFractionalScrollOffsetsForTest fractional_scroll_offsets(true);
-
+TEST_P(ScrollingCoordinatorTest, fastFractionalScrollingDiv) {
   RegisterMockedHttpURLLoad("fractional-scroll-div.html");
   NavigateTo(base_url_ + "fractional-scroll-div.html");
   ForceFullCompositingUpdate();

@@ -91,7 +91,10 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
   id<GREYMatcher> settingsLinkMatcher =
       grey_allOf(grey_kindOfClass([TransparentLinkButton class]),
                  grey_sufficientlyVisible(), nil);
-  [[EarlGrey selectElementWithMatcher:settingsLinkMatcher]
+  [[[EarlGrey selectElementWithMatcher:settingsLinkMatcher]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 150)
+      onElementWithMatcher:grey_accessibilityID(
+                               kUnifiedConsentScrollViewIdentifier)]
       performAction:grey_tap()];
 }
 

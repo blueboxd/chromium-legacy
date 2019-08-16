@@ -18,11 +18,14 @@ XML below will generate the following five histograms:
 <histograms>
 
 <histogram name="HistogramTime" units="milliseconds">
+  <owner>person@chromium.org</owner>
+  <owner>some-team@chromium.org</owner>
   <summary>A brief description.</summary>
   <details>This is a more thorough description of this histogram.</details>
 </histogram>
 
 <histogram name="HistogramEnum" enum="MyEnumType">
+  <owner>person@chromium.org</owner>
   <summary>This histogram sports an enum value type.</summary>
 </histogram>
 
@@ -40,7 +43,7 @@ XML below will generate the following five histograms:
 
 <histogram_suffixes_list>
 
-<histogram_suffixes name="BrowserType">
+<histogram_suffixes name="BrowserType" separator="_">
   <suffix name="Chrome"/>
   <suffix name="IE"/>
   <suffix name="Firefox"/>
@@ -50,13 +53,11 @@ XML below will generate the following five histograms:
 </histogram_suffixes_list>
 
 </histogram-configuration>
-
 """
 
-import HTMLParser
-import bisect
 import copy
 import datetime
+import HTMLParser
 import logging
 import re
 import xml.dom.minidom
@@ -79,39 +80,69 @@ class Error(Exception):
   pass
 
 
-def _JoinChildNodes(tag):
-  """Joins child nodes into a single text.
+def _GetTextFromChildNodes(node):
+  """Returns a string concatenation of the text of the given node's children.
 
-  Applicable to leafs like 'summary' and 'detail'. Removes any comment in the
-  node.
-
-  Args:
-    tag: parent node
-
-  Returns:
-    a string with concatenated nodes' text representation.
-  """
-  return ''.join(c.toxml()
-                 for c in tag.childNodes
-                 if c.nodeType != xml.dom.minidom.Node.COMMENT_NODE).strip()
-
-
-def NormalizeString(s):
-  r"""Replaces all whitespace sequences with a single space.
-
-  The function properly handles multi-line strings and XML escaped characters.
+  Comments are ignored, consecutive lines of text are joined with a single
+  space, and paragraphs are maintained so that long text is more readable on
+  dashboards.
 
   Args:
-    s: The string to normalize, ('  \\n a  b c\\n d  ').
+    node: The DOM Element whose children's text is to be extracted, processed,
+      and returned.
+  """
+  paragraph_break = '\n\n'
+  text_parts = []
+
+  for child in node.childNodes:
+    if child.nodeType != xml.dom.minidom.Node.COMMENT_NODE:
+      child_text = child.toxml()
+      if not child_text:
+        continue
+
+      # If the given node has the below XML representation, then the text
+      # added to the list is 'Some words.\n\nWords.'
+      # <tag>
+      #   Some
+      #   words.
+      #
+      #   <!--Child comment node.-->
+      #
+      #   Words.
+      # </tag>
+
+      # In the case of the first child text node, raw_paragraphs would store
+      # ['\n  Some\n  words.', '  '], and in the case of the second,
+      # raw_paragraphs would store ['', '  Words.\n'].
+      raw_paragraphs = child_text.split(paragraph_break)
+
+      # In the case of the first child text node, processed_paragraphs would
+      # store ['Some words.', ''], and in the case of the second,
+      # processed_paragraphs would store ['Words.'].
+      processed_paragraphs = [NormalizeString(text)
+                              for text in raw_paragraphs
+                              if text]
+      text_parts.append(paragraph_break.join(processed_paragraphs))
+
+  return ''.join(text_parts).strip()
+
+
+def NormalizeString(text):
+  r"""Replaces all white space sequences with a single space.
+
+  Also, unescapes any HTML escaped characters, e.g. &quot; or &gt;.
+
+  Args:
+    text: The string to normalize, '\n\n a \n b&gt;c  '.
 
   Returns:
-    The normalized string (a b c d).
+    The normalized string 'a b>c'.
   """
-  singleline_value = ' '.join(s.split())
+  line = ' '.join(text.split())
 
   # Unescape using default ASCII encoding. Unescapes any HTML escaped character
   # like &quot; etc.
-  return HTMLParser.HTMLParser().unescape(singleline_value)
+  return HTMLParser.HTMLParser().unescape(line)
 
 
 def _NormalizeAllAttributeValues(node):
@@ -222,7 +253,7 @@ def ExtractEnumsFromXmlTree(tree):
         have_errors = True
         continue
       value_dict['label'] = int_tag.getAttribute('label')
-      value_dict['summary'] = _JoinChildNodes(int_tag)
+      value_dict['summary'] = _GetTextFromChildNodes(int_tag)
       enum_dict['values'][int_value] = value_dict
 
     enum_int_values = sorted(enum_dict['values'].keys())
@@ -247,7 +278,7 @@ def ExtractEnumsFromXmlTree(tree):
 
     summary_nodes = enum.getElementsByTagName('summary')
     if summary_nodes:
-      enum_dict['summary'] = NormalizeString(_JoinChildNodes(summary_nodes[0]))
+      enum_dict['summary'] = _GetTextFromChildNodes(summary_nodes[0])
 
     enums[name] = enum_dict
 
@@ -273,7 +304,7 @@ def _ExtractOwners(histogram):
   has_owner = False
 
   for owner_node in histogram.getElementsByTagName('owner'):
-    owner_text = NormalizeString(_JoinChildNodes(owner_node))
+    owner_text = _GetTextFromChildNodes(owner_node)
     is_email = email_pattern.match(owner_text)
 
     if owner_text and (is_email or OWNER_PLACEHOLDER in owner_text):
@@ -351,16 +382,16 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
 
     # Find <summary> tag.
     summary_nodes = histogram.getElementsByTagName('summary')
+
     if summary_nodes:
-      histogram_entry['summary'] = NormalizeString(
-          _JoinChildNodes(summary_nodes[0]))
+      histogram_entry['summary'] = _GetTextFromChildNodes(summary_nodes[0])
     else:
       histogram_entry['summary'] = 'TBD'
 
     # Find <obsolete> tag.
     obsolete_nodes = histogram.getElementsByTagName('obsolete')
     if obsolete_nodes:
-      reason = _JoinChildNodes(obsolete_nodes[0])
+      reason = _GetTextFromChildNodes(obsolete_nodes[0])
       histogram_entry['obsolete'] = reason
 
     # Non-obsolete histograms should provide a <summary>.
@@ -380,8 +411,7 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
     # Find <details> tag.
     details_nodes = histogram.getElementsByTagName('details')
     if details_nodes:
-      histogram_entry['details'] = NormalizeString(
-          _JoinChildNodes(details_nodes[0]))
+      histogram_entry['details'] = _GetTextFromChildNodes(details_nodes[0])
 
     # Handle enum types.
     if histogram.hasAttribute('enum'):
@@ -408,7 +438,7 @@ def _GetObsoleteReason(node):
   for child in node.childNodes:
     if child.localName == 'obsolete':
       # There can be at most 1 obsolete element per node.
-      return _JoinChildNodes(child)
+      return _GetTextFromChildNodes(child)
   return None
 
 

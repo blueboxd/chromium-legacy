@@ -5,13 +5,21 @@
 #include "third_party/blink/renderer/core/css/parser/sizes_calc_parser.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_math_function_value.h"
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/media_type_names.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
+
+namespace {
+// |float| has roughly 7 digits of precision.
+const double epsilon = 1e-6;
+}  // namespace
 
 struct SizesCalcTestCase {
   const char* input;
@@ -20,32 +28,42 @@ struct SizesCalcTestCase {
   const bool dont_run_in_css_calc;
 };
 
+#define EXPECT_APPROX_EQ(expected, actual)            \
+  {                                                   \
+    double actual_error = actual - expected;          \
+    double allowed_error = expected * epsilon;        \
+    EXPECT_LE(abs(actual_error), abs(allowed_error)); \
+  }
+
 static void VerifyCSSCalc(String text,
                           double value,
                           bool valid,
                           unsigned font_size,
                           unsigned viewport_width,
                           unsigned viewport_height) {
-  CSSLengthArray length_array;
   const CSSValue* css_value = CSSParser::ParseSingleValue(
       CSSPropertyID::kLeft, text,
       StrictCSSParserContext(SecureContextMode::kInsecureContext));
-  const auto* primitive_value = To<CSSPrimitiveValue>(css_value);
-  if (primitive_value)
-    primitive_value->AccumulateLengthArray(length_array);
-  else
-    ASSERT_EQ(valid, false);
-  float length = length_array.values.at(CSSPrimitiveValue::kUnitTypePixels);
-  length +=
-      length_array.values.at(CSSPrimitiveValue::kUnitTypeFontSize) * font_size;
-  length += length_array.values.at(CSSPrimitiveValue::kUnitTypeViewportWidth) *
-            viewport_width / 100.0;
-  length += length_array.values.at(CSSPrimitiveValue::kUnitTypeViewportHeight) *
-            viewport_height / 100.0;
-  ASSERT_EQ(value, length);
+  const auto* math_value = DynamicTo<CSSMathFunctionValue>(css_value);
+  if (!math_value) {
+    EXPECT_FALSE(valid) << text;
+    return;
+  }
+
+  ASSERT_TRUE(valid) << text;
+
+  Font font;
+  CSSToLengthConversionData::FontSizes font_sizes(font_size, font_size, &font);
+  CSSToLengthConversionData::ViewportSize viewport_size(viewport_width,
+                                                        viewport_height);
+  CSSToLengthConversionData conversion_data(nullptr, font_sizes, viewport_size,
+                                            1.0);
+  EXPECT_APPROX_EQ(value, math_value->ComputeLength<float>(conversion_data));
 }
 
 TEST(SizesCalcParserTest, Basic) {
+  ScopedCSSComparisonFunctionsForTest scope(true);
+
   SizesCalcTestCase test_cases[] = {
       {"calc(500px + 10em)", 660, true, false},
       {"calc(500px / 8)", 62.5, true, false},
@@ -105,6 +123,33 @@ TEST(SizesCalcParserTest, Basic) {
       {"calc((100vw - 2 * 2 / 2 * 40px - 2 * 30px) / 3)", 120, true, false},
       {"calc((100vw - 2 * 2 * 20px - 2 * 30px) / 3)", 120, true, false},
       {"calc((100vw - 320px / 2 / 2 - 2 * 30px) / 3)", 120, true, false},
+      // Following test cases contain comparison functions.
+      {"min()", 0, false, false},
+      {"min(100px)", 100, true, false},
+      {"min(200px, 100px, 300px, 40px, 1000px)", 40, true, false},
+      {"min( 100px , 200px )", 100, true, false},
+      {"min(100, 200, 300)", 0, false, false},
+      {"min(100, 200px, 300px)", 0, false, false},
+      {"min(100px 200px)", 0, false, false},
+      {"min(100px, , 200px)", 0, false, false},
+      {"min(100px, 200px,)", 0, false, false},
+      {"min(, 100px, 200px)", 0, false, false},
+      {"max()", 0, false, false},
+      {"max(100px)", 100, true, false},
+      {"max(200px, 100px, 300px, 40px, 1000px)", 1000, true, false},
+      {"max( 100px , 200px )", 200, true, false},
+      {"max(100, 200, 300)", 0, false, false},
+      {"max(100, 200px, 300px)", 0, false, false},
+      {"max(100px 200px)", 0, false, false},
+      {"max(100px, , 200px)", 0, false, false},
+      {"max(100px, 200px,)", 0, false, false},
+      {"max(, 100px, 200px)", 0, false, false},
+      {"calc(min(100px, 200px) + max(300px, 400px))", 500, true, false},
+      {"calc(max(300px, 400px) - min(100px, 200px))", 300, true, false},
+      {"calc(min(100px, 200px) * max(3, 4, 5))", 500, true, false},
+      {"calc(min(100px, 200px) / max(3, 4, 5))", 20, true, false},
+      {"max(10px, min(20px, 1em))", 16, true, false},
+      {"min(20px, max(10px, 1em))", 16, true, false},
       {nullptr, 0, true, false}  // Do not remove the terminator line.
   };
 
@@ -130,7 +175,7 @@ TEST(SizesCalcParserTest, Basic) {
         media_values);
     ASSERT_EQ(test_cases[i].valid, calc_parser.IsValid());
     if (calc_parser.IsValid())
-      ASSERT_EQ(test_cases[i].output, calc_parser.Result());
+      EXPECT_APPROX_EQ(test_cases[i].output, calc_parser.Result());
   }
 
   for (unsigned i = 0; test_cases[i].input; ++i) {

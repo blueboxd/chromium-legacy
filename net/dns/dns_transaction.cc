@@ -391,8 +391,15 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
     }
 
     request_->SetExtraRequestHeaders(extra_request_headers);
+    // Bypass proxy settings and certificate-related network fetches (currently
+    // just OCSP and CRL requests) to avoid deadlock. AIA requests and the
+    // Negotiate scheme for HTTP authentication may also cause deadlocks, but
+    // these deadlocks can be resolved from the DoH server side (e.g. the server
+    // can send a certificate chain that is complete from the client's
+    // perspective to prevent the client from sending AIA requests).
     request_->SetLoadFlags(request_->load_flags() | LOAD_DISABLE_CACHE |
-                           LOAD_BYPASS_PROXY);
+                           LOAD_BYPASS_PROXY |
+                           LOAD_DISABLE_CERT_NETWORK_FETCHES);
     request_->set_allow_credentials(false);
   }
 

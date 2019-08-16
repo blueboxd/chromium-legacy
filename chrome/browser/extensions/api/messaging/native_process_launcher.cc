@@ -47,7 +47,8 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
   NativeProcessLauncherImpl(bool allow_user_level_hosts,
                             intptr_t native_window,
                             const base::FilePath& profile_directory,
-                            bool require_native_initiated_connections);
+                            bool require_native_initiated_connections,
+                            const std::string& connect_id);
   ~NativeProcessLauncherImpl() override;
 
   void Launch(const GURL& origin,
@@ -60,7 +61,8 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
     Core(bool allow_user_level_hosts,
          intptr_t native_window,
          const base::FilePath& profile_directory,
-         bool require_native_initiated_connections);
+         bool require_native_initiated_connections,
+         const std::string& connect_id);
     void Launch(const GURL& origin,
                 const std::string& native_host_name,
                 const LaunchedCallback& callback);
@@ -91,6 +93,8 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
     const base::FilePath profile_directory_;
 
     const bool require_native_initiated_connections_;
+
+    const std::string connect_id_;
 #if defined(OS_WIN)
     // Handle of the native window corresponding to the extension.
     intptr_t window_handle_;
@@ -107,12 +111,14 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
 NativeProcessLauncherImpl::Core::Core(bool allow_user_level_hosts,
                                       intptr_t window_handle,
                                       const base::FilePath& profile_directory,
-                                      bool require_native_initiated_connections)
+                                      bool require_native_initiated_connections,
+                                      const std::string& connect_id)
     : detached_(false),
       allow_user_level_hosts_(allow_user_level_hosts),
       profile_directory_(profile_directory),
       require_native_initiated_connections_(
-          require_native_initiated_connections)
+          require_native_initiated_connections),
+      connect_id_(connect_id)
 #if defined(OS_WIN)
       ,
       window_handle_(window_handle)
@@ -260,6 +266,11 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
     base::Base64Encode(encoded_reconnect_command, &encoded_reconnect_command);
     command_line.AppendArg(
         base::StrCat({"--reconnect-command=", encoded_reconnect_command}));
+
+    if (!connect_id_.empty()) {
+      command_line.AppendArg(base::StrCat(
+          {"--", switches::kNativeMessagingConnectId, "=", connect_id_}));
+    }
   }
 
   base::Process process;
@@ -314,11 +325,13 @@ NativeProcessLauncherImpl::NativeProcessLauncherImpl(
     bool allow_user_level_hosts,
     intptr_t window_handle,
     const base::FilePath& profile_directory,
-    bool require_native_initiated_connections)
+    bool require_native_initiated_connections,
+    const std::string& connect_id)
     : core_(new Core(allow_user_level_hosts,
                      window_handle,
                      profile_directory,
-                     require_native_initiated_connections)) {}
+                     require_native_initiated_connections,
+                     connect_id)) {}
 
 NativeProcessLauncherImpl::~NativeProcessLauncherImpl() {
   core_->Detach();
@@ -337,7 +350,8 @@ std::unique_ptr<NativeProcessLauncher> NativeProcessLauncher::CreateDefault(
     bool allow_user_level_hosts,
     gfx::NativeView native_view,
     const base::FilePath& profile_directory,
-    bool require_native_initiated_connections) {
+    bool require_native_initiated_connections,
+    const std::string& connect_id) {
   intptr_t window_handle = 0;
 #if defined(OS_WIN)
   window_handle = reinterpret_cast<intptr_t>(
@@ -345,7 +359,7 @@ std::unique_ptr<NativeProcessLauncher> NativeProcessLauncher::CreateDefault(
 #endif
   return std::make_unique<NativeProcessLauncherImpl>(
       allow_user_level_hosts, window_handle, profile_directory,
-      require_native_initiated_connections);
+      require_native_initiated_connections, connect_id);
 }
 
 }  // namespace extensions

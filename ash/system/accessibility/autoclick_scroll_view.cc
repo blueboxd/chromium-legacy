@@ -8,6 +8,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/custom_shape_button.h"
@@ -50,9 +51,12 @@ class AutoclickScrollCloseButton : public TopShortcutButton,
     EnableCanvasFlippingForRTLUI(false);
     SetPreferredSize(
         gfx::Size(kScrollButtonCloseSizeDips, kScrollButtonCloseSizeDips));
-    SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kAutoclickCloseIcon, kIconOnDarkBackgroundColor));
+    SetImage(views::Button::STATE_NORMAL,
+             gfx::CreateVectorIcon(
+                 kAutoclickCloseIcon,
+                 AshColorProvider::Get()->GetContentLayerColor(
+                     AshColorProvider::ContentLayerType::kIconPrimary,
+                     AshColorProvider::AshColorMode::kDark)));
   }
 
   ~AutoclickScrollCloseButton() override = default;
@@ -131,7 +135,10 @@ class AutoclickScrollButton : public CustomShapeButton,
         base::BindRepeating(&AutoclickScrollButton::DoScrollAction,
                             base::Unretained(this)));
     SetImage(views::Button::STATE_NORMAL,
-             gfx::CreateVectorIcon(icon, kIconOnDarkBackgroundColor));
+             gfx::CreateVectorIcon(
+                 icon, AshColorProvider::Get()->GetContentLayerColor(
+                           AshColorProvider::ContentLayerType::kIconPrimary,
+                           AshColorProvider::AshColorMode::kDark)));
     if (action_ == AutoclickController::ScrollPadAction::kScrollLeft ||
         action_ == AutoclickController::ScrollPadAction::kScrollRight) {
       size_ = gfx::Size(kScrollPadButtonHypotenuseDips / 2,

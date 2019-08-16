@@ -884,7 +884,6 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/ui/util/WebViewCrashLogParser.java",
   ]
   deps = [
-    ":android_webview_services_java",
     ":common_commandline_java",
     ":common_crash_info_java",
 
@@ -895,6 +894,7 @@ android_library("android_webview_java") {
     ":common_platform_services_java",
     ":common_variations_utils_java",
     ":resources",
+    ":services_java",
     ":strings_grd",
     ":system_webview_manifest",
     "//base:base_java",
@@ -1063,9 +1063,23 @@ android_library("common_commandline_java") {
   ]
 }
 
+android_aidl("services_variations_seed_server_aidl") {
+  import_include = [ "java/src" ]
+  sources = [
+    "java/src/org/chromium/android_webview/services/IVariationsSeedServer.aidl",
+  ]
+}
+
+android_aidl("services_crash_receiver_aidl") {
+  import_include = [ "java/src" ]
+  sources = [
+    "java/src/org/chromium/android_webview/services/ICrashReceiverService.aidl",
+  ]
+}
+
 # Keep WebView's services separate from other WebView code to keep their deps clean
 # (and make them easy to move).
-android_library("android_webview_services_java") {
+android_library("services_java") {
   java_files = [
     "java/src/org/chromium/android_webview/services/AwMinidumpUploadJobService.java",
     "java/src/org/chromium/android_webview/services/AwMinidumpUploaderDelegate.java",
@@ -1088,8 +1102,8 @@ android_library("android_webview_services_java") {
     "//components/version_info/android:version_constants_java",
   ]
   srcjar_deps = [
-    ":crash_receiver_aidl",
-    ":aw_variations_seed_server_aidl",
+    ":services_crash_receiver_aidl",
+    ":services_variations_seed_server_aidl",
   ]
   android_manifest_for_lint = system_webview_android_manifest
   min_sdk_version = 21
@@ -1109,20 +1123,6 @@ android_library("android_webview_locale_config_java") {
   java_files = [ "java/src/org/chromium/android_webview/AwLocaleConfig.java" ]
   srcjar_deps = [ ":webview_locale_config" ]
   jar_excluded_patterns = [ "*/LocaleConfig.class" ]
-}
-
-android_aidl("crash_receiver_aidl") {
-  import_include = [ "java/src" ]
-  sources = [
-    "java/src/org/chromium/android_webview/services/ICrashReceiverService.aidl",
-  ]
-}
-
-android_aidl("aw_variations_seed_server_aidl") {
-  import_include = [ "java/src" ]
-  sources = [
-    "java/src/org/chromium/android_webview/services/IVariationsSeedServer.aidl",
-  ]
 }
 
 if (public_android_sdk) {

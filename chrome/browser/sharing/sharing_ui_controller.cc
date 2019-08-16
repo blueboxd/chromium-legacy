@@ -12,6 +12,7 @@
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "components/sync_device_info/device_info.h"
 #include "ui/gfx/vector_icon_types.h"
 
 namespace {
@@ -88,7 +89,7 @@ void SharingUiController::OnDialogClosed(SharingDialog* dialog) {
 }
 
 void SharingUiController::SendMessageToDevice(
-    const SharingDeviceInfo& device,
+    const syncer::DeviceInfo& device,
     chrome_browser_sharing::SharingMessage sharing_message) {
   last_dialog_id_++;
   is_loading_ = true;

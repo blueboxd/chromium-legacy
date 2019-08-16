@@ -235,6 +235,13 @@ NetworkStateHandler::TechnologyState NetworkStateHandler::GetTechnologyState(
   if (shill_property_handler_->IsTechnologyProhibited(technology))
     return TECHNOLOGY_PROHIBITED;
 
+  // Disabling is a pseudostate used by the UI and takes precedence over
+  // enabled.
+  if (shill_property_handler_->IsTechnologyDisabling(technology)) {
+    DCHECK(shill_property_handler_->IsTechnologyEnabled(technology));
+    return TECHNOLOGY_DISABLING;
+  }
+
   // Enabled and Uninitialized should be mutually exclusive. 'Enabling', which
   // is a pseudo state used by the UI, takes precedence over 'Uninitialized',
   // but not 'Enabled'.

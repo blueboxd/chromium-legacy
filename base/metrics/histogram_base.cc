@@ -159,7 +159,7 @@ void HistogramBase::WriteJSON(std::string* output,
   root.Set("params", std::move(parameters));
   if (verbosity_level != JSON_VERBOSITY_LEVEL_OMIT_BUCKETS)
     root.Set("buckets", std::move(buckets));
-  root.SetIntKey("pid", GetUniqueIdForProcess());
+  root.SetIntKey("pid", GetUniqueIdForProcess().GetUnsafeValue());
   serializer.Serialize(root);
 }
 

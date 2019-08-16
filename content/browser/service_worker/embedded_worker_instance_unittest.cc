@@ -553,25 +553,15 @@ TEST_F(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
   auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   worker->AddObserver(this);
 
-  // Attempt to start the worker. From the browser process's point of view, the
-  // start IPC was sent.
-  base::Optional<blink::ServiceWorkerStatusCode> status;
-  base::RunLoop loop;
-  worker->Start(CreateStartParams(pair.second),
-                ReceiveStatus(&status, loop.QuitClosure()));
-  loop.Run();
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
-
-  // But the renderer should not receive the message and the binding is broken.
-  // Worker should handle the failure of binding on the remote side as detach.
+  // Attempt to start the worker. Pass DoNothing() as the |sent_start_callback|
+  // as it won't be called when mojo IPC fails to connect.
+  worker->Start(CreateStartParams(pair.second), base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(3u, events_.size());
-  EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
-  EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
-  EXPECT_EQ(DETACHED, events_[2].type);
-  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[2].status.value());
-  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
+  // Worker should handle the failure of binding on the remote side as detach.
+  ASSERT_EQ(1u, events_.size());
+  EXPECT_EQ(DETACHED, events_[0].type);
+  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[0].status.value());
 }
 
 TEST_F(EmbeddedWorkerInstanceTest, RemoveRemoteInterface) {

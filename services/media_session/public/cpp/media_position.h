@@ -8,6 +8,15 @@
 #include "base/component_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+
+#if defined(OS_ANDROID)
+
+#include <jni.h>
+
+#include "base/android/scoped_java_ref.h"
+
+#endif  // defined(OS_ANDROID)
 
 namespace IPC {
 template <class P>
@@ -37,6 +46,12 @@ struct COMPONENT_EXPORT(MEDIA_SESSION_BASE_CPP) MediaPosition {
                 base::TimeDelta duration,
                 base::TimeDelta position);
   ~MediaPosition();
+
+#if defined(OS_ANDROID)
+  // Creates a Java MediaPosition instance and returns the JNI ref.
+  base::android::ScopedJavaLocalRef<jobject> CreateJavaObject(
+      JNIEnv* env) const;
+#endif
 
   // Return the duration of the media.
   base::TimeDelta duration() const;

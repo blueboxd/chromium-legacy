@@ -85,8 +85,8 @@ bool SizeMayChange(const NGBlockNode& node,
   DCHECK_EQ(new_space.IsFixedInlineSize(), old_space.IsFixedInlineSize());
   DCHECK_EQ(new_space.IsFixedBlockSize(), old_space.IsFixedBlockSize());
   DCHECK_EQ(new_space.IsShrinkToFit(), old_space.IsShrinkToFit());
-  DCHECK_EQ(new_space.TableCellChildLayoutPhase(),
-            old_space.TableCellChildLayoutPhase());
+  DCHECK_EQ(new_space.TableCellChildLayoutMode(),
+            old_space.TableCellChildLayoutMode());
 
   const ComputedStyle& style = node.Style();
 
@@ -186,7 +186,7 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
     //
     // Due to this we can't use cached |NGLayoutResult::IntrinsicBlockSize|
     // value, as the following |block_size| calculation would be incorrect.
-    if (node.IsFlexibleBox() && style.IsColumnFlexDirection() &&
+    if (node.IsFlexibleBox() && style.ResolvedIsColumnFlexDirection() &&
         layout_result.PhysicalFragment().DependsOnPercentageBlockSize()) {
       if (new_space.PercentageResolutionBlockSize() !=
           old_space.PercentageResolutionBlockSize())
@@ -194,7 +194,7 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
     }
 
     block_size = ComputeBlockSizeForFragment(
-        new_space, node, fragment_geometry.border + fragment_geometry.padding,
+        new_space, style, fragment_geometry.border + fragment_geometry.padding,
         layout_result.IntrinsicBlockSize());
   }
 
@@ -235,7 +235,7 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
     // %-block-size children of table-cells have different behaviour if they
     // are in the "measure" or "layout" phase.
     // Instead of trying to capture that logic here, we always miss the cache.
-    if (node.IsTableCell() &&
+    if (new_space.IsTableCell() &&
         new_space.IsFixedBlockSize() != old_space.IsFixedBlockSize())
       return NGLayoutCacheStatus::kNeedsLayout;
 

@@ -87,6 +87,11 @@ void ChromeSearchResult::SetDisplayLocation(DisplayLocation display_location) {
   SetSearchResultMetadata();
 }
 
+void ChromeSearchResult::SetPositionPriority(float position_priority) {
+  metadata_->position_priority = position_priority;
+  SetSearchResultMetadata();
+}
+
 void ChromeSearchResult::SetIsOmniboxSearch(bool is_omnibox_search) {
   metadata_->is_omnibox_search = is_omnibox_search;
   SetSearchResultMetadata();

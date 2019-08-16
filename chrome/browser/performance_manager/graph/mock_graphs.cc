@@ -17,7 +17,7 @@
 namespace performance_manager {
 
 TestProcessNodeImpl::TestProcessNodeImpl(GraphImpl* graph)
-    : ProcessNodeImpl(graph) {}
+    : ProcessNodeImpl(graph, RenderProcessHostProxy()) {}
 
 void TestProcessNodeImpl::SetProcessWithPid(base::ProcessId pid,
                                             base::Process process,

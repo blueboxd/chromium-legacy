@@ -880,7 +880,9 @@ modules_dictionary_idl_files =
 if (!is_android) {
   modules_dictionary_idl_files +=
       get_path_info([
+                      "serial/serial_input_signals.idl",
                       "serial/serial_options.idl",
+                      "serial/serial_output_signals.idl",
                       "serial/serial_port_request_options.idl",
                     ],
                     "abspath")

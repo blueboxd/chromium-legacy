@@ -57,7 +57,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kAcceleratedCompositedResourceUsage = 3,
     kAcceleratedDirect2DResourceUsage = 4,
     kAcceleratedDirect3DResourceUsage = 5,
-    kMaxValue = kAcceleratedDirect3DResourceUsage,
+    kSoftwareCompositedDirect2DResourceUsage = 6,
+    kMaxValue = kSoftwareCompositedDirect2DResourceUsage,
   };
 
   enum PresentationMode {

@@ -33,6 +33,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.media_session.mojom.MediaSessionAction;
 import org.chromium.services.media_session.MediaImage;
 import org.chromium.services.media_session.MediaMetadata;
+import org.chromium.services.media_session.MediaPosition;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.net.URI;
@@ -73,6 +74,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
     private MediaMetadata mCurrentMetadata;
     private MediaImageManager mMediaImageManager;
     private Set<Integer> mMediaSessionActions;
+    private @Nullable MediaPosition mMediaPosition;
     private Handler mHandler;
     // The delayed task to hide notification. Hiding notification can be immediate or delayed.
     // Delayed hiding will schedule this delayed task to |mHandler|. The task will be canceled when
@@ -231,7 +233,8 @@ public class MediaSessionTabHelper implements MediaImageCallback {
                                 .setContentIntent(contentIntent)
                                 .setId(R.id.media_playback_notification)
                                 .setListener(mControlsListener)
-                                .setMediaSessionActions(mMediaSessionActions);
+                                .setMediaSessionActions(mMediaSessionActions)
+                                .setMediaPosition(mMediaPosition);
 
                 // Do not show notification icon till we get the favicon from the LargeIconBridge
                 // since we do not need to show default icon then change it to favicon. It is ok to
@@ -265,6 +268,12 @@ public class MediaSessionTabHelper implements MediaImageCallback {
             public void mediaSessionArtworkChanged(List<MediaImage> images) {
                 mMediaImageManager.downloadImage(images, MediaSessionTabHelper.this);
                 updateNotificationMetadata();
+            }
+
+            @Override
+            public void mediaSessionPositionChanged(@Nullable MediaPosition position) {
+                mMediaPosition = position;
+                updateNotificationPosition();
             }
         };
     }
@@ -512,6 +521,13 @@ public class MediaSessionTabHelper implements MediaImageCallback {
         if (isNotificationHiddingOrHidden()) return;
 
         mNotificationInfoBuilder.setMediaSessionActions(mMediaSessionActions);
+        showNotification();
+    }
+
+    private void updateNotificationPosition() {
+        if (isNotificationHiddingOrHidden()) return;
+
+        mNotificationInfoBuilder.setMediaPosition(mMediaPosition);
         showNotification();
     }
 

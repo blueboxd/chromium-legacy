@@ -1527,9 +1527,7 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     // new RenderFrameMetadata, as the IME will need this info to be updated.
     // TODO(ericrk): Consider folding the above IPC into RenderFrameMetadata.
     // https://crbug.com/912309
-    if (IsSurfaceSynchronizationEnabled()) {
-      layer_tree_view_->RequestForceSendMetadata();
-    }
+    layer_tree_view_->RequestForceSendMetadata();
 #endif
   }
 }
@@ -3000,8 +2998,7 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
 
   settings.initial_debug_state.SetRecordRenderingStats(
       cmd.HasSwitch(cc::switches::kEnableGpuBenchmarking));
-  settings.enable_surface_synchronization =
-      features::IsSurfaceSynchronizationEnabled();
+  settings.enable_surface_synchronization = true;
   settings.build_hit_test_data = features::IsVizHitTestingSurfaceLayerEnabled();
 
   if (cmd.HasSwitch(cc::switches::kSlowDownRasterScaleFactor)) {
@@ -3157,12 +3154,9 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
     settings.enable_latency_recovery = false;
   }
 #if defined(OS_ANDROID)
-  if (features::IsSurfaceSynchronizationEnabled()) {
-    // TODO(crbug.com/933846): LatencyRecovery is causing jank on Android.
-    // Disable in viz mode for now, with plan to disable more widely once
-    // viz launches.
-    settings.enable_latency_recovery = false;
-  }
+  // TODO(crbug.com/933846): LatencyRecovery is causing jank on Android. Disable
+  // in viz mode for now, with plan to disable more widely once viz launches.
+  settings.enable_latency_recovery = false;
 #endif
 
   settings.enable_image_animation_resync =
@@ -3740,11 +3734,6 @@ void RenderWidget::SetMouseCapture(bool capture) {
           widget_input_handler_manager_->GetWidgetInputHandlerHost()) {
     host->SetMouseCapture(capture);
   }
-}
-
-bool RenderWidget::IsSurfaceSynchronizationEnabled() const {
-  return layer_tree_view_ &&
-         layer_tree_view_->IsSurfaceSynchronizationEnabled();
 }
 
 void RenderWidget::UseSynchronousResizeModeForTesting(bool enable) {

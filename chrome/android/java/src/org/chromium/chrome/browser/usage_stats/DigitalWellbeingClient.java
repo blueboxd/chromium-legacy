@@ -33,6 +33,13 @@ public class DigitalWellbeingClient {
     }
 
     /**
+     * Notify DW that the user has deleted history for the given fqdns.
+     */
+    public Promise<Void> notifyHistoryDeletion(List<String> fqdns) {
+        return Promise.fulfilled(null);
+    }
+
+    /**
      * Notify DW that the user has deleted all history, so it should delete all Chrome-originating
      * records.
      */

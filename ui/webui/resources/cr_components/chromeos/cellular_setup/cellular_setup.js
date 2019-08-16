@@ -156,6 +156,13 @@ Polymer({
    */
   cellularMetadata_: null,
 
+  /**
+   * Handler used to communicate state updates back to the CellularSetup
+   * service.
+   * @private {?chromeos.cellularSetup.mojom.CarrierPortalHandlerRemote}
+   */
+  carrierPortalHandler_: null,
+
   /** @override */
   created: function() {
     this.mojoInterfaceProvider_ =
@@ -296,9 +303,15 @@ Polymer({
     this.mojoInterfaceProvider_.getMojoServiceRemote()
         .startActivation(
             this.activationDelegateReceiver_.$.bindNewPipeAndPassRemote())
-        .then((handler) => {
-          this.carrierPortalHandler_ = handler;
-        });
+        .then(
+            /**
+             * @param {!chromeos.cellularSetup.
+             *             mojom.CellularSetup_StartActivation_ResponseParams}
+             *                 params
+             */
+            (params) => {
+              this.carrierPortalHandler_ = params.observer;
+            });
   },
 
   /** @private */

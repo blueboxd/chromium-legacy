@@ -23,18 +23,7 @@
 
 namespace payments {
 
-class PaymentRequestJourneyLoggerTestBase
-    : public PaymentRequestBrowserTestBase {
- protected:
-  PaymentRequestJourneyLoggerTestBase() {
-    feature_list_.InitAndEnableFeature(
-        ::features::kPaymentRequestHasEnrolledInstrument);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-  DISALLOW_COPY_AND_ASSIGN(PaymentRequestJourneyLoggerTestBase);
-};
+using PaymentRequestJourneyLoggerTestBase = PaymentRequestBrowserTestBase;
 
 using PaymentRequestJourneyLoggerSelectedPaymentInstrumentTest =
     PaymentRequestJourneyLoggerTestBase;

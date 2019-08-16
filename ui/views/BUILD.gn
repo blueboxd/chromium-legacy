@@ -762,6 +762,7 @@ jumbo_component("views") {
           "widget/desktop_aura/window_event_filter.cc",
           "widget/desktop_aura/window_event_filter.h",
         ]
+        deps += [ "//ui/base:hit_test" ]
       }
       if ((is_linux && !use_x11) || is_fuchsia) {
         public += [ "widget/desktop_aura/desktop_window_tree_host_platform.h" ]

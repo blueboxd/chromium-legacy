@@ -1242,13 +1242,19 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   // Check if a web UI scheme wants to handle this request.
   FrameTreeNode* frame_tree_node =
       FrameTreeNode::GloballyFindByID(frame_tree_node_id);
-  network::mojom::URLLoaderFactoryPtrInfo factory_for_webui;
   const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
   std::string scheme = new_request->url.scheme();
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_for_webui;
   if (base::Contains(schemes, scheme)) {
-    factory_for_webui = CreateWebUIURLLoaderBinding(
-                            frame_tree_node->current_frame_host(), scheme)
-                            .PassInterface();
+    auto factory_receiver = factory_for_webui.InitWithNewPipeAndPassReceiver();
+    GetContentClient()->browser()->WillCreateURLLoaderFactory(
+        partition->browser_context(), frame_tree_node->current_frame_host(),
+        frame_tree_node->current_frame_host()->GetProcess()->GetID(),
+        true /* is_navigation */, false /* is_download */, url::Origin(),
+        &factory_receiver, nullptr /* header_client */,
+        nullptr /* bypass_redirect_checks */);
+    CreateWebUIURLLoaderBinding(frame_tree_node->current_frame_host(), scheme,
+                                std::move(factory_receiver));
   }
 
   network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info;

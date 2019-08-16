@@ -117,14 +117,17 @@ class AutoclickMenuButton : public TopShortcutButton {
 
  private:
   void UpdateImage() {
+    const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kIconPrimary,
+        AshColorProvider::AshColorMode::kDark);
     SetImage(views::Button::STATE_NORMAL,
              gfx::CreateVectorIcon(
-                 *icon_, toggled_ ? kAutoclickMenuButtonIconColorActive
-                                  : kIconOnDarkBackgroundColor));
+                 *icon_,
+                 toggled_ ? kAutoclickMenuButtonIconColorActive : icon_color));
     SetImage(views::Button::STATE_DISABLED,
              gfx::CreateVectorIcon(
-                 *icon_, toggled_ ? kAutoclickMenuButtonIconColorActive
-                                  : kIconOnDarkBackgroundColor));
+                 *icon_,
+                 toggled_ ? kAutoclickMenuButtonIconColorActive : icon_color));
   }
 
   const gfx::VectorIcon* icon_;
@@ -215,8 +218,8 @@ AutoclickMenuView::AutoclickMenuView(AutoclickEventType type,
   AddChildView(action_button_container);
 
   views::Separator* separator = new views::Separator();
-  separator->SetColor(AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
-      AshColorProvider::ControlsLayerType::kSeparator,
+  separator->SetColor(AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+      AshColorProvider::ContentLayerType::kSeparator,
       kSeparatorOnDarkBackgroundColor));
   separator->SetPreferredHeight(kSeparatorHeight);
   int total_height = kUnifiedTopShortcutSpacing * 2 + kTrayItemSize;

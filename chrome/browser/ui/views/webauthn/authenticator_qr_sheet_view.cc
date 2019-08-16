@@ -8,6 +8,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_qr_code.h"
+#include "device/fido/cable/cable_discovery_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
@@ -85,8 +86,6 @@ class QRView : public views::View {
   static constexpr int kDinoY = kMid - (kDinoHeight * kDinoTilePixels) / 2;
 
   explicit QRView(const uint8_t qr_data[QRCode::kInputBytes]) {
-    static_assert(QRCode::kInputBytes == QRCode::kInputBytes,
-                  "QR lengths mismatch");
     qr_tiles_ = qr_.Generate(qr_data);
   }
   ~QRView() override {}
@@ -204,19 +203,42 @@ class QRView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(QRView);
 };
 
-// RandomURL writes a caBLE key URL to |out_bytes|. This consists of the prefix
-// "fido://c1/" followed by a base64url-encoded, 16-byte random key.
-void RandomURL(uint8_t out_bytes[QRCode::kInputBytes]) {
-  uint8_t rand_bytes[16];
-  base::RandBytes(rand_bytes, sizeof(rand_bytes));
-  std::string encoded;
+// Base64EncodedSize returns the number of bytes required to base64 encode an
+// input of |input_length| bytes, without padding.
+constexpr size_t Base64EncodedSize(size_t input_length) {
+  return ((input_length * 4) + 2) / 3;
+}
+
+// QRDataForCurrentTime writes a URL suitable for encoding as a QR to
+// |out_qr_data|. The URL is generated based on |qr_generator_key| and the
+// current time such that the caBLE discovery code can recognise the URL as
+// valid.
+void QRDataForCurrentTime(uint8_t out_qr_data[QRCode::kInputBytes],
+                          base::span<const uint8_t, 32> qr_generator_key) {
+  uint8_t qr_secret[device::kCableQRSecretSize];
+  uint8_t authenticator_eid[device::kCableEphemeralIdSize];
+  uint8_t session_pre_key[device::kCableSessionPreKeySize];
+  const int64_t current_tick = device::CableDiscoveryData::CurrentTimeTick();
+  device::CableDiscoveryData::DeriveQRKeyMaterial(
+      qr_secret, authenticator_eid, session_pre_key, qr_generator_key,
+      current_tick);
+
+  std::string base64_eid;
   base::Base64UrlEncode(
-      base::StringPiece(reinterpret_cast<const char*>(rand_bytes),
-                        sizeof(rand_bytes)),
-      base::Base64UrlEncodePolicy::OMIT_PADDING, &encoded);
-  static_assert(QRCode::kInputBytes == 10 + 22, "QR input length mismatch");
-  memcpy(out_bytes, "fido://c1/", 10);
-  memcpy(&out_bytes[10], encoded.data(), 22);
+      base::StringPiece(reinterpret_cast<const char*>(qr_secret),
+                        sizeof(qr_secret)),
+      base::Base64UrlEncodePolicy::OMIT_PADDING, &base64_eid);
+  static constexpr size_t kEncodedEIDLength =
+      Base64EncodedSize(sizeof(qr_secret));
+  DCHECK_EQ(kEncodedEIDLength, base64_eid.size());
+
+  static constexpr char kPrefix[] = "fido://c1/";
+  static constexpr size_t kPrefixLength = sizeof(kPrefix) - 1;
+
+  static_assert(QRCode::kInputBytes == kPrefixLength + kEncodedEIDLength,
+                "unexpected QR input length");
+  memcpy(out_qr_data, kPrefix, kPrefixLength);
+  memcpy(&out_qr_data[kPrefixLength], base64_eid.data(), kEncodedEIDLength);
 }
 
 }  // anonymous namespace
@@ -245,22 +267,18 @@ class AuthenticatorQRViewCentered : public views::View {
 
 AuthenticatorQRSheetView::AuthenticatorQRSheetView(
     std::unique_ptr<AuthenticatorQRSheetModel> sheet_model)
-    : AuthenticatorRequestSheetView(std::move(sheet_model)) {}
+    : AuthenticatorRequestSheetView(std::move(sheet_model)),
+      qr_generator_key_(reinterpret_cast<AuthenticatorQRSheetModel*>(model())
+                            ->dialog_model()
+                            ->transport_availability()
+                            ->qr_generator_key.value()) {}
 
 AuthenticatorQRSheetView::~AuthenticatorQRSheetView() = default;
 
-void AuthenticatorQRSheetView::RefreshQRCode(
-    const uint8_t new_qr_data[QRCode::kInputBytes]) {
-  qr_view_->RefreshQRCode(new_qr_data);
-}
-
 std::unique_ptr<views::View>
 AuthenticatorQRSheetView::BuildStepSpecificContent() {
-  // TODO: data for the QR code should come from a caBLE discovery. Since that
-  // isn't plumbed yet, we generate random data here.
   uint8_t qr_data[QRCode::kInputBytes];
-  RandomURL(qr_data);
-
+  QRDataForCurrentTime(qr_data, qr_generator_key_);
   auto qr_view = std::make_unique<AuthenticatorQRViewCentered>(qr_data);
   qr_view_ = qr_view.get();
 
@@ -270,9 +288,7 @@ AuthenticatorQRSheetView::BuildStepSpecificContent() {
 }
 
 void AuthenticatorQRSheetView::Update() {
-  // TODO: fresh random values should come from the caBLE discovery. Until
-  // that's plumbed in, generate them here.
   uint8_t qr_data[QRCode::kInputBytes];
-  RandomURL(qr_data);
+  QRDataForCurrentTime(qr_data, qr_generator_key_);
   qr_view_->RefreshQRCode(qr_data);
 }

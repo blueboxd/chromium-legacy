@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Value must be <ph name="MINIMUM_DATE_OR_TIME" /> or later.</translation>
 <translation id="2759744352195237655">pop-up button</translation>
 <translation id="2761667185364618470">Please tick this box if you want to proceed.</translation>
+<translation id="2844350028562914727">details</translation>
 <translation id="2896972712917208084">radio group</translation>
 <translation id="2908441821576996758">Please enter a comma-separated list of email addresses.</translation>
 <translation id="2940813599313844715">object</translation>
@@ -154,6 +155,7 @@
 <translation id="6166809985690652833">afterword</translation>
 <translation id="6209276755895393898">Appears to be: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glossary</translation>
+<translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Exit picture-in-picture</translation>
 <translation id="6398862346408813489">Show month selection panel</translation>
 <translation id="6404546809543547843">audio time scrubber</translation>
@@ -236,6 +238,7 @@
 <translation id="860475260694818407">table of contents</translation>
 <translation id="8613126697340063924">control remote playback</translation>
 <translation id="862370744433916922">subtitle</translation>
+<translation id="8711688047404765493">output</translation>
 <translation id="8750798805984357768">Please select one of these options.</translation>
 <translation id="8808573423886751634">chapter</translation>
 <translation id="8845239796550121995">Now casting to your TV</translation>

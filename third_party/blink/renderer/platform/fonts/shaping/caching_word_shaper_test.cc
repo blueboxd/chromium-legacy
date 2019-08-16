@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shaper.h"
 
 #include <memory>
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shape_iterator.h"
@@ -27,6 +28,7 @@ class CachingWordShaperTest : public testing::Test {
     cache = std::make_unique<ShapeCache>();
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   FontCachePurgePreventer font_cache_purge_preventer;
   FontDescription font_description;
   Font font;

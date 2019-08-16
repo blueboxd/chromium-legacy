@@ -19,6 +19,7 @@ namespace performance_manager {
 
 class FrameNode;
 class ProcessNodeObserver;
+class RenderProcessHostProxy;
 
 // A process node follows the lifetime of a RenderProcessHost.
 // It may reference zero or one processes at a time, but during its lifetime, it
@@ -91,6 +92,10 @@ class ProcessNode : public Node {
   // Returns the most recently measured private memory footprint of the render
   // process, in kilobytes.
   virtual uint64_t GetPrivateFootprintKb() const = 0;
+
+  // Returns a proxy to the RenderProcessHost associated with this node. The
+  // proxy may only be dereferenced on the UI thread.
+  virtual const RenderProcessHostProxy& GetRenderProcessHostProxy() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProcessNode);

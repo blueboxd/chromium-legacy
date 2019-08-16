@@ -15,6 +15,7 @@ import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.SynchronousInitializationActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
@@ -89,6 +90,7 @@ public class BookmarkAddEditFolderActivity extends SynchronousInitializationActi
      * Starts an edit folder activity. Require the context to fire an intent.
      */
     public static void startEditFolderActivity(Context context, BookmarkId idToEdit) {
+        RecordUserAction.record("MobileBookmarkManagerEditFolder");
         Intent intent = new Intent(context, BookmarkAddEditFolderActivity.class);
         intent.putExtra(INTENT_IS_ADD_MODE, false);
         intent.putExtra(INTENT_BOOKMARK_ID, idToEdit.toString());

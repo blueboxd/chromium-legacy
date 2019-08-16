@@ -40,6 +40,8 @@ extern const base::Feature kTabHoverCardImages;
 
 extern const base::Feature kTabOutlinesInLowContrastThemes;
 
+extern const base::Feature kWebFooterExperiment;
+
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 extern const base::Feature kWebUITabStrip;
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)

@@ -29,8 +29,6 @@
 #include "chromeos/dbus/biod/biod_client.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/network/network_handler.h"
-#include "chromeos/services/network_config/cros_network_config.h"
-#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "components/exo/file_helper.h"
 #include "content/public/browser/context_factory.h"
 #include "content/public/browser/system_connector.h"
@@ -87,9 +85,6 @@ void ShellBrowserMainParts::ToolkitInitialized() {
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_.reset(new content::ShellBrowserContext(false));
-
-  // CrosNetworkConfig is required for the system tray UI.
-  InitializeCrosNetworkConfig();
 
   ash_test_helper_ = std::make_unique<AshTestHelper>();
 
@@ -171,8 +166,6 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 
   views_delegate_.reset();
 
-  cros_network_config_.reset();
-
   // The keyboard may have created a WebContents. The WebContents is destroyed
   // with the UI, and it needs the BrowserContext to be alive during its
   // destruction. So destroy all of the UI elements before destroying the
@@ -184,29 +177,6 @@ void ShellBrowserMainParts::PostDestroyThreads() {
   chromeos::NetworkHandler::Shutdown();
   chromeos::shill_clients::Shutdown();
   content::BrowserMainParts::PostDestroyThreads();
-}
-
-void ShellBrowserMainParts::InitializeCrosNetworkConfig() {
-  chromeos::NetworkHandler* network_handler = chromeos::NetworkHandler::Get();
-  cros_network_config_ =
-      std::make_unique<chromeos::network_config::CrosNetworkConfig>(
-          network_handler->network_state_handler(),
-          network_handler->network_device_handler(),
-          network_handler->managed_network_configuration_handler());
-  // Use a test override for the mojo binding.
-  content::GetSystemConnector()->OverrideBinderForTesting(
-      service_manager::ServiceFilter::ByName(
-          chromeos::network_config::mojom::kServiceName),
-      chromeos::network_config::mojom::CrosNetworkConfig::Name_,
-      base::BindRepeating(&ShellBrowserMainParts::AddNetworkConfigBinding,
-                          base::Unretained(this)));
-}
-
-void ShellBrowserMainParts::AddNetworkConfigBinding(
-    mojo::ScopedMessagePipeHandle handle) {
-  cros_network_config_->BindRequest(
-      chromeos::network_config::mojom::CrosNetworkConfigRequest(
-          std::move(handle)));
 }
 
 }  // namespace shell

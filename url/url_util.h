@@ -19,11 +19,8 @@ namespace url {
 
 // Init ------------------------------------------------------------------------
 
-// Deprecated.  Does not do anything.
-COMPONENT_EXPORT(URL) void Initialize();
-
 // Resets all custom schemes to the default values.  Not thread-safe.
-COMPONENT_EXPORT(URL) void Shutdown();
+COMPONENT_EXPORT(URL) void ResetForTests();
 
 // Schemes ---------------------------------------------------------------------
 

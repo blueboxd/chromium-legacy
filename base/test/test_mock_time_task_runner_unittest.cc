@@ -190,31 +190,6 @@ TEST(TestMockTimeTaskRunnerTest, RunLoopDriveableWhenBound) {
   EXPECT_EQ(expected_value, counter);
 }
 
-TEST(TestMockTimeTaskRunnerTest, RunLoopRunWithTimeout) {
-  auto bound_mock_time_task_runner = MakeRefCounted<TestMockTimeTaskRunner>(
-      TestMockTimeTaskRunner::Type::kBoundToThread);
-  bool task1_ran = false;
-  bool task2_ran = false;
-  bool task3_ran = false;
-
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, BindLambdaForTesting([&]() { task1_ran = true; }),
-      TimeDelta::FromSeconds(3));
-
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, BindLambdaForTesting([&]() { task2_ran = true; }),
-      TimeDelta::FromSeconds(33));
-
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, BindLambdaForTesting([&]() { task3_ran = true; }),
-      TimeDelta::FromSeconds(333));
-
-  RunLoop().RunWithTimeout(TimeDelta::FromSeconds(33));
-  EXPECT_TRUE(task1_ran);
-  EXPECT_TRUE(task2_ran);
-  EXPECT_FALSE(task3_ran);
-}
-
 TEST(TestMockTimeTaskRunnerTest, AvoidCaptureWhenBound) {
   // Make sure that capturing the active task runner --- which sometimes happens
   // unknowingly due to ThreadsafeObserverList deep within some singleton ---

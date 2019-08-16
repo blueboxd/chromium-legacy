@@ -119,20 +119,27 @@ void CookieManager::DeleteCookies(mojom::CookieDeletionFilterPtr filter,
 
 void CookieManager::AddCookieChangeListener(
     const GURL& url,
-    const std::string& name,
+    const base::Optional<std::string>& name,
     mojom::CookieChangeListenerPtr listener) {
   auto listener_registration = std::make_unique<ListenerRegistration>();
   listener_registration->listener = std::move(listener);
 
-  listener_registration->subscription =
-      cookie_store_->GetChangeDispatcher().AddCallbackForCookie(
-          url, name,
-          base::BindRepeating(
-              &CookieManager::ListenerRegistration::DispatchCookieStoreChange,
-              // base::Unretained is safe as destruction of the
-              // ListenerRegistration will also destroy the
-              // CookieChangedSubscription, unregistering the callback.
-              base::Unretained(listener_registration.get())));
+  auto cookie_change_callback = base::BindRepeating(
+      &CookieManager::ListenerRegistration::DispatchCookieStoreChange,
+      // base::Unretained is safe as destruction of the
+      // ListenerRegistration will also destroy the
+      // CookieChangedSubscription, unregistering the callback.
+      base::Unretained(listener_registration.get()));
+
+  if (name) {
+    listener_registration->subscription =
+        cookie_store_->GetChangeDispatcher().AddCallbackForCookie(
+            url, *name, std::move(cookie_change_callback));
+  } else {
+    listener_registration->subscription =
+        cookie_store_->GetChangeDispatcher().AddCallbackForUrl(
+            url, std::move(cookie_change_callback));
+  }
 
   listener_registration->listener.set_connection_error_handler(
       base::BindOnce(&CookieManager::RemoveChangeListener,

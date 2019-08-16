@@ -3091,6 +3091,21 @@ void NavigationRequest::RestartCommitTimeout() {
 
 void NavigationRequest::OnCommitTimeout() {
   DCHECK_EQ(READY_TO_COMMIT, handle_state_);
+#if defined(OS_ANDROID)
+  // Rate limit the number of stack dumps so we don't overwhelm our crash
+  // reports.
+  // TODO(http://crbug.com/934317): Remove this once done debugging renderer
+  // hangs.
+  if (base::RandDouble() < 0.1) {
+    static base::debug::CrashKeyString* url =
+        base::debug::AllocateCrashKeyString("commit_timeout_url",
+                                            base::debug::CrashKeySize::Size256);
+    base::debug::ScopedCrashKeyString(
+        url, common_params_->url.possibly_invalid_spec());
+    base::debug::DumpWithoutCrashing();
+  }
+#endif
+
   UMA_HISTOGRAM_ENUMERATION(
       "Navigation.CommitTimeout.NetworkServiceAvailability",
       GetNetworkServiceAvailability());

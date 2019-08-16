@@ -27,7 +27,8 @@ class TestLoginScreenModel : public ash::LoginScreenModel {
   void DisableAuthForUser(
       const AccountId& account_id,
       const ash::AuthDisabledData& auth_disabled_data) override;
-  void EnableTapToUnlockForUser(const AccountId& account_id) override;
+  void SetTapToUnlockEnabledForUser(const AccountId& account_id,
+                                    bool enabled) override;
   void ForceOnlineSignInForUser(const AccountId& account_id) override;
   void ShowEasyUnlockIcon(const AccountId& user,
                           const ash::EasyUnlockIconOptions& icon) override;

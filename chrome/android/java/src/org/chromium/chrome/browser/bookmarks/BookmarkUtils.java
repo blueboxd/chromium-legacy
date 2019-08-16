@@ -221,6 +221,7 @@ public class BookmarkUtils {
 
     /** Starts an {@link BookmarkEditActivity} for the given {@link BookmarkId}. */
     public static void startEditActivity(Context context, BookmarkId bookmarkId) {
+        RecordUserAction.record("MobileBookmarkManagerEditBookmark");
         Intent intent = new Intent(context, BookmarkEditActivity.class);
         intent.putExtra(BookmarkEditActivity.INTENT_BOOKMARK_ID, bookmarkId.toString());
         if (context instanceof BookmarkActivity) {

@@ -4,6 +4,8 @@
 
 #include "device/gamepad/dualshock4_controller_base.h"
 
+#include <array>
+
 namespace {
 const uint16_t kVendorSony = 0x054c;
 const uint16_t kProductDualshock4 = 0x05c4;
@@ -46,9 +48,8 @@ bool Dualshock4ControllerBase::IsDualshock4(uint16_t vendor_id,
 
 void Dualshock4ControllerBase::SetVibration(double strong_magnitude,
                                             double weak_magnitude) {
-  const size_t report_length = 32;
-  uint8_t control_report[report_length];
-  memset(control_report, 0, report_length);
+  std::array<uint8_t, 32> control_report;
+  control_report.fill(0);
   control_report[0] = 0x05;  // report ID
   control_report[1] = 0x01;  // motor only, don't update LEDs
   control_report[4] =
@@ -56,12 +57,7 @@ void Dualshock4ControllerBase::SetVibration(double strong_magnitude,
   control_report[5] =
       static_cast<uint8_t>(strong_magnitude * kRumbleMagnitudeMax);
 
-  WriteOutputReport(control_report, report_length);
-}
-
-size_t Dualshock4ControllerBase::WriteOutputReport(void* report,
-                                                   size_t report_length) {
-  return 0;
+  WriteOutputReport(control_report);
 }
 
 }  // namespace device

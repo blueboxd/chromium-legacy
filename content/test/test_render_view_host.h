@@ -93,7 +93,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
       const viz::LocalSurfaceId& local_surface_id,
       viz::CompositorFrame frame,
       base::Optional<viz::HitTestRegionList> hit_test_region_list) override;
-  void ClearCompositorFrame() override {}
 
   // Advances the fallback surface to the first surface after navigation. This
   // ensures that stale surfaces are not presented to the user for an indefinite

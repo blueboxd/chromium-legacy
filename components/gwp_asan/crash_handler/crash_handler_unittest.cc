@@ -352,12 +352,12 @@ class CrashHandlerTest : public base::MultiProcessTest,
   bool gwp_asan_found_;
 };
 
-#if (defined(ADDRESS_SANITIZER) && defined(OS_WIN)) || defined(OS_ANDROID)
+#if defined(ADDRESS_SANITIZER) && (defined(OS_WIN) || defined(OS_ANDROID))
 // ASan intercepts crashes and crashpad doesn't have a chance to see them.
 #define MAYBE_DISABLED(name) DISABLED_ ##name
 #else
 #define MAYBE_DISABLED(name) name
-#endif  // defined(ADDRESS_SANITIZER) && defined(OS_WIN)
+#endif
 
 TEST_P(CrashHandlerTest, MAYBE_DISABLED(UseAfterFree)) {
   ASSERT_TRUE(gwp_asan_found_);

@@ -10,7 +10,8 @@ namespace blink {
 
 void URLLoaderThrottle::Delegate::SetPriority(net::RequestPriority priority) {}
 void URLLoaderThrottle::Delegate::UpdateDeferredRequestHeaders(
-    const net::HttpRequestHeaders& modified_request_headers) {}
+    const net::HttpRequestHeaders& modified_request_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_request_headers) {}
 void URLLoaderThrottle::Delegate::UpdateDeferredResponseHead(
     const network::ResourceResponseHead& new_response_head) {}
 void URLLoaderThrottle::Delegate::PauseReadingBodyFromNet() {}

@@ -144,9 +144,7 @@ class PreviewsHintsTest
       net::EffectiveConnectionType* out_ect_threshold,
       std::string* serialized_hint_version_string);
 
-  void MaybeLoadHintAndLogHintCacheMatch(const GURL& url,
-                                         bool is_committed,
-                                         net::EffectiveConnectionType ect);
+  void MaybeLoadHintAndLogHintCacheMatch(const GURL& url, bool is_committed);
 
   void RunUntilIdle() {
     scoped_task_environment_.RunUntilIdle();
@@ -193,12 +191,10 @@ bool PreviewsHintsTest::MaybeLoadHintAndCheckIsWhitelisted(
                                         out_serialized_hint_version_string);
 }
 
-void PreviewsHintsTest::MaybeLoadHintAndLogHintCacheMatch(
-    const GURL& url,
-    bool is_committed,
-    net::EffectiveConnectionType ect) {
+void PreviewsHintsTest::MaybeLoadHintAndLogHintCacheMatch(const GURL& url,
+                                                          bool is_committed) {
   MaybeLoadHint(url);
-  previews_hints_->LogHintCacheMatch(url, is_committed, ect);
+  previews_hints_->LogHintCacheMatch(url, is_committed);
 }
 
 void PreviewsHintsTest::MaybeLoadHint(const GURL& url) {
@@ -236,43 +232,99 @@ TEST_F(PreviewsHintsTest, LogHintCacheMatch) {
   resource_loading_hint1->set_resource_pattern("news_cruft.js");
   ParseConfig(config);
 
-  base::HistogramTester histogram_tester;
+  // Verify histogram counts for non-matching URL host prior to commit.
+  {
+    base::HistogramTester histogram_tester;
 
-  // First verify no histogram counts for non-matching URL host.
-  MaybeLoadHintAndLogHintCacheMatch(
-      GURL("https://someotherdomain.com/news/story.html"),
-      false /* is_committed */, net::EFFECTIVE_CONNECTION_TYPE_3G);
-  MaybeLoadHintAndLogHintCacheMatch(
-      GURL("https://someotherdomain.com/news/story2.html"),
-      true /* is_committed */, net::EFFECTIVE_CONNECTION_TYPE_4G);
-  histogram_tester.ExpectTotalCount(
-      "Previews.OptimizationGuide.HintCache.HasHint.BeforeCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "Previews.OptimizationGuide.HintCache.HasHint.AtCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "Previews.OptimizationGuide.HintCache.HintLoaded.AtCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "Previews.OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
+    MaybeLoadHintAndLogHintCacheMatch(
+        GURL("https://someotherdomain.com/news/story.html"),
+        false /* is_committed */);
 
-  // Now verify do have histogram counts for matching URL host.
-  MaybeLoadHintAndLogHintCacheMatch(
-      GURL("https://somedomain.org/news/story.html"), false /* is_committed */,
-      net::EFFECTIVE_CONNECTION_TYPE_3G);
-  MaybeLoadHintAndLogHintCacheMatch(
-      GURL("https://somedomain.org/news/story2.html"), true /* is_committed */,
-      net::EFFECTIVE_CONNECTION_TYPE_4G);
-  histogram_tester.ExpectBucketCount(
-      "Previews.OptimizationGuide.HintCache.HasHint.BeforeCommit",
-      4 /* EFFECTIVE_CONNECTION_TYPE_3G */, 1);
-  histogram_tester.ExpectBucketCount(
-      "Previews.OptimizationGuide.HintCache.HasHint.AtCommit",
-      5 /* EFFECTIVE_CONNECTION_TYPE_4G */, 1);
-  histogram_tester.ExpectBucketCount(
-      "Previews.OptimizationGuide.HintCache.HostMatch.AtCommit",
-      5 /* EFFECTIVE_CONNECTION_TYPE_4G */, 1);
-  histogram_tester.ExpectBucketCount(
-      "Previews.OptimizationGuide.HintCache.PageMatch.AtCommit",
-      5 /* EFFECTIVE_CONNECTION_TYPE_4G */, 1);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintCache.HasHint.BeforeCommit", false, 1);
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.HasHint.AtCommit", 0);
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.HintLoaded.AtCommit", 0);
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
+  }
+
+  // Verify histogram counts for non-matching URL host after commit.
+  {
+    base::HistogramTester histogram_tester;
+
+    MaybeLoadHintAndLogHintCacheMatch(
+        GURL("https://someotherdomain.com/news/story2.html"),
+        true /* is_committed */);
+
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.HasHint.BeforeCommit", 0);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintCache.HasHint.AtCommit", false, 1);
+    // We don't have a hint for this host so we do not expect to check if the
+    // hint is loaded and we have a page hint.
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.HintLoaded.AtCommit", 0);
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
+  }
+
+  // Verify do have histogram counts for matching URL host before commit.
+  {
+    base::HistogramTester histogram_tester;
+
+    MaybeLoadHintAndLogHintCacheMatch(
+        GURL("https://somedomain.org/news/story.html"),
+        false /* is_committed */);
+
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintCache.HasHint.BeforeCommit", true, 1);
+    // None of the AfterCommit histograms should be recorded.
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.HasHint.AtCommit", 0);
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.HostMatch.AtCommit", 0);
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
+  }
+
+  // Verify do have histogram counts for matching URL host after commit.
+  {
+    base::HistogramTester histogram_tester;
+
+    MaybeLoadHintAndLogHintCacheMatch(
+        GURL("https://somedomain.org/news/story2.html"),
+        true /* is_committed */);
+
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.HasHint.BeforeCommit", 0);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintCache.HostMatch.AtCommit", true, 1);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintCache.PageMatch.AtCommit", true, 1);
+  }
+
+  // Verify do have histogram counts for matching URL host but no matching page
+  // hint after commit.
+  {
+    base::HistogramTester histogram_tester;
+
+    MaybeLoadHintAndLogHintCacheMatch(
+        GURL("https://somedomain.org/nopagehint/story2.html"),
+        true /* is_committed */);
+
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.HasHint.BeforeCommit", 0);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintCache.HostMatch.AtCommit", true, 1);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintCache.PageMatch.AtCommit", false, 1);
+  }
 }
 
 TEST_F(PreviewsHintsTest, IsBlacklistedReturnsTrueIfNoBloomFilter) {

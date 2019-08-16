@@ -3221,7 +3221,7 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       </message>
       <message desc="The text label for ChromeVox language switching checkbox."
         name="IDS_CHROMEVOX_OPTIONS_LANG_SWITCHING_CHECKBOX_LABEL">
-        Automatically detect and switch ChromeVox language.
+        Automatically switch ChromeVox voice based on language.
       </message>
       <message desc="Spoken to describe all rich text attributes of a node." name="IDS_CHROMEVOX_RICH_TEXT_ATTRIBUTES">
         Text formatting.

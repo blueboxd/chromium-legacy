@@ -78,6 +78,8 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
         WebContents webContents = mTab.getWebContents();
         if (webContents != null) {
             webContents.onHide();
+            webContents.suspendAllMediaPlayers();
+            webContents.setAudioMuted(true);
             WebContentsAccessibility.fromWebContents(webContents).setObscuredByAnotherView(true);
         }
 
@@ -110,6 +112,7 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
         WebContents webContents = mTab.getWebContents();
         if (webContents != null) {
             webContents.onShow();
+            webContents.setAudioMuted(false);
             WebContentsAccessibility.fromWebContents(webContents).setObscuredByAnotherView(false);
         }
 

@@ -43,6 +43,20 @@ void SetIfValid(base::TimeDelta* out, const base::Value* value) {
     *out = base::TimeDelta::FromSeconds(value->GetDouble());
 }
 
+// If |value| has "width" and "height" fields with positive values, it gets
+// converted into gfx::Size. Otherwise base::nullopt is returned.
+base::Optional<gfx::Size> GetValidSize(const base::Value* value) {
+  if (!value)
+    return base::nullopt;
+  int width = 0;
+  int height = 0;
+  SetIfValid(&width, value->FindPath("width"));
+  SetIfValid(&height, value->FindPath("height"));
+  if (width <= 0 || height <= 0)
+    return base::nullopt;
+  return base::make_optional<gfx::Size>(width, height);
+}
+
 }  // namespace
 
 CastMediaController::CastMediaController(ActivityRecord* activity,
@@ -98,6 +112,20 @@ void CastMediaController::Seek(base::TimeDelta time) {
   request.SetDoublePath("message.currentTime", time.InSecondsF());
   activity_->SendMediaRequestToReceiver(
       *CastInternalMessage::From(std::move(request)));
+}
+
+void CastMediaController::NextTrack() {
+  if (session_id_.empty())
+    return;
+  activity_->SendMediaRequestToReceiver(*CastInternalMessage::From(
+      CreateMediaRequest(V2MessageType::kQueueNext)));
+}
+
+void CastMediaController::PreviousTrack() {
+  if (session_id_.empty())
+    return;
+  activity_->SendMediaRequestToReceiver(*CastInternalMessage::From(
+      CreateMediaRequest(V2MessageType::kQueuePrev)));
 }
 
 void CastMediaController::SetSession(const CastSession& session) {
@@ -163,12 +191,30 @@ void CastMediaController::UpdateMediaStatus(const base::Value& message_value) {
   SetIfValid(&media_status_.current_time, status_value.FindKey("currentTime"));
   SetIfValid(&media_status_.duration, status_value.FindPath("media.duration"));
 
-  const base::Value* commands = status_value.FindKey("supportedMediaCommands");
-  if (commands && commands->is_int()) {
+  const base::Value* images = status_value.FindPath("media.metadata.images");
+  if (images && images->is_list()) {
+    media_status_.images.clear();
+    for (const base::Value& image_value : images->GetList()) {
+      const std::string* url_string = image_value.FindStringKey("url");
+      if (!url_string)
+        continue;
+      media_status_.images.emplace_back(base::in_place, GURL(*url_string),
+                                        GetValidSize(&image_value));
+    }
+  }
+
+  const base::Value* commands_value =
+      status_value.FindKey("supportedMediaCommands");
+  if (commands_value && commands_value->is_int()) {
+    int commands = commands_value->GetInt();
     // |can_set_volume| and |can_mute| are not used, because the receiver volume
-    // obtained in SetSession() is used instead.
-    media_status_.can_play_pause = commands->GetInt() & 1;
-    media_status_.can_seek = commands->GetInt() & 2;
+    // info obtained in SetSession() is used instead.
+    media_status_.can_play_pause = commands & kSupportedMediaCommandPause;
+    media_status_.can_seek = commands & kSupportedMediaCommandSeek;
+    media_status_.can_skip_to_next_track =
+        commands & kSupportedMediaCommandQueueNext;
+    media_status_.can_skip_to_previous_track =
+        commands & kSupportedMediaCommandQueuePrev;
   }
 
   const base::Value* player_state = status_value.FindKey("playerState");

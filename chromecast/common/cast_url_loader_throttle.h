@@ -25,7 +25,9 @@ class CastURLLoaderThrottle : public blink::URLLoaderThrottle {
     virtual int WillStartResourceRequest(
         network::ResourceRequest* request,
         const std::string& session_id,
-        base::OnceCallback<void(int, net::HttpRequestHeaders)> callback) = 0;
+        base::OnceCallback<void(int,
+                                net::HttpRequestHeaders,
+                                net::HttpRequestHeaders)> callback) = 0;
 
    protected:
     virtual ~Delegate() = default;
@@ -41,7 +43,9 @@ class CastURLLoaderThrottle : public blink::URLLoaderThrottle {
                         bool* defer) override;
   bool makes_unsafe_redirect() override;
 
-  void ResumeRequest(int error, net::HttpRequestHeaders headers);
+  void ResumeRequest(int error,
+                     net::HttpRequestHeaders headers,
+                     net::HttpRequestHeaders cors_exempt_headers);
 
   bool deferred_ = false;
   Delegate* const settings_delegate_;

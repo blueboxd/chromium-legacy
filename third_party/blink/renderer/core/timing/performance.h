@@ -304,12 +304,13 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
       ScriptState*,
       const AtomicString& measure_name,
       const StringOrPerformanceMeasureOptions& start,
-      base::Optional<String> end,
+      base::Optional<String> end_mark,
       ExceptionState&);
 
   PerformanceMeasure* MeasureWithDetail(ScriptState*,
                                         const AtomicString& measure_name,
                                         const StringOrDouble& start,
+                                        base::Optional<double> duration,
                                         const StringOrDouble& end,
                                         const ScriptValue& detail,
                                         ExceptionState&);

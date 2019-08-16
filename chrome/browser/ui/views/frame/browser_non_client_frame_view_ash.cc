@@ -358,7 +358,7 @@ void BrowserNonClientFrameViewAsh::GetWindowMask(const gfx::Size& size,
 
 void BrowserNonClientFrameViewAsh::ResetWindowControls() {
   BrowserNonClientFrameView::ResetWindowControls();
-  caption_button_container_->SetVisible(true);
+  caption_button_container_->SetVisible(ShouldShowCaptionButtons());
   caption_button_container_->ResetWindowControls();
 }
 

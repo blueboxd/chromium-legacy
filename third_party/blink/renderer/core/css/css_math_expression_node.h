@@ -41,10 +41,12 @@
 
 namespace blink {
 
+class CalculationExpressionNode;
 class CSSNumericLiteralValue;
 
 // The order of this enum should not change since its elements are used as
 // indices in the addSubtractResult matrix.
+// TODO(crbug.com/825895): Change it to |enum class CSSMathExpressionCategory|.
 enum CalculationCategory {
   kCalcNumber = 0,
   kCalcLength,
@@ -62,12 +64,17 @@ enum CalculationCategory {
 class CORE_EXPORT CSSMathExpressionNode
     : public GarbageCollected<CSSMathExpressionNode> {
  public:
-  static CSSMathExpressionNode* CreateFromPixelsAndPercent(double pixels,
-                                                           double percent);
+  static CSSMathExpressionNode* Create(const CalculationValue& node);
+  static CSSMathExpressionNode* Create(PixelsAndPercent pixels_and_percent);
+  static CSSMathExpressionNode* Create(const CalculationExpressionNode& node);
+
   static CSSMathExpressionNode* ParseCalc(const CSSParserTokenRange& tokens);
+  static CSSMathExpressionNode* ParseMin(const CSSParserTokenRange& tokens);
+  static CSSMathExpressionNode* ParseMax(const CSSParserTokenRange& tokens);
 
   virtual bool IsNumericLiteral() const { return false; }
   virtual bool IsBinaryOperation() const { return false; }
+  virtual bool IsVariadicOperation() const { return false; }
 
   virtual bool IsZero() const = 0;
 
@@ -78,9 +85,8 @@ class CORE_EXPORT CSSMathExpressionNode
   virtual double ComputeLengthPx(const CSSToLengthConversionData&) const = 0;
   virtual bool AccumulateLengthArray(CSSLengthArray&,
                                      double multiplier) const = 0;
-  virtual void AccumulatePixelsAndPercent(const CSSToLengthConversionData&,
-                                          PixelsAndPercent&,
-                                          float multiplier = 1) const = 0;
+  virtual scoped_refptr<const CalculationExpressionNode>
+  ToCalculationExpression(const CSSToLengthConversionData&) const = 0;
 
   // Evaluates the expression with type conversion (e.g., cm -> px) handled, and
   // returns the result value in the canonical unit of the corresponding
@@ -141,10 +147,8 @@ class CORE_EXPORT CSSMathExpressionNumericLiteral final
 
   bool IsZero() const final;
   String CustomCSSText() const final;
-  void AccumulatePixelsAndPercent(
-      const CSSToLengthConversionData& conversion_data,
-      PixelsAndPercent& value,
-      float multiplier) const final;
+  scoped_refptr<const CalculationExpressionNode> ToCalculationExpression(
+      const CSSToLengthConversionData&) const final;
   double DoubleValue() const final;
   base::Optional<double> ComputeValueInCanonicalUnit() const final;
   double ComputeLengthPx(
@@ -192,10 +196,8 @@ class CORE_EXPORT CSSMathExpressionBinaryOperation final
   bool IsBinaryOperation() const final { return true; }
 
   bool IsZero() const final;
-  void AccumulatePixelsAndPercent(
-      const CSSToLengthConversionData& conversion_data,
-      PixelsAndPercent& value,
-      float multiplier) const final;
+  scoped_refptr<const CalculationExpressionNode> ToCalculationExpression(
+      const CSSToLengthConversionData&) const final;
   double DoubleValue() const final;
   base::Optional<double> ComputeValueInCanonicalUnit() const final;
   double ComputeLengthPx(
@@ -234,6 +236,58 @@ template <>
 struct DowncastTraits<CSSMathExpressionBinaryOperation> {
   static bool AllowFrom(const CSSMathExpressionNode& node) {
     return node.IsBinaryOperation();
+  }
+};
+
+class CSSMathExpressionVariadicOperation final : public CSSMathExpressionNode {
+ public:
+  using Operands = HeapVector<Member<CSSMathExpressionNode>>;
+
+  static CSSMathExpressionVariadicOperation* Create(Operands&& operands,
+                                                    CSSMathOperator op);
+
+  CSSMathExpressionVariadicOperation(CalculationCategory category,
+                                     bool is_integer_result,
+                                     Operands&& operands,
+                                     CSSMathOperator op);
+
+  const Operands& GetOperands() const { return operands_; }
+  CSSMathOperator OperatorType() const { return operator_; }
+
+  bool IsVariadicOperation() const final { return true; }
+
+  bool IsZero() const final;
+  String CustomCSSText() const final;
+  scoped_refptr<const CalculationExpressionNode> ToCalculationExpression(
+      const CSSToLengthConversionData&) const final;
+  double DoubleValue() const final;
+  double ComputeLengthPx(
+      const CSSToLengthConversionData& conversion_data) const final;
+  bool AccumulateLengthArray(CSSLengthArray& length_array,
+                             double multiplier) const final;
+  base::Optional<double> ComputeValueInCanonicalUnit() const final;
+  bool IsComputationallyIndependent() const final;
+  bool operator==(const CSSMathExpressionNode& other) const final;
+  CSSPrimitiveValue::UnitType ResolvedUnitType() const final;
+  void Trace(blink::Visitor* visitor) final;
+
+ private:
+  // Helper for iterating from the 2nd to the last operands
+  // TODO: Is this Oilpan-safe?
+  base::span<const Member<CSSMathExpressionNode>> SecondToLastOperands() const {
+    return base::make_span(std::next(operands_.begin()), operands_.end());
+  }
+
+  double EvaluateBinary(double lhs, double rhs) const;
+
+  Operands operands_;
+  const CSSMathOperator operator_;
+};
+
+template <>
+struct DowncastTraits<CSSMathExpressionVariadicOperation> {
+  static bool AllowFrom(const CSSMathExpressionNode& node) {
+    return node.IsVariadicOperation();
   }
 };
 

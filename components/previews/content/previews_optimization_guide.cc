@@ -188,15 +188,13 @@ bool PreviewsOptimizationGuide::GetResourceLoadingHints(
   return hints_->GetResourceLoadingHints(url, out_resource_patterns_to_block);
 }
 
-void PreviewsOptimizationGuide::LogHintCacheMatch(
-    const GURL& url,
-    bool is_committed,
-    net::EffectiveConnectionType ect) const {
+void PreviewsOptimizationGuide::LogHintCacheMatch(const GURL& url,
+                                                  bool is_committed) const {
   if (!hints_) {
     return;
   }
 
-  hints_->LogHintCacheMatch(url, is_committed, ect);
+  hints_->LogHintCacheMatch(url, is_committed);
 }
 
 void PreviewsOptimizationGuide::OnHintCacheInitialized() {

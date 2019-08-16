@@ -9,14 +9,16 @@
 #include <array>
 
 #include "base/component_export.h"
+#include "base/containers/span.h"
 
 namespace device {
 
-constexpr size_t kEphemeralIdSize = 16;
-constexpr size_t kSessionPreKeySize = 32;
+constexpr size_t kCableEphemeralIdSize = 16;
+constexpr size_t kCableSessionPreKeySize = 32;
+constexpr size_t kCableQRSecretSize = 16;
 
-using EidArray = std::array<uint8_t, kEphemeralIdSize>;
-using SessionPreKeyArray = std::array<uint8_t, kSessionPreKeySize>;
+using CableEidArray = std::array<uint8_t, kCableEphemeralIdSize>;
+using CableSessionPreKeyArray = std::array<uint8_t, kCableSessionPreKeySize>;
 
 // Encapsulates information required to discover Cable device per single
 // credential. When multiple credentials are enrolled to a single account
@@ -27,19 +29,35 @@ using SessionPreKeyArray = std::array<uint8_t, kSessionPreKeySize>;
 // See: https://crbug.com/837088
 struct COMPONENT_EXPORT(DEVICE_FIDO) CableDiscoveryData {
   CableDiscoveryData(uint8_t version,
-                     const EidArray& client_eid,
-                     const EidArray& authenticator_eid,
-                     const SessionPreKeyArray& session_pre_key);
+                     const CableEidArray& client_eid,
+                     const CableEidArray& authenticator_eid,
+                     const CableSessionPreKeyArray& session_pre_key);
   CableDiscoveryData();
   CableDiscoveryData(const CableDiscoveryData& data);
-  CableDiscoveryData& operator=(const CableDiscoveryData& other);
-  bool operator==(const CableDiscoveryData& other) const;
   ~CableDiscoveryData();
 
+  CableDiscoveryData& operator=(const CableDiscoveryData& other);
+  bool operator==(const CableDiscoveryData& other) const;
+
+  // CurrentTimeTick returns the current time as used by QR generation. The size
+  // of these ticks is a purely local matter for Chromium.
+  static int64_t CurrentTimeTick();
+
+  // DeriveQRKeyMaterial writes |kCableQRSecretSize| bytes to |out_qr_secret|,
+  // |kCableEphemeralIdSize| bytes to |out_authenticator_eid| and
+  // |kCableSessionPreKeySize| bytes of |out_session_key|, based on the given
+  // generator key and current time.
+  static void DeriveQRKeyMaterial(
+      base::span<uint8_t, kCableQRSecretSize> out_qr_secret,
+      base::span<uint8_t, kCableEphemeralIdSize> out_authenticator_eid,
+      base::span<uint8_t, kCableSessionPreKeySize> out_session_key,
+      base::span<const uint8_t, 32> qr_generator_key,
+      const int64_t tick);
+
   uint8_t version;
-  EidArray client_eid;
-  EidArray authenticator_eid;
-  SessionPreKeyArray session_pre_key;
+  CableEidArray client_eid;
+  CableEidArray authenticator_eid;
+  CableSessionPreKeyArray session_pre_key;
 };
 
 }  // namespace device

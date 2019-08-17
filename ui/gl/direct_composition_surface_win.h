@@ -47,9 +47,9 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   // chain.  Overridden with --disable-direct-composition.
   static bool IsDirectCompositionSupported();
 
-  // Returns true if hardware overlays are supported, and DirectComposition
-  // surface and layers should be used.  Overridden with
-  // --enable-direct-composition-layers and --disable-direct-composition-layers.
+  // Returns true if hardware video overlays are supported and should be used.
+  // Overridden with --enable-direct-composition-video-overlays and
+  // --disable-direct-composition-video-overlays.
   static bool AreOverlaysSupported();
 
   // Returns true if zero copy decode swap chain is supported.

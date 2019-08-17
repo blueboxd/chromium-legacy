@@ -85,7 +85,8 @@ void NGBoxFragmentBuilder::RemoveChildren() {
   children_.resize(0);
 }
 
-void NGBoxFragmentBuilder::AddBreakBeforeChild(NGLayoutInputNode child) {
+void NGBoxFragmentBuilder::AddBreakBeforeChild(NGLayoutInputNode child,
+                                               bool is_forced_break) {
   DCHECK(has_block_fragmentation_);
   if (auto* child_inline_node = DynamicTo<NGInlineNode>(child)) {
     if (inline_break_tokens_.IsEmpty()) {
@@ -100,7 +101,7 @@ void NGBoxFragmentBuilder::AddBreakBeforeChild(NGLayoutInputNode child) {
     }
     return;
   }
-  auto token = NGBlockBreakToken::CreateBreakBefore(child);
+  auto token = NGBlockBreakToken::CreateBreakBefore(child, is_forced_break);
   child_break_tokens_.push_back(token);
 }
 

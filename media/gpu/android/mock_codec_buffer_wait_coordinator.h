@@ -5,8 +5,8 @@
 #ifndef MEDIA_GPU_ANDROID_MOCK_CODEC_BUFFER_WAIT_COORDINATOR_H_
 #define MEDIA_GPU_ANDROID_MOCK_CODEC_BUFFER_WAIT_COORDINATOR_H_
 
+#include "gpu/ipc/common/android/mock_texture_owner.h"
 #include "media/gpu/android/codec_buffer_wait_coordinator.h"
-#include "media/gpu/android/mock_texture_owner.h"
 
 namespace media {
 
@@ -14,10 +14,10 @@ namespace media {
 class MockCodecBufferWaitCoordinator : public CodecBufferWaitCoordinator {
  public:
   MockCodecBufferWaitCoordinator(
-      scoped_refptr<NiceMock<MockTextureOwner>> texture_owner);
+      scoped_refptr<NiceMock<gpu::MockTextureOwner>> texture_owner);
 
   MOCK_CONST_METHOD0(texture_owner,
-                     scoped_refptr<NiceMock<MockTextureOwner>>());
+                     scoped_refptr<NiceMock<gpu::MockTextureOwner>>());
   MOCK_METHOD0(SetReleaseTimeToNow, void());
   MOCK_METHOD0(IsExpectingFrameAvailable, bool());
   MOCK_METHOD0(WaitForFrameAvailable, void());
@@ -27,7 +27,7 @@ class MockCodecBufferWaitCoordinator : public CodecBufferWaitCoordinator {
   bool FakeIsExpectingFrameAvailable() { return expecting_frame_available; }
   void FakeWaitForFrameAvailable() { expecting_frame_available = false; }
 
-  scoped_refptr<NiceMock<MockTextureOwner>> mock_texture_owner;
+  scoped_refptr<NiceMock<gpu::MockTextureOwner>> mock_texture_owner;
   bool expecting_frame_available;
 
  protected:

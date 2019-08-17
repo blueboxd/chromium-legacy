@@ -11,6 +11,7 @@
 #import "ios/web/public/session/crw_session_certificate_policy_cache_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #include "ios/web/public/session/session_certificate_policy_cache.h"
+#import "ios/web/public/test/error_test_util.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
@@ -32,33 +33,55 @@ using base::test::ios::WaitUntilConditionOrTimeout;
 namespace web {
 
 // BadSslResponseTest is parameterized on this enum to test both
-// LegacyNavigationManagerImpl and WKBasedNavigationManagerImpl.
-enum NavigationManagerChoice {
-  TEST_LEGACY_NAVIGATION_MANAGER,
-  TEST_WK_BASED_NAVIGATION_MANAGER,
+// LegacyNavigationManagerImpl and WKBasedNavigationManagerImpl, and both
+// committed and non-committed interstitials.
+typedef NS_ENUM(NSUInteger, TestParam) {
+  EmptyTestParam = 0,
+  EnableSlimNavigationManager = 1 << 0,
+  EnableCommittedInterstitials = 1 << 1,
+  MaxTestParam = 1 << 2,
 };
 
 // Test fixture for loading https pages with self signed certificate.
-class BadSslResponseTest
-    : public WebTestWithWebState,
-      public ::testing::WithParamInterface<NavigationManagerChoice> {
+class BadSslResponseTest : public WebTestWithWebState,
+                           public ::testing::WithParamInterface<TestParam> {
  protected:
   BadSslResponseTest()
       : WebTestWithWebState(std::make_unique<TestWebClient>()),
         https_server_(net::test_server::EmbeddedTestServer::TYPE_HTTPS) {
-    if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kSlimNavigationManager);
+    std::vector<base::Feature> enabled;
+    std::vector<base::Feature> disabled;
+
+    if (SlimNavigationManagerEnabled()) {
+      enabled.push_back(features::kSlimNavigationManager);
     } else {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kSlimNavigationManager);
+      disabled.push_back(features::kSlimNavigationManager);
     }
+
+    if (CommittedInterstitialsEnabled()) {
+      enabled.push_back(features::kSSLCommittedInterstitials);
+    } else {
+      disabled.push_back(features::kSSLCommittedInterstitials);
+    }
+
+    scoped_feature_list_.InitWithFeatures(enabled, disabled);
+
     RegisterDefaultHandlers(&https_server_);
   }
 
   void SetUp() override {
     WebTestWithWebState::SetUp();
     ASSERT_TRUE(https_server_.Start());
+  }
+
+  // Convenience getters for the test params.
+  bool SlimNavigationManagerEnabled() {
+    return (GetParam() & EnableSlimNavigationManager) ==
+           EnableSlimNavigationManager;
+  }
+  bool CommittedInterstitialsEnabled() {
+    return (GetParam() & EnableCommittedInterstitials) ==
+           EnableCommittedInterstitials;
   }
 
   TestWebClient* web_client() {
@@ -74,6 +97,9 @@ class BadSslResponseTest
 // via WebClient. Test verifies the arguments passed to
 // WebClient::AllowCertificateError.
 TEST_P(BadSslResponseTest, RejectLoad) {
+  if (CommittedInterstitialsEnabled()) {
+    return;
+  }
   web_client()->SetAllowCertificateErrors(false);
   const GURL url = https_server_.GetURL("/");
   test::LoadUrl(web_state(), url);
@@ -97,6 +123,9 @@ TEST_P(BadSslResponseTest, RejectLoad) {
 // Tests navigation to a page with self signed SSL cert and allowing the load
 // via WebClient.
 TEST_P(BadSslResponseTest, AllowLoad) {
+  if (CommittedInterstitialsEnabled()) {
+    return;
+  }
   web_client()->SetAllowCertificateErrors(true);
   GURL url(https_server_.GetURL("/echo"));
   test::LoadUrl(web_state(), url);
@@ -157,6 +186,9 @@ TEST_P(BadSslResponseTest, AllowLoad) {
 // Tests creating WebState with CRWSessionCertificateStorage and populating
 // CertificatePolicyCache.
 TEST_P(BadSslResponseTest, ReadFromSessionCertificateStorage) {
+  if (CommittedInterstitialsEnabled()) {
+    return;
+  }
   // Create WebState with CRWSessionCertificateStorage.
   GURL url(https_server_.GetURL("/echo"));
   scoped_refptr<net::X509Certificate> cert = https_server_.GetCertificate();
@@ -189,11 +221,34 @@ TEST_P(BadSslResponseTest, ReadFromSessionCertificateStorage) {
   EXPECT_EQ(url, web_state->GetLastCommittedURL());
 }
 
+// Tests that an error page is shown for SSL cert errors when committed
+// interstitials are enabled.
+TEST_P(BadSslResponseTest, ShowSSLErrorPageCommittedInterstitial) {
+  if (!CommittedInterstitialsEnabled()) {
+    return;
+  }
+  web_client()->SetAllowCertificateErrors(false);
+  const GURL url = https_server_.GetURL("/");
+  test::LoadUrl(web_state(), url);
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return !web_state()->IsLoading();
+  }));
+  ASSERT_TRUE(test::WaitForWebViewContainingText(
+      web_state(),
+      testing::GetErrorText(web_state(), url, "NSURLErrorDomain",
+                            /*error_code=*/NSURLErrorServerCertificateUntrusted,
+                            /*is_post=*/false, /*is_otr=*/false)));
+}
+
 // Tests navigation to a page with self signed SSL cert and allowing the load
 // via WebClient. Subsequent navigation should not call AllowCertificateError
 // but always allow the load.
 // TODO(crbug.com/973635): fix and reenable this test.
 TEST_P(BadSslResponseTest, DISABLED_RememberCertDecision) {
+  if (CommittedInterstitialsEnabled()) {
+    return;
+  }
   // Allow the load via WebClient.
   web_client()->SetAllowCertificateErrors(true);
   GURL url(https_server_.GetURL("/echo"));
@@ -209,11 +264,8 @@ TEST_P(BadSslResponseTest, DISABLED_RememberCertDecision) {
   EXPECT_EQ(url2, web_state()->GetLastCommittedURL());
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    ProgrammaticBadSslResponseTest,
-    BadSslResponseTest,
-    ::testing::Values(
-        NavigationManagerChoice::TEST_LEGACY_NAVIGATION_MANAGER,
-        NavigationManagerChoice::TEST_WK_BASED_NAVIGATION_MANAGER));
+INSTANTIATE_TEST_SUITE_P(,
+                         BadSslResponseTest,
+                         ::testing::Range(EmptyTestParam, MaxTestParam));
 
 }  // namespace web {

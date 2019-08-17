@@ -6,7 +6,7 @@
 #define GPU_IPC_COMMON_ANDROID_SCOPED_SURFACE_REQUEST_CONDUIT_H_
 
 #include "gpu/gpu_export.h"
-#include "gpu/ipc/common/android/surface_owner_android.h"
+#include "gpu/ipc/common/android/texture_owner.h"
 
 namespace base {
 class UnguessableToken;
@@ -14,7 +14,7 @@ class UnguessableToken;
 
 namespace gpu {
 
-// Allows the forwarding of SurfaceOwners from the GPU or the browser process
+// Allows the forwarding of TextureOwners from the GPU or the browser process
 // to fulfill requests registered by the ScopedSurfaceRequestManager.
 class GPU_EXPORT ScopedSurfaceRequestConduit {
  public:
@@ -25,7 +25,7 @@ class GPU_EXPORT ScopedSurfaceRequestConduit {
   // process, to fulfill the request registered under the |request_token| key.
   virtual void ForwardSurfaceOwnerForSurfaceRequest(
       const base::UnguessableToken& request_token,
-      const SurfaceOwner* surface_owner) = 0;
+      const TextureOwner* texture_owner) = 0;
 
  protected:
   virtual ~ScopedSurfaceRequestConduit() {}

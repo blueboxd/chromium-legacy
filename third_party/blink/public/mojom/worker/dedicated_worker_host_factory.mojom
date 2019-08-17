@@ -105,5 +105,5 @@ interface DedicatedWorkerHostFactory {
       blink.mojom.FetchClientSettingsObject
           outside_fetch_client_settings_object,
       blink.mojom.BlobURLToken? blob_url_token,
-      DedicatedWorkerHostFactoryClient client);
+      pending_remote<DedicatedWorkerHostFactoryClient> client);
 };

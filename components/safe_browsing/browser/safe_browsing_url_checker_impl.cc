@@ -9,6 +9,8 @@
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/browser/url_checker_delegate.h"
+#include "components/safe_browsing/realtime/policy_engine.h"
+#include "components/safe_browsing/realtime/url_lookup_service.h"
 #include "components/safe_browsing/web_ui/constants.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -25,6 +27,10 @@ namespace {
 // check. After this amount of time the outstanding check will be aborted, and
 // the resource will be treated as if it were safe.
 const int kCheckUrlTimeoutMs = 5000;
+
+void RecordCheckUrlTimeout(bool timed_out) {
+  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.CheckUrl.Timeout", timed_out);
+}
 
 }  // namespace
 
@@ -126,11 +132,18 @@ void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
     const GURL& url,
     SBThreatType threat_type,
     const ThreatMetadata& metadata) {
+  OnUrlResult(url, threat_type, metadata);
+}
+
+void SafeBrowsingUrlCheckerImpl::OnUrlResult(const GURL& url,
+                                             SBThreatType threat_type,
+                                             const ThreatMetadata& metadata) {
   DCHECK_EQ(STATE_CHECKING_URL, state_);
   DCHECK_LT(next_index_, urls_.size());
   DCHECK_EQ(urls_[next_index_].url, url);
 
   timer_.Stop();
+  RecordCheckUrlTimeout(/*timed_out=*/false);
 
   TRACE_EVENT_ASYNC_END1(
       "safe_browsing", "CheckUrl", this, "result",
@@ -191,11 +204,13 @@ void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
       resource_type_ == content::ResourceType::kMainFrame, has_user_gesture_);
 }
 
-void SafeBrowsingUrlCheckerImpl::OnCheckUrlTimeout() {
+void SafeBrowsingUrlCheckerImpl::OnTimeout() {
+  RecordCheckUrlTimeout(/*timed_out=*/true);
+
   database_manager_->CancelCheck(this);
 
-  OnCheckBrowseUrlResult(urls_[next_index_].url,
-                         safe_browsing::SB_THREAT_TYPE_SAFE, ThreatMetadata());
+  OnUrlResult(urls_[next_index_].url, safe_browsing::SB_THREAT_TYPE_SAFE,
+              ThreatMetadata());
 }
 
 void SafeBrowsingUrlCheckerImpl::CheckUrlImpl(const GURL& url,
@@ -210,6 +225,7 @@ void SafeBrowsingUrlCheckerImpl::CheckUrlImpl(const GURL& url,
 }
 
 void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK_NE(STATE_BLOCKED, state_);
 
   if (state_ == STATE_CHECKING_URL ||
@@ -221,7 +237,6 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
     DCHECK_EQ(STATE_NONE, state_);
 
     const GURL& url = urls_[next_index_].url;
-
     if (url_checker_delegate_->IsUrlWhitelisted(url)) {
       if (!RunNextCallback(true, false))
         return;
@@ -262,8 +277,61 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
       break;
     }
 
-    if (database_manager_->CheckBrowseUrl(
-            url, url_checker_delegate_->GetThreatTypes(), this)) {
+    TRACE_EVENT_ASYNC_BEGIN1("safe_browsing", "CheckUrl", this, "url",
+                             url.spec());
+
+    // Start a timer to abort the check if it takes too long.
+    timer_.Start(FROM_HERE,
+                 base::TimeDelta::FromMilliseconds(kCheckUrlTimeoutMs), this,
+                 &SafeBrowsingUrlCheckerImpl::OnTimeout);
+
+    bool safe_synchronously;
+    auto* rt_lookup_service = database_manager_->GetRealTimeUrlLookupService();
+    if (RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
+            resource_type_) &&
+        rt_lookup_service && !rt_lookup_service->IsInBackoffMode()) {
+      UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.ResourceTypes.Checked",
+                                resource_type_);
+      safe_synchronously = false;
+      AsyncMatch match =
+          database_manager_->CheckUrlForHighConfidenceAllowlist(url, this);
+      switch (match) {
+        case AsyncMatch::ASYNC:
+          // Hash-prefix matched. A call to
+          // |OnCheckUrlForHighConfidenceAllowlist| will follow.
+          break;
+        case AsyncMatch::MATCH:
+          // Full-hash matched locally so queue a call to
+          // |OnCheckUrlForHighConfidenceAllowlist| to trigger the hash-based
+          // checking.
+          base::PostTask(
+              FROM_HERE, {content::BrowserThread::IO},
+              base::BindOnce(&SafeBrowsingUrlCheckerImpl::
+                                 OnCheckUrlForHighConfidenceAllowlist,
+                             weak_factory_.GetWeakPtr(),
+                             /*did_match_allowlist=*/true));
+          break;
+        case AsyncMatch::NO_MATCH:
+          // No match found locally. Queue the call to
+          // |OnCheckUrlForHighConfidenceAllowlist| to perform the full URL
+          // lookup.
+          base::PostTask(
+              FROM_HERE, {content::BrowserThread::IO},
+              base::BindOnce(&SafeBrowsingUrlCheckerImpl::
+                                 OnCheckUrlForHighConfidenceAllowlist,
+                             weak_factory_.GetWeakPtr(),
+                             /*did_match_allowlist=*/false));
+          break;
+      }
+    } else {
+      safe_synchronously = database_manager_->CheckBrowseUrl(
+          url, url_checker_delegate_->GetThreatTypes(), this);
+    }
+
+    if (safe_synchronously) {
+      timer_.Stop();
+      RecordCheckUrlTimeout(/*timed_out=*/false);
+
       if (!RunNextCallback(true, false))
         return;
 
@@ -279,14 +347,6 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
     // synchronous checks at all (e.g., on mobile).
     if (!database_manager_->ChecksAreAlwaysAsync())
       urls_[next_index_].notifier.OnStartSlowCheck();
-
-    TRACE_EVENT_ASYNC_BEGIN1("safe_browsing", "CheckUrl", this, "url",
-                             url.spec());
-
-    // Start a timer to abort the check if it takes too long.
-    timer_.Start(FROM_HERE,
-                 base::TimeDelta::FromMilliseconds(kCheckUrlTimeoutMs), this,
-                 &SafeBrowsingUrlCheckerImpl::OnCheckUrlTimeout);
 
     break;
   }
@@ -338,6 +398,48 @@ bool SafeBrowsingUrlCheckerImpl::RunNextCallback(bool proceed,
   auto weak_self = weak_factory_.GetWeakPtr();
   urls_[next_index_++].notifier.OnCompleteCheck(proceed, showed_interstitial);
   return !!weak_self;
+}
+
+void SafeBrowsingUrlCheckerImpl::OnCheckUrlForHighConfidenceAllowlist(
+    bool did_match_allowlist) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_EQ(content::ResourceType::kMainFrame, resource_type_);
+
+  const GURL& url = urls_[next_index_].url;
+  if (did_match_allowlist) {
+    // If the URL matches the high-confidence allowlist, still do the hash based
+    // checks.
+    if (database_manager_->CheckBrowseUrl(
+            url, url_checker_delegate_->GetThreatTypes(), this)) {
+      // No match found in the local database. Safe to call |OnUrlResult| here
+      // directly.
+      OnUrlResult(url, SB_THREAT_TYPE_SAFE, ThreatMetadata());
+    }
+    return;
+  }
+
+  RTLookupResponseCallback result_callback =
+      base::Bind(&SafeBrowsingUrlCheckerImpl::OnRTLookupResponse,
+                 weak_factory_.GetWeakPtr());
+  auto* rt_lookup_service = database_manager_->GetRealTimeUrlLookupService();
+  rt_lookup_service->StartLookup(url, std::move(result_callback));
+}
+
+void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
+    std::unique_ptr<RTLookupResponse> response) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_EQ(content::ResourceType::kMainFrame, resource_type_);
+
+  const GURL& url = urls_[next_index_].url;
+  if (response && (response->threat_info_size() > 0) &&
+      (response->threat_info(0).verdict_type() ==
+       RTLookupResponse::ThreatInfo::DANGEROUS)) {
+    OnUrlResult(url, SB_THREAT_TYPE_URL_PHISHING, ThreatMetadata());
+  } else {
+    OnUrlResult(url, SB_THREAT_TYPE_SAFE, ThreatMetadata());
+  }
+
+  // TODO(vakh): Log |response| to chrome://safe-browsing
 }
 
 }  // namespace safe_browsing

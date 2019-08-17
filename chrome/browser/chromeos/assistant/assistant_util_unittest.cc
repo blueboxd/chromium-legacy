@@ -99,13 +99,9 @@ class ScopedLogIn {
       default:
         NOTREACHED();
     }
-    fake_user_manager_->testing_profile_manager()->SetLoggedIn(true);
   }
 
-  ~ScopedLogIn() {
-    fake_user_manager_->testing_profile_manager()->SetLoggedIn(false);
-    LogOut();
-  }
+  ~ScopedLogIn() { fake_user_manager_->RemoveUserFromList(account_id_); }
 
  private:
   void LogIn() {
@@ -131,8 +127,6 @@ class ScopedLogIn {
     fake_user_manager_->AddArcKioskAppUser(account_id_);
     fake_user_manager_->LoginUser(account_id_);
   }
-
-  void LogOut() { fake_user_manager_->RemoveUserFromList(account_id_); }
 
   FakeUserManagerWithLocalState* fake_user_manager_;
   signin::IdentityTestEnvironment* identity_test_env_;

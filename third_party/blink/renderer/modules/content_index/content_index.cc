@@ -293,7 +293,7 @@ void ContentIndex::Trace(blink::Visitor* visitor) {
 mojom::blink::ContentIndexService* ContentIndex::GetService() {
   if (!content_index_service_) {
     registration_->GetExecutionContext()->GetInterfaceProvider()->GetInterface(
-        mojo::MakeRequest(&content_index_service_, task_runner_));
+        content_index_service_.BindNewPipeAndPassReceiver(task_runner_));
   }
   return content_index_service_.get();
 }

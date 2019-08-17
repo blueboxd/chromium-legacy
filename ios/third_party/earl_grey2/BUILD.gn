@@ -32,6 +32,7 @@ config("config") {
     "//ios/third_party/earl_grey2/src/UILib/Additions",
     "//ios/third_party/earl_grey2/src/UILib/Provider",
     "//ios/third_party/earl_grey2/src/UILib/Traversal",
+    "//ios/third_party/earl_grey2/src/UILib/VisibilityChecker",
     "//ios/third_party/earl_grey2/src/TestLib",
     "//ios/third_party/earl_grey2/src/TestLib/AlertHandling",
     "//ios/third_party/earl_grey2/src/TestLib/AppleInternals",
@@ -110,6 +111,7 @@ source_set("common_lib") {
     "src/CommonLib/GREYConstants.m",
     "src/CommonLib/GREYDefines.h",
     "src/CommonLib/GREYDiagnosable.h",
+    "src/CommonLib/GREYDiagnosable.m",
     "src/CommonLib/GREYLogger.h",
     "src/CommonLib/GREYObjcRuntime.h",
     "src/CommonLib/GREYObjcRuntime.m",
@@ -157,7 +159,7 @@ source_set("ui_lib_shared_headers") {
   sources = [
     "src/UILib/GREYElementHierarchy.h",
     "src/UILib/GREYScreenshotter.h",
-    "src/UILib/GREYVisibilityChecker.h",
+    "src/UILib/VisibilityChecker/GREYVisibilityChecker.h",
   ]
 }
 
@@ -174,8 +176,6 @@ source_set("ui_lib") {
     "src/UILib/GREYElementHierarchy.m",
     "src/UILib/GREYScreenshotter+Private.h",
     "src/UILib/GREYScreenshotter.m",
-    "src/UILib/GREYVisibilityChecker+Private.h",
-    "src/UILib/GREYVisibilityChecker.m",
     "src/UILib/Provider/GREYDataEnumerator.h",
     "src/UILib/Provider/GREYDataEnumerator.m",
     "src/UILib/Provider/GREYElementProvider.h",
@@ -190,6 +190,8 @@ source_set("ui_lib") {
     "src/UILib/Traversal/GREYTraversalFunctions.m",
     "src/UILib/Traversal/GREYTraversalObject.h",
     "src/UILib/Traversal/GREYTraversalObject.m",
+    "src/UILib/VisibilityChecker/GREYVisibilityChecker+Private.h",
+    "src/UILib/VisibilityChecker/GREYVisibilityChecker.m",
   ]
 
   deps = [
@@ -321,7 +323,6 @@ ios_framework_bundle("app_framework") {
     "src/AppFramework/Config/GREYAppConfiguration.m",
     "src/AppFramework/Core/GREYElementFinder.h",
     "src/AppFramework/Core/GREYElementFinder.m",
-    "src/AppFramework/Core/GREYElementInteraction+Private.h",
     "src/AppFramework/Core/GREYElementInteraction.m",
     "src/AppFramework/Core/GREYInteractionDataSource.h",
     "src/AppFramework/Delegate/GREYCAAnimationDelegate.h",

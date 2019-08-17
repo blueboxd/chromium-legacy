@@ -24,9 +24,9 @@ namespace content {
 DedicatedWorkerHostFactoryClient::DedicatedWorkerHostFactoryClient(
     blink::WebDedicatedWorker* worker,
     service_manager::InterfaceProvider* interface_provider)
-    : worker_(worker), binding_(this) {
+    : worker_(worker) {
   DCHECK(interface_provider);
-  interface_provider->GetInterface(mojo::MakeRequest(&factory_));
+  interface_provider->GetInterface(factory_.BindNewPipeAndPassReceiver());
 }
 
 DedicatedWorkerHostFactoryClient::~DedicatedWorkerHostFactoryClient() = default;
@@ -54,8 +54,6 @@ void DedicatedWorkerHostFactoryClient::CreateWorkerHost(
     const blink::WebInsecureRequestPolicy fetch_client_insecure_request_policy,
     mojo::ScopedMessagePipeHandle blob_url_token) {
   DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
-  blink::mojom::DedicatedWorkerHostFactoryClientPtr client_ptr;
-  binding_.Bind(mojo::MakeRequest(&client_ptr));
 
   auto outside_fetch_client_settings_object =
       blink::mojom::FetchClientSettingsObject::New();
@@ -73,7 +71,7 @@ void DedicatedWorkerHostFactoryClient::CreateWorkerHost(
       std::move(outside_fetch_client_settings_object),
       blink::mojom::BlobURLTokenPtr(blink::mojom::BlobURLTokenPtrInfo(
           std::move(blob_url_token), blink::mojom::BlobURLToken::Version_)),
-      std::move(client_ptr));
+      receiver_.BindNewPipeAndPassRemote());
 }
 
 scoped_refptr<blink::WebWorkerFetchContext>

@@ -26,11 +26,13 @@
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
+#include "third_party/blink/renderer/core/css/cssom/cross_thread_color_value.h"
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_keyword_value.h"
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_unit_value.h"
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_unsupported_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_keyword_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unsupported_color_value.h"
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -2435,6 +2437,9 @@ ComputedStyleUtils::CrossThreadStyleValueFromCSSStyleValue(
       return std::make_unique<CrossThreadUnitValue>(
           To<CSSUnitValue>(style_value)->value(),
           To<CSSUnitValue>(style_value)->GetInternalUnit());
+    case CSSStyleValue::StyleValueType::kUnsupportedColorType:
+      return std::make_unique<CrossThreadColorValue>(
+          To<CSSUnsupportedColorValue>(style_value)->Value());
     default:
       // Make an isolated copy to ensure that it is safe to pass cross thread.
       return std::make_unique<CrossThreadUnsupportedValue>(

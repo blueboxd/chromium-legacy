@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/system/sys_info.h"
@@ -25,11 +26,6 @@ using previous_session_info_constants::DeviceBatteryState;
 using previous_session_info_constants::DeviceThermalState;
 
 namespace {
-
-// Percentage of battery level which is assumed low enough to have possibly
-// been the reason for the previous session ending in an unclean shutdown.
-// Percent rpresented by a value between 0 and 1.
-const float kCriticallyLowBatteryLevel = 0.01;
 
 // Amount of storage, in kilobytes, considered to be critical enough to
 // negatively effect device operation.
@@ -170,17 +166,19 @@ void MobileSessionShutdownMetricsProvider::ProvidePreviousSessionData(
   LogLowPowerMode(session_info.deviceWasInLowPowerMode);
   LogDeviceThermalState(session_info.deviceThermalState);
 
+  base::UmaHistogramBoolean("Stability.iOS.UTE.OSRestartedAfterPreviousSession",
+                            session_info.OSRestartedAfterPreviousSession);
+
   bool possible_explanation =
       // Log any of the following cases as a possible explanation for the
       // crash:
-      // - battery is critically low
-      (session_info.deviceBatteryState == DeviceBatteryState::kUnplugged &&
-       session_info.deviceBatteryLevel <= kCriticallyLowBatteryLevel) ||
-      // - storage is extremely low
+      // - storage was critically low
       (session_info.availableDeviceStorage >= 0 &&
        session_info.availableDeviceStorage <= kCriticallyLowDeviceStorage) ||
       // - OS version changed
       session_info.isFirstSessionAfterOSUpgrade ||
+      // - OS was restarted
+      session_info.OSRestartedAfterPreviousSession ||
       // - low power mode enabled
       session_info.deviceWasInLowPowerMode ||
       // - device in abnormal thermal state

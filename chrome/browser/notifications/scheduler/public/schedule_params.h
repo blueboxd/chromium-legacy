@@ -42,7 +42,8 @@ struct ScheduleParams {
   // The start time of the deliver time window of the notification.
   base::Optional<base::Time> deliver_time_start;
 
-  // The end time of the deliver time window of the notification.
+  // The end time of the deliver time window of the notification. Use in pair
+  // with |deliver_time_start|.
   base::Optional<base::Time> deliver_time_end;
 };
 

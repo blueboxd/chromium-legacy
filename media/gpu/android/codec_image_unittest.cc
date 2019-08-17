@@ -11,12 +11,12 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/ipc/common/android/mock_abstract_texture.h"
+#include "gpu/ipc/common/android/mock_texture_owner.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/mock_media_codec_bridge.h"
 #include "media/gpu/android/codec_image.h"
-#include "media/gpu/android/mock_abstract_texture.h"
 #include "media/gpu/android/mock_codec_buffer_wait_coordinator.h"
-#include "media/gpu/android/mock_texture_owner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
@@ -62,7 +62,7 @@ class CodecImageTest : public testing::Test {
     // The tests rely on this texture being bound.
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id_);
 
-    auto texture_owner = base::MakeRefCounted<NiceMock<MockTextureOwner>>(
+    auto texture_owner = base::MakeRefCounted<NiceMock<gpu::MockTextureOwner>>(
         texture_id_, context_.get(), surface_.get(), BindsTextureOnUpdate());
     codec_buffer_wait_coordinator_ =
         base::MakeRefCounted<NiceMock<MockCodecBufferWaitCoordinator>>(

@@ -11,22 +11,37 @@
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#endif
+
 namespace content {
 class WebUI;
-}
+}  // namespace content
 
 class Profile;
 
 class AppManagementPageHandler : public app_management::mojom::PageHandler,
-                                 public apps::AppRegistryCache::Observer {
+                                 public apps::AppRegistryCache::Observer
+#if defined(OS_CHROMEOS)
+    ,
+                                 public ArcAppListPrefs::Observer
+#endif  // OS_CHROMEOS
+{
  public:
   AppManagementPageHandler(app_management::mojom::PageHandlerRequest request,
                            app_management::mojom::PagePtr page,
                            content::WebUI* web_ui);
   ~AppManagementPageHandler() override;
 
+#if defined(OS_CHROMEOS)
+  static bool IsCurrentArcVersionSupported(Profile* profile);
+#endif  // OS_CHROMEOS
+
   void OnPinnedChanged(const std::string& app_id, bool pinned);
-  void OnArcSupportChanged(bool supported);
+#if defined(OS_CHROMEOS)
+  void OnArcVersionChanged(int androidVersion);
+#endif  // OS_CHROMEOS
 
   // app_management::mojom::PageHandler:
   void GetApps(GetAppsCallback callback) override;
@@ -48,6 +63,14 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
   void OnAppRegistryCacheWillBeDestroyed(
       apps::AppRegistryCache* cache) override;
 
+#if defined(OS_CHROMEOS)
+  // ArcAppListPrefs::Observer:
+  void OnPackageInstalled(
+      const arc::mojom::ArcPackageInfo& package_info) override;
+  void OnPackageModified(
+      const arc::mojom::ArcPackageInfo& package_info) override;
+#endif  // OS_CHROMEOS
+
   mojo::Binding<app_management::mojom::PageHandler> binding_;
 
   app_management::mojom::PagePtr page_;
@@ -56,7 +79,7 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
 
 #if defined(OS_CHROMEOS)
   AppManagementShelfDelegate shelf_delegate_;
-#endif
+#endif  // OS_CHROMEOS
 
   DISALLOW_COPY_AND_ASSIGN(AppManagementPageHandler);
 };

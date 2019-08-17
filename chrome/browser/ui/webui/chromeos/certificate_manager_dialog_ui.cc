@@ -55,7 +55,7 @@ CertificateManagerDialogUI::CertificateManagerDialogUI(content::WebUI* web_ui)
       user_manager::UserManager::Get()->IsLoggedInAsKioskApp() ||
           user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp());
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->SetDefaultResource(IDR_CERT_MANAGER_DIALOG_HTML);
   source->DisableContentSecurityPolicy();
 

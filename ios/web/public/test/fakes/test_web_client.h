@@ -45,6 +45,12 @@ class TestWebClient : public web::WebClient {
                              const GURL&,
                              bool overridable,
                              const base::Callback<void(bool)>&) override;
+  void PrepareErrorPage(WebState* web_state,
+                        const GURL& url,
+                        NSError* error,
+                        bool is_post,
+                        bool is_off_the_record,
+                        base::OnceCallback<void(NSString*)> callback) override;
   UIView* GetWindowedContainer() override;
 
   // Sets |plugin_not_supported_text_|.

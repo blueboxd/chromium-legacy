@@ -119,10 +119,6 @@
 namespace settings {
 namespace {
 
-// Note that settings.html contains a <script> tag which imports a script of
-// the following name. These names must be kept in sync.
-constexpr char kLocalizedStringsFile[] = "strings.js";
-
 #if defined(OS_CHROMEOS)
 // Generates a Google Help URL which includes a "board type" parameter. Some
 // help pages need to be adjusted depending on the type of CrOS device that is
@@ -3345,7 +3341,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   policy_indicator::AddLocalizedStrings(html_source);
   AddSecurityKeysStrings(html_source);
 
-  html_source->SetJsonPath(kLocalizedStringsFile);
+  html_source->UseStringsJs();
 }
 
 }  // namespace settings

@@ -24,7 +24,6 @@ class AppListView;
 class AppListViewDelegate;
 class ContentsView;
 class SearchModel;
-class SearchResultBaseView;
 
 // Subclass of search_box::SearchBoxViewBase. SearchBoxModel is its data model
 // that controls what icon to display, what placeholder text to use for
@@ -146,10 +145,9 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   void SearchEngineChanged() override;
   void ShowAssistantChanged() override;
 
-  // Updates search_box() text to match |selected_result_view|. Should be called
+  // Updates search_box() text to match |selected_result|. Should be called
   // when the selected search result changes.
-  void UpdateSearchBoxTextForSelectedResult(
-      SearchResultBaseView* selected_result_view);
+  void UpdateSearchBoxTextForSelectedResult(SearchResult* selected_result);
 
   // Returns true if the event to trigger autocomplete should be handled.
   bool ShouldProcessAutocomplete();

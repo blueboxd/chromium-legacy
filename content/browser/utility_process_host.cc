@@ -55,6 +55,11 @@
 #include "services/network/network_sandbox_win.h"
 #endif
 
+#if defined(OS_LINUX)
+#include "components/services/font/public/mojom/font_service.mojom.h"  // nogncheck
+#include "content/browser/font_service.h"  // nogncheck
+#endif
+
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
 #include "services/service_manager/zygote/common/zygote_handle.h"  // nogncheck
 #endif
@@ -506,6 +511,16 @@ void UtilityProcessHost::OnProcessCrashed(int exit_code) {
   }
 #endif
   client->OnProcessCrashed();
+}
+
+void UtilityProcessHost::BindHostReceiver(
+    mojo::GenericPendingReceiver receiver) {
+#if defined(OS_LINUX)
+  if (auto font_receiver = receiver.As<font_service::mojom::FontService>()) {
+    ConnectToFontService(std::move(font_receiver));
+    return;
+  }
+#endif
 }
 
 }  // namespace content

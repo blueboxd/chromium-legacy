@@ -73,12 +73,7 @@ config("compiler") {
   } else {
     assert(false, "Architecture not supported")
   }
-  cflags += [
-    "--target=$abi_target$compile_api_level",
-    "-isystem" +
-        rebase_path("$android_ndk_root/sysroot/usr/include/$abi_target",
-                    root_build_dir),
-  ]
+  cflags += [ "--target=$abi_target$compile_api_level" ]
   ldflags += [ "--target=$abi_target$compile_api_level" ]
 
   # TODO(crbug.com/771171): Remove this define once code that uses it has been
@@ -98,22 +93,8 @@ config("compiler") {
 # that is Android-only. Please see that target for advice on what should go in
 # :runtime_library vs. :compiler.
 config("runtime_library") {
-  # NOTE: The libc++ header include paths below are specified in cflags_cc
-  # rather than include_dirs because they need to come after include_dirs.
-  # Think of them like system headers, but don't use '-isystem' because the
-  # arm-linux-androideabi-4.4.3 toolchain (circa Gingerbread) will exhibit
-  # strange errors. The include ordering here is important; change with
-  # caution.
-  cflags_cc = [ "-isystem" +
-                rebase_path("$android_ndk_root/sources/android/support/include",
-                            root_build_dir) ]
-
-  defines = [
-    "__GNU_SOURCE=1",  # Necessary for clone().
-    "CHROMIUM_CXX_TWEAK_INLINES",  # Saves binary size.
-  ]
-  ldflags = [ "-nostdlib" ]
-  lib_dirs = [ android_libcpp_lib_dir ]
+  # Let the linker find libgcc.a.
+  ldflags = [ "-B" + rebase_path(android_toolchain_root, root_build_dir) ]
 
   libs = []
 
@@ -129,13 +110,6 @@ config("runtime_library") {
   if (current_cpu == "arm") {
     libs += [ "unwind" ]
   }
-
-  # Manually link the libgcc.a that the cross compiler uses. This is
-  # absolute because the linker will look inside the sysroot if it's not.
-  libs += [
-    rebase_path(android_libgcc_file),
-    "c",
-  ]
 
   if (current_cpu == "arm" && arm_version == 6) {
     libs += [ "atomic" ]

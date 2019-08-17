@@ -39,8 +39,9 @@ InternalFormatType BufferFormatToInternalFormatType(gfx::BufferFormat format) {
       return {GL_RED_INTEGER, GL_UNSIGNED_SHORT};
     case gfx::BufferFormat::RG_88:
       return {GL_RG, GL_UNSIGNED_BYTE};
+    case gfx::BufferFormat::BGRX_8888:
+      return {GL_RGB, GL_UNSIGNED_BYTE};
     case gfx::BufferFormat::BGRA_8888:
-    case gfx::BufferFormat::BGRX_8888:  // See https://crbug.com/595948.
     case gfx::BufferFormat::RGBA_8888:
       return {GL_BGRA_EXT, GL_UNSIGNED_BYTE};
     case gfx::BufferFormat::RGBA_F16:

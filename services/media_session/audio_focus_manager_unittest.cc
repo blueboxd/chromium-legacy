@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/media_session/audio_focus_manager_metrics_helper.h"
+#include "services/media_session/audio_focus_request.h"
 #include "services/media_session/media_session_service.h"
 #include "services/media_session/public/cpp/test/audio_focus_test_util.h"
 #include "services/media_session/public/cpp/test/mock_media_session.h"
@@ -166,8 +167,9 @@ class AudioFocusManagerTest
     return mojom::MediaSessionInfo::SessionState::kActive;
   }
 
-  void SetSourceName(const std::string& name) {
-    GetService()->SetSourceName(name);
+  void SetSource(const base::UnguessableToken& identity,
+                 const std::string& name) {
+    GetService()->SetSource(identity, name);
     audio_focus_remote_.FlushForTesting();
   }
 
@@ -214,6 +216,12 @@ class AudioFocusManagerTest
 
   mojo::Remote<mojom::MediaControllerManager>& controller_manager() {
     return controller_manager_remote_;
+  }
+
+  const base::UnguessableToken& GetIdentityForLastRequest() const {
+    return service_->audio_focus_manager_for_testing()
+        .audio_focus_stack_.back()
+        ->identity();
   }
 
  private:
@@ -861,40 +869,54 @@ TEST_P(AudioFocusManagerTest,
             GetState(&media_session_1));
 }
 
-TEST_P(AudioFocusManagerTest, SourceName_AssociatedWithBinding) {
-  SetSourceName(kExampleSourceName);
+TEST_P(AudioFocusManagerTest, Source_AssociatedWithBinding) {
+  base::UnguessableToken identity = base::UnguessableToken::Create();
+  SetSource(identity, kExampleSourceName);
 
+  base::UnguessableToken new_identity = base::UnguessableToken::Create();
   mojo::Remote<mojom::AudioFocusManager> new_ptr =
       CreateAudioFocusManagerRemote();
-  new_ptr->SetSourceName(kExampleSourceName2);
+  new_ptr->SetSource(new_identity, kExampleSourceName2);
   new_ptr.FlushForTesting();
 
-  test::MockMediaSession media_session;
-  RequestAudioFocus(&media_session, mojom::AudioFocusType::kGain);
+  test::MockMediaSession media_session_1;
+  RequestAudioFocus(&media_session_1, mojom::AudioFocusType::kGain);
   EXPECT_EQ(kExampleSourceName, GetSourceNameForLastRequest());
+  EXPECT_EQ(identity, GetIdentityForLastRequest());
+
+  test::MockMediaSession media_session_2;
+  media_session_2.RequestAudioFocusFromService(new_ptr,
+                                               mojom::AudioFocusType::kGain);
+  EXPECT_EQ(kExampleSourceName2, GetSourceNameForLastRequest());
+  EXPECT_EQ(new_identity, GetIdentityForLastRequest());
 }
 
-TEST_P(AudioFocusManagerTest, SourceName_Empty) {
+TEST_P(AudioFocusManagerTest, Source_Empty) {
   test::MockMediaSession media_session;
   RequestAudioFocus(&media_session, mojom::AudioFocusType::kGain);
   EXPECT_TRUE(GetSourceNameForLastRequest().empty());
+  EXPECT_EQ(base::UnguessableToken::Null(), GetIdentityForLastRequest());
 }
 
-TEST_P(AudioFocusManagerTest, SourceName_Updated) {
-  SetSourceName(kExampleSourceName);
+TEST_P(AudioFocusManagerTest, Source_Updated) {
+  base::UnguessableToken identity = base::UnguessableToken::Create();
+  SetSource(identity, kExampleSourceName);
 
   test::MockMediaSession media_session;
   RequestAudioFocus(&media_session, mojom::AudioFocusType::kGain);
   EXPECT_EQ(kExampleSourceName, GetSourceNameForLastRequest());
+  EXPECT_EQ(identity, GetIdentityForLastRequest());
 
-  SetSourceName(kExampleSourceName2);
+  base::UnguessableToken new_identity = base::UnguessableToken::Create();
+  SetSource(new_identity, kExampleSourceName2);
   EXPECT_EQ(kExampleSourceName, GetSourceNameForLastRequest());
+  EXPECT_EQ(identity, GetIdentityForLastRequest());
 }
 
 TEST_P(AudioFocusManagerTest, RecordUmaMetrics) {
   EXPECT_EQ(0, GetAudioFocusHistogramCount());
 
-  SetSourceName(kExampleSourceName);
+  SetSource(base::UnguessableToken::Create(), kExampleSourceName);
   test::MockMediaSession media_session;
   RequestAudioFocus(&media_session, mojom::AudioFocusType::kGainTransient);
 
@@ -961,7 +983,7 @@ TEST_P(AudioFocusManagerTest, RecordUmaMetrics) {
 }
 
 TEST_P(AudioFocusManagerTest, RecordUmaMetrics_ConnectionError) {
-  SetSourceName(kExampleSourceName);
+  SetSource(base::UnguessableToken::Create(), kExampleSourceName);
 
   {
     test::MockMediaSession media_session;

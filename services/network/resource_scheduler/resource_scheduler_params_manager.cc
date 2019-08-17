@@ -345,4 +345,13 @@ bool ResourceSchedulerParamsManager::CanThrottleNetworkTrafficAnnotationHash(
          throttled_traffic_annotation_hashes_.end();
 }
 
+base::TimeDelta ResourceSchedulerParamsManager::
+    TimeToPauseHeavyBrowserInitiatedRequestsAfterEndOfP2PConnections() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+      features::kPauseBrowserInitiatedHeavyTrafficForP2P,
+      "seconds_to_pause_requests_after_end_of_p2p_connections", 60));
+}
+
 }  // namespace network

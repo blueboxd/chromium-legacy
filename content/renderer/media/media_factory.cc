@@ -36,6 +36,7 @@
 #include "media/blink/webencryptedmediaclient_impl.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/media_buildflags.h"
+#include "media/mojo/buildflags.h"
 #include "media/renderers/decrypting_renderer_factory.h"
 #include "media/renderers/default_decoder_factory.h"
 #include "media/renderers/default_renderer_factory.h"
@@ -60,6 +61,10 @@
 #include "media/base/android/media_codec_util.h"
 #include "media/base/media.h"
 #include "url/gurl.h"
+#endif
+
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+#include "content/renderer/media/cast_renderer_client_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA)
@@ -490,6 +495,15 @@ MediaFactory::CreateRendererFactorySelector(
     auto mojo_renderer_factory = std::make_unique<media::MojoRendererFactory>(
         GetMediaInterfaceFactory());
 
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+    factory_selector->AddFactory(
+        media::RendererFactorySelector::FactoryType::CAST,
+        std::make_unique<CastRendererClientFactory>(
+            media_log, std::move(mojo_renderer_factory)));
+
+    factory_selector->SetBaseFactoryType(
+        media::RendererFactorySelector::FactoryType::CAST);
+#else
     // The "default" MojoRendererFactory can be wrapped by a
     // DecryptingRendererFactory without changing any behavior.
     // TODO(tguilbert/xhwang): Add "FactoryType::DECRYPTING" if ever we need to
@@ -501,6 +515,7 @@ MediaFactory::CreateRendererFactorySelector(
 
     factory_selector->SetBaseFactoryType(
         media::RendererFactorySelector::FactoryType::MOJO);
+#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
   }
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 

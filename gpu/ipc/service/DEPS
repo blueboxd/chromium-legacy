@@ -13,4 +13,5 @@ include_rules = [
   "+ui/latency",
   "+ui/ozone",
   "+ui/platform_window",
+  "+media/gpu/android/texture_owner.h",
 ]

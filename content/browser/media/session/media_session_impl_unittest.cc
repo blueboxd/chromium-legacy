@@ -12,9 +12,11 @@
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/browser/media/session/mock_media_session_player_observer.h"
 #include "content/browser/media/session/mock_media_session_service_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_service_manager_context.h"
+#include "content/test/test_web_contents.h"
 #include "media/base/media_content_type.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -644,5 +646,20 @@ TEST_F(MediaSessionImplTest, RequestAudioFocus_OnFocus_Suspended) {
 #endif  // defined(OS_MACOSX)
 
 #endif  // !defined(OS_ANDROID)
+
+TEST_F(MediaSessionImplTest, SourceId_SameBrowserContext) {
+  auto other_contents = TestWebContents::Create(browser_context(), nullptr);
+  MediaSessionImpl* other_session = MediaSessionImpl::Get(other_contents.get());
+
+  EXPECT_EQ(GetMediaSession()->GetSourceId(), other_session->GetSourceId());
+}
+
+TEST_F(MediaSessionImplTest, SourceId_DifferentBrowserContext) {
+  auto other_context = CreateBrowserContext();
+  auto other_contents = TestWebContents::Create(other_context.get(), nullptr);
+  MediaSessionImpl* other_session = MediaSessionImpl::Get(other_contents.get());
+
+  EXPECT_NE(GetMediaSession()->GetSourceId(), other_session->GetSourceId());
+}
 
 }  // namespace content

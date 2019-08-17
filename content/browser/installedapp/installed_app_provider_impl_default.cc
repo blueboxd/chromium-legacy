@@ -4,7 +4,7 @@
 
 #include "content/browser/installedapp/installed_app_provider_impl_default.h"
 
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace content {
 
@@ -21,10 +21,18 @@ void InstalledAppProviderImplDefault::FilterInstalledApps(
 }
 
 // static
-void InstalledAppProviderImplDefault::Create(
+void InstalledAppProviderImplDefault::CreateForRequest(
     blink::mojom::InstalledAppProviderRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<InstalledAppProviderImplDefault>(),
-                          std::move(request));
+  // Implicit conversion to
+  // mojo::PendingReceiver<blink::mojom::InstalledAppProvider>.
+  Create(std::move(request));
+}
+
+// static
+void InstalledAppProviderImplDefault::Create(
+    mojo::PendingReceiver<blink::mojom::InstalledAppProvider> receiver) {
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<InstalledAppProviderImplDefault>(), std::move(receiver));
 }
 
 }  // namespace content

@@ -22,6 +22,9 @@ const base::Feature kAssistantWarmerWelcomeFeature{
 const base::Feature kAssistantAppSupport{"AssistantAppSupport",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAssistantProactiveSuggestions{
+    "AssistantProactiveSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAssistantRoutines{"AssistantRoutines",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -98,6 +101,10 @@ bool IsMediaSessionIntegrationEnabled() {
 
 bool IsPowerManagerEnabled() {
   return base::FeatureList::IsEnabled(kEnablePowerManager);
+}
+
+bool IsProactiveSuggestionsEnabled() {
+  return base::FeatureList::IsEnabled(kAssistantProactiveSuggestions);
 }
 
 bool IsRoutinesEnabled() {

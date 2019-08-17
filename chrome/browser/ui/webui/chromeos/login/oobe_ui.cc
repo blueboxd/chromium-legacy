@@ -134,7 +134,6 @@ constexpr char kOobeJSPath[] = "oobe.js";
 constexpr char kProductLogoPath[] = "product-logo.png";
 constexpr char kRecommendAppListViewHTMLPath[] = "recommend_app_list_view.html";
 constexpr char kRecommendAppListViewJSPath[] = "recommend_app_list_view.js";
-constexpr char kStringsJSPath[] = "strings.js";
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 constexpr char kLogo24PX1XSvgPath[] = "logo_24px-1x.svg";
@@ -236,7 +235,7 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIOobeHost);
   source->AddLocalizedStrings(localized_strings);
-  source->SetJsonPath(kStringsJSPath);
+  source->UseStringsJs();
 
   // First, configure default and non-shared resources for the current display
   // type.

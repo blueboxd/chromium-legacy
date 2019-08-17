@@ -264,6 +264,10 @@ class MediaSessionImpl : public MediaSession,
   // Returns whether the action should be routed to |routed_service_|.
   bool ShouldRouteAction(media_session::mojom::MediaSessionAction action) const;
 
+  // Returns the source ID which links media sessions on the same browser
+  // context together.
+  CONTENT_EXPORT const base::UnguessableToken& GetSourceId() const;
+
  private:
   friend class content::WebContentsUserData<MediaSessionImpl>;
   friend class ::MediaSessionImplBrowserTest;

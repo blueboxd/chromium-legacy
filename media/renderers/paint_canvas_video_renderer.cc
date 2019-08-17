@@ -1282,7 +1282,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
 
     // Upload the CPU-side SkImage into a GPU-side SkImage.
     // (Note the original video_frame data is no longer used after this point.)
-    yuv_images[plane] = plane_image_cpu->makeTextureImage(gr_context, nullptr);
+    yuv_images[plane] = plane_image_cpu->makeTextureImage(gr_context);
     DCHECK(yuv_images[plane]);
 
     // Extract the backend texture from the GPU-side image.

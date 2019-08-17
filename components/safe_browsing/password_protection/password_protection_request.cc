@@ -269,9 +269,7 @@ void PasswordProtectionRequest::FillRequestProto() {
 
 void PasswordProtectionRequest::OnGetDomFeatures(const std::string& verdict) {
   ClientPhishingRequest dom_features_request;
-  bool parsed = dom_features_request.ParseFromString(verdict);
-  UMA_HISTOGRAM_BOOLEAN("PasswordProtection.DomFeatureParsing", parsed);
-  if (parsed) {
+  if (dom_features_request.ParseFromString(verdict)) {
     for (const ClientPhishingRequest::Feature& feature :
          dom_features_request.feature_map()) {
       DomFeatures::Feature* new_feature =

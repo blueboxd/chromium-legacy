@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 
@@ -43,7 +44,14 @@ class XRWorldInformation;
 class XRWorldTrackingState;
 class XRWorldTrackingStateInit;
 
-enum class XRSessionFeature;
+enum class XRSessionFeature {
+  kViewer,
+  kLocal,
+  kLocalFloor,
+  kBoundedFloor,
+  kUnbounded,
+};
+using XRSessionFeatureSet = WTF::HashSet<XRSessionFeature>;
 
 class XRSession final
     : public EventTargetWithInlineData,
@@ -68,7 +76,7 @@ class XRSession final
             EnvironmentBlendMode environment_blend_mode,
             bool uses_input_eventing,
             bool sensorless_session,
-            const WTF::HashSet<XRSessionFeature>& enabled_features);
+            XRSessionFeatureSet enabled_features);
   ~XRSession() override = default;
 
   XR* xr() const { return xr_; }
@@ -238,7 +246,7 @@ class XRSession final
   Member<XRWorldInformation> world_information_;
   HeapVector<Member<XRRenderStateInit>> pending_render_state_;
 
-  WTF::HashSet<XRSessionFeature> enabled_features_;
+  XRSessionFeatureSet enabled_features_;
   WTF::Vector<XRViewData> views_;
 
   Member<XRInputSourceArray> input_sources_;

@@ -8,7 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/run_loop.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "gpu/ipc/common/android/surface_owner_android.h"
+#include "gpu/ipc/common/android/mock_texture_owner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/android/surface_texture.h"
@@ -27,7 +27,8 @@ class ScopedSurfaceRequestManagerUnitTest : public testing::Test {
     last_received_request_ = 0;
     dummy_token_ = base::UnguessableToken::Deserialize(123, 456);
 
-    surface_owner = gpu::SurfaceOwner::Create(0);
+    mock_texture_owner = base::MakeRefCounted<NiceMock<gpu::MockTextureOwner>>(
+        0, nullptr, nullptr);
     dummy_request_ =
         base::Bind(&ScopedSurfaceRequestManagerUnitTest::DummyCallback,
                    base::Unretained(this));
@@ -47,7 +48,7 @@ class ScopedSurfaceRequestManagerUnitTest : public testing::Test {
 
   ScopedSurfaceRequestManager::ScopedSurfaceRequestCB dummy_request_;
   ScopedSurfaceRequestManager::ScopedSurfaceRequestCB specific_logging_request_;
-  std::unique_ptr<gpu::SurfaceOwner> surface_owner;
+  scoped_refptr<NiceMock<gpu::MockTextureOwner>> mock_texture_owner;
 
   int last_received_request_;
   const int kSpecificCallbackId = 1357;
@@ -140,8 +141,8 @@ TEST_F(ScopedSurfaceRequestManagerUnitTest,
        FulfillUnregisteredRequest_ShouldDoNothing) {
   manager_->RegisterScopedSurfaceRequest(specific_logging_request_);
 
-  manager_->FulfillScopedSurfaceRequest(dummy_token_,
-                                        surface_owner->CreateJavaSurface());
+  manager_->FulfillScopedSurfaceRequest(
+      dummy_token_, mock_texture_owner->CreateJavaSurface());
 
   EXPECT_EQ(1, manager_->request_count_for_testing());
   EXPECT_NE(kSpecificCallbackId, last_received_request_);
@@ -159,8 +160,8 @@ TEST_F(ScopedSurfaceRequestManagerUnitTest,
       base::Bind(&ScopedSurfaceRequestManagerUnitTest::LoggingCallback,
                  base::Unretained(this), kOtherCallbackId));
 
-  manager_->FulfillScopedSurfaceRequest(specific_token,
-                                        surface_owner->CreateJavaSurface());
+  manager_->FulfillScopedSurfaceRequest(
+      specific_token, mock_texture_owner->CreateJavaSurface());
 
   base::RunLoop().RunUntilIdle();
 
@@ -175,7 +176,8 @@ TEST_F(ScopedSurfaceRequestManagerUnitTest,
   base::UnguessableToken token =
       manager_->RegisterScopedSurfaceRequest(specific_logging_request_);
 
-  manager_->ForwardSurfaceOwnerForSurfaceRequest(token, surface_owner.get());
+  manager_->ForwardSurfaceOwnerForSurfaceRequest(token,
+                                                 mock_texture_owner.get());
 
   base::RunLoop().RunUntilIdle();
 

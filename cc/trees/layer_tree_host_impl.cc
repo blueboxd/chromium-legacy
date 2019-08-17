@@ -594,13 +594,13 @@ PaintWorkletJobMap LayerTreeHostImpl::GatherDirtyPaintWorklets(
       for (const auto& element : input->GetPropertyKeys()) {
         // We should not have multiple property ids with the same name.
         DCHECK(!animated_property_values.contains(element.first));
-        base::Optional<float> animated_property_value =
+        const PaintWorkletInput::PropertyValue& animated_property_value =
             paint_worklet_tracker_.GetPropertyAnimationValue(element);
         // No value indicates that the input property was not mutated by CC
         // animation.
-        if (animated_property_value) {
+        if (animated_property_value.has_value()) {
           animated_property_values.emplace(element.first,
-                                           animated_property_value.value());
+                                           animated_property_value);
         }
       }
 
@@ -1058,7 +1058,6 @@ DrawMode LayerTreeHostImpl::GetDrawMode() const {
 }
 
 static void AppendQuadsToFillScreen(
-    const gfx::Rect& root_scroll_layer_rect,
     viz::RenderPass* target_render_pass,
     const RenderSurfaceImpl* root_render_surface,
     SkColor screen_background_color,
@@ -1348,12 +1347,20 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 #endif
   bool has_transparent_background =
       SkColorGetA(active_tree_->background_color()) != SK_AlphaOPAQUE;
-  if (!has_transparent_background) {
+  auto* root_render_surface = active_tree_->RootRenderSurface();
+  if (root_render_surface && !has_transparent_background) {
     frame->render_passes.back()->has_transparent_background = false;
-    AppendQuadsToFillScreen(
-        active_tree_->RootScrollLayerDeviceViewportBounds(),
-        frame->render_passes.back().get(), active_tree_->RootRenderSurface(),
-        active_tree_->background_color(), unoccluded_screen_space_region);
+
+    // If any tiles are missing, then fill behind the entire root render
+    // surface.  This is a workaround for this edge case, instead of tracking
+    // individual tiles that are missing.
+    Region fill_region = unoccluded_screen_space_region;
+    if (num_missing_tiles > 0)
+      fill_region = root_render_surface->content_rect();
+
+    AppendQuadsToFillScreen(frame->render_passes.back().get(),
+                            root_render_surface,
+                            active_tree_->background_color(), fill_region);
   }
 
   RemoveRenderPasses(frame);
@@ -3793,6 +3800,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   // in input_handler_proxy instead.
   touch_scrolling_ = type == InputHandler::TOUCHSCREEN;
   wheel_scrolling_ = type == InputHandler::WHEEL;
+  middle_click_autoscrolling_ = type == InputHandler::AUTOSCROLL;
   scroll_state->set_is_direct_manipulation(touch_scrolling_);
   // Invoke |DistributeScrollDelta| even with zero delta and velocity to ensure
   // scroll customization callbacks are invoked.
@@ -4524,6 +4532,11 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
 
       if (!scroll_node->scrollable)
         continue;
+
+      if (middle_click_autoscrolling_) {
+        current_scroll_chain.push_front(scroll_node);
+        break;
+      }
 
       if (CanConsumeDelta(*scroll_node, *scroll_state))
         current_scroll_chain.push_front(scroll_node);
@@ -5906,9 +5919,9 @@ void LayerTreeHostImpl::SetElementFilterMutated(
 void LayerTreeHostImpl::OnCustomPropertyMutated(
     ElementId element_id,
     const std::string& custom_property_name,
-    float custom_property_value) {
+    PaintWorkletInput::PropertyValue custom_property_value) {
   paint_worklet_tracker_.OnCustomPropertyMutated(
-      element_id, custom_property_name, custom_property_value);
+      element_id, custom_property_name, std::move(custom_property_value));
 }
 
 void LayerTreeHostImpl::SetElementBackdropFilterMutated(

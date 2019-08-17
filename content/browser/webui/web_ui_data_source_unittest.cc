@@ -88,15 +88,23 @@ class WebUIDataSourceTest : public testing::Test {
   scoped_refptr<WebUIDataSourceImpl> source_;
 };
 
-void EmptyStringsCallback(scoped_refptr<base::RefCountedMemory> data) {
+void EmptyStringsCallback(bool from_js_module,
+                          scoped_refptr<base::RefCountedMemory> data) {
   std::string result(data->front_as<char>(), data->size());
   EXPECT_NE(result.find("loadTimeData.data = {"), std::string::npos);
   EXPECT_NE(result.find("};"), std::string::npos);
+  bool has_import = result.find("import {loadTimeData}") != std::string::npos;
+  EXPECT_EQ(from_js_module, has_import);
 }
 
 TEST_F(WebUIDataSourceTest, EmptyStrings) {
-  source()->SetJsonPath("strings.js");
-  StartDataRequest("strings.js", base::Bind(&EmptyStringsCallback));
+  source()->UseStringsJs();
+  StartDataRequest("strings.js", base::Bind(&EmptyStringsCallback, false));
+}
+
+TEST_F(WebUIDataSourceTest, EmptyModuleStrings) {
+  source()->UseStringsJs();
+  StartDataRequest("strings.m.js", base::Bind(&EmptyStringsCallback, true));
 }
 
 void SomeValuesCallback(scoped_refptr<base::RefCountedMemory> data) {
@@ -109,7 +117,7 @@ void SomeValuesCallback(scoped_refptr<base::RefCountedMemory> data) {
 }
 
 TEST_F(WebUIDataSourceTest, SomeValues) {
-  source()->SetJsonPath("strings.js");
+  source()->UseStringsJs();
   source()->AddBoolean("flag", true);
   source()->AddInteger("counter", 10);
   source()->AddInteger("debt", -456);

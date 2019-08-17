@@ -2799,10 +2799,16 @@ class DownloadHistoryWaiter : public DownloadHistory::Observer {
 
 }  // namespace
 
+// TODO(crbug.com/994789): Flaky on MSan.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_DownloadCookieIsolation DISABLED_DownloadCookieIsolation
+#else
+#define MAYBE_DownloadCookieIsolation DownloadCookieIsolation
+#endif  // !defined(MEMORY_SANITIZER)
 // Downloads initiated from isolated guest parititons should use their
 // respective cookie stores. In addition, if those downloads are resumed, they
 // should continue to use their respective cookie stores.
-IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadCookieIsolation) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_DownloadCookieIsolation) {
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(&HandleDownloadRequestWithCookie));
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
@@ -2943,7 +2949,17 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
   content::EnsureCookiesFlushed(profile());
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadCookieIsolation_CrossSession) {
+// TODO(crbug.com/994789): Flaky on MSan.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_DownloadCookieIsolation_CrossSession \
+  DISABLED_DownloadCookieIsolation_CrossSession
+#else
+#define MAYBE_DownloadCookieIsolation_CrossSession \
+  DownloadCookieIsolation_CrossSession
+#endif  // !defined(MEMORY_SANITIZER)
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       MAYBE_DownloadCookieIsolation_CrossSession) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(
       download::features::kDownloadDBForNewDownloads);

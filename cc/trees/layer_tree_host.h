@@ -47,7 +47,6 @@
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
@@ -652,9 +651,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
                               float maximum_scale,
                               float starting_scale) override;
 
-  void OnCustomPropertyMutated(ElementId element_id,
-                               const std::string& custom_property_name,
-                               float custom_property_value) override {}
+  void OnCustomPropertyMutated(
+      ElementId element_id,
+      const std::string& custom_property_name,
+      PaintWorkletInput::PropertyValue custom_property_value) override {}
 
   void ScrollOffsetAnimationFinished() override {}
   gfx::ScrollOffset GetScrollOffsetForAnimation(

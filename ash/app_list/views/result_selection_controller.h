@@ -82,6 +82,11 @@ class APP_LIST_EXPORT ResultSelectionController {
   ~ResultSelectionController();
 
   // Returns the currently selected result.
+  // Note that the return view might contain null result if results are
+  // currently being updated.
+  // As long as |block_selection_changes_| gets set while results are changing,
+  // it should be safe to assume the result is not null after call to
+  // MoveSelection() changes the selected result.
   SearchResultBaseView* selected_result() { return selected_result_; }
 
   // Returns the |ResultLocationDetails| object for the |selected_result_|.
@@ -99,6 +104,14 @@ class APP_LIST_EXPORT ResultSelectionController {
 
   // Clears the |selected_result_|, |selected_location_details_|.
   void ClearSelection();
+
+  // Used to block selection changes while async search result updates are in
+  // flight, i.e. while the result views might point to obsolete null results.
+  // Should be set for a short time, and setting this to false should generally
+  // be followed by ResetSelection().
+  void set_block_selection_changes(bool block_selection_changes) {
+    block_selection_changes_ = block_selection_changes;
+  }
 
  private:
   // Calls |GetNextResultLocationForLocation| using |selected_location_details_|
@@ -136,6 +149,9 @@ class APP_LIST_EXPORT ResultSelectionController {
 
   // The currently selected result view
   SearchResultBaseView* selected_result_ = nullptr;
+
+  // If set, any attempt to change current selection will be rejected.
+  bool block_selection_changes_ = false;
 
   // The |ResultLocationDetails| for the currently selected result view
   std::unique_ptr<ResultLocationDetails> selected_location_details_;

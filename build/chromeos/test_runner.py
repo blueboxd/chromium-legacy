@@ -255,14 +255,11 @@ class TastTest(RemoteTest):
           'Tast tests should not have additional args. These will be '
           'ignored: %s', self._additional_args)
 
-    # VMs don't have the disk space for an unstripped version of Chrome, so only
-    # strip when running on VMs.
-    if not self._use_vm:
-      self._test_cmd.append('--nostrip')
-
     self._test_cmd += [
         '--deploy',
+        # Mounting the browser gives it enough disk space to not need stripping.
         '--mount',
+        '--nostrip',
         '--build-dir', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH),
     ]
 

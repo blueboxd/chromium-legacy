@@ -5,13 +5,16 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_SHARED_WORKER_DEVTOOLS_AGENT_HOST_H_
 #define CONTENT_BROWSER_DEVTOOLS_SHARED_WORKER_DEVTOOLS_AGENT_HOST_H_
 
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
+#include "content/browser/worker_host/shared_worker_instance.h"
 
 namespace content {
 
-class SharedWorkerInstance;
 class SharedWorkerHost;
 
 class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
@@ -58,7 +61,7 @@ class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
   WorkerState state_;
   SharedWorkerHost* worker_host_;
   base::UnguessableToken devtools_worker_token_;
-  std::unique_ptr<SharedWorkerInstance> instance_;
+  SharedWorkerInstance instance_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerDevToolsAgentHost);
 };

@@ -1053,7 +1053,7 @@ class PixelTestPages(object):
 
   @staticmethod
   def DirectCompositionPages(base_name):
-    browser_args = ['--enable-direct-composition-layers']
+    browser_args = ['--enable-direct-composition-video-overlays']
     browser_args_Underlay = browser_args + [
       '--enable-features=DirectCompositionUnderlays']
     browser_args_Nonroot = browser_args +[

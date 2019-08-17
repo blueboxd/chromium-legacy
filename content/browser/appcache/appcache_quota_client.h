@@ -31,7 +31,8 @@ class AppCacheStorageImpl;
 // used on the IO thread by the quota manager. This class deletes
 // itself when both the quota manager and the appcache service have
 // been destroyed.
-class AppCacheQuotaClient : public storage::QuotaClient {
+class AppCacheQuotaClient : public storage::QuotaClient,
+                            public base::SupportsWeakPtr<AppCacheQuotaClient> {
  public:
   using RequestQueue = base::circular_deque<base::OnceClosure>;
 
@@ -86,7 +87,6 @@ class AppCacheQuotaClient : public storage::QuotaClient {
 
   base::WeakPtr<AppCacheServiceImpl> service_;
   bool appcache_is_ready_ = false;
-  bool quota_manager_is_destroyed_ = false;
   bool service_is_destroyed_ = false;
   SEQUENCE_CHECKER(sequence_checker_);
 

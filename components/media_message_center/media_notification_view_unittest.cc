@@ -942,4 +942,54 @@ TEST_F(MediaNotificationViewTest, Freezing_DisableInteraction) {
   EXPECT_EQ(0, media_controller()->next_track_count());
 }
 
+TEST_F(MediaNotificationViewTest, UnfreezingDoesntMissUpdates) {
+  EnableAction(MediaSessionAction::kPlay);
+  EnableAction(MediaSessionAction::kPause);
+
+  // Freeze the item and clear the metadata.
+  GetItem()->Freeze();
+  GetItem()->MediaSessionInfoChanged(nullptr);
+  GetItem()->MediaSessionMetadataChanged(base::nullopt);
+
+  // The item should be frozen and the view should contain the old data.
+  EXPECT_TRUE(GetItem()->frozen());
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay));
+  EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
+  EXPECT_EQ(base::ASCIIToUTF16("title"), title_label()->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("artist"), artist_label()->GetText());
+
+  // Bind the item to a new controller that's playing instead of paused.
+  auto new_media_controller = std::make_unique<TestMediaController>();
+  media_session::mojom::MediaSessionInfoPtr session_info(
+      media_session::mojom::MediaSessionInfo::New());
+  session_info->playback_state =
+      media_session::mojom::MediaPlaybackState::kPlaying;
+  session_info->is_controllable = true;
+  GetItem()->SetController(new_media_controller->CreateMediaControllerRemote(),
+                           session_info.Clone());
+
+  // The item will receive a MediaSessionInfoChanged.
+  GetItem()->MediaSessionInfoChanged(session_info.Clone());
+
+  // The item should still be frozen, and the view should contain the old data.
+  EXPECT_TRUE(GetItem()->frozen());
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay));
+  EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
+  EXPECT_EQ(base::ASCIIToUTF16("title"), title_label()->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("artist"), artist_label()->GetText());
+
+  // Update the metadata.
+  media_session::MediaMetadata metadata;
+  metadata.title = base::ASCIIToUTF16("title2");
+  metadata.artist = base::ASCIIToUTF16("artist2");
+  GetItem()->MediaSessionMetadataChanged(metadata);
+
+  // The item should no longer be frozen, and we should see the updated data.
+  EXPECT_FALSE(GetItem()->frozen());
+  EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPlay));
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPause));
+  EXPECT_EQ(base::ASCIIToUTF16("title2"), title_label()->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("artist2"), artist_label()->GetText());
+}
+
 }  // namespace media_message_center

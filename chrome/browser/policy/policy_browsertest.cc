@@ -6992,16 +6992,14 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, CheckURLsInRealTime) {
   scoped_feature_list.InitAndEnableFeature(
       safe_browsing::kRealTimeUrlLookupFetchAllowlist);
 
-  safe_browsing::RealTimePolicyEngine rt_policy_engine(
-      browser()->profile()->GetPrefs());
-  EXPECT_FALSE(rt_policy_engine.CanPerformFullURLLookup());
+  EXPECT_FALSE(safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup());
 
   PolicyMap policies;
   SetPolicy(&policies, key::kSafeBrowsingRealTimeLookupEnabled,
             std::make_unique<base::Value>(true));
   UpdateProviderPolicy(policies);
 
-  EXPECT_TRUE(rt_policy_engine.CanPerformFullURLLookup());
+  EXPECT_TRUE(safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup());
 }
 
 // Verifies that the enterprise default policies are only applied on the profile

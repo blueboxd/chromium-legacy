@@ -310,6 +310,8 @@ public class PaymentRequestImpl
     private final boolean mIsIncognito;
 
     private PaymentRequestClient mClient;
+    private List<AutofillProfile> mAutofillProfiles;
+    private boolean mHaveRequestedAutofillData = true;
     private boolean mIsCanMakePaymentResponsePending;
     private boolean mIsHasEnrolledInstrumentResponsePending;
     private boolean mHasEnrolledInstrumentUsesPerMethodQuota;
@@ -542,6 +544,42 @@ public class PaymentRequestImpl
         mUserCanAddCreditCard = mMerchantSupportsAutofillPaymentInstruments
                 && !ChromeFeatureList.isEnabled(ChromeFeatureList.NO_CREDIT_CARD_ABORT);
 
+        if (mRequestShipping || mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail) {
+            mAutofillProfiles = Collections.unmodifiableList(
+                    PersonalDataManager.getInstance().getProfilesToSuggest(
+                            false /* includeNameInLabel */));
+        }
+
+        if (mRequestShipping) {
+            boolean haveCompleteShippingAddress = false;
+            for (int i = 0; i < mAutofillProfiles.size(); i++) {
+                if (AutofillAddress.checkAddressCompletionStatus(
+                            mAutofillProfiles.get(i), AutofillAddress.CompletenessCheckType.NORMAL)
+                        == AutofillAddress.CompletionStatus.COMPLETE) {
+                    haveCompleteShippingAddress = true;
+                    break;
+                }
+            }
+            mHaveRequestedAutofillData &= haveCompleteShippingAddress;
+        }
+
+        if (mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail) {
+            // Do not persist changes on disk in incognito mode.
+            mContactEditor = new ContactEditor(mRequestPayerName, mRequestPayerPhone,
+                    mRequestPayerEmail, /*saveToDisk=*/!mIsIncognito);
+            boolean haveCompleteContactInfo = false;
+            for (int i = 0; i < mAutofillProfiles.size(); i++) {
+                AutofillProfile profile = mAutofillProfiles.get(i);
+                if (mContactEditor.checkContactCompletionStatus(profile.getFullName(),
+                            profile.getPhoneNumber(), profile.getEmailAddress())
+                        == ContactEditor.COMPLETE) {
+                    haveCompleteContactInfo = true;
+                    break;
+                }
+            }
+            mHaveRequestedAutofillData &= haveCompleteContactInfo;
+        }
+
         boolean mayCrawl = !mUserCanAddCreditCard
                 || PaymentsExperimentalFeatures.isEnabled(
                         ChromeFeatureList.WEB_PAYMENTS_ALWAYS_ALLOW_JUST_IN_TIME_PAYMENT_APP);
@@ -622,22 +660,13 @@ public class PaymentRequestImpl
             mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
         }
 
-        List<AutofillProfile> profiles = null;
-        if (mRequestShipping || mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail) {
-            profiles = PersonalDataManager.getInstance().getProfilesToSuggest(
-                    false /* includeNameInLabel */);
-        }
-
         if (mRequestShipping && !mWaitForUpdatedDetails) {
-            createShippingSection(activity, Collections.unmodifiableList(profiles));
+            createShippingSection(activity, mAutofillProfiles);
         }
 
         if (mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail) {
-            // Do not persist changes on disk in incognito mode.
-            mContactEditor = new ContactEditor(mRequestPayerName, mRequestPayerPhone,
-                    mRequestPayerEmail, /*saveToDisk=*/!mIsIncognito);
-            mContactSection = new ContactDetailsSection(activity,
-                    Collections.unmodifiableList(profiles), mContactEditor, mJourneyLogger);
+            mContactSection = new ContactDetailsSection(
+                    activity, mAutofillProfiles, mContactEditor, mJourneyLogger);
         }
 
         setIsAnyPaymentRequestShowing(true);
@@ -1065,12 +1094,7 @@ public class PaymentRequestImpl
             return;
         }
 
-        if (mRequestShipping) {
-            createShippingSection(chromeActivity,
-                    Collections.unmodifiableList(
-                            PersonalDataManager.getInstance().getProfilesToSuggest(
-                                    false /* includeNameInLabel */)));
-        }
+        if (mRequestShipping) createShippingSection(chromeActivity, mAutofillProfiles);
 
         if (!mShouldSkipShowingPaymentRequestUi) {
             enableUserInterfaceAfterPaymentRequestUpdateEvent();
@@ -2047,6 +2071,7 @@ public class PaymentRequestImpl
                 if (!instrumentMethodNames.isEmpty()) {
                     mHideServerAutofillInstruments |=
                             instrument.isServerAutofillInstrumentReplacement();
+                    instrument.setHaveRequestedAutofillData(mHaveRequestedAutofillData);
                     mHasEnrolledInstrument |= instrument.canMakePayment();
                     mPendingInstruments.add(instrument);
                 } else {

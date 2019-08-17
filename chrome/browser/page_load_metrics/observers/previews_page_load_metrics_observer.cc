@@ -184,27 +184,27 @@ void PreviewsPageLoadMetricsObserver::RecordPageSizeUMA() const {
 void PreviewsPageLoadMetricsObserver::RecordTimingMetrics(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing->load_event_start, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.document_timing->load_event_start, GetDelegate())) {
     RecordPageLoadHistogram(previews_type_,
                             "DocumentTiming.NavigationToLoadEventFired",
                             timing.document_timing->load_event_start.value());
   }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_contentful_paint, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_contentful_paint, GetDelegate())) {
     RecordPageLoadHistogram(
         previews_type_, "PaintTiming.NavigationToFirstContentfulPaint",
         timing.paint_timing->first_contentful_paint.value());
   }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_meaningful_paint, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_meaningful_paint, GetDelegate())) {
     RecordPageLoadHistogram(
         previews_type_,
         "Experimental.PaintTiming.NavigationToFirstMeaningfulPaint",
         timing.paint_timing->first_meaningful_paint.value());
   }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.parse_timing->parse_stop, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.parse_timing->parse_stop, GetDelegate())) {
     RecordPageLoadHistogram(
         previews_type_, "ParseTiming.ParseBlockedOnScriptLoad",
         timing.parse_timing->parse_blocked_on_script_load_duration.value());

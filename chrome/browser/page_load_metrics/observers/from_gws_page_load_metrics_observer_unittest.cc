@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
@@ -542,13 +543,11 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
   web_contents()->WasHidden();
   SimulateTimingUpdate(timing);
 
-  page_load_metrics::PageLoadExtraInfo info =
-      GetPageLoadExtraInfoForCommittedLoad();
-
   // If the system clock is low resolution PageLoadTracker's background_time_
   // may be < timing.first_image_paint.
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_image_paint, info)) {
+          timing.paint_timing->first_image_paint,
+          GetDelegateForCommittedLoad())) {
     histogram_tester().ExpectTotalCount(
         internal::kHistogramFromGWSFirstImagePaint, 1);
     histogram_tester().ExpectBucketCount(

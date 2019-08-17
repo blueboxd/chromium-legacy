@@ -2956,6 +2956,11 @@ void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {
     UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", TabStripModel::NEW_TAB_BUTTON,
                               TabStripModel::NEW_TAB_ENUM_COUNT);
     if (event.IsMouseEvent()) {
+      // Prevent the hover card from popping back in immediately. This forces a
+      // normal fade-in.
+      if (hover_card_)
+        hover_card_->set_last_mouse_exit_timestamp(base::TimeTicks());
+
       const ui::MouseEvent& mouse = static_cast<const ui::MouseEvent&>(event);
       if (mouse.IsOnlyMiddleMouseButton()) {
         if (ui::Clipboard::IsSupportedClipboardType(

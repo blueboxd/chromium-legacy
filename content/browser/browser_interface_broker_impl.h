@@ -21,7 +21,7 @@ class BrowserInterfaceBrokerImpl : public blink::mojom::BrowserInterfaceBroker {
  public:
   BrowserInterfaceBrokerImpl(ExecutionContextHost* host) : host_(host) {
     internal::PopulateBinderMap(host, &binder_map_);
-    internal::PopulateBinderMapWithContext(host, &binder_map_with_context);
+    internal::PopulateBinderMapWithContext(host, &binder_map_with_context_);
   }
 
   // blink::mojom::BrowserInterfaceBroker
@@ -30,8 +30,8 @@ class BrowserInterfaceBrokerImpl : public blink::mojom::BrowserInterfaceBroker {
     auto interface_name = receiver.interface_name().value();
     auto pipe = receiver.PassPipe();
     if (!binder_map_.TryBind(interface_name, &pipe)) {
-      binder_map_with_context.TryBind(internal::GetContextForHost(host_),
-                                      interface_name, &pipe);
+      binder_map_with_context_.TryBind(internal::GetContextForHost(host_),
+                                       interface_name, &pipe);
     }
   }
 
@@ -39,7 +39,7 @@ class BrowserInterfaceBrokerImpl : public blink::mojom::BrowserInterfaceBroker {
   ExecutionContextHost* const host_;
   service_manager::BinderMap binder_map_;
   service_manager::BinderMapWithContext<InterfaceBinderContext>
-      binder_map_with_context;
+      binder_map_with_context_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserInterfaceBrokerImpl);
 };

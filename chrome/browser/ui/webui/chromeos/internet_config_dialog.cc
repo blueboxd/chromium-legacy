@@ -142,7 +142,7 @@ InternetConfigDialogUI::InternetConfigDialogUI(content::WebUI* web_ui)
 
   AddInternetStrings(source);
   source->AddLocalizedString("title", IDS_SETTINGS_INTERNET_CONFIG);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->SetDefaultResource(IDR_INTERNET_CONFIG_DIALOG_VULCANIZED_HTML);
   source->AddResourcePath("crisper.js", IDR_INTERNET_CONFIG_DIALOG_CRISPER_JS);

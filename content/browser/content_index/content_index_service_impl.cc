@@ -14,27 +14,38 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace content {
 
 namespace {
 
-void CreateOnIO(blink::mojom::ContentIndexServiceRequest request,
-                const url::Origin& origin,
-                scoped_refptr<ContentIndexContextImpl> content_index_context) {
+void CreateOnIO(
+    mojo::PendingReceiver<blink::mojom::ContentIndexService> receiver,
+    const url::Origin& origin,
+    scoped_refptr<ContentIndexContextImpl> content_index_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  mojo::MakeStrongBinding(std::make_unique<ContentIndexServiceImpl>(
-                              origin, std::move(content_index_context)),
-                          std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<ContentIndexServiceImpl>(
+                                  origin, std::move(content_index_context)),
+                              std::move(receiver));
 }
 
 }  // namespace
 
 // static
-void ContentIndexServiceImpl::Create(
+void ContentIndexServiceImpl::CreateForRequest(
     blink::mojom::ContentIndexServiceRequest request,
+    RenderProcessHost* render_process_host,
+    const url::Origin& origin) {
+  // Implicit conversion from ContentIndexServiceRequest to
+  // mojo::PendingReceiver<blink::mojom::ContentIndexService>.
+  Create(std::move(request), render_process_host, origin);
+}
+
+// static
+void ContentIndexServiceImpl::Create(
+    mojo::PendingReceiver<blink::mojom::ContentIndexService> receiver,
     RenderProcessHost* render_process_host,
     const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -45,7 +56,7 @@ void ContentIndexServiceImpl::Create(
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
-          &CreateOnIO, std::move(request), origin,
+          &CreateOnIO, std::move(receiver), origin,
           base::WrapRefCounted(storage_partition->GetContentIndexContext())));
 }
 

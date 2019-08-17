@@ -2068,7 +2068,7 @@ static PhysicalRect MapLocalRectToAncestorLayer(
 static bool IsRepeatingTableSection(const LayoutObject& object) {
   if (!object.IsTableSection())
     return false;
-  const auto& section = ToLayoutTableSection(object);
+  const auto& section = ToInterface<LayoutNGTableSectionInterface>(object);
   return section.IsRepeatingHeaderGroup() || section.IsRepeatingFooterGroup();
 }
 
@@ -2128,16 +2128,18 @@ static PhysicalRect BoundingBoxInPaginationContainer(
   if (!IsRepeatingTableSection(object))
     return bounding_box;
 
-  const auto& section = ToLayoutTableSection(object);
-  const auto& table = *section.Table();
+  const auto& section = ToInterface<LayoutNGTableSectionInterface>(object);
+  const auto& table = *section.TableInterface();
 
   if (section.IsRepeatingHeaderGroup()) {
     // Now bounding_box covers the original header. Expand it to intersect
     // with all fragments containing the original and repeatings, i.e. to
     // intersect any fragment containing any row.
-    if (const auto* bottom_section = table.BottomNonEmptySection()) {
+    if (const auto* bottom_section = table.BottomNonEmptySectionInterface()) {
+      const LayoutBox* bottom_section_box =
+          ToLayoutBox(bottom_section->ToLayoutObject());
       bounding_box.Unite(MapLocalRectToAncestorLayer(
-          *bottom_section, bottom_section->PhysicalBorderBoxRect(),
+          *bottom_section_box, bottom_section_box->PhysicalBorderBoxRect(),
           enclosing_pagination_layer));
     }
     return bounding_box;
@@ -2146,18 +2148,22 @@ static PhysicalRect BoundingBoxInPaginationContainer(
   DCHECK(section.IsRepeatingFooterGroup());
   // Similar to repeating header, expand bounding_box to intersect any
   // fragment containing any row first.
-  if (const auto* top_section = table.TopNonEmptySection()) {
+  if (const auto* top_section = table.TopNonEmptySectionInterface()) {
+    const LayoutBox* top_section_box =
+        ToLayoutBox(top_section->ToLayoutObject());
     bounding_box.Unite(MapLocalRectToAncestorLayer(
-        *top_section, top_section->PhysicalBorderBoxRect(),
+        *top_section_box, top_section_box->PhysicalBorderBoxRect(),
         enclosing_pagination_layer));
     // However, the first fragment intersecting the expanded bounding_box may
     // not have enough space to contain the repeating footer. Exclude the
     // total height of the first row and repeating footers from the top of
     // bounding_box to exclude the first fragment without enough space.
     LayoutUnit top_exclusion = table.RowOffsetFromRepeatingFooter();
-    if (top_section != section) {
+    if (top_section != &section) {
       top_exclusion +=
-          top_section->FirstRow()->LogicalHeight() + table.VBorderSpacing();
+          ToLayoutBox(top_section->FirstRowInterface()->ToLayoutObject())
+              ->LogicalHeight() +
+          table.VBorderSpacing();
     }
     // Subtract 1 to ensure overlap of 1 px for a fragment that has exactly
     // one row plus space for the footer.
@@ -2617,10 +2623,12 @@ void PaintPropertyTreeBuilder::
   if (!context_.repeating_table_section)
     return;
 
-  if (object_ == context_.repeating_table_section) {
-    if (ToLayoutTableSection(object_).IsRepeatingHeaderGroup())
+  if (object_ == context_.repeating_table_section->ToLayoutObject()) {
+    if (ToInterface<LayoutNGTableSectionInterface>(object_)
+            .IsRepeatingHeaderGroup())
       UpdateRepeatingTableHeaderPaintOffsetAdjustment();
-    else if (ToLayoutTableSection(object_).IsRepeatingFooterGroup())
+    else if (ToInterface<LayoutNGTableSectionInterface>(object_)
+                 .IsRepeatingFooterGroup())
       UpdateRepeatingTableFooterPaintOffsetAdjustment();
   } else if (!context_.painting_layer->EnclosingPaginationLayer()) {
     // When repeating a table section in paged media, paint_offset is inherited
@@ -2640,7 +2648,7 @@ void PaintPropertyTreeBuilder::
 // Need to support vertical writing modes.
 void PaintPropertyTreeBuilder::
     UpdateRepeatingTableHeaderPaintOffsetAdjustment() {
-  const auto& section = ToLayoutTableSection(object_);
+  const auto& section = ToInterface<LayoutNGTableSectionInterface>(object_);
   DCHECK(section.IsRepeatingHeaderGroup());
 
   LayoutUnit fragment_height;
@@ -2670,12 +2678,13 @@ void PaintPropertyTreeBuilder::
         IntMod(original_offset_in_flow_thread, fragment_height);
   }
 
-  const LayoutTable& table = *section.Table();
+  const LayoutNGTableInterface& table = *section.TableInterface();
 
   // This is total height of repeating headers seen by the table - height of
   // this header (which is the lowest repeating header seen by this table.
   auto repeating_offset_in_fragment =
-      table.RowOffsetFromRepeatingHeader() - section.LogicalHeight();
+      table.RowOffsetFromRepeatingHeader() -
+      ToLayoutBox(section.ToLayoutObject())->LogicalHeight();
 
   // For a repeating table header, the original location (which may be in the
   // middle of the fragment) and repeated locations (which should be always,
@@ -2692,7 +2701,9 @@ void PaintPropertyTreeBuilder::
   // border-spacing, and also bottom captions. No room has been made for a
   // repeated header there.
   auto sections_logical_height =
-      table.BottomSection()->LogicalBottom() - table.TopSection()->LogicalTop();
+      ToLayoutBox(table.BottomSectionInterface()->ToLayoutObject())
+          ->LogicalBottom() -
+      ToLayoutBox(table.TopSectionInterface()->ToLayoutObject())->LogicalTop();
   auto content_remaining = sections_logical_height - table.VBorderSpacing();
 
   for (wtf_size_t i = 0; i < context_.fragments.size(); ++i) {
@@ -2722,13 +2733,13 @@ void PaintPropertyTreeBuilder::
 
 void PaintPropertyTreeBuilder::
     UpdateRepeatingTableFooterPaintOffsetAdjustment() {
-  const auto& section = ToLayoutTableSection(object_);
+  const auto& section = ToInterface<LayoutNGTableSectionInterface>(object_);
   DCHECK(section.IsRepeatingFooterGroup());
 
   LayoutUnit fragment_height;
   LayoutUnit original_offset_in_flow_thread =
       context_.repeating_table_section_bounding_box.Bottom() -
-      section.LogicalHeight();
+      ToLayoutBox(section.ToLayoutObject())->LogicalHeight();
   LayoutUnit original_offset_in_fragment;
   const LayoutFlowThread* flow_thread = nullptr;
   if (const auto* pagination_layer =
@@ -2753,7 +2764,7 @@ void PaintPropertyTreeBuilder::
         IntMod(original_offset_in_flow_thread, fragment_height);
   }
 
-  const auto& table = *section.Table();
+  const auto& table = *section.TableInterface();
   // TODO(crbug.com/798153): This keeps the existing behavior of repeating
   // footer painting in TableSectionPainter. Should change both places when
   // tweaking border-spacing for repeating footers.
@@ -2762,8 +2773,10 @@ void PaintPropertyTreeBuilder::
                                       table.VBorderSpacing();
   // We should show the whole bottom border instead of half if the table
   // collapses borders.
-  if (table.ShouldCollapseBorders())
-    repeating_offset_in_fragment -= table.BorderBottom();
+  if (table.ShouldCollapseBorders()) {
+    repeating_offset_in_fragment -=
+        ToLayoutBox(table.ToLayoutObject())->BorderBottom();
+  }
 
   // Similar to repeating header, this is to adjust the repeating footer from
   // its original location to the repeating location.
@@ -2968,7 +2981,8 @@ void PaintPropertyTreeBuilder::CreateFragmentContextsInFlowThread(
     object_bounding_box_in_flow_thread =
         BoundingBoxInPaginationContainer(object_, *enclosing_pagination_layer);
     if (IsRepeatingTableSection(object_)) {
-      context_.repeating_table_section = &ToLayoutTableSection(object_);
+      context_.repeating_table_section =
+          &ToInterface<LayoutNGTableSectionInterface>(object_);
       context_.repeating_table_section_bounding_box =
           object_bounding_box_in_flow_thread;
     }
@@ -3196,7 +3210,8 @@ bool PaintPropertyTreeBuilder::UpdateFragments() {
     context_.is_repeating_fixed_position = true;
     CreateFragmentContextsForRepeatingFixedPosition();
   } else if (ObjectIsRepeatingTableSectionInPagedMedia()) {
-    context_.repeating_table_section = &ToLayoutTableSection(object_);
+    context_.repeating_table_section =
+        &ToInterface<LayoutNGTableSectionInterface>(object_);
     CreateFragmentContextsForRepeatingTableSectionInPagedMedia();
   }
 

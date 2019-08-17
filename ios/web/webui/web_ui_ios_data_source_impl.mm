@@ -101,8 +101,8 @@ void WebUIIOSDataSourceImpl::AddBoolean(const std::string& name, bool value) {
   localized_strings_.SetBoolean(name, value);
 }
 
-void WebUIIOSDataSourceImpl::SetJsonPath(const std::string& path) {
-  json_path_ = path;
+void WebUIIOSDataSourceImpl::UseStringsJs() {
+  use_strings_js_ = true;
 }
 
 void WebUIIOSDataSourceImpl::AddResourcePath(const std::string& path,
@@ -162,9 +162,12 @@ void WebUIIOSDataSourceImpl::StartDataRequest(
     const URLDataSourceIOS::GotDataCallback& callback) {
   EnsureLoadTimeDataDefaultsAdded();
 
-  if (!json_path_.empty() && path == json_path_) {
-    SendLocalizedStringsAsJSON(callback);
-    return;
+  if (use_strings_js_) {
+    bool from_js_module = path == "strings.m.js";
+    if (from_js_module || path == "strings.js") {
+      SendLocalizedStringsAsJSON(callback, from_js_module);
+      return;
+    }
   }
 
   int resource_id = PathToIdrOrDefault(path);
@@ -175,9 +178,10 @@ void WebUIIOSDataSourceImpl::StartDataRequest(
 }
 
 void WebUIIOSDataSourceImpl::SendLocalizedStringsAsJSON(
-    const URLDataSourceIOS::GotDataCallback& callback) {
+    const URLDataSourceIOS::GotDataCallback& callback,
+    bool from_js_module) {
   std::string template_data;
-  webui::AppendJsonJS(&localized_strings_, &template_data);
+  webui::AppendJsonJS(&localized_strings_, &template_data, from_js_module);
   callback.Run(base::RefCountedString::TakeString(&template_data));
 }
 

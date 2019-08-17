@@ -8,5 +8,5 @@
     Exposed=Window,
     RuntimeEnabled=WebXR
 ] interface XRViewerPose : XRPose {
-  [SameObject] readonly attribute FrozenArray<XRView> views;
+  [SameObject, SaveSameObject] readonly attribute FrozenArray<XRView> views;
 };

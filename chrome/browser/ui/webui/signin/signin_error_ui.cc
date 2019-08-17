@@ -66,7 +66,7 @@ void SigninErrorUI::Initialize(Browser* browser, bool is_system_profile) {
 
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISigninErrorHost);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->SetDefaultResource(IDR_SIGNIN_ERROR_HTML);
   source->AddResourcePath("signin_error.js", IDR_SIGNIN_ERROR_JS);
   source->AddResourcePath("signin_shared_css.html", IDR_SIGNIN_SHARED_CSS_HTML);

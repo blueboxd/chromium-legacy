@@ -72,8 +72,10 @@ void SimpleDownloadManagerCoordinator::DownloadUrl(
 
 void SimpleDownloadManagerCoordinator::GetAllDownloads(
     std::vector<DownloadItem*>* downloads) {
-  if (simple_download_manager_)
+  if (simple_download_manager_) {
     simple_download_manager_->GetAllDownloads(downloads);
+    simple_download_manager_->GetUninitializedActiveDownloadsIfAny(downloads);
+  }
 }
 
 DownloadItem* SimpleDownloadManagerCoordinator::GetDownloadByGuid(

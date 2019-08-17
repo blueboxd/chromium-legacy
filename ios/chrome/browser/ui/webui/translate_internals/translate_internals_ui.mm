@@ -28,7 +28,7 @@ web::WebUIIOSDataSource* CreateTranslateInternalsHTMLSource() {
       web::WebUIIOSDataSource::Create(kChromeUITranslateInternalsHost);
 
   source->SetDefaultResource(IDR_IOS_TRANSLATE_INTERNALS_HTML);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->AddResourcePath("translate_internals.js",
                           IDR_IOS_TRANSLATE_INTERNALS_JS);
 

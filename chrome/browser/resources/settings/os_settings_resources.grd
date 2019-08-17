@@ -527,6 +527,12 @@
       <structure name="IDR_OS_SETTINGS_MEDIA_PICKER_JS"
                  file="site_settings/media_picker.js"
                  type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_OS_TOOLBAR_JS"
+                 file="chromeos/os_toolbar/os_toolbar.js"
+                 type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_OS_TOOLBAR_HTML"
+                 file="chromeos/os_toolbar/os_toolbar.html"
+                 type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_PEOPLE_PAGE_HTML"
                  file="chromeos/os_people_page/os_people_page.html"
                  type="chrome_html"

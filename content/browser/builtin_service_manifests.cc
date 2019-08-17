@@ -30,10 +30,6 @@
 #include "services/shape_detection/public/cpp/manifest.h"
 #include "services/tracing/manifest.h"
 
-#if defined(OS_LINUX)
-#include "components/services/font/public/cpp/manifest.h"  // nogncheck
-#endif
-
 namespace content {
 
 namespace {
@@ -81,9 +77,6 @@ const std::vector<service_manager::Manifest>& GetBuiltinServiceManifests() {
           resource_coordinator::GetManifest(),
           shape_detection::GetManifest(),
           tracing::GetManifest(),
-#if defined(OS_LINUX)
-          font_service::GetManifest(),
-#endif
       }};
   return *manifests;
 }

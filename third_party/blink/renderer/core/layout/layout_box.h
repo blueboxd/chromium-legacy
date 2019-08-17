@@ -1136,7 +1136,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool CanAutoscroll() const;
   PhysicalOffset CalculateAutoscrollDirection(
       const FloatPoint& point_in_root_frame) const;
-  static LayoutBox* FindAutoscrollable(LayoutObject*);
+  static LayoutBox* FindAutoscrollable(LayoutObject*,
+                                       bool is_middle_click_autoscroll);
   virtual void StopAutoscroll() {}
   virtual void MayUpdateHoverWhenContentUnderMouseChanged(EventHandler&);
 

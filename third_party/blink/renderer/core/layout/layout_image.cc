@@ -419,12 +419,7 @@ SVGImage* LayoutImage::EmbeddedSVGImage() const {
 void LayoutImage::UpdateAfterLayout() {
   LayoutBox::UpdateAfterLayout();
   Node* node = GetNode();
-
-  // Check for oversized-images policy.
-  // TODO(loonybear): Support oversized-images policy on other image types
-  // in addition to HTMLImageElement.
   if (auto* image_element = ToHTMLImageElementOrNull(node)) {
-    // Report violation of unsized-media policy.
     media_element_parser_helpers::ReportUnsizedMediaViolation(
         this, image_element->IsDefaultIntrinsicSize());
   }

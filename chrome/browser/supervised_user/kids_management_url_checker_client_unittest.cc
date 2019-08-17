@@ -25,6 +25,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "components/user_manager/scoped_user_manager.h"
 #endif
 
 namespace {
@@ -95,7 +96,6 @@ class KidsManagementURLCheckerClientTest : public testing::Test {
     test_profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(test_profile_manager_->SetUp());
-    test_profile_manager_->SetLoggedIn(true);
 
 // ChromeOS requires a chromeos::FakeChromeUserManager for the tests to work.
 #if defined(OS_CHROMEOS)
@@ -107,6 +107,9 @@ class KidsManagementURLCheckerClientTest : public testing::Test {
     user_manager_->SwitchActiveUser(test_account_id);
     test_profile_ = test_profile_manager_->CreateTestingProfile(
         test_account_id.GetUserEmail());
+
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        base::WrapUnique(user_manager_));
 #else
     test_profile_ =
         test_profile_manager_->CreateTestingProfile(chrome::kInitialProfile);
@@ -145,6 +148,7 @@ class KidsManagementURLCheckerClientTest : public testing::Test {
   std::unique_ptr<KidsManagementURLCheckerClient> url_classifier_;
 #if defined(OS_CHROMEOS)
   chromeos::FakeChromeUserManager* user_manager_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 #endif
 
  private:

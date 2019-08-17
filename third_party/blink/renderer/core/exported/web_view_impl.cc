@@ -1233,7 +1233,7 @@ void WebViewImpl::Close() {
   // being detached (and in particular while its unload handlers run).
   {
     if (does_composite_)
-      GetPage()->WillCloseLayerTreeView(*layer_tree_view_, nullptr);
+      GetPage()->WillCloseAnimationHost(nullptr);
 
     animation_host_ = nullptr;
     layer_tree_view_ = nullptr;
@@ -2477,11 +2477,10 @@ void WebViewImpl::SetDeviceScaleFactor(float scale_factor) {
 
 void WebViewImpl::SetZoomFactorForDeviceScaleFactor(
     float zoom_factor_for_device_scale_factor) {
+  DCHECK(does_composite_);
   // We can't early-return here if these are already equal, because we may
   // need to propagate the correct zoom factor to newly navigated frames.
   zoom_factor_for_device_scale_factor_ = zoom_factor_for_device_scale_factor;
-  if (!layer_tree_view_)
-    return;
   SetZoomLevel(zoom_level_);
 }
 
@@ -3352,8 +3351,7 @@ void WebViewImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
   layer_tree_view_ = layer_tree_view;
   animation_host_ = animation_host;
 
-  AsView().page->LayerTreeViewInitialized(*layer_tree_view_, *animation_host_,
-                                          nullptr);
+  AsView().page->AnimationHostInitialized(*animation_host_, nullptr);
 }
 
 void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {

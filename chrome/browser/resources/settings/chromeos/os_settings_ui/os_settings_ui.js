@@ -58,7 +58,7 @@ Polymer({
 
     /**
      * Whether settings is in the narrow state (side nav hidden). Controlled by
-     * a binding in the cr-toolbar element.
+     * a binding in the os-toolbar element.
      */
     isNarrow: {
       type: Boolean,
@@ -244,7 +244,7 @@ Polymer({
 
     this.lastSearchQuery_ = urlSearchQuery;
 
-    const toolbar = /** @type {!CrToolbarElement} */ (this.$$('cr-toolbar'));
+    const toolbar = /** @type {!OsToolbarElement} */ (this.$$('os-toolbar'));
     const searchField =
         /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
 
@@ -264,13 +264,13 @@ Polymer({
     if (modalContextOpen) {
       return false;
     }
-    this.$$('cr-toolbar').getSearchField().showAndFocus();
+    this.$$('os-toolbar').getSearchField().showAndFocus();
     return true;
   },
 
   // Override FindShortcutBehavior methods.
   searchInputHasFocus: function() {
-    return this.$$('cr-toolbar').getSearchField().isSearchFocused();
+    return this.$$('os-toolbar').getSearchField().isSearchFocused();
   },
 
   /**

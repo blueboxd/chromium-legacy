@@ -21,6 +21,7 @@
 #include "content/child/child_process_sandbox_support_impl_mac.h"
 #elif defined(OS_LINUX)
 #include "content/child/child_process_sandbox_support_impl_linux.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #endif
 
 using blink::WebSandboxSupport;
@@ -34,8 +35,10 @@ namespace content {
 
 PpapiBlinkPlatformImpl::PpapiBlinkPlatformImpl() {
 #if defined(OS_LINUX)
-  font_loader_ =
-      sk_make_sp<font_service::FontLoader>(ChildThread::Get()->GetConnector());
+  mojo::PendingRemote<font_service::mojom::FontService> font_service;
+  ChildThread::Get()->BindHostReceiver(
+      font_service.InitWithNewPipeAndPassReceiver());
+  font_loader_ = sk_make_sp<font_service::FontLoader>(std::move(font_service));
   SkFontConfigInterface::SetGlobal(font_loader_);
   sandbox_support_.reset(new WebSandboxSupportLinux(font_loader_));
 #elif defined(OS_MACOSX)

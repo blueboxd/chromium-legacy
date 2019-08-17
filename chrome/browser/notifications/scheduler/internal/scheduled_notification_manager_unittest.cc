@@ -194,6 +194,10 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotification) {
   schedule_params.priority = ScheduleParams::Priority::kLow;
   auto params = std::make_unique<NotificationParams>(
       SchedulerClientType::kTest1, notification_data, schedule_params);
+  params->schedule_params.deliver_time_start = base::Time::Now();
+  params->schedule_params.deliver_time_end =
+      base::Time::Now() + base::TimeDelta::FromDays(1);
+
   params->enable_ihnr_buttons = true;
   std::string guid = params->guid;
   EXPECT_FALSE(guid.empty());
@@ -218,6 +222,7 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotification) {
   EXPECT_EQ(base::UTF16ToUTF8(entry->notification_data.title), kTitle);
   EXPECT_EQ(entry->schedule_params.priority, ScheduleParams::Priority::kLow);
 
+  // Verify that |enable_ihnr_buttons| will add the helpful/unhelpful buttons.
   auto buttons = entry->notification_data.buttons;
   EXPECT_EQ(buttons.size(), 2u);
   EXPECT_EQ(buttons[0].id, notifications::kDefaultHelpfulButtonId);
@@ -231,6 +236,9 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotificationEmptyGuid) {
   InitWithData(std::vector<NotificationEntry>());
   auto params = std::make_unique<NotificationParams>(
       SchedulerClientType::kTest1, NotificationData(), ScheduleParams());
+  params->schedule_params.deliver_time_start = base::Time::Now();
+  params->schedule_params.deliver_time_end =
+      base::Time::Now() + base::TimeDelta::FromDays(1);
 
   // Verify call contract.
   EXPECT_CALL(*notification_store(), Add(_, _, _));

@@ -22,9 +22,17 @@ class RenderProcessHost;
 class CONTENT_EXPORT ContentIndexServiceImpl
     : public blink::mojom::ContentIndexService {
  public:
-  static void Create(blink::mojom::ContentIndexServiceRequest request,
-                     RenderProcessHost* render_process_host,
-                     const url::Origin& origin);
+  // TODO(https://crbug.com/955171): Remove this method and use Create once
+  // RendererInterfaceBinders uses service_manager::BinderMap instead of
+  // service_manager::BinderRegistry.
+  static void CreateForRequest(blink::mojom::ContentIndexServiceRequest request,
+                               RenderProcessHost* render_process_host,
+                               const url::Origin& origin);
+
+  static void Create(
+      mojo::PendingReceiver<blink::mojom::ContentIndexService> receiver,
+      RenderProcessHost* render_process_host,
+      const url::Origin& origin);
 
   ContentIndexServiceImpl(
       const url::Origin& origin,

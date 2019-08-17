@@ -13,6 +13,7 @@
 #include "cc/animation/animation_export.h"
 #include "cc/animation/animation_target.h"
 #include "cc/paint/element_id.h"
+#include "cc/paint/paint_worklet_input.h"
 #include "cc/trees/property_animation_state.h"
 #include "cc/trees/target_property.h"
 #include "ui/gfx/geometry/scroll_offset.h"
@@ -145,7 +146,7 @@ class CC_ANIMATION_EXPORT ElementAnimations
                                 KeyframeModel* keyframe_model) override {}
   void NotifyClientColorAnimated(SkColor color,
                                  int target_property_id,
-                                 KeyframeModel* keyframe_model) override {}
+                                 KeyframeModel* keyframe_model) override;
   void NotifyClientTransformOperationsAnimated(
       const TransformOperations& operations,
       int target_property_id,
@@ -186,8 +187,9 @@ class CC_ANIMATION_EXPORT ElementAnimations
   void OnOpacityAnimated(ElementListType list_type,
                          float opacity,
                          KeyframeModel* keyframe_model);
-  void OnCustomPropertyAnimated(float custom_prop_value,
-                                KeyframeModel* keyframe_model);
+  void OnCustomPropertyAnimated(
+      PaintWorkletInput::PropertyValue custom_prop_value,
+      KeyframeModel* keyframe_model);
   void OnTransformAnimated(ElementListType list_type,
                            const gfx::Transform& transform,
                            KeyframeModel* keyframe_model);

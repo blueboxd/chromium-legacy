@@ -555,7 +555,15 @@ bool AutofillManager::MaybeStartVoteUploadProcess(
   FormStructure* raw_form = form_structure.get();
   base::PostTaskAndReply(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      // If the priority is BEST_EFFORT, the task can be preempted, which is
+      // thought to cause high memory usage (as memory is retained by the task
+      // while it is preempted).
+      //
+      // TODO(fdoray): Update when the hypothesis that setting the priority to
+      // USER_VISIBLE instead of BEST_EFFORT fixes memory usage. Consider
+      // keeping BEST_EFFORT priority, but manually enforcing a limit on the
+      // number of outstanding tasks. https://crbug.com/974249
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&AutofillManager::DeterminePossibleFieldTypesForUpload,
                      copied_profiles, copied_credit_cards, app_locale_,
                      raw_form),

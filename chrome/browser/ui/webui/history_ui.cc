@@ -167,7 +167,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
 #endif
 
   source->SetDefaultResource(IDR_HISTORY_HISTORY_HTML);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
 
   return source;
 }

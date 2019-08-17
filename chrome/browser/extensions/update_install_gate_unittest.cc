@@ -126,7 +126,6 @@ class UpdateInstallGateTest : public testing::Test {
     fake_user_manager_->LoginUser(account_id);
 #endif
     profile_ = profile_manager_->CreateTestingProfile(kUserProfile);
-    profile_manager_->SetLoggedIn(true);
 
     TestExtensionSystem* test_extension_system =
         static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile_));

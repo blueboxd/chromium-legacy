@@ -63,9 +63,14 @@ class ExternalVkImageBacking : public SharedImageBacking {
         ->GetVulkanDevice();
   }
   bool need_sychronization() const {
-    if (use_separate_gl_texture())
-      return false;
-    return usage() & SHARED_IMAGE_USAGE_GLES2;
+    if (usage() & SHARED_IMAGE_USAGE_WEBGPU) {
+      return true;
+    }
+
+    if (usage() & SHARED_IMAGE_USAGE_GLES2) {
+      return !use_separate_gl_texture();
+    }
+    return false;
   }
   bool use_separate_gl_texture() const {
     return !context_state()->support_vulkan_external_object();
@@ -97,6 +102,10 @@ class ExternalVkImageBacking : public SharedImageBacking {
   void EndAccessInternal(bool readonly, SemaphoreHandle semaphore_handle);
 
   // SharedImageBacking implementation.
+  std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker,
+      DawnDevice dawnDevice) override;
   std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker) override;
@@ -120,7 +129,14 @@ class ExternalVkImageBacking : public SharedImageBacking {
                          size_t memory_size,
                          VkFormat vk_format,
                          VulkanCommandPool* command_pool,
-                         base::Optional<VulkanYCbCrInfo> ycbcr_info);
+                         base::Optional<VulkanYCbCrInfo> ycbcr_info,
+                         base::Optional<DawnTextureFormat> dawn_format,
+                         base::Optional<uint32_t> memory_type_index);
+
+#ifdef OS_LINUX
+  // Extract file descriptor from image
+  int GetMemoryFd(const GrVkImageInfo& image_info);
+#endif
 
   // Install a shared memory GMB to the backing.
   void InstallSharedMemory(
@@ -157,6 +173,9 @@ class ExternalVkImageBacking : public SharedImageBacking {
     kInGLTexture = 1 << 2,
   };
   uint32_t latest_content_ = 0;
+
+  base::Optional<DawnTextureFormat> dawn_format_;
+  base::Optional<uint32_t> memory_type_index_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalVkImageBacking);
 };

@@ -31,12 +31,20 @@ struct LookupSingleLeakData {
 using SingleLeakRequestDataCallback =
     base::OnceCallback<void(LookupSingleLeakData)>;
 
+using SingleLeakResponseAnalysisCallback = base::OnceCallback<void(bool)>;
+
 // Asynchronously creates a data payload for single credential check.
 // Callback is invoked on the calling thread with the protobuf and the
 // encryption key used.
 void PrepareSingleLeakRequestData(const std::string& username,
                                   const std::string& password,
                                   SingleLeakRequestDataCallback callback);
+
+// Analyses the |response| asynchronously and checks if the credential was
+// leaked. |callback| is invoked on the calling thread.
+void AnalyzeResponseResult(std::unique_ptr<SingleLookupResponse> response,
+                           const std::string& encryption_key,
+                           SingleLeakResponseAnalysisCallback callback);
 
 // Processes the provided |response| and returns whether the relevant credential
 // was leaked.

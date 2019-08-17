@@ -56,6 +56,10 @@ void CrostiniShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   std::move(callback).Run(std::move(menu_model));
 }
 
+bool CrostiniShelfContextMenu::IsUninstallable() const {
+  return crostini::IsUninstallable(controller()->profile(), item().id.app_id);
+}
+
 void CrostiniShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   const crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(
@@ -76,6 +80,11 @@ void CrostiniShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
       crostini::IsCrostiniRunning(controller()->profile())) {
     AddContextMenuOption(menu_model, ash::STOP_APP,
                          IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM);
+  }
+
+  if (IsUninstallable()) {
+    AddContextMenuOption(menu_model, ash::UNINSTALL,
+                         IDS_APP_LIST_UNINSTALL_ITEM);
   }
 
   if (controller()->IsOpen(item().id)) {

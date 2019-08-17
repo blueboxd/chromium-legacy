@@ -268,16 +268,6 @@ class CORE_EXPORT NGConstraintSpace final {
     return bitfields_.is_new_formatting_context;
   }
 
-  // Return true if we are to separate (i.e. honor, rather than collapse)
-  // block-start margins at the beginning of fragmentainers. This only makes a
-  // difference if we're block-fragmented (pagination, multicol, etc.). Then
-  // block-start margins at the beginning of a fragmentainers are to be
-  // truncated to 0 if they occur after a soft (unforced) break.
-  bool HasSeparateLeadingFragmentainerMargins() const {
-    return HasRareData() &&
-           rare_data_->has_separate_leading_fragmentainer_margins;
-  }
-
   // Whether the current node is a table-cell.
   bool IsTableCell() const { return bitfields_.is_table_cell; }
 
@@ -557,7 +547,6 @@ class CORE_EXPORT NGConstraintSpace final {
         : bfc_offset(bfc_offset),
           block_direction_fragmentation_type(
               static_cast<unsigned>(kFragmentNone)),
-          has_separate_leading_fragmentainer_margins(false),
           is_inside_balanced_columns(false) {}
     RareData(const RareData&) = default;
     ~RareData() = default;
@@ -579,7 +568,6 @@ class CORE_EXPORT NGConstraintSpace final {
     LayoutUnit fragmentainer_space_at_bfc_start = kIndefiniteSize;
 
     unsigned block_direction_fragmentation_type : 2;
-    unsigned has_separate_leading_fragmentainer_margins : 1;
     unsigned is_inside_balanced_columns : 1;
 
     bool MaySkipLayout(const RareData& other) const {
@@ -593,8 +581,6 @@ class CORE_EXPORT NGConstraintSpace final {
                  other.fragmentainer_space_at_bfc_start &&
              block_direction_fragmentation_type ==
                  other.block_direction_fragmentation_type &&
-             has_separate_leading_fragmentainer_margins ==
-                 other.has_separate_leading_fragmentainer_margins &&
              is_inside_balanced_columns == other.is_inside_balanced_columns;
     }
 
@@ -607,7 +593,6 @@ class CORE_EXPORT NGConstraintSpace final {
              fragmentainer_block_size == kIndefiniteSize &&
              fragmentainer_space_at_bfc_start == kIndefiniteSize &&
              block_direction_fragmentation_type == kFragmentNone &&
-             !has_separate_leading_fragmentainer_margins &&
              !is_inside_balanced_columns;
     }
   };

@@ -214,17 +214,17 @@ class OverlayWindowViews : public content::OverlayWindow,
   gfx::Size natural_size_;
 
   // Views to be shown.
-  std::unique_ptr<views::View> window_background_view_;
-  std::unique_ptr<views::View> video_view_;
-  std::unique_ptr<views::View> controls_scrim_view_;
-  std::unique_ptr<views::CloseImageButton> close_controls_view_;
-  std::unique_ptr<views::BackToTabImageButton> back_to_tab_controls_view_;
-  std::unique_ptr<views::TrackImageButton> previous_track_controls_view_;
-  std::unique_ptr<views::PlaybackImageButton> play_pause_controls_view_;
-  std::unique_ptr<views::TrackImageButton> next_track_controls_view_;
-  std::unique_ptr<views::MuteImageButton> mute_controls_view_;
-  std::unique_ptr<views::SkipAdLabelButton> skip_ad_controls_view_;
-  std::unique_ptr<views::ResizeHandleButton> resize_handle_view_;
+  views::View* window_background_view_ = nullptr;
+  views::View* video_view_ = nullptr;
+  views::View* controls_scrim_view_ = nullptr;
+  views::CloseImageButton* close_controls_view_ = nullptr;
+  views::BackToTabImageButton* back_to_tab_controls_view_ = nullptr;
+  views::TrackImageButton* previous_track_controls_view_ = nullptr;
+  views::PlaybackImageButton* play_pause_controls_view_ = nullptr;
+  views::TrackImageButton* next_track_controls_view_ = nullptr;
+  views::MuteImageButton* mute_controls_view_ = nullptr;
+  views::SkipAdLabelButton* skip_ad_controls_view_ = nullptr;
+  views::ResizeHandleButton* resize_handle_view_ = nullptr;
 #if defined(OS_CHROMEOS)
   std::unique_ptr<ash::RoundedCornerDecorator> decorator_;
 #endif

@@ -89,6 +89,8 @@ const base::Feature kIPHTabGroupsTapToSeeAnotherTabFeature{
     "IPH_TabGroupsTapToSeeAnotherTab", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHTabGroupsYourTabsAreTogetherFeature{
     "IPH_TabGroupsYourTabsTogether", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHTabGroupsDragAndDropFeature{
+    "IPH_TabGroupsDragAndDrop", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHTranslateMenuButtonFeature{
     "IPH_TranslateMenuButton", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHExploreSitesTileFeature{

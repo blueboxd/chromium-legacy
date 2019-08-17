@@ -258,7 +258,8 @@ void ElementAnimations::NotifyClientFloatAnimated(
       // pending tree). As such, we don't need to notify in the case where a
       // KeyframeModel only affects active elements.
       if (KeyframeModelAffectsPendingElements(keyframe_model))
-        OnCustomPropertyAnimated(value, keyframe_model);
+        OnCustomPropertyAnimated(PaintWorkletInput::PropertyValue(value),
+                                 keyframe_model);
       break;
     case TargetProperty::OPACITY: {
       float opacity = base::ClampToRange(value, 0.0f, 1.0f);
@@ -295,6 +296,16 @@ void ElementAnimations::NotifyClientFilterAnimated(
     default:
       NOTREACHED();
   }
+}
+
+void ElementAnimations::NotifyClientColorAnimated(
+    SkColor value,
+    int target_property_id,
+    KeyframeModel* keyframe_model) {
+  DCHECK_EQ(keyframe_model->target_property_id(),
+            TargetProperty::CSS_CUSTOM_PROPERTY);
+  OnCustomPropertyAnimated(PaintWorkletInput::PropertyValue(value),
+                           keyframe_model);
 }
 
 void ElementAnimations::NotifyClientTransformOperationsAnimated(
@@ -498,13 +509,13 @@ void ElementAnimations::OnOpacityAnimated(ElementListType list_type,
 }
 
 void ElementAnimations::OnCustomPropertyAnimated(
-    float custom_prop_value,
+    PaintWorkletInput::PropertyValue custom_prop_value,
     KeyframeModel* keyframe_model) {
   DCHECK(animation_host_);
   DCHECK(animation_host_->mutator_host_client());
   animation_host_->mutator_host_client()->OnCustomPropertyMutated(
       CalculateTargetElementId(this, keyframe_model),
-      keyframe_model->custom_property_name(), custom_prop_value);
+      keyframe_model->custom_property_name(), std::move(custom_prop_value));
 }
 
 void ElementAnimations::OnTransformAnimated(ElementListType list_type,

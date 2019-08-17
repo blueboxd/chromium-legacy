@@ -7,6 +7,8 @@
 #include <windows.h>
 #include <memory>
 
+#include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
@@ -14,17 +16,34 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
+#include "base/win/scoped_com_initializer.h"
 #include "chrome/updater/updater_constants.h"
 #include "chrome/updater/util.h"
+#include "chrome/updater/win/setup/setup_util.h"
+#include "chrome/updater/win/task_scheduler.h"
 
 namespace updater {
 
-// Runs the uninstall script in the install directory of the updater. This is
-// a best effort uninstall. The execution of this function and the script race
-// each other but the script loops and wait in between iterations trying to
-// delete the install directory.
+// Reverses the changes made by setup. This is a best effort uninstall:
+// 1. deletes the scheduled task.
+// 2. runs the uninstall script in the install directory of the updater.
+// The execution of this function and the script race each other but the script
+// loops and waits in between iterations trying to delete the install directory.
 int Uninstall() {
   VLOG(1) << __func__;
+
+  auto scoped_com_initializer =
+      std::make_unique<base::win::ScopedCOMInitializer>(
+          base::win::ScopedCOMInitializer::kMTA);
+
+  if (!TaskScheduler::Initialize()) {
+    LOG(ERROR) << "Failed to initialize the scheduler.";
+    return -1;
+  }
+  base::ScopedClosureRunner task_scheduler_terminate_caller(
+      base::BindOnce([]() { TaskScheduler::Terminate(); }));
+
+  updater::UnregisterUpdateAppsTask();
 
   base::FilePath product_dir;
   if (!GetProductDirectory(&product_dir)) {

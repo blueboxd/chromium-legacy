@@ -57,7 +57,9 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelFilter;
@@ -70,6 +72,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.feature_engagement.EventConstants;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
@@ -132,6 +136,10 @@ public class TabListMediatorUnitTest {
     TabListMediator.TabActionListener mOpenGroupActionListener;
     @Mock
     GridLayoutManager mGridLayoutManager;
+    @Mock
+    Profile mProfile;
+    @Mock
+    Tracker mTracker;
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
     @Captor
@@ -219,6 +227,7 @@ public class TabListMediatorUnitTest {
                 false, null, null, mGridCardOnClickListenerProvider, null,
                 getClass().getSimpleName());
         mMediator.registerOrientationListener(mGridLayoutManager);
+        TrackerFactory.setTrackerForTests(mTracker);
     }
 
     @After
@@ -365,8 +374,7 @@ public class TabListMediatorUnitTest {
 
         doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
 
-        mMediator.getItemTouchHelperCallback(0f, 0f, 0f)
-                .onMove(mRecyclerView, mViewHolder1, mViewHolder2);
+        getItemTouchHelperCallback().onMove(mRecyclerView, mViewHolder1, mViewHolder2);
 
         verify(mTabModel).moveTab(eq(TAB1_ID), eq(2));
     }
@@ -393,6 +401,7 @@ public class TabListMediatorUnitTest {
 
         verify(mTabGroupModelFilter).mergeTabsToGroup(eq(TAB2_ID), eq(TAB1_ID));
         verify(mRecyclerView).removeView(mItemView2);
+        verify(mTracker).notifyEvent(eq(EventConstants.TAB_DRAG_AND_DROP_TO_GROUP));
     }
 
     @Test
@@ -1140,7 +1149,8 @@ public class TabListMediatorUnitTest {
     }
 
     private TabGridItemTouchHelperCallback getItemTouchHelperCallback() {
-        return (TabGridItemTouchHelperCallback) mMediator.getItemTouchHelperCallback(0f, 0f, 0f);
+        return (TabGridItemTouchHelperCallback) mMediator.getItemTouchHelperCallback(
+                0f, 0f, 0f, mProfile);
     }
 
     private void setUpForTabGroupOperation() {

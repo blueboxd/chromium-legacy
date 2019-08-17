@@ -257,8 +257,10 @@ void AppendWorkaroundsToCommandLine(const GpuFeatureInfo& gpu_feature_info,
   if (gpu_feature_info.IsWorkaroundEnabled(DISABLE_DIRECT_COMPOSITION)) {
     command_line->AppendSwitch(switches::kDisableDirectComposition);
   }
-  if (gpu_feature_info.IsWorkaroundEnabled(DISABLE_DIRECT_COMPOSITION_LAYERS)) {
-    command_line->AppendSwitch(switches::kDisableDirectCompositionLayers);
+  if (gpu_feature_info.IsWorkaroundEnabled(
+          DISABLE_DIRECT_COMPOSITION_VIDEO_OVERLAYS)) {
+    command_line->AppendSwitch(
+        switches::kDisableDirectCompositionVideoOverlays);
   }
 #endif
 }

@@ -23,7 +23,8 @@ class CC_PAINT_EXPORT PaintWorkletJob {
   // override the Blink-provided value for properties which are being animated.
   // For a custom property, its name is sufficient to uniquely identify it.
   // TODO(xidachen): support more property types such as color.
-  using AnimatedPropertyValues = base::flat_map<std::string, float>;
+  using AnimatedPropertyValues =
+      base::flat_map<std::string, PaintWorkletInput::PropertyValue>;
   PaintWorkletJob(int layer_id,
                   scoped_refptr<const PaintWorkletInput> input,
                   AnimatedPropertyValues animated_property_values);

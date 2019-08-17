@@ -13,6 +13,7 @@
 #include "base/timer/timer.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/db/database_manager.h"
+#include "components/safe_browsing/proto/realtimeapi.pb.h"
 #include "content/public/common/resource_type.h"
 #include "net/http/http_request_headers.h"
 #include "url/gurl.h"
@@ -108,7 +109,13 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
                               SBThreatType threat_type,
                               const ThreatMetadata& metadata) override;
 
-  void OnCheckUrlTimeout();
+  void OnCheckUrlForHighConfidenceAllowlist(bool did_match_allowlist) override;
+
+  void OnTimeout();
+
+  void OnUrlResult(const GURL& url,
+                   SBThreatType threat_type,
+                   const ThreatMetadata& metadata);
 
   void CheckUrlImpl(const GURL& url,
                     const std::string& method,
@@ -127,6 +134,9 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   // Returns false if this object has been destroyed by the callback. In that
   // case none of the members of this object should be touched again.
   bool RunNextCallback(bool proceed, bool showed_interstitial);
+
+  // Called when the |response| from the real-time lookup service is received.
+  void OnRTLookupResponse(std::unique_ptr<RTLookupResponse> response);
 
   enum State {
     // Haven't started checking or checking is complete.

@@ -28,6 +28,10 @@ jumbo_source_set("base") {
     visibility += [ "//media/base/mac" ]
   }
 
+  if (is_android) {
+    visibility += [ "//gpu/ipc/common:android_texture_owner_unittests" ]
+  }
+
   sources = [
     "android_overlay_config.cc",
     "android_overlay_config.h",

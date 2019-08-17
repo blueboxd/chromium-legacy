@@ -84,6 +84,25 @@ void UpdateViewFromEyeParameters(
   view.UpdateOffset(eye->offset.x(), eye->offset.y(), eye->offset.z());
 }
 
+// Returns the session feature corresponding to the given reference space type.
+XRSessionFeature MapReferenceSpaceTypeToFeature(XRReferenceSpace::Type type) {
+  switch (type) {
+    case XRReferenceSpace::Type::kTypeViewer:
+      return XRSessionFeature::kViewer;
+    case XRReferenceSpace::Type::kTypeLocal:
+      return XRSessionFeature::kLocal;
+    case XRReferenceSpace::Type::kTypeLocalFloor:
+      return XRSessionFeature::kLocalFloor;
+    case XRReferenceSpace::Type::kTypeBoundedFloor:
+      return XRSessionFeature::kBoundedFloor;
+    case XRReferenceSpace::Type::kTypeUnbounded:
+      return XRSessionFeature::kUnbounded;
+  }
+
+  NOTREACHED();
+  return XRSessionFeature::kUnbounded;
+}
+
 }  // namespace
 
 class XRSession::XRSessionResizeObserverDelegate final
@@ -117,13 +136,13 @@ XRSession::XRSession(
     EnvironmentBlendMode environment_blend_mode,
     bool uses_input_eventing,
     bool sensorless_session,
-    const WTF::HashSet<XRSessionFeature>& enabled_features)
+    XRSessionFeatureSet enabled_features)
     : xr_(xr),
       mode_(mode),
       environment_integration_(mode == kModeImmersiveAR),
       world_tracking_state_(MakeGarbageCollected<XRWorldTrackingState>()),
       world_information_(MakeGarbageCollected<XRWorldInformation>(this)),
-      enabled_features_(enabled_features),
+      enabled_features_(std::move(enabled_features)),
       input_sources_(MakeGarbageCollected<XRInputSourceArray>()),
       client_binding_(this, std::move(client_request)),
       input_binding_(this),
@@ -272,6 +291,16 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
                                            kReferenceSpaceNotSupported));
   }
 
+  // If the session feature required by this reference space type is not
+  // enabled, reject the session.
+  if (!enabled_features_.Contains(
+          MapReferenceSpaceTypeToFeature(requested_type))) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
+                                           kReferenceSpaceNotSupported));
+  }
+
   XRReferenceSpace* reference_space = nullptr;
   switch (requested_type) {
     case XRReferenceSpace::Type::kTypeViewer:
@@ -293,11 +322,6 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
 
       if (supports_bounded) {
         reference_space = MakeGarbageCollected<XRBoundedReferenceSpace>(this);
-      } else {
-        return ScriptPromise::RejectWithDOMException(
-            script_state, MakeGarbageCollected<DOMException>(
-                              DOMExceptionCode::kNotSupportedError,
-                              kReferenceSpaceNotSupported));
       }
       break;
     }
@@ -305,13 +329,17 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
       if (immersive() && environment_integration_) {
         reference_space = MakeGarbageCollected<XRReferenceSpace>(
             this, XRReferenceSpace::Type::kTypeUnbounded);
-      } else {
-        return ScriptPromise::RejectWithDOMException(
-            script_state, MakeGarbageCollected<DOMException>(
-                              DOMExceptionCode::kNotSupportedError,
-                              kReferenceSpaceNotSupported));
       }
       break;
+  }
+
+  // If the above switch statement failed to assign to reference_space,
+  // it's because the reference space wasn't supported by the device.
+  if (!reference_space) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
+                                           kReferenceSpaceNotSupported));
   }
 
   DCHECK(reference_space);

@@ -1039,11 +1039,14 @@ PhysicalOffset LayoutBox::CalculateAutoscrollDirection(
   return PhysicalOffset::FromFloatSizeRound(point - point_in_root_frame);
 }
 
-LayoutBox* LayoutBox::FindAutoscrollable(LayoutObject* layout_object) {
+LayoutBox* LayoutBox::FindAutoscrollable(LayoutObject* layout_object,
+                                         bool is_middle_click_autoscroll) {
   while (layout_object && !(layout_object->IsBox() &&
                             ToLayoutBox(layout_object)->CanAutoscroll())) {
-    // Do not start autoscroll when the node is inside a fixed-position element.
-    if (layout_object->IsBox() && ToLayoutBox(layout_object)->HasLayer() &&
+    // Do not start selection-based autoscroll when the node is inside a
+    // fixed-position element.
+    if (!is_middle_click_autoscroll && layout_object->IsBox() &&
+        ToLayoutBox(layout_object)->HasLayer() &&
         ToLayoutBox(layout_object)->Layer()->FixedToViewport()) {
       return nullptr;
     }
@@ -3035,7 +3038,7 @@ LayoutUnit LayoutBox::ComputeIntrinsicLogicalWidthUsing(
     LayoutUnit available_logical_width,
     LayoutUnit border_and_padding) const {
   if (logical_width_length.IsFillAvailable()) {
-    if (!IsHTMLMarqueeElement(GetNode())) {
+    if (!IsA<HTMLMarqueeElement>(GetNode())) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kCSSFillAvailableLogicalWidth);
     }
@@ -3582,7 +3585,7 @@ LayoutUnit LayoutBox::ComputeIntrinsicLogicalContentHeightUsing(
     return intrinsic_content_height;
   }
   if (logical_height_length.IsFillAvailable()) {
-    if (!IsHTMLMarqueeElement(GetNode())) {
+    if (!IsA<HTMLMarqueeElement>(GetNode())) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kCSSFillAvailableLogicalHeight);
     }
@@ -3710,12 +3713,16 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPercentageResolution(
         // of their parent cell's height are considered to have an auto
         // height if they have overflow set to visible or hidden or if
         // they are replaced elements, and a 0px height if they have not.
-        LayoutTableCell* cell = ToLayoutTableCell(cb);
+        const LayoutNGTableCellInterface* cell =
+            ToInterface<LayoutNGTableCellInterface>(cb);
         if (StyleRef().OverflowY() != EOverflow::kVisible &&
             StyleRef().OverflowY() != EOverflow::kHidden &&
             !ShouldBeConsideredAsReplaced() &&
-            (!cell->StyleRef().LogicalHeight().IsAuto() ||
-             !cell->Table()->StyleRef().LogicalHeight().IsAuto()))
+            (!cb->StyleRef().LogicalHeight().IsAuto() || !cell->TableInterface()
+                                                              ->ToLayoutObject()
+                                                              ->StyleRef()
+                                                              .LogicalHeight()
+                                                              .IsAuto()))
           return LayoutUnit();
         return LayoutUnit(-1);
       }
@@ -5887,9 +5894,9 @@ static void MarkBoxForRelayoutAfterSplit(LayoutBox* box) {
     // Because we may have added some sections with already computed column
     // structures, we need to sync the table structure with them now. This
     // avoids crashes when adding new cells to the table.
-    ToLayoutTable(box)->ForceSectionsRecalc();
+    ToInterface<LayoutNGTableInterface>(box)->ForceSectionsRecalc();
   } else if (box->IsTableSection()) {
-    ToLayoutTableSection(box)->SetNeedsCellRecalc();
+    ToInterface<LayoutNGTableSectionInterface>(box)->SetNeedsCellRecalc();
   }
 
   box->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(

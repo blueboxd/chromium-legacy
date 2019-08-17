@@ -54,7 +54,7 @@ Polymer({
     this.offlineContentDiv.hidden = navigator.onLine;
 
     window.addEventListener('online', () => {
-      this.webviewDiv.style.hidden = false;
+      this.webviewDiv.hidden = false;
       this.offlineContentDiv.hidden = true;
     });
 

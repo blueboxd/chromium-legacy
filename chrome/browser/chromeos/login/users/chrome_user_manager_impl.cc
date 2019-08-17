@@ -102,6 +102,7 @@
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/browser/device_local_account_util.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -293,6 +294,35 @@ bool PolicyHasWebTrustedAuthorityCertificate(
   return policy::UserNetworkConfigurationUpdater::
       PolicyHasWebTrustedAuthorityCertificate(
           broker->core()->store()->policy_map());
+}
+
+void CheckCryptohomeIsMounted(base::Optional<bool> result) {
+  if (!result.has_value()) {
+    LOG(ERROR) << "IsMounted call failed.";
+    return;
+  }
+
+  LOG_IF(ERROR, !result.value()) << "Cryptohome is not mounted.";
+}
+
+// If we don't have a mounted profile directory we're in trouble.
+// TODO(davemoore): Once we have better api this check should ensure that
+// our profile directory is the one that's mounted, and that it's mounted
+// as the current user.
+void CheckProfileForSanity() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType))
+    return;
+
+  chromeos::CryptohomeClient::Get()->IsMounted(
+      base::BindOnce(&CheckCryptohomeIsMounted));
+
+  // Confirm that we hadn't loaded the new profile previously.
+  base::FilePath user_profile_dir =
+      g_browser_process->profile_manager()->user_data_dir().Append(
+          chromeos::ProfileHelper::Get()->GetActiveUserProfileDir());
+  CHECK(
+      !g_browser_process->profile_manager()->GetProfileByPath(user_profile_dir))
+      << "The user profile was loaded before we mounted the cryptohome.";
 }
 
 }  // namespace
@@ -1061,12 +1091,7 @@ void ChromeUserManagerImpl::NotifyOnLogin() {
 
   ChromeUserManager::NotifyOnLogin();
 
-  // TODO(nkostylev): Deprecate this notification in favor of
-  // ActiveUserChanged() observer call.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-      content::Source<UserManager>(this),
-      content::Details<const user_manager::User>(GetActiveUser()));
+  CheckProfileForSanity();
 
   UserSessionManager::GetInstance()->PerformPostUserLoggedInActions();
 }

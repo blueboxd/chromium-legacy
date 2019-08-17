@@ -29,8 +29,8 @@ bool WebGPUTest::WebGPUSupported() const {
 }
 
 bool WebGPUTest::WebGPUSharedImageSupported() const {
-  // Currently WebGPUSharedImage is only implemented on Mac
-#if defined(OS_MACOSX) && BUILDFLAG(USE_DAWN)
+  // Currently WebGPUSharedImage is only implemented on Mac and Linux
+#if (defined(OS_MACOSX) || defined(OS_LINUX)) && BUILDFLAG(USE_DAWN)
   return true;
 #else
   return false;
@@ -40,6 +40,9 @@ bool WebGPUTest::WebGPUSharedImageSupported() const {
 void WebGPUTest::SetUp() {
   gpu::GpuPreferences gpu_preferences;
   gpu_preferences.enable_webgpu = true;
+#if defined(OS_LINUX) && BUILDFLAG(USE_DAWN)
+  gpu_preferences.use_vulkan = gpu::VulkanImplementationName::kNative;
+#endif
   gpu_service_holder_ =
       std::make_unique<viz::TestGpuServiceHolder>(gpu_preferences);
 }

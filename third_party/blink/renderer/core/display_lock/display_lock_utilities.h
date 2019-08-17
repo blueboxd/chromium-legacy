@@ -39,22 +39,12 @@ class CORE_EXPORT DisplayLockUtilities {
   static bool ActivateFindInPageMatchRangeIfNeeded(
       const EphemeralRangeInFlatTree& range);
 
-  // Activates all locked nodes in |range| that are activatable and doesn't
-  // have user-select:none. Returns true if we activated at least one node.
-  static bool ActivateSelectionRangeIfNeeded(
-      const EphemeralRangeInFlatTree& range);
-
-  // Updates style for all locked nodes in |range|. Returns true if there's at
-  // least one locked node encountered.
-  static bool UpdateStyleAndLayoutForRangeIfNeeded(
-      const EphemeralRangeInFlatTree& range);
-
-  // Returns activatable-locked inclusive ancestors of |node|.
-  // Note that this function will return an empty list if |node| is inside a
+  // Returns activatable-locked inclusive ancestors of |element|.
+  // Note that this function will have failing DCHECKs if |element| is inside a
   // non-activatable locked subtree (e.g. at least one ancestor is not
   // activatable-locked).
   static const HeapVector<Member<Element>> ActivatableLockedInclusiveAncestors(
-      const Node& node);
+      Element& element);
 
   // Returns the nearest inclusive ancestor of |node| that is display locked.
   static const Element* NearestLockedInclusiveAncestor(const Node& node);

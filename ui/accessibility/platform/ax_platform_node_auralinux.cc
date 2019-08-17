@@ -28,6 +28,7 @@
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_mode_observer.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_role_properties.h"
@@ -951,10 +952,12 @@ char* GetTextWithBoundaryType(AtkText* atk_text,
   // need to convert this input value.
   offset = obj->UnicodeToUTF16OffsetInText(offset);
 
-  int start_offset = obj->FindTextBoundary(boundary, offset,
-                                           AXTextBoundaryDirection::kBackwards);
+  int start_offset = obj->FindTextBoundary(
+      boundary, offset, AXTextBoundaryDirection::kBackwards,
+      ax::mojom::TextAffinity::kDownstream);
   int end_offset = obj->FindTextBoundary(boundary, offset,
-                                         AXTextBoundaryDirection::kForwards);
+                                         AXTextBoundaryDirection::kForwards,
+                                         ax::mojom::TextAffinity::kDownstream);
   if (start_offset < 0 || end_offset < 0)
     return nullptr;
 

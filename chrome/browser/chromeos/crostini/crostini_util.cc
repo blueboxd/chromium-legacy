@@ -300,6 +300,24 @@ std::string ContainerIdToString(const ContainerId& container_id) {
       {"(", container_id.first, ", ", container_id.second, ")"});
 }
 
+bool IsUninstallable(Profile* profile, const std::string& app_id) {
+  if (!IsCrostiniEnabled(profile))
+    return false;
+  if (app_id == kCrostiniTerminalId &&
+      !crostini::CrostiniManager::GetForProfile(profile)
+           ->GetInstallerViewStatus()) {
+    // Crostini should not be uninstalled if the installer is still running.
+    return true;
+  }
+  CrostiniRegistryService* registry_service =
+      CrostiniRegistryServiceFactory::GetForProfile(profile);
+  base::Optional<CrostiniRegistryService::Registration> registration =
+      registry_service->GetRegistration(app_id);
+  if (registration)
+    return registration->CanUninstall();
+  return false;
+}
+
 bool IsCrostiniAllowedForProfile(Profile* profile) {
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);

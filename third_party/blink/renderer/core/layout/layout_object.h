@@ -76,13 +76,16 @@ class LayoutBlockFlow;
 class LayoutFlowThread;
 class LayoutGeometryMap;
 class LayoutMultiColumnSpannerPlaceholder;
+class LayoutNGTableInterface;
+class LayoutNGTableRowInterface;
+class LayoutNGTableSectionInterface;
+class LayoutNGTableCellInterface;
 class LayoutView;
 class LocalFrameView;
 class NGPaintFragment;
 class NGPhysicalBoxFragment;
 class PaintLayer;
 class PseudoStyleRequest;
-
 struct PaintInfo;
 struct PaintInvalidatorContext;
 struct WebScrollIntoViewParams;
@@ -730,6 +733,24 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsTablePart() const {
     return IsTableCell() || IsLayoutTableCol() || IsTableCaption() ||
            IsTableRow() || IsTableSection();
+  }
+  virtual const LayoutNGTableInterface* ToLayoutNGTableInterface() const {
+    DCHECK(false);
+    return nullptr;
+  }
+  virtual const LayoutNGTableSectionInterface* ToLayoutNGTableSectionInterface()
+      const {
+    DCHECK(false);
+    return nullptr;
+  }
+  virtual const LayoutNGTableRowInterface* ToLayoutNGTableRowInterface() const {
+    DCHECK(false);
+    return nullptr;
+  }
+  virtual const LayoutNGTableCellInterface* ToLayoutNGTableCellInterface()
+      const {
+    DCHECK(false);
+    return nullptr;
   }
 
   inline bool IsBeforeContent() const;

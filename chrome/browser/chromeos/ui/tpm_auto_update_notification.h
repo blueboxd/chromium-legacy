@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_UI_TPM_AUTO_UPDATE_NOTIFICATION_H_
 #define CHROME_BROWSER_CHROMEOS_UI_TPM_AUTO_UPDATE_NOTIFICATION_H_
 
-class Profile;
-
 namespace chromeos {
 
 // For the TPM firmware auto-update flow with user acknowledgment users will be
@@ -23,8 +21,8 @@ enum class TpmAutoUpdateUserNotification {
   kOnNextReboot = 2
 };
 
-void ShowAutoUpdateNotification(TpmAutoUpdateUserNotification notification_type,
-                                Profile* profile);
+void ShowAutoUpdateNotification(
+    TpmAutoUpdateUserNotification notification_type);
 
 }  // namespace chromeos
 

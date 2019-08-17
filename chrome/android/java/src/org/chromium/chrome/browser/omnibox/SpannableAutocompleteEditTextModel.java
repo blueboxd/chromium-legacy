@@ -144,14 +144,11 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
             event.setAddedCount(addedCount);
             mDelegate.sendAccessibilityEventUnchecked(event);
         }
-        if (oldState.getSelStart() != newState.getSelEnd()
+
+        if (oldState.getSelStart() != newState.getSelStart()
                 || oldState.getSelEnd() != newState.getSelEnd()) {
-            AccessibilityEvent event =
-                    AccessibilityEvent.obtain(AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED);
-            event.setFromIndex(newState.getSelStart());
-            event.setToIndex(newState.getSelEnd());
-            event.setItemCount(newState.getUserText().length());
-            mDelegate.sendAccessibilityEventUnchecked(event);
+            mDelegate.sendAccessibilityEventUnchecked(
+                    AccessibilityEvent.obtain(AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED));
         }
     }
 

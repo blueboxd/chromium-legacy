@@ -2005,7 +2005,7 @@ std::string NetworkStateHandler::GetTechnologyForType(
   if (type.MatchesType(kTypeTether))
     return kTypeTether;
 
-  NOTREACHED();
+  NOTREACHED() << "Unexpected Type: " << type.ToDebugString();
   return std::string();
 }
 

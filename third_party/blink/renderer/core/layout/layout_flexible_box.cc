@@ -969,66 +969,6 @@ bool LayoutFlexibleBox::HasAutoMarginsInCrossAxis(
          child.StyleRef().MarginRight().IsAuto();
 }
 
-bool LayoutFlexibleBox::UpdateAutoMarginsInCrossAxis(
-    LayoutBox& child,
-    LayoutUnit available_alignment_space) {
-  DCHECK(!child.IsOutOfFlowPositioned());
-  DCHECK_GE(available_alignment_space, LayoutUnit());
-
-  bool is_horizontal = IsHorizontalFlow();
-  const Length& top_or_left = is_horizontal ? child.StyleRef().MarginTop()
-                                            : child.StyleRef().MarginLeft();
-  const Length& bottom_or_right = is_horizontal
-                                      ? child.StyleRef().MarginBottom()
-                                      : child.StyleRef().MarginRight();
-  if (top_or_left.IsAuto() && bottom_or_right.IsAuto()) {
-    AdjustAlignmentForChild(child, available_alignment_space / 2);
-    if (is_horizontal) {
-      child.SetMarginTop(available_alignment_space / 2);
-      child.SetMarginBottom(available_alignment_space / 2);
-    } else {
-      child.SetMarginLeft(available_alignment_space / 2);
-      child.SetMarginRight(available_alignment_space / 2);
-    }
-    return true;
-  }
-  bool should_adjust_top_or_left = true;
-  if (IsColumnFlow() && !child.StyleRef().IsLeftToRightDirection()) {
-    // For column flows, only make this adjustment if topOrLeft corresponds to
-    // the "before" margin, so that flipForRightToLeftColumn will do the right
-    // thing.
-    should_adjust_top_or_left = false;
-  }
-  if (!IsColumnFlow() && child.StyleRef().IsFlippedBlocksWritingMode()) {
-    // If we are a flipped writing mode, we need to adjust the opposite side.
-    // This is only needed for row flows because this only affects the
-    // block-direction axis.
-    should_adjust_top_or_left = false;
-  }
-
-  if (top_or_left.IsAuto()) {
-    if (should_adjust_top_or_left)
-      AdjustAlignmentForChild(child, available_alignment_space);
-
-    if (is_horizontal)
-      child.SetMarginTop(available_alignment_space);
-    else
-      child.SetMarginLeft(available_alignment_space);
-    return true;
-  }
-  if (bottom_or_right.IsAuto()) {
-    if (!should_adjust_top_or_left)
-      AdjustAlignmentForChild(child, available_alignment_space);
-
-    if (is_horizontal)
-      child.SetMarginBottom(available_alignment_space);
-    else
-      child.SetMarginRight(available_alignment_space);
-    return true;
-  }
-  return false;
-}
-
 LayoutUnit LayoutFlexibleBox::ComputeChildMarginValue(const Length& margin) {
   // When resolving the margins, we use the content size for resolving percent
   // and calc (for percents in calc expressions) margins. Fortunately, percent
@@ -1617,10 +1557,11 @@ void LayoutFlexibleBox::AlignChildren(Vector<FlexLine>& line_contexts) {
     for (FlexItem& flex_item : line_context.line_items) {
       DCHECK(!flex_item.box->IsOutOfFlowPositioned());
 
-      if (UpdateAutoMarginsInCrossAxis(
-              *flex_item.box,
-              std::max(LayoutUnit(), flex_item.AvailableAlignmentSpace())))
+      if (flex_item.UpdateAutoMarginsInCrossAxis(
+              std::max(LayoutUnit(), flex_item.AvailableAlignmentSpace()))) {
+        ResetAlignmentForChild(*flex_item.box, flex_item.desired_location.Y());
         continue;
+      }
 
       ItemPosition position = flex_item.Alignment();
       if (position == ItemPosition::kStretch) {

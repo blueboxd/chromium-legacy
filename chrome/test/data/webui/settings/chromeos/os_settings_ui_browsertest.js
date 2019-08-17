@@ -68,7 +68,7 @@ TEST_F('OSSettingsUIBrowserTest', 'MAYBE_AllJsTests', () => {
     });
 
     test('showing menu in toolbar is dependent on narrow mode', () => {
-      const toolbar = assert(ui.$$('cr-toolbar'));
+      const toolbar = assert(ui.$$('os-toolbar'));
       toolbar.narrow = true;
       assertTrue(toolbar.showMenu);
 
@@ -98,7 +98,7 @@ TEST_F('OSSettingsUIBrowserTest', 'MAYBE_AllJsTests', () => {
 
     test('app drawer closes when exiting narrow mode', async () => {
       const drawer = ui.$.drawer;
-      const toolbar = ui.$$('cr-toolbar');
+      const toolbar = ui.$$('os-toolbar');
 
       // Mimic narrow mode and open the drawer.
       toolbar.narrow = true;
@@ -167,7 +167,7 @@ TEST_F('OSSettingsUIBrowserTest', 'MAYBE_AllJsTests', () => {
     });
 
     test('URL initiated search propagates to search box', () => {
-      toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
+      toolbar = /** @type {!OsToolbarElement} */ (ui.$$('os-toolbar'));
       const searchField =
           /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
       assertEquals('', searchField.getSearchInput().value);
@@ -179,7 +179,7 @@ TEST_F('OSSettingsUIBrowserTest', 'MAYBE_AllJsTests', () => {
     });
 
     test('search box initiated search propagates to URL', () => {
-      toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
+      toolbar = /** @type {!OsToolbarElement} */ (ui.$$('os-toolbar'));
       const searchField =
           /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
 
@@ -200,7 +200,7 @@ TEST_F('OSSettingsUIBrowserTest', 'MAYBE_AllJsTests', () => {
     });
 
     test('whitespace only search query is ignored', () => {
-      toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
+      toolbar = /** @type {!OsToolbarElement} */ (ui.$$('os-toolbar'));
       const searchField =
           /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
       searchField.setValue('    ');

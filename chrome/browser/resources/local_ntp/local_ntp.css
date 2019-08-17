@@ -1762,6 +1762,13 @@ html[dir=rtl] #colors-menu .bg-sel-tile .selected-check {
   width: 50%;
 }
 
+html[dir=rtl] #left-semicircle {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: var(--tile-size);
+  border-top-left-radius: 0;
+  border-top-right-radius: var(--tile-size);
+}
+
 #refresh-daily-wrapper {
   display: none;
   margin-inline-start: auto;

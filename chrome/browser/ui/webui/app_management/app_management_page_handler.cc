@@ -22,9 +22,19 @@
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permissions_data.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "components/arc/arc_prefs.h"
+#endif
+
 using apps::mojom::OptionalBool;
 
 namespace {
+
+#if defined(OS_CHROMEOS)
+constexpr char kArcFrameworkPackage[] = "android";
+constexpr int kMinAndroidFrameworkVersion = 28;  // Android P
+#endif
 
 constexpr char const* kAppIdsWithHiddenMoreSettings[] = {
     extension_misc::kFilesManagerAppId,
@@ -78,6 +88,12 @@ AppManagementPageHandler::AppManagementPageHandler(
     return;
 
   Observe(&proxy->AppRegistryCache());
+
+#if defined(OS_CHROMEOS)
+  if (arc::IsArcAllowedForProfile(profile_)) {
+    ArcAppListPrefs::Get(profile_)->AddObserver(this);
+  }
+#endif  // OS_CHROMEOS
 }
 
 AppManagementPageHandler::~AppManagementPageHandler() {}
@@ -247,11 +263,36 @@ void AppManagementPageHandler::OnAppUpdate(const apps::AppUpdate& update) {
   }
 }
 
-void AppManagementPageHandler::OnArcSupportChanged(bool supported) {
-  page_->OnArcSupportChanged(supported);
-}
-
 void AppManagementPageHandler::OnAppRegistryCacheWillBeDestroyed(
     apps::AppRegistryCache* cache) {
   Observe(nullptr);
 }
+
+#if defined(OS_CHROMEOS)
+// static
+bool AppManagementPageHandler::IsCurrentArcVersionSupported(Profile* profile) {
+  if (arc::IsArcAllowedForProfile(profile)) {
+    auto package =
+        ArcAppListPrefs::Get(profile)->GetPackage(kArcFrameworkPackage);
+    return package && (package->package_version >= kMinAndroidFrameworkVersion);
+  }
+  return false;
+}
+
+void AppManagementPageHandler::OnArcVersionChanged(int androidVersion) {
+  page_->OnArcSupportChanged(androidVersion >= kMinAndroidFrameworkVersion);
+}
+
+void AppManagementPageHandler::OnPackageInstalled(
+    const arc::mojom::ArcPackageInfo& package_info) {
+  OnPackageModified(package_info);
+}
+
+void AppManagementPageHandler::OnPackageModified(
+    const arc::mojom::ArcPackageInfo& package_info) {
+  if (package_info.package_name != kArcFrameworkPackage) {
+    return;
+  }
+  OnArcVersionChanged(package_info.package_version);
+}
+#endif  // OS_CHROMEOS

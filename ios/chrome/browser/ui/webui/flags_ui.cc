@@ -44,7 +44,7 @@ web::WebUIIOSDataSource* CreateFlagsUIHTMLSource() {
                              IDS_FLAGS_UI_RELAUNCH_NOTICE);
   source->AddString(flags_ui::kVersion, version_info::GetVersionNumber());
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->AddResourcePath(flags_ui::kFlagsJS, IDR_FLAGS_UI_FLAGS_JS);
   source->SetDefaultResource(IDR_FLAGS_UI_FLAGS_HTML);
   return source;

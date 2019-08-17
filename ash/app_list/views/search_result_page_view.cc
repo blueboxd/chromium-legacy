@@ -300,6 +300,13 @@ void SearchResultPageView::ReorderSearchResultContainers() {
   Layout();
 }
 
+void SearchResultPageView::OnSearchResultContainerResultsChanging() {
+  // Block any result selection changes while result updates are in flight.
+  // The selection will be reset once the results are all updated.
+  if (app_list_features::IsSearchBoxSelectionEnabled())
+    result_selection_controller_->set_block_selection_changes(true);
+}
+
 void SearchResultPageView::OnSearchResultContainerResultsChanged() {
   DCHECK(!result_container_views_.empty());
   DCHECK(result_container_views_.size() == separators_.size() + 1);
@@ -338,6 +345,7 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
 
   if (app_list_features::IsSearchBoxSelectionEnabled()) {
     // Reset selection to first when things change.
+    result_selection_controller_->set_block_selection_changes(false);
     result_selection_controller_->ResetSelection(nullptr /*key_event*/);
   } else {
     // Highlight the first result after search results are updated. Note that

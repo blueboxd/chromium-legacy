@@ -208,11 +208,6 @@ String BiquadFilterNode::type() const {
 }
 
 void BiquadFilterNode::setType(const String& type) {
-  // For the Q histogram, we need to change the name of the AudioParam for the
-  // lowpass and highpass filters so we know to count the Q value when it is
-  // set. And explicitly set the value to itself so the histograms know the
-  // initial value.
-
   if (type == "lowpass") {
     setType(BiquadProcessor::kLowPass);
   } else if (type == "highpass") {

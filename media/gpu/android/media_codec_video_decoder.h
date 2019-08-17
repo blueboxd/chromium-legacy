@@ -128,7 +128,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   // Finishes initialization.
   void StartLazyInit();
   void OnVideoFrameFactoryInitialized(
-      scoped_refptr<TextureOwner> texture_owner);
+      scoped_refptr<gpu::TextureOwner> texture_owner);
 
   // Resets |waiting_for_key_| to false, indicating that MediaCodec might now
   // accept buffers.
@@ -307,6 +307,14 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   // drained; this flag indicates that we also elided the drain, so the codec is
   // in some random state, possibly with output buffers pending.
   bool deferred_flush_pending_ = false;
+
+  // Should we upgrade the next flush to a full release / reallocation of the
+  // codec?  This lets us update our hints to the decoder about the size of the
+  // expected video.
+  bool deferred_reallocation_pending_ = false;
+
+  // Width, in pixels, of the resolution that we last told the codec about.
+  int last_width_ = 0;
 
   // Optional crypto object from the Cdm.
   base::android::ScopedJavaGlobalRef<jobject> media_crypto_;

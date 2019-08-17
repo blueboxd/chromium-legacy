@@ -24,6 +24,14 @@ import java.util.Set;
  */
 public abstract class PaymentInstrument extends EditableOption {
     /**
+     * Whether complete and valid autofill data for merchant's request is available, e.g., if
+     * merchant specifies `requestPayerEmail: true`, then this variable is true only if the autofill
+     * data contains a valid email address. May be used in canMakePayment() for some types of
+     * instruments, such as AutofillPaymentInstrument.
+     */
+    protected boolean mHaveRequestedAutofillData;
+
+    /**
      * The interface for the requester of instrument details.
      */
     public interface InstrumentDetailsCallback {
@@ -131,6 +139,14 @@ public abstract class PaymentInstrument extends EditableOption {
     @Nullable
     public String getCountryCode() {
         return null;
+    }
+
+    /**
+     * @param haveRequestedAutofillData Whether complete and valid autofill data for merchant's
+     *                                  request is available.
+     */
+    /* package*/ void setHaveRequestedAutofillData(boolean haveRequestedAutofillData) {
+        mHaveRequestedAutofillData = haveRequestedAutofillData;
     }
 
     /**

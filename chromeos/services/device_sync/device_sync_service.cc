@@ -21,8 +21,8 @@ DeviceSyncService::DeviceSyncService(
     const GcmDeviceInfoProvider* gcm_device_info_provider,
     ClientAppMetadataProvider* client_app_metadata_provider,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)),
+    mojo::PendingReceiver<mojom::DeviceSyncServiceInitializer> init_receiver)
+    : init_receiver_(this, std::move(init_receiver)),
       identity_manager_(identity_manager),
       gcm_driver_(gcm_driver),
       gcm_device_info_provider_(gcm_device_info_provider),
@@ -37,25 +37,22 @@ DeviceSyncService::~DeviceSyncService() {
     device_sync_->CloseAllBindings();
 }
 
-void DeviceSyncService::OnStart() {
-  PA_LOG(VERBOSE) << "DeviceSyncService::OnStart()";
-
+void DeviceSyncService::Initialize(
+    mojo::PendingReceiver<mojom::DeviceSyncService> receiver,
+    mojo::PendingRemote<prefs::mojom::PrefStoreConnector>
+        pref_store_connector) {
+  PA_LOG(VERBOSE) << "DeviceSyncService::Init()";
+  receiver_.Bind(std::move(receiver));
   device_sync_ = DeviceSyncImpl::Factory::Get()->BuildInstance(
-      identity_manager_, gcm_driver_, service_binding_.GetConnector(),
+      identity_manager_, gcm_driver_, std::move(pref_store_connector),
       gcm_device_info_provider_, client_app_metadata_provider_,
       url_loader_factory_, std::make_unique<base::OneShotTimer>());
-
-  registry_.AddInterface(base::Bind(&DeviceSyncBase::BindRequest,
-                                    base::Unretained(device_sync_.get())));
 }
 
-void DeviceSyncService::OnBindInterface(
-    const service_manager::BindSourceInfo& source_info,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  PA_LOG(VERBOSE) << "DeviceSyncService::OnBindInterface() from interface "
-                  << interface_name << ".";
-  registry_.BindInterface(interface_name, std::move(interface_pipe));
+void DeviceSyncService::BindDeviceSync(
+    mojo::PendingReceiver<mojom::DeviceSync> receiver) {
+  PA_LOG(VERBOSE) << "DeviceSyncService::BindDeviceSync()";
+  device_sync_->BindRequest(std::move(receiver));
 }
 
 }  // namespace device_sync

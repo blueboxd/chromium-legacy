@@ -791,8 +791,9 @@ void RenderThreadImpl::Init() {
 
   audio_output_ipc_factory_.emplace(GetIOTaskRunner());
 
-  registry->AddInterface(base::BindRepeating(&SharedWorkerFactoryImpl::Create),
-                         base::ThreadTaskRunnerHandle::Get());
+  registry->AddInterface(
+      base::BindRepeating(&SharedWorkerFactoryImpl::CreateForRequest),
+      base::ThreadTaskRunnerHandle::Get());
   registry->AddInterface(base::BindRepeating(CreateResourceUsageReporter,
                                              weak_factory_.GetWeakPtr()),
                          base::ThreadTaskRunnerHandle::Get());

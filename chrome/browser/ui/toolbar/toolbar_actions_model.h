@@ -187,6 +187,9 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
   // Returns true if the action is pinned to the toolbar.
   bool IsActionPinned(const ActionId& action_id) const;
 
+  // Move the pinned action for |action_id| to |target_index|.
+  void MovePinnedAction(const ActionId& action_id, size_t target_index);
+
   // Returns the ordered list of ids of pinned actions.
   const std::vector<ActionId>& pinned_action_ids() const {
     return pinned_action_ids_;

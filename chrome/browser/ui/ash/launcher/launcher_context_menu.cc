@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/app_list/extension_uninstaller.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -26,6 +27,16 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/vector_icons.h"
+
+namespace {
+
+void UninstallApp(Profile* profile, const std::string& app_id) {
+  // ExtensionUninstall deletes itself when done or aborted.
+  ExtensionUninstaller* uninstaller = new ExtensionUninstaller(profile, app_id);
+  uninstaller->Run();
+}
+
+}  // namespace
 
 // static
 std::unique_ptr<LauncherContextMenu> LauncherContextMenu::Create(
@@ -118,6 +129,9 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
       else
         controller_->PinAppWithID(item_.id.app_id);
       break;
+    case ash::UNINSTALL:
+      UninstallApp(controller_->profile(), item_.id.app_id);
+      break;
     default:
       NOTREACHED();
   }
@@ -151,6 +165,7 @@ bool LauncherContextMenu::ExecuteCommonCommand(int command_id,
     case ash::MENU_OPEN_NEW:
     case ash::MENU_CLOSE:
     case ash::MENU_PIN:
+    case ash::UNINSTALL:
       LauncherContextMenu::ExecuteCommand(command_id, event_flags);
       return true;
     default:
@@ -198,6 +213,10 @@ const gfx::VectorIcon& LauncherContextMenu::GetCommandIdVectorIcon(
       return views::kOpenIcon;
     case ash::MENU_CLOSE:
       return views::kCloseIcon;
+    case ash::SHOW_APP_INFO:
+      return views::kInfoIcon;
+    case ash::UNINSTALL:
+      return views::kUninstallIcon;
     case ash::MENU_PIN:
       return controller_->IsPinned(item_.id) ? views::kUnpinIcon
                                              : views::kPinIcon;

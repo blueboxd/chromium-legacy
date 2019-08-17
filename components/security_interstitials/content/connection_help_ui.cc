@@ -73,7 +73,7 @@ ConnectionHelpUI::ConnectionHelpUI(content::WebUI* web_ui)
   html_source->AddLocalizedString("connectionHelpShowLess",
                                   IDS_CONNECTION_HELP_SHOW_LESS);
 
-  html_source->SetJsonPath("strings.js");
+  html_source->UseStringsJs();
 
   html_source->AddResourcePath("interstitial_core.css",
                                IDR_SECURITY_INTERSTITIAL_CORE_CSS);

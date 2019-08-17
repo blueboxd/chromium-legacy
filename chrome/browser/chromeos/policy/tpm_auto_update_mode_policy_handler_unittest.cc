@@ -16,9 +16,8 @@
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -43,9 +42,7 @@ class TPMAutoUpdateModePolicyHandlerTest : public testing::Test {
   TPMAutoUpdateModePolicyHandlerTest()
       : local_state_(TestingBrowserProcess::GetGlobal()),
         user_manager_(new chromeos::FakeChromeUserManager()),
-        user_manager_enabler_(base::WrapUnique(user_manager_)),
-        profile_manager_(TestingBrowserProcess::GetGlobal(), &local_state_) {
-    CHECK(profile_manager_.SetUp());
+        user_manager_enabler_(base::WrapUnique(user_manager_)) {
     chromeos::SessionManagerClient::InitializeFakeInMemory();
   }
 
@@ -67,8 +64,7 @@ class TPMAutoUpdateModePolicyHandlerTest : public testing::Test {
   }
 
   void ShowNotification(
-      chromeos::TpmAutoUpdateUserNotification notification_type,
-      Profile* profile) {
+      chromeos::TpmAutoUpdateUserNotification notification_type) {
     last_shown_notification_ = notification_type;
   }
 
@@ -81,7 +77,6 @@ class TPMAutoUpdateModePolicyHandlerTest : public testing::Test {
   ScopedTestingLocalState local_state_;
   chromeos::FakeChromeUserManager* user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
-  TestingProfileManager profile_manager_;
 
   // Set up fake install attributes to pretend the machine is enrolled.
   chromeos::ScopedStubInstallAttributes test_install_attributes_{

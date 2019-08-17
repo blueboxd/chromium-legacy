@@ -15,7 +15,6 @@
 
 class PrefRegistrySimple;
 class PrefService;
-class Profile;
 
 namespace base {
 class OneShotTimer;
@@ -51,8 +50,7 @@ class TPMAutoUpdateModePolicyHandler {
   // informing the user that a TPM update which will clear user data is planned
   // in 24 hours or at next reboot, depending on |notification_type|.
   using ShowNotificationCallback = base::RepeatingCallback<void(
-      chromeos::TpmAutoUpdateUserNotification notification_type,
-      Profile* profile)>;
+      chromeos::TpmAutoUpdateUserNotification notification_type)>;
 
   TPMAutoUpdateModePolicyHandler(chromeos::CrosSettings* cros_settings,
                                  PrefService* local_state);
@@ -109,7 +107,7 @@ class TPMAutoUpdateModePolicyHandler {
 
   UpdateCheckerCallback update_checker_callback_;
 
-  ShowNotificationCallback show_notfication_callback_;
+  ShowNotificationCallback show_notification_callback_;
 
   base::WeakPtrFactory<TPMAutoUpdateModePolicyHandler> weak_factory_;
 

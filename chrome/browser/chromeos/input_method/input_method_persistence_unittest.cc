@@ -22,7 +22,6 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -52,8 +51,7 @@ class InputMethodPersistenceTest : public testing::Test {
     // Create a valid profile for the user.
     TestingProfile* mock_profile = mock_profile_manager_.CreateTestingProfile(
         test_account_id.GetUserEmail());
-    mock_profile_manager_.SetLoggedIn(true);
-    EXPECT_TRUE(ProfileManager::GetActiveUserProfile() == mock_profile);
+    EXPECT_EQ(ProfileManager::GetActiveUserProfile(), mock_profile);
 
     mock_user_prefs_ = mock_profile->GetTestingPrefService();
   }

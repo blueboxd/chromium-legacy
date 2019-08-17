@@ -86,6 +86,6 @@ let testFunction = function(session, fakeDeviceController, t) {
 };
 
 xr_session_promise_test(
-  testName, testFunction, fakeDeviceInitParams, 'immersive-vr');
+  testName, testFunction, fakeDeviceInitParams, 'immersive-vr', { 'requiredFeatures': ['bounded-floor'] });
 
 </script>

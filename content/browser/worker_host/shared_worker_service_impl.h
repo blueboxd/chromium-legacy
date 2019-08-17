@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <set>
+#include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
@@ -81,7 +82,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
 
   // Creates a new worker in the client's renderer process.
   void CreateWorker(
-      std::unique_ptr<SharedWorkerInstance> instance,
+      const SharedWorkerInstance& instance,
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,
       blink::mojom::SharedWorkerClientPtr client,
@@ -91,7 +92,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       const blink::MessagePortChannel& message_port,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
   void DidCreateScriptLoader(
-      std::unique_ptr<SharedWorkerInstance> instance,
+      const SharedWorkerInstance& instance,
       base::WeakPtr<SharedWorkerHost> host,
       blink::mojom::SharedWorkerClientPtr client,
       int client_process_id,
@@ -105,7 +106,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
           controller_service_worker_object_host,
       bool success);
   void StartWorker(
-      std::unique_ptr<SharedWorkerInstance> instance,
+      const SharedWorkerInstance& instance,
       base::WeakPtr<SharedWorkerHost> host,
       blink::mojom::SharedWorkerClientPtr client,
       int client_process_id,

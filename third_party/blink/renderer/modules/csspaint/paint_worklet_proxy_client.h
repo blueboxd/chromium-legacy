@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/renderer/core/css/cssom/paint_worklet_style_property_map.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -100,6 +101,11 @@ class MODULES_EXPORT PaintWorkletProxyClient
   friend class PaintWorkletProxyClientTest;
   FRIEND_TEST_ALL_PREFIXES(PaintWorkletProxyClientTest,
                            PaintWorkletProxyClientConstruction);
+
+  void ApplyAnimatedPropertyOverrides(
+      PaintWorkletStylePropertyMap* style_map,
+      const CompositorPaintWorkletJob::AnimatedPropertyValues&
+          animated_property_values);
 
   // Store the device pixel ratio here so it can be used off main thread
   double device_pixel_ratio_;

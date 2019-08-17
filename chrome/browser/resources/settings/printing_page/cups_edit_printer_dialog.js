@@ -290,12 +290,20 @@ Polymer({
   },
 
   /**
+   * @return {boolean} Whether the current printer was auto configured.
+   * @private
+   */
+  isAutoconfPrinter_: function() {
+    return this.pendingPrinter_.printerPpdReference.autoconf;
+  },
+
+  /**
    * @return {boolean} Whether the Save button is enabled.
    * @private
    */
   canSavePrinter_: function() {
     return this.printerInfoChanged_ &&
-        (this.isPrinterValid() || !this.isOnline_);
+        (this.isPrinterConfigured_() || !this.isOnline_);
   },
 
   /**
@@ -396,16 +404,19 @@ Polymer({
   },
 
   /**
-   * Returns true if the printer has valid name, address, and PPD.
+   * Returns true if the printer has valid name, address, and valid PPD or was
+   * auto-configured.
    * @return {boolean}
+   * @private
    */
-  isPrinterValid: function() {
+  isPrinterConfigured_: function() {
     return settings.printing.isNameAndAddressValid(this.pendingPrinter_) &&
-        settings.printing.isPPDInfoValid(
-            this.pendingPrinter_.ppdManufacturer, this.pendingPrinter_.ppdModel,
-            this.pendingPrinter_.printerPPDPath);
+        (this.isAutoconfPrinter_() ||
+         settings.printing.isPPDInfoValid(
+             this.pendingPrinter_.ppdManufacturer,
+             this.pendingPrinter_.ppdModel,
+             this.pendingPrinter_.printerPPDPath));
   },
-
 
   /**
    * Helper function to copy over modified fields to activePrinter.

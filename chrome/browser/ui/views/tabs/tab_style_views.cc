@@ -370,17 +370,6 @@ float GM2TabStyle::GetZValue() const {
 }
 
 TabStyle::TabColors GM2TabStyle::CalculateColors() const {
-  const ui::ThemeProvider* theme_provider = tab_->GetThemeProvider();
-
-  // These ratios are calculated from the default Chrome theme colors.
-  // Active/inactive are the contrast ratios of the close X against the tab
-  // background. Hovered/pressed are the contrast ratios of the highlight circle
-  // against the tab background.
-  constexpr float kMinimumActiveContrastRatio = 6.05f;
-  constexpr float kMinimumInactiveContrastRatio = 4.61f;
-  constexpr float kMinimumHoveredContrastRatio = 5.02f;
-  constexpr float kMinimumPressedContrastRatio = 4.41f;
-
   // In some cases, inactive tabs may have background more like active tabs than
   // inactive tabs, so colors should be adapted to ensure appropriate contrast.
   // In particular, text should have plenty of contrast in all cases, so switch
@@ -394,48 +383,14 @@ TabStyle::TabColors GM2TabStyle::CalculateColors() const {
   } else if (tab_->mouse_hovered()) {
     expected_opacity = GetHoverOpacity();
   }
-  const SkColor bg_color = color_utils::AlphaBlend(
+  const SkColor background_color = color_utils::AlphaBlend(
       GetTabBackgroundColor(TAB_ACTIVE), GetTabBackgroundColor(TAB_INACTIVE),
       expected_opacity);
 
-  SkColor title_color = tab_->controller()->GetTabForegroundColor(
-      expected_opacity > 0.5f ? TAB_ACTIVE : TAB_INACTIVE, bg_color);
+  const SkColor foreground_color = tab_->controller()->GetTabForegroundColor(
+      expected_opacity > 0.5f ? TAB_ACTIVE : TAB_INACTIVE, background_color);
 
-  const SkColor base_hovered_color = theme_provider->GetColor(
-      ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_HOVER);
-  const SkColor base_pressed_color = theme_provider->GetColor(
-      ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_PRESSED);
-
-  const auto get_color_for_contrast_ratio =
-      [](SkColor fg_color, SkColor bg_color, float contrast_ratio) {
-        return color_utils::BlendForMinContrast(bg_color, bg_color, fg_color,
-                                                contrast_ratio)
-            .color;
-      };
-
-  const SkColor generated_icon_color = get_color_for_contrast_ratio(
-      title_color, bg_color,
-      tab_->IsActive() ? kMinimumActiveContrastRatio
-                       : kMinimumInactiveContrastRatio);
-  const SkColor generated_hovered_color = get_color_for_contrast_ratio(
-      base_hovered_color, bg_color, kMinimumHoveredContrastRatio);
-  const SkColor generated_pressed_color = get_color_for_contrast_ratio(
-      base_pressed_color, bg_color, kMinimumPressedContrastRatio);
-
-  const SkColor generated_hovered_icon_color =
-      color_utils::BlendForMinContrast(title_color, generated_hovered_color)
-          .color;
-  const SkColor generated_pressed_icon_color =
-      color_utils::BlendForMinContrast(title_color, generated_pressed_color)
-          .color;
-
-  return {bg_color,
-          title_color,
-          generated_icon_color,
-          generated_hovered_icon_color,
-          generated_pressed_icon_color,
-          generated_hovered_color,
-          generated_pressed_color};
+  return {foreground_color, background_color};
 }
 
 void GM2TabStyle::PaintTab(gfx::Canvas* canvas, const SkPath& clip) const {

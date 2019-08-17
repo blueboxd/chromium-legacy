@@ -39,7 +39,7 @@ using URLSecurityPolicy =
 // |cert_status| is ignored if error_code is not net::ERR_ABORTED.
 COMPONENTS_DOWNLOAD_EXPORT DownloadInterruptReason
 HandleRequestCompletionStatus(net::Error error_code,
-                              bool ignore_content_length_mismatch,
+                              bool has_strong_validators,
                               net::CertStatus cert_status,
                               bool is_partial_request,
                               DownloadInterruptReason abort_reason);

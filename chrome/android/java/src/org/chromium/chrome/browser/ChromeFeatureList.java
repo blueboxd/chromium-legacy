@@ -310,6 +310,8 @@ public abstract class ChromeFeatureList {
     public static final String SHOW_TRUSTED_PUBLISHER_URL = "ShowTrustedPublisherURL";
     public static final String SPANNABLE_INLINE_AUTOCOMPLETE = "SpannableInlineAutocomplete";
     public static final String START_SURFACE_ANDROID = "StartSurfaceAndroid";
+    public static final String STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT =
+            "StrictHasEnrolledAutofillInstrument";
     public static final String SUBRESOURCE_FILTER = "SubresourceFilter";
     public static final String SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT =
             "SwapPixelFormatToFixConvertFromTranslucent";

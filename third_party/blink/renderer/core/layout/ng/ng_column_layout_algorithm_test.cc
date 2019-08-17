@@ -2030,6 +2030,91 @@ TEST_F(NGColumnLayoutAlgorithmTest, ForcedBreaks) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, ForcedAndUnforcedBreaksAtSameBoundary) {
+  // We have two parallel flows, one with a forced break inside and one with an
+  // unforced break. Check that we handle the block-start margins correctly
+  // (i.e. truncate at unforced breaks but not at forced breaks).
+  //
+  // Note about the #blockchildifier DIV in the test: it's there to force block
+  // layout, as our fragmentation support for floats inside an inline formatting
+  // context is borked; see crbug.com/915929
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div id="blockchildifier"></div>
+        <div style="float:left; width:33px;">
+          <div style="width:10px; height:70px;"></div>
+          <div style="break-before:column; margin-top:50px; width:20px; height:20px;"></div>
+       </div>
+       <div style="float:left; width:34px;">
+         <div style="width:10px; height:70px;"></div>
+        <div style="margin-top:50px; width:20px; height:20px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x0
+        offset:0,0 size:33x100
+          offset:0,0 size:10x70
+        offset:33,0 size:34x100
+          offset:0,0 size:10x70
+      offset:110,0 size:100x70
+        offset:0,0 size:33x70
+          offset:0,50 size:20x20
+        offset:33,0 size:34x20
+          offset:0,0 size:20x20
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, ResumeInsideFormattingContextRoot) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="display:flow-root; width:33px;">
+          <div style="width:10px; height:70px;"></div>
+          <div style="margin-top:50px; width:20px; height:20px;"></div>
+       </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:33x100
+          offset:0,0 size:10x70
+      offset:110,0 size:100x20
+        offset:0,0 size:33x20
+          offset:0,0 size:20x20
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 TEST_F(NGColumnLayoutAlgorithmTest, MinMax) {
   // The multicol container here contains two inline-blocks with a line break
   // opportunity between them. We'll test what min/max values we get for the
@@ -2887,9 +2972,9 @@ TEST_F(NGColumnLayoutAlgorithmTest,
       offset:0,0 size:100x100
         offset:0,0 size:50x70
         offset:0,70 size:100x20
-      offset:110,0 size:100x22
-        offset:0,0 size:57x22
-          offset:1,1 size:44x20
+      offset:110,0 size:100x41
+        offset:0,0 size:57x41
+          offset:1,20 size:44x20
             offset:0,0 size:33x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -2981,6 +3066,43 @@ TEST_F(NGColumnLayoutAlgorithmTest, Nested) {
         offset:0,0 size:100x23
           offset:1,0 size:44x20
             offset:0,0 size:70x20
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, NestedWithEdibleMargin) {
+  // There's a block-start margin after an unforced break. It should be eaten by
+  // the fragmentainer boundary.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .outer { columns:3; height:50px; column-fill:auto; width:320px; }
+      .inner { columns:2; height:100px; column-fill:auto; }
+      .outer, .inner { column-gap:10px; }
+    </style>
+    <div id="container">
+      <div class="outer">
+        <div class="inner">
+          <div style="width:5px; height:80px;"></div>
+          <div style="break-inside:avoid; margin-top:30px; width:10px; height:10px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x50
+    offset:0,0 size:320x50
+      offset:0,0 size:100x50
+        offset:0,0 size:100x50
+          offset:0,0 size:45x50
+            offset:0,0 size:5x50
+          offset:55,0 size:45x50
+            offset:0,0 size:5x30
+      offset:110,0 size:100x50
+        offset:0,0 size:100x50
+          offset:0,0 size:45x10
+            offset:0,0 size:10x10
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }

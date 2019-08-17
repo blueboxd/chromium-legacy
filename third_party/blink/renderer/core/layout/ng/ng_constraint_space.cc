@@ -89,13 +89,20 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
   }
 
   if (block.IsTableCell()) {
-    const LayoutTableCell& cell = ToLayoutTableCell(block);
+    const LayoutNGTableCellInterface& cell =
+        ToInterface<LayoutNGTableCellInterface>(block);
     builder.SetIsTableCell(true);
     builder.SetIsRestrictedBlockSizeTableCell(
-        !cell.StyleRef().LogicalHeight().IsAuto() ||
-        !cell.Table()->StyleRef().LogicalHeight().IsAuto());
-    builder.SetTableCellBorders({cell.BorderStart(), cell.BorderEnd(),
-                                 cell.BorderBefore(), cell.BorderAfter()});
+        !cell.ToLayoutObject()->StyleRef().LogicalHeight().IsAuto() ||
+        !cell.TableInterface()
+             ->ToLayoutObject()
+             ->StyleRef()
+             .LogicalHeight()
+             .IsAuto());
+    const LayoutBlock& cell_block = To<LayoutBlock>(*cell.ToLayoutObject());
+    builder.SetTableCellBorders(
+        {cell_block.BorderStart(), cell_block.BorderEnd(),
+         cell_block.BorderBefore(), cell_block.BorderAfter()});
     builder.SetTableCellIntrinsicPadding(
         {LayoutUnit(), LayoutUnit(), LayoutUnit(cell.IntrinsicPaddingBefore()),
          LayoutUnit(cell.IntrinsicPaddingAfter())});

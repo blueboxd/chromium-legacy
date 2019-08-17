@@ -272,7 +272,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     return;
   }
 
-  if (IsHTMLMarqueeElement(element)) {
+  if (IsA<HTMLMarqueeElement>(element)) {
     // For now, <marquee> requires an overflow clip to work properly.
     style.SetOverflowX(EOverflow::kHidden);
     style.SetOverflowY(EOverflow::kHidden);

@@ -855,40 +855,61 @@ TEST_F(ResourceSchedulerTest,
 // Verify that browser requests that are currently queued are dispatched to the
 // network as soon as the active P2P connections count drops to 0.
 TEST_F(ResourceSchedulerTest, P2PConnectionWentAway) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  base::HistogramTester histogram_tester;
-  base::FieldTrialParams field_trial_params;
-  field_trial_params["throttled_traffic_annotation_tags"] = "727528";
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kPauseBrowserInitiatedHeavyTrafficForP2P, field_trial_params);
-  InitializeScheduler();
+  const struct {
+    int seconds_to_pause_requests_after_end_of_p2p_connections;
+    bool expect_lows_started;
+  } tests[] = {
+      {// When |seconds_to_pause_requests_after_end_of_p2p_connections| is 0,
+       // running the RunLoop should cause the timer to fire and dispatch
+       // queued browser-initiated requests.
+       0, true},
+      {60, false},
+  };
 
-  network_quality_estimator_
-      .SetAndNotifyObserversOfP2PActiveConnectionsCountChange(1u);
-  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  for (const auto& test : tests) {
+    base::test::ScopedFeatureList scoped_feature_list;
+    base::HistogramTester histogram_tester;
+    base::FieldTrialParams field_trial_params;
+    field_trial_params["throttled_traffic_annotation_tags"] = "727528";
+    field_trial_params
+        ["seconds_to_pause_requests_after_end_of_p2p_connections"] =
+            base::NumberToString(
+                test.seconds_to_pause_requests_after_end_of_p2p_connections);
+    scoped_feature_list.InitAndEnableFeatureWithParameters(
+        features::kPauseBrowserInitiatedHeavyTrafficForP2P, field_trial_params);
+    InitializeScheduler();
 
-  std::string url = "http://host/browser-initiatited";
+    network_quality_estimator_
+        .SetAndNotifyObserversOfP2PActiveConnectionsCountChange(1u);
+    network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
+        net::EFFECTIVE_CONNECTION_TYPE_2G);
 
-  net::NetworkTrafficAnnotationTag tag = net::DefineNetworkTrafficAnnotation(
-      "metrics_report_uma",
-      "Traffic annotation for unit, browser and other tests");
-  // (COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH(""));
-  std::unique_ptr<TestRequest> lows = (NewBrowserRequestWithAnnotationTag(
-      url.c_str(), net::LOWEST, tag));  //"metrics_report_uma"));
-  EXPECT_FALSE(lows->started());
+    std::string url = "http://host/browser-initiatited";
 
-  network_quality_estimator_
-      .SetAndNotifyObserversOfP2PActiveConnectionsCountChange(2u);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(lows->started());
+    net::NetworkTrafficAnnotationTag tag = net::DefineNetworkTrafficAnnotation(
+        "metrics_report_uma",
+        "Traffic annotation for unit, browser and other tests");
+    // (COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH(""));
+    std::unique_ptr<TestRequest> lows = (NewBrowserRequestWithAnnotationTag(
+        url.c_str(), net::LOWEST, tag));  //"metrics_report_uma"));
+    EXPECT_FALSE(lows->started());
 
-  network_quality_estimator_
-      .SetAndNotifyObserversOfP2PActiveConnectionsCountChange(0u);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(lows->started());
-  histogram_tester.ExpectTotalCount(
-      "ResourceScheduler.BrowserInitiatedHeavyRequest.QueuingDuration", 1u);
+    network_quality_estimator_
+        .SetAndNotifyObserversOfP2PActiveConnectionsCountChange(2u);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(lows->started());
+
+    network_quality_estimator_
+        .SetAndNotifyObserversOfP2PActiveConnectionsCountChange(0u);
+    EXPECT_FALSE(lows->started());
+
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(test.expect_lows_started, lows->started());
+
+    histogram_tester.ExpectTotalCount(
+        "ResourceScheduler.BrowserInitiatedHeavyRequest.QueuingDuration",
+        test.expect_lows_started ? 1u : 0u);
+  }
 }
 
 // Verify that the previously queued browser requests are dispatched to the

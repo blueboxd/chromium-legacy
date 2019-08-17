@@ -104,10 +104,10 @@ const AXTree::Selection TestAXNodeWrapper::GetUnignoredSelection() const {
 }
 
 AXNodePosition::AXPositionInstance TestAXNodeWrapper::CreateTextPositionAt(
-    int offset,
-    ax::mojom::TextAffinity affinity) const {
-  return ui::AXNodePosition::CreateTextPosition(GetTreeData().tree_id,
-                                                node_->id(), offset, affinity);
+    int offset) const {
+  return ui::AXNodePosition::CreateTextPosition(
+      GetTreeData().tree_id, node_->id(), offset,
+      ax::mojom::TextAffinity::kDownstream);
 }
 
 gfx::NativeViewAccessible TestAXNodeWrapper::GetParent() {

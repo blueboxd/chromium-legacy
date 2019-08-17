@@ -61,7 +61,7 @@ web::WebUIIOSDataSource* CreateInspectUIHTMLSource() {
                              IDS_IOS_INSPECT_UI_CONSOLE_START_LOGGING);
   source->AddLocalizedString("inspectConsoleStopLogging",
                              IDS_IOS_INSPECT_UI_CONSOLE_STOP_LOGGING);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->AddResourcePath("inspect.js", IDR_IOS_INSPECT_JS);
   source->SetDefaultResource(IDR_IOS_INSPECT_HTML);
   return source;

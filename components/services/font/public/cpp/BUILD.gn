@@ -17,21 +17,6 @@ source_set("cpp") {
     "//components/services/font/public/mojom",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/mojom",
     "//skia",
-  ]
-}
-
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//components/services/font/public/mojom",
-    "//services/service_manager/public/cpp",
   ]
 }

@@ -572,9 +572,10 @@ bool TextIteratorAlgorithm<Strategy>::ShouldEmitTabBeforeNode(
     return false;
 
   // Want a tab before every cell other than the first one
-  LayoutTableCell* rc = ToLayoutTableCell(r);
-  LayoutTable* t = rc->Table();
-  return t && (t->CellPreceding(*rc) || t->CellAbove(*rc));
+  const LayoutNGTableCellInterface* rc =
+      ToInterface<LayoutNGTableCellInterface>(r);
+  const LayoutNGTableInterface* t = rc->TableInterface();
+  return t && (t->CellInterfacePreceding(*rc) || t->CellInterfaceAbove(*rc));
 }
 
 template <typename Strategy>
@@ -621,8 +622,9 @@ static bool ShouldEmitNewlinesBeforeAndAfterNode(const Node& node) {
   // Need to make an exception for table row elements, because they are neither
   // "inline" or "LayoutBlock", but we want newlines for them.
   if (r->IsTableRow()) {
-    LayoutTable* t = ToLayoutTableRow(r)->Table();
-    if (t && !t->IsInline())
+    const LayoutNGTableInterface* t =
+        ToInterface<LayoutNGTableRowInterface>(r)->TableInterface();
+    if (t && !t->ToLayoutObject()->IsInline())
       return true;
   }
 

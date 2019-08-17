@@ -24,7 +24,7 @@ namespace {
 // assigned to it.
 void AppendJsonHtml(const base::DictionaryValue* json, std::string* output) {
   std::string javascript_string;
-  AppendJsonJS(json, &javascript_string);
+  AppendJsonJS(json, &javascript_string, /*from_js_module=*/false);
 
   // </ confuses the HTML parser because it could be a </script> tag.  So we
   // replace </ with <\/.  The extra \ will be ignored by the JS engine.
@@ -112,9 +112,18 @@ std::string GetTemplatesHtml(const base::StringPiece& html_template,
   return output;
 }
 
-void AppendJsonJS(const base::DictionaryValue* json, std::string* output) {
+void AppendJsonJS(const base::DictionaryValue* json,
+                  std::string* output,
+                  bool from_js_module) {
   // Convert the template data to a json string.
   DCHECK(json) << "must include json data structure";
+
+  if (from_js_module) {
+    // If the script is being imported as a module, import |loadTimeData| in
+    // order to allow assigning the localized strings to loadTimeData.data.
+    output->append("import {loadTimeData} from ");
+    output->append("'chrome://resources/js/load_time_data.m.js';\n");
+  }
 
   std::string jstext;
   JSONStringValueSerializer serializer(&jstext);

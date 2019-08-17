@@ -7,8 +7,6 @@
 #include "ash/public/cpp/app_menu_constants.h"
 #include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/grit/generated_resources.h"
 
@@ -21,24 +19,7 @@ CrostiniAppContextMenu::CrostiniAppContextMenu(
 CrostiniAppContextMenu::~CrostiniAppContextMenu() = default;
 
 bool CrostiniAppContextMenu::IsUninstallable() const {
-  if (!crostini::IsCrostiniEnabled(profile())) {
-    return false;
-  }
-  if (app_id() == crostini::kCrostiniTerminalId &&
-      !crostini::CrostiniManager::GetForProfile(profile())
-           ->GetInstallerViewStatus()) {
-    // Crostini should not be uninstalled if the installer is still running.
-    return true;
-  }
-
-  crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile());
-  base::Optional<crostini::CrostiniRegistryService::Registration> registration =
-      registry_service->GetRegistration(app_id());
-  if (registration) {
-    return registration->CanUninstall();
-  }
-  return false;
+  return crostini::IsUninstallable(profile(), app_id());
 }
 
 // TODO(timloh): Add support for "App Info" and possibly actions defined in

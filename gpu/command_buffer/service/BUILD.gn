@@ -268,6 +268,8 @@ target(link_target_type, "gles2_sources") {
 
   if (use_dawn) {
     sources += [
+      "dawn_platform.cc",
+      "dawn_platform.h",
       "dawn_service_memory_transfer_service.cc",
       "dawn_service_memory_transfer_service.h",
       "webgpu_decoder_impl.cc",
@@ -324,10 +326,6 @@ target(link_target_type, "gles2_sources") {
     "//ui/gl/init",
   ]
 
-  if (use_dawn) {
-    deps += [ "//third_party/dawn:libdawn_native" ]
-  }
-
   if (enable_vulkan) {
     deps += [
       "//components/viz/common:vulkan_context_provider",
@@ -344,6 +342,13 @@ target(link_target_type, "gles2_sources") {
         "external_vk_image_gl_representation.h",
         "external_vk_image_skia_representation.cc",
         "external_vk_image_skia_representation.h",
+      ]
+    }
+
+    if (is_linux && use_dawn) {
+      sources += [
+        "external_vk_image_dawn_representation.cc",
+        "external_vk_image_dawn_representation.h",
       ]
     }
   }

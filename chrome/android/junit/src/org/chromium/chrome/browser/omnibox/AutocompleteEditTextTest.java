@@ -1173,6 +1173,10 @@ public class AutocompleteEditTextTest {
         if (!isUsingSpannableModel()) mInOrder.verify(mVerifier).onUpdateSelection(len, len);
         verifyOnPopulateAccessibilityEvent(
                 AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED, url, "", 18, 18, 18, -1, -1);
+        if (isUsingSpannableModel()) {
+            verifyOnPopulateAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED,
+                    url, "", 18, 0, 18, -1, -1);
+        }
         mInOrder.verify(mVerifier).onUpdateSelection(0, len);
         verifyOnPopulateAccessibilityEvent(
                 AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED, url, "", 18, 0, 18, -1, -1);
@@ -1180,7 +1184,9 @@ public class AutocompleteEditTextTest {
                 AccessibilityEvent.TYPE_VIEW_FOCUSED, url, "", 2, -1, -1, -1, -1);
 
         if (isUsingSpannableModel()) {
-            assertVerifierCallCounts(1, 3);
+            // TODO(https://crbug.com/935785): Remove this exception when double announcement is
+            // fixed; we expect to see same results as with non-spannable model.
+            assertVerifierCallCounts(1, 4);
         } else {
             assertVerifierCallCounts(2, 3);
         }

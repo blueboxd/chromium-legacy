@@ -20,7 +20,6 @@ class GraphicsContext;
 class Page;
 class LinkHighlightImpl;
 class CompositorAnimationTimeline;
-class WebLayerTreeView;
 class LocalFrame;
 class LayoutObject;
 
@@ -47,8 +46,8 @@ class CORE_EXPORT LinkHighlights final
 
   void StartHighlightAnimationIfNeeded();
 
-  void LayerTreeViewInitialized(WebLayerTreeView&, cc::AnimationHost&);
-  void WillCloseLayerTreeView(WebLayerTreeView&);
+  void AnimationHostInitialized(cc::AnimationHost&);
+  void WillCloseAnimationHost();
 
   bool IsEmpty() const { return link_highlights_.IsEmpty(); }
 

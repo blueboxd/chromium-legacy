@@ -34,6 +34,13 @@ class TestMojoMediaClient : public MojoMediaClient {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       MediaLog* media_log,
       const std::string& audio_device_id) final;
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+  std::unique_ptr<Renderer> CreateCastRenderer(
+      service_manager::mojom::InterfaceProvider* host_interfaces,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      MediaLog* media_log,
+      const base::UnguessableToken& overlay_plane_id) final;
+#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
   std::unique_ptr<CdmFactory> CreateCdmFactory(
       service_manager::mojom::InterfaceProvider* /* host_interfaces */) final;
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)

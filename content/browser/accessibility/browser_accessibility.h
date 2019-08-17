@@ -434,9 +434,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   const ui::AXTreeData& GetTreeData() const override;
   const ui::AXTree::Selection GetUnignoredSelection() const override;
   ui::AXNodePosition::AXPositionInstance CreateTextPositionAt(
-      int offset,
-      ax::mojom::TextAffinity affinity =
-          ax::mojom::TextAffinity::kDownstream) const override;
+      int offset) const override;
   gfx::NativeViewAccessible GetNSWindow() override;
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;

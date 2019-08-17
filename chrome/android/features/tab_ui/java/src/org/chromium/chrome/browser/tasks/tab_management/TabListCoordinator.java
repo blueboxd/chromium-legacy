@@ -183,7 +183,8 @@ public class TabListCoordinator implements Destroyable {
             ItemTouchHelper touchHelper = new ItemTouchHelper(mMediator.getItemTouchHelperCallback(
                     context.getResources().getDimension(R.dimen.swipe_to_dismiss_threshold),
                     context.getResources().getDimension(R.dimen.tab_grid_merge_threshold),
-                    context.getResources().getDimension(R.dimen.bottom_sheet_peek_height)));
+                    context.getResources().getDimension(R.dimen.bottom_sheet_peek_height),
+                    tabModelSelector.getCurrentModel().getProfile()));
             touchHelper.attachToRecyclerView(mRecyclerView);
             mMediator.registerOrientationListener(
                     (GridLayoutManager) mRecyclerView.getLayoutManager());

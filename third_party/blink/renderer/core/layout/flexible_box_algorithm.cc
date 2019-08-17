@@ -143,6 +143,65 @@ void FlexItem::UpdateAutoMarginsInMainAxis(LayoutUnit auto_margin_offset) {
   }
 }
 
+bool FlexItem::UpdateAutoMarginsInCrossAxis(
+    LayoutUnit available_alignment_space) {
+  DCHECK(!box->IsOutOfFlowPositioned());
+  DCHECK_GE(available_alignment_space, LayoutUnit());
+
+  bool is_horizontal = algorithm->IsHorizontalFlow();
+  const Length& top_or_left = is_horizontal ? box->StyleRef().MarginTop()
+                                            : box->StyleRef().MarginLeft();
+  const Length& bottom_or_right = is_horizontal ? box->StyleRef().MarginBottom()
+                                                : box->StyleRef().MarginRight();
+  if (top_or_left.IsAuto() && bottom_or_right.IsAuto()) {
+    desired_location.Move(LayoutUnit(), available_alignment_space / 2);
+    if (is_horizontal) {
+      box->SetMarginTop(available_alignment_space / 2);
+      box->SetMarginBottom(available_alignment_space / 2);
+    } else {
+      box->SetMarginLeft(available_alignment_space / 2);
+      box->SetMarginRight(available_alignment_space / 2);
+    }
+    return true;
+  }
+  bool should_adjust_top_or_left = true;
+  if (algorithm->IsColumnFlow() && !box->StyleRef().IsLeftToRightDirection()) {
+    // For column flows, only make this adjustment if topOrLeft corresponds to
+    // the "before" margin, so that flipForRightToLeftColumn will do the right
+    // thing.
+    should_adjust_top_or_left = false;
+  }
+  if (!algorithm->IsColumnFlow() &&
+      box->StyleRef().IsFlippedBlocksWritingMode()) {
+    // If we are a flipped writing mode, we need to adjust the opposite side.
+    // This is only needed for row flows because this only affects the
+    // block-direction axis.
+    should_adjust_top_or_left = false;
+  }
+
+  if (top_or_left.IsAuto()) {
+    if (should_adjust_top_or_left)
+      desired_location.Move(LayoutUnit(), available_alignment_space);
+
+    if (is_horizontal)
+      box->SetMarginTop(available_alignment_space);
+    else
+      box->SetMarginLeft(available_alignment_space);
+    return true;
+  }
+  if (bottom_or_right.IsAuto()) {
+    if (!should_adjust_top_or_left)
+      desired_location.Move(LayoutUnit(), available_alignment_space);
+
+    if (is_horizontal)
+      box->SetMarginBottom(available_alignment_space);
+    else
+      box->SetMarginRight(available_alignment_space);
+    return true;
+  }
+  return false;
+}
+
 void FlexItem::ComputeStretchedSize() {
   DCHECK_EQ(Alignment(), ItemPosition::kStretch);
   if (MainAxisIsInlineAxis() && box->StyleRef().LogicalHeight().IsAuto()) {

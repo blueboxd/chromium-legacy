@@ -302,7 +302,7 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
     cache->ChildrenChanged(&popup_client_->OwnerElement());
   }
 
-  page_->LayerTreeViewInitialized(*layer_tree_view_, *animation_host_, nullptr);
+  page_->AnimationHostInitialized(*animation_host_, nullptr);
 
   scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
   popup_client_->WriteDocument(data.get());
@@ -330,7 +330,7 @@ void WebPagePopupImpl::PostMessageToPopup(const String& message) {
 }
 
 void WebPagePopupImpl::DestroyPage() {
-  page_->WillCloseLayerTreeView(*layer_tree_view_, nullptr);
+  page_->WillCloseAnimationHost(nullptr);
   page_->WillBeDestroyed();
   page_.Clear();
 }

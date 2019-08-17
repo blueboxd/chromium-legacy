@@ -84,6 +84,7 @@ template("generate_installer") {
 
     deps = [
       ":updater_runtime_deps",
+      "//chrome/updater/win:uninstall.cmd",
       "//chrome/updater/win:updater",
     ]
 

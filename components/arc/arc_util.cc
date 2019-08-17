@@ -11,7 +11,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/optional.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/concierge_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/arc/arc_features.h"
 #include "components/exo/shell_surface_util.h"
@@ -46,6 +49,34 @@ void SetArcCpuRestrictionCallback(
           ? "unprioritize"
           : "prioritize";
   LOG(ERROR) << "Failed to " << message << " ARC";
+}
+
+void OnSetArcVmCpuRestriction(
+    base::Optional<vm_tools::concierge::SetVmCpuRestrictionResponse> response) {
+  if (!response) {
+    LOG(ERROR) << "Failed to call SetVmCpuRestriction";
+    return;
+  }
+  if (response->success())
+    return;
+  // TODO(yusukes): Add logging here once Concierge side is ready.
+}
+
+void SetArcVmCpuRestriction(bool do_restrict) {
+  auto* client = chromeos::DBusThreadManager::Get()->GetConciergeClient();
+  if (!client) {
+    LOG(WARNING) << "ConciergeClient is not available";
+    return;
+  }
+
+  vm_tools::concierge::SetVmCpuRestrictionRequest request;
+  request.set_cpu_cgroup(vm_tools::concierge::CPU_CGROUP_ARCVM);
+  request.set_cpu_restriction_state(
+      do_restrict ? vm_tools::concierge::CPU_RESTRICTION_BACKGROUND
+                  : vm_tools::concierge::CPU_RESTRICTION_FOREGROUND);
+
+  client->SetVmCpuRestriction(request,
+                              base::BindOnce(&OnSetArcVmCpuRestriction));
 }
 
 }  // namespace
@@ -195,15 +226,20 @@ int GetTaskIdFromWindowAppId(const std::string& app_id) {
 }
 
 void SetArcCpuRestriction(bool do_restrict) {
-  if (!chromeos::SessionManagerClient::Get()) {
-    LOG(WARNING) << "SessionManagerClient is not available";
-    return;
-  }
-
   // Ignore any calls to restrict the ARC container if the specified command
   // line flag is set.
   if (chromeos::switches::IsArcCpuRestrictionDisabled() && do_restrict)
     return;
+
+  if (IsArcVmEnabled()) {
+    SetArcVmCpuRestriction(do_restrict);
+    // TODO(yusukes): Add return; here once Concierge side is ready.
+  }
+
+  if (!chromeos::SessionManagerClient::Get()) {
+    LOG(WARNING) << "SessionManagerClient is not available";
+    return;
+  }
 
   const login_manager::ContainerCpuRestrictionState state =
       do_restrict ? login_manager::CONTAINER_CPU_RESTRICTION_BACKGROUND

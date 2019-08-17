@@ -23,7 +23,7 @@ SigninEmailConfirmationUI::SigninEmailConfirmationUI(content::WebUI* web_ui)
 
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUISigninEmailConfirmationHost);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->SetDefaultResource(IDR_SIGNIN_EMAIL_CONFIRMATION_HTML);
   source->AddResourcePath("signin_email_confirmation.js",
                           IDR_SIGNIN_EMAIL_CONFIRMATION_JS);

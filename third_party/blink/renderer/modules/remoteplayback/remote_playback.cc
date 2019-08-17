@@ -92,8 +92,7 @@ RemotePlayback::RemotePlayback(HTMLMediaElement& element)
       state_(mojom::blink::PresentationConnectionState::CLOSED),
       availability_(mojom::ScreenAvailability::UNKNOWN),
       media_element_(&element),
-      is_listening_(false),
-      presentation_connection_binding_(this) {}
+      is_listening_(false) {}
 
 const AtomicString& RemotePlayback::InterfaceName() const {
   return event_target_names::kRemotePlayback;
@@ -469,7 +468,7 @@ void RemotePlayback::RemotePlaybackDisabled() {
 
 void RemotePlayback::CleanupConnections() {
   target_presentation_connection_.reset();
-  presentation_connection_binding_.Close();
+  presentation_connection_receiver_.reset();
 }
 
 void RemotePlayback::AvailabilityChanged(
@@ -504,7 +503,7 @@ void RemotePlayback::OnConnectionSuccess(
 
   StateChanged(mojom::blink::PresentationConnectionState::CONNECTING);
 
-  DCHECK(!presentation_connection_binding_.is_bound());
+  DCHECK(!presentation_connection_receiver_.is_bound());
   auto* presentation_controller =
       PresentationController::FromContext(GetExecutionContext());
   if (!presentation_controller)
@@ -512,7 +511,7 @@ void RemotePlayback::OnConnectionSuccess(
 
   // Note: Messages on |connection_request| are ignored.
   target_presentation_connection_.Bind(std::move(result->connection_ptr));
-  presentation_connection_binding_.Bind(std::move(result->connection_request));
+  presentation_connection_receiver_.Bind(std::move(result->connection_request));
 }
 
 void RemotePlayback::OnConnectionError(

@@ -46,6 +46,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/cache_stats_recorder.h"
+#include "chrome/browser/chrome_browser_interface_binders.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "chrome/browser/chrome_quota_permission_context.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -322,14 +323,10 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "ppapi/host/ppapi_host.h"
 #include "printing/buildflags/buildflags.h"
-#include "services/image_annotation/public/mojom/constants.mojom.h"
-#include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/service_manager/embedder/switches.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "services/strings/grit/services_strings.h"
@@ -3758,6 +3755,11 @@ void ChromeContentBrowserClient::ExposeInterfacesToMediaService(
 #endif
 }
 
+void ChromeContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
+    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
+  chrome::internal::PopulateChromeFrameBinders(map);
+}
+
 void ChromeContentBrowserClient::BindInterfaceRequestFromFrame(
     content::RenderFrameHost* render_frame_host,
     const std::string& interface_name,
@@ -4322,14 +4324,6 @@ void ChromeContentBrowserClient::OverridePageVisibilityState(
   }
 }
 
-// Forward image Annotator requests to the image_annotation service.
-void BindImageAnnotator(image_annotation::mojom::AnnotatorRequest request,
-                        RenderFrameHost* const frame_host) {
-  content::BrowserContext::GetConnectorFor(
-      frame_host->GetProcess()->GetBrowserContext())
-      ->BindInterface(image_annotation::mojom::kServiceName,
-                      std::move(request));
-}
 
 void ChromeContentBrowserClient::InitWebContextInterfaces() {
   frame_interfaces_ = std::make_unique<service_manager::BinderRegistry>();
@@ -4345,8 +4339,6 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
 
   frame_interfaces_parameterized_->AddInterface(
       base::Bind(&InsecureSensitiveInputDriverFactory::BindDriver));
-  frame_interfaces_parameterized_->AddInterface(
-      base::BindRepeating(&BindImageAnnotator));
 
 #if defined(OS_ANDROID)
   frame_interfaces_parameterized_->AddInterface(base::Bind(
@@ -4747,8 +4739,7 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
     content::BrowserContext* browser_context,
     content::RenderFrameHost* frame,
     int render_process_id,
-    bool is_navigation,
-    bool is_download,
+    URLLoaderFactoryType type,
     const url::Origin& request_initiator,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
@@ -4765,8 +4756,8 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
   if (web_request_api) {
     bool use_proxy_for_web_request =
         web_request_api->MaybeProxyURLLoaderFactory(
-            browser_context, frame, render_process_id, is_navigation,
-            is_download, factory_receiver, header_client);
+            browser_context, frame, render_process_id, type, factory_receiver,
+            header_client);
     if (bypass_redirect_checks)
       *bypass_redirect_checks = use_proxy_for_web_request;
     use_proxy |= use_proxy_for_web_request;
@@ -4774,7 +4765,8 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
 #endif
 
   use_proxy |= signin::ProxyingURLLoaderFactory::MaybeProxyRequest(
-      frame, is_navigation, request_initiator, factory_receiver);
+      frame, type == URLLoaderFactoryType::kNavigation, request_initiator,
+      factory_receiver);
 
   return use_proxy;
 }

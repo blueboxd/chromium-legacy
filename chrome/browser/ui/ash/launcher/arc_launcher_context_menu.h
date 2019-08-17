@@ -27,6 +27,9 @@ class ArcLauncherContextMenu : public LauncherContextMenu {
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
+  // Launches App Info UI for ARC apps.
+  void ShowPackageInfo();
+
   void BuildMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
                  GetMenuModelCallback callback);
 

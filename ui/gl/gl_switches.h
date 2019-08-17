@@ -62,8 +62,8 @@ GL_EXPORT extern const char kEnableSgiVideoSync[];
 GL_EXPORT extern const char kDisableGLExtensions[];
 GL_EXPORT extern const char kEnableSwapBuffersWithBounds[];
 GL_EXPORT extern const char kDisableDirectComposition[];
-GL_EXPORT extern const char kEnableDirectCompositionLayers[];
-GL_EXPORT extern const char kDisableDirectCompositionLayers[];
+GL_EXPORT extern const char kEnableDirectCompositionVideoOverlays[];
+GL_EXPORT extern const char kDisableDirectCompositionVideoOverlays[];
 
 // These flags are used by the test harness code, not passed in by users.
 GL_EXPORT extern const char kDisableGLDrawingForTests[];

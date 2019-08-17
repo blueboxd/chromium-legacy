@@ -83,7 +83,7 @@ NetworkErrorsListingUI::NetworkErrorsListingUI(WebUI* web_ui)
       WebUIDataSource::Create(kChromeUINetworkErrorsListingHost);
 
   // Add required resources.
-  html_source->SetJsonPath("strings.js");
+  html_source->UseStringsJs();
   html_source->AddResourcePath("network_errors_listing.css",
                                IDR_NETWORK_ERROR_LISTING_CSS);
   html_source->AddResourcePath("network_errors_listing.js",

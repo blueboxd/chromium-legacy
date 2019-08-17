@@ -425,6 +425,14 @@ class ExtensionDataSource : public AppSearchProvider::DataSource,
         continue;
       }
 
+      // On first login for a given user on a new device, set |last_launch_time|
+      // for OEM app results to Time::Now() so they have a higher relevance than
+      // synced apps.
+      if (profile()->IsNewProfile() &&
+          prefs->WasInstalledByOem(extension->id())) {
+        prefs->SetLastLaunchTime(extension->id(), base::Time::Now());
+      }
+
       apps->emplace_back(std::make_unique<AppSearchProvider::App>(
           this, extension->id(), extension->short_name(),
           prefs->GetLastLaunchTime(extension->id()),
@@ -590,6 +598,12 @@ class ArcDataSource : public IconCachedDataSource,
         NOTREACHED();
         continue;
       }
+
+      // On first login for a given user on a new device, set |last_launch_time|
+      // for OEM app results to Time::Now() so they have a higher relevance than
+      // synced apps.
+      if (profile()->IsNewProfile() && arc_prefs->IsOem(app_id))
+        arc_prefs->SetLastLaunchTime(app_id);
 
       if (!app_info->show_in_launcher)
         continue;

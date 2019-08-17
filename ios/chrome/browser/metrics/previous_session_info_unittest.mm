@@ -157,6 +157,52 @@ TEST_F(PreviousSessionInfoTest, InitializationDifferentVersionMemoryWarning) {
   EXPECT_TRUE([sharedInstance isFirstSessionAfterUpgrade]);
 }
 
+// Creates conditions that exist on the first app run and tests
+// OSRestartedAfterPreviousSession property.
+TEST_F(PreviousSessionInfoTest, InitializationWithoutSystemStartTime) {
+  [PreviousSessionInfo resetSharedInstanceForTesting];
+  [[NSUserDefaults standardUserDefaults]
+      removeObjectForKey:previous_session_info_constants::kOSStartTime];
+
+  EXPECT_FALSE(
+      [[PreviousSessionInfo sharedInstance] OSRestartedAfterPreviousSession]);
+}
+
+// Creates conditions that exist when OS was restarted after the previous app
+// run and tests OSRestartedAfterPreviousSession property.
+TEST_F(PreviousSessionInfoTest, InitializationAfterOSRestart) {
+  [PreviousSessionInfo resetSharedInstanceForTesting];
+
+  // For the previous session OS started 60 seconds before OS has started for
+  // this session.
+  NSTimeInterval current_system_start_time =
+      NSDate.timeIntervalSinceReferenceDate -
+      NSProcessInfo.processInfo.systemUptime;
+  [[NSUserDefaults standardUserDefaults]
+      setDouble:current_system_start_time - 60
+         forKey:previous_session_info_constants::kOSStartTime];
+
+  EXPECT_TRUE(
+      [[PreviousSessionInfo sharedInstance] OSRestartedAfterPreviousSession]);
+}
+
+// Creates conditions that exist when OS was not restarted after the previous
+// app run and tests OSRestartedAfterPreviousSession property.
+TEST_F(PreviousSessionInfoTest, InitializationForSecondSessionAfterOSRestart) {
+  [PreviousSessionInfo resetSharedInstanceForTesting];
+
+  // OS startup time is the same for this and previous session.
+  NSTimeInterval current_system_start_time =
+      NSDate.timeIntervalSinceReferenceDate -
+      NSProcessInfo.processInfo.systemUptime;
+  [[NSUserDefaults standardUserDefaults]
+      setDouble:current_system_start_time
+         forKey:previous_session_info_constants::kOSStartTime];
+
+  EXPECT_FALSE(
+      [[PreviousSessionInfo sharedInstance] OSRestartedAfterPreviousSession]);
+}
+
 TEST_F(PreviousSessionInfoTest, BeginRecordingCurrentSession) {
   [PreviousSessionInfo resetSharedInstanceForTesting];
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];

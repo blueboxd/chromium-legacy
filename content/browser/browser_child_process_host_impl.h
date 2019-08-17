@@ -89,6 +89,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   const base::Process& GetProcess() override;
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
+  void BindHostReceiver(mojo::GenericPendingReceiver receiver) override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;

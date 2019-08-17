@@ -70,7 +70,7 @@ SmbShareDialogUI::SmbShareDialogUI(content::WebUI* web_ui)
   source->AddBoolean("isActiveDirectoryUser",
                      user && user->IsActiveDirectoryUser());
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->SetDefaultResource(IDR_SMB_SHARES_DIALOG_CONTAINER_HTML);
   source->AddResourcePath("smb_share_dialog.html", IDR_SMB_SHARES_DIALOG_HTML);
   source->AddResourcePath("smb_share_dialog.js", IDR_SMB_SHARES_DIALOG_JS);

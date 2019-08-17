@@ -357,6 +357,8 @@ void PaymentRequestState::AddAutofillPaymentInstrument(
   auto instrument = std::make_unique<AutofillPaymentInstrument>(
       basic_card_network, card, matches_merchant_card_type_exactly,
       shipping_profiles_, app_locale_, payment_request_delegate_);
+  instrument->set_is_requested_autofill_data_available(
+      is_requested_autofill_data_available_);
   available_instruments_.push_back(std::move(instrument));
 
   if (selected) {
@@ -542,6 +544,7 @@ void PaymentRequestState::PopulateProfileCache() {
         contact_profiles_.empty()
             ? false
             : profile_comparator()->IsContactInfoComplete(contact_profiles_[0]);
+    is_requested_autofill_data_available_ &= has_complete_contact;
     journey_logger_->SetNumberOfSuggestionsShown(
         JourneyLogger::Section::SECTION_CONTACT_INFO, contact_profiles_.size(),
         has_complete_contact);
@@ -551,6 +554,7 @@ void PaymentRequestState::PopulateProfileCache() {
         shipping_profiles_.empty()
             ? false
             : profile_comparator()->IsShippingComplete(shipping_profiles_[0]);
+    is_requested_autofill_data_available_ &= has_complete_shipping;
     journey_logger_->SetNumberOfSuggestionsShown(
         JourneyLogger::Section::SECTION_SHIPPING_ADDRESS,
         shipping_profiles_.size(), has_complete_shipping);

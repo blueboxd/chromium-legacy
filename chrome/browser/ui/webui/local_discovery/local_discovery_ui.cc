@@ -81,7 +81,7 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
   };
   AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
 
   source->DisableDenyXFrameOptions();
 

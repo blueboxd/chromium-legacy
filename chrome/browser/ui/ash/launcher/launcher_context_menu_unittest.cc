@@ -140,7 +140,7 @@ class LauncherContextMenuTest : public ChromeAshTestBase {
 
   ArcAppTest& arc_test() { return arc_test_; }
 
-  Profile* profile() { return &profile_; }
+  TestingProfile* profile() { return &profile_; }
 
   ChromeLauncherController* controller() { return launcher_controller_.get(); }
 
@@ -217,7 +217,32 @@ TEST_F(LauncherContextMenuTest,
   ASSERT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_CLOSE));
 }
 
+// Verifies that "App Info and Uninstall" are shown in context menu for pinned
+// apps.
+TEST_F(LauncherContextMenuTest, GeneralAppContextMenuInfoUninstall) {
+  const int64_t display_id = GetPrimaryDisplay().id();
+  std::unique_ptr<LauncherContextMenu> launcher_context_menu =
+      CreateLauncherContextMenu(ash::TYPE_PINNED_APP, display_id);
+  std::unique_ptr<ui::MenuModel> menu =
+      GetMenuModel(launcher_context_menu.get());
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::SHOW_APP_INFO));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
+}
+
+// Verifies that "App Info and Uninstall" are shown in context menu for V1, V2,
+// and ARC apps.
+TEST_F(LauncherContextMenuTest, ArcAppContextMenuInfoUninstall) {
+  const int64_t display_id = GetPrimaryDisplay().id();
+  std::unique_ptr<LauncherContextMenu> launcher_context_menu =
+      CreateLauncherContextMenu(ash::TYPE_APP, display_id);
+  std::unique_ptr<ui::MenuModel> menu =
+      GetMenuModel(launcher_context_menu.get());
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::SHOW_APP_INFO));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
+}
+
 // Verifies context menu and app menu items for ARC app.
+// The 0th item is sticky but not the following.
 TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
   arc_test().app_instance()->SendRefreshAppList(
       std::vector<arc::mojom::AppInfo>(arc_test().fake_apps().begin(),
@@ -244,6 +269,8 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
   // ARC app is pinned but not running.
   EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_OPEN_NEW));
   EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_PIN));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::SHOW_APP_INFO));
+  EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
   EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_CLOSE));
 
   // ARC app is running.
@@ -264,6 +291,8 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
   EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_OPEN_NEW));
   EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_PIN));
   EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_CLOSE));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::SHOW_APP_INFO));
+  EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
 
   // ARC non-launchable app is running.
   const std::string app_id2 = ArcAppTest::GetAppId(arc_test().fake_apps()[1]);
@@ -290,6 +319,8 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
   EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_OPEN_NEW));
   EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_PIN));
   EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_CLOSE));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::SHOW_APP_INFO));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
 
   // Shelf group context menu.
   std::vector<arc::mojom::ShortcutInfo> shortcuts = arc_test().fake_shortcuts();
@@ -331,6 +362,8 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
     EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_OPEN_NEW));
     EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_PIN));
     EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_CLOSE));
+    EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::SHOW_APP_INFO));
+    EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
 
     menu_list = item_delegate3->GetAppMenuItems(0 /* event_flags */);
     ASSERT_EQ(i + 1, menu_list.size());
@@ -368,6 +401,8 @@ TEST_F(LauncherContextMenuTest, ArcLauncherSuspendAppMenu) {
   EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_OPEN_NEW));
   EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_PIN));
   EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_CLOSE));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::SHOW_APP_INFO));
+  EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
 }
 
 TEST_F(LauncherContextMenuTest, ArcDeferredLauncherContextMenuItemCheck) {
@@ -405,6 +440,8 @@ TEST_F(LauncherContextMenuTest, ArcDeferredLauncherContextMenuItemCheck) {
   EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_OPEN_NEW));
   EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_PIN));
   EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_CLOSE));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::SHOW_APP_INFO));
+  EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
 
   item_delegate = model()->GetShelfItemDelegate(shelf_id2);
   ASSERT_TRUE(item_delegate);
@@ -414,6 +451,8 @@ TEST_F(LauncherContextMenuTest, ArcDeferredLauncherContextMenuItemCheck) {
   EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_OPEN_NEW));
   EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_PIN));
   EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_CLOSE));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::SHOW_APP_INFO));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
 }
 
 TEST_F(LauncherContextMenuTest, CommandIdsMatchEnumsForHistograms) {
@@ -432,10 +471,10 @@ TEST_F(LauncherContextMenuTest, CommandIdsMatchEnumsForHistograms) {
 }
 
 TEST_F(LauncherContextMenuTest, ArcContextMenuOptions) {
-  // Tests that there are 8 ARC app context menu options. If you're
-  // adding a context menu option ensure that you have added the enum to
-  // tools/metrics/enums.xml and that you haven't modified the order of the
-  // existing enums.
+  // Tests that there are the right number of ARC app context menu options. If
+  // you're adding a context menu option ensure that you have added the enum to
+  // tools/metrics/histograms/enums.xml and that you haven't modified the order
+  // of the existing enums.
   arc_test().app_instance()->SendRefreshAppList(
       std::vector<arc::mojom::AppInfo>(arc_test().fake_apps().begin(),
                                        arc_test().fake_apps().begin() + 1));
@@ -452,8 +491,8 @@ TEST_F(LauncherContextMenuTest, ArcContextMenuOptions) {
   std::unique_ptr<ui::MenuModel> menu =
       GetContextMenu(item_delegate, primary_id);
 
-  // Test that there are 8 items in an ARC app context menu.
-  EXPECT_EQ(8, menu->GetItemCount());
+  // Test that there are 9 items in an ARC app context menu.
+  EXPECT_EQ(9, menu->GetItemCount());
 }
 
 // Tests that the context menu of internal app  is correct.
@@ -578,6 +617,7 @@ TEST_F(LauncherContextMenuTest, CrostiniNormalApp) {
   // care that one is shown.
   EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::CROSTINI_USE_LOW_DENSITY) ||
               IsItemEnabledInMenu(menu.get(), ash::CROSTINI_USE_HIGH_DENSITY));
+  EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
 }
 
 // Confirms the menu items for unregistered crostini apps (i.e. apps that do not

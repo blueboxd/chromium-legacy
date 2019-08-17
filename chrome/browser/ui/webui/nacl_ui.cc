@@ -63,7 +63,7 @@ content::WebUIDataSource* CreateNaClUIHTMLSource() {
       content::WebUIDataSource::Create(chrome::kChromeUINaClHost);
   source->OverrideContentSecurityPolicyScriptSrc(
       "script-src chrome://resources 'self' 'unsafe-eval';");
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->AddResourcePath("about_nacl.css", IDR_ABOUT_NACL_CSS);
   source->AddResourcePath("about_nacl.js", IDR_ABOUT_NACL_JS);
   source->SetDefaultResource(IDR_ABOUT_NACL_HTML);

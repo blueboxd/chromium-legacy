@@ -226,8 +226,9 @@ public class PickerCategoryView extends RelativeLayout
             selection.add(item);
         }
 
-        // TODO(finnur): Do this asynchronously to make the number roll view show the right number.
-        mSelectionDelegate.setSelectedItems(selection);
+        // Post a runnable to update the selection so that the update occurs after the search fully
+        // finishes, ensuring the number roll shows the right number.
+        getHandler().post(() -> mSelectionDelegate.setSelectedItems(selection));
     }
 
     @Override

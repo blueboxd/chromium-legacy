@@ -177,6 +177,11 @@ std::vector<SupportedVideoDecoderConfig> GetSupportedConfigsInternal(
 
 }  // namespace
 
+// When re-initializing the codec changes the resolution to be more than
+// |kReallocateThreshold| times the old one, force a codec reallocation to
+// update the hints that we provide to MediaCodec.  crbug.com/989182 .
+constexpr static float kReallocateThreshold = 4;
+
 // static
 PendingDecode PendingDecode::CreateEos() {
   return {DecoderBuffer::CreateEOSBuffer(), base::DoNothing()};
@@ -327,6 +332,25 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   // Do the rest of the initialization lazily on the first decode.
   BindToCurrentLoop(std::move(init_cb)).Run(true);
+
+  const int width = config.coded_size().width();
+  // On re-init, reallocate the codec if the size has changed too much.
+  // Restrict this behavior to Q, where the behavior changed.
+  if (first_init) {
+    last_width_ = width;
+  } else if (width > last_width_ * kReallocateThreshold && device_info_ &&
+             device_info_->SdkVersion() > base::android::SDK_VERSION_P) {
+    DCHECK(codec_);
+    // Reallocate the codec the next time we queue input, once there are no
+    // outstanding output buffers.  Note that |deferred_flush_pending_| might
+    // already be set, which is fine.  We're just upgrading the flush.
+    //
+    // If the codec IsDrained(), then we'll flush anyway.  However, just to be
+    // sure, request a deferred flush.
+    deferred_flush_pending_ = true;
+    deferred_reallocation_pending_ = true;
+    last_width_ = width;
+  }  // else leave |last_width_| unmodified, since we're re-using the codec.
 }
 
 void MediaCodecVideoDecoder::SetCdm(CdmContext* cdm_context, InitCB init_cb) {
@@ -431,7 +455,7 @@ void MediaCodecVideoDecoder::StartLazyInit() {
 }
 
 void MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized(
-    scoped_refptr<TextureOwner> texture_owner) {
+    scoped_refptr<gpu::TextureOwner> texture_owner) {
   DVLOG(2) << __func__;
   TRACE_EVENT0("media",
                "MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized");
@@ -654,6 +678,28 @@ void MediaCodecVideoDecoder::FlushCodec() {
 
   // If a deferred flush was pending, then it isn't anymore.
   deferred_flush_pending_ = false;
+
+  // Release and re-allocate the codec, if needed, for a resolution change.
+  // This also counts as a flush.  Note that we could also stop / configure /
+  // start the codec, but there's a fair bit of complexity in that.  Timing
+  // tests didn't show any big advantage.  During a resolution change, the time
+  // between the next time we queue an input buffer and the next time we get an
+  // output buffer were:
+  //
+  //  flush only:               0.04 s
+  //  stop / configure / start: 0.026 s
+  //  release / create:         0.03 s
+  //
+  // So, it seems that flushing the codec defers some work (buffer reallocation
+  // or similar) that ends up on the critical path.  I didn't verify what
+  // happens when we're flushing without a resolution change, nor can I quite
+  // explain how anything can be done off the critical path when a flush is
+  // deferred to the first queued input.
+  if (deferred_reallocation_pending_) {
+    deferred_reallocation_pending_ = false;
+    ReleaseCodec();
+    CreateCodec();
+  }
 
   if (!codec_ || codec_->IsFlushed())
     return;

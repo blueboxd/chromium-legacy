@@ -15,7 +15,7 @@
 #include "base/unguessable_token.h"
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
-#include "gpu/ipc/common/android/surface_owner_android.h"
+#include "gpu/ipc/common/android/texture_owner.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "ipc/ipc_listener.h"
 #include "ui/gl/android/surface_texture.h"
@@ -43,9 +43,14 @@ class StreamTexture : public gpu::gles2::GLStreamTextureImage,
  private:
   StreamTexture(GpuChannel* channel,
                 int32_t route_id,
-                std::unique_ptr<gles2::AbstractTexture> surface_owner_texture,
                 scoped_refptr<SharedContextState> context_state);
   ~StreamTexture() override;
+
+  // Static function which is used to access |weak_stream_texture| on correct
+  // thread since WeakPtr is not thread safe.
+  static void RunCallback(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      base::WeakPtr<StreamTexture> weak_stream_texture);
 
   // gl::GLImage implementation:
   gfx::Size GetSize() override;
@@ -98,13 +103,8 @@ class StreamTexture : public gpu::gles2::GLStreamTextureImage,
                            uint32_t release_id);
   void OnDestroy();
 
-  // An AbstractTexture which owns |surface_owner_texture_id_|, which is used
-  // by |surface_owner_|.
-  std::unique_ptr<gles2::AbstractTexture> surface_owner_texture_;
-  uint32_t surface_owner_texture_id_;
-
-  // The SurfaceOwner which receives frames.
-  std::unique_ptr<SurfaceOwner> surface_owner_;
+  // The TextureOwner which receives frames.
+  scoped_refptr<TextureOwner> texture_owner_;
 
   // Current transform matrix of the surface owner.
   float current_matrix_[16];

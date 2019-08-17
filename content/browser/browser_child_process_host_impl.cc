@@ -369,6 +369,11 @@ void BrowserChildProcessHostImpl::BindInterface(
   child_connection_->BindInterface(interface_name, std::move(interface_pipe));
 }
 
+void BrowserChildProcessHostImpl::BindHostReceiver(
+    mojo::GenericPendingReceiver receiver) {
+  delegate_->BindHostReceiver(std::move(receiver));
+}
+
 void BrowserChildProcessHostImpl::HistogramBadMessageTerminated(
     ProcessType process_type) {
   UMA_HISTOGRAM_ENUMERATION("ChildProcess.BadMessgeTerminated", process_type,

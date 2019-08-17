@@ -54,9 +54,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   const AXTreeData& GetTreeData() const override;
   const AXTree::Selection GetUnignoredSelection() const override;
   AXNodePosition::AXPositionInstance CreateTextPositionAt(
-      int offset,
-      ax::mojom::TextAffinity affinity =
-          ax::mojom::TextAffinity::kDownstream) const override;
+      int offset) const override;
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;

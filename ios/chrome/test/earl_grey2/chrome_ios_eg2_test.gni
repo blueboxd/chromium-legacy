@@ -119,15 +119,8 @@ template("chrome_ios_eg2_test_app_host") {
       "EG_MAIN_APPLICATION_DELEGATE=$_eg_main_application_delegate",
       "SSOAUTH_URL_SCHEME=$url_ssoauth_scheme",
       "CONTENT_WIDGET_EXTENSION_BUNDLE_ID=$chromium_bundle_id.ContentTodayExtension",
+      "CHROMIUM_BUNDLE_ID=gtest.$target_name",
     ]
-    if (ios_automatically_manage_certs) {
-      # Use the same bundle identifier for EarlGrey tests as for unit tests
-      # when managing certificates as the number of free certs is limited.
-      extra_substitutions +=
-          [ "CHROMIUM_BUNDLE_ID=gtest.${ios_generic_test_bundle_id_suffix}" ]
-    } else {
-      extra_substitutions += [ "CHROMIUM_BUNDLE_ID=gtest.$target_name" ]
-    }
   }
 }
 

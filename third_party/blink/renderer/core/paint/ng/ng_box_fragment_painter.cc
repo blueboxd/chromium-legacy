@@ -379,19 +379,22 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
 }
 
 void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info) {
+  DCHECK(!box_fragment_.ChildrenInline());
+  DCHECK(!box_fragment_.GetLayoutObject()->ChildrenInline());
+  PaintInfo paint_info_for_descendants = paint_info.ForDescendants();
   for (const NGLink& child : box_fragment_.Children()) {
-    const NGPhysicalFragment& fragment = *child;
-    if (fragment.HasSelfPaintingLayer() || fragment.IsFloating())
+    const NGPhysicalFragment& child_fragment = *child;
+    if (child_fragment.HasSelfPaintingLayer() || child_fragment.IsFloating())
       continue;
 
-    if (fragment.Type() == NGPhysicalFragment::kFragmentBox) {
+    if (child_fragment.Type() == NGPhysicalFragment::kFragmentBox) {
       // TODO(kojii): We could skip going through |LayoutObject| when we know
       // children are always laid out by NG. See
       // |FragmentRequiresLegacyFallback|.
-      fragment.GetLayoutObject()->Paint(paint_info);
+      child_fragment.GetLayoutObject()->Paint(paint_info_for_descendants);
     } else {
-      DCHECK(fragment.Type() == NGPhysicalFragment::kFragmentRenderedLegend)
-          << fragment;
+      DCHECK_EQ(child_fragment.Type(),
+                NGPhysicalFragment::kFragmentRenderedLegend);
     }
   }
 }
@@ -615,11 +618,13 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
   bool needs_end_layer = false;
   if (!box_decoration_data.IsPaintingScrollingBackground()) {
     if (box_fragment_.HasSelfPaintingLayer() && layout_box.IsTableCell() &&
-        ToLayoutTableCell(layout_box).Table()->ShouldCollapseBorders()) {
+        ToInterface<LayoutNGTableCellInterface>(layout_box)
+            .TableInterface()
+            ->ShouldCollapseBorders()) {
       // We have to clip here because the background would paint on top of the
       // collapsed table borders otherwise, since this is a self-painting layer.
       PhysicalRect clip_rect = paint_rect;
-      clip_rect.Expand(ToLayoutTableCell(layout_box).BorderInsets());
+      clip_rect.Expand(layout_box.BorderInsets());
       state_saver.Save();
       paint_info.context.Clip(PixelSnappedIntRect(clip_rect));
     } else if (BleedAvoidanceIsClipping(
@@ -957,8 +962,8 @@ bool NGBoxFragmentPainter::ShouldPaint(
     return paint_state.LocalRectIntersectsCullRect(
         paint_fragment_->InkOverflow());
   }
-  const NGPhysicalFragment& fragment = PhysicalFragment();
-  if (fragment.IsBox() && !fragment.IsInlineBox()) {
+  const NGPhysicalBoxFragment& fragment = PhysicalFragment();
+  if (!fragment.IsInlineBox()) {
     return paint_state.LocalRectIntersectsCullRect(
         ToLayoutBox(fragment.GetLayoutObject())
             ->PhysicalSelfVisualOverflowRect());

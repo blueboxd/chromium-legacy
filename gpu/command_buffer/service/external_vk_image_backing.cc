@@ -20,7 +20,12 @@
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gl/buildflags.h"
 #include "ui/gl/gl_context.h"
+
+#if defined(OS_LINUX) && BUILDFLAG(USE_DAWN)
+#include "gpu/command_buffer/service/external_vk_image_dawn_representation.h"
+#endif
 
 #if defined(OS_FUCHSIA)
 #include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
@@ -145,6 +150,23 @@ class ScopedPixelStore {
   DISALLOW_COPY_AND_ASSIGN(ScopedPixelStore);
 };
 
+base::Optional<DawnTextureFormat> GetDawnFormat(viz::ResourceFormat format) {
+  switch (format) {
+    case viz::RED_8:
+    case viz::ALPHA_8:
+    case viz::LUMINANCE_8:
+      return DAWN_TEXTURE_FORMAT_R8_UNORM;
+    case viz::RG_88:
+      return DAWN_TEXTURE_FORMAT_RG8_UNORM;
+    case viz::RGBA_8888:
+      return DAWN_TEXTURE_FORMAT_RGBA8_UNORM;
+    case viz::BGRA_8888:
+      return DAWN_TEXTURE_FORMAT_BGRA8_UNORM;
+    default:
+      return {};
+  }
+}
+
 }  // namespace
 
 // static
@@ -224,7 +246,8 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
 
   auto backing = base::WrapUnique(new ExternalVkImageBacking(
       mailbox, format, size, color_space, usage, context_state, image, memory,
-      requirements.size, vk_format, command_pool, ycbcr_info));
+      requirements.size, vk_format, command_pool, ycbcr_info,
+      GetDawnFormat(format), mem_alloc_info.memoryTypeIndex));
 
   if (!pixel_data.empty()) {
     backing->WritePixels(
@@ -280,10 +303,13 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
       return nullptr;
     }
 
+    viz::ResourceFormat resource_format = viz::GetResourceFormat(buffer_format);
+
     return base::WrapUnique(new ExternalVkImageBacking(
         mailbox, viz::GetResourceFormat(buffer_format), size, color_space,
         usage, context_state, vk_image, vk_device_memory, memory_size,
-        vk_image_info.format, command_pool, ycbcr_info));
+        vk_image_info.format, command_pool, ycbcr_info,
+        GetDawnFormat(resource_format), {}));
   }
 
   if (gfx::NumberOfPlanesForLinearBufferFormat(buffer_format) != 1) {
@@ -383,7 +409,9 @@ ExternalVkImageBacking::ExternalVkImageBacking(
     size_t memory_size,
     VkFormat vk_format,
     VulkanCommandPool* command_pool,
-    base::Optional<VulkanYCbCrInfo> ycbcr_info)
+    base::Optional<VulkanYCbCrInfo> ycbcr_info,
+    base::Optional<DawnTextureFormat> dawn_format,
+    base::Optional<uint32_t> memory_type_index)
     : SharedImageBacking(mailbox,
                          format,
                          size,
@@ -400,7 +428,9 @@ ExternalVkImageBacking::ExternalVkImageBacking(
                                            memory_size,
                                            usage & SHARED_IMAGE_USAGE_PROTECTED,
                                            ycbcr_info)),
-      command_pool_(command_pool) {}
+      command_pool_(command_pool),
+      dawn_format_(dawn_format),
+      memory_type_index_(memory_type_index) {}
 
 ExternalVkImageBacking::~ExternalVkImageBacking() {
   DCHECK(!backend_texture_.isValid());
@@ -470,6 +500,39 @@ bool ExternalVkImageBacking::ProduceLegacyMailbox(
   return false;
 }
 
+std::unique_ptr<SharedImageRepresentationDawn>
+ExternalVkImageBacking::ProduceDawn(SharedImageManager* manager,
+                                    MemoryTypeTracker* tracker,
+                                    DawnDevice dawnDevice) {
+#if defined(OS_LINUX) && BUILDFLAG(USE_DAWN)
+  if (!dawn_format_) {
+    DLOG(ERROR) << "Format not supported for Dawn";
+    return nullptr;
+  }
+
+  if (!memory_type_index_) {
+    DLOG(ERROR) << "No type index info provided";
+    return nullptr;
+  }
+
+  GrVkImageInfo image_info;
+  bool result = backend_texture_.getVkImageInfo(&image_info);
+  DCHECK(result);
+
+  int memory_fd = GetMemoryFd(image_info);
+  if (memory_fd < 0) {
+    return nullptr;
+  }
+
+  return std::make_unique<ExternalVkImageDawnRepresentation>(
+      manager, this, tracker, dawnDevice, dawn_format_.value(), memory_fd,
+      image_info.fAlloc.fSize, memory_type_index_.value());
+#else  // !defined(OS_LINUX) || !BUILDFLAG(USE_DAWN)
+  NOTIMPLEMENTED_LOG_ONCE();
+  return nullptr;
+#endif
+}
+
 std::unique_ptr<SharedImageRepresentationGLTexture>
 ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
                                          MemoryTypeTracker* tracker) {
@@ -489,17 +552,8 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
     gl::GLApi* api = gl::g_current_gl_context;
     GLuint memory_object = 0;
     if (!use_separate_gl_texture()) {
-      VkMemoryGetFdInfoKHR get_fd_info;
-      get_fd_info.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR;
-      get_fd_info.pNext = nullptr;
-      get_fd_info.memory = image_info.fAlloc.fMemory;
-      get_fd_info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
-
-      int memory_fd = -1;
-      vkGetMemoryFdKHR(device(), &get_fd_info, &memory_fd);
+      int memory_fd = GetMemoryFd(image_info);
       if (memory_fd < 0) {
-        DLOG(ERROR)
-            << "Unable to extract file descriptor out of external VkImage";
         return nullptr;
       }
 
@@ -575,6 +629,23 @@ ExternalVkImageBacking::ProduceSkia(
   return std::make_unique<ExternalVkImageSkiaRepresentation>(manager, this,
                                                              tracker);
 }
+
+#ifdef OS_LINUX
+int ExternalVkImageBacking::GetMemoryFd(const GrVkImageInfo& image_info) {
+  VkMemoryGetFdInfoKHR get_fd_info;
+  get_fd_info.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR;
+  get_fd_info.pNext = nullptr;
+  get_fd_info.memory = image_info.fAlloc.fMemory;
+  get_fd_info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
+
+  int memory_fd = -1;
+  vkGetMemoryFdKHR(device(), &get_fd_info, &memory_fd);
+  if (memory_fd < 0) {
+    DLOG(ERROR) << "Unable to extract file descriptor out of external VkImage";
+  }
+  return memory_fd;
+}
+#endif
 
 void ExternalVkImageBacking::InstallSharedMemory(
     base::WritableSharedMemoryMapping shared_memory_mapping,

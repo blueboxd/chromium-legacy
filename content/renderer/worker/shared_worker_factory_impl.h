@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_WORKER_SHARED_WORKER_FACTORY_IMPL_H_
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_factory.mojom.h"
 
@@ -17,7 +18,14 @@ namespace content {
 
 class SharedWorkerFactoryImpl : public blink::mojom::SharedWorkerFactory {
  public:
-  static void Create(blink::mojom::SharedWorkerFactoryRequest request);
+  // TODO(https://crbug.com/955171): Remove this method and use Create once
+  // RendererInterfaceBinders uses service_manager::BinderMap instead of
+  // service_manager::BinderRegistry.
+  static void CreateForRequest(
+      blink::mojom::SharedWorkerFactoryRequest request);
+
+  static void Create(
+      mojo::PendingReceiver<blink::mojom::SharedWorkerFactory> receiver);
 
  private:
   SharedWorkerFactoryImpl();

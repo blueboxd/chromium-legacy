@@ -277,38 +277,40 @@ void DataReductionProxyMetricsObserverBase::SendPingback(
   base::Optional<base::TimeDelta> parse_stop;
   base::Optional<base::TimeDelta> page_end_time;
   base::Optional<base::TimeDelta> main_frame_fetch_start;
-  if (WasStartedInForegroundOptionalEventInForeground(timing.response_start,
-                                                      info)) {
+
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.response_start, GetDelegate())) {
     response_start = timing.response_start;
   }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing->load_event_start, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.document_timing->load_event_start, GetDelegate())) {
     load_event_start = timing.document_timing->load_event_start;
   }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_image_paint, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_image_paint, GetDelegate())) {
     first_image_paint = timing.paint_timing->first_image_paint;
   }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_contentful_paint, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_contentful_paint, GetDelegate())) {
     first_contentful_paint = timing.paint_timing->first_contentful_paint;
   }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_meaningful_paint, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_meaningful_paint, GetDelegate())) {
     experimental_first_meaningful_paint =
         timing.paint_timing->first_meaningful_paint;
   }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.interactive_timing->first_input_delay, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.interactive_timing->first_input_delay, GetDelegate())) {
     first_input_delay = timing.interactive_timing->first_input_delay;
   }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.parse_timing->parse_blocked_on_script_load_duration, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.parse_timing->parse_blocked_on_script_load_duration,
+          GetDelegate())) {
     parse_blocked_on_script_load_duration =
         timing.parse_timing->parse_blocked_on_script_load_duration;
   }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.parse_timing->parse_stop, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.parse_timing->parse_stop, GetDelegate())) {
     parse_stop = timing.parse_timing->parse_stop;
   }
   if (GetDelegate().DidCommit() && main_frame_fetch_start_) {
@@ -317,7 +319,8 @@ void DataReductionProxyMetricsObserverBase::SendPingback(
   }
   if (info.started_in_foreground && info.page_end_time.has_value()) {
     // This should be reported even when the app goes into the background which
-    // is excluded in |WasStartedInForegroundOptionalEventInForeground|.
+    // is excluded in
+    // |page_load_metrics::WasStartedInForegroundOptionalEventInForeground|.
     page_end_time = info.page_end_time;
   } else if (info.started_in_foreground) {
     page_end_time = base::TimeTicks::Now() - info.navigation_start;

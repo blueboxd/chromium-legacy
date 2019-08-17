@@ -660,8 +660,10 @@ void HttpServerProperties::OnExpireBrokenAlternativeService(
   // |alternative_service_map_|.
   for (auto map_it = server_info_map_.begin();
        map_it != server_info_map_.end();) {
-    if (!map_it->second.alternative_services.has_value())
+    if (!map_it->second.alternative_services.has_value()) {
+      ++map_it;
       continue;
+    }
     AlternativeServiceInfoVector* service_info =
         &map_it->second.alternative_services.value();
     for (auto it = service_info->begin(); it != service_info->end();) {

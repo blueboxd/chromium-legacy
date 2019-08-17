@@ -120,7 +120,7 @@ public class PageViewObserver {
             }
         };
 
-        switchObserverToTab(tabModelSelector.getCurrentTab());
+        activeTabChanged(tabModelSelector.getCurrentTab());
     }
 
     /** Notify PageViewObserver that {@code fqdn} was just suspended or un-suspended. */

@@ -1055,18 +1055,6 @@ QuicStreamRequest::ReleaseSessionHandle() {
   return std::move(session_);
 }
 
-namespace {
-
-std::set<std::string> HostsFromOrigins(std::set<HostPortPair> origins) {
-  std::set<std::string> hosts;
-  for (const auto& origin : origins) {
-    hosts.insert(origin.host());
-  }
-  return hosts;
-}
-
-}  // namespace
-
 QuicStreamFactory::QuicStreamFactory(
     NetLog* net_log,
     HostResolver* host_resolver,
@@ -1102,12 +1090,11 @@ QuicStreamFactory::QuicStreamFactory(
                                params.idle_connection_timeout,
                                params.max_time_before_crypto_handshake,
                                params.max_idle_time_before_crypto_handshake)),
-      crypto_config_(std::make_unique<ProofVerifierChromium>(
-          cert_verifier,
-          ct_policy_enforcer,
-          transport_security_state,
-          cert_transparency_verifier,
-          HostsFromOrigins(params.origins_to_force_quic_on))),
+      crypto_config_(
+          std::make_unique<ProofVerifierChromium>(cert_verifier,
+                                                  ct_policy_enforcer,
+                                                  transport_security_state,
+                                                  cert_transparency_verifier)),
       ping_timeout_(quic::QuicTime::Delta::FromSeconds(quic::kPingTimeoutSecs)),
       reduced_ping_timeout_(quic::QuicTime::Delta::FromMicroseconds(
           params.reduced_ping_timeout.InMicroseconds())),

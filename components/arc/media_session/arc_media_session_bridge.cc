@@ -91,7 +91,8 @@ void ArcMediaSessionBridge::SetupAudioFocus() {
   content::GetSystemConnector()->BindInterface(
       media_session::mojom::kServiceName, &audio_focus_ptr);
 
-  audio_focus_ptr->SetSourceName(kAudioFocusSourceName);
+  audio_focus_ptr->SetSource(base::UnguessableToken::Create(),
+                             kAudioFocusSourceName);
 
   DVLOG(2) << "ArcMediaSessionBridge will enable audio focus";
   ms_instance->EnableAudioFocus(std::move(audio_focus_ptr));

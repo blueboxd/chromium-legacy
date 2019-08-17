@@ -52,7 +52,7 @@ void DocumentWritePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (info.main_frame_metadata.behavior_flags &
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorDocumentWriteBlock) {
-    LogDocumentWriteBlockFirstContentfulPaint(timing, info);
+    LogDocumentWriteBlockFirstContentfulPaint(timing);
   }
 }
 
@@ -62,7 +62,7 @@ void DocumentWritePageLoadMetricsObserver::
         const page_load_metrics::PageLoadExtraInfo& info) {
   if (info.main_frame_metadata.behavior_flags &
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorDocumentWriteBlock) {
-    LogDocumentWriteBlockFirstMeaningfulPaint(timing, info);
+    LogDocumentWriteBlockFirstMeaningfulPaint(timing);
   }
 }
 
@@ -71,7 +71,7 @@ void DocumentWritePageLoadMetricsObserver::OnParseStop(
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (info.main_frame_metadata.behavior_flags &
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorDocumentWriteBlock) {
-    LogDocumentWriteBlockParseStop(timing, info);
+    LogDocumentWriteBlockParseStop(timing);
   }
 }
 
@@ -134,10 +134,9 @@ void DocumentWritePageLoadMetricsObserver::OnLoadingBehaviorObserved(
 // the consumer wants.
 void DocumentWritePageLoadMetricsObserver::
     LogDocumentWriteBlockFirstMeaningfulPaint(
-        const page_load_metrics::mojom::PageLoadTiming& timing,
-        const page_load_metrics::PageLoadExtraInfo& info) {
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_meaningful_paint, info)) {
+        const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_meaningful_paint, GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.DocWrite.Block.Experimental.PaintTiming."
         "ParseStartToFirstMeaningfulPaint",
@@ -148,10 +147,9 @@ void DocumentWritePageLoadMetricsObserver::
 
 void DocumentWritePageLoadMetricsObserver::
     LogDocumentWriteBlockFirstContentfulPaint(
-        const page_load_metrics::mojom::PageLoadTiming& timing,
-        const page_load_metrics::PageLoadExtraInfo& info) {
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_contentful_paint, info)) {
+        const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_contentful_paint, GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramDocWriteBlockFirstContentfulPaint,
                         timing.paint_timing->first_contentful_paint.value());
     PAGE_LOAD_HISTOGRAM(
@@ -162,12 +160,11 @@ void DocumentWritePageLoadMetricsObserver::
 }
 
 void DocumentWritePageLoadMetricsObserver::LogDocumentWriteBlockParseStop(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   base::TimeDelta parse_duration = timing.parse_timing->parse_stop.value() -
                                    timing.parse_timing->parse_start.value();
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.parse_timing->parse_stop, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.parse_timing->parse_stop, GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramDocWriteBlockParseDuration,
                         parse_duration);
     PAGE_LOAD_HISTOGRAM(
@@ -189,7 +186,8 @@ void DocumentWritePageLoadMetricsObserver::LogDocumentWriteBlockParseStop(
             ->parse_blocked_on_script_execution_from_document_write_duration
             .value());
 
-    ukm::builders::Intervention_DocumentWrite_ScriptBlock(info.source_id)
+    ukm::builders::Intervention_DocumentWrite_ScriptBlock(
+        GetDelegate().GetSourceId())
         .SetParseTiming_ParseBlockedOnScriptLoadFromDocumentWrite(
             timing.parse_timing
                 ->parse_blocked_on_script_load_from_document_write_duration

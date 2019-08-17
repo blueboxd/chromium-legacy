@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_table_row.h"
 #include "third_party/blink/renderer/core/layout/layout_table_section.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell_interface.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/text/writing_mode_utils.h"
 
@@ -43,6 +44,7 @@ static const unsigned kUnsetColumnIndex =
 static const unsigned kMaxColumnIndex = kUnsetColumnIndex - 1;
 
 class SubtreeLayoutScope;
+class LayoutNGTableInterface;
 
 // LayoutTableCell is used to represent a table cell (display: table-cell).
 //
@@ -86,11 +88,12 @@ class SubtreeLayoutScope;
 // LayoutTableCell is positioned with respect to the enclosing
 // LayoutTableSection. See callers of
 // LayoutTableSection::setLogicalPositionForCell() for when it is placed.
-class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
+class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow,
+                                    public LayoutNGTableCellInterface {
  public:
   explicit LayoutTableCell(Element*);
 
-  unsigned ColSpan() const {
+  unsigned ColSpan() const final {
     if (!has_col_span_)
       return 1;
     return ParseColSpanFromDOM();
@@ -100,7 +103,7 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
       return 1;
     return ParseRowSpanFromDOM();
   }
-  unsigned ResolvedRowSpan() const {
+  unsigned ResolvedRowSpan() const final {
     unsigned row_span = ParsedRowSpan();
     if (!row_span) {
       DCHECK(!Section()->NeedsCellRecalc());
@@ -110,7 +113,7 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
   }
 
   // Called from HTMLTableCellElement.
-  void ColSpanOrRowSpanChanged();
+  void ColSpanOrRowSpanChanged() final;
 
   void SetAbsoluteColumnIndex(unsigned column) {
     CHECK_LE(column, kMaxColumnIndex);
@@ -121,29 +124,29 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
     return absolute_column_index_ != kUnsetColumnIndex;
   }
 
-  unsigned AbsoluteColumnIndex() const {
+  unsigned AbsoluteColumnIndex() const final {
     DCHECK(HasSetAbsoluteColumnIndex());
     return absolute_column_index_;
   }
 
-  LayoutTableRow* Row() const { return ToLayoutTableRow(Parent()); }
+  LayoutTableRow* Row() const { return To<LayoutTableRow>(Parent()); }
   LayoutTableSection* Section() const {
-    return ToLayoutTableSection(Parent()->Parent());
+    return To<LayoutTableSection>(Parent()->Parent());
   }
   LayoutTable* Table() const {
-    return ToLayoutTable(Parent()->Parent()->Parent());
+    return To<LayoutTable>(Parent()->Parent()->Parent());
   }
 
   LayoutTableCell* PreviousCell() const;
   LayoutTableCell* NextCell() const;
 
-  unsigned RowIndex() const {
+  unsigned RowIndex() const final {
     // This function shouldn't be called on a detached cell.
     DCHECK(Row());
     return Row()->RowIndex();
   }
 
-  Length StyleOrColLogicalWidth() const {
+  Length StyleOrColLogicalWidth() const final {
     const Length& style_width = StyleRef().LogicalWidth();
     if (!style_width.IsAuto())
       return style_width;
@@ -216,8 +219,8 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
 
   void ClearIntrinsicPadding() { SetIntrinsicPadding(0, 0); }
 
-  int IntrinsicPaddingBefore() const { return intrinsic_padding_before_; }
-  int IntrinsicPaddingAfter() const { return intrinsic_padding_after_; }
+  int IntrinsicPaddingBefore() const final { return intrinsic_padding_before_; }
+  int IntrinsicPaddingAfter() const final { return intrinsic_padding_after_; }
 
   LayoutUnit PaddingTop() const override;
   LayoutUnit PaddingBottom() const override;
@@ -339,6 +342,26 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
   }
 
   void ComputeVisualOverflow(bool recompute_floats) override;
+
+  // LayoutNGTableCellInterface implementation start.
+
+  const LayoutNGTableCellInterface* ToLayoutNGTableCellInterface() const final {
+    return this;
+  }
+  const LayoutTableCell* ToLayoutTableCell() const final { return this; }
+  const LayoutObject* ToLayoutObject() const final { return this; }
+  LayoutObject* ToMutableLayoutObject() final { return this; }
+  LayoutNGTableInterface* TableInterface() const final { return Table(); }
+  LayoutTableCell* NextCellInterface() const final { return NextCell(); }
+  LayoutTableCell* PreviousCellInterface() const final {
+    return PreviousCell();
+  }
+  LayoutNGTableRowInterface* RowInterface() const final { return Row(); }
+  LayoutNGTableSectionInterface* SectionInterface() const final {
+    return Section();
+  }
+
+  // LayoutNGTableCellInterface implementation end.
 
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
@@ -507,23 +530,29 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
   int intrinsic_padding_after_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableCell, IsTableCell());
-
 inline LayoutTableCell* LayoutTableCell::PreviousCell() const {
-  return ToLayoutTableCell(LayoutObject::PreviousSibling());
+  return To<LayoutTableCell>(LayoutObject::PreviousSibling());
 }
 
 inline LayoutTableCell* LayoutTableCell::NextCell() const {
-  return ToLayoutTableCell(LayoutObject::NextSibling());
+  return To<LayoutTableCell>(LayoutObject::NextSibling());
 }
 
 inline LayoutTableCell* LayoutTableRow::FirstCell() const {
-  return ToLayoutTableCell(FirstChild());
+  return To<LayoutTableCell>(FirstChild());
 }
 
 inline LayoutTableCell* LayoutTableRow::LastCell() const {
-  return ToLayoutTableCell(LastChild());
+  return To<LayoutTableCell>(LastChild());
 }
+
+// To<LayoutTableCell>() helper.
+template <>
+struct DowncastTraits<LayoutTableCell> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsTableCell();
+  }
+};
 
 }  // namespace blink
 

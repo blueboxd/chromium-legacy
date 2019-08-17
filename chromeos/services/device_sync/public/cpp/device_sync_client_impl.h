@@ -24,10 +24,6 @@ namespace base {
 class TaskRunner;
 }  // namespace base
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace chromeos {
 
 namespace multidevice {
@@ -46,13 +42,13 @@ class DeviceSyncClientImpl : public DeviceSyncClient,
     static void SetInstanceForTesting(Factory* test_factory);
     virtual ~Factory();
     virtual std::unique_ptr<DeviceSyncClient> BuildInstance(
-        service_manager::Connector* connector);
+        mojom::DeviceSyncService* service);
 
    private:
     static Factory* test_factory_;
   };
 
-  explicit DeviceSyncClientImpl(service_manager::Connector* connector);
+  explicit DeviceSyncClientImpl(mojom::DeviceSyncService* service);
   ~DeviceSyncClientImpl() override;
 
   // DeviceSyncClient:
@@ -79,7 +75,7 @@ class DeviceSyncClientImpl : public DeviceSyncClient,
  private:
   friend class DeviceSyncClientImplTest;
 
-  DeviceSyncClientImpl(service_manager::Connector* connector,
+  DeviceSyncClientImpl(mojom::DeviceSyncService* service,
                        scoped_refptr<base::TaskRunner> task_runner);
 
   void AttemptToBecomeReady();

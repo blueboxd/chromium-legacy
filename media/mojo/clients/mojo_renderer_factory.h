@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "media/base/renderer_factory.h"
+#include "media/mojo/buildflags.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "media/mojo/mojom/renderer.mojom.h"
 
@@ -46,6 +47,12 @@ class MojoRendererFactory : public RendererFactory {
       VideoRendererSink* video_renderer_sink,
       const RequestOverlayInfoCB& request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space) final;
+
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+  std::unique_ptr<MojoRenderer> CreateCastRenderer(
+      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+      VideoRendererSink* video_renderer_sink);
+#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
 
 #if defined(OS_ANDROID)
   std::unique_ptr<MojoRenderer> CreateFlingingRenderer(

@@ -394,14 +394,6 @@ config("compiler") {
 
   # Linux-specific compiler flags setup.
   # ------------------------------------
-  if (is_android && is_clang) {
-    _rebased_android_toolchain_root =
-        rebase_path(android_toolchain_root, root_build_dir)
-
-    # Let clang find the linker in the NDK.
-    ldflags += [ "--gcc-toolchain=$_rebased_android_toolchain_root" ]
-  }
-
   if (((is_posix || is_fuchsia) && use_lld) ||
       (target_os == "chromeos" && is_android)) {
     # NOTE: Some Chrome OS builds globally disable LLD, but they also build some

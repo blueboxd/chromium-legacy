@@ -12,6 +12,8 @@ import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -20,6 +22,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.components.feature_engagement.EventConstants;
+import org.chromium.components.feature_engagement.Tracker;
 
 import java.util.List;
 
@@ -44,6 +48,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
     private int mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
     private int mUnGroupTabIndex = TabModel.INVALID_TAB_INDEX;
     private RecyclerView mRecyclerView;
+    private Profile mProfile;
 
     public TabGridItemTouchHelperCallback(TabListModel tabListModel,
             TabModelSelector tabModelSelector, TabListMediator.TabActionListener tabClosedListener,
@@ -65,12 +70,14 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
      *         order to be considered as a remove operation.
      * @param mergeThreshold                   Defines the threshold of how much two items need to
      *         be overlapped in order to be considered as a merge operation.
+     * @param profile                          The profile used to track user behavior.
      */
-    void setupCallback(
-            float swipeToDismissThreshold, float mergeThreshold, float ungroupThreshold) {
+    void setupCallback(float swipeToDismissThreshold, float mergeThreshold, float ungroupThreshold,
+            Profile profile) {
         mSwipeToDismissThreshold = swipeToDismissThreshold;
         mMergeThreshold = mergeThreshold;
         mUngroupThreshold = ungroupThreshold;
+        mProfile = profile;
         boolean isTabGroupEnabled = FeatureUtilities.isTabGroupsAndroidEnabled();
         boolean isTabGroupUiImprovementEnabled =
                 FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled();
@@ -239,6 +246,11 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                         .getCurrentTabModelFilter();
         filter.mergeTabsToGroup(filter.getTabAt(selectedCardIndex).getId(),
                 filter.getTabAt(hoveredCardIndex).getId());
+
+        // If user has used drop-to-merge, send a signal to disable
+        // FeatureConstants.TAB_GROUPS_DRAG_AND_DROP_FEATURE.
+        final Tracker tracker = TrackerFactory.getTrackerForProfile(mProfile);
+        tracker.notifyEvent(EventConstants.TAB_DRAG_AND_DROP_TO_GROUP);
     }
 
     @VisibleForTesting

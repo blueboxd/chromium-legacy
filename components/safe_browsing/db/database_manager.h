@@ -30,6 +30,8 @@ class SharedURLLoaderFactory;
 
 namespace safe_browsing {
 
+class RealTimeUrlLookupService;
+
 // Value returned by some functions that check an allowlist and may or may not
 // have an immediate answer.
 enum class AsyncMatch : int {
@@ -262,6 +264,8 @@ class SafeBrowsingDatabaseManager
   // should override this method, set enabled_ to false and call the base class
   // method at the bottom of it.
   virtual void StopOnIOThread(bool shutdown);
+
+  virtual RealTimeUrlLookupService* GetRealTimeUrlLookupService();
 
  protected:
   // Bundled client info for an API abuse hash prefix check.

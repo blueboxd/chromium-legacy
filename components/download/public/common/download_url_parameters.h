@@ -257,11 +257,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
     require_safety_checks_ = require_safety_checks;
   }
 
-  // Sets whether to ignore content length mismatch errors.
-  void set_ignore_content_length_mismatch(bool ignore_content_length_mismatch) {
-    ignore_content_length_mismatch_ = ignore_content_length_mismatch;
-  }
-
   const OnStartedCallback& callback() const { return callback_; }
   bool content_initiated() const { return content_initiated_; }
   const std::string& last_modified() const { return last_modified_; }
@@ -315,9 +310,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
   bool is_transient() const { return transient_; }
   std::string guid() const { return guid_; }
   bool require_safety_checks() const { return require_safety_checks_; }
-  bool ignore_content_length_mismatch() const {
-    return ignore_content_length_mismatch_;
-  }
 
   // STATE CHANGING: All save_info_ sub-objects will be in an indeterminate
   // state following this call.
@@ -365,7 +357,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
   DownloadSource download_source_;
   UploadProgressCallback upload_callback_;
   bool require_safety_checks_;
-  bool ignore_content_length_mismatch_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadUrlParameters);
 };

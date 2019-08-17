@@ -25,7 +25,7 @@ constexpr char kArcGraphicsTracingCssPath[] = "arc_graphics_tracing.css";
 content::WebUIDataSource* CreateDataSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIArcGraphicsTracingHost);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->SetDefaultResource(IDR_ARC_GRAPHICS_TRACING_HTML);
   source->AddResourcePath(kArcGraphicsTracingJsPath,
                           IDR_ARC_GRAPHICS_TRACING_JS);

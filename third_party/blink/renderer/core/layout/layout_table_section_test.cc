@@ -14,7 +14,9 @@ namespace {
 class LayoutTableSectionTest : public RenderingTest {
  protected:
   LayoutTableSection* GetSectionByElementId(const char* id) {
-    return ToLayoutTableSection(GetLayoutObjectByElementId(id));
+    // TODO(958381) Needs to TableNG compatible with
+    // LayoutNGTableSectionInterface.
+    return To<LayoutTableSection>(GetLayoutObjectByElementId(id));
   }
 
   LayoutTableSection* CreateSection(unsigned rows, unsigned columns) {
@@ -29,7 +31,9 @@ class LayoutTableSectionTest : public RenderingTest {
         row->appendChild(GetDocument().CreateRawElement(html_names::kTdTag));
     }
     UpdateAllLifecyclePhasesForTest();
-    return ToLayoutTableSection(section->GetLayoutObject());
+    // TODO(958381) Needs to TableNG compatible with
+    // LayoutNGTableSectionInterface.
+    return To<LayoutTableSection>(section->GetLayoutObject());
   }
 };
 

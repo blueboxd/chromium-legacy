@@ -103,9 +103,6 @@ class TestingProfileManager {
   // properly persisting data.
   void DeleteProfileInfoCache();
 
-  // Sets ProfileManager's logged_in state. This is only useful on ChromeOS.
-  void SetLoggedIn(bool logged_in);
-
   // Sets the last used profile; also sets the active time to now.
   void UpdateLastUser(Profile* last_active);
 

@@ -141,9 +141,11 @@ void AssistantMediaSession::EnsureServiceConnection() {
     return;
 
   audio_focus_remote_.reset();
+
   client_->RequestAudioFocusManager(
       audio_focus_remote_.BindNewPipeAndPassReceiver());
-  audio_focus_remote_->SetSourceName(kAudioFocusSourceName);
+  audio_focus_remote_->SetSource(base::UnguessableToken::Create(),
+                                 kAudioFocusSourceName);
 }
 
 void AssistantMediaSession::FinishAudioFocusRequest(

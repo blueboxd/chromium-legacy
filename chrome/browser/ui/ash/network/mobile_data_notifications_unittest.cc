@@ -149,7 +149,6 @@ class MobileDataNotificationsTest : public testing::Test {
     const AccountId test_account_id(AccountId::FromUserEmail(email));
     TestingProfile* profile =
         profile_manager_->CreateTestingProfile(test_account_id.GetUserEmail());
-    profile_manager_->SetLoggedIn(true);
     user_manager_->AddUser(test_account_id);
     user_manager_->LoginUser(test_account_id);
     user_manager_->SwitchActiveUser(test_account_id);

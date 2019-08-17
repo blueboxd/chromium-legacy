@@ -9,6 +9,7 @@ import os
 import re
 import shutil
 import sys
+import zipfile
 
 from util import build_utils
 from util import diff_utils
@@ -329,6 +330,22 @@ def _CreateDynamicConfig(options):
   return '\n'.join(ret)
 
 
+def _VerifyNoEmbeddedConfigs(jar_paths):
+  failed = False
+  for jar_path in jar_paths:
+    with zipfile.ZipFile(jar_path) as z:
+      for name in z.namelist():
+        if name.startswith('META-INF/proguard/'):
+          failed = True
+          sys.stderr.write("""\
+Found embedded proguard config within {}.
+Embedded configs are not permitted (https://crbug.com/989505)
+""".format(jar_path))
+          break
+  if failed:
+    sys.exit(1)
+
+
 def main():
   options = _ParseOptions()
 
@@ -337,6 +354,8 @@ def main():
     # If a jar is part of input no need to include it as library jar.
     if p not in libraries and p not in options.input_paths:
       libraries.append(p)
+
+  _VerifyNoEmbeddedConfigs(options.input_paths + libraries)
 
   # Apply config exclusion filter.
   config_paths = [

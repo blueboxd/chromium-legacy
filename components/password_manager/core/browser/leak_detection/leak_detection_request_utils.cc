@@ -8,9 +8,11 @@
 
 #include "base/containers/span.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
 #include "components/password_manager/core/browser/leak_detection/single_lookup_response.h"
+#include "crypto/sha2.h"
 
 namespace password_manager {
 namespace {
@@ -26,6 +28,31 @@ LookupSingleLeakData PrepareLookupSingleLeakData(const std::string& username,
   return data;
 }
 
+// Searches |reencrypted_lookup_hash| in the |encrypted_leak_match_prefixes|
+// array. |encryption_key| is the original client key used to encrypt the
+// payload.
+bool CheckIfCredentialWasLeaked(std::unique_ptr<SingleLookupResponse> response,
+                                const std::string& encryption_key) {
+  std::string decrypted_username_password =
+      CipherDecrypt(response->reencrypted_lookup_hash, encryption_key);
+  if (decrypted_username_password.empty()) {
+    DLOG(ERROR) << "Can't decrypt data="
+                << base::HexEncode(base::as_bytes(
+                       base::make_span(response->reencrypted_lookup_hash)));
+    return false;
+  }
+
+  std::string hash_username_password =
+      crypto::SHA256HashString(decrypted_username_password);
+
+  return std::any_of(response->encrypted_leak_match_prefixes.begin(),
+                     response->encrypted_leak_match_prefixes.end(),
+                     [&hash_username_password](const std::string& prefix) {
+                       return base::StartsWith(hash_username_password, prefix,
+                                               base::CompareCase::SENSITIVE);
+                     });
+}
+
 }  // namespace
 
 void PrepareSingleLeakRequestData(const std::string& username,
@@ -36,6 +63,18 @@ void PrepareSingleLeakRequestData(const std::string& username,
       {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&PrepareLookupSingleLeakData, username, password),
+      std::move(callback));
+}
+
+void AnalyzeResponseResult(std::unique_ptr<SingleLookupResponse> response,
+                           const std::string& encryption_key,
+                           SingleLeakResponseAnalysisCallback callback) {
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&CheckIfCredentialWasLeaked, std::move(response),
+                     encryption_key),
       std::move(callback));
 }
 

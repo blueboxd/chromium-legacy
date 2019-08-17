@@ -16,10 +16,10 @@
 // $2 - red value of primary color
 // $3 - green value of primary color
 // $4 - blue value of primary color
-// $5 - color label
+// $5 - color label id
 // $6 - icon data
 const char kColorInfoLineTemplate[] =
-    "   ColorInfo($1, SkColorSetRGB($2, $3, $4), \"$5\", "
+    "   ColorInfo($1, SkColorSetRGB($2, $3, $4), $5, "
     "\"data:image/svg+xml;base64,$6\")";
 
 // Template for the generated file content.
@@ -81,7 +81,7 @@ std::string GenerateColorLine(chrome_colors::ColorInfo color_info) {
   subst.push_back(base::NumberToString(SkColorGetR(color_info.color)));
   subst.push_back(base::NumberToString(SkColorGetG(color_info.color)));
   subst.push_back(base::NumberToString(SkColorGetB(color_info.color)));
-  subst.push_back(color_info.label);
+  subst.push_back(base::NumberToString(color_info.label_id));
   subst.push_back(GenerateIconDataForColor(color_info.color));
   return base::ReplaceStringPlaceholders(kColorInfoLineTemplate, subst, NULL);
 }

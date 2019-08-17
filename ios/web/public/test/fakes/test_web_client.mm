@@ -7,7 +7,10 @@
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "ios/web/public/test/error_test_util.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/test/test_url_constants.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -83,6 +86,18 @@ void TestWebClient::AllowCertificateError(
 
 void TestWebClient::SetAllowCertificateErrors(bool flag) {
   allow_certificate_errors_ = flag;
+}
+
+void TestWebClient::PrepareErrorPage(
+    WebState* web_state,
+    const GURL& url,
+    NSError* error,
+    bool is_post,
+    bool is_off_the_record,
+    base::OnceCallback<void(NSString*)> callback) {
+  std::move(callback).Run(base::SysUTF8ToNSString(testing::GetErrorText(
+      web_state, url, base::SysNSStringToUTF8(error.domain), error.code,
+      is_post, is_off_the_record)));
 }
 
 UIView* TestWebClient::GetWindowedContainer() {

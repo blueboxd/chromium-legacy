@@ -371,12 +371,12 @@ void LayoutObject::AddChild(LayoutObject* new_child,
     // Generate an anonymous table or reuse existing one from previous child
     // Per: 17.2.1 Anonymous table objects 3. Generate missing parents
     // http://www.w3.org/TR/CSS21/tables.html#anonymous-boxes
-    LayoutTable* table;
+    LayoutObject* table;
     LayoutObject* after_child =
         before_child ? before_child->PreviousSibling() : children->LastChild();
     if (after_child && after_child->IsAnonymous() && after_child->IsTable() &&
         !after_child->IsBeforeContent()) {
-      table = ToLayoutTable(after_child);
+      table = after_child;
     } else {
       table = LayoutTable::CreateAnonymousWithParent(this);
       children->InsertChildNode(this, table, before_child);

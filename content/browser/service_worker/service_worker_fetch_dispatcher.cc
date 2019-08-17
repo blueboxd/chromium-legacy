@@ -317,8 +317,8 @@ void CreateNetworkFactoryForNavigationPreloadOnUI(
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       partition->browser_context(), frame_tree_node->current_frame_host(),
       frame_tree_node->current_frame_host()->GetProcess()->GetID(),
-      /*is_navigation=*/true, /*is_download=*/false, initiator, &receiver,
-      &header_client, &bypass_redirect_checks_unused);
+      ContentBrowserClient::URLLoaderFactoryType::kNavigation, initiator,
+      &receiver, &header_client, &bypass_redirect_checks_unused);
 
   // Make the network factory.
   NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(

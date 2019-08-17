@@ -149,7 +149,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->SetDefaultResource(IDR_DOWNLOADS_DOWNLOADS_HTML);
 #endif
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
 
   return source;
 }

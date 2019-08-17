@@ -27,6 +27,7 @@
 namespace ui {
 
 using TestPositionType = std::unique_ptr<AXPosition<AXNodePosition, AXNode>>;
+using TestPositionRange = AXRange<AXPosition<AXNodePosition, AXNode>>;
 
 namespace {
 
@@ -157,6 +158,50 @@ class AXPositionTest : public testing::Test {
   AXTree tree_;
 
   DISALLOW_COPY_AND_ASSIGN(AXPositionTest);
+};
+
+// Used by AXPositionExpandToEnclosingTextBoundaryTestWithParam.
+//
+// Every test instance starts from a pre-determined position and calls the
+// ExpandToEnclosingTextBoundary method with the arguments provided in this
+// struct.
+struct ExpandToEnclosingTextBoundaryTestParam {
+  ExpandToEnclosingTextBoundaryTestParam() = default;
+
+  // Required by GTest framework.
+  ExpandToEnclosingTextBoundaryTestParam(
+      const ExpandToEnclosingTextBoundaryTestParam& other) = default;
+  ExpandToEnclosingTextBoundaryTestParam& operator=(
+      const ExpandToEnclosingTextBoundaryTestParam& other) = default;
+
+  ~ExpandToEnclosingTextBoundaryTestParam() = default;
+
+  // The text boundary to expand to.
+  AXTextBoundary boundary;
+
+  // Determines how to expand to the enclosing range when the starting position
+  // is already at a text boundary.
+  AXRangeExpandBehavior expand_behavior;
+
+  // The text position that should be returned for the anchor of the range.
+  std::string expected_anchor_position;
+
+  // The text position that should be returned for the focus of the range.
+  std::string expected_focus_position;
+};
+
+// This is a fixture for a set of parameterized tests that test the
+// |ExpandToEnclosingTextBoundary| method with all possible input arguments.
+class AXPositionExpandToEnclosingTextBoundaryTestWithParam
+    : public AXPositionTest,
+      public testing::WithParamInterface<
+          ExpandToEnclosingTextBoundaryTestParam> {
+ public:
+  AXPositionExpandToEnclosingTextBoundaryTestWithParam() = default;
+  ~AXPositionExpandToEnclosingTextBoundaryTestWithParam() override = default;
+
+  DISALLOW_COPY_AND_ASSIGN(
+      AXPositionExpandToEnclosingTextBoundaryTestWithParam);
 };
 
 // Used by AXPositionCreatePositionAtTextBoundaryTestWithParam.
@@ -1847,6 +1892,10 @@ TEST_F(AXPositionTest, CreatePositionAtPreviousFormatStartWithNullPosition) {
       AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsNullPosition());
+  test_position = null_position->CreatePreviousFormatStartPosition(
+      AXBoundaryBehavior::StopAtAnchorBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsNullPosition());
 }
 
 TEST_F(AXPositionTest, CreatePositionAtPreviousFormatStartWithTreePosition) {
@@ -1869,7 +1918,7 @@ TEST_F(AXPositionTest, CreatePositionAtPreviousFormatStartWithTreePosition) {
   EXPECT_EQ(AXNodePosition::BEFORE_TEXT, test_position->child_index());
 
   // AXBoundaryBehavior::CrossBoundary should return a null position when it
-  // reaches the start of the document
+  // reaches the start of the document.
   test_position = test_position->CreatePreviousFormatStartPosition(
       AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, test_position);
@@ -1885,6 +1934,14 @@ TEST_F(AXPositionTest, CreatePositionAtPreviousFormatStartWithTextPosition) {
   TestPositionType test_position =
       text_position->CreatePreviousFormatStartPosition(
           AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
+
+  test_position = test_position->CreatePreviousFormatStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTextPosition());
   EXPECT_EQ(button_.id, test_position->anchor_id());
@@ -1974,7 +2031,7 @@ TEST_F(AXPositionTest, CreatePositionAtNextFormatEndWithTextPosition) {
   EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
   EXPECT_EQ(6, test_position->text_offset());
 
-  // This time, it should move due to AXBoundaryBehavior::CrossBoundary
+  // This time, it should move due to AXBoundaryBehavior::CrossBoundary.
   test_position = test_position->CreateNextFormatEndPosition(
       AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, test_position);
@@ -1986,7 +2043,7 @@ TEST_F(AXPositionTest, CreatePositionAtNextFormatEndWithTextPosition) {
       AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTextPosition());
-  EXPECT_EQ(static_text2_.id, test_position->anchor_id());
+  EXPECT_EQ(inline_box2_.id, test_position->anchor_id());
   EXPECT_EQ(6, test_position->text_offset());
 }
 
@@ -3905,6 +3962,20 @@ TEST_F(AXPositionTest, CreateLinePositionsMultipleAnchorsInSingleLine) {
 // Parameterized tests.
 //
 
+TEST_P(AXPositionExpandToEnclosingTextBoundaryTestWithParam,
+       TextPositionBeforeLine2) {
+  // Create a text position right before "Line 2". This should be at the start
+  // of many text boundaries, e.g. line, paragraph and word.
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, text_field_.id, 7 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  TestPositionRange range = text_position->ExpandToEnclosingTextBoundary(
+      GetParam().boundary, GetParam().expand_behavior);
+  EXPECT_EQ(GetParam().expected_anchor_position, range.anchor()->ToString());
+  EXPECT_EQ(GetParam().expected_focus_position, range.focus()->ToString());
+}
+
 TEST_P(AXPositionCreatePositionAtTextBoundaryTestWithParam,
        TextPositionBeforeStaticText) {
   TestPositionType text_position = AXNodePosition::CreateTextPosition(
@@ -3947,7 +4018,172 @@ TEST_P(AXPositionTextNavigationTestWithParam,
 // Instantiations of parameterized tests.
 //
 
+INSTANTIATE_TEST_SUITE_P(
+    ExpandToEnclosingTextBoundary,
+    AXPositionExpandToEnclosingTextBoundaryTestWithParam,
+    testing::Values(
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kCharacter, AXRangeExpandBehavior::kLeftFirst,
+            "TextPosition anchor_id=4 text_offset=6 affinity=downstream "
+            "annotated_text=Line 1<\n>Line 2",
+            "TextPosition anchor_id=4 text_offset=7 affinity=downstream "
+            "annotated_text=Line 1\n<L>ine 2"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kCharacter, AXRangeExpandBehavior::kRightFirst,
+            "TextPosition anchor_id=4 text_offset=7 affinity=downstream "
+            "annotated_text=Line 1\n<L>ine 2",
+            "TextPosition anchor_id=4 text_offset=8 affinity=downstream "
+            "annotated_text=Line 1\nL<i>ne 2"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kFormatChange, AXRangeExpandBehavior::kLeftFirst,
+            "TextPosition anchor_id=4 text_offset=0 affinity=downstream "
+            "annotated_text=<L>ine 1\nLine 2",
+            "TextPosition anchor_id=4 text_offset=13 affinity=downstream "
+            "annotated_text=Line 1\nLine 2<>"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kFormatChange, AXRangeExpandBehavior::kRightFirst,
+            "TextPosition anchor_id=4 text_offset=0 affinity=downstream "
+            "annotated_text=<L>ine 1\nLine 2",
+            "TextPosition anchor_id=4 text_offset=13 affinity=downstream "
+            "annotated_text=Line 1\nLine 2<>"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kLineEnd, AXRangeExpandBehavior::kLeftFirst,
+            "TextPosition anchor_id=4 text_offset=6 affinity=downstream "
+            "annotated_text=Line 1<\n>Line 2",
+            "TextPosition anchor_id=4 text_offset=13 affinity=downstream "
+            "annotated_text=Line 1\nLine 2<>"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kLineEnd, AXRangeExpandBehavior::kRightFirst,
+            "TextPosition anchor_id=4 text_offset=6 affinity=downstream "
+            "annotated_text=Line 1<\n>Line 2",
+            "TextPosition anchor_id=4 text_offset=13 affinity=downstream "
+            "annotated_text=Line 1\nLine 2<>"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kLineStart, AXRangeExpandBehavior::kLeftFirst,
+            "TextPosition anchor_id=4 text_offset=0 affinity=downstream "
+            "annotated_text=<L>ine 1\nLine 2",
+            "TextPosition anchor_id=4 text_offset=7 affinity=downstream "
+            "annotated_text=Line 1\n<L>ine 2"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kLineStart, AXRangeExpandBehavior::kRightFirst,
+            "TextPosition anchor_id=4 text_offset=7 affinity=downstream "
+            "annotated_text=Line 1\n<L>ine 2",
+            "TextPosition anchor_id=4 text_offset=13 affinity=downstream "
+            "annotated_text=Line 1\nLine 2<>"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kLineStartOrEnd, AXRangeExpandBehavior::kLeftFirst,
+            "TextPosition anchor_id=4 text_offset=0 affinity=downstream "
+            "annotated_text=<L>ine 1\nLine 2",
+            "TextPosition anchor_id=4 text_offset=6 affinity=downstream "
+            "annotated_text=Line 1<\n>Line 2"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kLineStartOrEnd, AXRangeExpandBehavior::kRightFirst,
+            "TextPosition anchor_id=4 text_offset=7 affinity=downstream "
+            "annotated_text=Line 1\n<L>ine 2",
+            "TextPosition anchor_id=4 text_offset=13 affinity=downstream "
+            "annotated_text=Line 1\nLine 2<>"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kObject, AXRangeExpandBehavior::kLeftFirst,
+            "TextPosition anchor_id=4 text_offset=0 affinity=downstream "
+            "annotated_text=<L>ine 1\nLine 2",
+            "TextPosition anchor_id=4 text_offset=13 affinity=downstream "
+            "annotated_text=Line 1\nLine 2<>"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kObject, AXRangeExpandBehavior::kRightFirst,
+            "TextPosition anchor_id=4 text_offset=0 affinity=downstream "
+            "annotated_text=<L>ine 1\nLine 2",
+            "TextPosition anchor_id=4 text_offset=13 affinity=downstream "
+            "annotated_text=Line 1\nLine 2<>"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kParagraphEnd, AXRangeExpandBehavior::kLeftFirst,
+            "TextPosition anchor_id=4 text_offset=0 affinity=downstream "
+            "annotated_text=<L>ine 1\nLine 2",
+            "TextPosition anchor_id=4 text_offset=7 affinity=upstream "
+            "annotated_text=Line 1\n<L>ine 2"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kParagraphEnd, AXRangeExpandBehavior::kRightFirst,
+            "TextPosition anchor_id=4 text_offset=7 affinity=upstream "
+            "annotated_text=Line 1\n<L>ine 2",
+            "TextPosition anchor_id=4 text_offset=13 affinity=downstream "
+            "annotated_text=Line 1\nLine 2<>"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kParagraphStart, AXRangeExpandBehavior::kLeftFirst,
+            "TextPosition anchor_id=4 text_offset=0 affinity=downstream "
+            "annotated_text=<L>ine 1\nLine 2",
+            "TextPosition anchor_id=4 text_offset=7 affinity=downstream "
+            "annotated_text=Line 1\n<L>ine 2"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kParagraphStart, AXRangeExpandBehavior::kRightFirst,
+            "TextPosition anchor_id=4 text_offset=7 affinity=downstream "
+            "annotated_text=Line 1\n<L>ine 2",
+            "TextPosition anchor_id=4 text_offset=13 affinity=downstream "
+            "annotated_text=Line 1\nLine 2<>"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kParagraphStartOrEnd,
+            AXRangeExpandBehavior::kLeftFirst,
+            "TextPosition anchor_id=4 text_offset=0 affinity=downstream "
+            "annotated_text=<L>ine 1\nLine 2",
+            "TextPosition anchor_id=4 text_offset=7 affinity=upstream "
+            "annotated_text=Line 1\n<L>ine 2"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kParagraphStartOrEnd,
+            AXRangeExpandBehavior::kRightFirst,
+            "TextPosition anchor_id=4 text_offset=7 affinity=downstream "
+            "annotated_text=Line 1\n<L>ine 2",
+            "TextPosition anchor_id=4 text_offset=13 affinity=downstream "
+            "annotated_text=Line 1\nLine 2<>"},
+        // TODO(accessibility): Add tests for sentence boundary.
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kWebPage, AXRangeExpandBehavior::kLeftFirst,
+            "TextPosition anchor_id=1 text_offset=0 affinity=downstream "
+            "annotated_text=<L>ine 1\nLine 2",
+            "TextPosition anchor_id=9 text_offset=6 affinity=downstream "
+            "annotated_text=Line 2<>"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kWebPage, AXRangeExpandBehavior::kRightFirst,
+            "TextPosition anchor_id=1 text_offset=0 affinity=downstream "
+            "annotated_text=<L>ine 1\nLine 2",
+            "TextPosition anchor_id=9 text_offset=6 affinity=downstream "
+            "annotated_text=Line 2<>"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kWordEnd, AXRangeExpandBehavior::kLeftFirst,
+            "TextPosition anchor_id=4 text_offset=6 affinity=downstream "
+            "annotated_text=Line 1<\n>Line 2",
+            "TextPosition anchor_id=4 text_offset=11 affinity=downstream "
+            "annotated_text=Line 1\nLine< >2"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kWordEnd, AXRangeExpandBehavior::kRightFirst,
+            "TextPosition anchor_id=4 text_offset=6 affinity=downstream "
+            "annotated_text=Line 1<\n>Line 2",
+            "TextPosition anchor_id=4 text_offset=11 affinity=downstream "
+            "annotated_text=Line 1\nLine< >2"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kWordStart, AXRangeExpandBehavior::kLeftFirst,
+            "TextPosition anchor_id=4 text_offset=5 affinity=downstream "
+            "annotated_text=Line <1>\nLine 2",
+            "TextPosition anchor_id=4 text_offset=7 affinity=downstream "
+            "annotated_text=Line 1\n<L>ine 2"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kWordStart, AXRangeExpandBehavior::kRightFirst,
+            "TextPosition anchor_id=4 text_offset=7 affinity=downstream "
+            "annotated_text=Line 1\n<L>ine 2",
+            "TextPosition anchor_id=4 text_offset=12 affinity=downstream "
+            "annotated_text=Line 1\nLine <2>"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kWordStartOrEnd, AXRangeExpandBehavior::kLeftFirst,
+            "TextPosition anchor_id=4 text_offset=5 affinity=downstream "
+            "annotated_text=Line <1>\nLine 2",
+            "TextPosition anchor_id=4 text_offset=6 affinity=downstream "
+            "annotated_text=Line 1<\n>Line 2"},
+        ExpandToEnclosingTextBoundaryTestParam{
+            AXTextBoundary::kWordStartOrEnd, AXRangeExpandBehavior::kRightFirst,
+            "TextPosition anchor_id=4 text_offset=7 affinity=downstream "
+            "annotated_text=Line 1\n<L>ine 2",
+            "TextPosition anchor_id=4 text_offset=11 affinity=downstream "
+            "annotated_text=Line 1\nLine< >2"}));
+
 // Only test with AXBoundaryBehavior::CrossBoundary for now.
+// TODO(accessibility): Add more tests for other boundary behaviors if needed.
 INSTANTIATE_TEST_SUITE_P(
     CreatePositionAtTextBoundary,
     AXPositionCreatePositionAtTextBoundaryTestWithParam,

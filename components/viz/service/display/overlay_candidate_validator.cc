@@ -56,15 +56,8 @@ CreateOverlayCandidateValidatorOzone(
 std::unique_ptr<OverlayCandidateValidatorWin>
 CreateOverlayCandidateValidatorWin(const ContextProvider* context_provider) {
   DCHECK(context_provider);
-
   const auto& capabilities = context_provider->ContextCapabilities();
-  const bool use_overlays_for_sw_protected_video = base::FeatureList::IsEnabled(
-      features::kUseDCOverlaysForSoftwareProtectedVideo);
-  const bool use_overlays =
-      capabilities.dc_layers && (capabilities.use_dc_overlays_for_video ||
-                                 use_overlays_for_sw_protected_video);
-
-  if (use_overlays) {
+  if (capabilities.dc_layers) {
     return std::make_unique<OverlayCandidateValidatorWin>();
   } else {
     return nullptr;
@@ -129,9 +122,9 @@ std::unique_ptr<OverlayCandidateValidator> OverlayCandidateValidator::Create(
 #elif defined(OS_ANDROID)
     return CreateOverlayCandidateValidatorAndroid(context_provider);
 #elif defined(USE_OZONE)
-    // Chromecast could either be backed by Ozone-DRM, which is covered by Surfacelss code path
-    // above, or Ozone-Cast, which is the type of Ozone platform that doesn't use Surfaceless
-    // Surface.
+    // Chromecast could either be backed by Ozone-DRM, which is covered by
+    // Surfaceless code path above, or Ozone-Cast, which is the type of Ozone
+    // platform that doesn't use Surfaceless Surface.
     return CreateOverlayCandidateValidatorOzone(surface_handle,
                                                 renderer_settings);
 #else

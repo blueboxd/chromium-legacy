@@ -6,8 +6,8 @@
 #define MEDIA_GPU_ANDROID_CODEC_SURFACE_BUNDLE_H_
 
 #include "base/memory/ref_counted_delete_on_sequence.h"
+#include "gpu/ipc/common/android/texture_owner.h"
 #include "media/base/android/android_overlay.h"
-#include "media/gpu/android/surface_texture_gl_owner.h"
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gl/android/scoped_java_surface.h"
 
@@ -27,7 +27,7 @@ class MEDIA_GPU_EXPORT CodecSurfaceBundle
   // Create an empty bundle to be manually populated.
   CodecSurfaceBundle();
   explicit CodecSurfaceBundle(std::unique_ptr<AndroidOverlay> overlay);
-  explicit CodecSurfaceBundle(scoped_refptr<TextureOwner> texture_owner);
+  explicit CodecSurfaceBundle(scoped_refptr<gpu::TextureOwner> texture_owner);
 
   const base::android::JavaRef<jobject>& GetJavaSurface() const;
 
@@ -36,7 +36,9 @@ class MEDIA_GPU_EXPORT CodecSurfaceBundle
   // |this|; the cb will do nothing if |this| is destroyed.
   ScheduleLayoutCB GetScheduleLayoutCB();
 
-  scoped_refptr<TextureOwner> texture_owner() const { return texture_owner_; }
+  scoped_refptr<gpu::TextureOwner> texture_owner() const {
+    return texture_owner_;
+  }
   AndroidOverlay* overlay() const { return overlay_.get(); }
 
  private:
@@ -49,7 +51,7 @@ class MEDIA_GPU_EXPORT CodecSurfaceBundle
   // The Overlay or TextureOwner.
   std::unique_ptr<AndroidOverlay> overlay_;
 
-  scoped_refptr<TextureOwner> texture_owner_;
+  scoped_refptr<gpu::TextureOwner> texture_owner_;
 
   // The Java surface for |texture_owner_|.
   gl::ScopedJavaSurface texture_owner_surface_;

@@ -89,7 +89,11 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
     // animations. This is used when performing the desk switch animation when
     // the source desk is in overview mode, while the target desk is not.
     // This should not be used for entering overview mode.
-    kImmediateExit
+    kImmediateExit,
+    // Prevents overview from stealing the input focus. Used by code that starts
+    // overview after a window has already been snapped in split view. The
+    // purpose is so that overview does not steal focus from the snapped window.
+    kStartUnfocused,
   };
 
   // Callback which fills out the passed settings object. Used by several

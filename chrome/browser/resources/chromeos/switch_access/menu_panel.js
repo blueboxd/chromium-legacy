@@ -19,15 +19,30 @@ class Panel {
      * @private {SwitchAccessInterface}
      */
     this.switchAccess_;
+
+    /**
+     * Reference to the menu panel element.
+     * @private {Element}
+     */
+    this.panel_;
+
+    /**
+     * ID of the current menu being shown in the menu panel.
+     * @private {?SAConstants.MenuId}
+     */
+    this.currentMenuId_;
   }
 
   /**
    * Initialize the panel and buttons.
    */
   init() {
-    const div = document.getElementById(SAConstants.MENU_ID);
-    for (const button of div.children)
+    this.panel_ = document.getElementById(SAConstants.MENU_PANEL_ID);
+
+    const buttons = document.getElementsByTagName('button');
+    for (const button of buttons) {
       this.setupButton_(button);
+    }
 
     const background = chrome.extension.getBackgroundPage();
     if (background.document.readyState === 'complete')
@@ -77,11 +92,63 @@ class Panel {
    * @param {!Array<string>} actions
    */
   setActions(actions) {
-    const div = document.getElementById(SAConstants.MENU_ID);
+    const div = document.getElementById(SAConstants.MENU_PANEL_ID);
     for (const button of div.children)
       button.hidden = !actions.includes(button.id);
 
     this.setHeight_(actions.length);
+  }
+
+  /**
+   * Sets the actions in the menu panel to the actions in |actions| from
+   * the menu with the given |menuId|.
+   * TODO(sophyang): Replace setActions() with this function once
+   * submenus are implemented.
+   * @param {!Array<string>} actions
+   * @param {!SAConstants.MenuId} menuId
+   * @public
+   */
+  setActionsFromMenu(actions, menuId) {
+    const menu = document.getElementById(menuId);
+    const menuButtons = Array.from(menu.children);
+
+    // Add the menu to the panel if it is not already being shown.
+    if (menuId !== this.currentMenuId_) {
+      this.panel_.clear();
+      this.panel_.appendChild(menu);
+    }
+
+    // Hide menu actions not applicable to the current node.
+    for (const button of menuButtons) {
+      button.hidden = !actions.includes(button.id);
+    }
+
+    this.currentMenuId_ = menuId;
+
+    this.setHeight_(actions.length);
+  }
+
+  /**
+   * Clears the current menu from the panel.
+   * @public
+   */
+  clear() {
+    if (this.currentMenuId_) {
+      const menu = document.getElementById(this.currentMenuId_);
+      document.body.appendChild(menu);
+
+      this.currentMenuId_ = null;
+    }
+  }
+
+  /**
+   * Get the id of the current menu being shown in the panel. A null
+   * id indicates that no menu is currently being shown in the panel.
+   * @return {?SAConstants.MenuId}
+   * @public
+   */
+  currentMenuId() {
+    return this.currentMenuId_;
   }
 
   /**
@@ -125,7 +192,7 @@ class Panel {
     }
 
     const height = rowHeight * numRows;
-    document.getElementById(SAConstants.MENU_ID).style.height = height + 'px';
+    this.panel_.style.height = height + 'px';
   }
 
   /**

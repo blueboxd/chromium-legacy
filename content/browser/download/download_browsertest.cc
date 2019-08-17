@@ -1847,56 +1847,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectUnsafeDownload) {
             downloads[0]->GetLastReason());
 }
 
-// Test that content length mismatch errors are handled properly.
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, ContentLengthMismatch) {
-  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
-  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
-  // Server response doesn't contain strong validators.
-  TestDownloadHttpResponse::StartServingStaticResponse(
-      "HTTP/1.1 200 OK\r\n"
-      "Content-Length: 100000\r\n"
-      "\r\n"
-      "abc\r\n",
-      server_url);
-
-  auto download_parameters = std::make_unique<download::DownloadUrlParameters>(
-      server_url, TRAFFIC_ANNOTATION_FOR_TESTS);
-  DownloadManagerForShell(shell())->DownloadUrl(std::move(download_parameters));
-  std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
-  observer->WaitForFinished();
-
-  // Verify download completed without any interruptions.
-  std::vector<download::DownloadItem*> downloads;
-  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
-  EXPECT_EQ(1u, downloads.size());
-  EXPECT_EQ(download::DownloadItem::COMPLETE, downloads[0]->GetState());
-  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE,
-            downloads[0]->GetLastReason());
-  EXPECT_EQ(0, downloads[0]->GetAutoResumeCount());
-  downloads[0]->Remove();
-
-  // Change server response to include strong validators.
-  TestDownloadHttpResponse::StartServingStaticResponse(
-      "HTTP/1.1 200 OK\r\n"
-      "Content-Length: 100000\r\n"
-      "Etag: xyz\r\n"
-      "\r\n"
-      "abc\r\n",
-      server_url);
-  download_parameters = std::make_unique<download::DownloadUrlParameters>(
-      server_url, TRAFFIC_ANNOTATION_FOR_TESTS);
-  DownloadManagerForShell(shell())->DownloadUrl(std::move(download_parameters));
-  std::unique_ptr<DownloadTestObserver> observer2(CreateWaiter(shell(), 1));
-  observer2->WaitForFinished();
-
-  // Verify the new download completed with 1 auto resumption attempt.
-  downloads.clear();
-  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
-  EXPECT_EQ(1u, downloads.size());
-  EXPECT_EQ(download::DownloadItem::COMPLETE, downloads[0]->GetState());
-  EXPECT_EQ(1, downloads[0]->GetAutoResumeCount());
-}
-
 // If the server response for the resumption request specifies a bad range (i.e.
 // not the range that was requested), then the download should be marked as
 // interrupted and restart from the beginning.

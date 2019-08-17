@@ -83,6 +83,7 @@ public class TabSuspensionTest {
 
     private ChromeTabbedActivity mActivity;
     private PageViewObserver mPageViewObserver;
+    private PageViewObserver mPageViewObserver2;
     private TokenTracker mTokenTracker;
     private EventTracker mEventTracker;
     private Tab mTab;
@@ -232,13 +233,16 @@ public class TabSuspensionTest {
         waitForSuspendedTabToShow(tab2, DIFFERENT_FQDN);
 
         // Each PageViewObserver is associated with a single ChromeTabbedActivity, so we need to
-        // create a new one for the other window.
-        PageViewObserver pageViewObserver2 = new PageViewObserver(activity2,
-                activity2.getTabModelSelector(), mEventTracker, mTokenTracker, mSuspensionTracker);
+        // create a new one for the other window. This needs to be done on the UI thread since it
+        // can trigger view maniplation.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mPageViewObserver2 = new PageViewObserver(activity2, activity2.getTabModelSelector(),
+                    mEventTracker, mTokenTracker, mSuspensionTracker);
+        });
 
         suspendDomain(STARTING_FQDN);
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { pageViewObserver2.notifySiteSuspensionChanged(DIFFERENT_FQDN, false); });
+                () -> { mPageViewObserver2.notifySiteSuspensionChanged(DIFFERENT_FQDN, false); });
         // Suspending and un-suspending should work in both activities/windows.
         assertSuspendedTabHidden(tab2);
         waitForSuspendedTabToShow(mTab, STARTING_FQDN);

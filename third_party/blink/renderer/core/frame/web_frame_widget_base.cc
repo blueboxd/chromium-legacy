@@ -340,11 +340,6 @@ void WebFrameWidgetBase::DidLosePointerLock() {
 void WebFrameWidgetBase::RequestDecode(
     const PaintImage& image,
     base::OnceCallback<void(bool)> callback) {
-  // If we have a LayerTreeView, propagate the request, otherwise fail it since
-  // otherwise it would remain in a unresolved and unrejected state.
-  // TODO(danakj): This should be based on |does_composite| instead.
-  if (!GetLayerTreeView())
-    std::move(callback).Run(false);
   Client()->RequestDecode(image, std::move(callback));
 }
 

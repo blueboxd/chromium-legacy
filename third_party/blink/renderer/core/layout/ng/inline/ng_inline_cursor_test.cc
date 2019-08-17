@@ -107,4 +107,18 @@ TEST_P(NGInlineCursorTest, NextSkippingChildren) {
   EXPECT_THAT(list, ElementsAre("#span2", "text4", "text5"));
 }
 
+TEST_P(NGInlineCursorTest, EmptyOutOfFlow) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=root>
+      <span style="position: absolute"></span>
+    </div>
+  )HTML");
+
+  LayoutBlockFlow* block_flow =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("root"));
+  NGInlineCursor cursor(block_flow);
+  Vector<String> list = ToDebugStringList(&cursor);
+  EXPECT_THAT(list, ElementsAre());
+}
+
 }  // namespace blink

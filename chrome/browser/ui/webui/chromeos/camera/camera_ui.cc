@@ -53,7 +53,7 @@ content::WebUIDataSource* CreateCameraUIHTMLSource() {
   // Add System Web App resources.
   source->AddResourcePath("pwa.html", IDR_PWA_HTML);
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
 
   return source;
 }

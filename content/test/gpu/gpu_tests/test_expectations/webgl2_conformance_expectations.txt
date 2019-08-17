@@ -131,7 +131,9 @@ crbug.com/602688 [ opengl win passthrough intel intel_lt_25.20.100.6577 ] confor
 crbug.com/602688 [ opengl win passthrough intel intel_lt_25.20.100.6577 ] conformance2/textures/misc/texture-npot.html [ Failure ]
 crbug.com/854100 [ opengl win passthrough intel intel_lt_25.20.100.6577 ] conformance/glsl/variables/gl-pointcoord.html [ Failure ]
 crbug.com/957631 [ opengl win passthrough intel intel_lt_25.20.100.6577 ] conformance2/rendering/element-index-uint.html [ Failure ]
-crbug.com/angleproject/2880 [ opengl win passthrough intel intel_lt_25.20.100.6577 ] deqp/functional/gles3/shaderbuiltinvar.html [ Failure ]
+# TODO(crbug.com/994852) : Add back driver version tag intel_lt_25.20.100.6577
+# once it is working again.
+crbug.com/angleproject/2880 [ opengl win passthrough intel ] deqp/functional/gles3/shaderbuiltinvar.html [ Skip ]
 
 # This is an OpenGL driver bug on Intel platform and it is fixed in
 # Intel Driver 25.20.100.6444.

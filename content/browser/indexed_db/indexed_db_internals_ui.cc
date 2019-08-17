@@ -72,7 +72,7 @@ IndexedDBInternalsUI::IndexedDBInternalsUI(WebUI* web_ui)
       WebUIDataSource::Create(kChromeUIIndexedDBInternalsHost);
   source->OverrideContentSecurityPolicyScriptSrc(
       "script-src chrome://resources 'self' 'unsafe-eval';");
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->AddResourcePath("indexeddb_internals.js",
                           IDR_INDEXED_DB_INTERNALS_JS);
   source->AddResourcePath("indexeddb_internals.css",

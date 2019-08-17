@@ -386,7 +386,7 @@
   {
     "name": "chrome-colors",
     "owners": ["gayane"],
-    "expiry_milestone": 78
+    "expiry_milestone": 79
   },
   {
     "name": "chrome-colors-custom-color-picker",
@@ -2403,7 +2403,7 @@
   {
     "name": "ntp-customization-menu-v2",
     "owners": ["kmilka", "ramyan"],
-    "expiry_milestone": 77
+    "expiry_milestone": 79
   },
   {
     "name": "ntp-disable-initial-most-visited-fade-in",

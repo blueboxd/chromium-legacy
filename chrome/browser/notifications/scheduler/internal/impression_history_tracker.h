@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_IMPRESSION_HISTORY_TRACKER_H_
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_IMPRESSION_HISTORY_TRACKER_H_
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/clock.h"
@@ -118,17 +118,19 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
 
   // Helper method to prune impressions created before |start_time|. Assumes
   // |impressions| are sorted by creation time.
-  static void PruneImpressionByCreateTime(std::deque<Impression*>* impressions,
-                                          const base::Time& start_time);
+  static void PruneImpressionByCreateTime(
+      base::circular_deque<Impression*>* impressions,
+      const base::Time& start_time);
 
   // Analyzes the impression history for a particular client.
   void AnalyzeImpressionHistory(ClientState* client_state);
 
   // Check consecutive user actions, and generate impression result if no less
   // than |num_actions| count of user actions.
-  void CheckConsecutiveUserAction(ClientState* client_state,
-                                  std::deque<Impression*>* impressions,
-                                  size_t num_actions);
+  void CheckConsecutiveUserAction(
+      ClientState* client_state,
+      base::circular_deque<Impression*>* impressions,
+      size_t num_actions);
 
   // Generates user impression result.
   void GenerateImpressionResult(Impression* impression);

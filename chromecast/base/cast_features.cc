@@ -151,6 +151,10 @@ const base::Feature kDisableIdleSocketsCloseOnMemoryPressure{
 const base::Feature kEnableGeneralAudienceBrowsing{
     "enable_general_audience_browsing", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Uses unified IPC QueryableData bindings backend instead of v8 injection.
+const base::Feature kUseQueryableDataBackend{"use_queryable_data_backend",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // End Chromecast Feature definitions.
 const base::Feature* kFeatures[] = {
     &kAllowUserMediaAccess,
@@ -159,6 +163,7 @@ const base::Feature* kFeatures[] = {
     &kSingleBuffer,
     &kDisableIdleSocketsCloseOnMemoryPressure,
     &kEnableGeneralAudienceBrowsing,
+    &kUseQueryableDataBackend,
 };
 
 // An iterator for a base::DictionaryValue. Use an alias for brevity in loops.

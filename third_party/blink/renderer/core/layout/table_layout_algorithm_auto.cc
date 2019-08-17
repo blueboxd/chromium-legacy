@@ -53,7 +53,7 @@ void TableLayoutAlgorithmAuto::RecalcColumn(unsigned eff_col) {
       // mark it's ancestors as dirty.
       ToLayoutTableCol(child)->ClearPreferredLogicalWidthsDirtyBits();
     } else if (child->IsTableSection()) {
-      LayoutTableSection* section = ToLayoutTableSection(child);
+      LayoutTableSection* section = To<LayoutTableSection>(child);
       unsigned num_rows = section->NumRows();
       for (unsigned i = 0; i < num_rows; i++) {
         if (eff_col >= section->NumCols(i))
@@ -266,7 +266,7 @@ static bool ShouldScaleColumnsForSelf(LayoutTable* table) {
                                !cb->StyleRef().Width().IsPercentOrCalc()))
       return true;
 
-    LayoutTableCell* cell = ToLayoutTableCell(cb);
+    LayoutTableCell* cell = To<LayoutTableCell>(cb);
     table = cell->Table();
     if (cell->ColSpan() > 1 || table->IsLogicalWidthAuto())
       return false;

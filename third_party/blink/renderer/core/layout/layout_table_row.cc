@@ -49,6 +49,14 @@ void LayoutTableRow::WillBeRemovedFromTree() {
   Section()->SetNeedsCellRecalc();
 }
 
+LayoutNGTableCellInterface* LayoutTableRow::FirstCellInterface() const {
+  return FirstCell();
+}
+
+LayoutNGTableCellInterface* LayoutTableRow::LastCellInterface() const {
+  return LastCell();
+}
+
 void LayoutTableRow::StyleDidChange(StyleDifference diff,
                                     const ComputedStyle* old_style) {
   DCHECK_EQ(StyleRef().Display(), EDisplay::kTableRow);
@@ -122,7 +130,7 @@ void LayoutTableRow::AddChild(LayoutObject* child, LayoutObject* before_child) {
       last = LastCell();
     if (last && last->IsAnonymous() && last->IsTableCell() &&
         !last->IsBeforeOrAfterContent()) {
-      LayoutTableCell* last_cell = ToLayoutTableCell(last);
+      LayoutTableCell* last_cell = To<LayoutTableCell>(last);
       if (before_child == last_cell)
         before_child = last_cell->FirstChild();
       last_cell->AddChild(child, before_child);
@@ -155,7 +163,7 @@ void LayoutTableRow::AddChild(LayoutObject* child, LayoutObject* before_child) {
   if (before_child && before_child->Parent() != this)
     before_child = SplitAnonymousBoxesAroundChild(before_child);
 
-  LayoutTableCell* cell = ToLayoutTableCell(child);
+  LayoutTableCell* cell = To<LayoutTableCell>(child);
 
   DCHECK(!before_child || before_child->IsTableCell());
   LayoutTableBoxComponent::AddChild(cell, before_child);

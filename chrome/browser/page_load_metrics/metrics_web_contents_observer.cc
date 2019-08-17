@@ -394,10 +394,10 @@ void MetricsWebContentsObserver::OnDomStorageAccessed(
                                           blocked_by_policy);
 }
 
-const PageLoadExtraInfo
-MetricsWebContentsObserver::GetPageLoadExtraInfoForCommittedLoad() {
+const PageLoadMetricsObserverDelegate&
+MetricsWebContentsObserver::GetDelegateForCommittedLoad() {
   DCHECK(committed_load_);
-  return committed_load_->ComputePageLoadExtraInfo();
+  return *committed_load_.get();
 }
 
 void MetricsWebContentsObserver::ReadyToCommitNavigation(

@@ -17,17 +17,13 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-// Text color for the Cancel button.
-const CGFloat kCancelButtonTextColorBlue = 0x1A73E8;
-}  // namespace
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierContent = kSectionIdentifierEnumZero,
@@ -98,8 +94,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.view.backgroundColor = [UIColor whiteColor];
-  self.styler.cellBackgroundColor = [UIColor whiteColor];
+  self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+  self.styler.cellBackgroundColor = [UIColor colorNamed:kBackgroundColor];
   self.tableView.sectionHeaderHeight = 0;
   [self.tableView
       setSeparatorInset:UIEdgeInsetsMake(0, kTableViewHorizontalSpacing, 0, 0)];
@@ -199,8 +195,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     self.cancelInfobarItem =
         [[TableViewTextButtonItem alloc] initWithType:ItemTypeCancel];
     self.cancelInfobarItem.buttonText = self.cancelButtonText;
-    self.cancelInfobarItem.buttonTextColor =
-        UIColorFromRGB(kCancelButtonTextColorBlue);
+    self.cancelInfobarItem.buttonTextColor = [UIColor colorNamed:kBlueColor];
     self.cancelInfobarItem.buttonBackgroundColor = [UIColor clearColor];
     self.cancelInfobarItem.boldButtonText = NO;
     [model addItem:self.cancelInfobarItem

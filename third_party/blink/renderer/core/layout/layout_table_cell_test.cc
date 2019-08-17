@@ -80,8 +80,9 @@ class LayoutTableCellTest : public RenderingTest {
   bool IsInEndColumn(const LayoutTableCell* cell) {
     return cell->IsInEndColumn();
   }
+  // TODO(958381) Make this code TableNG compatible.
   LayoutTableCell* GetCellByElementId(const char* id) {
-    return ToLayoutTableCell(GetLayoutObjectByElementId(id));
+    return To<LayoutTableCell>(GetLayoutObjectByElementId(id));
   }
 };
 

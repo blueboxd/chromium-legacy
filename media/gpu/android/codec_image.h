@@ -108,7 +108,7 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
     return !!codec_buffer_wait_coordinator_;
   }
 
-  scoped_refptr<TextureOwner> texture_owner() const {
+  scoped_refptr<gpu::TextureOwner> texture_owner() const {
     return codec_buffer_wait_coordinator_
                ? codec_buffer_wait_coordinator_->texture_owner()
                : nullptr;

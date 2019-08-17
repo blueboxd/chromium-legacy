@@ -169,6 +169,7 @@ static_library("v4_local_database_manager") {
     "//base",
     "//components/safe_browsing:webui_proto",
     "//components/safe_browsing/realtime:policy_engine",
+    "//components/safe_browsing/realtime:url_lookup_service",
     "//content/public/browser",
     "//crypto",
     "//net",

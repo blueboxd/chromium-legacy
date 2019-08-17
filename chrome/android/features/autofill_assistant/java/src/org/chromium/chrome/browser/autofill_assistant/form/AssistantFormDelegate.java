@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant.form;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 
 /** Delegate for the form UI. */
 @JNINamespace("autofill_assistant")
@@ -23,13 +24,14 @@ class AssistantFormDelegate {
 
     void onCounterChanged(int inputIndex, int counterIndex, int value) {
         if (mNativeAssistantFormDelegate != 0) {
-            nativeOnCounterChanged(mNativeAssistantFormDelegate, inputIndex, counterIndex, value);
+            AssistantFormDelegateJni.get().onCounterChanged(mNativeAssistantFormDelegate,
+                    AssistantFormDelegate.this, inputIndex, counterIndex, value);
         }
     }
     void onChoiceSelectionChanged(int inputIndex, int choiceIndex, boolean selected) {
         if (mNativeAssistantFormDelegate != 0) {
-            nativeOnChoiceSelectionChanged(
-                    mNativeAssistantFormDelegate, inputIndex, choiceIndex, selected);
+            AssistantFormDelegateJni.get().onChoiceSelectionChanged(mNativeAssistantFormDelegate,
+                    AssistantFormDelegate.this, inputIndex, choiceIndex, selected);
         }
     }
 
@@ -38,8 +40,11 @@ class AssistantFormDelegate {
         mNativeAssistantFormDelegate = 0;
     }
 
-    private native void nativeOnCounterChanged(long nativeAssistantFormDelegate, int inputIndex,
-            int counterIndex, long nativeAssistantOverlayDelegate);
-    private native void nativeOnChoiceSelectionChanged(
-            long nativeAssistantFormDelegate, int inputIndex, int choiceIndex, boolean selected);
+    @NativeMethods
+    interface Natives {
+        void onCounterChanged(long nativeAssistantFormDelegate, AssistantFormDelegate caller,
+                int inputIndex, int counterIndex, long nativeAssistantOverlayDelegate);
+        void onChoiceSelectionChanged(long nativeAssistantFormDelegate,
+                AssistantFormDelegate caller, int inputIndex, int choiceIndex, boolean selected);
+    }
 }

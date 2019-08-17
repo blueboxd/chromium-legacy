@@ -362,7 +362,7 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
 
   network_element::AddLocalizedStrings(html);
 
-  html->SetJsonPath("strings.js");
+  html->UseStringsJs();
   html->AddResourcePath("network_ui.css", IDR_NETWORK_UI_CSS);
   html->AddResourcePath("network_ui.js", IDR_NETWORK_UI_JS);
   html->SetDefaultResource(IDR_NETWORK_UI_HTML);

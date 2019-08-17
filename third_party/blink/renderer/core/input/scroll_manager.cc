@@ -488,8 +488,21 @@ WebInputEventResult ScrollManager::HandleGestureScrollBegin(
   scroll_state_data->delta_consumed_for_scroll_sequence =
       delta_consumed_for_scroll_sequence_;
   ScrollState* scroll_state = ScrollState::Create(std::move(scroll_state_data));
-  RecomputeScrollChain(*scroll_gesture_handling_node_.Get(), *scroll_state,
-                       current_scroll_chain_);
+  // For middle click autoscroll, only scrollable area for
+  // |scroll_gesture_handling_node_| should receive and handle all scroll
+  // events. It should not bubble up to the ancestor.
+  if (gesture_event.SourceDevice() == WebGestureDevice::kSyntheticAutoscroll) {
+    LayoutBox* scrollable = LayoutBox::FindAutoscrollable(
+        scroll_gesture_handling_node_->GetLayoutObject(),
+        /*is_middle_click_autoscroll*/ true);
+    if (scrollable) {
+      Node* scrollable_node = scrollable->GetNode();
+      current_scroll_chain_.push_back(DOMNodeIds::IdForNode(scrollable_node));
+    }
+  } else {
+    RecomputeScrollChain(*scroll_gesture_handling_node_.Get(), *scroll_state,
+                         current_scroll_chain_);
+  }
 
   TRACE_EVENT_INSTANT1("input", "Computed Scroll Chain",
                        TRACE_EVENT_SCOPE_THREAD, "length",

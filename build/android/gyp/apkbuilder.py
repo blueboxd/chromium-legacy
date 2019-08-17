@@ -346,7 +346,7 @@ def main(args):
         build_utils.AddToZipHermetic(out_apk, apk_path, data='')
 
       # 5. Resources
-      for info in resource_infos:
+      for info in sorted(resource_infos, key=lambda i: i.filename):
         if info.filename != 'AndroidManifest.xml':
           copy_resource(info)
 
@@ -355,7 +355,7 @@ def main(args):
       # Prebuilt jars may contain class files which we shouldn't include.
       for java_resource in options.java_resources:
         with zipfile.ZipFile(java_resource, 'r') as java_resource_jar:
-          for apk_path in java_resource_jar.namelist():
+          for apk_path in sorted(java_resource_jar.namelist()):
             apk_path_lower = apk_path.lower()
 
             if apk_path_lower.startswith('meta-inf/'):

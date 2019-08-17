@@ -92,8 +92,7 @@ void LinkHighlights::StartHighlightAnimationIfNeeded() {
     GetPage().GetChromeClient().ScheduleAnimation(local_frame->View());
 }
 
-void LinkHighlights::LayerTreeViewInitialized(
-    WebLayerTreeView& layer_tree_view,
+void LinkHighlights::AnimationHostInitialized(
     cc::AnimationHost& animation_host) {
   animation_host_ = &animation_host;
   if (Platform::Current()->IsThreadedAnimationEnabled()) {
@@ -102,7 +101,7 @@ void LinkHighlights::LayerTreeViewInitialized(
   }
 }
 
-void LinkHighlights::WillCloseLayerTreeView(WebLayerTreeView& layer_tree_view) {
+void LinkHighlights::WillCloseAnimationHost() {
   RemoveAllHighlights();
   if (timeline_) {
     animation_host_->RemoveAnimationTimeline(timeline_->GetAnimationTimeline());

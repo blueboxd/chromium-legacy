@@ -150,13 +150,14 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
     // balancing).
     LayoutUnit minimal_space_shortage(LayoutUnit::Max());
 
-    // Allow any block-start margins at the start of the first column.
-    bool separate_leading_margins = true;
-
     do {
+      // This is the first column in this fragmentation context if there are no
+      // preceding columns in this row and there are also no preceding rows.
+      bool is_first_fragmentainer = !break_token && !BreakToken();
+
       // Lay out one column. Each column will become a fragment.
       NGConstraintSpace child_space = CreateConstraintSpaceForColumns(
-          column_size, separate_leading_margins, balance_columns);
+          column_size, is_first_fragmentainer, balance_columns);
 
       NGFragmentGeometry fragment_geometry =
           CalculateInitialFragmentGeometry(child_space, Node());
@@ -176,12 +177,8 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
             std::min(minimal_space_shortage, space_shortage);
       }
       actual_column_count++;
-      if (result->HasForcedBreak()) {
+      if (result->HasForcedBreak())
         forced_break_count++;
-        separate_leading_margins = true;
-      } else {
-        separate_leading_margins = false;
-      }
 
       LayoutUnit block_size = NGFragment(writing_mode, column).BlockSize();
       intrinsic_block_size =
@@ -426,7 +423,7 @@ LayoutUnit NGColumnLayoutAlgorithm::ConstrainColumnBlockSize(
 
 NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForColumns(
     const LogicalSize& column_size,
-    bool separate_leading_margins,
+    bool is_first_fragmentainer,
     bool balance_columns) const {
   NGConstraintSpaceBuilder space_builder(
       ConstraintSpace(), Style().GetWritingMode(), /* is_new_fc */ true);
@@ -446,10 +443,15 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForColumns(
   space_builder.SetFragmentainerBlockSize(column_block_size);
   space_builder.SetFragmentainerSpaceAtBfcStart(column_block_size);
   space_builder.SetIsAnonymous(true);
-  space_builder.SetSeparateLeadingFragmentainerMargins(
-      separate_leading_margins);
   if (balance_columns)
     space_builder.SetIsInsideBalancedColumns();
+  if (!is_first_fragmentainer) {
+    // Margins at fragmentainer boundaries should be eaten and truncated to
+    // zero. Note that this doesn't apply to margins at forced breaks, but we'll
+    // deal with those when we get to them. Set up a margin strut that eats all
+    // leading adjacent margins.
+    space_builder.SetDiscardingMarginStrut();
+  }
 
   return space_builder.ToConstraintSpace();
 }

@@ -20,6 +20,16 @@
 namespace pdf {
 namespace {
 
+const PP_PrivateAccessibilityTextRunInfo kFirstTextRun = {
+    15, 12, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
+const PP_PrivateAccessibilityCharInfo kDummyCharsData[] = {
+    {'H', 12}, {'e', 6},  {'l', 5},  {'l', 4},  {'o', 8},  {',', 4},
+    {' ', 4},  {'w', 12}, {'o', 6},  {'r', 6},  {'l', 4},  {'d', 9},
+    {'!', 4},  {'\r', 0}, {'\n', 0}, {'G', 16}, {'o', 12}, {'o', 12},
+    {'d', 12}, {'b', 10}, {'y', 12}, {'e', 12}, {',', 4},  {' ', 6},
+    {'w', 16}, {'o', 12}, {'r', 8},  {'l', 4},  {'d', 12}, {'!', 2},
+};
+
 void CompareRect(PP_Rect expected_rect, PP_Rect actual_rect) {
   EXPECT_EQ(expected_rect.point.x, actual_rect.point.x);
   EXPECT_EQ(expected_rect.point.y, actual_rect.point.y);
@@ -189,6 +199,35 @@ TEST_F(PdfAccessibilityTreeTest, TestAccessibilityDisabledDuringPDFLoad) {
 
   pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
                                                   chars_);
+}
+
+TEST_F(PdfAccessibilityTreeTest, TextRunsAndCharsMismatch) {
+  // |chars_| and |text_runs_| span over the same page text. They should denote
+  // the same page text size, but |text_runs_| is incorrect and only denotes 1
+  // of 2 text runs.
+  text_runs_.emplace_back(kFirstTextRun);
+  chars_.insert(chars_.end(), std::begin(kDummyCharsData),
+                std::end(kDummyCharsData));
+
+  page_info_.text_run_count = text_runs_.size();
+  page_info_.char_count = chars_.size();
+
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
+
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame());
+  PP_Instance instance = 0;
+  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_);
+  // In case of invalid data, only the initialized data should be in the tree.
+  ASSERT_EQ(ax::mojom::Role::kUnknown,
+            pdf_accessibility_tree.GetRoot()->data().role);
+  ASSERT_EQ(0u, pdf_accessibility_tree.GetRoot()->children().size());
 }
 
 TEST_F(PdfAccessibilityTreeTest, TestActionDataConversion) {

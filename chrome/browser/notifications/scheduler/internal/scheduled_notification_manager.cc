@@ -34,6 +34,21 @@ bool CreateTimeCompare(const NotificationEntry* lhs,
   return lhs->create_time <= rhs->create_time;
 }
 
+void ValidateNotificationParams(const NotificationParams& params) {
+  // Validate time window.
+  DCHECK(params.schedule_params.deliver_time_start.has_value() &&
+         params.schedule_params.deliver_time_end.has_value())
+      << "Currently only support deliver in a time window,";
+  DCHECK(params.schedule_params.deliver_time_start.value() <=
+         params.schedule_params.deliver_time_end.value());
+
+  // Validate ihnr buttons option.
+  if (params.enable_ihnr_buttons) {
+    DCHECK(params.notification_data.buttons.empty())
+        << "Can't have custom buttons when have helpful/unhelpful buttons.";
+  }
+}
+
 class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
  public:
   using NotificationStore = std::unique_ptr<CollectionStore<NotificationEntry>>;
@@ -77,8 +92,9 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
       return;
     }
 
+    ValidateNotificationParams(*notification_params);
+
     if (notification_params->enable_ihnr_buttons) {
-      DCHECK(notification_params->notification_data.buttons.empty());
       CreateInhrButtonsPair(&notification_params->notification_data.buttons);
     }
 

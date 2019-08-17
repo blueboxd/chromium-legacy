@@ -386,7 +386,7 @@
 -dontwarn com.google.protobuf.nano.NanoEnumValue
 
 ################################################################################
-# gen/third_party/android_deps/com_android_support_animated_vector_drawable_java/proguard.txt
+# obj/third_party/android_deps/com_android_support_animated_vector_drawable_java/proguard.txt
 ################################################################################
 # Copyright (C) 2016 The Android Open Source Project
 #
@@ -409,7 +409,7 @@
 }
 
 ################################################################################
-# gen/third_party/android_deps/com_android_support_appcompat_v7_java/proguard.txt
+# obj/third_party/android_deps/com_android_support_appcompat_v7_java/proguard.txt
 ################################################################################
 # Copyright (C) 2018 The Android Open Source Project
 #
@@ -434,7 +434,7 @@
 -keep class android.support.v7.widget.SearchView { <init>(...); }
 
 ################################################################################
-# gen/third_party/android_deps/com_android_support_preference_v7_java/proguard.txt
+# obj/third_party/android_deps/com_android_support_preference_v7_java/proguard.txt
 ################################################################################
 # Copyright (C) 2015 The Android Open Source Project
 #
@@ -459,7 +459,7 @@
 }
 
 ################################################################################
-# gen/third_party/android_deps/com_android_support_recyclerview_v7_java/proguard.txt
+# obj/third_party/android_deps/com_android_support_recyclerview_v7_java/proguard.txt
 ################################################################################
 # Copyright (C) 2015 The Android Open Source Project
 #
@@ -483,13 +483,13 @@
 }
 
 ################################################################################
-# gen/third_party/android_deps/com_android_support_support_compat_java/proguard.txt
+# obj/third_party/android_deps/com_android_support_support_compat_java/proguard.txt
 ################################################################################
 # aapt2 is not (yet) keeping FQCNs defined in the appComponentFactory <application> attribute
 -keep class android.support.v4.app.CoreComponentFactory
 
 ################################################################################
-# gen/third_party/android_deps/com_android_support_support_media_compat_java/proguard.txt
+# obj/third_party/android_deps/com_android_support_support_media_compat_java/proguard.txt
 ################################################################################
 # Copyright (C) 2017 The Android Open Source Project
 #
@@ -537,7 +537,7 @@
 }
 
 ################################################################################
-# gen/third_party/android_deps/com_android_support_transition_java/proguard.txt
+# obj/third_party/android_deps/com_android_support_transition_java/proguard.txt
 ################################################################################
 # Copyright (C) 2017 The Android Open Source Project
 #
@@ -559,7 +559,7 @@
 }
 
 ################################################################################
-# gen/third_party/android_deps/com_android_support_versionedparcelable_java/proguard.txt
+# obj/third_party/android_deps/com_android_support_versionedparcelable_java/proguard.txt
 ################################################################################
 -keep public class * extends androidx.versionedparcelable.VersionedParcelable
 -keep public class android.support.**Parcelizer { *; }
@@ -567,7 +567,7 @@
 -keep public class androidx.versionedparcelable.ParcelImpl
 
 ################################################################################
-# gen/third_party/android_deps/google_play_services_base_java/proguard.txt
+# obj/third_party/android_deps/google_play_services_base_java/proguard.txt
 ################################################################################
 # b/35135904 Ensure that proguard will not strip the mResultGuardian.
 -keepclassmembers class com.google.android.gms.common.api.internal.BasePendingResult {
@@ -575,7 +575,7 @@
 }
 
 ################################################################################
-# gen/third_party/android_deps/google_play_services_basement_java/proguard.txt
+# obj/third_party/android_deps/google_play_services_basement_java/proguard.txt
 ################################################################################
 # Proguard flags for consumers of the Google Play services SDK
 # https://developers.google.com/android/guides/setup#add_google_play_services_to_your_project
@@ -636,12 +636,12 @@
 -dontwarn org.checkerframework.**
 
 ################################################################################
-# gen/third_party/android_deps/google_play_services_cast_framework_java/proguard.txt
+# obj/third_party/android_deps/google_play_services_cast_framework_java/proguard.txt
 ################################################################################
 -keep public class * implements com.google.android.gms.cast.framework.OptionsProvider
 
 ################################################################################
-# gen/third_party/android_deps/google_play_services_clearcut_java/proguard.txt
+# obj/third_party/android_deps/google_play_services_clearcut_java/proguard.txt
 ################################################################################
 # We keep all fields for every generated proto file as the runtime uses
 # reflection over them that ProGuard cannot detect. Without this keep
@@ -651,14 +651,14 @@
 }
 
 ################################################################################
-# gen/third_party/android_deps/google_play_services_fido_java/proguard.txt
+# obj/third_party/android_deps/google_play_services_fido_java/proguard.txt
 ################################################################################
 # Methods enable and disable in this class are complained as unresolved
 # references, but they are system APIs and are not used by Fido client apps.
 -dontwarn android.nfc.NfcAdapter
 
 ################################################################################
-# gen/third_party/android_deps/google_play_services_gcm_java/proguard.txt
+# obj/third_party/android_deps/google_play_services_gcm_java/proguard.txt
 ################################################################################
 # Ensure that proguard will not strip the handleIntent method.
 -keepclassmembers class com.google.android.gms.gcm.GcmListenerService {
@@ -666,7 +666,7 @@
 }
 
 ################################################################################
-# gen/third_party/arcore-android-sdk-client/com_google_ar_core_java/proguard.txt
+# obj/third_party/arcore-android-sdk-client/com_google_ar_core_java/proguard.txt
 ################################################################################
 # Keep ARCore public-facing classes
 -keepparameternames

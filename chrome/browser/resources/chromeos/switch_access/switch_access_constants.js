@@ -11,7 +11,19 @@ let SAConstants = {};
  * @type {string}
  * @const
  */
-SAConstants.MENU_ID = 'switchaccess_menu_actions';
+SAConstants.MENU_PANEL_ID = 'switchaccess_menu_actions';
+
+/**
+ * IDs of menus that can appear in the menu panel.
+ * This must be kept in sync with the div ID of each menu
+ * in menu_panel.html.
+ * @enum {string}
+ * @const
+ */
+SAConstants.MenuId = {
+  MAIN: 'main_menu',
+  TEXT_NAVIGATION: 'text_navigation_menu'
+};
 
 /**
  * The ID of the back button.

@@ -57,9 +57,9 @@ ScopedSurfaceRequestManager::GetAndUnregisterInternal(
 
 void ScopedSurfaceRequestManager::ForwardSurfaceOwnerForSurfaceRequest(
     const base::UnguessableToken& request_token,
-    const gpu::SurfaceOwner* surface_owner) {
+    const gpu::TextureOwner* texture_owner) {
   FulfillScopedSurfaceRequest(request_token,
-                              surface_owner->CreateJavaSurface());
+                              texture_owner->CreateJavaSurface());
 }
 
 void ScopedSurfaceRequestManager::FulfillScopedSurfaceRequest(

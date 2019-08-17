@@ -61,7 +61,7 @@ content::WebUIDataSource* UserManagerUI::CreateUIDataSource(
   source->AddBoolean("isForceSigninEnabled",
                      signin_util::IsForceSigninEnabled());
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
 
   source->AddResourcePath("control_bar.html", IDR_CONTROL_BAR_HTML);
   source->AddResourcePath("control_bar.js", IDR_CONTROL_BAR_JS);

@@ -20,8 +20,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -140,7 +140,7 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
   switch (app_type) {
     case apps::mojom::AppType::kWeb:
       if (should_launch_app)
-        ReparentWebContentsIntoAppBrowser(web_contents, launch_name);
+        web_app::ReparentWebContentsIntoAppBrowser(web_contents, launch_name);
       break;
     case apps::mojom::AppType::kUnknown:
       // We reach here if the picker was closed without an app being chosen,

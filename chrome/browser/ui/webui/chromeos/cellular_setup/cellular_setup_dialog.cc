@@ -111,7 +111,7 @@ CellularSetupDialogUI::CellularSetupDialogUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUICellularSetupHost);
 
   chromeos::cellular_setup::AddLocalizedStrings(source);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->SetDefaultResource(IDR_CELLULAR_SETUP_CELLULAR_SETUP_DIALOG_HTML);
 
   // Note: The |kCellularSetupResourcesSize| and |kCellularSetupResources|

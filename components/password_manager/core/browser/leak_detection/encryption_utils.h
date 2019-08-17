@@ -35,13 +35,22 @@ std::string ScryptHashUsernameAndPassword(base::StringPiece username,
 // Encrypt/decrypt routines.
 
 // Encrypts |plaintext| with a new key. The key is returned via |key|.
+// Internally the function does some hashing first and then encrypts the result.
 std::string CipherEncrypt(const std::string& plaintext, std::string* key);
 
 // Encrypts |plaintext| with the existing key.
 std::string CipherEncryptWithKey(const std::string& plaintext,
                                  const std::string& key);
 
-// Decrypts |ciphertext| using |key|.
+// |already_encrypted| is an already encrypted string (output of CipherEncrypt).
+// Encrypts it again with a new key. The key is returned in |key|.
+// The function is different from CipherEncrypt() as it doesn't apply hashing on
+// the input.
+std::string CipherReEncrypt(const std::string& already_encrypted,
+                            std::string* key);
+
+// Decrypts |ciphertext| using |key|. The result isn't the original string but a
+// hash of it.
 std::string CipherDecrypt(const std::string& ciphertext,
                           const std::string& key);
 

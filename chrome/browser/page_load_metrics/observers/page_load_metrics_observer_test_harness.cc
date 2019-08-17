@@ -164,9 +164,9 @@ MetricsWebContentsObserver* PageLoadMetricsObserverTestHarness::observer()
   return tester_->observer();
 }
 
-const PageLoadExtraInfo
-PageLoadMetricsObserverTestHarness::GetPageLoadExtraInfoForCommittedLoad() {
-  return tester_->GetPageLoadExtraInfoForCommittedLoad();
+const PageLoadMetricsObserverDelegate&
+PageLoadMetricsObserverTestHarness::GetDelegateForCommittedLoad() const {
+  return tester_->GetDelegateForCommittedLoad();
 }
 
 void PageLoadMetricsObserverTestHarness::NavigateWithPageTransitionAndCommit(

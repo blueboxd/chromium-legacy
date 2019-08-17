@@ -399,7 +399,9 @@ void FeedSchedulerHost::OnReceiveNewContent(
 }
 
 void FeedSchedulerHost::OnRequestError(int network_response_code) {
-  profile_prefs_->SetTime(prefs::kLastFetchAttemptTime, clock_->Now());
+  if (!kOnlySetLastRefreshAttemptOnSuccess.Get())
+    profile_prefs_->SetTime(prefs::kLastFetchAttemptTime, clock_->Now());
+
   last_fetch_status_ = network_response_code;
   TryRun(std::move(fixed_timer_completion_));
   outstanding_request_until_ = base::Time();

@@ -2424,13 +2424,6 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   download_params->set_referrer_policy(net::URLRequest::NEVER_CLEAR_REFERRER);
   download_params->set_follow_cross_origin_redirects(false);
 
-  // If the interruption was caused by content length mismatch, ignore it during
-  // resumption.
-  if (last_reason_ ==
-      DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH) {
-    download_params->set_ignore_content_length_mismatch(true);
-  }
-
   TransitionTo(RESUMING_INTERNAL);
   RecordDownloadCountWithSource(source == ResumptionRequestSource::USER
                                     ? MANUAL_RESUMPTION_COUNT

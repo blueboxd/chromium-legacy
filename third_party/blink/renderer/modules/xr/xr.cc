@@ -76,22 +76,6 @@ XRSession::SessionMode stringToSessionMode(const String& mode_string) {
   return XRSession::kModeInline;
 }
 
-XRSessionFeature stringToSessionFeature(const String& feature_string) {
-  if (feature_string == "viewer") {
-    return XRSessionFeature::kViewer;
-  } else if (feature_string == "local") {
-    return XRSessionFeature::kLocal;
-  } else if (feature_string == "local-floor") {
-    return XRSessionFeature::kLocalFloor;
-  } else if (feature_string == "bounded-floor") {
-    return XRSessionFeature::kBoundedFloor;
-  } else if (feature_string == "unbounded") {
-    return XRSessionFeature::kUnbounded;
-  }
-
-  return XRSessionFeature::kUnknownFeature;
-}
-
 // When updating this list, also update XRRuntimeManager's
 // AreArFeaturesEnabled() until https://crbug.com/966647 is fixed.
 // TODO(https://crbug.com/966647) remove the above comment when fixed.
@@ -122,6 +106,26 @@ blink::DOMException* MapToDOMException(
 
   NOTREACHED();
   return nullptr;
+}
+
+// Converts the given string to an XRSessionFeature. If the string is
+// unrecognized, returns nullopt. Based on the spec:
+// https://immersive-web.github.io/webxr/#feature-name
+base::Optional<XRSessionFeature> StringToXRSessionFeature(
+    WTF::StringView feature_string) {
+  if (feature_string == "viewer") {
+    return XRSessionFeature::kViewer;
+  } else if (feature_string == "local") {
+    return XRSessionFeature::kLocal;
+  } else if (feature_string == "local-floor") {
+    return XRSessionFeature::kLocalFloor;
+  } else if (feature_string == "bounded-floor") {
+    return XRSessionFeature::kBoundedFloor;
+  } else if (feature_string == "unbounded") {
+    return XRSessionFeature::kUnbounded;
+  }
+
+  return base::nullopt;
 }
 
 }  // namespace
@@ -155,12 +159,12 @@ XR::PendingRequestSessionQuery::PendingRequestSessionQuery(
     int64_t ukm_source_id,
     ScriptPromiseResolver* resolver,
     XRSession::SessionMode session_mode,
-    const WTF::HashSet<XRSessionFeature>& required_features,
-    const WTF::HashSet<XRSessionFeature>& optional_features)
+    XRSessionFeatureSet required_features,
+    XRSessionFeatureSet optional_features)
     : resolver_(resolver),
       mode_(session_mode),
-      required_features_(required_features),
-      optional_features_(optional_features),
+      required_features_(std::move(required_features)),
+      optional_features_(std::move(optional_features)),
       ukm_source_id_(ukm_source_id) {}
 
 void XR::PendingRequestSessionQuery::Resolve(XRSession* session) {
@@ -182,13 +186,13 @@ XRSession::SessionMode XR::PendingRequestSessionQuery::mode() const {
   return mode_;
 }
 
-const WTF::HashSet<XRSessionFeature>&
-XR::PendingRequestSessionQuery::RequiredFeatures() const {
+XRSessionFeatureSet const& XR::PendingRequestSessionQuery::RequiredFeatures()
+    const {
   return required_features_;
 }
 
-const WTF::HashSet<XRSessionFeature>&
-XR::PendingRequestSessionQuery::OptionalFeatures() const {
+XRSessionFeatureSet const& XR::PendingRequestSessionQuery::OptionalFeatures()
+    const {
   return optional_features_;
 }
 
@@ -356,8 +360,9 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
   // metrics-related methods when the promise gets resolved/rejected.
 
   LocalFrame* frame = GetFrame();
-  if (!frame || !frame->GetDocument()) {
-    // Reject if the frame is inaccessible.
+  Document* doc = frame ? frame->GetDocument() : nullptr;
+  if (!doc) {
+    // Reject if the frame or doc is inaccessible.
 
     // Do *not* record an UKM event in this case (we won't be able to access the
     // Document to get UkmRecorder anyway).
@@ -368,51 +373,54 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
                                            kNavigatorDetachedError));
   }
 
-  Document* doc = frame->GetDocument();
   XRSession::SessionMode session_mode = stringToSessionMode(mode);
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  WTF::HashSet<XRSessionFeature> required_features;
+  // Parse required feature strings
+  bool has_invalid_required_feature = false;
+  XRSessionFeatureSet required_features;
   if (session_init && session_init->hasRequiredFeatures()) {
     for (const auto& feature : session_init->requiredFeatures()) {
       // Add all features so that we can track the presence of an unknown
       // required feature later, to reject it at the appropriate time.
-      auto feature_enum = stringToSessionFeature(feature);
-      required_features.insert(feature_enum);
-
-      if (feature_enum == XRSessionFeature::kUnknownFeature) {
+      auto feature_enum = StringToXRSessionFeature(feature);
+      if (!feature_enum.has_value()) {
         GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
             mojom::ConsoleMessageSource::kJavaScript,
             mojom::ConsoleMessageLevel::kError,
             "Unrecognized required feature requested: " + feature));
+        has_invalid_required_feature = true;
+      } else {
+        required_features.insert(feature_enum.value());
       }
     }
   }
 
-  WTF::HashSet<XRSessionFeature> optional_features;
+  // Parse optional feature strings
+  XRSessionFeatureSet optional_features;
   if (session_init && session_init->hasOptionalFeatures()) {
     for (const auto& feature : session_init->optionalFeatures()) {
-      auto feature_enum = stringToSessionFeature(feature);
+      auto feature_enum = StringToXRSessionFeature(feature);
 
       // Unrecognized optional features can be silently ignored, as they won't
       // be supported.
-      if (feature_enum != XRSessionFeature::kUnknownFeature) {
-        optional_features.insert(feature_enum);
-      } else {
+      if (!feature_enum.has_value()) {
         GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
             mojom::ConsoleMessageSource::kJavaScript,
             mojom::ConsoleMessageLevel::kWarning,
             "Unrecognized optional feature requested: " + feature));
+      } else {
+        optional_features.insert(feature_enum.value());
       }
     }
   }
 
   PendingRequestSessionQuery* query =
       MakeGarbageCollected<PendingRequestSessionQuery>(
-          GetSourceId(), resolver, session_mode, required_features,
-          optional_features);
+          GetSourceId(), resolver, session_mode, std::move(required_features),
+          std::move(optional_features));
 
   if (session_mode == XRSession::kModeImmersiveAR &&
       !AreArRuntimeFeaturesEnabled(doc)) {
@@ -486,7 +494,8 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
     return promise;
   }
 
-  if (query->RequiredFeatures().Contains(XRSessionFeature::kUnknownFeature)) {
+  // Reject session if any of the required features were invalid.
+  if (has_invalid_required_feature) {
     query->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError, kSessionNotSupported));
     return promise;
@@ -518,10 +527,12 @@ void XR::OnSupportsSessionReturned(PendingSupportsSessionQuery* query,
   DCHECK(outstanding_support_queries_.Contains(query));
   outstanding_support_queries_.erase(query);
 
-  supports_session
-      ? query->Resolve()
-      : query->Reject(MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kNotSupportedError, kSessionNotSupported));
+  if (supports_session) {
+    query->Resolve();
+  } else {
+    query->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotSupportedError, kSessionNotSupported));
+  }
 }
 
 void XR::OnRequestSessionReturned(
@@ -573,7 +584,7 @@ void XR::OnRequestSessionReturned(
   // TODO(crbug.com/991605): enabled_features should be coming back on something
   // in the session request result.  Which includes populating any granted
   // implied optional features.
-  WTF::HashSet<XRSessionFeature> enabled_features = query->RequiredFeatures();
+  XRSessionFeatureSet enabled_features = query->RequiredFeatures();
   for (const auto& feature : query->OptionalFeatures()) {
     enabled_features.insert(feature);
   }
@@ -581,6 +592,7 @@ void XR::OnRequestSessionReturned(
   // Add any implied optional features per the spec.
   switch (query->mode()) {
     case XRSession::kModeImmersiveVR:
+    case XRSession::kModeImmersiveAR:
       enabled_features.insert(XRSessionFeature::kLocal);
       FALLTHROUGH;
     case XRSession::kModeInline:
@@ -590,7 +602,6 @@ void XR::OnRequestSessionReturned(
       break;
   }
 
-  DCHECK(!enabled_features.Contains(XRSessionFeature::kUnknownFeature));
   XRSession* session = CreateSession(
       query->mode(), blend_mode, std::move(session_ptr->client_request),
       std::move(session_ptr->display_info), session_ptr->uses_input_eventing,
@@ -670,11 +681,12 @@ XRSession* XR::CreateSession(
     device::mojom::blink::XRSessionClientRequest client_request,
     device::mojom::blink::VRDisplayInfoPtr display_info,
     bool uses_input_eventing,
-    const WTF::HashSet<XRSessionFeature>& enabled_features,
+    XRSessionFeatureSet enabled_features,
     bool sensorless_session) {
   XRSession* session = MakeGarbageCollected<XRSession>(
       this, client_request ? std::move(client_request) : nullptr, mode,
-      blend_mode, uses_input_eventing, sensorless_session, enabled_features);
+      blend_mode, uses_input_eventing, sensorless_session,
+      std::move(enabled_features));
   if (display_info)
     session->SetXRDisplayInfo(std::move(display_info));
   sessions_.insert(session);

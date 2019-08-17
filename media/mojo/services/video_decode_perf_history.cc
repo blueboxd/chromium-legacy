@@ -32,11 +32,27 @@ const double kMaxSmoothDroppedFramesPercentParamDefault = .05;
 const char VideoDecodePerfHistory::kMaxSmoothDroppedFramesPercentParamName[] =
     "smooth_threshold";
 
+const char
+    VideoDecodePerfHistory::kEmeMaxSmoothDroppedFramesPercentParamName[] =
+        "eme_smooth_threshold";
+
 // static
-double VideoDecodePerfHistory::GetMaxSmoothDroppedFramesPercent() {
-  return base::GetFieldTrialParamByFeatureAsDouble(
+double VideoDecodePerfHistory::GetMaxSmoothDroppedFramesPercent(bool is_eme) {
+  double threshold = base::GetFieldTrialParamByFeatureAsDouble(
       kMediaCapabilitiesWithParameters, kMaxSmoothDroppedFramesPercentParamName,
       kMaxSmoothDroppedFramesPercentParamDefault);
+
+  // For EME, the precedence of overrides is:
+  // 1. EME specific override, |k*Eme*MaxSmoothDroppedFramesPercentParamName
+  // 2. Non-EME override, |kMaxSmoothDroppedFramesPercentParamName|
+  // 3. |kMaxSmoothDroppedFramesPercentParamDefault|
+  if (is_eme) {
+    threshold = base::GetFieldTrialParamByFeatureAsDouble(
+        kMediaCapabilitiesWithParameters,
+        kEmeMaxSmoothDroppedFramesPercentParamName, threshold);
+  }
+
+  return threshold;
 }
 
 VideoDecodePerfHistory::VideoDecodePerfHistory(
@@ -134,6 +150,7 @@ void VideoDecodePerfHistory::GetPerfInfo(mojom::PredictionFeaturesPtr features,
 }
 
 void VideoDecodePerfHistory::AssessStats(
+    const VideoDecodeStatsDB::VideoDescKey& key,
     const VideoDecodeStatsDB::DecodeStatsEntry* stats,
     bool* is_smooth,
     bool* is_power_efficient) {
@@ -158,7 +175,9 @@ void VideoDecodePerfHistory::AssessStats(
 
   *is_power_efficient =
       percent_power_efficient >= kMinPowerEfficientDecodedFramePercent;
-  *is_smooth = percent_dropped <= GetMaxSmoothDroppedFramesPercent();
+
+  *is_smooth = percent_dropped <=
+               GetMaxSmoothDroppedFramesPercent(!key.key_system.empty());
 }
 
 void VideoDecodePerfHistory::OnGotStatsForRequest(
@@ -175,7 +194,7 @@ void VideoDecodePerfHistory::OnGotStatsForRequest(
   double percent_dropped = 0;
   double percent_power_efficient = 0;
 
-  AssessStats(stats.get(), &is_smooth, &is_power_efficient);
+  AssessStats(video_key, stats.get(), &is_smooth, &is_power_efficient);
 
   if (stats && stats->frames_decoded) {
     DCHECK(database_success);
@@ -333,7 +352,7 @@ void VideoDecodePerfHistory::ReportUkmMetrics(
 
   bool past_is_smooth = false;
   bool past_is_efficient = false;
-  AssessStats(past_stats, &past_is_smooth, &past_is_efficient);
+  AssessStats(video_key, past_stats, &past_is_smooth, &past_is_efficient);
   builder.SetPerf_ApiWouldClaimIsSmooth(past_is_smooth);
   builder.SetPerf_ApiWouldClaimIsPowerEfficient(past_is_efficient);
   if (past_stats) {
@@ -349,7 +368,7 @@ void VideoDecodePerfHistory::ReportUkmMetrics(
 
   bool new_is_smooth = false;
   bool new_is_efficient = false;
-  AssessStats(&new_stats, &new_is_smooth, &new_is_efficient);
+  AssessStats(video_key, &new_stats, &new_is_smooth, &new_is_efficient);
   builder.SetPerf_RecordIsSmooth(new_is_smooth);
   builder.SetPerf_RecordIsPowerEfficient(new_is_efficient);
   builder.SetPerf_VideoFramesDecoded(new_stats.frames_decoded);

@@ -17,6 +17,7 @@
 #include "base/task_runner_util.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
+#include "gpu/ipc/common/android/texture_owner.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
@@ -32,7 +33,7 @@
 namespace media {
 namespace {
 
-TextureOwner::Mode GetTextureOwnerMode(
+gpu::TextureOwner::Mode GetTextureOwnerMode(
     VideoFrameFactory::OverlayMode overlay_mode) {
   const bool a_image_reader_supported =
       base::android::AndroidImageReader::GetInstance().IsSupported();
@@ -42,18 +43,18 @@ TextureOwner::Mode GetTextureOwnerMode(
     case VideoFrameFactory::OverlayMode::kRequestPromotionHints:
       return a_image_reader_supported && base::FeatureList::IsEnabled(
                                              media::kAImageReaderVideoOutput)
-                 ? TextureOwner::Mode::kAImageReaderInsecure
-                 : TextureOwner::Mode::kSurfaceTextureInsecure;
+                 ? gpu::TextureOwner::Mode::kAImageReaderInsecure
+                 : gpu::TextureOwner::Mode::kSurfaceTextureInsecure;
     case VideoFrameFactory::OverlayMode::kSurfaceControlSecure:
       DCHECK(a_image_reader_supported);
-      return TextureOwner::Mode::kAImageReaderSecureSurfaceControl;
+      return gpu::TextureOwner::Mode::kAImageReaderSecureSurfaceControl;
     case VideoFrameFactory::OverlayMode::kSurfaceControlInsecure:
       DCHECK(a_image_reader_supported);
-      return TextureOwner::Mode::kAImageReaderInsecureSurfaceControl;
+      return gpu::TextureOwner::Mode::kAImageReaderInsecureSurfaceControl;
   }
 
   NOTREACHED();
-  return TextureOwner::Mode::kSurfaceTextureInsecure;
+  return gpu::TextureOwner::Mode::kSurfaceTextureInsecure;
 }
 
 // Run on the GPU main thread to allocate the texture owner, and return it
@@ -67,9 +68,9 @@ static void AllocateTextureOwnerOnGpuThread(
     return;
   }
 
-  std::move(init_cb).Run(
-      TextureOwner::Create(TextureOwner::CreateTexture(shared_context_state),
-                           GetTextureOwnerMode(overlay_mode)));
+  std::move(init_cb).Run(gpu::TextureOwner::Create(
+      gpu::TextureOwner::CreateTexture(shared_context_state),
+      GetTextureOwnerMode(overlay_mode)));
 }
 
 }  // namespace

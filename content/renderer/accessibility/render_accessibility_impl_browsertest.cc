@@ -26,6 +26,8 @@
 #include "content/renderer/accessibility/ax_image_annotator.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ppapi/c/private/ppp_pdf.h"
 #include "services/image_annotation/public/cpp/image_processor.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
@@ -68,11 +70,12 @@ class TestRenderAccessibilityImpl : public RenderAccessibilityImpl {
 
 class TestAXImageAnnotator : public AXImageAnnotator {
  public:
-  TestAXImageAnnotator(TestRenderAccessibilityImpl* const render_accessibility,
-                       image_annotation::mojom::AnnotatorPtr annotator_ptr)
+  TestAXImageAnnotator(
+      TestRenderAccessibilityImpl* const render_accessibility,
+      mojo::PendingRemote<image_annotation::mojom::Annotator> annotator)
       : AXImageAnnotator(render_accessibility,
                          std::string() /* preferred_language */,
-                         std::move(annotator_ptr)) {}
+                         std::move(annotator)) {}
   ~TestAXImageAnnotator() override = default;
 
  private:
@@ -98,10 +101,10 @@ class MockAnnotationService : public image_annotation::mojom::Annotator {
   MockAnnotationService() = default;
   ~MockAnnotationService() override = default;
 
-  image_annotation::mojom::AnnotatorPtr GetPtr() {
-    image_annotation::mojom::AnnotatorPtr ptr;
-    bindings_.AddBinding(this, mojo::MakeRequest(&ptr));
-    return ptr;
+  mojo::PendingRemote<image_annotation::mojom::Annotator> GetRemote() {
+    mojo::PendingRemote<image_annotation::mojom::Annotator> remote;
+    receivers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
+    return remote;
   }
 
   void AnnotateImage(const std::string& image_id,
@@ -126,7 +129,7 @@ class MockAnnotationService : public image_annotation::mojom::Annotator {
     image_processors_[index].reset();
   }
 
-  mojo::BindingSet<image_annotation::mojom::Annotator> bindings_;
+  mojo::ReceiverSet<image_annotation::mojom::Annotator> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAnnotationService);
 };
@@ -660,7 +663,7 @@ class AXImageAnnotatorTest : public RenderAccessibilityImplTest {
     SetMode(mode);
     render_accessibility().ax_image_annotator_ =
         std::make_unique<TestAXImageAnnotator>(&render_accessibility(),
-                                               mock_annotator().GetPtr());
+                                               mock_annotator().GetRemote());
     render_accessibility().tree_source_.RemoveImageAnnotator();
     render_accessibility().tree_source_.AddImageAnnotator(
         render_accessibility().ax_image_annotator_.get());

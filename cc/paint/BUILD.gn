@@ -60,6 +60,7 @@ cc_component("paint") {
     "paint_recorder.h",
     "paint_shader.cc",
     "paint_shader.h",
+    "paint_worklet_input.cc",
     "paint_worklet_input.h",
     "paint_worklet_job.cc",
     "paint_worklet_job.h",

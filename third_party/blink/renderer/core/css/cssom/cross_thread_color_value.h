@@ -27,6 +27,8 @@ class CORE_EXPORT CrossThreadColorValue final : public CrossThreadStyleValue {
 
   bool operator==(const CrossThreadStyleValue&) const override;
 
+  Color GetValue() const { return value_; }
+
  private:
   friend class CrossThreadStyleValueTest;
 

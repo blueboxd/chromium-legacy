@@ -16,32 +16,41 @@ namespace blink {
 class LocationReportBody : public ReportBody {
  public:
   explicit LocationReportBody(std::unique_ptr<SourceLocation> location)
-      : location_(std::move(location)) {}
+      : source_file_(location->Url()),
+        line_number_(location->IsUnknown()
+                         ? base::nullopt
+                         : base::Optional<uint32_t>{location->LineNumber()}),
+        column_number_(location->IsUnknown() ? base::nullopt
+                                             : base::Optional<uint32_t>{
+                                                   location->ColumnNumber()}) {}
 
   LocationReportBody() : LocationReportBody(SourceLocation::Capture()) {}
 
   LocationReportBody(const String& source_file,
-                     unsigned line_number,
-                     unsigned column_number)
-      : LocationReportBody(
-            SourceLocation::Capture(source_file, line_number, column_number)) {}
+                     base::Optional<uint32_t> line_number = base::nullopt,
+                     base::Optional<uint32_t> column_number = base::nullopt)
+      : source_file_(source_file),
+        line_number_(line_number),
+        column_number_(column_number) {}
 
   ~LocationReportBody() override = default;
 
-  String sourceFile() const { return location_->Url(); }
+  String sourceFile() const { return source_file_; }
 
   uint32_t lineNumber(bool& is_null) const {
-    is_null = location_->IsUnknown();
-    return location_->LineNumber();
+    is_null = !line_number_.has_value();
+    return line_number_.value_or(0);
   }
 
   uint32_t columnNumber(bool& is_null) const {
-    is_null = location_->IsUnknown();
-    return location_->ColumnNumber();
+    is_null = !column_number_.has_value();
+    return column_number_.value_or(0);
   }
 
  protected:
-  std::unique_ptr<SourceLocation> location_;
+  const String source_file_;
+  base::Optional<uint32_t> line_number_;
+  base::Optional<uint32_t> column_number_;
 };
 
 }  // namespace blink

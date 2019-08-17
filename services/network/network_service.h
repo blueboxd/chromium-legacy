@@ -169,6 +169,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 #endif
   void SetEnvironment(
       std::vector<mojom::EnvironmentVariablePtr> environment) override;
+#if defined(OS_ANDROID)
+  void DumpWithoutCrashing(base::Time dump_request_time) override;
+#endif
 
   // Returns the shared HttpAuthHandlerFactory for the NetworkService, creating
   // one if needed.

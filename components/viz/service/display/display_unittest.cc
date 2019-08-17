@@ -3409,12 +3409,9 @@ TEST_F(DisplayTest, BeginFrameThrottling) {
     EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
     UpdateBeginFrameTime(support_.get(), frame_time);
     submit_frame();
-    // If we've submitted more than one frame without drawing, there will
-    // always be presentation feedback so ShouldSendBeginFrame should always
-    // return true.
-    if (i > 0)
-      EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
-
+    // Immediately after submitting frame, because there is presentation
+    // feedback queued up, ShouldSendBeginFrame should always return true.
+    EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
     // Clear the presentation feedbacks.
     UpdateBeginFrameTime(support_.get(), frame_time);
   }
@@ -3567,11 +3564,9 @@ TEST_F(DisplayTest, DontThrottleWhenParentBlocked) {
     UpdateBeginFrameTime(sub_support.get(), frame_time);
     sub_support->SubmitCompositorFrame(sub_local_surface_id,
                                        MakeDefaultCompositorFrame());
-    // If we've submitted more than one frame without drawing, there will
-    // always be presentation feedback so ShouldSendBeginFrame should always
-    // return true.
-    if (i > 0)
-      EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
+    // Immediately after submitting frame, because there is presentation
+    // feedback queued up, ShouldSendBeginFrame should always return true.
+    EXPECT_TRUE(ShouldSendBeginFrame(sub_support.get(), frame_time));
     // Clear the presentation feedbacks.
     UpdateBeginFrameTime(sub_support.get(), frame_time);
   }

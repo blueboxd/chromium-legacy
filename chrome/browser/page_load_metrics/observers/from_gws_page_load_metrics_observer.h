@@ -65,46 +65,53 @@ class FromGWSPageLoadMetricsLogger {
   // Invoked when metrics for the given page are complete.
   void OnCommit(content::NavigationHandle* navigation_handle,
                 ukm::SourceId source_id);
-  void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
-                  const page_load_metrics::PageLoadExtraInfo& extra_info);
+  // TODO(crbug/993377): Replace const& to PageLoadMetricsObserverDelegate with
+  // a member variable.
+  void OnComplete(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadMetricsObserverDelegate& delegate);
   void OnFailedProvisionalLoad(
       const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
-      const page_load_metrics::PageLoadExtraInfo& extra_info);
+      const page_load_metrics::PageLoadMetricsObserverDelegate& delegate);
 
   void OnDomContentLoadedEventStart(
       const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info);
-  void OnLoadEventStart(const page_load_metrics::mojom::PageLoadTiming& timing,
-                        const page_load_metrics::PageLoadExtraInfo& extra_info);
+      const page_load_metrics::PageLoadMetricsObserverDelegate& delegate);
+  void OnLoadEventStart(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadMetricsObserverDelegate& delegate);
   void OnFirstPaintInPage(
       const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info);
+      const page_load_metrics::PageLoadMetricsObserverDelegate& delegate);
   void OnFirstImagePaintInPage(
       const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info);
+      const page_load_metrics::PageLoadMetricsObserverDelegate& delegate);
   void OnFirstContentfulPaintInPage(
       const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info);
-  void OnParseStart(const page_load_metrics::mojom::PageLoadTiming& timing,
-                    const page_load_metrics::PageLoadExtraInfo& extra_info);
-  void OnParseStop(const page_load_metrics::mojom::PageLoadTiming& timing,
-                   const page_load_metrics::PageLoadExtraInfo& extra_info);
-  void OnUserInput(const blink::WebInputEvent& event,
-                   const page_load_metrics::mojom::PageLoadTiming& timing,
-                   const page_load_metrics::PageLoadExtraInfo& extra_info);
+      const page_load_metrics::PageLoadMetricsObserverDelegate& delegate);
+  void OnParseStart(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadMetricsObserverDelegate& delegate);
+  void OnParseStop(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadMetricsObserverDelegate& delegate);
+  void OnUserInput(
+      const blink::WebInputEvent& event,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadMetricsObserverDelegate& delegate);
   void OnFirstInputInPage(
       const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info);
+      const page_load_metrics::PageLoadMetricsObserverDelegate& delegate);
   void FlushMetricsOnAppEnterBackground(
       const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info);
+      const page_load_metrics::PageLoadMetricsObserverDelegate& delegate);
 
   // The methods below are public only for testing.
   bool ShouldLogFailedProvisionalLoadMetrics();
   bool ShouldLogPostCommitMetrics(const GURL& url);
   bool ShouldLogForegroundEventAfterCommit(
       const base::Optional<base::TimeDelta>& event,
-      const page_load_metrics::PageLoadExtraInfo& info);
+      const page_load_metrics::PageLoadMetricsObserverDelegate& delegate);
 
  private:
   bool previously_committed_url_is_search_results_ = false;

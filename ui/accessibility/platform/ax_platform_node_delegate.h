@@ -17,7 +17,7 @@
 #include "base/optional.h"
 #include "ui/accessibility/ax_clipping_behavior.h"
 #include "ui/accessibility/ax_coordinate_system.h"
-#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_offscreen_result.h"
@@ -71,9 +71,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
 
   // Creates a text position rooted at this object.
   virtual AXNodePosition::AXPositionInstance CreateTextPositionAt(
-      int offset,
-      ax::mojom::TextAffinity affinity =
-          ax::mojom::TextAffinity::kDownstream) const = 0;
+      int offset) const = 0;
 
   // Get the accessibility node for the NSWindow the node is contained in. This
   // method is only meaningful on macOS.
@@ -230,6 +228,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
 
   virtual const AXUniqueId& GetUniqueId() const = 0;
 
+  // Finds the previous or next offset from the provided offset, that matches
+  // the provided boundary type.
+  //
   // This method finds text boundaries in the text used for platform text APIs.
   // Implementations may use side-channel data such as line or word indices to
   // produce appropriate results. It may optionally return no value, indicating

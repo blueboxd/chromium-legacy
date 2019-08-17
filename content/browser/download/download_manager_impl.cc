@@ -245,9 +245,10 @@ CreateDownloadURLLoaderFactoryGetter(StoragePartitionImpl* storage_partition,
     // Also allow the Content embedder to inject itself if it wants to.
     should_proxy |= GetContentClient()->browser()->WillCreateURLLoaderFactory(
         rfh->GetSiteInstance()->GetBrowserContext(), rfh,
-        rfh->GetProcess()->GetID(), false /* is_navigation */,
-        true /* is_download/ */, url::Origin(), &maybe_proxy_factory_receiver,
-        nullptr /* header_client */, nullptr /* bypass_redirect_checks */);
+        rfh->GetProcess()->GetID(),
+        ContentBrowserClient::URLLoaderFactoryType::kDownload, url::Origin(),
+        &maybe_proxy_factory_receiver, nullptr /* header_client */,
+        nullptr /* bypass_redirect_checks */);
 
     // If anyone above indicated that they care about proxying, pass the
     // intermediate pipe along to the NetworkDownloadURLLoaderFactoryGetter.
@@ -1102,6 +1103,10 @@ void DownloadManagerImpl::GetAllDownloads(
     download::SimpleDownloadManager::DownloadVector* downloads) {
   for (const auto& it : downloads_)
     downloads->push_back(it.second.get());
+}
+
+void DownloadManagerImpl::GetUninitializedActiveDownloadsIfAny(
+    download::SimpleDownloadManager::DownloadVector* downloads) {
   for (const auto& it : in_progress_downloads_)
     downloads->push_back(it.get());
 }

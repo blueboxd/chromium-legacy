@@ -15,6 +15,7 @@ source_set("banners") {
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/colors",
     "//ui/base",
   ]
 }

@@ -99,7 +99,8 @@ public class TouchlessTabCreator extends ChromeTabCreator {
     @Override
     public Tab createNewTab(
             LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent, Intent intent) {
-        InterceptNavigationDelegateImpl delegate = InterceptNavigationDelegateImpl.get(parent);
+        InterceptNavigationDelegateImpl delegate =
+                parent == null ? null : InterceptNavigationDelegateImpl.get(parent);
         if (delegate != null && delegate.shouldIgnoreNewTab(loadUrlParams.getUrl(), false)) {
             return null;
         }

@@ -114,7 +114,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         if (navigator.xr) {
           const mode = 'inline';
-          navigator.xr.requestSession(mode).then((session) => {
+          navigator.xr.requestSession(mode, {optionalFeatures: ['local-floor']})
+          .then((session) => {
             session.mode = mode;
             onSessionStarted(session);
           });
@@ -200,7 +201,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function onRequestSession() {
         const mode = 'immersive-vr';
-        navigator.xr.requestSession(mode).then((session) => {
+        navigator.xr.requestSession(mode, {requiredFeatures: ['local-floor']})
+        .then((session) => {
           session.mode = mode;
           xrButton.setSession(session);
           onSessionStarted(session);

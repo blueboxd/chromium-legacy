@@ -1150,6 +1150,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnap) {
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 }
 
 // Test that if the active window is snapped on the right before tablet mode,
@@ -1162,6 +1163,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveRightSnap) {
   EXPECT_EQ(SplitViewState::kRightSnapped, split_view_controller->state());
   EXPECT_EQ(window.get(), split_view_controller->right_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 }
 
 // Test that if before tablet mode, the active window is snapped on the left and
@@ -1237,6 +1239,7 @@ TEST_F(TabletModeControllerTest,
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_EQ(left_window.get(), window_util::GetActiveWindow());
 }
 
 // Test that if before tablet mode, the active window is a transient child of a
@@ -1254,6 +1257,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveTransientChildOfLeftSnap) {
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(parent.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_EQ(parent.get(), window_util::GetActiveWindow());
 }
 
 // Test that if before tablet mode, the active window is the app list and the
@@ -1270,6 +1274,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveAppListPreviousLeftSnap) {
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 }
 
 // Test that if before tablet mode, the active window is being dragged and the
@@ -1292,6 +1297,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveDraggedPreviousLeftSnap) {
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(snapped_window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_EQ(snapped_window.get(), window_util::GetActiveWindow());
 }
 
 // Test that if before tablet mode, the active window is hidden from overview
@@ -1311,6 +1317,7 @@ TEST_F(TabletModeControllerTest,
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(snapped_window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_EQ(snapped_window.get(), window_util::GetActiveWindow());
 }
 
 // Test that if before tablet mode, the active window is snapped on the left but
@@ -1399,6 +1406,7 @@ TEST_F(TabletModeControllerTest,
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_EQ(left_window.get(), window_util::GetActiveWindow());
 }
 
 // Test that if before tablet mode, the active window is snapped on the right
@@ -1429,6 +1437,7 @@ TEST_F(TabletModeControllerTest,
   EXPECT_EQ(SplitViewState::kRightSnapped, split_view_controller->state());
   EXPECT_EQ(right_window.get(), split_view_controller->right_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_EQ(right_window.get(), window_util::GetActiveWindow());
 }
 
 // Test that if overview is triggered on entering tablet mode, then the app list
@@ -1455,6 +1464,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnapPreviousLeftSnap) {
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(window1.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_EQ(window1.get(), window_util::GetActiveWindow());
 }
 
 // Test that it is okay to write code that first starts split view by snapping a

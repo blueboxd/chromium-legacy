@@ -8,7 +8,7 @@
 #include <list>
 #include <memory>
 #include <set>
-#include <utility>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -16,10 +16,13 @@
 #include "base/strings/string16.h"
 #include "base/unguessable_token.h"
 #include "content/browser/browser_interface_broker_impl.h"
+#include "content/browser/worker_host/shared_worker_instance.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
@@ -43,7 +46,6 @@ class AppCacheNavigationHandle;
 class ServiceWorkerNavigationHandle;
 class ServiceWorkerObjectHost;
 class SharedWorkerContentSettingsProxyImpl;
-class SharedWorkerInstance;
 class SharedWorkerServiceImpl;
 
 // The SharedWorkerHost is the interface that represents the browser side of
@@ -55,7 +57,7 @@ class CONTENT_EXPORT SharedWorkerHost
       public service_manager::mojom::InterfaceProvider {
  public:
   SharedWorkerHost(SharedWorkerServiceImpl* service,
-                   std::unique_ptr<SharedWorkerInstance> instance,
+                   const SharedWorkerInstance& instance,
                    int worker_process_id);
   ~SharedWorkerHost() override;
 
@@ -89,7 +91,7 @@ class CONTENT_EXPORT SharedWorkerHost
   // a ServiceWorker object about the controller is prepared, it is registered
   // to |controller_service_worker_object_host|.
   void Start(
-      blink::mojom::SharedWorkerFactoryPtr factory,
+      mojo::PendingRemote<blink::mojom::SharedWorkerFactory> factory,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,
@@ -116,7 +118,7 @@ class CONTENT_EXPORT SharedWorkerHost
   void SetServiceWorkerHandle(
       std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle);
 
-  SharedWorkerInstance* instance() { return instance_.get(); }
+  const SharedWorkerInstance& instance() const { return instance_; }
   int worker_process_id() const { return worker_process_id_; }
   bool IsAvailable() const;
 
@@ -179,7 +181,7 @@ class CONTENT_EXPORT SharedWorkerHost
 
   // |service_| owns |this|.
   SharedWorkerServiceImpl* service_;
-  std::unique_ptr<SharedWorkerInstance> instance_;
+  SharedWorkerInstance instance_;
   ClientList clients_;
 
   blink::mojom::SharedWorkerRequest worker_request_;
@@ -198,7 +200,7 @@ class CONTENT_EXPORT SharedWorkerHost
   // associated with Mojo interfaces (ServiceWorkerContainer and
   // URLLoaderFactory) that are needed to stay alive while the worker is
   // starting or running.
-  blink::mojom::SharedWorkerFactoryPtr factory_;
+  mojo::Remote<blink::mojom::SharedWorkerFactory> factory_;
 
   mojo::Binding<service_manager::mojom::InterfaceProvider>
       interface_provider_binding_;

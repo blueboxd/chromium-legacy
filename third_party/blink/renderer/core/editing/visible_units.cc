@@ -450,8 +450,6 @@ static LayoutUnit BoundingBoxLogicalHeight(LayoutObject* o,
 // the text node. It seems weird to return false in this case.
 bool HasRenderedNonAnonymousDescendantsWithHeight(
     const LayoutObject* layout_object) {
-  if (DisplayLockUtilities::NearestLockedInclusiveAncestor(*layout_object))
-    return false;
   const LayoutObject* stop = layout_object->NextInPreOrderAfterChildren();
   // TODO(editing-dev): Avoid single-character parameter names.
   for (LayoutObject* o = layout_object->SlowFirstChild(); o && o != stop;
@@ -560,7 +558,7 @@ bool EndsOfNodeAreVisuallyDistinctPositions(const Node* node) {
 
   // A Marquee elements are moving so we should assume their ends are always
   // visibily distinct.
-  if (IsHTMLMarqueeElement(*node))
+  if (IsA<HTMLMarqueeElement>(*node))
     return true;
 
   // There is a VisiblePosition inside an empty inline-block container.

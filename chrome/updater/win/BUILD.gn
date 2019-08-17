@@ -28,10 +28,6 @@ executable("updater") {
     "//build/win:default_exe_manifest",
     "//chrome/updater:common",
   ]
-
-  data_deps = [
-    ":uninstall.cmd",
-  ]
 }
 
 copy("uninstall.cmd") {
@@ -62,6 +58,8 @@ source_set("code") {
     "net/scoped_hinternet.h",
     "setup/setup.cc",
     "setup/setup.h",
+    "setup/setup_util.cc",
+    "setup/setup_util.h",
     "setup/uninstall.cc",
     "setup/uninstall.h",
     "task_scheduler.cc",

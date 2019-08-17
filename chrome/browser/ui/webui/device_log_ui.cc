@@ -91,7 +91,7 @@ DeviceLogUI::DeviceLogUI(content::WebUI* web_ui)
   };
   AddLocalizedStringsBulk(html, kStrings, base::size(kStrings));
 
-  html->SetJsonPath("strings.js");
+  html->UseStringsJs();
   html->AddResourcePath("device_log_ui.css", IDR_DEVICE_LOG_UI_CSS);
   html->AddResourcePath("device_log_ui.js", IDR_DEVICE_LOG_UI_JS);
   html->SetDefaultResource(IDR_DEVICE_LOG_UI_HTML);

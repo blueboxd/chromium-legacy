@@ -124,6 +124,9 @@ class FlexItem {
   // it in cross_axis_size. DCHECKs if the item is not stretch aligned.
   void ComputeStretchedSize();
 
+  // Returns true if the margins were adjusted due to auto margin resolution.
+  bool UpdateAutoMarginsInCrossAxis(LayoutUnit available_alignment_space);
+
   inline const FlexLine* Line() const;
 
   FlexLayoutAlgorithm* algorithm;

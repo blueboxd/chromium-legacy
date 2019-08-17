@@ -3,7 +3,7 @@
     "Run tests on iOS13beta track on 64-bit iOS 13 simulators.",
     "Note: Xcode 11 requires OSX 10.14.4 and up"
   ],
-  "xcode build version": "10e1001",
+  "xcode build version": "11m382q",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",
@@ -49,8 +49,8 @@
       "xcode parallelization": true,
       "include": "eg2_tests.json",
       "device type": "iPhone X",
-      "os": "12.2",
-      "xcode build version": "10e1001",
+      "os": "12.1",
+      "xcode build version": "11m382q",
       "pool":"Chrome",
       "host os": "Mac-10.14.4",
       "optional_dimensions": {
@@ -63,8 +63,8 @@
       "xcode parallelization": true,
       "include": "eg2_tests.json",
       "device type": "iPad (6th generation)",
-      "os": "12.2",
-      "xcode build version": "10e1001",
+      "os": "12.1",
+      "xcode build version": "11m382q",
       "pool":"Chrome",
       "host os": "Mac-10.14.4",
       "optional_dimensions": {

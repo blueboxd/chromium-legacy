@@ -29,7 +29,8 @@ bool GetProductDirectory(base::FilePath* path) {
   }
 
   const auto product_data_dir =
-      app_data_dir.AppendASCII(PRODUCT_FULLNAME_STRING);
+      app_data_dir.AppendASCII(COMPANY_SHORTNAME_STRING)
+          .AppendASCII(PRODUCT_FULLNAME_STRING);
   if (!base::CreateDirectory(product_data_dir)) {
     LOG(ERROR) << "Can't create product directory.";
     return false;

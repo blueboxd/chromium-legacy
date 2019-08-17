@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
-#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/editing_boundary.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -49,80 +48,29 @@ bool DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(
   DCHECK(enclosing_block);
   DCHECK_EQ(enclosing_block,
             EnclosingBlock(range.EndPosition(), kCannotCrossEditingBoundary));
-  return enclosing_block->ActivateDisplayLockIfNeeded();
-}
-
-bool DisplayLockUtilities::ActivateSelectionRangeIfNeeded(
-    const EphemeralRangeInFlatTree& range) {
-  if (range.IsNull() || range.IsCollapsed())
-    return false;
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled() ||
-      range.GetDocument().LockedDisplayLockCount() ==
-          range.GetDocument().ActivationBlockingDisplayLockCount())
-    return false;
-  UpdateStyleAndLayoutForRangeIfNeeded(range);
-  HeapHashSet<Member<Element>> elements_to_activate;
-  for (Node& node : range.Nodes()) {
-    DCHECK(!node.GetDocument().NeedsLayoutTreeUpdateForNode(node));
-    const ComputedStyle* style = node.GetComputedStyle();
-    if (!style || style->UserSelect() == EUserSelect::kNone)
-      continue;
-    if (auto* nearest_locked_ancestor = NearestLockedExclusiveAncestor(node))
-      elements_to_activate.insert(nearest_locked_ancestor);
-  }
-  for (Element* element : elements_to_activate)
+  const HeapVector<Member<Element>>& elements_to_activate =
+      ActivatableLockedInclusiveAncestors(*enclosing_block);
+  for (Element* element : elements_to_activate) {
+    // We save the elements to a vector and go through & activate them one by
+    // one like this because the DOM structure might change due to running event
+    // handlers of the beforeactivate event.
     element->ActivateDisplayLockIfNeeded();
+  }
   return !elements_to_activate.IsEmpty();
 }
 
-bool DisplayLockUtilities::UpdateStyleAndLayoutForRangeIfNeeded(
-    const EphemeralRangeInFlatTree& range) {
-  if (range.IsNull() || range.IsCollapsed())
-    return false;
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled() ||
-      range.GetDocument().LockedDisplayLockCount() ==
-          range.GetDocument().ActivationBlockingDisplayLockCount())
-    return false;
-  Vector<DisplayLockContext::ScopedForcedUpdate> scoped_forced_update_list_;
-  for (Node& node : range.Nodes()) {
-    for (Element* locked_activatable_ancestor :
-         ActivatableLockedInclusiveAncestors(node)) {
-      DCHECK(locked_activatable_ancestor->GetDisplayLockContext());
-      DCHECK(locked_activatable_ancestor->GetDisplayLockContext()->IsLocked());
-      if (locked_activatable_ancestor->GetDisplayLockContext()->UpdateForced())
-        break;
-      scoped_forced_update_list_.push_back(
-          locked_activatable_ancestor->GetDisplayLockContext()
-              ->GetScopedForcedUpdate());
-    }
-  }
-  if (!scoped_forced_update_list_.IsEmpty())
-    range.GetDocument().UpdateStyleAndLayout();
-  return !scoped_forced_update_list_.IsEmpty();
-}
-
 const HeapVector<Member<Element>>
-DisplayLockUtilities::ActivatableLockedInclusiveAncestors(const Node& node) {
+DisplayLockUtilities::ActivatableLockedInclusiveAncestors(Element& element) {
   HeapVector<Member<Element>> elements_to_activate;
-  const_cast<Node*>(&node)->UpdateDistributionForFlatTreeTraversal();
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled() ||
-      node.GetDocument().LockedDisplayLockCount() ==
-          node.GetDocument().ActivationBlockingDisplayLockCount())
-    return elements_to_activate;
-
-  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(node)) {
+  const_cast<Element*>(&element)->UpdateDistributionForFlatTreeTraversal();
+  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(element)) {
     auto* ancestor_element = DynamicTo<Element>(ancestor);
     if (!ancestor_element)
       continue;
     if (auto* context = ancestor_element->GetDisplayLockContext()) {
+      DCHECK(context->IsActivatable());
       if (!context->IsLocked())
         continue;
-      if (!context->IsActivatable()) {
-        // If we find a non-activatable locked ancestor, then we shouldn't
-        // activate anything.
-        elements_to_activate.clear();
-        return elements_to_activate;
-      }
       elements_to_activate.push_back(ancestor_element);
     }
   }

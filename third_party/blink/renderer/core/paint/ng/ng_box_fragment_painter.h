@@ -187,14 +187,16 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
       paint_fragment_(paint_fragment) {
   DCHECK(box.IsBox() || box.IsRenderedLegend());
 #if DCHECK_IS_ON()
-  if (box.ChildrenInline() || box.IsInlineBox()) {
+  if ((box.ChildrenInline() && !box.Children().empty()) || box.IsInlineBox()) {
     DCHECK(paint_fragment);
     DCHECK_EQ(&paint_fragment->PhysicalFragment(), &box);
+  } else if (box.ChildrenInline() && box.Children().empty()) {
+    // If no children, there maybe or may not be NGPaintFragment.
+    // TODO(kojii): To be investigated if this correct or should be fixed.
   } else if (box.GetLayoutObject()->SlowFirstChild() &&
              box.GetLayoutObject()->SlowFirstChild()->IsLayoutFlowThread()) {
     // TODO(kojii): NGPaintFragment for multicol has non-inline children
     // (kColumnBox). Could this be regular box fragments?
-    DCHECK(paint_fragment);
   } else {
     DCHECK(!paint_fragment);
   }

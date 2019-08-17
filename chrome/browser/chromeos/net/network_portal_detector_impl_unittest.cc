@@ -101,7 +101,6 @@ class NetworkPortalDetectorImplTest
     // Create a profile for the user.
     profile_ = test_profile_manager_.CreateTestingProfile(
         test_account_id.GetUserEmail());
-    test_profile_manager_.SetLoggedIn(true);
     EXPECT_TRUE(user_manager::UserManager::Get()->GetPrimaryUser());
 
     network_portal_detector_.reset(

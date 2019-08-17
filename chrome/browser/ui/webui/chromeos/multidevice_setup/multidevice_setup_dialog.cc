@@ -91,7 +91,7 @@ MultiDeviceSetupDialogUI::MultiDeviceSetupDialogUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUIMultiDeviceSetupHost);
 
   chromeos::multidevice_setup::AddLocalizedStrings(source);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->SetDefaultResource(
       IDR_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_DIALOG_HTML);
 

@@ -141,6 +141,11 @@ void SafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
   v4_get_hash_protocol_manager_.reset();
 }
 
+RealTimeUrlLookupService*
+SafeBrowsingDatabaseManager::GetRealTimeUrlLookupService() {
+  return nullptr;
+}
+
 std::unique_ptr<base::CallbackList<void()>::Subscription>
 SafeBrowsingDatabaseManager::RegisterDatabaseUpdatedCallback(
     const OnDatabaseUpdated& cb) {

@@ -310,9 +310,6 @@
         },
       },
       'Marshmallow 64 bit Tester': {
-        # TODO(crbug.com/731759): Enable this once we're confident that it
-        # passes.
-        'experiment_percentage': 100,
         'swarming': {
           'shards': 14,
         },

@@ -137,10 +137,7 @@ bool IndividualSettings::Parse(const base::DictionaryValue* dict,
         URLPattern pattern(extension_scheme_mask);
         if (unparsed_str != URLPattern::kAllUrlsPattern)
           unparsed_str.append("/*");
-        // TODO(nrpeter): Remove effective TLD wildcard capability from
-        // URLPattern.
-        URLPattern::ParseResult parse_result = pattern.Parse(
-            unparsed_str, URLPattern::DENY_WILDCARD_FOR_EFFECTIVE_TLD);
+        URLPattern::ParseResult parse_result = pattern.Parse(unparsed_str);
         if (parse_result != URLPattern::ParseResult::kSuccess) {
           LOG(WARNING) << kMalformedPreferenceWarning;
           LOG(WARNING) << "Invalid URL pattern '" + unparsed_str +

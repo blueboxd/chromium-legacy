@@ -12,14 +12,14 @@ namespace page_load_metrics {
 
 namespace {
 
-bool IsBackgroundAbort(const PageLoadExtraInfo& info) {
-  if (!info.started_in_foreground || !info.first_background_time)
+bool IsBackgroundAbort(const PageLoadMetricsObserverDelegate& delegate) {
+  if (!delegate.StartedInForeground() || !delegate.GetFirstBackgroundTime())
     return false;
 
-  if (!info.page_end_time)
+  if (!delegate.GetPageEndTime())
     return true;
 
-  return info.first_background_time <= info.page_end_time;
+  return delegate.GetFirstBackgroundTime() <= delegate.GetPageEndTime();
 }
 
 PageAbortReason GetAbortReasonForEndReason(PageEndReason end_reason) {
@@ -103,48 +103,50 @@ bool QueryContainsComponentHelper(const base::StringPiece query,
 
 bool WasStartedInForegroundOptionalEventInForeground(
     const base::Optional<base::TimeDelta>& event,
-    const PageLoadExtraInfo& info) {
-  return info.started_in_foreground && event &&
-         (!info.first_background_time ||
-          event.value() <= info.first_background_time.value());
+    const PageLoadMetricsObserverDelegate& delegate) {
+  return delegate.StartedInForeground() && event &&
+         (!delegate.GetFirstBackgroundTime() ||
+          event.value() <= delegate.GetFirstBackgroundTime().value());
 }
 
 bool WasStartedInBackgroundOptionalEventInForeground(
     const base::Optional<base::TimeDelta>& event,
-    const PageLoadExtraInfo& info) {
-  return !info.started_in_foreground && event && info.first_foreground_time &&
-         info.first_foreground_time.value() <= event.value() &&
-         (!info.first_background_time ||
-          event.value() <= info.first_background_time.value());
+    const PageLoadMetricsObserverDelegate& delegate) {
+  return !delegate.StartedInForeground() && event &&
+         delegate.GetFirstForegroundTime() &&
+         delegate.GetFirstForegroundTime().value() <= event.value() &&
+         (!delegate.GetFirstBackgroundTime() ||
+          event.value() <= delegate.GetFirstBackgroundTime().value());
 }
 
-PageAbortInfo GetPageAbortInfo(const PageLoadExtraInfo& info) {
-  if (IsBackgroundAbort(info)) {
+PageAbortInfo GetPageAbortInfo(
+    const PageLoadMetricsObserverDelegate& delegate) {
+  if (IsBackgroundAbort(delegate)) {
     // Though most cases where a tab is backgrounded are user initiated, we
     // can't be certain that we were backgrounded due to a user action. For
     // example, on Android, the screen times out after a period of inactivity,
     // resulting in a non-user-initiated backgrounding.
     return {ABORT_BACKGROUND, UserInitiatedInfo::NotUserInitiated(),
-            info.first_background_time.value()};
+            delegate.GetFirstBackgroundTime().value()};
   }
 
   PageAbortReason abort_reason =
-      GetAbortReasonForEndReason(info.page_end_reason);
+      GetAbortReasonForEndReason(delegate.GetPageEndReason());
   if (abort_reason == ABORT_NONE)
     return PageAbortInfo();
 
-  return {abort_reason, info.page_end_user_initiated_info,
-          info.page_end_time.value()};
+  return {abort_reason, delegate.GetPageEndUserInitiatedInfo(),
+          delegate.GetPageEndTime().value()};
 }
 
 base::Optional<base::TimeDelta> GetInitialForegroundDuration(
-    const PageLoadExtraInfo& info,
+    const PageLoadMetricsObserverDelegate& delegate,
     base::TimeTicks app_background_time) {
-  if (!info.started_in_foreground)
+  if (!delegate.StartedInForeground())
     return base::Optional<base::TimeDelta>();
 
   base::Optional<base::TimeDelta> time_on_page =
-      OptionalMin(info.first_background_time, info.page_end_time);
+      OptionalMin(delegate.GetFirstBackgroundTime(), delegate.GetPageEndTime());
 
   // If we don't have a time_on_page value yet, and we have an app background
   // time, use the app background time as our end time. This addresses cases
@@ -153,7 +155,7 @@ base::Optional<base::TimeDelta> GetInitialForegroundDuration(
   // (Android). In these cases, we use the app background time as the 'end
   // time'.
   if (!time_on_page && !app_background_time.is_null()) {
-    time_on_page = app_background_time - info.navigation_start;
+    time_on_page = app_background_time - delegate.GetNavigationStart();
   }
   return time_on_page;
 }

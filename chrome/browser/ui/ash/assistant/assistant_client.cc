@@ -19,8 +19,10 @@
 #include "chrome/browser/ui/ash/assistant/assistant_image_downloader.h"
 #include "chrome/browser/ui/ash/assistant/assistant_service_connection.h"
 #include "chrome/browser/ui/ash/assistant/assistant_setup.h"
+#include "chrome/browser/ui/ash/assistant/proactive_suggestions_client_impl.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
@@ -95,6 +97,11 @@ void AssistantClient::MaybeInit(Profile* profile) {
   service->Init(std::move(client_ptr), device_actions_.AddBinding(), is_test);
   assistant_image_downloader_ = std::make_unique<AssistantImageDownloader>();
   assistant_setup_ = std::make_unique<AssistantSetup>(service);
+
+  if (chromeos::assistant::features::IsProactiveSuggestionsEnabled()) {
+    proactive_suggestions_client_ =
+        std::make_unique<ProactiveSuggestionsClientImpl>(this);
+  }
 
   for (auto& receiver : pending_assistant_receivers_)
     service->BindAssistant(std::move(receiver));

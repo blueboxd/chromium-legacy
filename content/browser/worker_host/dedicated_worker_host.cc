@@ -21,6 +21,8 @@
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/network_isolation_key.h"
@@ -74,7 +76,7 @@ void DedicatedWorkerHost::StartScriptLoad(
     blink::mojom::FetchClientSettingsObjectPtr
         outside_fetch_client_settings_object,
     blink::mojom::BlobURLTokenPtr blob_url_token,
-    blink::mojom::DedicatedWorkerHostFactoryClientPtr client) {
+    mojo::Remote<blink::mojom::DedicatedWorkerHostFactoryClient> client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
 
@@ -372,7 +374,8 @@ class DedicatedWorkerHostFactoryImpl
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,
       blink::mojom::BlobURLTokenPtr blob_url_token,
-      blink::mojom::DedicatedWorkerHostFactoryClientPtr client) override {
+      mojo::PendingRemote<blink::mojom::DedicatedWorkerHostFactoryClient>
+          client) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!blink::features::IsPlzDedicatedWorkerEnabled()) {
       mojo::ReportBadMessage("DWH_BROWSER_SCRIPT_FETCH_DISABLED");
@@ -399,12 +402,15 @@ class DedicatedWorkerHostFactoryImpl
         FilterRendererExposedInterfaces(
             blink::mojom::kNavigation_DedicatedWorkerSpec, creator_process_id_,
             mojo::MakeRequest(&interface_provider)));
-    client->OnWorkerHostCreated(std::move(interface_provider),
-                                std::move(broker));
-    host_raw->StartScriptLoad(script_url, request_initiator_origin,
-                              credentials_mode,
-                              std::move(outside_fetch_client_settings_object),
-                              std::move(blob_url_token), std::move(client));
+
+    mojo::Remote<blink::mojom::DedicatedWorkerHostFactoryClient> remote_client(
+        std::move(client));
+    remote_client->OnWorkerHostCreated(std::move(interface_provider),
+                                       std::move(broker));
+    host_raw->StartScriptLoad(
+        script_url, request_initiator_origin, credentials_mode,
+        std::move(outside_fetch_client_settings_object),
+        std::move(blob_url_token), std::move(remote_client));
   }
 
  private:
@@ -421,12 +427,12 @@ void CreateDedicatedWorkerHostFactory(
     int creator_process_id,
     int ancestor_render_frame_id,
     const url::Origin& origin,
-    blink::mojom::DedicatedWorkerHostFactoryRequest request) {
+    mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<DedicatedWorkerHostFactoryImpl>(
           creator_process_id, ancestor_render_frame_id, origin),
-      std::move(request));
+      std::move(receiver));
 }
 
 }  // namespace content

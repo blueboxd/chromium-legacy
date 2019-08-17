@@ -189,9 +189,9 @@ void IceTransportAdapterImpl::OnNetworkRouteChanged(
     LOG(ERROR) << "OnNetworkRouteChanged called, but ICE transport released";
     return;
   }
-  const cricket::CandidatePairInterface* selected_connection =
-      ice_transport_channel()->selected_connection();
-  if (!selected_connection) {
+  const absl::optional<const cricket::CandidatePair> selected_pair =
+      ice_transport_channel()->GetSelectedCandidatePair();
+  if (!selected_pair) {
     // The selected connection will only be null if the ICE connection has
     // totally failed, at which point we'll get a StateChanged signal. The
     // client will implicitly clear the selected candidate pair when it receives
@@ -199,9 +199,8 @@ void IceTransportAdapterImpl::OnNetworkRouteChanged(
     // here.
     return;
   }
-  delegate_->OnSelectedCandidatePairChanged(
-      std::make_pair(selected_connection->local_candidate(),
-                     selected_connection->remote_candidate()));
+  delegate_->OnSelectedCandidatePairChanged(std::make_pair(
+      selected_pair->local_candidate(), selected_pair->remote_candidate()));
 }
 
 static const char* IceRoleToString(cricket::IceRole role) {

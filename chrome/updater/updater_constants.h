@@ -16,21 +16,33 @@ extern const char kCrashMeSwitch[];
 extern const char kCrashHandlerSwitch[];
 
 // Installs the updater.
-extern const char kInstall[];
+extern const char kInstallSwitch[];
 
 // Uninstalls the updater.
-extern const char kUninstall[];
+extern const char kUninstallSwitch[];
+
+// Updates all apps registered with the updater.
+extern const char kUpdateAppsSwitch[];
 
 // Runs in test mode. Currently, it exits right away.
 extern const char kTestSwitch[];
 
 // Disables throttling for the crash reported until the following bug is fixed:
 // https://bugs.chromium.org/p/crashpad/issues/detail?id=23
-extern const char kNoRateLimit[];
+extern const char kNoRateLimitSwitch[];
 
 // The handle of an event to signal when the initialization of the main process
 // is complete.
 extern const char kInitDoneNotifierSwitch[];
+
+// Enables logging.
+extern const char kEnableLoggingSwitch[];
+
+// Specifies the logging level.
+extern const char kLoggingLevelSwitch[];
+
+// Specifies the logging module filter.
+extern const char kLoggingModuleSwitch[];
 
 // URLs.
 //

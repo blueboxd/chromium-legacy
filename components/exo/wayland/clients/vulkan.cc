@@ -120,6 +120,7 @@ class ScopedVulkanRenderFrame {
 };
 
 void VulkanClient::Run(const ClientBase::InitParams& params) {
+  params.use_vulkan = true;
   if (!ClientBase::Init(params))
     return;
 

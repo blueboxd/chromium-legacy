@@ -33,8 +33,6 @@ namespace chromeos {
 
 namespace {
 
-const char kStringsJsFile[] = "strings.js";
-
 const char kRequestBatteryChargeDataCallback[] = "requestBatteryChargeData";
 const char kOnRequestBatteryChargeDataFunction[] =
     "powerUI.showBatteryChargeData";
@@ -260,7 +258,7 @@ PowerUI::PowerUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
   };
   AddLocalizedStringsBulk(html, kStrings, base::size(kStrings));
 
-  html->SetJsonPath(kStringsJsFile);
+  html->UseStringsJs();
 
   html->AddResourcePath("power.css", IDR_ABOUT_POWER_CSS);
   html->AddResourcePath("power.js", IDR_ABOUT_POWER_JS);

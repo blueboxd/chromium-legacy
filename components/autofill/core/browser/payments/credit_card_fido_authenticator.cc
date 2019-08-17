@@ -65,6 +65,7 @@ void CreditCardFIDOAuthenticator::Authenticate(
   form_parsed_timestamp_ = form_parsed_timestamp;
 
   if (card_ && IsValidRequestOptions(request_options.Clone())) {
+    current_flow_ = AUTHENTICATION_FLOW;
     GetAssertion(ParseRequestOptions(std::move(request_options)));
   } else {
     requester_->OnFIDOAuthenticationComplete(/*did_succeed=*/false);
@@ -75,14 +76,18 @@ void CreditCardFIDOAuthenticator::Register(base::Value creation_options) {
   // If |creation_options| is set, then must enroll a new credential. Otherwise
   // directly send request to payments for opting in.
   if (creation_options.is_dict()) {
-    if (IsValidCreationOptions(creation_options))
+    if (IsValidCreationOptions(creation_options)) {
+      current_flow_ = OPT_IN_WITH_CHALLENGE_FLOW;
       MakeCredential(ParseCreationOptions(creation_options));
+    }
   } else {
+    current_flow_ = OPT_IN_WITHOUT_CHALLENGE_FLOW;
     OptChange(/*opt_in=*/true);
   }
 }
 
 void CreditCardFIDOAuthenticator::OptOut() {
+  current_flow_ = OPT_OUT_FLOW;
   OptChange(/*opt_in=*/false);
 }
 
@@ -163,7 +168,9 @@ void CreditCardFIDOAuthenticator::OptChange(bool opt_in,
 void CreditCardFIDOAuthenticator::OnDidGetAssertion(
     AuthenticatorStatus status,
     GetAssertionAuthenticatorResponsePtr assertion_response) {
+  // End the flow if there was an authentication error.
   if (status != AuthenticatorStatus::SUCCESS) {
+    current_flow_ = NONE_FLOW;
     requester_->OnFIDOAuthenticationComplete(/*did_succeed=*/false);
     return;
   }
@@ -180,8 +187,11 @@ void CreditCardFIDOAuthenticator::OnDidGetAssertion(
 void CreditCardFIDOAuthenticator::OnDidMakeCredential(
     AuthenticatorStatus status,
     MakeCredentialAuthenticatorResponsePtr attestation_response) {
-  if (status != AuthenticatorStatus::SUCCESS)
+  // End the flow if there was an authentication error.
+  if (status != AuthenticatorStatus::SUCCESS) {
+    current_flow_ = NONE_FLOW;
     return;
+  }
 
   OptChange(/*opt_in=*/true,
             ParseAttestationResponse(std::move(attestation_response)));
@@ -191,16 +201,25 @@ void CreditCardFIDOAuthenticator::OnDidGetOptChangeResult(
     AutofillClient::PaymentsRpcResult result,
     bool user_is_opted_in,
     base::Value creation_options) {
-  if (result != AutofillClient::PaymentsRpcResult::SUCCESS)
+  DCHECK(current_flow_ == OPT_IN_WITHOUT_CHALLENGE_FLOW ||
+         current_flow_ == OPT_OUT_FLOW ||
+         current_flow_ == OPT_IN_WITH_CHALLENGE_FLOW);
+  // End the flow if the server responded with an error.
+  if (result != AutofillClient::PaymentsRpcResult::SUCCESS) {
+    current_flow_ = NONE_FLOW;
     return;
+  }
 
-  // If response contains |creation_options|, then invoke WebAuthn registration
-  // prompt. Otherwise, set pref to enable FIDO Authentication for card unmask.
-  if (creation_options.is_dict()) {
+  // If response contains |creation_options| and the last opt-in attempt did not
+  // include a challenge, then invoke WebAuthn registration prompt. Otherwise,
+  // set pref to enable FIDO Authentication for card unmask and end the flow.
+  if (creation_options.is_dict() &&
+      current_flow_ == OPT_IN_WITHOUT_CHALLENGE_FLOW) {
     Register(std::move(creation_options));
   } else {
     ::autofill::prefs::SetCreditCardFIDOAuthEnabled(
         autofill_client_->GetPrefs(), user_is_opted_in);
+    current_flow_ = NONE_FLOW;
   }
 }
 
@@ -208,10 +227,14 @@ void CreditCardFIDOAuthenticator::OnFullCardRequestSucceeded(
     const payments::FullCardRequest& full_card_request,
     const CreditCard& card,
     const base::string16& cvc) {
+  DCHECK_EQ(AUTHENTICATION_FLOW, current_flow_);
+  current_flow_ = NONE_FLOW;
   requester_->OnFIDOAuthenticationComplete(/*did_succeed=*/true, &card);
 }
 
 void CreditCardFIDOAuthenticator::OnFullCardRequestFailed() {
+  DCHECK_EQ(AUTHENTICATION_FLOW, current_flow_);
+  current_flow_ = NONE_FLOW;
   requester_->OnFIDOAuthenticationComplete(/*did_succeed=*/false);
 }
 

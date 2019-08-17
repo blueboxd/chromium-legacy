@@ -504,13 +504,6 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
       result = ct_result;
   }
 
-  if (result == OK &&
-      !verify_details_->cert_verify_result.is_issued_by_known_root &&
-      !base::Contains(proof_verifier_->hostnames_to_allow_unknown_roots_,
-                      hostname_)) {
-    result = ERR_QUIC_CERT_ROOT_NOT_KNOWN;
-  }
-
   verify_details_->is_fatal_cert_error =
       IsCertStatusError(cert_status) && !IsCertStatusMinorError(cert_status) &&
       transport_security_state_->ShouldSSLErrorsBeFatal(hostname_);
@@ -577,13 +570,11 @@ ProofVerifierChromium::ProofVerifierChromium(
     CertVerifier* cert_verifier,
     CTPolicyEnforcer* ct_policy_enforcer,
     TransportSecurityState* transport_security_state,
-    CTVerifier* cert_transparency_verifier,
-    std::set<std::string> hostnames_to_allow_unknown_roots)
+    CTVerifier* cert_transparency_verifier)
     : cert_verifier_(cert_verifier),
       ct_policy_enforcer_(ct_policy_enforcer),
       transport_security_state_(transport_security_state),
-      cert_transparency_verifier_(cert_transparency_verifier),
-      hostnames_to_allow_unknown_roots_(hostnames_to_allow_unknown_roots) {
+      cert_transparency_verifier_(cert_transparency_verifier) {
   DCHECK(cert_verifier_);
   DCHECK(ct_policy_enforcer_);
   DCHECK(transport_security_state_);

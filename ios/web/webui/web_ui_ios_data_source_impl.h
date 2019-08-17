@@ -30,7 +30,7 @@ class WebUIIOSDataSourceImpl : public URLDataSourceIOSImpl,
   void AddLocalizedStrings(
       const base::DictionaryValue& localized_strings) override;
   void AddBoolean(const std::string& name, bool value) override;
-  void SetJsonPath(const std::string& path) override;
+  void UseStringsJs() override;
   void AddResourcePath(const std::string& path, int resource_id) override;
   void SetDefaultResource(int resource_id) override;
   void DisableDenyXFrameOptions() override;
@@ -41,7 +41,8 @@ class WebUIIOSDataSourceImpl : public URLDataSourceIOSImpl,
 
   // Completes a request by sending our dictionary of localized strings.
   void SendLocalizedStringsAsJSON(
-      const URLDataSourceIOS::GotDataCallback& callback);
+      const URLDataSourceIOS::GotDataCallback& callback,
+      bool from_js_module);
 
  private:
   class InternalDataSource;
@@ -68,7 +69,7 @@ class WebUIIOSDataSourceImpl : public URLDataSourceIOSImpl,
   // specific resources like "favicon/34" getting sent to this source.
   std::string source_name_;
   int default_resource_;
-  std::string json_path_;
+  bool use_strings_js_ = false;
   std::map<std::string, int> path_to_idr_map_;
   // The replacements are initiallized in the main thread and then used in the
   // IO thread. The map is safe to read from multiple threads as long as no

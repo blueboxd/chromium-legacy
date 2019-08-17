@@ -13102,7 +13102,6 @@
           "--recover-devices",
           "--test-filter=-org.chromium.chrome.browser.metrics.StartupLoadingMetricsTest#testStartWithURLRecorded"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [
             "--bucket",

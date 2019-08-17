@@ -62,7 +62,7 @@ ListInfos GetListInfos() {
   const bool kSyncAlways = true;
   const bool kSyncNever = false;
   const bool kSyncRealTimeLookupList =
-      RealTimePolicyEngine::CanFetchAllowlist();
+      RealTimePolicyEngine::IsFetchAllowlistEnabled();
   return ListInfos({
       ListInfo(kSyncAlways, "IpMalware.store", GetIpMalwareId(),
                SB_THREAT_TYPE_UNUSED),
@@ -402,7 +402,6 @@ AsyncMatch V4LocalDatabaseManager::CheckUrlForHighConfidenceAllowlist(
       !AreAllStoresAvailableNow(stores_to_check)) {
     // NOTE(vakh): If Safe Browsing isn't enabled yet, or if the URL isn't a
     // navigation URL, or if the allowlist isn't ready yet, return NO_MATCH.
-    // This will lead to a full URL lookup, if other conditions are met.
     return AsyncMatch::NO_MATCH;
   }
 
@@ -519,6 +518,7 @@ void V4LocalDatabaseManager::StartOnIOThread(
   db_updated_callback_ = base::Bind(&V4LocalDatabaseManager::DatabaseUpdated,
                                     weak_factory_.GetWeakPtr());
 
+  SetupRealTimeUrlLookupService(url_loader_factory);
   SetupUpdateProtocolManager(url_loader_factory, config);
   SetupDatabase();
 
@@ -542,6 +542,8 @@ void V4LocalDatabaseManager::StopOnIOThread(bool shutdown) {
   // This operation happens on the task_runner on which v4_database_ operates
   // and doesn't block the IO thread.
   V4Database::Destroy(std::move(v4_database_));
+
+  rt_url_lookup_service_.reset();
 
   // Delete the V4UpdateProtocolManager.
   // This cancels any in-flight update request.
@@ -675,6 +677,11 @@ bool V4LocalDatabaseManager::GetPrefixMatches(
   return !check->full_hash_to_store_and_hash_prefixes.empty();
 }
 
+RealTimeUrlLookupService*
+V4LocalDatabaseManager::GetRealTimeUrlLookupService() {
+  return rt_url_lookup_service_.get();
+}
+
 void V4LocalDatabaseManager::GetSeverestThreatTypeAndMetadata(
     const std::vector<FullHashInfo>& full_hash_infos,
     const std::vector<FullHash>& full_hashes,
@@ -743,8 +750,9 @@ AsyncMatch V4LocalDatabaseManager::HandleWhitelistCheck(
   // These loops will have exactly 1 entry most of the time.
   for (const auto& entry : check->full_hash_to_store_and_hash_prefixes) {
     for (const auto& store_and_prefix : entry.second) {
-      if (store_and_prefix.hash_prefix.size() == kMaxHashPrefixLength)
+      if (store_and_prefix.hash_prefix.size() == kMaxHashPrefixLength) {
         return AsyncMatch::MATCH;
+      }
     }
   }
 
@@ -987,6 +995,14 @@ void V4LocalDatabaseManager::SetupDatabase() {
       base::Bind(&V4LocalDatabaseManager::DatabaseReadyForChecks,
                  weak_factory_.GetWeakPtr());
   V4Database::Create(task_runner_, base_path_, list_infos_, db_ready_callback);
+}
+
+void V4LocalDatabaseManager::SetupRealTimeUrlLookupService(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  rt_url_lookup_service_ =
+      std::make_unique<RealTimeUrlLookupService>(url_loader_factory);
 }
 
 void V4LocalDatabaseManager::SetupUpdateProtocolManager(

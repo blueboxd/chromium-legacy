@@ -481,11 +481,12 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
     for (wtf_size_t child_number = 0;
          child_number < line_context.line_items.size(); ++child_number) {
       FlexItem& flex_item = line_context.line_items[child_number];
-      // TODO(dgrogan): Make this obey the rule that the item stretches only if
-      // neither of the cross-axis margins are auto from
-      // https://drafts.csswg.org/css-flexbox/#valdef-align-items-stretch
-      // Just use DoesItemStretch here?
-      if (flex_item.Alignment() == ItemPosition::kStretch) {
+
+      // UpdateAutoMarginsInCrossAxis updates the flex_item's desired_location
+      // if the auto margins have an effect.
+      if (!flex_item.UpdateAutoMarginsInCrossAxis(
+              std::max(LayoutUnit(), flex_item.AvailableAlignmentSpace())) &&
+          flex_item.Alignment() == ItemPosition::kStretch) {
         flex_item.ComputeStretchedSize();
 
         WritingMode child_writing_mode =

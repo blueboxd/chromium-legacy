@@ -29,18 +29,6 @@ std::string CalculateECCurveHash(const std::string& plaintext) {
   return point.ValueOrDie().ToBytesCompressed().ValueOrDie();
 }
 
-// |already_encrypted| is an already encrypted string (output of CipherEncrypt).
-// Encrypts it again with a new key. The key is returned in |key|.
-std::string CipherReEncrypt(const std::string& already_encrypted,
-                            std::string* key) {
-  using ::private_join_and_compute::ECCommutativeCipher;
-  auto cipher = ECCommutativeCipher::CreateWithNewKey(
-      NID_X9_62_prime256v1, ECCommutativeCipher::SHA256);
-  *key = cipher.ValueOrDie()->GetPrivateKeyBytes();
-  auto result = cipher.ValueOrDie()->ReEncrypt(already_encrypted);
-  return result.ValueOrDie();
-}
-
 // Converts a string to an array for printing.
 std::vector<int> StringAsArray(const std::string& s) {
   return std::vector<int>(s.begin(), s.end());

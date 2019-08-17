@@ -391,9 +391,10 @@ void TraceEventDataSource::StartTracingInternal(
     target_buffer_ = data_source_config.target_buffer();
     // Reduce lock contention by binding the registry without holding the lock.
     unbound_writer_registry = std::move(startup_writer_registry_);
-  }
 
-  session_id_.fetch_add(1u, std::memory_order_relaxed);
+    // Protected by |lock_| for CreateThreadLocalEventSink().
+    session_id_.fetch_add(1u, std::memory_order_relaxed);
+  }
 
   if (unbound_writer_registry) {
     // TODO(oysteine): Investigate why trace events emitted by something in

@@ -581,6 +581,19 @@ class ResourceScheduler::Client
     if (p2p_connections_count_ == count)
       return;
 
+    if (p2p_connections_count_ > 0 && count == 0) {
+      // If the count of P2P connections went down to 0, start a timer. When the
+      // timer fires, the queued browser-initiated requests would be dispatched.
+      p2p_connections_count_end_timestamp_ = tick_clock_->NowTicks();
+      p2p_connections_count_ended_timer_.Stop();
+      p2p_connections_count_ended_timer_.Start(
+          FROM_HERE,
+          resource_scheduler_->resource_scheduler_params_manager_
+              .TimeToPauseHeavyBrowserInitiatedRequestsAfterEndOfP2PConnections(),
+          this,
+          &ResourceScheduler::Client::OnP2PConnectionsCountEndedTimerFired);
+    }
+
     p2p_connections_count_ = count;
 
     if (p2p_connections_count_ > 0 &&
@@ -592,6 +605,13 @@ class ResourceScheduler::Client
         p2p_connections_count_active_timestamp_.has_value()) {
       p2p_connections_count_active_timestamp_ = base::nullopt;
     }
+
+    LoadAnyStartablePendingRequests(
+        RequestStartTrigger::PEER_TO_PEER_CONNECTIONS_COUNT_CHANGED);
+  }
+
+  void OnP2PConnectionsCountEndedTimerFired() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     LoadAnyStartablePendingRequests(
         RequestStartTrigger::PEER_TO_PEER_CONNECTIONS_COUNT_CHANGED);
@@ -884,8 +904,29 @@ class ResourceScheduler::Client
       return false;
     }
 
-    if (p2p_connections_count_ == 0)
-      return false;
+    if (p2p_connections_count_ == 0) {
+      // If the current count of P2P connections is 0, then check when was the
+      // last time when there was an active P2P connection. If that timestamp is
+      // recent, it's a heuristic indication that a new P2P connection may
+      // start soon. To avoid network contention for that connection, keep
+      // throttling browser-initiated requests.
+      if (!p2p_connections_count_end_timestamp_.has_value())
+        return false;
+
+      bool p2p_connections_ended_long_back =
+          (tick_clock_->NowTicks() -
+           p2p_connections_count_end_timestamp_.value()) >=
+          resource_scheduler_->resource_scheduler_params_manager_
+              .TimeToPauseHeavyBrowserInitiatedRequestsAfterEndOfP2PConnections();
+      if (p2p_connections_ended_long_back)
+        return false;
+
+      // If there are no currently active P2P connections, and the last
+      // connection ended recently, then |p2p_connections_count_ended_timer_|
+      // must be running. When |p2p_connections_count_ended_timer_| fires,
+      // queued browser-initiated requests would be dispatched.
+      DCHECK(p2p_connections_count_ended_timer_.IsRunning());
+    }
 
     // Only throttle when effective connection type is between Slow2G and 3G.
     if (effective_connection_type_ <= net::EFFECTIVE_CONNECTION_TYPE_OFFLINE ||
@@ -896,17 +937,19 @@ class ResourceScheduler::Client
     if (request.url_request()->priority() == net::HIGHEST)
       return false;
 
-    base::TimeDelta time_since_p2p_connections_active =
-        tick_clock_->NowTicks() -
-        p2p_connections_count_active_timestamp_.value();
+    if (p2p_connections_count_ > 0) {
+      base::TimeDelta time_since_p2p_connections_active =
+          tick_clock_->NowTicks() -
+          p2p_connections_count_active_timestamp_.value();
 
-    base::Optional<base::TimeDelta> max_wait_time_p2p_connections =
-        resource_scheduler_->resource_scheduler_params_manager_
-            .max_wait_time_p2p_connections();
+      base::Optional<base::TimeDelta> max_wait_time_p2p_connections =
+          resource_scheduler_->resource_scheduler_params_manager_
+              .max_wait_time_p2p_connections();
 
-    if (time_since_p2p_connections_active >
-        max_wait_time_p2p_connections.value()) {
-      return false;
+      if (time_since_p2p_connections_active >
+          max_wait_time_p2p_connections.value()) {
+        return false;
+      }
     }
 
     // Check other request specific constraints.
@@ -1272,6 +1315,13 @@ class ResourceScheduler::Client
   // changes from 0 to a non-zero value. Reset to null when
   // |p2p_connections_count_| becomes 0.
   base::Optional<base::TimeTicks> p2p_connections_count_active_timestamp_;
+
+  // Earliest timestamp since when the count of active peer to peer
+  // connection counts dropped from a non-zero value to zero. Set to current
+  // timestamp when |p2p_connections_count_| changes from a non-zero value to 0.
+  base::Optional<base::TimeTicks> p2p_connections_count_end_timestamp_;
+
+  base::OneShotTimer p2p_connections_count_ended_timer_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

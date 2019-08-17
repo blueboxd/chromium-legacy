@@ -93,6 +93,8 @@ class ViewportImpl {
     this.fittingType_ = FittingType.NONE;
     this.defaultZoom_ = defaultZoom;
     this.topToolbarHeight_ = topToolbarHeight;
+    // |twoUpView_| should be in sync with |two_up_view_| in PDFiumEngine.
+    this.twoUpView_ = false;
     this.prevScale_ = 1;
     this.pinchPhase_ = Viewport.PinchPhase.PINCH_NONE;
     this.pinchPanVector_ = null;
@@ -122,6 +124,15 @@ class ViewportImpl {
    */
   getClockwiseRotations() {
     return this.rotations_;
+  }
+
+  /**
+   * Sets the state of two-up view.
+   *
+   * @param {boolean} twoUpView new two-up view state.
+   */
+  setTwoUpView(twoUpView) {
+    this.twoUpView_ = twoUpView;
   }
 
   /**
@@ -194,6 +205,22 @@ class ViewportImpl {
     return {
       width: this.documentDimensions_.width,
       height: this.documentDimensions_.height
+    };
+  }
+
+  /**
+   * Returns the rectangle representing the viewport.
+   *
+   * @return {!ViewportRect} a ViewportRect containing x, y, width, and height
+   *     of the viewport given current zoom.
+   * @private
+   */
+  getViewportRect_() {
+    return {
+      x: this.position.x / this.zoom,
+      y: this.position.y / this.zoom,
+      width: this.size.width / this.zoom,
+      height: this.size.height / this.zoom
     };
   }
 
@@ -530,36 +557,24 @@ class ViewportImpl {
   }
 
   /**
-   * Assuming there are at most two pages overlapping |y| in the current layout,
-   * return the highest index of the pages at a given y position. Returns the
-   * last index of the document if the |y| is greater than the total height of
-   * the document.
+   * Return the last page visible in the viewport. Returns the last index of the
+   * document if the viewport is below the document.
    *
-   * @param {number} y the y-coordinate to get the page at.
-   * @return {number} the highest index of the pages overlapping the given
-   *     y-coordinate.
+   * @return {number} the highest index of the pages visible in the viewport.
    * @private
    */
-  getLastPageAtY_(y) {
-    const firstPage = this.getPageAtY_(y);
+  getLastPageInViewport_() {
+    const viewportRect = this.getViewportRect_();
+    const pageAtY = this.getPageAtY_(viewportRect.y + viewportRect.height);
 
-    if (firstPage == 0 && this.pageDimensions_[firstPage].y < y) {
-      return this.pageDimensions_.length - 1;
+    if (!this.twoUpView_ || pageAtY % 2 == 1 ||
+        pageAtY + 1 >= this.pageDimensions_.length) {
+      return pageAtY;
     }
 
-    if (firstPage % 2 != 0 || firstPage + 1 >= this.pageDimensions_.length) {
-      return firstPage;
-    }
-
-    // If the next page overlaps |y| then the next page is located to the
-    // right of |firstPage|, implying the document is in two-up view. Check
-    // the next page to see if it has this property, returning
-    // |firstPage| + 1 if true.
-    const nextPageY = this.pageDimensions_[firstPage + 1].y;
-    const nextPageBottom =
-        this.pageDimensions_[firstPage + 1].height + nextPageY;
-
-    return (nextPageY <= y && nextPageBottom > y) ? firstPage + 1 : firstPage;
+    const nextPage = this.pageDimensions_[pageAtY + 1];
+    return getIntersectionArea(viewportRect, nextPage) > 0 ? pageAtY + 1 :
+                                                             pageAtY;
   }
 
   /** @override */
@@ -591,16 +606,10 @@ class ViewportImpl {
    * @return {number} the index of the most visible page.
    */
   getMostVisiblePage() {
-    const viewportRect = {
-      x: this.position.x / this.zoom,
-      y: this.position.y / this.zoom,
-      width: this.size.width / this.zoom,
-      height: this.size.height / this.zoom
-    };
+    const viewportRect = this.getViewportRect_();
 
     const firstVisiblePage = this.getPageAtY_(viewportRect.y);
-    const lastPossibleVisiblePage =
-        this.getLastPageAtY_(viewportRect.y + viewportRect.height);
+    const lastPossibleVisiblePage = this.getLastPageInViewport_();
     if (firstVisiblePage === lastPossibleVisiblePage) {
       return firstVisiblePage;
     }
@@ -951,6 +960,31 @@ class ViewportImpl {
     this.pinchPanVector_ = null;
     this.pinchCenter_ = null;
     this.firstPinchCenterInFrame_ = null;
+  }
+
+  /**
+   * Go to the next page. If the document is in two-up view, go to the left page
+   * of the next row.
+   */
+  goToNextPage() {
+    const currentPage = this.getMostVisiblePage();
+    const nextPageOffset = (this.twoUpView_ && currentPage % 2 == 0) ? 2 : 1;
+    this.goToPage(currentPage + nextPageOffset);
+  }
+
+  /**
+   * Go to the previous page. If the document is in two-up view, go to the left
+   * page of the previous row.
+   */
+  goToPreviousPage() {
+    const currentPage = this.getMostVisiblePage();
+    let previousPageOffset = -1;
+
+    if (this.twoUpView_) {
+      previousPageOffset = (currentPage % 2 == 0) ? -2 : -3;
+    }
+
+    this.goToPage(currentPage + previousPageOffset);
   }
 
   /**

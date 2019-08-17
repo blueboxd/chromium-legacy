@@ -540,20 +540,27 @@ bool ImageResourceContent::IsAcceptableCompressionRatio(
     UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.FeaturePolicy.ImageFormats",
                               compression_format);
   }
+
+  // Pass image url to reporting API.
+  const String& image_url = Url().GetString();
+
   if (compression_format == ImageDecoder::kLossyFormat) {
     // Enforce the lossy image policy.
     return context.IsFeatureEnabled(
         mojom::FeaturePolicyFeature::kUnoptimizedLossyImages,
-        PolicyValue(compression_ratio_1k), ReportOptions::kReportOnFailure);
+        PolicyValue(compression_ratio_1k), ReportOptions::kReportOnFailure,
+        g_empty_string, image_url);
   }
   if (compression_format == ImageDecoder::kLosslessFormat) {
     // Enforce the lossless image policy.
     bool enabled_by_10k_policy = context.IsFeatureEnabled(
         mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages,
-        PolicyValue(compression_ratio_10k), ReportOptions::kReportOnFailure);
+        PolicyValue(compression_ratio_10k), ReportOptions::kReportOnFailure,
+        g_empty_string, image_url);
     bool enabled_by_1k_policy = context.IsFeatureEnabled(
         mojom::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict,
-        PolicyValue(compression_ratio_1k), ReportOptions::kReportOnFailure);
+        PolicyValue(compression_ratio_1k), ReportOptions::kReportOnFailure,
+        g_empty_string, image_url);
     return enabled_by_10k_policy && enabled_by_1k_policy;
   }
 

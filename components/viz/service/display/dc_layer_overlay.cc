@@ -33,7 +33,7 @@ constexpr gfx::Insets kDCLayerDebugBorderInsets = gfx::Insets(-2);
 // so don't remove entries and make sure to update enums.xml if it changes.
 enum DCLayerResult {
   DC_LAYER_SUCCESS,
-  DC_LAYER_FAILED_UNSUPPORTED_QUAD,
+  DC_LAYER_FAILED_UNSUPPORTED_QUAD,  // not recorded
   DC_LAYER_FAILED_QUAD_BLEND_MODE,
   DC_LAYER_FAILED_TEXTURE_NOT_CANDIDATE,
   DC_LAYER_FAILED_OCCLUDED,
@@ -41,7 +41,7 @@ enum DCLayerResult {
   DC_LAYER_FAILED_TRANSPARENT,
   DC_LAYER_FAILED_NON_ROOT,
   DC_LAYER_FAILED_TOO_MANY_OVERLAYS,
-  DC_LAYER_FAILED_NO_HW_OVERLAY_SUPPORT,
+  DC_LAYER_FAILED_NO_HW_OVERLAY_SUPPORT,  // deprecated
   kMaxValue = DC_LAYER_FAILED_NO_HW_OVERLAY_SUPPORT,
 };
 
@@ -57,39 +57,38 @@ DCLayerResult FromYUVQuad(const YUVVideoDrawQuad* quad,
                           int current_frame_processed_overlay_count,
                           DisplayResourceProvider* resource_provider,
                           DCLayerOverlay* dc_layer) {
+  // To support software protected video on machines without hardware overlay
+  // capability. Don't do dc layer overlay if no hardware support.
+  gfx::ProtectedVideoType protected_video_type = quad->protected_video_type;
+  bool allow_video_overlay =
+      has_hw_overlay_support ||
+      (protected_video_type == gfx::ProtectedVideoType::kSoftwareProtected &&
+       base::FeatureList::IsEnabled(
+           features::kUseDCOverlaysForSoftwareProtectedVideo));
+  if (!allow_video_overlay)
+    return DC_LAYER_FAILED_UNSUPPORTED_QUAD;
+
   // Check that resources are overlay compatible first so that subsequent
   // assumptions are valid.
   for (const auto& resource : quad->resources) {
     if (!resource_provider->IsOverlayCandidate(resource))
       return DC_LAYER_FAILED_TEXTURE_NOT_CANDIDATE;
   }
+
   // Hardware protected video must use Direct Composition Overlay
-  if (quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver &&
-      quad->protected_video_type !=
-          gfx::ProtectedVideoType::kHardwareProtected) {
-    return DC_LAYER_FAILED_QUAD_BLEND_MODE;
-  }
-  // To support software protected video on machines without hardware overlay
-  // capability. Don't do dc layer overlay if no hardware support.
-  if (!has_hw_overlay_support &&
-      quad->protected_video_type !=
-          gfx::ProtectedVideoType::kSoftwareProtected) {
-    return DC_LAYER_FAILED_NO_HW_OVERLAY_SUPPORT;
-  }
+  if (protected_video_type != gfx::ProtectedVideoType::kHardwareProtected) {
+    if (quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver)
+      return DC_LAYER_FAILED_QUAD_BLEND_MODE;
 
-  if (!quad->shared_quad_state->quad_to_target_transform
-           .Preserves2dAxisAlignment() &&
-      quad->protected_video_type !=
-          gfx::ProtectedVideoType::kHardwareProtected &&
-      !base::FeatureList::IsEnabled(
-          features::kDirectCompositionComplexOverlays)) {
-    return DC_LAYER_FAILED_COMPLEX_TRANSFORM;
-  }
+    bool is_axis_aligned = quad->shared_quad_state->quad_to_target_transform
+                               .Preserves2dAxisAlignment();
+    if (!is_axis_aligned && !base::FeatureList::IsEnabled(
+                                features::kDirectCompositionComplexOverlays)) {
+      return DC_LAYER_FAILED_COMPLEX_TRANSFORM;
+    }
 
-  if (current_frame_processed_overlay_count > 0 &&
-      quad->protected_video_type !=
-          gfx::ProtectedVideoType::kHardwareProtected) {
-    return DC_LAYER_FAILED_TOO_MANY_OVERLAYS;
+    if (current_frame_processed_overlay_count > 0)
+      return DC_LAYER_FAILED_TOO_MANY_OVERLAYS;
   }
 
   // Direct composition path only supports single NV12 buffer, or two buffers
@@ -230,20 +229,41 @@ bool HasOccludingQuads(const gfx::RectF& target_quad,
   return false;
 }
 
-void RecordDCLayerResult(DCLayerResult result,
-                         gfx::ProtectedVideoType protected_video_type) {
+void RecordVideoDCLayerResult(DCLayerResult result,
+                              gfx::ProtectedVideoType protected_video_type) {
   switch (protected_video_type) {
     case gfx::ProtectedVideoType::kClear:
-      UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.DCLayerResult2.Clear",
-                                result);
+      UMA_HISTOGRAM_ENUMERATION(
+          "GPU.DirectComposition.DCLayerResult.Video.Clear", result);
       break;
     case gfx::ProtectedVideoType::kSoftwareProtected:
       UMA_HISTOGRAM_ENUMERATION(
-          "GPU.DirectComposition.DCLayerResult2.SoftwareProtected", result);
+          "GPU.DirectComposition.DCLayerResult.Video.SoftwareProtected",
+          result);
       break;
     case gfx::ProtectedVideoType::kHardwareProtected:
       UMA_HISTOGRAM_ENUMERATION(
-          "GPU.DirectComposition.DCLayerResult2.HardwareProtected", result);
+          "GPU.DirectComposition.DCLayerResult.Video.HardwareProtected",
+          result);
+      break;
+  }
+}
+
+void RecordDCLayerResult(DCLayerResult result, QuadList::Iterator it) {
+  // Skip recording unsupported quads since that'd dwarf the data we care about.
+  if (result == DC_LAYER_FAILED_UNSUPPORTED_QUAD)
+    return;
+
+  switch (it->material) {
+    case DrawQuad::Material::kYuvVideoContent:
+      RecordVideoDCLayerResult(
+          result, YUVVideoDrawQuad::MaterialCast(*it)->protected_video_type);
+      break;
+    case DrawQuad::Material::kTextureContent:
+      UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.DCLayerResult.Texture",
+                                result);
+      break;
+    default:
       break;
   }
 }
@@ -273,7 +293,6 @@ DCLayerOverlayProcessor::DCLayerOverlayProcessor(
     const RendererSettings& settings)
     : has_hw_overlay_support_(
           context_provider &&
-          context_provider->ContextCapabilities().dc_layers &&
           context_provider->ContextCapabilities().use_dc_overlays_for_video),
       show_debug_borders_(settings.show_dc_layer_debug_borders) {}
 
@@ -460,7 +479,6 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
 
     DCLayerOverlay dc_layer;
     DCLayerResult result;
-    auto uma_protected_video_type = gfx::ProtectedVideoType::kClear;
     switch (it->material) {
       case DrawQuad::Material::kYuvVideoContent:
         result = FromYUVQuad(YUVVideoDrawQuad::MaterialCast(*it),
@@ -468,8 +486,6 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
                              has_hw_overlay_support_,
                              current_frame_processed_overlay_count_,
                              resource_provider, &dc_layer);
-        uma_protected_video_type =
-            YUVVideoDrawQuad::MaterialCast(*it)->protected_video_type;
         break;
       case DrawQuad::Material::kTextureContent:
         result = FromTextureQuad(TextureDrawQuad::MaterialCast(*it),
@@ -481,7 +497,7 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     }
 
     if (result != DC_LAYER_SUCCESS) {
-      RecordDCLayerResult(result, uma_protected_video_type);
+      RecordDCLayerResult(result, it);
       continue;
     }
 
@@ -500,10 +516,11 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     if (!is_overlay) {
       result = IsUnderlayAllowed(it, is_root, dc_layer);
       if (result != DC_LAYER_SUCCESS) {
-        RecordDCLayerResult(result, uma_protected_video_type);
+        RecordDCLayerResult(result, it);
         continue;
       }
     }
+    RecordDCLayerResult(DC_LAYER_SUCCESS, it);
 
     // Quad is always promoted to either an underlay or an overlay after this
     // point. It should not fail.
@@ -545,7 +562,6 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
         render_pass->transform_to_root_target, quad_rectangle_in_target_space);
     current_frame_overlay_rect_union_.Union(rect_in_root);
 
-    RecordDCLayerResult(DC_LAYER_SUCCESS, dc_layer.protected_video_type);
     RecordOverlayHistograms(is_overlay, occluding_damage_rect, damage_rect);
 
     dc_layer_overlays->push_back(dc_layer);

@@ -29,6 +29,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -842,7 +843,13 @@ TEST_P(SimpleURLLoaderTest, UploadShortStringWithRedirect) {
   EXPECT_EQ(1, num_redirects);
 }
 
-TEST_P(SimpleURLLoaderTest, UploadLongStringWithRedirect) {
+#if defined(OS_FUCHSIA)
+// TODO(crbug.com/994007): The test crashes on Fuchsia.
+#define MAYBE_UploadLongStringWithRedirect DISABLED_UploadLongStringWithRedirect
+#else
+#define MAYBE_UploadLongStringWithRedirect UploadLongStringWithRedirect
+#endif
+TEST_P(SimpleURLLoaderTest, MAYBE_UploadLongStringWithRedirect) {
   // Use a 307 redirect to preserve the body across the redirect.
   std::unique_ptr<SimpleLoaderTestHelper> test_helper = CreateHelperForURL(
       test_server_.GetURL("/server-redirect-307?" +

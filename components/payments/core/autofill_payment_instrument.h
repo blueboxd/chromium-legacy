@@ -68,6 +68,11 @@ class AutofillPaymentInstrument
 
   void RecordMissingFieldsForInstrument() const;
 
+  // Sets whether the complete and valid autofill data for merchant's request is
+  // available.
+  void set_is_requested_autofill_data_available(bool available) {
+    is_requested_autofill_data_available_ = available;
+  }
   autofill::CreditCard* credit_card() { return &credit_card_; }
   const autofill::CreditCard* credit_card() const { return &credit_card_; }
 
@@ -105,6 +110,11 @@ class AutofillPaymentInstrument
 
   bool is_waiting_for_card_unmask_;
   bool is_waiting_for_billing_address_normalization_;
+
+  // True when complete and valid autofill data for merchant's request is
+  // available, e.g., if merchant specifies `requestPayerEmail: true`, then this
+  // variable is true only if the autofill data contains a valid email address.
+  bool is_requested_autofill_data_available_ = false;
 
   base::WeakPtrFactory<AutofillPaymentInstrument> weak_ptr_factory_{this};
 

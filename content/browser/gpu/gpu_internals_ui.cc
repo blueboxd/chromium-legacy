@@ -70,7 +70,7 @@ WebUIDataSource* CreateGpuHTMLSource() {
   source->OverrideContentSecurityPolicyScriptSrc(
       "script-src chrome://resources 'self' 'unsafe-eval';");
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->AddResourcePath("gpu_internals.js", IDR_GPU_INTERNALS_JS);
   source->SetDefaultResource(IDR_GPU_INTERNALS_HTML);
   return source;

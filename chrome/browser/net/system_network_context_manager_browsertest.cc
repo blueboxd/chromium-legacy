@@ -8,8 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "base/deferred_sequenced_task_runner.h"
 #include "base/feature_list.h"
 #include "base/optional.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -25,8 +27,10 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/user_agent.h"
 #include "net/socket/client_socket_pool_manager.h"
@@ -270,16 +274,28 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
 
 IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest,
                        DefaultMaxConnectionsPerProxy) {
-  network::mojom::NetworkServiceTestPtr network_service_test;
-  content::GetSystemConnector()->BindInterface(
-      content::mojom::kNetworkServiceName, &network_service_test);
-
-  mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-
   int max_connections = 0;
-  bool available =
-      network_service_test->GetMaxConnectionsPerProxy(&max_connections);
-  EXPECT_TRUE(available);
+  if (content::IsInProcessNetworkService()) {
+    base::RunLoop run_loop;
+    content::GetNetworkTaskRunner()->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([&run_loop, &max_connections] {
+          max_connections =
+              net::ClientSocketPoolManager::max_sockets_per_proxy_server(
+                  net::HttpNetworkSession::NORMAL_SOCKET_POOL);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  } else {
+    network::mojom::NetworkServiceTestPtr network_service_test;
+    content::GetSystemConnector()->BindInterface(
+        content::mojom::kNetworkServiceName, &network_service_test);
+
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+
+    bool available =
+        network_service_test->GetMaxConnectionsPerProxy(&max_connections);
+    EXPECT_TRUE(available);
+  }
   EXPECT_EQ(net::DefaultMaxValues::kDefaultMaxSocketsPerProxyServer,
             max_connections);
 }

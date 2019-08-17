@@ -17,6 +17,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/url_list_manager.h"
@@ -70,15 +71,19 @@ class ContentSettingBubbleModel {
   typedef ContentSettingBubbleModelDelegate Delegate;
 
   struct ListItem {
-    ListItem(const gfx::Image& image,
+    ListItem(const gfx::VectorIcon* image,
              const base::string16& title,
+             const base::string16& description,
              bool has_link,
-             int32_t item_id)
-        : image(image), title(title), has_link(has_link), item_id(item_id) {}
-
-    gfx::Image image;
+             bool has_blocked_badge,
+             int32_t item_id);
+    ListItem(const ListItem& other);
+    ListItem& operator=(const ListItem& other);
+    const gfx::VectorIcon* image;
     base::string16 title;
+    base::string16 description;
     bool has_link;
+    bool has_blocked_badge;
     int32_t item_id;
   };
   typedef std::vector<ListItem> ListItems;
@@ -182,7 +187,9 @@ class ContentSettingBubbleModel {
   virtual void OnLearnMoreClicked() {}
   virtual void OnMediaMenuClicked(blink::mojom::MediaStreamType type,
                                   const std::string& selected_device_id) {}
-
+  // Whether or not clicking the `Done` button should invoke
+  // OnManageButtonClicked() on the model instead of closing the bubble.
+  virtual bool ShouldDoneButtonBehaveAsManageButton();
   // Called by the view code when the bubble is closed
   virtual void CommitChanges() {}
 
@@ -340,6 +347,7 @@ class ContentSettingMediaStreamBubbleModel : public ContentSettingBubbleModel {
   ContentSettingMediaStreamBubbleModel* AsMediaStreamBubbleModel() override;
   void CommitChanges() override;
   void OnManageButtonClicked() override;
+  bool ShouldDoneButtonBehaveAsManageButton() override;
 
  private:
   // Helper functions to check if this bubble was invoked for microphone,
@@ -365,6 +373,16 @@ class ContentSettingMediaStreamBubbleModel : public ContentSettingBubbleModel {
 
   // Updates the camera and microphone setting with the passed |setting|.
   void UpdateSettings(ContentSetting setting);
+
+#if defined(OS_MACOSX)
+  // Initialize the bubble with the elements specific to the scenario when
+  // camera or mic are disabled in a system (OS) level.
+  void InitializeSystemMediaPermissionBubble();
+#endif  // defined(OS_MACOSX)
+
+  // Whether or not to show the bubble UI specific to when media permissions are
+  // turned off in a system level.
+  bool ShouldShowSystemMediaPermissions();
 
   // Updates the camera and microphone default device with the passed |type|
   // and device.

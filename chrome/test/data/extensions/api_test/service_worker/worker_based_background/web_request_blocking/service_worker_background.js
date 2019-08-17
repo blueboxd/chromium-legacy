@@ -4,7 +4,6 @@
 
 // Register a listener with a callback that blocks all requests.
 chrome.webRequest.onBeforeRequest.addListener(function localListener(details) {
-  chrome.webRequest.onBeforeRequest.removeListener(localListener);
   return {cancel: true};
 }, { urls: ['<all_urls>']}, ['blocking']);
 

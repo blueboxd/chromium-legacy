@@ -53,16 +53,13 @@ class DocumentWritePageLoadMetricsObserver
                                         ukm::SourceId source_id);
 
   void LogDocumentWriteBlockFirstContentfulPaint(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info);
+      const page_load_metrics::mojom::PageLoadTiming& timing);
 
   void LogDocumentWriteBlockParseStop(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info);
+      const page_load_metrics::mojom::PageLoadTiming& timing);
 
   void LogDocumentWriteBlockFirstMeaningfulPaint(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info);
+      const page_load_metrics::mojom::PageLoadTiming& timing);
 
   bool doc_write_same_site_diff_scheme_ = false;
   bool doc_write_block_observed_ = false;

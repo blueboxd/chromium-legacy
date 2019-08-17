@@ -167,7 +167,7 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
   source->SetDefaultResource(IDR_BOOKMARKS_BOOKMARKS_HTML);
 #endif
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
 
   return source;
 }

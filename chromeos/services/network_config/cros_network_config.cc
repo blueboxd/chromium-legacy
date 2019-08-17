@@ -1574,6 +1574,8 @@ void CrosNetworkConfig::ActiveNetworksChanged(
 }
 
 void CrosNetworkConfig::NetworkPropertiesUpdated(const NetworkState* network) {
+  if (network->type() == shill::kTypeEthernetEap)
+    return;
   mojom::NetworkStatePropertiesPtr mojo_network = GetMojoNetworkState(network);
   if (!mojo_network)
     return;

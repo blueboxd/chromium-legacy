@@ -69,7 +69,7 @@ content::WebUIDataSource* CreateDataSource() {
 
 #if defined(OS_LINUX)
   SetSandboxStatusData(source);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
 #endif
 
   return source;

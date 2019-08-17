@@ -87,8 +87,8 @@ SignedExchangePageLoadMetricsObserver::OnCommit(
 void SignedExchangePageLoadMetricsObserver::OnFirstPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_paint, info)) {
+  if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_paint, GetDelegate())) {
     return;
   }
 
@@ -98,8 +98,8 @@ void SignedExchangePageLoadMetricsObserver::OnFirstPaintInPage(
 void SignedExchangePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_contentful_paint, info)) {
+  if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_contentful_paint, GetDelegate())) {
     return;
   }
 
@@ -114,8 +114,8 @@ void SignedExchangePageLoadMetricsObserver::
     OnFirstMeaningfulPaintInMainFrameDocument(
         const page_load_metrics::mojom::PageLoadTiming& timing,
         const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_meaningful_paint, info)) {
+  if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_meaningful_paint, GetDelegate())) {
     return;
   }
 
@@ -129,8 +129,9 @@ void SignedExchangePageLoadMetricsObserver::
 void SignedExchangePageLoadMetricsObserver::OnDomContentLoadedEventStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing->dom_content_loaded_event_start, info)) {
+  if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.document_timing->dom_content_loaded_event_start,
+          GetDelegate())) {
     return;
   }
 
@@ -142,8 +143,8 @@ void SignedExchangePageLoadMetricsObserver::OnDomContentLoadedEventStart(
 void SignedExchangePageLoadMetricsObserver::OnLoadEventStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing->load_event_start, info)) {
+  if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.document_timing->load_event_start, GetDelegate())) {
     return;
   }
 
@@ -154,8 +155,8 @@ void SignedExchangePageLoadMetricsObserver::OnLoadEventStart(
 void SignedExchangePageLoadMetricsObserver::OnFirstInputInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.interactive_timing->first_input_timestamp, info)) {
+  if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.interactive_timing->first_input_timestamp, GetDelegate())) {
     return;
   }
 
@@ -184,8 +185,8 @@ void SignedExchangePageLoadMetricsObserver::OnFirstInputInPage(
 void SignedExchangePageLoadMetricsObserver::OnParseStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.parse_timing->parse_start, info)) {
+  if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.parse_timing->parse_start, GetDelegate())) {
     return;
   }
 

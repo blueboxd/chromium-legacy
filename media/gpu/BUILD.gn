@@ -117,8 +117,6 @@ component("gpu") {
       "android/device_info.h",
       "android/direct_shared_image_video_provider.cc",
       "android/direct_shared_image_video_provider.h",
-      "android/image_reader_gl_owner.cc",
-      "android/image_reader_gl_owner.h",
       "android/maybe_render_early_manager.cc",
       "android/maybe_render_early_manager.h",
       "android/media_codec_video_decoder.cc",
@@ -132,10 +130,6 @@ component("gpu") {
       "android/shared_image_video_provider.h",
       "android/surface_chooser_helper.cc",
       "android/surface_chooser_helper.h",
-      "android/surface_texture_gl_owner.cc",
-      "android/surface_texture_gl_owner.h",
-      "android/texture_owner.cc",
-      "android/texture_owner.h",
       "android/video_frame_factory.h",
       "android/video_frame_factory_impl.cc",
       "android/video_frame_factory_impl.h",
@@ -143,6 +137,7 @@ component("gpu") {
     libs += [ "android" ]
     deps += [
       "//gpu/ipc/common:android_image_reader_utils",
+      "//gpu/ipc/common:android_texture_owner",
 
       # TODO(crbug.com/789435): This can be removed once CdmManager is removed.
       "//gpu/ipc/common:ipc_common_sources",
@@ -431,6 +426,7 @@ if (is_win || is_android || use_v4l2_codec || use_vaapi) {
     if (is_android) {
       deps += [
         ":android_video_decode_accelerator_unittests",
+        "//gpu/ipc/common:android_texture_owner_unittests",
         "//media/base/android:media_java",
         "//media/test:run_all_unittests",
         "//ui/android:ui_java",
@@ -468,11 +464,8 @@ source_set("android_video_decode_accelerator_unittests") {
       "android/codec_wrapper_unittest.cc",
       "android/fake_codec_allocator.cc",
       "android/fake_codec_allocator.h",
-      "android/image_reader_gl_owner_unittest.cc",
       "android/maybe_render_early_manager_unittest.cc",
       "android/media_codec_video_decoder_unittest.cc",
-      "android/mock_abstract_texture.cc",
-      "android/mock_abstract_texture.h",
       "android/mock_android_video_surface_chooser.cc",
       "android/mock_android_video_surface_chooser.h",
       "android/mock_codec_buffer_wait_coordinator.cc",
@@ -483,11 +476,8 @@ source_set("android_video_decode_accelerator_unittests") {
       "android/mock_device_info.h",
       "android/mock_promotion_hint_aggregator.cc",
       "android/mock_promotion_hint_aggregator.h",
-      "android/mock_texture_owner.cc",
-      "android/mock_texture_owner.h",
       "android/promotion_hint_aggregator_impl_unittest.cc",
       "android/surface_chooser_helper_unittest.cc",
-      "android/surface_texture_gl_owner_unittest.cc",
       "android/video_frame_factory_impl_unittest.cc",
     ]
     deps = [
@@ -495,6 +485,7 @@ source_set("android_video_decode_accelerator_unittests") {
       ":gpu",
       "//base/test:test_support",
       "//gpu:test_support",
+      "//gpu/ipc/common:android_texture_owner_test_support",
       "//media",
       "//media:test_support",
       "//testing/gmock",

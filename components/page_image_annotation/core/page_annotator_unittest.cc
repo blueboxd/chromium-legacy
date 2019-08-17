@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,10 +50,10 @@ class MockObserver : public PageAnnotator::Observer {
 // AnnotateImage method was called.
 class TestAnnotator : public ia_mojom::Annotator {
  public:
-  ia_mojom::AnnotatorPtr GetPtr() {
-    ia_mojom::AnnotatorPtr ptr;
-    bindings_.AddBinding(this, mojo::MakeRequest(&ptr));
-    return ptr;
+  mojo::PendingRemote<ia_mojom::Annotator> GetRemote() {
+    mojo::PendingRemote<ia_mojom::Annotator> remote;
+    receivers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
+    return remote;
   }
 
   void AnnotateImage(const std::string& source_id,
@@ -81,7 +82,7 @@ class TestAnnotator : public ia_mojom::Annotator {
     image_processors_[index].reset();
   }
 
-  mojo::BindingSet<ia_mojom::Annotator> bindings_;
+  mojo::ReceiverSet<ia_mojom::Annotator> receivers_;
 };
 
 // Tests that correct image tracking messages are sent to observers.
@@ -90,7 +91,7 @@ TEST(PageAnnotatorTest, ImageTracking) {
 
   base::test::ScopedTaskEnvironment test_task_env;
 
-  PageAnnotator page_annotator(ia_mojom::AnnotatorPtr{});
+  PageAnnotator page_annotator((mojo::NullRemote()));
 
   MockObserver o1;
   page_annotator.AddObserver(&o1);
@@ -121,7 +122,7 @@ TEST(PageAnnotatorTest, Annotation) {
   base::test::ScopedTaskEnvironment test_task_env;
 
   TestAnnotator test_annotator;
-  PageAnnotator page_annotator(test_annotator.GetPtr());
+  PageAnnotator page_annotator(test_annotator.GetRemote());
   test_task_env.RunUntilIdle();
 
   // We use NiceMocks here since we don't place expectations on image added /

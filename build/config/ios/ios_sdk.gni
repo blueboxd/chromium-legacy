@@ -33,12 +33,6 @@ declare_args() {
   # provisioning for the selected code signing identify support that prefix.
   ios_app_bundle_id_prefix = "org.chromium"
 
-  # If true, then allow using Xcode to automatically manage certificates. This
-  # requires loading a separate Xcode project and enable automatically managed
-  # certificates. When true, all test application will use the same bundle id
-  # to avoid running out of certificates if using a free account.
-  ios_automatically_manage_certs = false
-
   # If non-empty, this list must contain valid cpu architecture, and the final
   # build will be a multi-architecture build (aka fat build) supporting the
   # main $target_cpu architecture and all of $additional_target_cpus.
@@ -64,8 +58,6 @@ assert(custom_toolchain == "" || additional_target_cpus == [],
        "cannot define both custom_toolchain and additional_target_cpus")
 
 use_ios_simulator = current_cpu == "x86" || current_cpu == "x64"
-
-ios_generic_test_bundle_id_suffix = "generic-unit-test"
 
 # Initialize additional_toolchains from additional_target_cpus. Assert here
 # that the list does not contains $target_cpu nor duplicates as this would

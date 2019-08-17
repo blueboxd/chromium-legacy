@@ -62,7 +62,6 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
     test_account_id1_ = AccountId::FromUserEmail(kTestAccount1);
     test_account_id2_ = AccountId::FromUserEmail(kTestAccount2);
     BrowserWithTestWindowTest::SetUp();
-    profile_manager()->SetLoggedIn(true);
     second_profile_ = CreateMultiUserProfile(test_account_id2_);
   }
 

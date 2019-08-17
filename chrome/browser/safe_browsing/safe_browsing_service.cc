@@ -42,6 +42,7 @@
 #include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/ping_manager.h"
+#include "components/safe_browsing/realtime/policy_engine.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
 #include "components/safe_browsing/verdict_cache_manager.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
@@ -364,6 +365,9 @@ void SafeBrowsingService::AddPrefService(PrefService* pref_service) {
   registrar->Add(
       prefs::kSafeBrowsingScoutReportingEnabled,
       base::Bind(&SafeBrowsingService::RefreshState, base::Unretained(this)));
+  registrar->Add(
+      prefs::kSafeBrowsingRealTimeLookupEnabled,
+      base::Bind(&SafeBrowsingService::RefreshState, base::Unretained(this)));
   prefs_map_[pref_service] = std::move(registrar);
   RefreshState();
 
@@ -395,17 +399,26 @@ void SafeBrowsingService::RefreshState() {
   // Check if any profile requires the service to be active.
   enabled_by_prefs_ = false;
   estimated_extended_reporting_by_prefs_ = SBER_LEVEL_OFF;
+  bool is_real_time_lookup_enabled = false;
   for (const auto& pref : prefs_map_) {
     if (pref.first->GetBoolean(prefs::kSafeBrowsingEnabled)) {
       enabled_by_prefs_ = true;
+
       ExtendedReportingLevel erl =
           safe_browsing::GetExtendedReportingLevel(*pref.first);
       if (erl != SBER_LEVEL_OFF) {
         estimated_extended_reporting_by_prefs_ = erl;
-        break;
+      }
+
+      if (pref.first->GetBoolean(prefs::kSafeBrowsingRealTimeLookupEnabled)) {
+        is_real_time_lookup_enabled = true;
       }
     }
   }
+
+  // TODO(crbug.com/991394): This enables real-time URL lookup if it is enabled
+  // for any of the active profiles. This should be fixed.
+  RealTimePolicyEngine::SetEnabled(is_real_time_lookup_enabled);
 
   if (enabled_by_prefs_)
     Start();

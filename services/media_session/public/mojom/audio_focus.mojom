@@ -7,7 +7,7 @@ module media_session.mojom;
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/media_session/public/mojom/media_session.mojom";
 
-// Next MinVersion: 6
+// Next MinVersion: 7
 
 // These are the different modes the AudioFocusManager can enforce audio focus.
 [Extensible]
@@ -87,8 +87,11 @@ interface AudioFocusRequestClient {
   MediaSessionInfoChanged@2(MediaSessionInfo session_info);
 };
 
-// Controls audio focus across the entire system.
-// Next Method ID: 6
+// Controls audio focus across the entire system. After binding
+// AudioFocusManager clients should call SetSource to identify themselves to
+// the media session service.
+// Next Method ID: 7
+// Deprecated method IDs: 3
 interface AudioFocusManager {
   // Requests audio focus with |type| for the |media_session| with
   // |session_info|. Media sessions should provide a |request| that will
@@ -123,11 +126,14 @@ interface AudioFocusManager {
   // Adds observers that receive audio focus events.
   AddObserver@2(pending_remote<AudioFocusObserver> observer);
 
-  // Associates a name with this binding. This will be associated with all
-  // audio focus requests made with this binding. It will also be used for
-  // associating metrics to a source. If the source name is updated then
+  // Associates a source with this binding. This will be associated with all
+  // audio focus requests made with this binding and we expect that this should
+  // be called at most once per binding. The |identity| will be used for
+  // filtering requests from the same context (e.g. profile). The |name| will
+  // be used for associating metrics to a source. If the source is updated then
   // the audio focus requests will retain the previous source name.
-  [MinVersion=2] SetSourceName@3(string name);
+  [MinVersion=6] SetSource@6(
+      mojo_base.mojom.UnguessableToken identity, string name);
 
   // Sets the enforcement mode for the Audio Focus Manager.
   [MinVersion=5] SetEnforcementMode@5(EnforcementMode mode);

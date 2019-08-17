@@ -8,6 +8,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -33,6 +34,8 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -41,6 +44,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.feature_engagement.EventConstants;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -93,6 +98,10 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     EmptyTabModelFilter mEmptyTabModelFilter;
     @Mock
     TabListMediator.TabGridDialogHandler mTabGridDialogHandler;
+    @Mock
+    Profile mProfile;
+    @Mock
+    Tracker mTracker;
 
     private Tab mTab1;
     private Tab mTab2;
@@ -155,6 +164,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
 
         mModel = new TabListModel();
         setupItemTouchHelperCallback(false);
+        TrackerFactory.setTrackerForTests(mTracker);
     }
 
     private void setupRecyclerView() {
@@ -183,7 +193,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     private void setupItemTouchHelperCallback(boolean isDialog) {
         mItemTouchHelperCallback = new TabGridItemTouchHelperCallback(mModel, mTabModelSelector,
                 mTabClosedListener, isDialog ? mTabGridDialogHandler : null, "", !isDialog);
-        mItemTouchHelperCallback.setupCallback(THRESHOLD, THRESHOLD, THRESHOLD);
+        mItemTouchHelperCallback.setupCallback(THRESHOLD, THRESHOLD, THRESHOLD, mProfile);
         mItemTouchHelperCallback.getMovementFlags(mRecyclerView, mMockViewHolder1);
     }
 
@@ -262,6 +272,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
 
         verify(mTabGroupModelFilter).mergeTabsToGroup(TAB1_ID, TAB2_ID);
         verify(mRecyclerView).removeView(mItemView1);
+        verify(mTracker).notifyEvent(eq(EventConstants.TAB_DRAG_AND_DROP_TO_GROUP));
         assertThat(mModel.get(0).get(TabProperties.CARD_ANIMATION_STATUS),
                 equalTo(ClosableTabGridViewHolder.AnimationStatus.HOVERED_CARD_ZOOM_OUT));
         assertThat(mModel.get(0).get(TabProperties.ALPHA), equalTo(1f));
@@ -285,6 +296,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
 
         verify(mRecyclerView).removeView(mItemView2);
         verify(mTabGroupModelFilter).mergeTabsToGroup(TAB2_ID, TAB1_ID);
+        verify(mTracker).notifyEvent(eq(EventConstants.TAB_DRAG_AND_DROP_TO_GROUP));
         assertThat(mModel.get(1).get(TabProperties.CARD_ANIMATION_STATUS),
                 equalTo(ClosableTabGridViewHolder.AnimationStatus.SELECTED_CARD_ZOOM_OUT));
         assertThat(mModel.get(1).get(TabProperties.ALPHA), equalTo(1f));

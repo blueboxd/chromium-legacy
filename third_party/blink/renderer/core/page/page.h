@@ -78,7 +78,6 @@ class SpatialNavigationController;
 class TopDocumentRootScrollerController;
 class ValidationMessageClient;
 class VisualViewport;
-class WebLayerTreeView;
 
 typedef uint64_t LinkHash;
 
@@ -291,10 +290,8 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   void Trace(blink::Visitor*) override;
 
-  void LayerTreeViewInitialized(WebLayerTreeView&,
-                                cc::AnimationHost&,
-                                LocalFrameView*);
-  void WillCloseLayerTreeView(WebLayerTreeView&, LocalFrameView*);
+  void AnimationHostInitialized(cc::AnimationHost&, LocalFrameView*);
+  void WillCloseAnimationHost(LocalFrameView*);
 
   void WillBeDestroyed();
 

@@ -182,6 +182,7 @@ bool ChildProcessHostImpl::InitChannel() {
   content::BindInterface(
       this,
       mojom::ChildProcessRequest(child_process_.BindNewPipeAndPassReceiver()));
+  child_process_->Initialize(bootstrap_receiver_.BindNewPipeAndPassRemote());
 
   // Make sure these messages get sent first.
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
@@ -240,6 +241,16 @@ uint64_t ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
   return static_cast<uint64_t>(
              base::Hash(&child_process_id, sizeof(child_process_id))) +
          1;
+}
+
+void ChildProcessHostImpl::BindProcessHost(
+    mojo::PendingReceiver<mojom::ChildProcessHost> receiver) {
+  receiver_.Bind(std::move(receiver));
+}
+
+void ChildProcessHostImpl::BindHostReceiver(
+    mojo::GenericPendingReceiver receiver) {
+  delegate_->BindHostReceiver(std::move(receiver));
 }
 
 bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {

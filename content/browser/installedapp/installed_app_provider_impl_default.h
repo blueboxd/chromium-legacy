@@ -26,8 +26,14 @@ class InstalledAppProviderImplDefault
       std::vector<blink::mojom::RelatedApplicationPtr> related_apps,
       FilterInstalledAppsCallback callback) override;
 
-  static void Create(
+  // TODO(https://crbug.com/955171): Remove this method and use Create once
+  // RendererInterfaceBinders uses service_manager::BinderMap instead of
+  // service_manager::BinderRegistry.
+  static void CreateForRequest(
       mojo::InterfaceRequest<blink::mojom::InstalledAppProvider> request);
+
+  static void Create(
+      mojo::PendingReceiver<blink::mojom::InstalledAppProvider> receiver);
 };
 
 }  // namespace content

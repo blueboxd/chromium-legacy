@@ -49,6 +49,10 @@ extern const base::Feature kWebPaymentsPerMethodCanMakePaymentQuota;
 // ShippingAddressChangeEvent is redacted of fine-grained details.
 extern const base::Feature kWebPaymentsRedactShippingAddress;
 
+// Used to make autofill instrument more restrictive when responding to
+// hasEnrolledInstrument() queries.
+extern const base::Feature kStrictHasEnrolledAutofillInstrument;
+
 }  // namespace features
 }  // namespace payments
 

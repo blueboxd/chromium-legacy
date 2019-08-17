@@ -40,13 +40,13 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/hosted_app_menu_model.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
@@ -537,7 +537,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, WebContentsPrefsOpenApplication) {
 }
 
 // Tests that the WebContents of an app window launched using
-// ReparentWebContentsIntoAppBrowser has the correct prefs.
+// web_app::ReparentWebContentsIntoAppBrowser has the correct prefs.
 IN_PROC_BROWSER_TEST_P(HostedAppTest, WebContentsPrefsReparentWebContents) {
   SetupApp("https_app");
 
@@ -546,7 +546,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, WebContentsPrefsReparentWebContents) {
   CheckWebContentsDoesNotHaveAppPrefs(current_tab);
 
   Browser* app_browser =
-      ReparentWebContentsIntoAppBrowser(current_tab, app_->id());
+      web_app::ReparentWebContentsIntoAppBrowser(current_tab, app_->id());
   ASSERT_NE(browser(), app_browser);
 
   CheckWebContentsHasAppPrefs(
@@ -1225,7 +1225,7 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, CreateShortcutForInstallableSite) {
 
 // Tests that the command for OpenActiveTabInPwaWindow is available for secure
 // pages in an app's scope.
-IN_PROC_BROWSER_TEST_P(SharedPWATest, ReparentSecureActiveTabIntoPwaWindow) {
+IN_PROC_BROWSER_TEST_P(SharedPWATest, ReparentWebAppForSecureActiveTab) {
   ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1239,7 +1239,7 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, ReparentSecureActiveTabIntoPwaWindow) {
   EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
             kEnabled);
 
-  Browser* app_browser = ReparentSecureActiveTabIntoPwaWindow(browser());
+  Browser* app_browser = web_app::ReparentWebAppForSecureActiveTab(browser());
 
   ASSERT_EQ(app_browser->app_controller()->GetAppId(), app_->id());
 }
@@ -1252,7 +1252,7 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, ReparentLastBrowserTab) {
   InstallSecurePWA();
   NavigateToURLAndWait(browser(), GetSecureAppURL());
 
-  Browser* app_browser = ReparentSecureActiveTabIntoPwaWindow(browser());
+  Browser* app_browser = web_app::ReparentWebAppForSecureActiveTab(browser());
   ASSERT_EQ(app_browser->app_controller()->GetAppId(), app_->id());
 
   ASSERT_TRUE(IsBrowserOpen(browser()));
@@ -1331,11 +1331,11 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
   CheckMixedContentLoaded(browser());
   EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
             kNotPresent);
-  EXPECT_EQ(ReparentSecureActiveTabIntoPwaWindow(browser()), nullptr);
+  EXPECT_EQ(web_app::ReparentWebAppForSecureActiveTab(browser()), nullptr);
 }
 
-// Tests that when calling ReparentWebContentsIntoAppBrowser, mixed content
-// cannot be loaded in the new app window.
+// Tests that when calling web_app::ReparentWebContentsIntoAppBrowser, mixed
+// content cannot be loaded in the new app window.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
                        MixedContentReparentWebContentsIntoAppBrowser) {
   ASSERT_TRUE(https_server()->Start());
@@ -1354,7 +1354,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
             kNotPresent);
 
   Browser* app_browser =
-      ReparentWebContentsIntoAppBrowser(tab_contents, app_->id());
+      web_app::ReparentWebContentsIntoAppBrowser(tab_contents, app_->id());
 
   ASSERT_NE(app_browser, browser());
   ASSERT_EQ(GetMixedContentAppURL(), app_browser->tab_strip_model()
@@ -1399,7 +1399,7 @@ IN_PROC_BROWSER_TEST_P(
   NavigateToURLAndWait(browser(), GetSecureIFrameAppURL());
   CheckMixedContentFailedToLoad(browser());
 
-  app_browser_ = ReparentWebContentsIntoAppBrowser(
+  app_browser_ = web_app::ReparentWebContentsIntoAppBrowser(
       browser()->tab_strip_model()->GetActiveWebContents(), app_->id());
   CheckMixedContentFailedToLoad(app_browser_);
 

@@ -5,6 +5,8 @@
 #include "content/browser/renderer_host/render_widget_targeter.h"
 
 #include "base/bind.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -12,8 +14,11 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/renderer_host/input/one_shot_timeout_monitor.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/scoped_active_url.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/events/blink/blink_event_util.h"
@@ -39,6 +44,33 @@ gfx::PointF ComputeEventLocation(const blink::WebInputEvent& event) {
 }
 
 constexpr const char kTracingCategory[] = "input,latency";
+
+// This function helps with debugging the reasons of viz hit testing mismatch.
+void DumpWithoutCrashing(RenderWidgetHostViewBase* root_view,
+                         RenderWidgetHostViewBase* target,
+                         const base::Optional<gfx::PointF>& target_location) {
+  RenderViewHostImpl* rvh =
+      RenderViewHostImpl::From(root_view->GetRenderWidgetHost());
+  if (!rvh || !rvh->GetMainFrame())
+    return;
+  ScopedActiveURL scoped_active_url(rvh);
+
+  static auto* crash_key = base::debug::AllocateCrashKeyString(
+      "vizhittest-mismatch-v2-coordinate", base::debug::CrashKeySize::Size32);
+  const std::string global_coordinate =
+      target->TransformPointToRootCoordSpaceF(target_location.value())
+          .ToString();
+  base::debug::SetCrashKeyString(crash_key, global_coordinate);
+
+  crash_key = base::debug::AllocateCrashKeyString(
+      "vizhittest-mismatch-v2-viewport-size",
+      base::debug::CrashKeySize::Size32);
+  const std::string viewport_size =
+      root_view->GetVisibleViewportSize().ToString();
+  base::debug::SetCrashKeyString(crash_key, viewport_size);
+
+  base::debug::DumpWithoutCrashing();
+}
 
 }  // namespace
 
@@ -483,6 +515,8 @@ void RenderWidgetTargeter::FoundTarget(
     static const char* kResultsMatchHistogramName =
         "Event.VizHitTestSurfaceLayer.ResultsMatch";
     HitTestResultsMatch bucket = GetHitTestResultsMatchBucket(target, request);
+    if (bucket == HitTestResultsMatch::kDoNotMatch)
+      DumpWithoutCrashing(request->GetRootView(), target, target_location);
     UMA_HISTOGRAM_ENUMERATION(kResultsMatchHistogramName, bucket,
                               HitTestResultsMatch::kMaxValue);
     FlushEventQueue(true);

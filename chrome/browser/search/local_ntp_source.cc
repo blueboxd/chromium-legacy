@@ -295,10 +295,6 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
               IDS_NEW_TAB_VOICE_OTHER_ERROR);
     AddString(translated_strings.get(), "voiceCloseTooltip",
               IDS_NEW_TAB_VOICE_CLOSE_TOOLTIP);
-
-    // Colors menu
-    AddString(translated_strings.get(), "colorLabelPrefix",
-              IDS_NTP_CUSTOMIZE_COLOR_LABEL_PREFIX);
   }
 
   return translated_strings;

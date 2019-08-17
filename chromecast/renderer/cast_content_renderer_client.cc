@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromecast/base/bitstream_audio_codecs.h"
+#include "chromecast/base/cast_features.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/media/base/media_codec_support.h"
 #include "chromecast/media/base/supported_codec_profile_levels_memo.h"
@@ -169,7 +170,9 @@ void CastContentRendererClient::RenderFrameCreated(
   DCHECK(render_frame);
   // Lifetime is tied to |render_frame| via content::RenderFrameObserver.
   new CastMediaPlaybackOptions(render_frame);
-  new QueryableDataBindings(render_frame);
+  if (!::chromecast::IsFeatureEnabled(kUseQueryableDataBackend)) {
+    new QueryableDataBindings(render_frame);
+  }
 
   // Add script injection support to the RenderFrame, used by Cast platform
   // APIs. The objects' lifetimes are bound to the RenderFrame's lifetime.

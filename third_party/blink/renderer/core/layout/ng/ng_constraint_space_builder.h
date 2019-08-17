@@ -167,15 +167,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     space_.EnsureRareData()->is_inside_balanced_columns = true;
   }
 
-  void SetSeparateLeadingFragmentainerMargins(bool b) {
-#if DCHECK_IS_ON()
-    DCHECK(!has_separate_leading_fragmentainer_margins_set_);
-    has_separate_leading_fragmentainer_margins_set_ = true;
-#endif
-    if (b)
-      space_.EnsureRareData()->has_separate_leading_fragmentainer_margins = b;
-  }
-
   void SetIsTableCell(bool b) { space_.bitfields_.is_table_cell = b; }
 
   void SetIsRestrictedBlockSizeTableCell(bool b) {
@@ -207,6 +198,18 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 #endif
     if (!is_new_fc_ && margin_strut != NGMarginStrut())
       space_.EnsureRareData()->margin_strut = margin_strut;
+  }
+
+  // Set up a margin strut that discards all adjoining margins. This is used to
+  // discard block-start margins after fragmentainer breaks.
+  void SetDiscardingMarginStrut() {
+#if DCHECK_IS_ON()
+    DCHECK(!is_margin_strut_set_);
+    is_margin_strut_set_ = true;
+#endif
+    NGMarginStrut discarding_margin_strut;
+    discarding_margin_strut.discard_margins = true;
+    space_.EnsureRareData()->margin_strut = discarding_margin_strut;
   }
 
   void SetBfcOffset(const NGBfcOffset& bfc_offset) {
@@ -328,7 +331,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   bool is_fragmentainer_block_size_set_ = false;
   bool is_fragmentainer_space_at_bfc_start_set_ = false;
   bool is_block_direction_fragmentation_type_set_ = false;
-  bool has_separate_leading_fragmentainer_margins_set_ = false;
   bool is_margin_strut_set_ = false;
   bool is_optimistic_bfc_block_offset_set_ = false;
   bool is_forced_bfc_block_offset_set_ = false;

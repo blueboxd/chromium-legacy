@@ -49,22 +49,56 @@ class CookieManager {
   void SetMojoCookieManager(
       network::mojom::CookieManagerPtrInfo cookie_manager_info);
 
-  void SetShouldAcceptCookies(bool accept);
-  bool GetShouldAcceptCookies();
-  void SetCookie(const GURL& host,
-                 const std::string& cookie_value,
-                 base::OnceCallback<void(bool)> callback);
-  void SetCookieSync(const GURL& host, const std::string& cookie_value);
-  std::string GetCookie(const GURL& host);
-  void RemoveSessionCookies(base::OnceCallback<void(bool)> callback);
-  void RemoveAllCookies(base::OnceCallback<void(bool)> callback);
-  void RemoveAllCookiesSync();
-  void RemoveSessionCookiesSync();
-  void RemoveExpiredCookies();
-  void FlushCookieStore();
-  bool HasCookies();
+  void SetShouldAcceptCookies(JNIEnv* env,
+                              const base::android::JavaParamRef<jobject>& obj,
+                              jboolean accept);
+  jboolean GetShouldAcceptCookies(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void SetCookie(JNIEnv* env,
+                 const base::android::JavaParamRef<jobject>& obj,
+                 const base::android::JavaParamRef<jstring>& url,
+                 const base::android::JavaParamRef<jstring>& value,
+                 const base::android::JavaParamRef<jobject>& java_callback);
+  void SetCookieSync(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj,
+                     const base::android::JavaParamRef<jstring>& url,
+                     const base::android::JavaParamRef<jstring>& value);
+
+  base::android::ScopedJavaLocalRef<jstring> GetCookie(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& url);
+
+  void RemoveAllCookies(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& java_callback);
+  void RemoveSessionCookies(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& java_callback);
+  void RemoveAllCookiesSync(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj);
+  void RemoveSessionCookiesSync(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void RemoveExpiredCookies(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj);
+  void FlushCookieStore(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj);
+  jboolean HasCookies(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj);
   bool AllowFileSchemeCookies();
-  void SetAcceptFileSchemeCookies(bool accept);
+  jboolean AllowFileSchemeCookies(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void SetAcceptFileSchemeCookies(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean accept);
+
+  base::FilePath GetCookieStorePath();
 
  private:
   friend struct base::LazyInstanceTraitsBase<CookieManager>;
@@ -136,6 +170,9 @@ class CookieManager {
   void AllowFileSchemeCookiesCompleted(base::OnceClosure complete,
                                        bool* result,
                                        bool value);
+  void MigrateCookieStorePath();
+
+  base::FilePath cookie_store_path_;
 
   // This protects the following two bools, as they're used on multiple threads.
   base::Lock accept_file_scheme_cookies_lock_;

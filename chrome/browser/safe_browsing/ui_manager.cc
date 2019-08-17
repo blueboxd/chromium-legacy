@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/safe_browsing_subresource_tab_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -26,6 +27,7 @@
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/ping_manager.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -156,6 +158,28 @@ void SafeBrowsingUIManager::AddObserver(Observer* observer) {
 void SafeBrowsingUIManager::RemoveObserver(Observer* observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observer_list_.RemoveObserver(observer);
+}
+
+void SafeBrowsingUIManager::DisplayBlockingPage(
+    const UnsafeResource& resource) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BaseUIManager::DisplayBlockingPage(resource);
+  if (!resource.IsMainPageLoadBlocked() && !IsWhitelisted(resource) &&
+      SafeBrowsingInterstitialsAreCommittedNavigations()) {
+    content::WebContents* contents = resource.web_contents_getter.Run();
+    content::NavigationEntry* entry = resource.GetNavigationEntryForResource();
+    // entry can be null if we are on a brand new tab, and a resource is added
+    // via javascript without a navigation.
+    GURL blocked_url = entry ? entry->GetURL() : resource.url;
+    SafeBrowsingBlockingPage* blocking_page =
+        SafeBrowsingBlockingPage::CreateBlockingPage(this, contents,
+                                                     blocked_url, resource);
+    SafeBrowsingSubresourceTabHelper::CreateForWebContents(contents);
+    contents->GetController().LoadErrorPage(
+        contents->GetMainFrame(), blocked_url, blocking_page->GetHTMLContents(),
+        net::ERR_BLOCKED_BY_CLIENT);
+    delete blocking_page;
+  }
 }
 
 const std::string SafeBrowsingUIManager::app_locale() const {

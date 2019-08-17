@@ -10,6 +10,7 @@
 #include "base/process/process.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace IPC {
@@ -37,6 +38,10 @@ class ChildProcessHostDelegate : public IPC::Listener {
   // Binds an interface in the child process.
   virtual void BindInterface(const std::string& interface_name,
                              mojo::ScopedMessagePipeHandle interface_pipe) {}
+
+  // Binds an interface receiver in the host process, as requested by the child
+  // process.
+  virtual void BindHostReceiver(mojo::GenericPendingReceiver receiver) {}
 };
 
 }  // namespace content

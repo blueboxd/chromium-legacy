@@ -199,7 +199,7 @@ void ImpressionHistoryTrackerImpl::SyncRegisteredClients() {
 void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory(
     ClientState* client_state) {
   DCHECK(client_state);
-  std::deque<Impression*> dismisses;
+  base::circular_deque<Impression*> dismisses;
   base::Time now = clock_->Now();
 
   for (auto it = client_state->impressions.begin();
@@ -254,7 +254,7 @@ void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory(
 
 // static
 void ImpressionHistoryTrackerImpl::PruneImpressionByCreateTime(
-    std::deque<Impression*>* impressions,
+    base::circular_deque<Impression*>* impressions,
     const base::Time& start_time) {
   DCHECK(impressions);
   while (!impressions->empty()) {
@@ -318,7 +318,7 @@ void ImpressionHistoryTrackerImpl::UpdateThrottling(ClientState* client_state,
 
 void ImpressionHistoryTrackerImpl::CheckConsecutiveUserAction(
     ClientState* client_state,
-    std::deque<Impression*>* impressions,
+    base::circular_deque<Impression*>* impressions,
     size_t num_actions) {
   if (impressions->size() < num_actions)
     return;

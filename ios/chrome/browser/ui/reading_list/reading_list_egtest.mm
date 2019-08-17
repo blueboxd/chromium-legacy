@@ -602,6 +602,13 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads online version by tapping on entry.
 - (void)testSavingToReadingListAndLoadNormal {
+  // TODO(crbug.com/994808) Tests broken on iOS13 SlimNav.
+  if (@available(iOS 13, *)) {
+    if ([ChromeEarlGrey isSlimNavigationManagerEnabled]) {
+      EARL_GREY_TEST_DISABLED(@"Test disabled on iOS13 SlimNav.");
+    }
+  }
+
   auto network_change_disabler =
       std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
@@ -639,6 +646,13 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry without web server.
 - (void)testSavingToReadingListAndLoadNoNetwork {
+  // TODO(crbug.com/994808) Tests broken on iOS13 SlimNav.
+  if (@available(iOS 13, *)) {
+    if ([ChromeEarlGrey isSlimNavigationManagerEnabled]) {
+      EARL_GREY_TEST_DISABLED(@"Test disabled on iOS13 SlimNav.");
+    }
+  }
+
   auto network_change_disabler =
       std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();

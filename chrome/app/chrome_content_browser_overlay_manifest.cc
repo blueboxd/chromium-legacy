@@ -50,7 +50,6 @@
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom.h"
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
-#include "chromeos/services/device_sync/public/cpp/manifest.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
 #include "chromeos/services/multidevice_setup/public/cpp/manifest.h"
@@ -122,7 +121,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability("device", "device:geolocation_config")
         .RequireCapability("device", "device:geolocation_control")
         .RequireCapability("device", "device:ip_geolocator")
-        .RequireCapability("device_sync", "device_sync")
         .RequireCapability("identity", "identity_accessor")
         .RequireCapability(image_annotation::mojom::kServiceName,
                            image_annotation::mojom::kAnnotationCapability)
@@ -194,7 +192,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 extensions::mime_handler::BeforeUnloadControl,
                 extensions::mime_handler::MimeHandlerService,
 #endif
-                image_annotation::mojom::Annotator,
                 media::mojom::MediaEngagementScoreDetailsProvider,
                 media_router::mojom::MediaRouter,
                 page_load_metrics::mojom::PageLoadMetrics,
@@ -229,7 +226,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .PackageService(image_annotation::GetManifest())
         .PackageService(prefs::GetManifest())
 #if defined(OS_CHROMEOS)
-        .PackageService(chromeos::device_sync::GetManifest())
         .PackageService(chromeos::multidevice_setup::GetManifest())
 #endif  // defined(OS_CHROMEOS)
 #if !defined(OS_ANDROID)

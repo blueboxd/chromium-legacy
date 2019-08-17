@@ -119,7 +119,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         if (navigator.xr) {
           // Pick an arbitrary device for the magic window content and start
           // up a non-immersive session if possible.
-          navigator.xr.requestSession('inline').then(onSessionStarted);
+          navigator.xr.requestSession('inline', {optionalFeatures: ['local']}).then(onSessionStarted);
         }
       }
 

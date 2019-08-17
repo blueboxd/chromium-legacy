@@ -641,6 +641,18 @@ void NetworkService::SetEnvironment(
     env->SetVar(variable->name, variable->value);
 }
 
+#if defined(OS_ANDROID)
+void NetworkService::DumpWithoutCrashing(base::Time dump_request_time) {
+  static base::debug::CrashKeyString* time_key =
+      base::debug::AllocateCrashKeyString("time_since_dump_request_ms",
+                                          base::debug::CrashKeySize::Size32);
+  base::debug::ScopedCrashKeyString(
+      time_key, base::NumberToString(
+                    (base::Time::Now() - dump_request_time).InMilliseconds()));
+  base::debug::DumpWithoutCrashing();
+}
+#endif
+
 net::HttpAuthHandlerFactory* NetworkService::GetHttpAuthHandlerFactory() {
   if (!http_auth_handler_factory_) {
     http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault(

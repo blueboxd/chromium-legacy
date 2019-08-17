@@ -79,21 +79,13 @@ font_service::mojom::RenderStyleSwitch ConvertSubpixelRendering(
 
 namespace font_service {
 
-FontServiceApp::FontServiceApp(service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)) {
-  registry_.AddInterface(
-      base::BindRepeating(&FontServiceApp::CreateSelf, base::Unretained(this)));
-}
+FontServiceApp::FontServiceApp() = default;
 
-FontServiceApp::~FontServiceApp() {}
+FontServiceApp::~FontServiceApp() = default;
 
-void FontServiceApp::OnStart() {}
-
-void FontServiceApp::OnBindInterface(
-    const service_manager::BindSourceInfo& source_info,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_.BindInterface(interface_name, std::move(interface_pipe));
+void FontServiceApp::BindReceiver(
+    mojo::PendingReceiver<mojom::FontService> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void FontServiceApp::MatchFamilyName(const std::string& family_name,
@@ -246,10 +238,6 @@ void FontServiceApp::MatchFontWithFallback(
 #else
   NOTREACHED();
 #endif
-}
-
-void FontServiceApp::CreateSelf(mojom::FontServiceRequest request) {
-  bindings_.AddBinding(this, std::move(request));
 }
 
 int FontServiceApp::FindOrAddPath(const SkString& path) {

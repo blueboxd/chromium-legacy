@@ -31,7 +31,8 @@ class AudioFocusRequest : public mojom::AudioFocusRequestClient {
       mojom::AudioFocusType audio_focus_type,
       const base::UnguessableToken& id,
       const std::string& source_name,
-      const base::UnguessableToken& group_id);
+      const base::UnguessableToken& group_id,
+      const base::UnguessableToken& identity);
 
   ~AudioFocusRequest() override;
 
@@ -80,6 +81,7 @@ class AudioFocusRequest : public mojom::AudioFocusRequestClient {
   const base::UnguessableToken& id() const { return id_; }
   const std::string& source_name() const { return source_name_; }
   const base::UnguessableToken& group_id() const { return group_id_; }
+  const base::UnguessableToken& identity() const { return identity_; }
 
  private:
   void SetSessionInfo(mojom::MediaSessionInfoPtr session_info);
@@ -112,6 +114,9 @@ class AudioFocusRequest : public mojom::AudioFocusRequestClient {
 
   // The group ID of the audio focus request.
   base::UnguessableToken const group_id_;
+
+  // The identity that requested audio focus.
+  base::UnguessableToken const identity_;
 
   // Weak pointer to the owning |AudioFocusManager| instance.
   const base::WeakPtr<AudioFocusManager> owner_;

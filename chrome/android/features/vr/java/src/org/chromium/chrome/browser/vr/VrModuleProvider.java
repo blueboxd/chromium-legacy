@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.vr;
 import org.chromium.base.BundleUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modules.ModuleInstallUi;
 import org.chromium.chrome.browser.tab.Tab;
@@ -34,7 +35,7 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
      */
     public static void maybeInit() {
         if (!VrBuildConfig.IS_VR_ENABLED) return;
-        nativeInit();
+        VrModuleProviderJni.get().init();
         // Always install the VR module on Daydream-ready devices.
         maybeRequestModuleIfDaydreamReady();
     }
@@ -103,7 +104,7 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
     // TODO(crbug.com/870055): JNI should be registered in the shared VR library's JNI_OnLoad
     // function. Do this once we have a shared VR library.
     /* package */ static void registerJni() {
-        nativeRegisterJni();
+        VrModuleProviderJni.get().registerJni();
     }
 
     private static VrDelegateProvider getDelegateProvider() {
@@ -137,7 +138,8 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
     @Override
     public void onCancel() {
         if (mNativeVrModuleProvider != 0) {
-            nativeOnInstalledModule(mNativeVrModuleProvider, false);
+            VrModuleProviderJni.get().onInstalledModule(
+                    mNativeVrModuleProvider, VrModuleProvider.this, false);
         }
     }
 
@@ -162,12 +164,17 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
                     return;
                 }
                 ui.showInstallSuccessUi();
-                nativeOnInstalledModule(mNativeVrModuleProvider, success);
+                VrModuleProviderJni.get().onInstalledModule(
+                        mNativeVrModuleProvider, VrModuleProvider.this, success);
             }
         });
     }
 
-    private static native void nativeInit();
-    private static native void nativeRegisterJni();
-    private native void nativeOnInstalledModule(long nativeVrModuleProvider, boolean success);
+    @NativeMethods
+    interface Natives {
+        void init();
+        void registerJni();
+        void onInstalledModule(
+                long nativeVrModuleProvider, VrModuleProvider caller, boolean success);
+    }
 }

@@ -1157,7 +1157,7 @@ if (!is_component_build) {
       "//third_party/junit",
     ]
 
-    enable_multidex = false
+    enable_multidex = true
     if (!is_java_debug) {
       proguard_enabled = true
       proguard_configs = [

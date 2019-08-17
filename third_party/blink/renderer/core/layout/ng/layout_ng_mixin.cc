@@ -56,7 +56,8 @@ void LayoutNGMixin<Base>::ComputeIntrinsicLogicalWidths(
     // If a table cell, or the column that it belongs to, has a specified fixed
     // positive inline-size, and the measured intrinsic max size is less than
     // that, use specified size as max size.
-    LayoutTableCell* cell = ToLayoutTableCell(node.GetLayoutBox());
+    LayoutNGTableCellInterface* cell =
+        ToInterface<LayoutNGTableCellInterface>(node.GetLayoutBox());
     Length table_cell_width = cell->StyleOrColLogicalWidth();
     if (table_cell_width.IsFixed() && table_cell_width.Value() > 0) {
       sizes.max_size = std::max(sizes.min_size,

@@ -67,8 +67,9 @@ class WebUIDataSource {
   // MAX_SAFE_INTEGER in /v8/src/globals.h.
   virtual void AddInteger(base::StringPiece name, int32_t value) = 0;
 
-  // Sets the path which will return the JSON strings.
-  virtual void SetJsonPath(base::StringPiece path) = 0;
+  // Call this to enable a virtual "strings.js" (or "strings.m.js" for modules)
+  // URL that provides translations and dynamic data when requested.
+  virtual void UseStringsJs() = 0;
 
   // Adds a mapping between a path name and a resource to return.
   virtual void AddResourcePath(base::StringPiece path, int resource_id) = 0;

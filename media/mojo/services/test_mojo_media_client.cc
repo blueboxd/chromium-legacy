@@ -88,8 +88,17 @@ std::unique_ptr<Renderer> TestMojoMediaClient::CreateRenderer(
   return renderer_factory_->CreateRenderer(
       task_runner, task_runner, audio_sink.get(), video_sink_ptr,
       RequestOverlayInfoCB(), gfx::ColorSpace());
+}
 
-}  // namespace media
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+std::unique_ptr<Renderer> TestMojoMediaClient::CreateCastRenderer(
+    service_manager::mojom::InterfaceProvider* host_interfaces,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    MediaLog* media_log,
+    const base::UnguessableToken& /* overlay_plane_id */) {
+  return CreateRenderer(host_interfaces, task_runner, media_log, std::string());
+}
+#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
 
 std::unique_ptr<CdmFactory> TestMojoMediaClient::CreateCdmFactory(
     service_manager::mojom::InterfaceProvider* /* host_interfaces */) {

@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "components/crx_file/id_util.h"
+#include "components/device_event_log/device_event_log.h"
 
 namespace chromeos {
 namespace onc {
@@ -1172,9 +1173,9 @@ void Validator::AddValidationIssue(bool is_error,
   std::string message = msg.str();
 
   if (is_error)
-    LOG(ERROR) << message;
+    NET_LOG(ERROR) << message;
   else if (log_warnings_)
-    LOG(WARNING) << message;
+    NET_LOG(DEBUG) << message;
 
   validation_issues_.push_back({is_error, message});
 }

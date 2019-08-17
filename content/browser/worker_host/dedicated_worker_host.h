@@ -8,7 +8,9 @@
 #include "content/browser/browser_interface_broker_impl.h"
 #include "content/public/browser/render_process_host.h"
 
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom-forward.h"
@@ -32,7 +34,7 @@ void CreateDedicatedWorkerHostFactory(
     int process_id,
     int parent_render_frame_id,
     const url::Origin& origin,
-    blink::mojom::DedicatedWorkerHostFactoryRequest request);
+    mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver);
 
 // A host for a single dedicated worker. Its lifetime is managed by the
 // DedicatedWorkerGlobalScope of the corresponding worker in the renderer via a
@@ -66,7 +68,7 @@ class DedicatedWorkerHost final
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,
       blink::mojom::BlobURLTokenPtr blob_url_token,
-      blink::mojom::DedicatedWorkerHostFactoryClientPtr client);
+      mojo::Remote<blink::mojom::DedicatedWorkerHostFactoryClient> client);
 
  private:
   void RegisterMojoInterfaces();
@@ -127,7 +129,7 @@ class DedicatedWorkerHost final
   // associated with Mojo interfaces (ServiceWorkerContainer and
   // URLLoaderFactory) that are needed to stay alive while the worker is
   // starting or running.
-  blink::mojom::DedicatedWorkerHostFactoryClientPtr client_;
+  mojo::Remote<blink::mojom::DedicatedWorkerHostFactoryClient> client_;
 
   std::unique_ptr<AppCacheNavigationHandle> appcache_handle_;
   std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;

@@ -77,7 +77,7 @@ class CrostiniAppModelBuilderTest : public AppListTestBase {
 
   void SetUp() override {
     AppListTestBase::SetUp();
-    test_helper_ = std::make_unique<CrostiniTestHelper>(profile());
+    test_helper_ = std::make_unique<CrostiniTestHelper>(testing_profile());
     test_helper_->ReInitializeAppServiceIntegration();
     CreateBuilder();
   }
@@ -151,18 +151,18 @@ TEST_F(CrostiniAppModelBuilderTest, EnableAndDisableCrostini) {
   ResetBuilder();
   test_helper_.reset();
   test_helper_ = std::make_unique<CrostiniTestHelper>(
-      profile(), /*enable_crostini=*/false);
+      testing_profile(), /*enable_crostini=*/false);
   CreateBuilder();
 
   EXPECT_EQ(0u, GetModelItemCount());
 
-  CrostiniTestHelper::EnableCrostini(profile());
+  CrostiniTestHelper::EnableCrostini(testing_profile());
   EXPECT_THAT(GetAllApps(),
               testing::UnorderedElementsAre(
                   IsChromeApp(crostini::kCrostiniTerminalId, TerminalAppName(),
                               crostini::kCrostiniFolderId)));
 
-  CrostiniTestHelper::DisableCrostini(profile());
+  CrostiniTestHelper::DisableCrostini(testing_profile());
   EXPECT_THAT(GetAllApps(), testing::IsEmpty());
 }
 
@@ -279,6 +279,6 @@ TEST_F(CrostiniAppModelBuilderTest, DisableCrostini) {
   // The uninstall flow removes all apps before setting the CrostiniEnabled pref
   // to false, so we need to do that explicitly too.
   RegistryService()->ClearApplicationList(crostini::kCrostiniDefaultVmName, "");
-  CrostiniTestHelper::DisableCrostini(profile());
+  CrostiniTestHelper::DisableCrostini(testing_profile());
   EXPECT_EQ(0u, GetModelItemCount());
 }

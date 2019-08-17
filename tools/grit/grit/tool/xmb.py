@@ -49,8 +49,9 @@ def _WriteAttribute(file, name, value):
       name: name of the attribute
       value: (unescaped) value of the attribute
     """
+  name = name.encode('utf-8')
   if value:
-    file.write(' %s="%s"' % (name, _XmlEscape(value)))
+    file.write(b' %s="%s"' % (name, _XmlEscape(value)))
 
 
 def _WriteMessage(file, message):
@@ -61,38 +62,38 @@ def _WriteMessage(file, message):
   preserve_space = presentable_content != _WHITESPACES_REGEX.sub(
       u' ', presentable_content.strip())
 
-  file.write('<msg')
+  file.write(b'<msg')
   _WriteAttribute(file, 'desc', message.GetDescription())
   _WriteAttribute(file, 'id', message.GetId())
   _WriteAttribute(file, 'meaning', message.GetMeaning())
   if preserve_space:
     _WriteAttribute(file, 'xml:space', 'preserve')
-  file.write('>')
+  file.write(b'>')
   if not preserve_space:
-    file.write('\n  ')
+    file.write(b'\n  ')
 
   parts = message.GetContent()
   for part in parts:
     if isinstance(part, tclib.Placeholder):
-      file.write('<ph')
+      file.write(b'<ph')
       _WriteAttribute(file, 'name', part.GetPresentation())
-      file.write('><ex>')
+      file.write(b'><ex>')
       file.write(_XmlEscape(part.GetExample()))
-      file.write('</ex>')
+      file.write(b'</ex>')
       file.write(_XmlEscape(part.GetOriginal()))
-      file.write('</ph>')
+      file.write(b'</ph>')
     else:
       file.write(_XmlEscape(part))
   if not preserve_space:
-    file.write('\n')
-  file.write('</msg>\n')
+    file.write(b'\n')
+  file.write(b'</msg>\n')
 
 
 def WriteXmbFile(file, messages):
   """Writes the given grit.tclib.Message items to the specified open
   file-like object in the XMB format.
   """
-  file.write("""<?xml version="1.0" encoding="UTF-8"?>
+  file.write(b"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE messagebundle [
 <!ELEMENT messagebundle (msg)*>
 <!ATTLIST messagebundle class CDATA #IMPLIED>
@@ -118,7 +119,7 @@ def WriteXmbFile(file, messages):
 """)
   for message in messages:
     _WriteMessage(file, message)
-  file.write('</messagebundle>')
+  file.write(b'</messagebundle>')
 
 
 class OutputXmb(interface.Tool):

@@ -102,7 +102,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
                     chrome::kManagedUiLearnMoreUrl);
 #endif  // defined(OS_CHROMEOS)
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   // Add required resources.
   source->AddResourcePath("management_browser_proxy.html",
                           IDR_MANAGEMENT_BROWSER_PROXY_HTML);

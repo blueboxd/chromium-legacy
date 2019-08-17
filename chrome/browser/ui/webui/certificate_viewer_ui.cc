@@ -46,7 +46,7 @@ content::WebUIDataSource* GetWebUIDataSource(const std::string& host) {
   };
   AddLocalizedStringsBulk(html_source, kStrings, base::size(kStrings));
 
-  html_source->SetJsonPath("strings.js");
+  html_source->UseStringsJs();
 
   // Add required resources.
   html_source->AddResourcePath("certificate_viewer.js",

@@ -15,6 +15,8 @@
 #include "base/macros.h"
 #include "content/browser/worker_host/shared_worker_host.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
@@ -56,7 +58,7 @@ class MockSharedWorker : public blink::mojom::SharedWorker {
 class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
  public:
   explicit MockSharedWorkerFactory(
-      blink::mojom::SharedWorkerFactoryRequest request);
+      mojo::PendingReceiver<blink::mojom::SharedWorkerFactory> receiver);
   ~MockSharedWorkerFactory() override;
 
   bool CheckReceivedCreateSharedWorker(
@@ -101,7 +103,7 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
     service_manager::mojom::InterfaceProviderPtr interface_provider;
   };
 
-  mojo::Binding<blink::mojom::SharedWorkerFactory> binding_;
+  mojo::Receiver<blink::mojom::SharedWorkerFactory> receiver_;
   std::unique_ptr<CreateParams> create_params_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSharedWorkerFactory);

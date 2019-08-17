@@ -36,6 +36,10 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
+#endif
+
 using content::WebContents;
 
 // The image models hierarchy:
@@ -123,12 +127,22 @@ class ContentSettingMediaImageModel : public ContentSettingImageModel {
   ContentSettingMediaImageModel();
 
   bool UpdateAndGetVisibility(WebContents* web_contents) override;
+  bool IsMicAccessed();
+  bool IsCamAccessed();
+  bool IsMicBlockedOnSiteLevel();
+  bool IsCameraBlockedOnSiteLevel();
+#if defined(OS_MACOSX)
+  bool DidCameraAccessFailBecauseOfSystemLevelBlock();
+  bool DidMicAccessFailBecauseOfSystemLevelBlock();
+#endif  // defined(OS_MACOSX)
 
   std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModelImpl(
       ContentSettingBubbleModel::Delegate* delegate,
       WebContents* web_contents) override;
 
  private:
+  TabSpecificContentSettings::MicrophoneCameraState state_;
+
   DISALLOW_COPY_AND_ASSIGN(ContentSettingMediaImageModel);
 };
 
@@ -510,33 +524,87 @@ bool ContentSettingMediaImageModel::UpdateAndGetVisibility(
       TabSpecificContentSettings::FromWebContents(web_contents);
   if (!content_settings)
     return false;
-  TabSpecificContentSettings::MicrophoneCameraState state =
-      content_settings->GetMicrophoneCameraState();
+  state_ = content_settings->GetMicrophoneCameraState();
 
   // If neither the microphone nor the camera stream was accessed then no icon
   // is displayed in the omnibox.
-  if (state == TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED)
+  if (state_ == TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED)
     return false;
 
-  bool is_mic = (state & TabSpecificContentSettings::MICROPHONE_ACCESSED) != 0;
-  bool is_cam = (state & TabSpecificContentSettings::CAMERA_ACCESSED) != 0;
-  DCHECK(is_mic || is_cam);
+#if defined(OS_MACOSX)
+  if (base::FeatureList::IsEnabled(
+          ::features::kMacSystemMediaPermissionsInfoUi)) {
+    if (DidCameraAccessFailBecauseOfSystemLevelBlock() &&
+        DidMicAccessFailBecauseOfSystemLevelBlock()) {
+      set_icon(vector_icons::kVideocamIcon, kBlockedBadgeIcon);
+      set_explanatory_string_id(IDS_CAMERA_BLOCKED_TITLE);
+      set_tooltip(l10n_util::GetStringUTF16(IDS_MICROPHONE_CAMERA_BLOCKED));
+      return true;
+    } else if (DidCameraAccessFailBecauseOfSystemLevelBlock()) {
+      set_icon(vector_icons::kVideocamIcon, kBlockedBadgeIcon);
+      set_explanatory_string_id(IDS_CAMERA_BLOCKED_TITLE);
+      set_tooltip(l10n_util::GetStringUTF16(IDS_CAMERA_BLOCKED));
+      return true;
+    } else if (DidMicAccessFailBecauseOfSystemLevelBlock()) {
+      set_icon(vector_icons::kMicIcon, kBlockedBadgeIcon);
+      set_explanatory_string_id(IDS_MICROPHONE_BLOCKED_TITLE);
+      set_tooltip(l10n_util::GetStringUTF16(IDS_MICROPHONE_BLOCKED));
+      return true;
+    }
+  }
+#endif  // defined(OS_MACOSX)
+
+  DCHECK(IsMicAccessed() || IsCamAccessed());
 
   int id = IDS_CAMERA_BLOCKED;
-  if (state & (TabSpecificContentSettings::MICROPHONE_BLOCKED |
-               TabSpecificContentSettings::CAMERA_BLOCKED)) {
+  if (IsMicBlockedOnSiteLevel() || IsCameraBlockedOnSiteLevel()) {
     set_icon(vector_icons::kVideocamIcon, kBlockedBadgeIcon);
-    if (is_mic)
-      id = is_cam ? IDS_MICROPHONE_CAMERA_BLOCKED : IDS_MICROPHONE_BLOCKED;
+    if (IsMicAccessed())
+      id = IsCamAccessed() ? IDS_MICROPHONE_CAMERA_BLOCKED
+                           : IDS_MICROPHONE_BLOCKED;
   } else {
     set_icon(vector_icons::kVideocamIcon, gfx::kNoneIcon);
     id = IDS_CAMERA_ACCESSED;
-    if (is_mic)
-      id = is_cam ? IDS_MICROPHONE_CAMERA_ALLOWED : IDS_MICROPHONE_ACCESSED;
+    if (IsMicAccessed())
+      id = IsCamAccessed() ? IDS_MICROPHONE_CAMERA_ALLOWED
+                           : IDS_MICROPHONE_ACCESSED;
   }
   set_tooltip(l10n_util::GetStringUTF16(id));
+
   return true;
 }
+
+bool ContentSettingMediaImageModel::IsMicAccessed() {
+  return ((state_ & TabSpecificContentSettings::MICROPHONE_ACCESSED) != 0);
+}
+
+bool ContentSettingMediaImageModel::IsCamAccessed() {
+  return ((state_ & TabSpecificContentSettings::CAMERA_ACCESSED) != 0);
+}
+
+bool ContentSettingMediaImageModel::IsMicBlockedOnSiteLevel() {
+  return ((state_ & TabSpecificContentSettings::MICROPHONE_BLOCKED) != 0);
+}
+
+bool ContentSettingMediaImageModel::IsCameraBlockedOnSiteLevel() {
+  return ((state_ & TabSpecificContentSettings::CAMERA_BLOCKED) != 0);
+}
+
+#if defined(OS_MACOSX)
+bool ContentSettingMediaImageModel::
+    DidCameraAccessFailBecauseOfSystemLevelBlock() {
+  return (IsCamAccessed() && !IsCameraBlockedOnSiteLevel() &&
+          system_media_permissions::CheckSystemVideoCapturePermission() ==
+              system_media_permissions::SystemPermission::kDenied);
+}
+
+bool ContentSettingMediaImageModel::
+    DidMicAccessFailBecauseOfSystemLevelBlock() {
+  return (IsMicAccessed() && !IsMicBlockedOnSiteLevel() &&
+          system_media_permissions::CheckSystemAudioCapturePermission() ==
+              system_media_permissions::SystemPermission::kDenied);
+}
+#endif  // defined(OS_MACOSX)
 
 std::unique_ptr<ContentSettingBubbleModel>
 ContentSettingMediaImageModel::CreateBubbleModelImpl(

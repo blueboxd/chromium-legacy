@@ -13,8 +13,8 @@
 
 namespace {
 
-const int kCloseButtonMargin = 8;
-const int kCloseButtonSize = 16;
+constexpr int kCloseButtonMargin = 8;
+constexpr int kCloseButtonSize = 16;
 
 constexpr SkColor kCloseIconColor = SK_ColorWHITE;
 

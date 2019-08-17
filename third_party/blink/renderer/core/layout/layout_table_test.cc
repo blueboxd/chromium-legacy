@@ -13,8 +13,9 @@ namespace {
 
 class LayoutTableTest : public RenderingTest {
  protected:
+  // TODO(958381) Make these tests TableNG compatible.
   LayoutTable* GetTableByElementId(const char* id) {
-    return ToLayoutTable(GetLayoutObjectByElementId(id));
+    return To<LayoutTable>(GetLayoutObjectByElementId(id));
   }
 };
 
@@ -273,13 +274,21 @@ TEST_F(LayoutTableTest, OutOfOrderHeadAndBody) {
     <table>
   )HTML");
   auto* table = GetTableByElementId("table");
-  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("head")),
+  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                GetLayoutObjectByElementId("head"))
+                ->ToLayoutObject(),
             table->TopSection());
-  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("body")),
+  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                GetLayoutObjectByElementId("body"))
+                ->ToLayoutObject(),
             table->TopNonEmptySection());
-  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("body")),
+  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                GetLayoutObjectByElementId("body"))
+                ->ToLayoutObject(),
             table->BottomSection());
-  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("body")),
+  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                GetLayoutObjectByElementId("body"))
+                ->ToLayoutObject(),
             table->BottomNonEmptySection());
 }
 
@@ -291,13 +300,21 @@ TEST_F(LayoutTableTest, OutOfOrderFootAndBody) {
     <table>
   )HTML");
   auto* table = GetTableByElementId("table");
-  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("body")),
+  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                GetLayoutObjectByElementId("body"))
+                ->ToLayoutObject(),
             table->TopSection());
-  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("body")),
+  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                GetLayoutObjectByElementId("body"))
+                ->ToLayoutObject(),
             table->TopNonEmptySection());
-  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("foot")),
+  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                GetLayoutObjectByElementId("foot"))
+                ->ToLayoutObject(),
             table->BottomSection());
-  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("body")),
+  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                GetLayoutObjectByElementId("body"))
+                ->ToLayoutObject(),
             table->BottomNonEmptySection());
 }
 
@@ -310,13 +327,21 @@ TEST_F(LayoutTableTest, OutOfOrderHeadFootAndBody) {
     <table>
   )HTML");
   auto* table = GetTableByElementId("table");
-  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("head")),
+  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                GetLayoutObjectByElementId("head"))
+                ->ToLayoutObject(),
             table->TopSection());
-  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("head")),
+  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                GetLayoutObjectByElementId("head"))
+                ->ToLayoutObject(),
             table->TopNonEmptySection());
-  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("foot")),
+  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                GetLayoutObjectByElementId("foot"))
+                ->ToLayoutObject(),
             table->BottomSection());
-  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("foot")),
+  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                GetLayoutObjectByElementId("foot"))
+                ->ToLayoutObject(),
             table->BottomNonEmptySection());
 }
 

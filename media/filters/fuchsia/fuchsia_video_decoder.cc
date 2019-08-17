@@ -507,7 +507,7 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
         OnError();
       });
 
-  codec_.events().OnStreamFailed2 =
+  codec_.events().OnStreamFailed =
       fit::bind_member(this, &FuchsiaVideoDecoder::OnStreamFailed);
   codec_.events().OnInputConstraints =
       fit::bind_member(this, &FuchsiaVideoDecoder::OnInputConstraints);

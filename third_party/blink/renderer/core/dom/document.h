@@ -1500,7 +1500,10 @@ class CORE_EXPORT Document : public ContainerNode,
   void ReportFeaturePolicyViolation(
       mojom::FeaturePolicyFeature,
       mojom::FeaturePolicyDisposition,
-      const String& message = g_empty_string) const override;
+      const String& message = g_empty_string,
+      // If source_file is set to empty string,
+      // current JS file would be used as source_file instead.
+      const String& source_file = g_empty_string) const override;
 
   void IncrementNumberOfCanvases();
 

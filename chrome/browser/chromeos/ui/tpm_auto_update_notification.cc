@@ -7,9 +7,7 @@
 #include "ash/public/cpp/notification_utils.h"
 #include "base/bind.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/notifications/notification_display_service.h"
-#include "chrome/browser/notifications/notification_display_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
@@ -23,13 +21,16 @@ constexpr char kTPMPlannedAutoUpdateNotificationId[] =
 constexpr char kTPMAutoUpdateOnRebootNotificationId[] =
     "chrome://tpm_firmware_auto_update_on_reboot";
 
-void ShowAutoUpdateNotification(TpmAutoUpdateUserNotification notification_type,
-                                Profile* profile) {
+void ShowAutoUpdateNotification(
+    TpmAutoUpdateUserNotification notification_type) {
   base::string16 title, text;
   std::string notification_id;
   bool pinned = false;
 
   switch (notification_type) {
+    case TpmAutoUpdateUserNotification::kNone:
+      NOTREACHED();
+      return;
     case TpmAutoUpdateUserNotification::kPlanned:
       title = l10n_util::GetStringUTF16(
           IDS_TPM_AUTO_UPDATE_PLANNED_NOTIFICATION_TITLE);
@@ -45,8 +46,6 @@ void ShowAutoUpdateNotification(TpmAutoUpdateUserNotification notification_type,
       notification_id = kTPMAutoUpdateOnRebootNotificationId;
       pinned = true;
       break;
-    default:
-      return;
   }
 
   std::unique_ptr<message_center::Notification> notification =
@@ -62,8 +61,6 @@ void ShowAutoUpdateNotification(TpmAutoUpdateUserNotification notification_type,
   notification->set_priority(message_center::SYSTEM_PRIORITY);
   notification->set_pinned(pinned);
 
-  NotificationDisplayServiceFactory::GetForProfile(profile)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification,
-      nullptr /*metadata*/);
+  SystemNotificationHelper::GetInstance()->Display(*notification);
 }
 }  // namespace chromeos

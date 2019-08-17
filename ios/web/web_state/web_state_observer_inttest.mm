@@ -28,6 +28,7 @@
 #import "ios/web/public/navigation/web_state_policy_decider.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
+#import "ios/web/public/test/error_test_util.h"
 #include "ios/web/public/test/fakes/test_web_state_observer.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
@@ -842,9 +843,9 @@ class PolicyDeciderMock : public WebStatePolicyDecider {
 }  // namespace
 
 using net::test_server::EmbeddedTestServer;
-using testing::Return;
-using testing::StrictMock;
-using testing::_;
+using ::testing::Return;
+using ::testing::StrictMock;
+using ::testing::_;
 using base::test::ios::kWaitForPageLoadTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
 using test::WaitForWebViewContainingText;
@@ -882,10 +883,10 @@ class WebStateObserverTest
     test_server_ = std::make_unique<EmbeddedTestServer>();
     test_server_->RegisterRequestHandler(
         base::BindRepeating(&net::test_server::HandlePrefixedRequest, "/form",
-                            base::BindRepeating(&testing::HandleForm)));
+                            base::BindRepeating(::testing::HandleForm)));
     test_server_->RegisterRequestHandler(base::BindRepeating(
         &net::test_server::HandlePrefixedRequest, "/download",
-        base::BindRepeating(&testing::HandleDownload)));
+        base::BindRepeating(::testing::HandleDownload)));
     RegisterDefaultHandlers(test_server_.get());
     test_server_->ServeFilesFromSourceDirectory(
         base::FilePath("ios/testing/data/http_server_files/"));
@@ -907,7 +908,7 @@ class WebStateObserverTest
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   ScopedObserver<WebState, WebStateObserver> scoped_observer_;
-  testing::InSequence callbacks_sequence_checker_;
+  ::testing::InSequence callbacks_sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateObserverTest);
 };
@@ -1079,7 +1080,9 @@ TEST_P(WebStateObserverTest, FailedNavigation) {
   web::NavigationItem* item = manager->GetPendingItem();
   item->SetTitle(base::UTF8ToUTF16(kFailedTitle));
   ASSERT_TRUE(test::WaitForWebViewContainingText(
-      web_state(), "The network connection was lost."));
+      web_state(), testing::GetErrorText(web_state(), url, "NSURLErrorDomain",
+                                         /*error_code=*/-1005,
+                                         /*is_post=*/false, /*is_otr=*/false)));
   DCHECK_EQ(item->GetTitle(), base::UTF8ToUTF16(kFailedTitle));
 }
 
@@ -1779,7 +1782,7 @@ TEST_P(WebStateObserverTest, RendererInitiatedPostNavigation) {
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ASSERT_TRUE(LoadUrl(url));
   ASSERT_TRUE(
-      WaitForWebViewContainingText(web_state(), testing::kTestFormPage));
+      WaitForWebViewContainingText(web_state(), ::testing::kTestFormPage));
 
   // Submit the form using JavaScript.
   NavigationContext* context = nullptr;
@@ -1812,8 +1815,8 @@ TEST_P(WebStateObserverTest, RendererInitiatedPostNavigation) {
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ExecuteJavaScript(@"document.getElementById('form').submit();");
-  ASSERT_TRUE(
-      WaitForWebViewContainingText(web_state(), testing::kTestFormFieldValue));
+  ASSERT_TRUE(WaitForWebViewContainingText(web_state(),
+                                           ::testing::kTestFormFieldValue));
 }
 
 // Tests successful reload of a page returned for post request.
@@ -1840,7 +1843,7 @@ TEST_P(WebStateObserverTest, ReloadPostNavigation) {
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ASSERT_TRUE(LoadUrl(url));
   ASSERT_TRUE(
-      WaitForWebViewContainingText(web_state(), testing::kTestFormPage));
+      WaitForWebViewContainingText(web_state(), ::testing::kTestFormPage));
 
   // Submit the form using JavaScript.
   WebStatePolicyDecider::RequestInfo form_request_info(
@@ -1865,8 +1868,8 @@ TEST_P(WebStateObserverTest, ReloadPostNavigation) {
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ExecuteJavaScript(@"window.document.getElementById('form').submit();");
-  ASSERT_TRUE(
-      WaitForWebViewContainingText(web_state(), testing::kTestFormFieldValue));
+  ASSERT_TRUE(WaitForWebViewContainingText(web_state(),
+                                           ::testing::kTestFormFieldValue));
 
   // Reload the page.
   NavigationContext* context = nullptr;
@@ -1937,7 +1940,7 @@ TEST_P(WebStateObserverTest, ForwardPostNavigation) {
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ASSERT_TRUE(LoadUrl(url));
   ASSERT_TRUE(
-      WaitForWebViewContainingText(web_state(), testing::kTestFormPage));
+      WaitForWebViewContainingText(web_state(), ::testing::kTestFormPage));
 
   // Submit the form using JavaScript.
   WebStatePolicyDecider::RequestInfo form_request_info(
@@ -1960,8 +1963,8 @@ TEST_P(WebStateObserverTest, ForwardPostNavigation) {
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ExecuteJavaScript(@"window.document.getElementById('form').submit();");
-  ASSERT_TRUE(
-      WaitForWebViewContainingText(web_state(), testing::kTestFormFieldValue));
+  ASSERT_TRUE(WaitForWebViewContainingText(web_state(),
+                                           ::testing::kTestFormFieldValue));
 
   // Go Back.
   WebStatePolicyDecider::RequestInfo back_request_info(

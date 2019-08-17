@@ -389,6 +389,13 @@ target(link_target_type, "renderer") {
     "worker/worker_thread_registry.h",
   ]
 
+  if (enable_cast_renderer) {
+    sources += [
+      "media/cast_renderer_client_factory.cc",
+      "media/cast_renderer_client_factory.h",
+    ]
+  }
+
   if (!is_component_build) {
     if (is_win && is_official_build) {
       split_count = 2  # In certain configurations a full renderer.lib can

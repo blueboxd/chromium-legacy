@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.touchless;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 
@@ -41,14 +42,11 @@ public class TouchlessPreferences extends Preferences {
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
         Fragment fragment = getMainFragment();
-        if (fragment == null || fragment.getView() == null
-                || fragment.getView().findViewById(R.id.list) == null) {
-            return;
-        }
+        if (!(fragment instanceof PreferenceFragmentCompat)) return;
 
         int padding = getResources().getDimensionPixelSize(
                 org.chromium.chrome.touchless.R.dimen.touchless_preferences_highlight_padding);
-        RecyclerView recyclerView = fragment.getView().findViewById(R.id.list);
+        RecyclerView recyclerView = ((PreferenceFragmentCompat) fragment).getListView();
         recyclerView.setPadding(padding, 0, padding, 0);
     }
 

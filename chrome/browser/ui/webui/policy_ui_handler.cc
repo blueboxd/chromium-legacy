@@ -739,7 +739,7 @@ void PolicyUIHandler::AddCommonLocalizedStringsToSource(
   };
   AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
 }
 
 void PolicyUIHandler::RegisterMessages() {

@@ -1029,10 +1029,9 @@ void RenderAccessibilityImpl::AddPluginTreeToUpdate(
 void RenderAccessibilityImpl::CreateAXImageAnnotator() {
   if (!render_frame_)
     return;
-
-  image_annotation::mojom::AnnotatorPtr annotator_ptr;
-  render_frame()->GetRemoteInterfaces()->GetInterface(
-      mojo::MakeRequest(&annotator_ptr));
+  mojo::PendingRemote<image_annotation::mojom::Annotator> annotator;
+  render_frame()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+      annotator.InitWithNewPipeAndPassReceiver());
 
   const std::string preferred_language =
       render_frame()->render_view()
@@ -1040,7 +1039,7 @@ void RenderAccessibilityImpl::CreateAXImageAnnotator() {
                 render_frame()->render_view()->GetAcceptLanguages())
           : std::string();
   ax_image_annotator_ = std::make_unique<AXImageAnnotator>(
-      this, preferred_language, std::move(annotator_ptr));
+      this, preferred_language, std::move(annotator));
   tree_source_.AddImageAnnotator(ax_image_annotator_.get());
 }
 

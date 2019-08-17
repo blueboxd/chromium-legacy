@@ -89,7 +89,11 @@ class UI_DEVTOOLS_EXPORT DOMAgent
       UIElement* ui_element) = 0;
 
   void OnElementBoundsChanged(UIElement* ui_element);
-  void RemoveDomNode(UIElement* ui_element);
+
+  // Recursively removes |ui_element| and its children from the frontend
+  // elements tree. If |update_node_id_map|=true, also remove |ui_element|'s
+  // |node_id| from |node_id_to_ui_element_|.
+  void RemoveDomNode(UIElement* ui_element, bool update_node_id_map);
   void Reset();
   Query PreprocessQuery(protocol::String query);
   void SearchDomTree(const Query& query, std::vector<int>* result_collector);

@@ -157,6 +157,9 @@ public final class EventConstants {
     /** The Explore Sites tile was tapped. */
     public static final String EXPLORE_SITES_TILE_TAPPED = "explore_sites_tile_tapped";
 
+    /** User has finished drop-to-merge to create a group. */
+    public static final String TAB_DRAG_AND_DROP_TO_GROUP = "tab_drag_and_drop_to_group";
+
     /**
      * Do not instantiate.
      */

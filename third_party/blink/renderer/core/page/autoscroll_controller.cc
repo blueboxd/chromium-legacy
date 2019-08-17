@@ -111,7 +111,8 @@ void AutoscrollController::StartAutoscrollForSelection(
   // it's already active.
   if (autoscroll_type_ != kNoAutoscroll)
     return;
-  LayoutBox* scrollable = LayoutBox::FindAutoscrollable(layout_object);
+  LayoutBox* scrollable = LayoutBox::FindAutoscrollable(
+      layout_object, /*is_middle_click_autoscroll*/ false);
   if (!scrollable)
     scrollable =
         layout_object->IsListBox() ? ToLayoutListBox(layout_object) : nullptr;
@@ -181,7 +182,8 @@ void AutoscrollController::UpdateDragAndDrop(Node* drop_target_node,
       ->UpdateAllLifecyclePhasesExceptPaint();
 
   LayoutBox* scrollable =
-      LayoutBox::FindAutoscrollable(drop_target_node->GetLayoutObject());
+      LayoutBox::FindAutoscrollable(drop_target_node->GetLayoutObject(),
+                                    /*is_middle_click_autoscroll*/ false);
   if (!scrollable) {
     StopAutoscroll();
     return;

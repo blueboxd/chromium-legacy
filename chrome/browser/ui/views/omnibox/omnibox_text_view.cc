@@ -177,10 +177,10 @@ void OmniboxTextView::SetText(const base::string16& text, bool deemphasize) {
   }
 
   use_deemphasized_font_ = deemphasize;
-  render_text_.reset();
   render_text_ = CreateRenderText(text);
   UpdateLineHeight();
   SetPreferredSize(CalculatePreferredSize());
+  SchedulePaint();
 }
 
 void OmniboxTextView::SetText(const base::string16& text,
@@ -197,6 +197,7 @@ void OmniboxTextView::SetText(const base::string16& text,
       std::make_unique<ACMatchClassifications>(classifications);
   render_text_ = CreateRenderText(text);
 
+  // ReapplyStyling will update the preferred size and request a repaint.
   ReapplyStyling();
 }
 
@@ -205,7 +206,6 @@ void OmniboxTextView::SetText(const SuggestionAnswer::ImageLine& line,
   use_deemphasized_font_ = deemphasize;
   cached_classifications_.reset();
   wrap_text_lines_ = line.num_text_lines() > 1;
-  render_text_.reset();
   render_text_ = CreateRenderText(base::string16());
 
   for (const SuggestionAnswer::TextField& text_field : line.text_fields())
@@ -222,10 +222,11 @@ void OmniboxTextView::SetText(const SuggestionAnswer::ImageLine& line,
   }
 
   // Add the "additional" and "status" text from |line|, if any.
-  // Also updates preferred size.
   AppendExtraText(line);
 
   UpdateLineHeight();
+  SetPreferredSize(CalculatePreferredSize());
+  SchedulePaint();
 }
 
 void OmniboxTextView::AppendExtraText(const SuggestionAnswer::ImageLine& line) {
@@ -275,6 +276,7 @@ void OmniboxTextView::ReapplyStyling() {
 
   UpdateLineHeight();
   SetPreferredSize(CalculatePreferredSize());
+  SchedulePaint();
 }
 
 std::unique_ptr<gfx::RenderText> OmniboxTextView::CreateRenderText(

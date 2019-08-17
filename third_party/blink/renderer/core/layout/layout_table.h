@@ -30,18 +30,19 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_interface.h"
 #include "third_party/blink/renderer/platform/graphics/scroll_types.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
+class LayoutNGTableSectionInterface;
 class LayoutTableCol;
 class LayoutTableCaption;
 class LayoutTableCell;
 class LayoutTableSection;
 class TableLayoutAlgorithm;
 
-enum SkipEmptySectionsValue { kDoNotSkipEmptySections, kSkipEmptySections };
 enum TableHeightChangingValue { kTableHeightNotChanging, kTableHeightChanging };
 
 // LayoutTable is the LayoutObject associated with
@@ -133,7 +134,8 @@ enum TableHeightChangingValue { kTableHeightNotChanging, kTableHeightChanging };
 // See absoluteColumnToEffectiveColumn() for converting an absolute column
 // index into an index into effectiveColumns() and effectiveColumnPositions().
 
-class CORE_EXPORT LayoutTable final : public LayoutBlock {
+class CORE_EXPORT LayoutTable final : public LayoutBlock,
+                                      public LayoutNGTableInterface {
  public:
   explicit LayoutTable(Element*);
   ~LayoutTable() override;
@@ -142,10 +144,10 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   // 'border-spacing' property represent spacing between columns and rows
   // respectively, not necessarily the horizontal and vertical spacing
   // respectively".
-  int16_t HBorderSpacing() const { return h_spacing_; }
-  int16_t VBorderSpacing() const { return v_spacing_; }
+  int16_t HBorderSpacing() const final { return h_spacing_; }
+  int16_t VBorderSpacing() const final { return v_spacing_; }
 
-  bool ShouldCollapseBorders() const {
+  bool ShouldCollapseBorders() const final {
     return StyleRef().BorderCollapse() == EBorderCollapse::kCollapse;
   }
 
@@ -164,7 +166,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
     unsigned span;
   };
 
-  void ForceSectionsRecalc() {
+  void ForceSectionsRecalc() final {
     SetNeedsSectionRecalc();
     RecalcSections();
   }
@@ -200,14 +202,14 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   void SetRowOffsetFromRepeatingHeader(LayoutUnit offset) {
     row_offset_from_repeating_header_ = offset;
   }
-  LayoutUnit RowOffsetFromRepeatingHeader() const {
+  LayoutUnit RowOffsetFromRepeatingHeader() const final {
     return row_offset_from_repeating_header_;
   }
 
   void SetRowOffsetFromRepeatingFooter(LayoutUnit offset) {
     row_offset_from_repeating_footer_ = offset;
   }
-  LayoutUnit RowOffsetFromRepeatingFooter() const {
+  LayoutUnit RowOffsetFromRepeatingFooter() const final {
     return row_offset_from_repeating_footer_;
   }
 
@@ -231,7 +233,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   }
 
   unsigned AbsoluteColumnToEffectiveColumn(
-      unsigned absolute_column_index) const {
+      unsigned absolute_column_index) const final {
     if (absolute_column_index < no_cell_colspan_at_least_)
       return absolute_column_index;
 
@@ -306,7 +308,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
       return ColAndColGroup();
     return SlowColElementAtAbsoluteColumn(absolute_column_index);
   }
-  bool HasColElements() const { return has_col_elements_; }
+  bool HasColElements() const final { return has_col_elements_; }
 
   bool NeedsSectionRecalc() const { return needs_section_recalc_; }
   void SetNeedsSectionRecalc() {
@@ -348,7 +350,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   void InvalidateCollapsedBorders();
   void InvalidateCollapsedBordersForAllCellsIfNeeded();
 
-  bool HasCollapsedBorders() const {
+  bool HasCollapsedBorders() const final {
     DCHECK(collapsed_borders_valid_);
     return has_collapsed_borders_;
   }
@@ -371,7 +373,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
 
   bool HasSections() const { return Header() || Footer() || FirstBody(); }
 
-  void RecalcSectionsIfNeeded() const {
+  void RecalcSectionsIfNeeded() const final {
     if (needs_section_recalc_)
       RecalcSections();
   }
@@ -417,7 +419,6 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
     return is_any_column_ever_collapsed_;
   }
 
- protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void SimplifiedNormalFlowLayout() override;
 
@@ -428,6 +429,31 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   void InvalidatePaint(const PaintInvalidatorContext&) const override;
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
   void ColumnStructureChanged();
+
+  // LayoutNGTableInterface methods start.
+
+  const LayoutNGTableInterface* ToLayoutNGTableInterface() const final {
+    return this;
+  }
+  const LayoutObject* ToLayoutObject() const final { return this; }
+  LayoutObject* ToMutableLayoutObject() final { return this; }
+  bool IsFixedTableLayout() const final {
+    return StyleRef().IsFixedTableLayout();
+  }
+  LayoutNGTableSectionInterface* FirstBodyInterface() const final;
+  LayoutNGTableSectionInterface* TopSectionInterface() const final;
+  LayoutNGTableSectionInterface* TopNonEmptySectionInterface() const final;
+  LayoutNGTableSectionInterface* BottomSectionInterface() const final;
+  LayoutNGTableSectionInterface* BottomNonEmptySectionInterface() const final;
+  LayoutNGTableSectionInterface* SectionBelowInterface(
+      const LayoutNGTableSectionInterface*,
+      SkipEmptySectionsValue) const final;
+  LayoutNGTableCellInterface* CellInterfacePreceding(
+      const LayoutNGTableCellInterface& cell) const final;
+  LayoutNGTableCellInterface* CellInterfaceAbove(
+      const LayoutNGTableCellInterface& cell) const final;
+
+  // LayoutNGTableInterface methods end.
 
  private:
   bool IsOfType(LayoutObjectType type) const override {
@@ -610,7 +636,11 @@ inline LayoutTableSection* LayoutTable::TopSection() const {
   return foot_;
 }
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTable, IsTable());
+// To<LayoutTable>() helper.
+template <>
+struct DowncastTraits<LayoutTable> {
+  static bool AllowFrom(const LayoutObject& object) { return object.IsTable(); }
+};
 
 }  // namespace blink
 

@@ -148,7 +148,7 @@ TEST(ValidationSuite, TestWindows) {
   wchar_t command[1024] = {0};
 
   wsprintf(command, L"ValidWindow %Id",
-           reinterpret_cast<size_t>(::GetDesktopWindow()));
+           reinterpret_cast<size_t>(::GetShellWindow()));
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(command));
 
   wsprintf(command, L"ValidWindow %Id",

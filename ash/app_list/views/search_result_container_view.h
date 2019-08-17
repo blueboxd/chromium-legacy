@@ -32,7 +32,12 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
  public:
   class Delegate {
    public:
-    // Called whenever results in the container change, i.e. during |Update()|
+    // Called whenever results in the container start changing, i.e. during
+    // ScheduleUpdate(). It will be followed up with
+    // OnSearchResultContainerResultsChanged() when the update completes.
+    virtual void OnSearchResultContainerResultsChanging() = 0;
+
+    // Called whenever results in the container change, i.e. during |Update()|.
     virtual void OnSearchResultContainerResultsChanged() = 0;
 
     // Called whenever a result within the container gains focus.

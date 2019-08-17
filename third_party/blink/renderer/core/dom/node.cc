@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
-#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/child_list_mutation_scope.h"
@@ -1572,8 +1571,6 @@ void Node::SetForceReattachLayoutTree() {
 // FIXME: Shouldn't these functions be in the editing code?  Code that asks
 // questions about HTML in the core DOM class is obviously misplaced.
 bool Node::CanStartSelection() const {
-  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*this))
-    GetDocument().UpdateStyleAndLayoutTreeForNode(this);
   if (HasEditableStyle(*this))
     return true;
 

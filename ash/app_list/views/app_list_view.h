@@ -117,6 +117,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // next state, measured in DIPs/event.
   static constexpr int kDragVelocityThreshold = 6;
 
+  // The animation duration for app list movement.
+  static constexpr int kAppListAnimationDurationMs = 200;
+  static constexpr int kAppListAnimationDurationFromFullscreenMs = 250;
+
   // Does not take ownership of |delegate|.
   explicit AppListView(AppListViewDelegate* delegate);
   ~AppListView() override;
@@ -491,7 +495,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Whether the background blur is enabled.
   const bool is_background_blur_enabled_;
   // The state of the app list, controlled via SetState().
-  ash::AppListViewState app_list_state_ = ash::AppListViewState::kPeeking;
+  ash::AppListViewState app_list_state_ = ash::AppListViewState::kClosed;
 
   // An observer to notify AppListView of bounds animation completion.
   std::unique_ptr<BoundsAnimationObserver> bounds_animation_observer_;

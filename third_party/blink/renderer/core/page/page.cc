@@ -840,21 +840,18 @@ void Page::Trace(blink::Visitor* visitor) {
   PageVisibilityNotifier::Trace(visitor);
 }
 
-void Page::LayerTreeViewInitialized(WebLayerTreeView& layer_tree_view,
-                                    cc::AnimationHost& animation_host,
+void Page::AnimationHostInitialized(cc::AnimationHost& animation_host,
                                     LocalFrameView* view) {
   if (GetScrollingCoordinator()) {
-    GetScrollingCoordinator()->LayerTreeViewInitialized(layer_tree_view,
-                                                        animation_host, view);
+    GetScrollingCoordinator()->AnimationHostInitialized(animation_host, view);
   }
-  GetLinkHighlights().LayerTreeViewInitialized(layer_tree_view, animation_host);
+  GetLinkHighlights().AnimationHostInitialized(animation_host);
 }
 
-void Page::WillCloseLayerTreeView(WebLayerTreeView& layer_tree_view,
-                                  LocalFrameView* view) {
+void Page::WillCloseAnimationHost(LocalFrameView* view) {
   if (scrolling_coordinator_)
-    scrolling_coordinator_->WillCloseLayerTreeView(layer_tree_view, view);
-  GetLinkHighlights().WillCloseLayerTreeView(layer_tree_view);
+    scrolling_coordinator_->WillCloseAnimationHost(view);
+  GetLinkHighlights().WillCloseAnimationHost();
 }
 
 void Page::WillBeDestroyed() {

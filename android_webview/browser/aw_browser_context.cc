@@ -147,14 +147,8 @@ base::FilePath AwBrowserContext::GetPrefStorePath() {
   return pref_store_path;
 }
 
-// static
 base::FilePath AwBrowserContext::GetCookieStorePath() {
-  FilePath cookie_store_path;
-  if (!base::PathService::Get(base::DIR_ANDROID_APP_DATA, &cookie_store_path)) {
-    NOTREACHED() << "Failed to get app data directory for Android WebView";
-  }
-  cookie_store_path = cookie_store_path.Append(FILE_PATH_LITERAL("Cookies"));
-  return cookie_store_path;
+  return GetCookieManager()->GetCookieStorePath();
 }
 
 // static
@@ -276,6 +270,11 @@ AwBrowserContext::GetAutocompleteHistoryManager() {
   }
 
   return autocomplete_history_manager_.get();
+}
+
+CookieManager* AwBrowserContext::GetCookieManager() {
+  // TODO(amalova): create cookie manager for non-default profile
+  return CookieManager::GetInstance();
 }
 
 base::FilePath AwBrowserContext::GetPath() {
@@ -403,7 +402,7 @@ AwBrowserContext::GetNetworkContextParams(
   context_params->cookie_manager_params =
       network::mojom::CookieManagerParams::New();
   context_params->cookie_manager_params->allow_file_scheme_cookies =
-      CookieManager::GetInstance()->AllowFileSchemeCookies();
+      GetCookieManager()->AllowFileSchemeCookies();
 
   context_params->initial_ssl_config = network::mojom::SSLConfig::New();
   // Allow SHA-1 to be used for locally-installed trust anchors, as WebView

@@ -3139,7 +3139,7 @@
         }
       ],
       "features": [
-        "disable_direct_composition_layers"
+        "disable_direct_composition_video_overlays"
       ]
     },
     {
@@ -3268,7 +3268,7 @@
         "value": "25.21.14.1900"
       },
       "features": [
-        "disable_direct_composition_layers"
+        "disable_direct_composition_video_overlays"
       ]
     },
     {

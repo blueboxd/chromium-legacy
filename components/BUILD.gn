@@ -369,6 +369,7 @@ test("components_unittests") {
     deps += [
       "//components/safe_browsing:verdict_cache_manager_unittest",
       "//components/safe_browsing/db:unit_tests_desktop",
+      "//components/safe_browsing/realtime:unit_tests",
     ]
   } else if (safe_browsing_mode == 2) {
     deps += [ "//components/safe_browsing/android:unit_tests_mobile" ]
@@ -385,6 +386,10 @@ test("components_unittests") {
 
   if (use_dbus) {
     deps += [ "//components/dbus/menu:unit_tests" ]
+  }
+
+  if (enable_plugins) {
+    deps += [ "//components/pdf/renderer:unit_tests" ]
   }
 
   # No components should depend on Chrome.

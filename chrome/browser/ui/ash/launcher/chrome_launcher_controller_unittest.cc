@@ -1204,9 +1204,6 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
         std::make_unique<WallpaperControllerClient>();
     wallpaper_controller_client_->InitForTesting(&test_wallpaper_controller_);
 
-    // AvatarMenu and multiple profiles works after user logged in.
-    profile_manager()->SetLoggedIn(true);
-
     // Ensure there are multiple profiles. User 0 is created during setup.
     CreateMultiUserProfile("user1");
     ASSERT_TRUE(SessionControllerClientImpl::IsMultiProfileAvailable());

@@ -613,9 +613,11 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
     }
 
     search_box()->RequestFocus();
-    selection_controller->MoveSelection(key_event);
-    UpdateSearchBoxTextForSelectedResult(
-        selection_controller->selected_result());
+    if (selection_controller->MoveSelection(key_event) ==
+        ResultSelectionController::MoveResult::kResultChanged) {
+      UpdateSearchBoxTextForSelectedResult(
+          selection_controller->selected_result()->result());
+    }
     return true;
   }
 
@@ -623,8 +625,9 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
   if (key_event.key_code() == ui::VKEY_RETURN) {
     // Hitting Enter when focus is on search box opens the selected result.
     ui::KeyEvent event(key_event);
-    views::View* selected_result = selection_controller->selected_result();
-    if (selected_result)
+    SearchResultBaseView* selected_result =
+        selection_controller->selected_result();
+    if (selected_result && selected_result->result())
       selected_result->OnKeyEvent(&event);
     return true;
   }
@@ -635,8 +638,9 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
       ((key_event.key_code() == ui::VKEY_BROWSER_BACK) ||
        (key_event.key_code() == ui::VKEY_DELETE))) {
     ui::KeyEvent event(key_event);
-    views::View* selected_result = selection_controller->selected_result();
-    if (selected_result)
+    SearchResultBaseView* selected_result =
+        selection_controller->selected_result();
+    if (selected_result && selected_result->result())
       selected_result->OnKeyEvent(&event);
     selection_controller->ResetSelection(nullptr);
     search_box()->SetText(base::string16());
@@ -692,7 +696,7 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
       break;
     case ResultSelectionController::MoveResult::kResultChanged:
       UpdateSearchBoxTextForSelectedResult(
-          selection_controller->selected_result());
+          selection_controller->selected_result()->result());
       break;
   }
 
@@ -735,14 +739,13 @@ void SearchBoxView::ButtonPressed(views::Button* sender,
 }
 
 void SearchBoxView::UpdateSearchBoxTextForSelectedResult(
-    SearchResultBaseView* selected_result_view) {
-  if (selected_result_view->result()->result_type() ==
-          ash::SearchResultType::kOmnibox &&
-      !selected_result_view->result()->is_omnibox_search()) {
+    SearchResult* selected_result) {
+  if (selected_result->result_type() == ash::SearchResultType::kOmnibox &&
+      !selected_result->is_omnibox_search()) {
     // Use details to ensure url results fill url.
-    search_box()->SetText(selected_result_view->result()->details());
+    search_box()->SetText(selected_result->details());
   } else {
-    search_box()->SetText(selected_result_view->result()->title());
+    search_box()->SetText(selected_result->title());
   }
 }
 

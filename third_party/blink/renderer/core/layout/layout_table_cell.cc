@@ -45,7 +45,8 @@ namespace blink {
 
 using namespace html_names;
 
-struct SameSizeAsLayoutTableCell : public LayoutBlockFlow {
+struct SameSizeAsLayoutTableCell : public LayoutBlockFlow,
+                                   public LayoutNGTableCellInterface {
   unsigned bitfields;
   int paddings[2];
   void* pointer1;

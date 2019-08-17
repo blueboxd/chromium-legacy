@@ -95,7 +95,9 @@ void MediaNotificationItem::MediaSessionMetadataChanged(
   // MediaNotificationView that calls |SetView()|. If that happens, then we
   // don't want to call |view_->UpdateWithMediaMetadata()| below since |view_|
   // will have already received the metadata when calling |SetView()|.
-  // |view_needs_metadata_update_| is set to false in |SetView()|.
+  // |view_needs_metadata_update_| is set to false in |SetView()|. The reason we
+  // want to avoid sending the metadata twice is that metrics are recorded when
+  // metadata is set and we don't want to double-count metrics.
   if (view_ && view_needs_metadata_update_ && !frozen_)
     view_->UpdateWithMediaMetadata(session_metadata_);
 
@@ -244,6 +246,18 @@ void MediaNotificationItem::MaybeUnfreeze() {
 
   frozen_ = false;
   freeze_timer_.Stop();
+
+  // When we unfreeze, we want to fully update |view_| with any changes that
+  // we've avoided sending during the freeze.
+  if (view_) {
+    view_needs_metadata_update_ = false;
+    view_->UpdateWithMediaSessionInfo(session_info_);
+    view_->UpdateWithMediaMetadata(session_metadata_);
+    view_->UpdateWithMediaActions(session_actions_);
+
+    if (session_artwork_.has_value())
+      view_->UpdateWithMediaArtwork(*session_artwork_);
+  }
 }
 
 }  // namespace media_message_center

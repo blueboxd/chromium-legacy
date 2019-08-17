@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/usb/cros_usb_detector.h"
+
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -16,7 +18,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/usb/cros_usb_detector.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
@@ -137,8 +138,6 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
         {chromeos::features::kCrostiniUsbSupport,
          chromeos::features::kCrostiniUsbAllowUnsupported},
         {});
-    profile_manager()->SetLoggedIn(true);
-    chromeos::ProfileHelper::Get()->SetActiveUserIdForTesting(kProfileName);
 
     TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
         std::make_unique<SystemNotificationHelper>());

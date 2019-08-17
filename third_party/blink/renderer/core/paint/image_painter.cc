@@ -51,12 +51,19 @@ bool CheckForOversizedImagesPolicy(const LayoutImage& layout_image,
       image_size.Width() / (dpr * layout_size.Width());
   double downscale_ratio_height =
       image_size.Height() / (dpr * layout_size.Height());
+
+  const LayoutImageResource* image_resource = layout_image.ImageResource();
+  const ImageResourceContent* cached_image =
+      image_resource ? image_resource->CachedImage() : nullptr;
+  const String& image_url =
+      cached_image ? cached_image->Url().GetString() : g_empty_string;
+
   return !layout_image.GetDocument().IsFeatureEnabled(
       mojom::FeaturePolicyFeature::kOversizedImages,
       blink::PolicyValue(
           std::max(downscale_ratio_width, downscale_ratio_height),
           blink::mojom::PolicyValueType::kDecDouble),
-      ReportOptions::kReportOnFailure);
+      ReportOptions::kReportOnFailure, g_empty_string, image_url);
 }
 
 }  // namespace

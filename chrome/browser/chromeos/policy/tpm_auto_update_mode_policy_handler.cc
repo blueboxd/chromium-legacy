@@ -13,7 +13,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -96,7 +95,7 @@ TPMAutoUpdateModePolicyHandler::TPMAutoUpdateModePolicyHandler(
       base::BindRepeating(&TPMAutoUpdateModePolicyHandler::CheckForUpdate,
                           weak_factory_.GetWeakPtr());
 
-  show_notfication_callback_ =
+  show_notification_callback_ =
       base::BindRepeating(&chromeos::ShowAutoUpdateNotification);
 
   notification_timer_ = std::make_unique<base::OneShotTimer>();
@@ -154,7 +153,7 @@ void TPMAutoUpdateModePolicyHandler::SetUpdateCheckerCallbackForTesting(
 
 void TPMAutoUpdateModePolicyHandler::SetShowNotificationCallbackForTesting(
     const ShowNotificationCallback& callback) {
-  show_notfication_callback_ = callback;
+  show_notification_callback_ = callback;
 }
 
 void TPMAutoUpdateModePolicyHandler::UpdateOnEnrollmentIfNeeded() {
@@ -201,10 +200,6 @@ void TPMAutoUpdateModePolicyHandler::ShowTPMAutoUpdateNotification(
   if (!user_manager->IsUserLoggedIn() || user_manager->IsLoggedInAsKioskApp())
     return;
 
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  if (!profile)
-    return;
-
   base::Time notification_shown =
       local_state_->GetTime(prefs::kTPMUpdatePlannedNotificationShownTime);
 
@@ -212,8 +207,8 @@ void TPMAutoUpdateModePolicyHandler::ShowTPMAutoUpdateNotification(
     notification_shown = base::Time::Now();
     local_state_->SetTime(prefs::kTPMUpdatePlannedNotificationShownTime,
                           notification_shown);
-    show_notfication_callback_.Run(
-        chromeos::TpmAutoUpdateUserNotification::kPlanned, profile);
+    show_notification_callback_.Run(
+        chromeos::TpmAutoUpdateUserNotification::kPlanned);
   }
 
   // Show update on next reboot notification after
@@ -253,14 +248,11 @@ void TPMAutoUpdateModePolicyHandler::RegisterPrefs(
 }
 
 void TPMAutoUpdateModePolicyHandler::ShowTPMUpdateOnNextRebootNotification() {
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  if (!profile)
-    return;
   local_state_->SetBoolean(prefs::kTPMUpdateOnNextRebootNotificationShown,
                            true);
 
-  show_notfication_callback_.Run(
-      chromeos::TpmAutoUpdateUserNotification::kOnNextReboot, profile);
+  show_notification_callback_.Run(
+      chromeos::TpmAutoUpdateUserNotification::kOnNextReboot);
 }
 
 void TPMAutoUpdateModePolicyHandler::SetNotificationTimerForTesting(

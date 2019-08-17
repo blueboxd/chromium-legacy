@@ -47,8 +47,8 @@ class Document;
 class Frame;
 class IntSize;
 class LayoutBlock;
+class LayoutNGTableInterface;
 class LayoutObject;
-class LayoutTable;
 class LayoutText;
 class LocalFrame;
 class NGBlockNode;
@@ -99,7 +99,7 @@ class CORE_EXPORT TextAutosizer final
     STACK_ALLOCATED();
 
    public:
-    explicit TableLayoutScope(LayoutTable*);
+    explicit TableLayoutScope(LayoutNGTableInterface*);
   };
 
   class NGLayoutScope {
@@ -292,7 +292,7 @@ class CORE_EXPORT TextAutosizer final
 
   void BeginLayout(LayoutBlock*, SubtreeLayoutScope*);
   void EndLayout(LayoutBlock*);
-  void InflateAutoTable(LayoutTable*);
+  void InflateAutoTable(LayoutNGTableInterface*);
   float Inflate(LayoutObject*,
                 SubtreeLayoutScope*,
                 InflateBehavior = kThisBlockOnly,

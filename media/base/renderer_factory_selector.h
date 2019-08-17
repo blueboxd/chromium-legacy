@@ -28,8 +28,9 @@ class MEDIA_EXPORT RendererFactorySelector {
     MOJO = 1,          // MojoRendererFactory.
     MEDIA_PLAYER = 2,  // MediaPlayerRendererClientFactory.
     COURIER = 3,       // CourierRendererFactory.
-    FLINGING = 4,      // FlingingRendererClientFactory
-    FACTORY_TYPE_MAX = FLINGING,
+    FLINGING = 4,      // FlingingRendererClientFactory.
+    CAST = 5,          // CastRendererClientFactory.
+    FACTORY_TYPE_MAX = CAST,
   };
 
   RendererFactorySelector();

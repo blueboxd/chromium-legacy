@@ -98,6 +98,8 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
 
   unsigned is_break_before_ : 1;
 
+  unsigned is_forced_break_ : 1;
+
   // We're attempting to break at an undesirable place. Sometimes that's
   // unavoidable, but we should only break here if we cannot find a better break
   // point further up in the ancestry.

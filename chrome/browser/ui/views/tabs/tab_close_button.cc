@@ -22,7 +22,9 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/rect_based_targeting_utils.h"
+#include "ui/views/view_class_properties.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
@@ -40,9 +42,15 @@ TabCloseButton::TabCloseButton(views::ButtonListener* listener,
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-  // Disable animation so that the red danger sign shows up immediately
-  // to help avoid mis-clicks.
+
+  SetInkDropMode(InkDropMode::ON);
+  set_ink_drop_highlight_opacity(0.16f);
+  set_ink_drop_visible_opacity(0.14f);
+
+  // Disable animation so that the hover indicator shows up immediately to help
+  // avoid mis-clicks.
   SetAnimationDuration(0);
+  GetInkDrop()->SetHoverHighlightFadeDurationMs(0);
 
   SetInstallFocusRingOnFocus(true);
 }
@@ -55,16 +63,11 @@ int TabCloseButton::GetWidth() {
                                                   : kGlyphWidth;
 }
 
-void TabCloseButton::SetIconColors(SkColor icon_color,
-                                   SkColor hovered_icon_color,
-                                   SkColor pressed_icon_color,
-                                   SkColor hovered_color,
-                                   SkColor pressed_color) {
-  icon_colors_[views::Button::STATE_NORMAL] = icon_color;
-  icon_colors_[views::Button::STATE_HOVERED] = hovered_icon_color;
-  icon_colors_[views::Button::STATE_PRESSED] = pressed_icon_color;
-  highlight_colors_[views::Button::STATE_HOVERED] = hovered_color;
-  highlight_colors_[views::Button::STATE_PRESSED] = pressed_color;
+void TabCloseButton::SetIconColors(SkColor foreground_color,
+                                   SkColor background_color) {
+  icon_color_ = foreground_color;
+  set_ink_drop_base_color(
+      color_utils::GetColorWithMaxContrast(background_color));
 }
 
 views::View* TabCloseButton::GetTooltipHandlerForPoint(
@@ -109,11 +112,10 @@ const char* TabCloseButton::GetClassName() const {
 
 void TabCloseButton::Layout() {
   ImageButton::Layout();
-  if (focus_ring()) {
-    SkPath path;
-    path.addOval(gfx::RectToSkRect(GetMirroredRect(GetContentsBounds())));
-    focus_ring()->SetPath(path);
-  }
+  auto path = std::make_unique<SkPath>();
+  gfx::Point center = GetMirroredRect(GetContentsBounds()).CenterPoint();
+  path->addCircle(center.x(), center.y(), GetWidth() / 2);
+  SetProperty(views::kHighlightPathKey, path.release());
 }
 
 gfx::Size TabCloseButton::CalculatePreferredSize() const {
@@ -125,11 +127,18 @@ gfx::Size TabCloseButton::CalculatePreferredSize() const {
 }
 
 void TabCloseButton::PaintButtonContents(gfx::Canvas* canvas) {
-  ButtonState button_state = state();
-  // Draw the background circle highlight.
-  if (button_state != views::Button::STATE_NORMAL)
-    DrawHighlight(canvas, button_state);
-  DrawCloseGlyph(canvas, button_state);
+  cc::PaintFlags flags;
+  constexpr float kStrokeWidth = 1.5f;
+  float touch_scale = float{GetWidth()} / kGlyphWidth;
+  float size = (kGlyphWidth - 8) * touch_scale - kStrokeWidth;
+  gfx::RectF glyph_bounds(GetContentsBounds());
+  glyph_bounds.ClampToCenteredSize(gfx::SizeF(size, size));
+  flags.setAntiAlias(true);
+  flags.setStrokeWidth(kStrokeWidth);
+  flags.setStrokeCap(cc::PaintFlags::kRound_Cap);
+  flags.setColor(icon_color_);
+  canvas->DrawLine(glyph_bounds.origin(), glyph_bounds.bottom_right(), flags);
+  canvas->DrawLine(glyph_bounds.bottom_left(), glyph_bounds.top_right(), flags);
 }
 
 views::View* TabCloseButton::TargetForRect(views::View* root,
@@ -163,30 +172,4 @@ bool TabCloseButton::GetHitTestMask(SkPath* mask) const {
   // We need to define this so hit-testing won't include the border region.
   mask->addRect(gfx::RectToSkRect(GetMirroredRect(GetContentsBounds())));
   return true;
-}
-
-void TabCloseButton::DrawHighlight(gfx::Canvas* canvas, ButtonState state) {
-  SkPath path;
-  gfx::Point center = GetContentsBounds().CenterPoint();
-  path.setFillType(SkPath::kEvenOdd_FillType);
-  path.addCircle(center.x(), center.y(), GetWidth() / 2);
-  cc::PaintFlags flags;
-  flags.setAntiAlias(true);
-  flags.setColor(highlight_colors_[state]);
-  canvas->DrawPath(path, flags);
-}
-
-void TabCloseButton::DrawCloseGlyph(gfx::Canvas* canvas, ButtonState state) {
-  cc::PaintFlags flags;
-  constexpr float kStrokeWidth = 1.5f;
-  float touch_scale = float{GetWidth()} / kGlyphWidth;
-  float size = (kGlyphWidth - 8) * touch_scale - kStrokeWidth;
-  gfx::RectF glyph_bounds(GetContentsBounds());
-  glyph_bounds.ClampToCenteredSize(gfx::SizeF(size, size));
-  flags.setAntiAlias(true);
-  flags.setStrokeWidth(kStrokeWidth);
-  flags.setStrokeCap(cc::PaintFlags::kRound_Cap);
-  flags.setColor(icon_colors_[state]);
-  canvas->DrawLine(glyph_bounds.origin(), glyph_bounds.bottom_right(), flags);
-  canvas->DrawLine(glyph_bounds.bottom_left(), glyph_bounds.top_right(), flags);
 }

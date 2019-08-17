@@ -303,15 +303,15 @@ OverviewItem::UpdateYPositionAndOpacity(
     }
     layer->SetOpacity(opacity);
 
-    int initial_y_ = 0;
+    int initial_y = 0;
     if (translation_y_map_.contains(window))
-      initial_y_ = translation_y_map_[window];
+      initial_y = translation_y_map_[window];
 
     // Alter the y-translation. Offset by the window location relative to the
     // grid.
     gfx::Transform transform = layer->transform();
     transform.matrix().setFloat(1, 3,
-                                static_cast<float>(initial_y_ - new_grid_y));
+                                static_cast<float>(initial_y - new_grid_y));
     layer->SetTransform(transform);
 
     // Return the first layer for the caller to observe.
@@ -423,18 +423,11 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
   translation_y_map_.clear();
   aura::Window::Windows windows = GetWindowsForHomeGesture();
   for (auto* window : windows) {
-    // There is a bug where the first OverviewItem |window_| will always return
-    // the identity, even though a transform has been visually applied. For this
-    // case use the y location of the screen bounds.
-    // TODO(sammiequon): Investigate why this is happening and remove the if
-    // clause.
-    if (window->transform().IsIdentity() &&
-        (window == GetWindow() ||
-         ::wm::HasTransientAncestor(window, GetWindow()))) {
-      translation_y_map_[window] = window->GetBoundsInScreen().y();
-    } else {
-      translation_y_map_[window] = window->transform().To2dTranslation().y();
-    }
+    // Cache the original y translation when setting bounds. They will be
+    // possibly used later when swiping up from the shelf to close overview. Use
+    // the target transform as some windows may still be animating.
+    translation_y_map_[window] =
+        window->layer()->GetTargetTransform().To2dTranslation().y();
   }
 }
 
@@ -540,10 +533,6 @@ void OverviewItem::UpdateCannotSnapWarningVisibility() {
 
 void OverviewItem::OnSelectorItemDragStarted(OverviewItem* item) {
   is_being_dragged_ = (item == this);
-  // Disable shadow for the dragged overview item during dragging.
-  if (is_being_dragged_)
-    UpdateRoundedCornersAndShadow();
-
   caption_container_view_->SetHeaderVisibility(
       is_being_dragged_
           ? CaptionContainerView::HeaderVisibility::kInvisible
@@ -551,22 +540,14 @@ void OverviewItem::OnSelectorItemDragStarted(OverviewItem* item) {
 }
 
 void OverviewItem::OnSelectorItemDragEnded(bool snap) {
-  if (is_being_dragged_) {
-    is_being_dragged_ = false;
-    // Do nothing further with the dragged overview item if it is being snapped.
-    if (snap)
-      return;
-    // Re-show shadow for the dragged overview item after drag ends.
-    UpdateRoundedCornersAndShadow();
-  }
-
-  // Update the header.
   if (snap) {
-    caption_container_view_->HideCloseInstantlyAndThenShowItSlowly();
+    if (!is_being_dragged_)
+      caption_container_view_->HideCloseInstantlyAndThenShowItSlowly();
   } else {
     caption_container_view_->SetHeaderVisibility(
         CaptionContainerView::HeaderVisibility::kVisible);
   }
+  is_being_dragged_ = false;
 }
 
 ScopedOverviewTransformWindow::GridWindowFillMode
@@ -611,8 +592,8 @@ void OverviewItem::OnDragAnimationCompleted() {
 
   should_restack_on_animation_end_ = false;
 
-  // First stack this item's window below the snapped window if split view mode
-  // is active.
+  // First stack this item's window below the snapped window if split view
+  // mode is active.
   aura::Window* dragged_window = GetWindow();
   aura::Window* dragged_widget_window = item_widget_->GetNativeWindow();
   aura::Window* parent_window = dragged_widget_window->parent();
@@ -701,10 +682,9 @@ void OverviewItem::SetShadowBounds(base::Optional<gfx::Rect> bounds_in_screen) {
 }
 
 void OverviewItem::UpdateRoundedCornersAndShadow() {
-  // Do not show the rounded corners and the shadow if overview is shutting down
-  // or we're currently in entering overview animation.
-  // Also don't update or animate the window's frame header clip under these
-  // conditions.
+  // Do not show the rounded corners and the shadow if overview is shutting
+  // down or we're currently in entering overview animation. Also don't update
+  // or animate the window's frame header clip under these conditions.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   const bool is_shutting_down =
       !overview_controller || !overview_controller->InOverviewSession();
@@ -717,11 +697,10 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
       /*update_clip=*/should_show_rounded_corners);
 
   // In addition, the shadow should be hidden if
-  // 1) this overview item is being dragged or
-  // 2) this overview item is the drop target window or
-  // 3) this overview item is in animation.
+  // 1) this overview item is the drop target window or
+  // 2) this overview item is in animation.
   const bool should_show_shadow =
-      should_show_rounded_corners && !is_being_dragged_ &&
+      should_show_rounded_corners &&
       !overview_grid_->IsDropTargetWindow(GetWindow()) &&
       !transform_window_.GetOverviewWindow()
            ->layer()
@@ -741,8 +720,8 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
 void OverviewItem::OnStartingAnimationComplete() {
   DCHECK(item_widget_);
   if (transform_window_.IsMinimized()) {
-    // Fade the title in if minimized. The rest of |item_widget_| should already
-    // be shown.
+    // Fade the title in if minimized. The rest of |item_widget_| should
+    // already be shown.
     caption_container_view_->SetHeaderVisibility(
         CaptionContainerView::HeaderVisibility::kVisible);
   } else {
@@ -920,8 +899,8 @@ void OverviewItem::OnWindowBoundsChanged(aura::Window* window,
     if (window == GetWindow()) {
       caption_container_view_->UpdatePreviewView();
     } else {
-      // Transient window is repositioned. The new position within the overview
-      // item needs to be recomputed.
+      // Transient window is repositioned. The new position within the
+      // overview item needs to be recomputed.
       SetBounds(target_bounds_, OVERVIEW_ANIMATION_NONE);
     }
   }
@@ -946,8 +925,9 @@ void OverviewItem::OnWindowDestroying(aura::Window* window) {
 void OverviewItem::OnWindowTitleChanged(aura::Window* window) {
   if (window != GetWindow())
     return;
-  // TODO(flackr): Maybe add the new title to a vector of titles so that we can
-  // filter any of the titles the window had while in the overview session.
+  // TODO(flackr): Maybe add the new title to a vector of titles so that we
+  // can filter any of the titles the window had while in the overview
+  // session.
   caption_container_view_->SetTitle(window->GetTitle());
 }
 
@@ -1091,8 +1071,8 @@ void OverviewItem::AnimateOpacity(float opacity,
 
 void OverviewItem::HandlePressEvent(const gfx::PointF& location_in_screen,
                                     bool from_touch_gesture) {
-  // We allow switching finger while dragging, but do not allow dragging two or
-  // more items.
+  // We allow switching finger while dragging, but do not allow dragging two
+  // or more items.
   if (overview_session_->window_drag_controller() &&
       overview_session_->window_drag_controller()->item()) {
     return;

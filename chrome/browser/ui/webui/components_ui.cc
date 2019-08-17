@@ -67,7 +67,7 @@ content::WebUIDataSource* CreateComponentsUIHTMLSource(Profile* profile) {
       profile->IsOffTheRecord()
 #endif
   );
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->AddResourcePath("components.js", IDR_COMPONENTS_JS);
   source->SetDefaultResource(IDR_COMPONENTS_HTML);
   return source;

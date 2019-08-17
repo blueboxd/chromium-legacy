@@ -89,6 +89,8 @@ class SafeBrowsingUIManager : public BaseUIManager {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* remove);
 
+  void DisplayBlockingPage(const UnsafeResource& resource) override;
+
   const std::string app_locale() const override;
   history::HistoryService* history_service(
       content::WebContents* web_contents) override;

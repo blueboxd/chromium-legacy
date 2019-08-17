@@ -21,6 +21,12 @@ using previous_session_info_constants::DeviceThermalState;
 
 namespace {
 
+// Returns timestamp (in seconds since January 2001) when OS has started.
+NSTimeInterval GetOSStartTimeIntervalSinceReferenceDate() {
+  return NSDate.timeIntervalSinceReferenceDate -
+         NSProcessInfo.processInfo.systemUptime;
+}
+
 // Translates a UIDeviceBatteryState value to DeviceBatteryState value.
 DeviceBatteryState GetBatteryStateFromUIDeviceBatteryState(
     UIDeviceBatteryState device_battery_state) {
@@ -87,6 +93,7 @@ NSString* const kPreviousSessionInfoLowPowerMode =
 namespace previous_session_info_constants {
 NSString* const kDidSeeMemoryWarningShortlyBeforeTerminating =
     @"DidSeeMemoryWarning";
+NSString* const kOSStartTime = @"OSStartTime";
 }  // namespace previous_session_info_constants
 
 @interface PreviousSessionInfo ()
@@ -104,6 +111,7 @@ NSString* const kDidSeeMemoryWarningShortlyBeforeTerminating =
 @property(nonatomic, assign) BOOL isFirstSessionAfterOSUpgrade;
 @property(nonatomic, assign) BOOL isFirstSessionAfterUpgrade;
 @property(nonatomic, assign) BOOL isFirstSessionAfterLanguageChange;
+@property(nonatomic, assign) BOOL OSRestartedAfterPreviousSession;
 @property(nonatomic, strong) NSString* OSVersion;
 @property(nonatomic, strong) NSDate* sessionEndTime;
 
@@ -172,6 +180,16 @@ static PreviousSessionInfo* gSharedInstance = nil;
     gSharedInstance.isFirstSessionAfterUpgrade =
         ![lastRanVersion isEqualToString:currentVersion];
 
+    NSTimeInterval lastSystemStartTime =
+        [defaults doubleForKey:previous_session_info_constants::kOSStartTime];
+
+    gSharedInstance.OSRestartedAfterPreviousSession =
+        // Allow 5 seconds variation to account for rounding error.
+        (abs(lastSystemStartTime - GetOSStartTimeIntervalSinceReferenceDate()) >
+         5) &&
+        // Ensure that previous session actually exists.
+        lastSystemStartTime;
+
     NSString* lastRanLanguage = [defaults stringForKey:kLastRanLanguage];
     NSString* currentLanguage = [[NSLocale preferredLanguages] objectAtIndex:0];
     gSharedInstance.isFirstSessionAfterLanguageChange =
@@ -195,6 +213,10 @@ static PreviousSessionInfo* gSharedInstance = nil;
   NSString* currentVersion =
       base::SysUTF8ToNSString(version_info::GetVersionNumber());
   [defaults setObject:currentVersion forKey:kLastRanVersion];
+
+  // Set the current OS start time.
+  [defaults setDouble:GetOSStartTimeIntervalSinceReferenceDate()
+               forKey:previous_session_info_constants::kOSStartTime];
 
   // Set the current OS version.
   NSString* currentOSVersion =

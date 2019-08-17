@@ -13,9 +13,7 @@
 #include "chromeos/components/multidevice/expiring_remote_device_cache.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device.h"
-#include "chromeos/services/device_sync/public/mojom/constants.mojom.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 
@@ -43,22 +41,21 @@ void DeviceSyncClientImpl::Factory::SetInstanceForTesting(
 DeviceSyncClientImpl::Factory::~Factory() = default;
 
 std::unique_ptr<DeviceSyncClient> DeviceSyncClientImpl::Factory::BuildInstance(
-    service_manager::Connector* connector) {
-  return base::WrapUnique(new DeviceSyncClientImpl(connector));
+    mojom::DeviceSyncService* service) {
+  return base::WrapUnique(new DeviceSyncClientImpl(service));
 }
 
-DeviceSyncClientImpl::DeviceSyncClientImpl(
-    service_manager::Connector* connector)
-    : DeviceSyncClientImpl(connector, base::ThreadTaskRunnerHandle::Get()) {}
+DeviceSyncClientImpl::DeviceSyncClientImpl(mojom::DeviceSyncService* service)
+    : DeviceSyncClientImpl(service, base::ThreadTaskRunnerHandle::Get()) {}
 
 DeviceSyncClientImpl::DeviceSyncClientImpl(
-    service_manager::Connector* connector,
+    mojom::DeviceSyncService* service,
     scoped_refptr<base::TaskRunner> task_runner)
     : binding_(this),
       expiring_device_cache_(
           std::make_unique<multidevice::ExpiringRemoteDeviceCache>()),
       weak_ptr_factory_(this) {
-  connector->BindInterface(mojom::kServiceName, &device_sync_ptr_);
+  service->BindDeviceSync(mojo::MakeRequest(&device_sync_ptr_));
   device_sync_ptr_->AddObserver(GenerateInterfacePtr(), base::OnceClosure());
 
   // Delay calling these until after the constructor finishes.

@@ -108,10 +108,7 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
                                 bool blocked_by_policy);
 
   MetricsWebContentsObserver* observer() const;
-
-  // Gets the PageLoadExtraInfo for the committed_load_ in observer_.
-  const PageLoadExtraInfo GetPageLoadExtraInfoForCommittedLoad();
-
+  const PageLoadMetricsObserverDelegate& GetDelegateForCommittedLoad() const;
   void RegisterObservers(PageLoadTracker* tracker);
 
  private:

@@ -369,9 +369,12 @@ TEST_F(CreditCardFIDOAuthenticatorTest,
        AuthenticateCard_PaymentsResponseError) {
   CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
 
-  fido_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
-                                    base::TimeTicks::Now(),
-                                    base::Value(base::Value::Type::DICTIONARY));
+  fido_authenticator_->Authenticate(
+      &card, requester_->GetWeakPtr(), base::TimeTicks::Now(),
+      GetTestRequestOptions(kTestChallenge, kTestRelyingPartyId,
+                            kTestCredentialId));
+  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::AUTHENTICATION_FLOW,
+            fido_authenticator_->current_flow());
 
   // Mock user verification.
   TestCreditCardFIDOAuthenticator::GetAssertion(fido_authenticator_.get(),
@@ -388,6 +391,8 @@ TEST_F(CreditCardFIDOAuthenticatorTest, AuthenticateCard_Success) {
       &card, requester_->GetWeakPtr(), base::TimeTicks::Now(),
       GetTestRequestOptions(kTestChallenge, kTestRelyingPartyId,
                             kTestCredentialId));
+  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::AUTHENTICATION_FLOW,
+            fido_authenticator_->current_flow());
 
   // Mock user verification and payments response.
   TestCreditCardFIDOAuthenticator::GetAssertion(fido_authenticator_.get(),
@@ -404,6 +409,8 @@ TEST_F(CreditCardFIDOAuthenticatorTest, OptIn_PaymentsResponseError) {
   EXPECT_FALSE(fido_authenticator_->IsUserOptedIn());
 
   fido_authenticator_->Register();
+  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::OPT_IN_WITHOUT_CHALLENGE_FLOW,
+            fido_authenticator_->current_flow());
 
   // Mock payments response.
   OptChange(AutofillClient::PaymentsRpcResult::NETWORK_ERROR,
@@ -417,6 +424,8 @@ TEST_F(CreditCardFIDOAuthenticatorTest, OptIn_Success) {
   EXPECT_FALSE(fido_authenticator_->IsUserOptedIn());
 
   fido_authenticator_->Register();
+  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::OPT_IN_WITHOUT_CHALLENGE_FLOW,
+            fido_authenticator_->current_flow());
 
   // Mock payments response.
   OptChange(AutofillClient::PaymentsRpcResult::SUCCESS,
@@ -442,6 +451,8 @@ TEST_F(CreditCardFIDOAuthenticatorTest, Register_UserResponseFailure) {
 
   fido_authenticator_->Register(
       GetTestCreationOptions(kTestChallenge, kTestRelyingPartyId));
+  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::OPT_IN_WITH_CHALLENGE_FLOW,
+            fido_authenticator_->current_flow());
 
   // Mock user response and payments response.
   TestCreditCardFIDOAuthenticator::MakeCredential(fido_authenticator_.get(),
@@ -456,6 +467,8 @@ TEST_F(CreditCardFIDOAuthenticatorTest, Register_Success) {
 
   fido_authenticator_->Register(
       GetTestCreationOptions(kTestChallenge, kTestRelyingPartyId));
+  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::OPT_IN_WITH_CHALLENGE_FLOW,
+            fido_authenticator_->current_flow());
 
   // Mock user response and payments response.
   TestCreditCardFIDOAuthenticator::MakeCredential(fido_authenticator_.get(),
@@ -472,11 +485,15 @@ TEST_F(CreditCardFIDOAuthenticatorTest,
   EXPECT_FALSE(fido_authenticator_->IsUserOptedIn());
 
   fido_authenticator_->Register();
+  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::OPT_IN_WITHOUT_CHALLENGE_FLOW,
+            fido_authenticator_->current_flow());
 
-  // Mock payments response.
+  // Mock payments response with challenge to invoke enrollment flow.
   OptChange(AutofillClient::PaymentsRpcResult::SUCCESS,
             /*user_is_opted_in=*/false,
             GetTestCreationOptions(kTestChallenge, kTestRelyingPartyId));
+  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::OPT_IN_WITH_CHALLENGE_FLOW,
+            fido_authenticator_->current_flow());
   EXPECT_FALSE(fido_authenticator_->IsUserOptedIn());
 
   // Mock user response and second payments response.
@@ -496,6 +513,8 @@ TEST_F(CreditCardFIDOAuthenticatorTest, OptOut_Success) {
   EXPECT_TRUE(fido_authenticator_->IsUserOptedIn());
 
   fido_authenticator_->OptOut();
+  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::OPT_OUT_FLOW,
+            fido_authenticator_->current_flow());
 
   // Mock payments response.
   OptChange(AutofillClient::PaymentsRpcResult::SUCCESS,

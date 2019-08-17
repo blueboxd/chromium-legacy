@@ -72,30 +72,6 @@ bool IsForcedBreakValue(const NGConstraintSpace& constraint_space,
   return false;
 }
 
-bool ShouldIgnoreBlockStartMargin(const NGConstraintSpace& constraint_space,
-                                  NGLayoutInputNode child,
-                                  const NGBreakToken* child_break_token) {
-  // Always ignore margins if we're not at the start of the child.
-  auto* child_block_break_token =
-      DynamicTo<NGBlockBreakToken>(child_break_token);
-  if (child_block_break_token && !child_block_break_token->IsBreakBefore())
-    return true;
-
-  // If we're not fragmented or have been explicitly instructed to honor
-  // margins, don't ignore them.
-  if (!constraint_space.HasBlockFragmentation() ||
-      constraint_space.HasSeparateLeadingFragmentainerMargins())
-    return false;
-
-  // Only ignore margins if we're at the start of the fragmentainer.
-  if (constraint_space.FragmentainerBlockSize() !=
-      constraint_space.FragmentainerSpaceAtBfcStart())
-    return false;
-
-  // Otherwise, only ignore in-flow margins.
-  return !child.IsFloating() && !child.IsOutOfFlowPositioned();
-}
-
 void SetupFragmentation(const NGConstraintSpace& parent_space,
                         LayoutUnit new_bfc_block_offset,
                         NGConstraintSpaceBuilder* builder) {
@@ -104,12 +80,6 @@ void SetupFragmentation(const NGConstraintSpace& parent_space,
   LayoutUnit space_available =
       parent_space.FragmentainerSpaceAtBfcStart() - new_bfc_block_offset;
 
-  // The policy regarding collapsing block-start margin with the fragmentainer
-  // block-start is the same throughout the entire fragmentainer (although it
-  // really only matters at the beginning of each fragmentainer, we don't need
-  // to bother to check whether we're actually at the start).
-  builder->SetSeparateLeadingFragmentainerMargins(
-      parent_space.HasSeparateLeadingFragmentainerMargins());
   builder->SetFragmentainerBlockSize(parent_space.FragmentainerBlockSize());
   builder->SetFragmentainerSpaceAtBfcStart(space_available);
   builder->SetFragmentationType(parent_space.BlockFragmentationType());

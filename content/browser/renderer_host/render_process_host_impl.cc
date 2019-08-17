@@ -230,6 +230,9 @@
 #if defined(OS_LINUX)
 #include <sys/resource.h>
 #include <sys/time.h>
+
+#include "components/services/font/public/mojom/font_service.mojom.h"  // nogncheck
+#include "content/browser/font_service.h"  // nogncheck
 #endif
 
 #if defined(OS_MACOSX)
@@ -1304,6 +1307,13 @@ class RenderProcessHostImpl::IOThreadHostImpl
 
   // mojom::ChildProcessHost implementation:
   void BindHostReceiver(mojo::GenericPendingReceiver receiver) override {
+#if defined(OS_LINUX)
+    if (auto font_receiver = receiver.As<font_service::mojom::FontService>()) {
+      ConnectToFontService(std::move(font_receiver));
+      return;
+    }
+#endif
+
     GetContentClient()->browser()->BindHostReceiverForRendererOnIOThread(
         render_process_id_, &receiver);
     if (!receiver)

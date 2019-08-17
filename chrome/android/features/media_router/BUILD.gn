@@ -14,6 +14,7 @@ android_library("java") {
     "$google_play_services_package:google_play_services_cast_framework_java",
     "$google_play_services_package:google_play_services_cast_java",
     "//base:base_java",
+    "//base:jni_java",
     "//chrome/android:chrome_java",
     "//services/media_session/public/cpp/android:media_session_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
@@ -64,6 +65,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/media/router/caf/remoting/RemotingSessionController.java",
     "java/src/org/chromium/chrome/browser/media/router/caf/remoting/StreamPositionExtrapolator.java",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
 generate_jni("jni_headers") {

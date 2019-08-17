@@ -46,6 +46,24 @@ std::unique_ptr<Renderer> MojoRendererFactory::CreateRenderer(
       std::move(renderer_ptr));
 }
 
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+std::unique_ptr<MojoRenderer> MojoRendererFactory::CreateCastRenderer(
+    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    VideoRendererSink* video_renderer_sink) {
+  DCHECK(interface_factory_);
+
+  auto overlay_factory = std::make_unique<VideoOverlayFactory>();
+
+  mojom::RendererPtr renderer_ptr;
+  interface_factory_->CreateCastRenderer(overlay_factory->overlay_plane_id(),
+                                         mojo::MakeRequest(&renderer_ptr));
+
+  return std::make_unique<MojoRenderer>(
+      media_task_runner, std::move(overlay_factory), video_renderer_sink,
+      std::move(renderer_ptr));
+}
+#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
+
 #if defined(OS_ANDROID)
 std::unique_ptr<MojoRenderer> MojoRendererFactory::CreateFlingingRenderer(
     const std::string& presentation_id,

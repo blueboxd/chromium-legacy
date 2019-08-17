@@ -4176,7 +4176,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 #if !defined(OS_ANDROID)
   // The default (no-op) implementation of InstalledAppProvider. On Android, the
   // real implementation is provided in Java.
-  registry_->AddInterface(base::Bind(&InstalledAppProviderImplDefault::Create));
+  registry_->AddInterface(
+      base::Bind(&InstalledAppProviderImplDefault::CreateForRequest));
 #endif  // !defined(OS_ANDROID)
 
   PermissionControllerImpl* permission_controller =
@@ -5045,7 +5046,7 @@ void RenderFrameHostImpl::CommitNavigation(
           factory_for_webui.InitWithNewPipeAndPassReceiver();
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
           browser_context, this, GetProcess()->GetID(),
-          false /* is_navigation */, false /* is_download */,
+          ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
           GetOriginForURLLoaderFactory(navigation_request)
               .value_or(url::Origin()),
           &factory_receiver, nullptr /* header_client */,
@@ -5157,7 +5158,7 @@ void RenderFrameHostImpl::CommitNavigation(
           pending_factory_proxy.InitWithNewPipeAndPassReceiver();
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
           browser_context, this, GetProcess()->GetID(),
-          false /* is_navigation */, false /* is_download */,
+          ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
           GetOriginForURLLoaderFactory(navigation_request)
               .value_or(url::Origin()),
           &factory_receiver, nullptr /* header_client */,
@@ -5878,9 +5879,10 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
 
   network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client;
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
-      context, this, GetProcess()->GetID(), false /* is_navigation */,
-      false /* is_download */, origin.value_or(url::Origin()),
-      &default_factory_receiver, &header_client, &bypass_redirect_checks);
+      context, this, GetProcess()->GetID(),
+      ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
+      origin.value_or(url::Origin()), &default_factory_receiver, &header_client,
+      &bypass_redirect_checks);
 
   // Keep DevTools proxy last, i.e. closest to the network.
   devtools_instrumentation::WillCreateURLLoaderFactory(

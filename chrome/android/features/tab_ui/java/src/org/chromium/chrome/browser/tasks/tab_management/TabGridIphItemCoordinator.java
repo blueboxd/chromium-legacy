@@ -13,7 +13,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
- * Coordinator for the IPH item in {@link GridTabSwitcherCoordinator}
+ * Coordinator for the IPH item in {@link TabSwitcherMediator}
  */
 class TabGridIphItemCoordinator {
     private final PropertyModelChangeProcessor mModelChangeProcessor;
@@ -29,6 +29,14 @@ class TabGridIphItemCoordinator {
                 TabGridIphItemViewBinder::bind);
 
         mMediator = new TabGridIphItemMediator(iphItemPropertyModel);
+    }
+
+    /**
+     * Get the provider to show IPH item.
+     * @return The {@link TabSwitcherMediator.IphProvider} used to show IPH.
+     */
+    TabSwitcherMediator.IphProvider getIphProvider() {
+        return mMediator;
     }
 
     /** Destroy the IPH component. */

@@ -66,7 +66,7 @@ void SessionRestorePageLoadMetricsObserver::OnFirstPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_paint.value(), extra_info)) {
+          timing.paint_timing->first_paint.value(), GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramSessionRestoreForegroundTabFirstPaint,
         timing.paint_timing->first_paint.value());
@@ -88,7 +88,7 @@ void SessionRestorePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_contentful_paint.value(), extra_info)) {
+          timing.paint_timing->first_contentful_paint.value(), GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramSessionRestoreForegroundTabFirstContentfulPaint,
         timing.paint_timing->first_contentful_paint.value());
@@ -100,7 +100,7 @@ void SessionRestorePageLoadMetricsObserver::
         const page_load_metrics::mojom::PageLoadTiming& timing,
         const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_meaningful_paint.value(), extra_info)) {
+          timing.paint_timing->first_meaningful_paint.value(), GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramSessionRestoreForegroundTabFirstMeaningfulPaint,
         timing.paint_timing->first_meaningful_paint.value());

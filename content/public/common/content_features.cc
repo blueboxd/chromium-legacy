@@ -158,7 +158,7 @@ const base::Feature kFeaturePolicyForSandbox{"FeaturePolicyForSandbox",
 // font name or postscript name. Rolling out behind a flag, as enabling this
 // enables a font indexer on Android which we need to test in the field first.
 const base::Feature kFontSrcLocalMatching{"FontSrcLocalMatching",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables scrollers inside Blink to store scroll offsets in fractional
 // floating-point numbers rather than truncating to integers.
@@ -723,7 +723,7 @@ const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames{
 // names ending in ".local" and resolve them using mDNS.
 // http://crbug.com/878465
 const base::Feature kWebRtcHideLocalIpsWithMdns{
-    "WebRtcHideLocalIpsWithMdns", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WebRtcHideLocalIpsWithMdns", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the WebUSB API is enabled:
 // https://wicg.github.io/webusb

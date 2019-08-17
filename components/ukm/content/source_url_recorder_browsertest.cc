@@ -161,9 +161,8 @@ IN_PROC_BROWSER_TEST_F(SourceUrlRecorderWebContentsObserverBrowserTest,
   EXPECT_NE(source->id(), ukm_entries[1]->source_id);
 }
 
-// Flaky on all OSes: https://crbug.com/951020
 IN_PROC_BROWSER_TEST_F(SourceUrlRecorderWebContentsObserverDownloadBrowserTest,
-                       DISABLED_IgnoreDownload) {
+                       IgnoreDownload) {
   GURL url(embedded_test_server()->GetURL("/download-test1.lib"));
   content::NavigationHandleObserver observer(shell()->web_contents(), url);
   content::NavigateToURL(shell(), url);

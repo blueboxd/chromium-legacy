@@ -66,6 +66,7 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
                     return false;
                 }
             };
+    private TabGridIphItemCoordinator mTabGridIphItemCoordinator;
 
     public TabSwitcherCoordinator(Context context, ActivityLifecycleDispatcher lifecycleDispatcher,
             TabModelSelector tabModelSelector, TabContentManager tabContentManager,
@@ -114,6 +115,12 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
                 container, dynamicResourceLoader, true, COMPONENT_NAME);
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabListCoordinator.getContainerView(), TabListContainerViewBinder::bind);
+
+        if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
+            mTabGridIphItemCoordinator = new TabGridIphItemCoordinator(
+                    context, mTabListCoordinator.getContainerView(), container);
+            mMediator.setIphProvider(mTabGridIphItemCoordinator.getIphProvider());
+        }
 
         mMenuOrKeyboardActionController = menuOrKeyboardActionController;
         mMenuOrKeyboardActionController.registerMenuOrKeyboardActionHandler(
@@ -240,6 +247,9 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
         }
         if (mUndoGroupSnackbarController != null) {
             mUndoGroupSnackbarController.destroy();
+        }
+        if (mTabGridIphItemCoordinator != null) {
+            mTabGridIphItemCoordinator.destroy();
         }
         mMediator.destroy();
         mLifecycleDispatcher.unregister(this);

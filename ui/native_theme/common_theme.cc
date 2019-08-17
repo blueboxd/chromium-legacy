@@ -81,8 +81,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
         return gfx::kGoogleGrey200;
       case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
-      case NativeTheme::kColorId_FocusedHighlightedMenuItemBackgroundColor:
-        return SkColorSetA(SK_ColorWHITE, 0x20);
+        return SkColorSetA(SK_ColorWHITE, 0x29);
       case NativeTheme::kColorId_MenuSeparatorColor:
         return SkColorSetA(gfx::kGoogleGrey800, 0xCC);
       case NativeTheme::kColorId_MenuBackgroundColor:
@@ -252,7 +251,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_MenuBackgroundColor:
       return SK_ColorWHITE;
     case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
-      return gfx::kGoogleGrey200;
+      return gfx::kGoogleGrey300;
     case NativeTheme::kColorId_DisabledMenuItemForegroundColor:
       return kDisabledTextColor;
     case NativeTheme::kColorId_MenuItemMinorTextColor:
@@ -261,8 +260,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return gfx::kGoogleGrey050;
     case NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
       return gfx::kGoogleGrey900;
-    case NativeTheme::kColorId_FocusedHighlightedMenuItemBackgroundColor:
-      return gfx::kGoogleGrey200;
     case NativeTheme::kColorId_MenuItemAlertBackgroundColorMax:
       return SkColorSetA(gfx::kGoogleBlue600, 0x1A);
     case NativeTheme::kColorId_MenuItemAlertBackgroundColorMin:

@@ -23,12 +23,10 @@
 #include "chromeos/services/device_sync/fake_device_sync.h"
 #include "chromeos/services/device_sync/public/cpp/fake_client_app_metadata_provider.h"
 #include "chromeos/services/device_sync/public/cpp/fake_gcm_device_info_provider.h"
-#include "chromeos/services/device_sync/public/mojom/constants.mojom.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -63,7 +61,8 @@ class FakeDeviceSyncImplFactory : public DeviceSyncImpl::Factory {
   std::unique_ptr<DeviceSyncBase> BuildInstance(
       signin::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
-      service_manager::Connector* connector,
+      mojo::PendingRemote<prefs::mojom::PrefStoreConnector>
+          pref_store_connector,
       const GcmDeviceInfoProvider* gcm_device_info_provider,
       ClientAppMetadataProvider* client_app_metadata_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -170,11 +169,17 @@ class DeviceSyncClientImplTest : public testing::Test {
               return nullptr;
             }));
 
+    mojo::Remote<mojom::DeviceSyncServiceInitializer> initializer;
     service_ = std::make_unique<DeviceSyncService>(
         identity_test_environment_->identity_manager(), fake_gcm_driver_.get(),
         fake_gcm_device_info_provider_.get(),
         fake_client_app_metadata_provider_.get(), shared_url_loader_factory,
-        connector_factory_.RegisterInstance(mojom::kServiceName));
+        initializer.BindNewPipeAndPassReceiver());
+
+    mojo::PendingRemote<prefs::mojom::PrefStoreConnector> pref_store_connector;
+    ignore_result(pref_store_connector.InitWithNewPipeAndPassReceiver());
+    initializer->Initialize(remote_service_.BindNewPipeAndPassReceiver(),
+                            std::move(pref_store_connector));
 
     test_observer_ = std::make_unique<TestDeviceSyncClientObserver>();
 
@@ -185,8 +190,8 @@ class DeviceSyncClientImplTest : public testing::Test {
     // DeviceSyncClient's constructor posts two tasks to the TaskRunner. Idle
     // the TaskRunner so that the tasks can be run via a RunLoop later on.
     auto test_task_runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
-    client_ = base::WrapUnique(new DeviceSyncClientImpl(
-        connector_factory_.GetDefaultConnector(), test_task_runner));
+    client_ = base::WrapUnique(
+        new DeviceSyncClientImpl(remote_service_.get(), test_task_runner));
     test_task_runner->RunUntilIdle();
   }
 
@@ -430,8 +435,8 @@ class DeviceSyncClientImplTest : public testing::Test {
       fake_client_app_metadata_provider_;
   FakeDeviceSync* fake_device_sync_;
   std::unique_ptr<FakeDeviceSyncImplFactory> fake_device_sync_impl_factory_;
-  service_manager::TestConnectorFactory connector_factory_;
   std::unique_ptr<DeviceSyncService> service_;
+  mojo::Remote<mojom::DeviceSyncService> remote_service_;
   std::unique_ptr<TestDeviceSyncClientObserver> test_observer_;
 
   std::unique_ptr<DeviceSyncClientImpl> client_;

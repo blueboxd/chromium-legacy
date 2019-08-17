@@ -69,7 +69,8 @@ void AudioFocusManager::RequestAudioFocus(
       std::make_unique<AudioFocusRequest>(
           weak_ptr_factory_.GetWeakPtr(), std::move(receiver),
           std::move(media_session), std::move(session_info), type, request_id,
-          GetBindingSourceName(), base::UnguessableToken::Create()),
+          GetBindingSourceName(), base::UnguessableToken::Create(),
+          GetBindingIdentity()),
       type);
 
   std::move(callback).Run(request_id);
@@ -92,7 +93,7 @@ void AudioFocusManager::RequestGroupedAudioFocus(
       std::make_unique<AudioFocusRequest>(
           weak_ptr_factory_.GetWeakPtr(), std::move(receiver),
           std::move(media_session), std::move(session_info), type, request_id,
-          GetBindingSourceName(), group_id),
+          GetBindingSourceName(), group_id, GetBindingIdentity()),
       type);
 
   std::move(callback).Run(true /* success */);
@@ -116,6 +117,7 @@ void AudioFocusManager::GetDebugInfoForRequest(
 
     row->ipc()->GetDebugInfo(base::BindOnce(
         [](const base::UnguessableToken& group_id,
+           const base::UnguessableToken& identity,
            GetDebugInfoForRequestCallback callback,
            mojom::MediaSessionDebugInfoPtr info) {
           // Inject the |group_id| into the state string. This is because in
@@ -125,9 +127,12 @@ void AudioFocusManager::GetDebugInfoForRequest(
             info->state += " ";
           info->state += "GroupId=" + group_id.ToString();
 
+          // Inject the identity into the state string.
+          info->state += " Identity=" + identity.ToString();
+
           std::move(callback).Run(std::move(info));
         },
-        row->group_id(), std::move(callback)));
+        row->group_id(), row->identity(), std::move(callback)));
     return;
   }
 
@@ -170,9 +175,13 @@ void AudioFocusManager::AddObserver(
   observers_.Add(std::move(observer));
 }
 
-void AudioFocusManager::SetSourceName(const std::string& name) {
+void AudioFocusManager::SetSource(const base::UnguessableToken& identity,
+                                  const std::string& name) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  bindings_.dispatch_context()->source_name = name;
+
+  auto& context = bindings_.dispatch_context();
+  context->identity = identity;
+  context->source_name = name;
 }
 
 void AudioFocusManager::SetEnforcementMode(mojom::EnforcementMode mode) {
@@ -338,6 +347,11 @@ bool AudioFocusManager::IsFocusEntryPresent(
 const std::string& AudioFocusManager::GetBindingSourceName() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return bindings_.dispatch_context()->source_name;
+}
+
+const base::UnguessableToken& AudioFocusManager::GetBindingIdentity() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return bindings_.dispatch_context()->identity;
 }
 
 bool AudioFocusManager::IsSessionOnTopOfAudioFocusStack(

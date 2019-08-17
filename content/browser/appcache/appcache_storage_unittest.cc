@@ -4,11 +4,11 @@
 
 #include "content/browser/appcache/appcache_storage.h"
 
-#include "base/test/scoped_task_environment.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/mock_appcache_service.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,7 +24,7 @@ class AppCacheStorageTest : public testing::Test {
   };
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(AppCacheStorageTest, AddRemoveCache) {

@@ -84,9 +84,7 @@ class SysmemBufferCollection
   bool InitializeInternal(
       fuchsia::sysmem::Allocator_Sync* allocator,
       fuchsia::sysmem::BufferCollectionTokenSyncPtr collection_token,
-      size_t buffers_for_camping,
-      base::Optional<fuchsia::sysmem::ImageFormatConstraints>
-          image_format_constraints);
+      size_t buffers_for_camping);
 
   void InitializeImageCreateInfo(VkImageCreateInfo* vk_image_info,
                                  gfx::Size size);

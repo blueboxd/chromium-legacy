@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
@@ -247,17 +248,15 @@ TEST_F(CorePageLoadMetricsObserverTest, OnlyBackgroundLaterEvents) {
   PopulateRequiredTimingFields(&timing);
   SimulateTimingUpdate(timing);
 
-  // If the system clock is low resolution, PageLoadTracker's
-  // first_background_time_ may be same as other times such as
-  // dom_content_loaded_event_start.
-  page_load_metrics::PageLoadExtraInfo info =
-      GetPageLoadExtraInfoForCommittedLoad();
-
   // Navigate again to force histogram recording.
   NavigateAndCommit(GURL(kDefaultTestUrl2));
 
+  // If the system clock is low resolution, PageLoadTracker's
+  // first_background_time_ may be same as other times such as
+  // dom_content_loaded_event_start.
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing->dom_content_loaded_event_start, info)) {
+          timing.document_timing->dom_content_loaded_event_start,
+          GetDelegateForCommittedLoad())) {
     histogram_tester().ExpectTotalCount(internal::kHistogramDomContentLoaded,
                                         1);
     histogram_tester().ExpectBucketCount(

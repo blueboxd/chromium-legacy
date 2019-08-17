@@ -15,8 +15,7 @@ def plist_read(*args):
         '$W/App Product.app/Contents/Info.plist': {
             'CFBundleIdentifier': bundle_id,
             'KSProductID': 'test.ksproduct',
-            'KSChannelID': 'stable',
-            'KSChannelID-full': 'stable',
+            'KSChannelID-full': '-full',
         },
         '$W/App Product Canary.app/Contents/Frameworks/Product Framework.framework/XPCServices/AlertNotificationService.xpc/Contents/Info.plist':
             {
@@ -90,7 +89,8 @@ class TestModification(unittest.TestCase):
         plistlib.writePlist.assert_called_with(
             {
                 'CFBundleIdentifier': config.base_bundle_id,
-                'KSProductID': 'test.ksproduct'
+                'KSProductID': 'test.ksproduct',
+                'KSChannelID-full': '-full'
             },
             '$W/App Product.app/Contents/Info.plist',
         )
@@ -122,7 +122,8 @@ class TestModification(unittest.TestCase):
             {
                 'CFBundleIdentifier': config.base_bundle_id,
                 'KSProductID': 'test.ksproduct',
-                'KSBrandID': 'MOO'
+                'KSBrandID': 'MOO',
+                'KSChannelID-full': '-full'
             },
             '$W/App Product.app/Contents/Info.plist',
         )
@@ -186,6 +187,7 @@ class TestModification(unittest.TestCase):
             {
                 'CFBundleIdentifier': config.base_bundle_id,
                 'KSProductID': 'test.ksproduct',
+                'KSChannelID-full': '-full',
                 'CrProductDirName': 'Farmland/Cows'
             },
             '$W/App Product.app/Contents/Info.plist',
@@ -218,6 +220,7 @@ class TestModification(unittest.TestCase):
             {
                 'CFBundleIdentifier': config.base_bundle_id,
                 'KSProductID': 'test.ksproduct',
+                'KSChannelID-full': '-full',
                 'CFBundleSignature': 'Mooo'
             },
             '$W/App Product.app/Contents/Info.plist',

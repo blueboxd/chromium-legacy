@@ -26,7 +26,9 @@ public class ButtonPreference extends Preference {
         super(context, attrs);
         setLayoutResource(R.layout.button_preference_layout);
         setWidgetLayoutResource(R.layout.button_preference_button);
-        setSelectable(true);
+
+        // Only the inner button element should be focusable.
+        setSelectable(false);
     }
 
     @Override
@@ -39,8 +41,5 @@ public class ButtonPreference extends Preference {
                 getOnPreferenceClickListener().onPreferenceClick(ButtonPreference.this);
             }
         });
-
-        // Prevent triggering an event after tapping any part of the view that is not the button.
-        holder.itemView.setClickable(false);
     }
 }

@@ -78,6 +78,8 @@ class CONTENT_EXPORT DownloadManagerImpl
   void Shutdown() override;
   void GetAllDownloads(
       download::SimpleDownloadManager::DownloadVector* result) override;
+  void GetUninitializedActiveDownloadsIfAny(
+      download::SimpleDownloadManager::DownloadVector* result) override;
   void StartDownload(std::unique_ptr<download::DownloadCreateInfo> info,
                      std::unique_ptr<download::InputStream> stream,
                      scoped_refptr<download::DownloadURLLoaderFactoryGetter>

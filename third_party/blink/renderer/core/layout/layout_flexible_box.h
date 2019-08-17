@@ -172,9 +172,6 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 
   void LayoutFlexItems(bool relayout_children, SubtreeLayoutScope&);
   bool HasAutoMarginsInCrossAxis(const LayoutBox& child) const;
-  // Returns true if either of cross axis margins is non-auto.
-  bool UpdateAutoMarginsInCrossAxis(LayoutBox& child,
-                                    LayoutUnit available_alignment_space);
   void RepositionLogicalHeightDependentFlexItems(
       FlexLayoutAlgorithm& algorithm);
   LayoutUnit ClientLogicalBottomAfterRepositioning();

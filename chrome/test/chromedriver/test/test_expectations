@@ -29,9 +29,6 @@ _NEGATIVE_FILTER = [
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1960
     'CombinedInputActionsTest.testChordControlCutAndPaste',
-
-    #https://bugs.chromium.org/p/chromedriver/issues/detail?id=2971
-    'ChromeDevToolsProfilerTest.sampleProfileEvents',
 ]
 
 _READY_TO_RUN_FILTER = [

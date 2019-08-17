@@ -409,7 +409,7 @@ class MdnsResponderManager::SocketHandler {
         socket_(std::move(socket)),
         responder_manager_(responder_manager),
         io_buffer_(base::MakeRefCounted<net::IOBufferWithSize>(
-            net::dns_protocol::kMaxUDPSize + 1)) {}
+            net::dns_protocol::kMaxMulticastSize + 1)) {}
   ~SocketHandler() = default;
 
   int Start() {

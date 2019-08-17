@@ -95,11 +95,6 @@
 #include "content/public/android/content_jni_headers/ContentNfcDelegate_jni.h"
 #endif
 
-#if defined(OS_LINUX)
-#include "components/services/font/font_service_app.h"
-#include "components/services/font/public/mojom/constants.mojom.h"  // nogncheck
-#endif
-
 namespace content {
 
 namespace {
@@ -323,13 +318,6 @@ void CreateInProcessAudioService(
                      },
                      BrowserMainLoop::GetAudioManager(), std::move(request)));
 }
-
-#if defined(OS_LINUX)
-std::unique_ptr<service_manager::Service> CreateFontService(
-    service_manager::mojom::ServiceRequest request) {
-  return std::make_unique<font_service::FontServiceApp>(std::move(request));
-}
-#endif  // defined(OS_LINUX)
 
 std::unique_ptr<service_manager::Service> CreateResourceCoordinatorService(
     service_manager::mojom::ServiceRequest request) {
@@ -622,15 +610,6 @@ ServiceManagerContext::ServiceManagerContext(
                              base::SequencedTaskRunnerHandle::Get(),
                              base::BindRepeating(&CreateMediaSessionService));
   }
-
-#if defined(OS_LINUX)
-  RegisterInProcessService(
-      font_service::mojom::kServiceName,
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::WithBaseSyncPrimitives(),
-                                       base::TaskPriority::USER_BLOCKING}),
-      base::BindRepeating(&CreateFontService));
-#endif
 
   // This is safe to assign directly from any thread, because
   // ServiceManagerContext must be constructed before anyone can call

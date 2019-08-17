@@ -6,6 +6,7 @@ module chromeos.device_sync.mojom;
 
 import "chromeos/components/multidevice/mojom/multidevice_types.mojom";
 import "mojo/public/mojom/base/time.mojom";
+import "services/preferences/public/mojom/preferences.mojom";
 
 enum NetworkRequestResult {
   // Successful network request.
@@ -146,3 +147,20 @@ interface DeviceSync {
   //                  refactored out of DeviceSync.
   GetDebugInfo() => (DebugInfo? debug_info);
 };
+
+// The main interface to the Device Sync service, used to initialized a new
+// instance of the service.
+interface DeviceSyncServiceInitializer {
+  // Initializes the service instance, binding a DeviceSyncService endpoint
+  // with access to a given PrefStoreConnector.
+  Initialize(
+      pending_receiver<DeviceSyncService> receiver,
+      pending_remote<prefs.mojom.PrefStoreConnector> pref_store_connector);
+};
+
+// The main interface to the Device Sync service.
+interface DeviceSyncService {
+  // Binds a new DeviceSync endpoint.
+  BindDeviceSync(pending_receiver<DeviceSync> receiver);
+};
+

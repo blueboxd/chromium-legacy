@@ -148,7 +148,7 @@ content::WebUIDataSource* CreateBrowserSwitchUIHTMLSource(
   source->AddResourcePath("internals/", IDR_BROWSER_SWITCH_INTERNALS_HTML);
   source->AddResourcePath("internals", IDR_BROWSER_SWITCH_INTERNALS_HTML);
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
 
   return source;
 }

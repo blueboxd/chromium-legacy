@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.preferences.datareduction;
 
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.graphics.drawable.VectorDrawableCompat;
@@ -110,6 +111,15 @@ public class DataReductionPreferenceFragment extends PreferenceFragmentCompat {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        // Force rebinding of preferences on orientation change, otherwise the usage chart will not
+        // be correctly redrawn: https://crbug.com/994668.
+        getListView().getAdapter().notifyDataSetChanged();
+
+        super.onConfigurationChanged(newConfig);
     }
 
     /**

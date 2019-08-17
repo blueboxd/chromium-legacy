@@ -162,7 +162,7 @@ GCMInternalsUI::GCMInternalsUI(web::WebUIIOS* web_ui)
   web::WebUIIOSDataSource* html_source =
       web::WebUIIOSDataSource::Create(kChromeUIGCMInternalsHost);
 
-  html_source->SetJsonPath("strings.js");
+  html_source->UseStringsJs();
 
   // Add required resources.
   html_source->AddResourcePath(gcm_driver::kGcmInternalsCSS,

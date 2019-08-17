@@ -16,6 +16,7 @@ import android.text.style.StyleSpan;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.task.AsyncTask;
@@ -23,6 +24,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadMetrics;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -74,7 +76,6 @@ public class DuplicateDownloadInfoBar extends ConfirmInfoBar {
      * @param template Template of the text to be displayed.
      */
     private CharSequence getDownloadMessageText(final Context context, final String template) {
-        // TODO(qinmin): fix the case that mFilePath is a content Uri.
         final File file = new File(mFilePath);
         final Uri fileUri = Uri.fromFile(file);
         final String mimeType = getMimeTypeFromUri(fileUri);
@@ -82,24 +83,32 @@ public class DuplicateDownloadInfoBar extends ConfirmInfoBar {
         return getMessageText(template, filename, new ClickableSpan() {
             @Override
             public void onClick(View view) {
-                new AsyncTask<Boolean>() {
+                new AsyncTask<String>() {
                     @Override
-                    protected Boolean doInBackground() {
-                        return new File(mFilePath).exists();
+                    protected String doInBackground() {
+                        if (BuildInfo.isAtLeastQ()
+                                && DownloadCollectionBridge.getDownloadCollectionBridge()
+                                           .needToPublishDownload(mFilePath)) {
+                            Uri uri = DownloadCollectionBridge.getDownloadCollectionBridge()
+                                              .getDownloadUriForFileName(filename);
+                            return uri == null ? null : uri.toString();
+                        } else {
+                            if (file.exists()) return mFilePath;
+                            return null;
+                        }
                     }
 
                     @Override
-                    protected void onPostExecute(Boolean fileExists) {
-                        if (fileExists) {
-                            DownloadUtils.openFile(mFilePath, mimeType, null, mIsIncognito, null,
+                    protected void onPostExecute(String filePath) {
+                        if (filePath != null) {
+                            DownloadUtils.openFile(filePath, mimeType, null, mIsIncognito, null,
                                     null, DownloadMetrics.DownloadOpenSource.INFO_BAR);
                         } else {
                             DownloadManagerService.openDownloadsPage(
                                     ContextUtils.getApplicationContext());
                         }
                     }
-                }
-                        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
         });
     }

@@ -13,6 +13,7 @@ import android.util.JsonWriter;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -155,7 +156,10 @@ public class AutofillPaymentInstrument extends PaymentInstrument
 
     @Override
     public boolean canMakePayment() {
-        return mHasValidNumberAndName; // Ignore absence of billing address.
+        return PaymentsExperimentalFeatures.isEnabled(
+                       ChromeFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT)
+                ? getMissingFields() == CompletionStatus.COMPLETE && mHaveRequestedAutofillData
+                : mHasValidNumberAndName;
     }
 
     @Override

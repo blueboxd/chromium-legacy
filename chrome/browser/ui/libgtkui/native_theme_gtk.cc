@@ -126,7 +126,6 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     // Fallback to the same colors as Aura.
     case ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
     case ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
-    case ui::NativeTheme::kColorId_FocusedHighlightedMenuItemBackgroundColor:
     case ui::NativeTheme::kColorId_MenuItemAlertBackgroundColorMax:
     case ui::NativeTheme::kColorId_MenuItemAlertBackgroundColorMin:
       return ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(

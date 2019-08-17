@@ -20,6 +20,7 @@
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/db/v4_update_protocol_manager.h"
 #include "components/safe_browsing/proto/webui.pb.h"
+#include "components/safe_browsing/realtime/url_lookup_service.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {
@@ -77,6 +78,8 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   bool IsDownloadProtectionEnabled() const override;
   bool IsSupported() const override;
 
+  RealTimeUrlLookupService* GetRealTimeUrlLookupService() override;
+
   void StartOnIOThread(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const V4ProtocolConfig& config) override;
@@ -104,7 +107,7 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
 
   ~V4LocalDatabaseManager() override;
 
-  enum class ClientCallbackType {
+  enum class ClientCallbackType : int {
     // This represents the case when we're trying to determine if a URL is
     // unsafe from the following perspectives: Malware, Phishing, UwS.
     CHECK_BROWSE_URL,
@@ -309,6 +312,10 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // callback for |DatabaseReady| when the database is ready for use.
   void SetupDatabase();
 
+  // Instantiates and initializes |rt_url_lookup_service_|.
+  void SetupRealTimeUrlLookupService(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+
   // Instantiates and initializes |v4_update_protocol_manager_|.
   void SetupUpdateProtocolManager(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -366,6 +373,8 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // The checks that need to be scheduled when the database becomes ready for
   // use.
   QueuedChecks queued_checks_;
+
+  std::unique_ptr<RealTimeUrlLookupService> rt_url_lookup_service_;
 
   // The sequenced task runner for running safe browsing database operations.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

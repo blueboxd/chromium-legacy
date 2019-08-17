@@ -44,8 +44,9 @@ class WebUIIOSDataSource : public base::SupportsUserData {
   // Adds a boolean keyed to its name to our dictionary.
   virtual void AddBoolean(const std::string& name, bool value) = 0;
 
-  // Sets the path which will return the JSON strings.
-  virtual void SetJsonPath(const std::string& path) = 0;
+  // Call this to enable a virtual "strings.js" (or "strings.m.js" for modules)
+  // URL that provides translations and dynamic data when requested.
+  virtual void UseStringsJs() = 0;
 
   // Adds a mapping between a path name and a resource to return.
   virtual void AddResourcePath(const std::string& path, int resource_id) = 0;

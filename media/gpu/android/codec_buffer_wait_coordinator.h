@@ -9,7 +9,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "media/gpu/android/texture_owner.h"
+#include "gpu/ipc/common/android/texture_owner.h"
 #include "media/gpu/media_gpu_export.h"
 
 namespace media {
@@ -23,9 +23,9 @@ class MEDIA_GPU_EXPORT CodecBufferWaitCoordinator
     : public base::RefCountedThreadSafe<CodecBufferWaitCoordinator> {
  public:
   explicit CodecBufferWaitCoordinator(
-      scoped_refptr<TextureOwner> texture_owner);
+      scoped_refptr<gpu::TextureOwner> texture_owner);
 
-  scoped_refptr<TextureOwner> texture_owner() { return texture_owner_; }
+  scoped_refptr<gpu::TextureOwner> texture_owner() { return texture_owner_; }
 
   // Codec buffer wait management apis.
   // Sets the expectation of onFrameAVailable for a new frame because a buffer
@@ -50,7 +50,7 @@ class MEDIA_GPU_EXPORT CodecBufferWaitCoordinator
  private:
   friend class base::RefCountedThreadSafe<CodecBufferWaitCoordinator>;
 
-  scoped_refptr<TextureOwner> texture_owner_;
+  scoped_refptr<gpu::TextureOwner> texture_owner_;
   base::TimeTicks release_time_;
   scoped_refptr<FrameAvailableEvent> frame_available_event_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

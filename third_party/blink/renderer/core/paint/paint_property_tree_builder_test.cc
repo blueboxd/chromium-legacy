@@ -5972,8 +5972,9 @@ TEST_P(PaintPropertyTreeBuilderTest, RepeatingTableSectionInPagedMedia) {
     <div></div>
   )HTML");
 
-  const auto* head = ToLayoutTableSection(GetLayoutObjectByElementId("head"));
-  const auto* foot = ToLayoutTableSection(GetLayoutObjectByElementId("foot"));
+  // TODO(958381) Make this code TableNG compatible.
+  const auto* head = To<LayoutTableSection>(GetLayoutObjectByElementId("head"));
+  const auto* foot = To<LayoutTableSection>(GetLayoutObjectByElementId("foot"));
   EXPECT_FALSE(head->IsRepeatingHeaderGroup());
   EXPECT_EQ(1u, NumFragments(head));
   EXPECT_EQ(1u, NumFragments(head->FirstRow()));
@@ -5987,8 +5988,8 @@ TEST_P(PaintPropertyTreeBuilderTest, RepeatingTableSectionInPagedMedia) {
   GetFrame().StartPrinting(page_size, page_size, 1);
   GetDocument().View()->UpdateLifecyclePhasesForPrinting();
   // In LayoutNG, these may be different objects
-  head = ToLayoutTableSection(GetLayoutObjectByElementId("head"));
-  foot = ToLayoutTableSection(GetLayoutObjectByElementId("foot"));
+  head = To<LayoutTableSection>(GetLayoutObjectByElementId("head"));
+  foot = To<LayoutTableSection>(GetLayoutObjectByElementId("foot"));
 
   // "fixed" should create fragments to repeat in each printed page.
   EXPECT_TRUE(head->IsRepeatingHeaderGroup());
@@ -6023,8 +6024,8 @@ TEST_P(PaintPropertyTreeBuilderTest, RepeatingTableSectionInPagedMedia) {
 
   GetFrame().EndPrinting();
   UpdateAllLifecyclePhasesForTest();
-  head = ToLayoutTableSection(GetLayoutObjectByElementId("head"));
-  foot = ToLayoutTableSection(GetLayoutObjectByElementId("foot"));
+  head = To<LayoutTableSection>(GetLayoutObjectByElementId("head"));
+  foot = To<LayoutTableSection>(GetLayoutObjectByElementId("foot"));
   EXPECT_FALSE(head->IsRepeatingHeaderGroup());
   EXPECT_EQ(1u, NumFragments(head));
   EXPECT_EQ(1u, NumFragments(head->FirstRow()));

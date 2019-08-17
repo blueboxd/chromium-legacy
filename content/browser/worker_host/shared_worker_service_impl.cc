@@ -70,7 +70,7 @@ bool SharedWorkerServiceImpl::TerminateWorker(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (auto& host : worker_hosts_) {
     if (host->IsAvailable() &&
-        host->instance()->Matches(url, name, constructor_origin)) {
+        host->instance().Matches(url, name, constructor_origin)) {
       host->TerminateWorker();
       return true;
     }
@@ -140,16 +140,16 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     return;
   }
 
-  auto instance = std::make_unique<SharedWorkerInstance>(
+  SharedWorkerInstance instance(
       info->url, info->name, render_frame_host->GetLastCommittedOrigin(),
       info->content_security_policy, info->content_security_policy_type,
       info->creation_address_space, creation_context_type);
 
-  SharedWorkerHost* host = FindAvailableSharedWorkerHost(*instance);
+  SharedWorkerHost* host = FindAvailableSharedWorkerHost(instance);
   if (host) {
     // Non-secure contexts cannot connect to secure workers, and secure contexts
     // cannot connect to non-secure workers:
-    if (host->instance()->creation_context_type() != creation_context_type) {
+    if (host->instance().creation_context_type() != creation_context_type) {
       client->OnScriptLoadFailed();
       return;
     }
@@ -181,8 +181,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
       storage_partition_->browser_context(), site_instance->GetSiteURL(),
       /*can_be_default=*/true, &storage_domain, &partition_name, &in_memory);
 
-  CreateWorker(std::move(instance),
-               std::move(outside_fetch_client_settings_object),
+  CreateWorker(instance, std::move(outside_fetch_client_settings_object),
                std::move(client), client_process_id, frame_id, storage_domain,
                message_port, std::move(blob_url_loader_factory));
 }
@@ -197,7 +196,7 @@ void SharedWorkerServiceImpl::DestroyHost(SharedWorkerHost* host) {
 }
 
 void SharedWorkerServiceImpl::CreateWorker(
-    std::unique_ptr<SharedWorkerInstance> instance,
+    const SharedWorkerInstance& instance,
     blink::mojom::FetchClientSettingsObjectPtr
         outside_fetch_client_settings_object,
     blink::mojom::SharedWorkerClientPtr client,
@@ -208,14 +207,14 @@ void SharedWorkerServiceImpl::CreateWorker(
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!IsShuttingDown(RenderProcessHost::FromID(client_process_id)));
-  DCHECK(!blob_url_loader_factory || instance->url().SchemeIsBlob());
+  DCHECK(!blob_url_loader_factory || instance.url().SchemeIsBlob());
 
   // Create the host. We need to do this even before starting the worker,
   // because we are about to bounce to the IO thread. If another ConnectToWorker
   // request arrives in the meantime, it finds and reuses the host instead of
   // creating a new host and therefore new SharedWorker thread.
-  auto host = std::make_unique<SharedWorkerHost>(this, std::move(instance),
-                                                 client_process_id);
+  auto host =
+      std::make_unique<SharedWorkerHost>(this, instance, client_process_id);
   auto weak_host = host->AsWeakPtr();
   worker_hosts_.insert(std::move(host));
 
@@ -242,8 +241,8 @@ void SharedWorkerServiceImpl::CreateWorker(
   url::Origin origin(render_frame_host->frame_tree_node()->current_origin());
 
   WorkerScriptFetchInitiator::Start(
-      weak_host->worker_process_id(), weak_host->instance()->url(),
-      weak_host->instance()->constructor_origin(),
+      weak_host->worker_process_id(), weak_host->instance().url(),
+      weak_host->instance().constructor_origin(),
       net::NetworkIsolationKey(origin, origin), credentials_mode,
       std::move(outside_fetch_client_settings_object),
       ResourceType::kSharedWorker, service_worker_context_,
@@ -251,13 +250,13 @@ void SharedWorkerServiceImpl::CreateWorker(
       std::move(blob_url_loader_factory), url_loader_factory_override_,
       storage_partition_, storage_domain,
       base::BindOnce(&SharedWorkerServiceImpl::DidCreateScriptLoader,
-                     weak_factory_.GetWeakPtr(), std::move(instance), weak_host,
+                     weak_factory_.GetWeakPtr(), instance, weak_host,
                      std::move(client), client_process_id, frame_id,
                      message_port));
 }
 
 void SharedWorkerServiceImpl::DidCreateScriptLoader(
-    std::unique_ptr<SharedWorkerInstance> instance,
+    const SharedWorkerInstance& instance,
     base::WeakPtr<SharedWorkerHost> host,
     blink::mojom::SharedWorkerClientPtr client,
     int process_id,
@@ -282,15 +281,14 @@ void SharedWorkerServiceImpl::DidCreateScriptLoader(
   // TODO(https://crbug.com/986188): Check if the main script's final response
   // URL is commitable.
 
-  StartWorker(std::move(instance), std::move(host), std::move(client),
-              process_id, frame_id, message_port,
-              std::move(subresource_loader_factories),
+  StartWorker(instance, std::move(host), std::move(client), process_id,
+              frame_id, message_port, std::move(subresource_loader_factories),
               std::move(main_script_load_params), std::move(controller),
               std::move(controller_service_worker_object_host));
 }
 
 void SharedWorkerServiceImpl::StartWorker(
-    std::unique_ptr<SharedWorkerInstance> instance,
+    const SharedWorkerInstance& instance,
     base::WeakPtr<SharedWorkerHost> host,
     blink::mojom::SharedWorkerClientPtr client,
     int client_process_id,
@@ -321,7 +319,7 @@ void SharedWorkerServiceImpl::StartWorker(
 
   // Get the factory used to instantiate the new shared worker instance in
   // the target process.
-  blink::mojom::SharedWorkerFactoryPtr factory;
+  mojo::PendingRemote<blink::mojom::SharedWorkerFactory> factory;
   BindInterface(worker_process_host, &factory);
 
   host->Start(std::move(factory), std::move(main_script_load_params),
@@ -333,7 +331,7 @@ void SharedWorkerServiceImpl::StartWorker(
 SharedWorkerHost* SharedWorkerServiceImpl::FindAvailableSharedWorkerHost(
     const SharedWorkerInstance& instance) {
   for (auto& host : worker_hosts_) {
-    if (host->IsAvailable() && host->instance()->Matches(instance))
+    if (host->IsAvailable() && host->instance().Matches(instance))
       return host.get();
   }
   return nullptr;

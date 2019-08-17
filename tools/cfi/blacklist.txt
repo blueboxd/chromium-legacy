@@ -32,6 +32,9 @@ src:*atlcoll.h
 # https://github.com/grpc/grpc/issues/19375
 src:*third_party/grpc/src/src/core/lib/gprpp/inlined_vector.h
 
+# https://crbug.com/994752
+src:*third_party/spirv-cross/spirv-cross/spirv_cross_containers.hpp
+
 #############################################################################
 # Base class's constructor accesses a derived class.
 

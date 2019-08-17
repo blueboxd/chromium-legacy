@@ -30,7 +30,7 @@ CastUI::CastUI(content::WebUI* web_ui)
 
   html_source->AddResourcePath("cast.js", IDR_CAST_JS);
   html_source->AddString("extensionId", extension_id);
-  html_source->SetJsonPath("strings.js");
+  html_source->UseStringsJs();
   html_source->SetDefaultResource(IDR_CAST_HTML);
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);

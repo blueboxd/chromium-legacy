@@ -143,8 +143,8 @@ class MetricsWebContentsObserver
   // notification.
   void FlushMetricsOnAppEnterBackground();
 
-  // This getter function is required for testing.
-  const PageLoadExtraInfo GetPageLoadExtraInfoForCommittedLoad();
+  // Returns the delegate for the current committed load, required for testing.
+  const PageLoadMetricsObserverDelegate& GetDelegateForCommittedLoad();
 
   // Register / unregister TestingObservers. Should only be called from tests.
   void AddTestingObserver(TestingObserver* observer);

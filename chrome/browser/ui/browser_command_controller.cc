@@ -38,12 +38,11 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
 #include "chrome/common/content_restriction.h"
 #include "chrome/common/pref_names.h"
@@ -458,7 +457,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       break;
     case IDC_OPEN_IN_PWA_WINDOW:
       base::RecordAction(base::UserMetricsAction("OpenActiveTabInPwaWindow"));
-      ReparentSecureActiveTabIntoPwaWindow(browser_);
+      web_app::ReparentWebAppForSecureActiveTab(browser_);
       break;
 
 #if defined(OS_CHROMEOS)

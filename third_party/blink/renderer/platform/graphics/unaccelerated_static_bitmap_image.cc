@@ -79,8 +79,7 @@ UnacceleratedStaticBitmapImage::MakeAccelerated(
     return nullptr;  // Can happen if the context is lost.
 
   sk_sp<SkImage> sk_image = paint_image_.GetSkImage();
-  sk_sp<SkImage> gpu_skimage =
-      sk_image->makeTextureImage(grcontext, sk_image->colorSpace());
+  sk_sp<SkImage> gpu_skimage = sk_image->makeTextureImage(grcontext);
   if (!gpu_skimage)
     return nullptr;
 

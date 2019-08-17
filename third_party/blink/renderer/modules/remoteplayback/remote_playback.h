@@ -6,7 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_REMOTEPLAYBACK_REMOTE_PLAYBACK_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -170,9 +171,10 @@ class MODULES_EXPORT RemotePlayback final
   String presentation_id_;
   KURL presentation_url_;
 
-  mojo::Binding<mojom::blink::PresentationConnection>
-      presentation_connection_binding_;
-  mojom::blink::PresentationConnectionPtr target_presentation_connection_;
+  mojo::Receiver<mojom::blink::PresentationConnection>
+      presentation_connection_receiver_{this};
+  mojo::Remote<mojom::blink::PresentationConnection>
+      target_presentation_connection_;
 
   HeapHashSet<Member<RemotePlaybackObserver>> observers_;
 

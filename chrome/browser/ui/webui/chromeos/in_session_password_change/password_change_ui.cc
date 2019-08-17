@@ -89,7 +89,7 @@ PasswordChangeUI::PasswordChangeUI(content::WebUI* web_ui)
       std::make_unique<PasswordChangeHandler>(password_change_url));
 
   source->AddString("hostedHeader", GetHostedHeaderText(password_change_url));
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
 
   source->SetDefaultResource(IDR_PASSWORD_CHANGE_HTML);
 
@@ -134,7 +134,7 @@ ConfirmPasswordChangeUI::ConfirmPasswordChangeUI(content::WebUI* web_ui)
   AddSize(source, "New", ConfirmPasswordChangeDialog::GetSize(false, true));
   AddSize(source, "OldNew", ConfirmPasswordChangeDialog::GetSize(true, true));
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->SetDefaultResource(IDR_CONFIRM_PASSWORD_CHANGE_HTML);
   source->AddResourcePath("confirm_password_change.js",
                           IDR_CONFIRM_PASSWORD_CHANGE_JS);
@@ -172,7 +172,7 @@ UrgentPasswordExpiryNotificationUI::UrgentPasswordExpiryNotificationUI(
   AddLocalizedStringsBulk(source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->SetDefaultResource(IDR_URGENT_PASSWORD_EXPIRY_NOTIFICATION_HTML);
   source->AddResourcePath("urgent_password_expiry_notification.js",
                           IDR_URGENT_PASSWORD_EXPIRY_NOTIFICATION_JS);

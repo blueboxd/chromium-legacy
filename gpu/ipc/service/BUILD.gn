@@ -115,6 +115,7 @@ jumbo_component("service") {
       "stream_texture_android.h",
     ]
     libs += [ "android" ]
+    public_deps += [ "//gpu/ipc/common:android_texture_owner" ]
   }
   if (is_linux) {
     sources += [ "image_transport_surface_linux.cc" ]

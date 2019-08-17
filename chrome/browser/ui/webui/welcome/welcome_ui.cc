@@ -201,7 +201,7 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&HandleRequestCallback,
                           weak_ptr_factory_.GetWeakPtr()));
-  html_source->SetJsonPath("strings.js");
+  html_source->UseStringsJs();
 
   content::WebUIDataSource::Add(profile, html_source);
 }

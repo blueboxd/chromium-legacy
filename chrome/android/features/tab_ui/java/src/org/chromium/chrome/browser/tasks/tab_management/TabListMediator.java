@@ -26,6 +26,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -833,9 +834,9 @@ class TabListMediator {
      * @return The callback that hosts the logic for swipe and drag related actions.
      */
     ItemTouchHelper.SimpleCallback getItemTouchHelperCallback(final float swipeToDismissThreshold,
-            final float mergeThreshold, final float ungroupThreshold) {
+            final float mergeThreshold, final float ungroupThreshold, final Profile profile) {
         mTabGridItemTouchHelperCallback.setupCallback(
-                swipeToDismissThreshold, mergeThreshold, ungroupThreshold);
+                swipeToDismissThreshold, mergeThreshold, ungroupThreshold, profile);
         return mTabGridItemTouchHelperCallback;
     }
 
@@ -976,10 +977,9 @@ class TabListMediator {
     }
 
     int indexOfSelected() {
-        if (mNextTabId != Tab.INVALID_TAB_ID) {
-            return getIndexOfTab(
-                    TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), mNextTabId),
-                    !mActionsOnAllRelatedTabs);
+        Tab nextTab = TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), mNextTabId);
+        if (nextTab != null) {
+            return getIndexOfTab(nextTab, !mActionsOnAllRelatedTabs);
         }
 
         return mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().index();

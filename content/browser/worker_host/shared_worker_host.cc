@@ -19,7 +19,6 @@
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/worker_host/shared_worker_content_settings_proxy_impl.h"
-#include "content/browser/worker_host/shared_worker_instance.h"
 #include "content/browser/worker_host/shared_worker_service_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -76,17 +75,15 @@ class SharedWorkerHost::ScopedDevToolsHandle {
   DISALLOW_COPY_AND_ASSIGN(ScopedDevToolsHandle);
 };
 
-SharedWorkerHost::SharedWorkerHost(
-    SharedWorkerServiceImpl* service,
-    std::unique_ptr<SharedWorkerInstance> instance,
-    int worker_process_id)
+SharedWorkerHost::SharedWorkerHost(SharedWorkerServiceImpl* service,
+                                   const SharedWorkerInstance& instance,
+                                   int worker_process_id)
     : binding_(this),
       service_(service),
-      instance_(std::move(instance)),
+      instance_(instance),
       worker_process_id_(worker_process_id),
       next_connection_request_id_(1),
       interface_provider_binding_(this) {
-  DCHECK(instance_);
   // Set up the worker interface request. This is needed first in either
   // AddClient() or Start(). AddClient() can sometimes be called before Start()
   // when two clients call new SharedWorker() at around the same time.
@@ -133,7 +130,7 @@ void SharedWorkerHost::SetNetworkFactoryForTesting(
 }
 
 void SharedWorkerHost::Start(
-    blink::mojom::SharedWorkerFactoryPtr factory,
+    mojo::PendingRemote<blink::mojom::SharedWorkerFactory> factory,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
@@ -148,9 +145,9 @@ void SharedWorkerHost::Start(
   AdvanceTo(Phase::kStarted);
 
   blink::mojom::SharedWorkerInfoPtr info(blink::mojom::SharedWorkerInfo::New(
-      instance_->url(), instance_->name(), instance_->content_security_policy(),
-      instance_->content_security_policy_type(),
-      instance_->creation_address_space()));
+      instance_.url(), instance_.name(), instance_.content_security_policy(),
+      instance_.content_security_policy_type(),
+      instance_.creation_address_space()));
 
   // Register with DevTools.
   bool pause_on_start;
@@ -174,7 +171,7 @@ void SharedWorkerHost::Start(
   // Set up content settings interface.
   blink::mojom::WorkerContentSettingsProxyPtr content_settings;
   content_settings_ = std::make_unique<SharedWorkerContentSettingsProxyImpl>(
-      instance_->url(), this, mojo::MakeRequest(&content_settings));
+      instance_.url(), this, mojo::MakeRequest(&content_settings));
 
   // Set up host interface.
   blink::mojom::SharedWorkerHostPtr host;
@@ -213,7 +210,7 @@ void SharedWorkerHost::Start(
   }
 
   // Send the CreateSharedWorker message.
-  factory_ = std::move(factory);
+  factory_.Bind(std::move(factory));
   factory_->CreateSharedWorker(
       std::move(info), GetContentClient()->browser()->GetUserAgent(),
       pause_on_start, devtools_worker_token, std::move(renderer_preferences),
@@ -255,7 +252,7 @@ void SharedWorkerHost::CreateNetworkFactory(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
-  url::Origin origin = instance_->constructor_origin();
+  url::Origin origin = instance_.constructor_origin();
   network::mojom::TrustedURLLoaderHeaderClientPtrInfo no_header_client;
 
   // TODO(yhirano): Support COEP.
@@ -366,8 +363,6 @@ SharedWorkerHost::ClientInfo::ClientInfo(
 SharedWorkerHost::ClientInfo::~ClientInfo() {}
 
 void SharedWorkerHost::OnConnected(int connection_request_id) {
-  if (!instance_)
-    return;
   for (const ClientInfo& info : clients_) {
     if (info.connection_request_id != connection_request_id)
       continue;
@@ -461,7 +456,7 @@ void SharedWorkerHost::AddClient(blink::mojom::SharedWorkerClientPtr client,
                                  const blink::MessagePortChannel& port) {
   // Pass the actual creation context type, so the client can understand if
   // there is a mismatch between security levels.
-  client->OnCreated(instance_->creation_context_type());
+  client->OnCreated(instance_.creation_context_type());
 
   clients_.emplace_back(std::move(client), next_connection_request_id_++,
                         client_process_id, frame_id);
@@ -516,7 +511,7 @@ void SharedWorkerHost::GetInterface(
 
   BindWorkerInterface(interface_name, std::move(interface_pipe),
                       worker_process_host,
-                      url::Origin::Create(instance()->url()));
+                      url::Origin::Create(instance_.url()));
 }
 
 }  // namespace content

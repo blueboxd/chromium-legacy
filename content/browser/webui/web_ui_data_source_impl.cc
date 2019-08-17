@@ -162,11 +162,8 @@ void WebUIDataSourceImpl::AddInteger(base::StringPiece name, int32_t value) {
   localized_strings_.SetInteger(name, value);
 }
 
-void WebUIDataSourceImpl::SetJsonPath(base::StringPiece path) {
-  DCHECK(json_path_.empty());
-  DCHECK(!path.empty());
-
-  json_path_ = path.as_string();
+void WebUIDataSourceImpl::UseStringsJs() {
+  use_strings_js_ = true;
 }
 
 void WebUIDataSourceImpl::AddResourcePath(base::StringPiece path,
@@ -282,9 +279,12 @@ void WebUIDataSourceImpl::StartDataRequest(
 
   EnsureLoadTimeDataDefaultsAdded();
 
-  if (!json_path_.empty() && path == json_path_) {
-    SendLocalizedStringsAsJSON(callback);
-    return;
+  if (use_strings_js_) {
+    bool from_js_module = path == "strings.m.js";
+    if (from_js_module || path == "strings.js") {
+      SendLocalizedStringsAsJSON(callback, from_js_module);
+      return;
+    }
   }
 
   int resource_id = PathToIdrOrDefault(CleanUpPath(path));
@@ -295,9 +295,10 @@ void WebUIDataSourceImpl::StartDataRequest(
 }
 
 void WebUIDataSourceImpl::SendLocalizedStringsAsJSON(
-    const URLDataSource::GotDataCallback& callback) {
+    const URLDataSource::GotDataCallback& callback,
+    bool from_js_module) {
   std::string template_data;
-  webui::AppendJsonJS(&localized_strings_, &template_data);
+  webui::AppendJsonJS(&localized_strings_, &template_data, from_js_module);
   callback.Run(base::RefCountedString::TakeString(&template_data));
 }
 

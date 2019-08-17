@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequence_bound.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "media/mojo/mojom/cdm_storage.mojom.h"
 #include "storage/browser/fileapi/async_file_util.h"
 #include "url/origin.h"
@@ -80,6 +81,9 @@ class CdmFileImpl final : public media::mojom::CdmFile {
   bool AcquireFileLock(const std::string& file_name);
   void ReleaseFileLock(const std::string& file_name);
 
+  // Report operation time to UMA.
+  void ReportFileOperationTimeUMA(const std::string& uma_name);
+
   // Names of the files this class represents.
   const std::string file_name_;
   const std::string temp_file_name_;
@@ -106,6 +110,9 @@ class CdmFileImpl final : public media::mojom::CdmFile {
   // Used when writing the file. |file_writer_| lives on the IO thread.
   WriteCallback write_callback_;
   base::SequenceBound<FileWriter> file_writer_;
+
+  // Time when the read or write operation starts.
+  base::TimeTicks start_time_;
 
   THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<CdmFileImpl> weak_factory_{this};

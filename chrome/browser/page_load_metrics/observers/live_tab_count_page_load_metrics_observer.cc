@@ -58,8 +58,8 @@ LiveTabCountPageLoadMetricsObserver::~LiveTabCountPageLoadMetricsObserver() {}
 void LiveTabCountPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_contentful_paint, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_contentful_paint, GetDelegate())) {
     const std::string histogram_prefix(
         std::string(internal::kHistogramPrefixLiveTabCount)
             .append(internal::kHistogramFirstContentfulPaintSuffix));
@@ -75,8 +75,8 @@ void LiveTabCountPageLoadMetricsObserver::
     OnFirstMeaningfulPaintInMainFrameDocument(
         const page_load_metrics::mojom::PageLoadTiming& timing,
         const page_load_metrics::PageLoadExtraInfo& info) {
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_meaningful_paint, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_meaningful_paint, GetDelegate())) {
     const std::string histogram_prefix(
         std::string(internal::kHistogramPrefixLiveTabCount)
             .append(internal::kHistogramFirstMeaningfulPaintSuffix));
@@ -91,8 +91,8 @@ void LiveTabCountPageLoadMetricsObserver::
 void LiveTabCountPageLoadMetricsObserver::OnFirstInputInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.interactive_timing->first_input_timestamp, extra_info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.interactive_timing->first_input_timestamp, GetDelegate())) {
     const std::string histogram_prefix(
         std::string(internal::kHistogramPrefixLiveTabCount)
             .append(internal::kHistogramFirstInputDelaySuffix));

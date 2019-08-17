@@ -90,7 +90,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         document.querySelector('header').appendChild(xrButton.domElement);
 
         if (navigator.xr) {
-          navigator.xr.requestSession('inline').then(onSessionStarted);
+          navigator.xr.requestSession('inline', {optionalFeatures: ['local-floor']}).then(onSessionStarted);
         } else {
           initFallback();
         }
@@ -103,7 +103,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onRequestSession() {
-        navigator.xr.requestSession('immersive-vr').then((session) => {
+        navigator.xr.requestSession('immersive-vr', {optionalFeatures: ['bounded-floor'], requiredFeatures: ['local-floor']})
+        .then((session) => {
           session.mode = 'immersive-vr';
           xrButton.setSession(session);
           onSessionStarted(session);
@@ -164,7 +165,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // If a bounded reference space isn't supported, fall back to a
           // stationary/floor-level reference space. This still provides a
           // floor-relative space and will always be supported for
-          // immersive sessions. It will not, however, provide boundaries
+          // immersive sessions if required. It will not, however, provide boundaries
           // and generally expects the user to stand in one place.
           // If the device doesn't have a way of determining the floor
           // level (for example, with a 3DoF device) then it will return

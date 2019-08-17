@@ -21,6 +21,7 @@ class CrostiniShelfContextMenu : public LauncherContextMenu {
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
+  bool IsUninstallable() const;
   void BuildMenu(ui::SimpleMenuModel* menu_model);
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniShelfContextMenu);

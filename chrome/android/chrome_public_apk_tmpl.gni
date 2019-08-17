@@ -222,9 +222,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
             "*ApplicationStatus*",  # Doesn't work in non-browser process.
             "*ChromeActivity*",  # Pulls in the world, so ensure it doesn't slip in.
             "*GoogleApiAvailability*",  # Play Services only in browser process.
-
-            # TODO(agreive@): Uncomment when crbug 989505 is resolved.
-            # "*R\$*",  # Should not use resources from non-browser process.
+            "*R\$*",  # Should not use resources from non-browser process.
           ]
         }
 

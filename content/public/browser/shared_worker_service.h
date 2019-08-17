@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_SHARED_WORKER_SERVICE_H_
 #define CONTENT_PUBLIC_BROWSER_SHARED_WORKER_SERVICE_H_
 
+#include <string>
+
 namespace url {
 class Origin;
 }  // namespace url

@@ -13,6 +13,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/config/gpu_preferences.h"
+#include "gpu/ipc/common/android/mock_texture_owner.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/mock_android_overlay.h"
 #include "media/base/android/mock_media_crypto_context.h"
@@ -23,7 +24,6 @@
 #include "media/gpu/android/fake_codec_allocator.h"
 #include "media/gpu/android/mock_android_video_surface_chooser.h"
 #include "media/gpu/android/mock_device_info.h"
-#include "media/gpu/android/mock_texture_owner.h"
 #include "media/gpu/android/video_frame_factory.h"
 #include "media/video/supported_video_decoder_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,7 +66,7 @@ class MockVideoFrameFactory : public VideoFrameFactory {
   MOCK_METHOD5(
       MockCreateVideoFrame,
       void(CodecOutputBuffer* raw_output_buffer,
-           scoped_refptr<TextureOwner> texture_owner,
+           scoped_refptr<gpu::TextureOwner> texture_owner,
            base::TimeDelta timestamp,
            gfx::Size natural_size,
            PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb));
@@ -103,7 +103,7 @@ class MockVideoFrameFactory : public VideoFrameFactory {
   }
 
   std::unique_ptr<CodecOutputBuffer> last_output_buffer_;
-  scoped_refptr<TextureOwner> texture_owner_;
+  scoped_refptr<gpu::TextureOwner> texture_owner_;
   base::OnceClosure last_closure_;
 };
 
@@ -135,8 +135,8 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
         std::make_unique<NiceMock<MockAndroidVideoSurfaceChooser>>();
     surface_chooser_ = surface_chooser.get();
 
-    auto texture_owner =
-        base::MakeRefCounted<NiceMock<MockTextureOwner>>(0, nullptr, nullptr);
+    auto texture_owner = base::MakeRefCounted<NiceMock<gpu::MockTextureOwner>>(
+        0, nullptr, nullptr);
     texture_owner_ = texture_owner.get();
 
     auto video_frame_factory =
@@ -284,7 +284,7 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
   std::unique_ptr<MockDeviceInfo> device_info_;
   std::unique_ptr<FakeCodecAllocator> codec_allocator_;
   MockAndroidVideoSurfaceChooser* surface_chooser_;
-  MockTextureOwner* texture_owner_;
+  gpu::MockTextureOwner* texture_owner_;
   MockVideoFrameFactory* video_frame_factory_;
   NiceMock<base::MockCallback<VideoDecoder::DecodeCB>> decode_cb_;
   std::unique_ptr<DestructionObserver> destruction_observer_;

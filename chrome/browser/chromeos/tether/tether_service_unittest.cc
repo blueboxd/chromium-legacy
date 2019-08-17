@@ -267,7 +267,7 @@ class FakeDeviceSyncClientImplFactory
 
   // chromeos::device_sync::DeviceSyncClientImpl::Factory:
   std::unique_ptr<chromeos::device_sync::DeviceSyncClient> BuildInstance(
-      service_manager::Connector* connector) override {
+      chromeos::device_sync::mojom::DeviceSyncService* service) override {
     auto fake_device_sync_client =
         std::make_unique<chromeos::device_sync::FakeDeviceSyncClient>();
     fake_device_sync_client->NotifyReady();

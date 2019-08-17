@@ -23,7 +23,7 @@ content::WebUIDataSource* CreateQuotaInternalsHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIQuotaInternalsHost);
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->AddResourcePath(
       "event_handler.js", IDR_QUOTA_INTERNALS_EVENT_HANDLER_JS);
   source->AddResourcePath(

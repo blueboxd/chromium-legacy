@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/cssom/css_keyword_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unsupported_color_value.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -108,7 +109,7 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
 
     const PaintWorkletStylePropertyMap::CrossThreadData& data =
         map->StyleMapDataForTest();
-    EXPECT_EQ(data.size(), 4u);
+    EXPECT_EQ(data.size(), 5u);
     EXPECT_EQ(data.at("--foo")->ToCSSStyleValue()->GetType(),
               CSSStyleValue::StyleValueType::kUnitType);
     EXPECT_EQ(To<CSSUnitValue>(data.at("--foo")->ToCSSStyleValue())->value(),
@@ -123,6 +124,11 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
               CSSStyleValue::StyleValueType::kKeywordType);
     EXPECT_EQ(To<CSSKeywordValue>(data.at("--loo")->ToCSSStyleValue())->value(),
               "test");
+    EXPECT_EQ(data.at("--gar")->ToCSSStyleValue()->GetType(),
+              CSSStyleValue::StyleValueType::kUnsupportedColorType);
+    EXPECT_EQ(To<CSSUnsupportedColorValue>(data.at("--gar")->ToCSSStyleValue())
+                  ->Value(),
+              Color(0, 255, 0));
     EXPECT_EQ(data.at("display")->ToCSSStyleValue()->GetType(),
               CSSStyleValue::StyleValueType::kKeywordType);
     waitable_event->Signal();
@@ -134,13 +140,15 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
 
 TEST_F(PaintWorkletStylePropertyMapTest, CreateSupportedCrossThreadData) {
   Vector<CSSPropertyID> native_properties({CSSPropertyID::kDisplay});
-  Vector<AtomicString> custom_properties({"--foo", "--bar", "--loo"});
+  Vector<AtomicString> custom_properties({"--foo", "--bar", "--loo", "--gar"});
   css_test_helpers::RegisterProperty(GetDocument(), "--foo", "<length>",
                                      "134px", false);
   css_test_helpers::RegisterProperty(GetDocument(), "--bar", "<number>", "42",
                                      false);
   css_test_helpers::RegisterProperty(GetDocument(), "--loo", "test", "test",
                                      false);
+  css_test_helpers::RegisterProperty(GetDocument(), "--gar", "<color>",
+                                     "rgb(0, 255, 0)", false);
 
   UpdateAllLifecyclePhasesForTest();
   Node* node = PageNode();
@@ -177,8 +185,8 @@ TEST_F(PaintWorkletStylePropertyMapTest, CreateSupportedCrossThreadData) {
 TEST_F(PaintWorkletStylePropertyMapTest, UnsupportedCrossThreadData) {
   Vector<CSSPropertyID> native_properties1;
   Vector<AtomicString> custom_properties1({"--foo", "--bar", "--loo"});
-  css_test_helpers::RegisterProperty(GetDocument(), "--foo", "<color>",
-                                     "rgb(0, 0, 0)", false);
+  css_test_helpers::RegisterProperty(GetDocument(), "--foo", "<url>",
+                                     "url(https://google.com)", false);
   css_test_helpers::RegisterProperty(GetDocument(), "--bar", "<number>", "42",
                                      false);
   css_test_helpers::RegisterProperty(GetDocument(), "--loo", "test", "test",

@@ -6,23 +6,25 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_INTERVENTION_REPORT_BODY_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
-#include "third_party/blink/renderer/core/frame/message_report_body.h"
+#include "third_party/blink/renderer/core/frame/location_report_body.h"
 
 namespace blink {
 
-class CORE_EXPORT InterventionReportBody : public MessageReportBody {
+class CORE_EXPORT InterventionReportBody : public LocationReportBody {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   InterventionReportBody(const String& id, const String& message)
-      : MessageReportBody(message), id_(id) {}
+      : id_(id), message_(message) {}
 
   ~InterventionReportBody() override = default;
 
   String id() const { return id_; }
+  String message() const { return message_; }
 
  private:
   const String id_;
+  const String message_;
 };
 
 }  // namespace blink

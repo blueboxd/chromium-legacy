@@ -569,8 +569,9 @@ class MenuManager {
     let id = this.node_.htmlAttributes.id;
 
     // If the selection will close the menu, highlight the back button.
-    if (id === SAConstants.MENU_ID)
+    if (id === SAConstants.MENU_PANEL_ID) {
       id = SAConstants.BACK_ID;
+    }
 
     const enable = !opt_clear;
     this.menuPanel_.setFocusRing(id, enable);

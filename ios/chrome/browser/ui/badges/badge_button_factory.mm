@@ -8,6 +8,8 @@
 #import "ios/chrome/browser/ui/badges/badge_button.h"
 #import "ios/chrome/browser/ui/badges/badge_button_action_handler.h"
 #import "ios/chrome/browser/ui/badges/badge_constants.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -56,6 +58,8 @@
       forControlEvents:UIControlEventTouchUpInside];
   button.accessibilityIdentifier =
       kBadgeButtonSavePasswordAccessibilityIdentifier;
+  button.accessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_INFOBAR_BADGES_PASSWORD_HINT);
   return button;
 }
 
@@ -68,6 +72,8 @@
       forControlEvents:UIControlEventTouchUpInside];
   button.accessibilityIdentifier =
       kBadgeButtonUpdatePasswordAccessibilityIdentifier;
+  button.accessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_INFOBAR_BADGES_PASSWORD_HINT);
   return button;
 }
 
@@ -80,6 +86,8 @@
   button.accessibilityTraits &= ~UIAccessibilityTraitButton;
   button.enabled = NO;
   button.accessibilityIdentifier = kBadgeButtonIncognitoAccessibilityIdentifier;
+  button.accessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_BADGE_INCOGNITO_HINT);
   return button;
 }
 

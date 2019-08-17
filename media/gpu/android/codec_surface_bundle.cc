@@ -20,7 +20,7 @@ CodecSurfaceBundle::CodecSurfaceBundle(std::unique_ptr<AndroidOverlay> overlay)
       overlay_(std::move(overlay)) {}
 
 CodecSurfaceBundle::CodecSurfaceBundle(
-    scoped_refptr<TextureOwner> texture_owner)
+    scoped_refptr<gpu::TextureOwner> texture_owner)
     : RefCountedDeleteOnSequence<CodecSurfaceBundle>(
           base::SequencedTaskRunnerHandle::Get()),
       texture_owner_(std::move(texture_owner)),
@@ -40,8 +40,8 @@ CodecSurfaceBundle::~CodecSurfaceBundle() {
     texture_owner_->ReleaseBackBuffers();
   } else {
     task_runner->PostTask(
-        FROM_HERE,
-        base::BindRepeating(&TextureOwner::ReleaseBackBuffers, texture_owner_));
+        FROM_HERE, base::BindRepeating(&gpu::TextureOwner::ReleaseBackBuffers,
+                                       texture_owner_));
   }
 }
 

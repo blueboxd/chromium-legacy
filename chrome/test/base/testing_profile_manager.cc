@@ -232,10 +232,6 @@ void TestingProfileManager::DeleteProfileInfoCache() {
   profile_manager_->profile_info_cache_.reset(NULL);
 }
 
-void TestingProfileManager::SetLoggedIn(bool logged_in) {
-  profile_manager_->logged_in_ = logged_in;
-}
-
 void TestingProfileManager::UpdateLastUser(Profile* last_active) {
 #if !defined(OS_ANDROID)
   profile_manager_->UpdateLastUser(last_active);

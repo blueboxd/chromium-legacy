@@ -25,14 +25,11 @@
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/common/buildflags.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 class ProfileAttributesStorage;
 class ProfileInfoCache;
 
-class ProfileManager : public content::NotificationObserver,
-                       public Profile::Delegate {
+class ProfileManager : public Profile::Delegate {
  public:
   typedef base::RepeatingCallback<void(Profile*, Profile::CreateStatus)>
       CreateCallback;
@@ -235,14 +232,6 @@ class ProfileManager : public content::NotificationObserver,
 
   const base::FilePath& user_data_dir() const { return user_data_dir_; }
 
-  // For ChromeOS, determines if the user has logged in to a real profile.
-  bool IsLoggedIn() const { return logged_in_; }
-
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // Profile::Delegate implementation:
   void OnProfileCreated(Profile* profile,
                         bool success,
@@ -410,15 +399,8 @@ class ProfileManager : public content::NotificationObserver,
   // to an access to this member.
   std::unique_ptr<ProfileInfoCache> profile_info_cache_;
 
-  content::NotificationRegistrar registrar_;
-
   // The path to the user data directory (DIR_USER_DATA).
   const base::FilePath user_data_dir_;
-
-  // Indicates that a user has logged in and that the profile specified
-  // in the --login-profile command line argument should be used as the
-  // default.
-  bool logged_in_ = false;
 
 #if !defined(OS_ANDROID)
   BrowserListObserver browser_list_observer_{this};

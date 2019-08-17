@@ -68,8 +68,8 @@ void OpenBrowserUsingContextMenuOnRootWindow(aura::Window* root) {
       // a right-click but long-pressing yields the same result. All menus
       // here use a touchable layout.
       views::MenuConfig::instance().touchable_anchor_offset +
-      // 2 menu items we don't want, and go over part of the one we want.
-      2.2 * views::MenuConfig::instance().touchable_menu_height;
+      // 3 menu items we don't want, and go over part of the one we want.
+      3.2 * views::MenuConfig::instance().touchable_menu_height;
   generator.MoveMouseBy(0, -offset);
   generator.ReleaseRightButton();
 }

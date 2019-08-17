@@ -3850,6 +3850,21 @@
             ]
         }
     ],
+    "OmniboxGroupSuggestionsBySearchVsUrlAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "AndroidExperiments",
+                    "enable_features": [
+                        "OmniboxGroupSuggestionsBySearchVsUrl"
+                    ]
+                }
+            ]
+        }
+    ],
     "OmniboxSteadyStateElisions": [
         {
             "platforms": [
@@ -5113,6 +5128,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SendTabToSelfShowSendingUI"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ServiceManagerForBackgroundPrefetch": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ServiceManagerForBackgroundPrefetch"
                     ]
                 }
             ]

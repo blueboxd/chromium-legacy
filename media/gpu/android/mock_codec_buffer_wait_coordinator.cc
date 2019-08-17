@@ -10,7 +10,7 @@ using testing::Invoke;
 using testing::Return;
 
 MockCodecBufferWaitCoordinator::MockCodecBufferWaitCoordinator(
-    scoped_refptr<NiceMock<MockTextureOwner>> texture_owner)
+    scoped_refptr<NiceMock<gpu::MockTextureOwner>> texture_owner)
     : CodecBufferWaitCoordinator(texture_owner),
       mock_texture_owner(std::move(texture_owner)),
       expecting_frame_available(false) {

@@ -51,7 +51,7 @@ class CONTENT_EXPORT ScopedSurfaceRequestManager
   // Can be called from any thread.
   void ForwardSurfaceOwnerForSurfaceRequest(
       const base::UnguessableToken& request_token,
-      const gpu::SurfaceOwner* surface_owner) override;
+      const gpu::TextureOwner* texture_owner) override;
 
   void clear_requests_for_testing() { request_callbacks_.clear(); }
 

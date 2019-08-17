@@ -316,18 +316,16 @@ TEST_F(CSSAgentTest, UpdateOnBoundsChange) {
   EXPECT_EQ(2, GetStyleSheetChangedCount(another_element_stylesheet_id));
 }
 
-TEST_F(CSSAgentTest, DISABLED_GetSource) {
+TEST_F(CSSAgentTest, GetSource) {
+  // Tests CSSAgent::getStyleSheetText() with one source file.
   std::string file = "components/test/data/ui_devtools/test_file.cc";
   element()->AddSource(file, 0);
   auto result = GetSourceForElement();
 
+  // Ensure that test_file.cc was read in correctly.
   EXPECT_TRUE(result.first);
-
-  std::string source_code;
-  DCHECK(GetSourceCode(file, &source_code));
-  DCHECK(source_code != "");
-
-  EXPECT_EQ(result.second, source_code);
+  EXPECT_NE(std::string::npos,
+            result.second.find("This file is for testing GetSource."));
 }
 
 TEST_F(CSSAgentTest, BadPathFails) {

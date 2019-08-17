@@ -22,7 +22,7 @@ OfflineInternalsUI::OfflineInternalsUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUIOfflineInternalsHost);
 
   // Required resources.
-  html_source->SetJsonPath("strings.js");
+  html_source->UseStringsJs();
   html_source->AddResourcePath("offline_internals.css",
                                IDR_OFFLINE_INTERNALS_CSS);
   html_source->AddResourcePath("offline_internals.js",

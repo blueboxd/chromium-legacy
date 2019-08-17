@@ -158,10 +158,7 @@ void WebFrameWidgetImpl::Trace(blink::Visitor* visitor) {
 // WebWidget ------------------------------------------------------------------
 
 void WebFrameWidgetImpl::Close() {
-  if (layer_tree_view_) {
-    GetPage()->WillCloseLayerTreeView(*layer_tree_view_,
-                                      LocalRootImpl()->GetFrame()->View());
-  }
+  GetPage()->WillCloseAnimationHost(LocalRootImpl()->GetFrame()->View());
 
   WebFrameWidgetBase::Close();
 
@@ -218,21 +215,16 @@ void WebFrameWidgetImpl::Resize(const WebSize& new_size) {
       LocalRootImpl()->GetFrame()->GetDocument()->EnqueueResizeEvent();
     }
 
-    // TODO(danakj): |layer_tree_view_| is used as a proxy to tell if we're
-    // using compositing, and we should just set that explicitly... or read it
-    // from the WebView.
-    if (layer_tree_view_) {
-      // Pass the limits even though this is for subframes, as the limits will
-      // be needed in setting the raster scale. We set this value when setting
-      // up the compositor, but need to update it when the limits of the
-      // WebViewImpl have changed.
-      // TODO(wjmaclean): This is updating when the size of the *child frame*
-      // have changed which are completely independent of the WebView, and in an
-      // OOPIF where the main frame is remote, are these limits even useful?
-      Client()->SetPageScaleStateAndLimits(
-          1.f, false /* is_pinch_gesture_active */,
-          View()->MinimumPageScaleFactor(), View()->MaximumPageScaleFactor());
-    }
+    // Pass the limits even though this is for subframes, as the limits will
+    // be needed in setting the raster scale. We set this value when setting
+    // up the compositor, but need to update it when the limits of the
+    // WebViewImpl have changed.
+    // TODO(wjmaclean): This is updating when the size of the *child frame*
+    // have changed which are completely independent of the WebView, and in an
+    // OOPIF where the main frame is remote, are these limits even useful?
+    Client()->SetPageScaleStateAndLimits(
+        1.f, false /* is_pinch_gesture_active */,
+        View()->MinimumPageScaleFactor(), View()->MaximumPageScaleFactor());
   }
 }
 
@@ -982,7 +974,7 @@ void WebFrameWidgetImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
   layer_tree_view_ = layer_tree_view;
   animation_host_ = animation_host;
 
-  GetPage()->LayerTreeViewInitialized(*layer_tree_view_, *animation_host_,
+  GetPage()->AnimationHostInitialized(*animation_host_,
                                       LocalRootImpl()->GetFrame()->View());
 }
 
@@ -1028,10 +1020,6 @@ void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   // TODO(danakj): SetIsAcceleratedCompositingActive() also sets the root layer
   // if it's not null..
   Client()->SetRootLayer(root_layer_);
-}
-
-WebLayerTreeView* WebFrameWidgetImpl::GetLayerTreeView() const {
-  return layer_tree_view_;
 }
 
 cc::AnimationHost* WebFrameWidgetImpl::AnimationHost() const {

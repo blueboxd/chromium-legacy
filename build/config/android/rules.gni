@@ -2645,10 +2645,7 @@ if (enable_java_templates) {
 
     if (_native_libs_deps != [] || _secondary_abi_native_libs_deps != []) {
       write_native_libraries_java("${_template_name}__native_libraries") {
-        forward_variables_from(invoker,
-                               [
-                                 "enable_chromium_linker_tests",
-                               ])
+        forward_variables_from(invoker, [ "enable_chromium_linker_tests" ])
         deps = [
           ":${_template_name}__secondary_abi_shared_library_list",
           ":${_template_name}__shared_library_list",
@@ -4075,7 +4072,8 @@ if (enable_java_templates) {
   #   ignore_assets: Whether to ignore assets found in the .aar.
   #   ignore_native_libraries: Whether to ignore .so files found in the .aar.
   #       See also extract_native_libraries.
-  #   ignore_proguard_configs = Whether to ignore proguard configs.
+  #   ignore_proguard_configs: Whether to ignore proguard configs.
+  #   strip_resources: Whether to ignore android resources found in the .aar.
   #   extract_native_libraries: Whether to extract .so files found in the .aar.
   #       If the file contains .so, either extract_native_libraries or
   #       ignore_native_libraries must be set.
@@ -4097,7 +4095,7 @@ if (enable_java_templates) {
     if (defined(invoker.info_path)) {
       _info_path = invoker.info_path
     }
-    _output_path = "${target_gen_dir}/${target_name}"
+    _output_path = "${target_out_dir}/${target_name}"
     _unpack_target_name = "${target_name}__unpack_aar"
     _ignore_aidl = defined(invoker.ignore_aidl) && invoker.ignore_aidl
     _ignore_assets = defined(invoker.ignore_assets) && invoker.ignore_assets
@@ -4107,6 +4105,8 @@ if (enable_java_templates) {
                                invoker.ignore_proguard_configs
     _extract_native_libraries = defined(invoker.extract_native_libraries) &&
                                 invoker.extract_native_libraries
+    _strip_resources =
+        defined(invoker.strip_resources) && invoker.strip_resources
 
     # Scan the AAR file and determine the resources and jar files.
     # Some libraries might not have resources; others might have two jars.
@@ -4157,6 +4157,9 @@ if (enable_java_templates) {
         "--assert-info-file",
         rebase_path(_info_path, root_build_dir),
       ]
+      if (_strip_resources) {
+        args += [ "--ignore-resources" ]
+      }
       inputs = [
         invoker.aar_path,
       ]
@@ -4164,14 +4167,14 @@ if (enable_java_templates) {
         "${_output_path}/AndroidManifest.xml",
       ]
 
-      if (_scanned_files.has_r_text_file) {
+      if (!_strip_resources && _scanned_files.has_r_text_file) {
         # Certain packages, in particular Play Services have no R.txt even
         # though its presence is mandated by AAR spec. Such packages cause
         # spurious rebuilds if this output is specified unconditionally.
         outputs += [ "${_output_path}/R.txt" ]
       }
 
-      if (_scanned_files.resources != []) {
+      if (!_strip_resources && _scanned_files.resources != []) {
         outputs += get_path_info(
                 rebase_path(_scanned_files.resources, "", _output_path),
                 "abspath")
@@ -4193,8 +4196,6 @@ if (enable_java_templates) {
       }
     }
 
-    _strip_resources =
-        defined(invoker.strip_resources) && invoker.strip_resources
     _has_unignored_resources =
         !_strip_resources &&
         (_scanned_files.resources != [] || _scanned_files.has_r_text_file)

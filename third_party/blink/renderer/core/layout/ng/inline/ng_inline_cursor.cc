@@ -105,8 +105,13 @@ bool NGInlineCursor::MoveToNextItemSkippingChildren() {
 bool NGInlineCursor::MoveToParentPaintFragment() {
   DCHECK(root_paint_fragment_ && current_paint_fragment_);
   const NGPaintFragment* parent = current_paint_fragment_->Parent();
-  DCHECK(parent);
-  if (parent == root_paint_fragment_)
+  if (UNLIKELY(!parent)) {
+    // When traversing in DFS, the parent is null only when there are no
+    // descendants and that it tries to move to the parent of the root.
+    DCHECK_EQ(current_paint_fragment_, root_paint_fragment_);
+    return false;
+  }
+  if (UNLIKELY(parent == root_paint_fragment_))
     return false;
   current_paint_fragment_ = parent;
   return true;

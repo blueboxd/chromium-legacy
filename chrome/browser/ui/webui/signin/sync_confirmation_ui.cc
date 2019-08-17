@@ -33,7 +33,7 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
 
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISyncConfirmationHost);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->AddResourcePath("signin_shared_css.html", IDR_SIGNIN_SHARED_CSS_HTML);
 
   if (is_sync_allowed) {

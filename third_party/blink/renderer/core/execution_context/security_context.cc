@@ -168,18 +168,20 @@ void SecurityContext::AddReportOnlyFeaturePolicy(
 
 bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
                                        ReportOptions report_on_failure,
-                                       const String& message) const {
+                                       const String& message,
+                                       const String& source_file) const {
   return IsFeatureEnabled(
       feature,
       PolicyValue::CreateMaxPolicyValue(
           feature_policy_->GetFeatureList().at(feature).second),
-      report_on_failure, message);
+      report_on_failure, message, source_file);
 }
 
 bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
                                        PolicyValue threshold_value,
                                        ReportOptions report_on_failure,
-                                       const String& message) const {
+                                       const String& message,
+                                       const String& source_file) const {
   if (report_on_failure == ReportOptions::kReportOnFailure) {
     // We are expecting a violation report in case the feature is disabled in
     // the context. Therefore, this qualifies as a potential violation (i.e.,
@@ -196,7 +198,7 @@ bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
         (state == FeatureEnabledState::kReportOnly
              ? mojom::FeaturePolicyDisposition::kReport
              : mojom::FeaturePolicyDisposition::kEnforce),
-        message);
+        message, source_file);
   }
   return (state != FeatureEnabledState::kDisabled);
 }

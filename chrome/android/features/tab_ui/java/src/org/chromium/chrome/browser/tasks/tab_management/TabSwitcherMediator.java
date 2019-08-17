@@ -110,6 +110,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     private final TabSelectionEditorCoordinator
             .TabSelectionEditorController mTabSelectionEditorController;
     private TabSwitcher.OnTabSelectingListener mOnTabSelectingListener;
+    private IphProvider mIphProvider;
 
     /**
      * In cases where a didSelectTab was due to switching models with a toggle,
@@ -138,6 +139,11 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
          */
         void softCleanup();
     }
+
+    /**
+     * An interface to control whether to show IPH on grid tab switcher.
+     */
+    public interface IphProvider { void maybeShowIPH(); }
 
     /**
      * Basic constructor for the Mediator.
@@ -403,6 +409,9 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mModelIndexWhenShown = mTabModelSelector.getCurrentModelIndex();
         mTabIdwhenShown = mTabModelSelector.getCurrentTabId();
         mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
+        if (mIphProvider != null) {
+            mIphProvider.maybeShowIPH();
+        }
 
         recordTabCounts();
     }
@@ -471,6 +480,13 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
      */
     void setCleanupDelayForTesting(int timeoutMs) {
         mCleanupDelayMsForTesting = timeoutMs;
+    }
+
+    /**
+     * Setup the drag-and-drop IPH provider.
+     */
+    void setIphProvider(IphProvider iphProvider) {
+        mIphProvider = iphProvider;
     }
 
     /**

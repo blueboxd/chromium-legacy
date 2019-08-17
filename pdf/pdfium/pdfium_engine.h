@@ -568,7 +568,7 @@ class PDFiumEngine : public PDFEngine,
   std::vector<int> pending_pages_;
 
   // True if loading pages in two-up view layout. False if loading pages in
-  // single view layout.
+  // single view layout. Has to be in sync with |twoUpView_| in ViewportImpl.
   bool two_up_view_ = false;
 
   // During handling of input events we don't want to unload any pages in

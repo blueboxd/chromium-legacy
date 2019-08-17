@@ -318,10 +318,8 @@ template("test") {
         info_plist = "//testing/gtest_ios/unittest-Info.plist"
       }
 
-      _bundle_id_suffix = ios_generic_test_bundle_id_suffix
-      if (!ios_automatically_manage_certs) {
-        _bundle_id_suffix = "${target_name}"
-      }
+      _bundle_id_suffix = "${target_name}"
+
       if (!defined(extra_substitutions)) {
         extra_substitutions = []
       }

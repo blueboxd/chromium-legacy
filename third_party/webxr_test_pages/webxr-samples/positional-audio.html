@@ -307,7 +307,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             scene.addNode(playButton);
           });
 
-          navigator.xr.requestSession('inline').then(onSessionStarted);
+          navigator.xr.requestSession('inline', {optionalFeatures: ['local-floor']}).then(onSessionStarted);
         } else {
           initFallback();
         }
@@ -341,7 +341,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onRequestSession() {
-        navigator.xr.requestSession('immersive-vr').then((session) => {
+        navigator.xr.requestSession('immersive-vr', {requiredFeatures: ['local-floor']})
+        .then((session) => {
           session.mode = 'immersive-vr';
           xrButton.setSession(session);
           onSessionStarted(session);

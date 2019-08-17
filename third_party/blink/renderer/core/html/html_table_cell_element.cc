@@ -120,8 +120,10 @@ void HTMLTableCellElement::CollectStyleForPresentationAttribute(
 void HTMLTableCellElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == kRowspanAttr || params.name == kColspanAttr) {
-    if (GetLayoutObject() && GetLayoutObject()->IsTableCell())
-      ToLayoutTableCell(GetLayoutObject())->ColSpanOrRowSpanChanged();
+    if (GetLayoutObject() && GetLayoutObject()->IsTableCell()) {
+      ToInterface<LayoutNGTableCellInterface>(GetLayoutObject())
+          ->ColSpanOrRowSpanChanged();
+    }
   } else {
     HTMLTablePartElement::ParseAttribute(params);
   }

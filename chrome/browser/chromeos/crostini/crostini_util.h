@@ -39,6 +39,9 @@ using LaunchCrostiniAppCallback =
 // Return" (<vm_name>, <container_name>)".
 std::string ContainerIdToString(const ContainerId& container_id);
 
+// Checks if user profile is able to a crostini app with a given app_id.
+bool IsUninstallable(Profile* profile, const std::string& app_id);
+
 // Returns true if crostini is allowed to run for |profile|.
 // Otherwise, returns false, e.g. if crostini is not available on the device,
 // or it is in the flow to set up managed account creation.

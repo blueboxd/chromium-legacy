@@ -390,21 +390,27 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
 
 #dialog-header > div {
   -webkit-app-region: no-drag;
+  border-radius: 50%;
   display: block;
   height: 24px;
   position: absolute;
   top: 4px;
+  transition: background-color 100ms;
   width: 24px;
 }
 
+#dialog-header div:hover {
+  background-color: rgb(241, 243, 244);
+}
+
 #minimize-button {
-  background-image: url(../images/ui/button_minimize.svg);
-  right: 52px;
+  background-image: url(../images/ui/ic_minimize_grey-1x.svg);
+  right: 32px;
 }
 
 #close-button {
-  background-image: url(../images/ui/button_close.svg);
-  right: 12px;
+  background-image: url(../images/ui/ic_close_grey-1x.svg);
+  right: 4px;
 }
 
 #top-header {

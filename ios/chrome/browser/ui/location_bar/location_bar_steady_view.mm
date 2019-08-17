@@ -237,13 +237,6 @@ const CGFloat kbadgeViewAnimationDuration = 0.2;
 
   // Setup accessibility.
   _trailingButton.isAccessibilityElement = YES;
-  if (self.badgeView) {
-    self.badgeView.isAccessibilityElement = YES;
-    // TODO(crbug.com/989233): This needs to reflect the currently displayed
-    // badge.
-    self.badgeView.accessibilityLabel =
-        l10n_util::GetNSString(IDS_IOS_INFOBAR_BADGES_PASSWORD_HINT);
-  }
   _locationButton.isAccessibilityElement = YES;
   _locationButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_ACCNAME_LOCATION);
@@ -321,7 +314,13 @@ const CGFloat kbadgeViewAnimationDuration = 0.2;
   _badgeView = badgeView;
   if (!hadBadgeView && badgeView) {
     _badgeView.translatesAutoresizingMaskIntoConstraints = NO;
+    _badgeView.isAccessibilityElement = NO;
     [self.locationButton addSubview:_badgeView];
+    // Adding InfobarBadge button as an accessibility element behind location
+    // label. Thus, there should be at least one object already in
+    // |accessibleElements|.
+    DCHECK_GT([self.accessibleElements count], 0U);
+    [self.accessibleElements insertObject:_badgeView atIndex:1];
 
     // Lazy init.
     self.badgeViewFullScreenEnabledConstraints = @[

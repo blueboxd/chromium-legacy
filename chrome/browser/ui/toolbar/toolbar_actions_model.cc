@@ -437,6 +437,35 @@ bool ToolbarActionsModel::IsActionPinned(const ActionId& action_id) const {
   return base::Contains(pinned_action_ids_, action_id);
 }
 
+void ToolbarActionsModel::MovePinnedAction(const ActionId& action_id,
+                                           size_t target_index) {
+  DCHECK(base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
+
+  auto new_pinned_action_ids = pinned_action_ids_;
+
+  auto current_position = std::find(new_pinned_action_ids.begin(),
+                                    new_pinned_action_ids.end(), action_id);
+  DCHECK(current_position != new_pinned_action_ids.end());
+
+  const bool move_to_end = size_t{target_index} >= new_pinned_action_ids.size();
+  auto target_position =
+      move_to_end ? std::prev(new_pinned_action_ids.end())
+                  : std::next(new_pinned_action_ids.begin(), target_index);
+
+  // Rotate |action_id| to be in the target position.
+  if (target_position < current_position) {
+    std::rotate(target_position, current_position, std::next(current_position));
+  } else {
+    std::rotate(current_position, std::next(current_position),
+                std::next(target_position));
+  }
+
+  extension_prefs_->SetPinnedExtensions(new_pinned_action_ids);
+  // The |pinned_action_ids_| should be updated as a result of updating the
+  // preference.
+  DCHECK(pinned_action_ids_ == new_pinned_action_ids);
+}
+
 void ToolbarActionsModel::RemoveExtension(
     const extensions::Extension* extension) {
   RemoveAction(extension->id());

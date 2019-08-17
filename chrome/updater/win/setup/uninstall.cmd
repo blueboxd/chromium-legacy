@@ -3,7 +3,7 @@ rem anywhere in the directory path. Sleeps 3 seconds and tries 3 times to
 rem delete the directory.
 @echo off
 set Directory=%~dp0
-@echo %Directory% | FindStr /R \\AppData\\Local\\ChromeUpdater\\ > nul
+@echo %Directory% | FindStr /R \\AppData\\Local\\Google\\GoogleUpdater\\ > nul
 IF %ERRORLEVEL% NEQ 0 exit 1
 @echo Deleting "%Directory%"...
 for /L %%G IN (1,1,3) do (

@@ -65,6 +65,7 @@ if (is_win || is_mac) {
   process_version("version_header") {
     sources = [
       "//chrome/VERSION",
+      "BRANDING",
     ]
     template_file = "updater_version.h.in"
     output = "$target_gen_dir/updater_version.h"

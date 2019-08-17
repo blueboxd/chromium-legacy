@@ -236,17 +236,26 @@ class BuildConfigGenerator extends DefaultTask {
             }
         }
         switch(dependencyId) {
+            case 'androidx_annotation_annotation':
+                sb.append('  # https://crbug.com/989505\n')
+                sb.append('  jar_excluded_patterns = ["META-INF/proguard/*"]\n')
+                break
             case 'android_arch_lifecycle_runtime':
+            case 'android_arch_lifecycle_viewmodel':
                 sb.append('  # https://crbug.com/887942#c1\n')
                 sb.append('  ignore_proguard_configs = true\n')
                 break
             case 'com_android_support_coordinatorlayout':
-                // Reduce binary size. https:crbug.com/954584
+                sb.append('  # https:crbug.com/954584\n')
                 sb.append('  ignore_proguard_configs = true\n')
                 break
             case 'com_android_support_design':
                 // Reduce binary size. https:crbug.com/954584
                 sb.append('  ignore_proguard_configs = true\n')
+                break
+            case 'com_android_support_support_annotations':
+                sb.append('  # https://crbug.com/989505\n')
+                sb.append('  jar_excluded_patterns = ["META-INF/proguard/*"]\n')
                 break
             case 'com_android_support_support_compat':
             case 'com_android_support_support_media_compat':

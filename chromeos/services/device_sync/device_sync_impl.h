@@ -17,6 +17,8 @@
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "chromeos/services/device_sync/remote_device_provider.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/preferences/public/cpp/pref_service_factory.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 
@@ -38,10 +40,6 @@ class IdentityManager;
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace chromeos {
 
@@ -78,7 +76,8 @@ class DeviceSyncImpl : public DeviceSyncBase,
     virtual std::unique_ptr<DeviceSyncBase> BuildInstance(
         signin::IdentityManager* identity_manager,
         gcm::GCMDriver* gcm_driver,
-        service_manager::Connector* connector,
+        mojo::PendingRemote<prefs::mojom::PrefStoreConnector>
+            pref_store_conector,
         const GcmDeviceInfoProvider* gcm_device_info_provider,
         ClientAppMetadataProvider* client_app_metadata_provider,
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -131,7 +130,8 @@ class DeviceSyncImpl : public DeviceSyncBase,
 
     virtual scoped_refptr<PrefRegistrySimple> CreatePrefRegistry();
     virtual void ConnectToPrefService(
-        service_manager::Connector* connector,
+        mojo::PendingRemote<prefs::mojom::PrefStoreConnector>
+            pref_store_connector,
         scoped_refptr<PrefRegistrySimple> pref_registry,
         prefs::ConnectCallback callback);
   };
@@ -169,7 +169,8 @@ class DeviceSyncImpl : public DeviceSyncBase,
   DeviceSyncImpl(
       signin::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
-      service_manager::Connector* connector,
+      mojo::PendingRemote<prefs::mojom::PrefStoreConnector>
+          pref_store_connector,
       const GcmDeviceInfoProvider* gcm_device_info_provider,
       ClientAppMetadataProvider* client_app_metadata_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -214,7 +215,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
 
   signin::IdentityManager* identity_manager_;
   gcm::GCMDriver* gcm_driver_;
-  service_manager::Connector* connector_;
+  mojo::PendingRemote<prefs::mojom::PrefStoreConnector> pref_store_connector_;
   const GcmDeviceInfoProvider* gcm_device_info_provider_;
   ClientAppMetadataProvider* client_app_metadata_provider_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

@@ -474,6 +474,8 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOSuccess) {
   WaitForCallbacks();
 
   // FIDO Success.
+  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::AUTHENTICATION_FLOW,
+            GetFIDOAuthenticator()->current_flow());
   TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
                                                 /*did_succeed=*/true);
   EXPECT_TRUE(GetRealPanForFIDOAuth(AutofillClient::SUCCESS, kTestNumber));
@@ -500,12 +502,16 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOFailureCVCFallback) {
   WaitForCallbacks();
 
   // FIDO Failure.
+  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::AUTHENTICATION_FLOW,
+            GetFIDOAuthenticator()->current_flow());
   TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
                                                 /*did_succeed=*/false);
   EXPECT_FALSE(GetRealPanForFIDOAuth(AutofillClient::SUCCESS, kTestNumber));
   EXPECT_FALSE(accessor_->did_succeed());
 
   // Followed by a fallback to CVC.
+  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::NONE_FLOW,
+            GetFIDOAuthenticator()->current_flow());
   EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
   EXPECT_TRUE(accessor_->did_succeed());
   EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
@@ -572,6 +578,8 @@ TEST_F(CreditCardAccessManagerTest, FIDOEnrollmentSuccess) {
   WaitForCallbacks();
 
   // Mock user response and OptChange payments call.
+  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::OPT_IN_WITH_CHALLENGE_FLOW,
+            GetFIDOAuthenticator()->current_flow());
   TestCreditCardFIDOAuthenticator::MakeCredential(GetFIDOAuthenticator(),
                                                   /*did_succeed=*/true);
   OptChange(AutofillClient::SUCCESS, true);

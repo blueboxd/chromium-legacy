@@ -54,7 +54,7 @@ content::WebUIDataSource* CreateCrashesUIHTMLSource() {
 
   source->AddLocalizedString(crash_reporter::kCrashesUIShortProductName,
                              IDS_SHORT_PRODUCT_NAME);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->AddResourcePath(crash_reporter::kCrashesUICrashesJS,
                           IDR_CRASH_CRASHES_JS);
   source->SetDefaultResource(IDR_CRASH_CRASHES_HTML);

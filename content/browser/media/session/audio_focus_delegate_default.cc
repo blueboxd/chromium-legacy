@@ -182,7 +182,10 @@ void AudioFocusDelegateDefault::EnsureServiceConnection() {
   GetSystemConnector()->BindInterface(media_session::mojom::kServiceName,
                                       mojo::MakeRequest(&audio_focus_ptr_));
 
-  audio_focus_ptr_->SetSourceName(kAudioFocusSourceName);
+  // We associate all media sessions with the browser context so we can filter
+  // by browser context in the UI.
+  audio_focus_ptr_->SetSource(media_session_->GetSourceId(),
+                              kAudioFocusSourceName);
 }
 
 // static

@@ -5,8 +5,6 @@
 #ifndef UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_DELEGATE_BASE_H_
 #define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_DELEGATE_BASE_H_
 
-#include "ui/accessibility/platform/ax_platform_node_delegate.h"
-
 #include <stdint.h>
 
 #include <set>
@@ -14,6 +12,7 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "ui/accessibility/platform/ax_platform_node_delegate.h"
 
 namespace ui {
 
@@ -40,9 +39,7 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
 
   // Creates a text position rooted at this object.
   AXNodePosition::AXPositionInstance CreateTextPositionAt(
-      int offset,
-      ax::mojom::TextAffinity affinity =
-          ax::mojom::TextAffinity::kDownstream) const override;
+      int offset) const override;
 
   // See comments in AXPlatformNodeDelegate.
   gfx::NativeViewAccessible GetNSWindow() override;

@@ -23,11 +23,7 @@ std::vector<IconEntry::IconData> ConvertIconToStringInternal(
     std::vector<unsigned char> image_data;
     gfx::PNGCodec::EncodeBGRASkBitmap(
         std::move(images[i]), false /*discard_transparency*/, &image_data);
-    std::string encoded;
-    base::Base64Encode(
-        base::StringPiece(reinterpret_cast<const char*>(image_data.data()),
-                          image_data.size()),
-        &encoded);
+    std::string encoded(image_data.begin(), image_data.end());
     results.emplace_back(std::move(encoded));
   }
   return results;
@@ -39,9 +35,9 @@ std::vector<SkBitmap> ConvertStringToIconInternal(
   std::vector<SkBitmap> images;
   for (size_t i = 0; i < encoded_data.size(); i++) {
     SkBitmap image;
-    gfx::PNGCodec::Decode(
-        reinterpret_cast<const unsigned char*>(encoded_data[i].data()),
-        encoded_data[i].length(), &image);
+    gfx::PNGCodec::Decode(reinterpret_cast<const unsigned char*>(
+                              std::move(encoded_data[i]).data()),
+                          encoded_data[i].length(), &image);
     images.emplace_back(std::move(image));
   }
   return images;

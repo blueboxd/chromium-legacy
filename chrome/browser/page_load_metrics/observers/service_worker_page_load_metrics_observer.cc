@@ -161,8 +161,8 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (!IsServiceWorkerControlled(extra_info) ||
-      !WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_paint, extra_info)) {
+      !page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_paint, GetDelegate())) {
     return;
   }
   PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerFirstPaint,
@@ -173,8 +173,8 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!IsServiceWorkerControlled(info)) {
-    if (!WasStartedInForegroundOptionalEventInForeground(
-            timing.paint_timing->first_contentful_paint, info) ||
+    if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+            timing.paint_timing->first_contentful_paint, GetDelegate()) ||
         !page_load_metrics::IsGoogleSearchResultUrl(info.url)) {
       return;
     }
@@ -188,8 +188,8 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
             timing.parse_timing->parse_start.value());
     return;
   }
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_contentful_paint, info)) {
+  if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_contentful_paint, GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(
         internal::kBackgroundHistogramServiceWorkerFirstContentfulPaint,
         timing.paint_timing->first_contentful_paint.value());
@@ -237,8 +237,8 @@ void ServiceWorkerPageLoadMetricsObserver::
     OnFirstMeaningfulPaintInMainFrameDocument(
         const page_load_metrics::mojom::PageLoadTiming& timing,
         const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_meaningful_paint, info)) {
+  if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_meaningful_paint, GetDelegate())) {
     return;
   }
   if (!IsServiceWorkerControlled(info)) {
@@ -283,8 +283,9 @@ void ServiceWorkerPageLoadMetricsObserver::
 void ServiceWorkerPageLoadMetricsObserver::OnDomContentLoadedEventStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing->dom_content_loaded_event_start, info)) {
+  if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.document_timing->dom_content_loaded_event_start,
+          GetDelegate())) {
     return;
   }
   if (!IsServiceWorkerControlled(info)) {
@@ -312,8 +313,8 @@ void ServiceWorkerPageLoadMetricsObserver::OnDomContentLoadedEventStart(
 void ServiceWorkerPageLoadMetricsObserver::OnLoadEventStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing->load_event_start, info))
+  if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.document_timing->load_event_start, GetDelegate()))
     return;
   if (!IsServiceWorkerControlled(info)) {
     if (!page_load_metrics::IsGoogleSearchResultUrl(info.url))
@@ -338,8 +339,8 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstInputInPage(
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!IsServiceWorkerControlled(info))
     return;
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.interactive_timing->first_input_timestamp, info)) {
+  if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.interactive_timing->first_input_timestamp, GetDelegate())) {
     return;
   }
 
@@ -367,8 +368,8 @@ void ServiceWorkerPageLoadMetricsObserver::OnParseStart(
       static_cast<int>(ui::PageTransitionStripQualifier(transition_)),
       static_cast<int>(ui::PAGE_TRANSITION_LAST_CORE) + 1);
 
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.parse_timing->parse_start, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.parse_timing->parse_start, GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerParseStart,
                         timing.parse_timing->parse_start.value());
 

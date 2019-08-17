@@ -22,7 +22,7 @@ content::WebUIDataSource* CreateSyncInternalsHTMLSource() {
   source->OverrideContentSecurityPolicyScriptSrc(
       "script-src chrome://resources 'self' 'unsafe-eval';");
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->AddResourcePath(syncer::sync_ui_util::kSyncIndexJS,
                           IDR_SYNC_DRIVER_SYNC_INTERNALS_INDEX_JS);
   source->AddResourcePath(syncer::sync_ui_util::kChromeSyncJS,

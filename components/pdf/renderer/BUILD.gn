@@ -34,3 +34,16 @@ jumbo_static_library("renderer") {
     "//v8",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "pdf_accessibility_tree_unittest.cc",
+  ]
+
+  deps = [
+    ":renderer",
+    "//components/pdf/common:interfaces",
+    "//testing/gtest",
+  ]
+}

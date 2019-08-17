@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import codecs
+import io
 import os
 import re
 import shutil
@@ -349,18 +350,18 @@ def ParseGrdForUnittest(body, base_dir=None, predetermined_ids_file=None,
     body = body.encode('utf-8')
   if base_dir is None:
     base_dir = PathFromRoot('.')
-  lines = ['<?xml version="1.0" encoding="UTF-8"?>']
-  lines.append(('<grit latest_public_release="2" current_release="3" '
-                'source_lang_id="en" base_dir="{}">').format(base_dir))
-  if '<outputs>' in body:
+  lines = [b'<?xml version="1.0" encoding="UTF-8"?>']
+  lines.append(b'<grit latest_public_release="2" current_release="3" '
+               b'source_lang_id="en" base_dir="%s">' % base_dir.encode('utf-8'))
+  if b'<outputs>' in body:
     lines.append(body)
   else:
-    lines.append('  <outputs></outputs>')
-    lines.append('  <release seq="3">')
+    lines.append(b'  <outputs></outputs>')
+    lines.append(b'  <release seq="3">')
     lines.append(body)
-    lines.append('  </release>')
-  lines.append('</grit>')
-  ret = grd_reader.Parse(StringIO('\n'.join(lines)), dir=".")
+    lines.append(b'  </release>')
+  lines.append(b'</grit>')
+  ret = grd_reader.Parse(io.BytesIO(b'\n'.join(lines)), dir='.')
   ret.SetOutputLanguage('en')
   if run_gatherers:
     ret.RunGatherers()

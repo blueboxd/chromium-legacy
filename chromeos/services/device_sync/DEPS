@@ -9,6 +9,5 @@ include_rules = [
   "+services/network/public",
   "+services/network/test",
   "+services/preferences/public",
-  "+services/service_manager/public/cpp",
   "+components/cryptauth"
 ]

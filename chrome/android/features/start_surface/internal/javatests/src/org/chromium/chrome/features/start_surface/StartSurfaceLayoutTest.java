@@ -133,6 +133,7 @@ public class StartSurfaceLayoutTest {
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS})
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @DisabledTest(message = "crbug.com/991852 This test is flaky")
     public void testTabToGridFromLiveTabAnimation() throws InterruptedException {
         // clang-format on
         assertTrue(FeatureUtilities.isTabToGtsAnimationEnabled());

@@ -73,7 +73,7 @@ void DirectSharedImageVideoProvider::Initialize(GpuInitCB gpu_init_cb) {
 void DirectSharedImageVideoProvider::RequestImage(
     ImageReadyCB cb,
     const ImageSpec& spec,
-    scoped_refptr<TextureOwner> texture_owner) {
+    scoped_refptr<gpu::TextureOwner> texture_owner) {
   // It's unclear that we should handle the image group, but since CodecImages
   // have to be registered on it, we do.  If the CodecImage is ever re-used,
   // then part of that re-use would be to call the (then mis-named)
@@ -141,7 +141,7 @@ void GpuSharedImageVideoFactory::Initialize(
 void GpuSharedImageVideoFactory::CreateImage(
     FactoryImageReadyCB image_ready_cb,
     const SharedImageVideoProvider::ImageSpec& spec,
-    scoped_refptr<TextureOwner> texture_owner) {
+    scoped_refptr<gpu::TextureOwner> texture_owner) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Generate a shared image mailbox.
@@ -186,7 +186,7 @@ void GpuSharedImageVideoFactory::CreateImage(
 
 bool GpuSharedImageVideoFactory::CreateImageInternal(
     const SharedImageVideoProvider::ImageSpec& spec,
-    scoped_refptr<TextureOwner> texture_owner,
+    scoped_refptr<gpu::TextureOwner> texture_owner,
     gpu::Mailbox mailbox,
     scoped_refptr<CodecImage> image) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

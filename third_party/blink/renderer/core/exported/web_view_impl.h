@@ -355,7 +355,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   WebSettingsImpl* SettingsImpl();
 
-  WebLayerTreeView* LayerTreeView() const { return layer_tree_view_; }
   cc::AnimationHost* AnimationHost() const { return animation_host_; }
 
   BrowserControls& GetBrowserControls();

@@ -1645,6 +1645,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-with-forced
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-with-padding.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-with-single-empty-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-with-single-tall-line.html [ Failure ]
+crbug.com/994172 virtual/layout_ng_experimental/fast/multicol/nested-with-spanner-inside-margins-crash.html [ Crash ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-with-tall-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/avoid-column-break-inside.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/balance2.html [ Failure ]
@@ -1935,7 +1936,6 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ali
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/anonymous-flex-item-001.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/anonymous-flex-item-003.html [ Failure ]
 crbug.com/807497 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/auto-margins-001.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/css-flexbox-column-reverse-wrap-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/css-flexbox-column-reverse-wrap.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/css-flexbox-column-reverse.html [ Failure ]
@@ -1997,6 +1997,7 @@ crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/per
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/percentage-heights-quirks-node.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/position-absolute-001.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/position-absolute-002.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/quirks-auto-block-size-with-percentage-item.html [ Pass Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/scrollbars-auto.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/scrollbars.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/table-as-item-auto-min-width.html [ Failure ]
@@ -3243,6 +3244,10 @@ crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-tim
 crbug.com/994214 external/wpt/html/cross-origin-opener-policy/coop-navigated-popup.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-display/display-flow-root-list-item-001.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-display/display-flow-root-list-item-001.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-display/display-flow-root-list-item-001.html [ Failure ]
+crbug.com/626703 [ Mac10.10 ] external/wpt/html/cross-origin-opener-policy/popup-same-site-unsafe-allow-outgoing.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.13 ] wpt_internal/display-lock/rendersubtree/activation/selection.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-lists/li-value-reversed-005.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-lists/li-value-reversed-005.html [ Failure ]
@@ -5931,9 +5936,6 @@ crbug.com/924954 http/tests/images/feature-policy-image-policies-with-border-rad
 # which is still in flux.
 crbug.com/924670 external/wpt/webxr/webxr-supported-by-feature-policy.html [ Failure ]
 
-# Chrome does not enforce that apps need to ask for non-default reference spaces before using them.
-crbug.com/985095 external/wpt/webxr/xrSession_requestReferenceSpace_features.https.html [ Failure ]
-
 crbug.com/961015 [ Mac ] external/wpt/webxr/xrSession_requestAnimationFrame_callback_calls.https.html [ Timeout ]
 crbug.com/961015 [ Mac ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Timeout ]
 
@@ -6447,6 +6449,10 @@ crbug.com/993671 [ Win ] virtual/audio-service/http/tests/media/video-frame-size
 #Sheriff 2019-08-12
 crbug.com/783154 [ Linux Debug ] virtual/audio-service/media/controls/doubletap-to-jump-backwards.html [ Failure ]
 crbug.com/993238 fast/frames/frame-name-reset.html [ Pass Failure ]
+
+#Sherrif 2019-08-16
+crbug.com/994692 [ Linux Win ] compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
+crbug.com/994746 animations/events/play-state-initially-paused-start-event.html [ Pass Timeout ]
 
 # Video flakily not being being rendered on Mac
 crbug.com/979298 [ Mac ] media/controls/captions-menu-always-visible.html [ Pass Failure ]

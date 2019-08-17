@@ -1628,13 +1628,25 @@ NGInflowChildData NGBlockLayoutAlgorithm::ComputeChildData(
 
   // Calculate margins in parent's writing mode.
   bool margins_fully_resolved;
-  NGBoxStrut margins = CalculateMargins(child, is_new_fc, child_break_token,
-                                        &margins_fully_resolved);
+  NGBoxStrut margins =
+      CalculateMargins(child, is_new_fc, &margins_fully_resolved);
 
   // Append the current margin strut with child's block start margin.
   // Non empty border/padding, and new formatting-context use cases are handled
   // inside of the child's layout
   NGMarginStrut margin_strut = previous_inflow_position.margin_strut;
+
+  const auto* child_block_break_token =
+      DynamicTo<NGBlockBreakToken>(child_break_token);
+  bool is_resuming_after_break = IsResumingLayout(child_block_break_token);
+  if (child_block_break_token && child_block_break_token->IsForcedBreak()) {
+    // Margins after a fragmentainer break are usually discarded, but not if
+    // there's a forced break.
+    margin_strut = NGMarginStrut();
+  } else if (is_resuming_after_break) {
+    // We're past the block-start edge of this child. Don't repeat the margin.
+    margins.block_start = LayoutUnit();
+  }
 
   LayoutUnit logical_block_offset =
       previous_inflow_position.logical_block_offset;
@@ -1671,7 +1683,8 @@ NGInflowChildData NGBlockLayoutAlgorithm::ComputeChildData(
           margins.LineLeft(ConstraintSpace().Direction()),
       BfcBlockOffset() + logical_block_offset};
 
-  return {child_bfc_offset, margin_strut, margins, margins_fully_resolved};
+  return {child_bfc_offset, margin_strut, margins, margins_fully_resolved,
+          is_resuming_after_break};
 }
 
 NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
@@ -2026,7 +2039,7 @@ bool NGBlockLayoutAlgorithm::BreakBeforeChild(
       space_available.ClampNegativeToZero();
   // Drop the fragment on the floor and retry at the start of the next
   // fragmentainer.
-  container_builder_.AddBreakBeforeChild(child);
+  container_builder_.AddBreakBeforeChild(child, break_type == ForcedBreak);
   container_builder_.SetDidBreak();
   if (break_type == ForcedBreak) {
     container_builder_.SetHasForcedBreak();
@@ -2121,7 +2134,6 @@ NGBlockLayoutAlgorithm::BreakType NGBlockLayoutAlgorithm::BreakTypeBeforeChild(
 NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
     NGLayoutInputNode child,
     bool is_new_fc,
-    const NGBreakToken* child_break_token,
     bool* margins_fully_resolved) {
   // We need to at least partially resolve margins before creating a constraint
   // space for layout. Layout needs to know the line-left offset before
@@ -2145,8 +2157,6 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
   NGBoxStrut margins = ComputeMarginsFor(
       child_style, child_percentage_size_.inline_size,
       ConstraintSpace().GetWritingMode(), ConstraintSpace().Direction());
-  if (ShouldIgnoreBlockStartMargin(ConstraintSpace(), child, child_break_token))
-    margins.block_start = LayoutUnit();
 
   // As long as the child isn't establishing a new formatting context, we need
   // to know its line-left offset before layout, to be able to position child
@@ -2213,9 +2223,6 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
 
   if (NGBaseline::ShouldPropagateBaselines(child))
     builder.AddBaselineRequests(ConstraintSpace().BaselineRequests());
-
-  builder.SetBfcOffset(child_data.bfc_offset_estimate);
-  builder.SetMarginStrut(child_data.margin_strut);
 
   bool has_bfc_block_offset = container_builder_.BfcBlockOffset().has_value();
 
@@ -2285,11 +2292,18 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   builder.SetClearanceOffset(clearance_offset);
 
   if (!is_new_fc) {
+    builder.SetMarginStrut(child_data.margin_strut);
+    builder.SetBfcOffset(child_data.bfc_offset_estimate);
     builder.SetExclusionSpace(exclusion_space_);
     if (!has_bfc_block_offset) {
       builder.SetAdjoiningObjectTypes(
           container_builder_.AdjoiningObjectTypes());
     }
+  } else if (child_data.is_resuming_after_break) {
+    // If the child is being resumed after a break, margins inside the child may
+    // be adjoining with the fragmentainer boundary, regardless of whether the
+    // child establishes a new formatting context or not.
+    builder.SetDiscardingMarginStrut();
   }
 
   if (ConstraintSpace().HasBlockFragmentation()) {
@@ -2419,17 +2433,27 @@ bool NGBlockLayoutAlgorithm::ResolveBfcBlockOffset(
   if (NeedsAbortOnBfcBlockOffsetChange())
     return false;
 
-  // Reset the previous inflow position. Clear the margin strut and set the
-  // offset to our block-start border edge.
-  //
-  // We'll now end up at the block-start border edge. If the BFC block offset
-  // was resolved due to a block-start border or padding, that must be added by
-  // the caller, for subsequent layout to continue at the right position.
-  // Whether we need to add border+padding or not isn't something we should
-  // determine here, so it must be dealt with as part of initializing the
-  // layout algorithm.
+  // Set the offset to our block-start border edge. We'll now end up at the
+  // block-start border edge. If the BFC block offset was resolved due to a
+  // block-start border or padding, that must be added by the caller, for
+  // subsequent layout to continue at the right position. Whether we need to add
+  // border+padding or not isn't something we should determine here, so it must
+  // be dealt with as part of initializing the layout algorithm.
   previous_inflow_position->logical_block_offset = LayoutUnit();
-  previous_inflow_position->margin_strut = NGMarginStrut();
+
+  // Resolving the BFC offset normally means that we have finished collapsing
+  // adjoining margins, so that we can reset the margin strut. One exception
+  // here is if we're resuming after a break, in which case we know that we can
+  // resolve the BFC offset to the block-start of the fragmentainer
+  // (block-offset 0). But keep the margin strut, since we're essentially still
+  // collapsing with the fragmentainer boundary, which will eat / discard all
+  // adjoining margins - unless this is at a forced break. DCHECK that the strut
+  // is empty (note that a strut that's set up to eat all margins will also be
+  // considered to be empty).
+  if (!is_resuming_)
+    previous_inflow_position->margin_strut = NGMarginStrut();
+  else
+    DCHECK(previous_inflow_position->margin_strut.IsEmpty());
 
   return true;
 }

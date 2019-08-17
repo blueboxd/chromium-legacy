@@ -639,8 +639,12 @@ void OverviewSession::OnStartingAnimationComplete(bool canceled) {
     grid->OnStartingAnimationComplete(canceled);
 
   if (!canceled) {
-    if (overview_focus_widget_)
-      overview_focus_widget_->Show();
+    if (overview_focus_widget_) {
+      if (enter_exit_overview_type_ == EnterExitOverviewType::kStartUnfocused)
+        overview_focus_widget_->ShowInactive();
+      else
+        overview_focus_widget_->Show();
+    }
     Shell::Get()->overview_controller()->DelayedUpdateRoundedCornersAndShadow();
   }
 }

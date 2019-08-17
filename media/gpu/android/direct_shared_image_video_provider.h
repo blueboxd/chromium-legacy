@@ -14,13 +14,13 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/ipc/common/android/texture_owner.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/android/codec_image.h"
 #include "media/gpu/android/maybe_render_early_manager.h"
 #include "media/gpu/android/shared_image_video_provider.h"
-#include "media/gpu/android/surface_texture_gl_owner.h"
 #include "media/gpu/android/video_frame_factory.h"
 #include "media/gpu/gles2_decoder_helper.h"
 #include "media/gpu/media_gpu_export.h"
@@ -43,7 +43,7 @@ class MEDIA_GPU_EXPORT DirectSharedImageVideoProvider
   void Initialize(GpuInitCB get_stub_cb) override;
   void RequestImage(ImageReadyCB cb,
                     const ImageSpec& spec,
-                    scoped_refptr<TextureOwner> texture_owner) override;
+                    scoped_refptr<gpu::TextureOwner> texture_owner) override;
 
  private:
   base::SequenceBound<GpuSharedImageVideoFactory> gpu_factory_;
@@ -80,12 +80,12 @@ class GpuSharedImageVideoFactory
   // mailbox support, where we have to have one texture per CodecImage.
   void CreateImage(FactoryImageReadyCB cb,
                    const SharedImageVideoProvider::ImageSpec& spec,
-                   scoped_refptr<TextureOwner> texture_owner);
+                   scoped_refptr<gpu::TextureOwner> texture_owner);
 
  private:
   // Creates a SharedImage for |mailbox|, and returns success or failure.
   bool CreateImageInternal(const SharedImageVideoProvider::ImageSpec& spec,
-                           scoped_refptr<TextureOwner> texture_owner,
+                           scoped_refptr<gpu::TextureOwner> texture_owner,
                            gpu::Mailbox mailbox,
                            scoped_refptr<CodecImage> image);
 

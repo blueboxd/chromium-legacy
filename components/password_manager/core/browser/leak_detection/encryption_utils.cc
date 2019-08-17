@@ -100,6 +100,16 @@ std::string CipherEncryptWithKey(const std::string& plaintext,
   return std::string();
 }
 
+std::string CipherReEncrypt(const std::string& already_encrypted,
+                            std::string* key) {
+  using ::private_join_and_compute::ECCommutativeCipher;
+  auto cipher = ECCommutativeCipher::CreateWithNewKey(
+      NID_X9_62_prime256v1, ECCommutativeCipher::SHA256);
+  *key = cipher.ValueOrDie()->GetPrivateKeyBytes();
+  auto result = cipher.ValueOrDie()->ReEncrypt(already_encrypted);
+  return result.ValueOrDie();
+}
+
 std::string CipherDecrypt(const std::string& ciphertext,
                           const std::string& key) {
   using ::private_join_and_compute::ECCommutativeCipher;

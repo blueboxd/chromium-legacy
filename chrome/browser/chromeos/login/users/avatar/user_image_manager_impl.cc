@@ -565,7 +565,7 @@ UserImageManagerImpl::UserImageManagerImpl(
       has_managed_image_(false),
       weak_factory_(this) {
   background_task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 }
 

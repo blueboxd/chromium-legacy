@@ -51,7 +51,6 @@ class Page;
 class PaintLayer;
 class Region;
 class ScrollableArea;
-class WebLayerTreeView;
 
 using MainThreadScrollingReasons = uint32_t;
 using ScrollbarId = uint64_t;
@@ -85,10 +84,8 @@ class CORE_EXPORT ScrollingCoordinator final
   // not null, the host and timeline are attached to the specified
   // LocalFrameView. A LocalFrameView only needs to own them when it is the view
   // for an OOPIF.
-  void LayerTreeViewInitialized(WebLayerTreeView&,
-                                cc::AnimationHost&,
-                                LocalFrameView*);
-  void WillCloseLayerTreeView(WebLayerTreeView&, LocalFrameView*);
+  void AnimationHostInitialized(cc::AnimationHost&, LocalFrameView*);
+  void WillCloseAnimationHost(LocalFrameView*);
 
   void WillBeDestroyed();
 

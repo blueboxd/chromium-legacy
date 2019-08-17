@@ -325,7 +325,15 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   void IncrementSelectionStatus(JourneyLogger::Section section,
                                 SectionSelectionStatus selection_status);
 
+  // True when the requested autofill data (shipping address and/or contact
+  // information) and payment data (either autofill or service worker) are
+  // complete, valid, and selected.
   bool is_ready_to_pay_;
+
+  // True when the requested autofill data (shipping address and/or contact
+  // information) is complete and valid, even if not selected. This variable is
+  // not affected by payment instruments.
+  bool is_requested_autofill_data_available_ = true;
 
   bool get_all_instruments_finished_;
 

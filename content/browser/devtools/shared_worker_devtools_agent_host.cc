@@ -4,6 +4,9 @@
 
 #include "content/browser/devtools/shared_worker_devtools_agent_host.h"
 
+#include <memory>
+#include <utility>
+
 #include "content/browser/devtools/devtools_renderer_channel.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/protocol/inspector_handler.h"
@@ -13,7 +16,6 @@
 #include "content/browser/devtools/protocol/target_handler.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/worker_host/shared_worker_host.h"
-#include "content/browser/worker_host/shared_worker_instance.h"
 #include "content/browser/worker_host/shared_worker_service_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -28,7 +30,7 @@ SharedWorkerDevToolsAgentHost::SharedWorkerDevToolsAgentHost(
       state_(WORKER_NOT_READY),
       worker_host_(worker_host),
       devtools_worker_token_(devtools_worker_token),
-      instance_(new SharedWorkerInstance(*worker_host->instance())) {
+      instance_(worker_host->instance()) {
   NotifyCreated();
 }
 
@@ -49,11 +51,11 @@ std::string SharedWorkerDevToolsAgentHost::GetType() {
 }
 
 std::string SharedWorkerDevToolsAgentHost::GetTitle() {
-  return instance_->name();
+  return instance_.name();
 }
 
 GURL SharedWorkerDevToolsAgentHost::GetURL() {
-  return instance_->url();
+  return instance_.url();
 }
 
 bool SharedWorkerDevToolsAgentHost::Activate() {
@@ -86,7 +88,7 @@ void SharedWorkerDevToolsAgentHost::DetachSession(DevToolsSession* session) {
 }
 
 bool SharedWorkerDevToolsAgentHost::Matches(SharedWorkerHost* worker_host) {
-  return instance_->Matches(*worker_host->instance());
+  return instance_.Matches(worker_host->instance());
 }
 
 void SharedWorkerDevToolsAgentHost::WorkerReadyForInspection(

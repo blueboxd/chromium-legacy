@@ -7565,29 +7565,29 @@ histogram as enum -->
 </enum>
 
 <enum name="ChromeColorsInfo">
-  <int value="0" label="OTHER"/>
-  <int value="1" label="Elephant"/>
-  <int value="2" label="Light grey"/>
-  <int value="3" label="Midnight"/>
+  <int value="0" label="Other"/>
+  <int value="1" label="Warm grey"/>
+  <int value="2" label="Cool grey"/>
+  <int value="3" label="Midnight blue"/>
   <int value="4" label="Black"/>
-  <int value="5" label="Beige/White"/>
-  <int value="6" label="Yellow/White"/>
-  <int value="7" label="Green/White"/>
-  <int value="8" label="Light Teal/White"/>
-  <int value="9" label="Light Purple/White"/>
-  <int value="10" label="Pink/White"/>
+  <int value="5" label="Beige and white"/>
+  <int value="6" label="Yellow and white"/>
+  <int value="7" label="Green and white"/>
+  <int value="8" label="Light teal and white"/>
+  <int value="9" label="Light purple and white"/>
+  <int value="10" label="Pink and white"/>
   <int value="11" label="Beige"/>
   <int value="12" label="Orange"/>
-  <int value="13" label="Light Green"/>
-  <int value="14" label="Light Teal"/>
-  <int value="15" label="Light Blue"/>
+  <int value="13" label="Light green"/>
+  <int value="14" label="Light teal"/>
+  <int value="15" label="Light blue"/>
   <int value="16" label="Pink"/>
-  <int value="17" label="Dark Pink/Red"/>
-  <int value="18" label="Dark Red/Orange"/>
-  <int value="19" label="Dark Green"/>
-  <int value="20" label="Dark Teal"/>
-  <int value="21" label="Dark Blue"/>
-  <int value="22" label="Dark Purple"/>
+  <int value="17" label="Dark pink and red"/>
+  <int value="18" label="Dark red and orange"/>
+  <int value="19" label="Dark green"/>
+  <int value="20" label="Dark teal"/>
+  <int value="21" label="Dark blue"/>
+  <int value="22" label="Dark purple"/>
 </enum>
 
 <enum name="ChromeColorsRevertReason">
@@ -12832,7 +12832,7 @@ Called by update_net_error_codes.py.-->
 
 <enum name="DCLayerResult">
   <int value="0" label="Success"/>
-  <int value="1" label="Failed unsupported quad"/>
+  <int value="1" label="Failed unsupported quad (not recorded)"/>
   <int value="2" label="Failed quad blend mode"/>
   <int value="3" label="Failed texture not candidate"/>
   <int value="4" label="Failed occluded"/>
@@ -12840,7 +12840,7 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="Failed transparent"/>
   <int value="7" label="Failed non-root renderpass"/>
   <int value="8" label="Failed too many overlays"/>
-  <int value="9" label="Failed no hw overlay support"/>
+  <int value="9" label="Failed no hw overlay support (deprecated)"/>
 </enum>
 
 <enum name="DeclarativeAPIFunctionType">
@@ -19185,7 +19185,7 @@ Called by update_net_error_codes.py.-->
   <int value="302" label="MANAGEMENT_LAUNCHAPP"/>
   <int value="303" label="INPUT_IME_CLEARCOMPOSITION"/>
   <int value="304" label="ALARMS_GETALL"/>
-  <int value="305" label="DIAL_DISCOVERNOW"/>
+  <int value="305" label="DELETED_DIAL_DISCOVERNOW"/>
   <int value="306" label="TYPES_CHROMESETTING_SET"/>
   <int value="307" label="BROWSERACTION_SETICON"/>
   <int value="308" label="ACCESSIBILITY_PRIVATE_SETACCESSIBILITYENABLED"/>
@@ -19829,8 +19829,8 @@ Called by update_net_error_codes.py.-->
   <int value="926" label="HOTWORDPRIVATE_GETAUDIOHISTORYENABLED"/>
   <int value="927"
       label="DELETED_APP_CURRENTWINDOWINTERNAL_SETINTERCEPTALLKEYS"/>
-  <int value="928" label="LAUNCHERPAGE_PUSHSUBPAGE"/>
-  <int value="929" label="LAUNCHERPAGE_SHOW"/>
+  <int value="928" label="DELETED_LAUNCHERPAGE_PUSHSUBPAGE"/>
+  <int value="929" label="DELETED_LAUNCHERPAGE_SHOW"/>
   <int value="930" label="AUTOTESTPRIVATE_SETTOUCHPADSENSITIVITY"/>
   <int value="931" label="AUTOTESTPRIVATE_SETTAPTOCLICK"/>
   <int value="932" label="AUTOTESTPRIVATE_SETTHREEFINGERCLICK"/>
@@ -19842,7 +19842,7 @@ Called by update_net_error_codes.py.-->
   <int value="938" label="DELETED_COPRESENCEENDPOINTS_DESTROYLOCALENDPOINT"/>
   <int value="939" label="DELETED_COPRESENCEENDPOINTS_SEND"/>
   <int value="940" label="DELETED_INLINE_INSTALL_PRIVATE_INSTALL"/>
-  <int value="941" label="LAUNCHERPAGE_SETENABLED"/>
+  <int value="941" label="DELETED_LAUNCHERPAGE_SETENABLED"/>
   <int value="942" label="DELETED_CRYPTOTOKENPRIVATE_REQUESTPERMISSION"/>
   <int value="943" label="BLUETOOTHPRIVATE_DISCONNECTALL"/>
   <int value="944" label="FILEMANAGERPRIVATEINTERNAL_GETMIMETYPE"/>
@@ -19945,7 +19945,7 @@ Called by update_net_error_codes.py.-->
   <int value="1037" label="PASSWORDSPRIVATE_REMOVESAVEDPASSWORD"/>
   <int value="1038" label="PASSWORDSPRIVATE_REMOVEPASSWORDEXCEPTION"/>
   <int value="1039" label="PASSWORDSPRIVATE_REQUESTPLAINTEXTPASSWORD"/>
-  <int value="1040" label="LAUNCHERPAGE_HIDE"/>
+  <int value="1040" label="DELETED_LAUNCHERPAGE_HIDE"/>
   <int value="1041" label="PLATFORMKEYS_VERIFYTLSSERVERCERTIFICATE"/>
   <int value="1042" label="DEVELOPERPRIVATE_SETSHORTCUTHANDLINGSUSPENDED"/>
   <int value="1043" label="DEVELOPERPRIVATE_UPDATEEXTENSIONCOMMAND"/>
@@ -20069,7 +20069,7 @@ Called by update_net_error_codes.py.-->
   <int value="1155" label="QUICKUNLOCKPRIVATE_GETCREDENTIALREQUIREMENTS"/>
   <int value="1156" label="CLIPBOARD_SETIMAGEDATA"/>
   <int value="1157" label="NETWORKINGPRIVATE_GETGLOBALPOLICY"/>
-  <int value="1158" label="DIAL_FETCHDEVICEDESCRIPTION"/>
+  <int value="1158" label="DELETED_DIAL_FETCHDEVICEDESCRIPTION"/>
   <int value="1159" label="SYSTEM_DISPLAY_STARTCUSTOMTOUCHCALIBRATION"/>
   <int value="1160" label="AUDIO_GETMUTE"/>
   <int value="1161" label="AUDIO_SETMUTE"/>

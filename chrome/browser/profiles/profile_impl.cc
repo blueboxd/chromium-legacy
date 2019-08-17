@@ -58,7 +58,6 @@
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_manager_utils.h"
-#include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/native_file_system/chrome_native_file_system_permission_context.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_context_factory.h"
@@ -118,7 +117,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_store_impl.h"
-#include "components/gcm_driver/gcm_profile_service.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
@@ -137,6 +135,7 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
+#include "components/version_info/channel.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cors_origin_pattern_setter.h"
@@ -171,8 +170,6 @@
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/authpolicy/auth_policy_credentials_manager.h"
-#include "chrome/browser/chromeos/cryptauth/client_app_metadata_provider_service.h"
-#include "chrome/browser/chromeos/cryptauth/client_app_metadata_provider_service_factory.h"
 #include "chrome/browser/chromeos/cryptauth/gcm_device_info_provider_impl.h"
 #include "chrome/browser/chromeos/device_sync/device_sync_client_factory.h"
 #include "chrome/browser/chromeos/locale_change_guard.h"
@@ -190,8 +187,6 @@
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
-#include "chromeos/services/device_sync/device_sync_service.h"
-#include "chromeos/services/device_sync/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
@@ -1315,15 +1310,6 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-  if (service_name == chromeos::device_sync::mojom::kServiceName) {
-    return std::make_unique<chromeos::device_sync::DeviceSyncService>(
-        IdentityManagerFactory::GetForProfile(this),
-        gcm::GCMProfileServiceFactory::GetForProfile(this)->driver(),
-        chromeos::GcmDeviceInfoProviderImpl::GetInstance(),
-        chromeos::ClientAppMetadataProviderServiceFactory::GetForProfile(this),
-        GetURLLoaderFactory(), std::move(request));
-  }
-
   if (service_name == chromeos::multidevice_setup::mojom::kServiceName) {
     chromeos::android_sms::AndroidSmsService* android_sms_service =
         chromeos::android_sms::AndroidSmsServiceFactory::GetForBrowserContext(

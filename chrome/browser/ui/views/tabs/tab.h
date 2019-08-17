@@ -295,8 +295,8 @@ class Tab : public gfx::AnimationDelegate,
   // padding between them to space them out visually.
   bool extra_alert_indicator_padding_ = false;
 
-  // The current color of the alert indicator and close button icons.
-  SkColor button_color_ = SK_ColorTRANSPARENT;
+  // The tab foreground color (title, buttons).
+  SkColor foreground_color_ = SK_ColorTRANSPARENT;
 
   // Indicates whether the mouse is currently hovered over the tab. This is
   // different from View::IsMouseHovered() which does a naive intersection with

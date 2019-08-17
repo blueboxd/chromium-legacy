@@ -37,7 +37,6 @@
 #include "chromeos/services/device_sync/fake_software_feature_manager.h"
 #include "chromeos/services/device_sync/public/cpp/fake_client_app_metadata_provider.h"
 #include "chromeos/services/device_sync/public/cpp/fake_gcm_device_info_provider.h"
-#include "chromeos/services/device_sync/public/mojom/constants.mojom.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "chromeos/services/device_sync/remote_device_provider_impl.h"
 #include "chromeos/services/device_sync/software_feature_manager_impl.h"
@@ -46,7 +45,6 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -212,7 +210,8 @@ class FakeCryptAuthDeviceManagerFactory
 
 class FakeCryptAuthSchedulerFactory : public CryptAuthSchedulerImpl::Factory {
  public:
-  FakeCryptAuthSchedulerFactory(TestingPrefServiceSimple* test_pref_service)
+  explicit FakeCryptAuthSchedulerFactory(
+      TestingPrefServiceSimple* test_pref_service)
       : test_pref_service_(test_pref_service) {}
 
   ~FakeCryptAuthSchedulerFactory() override = default;
@@ -532,9 +531,11 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
       return test_pref_registry_;
     }
 
-    void ConnectToPrefService(service_manager::Connector* connector,
-                              scoped_refptr<PrefRegistrySimple> pref_registry,
-                              prefs::ConnectCallback callback) override {
+    void ConnectToPrefService(
+        mojo::PendingRemote<prefs::mojom::PrefStoreConnector>
+            pref_store_connector,
+        scoped_refptr<PrefRegistrySimple> pref_registry,
+        prefs::ConnectCallback callback) override {
       EXPECT_EQ(test_pref_service_->registry(), pref_registry.get());
       pending_callback_ = std::move(callback);
     }
@@ -564,16 +565,17 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
     std::unique_ptr<DeviceSyncBase> BuildInstance(
         signin::IdentityManager* identity_manager,
         gcm::GCMDriver* gcm_driver,
-        service_manager::Connector* connector,
+        mojo::PendingRemote<prefs::mojom::PrefStoreConnector>
+            pref_store_connector,
         const GcmDeviceInfoProvider* gcm_device_info_provider,
         ClientAppMetadataProvider* client_app_metadata_provider,
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
         std::unique_ptr<base::OneShotTimer> timer) override {
       return base::WrapUnique(new DeviceSyncImpl(
-          identity_manager, gcm_driver, connector, gcm_device_info_provider,
-          client_app_metadata_provider, std::move(url_loader_factory),
-          simple_test_clock_, std::move(fake_pref_connection_delegate_),
-          std::move(mock_timer_)));
+          identity_manager, gcm_driver, std::move(pref_store_connector),
+          gcm_device_info_provider, client_app_metadata_provider,
+          std::move(url_loader_factory), simple_test_clock_,
+          std::move(fake_pref_connection_delegate_), std::move(mock_timer_)));
     }
 
    private:
@@ -699,11 +701,20 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
             }));
 
     fake_device_sync_observer_ = std::make_unique<FakeDeviceSyncObserver>();
+    mojo::Remote<mojom::DeviceSyncServiceInitializer> initializer;
     service_ = std::make_unique<DeviceSyncService>(
         identity_test_environment_->identity_manager(), fake_gcm_driver_.get(),
         fake_gcm_device_info_provider_.get(),
         fake_client_app_metadata_provider_.get(), shared_url_loader_factory,
-        connector_factory_.RegisterInstance(mojom::kServiceName));
+        initializer.BindNewPipeAndPassReceiver());
+
+    // FakePrefConnectionDelegate precludes the service ever actually sending
+    // messages over this interface, so we provided the service with a
+    // bound but disconnected endpoint.
+    mojo::PendingRemote<prefs::mojom::PrefStoreConnector> pref_store_connector;
+    ignore_result(pref_store_connector.InitWithNewPipeAndPassReceiver());
+    initializer->Initialize(remote_service_.BindNewPipeAndPassReceiver(),
+                            std::move(pref_store_connector));
   }
 
   void TearDown() override {
@@ -735,8 +746,7 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
               device_already_enrolled_in_cryptauth);
     }
 
-    connector_factory_.GetDefaultConnector()->BindInterface(mojom::kServiceName,
-                                                            &device_sync_);
+    remote_service_->BindDeviceSync(mojo::MakeRequest(&device_sync_));
 
     // Set |fake_device_sync_observer_|.
     CallAddObserver();
@@ -1164,8 +1174,8 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
   std::unique_ptr<gcm::FakeGCMDriver> fake_gcm_driver_;
   std::unique_ptr<FakeGcmDeviceInfoProvider> fake_gcm_device_info_provider_;
 
-  service_manager::TestConnectorFactory connector_factory_;
   std::unique_ptr<DeviceSyncService> service_;
+  mojo::Remote<mojom::DeviceSyncService> remote_service_;
 
   bool device_already_enrolled_in_cryptauth_;
   bool last_force_enrollment_now_result_;

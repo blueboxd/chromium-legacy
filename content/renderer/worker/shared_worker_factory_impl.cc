@@ -6,17 +6,24 @@
 
 #include "base/memory/ptr_util.h"
 #include "content/renderer/worker/embedded_shared_worker_stub.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 
 namespace content {
+// static
+void SharedWorkerFactoryImpl::CreateForRequest(
+    blink::mojom::SharedWorkerFactoryRequest request) {
+  // Implicit conversion to
+  // mojo::PendingReceiver<blink::mojom::SharedWorkerFactory>.
+  Create(std::move(request));
+}
 
 // static
 void SharedWorkerFactoryImpl::Create(
-    blink::mojom::SharedWorkerFactoryRequest request) {
-  mojo::MakeStrongBinding<blink::mojom::SharedWorkerFactory>(
-      base::WrapUnique(new SharedWorkerFactoryImpl()), std::move(request));
+    mojo::PendingReceiver<blink::mojom::SharedWorkerFactory> receiver) {
+  mojo::MakeSelfOwnedReceiver<blink::mojom::SharedWorkerFactory>(
+      base::WrapUnique(new SharedWorkerFactoryImpl()), std::move(receiver));
 }
 
 SharedWorkerFactoryImpl::SharedWorkerFactoryImpl() {}

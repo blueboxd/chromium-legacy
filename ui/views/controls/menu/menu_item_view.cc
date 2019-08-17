@@ -1058,13 +1058,10 @@ void MenuItemView::PaintBackground(gfx::Canvas* canvas,
   if (type_ == HIGHLIGHTED || is_alerted_) {
     SkColor color = gfx::kPlaceholderColor;
 
-    // Highligted items always have a different-colored background, and ignore
-    // system theme.
     if (type_ == HIGHLIGHTED) {
       const ui::NativeTheme::ColorId color_id =
           render_selection
-              ? ui::NativeTheme::
-                    kColorId_FocusedHighlightedMenuItemBackgroundColor
+              ? ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor
               : ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor;
       color = GetNativeTheme()->GetSystemColor(color_id);
     } else {

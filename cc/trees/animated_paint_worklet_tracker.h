@@ -46,17 +46,17 @@ class CC_EXPORT AnimatedPaintWorkletTracker {
   // Called when the value of a property is changed by the CC animation system.
   // Responsible for updating the property value in |input_properties_|, and
   // marking any relevant PaintWorkletInputs as needs-invalidation.
-  void OnCustomPropertyMutated(ElementId element_id,
-                               const std::string& custom_property_name,
-                               float custom_property_value);
-
+  void OnCustomPropertyMutated(
+      ElementId element_id,
+      const std::string& custom_property_name,
+      PaintWorkletInput::PropertyValue custom_property_value);
   // Invalidate all the paint worklets that uses the set of dirtied properties.
   // Returns whether the set of dirtied properties is empty or not.
   bool InvalidatePaintWorkletsOnPendingTree();
 
   // Given a property, return its latest value if the property is animated.
-  // Otherwise return nullopt.
-  base::Optional<float> GetPropertyAnimationValue(
+  // Otherwise return a PropertyValue with no value.
+  PaintWorkletInput::PropertyValue GetPropertyAnimationValue(
       const PaintWorkletInput::PropertyKey& key) const;
 
   // Called right after Blink commit, clears the entries in |input_properties_|
@@ -77,7 +77,7 @@ class CC_EXPORT AnimatedPaintWorkletTracker {
   //      invalidate them when the property's value is changed by an animation.
   struct PropertyState {
     PropertyState();
-    explicit PropertyState(float value,
+    explicit PropertyState(PaintWorkletInput::PropertyValue value,
                            base::flat_set<PictureLayerImpl*> layers);
     PropertyState(const PropertyState&);
     ~PropertyState();
@@ -87,7 +87,7 @@ class CC_EXPORT AnimatedPaintWorkletTracker {
     // still being animated in CC. This allows us to continue using the final
     // value of the animation, after it finishes on the impl thread, until the
     // next commit.
-    base::Optional<float> animation_value;
+    PaintWorkletInput::PropertyValue animation_value;
     base::flat_set<PictureLayerImpl*> associated_layers;
   };
 

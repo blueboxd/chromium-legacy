@@ -195,7 +195,7 @@ SetTimeUI::SetTimeUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
   values.SetDouble("buildTime", base::GetBuildTime().ToJsTime());
 
   source->AddLocalizedStrings(values);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
 
   source->AddResourcePath("set_time_browser_proxy.html",
                           IDR_SET_TIME_BROWSER_PROXY_HTML);

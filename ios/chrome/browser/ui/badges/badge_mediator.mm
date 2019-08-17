@@ -41,6 +41,10 @@
   if (self) {
     _consumer = consumer;
     _webStateList = webStateList;
+    web::WebState* activeWebState = webStateList->GetActiveWebState();
+    if (activeWebState) {
+      [self updateNewWebState:activeWebState withWebStateList:webStateList];
+    }
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
     _webStateList->AddObserver(_webStateListObserver.get());
   }
@@ -99,9 +103,8 @@
 - (void)updateNewWebState:(web::WebState*)newWebState
          withWebStateList:(WebStateList*)webStateList {
   DCHECK_EQ(_webStateList, webStateList);
-  web::WebState* webState = webStateList->GetActiveWebState();
   InfobarBadgeTabHelper* infobarBadgeTabHelper =
-      InfobarBadgeTabHelper::FromWebState(webState);
+      InfobarBadgeTabHelper::FromWebState(newWebState);
   DCHECK(infobarBadgeTabHelper);
   infobarBadgeTabHelper->SetDelegate(self);
   // Whenever the WebState changes ask the corresponding

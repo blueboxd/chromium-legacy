@@ -437,10 +437,21 @@ TEST_F(FeedSchedulerHostTest, OnReceiveNewContentVerifyPref) {
 }
 
 TEST_F(FeedSchedulerHostTest, OnRequestErrorVerifyPref) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kInterestFeedContentSuggestions,
+      {{"only_set_last_refresh_attempt_on_success", "false"}});
+
   EXPECT_EQ(Time(), profile_prefs()->GetTime(prefs::kLastFetchAttemptTime));
   scheduler()->OnRequestError(0);
   EXPECT_EQ(test_clock()->Now(),
             profile_prefs()->GetTime(prefs::kLastFetchAttemptTime));
+}
+
+TEST_F(FeedSchedulerHostTest, OnRequestErrorVerifyRefreshTimeNotUpdated) {
+  EXPECT_EQ(Time(), profile_prefs()->GetTime(prefs::kLastFetchAttemptTime));
+  scheduler()->OnRequestError(0);
+  EXPECT_EQ(Time(), profile_prefs()->GetTime(prefs::kLastFetchAttemptTime));
 }
 
 TEST_F(FeedSchedulerHostTest, OnForegroundedActiveNtpUser) {

@@ -59,7 +59,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
                                                    bool in_dev_mode) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIExtensionsHost);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
 
   static constexpr LocalizedString kLocalizedStrings[] = {
     // Add common strings.

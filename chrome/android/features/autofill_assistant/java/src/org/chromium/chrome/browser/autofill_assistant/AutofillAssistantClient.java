@@ -14,6 +14,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.content_public.browser.WebContents;
@@ -68,7 +69,7 @@ class AutofillAssistantClient {
 
     /** Returns the client for the given web contents, creating it if necessary. */
     public static AutofillAssistantClient fromWebContents(WebContents webContents) {
-        return nativeFromWebContents(webContents);
+        return AutofillAssistantClientJni.get().fromWebContents(webContents);
     }
 
     private AutofillAssistantClient(long nativeClientAndroid) {
@@ -105,7 +106,8 @@ class AutofillAssistantClient {
 
         checkNativeClientIsAliveOrThrow();
         chooseAccountAsyncIfNecessary(parameters.get(PARAMETER_USER_EMAIL), intentExtras);
-        return nativeStart(mNativeClientAndroid, initialUrl, experimentIds,
+        return AutofillAssistantClientJni.get().start(mNativeClientAndroid,
+                AutofillAssistantClient.this, initialUrl, experimentIds,
                 parameters.keySet().toArray(new String[parameters.size()]),
                 parameters.values().toArray(new String[parameters.size()]), onboardingCoordinator,
                 AutofillAssistantServiceInjector.getServiceToInject());
@@ -117,7 +119,8 @@ class AutofillAssistantClient {
     public void destroyUi() {
         if (mNativeClientAndroid == 0) return;
 
-        nativeDestroyUI(mNativeClientAndroid);
+        AutofillAssistantClientJni.get().destroyUI(
+                mNativeClientAndroid, AutofillAssistantClient.this);
     }
 
     /**
@@ -130,7 +133,8 @@ class AutofillAssistantClient {
     public void transferUiTo(WebContents otherWebContents) {
         if (mNativeClientAndroid == 0) return;
 
-        nativeTransferUITo(mNativeClientAndroid, otherWebContents);
+        AutofillAssistantClientJni.get().transferUITo(
+                mNativeClientAndroid, AutofillAssistantClient.this, otherWebContents);
     }
 
     /** Lists available direct actions. */
@@ -145,7 +149,8 @@ class AutofillAssistantClient {
 
         // The native side calls sendDirectActionList() on the callback once the controller has
         // results.
-        nativeListDirectActions(mNativeClientAndroid, experimentIds,
+        AutofillAssistantClientJni.get().listDirectActions(mNativeClientAndroid,
+                AutofillAssistantClient.this, experimentIds,
                 arguments.keySet().toArray(new String[arguments.size()]),
                 arguments.values().toArray(new String[arguments.size()]), callback);
     }
@@ -168,7 +173,8 @@ class AutofillAssistantClient {
 
         // Note that only listDirectActions can start AA, so only it needs
         // chooseAccountAsyncIfNecessary.
-        return nativePerformDirectAction(mNativeClientAndroid, actionId, experimentIds,
+        return AutofillAssistantClientJni.get().performDirectAction(mNativeClientAndroid,
+                AutofillAssistantClient.this, actionId, experimentIds,
                 arguments.keySet().toArray(new String[arguments.size()]),
                 arguments.values().toArray(new String[arguments.size()]), onboardingCoordinator);
     }
@@ -190,8 +196,9 @@ class AutofillAssistantClient {
                 onAccountChosen(accounts.get(0));
                 return;
             }
-            Account signedIn =
-                    findAccountByName(accounts, nativeGetPrimaryAccountName(mNativeClientAndroid));
+            Account signedIn = findAccountByName(accounts,
+                    AutofillAssistantClientJni.get().getPrimaryAccountName(
+                            mNativeClientAndroid, AutofillAssistantClient.this));
             if (signedIn != null) {
                 // TODO(crbug.com/806868): Compare against account name from extras and complain if
                 // they don't match.
@@ -253,7 +260,9 @@ class AutofillAssistantClient {
             return;
         }
         if (mAccount == null) {
-            if (mNativeClientAndroid != 0) nativeOnAccessToken(mNativeClientAndroid, true, "");
+            if (mNativeClientAndroid != 0)
+                AutofillAssistantClientJni.get().onAccessToken(
+                        mNativeClientAndroid, AutofillAssistantClient.this, true, "");
             return;
         }
 
@@ -262,14 +271,16 @@ class AutofillAssistantClient {
                     @Override
                     public void onGetTokenSuccess(String token) {
                         if (mNativeClientAndroid != 0) {
-                            nativeOnAccessToken(mNativeClientAndroid, true, token);
+                            AutofillAssistantClientJni.get().onAccessToken(mNativeClientAndroid,
+                                    AutofillAssistantClient.this, true, token);
                         }
                     }
 
                     @Override
                     public void onGetTokenFailure(boolean isTransientError) {
                         if (!isTransientError && mNativeClientAndroid != 0) {
-                            nativeOnAccessToken(mNativeClientAndroid, false, "");
+                            AutofillAssistantClientJni.get().onAccessToken(
+                                    mNativeClientAndroid, AutofillAssistantClient.this, false, "");
                         }
                     }
                 });
@@ -324,18 +335,24 @@ class AutofillAssistantClient {
         mNativeClientAndroid = 0;
     }
 
-    private static native AutofillAssistantClient nativeFromWebContents(WebContents webContents);
-    private native boolean nativeStart(long nativeClientAndroid, String initialUrl,
-            String experimentIds, String[] parameterNames, String[] parameterValues,
-            @Nullable AssistantOnboardingCoordinator onboardingCoordinator, long nativeService);
-    private native void nativeOnAccessToken(
-            long nativeClientAndroid, boolean success, String accessToken);
-    private native String nativeGetPrimaryAccountName(long nativeClientAndroid);
-    private native void nativeDestroyUI(long nativeClientAndroid);
-    private native void nativeTransferUITo(long nativeClientAndroid, Object otherWebContents);
-    private native void nativeListDirectActions(long nativeClientAndroid, String experimentIds,
-            String[] argumentNames, String[] argumentValues, Object callback);
-    private native boolean nativePerformDirectAction(long nativeClientAndroid, String actionId,
-            String experimentId, String[] argumentNames, String[] argumentValues,
-            @Nullable AssistantOnboardingCoordinator onboardingCoordinator);
+    @NativeMethods
+    interface Natives {
+        AutofillAssistantClient fromWebContents(WebContents webContents);
+        boolean start(long nativeClientAndroid, AutofillAssistantClient caller, String initialUrl,
+                String experimentIds, String[] parameterNames, String[] parameterValues,
+                @Nullable AssistantOnboardingCoordinator onboardingCoordinator, long nativeService);
+        void onAccessToken(long nativeClientAndroid, AutofillAssistantClient caller,
+                boolean success, String accessToken);
+        String getPrimaryAccountName(long nativeClientAndroid, AutofillAssistantClient caller);
+        void destroyUI(long nativeClientAndroid, AutofillAssistantClient caller);
+        void transferUITo(
+                long nativeClientAndroid, AutofillAssistantClient caller, Object otherWebContents);
+        void listDirectActions(long nativeClientAndroid, AutofillAssistantClient caller,
+                String experimentIds, String[] argumentNames, String[] argumentValues,
+                Object callback);
+        boolean performDirectAction(long nativeClientAndroid, AutofillAssistantClient caller,
+                String actionId, String experimentId, String[] argumentNames,
+                String[] argumentValues,
+                @Nullable AssistantOnboardingCoordinator onboardingCoordinator);
+    }
 }

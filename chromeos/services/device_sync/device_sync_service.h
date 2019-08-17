@@ -9,9 +9,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace gcm {
 class GCMDriver;
@@ -35,7 +34,8 @@ class GcmDeviceInfoProvider;
 
 // Service which provides an implementation for DeviceSync. This service creates
 // one implementation and shares it among all connection requests.
-class DeviceSyncService : public service_manager::Service {
+class DeviceSyncService : public mojom::DeviceSyncServiceInitializer,
+                          public mojom::DeviceSyncService {
  public:
   DeviceSyncService(
       signin::IdentityManager* identity_manager,
@@ -43,17 +43,21 @@ class DeviceSyncService : public service_manager::Service {
       const GcmDeviceInfoProvider* gcm_device_info_provider,
       ClientAppMetadataProvider* client_app_metadata_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      service_manager::mojom::ServiceRequest request);
+      mojo::PendingReceiver<mojom::DeviceSyncServiceInitializer> init_receiver);
   ~DeviceSyncService() override;
 
  private:
-  // service_manager::Service:
-  void OnStart() override;
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override;
+  // mojom::DeviceSyncServiceInitializer:
+  void Initialize(mojo::PendingReceiver<mojom::DeviceSyncService> receiver,
+                  mojo::PendingRemote<prefs::mojom::PrefStoreConnector>
+                      pref_store_connector) override;
 
-  service_manager::ServiceBinding service_binding_;
+  // mojom::DeviceSyncService:
+  void BindDeviceSync(
+      mojo::PendingReceiver<mojom::DeviceSync> receiver) override;
+
+  mojo::Receiver<mojom::DeviceSyncServiceInitializer> init_receiver_;
+  mojo::Receiver<mojom::DeviceSyncService> receiver_{this};
 
   signin::IdentityManager* identity_manager_;
   gcm::GCMDriver* gcm_driver_;
@@ -62,7 +66,6 @@ class DeviceSyncService : public service_manager::Service {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   std::unique_ptr<DeviceSyncBase> device_sync_;
-  service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSyncService);
 };

@@ -93,7 +93,7 @@ int CrashReporterMain() {
 
   // Disable rate-limiting until this is fixed:
   //   https://bugs.chromium.org/p/crashpad/issues/detail?id=23
-  command_line->AppendSwitch(kNoRateLimit);
+  command_line->AppendSwitch(kNoRateLimitSwitch);
 
   std::vector<base::CommandLine::StringType> argv = command_line->argv();
 

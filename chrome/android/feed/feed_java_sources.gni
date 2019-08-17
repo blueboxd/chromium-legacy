@@ -78,6 +78,7 @@ if (enable_feed_in_chrome) {
     "//chrome/android/feed/dummy/java/src/org/chromium/chrome/browser/feed/FeedAppLifecycle.java",
     "//chrome/android/feed/dummy/java/src/org/chromium/chrome/browser/feed/FeedNewTabPage.java",
     "//chrome/android/feed/dummy/java/src/org/chromium/chrome/browser/feed/FeedProcessScopeFactory.java",
+    "//chrome/android/feed/dummy/java/src/org/chromium/chrome/browser/feed/FeedRefreshTask.java",
     "//chrome/android/feed/dummy/java/src/org/chromium/chrome/browser/feed/FeedSurfaceCoordinator.java",
     "//chrome/android/feed/dummy/java/src/org/chromium/chrome/browser/feed/TestNetworkClient.java",
   ]

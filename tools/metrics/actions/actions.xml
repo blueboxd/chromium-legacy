@@ -11091,6 +11091,17 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Media.OpenPreferencesClicked">
+  <owner>grunell@chromium.org</owner>
+  <owner>engedy@chromium.org</owner>
+  <owner>hkamila@chromium.org</owner>
+  <description>
+    Logs when the user clicks &quot;Open Preferences&quot;, which is a button,
+    that upon being clicked, triggers showing the &quot;Security &amp;
+    Privacy&quot; pane of macOS System Preferences.
+  </description>
+</action>
+
 <action name="Media.Session.BackgroundResume">
   <owner>avayvod@chromium.org</owner>
   <description>User resumed a backgrounded video. Android-only.</description>
@@ -11108,6 +11119,17 @@ should be able to be added at any place in this file.
   <owner>avayvod@chromium.org</owner>
   <description>
     User brought the frame containing a video to the foreground.
+  </description>
+</action>
+
+<action name="Media.ShowSystemMediaPermissionBubble">
+  <owner>grunell@chromium.org</owner>
+  <owner>engedy@chromium.org</owner>
+  <owner>hkamila@chromium.org</owner>
+  <description>
+    Logs when the user clicks the camera or microphone sliding icon which
+    triggers showing the &quot;Security &amp; Privacy&quot; pane of macOS System
+    Preferences.
   </description>
 </action>
 
@@ -22904,6 +22926,7 @@ should be able to be added at any place in this file.
   <suffix name="PreviewsOmniboxUI"
       label="For the Previews UI in the Android Omnibox feature."/>
   <suffix name="ReopenTab" label="For ReopenTab feature."/>
+  <suffix name="TabGroupsDragAndDrop" label="For drop-to-merge in tab group."/>
   <suffix name="TabGroupsQuicklyComparePages"
       label="For long press links to create tab groups."/>
   <suffix name="TabGroupsTapToSeeAnotherTab" label="For tab strip."/>

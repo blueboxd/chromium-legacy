@@ -185,7 +185,11 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
                      ->Clone();
     thread_safe_sender_ = RenderThreadImpl::current()->thread_safe_sender();
 #if defined(OS_LINUX)
-    font_loader_ = sk_make_sp<font_service::FontLoader>(connector_.get());
+    mojo::PendingRemote<font_service::mojom::FontService> font_service;
+    RenderThreadImpl::current()->BindHostReceiver(
+        font_service.InitWithNewPipeAndPassReceiver());
+    font_loader_ =
+        sk_make_sp<font_service::FontLoader>(std::move(font_service));
     SkFontConfigInterface::SetGlobal(font_loader_);
 #endif
   } else {

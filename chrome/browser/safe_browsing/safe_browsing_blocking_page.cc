@@ -189,8 +189,7 @@ SafeBrowsingBlockingPage::GetTypeForTesting() {
 }
 
 void SafeBrowsingBlockingPage::OnInterstitialClosing() {
-  if (base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials) &&
-      IsMainPageLoadBlocked(unsafe_resources())) {
+  if (base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials)) {
     // With committed interstitials OnProceed and OnDontProceed don't get
     // called, so call FinishThreatDetails from here.
     FinishThreatDetails(
@@ -292,7 +291,6 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
   auto interstitial_command =
       static_cast<security_interstitials::SecurityInterstitialCommand>(command);
   if (base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials) &&
-      IsMainPageLoadBlocked(unsafe_resources()) &&
       interstitial_command ==
           security_interstitials::SecurityInterstitialCommand::CMD_PROCEED) {
     // With committed interstitials, OnProceed() doesn't get called, so handle

@@ -83,6 +83,8 @@ jumbo_static_library("safe_browsing") {
       "safe_browsing_navigation_throttle.h",
       "safe_browsing_service.cc",
       "safe_browsing_service.h",
+      "safe_browsing_subresource_tab_helper.cc",
+      "safe_browsing_subresource_tab_helper.h",
       "services_delegate.h",
       "telemetry/telemetry_service.cc",
       "telemetry/telemetry_service.h",

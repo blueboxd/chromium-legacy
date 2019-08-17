@@ -83,7 +83,6 @@ class TestCertVerifier : public net::CertVerifier {
     net::Error result = net::OK;
     verify_result->verified_cert = params.certificate();
     verify_result->cert_status = net::MapNetErrorToCertStatus(result);
-    verify_result->is_issued_by_known_root = true;
     return result;
   }
   void SetConfig(const Config& config) override {}

@@ -9,9 +9,29 @@
 #include "components/ui_devtools/Protocol.h"
 #include "components/ui_devtools/ui_element_delegate.h"
 #include "components/ui_devtools/views/element_utility.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/views/widget/widget.h"
 
 namespace ui_devtools {
+
+namespace {
+
+// Returns true if |property_name| is type SkColor, false if not. If type
+// SkColor, remove the "--" from the name.
+bool GetSkColorPropertyName(std::string& property_name) {
+  if (property_name.length() < 2U)
+    return false;
+
+  // Check if property starts with "--", meaning its type is SkColor.
+  if (property_name[0] == '-' && property_name[1] == '-') {
+    // Remove "--" from |property_name|.
+    base::TrimString(property_name, "-", &property_name);
+    return true;
+  }
+  return false;
+}
+
+}  // namespace
 
 ViewElement::ViewElement(views::View* view,
                          UIElementDelegate* ui_element_delegate,
@@ -90,9 +110,19 @@ ViewElement::GetCustomPropertiesForMatchedStyle() const {
                                       base::UTF16ToUTF8(description));
     }
 
-    class_properties.emplace_back(
-        (*member)->member_name(),
-        base::UTF16ToUTF8((*member)->GetValueAsString(view_)));
+    // Check if type is SkColor and add "--" to property name so that DevTools
+    // frontend will interpret this field as a color. Also convert SkColor value
+    // to rgba string.
+    if ((*member)->member_type() == "SkColor") {
+      SkColor color;
+      if (base::StringToUint(
+              base::UTF16ToUTF8((*member)->GetValueAsString(view_)), &color))
+        class_properties.emplace_back("--" + (*member)->member_name(),
+                                      color_utils::SkColorToRgbaString(color));
+    } else
+      class_properties.emplace_back(
+          (*member)->member_name(),
+          base::UTF16ToUTF8((*member)->GetValueAsString(view_)));
 
     if (member.IsLastMember()) {
       ret.emplace_back(member.GetCurrentCollectionName(), class_properties);
@@ -121,6 +151,7 @@ void ViewElement::SetVisible(bool visible) {
 }
 
 bool ViewElement::SetPropertiesFromString(const std::string& text) {
+  bool property_set = false;
   std::vector<std::string> tokens = base::SplitString(
       text, ":;", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
@@ -128,8 +159,15 @@ bool ViewElement::SetPropertiesFromString(const std::string& text) {
     return false;
 
   for (size_t i = 0; i < tokens.size() - 1; i += 2) {
-    const std::string& property_name = tokens.at(i);
-    const std::string& property_value = base::ToLowerASCII(tokens.at(i + 1));
+    std::string property_name = tokens.at(i);
+    std::string property_value = base::ToLowerASCII(tokens.at(i + 1));
+
+    // Check if property is type SkColor.
+    if (GetSkColorPropertyName(property_name)) {
+      // Convert from CSS color format to SkColor.
+      if (!ParseColorFromFrontend(property_value, &property_value))
+        continue;
+    }
 
     views::metadata::ClassMetaData* metadata = view_->GetClassMetaData();
     views::metadata::MemberMetaDataBase* member =
@@ -150,9 +188,10 @@ bool ViewElement::SetPropertiesFromString(const std::string& text) {
     }
 
     member->SetValueAsString(view_, base::UTF8ToUTF16(property_value));
+    property_set = true;
   }
 
-  return true;
+  return property_set;
 }
 
 std::vector<std::string> ViewElement::GetAttributes() const {

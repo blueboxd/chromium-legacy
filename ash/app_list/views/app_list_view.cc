@@ -80,10 +80,9 @@ constexpr int kAppListBezelMargin = 50;
 constexpr int kAppInfoDialogWidth = 512;
 constexpr int kAppInfoDialogHeight = 384;
 
-// The animation duration for app list movement.
-constexpr float kAppListAnimationDurationImmediateMs = 0;
-constexpr float kAppListAnimationDurationMs = 200;
-constexpr float kAppListAnimationDurationFromFullscreenMs = 250;
+// The duration of app list animations when |short_animations_for_testing| are
+// enabled.
+constexpr int kAppListAnimationDurationImmediateMs = 0;
 
 // Events within this threshold from the top of the view will be reserved for
 // home launcher gestures, if they can be processed.
@@ -1643,17 +1642,22 @@ void AppListView::ApplyBoundsAnimation(ash::AppListViewState target_state,
 
   // When closing the view should animate to the shelf bounds. The workspace
   // area will not reflect an autohidden shelf so ask for the proper bounds.
-  const int target_y_for_closed_state =
+  const int y_for_closed_state =
       delegate_->GetTargetYForAppListHide(GetWidget()->GetNativeView());
   if (target_state == ash::AppListViewState::kClosed) {
-    target_bounds.set_y(target_y_for_closed_state);
+    target_bounds.set_y(y_for_closed_state);
   }
 
   // Record the current transform before removing it because this bounds
   // animation could be pre-empting another bounds animation.
   ui::Layer* layer = GetWidget()->GetLayer();
+
+  // Adjust the closed state y to account for auto-hidden shelf.
+  const int current_bounds_y = app_list_state_ == ash::AppListViewState::kClosed
+                                   ? y_for_closed_state
+                                   : layer->bounds().y();
   const int current_y_with_transform =
-      layer->bounds().y() + GetRemainingBoundsAnimationDistance();
+      current_bounds_y + GetRemainingBoundsAnimationDistance();
 
   layer->SetTransform(gfx::Transform());
   layer->SetBounds(target_bounds);
@@ -1680,7 +1684,7 @@ void AppListView::ApplyBoundsAnimation(ash::AppListViewState target_state,
   }
 
   const double target_height =
-      std::max(0, target_y_for_closed_state - target_bounds.y());
+      std::max(0, y_for_closed_state - target_bounds.y());
   layer->GetAnimator()->StartAnimation(new ui::LayerAnimationSequence(
       std::make_unique<TranslateWithChangingCornerRadiusAnimation>(
           y_offset, target_height, this, app_list_background_shield_,

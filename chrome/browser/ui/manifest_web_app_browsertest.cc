@@ -9,8 +9,8 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/manifest_web_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
@@ -40,7 +40,7 @@ IN_PROC_BROWSER_TEST_F(ManifestWebAppTest, OpenExampleSite) {
   feature_list.InitAndEnableFeature(features::kFocusMode);
   const GURL url("http://example.org/");
   ui_test_utils::NavigateToURL(browser(), url);
-  Browser* app_browser = ReparentWebContentsForFocusMode(
+  Browser* app_browser = web_app::ReparentWebContentsForFocusMode(
       browser()->tab_strip_model()->GetWebContentsAt(0));
   ASSERT_TRUE(app_browser->is_focus_mode());
   ASSERT_FALSE(browser()->is_focus_mode());
@@ -58,7 +58,7 @@ IN_PROC_BROWSER_TEST_F(ManifestWebAppTest, OpenExampleSite) {
 IN_PROC_BROWSER_TEST_F(ManifestWebAppTest, MetricsTest) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kFocusMode);
-  Browser* app_browser = ReparentWebContentsForFocusMode(
+  Browser* app_browser = web_app::ReparentWebContentsForFocusMode(
       browser()->tab_strip_model()->GetWebContentsAt(0));
 
   const base::TimeDelta duration = base::TimeDelta::FromSeconds(5);

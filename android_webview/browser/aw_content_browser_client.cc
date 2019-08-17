@@ -218,6 +218,7 @@ void DummyBindPasswordManagerDriver(
     content::RenderFrameHost* render_frame_host) {}
 
 void PassMojoCookieManagerToAwCookieManager(
+    CookieManager* cookie_manager,
     const network::mojom::NetworkContextPtr& network_context) {
   // Get the CookieManager from the NetworkContext.
   network::mojom::CookieManagerPtrInfo cookie_manager_info;
@@ -225,8 +226,7 @@ void PassMojoCookieManagerToAwCookieManager(
 
   // Pass the CookieManagerPtrInfo to android_webview::CookieManager, so it can
   // implement its APIs with this mojo CookieManager.
-  CookieManager::GetInstance()->SetMojoCookieManager(
-      std::move(cookie_manager_info));
+  cookie_manager->SetMojoCookieManager(std::move(cookie_manager_info));
 }
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
@@ -360,7 +360,8 @@ network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
 
   // Pass a CookieManager to the code supporting AwCookieManager.java (i.e., the
   // Cookies APIs).
-  PassMojoCookieManagerToAwCookieManager(network_context);
+  PassMojoCookieManagerToAwCookieManager(aw_context->GetCookieManager(),
+                                         network_context);
 
   return network_context;
 }
@@ -927,8 +928,7 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
     content::BrowserContext* browser_context,
     content::RenderFrameHost* frame,
     int render_process_id,
-    bool is_navigation,
-    bool is_download,
+    URLLoaderFactoryType type,
     const url::Origin& request_initiator,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
@@ -938,7 +938,8 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
   auto proxied_receiver = std::move(*factory_receiver);
   network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
   *factory_receiver = mojo::MakeRequest(&target_factory_info);
-  int process_id = is_navigation ? 0 : render_process_id;
+  int process_id =
+      type == URLLoaderFactoryType::kNavigation ? 0 : render_process_id;
 
   // Android WebView has one non off-the-record browser context.
   base::PostTask(FROM_HERE, {content::BrowserThread::IO},

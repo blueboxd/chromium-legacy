@@ -36,6 +36,10 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
                        PP_Instance instance);
   ~PdfAccessibilityTree() override;
 
+  static bool IsDataFromPluginValid(
+      const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+      const std::vector<PP_PrivateAccessibilityCharInfo>& chars);
+
   void SetAccessibilityViewportInfo(
       const PP_PrivateAccessibilityViewportInfo& viewport_info);
   void SetAccessibilityDocInfo(
@@ -120,6 +124,7 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
   // character within its page. Used to find the node associated with
   // the start or end of a selection.
   std::map<int32_t, uint32_t> node_id_to_char_index_in_page_;
+  bool invalid_plugin_message_received_ = false;
 };
 
 }  // namespace pdf;

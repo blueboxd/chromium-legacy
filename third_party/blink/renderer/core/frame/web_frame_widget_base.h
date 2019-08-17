@@ -33,7 +33,6 @@ class GraphicsLayer;
 class HitTestResult;
 class PageWidgetEventHandler;
 class PaintWorkletPaintDispatcher;
-class WebLayerTreeView;
 class WebLocalFrameImpl;
 class WebViewImpl;
 struct IntrinsicSizingInfo;
@@ -79,7 +78,6 @@ class CORE_EXPORT WebFrameWidgetBase
   // Sets the root layer. The |layer| can be null when detaching the root layer.
   virtual void SetRootLayer(scoped_refptr<cc::Layer> layer) = 0;
 
-  virtual WebLayerTreeView* GetLayerTreeView() const = 0;
   virtual cc::AnimationHost* AnimationHost() const = 0;
 
   virtual HitTestResult CoreHitTestResultAt(const gfx::Point&) = 0;

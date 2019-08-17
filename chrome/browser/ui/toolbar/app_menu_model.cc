@@ -23,7 +23,6 @@
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -44,7 +43,9 @@
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -776,14 +777,17 @@ void AppMenuModel::Build() {
 
   AddItemWithStringId(IDC_FIND, IDS_FIND);
 
-  const extensions::Extension* pwa =
-      extensions::util::GetPwaForSecureActiveTab(browser_);
-  if (pwa) {
+  base::Optional<web_app::AppId> app_id =
+      web_app::GetPwaForSecureActiveTab(browser());
+  if (app_id) {
+    auto* provider = web_app::WebAppProvider::Get(browser()->profile());
     AddItem(IDC_OPEN_IN_PWA_WINDOW,
             l10n_util::GetStringFUTF16(
                 IDS_OPEN_IN_APP_WINDOW,
-                gfx::TruncateString(base::UTF8ToUTF16(pwa->name()),
-                                    kMaxAppNameLength, gfx::CHARACTER_BREAK)));
+                gfx::TruncateString(
+                    base::UTF8ToUTF16(
+                        provider->registrar().GetAppShortName(*app_id)),
+                    kMaxAppNameLength, gfx::CHARACTER_BREAK)));
   } else {
     base::Optional<base::string16> install_pwa_item_name =
         GetInstallPWAAppMenuItemName(browser_);

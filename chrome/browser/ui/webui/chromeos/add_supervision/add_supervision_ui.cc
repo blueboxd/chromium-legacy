@@ -188,7 +188,7 @@ void AddSupervisionUI::SetupResources() {
       "add_supervision.mojom-lite.js",
       IDR_ADD_SUPERVISION_MOJOM_LITE_JS);
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->SetDefaultResource(IDR_ADD_SUPERVISION_HTML);
   source->AddString("webviewUrl", supervision_url_.spec());
   source->AddString("eventOriginFilter", supervision_url_.GetOrigin().spec());

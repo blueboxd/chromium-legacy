@@ -23,7 +23,7 @@ DownloadInternalsUI::DownloadInternalsUI(content::WebUI* web_ui)
       "script-src chrome://resources 'self' 'unsafe-eval';");
 
   // Required resources.
-  html_source->SetJsonPath("strings.js");
+  html_source->UseStringsJs();
   html_source->AddResourcePath("download_internals.css",
                                IDR_DOWNLOAD_INTERNALS_CSS);
   html_source->AddResourcePath("download_internals.js",

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom-blink.h"
 #include "third_party/blink/public/mojom/installedapp/related_application.mojom-blink.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
@@ -67,7 +68,7 @@ class MODULES_EXPORT InstalledAppController final
                              Vector<mojom::blink::RelatedApplicationPtr>);
 
   // Handle to the InstalledApp mojo service.
-  mojom::blink::InstalledAppProviderPtr provider_;
+  mojo::Remote<mojom::blink::InstalledAppProvider> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(InstalledAppController);
 };

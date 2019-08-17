@@ -13,7 +13,7 @@ AnimatedPaintWorkletTracker::AnimatedPaintWorkletTracker() = default;
 AnimatedPaintWorkletTracker::~AnimatedPaintWorkletTracker() = default;
 
 AnimatedPaintWorkletTracker::PropertyState::PropertyState(
-    float value,
+    PaintWorkletInput::PropertyValue value,
     base::flat_set<PictureLayerImpl*> layers)
     : animation_value(value), associated_layers(std::move(layers)) {}
 
@@ -27,7 +27,7 @@ AnimatedPaintWorkletTracker::PropertyState::~PropertyState() = default;
 void AnimatedPaintWorkletTracker::OnCustomPropertyMutated(
     ElementId element_id,
     const std::string& custom_property_name,
-    float custom_property_value) {
+    PaintWorkletInput::PropertyValue custom_property_value) {
   // This function is called to update custom property value only.
   DCHECK(!custom_property_name.empty());
   PaintWorkletInput::PropertyKey key{custom_property_name, element_id};
@@ -39,7 +39,7 @@ void AnimatedPaintWorkletTracker::OnCustomPropertyMutated(
   // affect paint worklet.
   if (iter == input_properties_.end())
     return;
-  iter->second.animation_value = custom_property_value;
+  iter->second.animation_value = std::move(custom_property_value);
   // Keep track of which input properties have been changed so that the
   // associated PaintWorklets can be invalidated before activating the pending
   // tree.
@@ -61,7 +61,8 @@ bool AnimatedPaintWorkletTracker::InvalidatePaintWorkletsOnPendingTree() {
   return return_value;
 }
 
-base::Optional<float> AnimatedPaintWorkletTracker::GetPropertyAnimationValue(
+PaintWorkletInput::PropertyValue
+AnimatedPaintWorkletTracker::GetPropertyAnimationValue(
     const PaintWorkletInput::PropertyKey& key) const {
   return input_properties_.find(key)->second.animation_value;
 }

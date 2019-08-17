@@ -64,8 +64,6 @@ class TabIcon : public views::View, public views::AnimationDelegateViews {
   // strip in order to keep the throbbers in sync.
   void StepLoadingAnimation(const base::TimeDelta& elapsed_time);
 
-  void SetBackgroundColor(SkColor color);
-
  private:
   class CrashAnimation;
   friend CrashAnimation;
@@ -160,8 +158,6 @@ class TabIcon : public views::View, public views::AnimationDelegateViews {
   std::unique_ptr<CrashAnimation> crash_animation_;
 
   bool can_paint_to_layer_ = false;
-
-  SkColor bg_color_ = SK_ColorBLACK;
 
   bool has_tab_renderer_data_ = false;
 

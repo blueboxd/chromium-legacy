@@ -16,7 +16,8 @@ AudioFocusRequest::AudioFocusRequest(
     mojom::AudioFocusType audio_focus_type,
     const base::UnguessableToken& id,
     const std::string& source_name,
-    const base::UnguessableToken& group_id)
+    const base::UnguessableToken& group_id,
+    const base::UnguessableToken& identity)
     : metrics_helper_(source_name),
       session_(std::move(session)),
       session_info_(std::move(session_info)),
@@ -25,6 +26,7 @@ AudioFocusRequest::AudioFocusRequest(
       id_(id),
       source_name_(source_name),
       group_id_(group_id),
+      identity_(identity),
       owner_(std::move(owner)) {
   // Listen for mojo errors.
   receiver_.set_disconnect_handler(base::BindOnce(

@@ -7,15 +7,22 @@
 #include <memory>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/strings/string16.h"
+#include "base/win/scoped_com_initializer.h"
 #include "chrome/installer/util/copy_tree_work_item.h"
 #include "chrome/installer/util/self_cleaning_temp_dir.h"
 #include "chrome/installer/util/work_item_list.h"
 #include "chrome/updater/updater_constants.h"
 #include "chrome/updater/util.h"
+#include "chrome/updater/win/setup/setup_util.h"
+#include "chrome/updater/win/task_scheduler.h"
 
 namespace updater {
 
@@ -43,6 +50,17 @@ const base::char16* kUpdaterFiles[] = {
 
 int Setup() {
   VLOG(1) << __func__;
+
+  auto scoped_com_initializer =
+      std::make_unique<base::win::ScopedCOMInitializer>(
+          base::win::ScopedCOMInitializer::kMTA);
+
+  if (!TaskScheduler::Initialize()) {
+    LOG(ERROR) << "Failed to initialize the scheduler.";
+    return -1;
+  }
+  base::ScopedClosureRunner task_scheduler_terminate_caller(
+      base::BindOnce([]() { TaskScheduler::Terminate(); }));
 
   base::FilePath temp_dir;
   if (!base::GetTempDir(&temp_dir)) {
@@ -77,9 +95,18 @@ int Setup() {
                                          WorkItem::ALWAYS, base::FilePath()));
   }
 
-  if (!install_list->Do()) {
+  base::CommandLine run_updater_ua_command(product_dir.Append(L"updater.exe"));
+  run_updater_ua_command.AppendSwitch(kUpdateAppsSwitch);
+#if !defined(NDEBUG)
+  run_updater_ua_command.AppendSwitch(kEnableLoggingSwitch);
+  run_updater_ua_command.AppendSwitchASCII(kLoggingLevelSwitch, "1");
+  run_updater_ua_command.AppendSwitchASCII(kLoggingModuleSwitch,
+                                           "*/chrome/updater/*");
+#endif
+  if (!install_list->Do() || !RegisterUpdateAppsTask(run_updater_ua_command)) {
     LOG(ERROR) << "Install failed, rolling back...";
     install_list->Rollback();
+    UnregisterUpdateAppsTask();
     LOG(ERROR) << "Rollback complete.";
     return -1;
   }

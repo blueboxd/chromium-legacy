@@ -50,7 +50,7 @@ DomDistillerUi::DomDistillerUi(content::WebUI* web_ui,
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
   content::WebUIDataSource::Add(browser_context, source);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
 
   // Add message handler.
   web_ui->AddMessageHandler(

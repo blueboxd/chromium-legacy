@@ -25,7 +25,7 @@ OmniboxUI::OmniboxUI(content::WebUI* web_ui)
 
   // Expose version information to client because it is useful in output.
   VersionUI::AddVersionDetailStrings(source);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
 
   source->AddResourcePath("omnibox.css", IDR_OMNIBOX_CSS);
   source->AddResourcePath("omnibox_input.css", IDR_OMNIBOX_INPUT_CSS);

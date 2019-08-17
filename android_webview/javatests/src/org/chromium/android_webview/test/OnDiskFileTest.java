@@ -80,7 +80,7 @@ public class OnDiskFileTest {
                                                   .getTargetContext()
                                                   .getDir("webview", Context.MODE_PRIVATE)
                                                   .getPath(),
-                "Cookies");
+                "Default/Cookies");
         webViewCookiePath.delete();
 
         // Set a cookie and flush it to disk. This should guarantee the cookie file is created.

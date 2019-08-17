@@ -7,6 +7,7 @@
 
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 
 namespace content {
 
@@ -26,6 +27,10 @@ class CONTENT_EXPORT BrowserChildProcessHostDelegate : public IPC::Listener {
   // process crashed (for posix, as returned from waitpid(), for Windows, as
   // returned from GetExitCodeProcess()).
   virtual void OnProcessCrashed(int exit_code) {}
+
+  // Binds an interface receiver in the host process, as requested by the child
+  // process.
+  virtual void BindHostReceiver(mojo::GenericPendingReceiver receiver) {}
 };
 
 }  // namespace content

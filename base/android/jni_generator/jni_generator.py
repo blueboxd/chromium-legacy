@@ -52,6 +52,8 @@ _MAIN_DEX_REGEX = re.compile(r'^\s*(?:@(?:\w+\.)*\w+\s+)*@MainDex\b',
 # doesn't require name to be prefixed with native, and does not
 # require a native qualifier.
 _EXTRACT_METHODS_REGEX = re.compile(
+    r'(@NativeClassQualifiedName'
+    r'\(\"(?P<native_class_name>.*?)\"\)\s*)?'
     r'(?P<qualifiers>'
     r'((public|private|static|final|abstract|protected|native)\s*)*)\s+'
     r'(?P<return_type>\S*)\s+'
@@ -919,7 +921,6 @@ class ProxyHelpers(object):
         name = method.group('name')
         params = JniParams.Parse(method.group('params'), use_proxy_types=True)
         return_type = JavaTypeToProxyCast(method.group('return_type'))
-
         unescaped_proxy_name = ProxyHelpers.CreateProxyMethodName(
             fully_qualified_class, name, use_hash)
         native = NativeMethod(
@@ -927,6 +928,7 @@ class ProxyHelpers(object):
             java_class_name=None,
             return_type=return_type,
             name=name,
+            native_class_name=method.group('native_class_name'),
             params=params,
             is_proxy=True,
             proxy_name=unescaped_proxy_name,

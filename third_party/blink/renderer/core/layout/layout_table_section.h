@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_table_box_component.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_section_interface.h"
 #include "third_party/blink/renderer/core/layout/table_grid_cell.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -102,7 +103,9 @@ class LayoutTableRow;
 // LayoutTableCells (see layoutRows()). However it is not their containing
 // block, the enclosing LayoutTable (this object's parent()) is. This is why
 // this class inherits from LayoutTableBoxComponent and not LayoutBlock.
-class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
+class CORE_EXPORT LayoutTableSection final
+    : public LayoutTableBoxComponent,
+      public LayoutNGTableSectionInterface {
  public:
   explicit LayoutTableSection(Element*);
   ~LayoutTableSection() override;
@@ -125,7 +128,7 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   void MarkAllCellsWidthsDirtyAndOrNeedsLayout(LayoutTable::WhatToMarkAllCells);
 
-  LayoutTable* Table() const final { return ToLayoutTable(Parent()); }
+  LayoutTable* Table() const final { return To<LayoutTable>(Parent()); }
 
   typedef Vector<LayoutTableCell*, 2> SpanningLayoutTableCells;
 
@@ -176,7 +179,7 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
         row, effective_column);
   }
 
-  unsigned NumCols(unsigned row) const {
+  unsigned NumCols(unsigned row) const final {
     DCHECK(!NeedsCellRecalc());
     return grid_[row].grid_cells.size();
   }
@@ -195,11 +198,11 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   void AppendEffectiveColumn(unsigned pos);
   void SplitEffectiveColumn(unsigned pos, unsigned first);
 
-  unsigned NumRows() const {
+  unsigned NumRows() const final {
     DCHECK(!NeedsCellRecalc());
     return grid_.size();
   }
-  unsigned NumEffectiveColumns() const;
+  unsigned NumEffectiveColumns() const final;
 
   // recalcCells() is used when we are not sure about the section's structure
   // and want to do an expensive (but safe) reconstruction of m_grid from
@@ -217,7 +220,7 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   }
 
   bool NeedsCellRecalc() const { return needs_cell_recalc_; }
-  void SetNeedsCellRecalc();
+  void SetNeedsCellRecalc() final;
 
   LayoutUnit RowBaseline(unsigned row) { return grid_[row].baseline; }
 
@@ -275,8 +278,12 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
       TransformState&,
       VisualRectFlags = kDefaultVisualRectFlags) const override;
 
-  bool IsRepeatingHeaderGroup() const { return is_repeating_header_group_; }
-  bool IsRepeatingFooterGroup() const { return is_repeating_footer_group_; }
+  bool IsRepeatingHeaderGroup() const final {
+    return is_repeating_header_group_;
+  }
+  bool IsRepeatingFooterGroup() const final {
+    return is_repeating_footer_group_;
+  }
 
   void UpdateLayout() override;
 
@@ -303,6 +310,24 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   void ComputeLayoutOverflowFromDescendants();
 
+  // LayoutNGTableSectionInterface methods start.
+
+  const LayoutNGTableSectionInterface* ToLayoutNGTableSectionInterface()
+      const final {
+    return this;
+  }
+  const LayoutTableSection* ToLayoutTableSection() const final { return this; }
+  const LayoutObject* ToLayoutObject() const final { return this; }
+  LayoutObject* ToMutableLayoutObject() final { return this; }
+
+  LayoutNGTableInterface* TableInterface() const final { return Table(); }
+  LayoutNGTableRowInterface* FirstRowInterface() const final;
+  LayoutNGTableRowInterface* LastRowInterface() const final;
+  const LayoutNGTableCellInterface* PrimaryCellInterfaceAt(
+      unsigned row,
+      unsigned effective_column) const final;
+
+  // LayoutNGTableSectionInterface methods end.
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   bool NodeAtPoint(HitTestResult&,
@@ -482,7 +507,13 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   bool is_repeating_footer_group_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableSection, IsTableSection());
+// To<LayoutTableSection>() helper.
+template <>
+struct DowncastTraits<LayoutTableSection> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsTableSection();
+  }
+};
 
 }  // namespace blink
 

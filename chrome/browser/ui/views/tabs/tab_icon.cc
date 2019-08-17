@@ -165,11 +165,6 @@ void TabIcon::StepLoadingAnimation(const base::TimeDelta& elapsed_time) {
     SchedulePaint();
 }
 
-void TabIcon::SetBackgroundColor(SkColor bg_color) {
-  bg_color_ = bg_color;
-  SchedulePaint();
-}
-
 void TabIcon::OnPaint(gfx::Canvas* canvas) {
   // This is used to log to UMA. NO EARLY RETURNS!
   base::ElapsedTimer paint_timer;

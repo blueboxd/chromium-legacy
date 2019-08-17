@@ -83,7 +83,7 @@ WebUIDataSource* CreateVersionUIDataSource() {
 
   VersionUI::AddVersionDetailStrings(html_source);
 
-  html_source->SetJsonPath("strings.js");
+  html_source->UseStringsJs();
   html_source->AddResourcePath(version_ui::kVersionJS, IDR_VERSION_UI_JS);
   html_source->AddResourcePath(version_ui::kAboutVersionCSS,
                                IDR_VERSION_UI_CSS);

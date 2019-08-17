@@ -29,7 +29,7 @@ content::WebUIDataSource* CreateTranslateInternalsHTMLSource() {
       content::WebUIDataSource::Create(chrome::kChromeUITranslateInternalsHost);
 
   source->SetDefaultResource(IDR_TRANSLATE_INTERNALS_HTML);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->AddResourcePath("translate_internals.js", IDR_TRANSLATE_INTERNALS_JS);
 
   base::DictionaryValue langs;

@@ -50,6 +50,11 @@
 #include "ui/gfx/font_render_params.h"
 #endif
 
+#if defined(OS_LINUX)
+#include "components/services/font/public/mojom/font_service.mojom.h"  // nogncheck
+#include "content/browser/font_service.h"  // nogncheck
+#endif
+
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
 #include "services/service_manager/zygote/common/zygote_handle.h"  // nogncheck
 #endif
@@ -483,6 +488,14 @@ void PpapiPluginProcessHost::OnProcessCrashed(int exit_code) {
       base::BindOnce(&PluginServiceImpl::RegisterPluginCrash,
                      base::Unretained(PluginServiceImpl::GetInstance()),
                      plugin_path_));
+}
+
+void PpapiPluginProcessHost::BindHostReceiver(
+    mojo::GenericPendingReceiver receiver) {
+#if defined(OS_LINUX)
+  if (auto font_receiver = receiver.As<font_service::mojom::FontService>())
+    ConnectToFontService(std::move(font_receiver));
+#endif
 }
 
 bool PpapiPluginProcessHost::OnMessageReceived(const IPC::Message& msg) {

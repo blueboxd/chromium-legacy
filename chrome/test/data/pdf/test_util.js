@@ -3,6 +3,23 @@
 // found in the LICENSE file.
 
 // Utilities that are used in multiple tests.
+
+// TODO(thestig): add more robust way to clean up tests that use ViewportImpl.
+/*
+ * Returns an instance of ViewportImpl with basic settings for testing purposes.
+ *
+ * @param {Window} mockWindow A mocked Window.
+ * @param {Object} mockSizer A mocked element representing the size of the
+ *     document.
+ * @param {Function} mockCallback A mock callback for when the viewport changes.
+ * @return {ViewportImpl} A ViewportImpl with basic settings.
+ */
+function createDefaultViewport(mockWindow, mockSizer, mockCallback) {
+  return new ViewportImpl(
+      mockWindow, mockSizer, mockCallback, function() {}, function() {},
+      function() {}, 0, 1, 0);
+}
+
 function MockWindow(width, height, sizer) {
   this.innerWidth = width;
   this.innerHeight = height;

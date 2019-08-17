@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -68,13 +67,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // exceeded, we throttle sBeginFrames to 1 per second. Limit must be at least
   // 1, as the relative ordering of renderer / browser frame submissions allows
   // us to have one outstanding undrawn frame under normal operation.
-#if defined(OS_ANDROID)
-  // TODO(ericrk): Revert this. Setting to 0 temporarily to test the impact of
-  // this change on a latency regression. See https://crbug.com/959048
-  static constexpr uint32_t kUndrawnFrameLimit = 0;
-#else
   static constexpr uint32_t kUndrawnFrameLimit = 3;
-#endif
 
   CompositorFrameSinkSupport(mojom::CompositorFrameSinkClient* client,
                              FrameSinkManagerImpl* frame_sink_manager,

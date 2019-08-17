@@ -164,7 +164,8 @@ void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
 
   // Table collapsed borders are painted in PaintPhaseDescendantBlockBackgrounds
   // on the table's layer.
-  if (object.IsTable() && ToLayoutTable(object).HasCollapsedBorders())
+  if (object.IsTable() &&
+      ToInterface<LayoutNGTableInterface>(object).HasCollapsedBorders())
     context.painting_layer->SetNeedsPaintPhaseDescendantBlockBackgrounds();
 
   // The following flags are for descendants of the layer object only.
@@ -172,8 +173,8 @@ void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
     return;
 
   if (object.IsTableSection()) {
-    const auto& section = ToLayoutTableSection(object);
-    if (section.Table()->HasColElements())
+    const auto& section = ToInterface<LayoutNGTableSectionInterface>(object);
+    if (section.TableInterface()->HasColElements())
       context.painting_layer->SetNeedsPaintPhaseDescendantBlockBackgrounds();
   }
 

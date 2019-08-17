@@ -82,7 +82,7 @@ class MEDIA_GPU_EXPORT SharedImageVideoProvider {
   // |cb| back before returning, or we might post it for later.
   virtual void RequestImage(ImageReadyCB cb,
                             const ImageSpec& spec,
-                            scoped_refptr<TextureOwner> texture_owner) = 0;
+                            scoped_refptr<gpu::TextureOwner> texture_owner) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SharedImageVideoProvider);

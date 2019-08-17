@@ -2064,13 +2064,16 @@ if (enable_arcore) {
       "//third_party/arcore-android-sdk-client:com_google_ar_core_java",
     ]
 
+    _libarcore_dir = get_label_info(
+                         "//third_party/arcore-android-sdk-client:com_google_ar_core_java($default_toolchain)",
+                         "target_out_dir") + "/com_google_ar_core_java/jni"
+
     # We store this as a separate .so in the APK and only load as needed.
     if (android_64bit_target_cpu && build_apk_secondary_abi) {
-      secondary_abi_loadable_modules = [ "$root_gen_dir/third_party/arcore-android-sdk-client/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
-    } else if (android_64bit_target_cpu && !build_apk_secondary_abi) {
-      loadable_modules = [ "$root_gen_dir/third_party/arcore-android-sdk-client/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
+      secondary_abi_loadable_modules =
+          [ "$_libarcore_dir/armeabi-v7a/libarcore_sdk_c.so" ]
     } else {
-      loadable_modules = [ "$root_gen_dir/third_party/arcore-android-sdk-client/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
+      loadable_modules = [ "$_libarcore_dir/armeabi-v7a/libarcore_sdk_c.so" ]
     }
 
     additional_apks = [ "//net/android:net_test_support_apk" ]
@@ -2318,7 +2321,8 @@ monochrome_or_trichrome_public_bundle_tmpl("monochrome_public_bundle") {
 
   # Having //clank present causes different flags because of how play services
   # is wired up.
-  if (!enable_chrome_android_internal) {
+  # The channel is required because manifest entries vary based on channel.
+  if (!enable_chrome_android_internal && android_channel == "stable") {
     verify_android_configuration = true
   }
 }

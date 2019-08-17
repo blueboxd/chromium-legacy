@@ -392,9 +392,7 @@ function renderTheme() {
       // is selected doesn't look good.
       const localImageFileName = 'background.jpg';
       if (!configData.richerPicker &&
-          imageWithOverlay.includes(localImageFileName) &&
-          !$(IDS.CUSTOM_BG)
-               .style.backgroundImage.includes(localImageFileName)) {
+          imageWithOverlay.includes(localImageFileName)) {
         customize.closeCustomizationDialog();
       }
       // |image| and |imageWithOverlay| use the same url as their source.
@@ -413,6 +411,7 @@ function renderTheme() {
     }
   } else {
     $(IDS.CUSTOM_BG).style.opacity = '0';
+    $(IDS.CUSTOM_BG).style.backgroundImage = '';
     customize.clearAttribution();
   }
 

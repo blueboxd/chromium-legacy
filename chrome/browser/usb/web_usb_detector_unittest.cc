@@ -30,6 +30,13 @@
 #include "ui/message_center/public/cpp/notification_delegate.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "components/user_manager/scoped_user_manager.h"
+#include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_names.h"
+#endif
+
 // These tests are disabled because WebUsbDetector::Initialize is a noop on
 // Windows due to jank and hangs caused by enumerating devices.
 // https://crbug.com/656702
@@ -63,7 +70,12 @@ class WebUsbDetectorTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 #if defined(OS_CHROMEOS)
-    profile_manager()->SetLoggedIn(true);
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::make_unique<chromeos::FakeChromeUserManager>());
+
+    GetFakeUserManager()->AddUser(user_manager::StubAccountId());
+    GetFakeUserManager()->LoginUser(user_manager::StubAccountId());
+
     chromeos::ProfileHelper::Get()->SetActiveUserIdForTesting(kProfileName);
 #endif
     BrowserList::SetLastActive(browser());
@@ -82,12 +94,24 @@ class WebUsbDetectorTest : public BrowserWithTestWindowTest {
 
   void TearDown() override {
     BrowserWithTestWindowTest::TearDown();
-    web_usb_detector_.reset(nullptr);
+#if defined(OS_CHROMEOS)
+    user_manager_enabler_.reset();
+#endif
+    web_usb_detector_.reset();
   }
 
   void Initialize() { web_usb_detector_->Initialize(); }
 
  protected:
+#if defined(OS_CHROMEOS)
+  chromeos::FakeChromeUserManager* GetFakeUserManager() {
+    return static_cast<chromeos::FakeChromeUserManager*>(
+        user_manager::UserManager::Get());
+  }
+
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
+#endif
+
   device::FakeUsbDeviceManager device_manager_;
   std::unique_ptr<WebUsbDetector> web_usb_detector_;
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;

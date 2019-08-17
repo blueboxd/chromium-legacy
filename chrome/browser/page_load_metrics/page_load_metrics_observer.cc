@@ -192,6 +192,8 @@ bool PageLoadMetricsObserver::AssignTimeAndSizeForLargestContentfulPaint(
 
 const PageLoadMetricsObserverDelegate& PageLoadMetricsObserver::GetDelegate()
     const {
+  // The delegate must exist and outlive the page load metrics observer.
+  DCHECK(delegate_);
   return *delegate_;
 }
 

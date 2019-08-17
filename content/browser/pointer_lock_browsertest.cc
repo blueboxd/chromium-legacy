@@ -441,7 +441,14 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockOopifCrashes) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockWheelEventRouting) {
+// Flaky on Windows.  https://crbug.com/994228
+#if defined(OS_WIN)
+#define MAYBE_PointerLockWheelEventRouting DISABLED_PointerLockWheelEventRouting
+#else
+#define MAYBE_PointerLockWheelEventRouting PointerLockWheelEventRouting
+#endif
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
+                       MAYBE_PointerLockWheelEventRouting) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

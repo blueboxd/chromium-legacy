@@ -132,7 +132,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   void SetRootGraphicsLayer(GraphicsLayer*) override;
   void SetRootLayer(scoped_refptr<cc::Layer>) override;
-  WebLayerTreeView* GetLayerTreeView() const override;
   cc::AnimationHost* AnimationHost() const override;
   HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
   void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;

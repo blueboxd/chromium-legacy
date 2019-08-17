@@ -62,7 +62,7 @@ class AwBrowserContext : public content::BrowserContext,
 
   base::FilePath GetCacheDir();
   base::FilePath GetPrefStorePath();
-  static base::FilePath GetCookieStorePath();
+  base::FilePath GetCookieStorePath();
   static base::FilePath GetContextStoragePath();
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -78,6 +78,7 @@ class AwBrowserContext : public content::BrowserContext,
 
   AwFormDatabaseService* GetFormDatabaseService();
   autofill::AutocompleteHistoryManager* GetAutocompleteHistoryManager();
+  CookieManager* GetCookieManager();
 
   // TODO(amalova): implement for non-default browser context
   bool IsDefaultBrowserContext() { return true; }

@@ -12,13 +12,10 @@
 #include "base/synchronization/lock.h"
 #include "components/services/font/public/cpp/mapped_font_file.h"
 #include "components/services/font/public/mojom/font_service.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
-
-namespace service_manager {
-class Connector;
-}
 
 namespace font_service {
 namespace internal {
@@ -34,7 +31,8 @@ class FontServiceThread;
 class FontLoader : public SkFontConfigInterface,
                    public internal::MappedFontFile::Observer {
  public:
-  explicit FontLoader(service_manager::Connector* connector);
+  explicit FontLoader(
+      mojo::PendingRemote<mojom::FontService> pending_font_service);
   ~FontLoader() override;
 
   // SkFontConfigInterface:

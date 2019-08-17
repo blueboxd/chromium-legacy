@@ -405,6 +405,19 @@ public final class PageViewObserverTest {
         verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStopEvent(STARTING_FQDN)));
     }
 
+    @Test
+    public void customTab_startReportedUponConstruction() {
+        doReturn(STARTING_URL).when(mTab).getUrl();
+        doReturn(false).when(mTab).isHidden();
+        PageViewObserver observer = createPageViewObserver();
+        verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStartEvent(STARTING_FQDN)));
+
+        doReturn(DIFFERENT_URL).when(mTab2).getUrl();
+        doReturn(true).when(mTab2).isHidden();
+        didAddTab(mTab2, TabLaunchType.FROM_EXTERNAL_APP);
+        verify(mEventTracker, times(0)).addWebsiteEvent(argThat(isStartEvent(DIFFERENT_FQDN)));
+    }
+
     private PageViewObserver createPageViewObserver() {
         PageViewObserver observer = new PageViewObserver(
                 mActivity, mTabModelSelector, mEventTracker, mTokenTracker, mSuspensionTracker);

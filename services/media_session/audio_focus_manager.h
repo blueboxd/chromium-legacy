@@ -66,7 +66,8 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   void GetFocusRequests(GetFocusRequestsCallback callback) override;
   void AddObserver(
       mojo::PendingRemote<mojom::AudioFocusObserver> observer) override;
-  void SetSourceName(const std::string& name) override;
+  void SetSource(const base::UnguessableToken& identity,
+                 const std::string& name) override;
   void SetEnforcementMode(mojom::EnforcementMode mode) override;
 
   // mojom::AudioFocusManagerDebug.
@@ -104,6 +105,9 @@ class AudioFocusManager : public mojom::AudioFocusManager,
     // service_manager::Identity for metrics and for identifying where an audio
     // focus request originated from.
     std::string source_name;
+
+    // The identity associated with the binding when it was created.
+    base::UnguessableToken identity;
   };
 
   void RequestAudioFocusInternal(std::unique_ptr<AudioFocusRequest>,
@@ -121,6 +125,10 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   // Returns the source name of the binding currently accessing the Audio
   // Focus Manager API over mojo.
   const std::string& GetBindingSourceName() const;
+
+  // Returns the identity of the binding currently accessing the Audio Focus
+  // Manager API over mojo.
+  const base::UnguessableToken& GetBindingIdentity() const;
 
   bool IsSessionOnTopOfAudioFocusStack(RequestId id,
                                        mojom::AudioFocusType type) const;

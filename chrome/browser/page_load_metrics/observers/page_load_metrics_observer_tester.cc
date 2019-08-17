@@ -264,9 +264,9 @@ MetricsWebContentsObserver* PageLoadMetricsObserverTester::observer() const {
   return observer_;
 }
 
-const PageLoadExtraInfo
-PageLoadMetricsObserverTester::GetPageLoadExtraInfoForCommittedLoad() {
-  return observer_->GetPageLoadExtraInfoForCommittedLoad();
+const PageLoadMetricsObserverDelegate&
+PageLoadMetricsObserverTester::GetDelegateForCommittedLoad() const {
+  return observer_->GetDelegateForCommittedLoad();
 }
 
 void PageLoadMetricsObserverTester::RegisterObservers(

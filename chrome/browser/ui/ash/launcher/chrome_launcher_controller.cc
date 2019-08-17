@@ -18,6 +18,7 @@
 #include "ash/public/cpp/window_animation_types.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -36,6 +37,7 @@
 #include "chrome/browser/ui/app_list/crostini/crostini_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/md_icon_normalizer.h"
+#include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
@@ -61,9 +63,12 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/chromium_strings.h"
@@ -79,6 +84,7 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/client/aura_constants.h"
@@ -117,6 +123,13 @@ std::string GetCrostiniAppIdFromContents(content::WebContents* web_contents) {
   base::Optional<std::string> app_id_opt =
       crostini::CrostiniAppIdFromAppName(browser->app_name());
   return app_id_opt.value_or("");
+}
+
+const extensions::Extension* GetExtension(Profile* profile,
+                                          const std::string& extension_id) {
+  const extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  return registry->GetInstalledExtension(extension_id);
 }
 
 }  // namespace
@@ -768,6 +781,41 @@ AppIconLoader* ChromeLauncherController::GetAppIconLoaderForApp(
   }
 
   return nullptr;
+}
+
+bool ChromeLauncherController::CanDoShowAppInfoFlow() {
+  return CanShowAppInfoDialog();
+}
+
+void ChromeLauncherController::DoShowAppInfoFlow(
+    Profile* profile,
+    const std::string& extension_id) {
+  DCHECK(CanDoShowAppInfoFlow());
+
+  const extensions::Extension* extension = GetExtension(profile, extension_id);
+  if (!extension)
+    return;
+
+  if (base::FeatureList::IsEnabled(features::kAppManagement)) {
+    chrome::ShowAppManagementPage(profile, extension_id);
+    return;
+  }
+
+  if (extension->is_hosted_app() && extension->from_bookmark()) {
+    chrome::ShowSiteSettings(
+        profile, extensions::AppLaunchInfo::GetFullLaunchURL(extension));
+    return;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialog.Launches",
+                            AppInfoLaunchSource::FROM_SHELF,
+                            AppInfoLaunchSource::NUM_LAUNCH_SOURCES);
+
+  ShowAppInfoInNativeDialog(BrowserList::GetInstance()
+                                ->GetLastActive()
+                                ->tab_strip_model()
+                                ->GetActiveWebContents(),
+                            profile, extension, base::Closure());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

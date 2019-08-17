@@ -17,6 +17,9 @@ const base::FeatureParam<int> kTimeoutDurationSeconds{
     &kInterestFeedContentSuggestions, "timeout_duration_seconds", 30};
 const base::FeatureParam<bool> kThrottleBackgroundFetches{
     &kInterestFeedContentSuggestions, "throttle_background_fetches", true};
+const base::FeatureParam<bool> kOnlySetLastRefreshAttemptOnSuccess{
+    &kInterestFeedContentSuggestions,
+    "only_set_last_refresh_attempt_on_success", true};
 
 const base::Feature kInterestFeedNotifications{
     "InterestFeedNotifications", base::FEATURE_DISABLED_BY_DEFAULT};

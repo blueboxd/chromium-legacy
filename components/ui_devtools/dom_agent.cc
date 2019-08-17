@@ -160,7 +160,7 @@ void DOMAgent::OnUIElementReordered(UIElement* parent, UIElement* child) {
   auto iter = std::find(children.begin(), children.end(), child);
   int prev_node_id =
       (iter == children.begin()) ? 0 : (*std::prev(iter))->node_id();
-  RemoveDomNode(child);
+  RemoveDomNode(child, false);
   frontend()->childNodeInserted(parent->node_id(), prev_node_id,
                                 BuildDomNodeFromUIElement(child));
 }
@@ -168,8 +168,7 @@ void DOMAgent::OnUIElementReordered(UIElement* parent, UIElement* child) {
 void DOMAgent::OnUIElementRemoved(UIElement* ui_element) {
   DCHECK(node_id_to_ui_element_.count(ui_element->node_id()));
 
-  RemoveDomNode(ui_element);
-  node_id_to_ui_element_.erase(ui_element->node_id());
+  RemoveDomNode(ui_element, true);
 }
 
 void DOMAgent::OnUIElementBoundsChanged(UIElement* ui_element) {
@@ -250,11 +249,14 @@ void DOMAgent::OnElementBoundsChanged(UIElement* ui_element) {
     observer.OnElementBoundsChanged(ui_element);
 }
 
-void DOMAgent::RemoveDomNode(UIElement* ui_element) {
+void DOMAgent::RemoveDomNode(UIElement* ui_element, bool update_node_id_map) {
   for (auto* child_element : ui_element->children())
-    RemoveDomNode(child_element);
+    RemoveDomNode(child_element, update_node_id_map);
   frontend()->childNodeRemoved(ui_element->parent()->node_id(),
                                ui_element->node_id());
+  if (update_node_id_map) {
+    node_id_to_ui_element_.erase(ui_element->node_id());
+  }
 }
 
 void DOMAgent::Reset() {

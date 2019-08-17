@@ -306,16 +306,13 @@ bool ExtensionSettingsPolicyHandler::CheckPolicySettings(
           std::string unparsed_url;
           unparsed_urls->GetString(i, &unparsed_url);
           URLPattern pattern(extension_scheme_mask);
-          URLPattern::ParseResult parse_result = pattern.Parse(
-              unparsed_url, URLPattern::DENY_WILDCARD_FOR_EFFECTIVE_TLD);
+          URLPattern::ParseResult parse_result = pattern.Parse(unparsed_url);
           // These keys don't support paths due to how we track the initiator
           // of a webRequest and cookie security policy. We expect a valid
           // pattern to return a PARSE_ERROR_EMPTY_PATH.
           if (parse_result == URLPattern::ParseResult::kEmptyPath) {
             // Add a wildcard path to the URL as it should match any path.
-            parse_result =
-                pattern.Parse(unparsed_url + "/*",
-                              URLPattern::DENY_WILDCARD_FOR_EFFECTIVE_TLD);
+            parse_result = pattern.Parse(unparsed_url + "/*");
           } else if (parse_result == URLPattern::ParseResult::kSuccess) {
             // The user supplied a path, notify them that this is not supported.
             if (!pattern.match_all_urls()) {

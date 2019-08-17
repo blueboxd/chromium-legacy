@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+
 namespace blink {
 
 std::unique_ptr<InterpolableNumber> ConsumeControlAxis(double value,
@@ -15,11 +17,11 @@ std::unique_ptr<InterpolableNumber> ConsumeControlAxis(double value,
       is_absolute ? value : current_value + value);
 }
 
-double ConsumeInterpolableControlAxis(const InterpolableValue* number,
-                                      bool is_absolute,
-                                      double current_value) {
+float ConsumeInterpolableControlAxis(const InterpolableValue* number,
+                                     bool is_absolute,
+                                     double current_value) {
   double value = ToInterpolableNumber(number)->Value();
-  return is_absolute ? value : value - current_value;
+  return clampTo<float>(is_absolute ? value : value - current_value);
 }
 
 std::unique_ptr<InterpolableNumber>
@@ -31,12 +33,13 @@ ConsumeCoordinateAxis(double value, bool is_absolute, double& current_value) {
   return std::make_unique<InterpolableNumber>(current_value);
 }
 
-double ConsumeInterpolableCoordinateAxis(const InterpolableValue* number,
-                                         bool is_absolute,
-                                         double& current_value) {
+float ConsumeInterpolableCoordinateAxis(const InterpolableValue* number,
+                                        bool is_absolute,
+                                        double& current_value) {
   double previous_value = current_value;
   current_value = ToInterpolableNumber(number)->Value();
-  return is_absolute ? current_value : current_value - previous_value;
+  return clampTo<float>(is_absolute ? current_value
+                                    : current_value - previous_value);
 }
 
 std::unique_ptr<InterpolableValue> ConsumeClosePath(

@@ -95,8 +95,9 @@ void OfflinePagePreviewsPageLoadMetricsObserver::OnComplete(
 void OfflinePagePreviewsPageLoadMetricsObserver::OnDomContentLoadedEventStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing->dom_content_loaded_event_start, info)) {
+  if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.document_timing->dom_content_loaded_event_start,
+          GetDelegate())) {
     return;
   }
   PAGE_LOAD_HISTOGRAM(
@@ -107,8 +108,8 @@ void OfflinePagePreviewsPageLoadMetricsObserver::OnDomContentLoadedEventStart(
 void OfflinePagePreviewsPageLoadMetricsObserver::OnLoadEventStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing->load_event_start, info)) {
+  if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.document_timing->load_event_start, GetDelegate())) {
     return;
   }
   PAGE_LOAD_HISTOGRAM(internal::kHistogramOfflinePreviewsLoadEventFired,
@@ -118,8 +119,8 @@ void OfflinePagePreviewsPageLoadMetricsObserver::OnLoadEventStart(
 void OfflinePagePreviewsPageLoadMetricsObserver::OnFirstLayout(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing->first_layout, info)) {
+  if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.document_timing->first_layout, GetDelegate())) {
     return;
   }
   PAGE_LOAD_HISTOGRAM(internal::kHistogramOfflinePreviewsFirstLayout,
@@ -129,8 +130,8 @@ void OfflinePagePreviewsPageLoadMetricsObserver::OnFirstLayout(
 void OfflinePagePreviewsPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_contentful_paint, info)) {
+  if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_contentful_paint, GetDelegate())) {
     return;
   }
   PAGE_LOAD_HISTOGRAM(internal::kHistogramOfflinePreviewsFirstContentfulPaint,
@@ -140,8 +141,8 @@ void OfflinePagePreviewsPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
 void OfflinePagePreviewsPageLoadMetricsObserver::OnParseStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.parse_timing->parse_start, info)) {
+  if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.parse_timing->parse_start, GetDelegate())) {
     return;
   }
   PAGE_LOAD_HISTOGRAM(internal::kHistogramOfflinePreviewsParseStart,

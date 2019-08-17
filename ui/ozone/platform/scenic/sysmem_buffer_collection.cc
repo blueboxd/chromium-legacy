@@ -89,12 +89,6 @@ VkFormat VkFormatForBufferFormat(gfx::BufferFormat buffer_format) {
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
 
-    case gfx::BufferFormat::R_8:
-      return VK_FORMAT_R8_UNORM;
-
-    case gfx::BufferFormat::RG_88:
-      return VK_FORMAT_R8G8_UNORM;
-
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::BGRX_8888:
       return VK_FORMAT_B8G8R8A8_UNORM;
@@ -109,37 +103,6 @@ VkFormat VkFormatForBufferFormat(gfx::BufferFormat buffer_format) {
   }
 }
 
-fuchsia::sysmem::PixelFormat BufferFormatToSysmemPixelFormat(
-    gfx::BufferFormat format) {
-  fuchsia::sysmem::PixelFormat result;
-  switch (format) {
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
-      result.type = fuchsia::sysmem::PixelFormatType::NV12;
-      break;
-
-    case gfx::BufferFormat::R_8:
-    case gfx::BufferFormat::RG_88:
-      // sysmem currently doesn't support R8 and R8G8 images. To workaround this
-      // issue they are masqueraded as RGBA images with shorter rows.
-      result.type = fuchsia::sysmem::PixelFormatType::BGRA32;
-      break;
-
-    case gfx::BufferFormat::BGRA_8888:
-    case gfx::BufferFormat::BGRX_8888:
-      result.type = fuchsia::sysmem::PixelFormatType::BGRA32;
-      break;
-
-    case gfx::BufferFormat::RGBA_8888:
-    case gfx::BufferFormat::RGBX_8888:
-      result.type = fuchsia::sysmem::PixelFormatType::R8G8B8A8;
-      break;
-
-    default:
-      NOTREACHED();
-  }
-  return result;
-}
-
 }  // namespace
 
 // static
@@ -147,8 +110,6 @@ bool SysmemBufferCollection::IsNativePixmapConfigSupported(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
   bool format_supported = format == gfx::BufferFormat::YUV_420_BIPLANAR ||
-                          format == gfx::BufferFormat::R_8 ||
-                          format == gfx::BufferFormat::RG_88 ||
                           format == gfx::BufferFormat::RGBA_8888 ||
                           format == gfx::BufferFormat::RGBX_8888 ||
                           format == gfx::BufferFormat::BGRA_8888 ||
@@ -195,41 +156,8 @@ bool SysmemBufferCollection::Initialize(
     return false;
   }
 
-  // sysmem currently doesn't support R8 and R8G8 images. To workaround this
-  // issue they are masqueraded as RGBA images with shorter rows.
-  size_t width_divider = 1;
-  if (format_ == gfx::BufferFormat::R_8) {
-    width_divider = 4;
-  } else if (format_ == gfx::BufferFormat::RG_88) {
-    width_divider = 2;
-  }
-
-  fuchsia::sysmem::ImageFormatConstraints image_format_constraints;
-  image_format_constraints.pixel_format =
-      BufferFormatToSysmemPixelFormat(format);
-  image_format_constraints.min_coded_width = size_.width() / width_divider;
-  image_format_constraints.max_coded_width =
-      std::numeric_limits<uint32_t>::max();
-  image_format_constraints.min_coded_height = size_.height();
-  image_format_constraints.max_coded_height =
-      std::numeric_limits<uint32_t>::max();
-  image_format_constraints.min_bytes_per_row =
-      gfx::RowSizeForBufferFormat(size_.width(), format, 0);
-  image_format_constraints.max_bytes_per_row =
-      std::numeric_limits<uint32_t>::max();
-  image_format_constraints.color_spaces_count = 1;
-
-  if (format == gfx::BufferFormat::YUV_420_BIPLANAR) {
-    image_format_constraints.color_space[0].type =
-        fuchsia::sysmem::ColorSpaceType::REC709;
-  } else {
-    image_format_constraints.color_space[0].type =
-        fuchsia::sysmem::ColorSpaceType::SRGB;
-  }
-
-  return InitializeInternal(
-      allocator, std::move(collection_token), num_buffers,
-      base::make_optional(std::move(image_format_constraints)));
+  return InitializeInternal(allocator, std::move(collection_token),
+                            num_buffers);
 }
 
 bool SysmemBufferCollection::Initialize(
@@ -249,7 +177,7 @@ bool SysmemBufferCollection::Initialize(
   token.Bind(std::move(token_handle));
 
   return InitializeInternal(allocator, std::move(token),
-                            /*buffers_for_camping=*/0, base::nullopt);
+                            /*buffers_for_camping=*/0);
 }
 
 scoped_refptr<gfx::NativePixmap> SysmemBufferCollection::CreateNativePixmap(
@@ -277,9 +205,19 @@ scoped_refptr<gfx::NativePixmap> SysmemBufferCollection::CreateNativePixmap(
   const fuchsia::sysmem::ImageFormatConstraints& format =
       buffers_info_.settings.image_format_constraints;
 
-  size_t stride = RoundUp(format.min_bytes_per_row, format.coded_width_divisor);
+  // The logic should match LogicalBufferCollection::Allocate().
+  size_t width =
+      RoundUp(std::max(format.min_coded_width, format.required_max_coded_width),
+              format.coded_width_divisor);
+  size_t stride =
+      RoundUp(std::max(static_cast<size_t>(format.min_bytes_per_row),
+                       gfx::RowSizeForBufferFormat(width, format_, 0)),
+              format.bytes_per_row_divisor);
+  size_t height = RoundUp(
+      std::max(format.min_coded_height, format.required_max_coded_height),
+      format.coded_height_divisor);
   size_t plane_offset = buffers_info_.buffers[buffer_index].vmo_usable_start;
-  size_t plane_size = stride * format.min_coded_height;
+  size_t plane_size = stride * height;
   handle.planes.emplace_back(stride, plane_offset, plane_size,
                              std::move(main_plane_vmo));
 
@@ -322,11 +260,20 @@ bool SysmemBufferCollection::CreateVkImage(
 
   InitializeImageCreateInfo(vk_image_info, size);
 
+  VkBufferCollectionImageCreateInfoFUCHSIA image_format_fuchsia = {
+      VK_STRUCTURE_TYPE_BUFFER_COLLECTION_IMAGE_CREATE_INFO_FUCHSIA,
+  };
+  image_format_fuchsia.collection = vk_buffer_collection_;
+  image_format_fuchsia.index = buffer_index;
+  vk_image_info->pNext = &image_format_fuchsia;
+
   if (vkCreateImage(vk_device_, vk_image_info, nullptr, vk_image) !=
       VK_SUCCESS) {
     DLOG(ERROR) << "Failed to create VkImage.";
     return false;
   }
+
+  vk_image_info->pNext = nullptr;
 
   VkMemoryRequirements requirements;
   vkGetImageMemoryRequirements(vk_device, *vk_image, &requirements);
@@ -419,9 +366,7 @@ SysmemBufferCollection::~SysmemBufferCollection() {
 bool SysmemBufferCollection::InitializeInternal(
     fuchsia::sysmem::Allocator_Sync* allocator,
     fuchsia::sysmem::BufferCollectionTokenSyncPtr collection_token,
-    size_t buffers_for_camping,
-    base::Optional<fuchsia::sysmem::ImageFormatConstraints>
-        image_format_constraints) {
+    size_t buffers_for_camping) {
   fidl::InterfaceHandle<fuchsia::sysmem::BufferCollectionToken>
       collection_token_for_vulkan;
   collection_token->Duplicate(ZX_RIGHT_SAME_RIGHTS,
@@ -452,13 +397,7 @@ bool SysmemBufferCollection::InitializeInternal(
   }
 
   constraints.min_buffer_count_for_camping = buffers_for_camping;
-
-  if (image_format_constraints) {
-    constraints.image_format_constraints_count = 1;
-    constraints.image_format_constraints[0] = image_format_constraints.value();
-  } else {
-    constraints.image_format_constraints_count = 0;
-  }
+  constraints.image_format_constraints_count = 0;
 
   status = collection_->SetConstraints(/*has_constraints=*/true,
                                        std::move(constraints));
@@ -485,16 +424,6 @@ bool SysmemBufferCollection::InitializeInternal(
 
   VkImageCreateInfo image_create_info;
   InitializeImageCreateInfo(&image_create_info, size_);
-
-  // sysmem currently doesn't support R8 and R8G8 images. To workaround this
-  // issue they are masqueraded as RGBA images with shorter rows.
-  if (format_ == gfx::BufferFormat::R_8) {
-    image_create_info.format = VK_FORMAT_B8G8R8A8_UNORM;
-    image_create_info.extent.width = size_.width() / 4;
-  } else if (format_ == gfx::BufferFormat::RG_88) {
-    image_create_info.format = VK_FORMAT_B8G8R8A8_UNORM;
-    image_create_info.extent.width = size_.width() / 2;
-  }
 
   if (vkSetBufferCollectionConstraintsFUCHSIA(vk_device_, vk_buffer_collection_,
                                               &image_create_info) !=

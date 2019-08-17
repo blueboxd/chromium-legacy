@@ -36,9 +36,7 @@ const AXTree::Selection AXPlatformNodeDelegateBase::GetUnignoredSelection()
 }
 
 AXNodePosition::AXPositionInstance
-AXPlatformNodeDelegateBase::CreateTextPositionAt(
-    int offset,
-    ax::mojom::TextAffinity affinity) const {
+AXPlatformNodeDelegateBase::CreateTextPositionAt(int offset) const {
   return AXNodePosition::CreateNullPosition();
 }
 

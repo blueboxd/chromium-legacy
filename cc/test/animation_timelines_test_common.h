@@ -150,9 +150,10 @@ class TestHostClient : public MutatorHostClient {
   void NotifyAnimationWorkletStateChange(AnimationWorkletMutationState state,
                                          ElementListType tree_type) override {}
 
-  void OnCustomPropertyMutated(ElementId element_id,
-                               const std::string& custom_property_name,
-                               float custom_property_value) override {}
+  void OnCustomPropertyMutated(
+      ElementId element_id,
+      const std::string& custom_property_name,
+      PaintWorkletInput::PropertyValue custom_property_value) override {}
 
   bool mutators_need_commit() const { return mutators_need_commit_; }
   void set_mutators_need_commit(bool need) { mutators_need_commit_ = need; }

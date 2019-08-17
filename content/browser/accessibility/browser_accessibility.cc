@@ -1428,12 +1428,11 @@ const ui::AXTree::Selection BrowserAccessibility::GetUnignoredSelection()
 }
 
 ui::AXNodePosition::AXPositionInstance
-BrowserAccessibility::CreateTextPositionAt(
-    int offset,
-    ax::mojom::TextAffinity affinity) const {
+BrowserAccessibility::CreateTextPositionAt(int offset) const {
   DCHECK(manager_);
-  return ui::AXNodePosition::CreateTextPosition(manager_->ax_tree_id(), GetId(),
-                                                offset, affinity);
+  return ui::AXNodePosition::CreateTextPosition(
+      manager_->ax_tree_id(), GetId(), offset,
+      ax::mojom::TextAffinity::kDownstream);
 }
 
 gfx::NativeViewAccessible BrowserAccessibility::GetNSWindow() {

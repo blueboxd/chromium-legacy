@@ -88,14 +88,12 @@ TEST(ExtensionURLPatternTest, Ports) {
       // Port-like strings in the path should not trigger a warning.
       {"http://*/:1234", URLPattern::ParseResult::kSuccess, "*"},
       {"http://*.foo/bar:1234", URLPattern::ParseResult::kSuccess, "*"},
-      {"http://foo/bar:1234/path", URLPattern::ParseResult::kSuccess, "*"},
-      {"http://*.foo.*/:1234", URLPattern::ParseResult::kSuccess, "*"}};
+      {"http://foo/bar:1234/path", URLPattern::ParseResult::kSuccess, "*"}};
 
   for (size_t i = 0; i < base::size(kTestPatterns); ++i) {
     URLPattern pattern(URLPattern::SCHEME_ALL);
     EXPECT_EQ(kTestPatterns[i].expected_result,
-              pattern.Parse(kTestPatterns[i].pattern,
-                            URLPattern::ALLOW_WILDCARD_FOR_EFFECTIVE_TLD))
+              pattern.Parse(kTestPatterns[i].pattern))
         << "Got unexpected result for URL pattern: "
         << kTestPatterns[i].pattern;
     EXPECT_EQ(kTestPatterns[i].expected_port, pattern.port())
@@ -167,7 +165,6 @@ TEST(ExtensionURLPatternTest, Match1) {
   EXPECT_EQ("http", pattern.scheme());
   EXPECT_EQ("", pattern.host());
   EXPECT_TRUE(pattern.match_subdomains());
-  EXPECT_TRUE(pattern.match_effective_tld());
   EXPECT_FALSE(pattern.match_all_urls());
   EXPECT_EQ("/*", pattern.path());
   EXPECT_TRUE(pattern.MatchesURL(GURL("http://google.com")));
@@ -184,7 +181,6 @@ TEST(ExtensionURLPatternTest, Match2) {
   EXPECT_EQ("https", pattern.scheme());
   EXPECT_EQ("", pattern.host());
   EXPECT_TRUE(pattern.match_subdomains());
-  EXPECT_TRUE(pattern.match_effective_tld());
   EXPECT_FALSE(pattern.match_all_urls());
   EXPECT_EQ("/foo*", pattern.path());
   EXPECT_TRUE(pattern.MatchesURL(GURL("https://www.google.com/foo")));
@@ -203,7 +199,6 @@ TEST(URLPatternTest, Match3) {
   EXPECT_EQ("http", pattern.scheme());
   EXPECT_EQ("google.com", pattern.host());
   EXPECT_TRUE(pattern.match_subdomains());
-  EXPECT_TRUE(pattern.match_effective_tld());
   EXPECT_FALSE(pattern.match_all_urls());
   EXPECT_EQ("/foo*bar", pattern.path());
   EXPECT_TRUE(pattern.MatchesURL(GURL("http://google.com/foobar")));
@@ -225,7 +220,6 @@ TEST(ExtensionURLPatternTest, Match5) {
   EXPECT_EQ("file", pattern.scheme());
   EXPECT_EQ("", pattern.host());
   EXPECT_FALSE(pattern.match_subdomains());
-  EXPECT_TRUE(pattern.match_effective_tld());
   EXPECT_FALSE(pattern.match_all_urls());
   EXPECT_EQ("/foo?bar\\*baz", pattern.path());
   EXPECT_TRUE(pattern.MatchesURL(GURL("file:///foo?bar\\hellobaz")));
@@ -240,7 +234,6 @@ TEST(ExtensionURLPatternTest, Match6) {
   EXPECT_EQ("http", pattern.scheme());
   EXPECT_EQ("127.0.0.1", pattern.host());
   EXPECT_FALSE(pattern.match_subdomains());
-  EXPECT_TRUE(pattern.match_effective_tld());
   EXPECT_FALSE(pattern.match_all_urls());
   EXPECT_EQ("/*", pattern.path());
   EXPECT_TRUE(pattern.MatchesURL(GURL("http://127.0.0.1")));
@@ -256,7 +249,6 @@ TEST(ExtensionURLPatternTest, Match7) {
   // Canonicalization forces 0.0.1 to 0.0.0.1.
   EXPECT_EQ("0.0.0.1", pattern.host());
   EXPECT_TRUE(pattern.match_subdomains());
-  EXPECT_TRUE(pattern.match_effective_tld());
   EXPECT_FALSE(pattern.match_all_urls());
   EXPECT_EQ("/*", pattern.path());
   // Subdomain matching is never done if the argument has an IP address host.
@@ -273,7 +265,6 @@ TEST(ExtensionURLPatternTest, Match8) {
   EXPECT_EQ("http", pattern.scheme());
   EXPECT_EQ("xn--gkd", pattern.host());
   EXPECT_TRUE(pattern.match_subdomains());
-  EXPECT_TRUE(pattern.match_effective_tld());
   EXPECT_FALSE(pattern.match_all_urls());
   EXPECT_EQ("/a%C2%81%E1*", pattern.path());
   EXPECT_TRUE(pattern.MatchesURL(
@@ -290,7 +281,6 @@ TEST(ExtensionURLPatternTest, Match9) {
   EXPECT_EQ(content::kChromeUIScheme, pattern.scheme());
   EXPECT_EQ("favicon", pattern.host());
   EXPECT_FALSE(pattern.match_subdomains());
-  EXPECT_TRUE(pattern.match_effective_tld());
   EXPECT_FALSE(pattern.match_all_urls());
   EXPECT_EQ("/*", pattern.path());
   EXPECT_TRUE(
@@ -310,7 +300,6 @@ TEST(ExtensionURLPatternTest, Match10) {
   EXPECT_FALSE(pattern.MatchesScheme("file"));
   EXPECT_FALSE(pattern.MatchesScheme("ftp"));
   EXPECT_TRUE(pattern.match_subdomains());
-  EXPECT_TRUE(pattern.match_effective_tld());
   EXPECT_FALSE(pattern.match_all_urls());
   EXPECT_EQ("/*", pattern.path());
   EXPECT_TRUE(pattern.MatchesURL(GURL("http://127.0.0.1")));
@@ -331,7 +320,6 @@ TEST(ExtensionURLPatternTest, Match11) {
   EXPECT_TRUE(pattern.MatchesScheme("filesystem"));
   EXPECT_TRUE(pattern.MatchesScheme(extensions::kExtensionScheme));
   EXPECT_TRUE(pattern.match_subdomains());
-  EXPECT_TRUE(pattern.match_effective_tld());
   EXPECT_TRUE(pattern.match_all_urls());
   EXPECT_EQ("/*", pattern.path());
   EXPECT_TRUE(
@@ -368,7 +356,6 @@ TEST(ExtensionURLPatternTest, Match12) {
   EXPECT_TRUE(pattern.MatchesScheme("about"));
   EXPECT_TRUE(pattern.MatchesScheme(extensions::kExtensionScheme));
   EXPECT_TRUE(pattern.match_subdomains());
-  EXPECT_TRUE(pattern.match_effective_tld());
   EXPECT_TRUE(pattern.match_all_urls());
   EXPECT_EQ("/*", pattern.path());
   EXPECT_TRUE(
@@ -421,7 +408,6 @@ TEST(ExtensionURLPatternTest, Match14) {
   EXPECT_EQ("", pattern.host());
   EXPECT_FALSE(pattern.match_subdomains());
   EXPECT_FALSE(pattern.match_all_urls());
-  EXPECT_TRUE(pattern.match_effective_tld());
   EXPECT_EQ("/foo*", pattern.path());
   EXPECT_FALSE(pattern.MatchesURL(GURL("file://foo")));
   EXPECT_FALSE(pattern.MatchesURL(GURL("file://foobar")));
@@ -438,7 +424,6 @@ TEST(ExtensionURLPatternTest, Match15) {
   EXPECT_EQ("", pattern.host());
   EXPECT_FALSE(pattern.match_subdomains());
   EXPECT_FALSE(pattern.match_all_urls());
-  EXPECT_TRUE(pattern.match_effective_tld());
   EXPECT_EQ("/foo*", pattern.path());
   EXPECT_FALSE(pattern.MatchesURL(GURL("file://foo")));
   EXPECT_FALSE(pattern.MatchesURL(GURL("file://foobar")));
@@ -456,7 +441,6 @@ TEST(ExtensionURLPatternTest, Match16) {
   // Since hostname is ignored for file://.
   EXPECT_EQ("", pattern.host());
   EXPECT_FALSE(pattern.match_subdomains());
-  EXPECT_TRUE(pattern.match_effective_tld());
   EXPECT_FALSE(pattern.match_all_urls());
   EXPECT_EQ("/foo*", pattern.path());
   EXPECT_FALSE(pattern.MatchesURL(GURL("file://foo")));
@@ -522,39 +506,6 @@ TEST(ExtensionURLPatternTest, Match19) {
   EXPECT_FALSE(pattern.MatchesURL(GURL("chrome-extension://foobar")));
   EXPECT_TRUE(pattern.MatchesURL(
       GURL("filesystem:chrome-extension://ftw/t/file.txt")));
-}
-
-// effective TLD wildcard
-TEST(URLPatternTest, EffectiveTldWildcard) {
-  URLPattern pattern(kAllSchemes);
-  EXPECT_EQ(URLPattern::ParseResult::kSuccess,
-            pattern.Parse("http://*.google.*/foo*bar",
-                          URLPattern::ALLOW_WILDCARD_FOR_EFFECTIVE_TLD));
-  EXPECT_EQ("http", pattern.scheme());
-  EXPECT_EQ("google", pattern.host());
-  EXPECT_TRUE(pattern.match_subdomains());
-  EXPECT_FALSE(pattern.match_effective_tld());
-  EXPECT_FALSE(pattern.match_all_urls());
-  EXPECT_EQ("/foo*bar", pattern.path());
-  EXPECT_TRUE(pattern.MatchesURL(GURL("http://google.com/foobar")));
-  EXPECT_TRUE(pattern.MatchesURL(GURL("http://www.google.com.br/foo?bar")));
-  EXPECT_TRUE(
-      pattern.MatchesURL(GURL("http://monkey.images.google.co.uk/foooobar")));
-  EXPECT_FALSE(pattern.MatchesURL(GURL("http://yahoo.com/foobar")));
-  EXPECT_TRUE(pattern.MatchesURL(GURL("filesystem:http://google.com/foo/bar")));
-  EXPECT_FALSE(pattern.MatchesURL(
-      GURL("filesystem:http://google.com/temporary/foobar")));
-  URLPattern pattern_sub(kAllSchemes);
-  EXPECT_EQ(URLPattern::ParseResult::kSuccess,
-            pattern_sub.Parse("https://maps.google.*/",
-                              URLPattern::ALLOW_WILDCARD_FOR_EFFECTIVE_TLD));
-  EXPECT_EQ("https", pattern_sub.scheme());
-  EXPECT_EQ("maps.google", pattern_sub.host());
-  EXPECT_FALSE(pattern_sub.match_subdomains());
-  EXPECT_FALSE(pattern_sub.match_all_urls());
-  EXPECT_EQ("/", pattern_sub.path());
-  EXPECT_TRUE(pattern_sub.MatchesURL(GURL("https://maps.google.co.uk/")));
-  EXPECT_FALSE(pattern_sub.MatchesURL(GURL("https://sub.maps.google.co.uk/")));
 }
 
 static const struct GetAsStringPatterns {

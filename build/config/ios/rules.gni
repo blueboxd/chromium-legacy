@@ -1690,18 +1690,10 @@ template("ios_xctest_bundle") {
         # Fall back to a reasonable default value.
         _principal_class = "NSObject"
       }
-      extra_substitutions =
-          [ "XCTEST_BUNDLE_PRINCIPAL_CLASS=${_principal_class}" ]
-
-      if (ios_automatically_manage_certs) {
-        # Use a fixed bundle identifier for EarlGrey tests when using Xcode to
-        # manage the certificates as the number of free certs is limited.
-        extra_substitutions += [
-          "MODULE_BUNDLE_ID=gtest.${ios_generic_test_bundle_id_suffix}-module",
-        ]
-      } else {
-        extra_substitutions += [ "MODULE_BUNDLE_ID=gtest.$_output_name" ]
-      }
+      extra_substitutions = [
+        "XCTEST_BUNDLE_PRINCIPAL_CLASS=${_principal_class}",
+        "MODULE_BUNDLE_ID=gtest.$_output_name",
+      ]
     }
 
     bundle_data(_info_plist_bundle) {
@@ -1845,15 +1837,6 @@ template("ios_xctest_test") {
 
     if (!defined(invoker.info_plist) && !defined(invoker.info_plist_target)) {
       info_plist = "//build/config/ios/Host-Info.plist"
-      if (ios_automatically_manage_certs) {
-        # Use the same bundle identifier for EarlGrey tests as for unit tests
-        # when managing certificates as the number of free certs is limited.
-        if (!defined(extra_substitutions)) {
-          extra_substitutions = []
-        }
-        extra_substitutions +=
-            [ "EXECUTABLE_NAME=gtest.${ios_generic_test_bundle_id_suffix}" ]
-      }
     }
 
     # Xcode needs the following frameworks installed in the application (and
@@ -1958,13 +1941,6 @@ template("ios_xcuitest_test_runner_bundle") {
 
     executable_name = _output_name
     info_plist_target = ":$_info_plist_merge_plist"
-
-    if (ios_automatically_manage_certs) {
-      # Use the same bundle identifier for XCUITest tests as for unit tests
-      # when managing certificates as the number of free certs is limited.
-      extra_substitutions =
-          [ "EXECUTABLE_NAME=gtest.${ios_generic_test_bundle_id_suffix}" ]
-    }
   }
 
   bundle_data(_info_plist_bundle) {

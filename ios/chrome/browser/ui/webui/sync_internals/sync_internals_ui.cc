@@ -20,7 +20,7 @@ web::WebUIIOSDataSource* CreateSyncInternalsHTMLSource() {
   web::WebUIIOSDataSource* source =
       web::WebUIIOSDataSource::Create(kChromeUISyncInternalsHost);
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->AddResourcePath(syncer::sync_ui_util::kSyncIndexJS,
                           IDR_SYNC_DRIVER_SYNC_INTERNALS_INDEX_JS);
   source->AddResourcePath(syncer::sync_ui_util::kChromeSyncJS,

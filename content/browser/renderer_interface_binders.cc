@@ -218,7 +218,7 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
             std::move(request));
       }));
   parameterized_binder_registry_.AddInterface(
-      base::BindRepeating(&ContentIndexServiceImpl::Create));
+      base::BindRepeating(&ContentIndexServiceImpl::CreateForRequest));
 }
 
 RendererInterfaceBinders& GetRendererInterfaceBinders() {

@@ -193,6 +193,9 @@ void TrackEventThreadLocalEventSink::ClearIncrementalState() {
 void TrackEventThreadLocalEventSink::AddTraceEvent(
     base::trace_event::TraceEvent* trace_event,
     base::trace_event::TraceEventHandle* handle) {
+  // TODO(eseckler): Remove after crbug.com/991126 is fixed.
+  CHECK(trace_event);
+
   // TODO(eseckler): Support splitting COMPLETE events into BEGIN/END pairs.
   // For now, we emit them as legacy events so that the generated JSON trace
   // size remains small.
@@ -211,6 +214,10 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
     }
 
     complete_event_stack_[current_stack_depth_] = std::move(*trace_event);
+
+    // TODO(eseckler): Remove after crbug.com/991126 is fixed.
+    CHECK(complete_event_stack_[current_stack_depth_].category_group_enabled());
+
     handle->event_index = ++current_stack_depth_;
     handle->chunk_index = kMagicChunkIndex;
     handle->chunk_seq = session_id_;
@@ -234,6 +241,9 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
   if (reset_incremental_state_) {
     DoResetIncrementalState(trace_event, explicit_timestamp);
   }
+
+  // TODO(eseckler): Remove after crbug.com/991126 is fixed.
+  CHECK(trace_event->category_group_enabled());
 
   const char* category_name =
       TraceLog::GetCategoryGroupName(trace_event->category_group_enabled());
@@ -572,16 +582,18 @@ void TrackEventThreadLocalEventSink::UpdateDuration(
     return;
   }
 
-  DCHECK_GE(current_stack_depth_, 1u);
+  // TODO(eseckler): Revert to DCHECK after crbug.com/983307 is fixed.
+  CHECK_GE(current_stack_depth_, 1u);
   // During trace shutdown, as the list of enabled categories are
   // non-monotonically shut down, there's the possibility that events higher in
   // the stack will have their category disabled prior to events lower in the
   // stack, hence we get misaligned here. In this case, as we know we're
   // shutting down, we leave the events unfinished.
   if (handle.event_index != current_stack_depth_) {
-    DCHECK(handle.event_index > 0 &&
-           handle.event_index < current_stack_depth_ &&
-           !base::trace_event::TraceLog::GetInstance()->IsEnabled());
+    // TODO(eseckler): Revert to DCHECKs after crbug.com/983307 is fixed.
+    CHECK(handle.event_index > 0);
+    CHECK(handle.event_index < current_stack_depth_);
+    CHECK(!base::trace_event::TraceLog::GetInstance()->IsEnabled());
     current_stack_depth_ = std::min(
         current_stack_depth_, static_cast<uint32_t>(handle.event_index - 1));
     return;

@@ -75,7 +75,7 @@ content::WebUIDataSource* CreateWebRtcLogsUIHTMLSource() {
   };
   AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->AddResourcePath("webrtc_logs.js", IDR_WEBRTC_LOGS_JS);
   source->SetDefaultResource(IDR_WEBRTC_LOGS_HTML);
   return source;

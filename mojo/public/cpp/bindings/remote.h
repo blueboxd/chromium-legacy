@@ -33,10 +33,10 @@ namespace mojo {
 // with a base::SequenceTaskRunner which the Remote uses exclusively to schedule
 // response callbacks and disconnection notifications.
 //
-// The most common ways to bind a Remote are to consume to a PendingRemote
-// received via some IPC, or to call |BindNewPipeAndPassReceiver()| and send the
-// returned PendingReceiver somewhere useful (i.e., to a remote Receiver who
-// will consume it). For example:
+// The most common ways to bind a Remote are to consume a PendingRemote received
+// via some IPC, or to call |BindNewPipeAndPassReceiver()| and send the returned
+// PendingReceiver somewhere useful (i.e., to a remote Receiver who will consume
+// it). For example:
 //
 //     mojo::Remote<mojom::Widget> widget;
 //     widget_factory->CreateWidget(widget.BindNewPipeAndPassReceiver());

@@ -30,7 +30,8 @@ interface CdmStorage {
 
 // Provides a way to access the contents of the file opened. When the connection
 // to this object is broken, it is assumed that the file has been closed and
-// that no more operations will be performed on it.
+// that no more operations will be performed on it. Only 1 Read() or Write()
+// operation should be in flight at any time.
 interface CdmFile {
   enum Status {
     kSuccess,  // Operation succeeded.

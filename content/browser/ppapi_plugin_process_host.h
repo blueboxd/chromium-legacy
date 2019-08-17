@@ -141,6 +141,7 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
 
   void OnProcessLaunched() override;
   void OnProcessCrashed(int exit_code) override;
+  void BindHostReceiver(mojo::GenericPendingReceiver receiver) override;
   bool OnMessageReceived(const IPC::Message& msg) override;
   void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;

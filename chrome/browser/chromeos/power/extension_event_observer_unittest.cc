@@ -62,9 +62,8 @@ class ExtensionEventObserverTest : public ChromeRenderViewHostTestHarness {
     fake_user_manager_->LoginUser(account_id);
     profile_ =
         profile_manager_->CreateTestingProfile(account_id.GetUserEmail());
-
-    profile_manager_->SetLoggedIn(true);
   }
+
   void TearDown() override {
     extension_event_observer_.reset();
     profile_ = NULL;

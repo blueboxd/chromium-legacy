@@ -4,7 +4,6 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_drawer/cr_drawer.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_page_host_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/find_shortcut_behavior.html">
@@ -12,6 +11,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="../os_settings_menu/os_settings_menu.html">
 <link rel="import" href="../os_settings_main/os_settings_main.html">
+<link rel="import" href="../os_toolbar/os_toolbar.html">
 <link rel="import" href="../../global_scroll_target_behavior.html">
 <link rel="import" href="../../i18n_setup.html">
 <link rel="import" href="../../icons.html">
@@ -37,16 +37,13 @@
             var(--cr-centered-card-width-percentage));
       }
 
-      cr-toolbar {
+      os-toolbar {
         @apply --layout-center;
         /* TODO(hsuregan): update for dark mode when needed. */
         background-color: white;
         color: var(--cr-secondary-text-color);
         min-height: 56px;
         z-index: 2;
-        --cr-toolbar-header-font-weight: 500;
-        --cr-toolbar-left-spacer-width: var(--settings-menu-width);
-        --cr-toolbar-center-basis: var(--settings-main-basis);
         --cr-toolbar-search-field-background: var(--google-grey-refresh-100);
         --cr-toolbar-search-field-border-radius: 4px;
         --cr-toolbar-search-field-input-color: var(--google-grey-refresh-700);
@@ -107,18 +104,14 @@
       }
     </style>
     <settings-prefs id="prefs" prefs="{{prefs}}"></settings-prefs>
-    <cr-toolbar page-name="$i18n{settings}"
-        clear-label="$i18n{clearSearch}"
-        search-prompt="$i18n{searchPrompt}"
-        on-cr-toolbar-menu-tap="onMenuButtonTap_"
+    <os-toolbar on-os-toolbar-menu-tap="onMenuButtonTap_"
         spinner-active="[[toolbarSpinnerActive_]]"
-        menu-label="$i18n{menuButtonLabel}"
         on-search-changed="onSearchChanged_"
         role="banner"
         narrow="{{isNarrow}}"
         narrow-threshold="980"
         show-menu="[[isNarrow]]">
-    </cr-toolbar>
+    </os-toolbar>
     <cr-drawer id="drawer" on-close="onMenuClose_" heading="$i18n{settings}"
         align="$i18n{textdirection}">
       <div class="drawer-content">

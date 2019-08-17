@@ -17,11 +17,12 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-class Profile;
 class AssistantImageDownloader;
 class AssistantSetup;
+class ProactiveSuggestionsClientImpl;
+class Profile;
 
-// Class to handle all assistant in-browser-process functionalities.
+// Class to handle all Assistant in-browser-process functionalities.
 class AssistantClient : chromeos::assistant::mojom::Client,
                         public signin::IdentityManager::Observer,
                         public session_manager::SessionManagerObserver {
@@ -104,6 +105,8 @@ class AssistantClient : chromeos::assistant::mojom::Client,
 
   std::unique_ptr<AssistantImageDownloader> assistant_image_downloader_;
   std::unique_ptr<AssistantSetup> assistant_setup_;
+
+  std::unique_ptr<ProactiveSuggestionsClientImpl> proactive_suggestions_client_;
 
   // Assistant interface receivers to be bound once we're initialized. These
   // accumulate when BindAssistant is called before initialization.

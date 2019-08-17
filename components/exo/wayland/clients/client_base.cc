@@ -477,9 +477,9 @@ bool ClientBase::Init(const InitParams& params) {
       LOG(ERROR) << "Can't create gbm device";
       return false;
     }
-    ui::OzonePlatform::InitParams params;
-    params.single_process = true;
-    ui::OzonePlatform::InitializeForGPU(params);
+    ui::OzonePlatform::InitParams ozone_params;
+    ozone_params.single_process = true;
+    ui::OzonePlatform::InitializeForGPU(ozone_params);
     bool gl_initialized = gl::init::InitializeGLOneOff();
     DCHECK(gl_initialized);
     gl_surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
@@ -504,21 +504,23 @@ bool ClientBase::Init(const InitParams& params) {
     DCHECK(gr_context_);
 
 #if defined(USE_VULKAN)
-    vk_implementation_ = gpu::CreateVulkanImplementation();
-    CHECK(vk_implementation_) << "Can't create VulkanImplementation";
-    bool ret = vk_implementation_->InitializeVulkanInstance(false);
-    CHECK(ret) << "Failed to initialize VulkanImplementation";
-    vk_instance_ = CreateVkInstance();
-    uint32_t queue_family_index = UINT32_MAX;
-    vk_device_ = CreateVkDevice(vk_instance_->get(), &queue_family_index);
-    CHECK(gpu::GetVulkanFunctionPointers()->BindDeviceFunctionPointers(
-        vk_device_->get(), VK_VERSION_1_0, gfx::ExtensionSet()));
-    vk_render_pass_ = CreateVkRenderPass(vk_device_->get());
+    if (params.use_vulkan) {
+      vk_implementation_ = gpu::CreateVulkanImplementation();
+      CHECK(vk_implementation_) << "Can't create VulkanImplementation";
+      bool ret = vk_implementation_->InitializeVulkanInstance(false);
+      CHECK(ret) << "Failed to initialize VulkanImplementation";
+      vk_instance_ = CreateVkInstance();
+      uint32_t queue_family_index = UINT32_MAX;
+      vk_device_ = CreateVkDevice(vk_instance_->get(), &queue_family_index);
+      CHECK(gpu::GetVulkanFunctionPointers()->BindDeviceFunctionPointers(
+          vk_device_->get(), VK_VERSION_1_0, gfx::ExtensionSet()));
+      vk_render_pass_ = CreateVkRenderPass(vk_device_->get());
 
-    vkGetDeviceQueue(vk_device_->get(), queue_family_index, 0, &vk_queue_);
+      vkGetDeviceQueue(vk_device_->get(), queue_family_index, 0, &vk_queue_);
 
-    vk_command_pool_ =
-        CreateVkCommandPool(vk_device_->get(), queue_family_index);
+      vk_command_pool_ =
+          CreateVkCommandPool(vk_device_->get(), queue_family_index);
+    }
 #endif  // defined(USE_VULKAN)
   }
 #endif  // defined(USE_GBM)
@@ -862,6 +864,8 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
     DCHECK(buffer->sk_surface);
 
 #if defined(USE_VULKAN)
+    if (!vk_implementation_)
+      return buffer;
     // TODO(dcastagna): remove this hack as soon as the extension
     // "VK_EXT_external_memory_dma_buf" is available.
 #define VK_STRUCTURE_TYPE_DMA_BUF_IMAGE_CREATE_INFO_INTEL 1024

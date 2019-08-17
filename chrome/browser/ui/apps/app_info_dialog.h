@@ -31,6 +31,7 @@ enum AppInfoLaunchSource {
   FROM_APP_LIST,         // Launched from the app list context menu (ChromeOS).
   FROM_EXTENSIONS_PAGE,  // Launched from the chrome://extensions page.
   FROM_APPS_PAGE,        // Launched from chrome://apps context menu.
+  FROM_SHELF,            // Launched from chrome shelf.
   NUM_LAUNCH_SOURCES,
 };
 

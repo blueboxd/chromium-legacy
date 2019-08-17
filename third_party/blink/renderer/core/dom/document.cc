@@ -8217,7 +8217,8 @@ void Document::CountPotentialFeaturePolicyViolation(
 void Document::ReportFeaturePolicyViolation(
     mojom::FeaturePolicyFeature feature,
     mojom::FeaturePolicyDisposition disposition,
-    const String& message) const {
+    const String& message,
+    const String& source_file) const {
   if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled(this))
     return;
   LocalFrame* frame = GetFrame();
@@ -8226,12 +8227,18 @@ void Document::ReportFeaturePolicyViolation(
 
   // Construct the feature policy violation report.
   const String& feature_name = GetNameForFeature(feature);
+  const String& disp_str =
+      (disposition == mojom::FeaturePolicyDisposition::kReport ? "report"
+                                                               : "enforce");
+
   FeaturePolicyViolationReportBody* body =
-      MakeGarbageCollected<FeaturePolicyViolationReportBody>(
-          feature_name, "Feature policy violation",
-          (disposition == mojom::FeaturePolicyDisposition::kReport
-               ? "report"
-               : "enforce"));
+      source_file.IsEmpty()
+          ? MakeGarbageCollected<FeaturePolicyViolationReportBody>(
+                feature_name, "Feature policy violation", disp_str)
+          : MakeGarbageCollected<FeaturePolicyViolationReportBody>(
+                feature_name, "Feature policy violation", disp_str,
+                source_file);
+
   Report* report = MakeGarbageCollected<Report>(
       ReportType::kFeaturePolicyViolation, Url().GetString(), body);
 

@@ -1960,10 +1960,15 @@ jumbo_source_set("browser") {
   }
 
   if (is_linux) {
+    sources += [
+      "font_service.cc",
+      "font_service.h",
+    ]
+
+    public_deps += [ "//components/services/font/public/mojom" ]
+
     deps += [
       "//components/services/font:lib",
-      "//components/services/font/public/cpp:manifest",
-      "//components/services/font/public/mojom",
       "//services/service_manager/zygote",
     ]
   }
@@ -2410,6 +2415,7 @@ jumbo_source_set("browser") {
       "//build/config/freetype",
       "//content/public/android:jni",
       "//device/gamepad/public/mojom",
+      "//gpu/ipc/common:android_texture_owner",
       "//media",
       "//media/capture/content/android",
       "//media/capture/video/android",

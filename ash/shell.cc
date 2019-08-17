@@ -924,6 +924,9 @@ void Shell::Init(
 
   display_prefs_ = std::make_unique<DisplayPrefs>(local_state_);
 
+  // RefreshFontParams depends on display prefs.
+  display_manager_->RefreshFontParams();
+
   // This will initialize aura::Env which requires |display_manager_| to
   // be initialized first.
   aura::Env* env = aura::Env::GetInstance();
@@ -1211,8 +1214,6 @@ void Shell::InitializeDisplayManager() {
 
   if (!display_initialized)
     display_manager_->InitDefaultDisplay();
-
-  display_manager_->RefreshFontParams();
 }
 
 void Shell::InitRootWindow(aura::Window* root_window) {

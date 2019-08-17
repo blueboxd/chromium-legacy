@@ -46,6 +46,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -1302,7 +1303,7 @@ v8::Local<v8::Value> NewTabPageBindings::GetColorsInfo(v8::Isolate* isolate) {
         gin::DataObjectBuilder(isolate)
             .Set("id", color_info.id)
             .Set("color", SkColorToArray(isolate, color_info.color))
-            .Set("label", std::string(color_info.label))
+            .Set("label", l10n_util::GetStringUTF16(color_info.label_id))
             .Set("icon", std::string(color_info.icon_data))
             .Build();
     v8_colors->CreateDataProperty(context, i++, v8_color_info).Check();

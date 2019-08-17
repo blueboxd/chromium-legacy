@@ -62,8 +62,8 @@ void MockSharedWorker::Terminate() {
 }
 
 MockSharedWorkerFactory::MockSharedWorkerFactory(
-    blink::mojom::SharedWorkerFactoryRequest request)
-    : binding_(this, std::move(request)) {}
+    mojo::PendingReceiver<blink::mojom::SharedWorkerFactory> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 MockSharedWorkerFactory::~MockSharedWorkerFactory() = default;
 

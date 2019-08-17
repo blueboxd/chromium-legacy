@@ -232,14 +232,15 @@ void LogProvisionalAborts(const page_load_metrics::PageAbortInfo& abort_info) {
 
 void LogForegroundDurations(
     const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info,
+    const page_load_metrics::PageLoadMetricsObserverDelegate& delegate,
     base::TimeTicks app_background_time) {
   base::Optional<base::TimeDelta> foreground_duration =
-      GetInitialForegroundDuration(info, app_background_time);
+      page_load_metrics::GetInitialForegroundDuration(delegate,
+                                                      app_background_time);
   if (!foreground_duration)
     return;
 
-  if (info.did_commit) {
+  if (delegate.DidCommit()) {
     PAGE_LOAD_LONG_HISTOGRAM(internal::kHistogramFromGWSForegroundDuration,
                              foreground_duration.value());
     if (timing.paint_timing->first_paint &&
@@ -264,18 +265,19 @@ void LogForegroundDurations(
 }
 
 bool WasAbortedInForeground(
-    const page_load_metrics::PageLoadExtraInfo& info,
+    const page_load_metrics::PageLoadMetricsObserverDelegate& delegate,
     const page_load_metrics::PageAbortInfo& abort_info) {
-  if (!info.started_in_foreground ||
+  if (!delegate.StartedInForeground() ||
       abort_info.reason == PageAbortReason::ABORT_NONE)
     return false;
 
   base::Optional<base::TimeDelta> time_to_abort(abort_info.time_to_abort);
-  if (WasStartedInForegroundOptionalEventInForeground(time_to_abort, info))
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          time_to_abort, delegate))
     return true;
 
   const base::TimeDelta time_to_first_background =
-      info.first_background_time.value();
+      delegate.GetFirstBackgroundTime().value();
   DCHECK_GT(abort_info.time_to_abort, time_to_first_background);
   base::TimeDelta background_abort_delta =
       abort_info.time_to_abort - time_to_first_background;
@@ -370,75 +372,75 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 FromGWSPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  logger_.FlushMetricsOnAppEnterBackground(timing, extra_info);
+  logger_.FlushMetricsOnAppEnterBackground(timing, GetDelegate());
   return STOP_OBSERVING;
 }
 
 void FromGWSPageLoadMetricsObserver::OnDomContentLoadedEventStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  logger_.OnDomContentLoadedEventStart(timing, extra_info);
+  logger_.OnDomContentLoadedEventStart(timing, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsObserver::OnLoadEventStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  logger_.OnLoadEventStart(timing, extra_info);
+  logger_.OnLoadEventStart(timing, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsObserver::OnFirstPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  logger_.OnFirstPaintInPage(timing, extra_info);
+  logger_.OnFirstPaintInPage(timing, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsObserver::OnFirstImagePaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  logger_.OnFirstImagePaintInPage(timing, extra_info);
+  logger_.OnFirstImagePaintInPage(timing, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  logger_.OnFirstContentfulPaintInPage(timing, extra_info);
+  logger_.OnFirstContentfulPaintInPage(timing, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsObserver::OnFirstInputInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  logger_.OnFirstInputInPage(timing, extra_info);
+  logger_.OnFirstInputInPage(timing, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsObserver::OnParseStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  logger_.OnParseStart(timing, extra_info);
+  logger_.OnParseStart(timing, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsObserver::OnParseStop(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  logger_.OnParseStop(timing, extra_info);
+  logger_.OnParseStop(timing, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  logger_.OnComplete(timing, extra_info);
+  logger_.OnComplete(timing, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsObserver::OnFailedProvisionalLoad(
     const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  logger_.OnFailedProvisionalLoad(failed_load_info, extra_info);
+  logger_.OnFailedProvisionalLoad(failed_load_info, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsObserver::OnUserInput(
     const blink::WebInputEvent& event,
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  logger_.OnUserInput(event, timing, extra_info);
+  logger_.OnUserInput(event, timing, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsLogger::OnCommit(
@@ -452,12 +454,12 @@ void FromGWSPageLoadMetricsLogger::OnCommit(
 
 void FromGWSPageLoadMetricsLogger::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (!ShouldLogPostCommitMetrics(extra_info.url))
+    const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
+  if (!ShouldLogPostCommitMetrics(delegate.GetUrl()))
     return;
 
-  page_load_metrics::PageAbortInfo abort_info = GetPageAbortInfo(extra_info);
-  if (!WasAbortedInForeground(extra_info, abort_info))
+  page_load_metrics::PageAbortInfo abort_info = GetPageAbortInfo(delegate);
+  if (!WasAbortedInForeground(delegate, abort_info))
     return;
 
   // If we did not receive any timing IPCs from the render process, we can't
@@ -478,22 +480,22 @@ void FromGWSPageLoadMetricsLogger::OnComplete(
     LogAbortsAfterPaintBeforeInteraction(abort_info);
   }
 
-  LogForegroundDurations(timing, extra_info, base::TimeTicks());
+  LogForegroundDurations(timing, delegate, base::TimeTicks());
 }
 
 void FromGWSPageLoadMetricsLogger::OnFailedProvisionalLoad(
     const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
   if (!ShouldLogFailedProvisionalLoadMetrics())
     return;
 
-  page_load_metrics::PageAbortInfo abort_info = GetPageAbortInfo(extra_info);
-  if (!WasAbortedInForeground(extra_info, abort_info))
+  page_load_metrics::PageAbortInfo abort_info = GetPageAbortInfo(delegate);
+  if (!WasAbortedInForeground(delegate, abort_info))
     return;
 
   LogProvisionalAborts(abort_info);
 
-  LogForegroundDurations(page_load_metrics::mojom::PageLoadTiming(), extra_info,
+  LogForegroundDurations(page_load_metrics::mojom::PageLoadTiming(), delegate,
                          base::TimeTicks());
 }
 
@@ -540,18 +542,19 @@ bool FromGWSPageLoadMetricsLogger::ShouldLogPostCommitMetrics(const GURL& url) {
 
 bool FromGWSPageLoadMetricsLogger::ShouldLogForegroundEventAfterCommit(
     const base::Optional<base::TimeDelta>& event,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  DCHECK(info.did_commit)
+    const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
+  DCHECK(delegate.DidCommit())
       << "ShouldLogForegroundEventAfterCommit called without committed URL.";
-  return ShouldLogPostCommitMetrics(info.url) &&
-         WasStartedInForegroundOptionalEventInForeground(event, info);
+  return ShouldLogPostCommitMetrics(delegate.GetUrl()) &&
+         page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+             event, delegate);
 }
 
 void FromGWSPageLoadMetricsLogger::OnDomContentLoadedEventStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
   if (ShouldLogForegroundEventAfterCommit(
-          timing.document_timing->dom_content_loaded_event_start, extra_info)) {
+          timing.document_timing->dom_content_loaded_event_start, delegate)) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramFromGWSDomContentLoaded,
         timing.document_timing->dom_content_loaded_event_start.value());
@@ -560,9 +563,9 @@ void FromGWSPageLoadMetricsLogger::OnDomContentLoadedEventStart(
 
 void FromGWSPageLoadMetricsLogger::OnLoadEventStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
   if (ShouldLogForegroundEventAfterCommit(
-          timing.document_timing->load_event_start, extra_info)) {
+          timing.document_timing->load_event_start, delegate)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSLoad,
                         timing.document_timing->load_event_start.value());
   }
@@ -570,9 +573,9 @@ void FromGWSPageLoadMetricsLogger::OnLoadEventStart(
 
 void FromGWSPageLoadMetricsLogger::OnFirstPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
   if (ShouldLogForegroundEventAfterCommit(timing.paint_timing->first_paint,
-                                          extra_info)) {
+                                          delegate)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstPaint,
                         timing.paint_timing->first_paint.value());
   }
@@ -581,9 +584,9 @@ void FromGWSPageLoadMetricsLogger::OnFirstPaintInPage(
 
 void FromGWSPageLoadMetricsLogger::OnFirstImagePaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
   if (ShouldLogForegroundEventAfterCommit(
-          timing.paint_timing->first_image_paint, extra_info)) {
+          timing.paint_timing->first_image_paint, delegate)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstImagePaint,
                         timing.paint_timing->first_image_paint.value());
   }
@@ -591,16 +594,16 @@ void FromGWSPageLoadMetricsLogger::OnFirstImagePaintInPage(
 
 void FromGWSPageLoadMetricsLogger::OnFirstContentfulPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
   if (ShouldLogForegroundEventAfterCommit(
-          timing.paint_timing->first_contentful_paint, extra_info)) {
+          timing.paint_timing->first_contentful_paint, delegate)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstContentfulPaint,
                         timing.paint_timing->first_contentful_paint.value());
 
     // If we have a foreground paint, we should have a foreground parse start,
     // since paints can't happen until after parsing starts.
-    DCHECK(WasStartedInForegroundOptionalEventInForeground(
-        timing.parse_timing->parse_start, extra_info));
+    DCHECK(page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+        timing.parse_timing->parse_start, delegate));
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramFromGWSParseStartToFirstContentfulPaint,
         timing.paint_timing->first_contentful_paint.value() -
@@ -610,9 +613,9 @@ void FromGWSPageLoadMetricsLogger::OnFirstContentfulPaintInPage(
 
 void FromGWSPageLoadMetricsLogger::OnFirstInputInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
   if (ShouldLogForegroundEventAfterCommit(
-          timing.interactive_timing->first_input_delay, extra_info)) {
+          timing.interactive_timing->first_input_delay, delegate)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstInputDelay,
                         timing.interactive_timing->first_input_delay.value());
   }
@@ -620,9 +623,9 @@ void FromGWSPageLoadMetricsLogger::OnFirstInputInPage(
 
 void FromGWSPageLoadMetricsLogger::OnParseStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
   if (ShouldLogForegroundEventAfterCommit(timing.parse_timing->parse_start,
-                                          extra_info)) {
+                                          delegate)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSParseStart,
                         timing.parse_timing->parse_start.value());
   }
@@ -630,9 +633,9 @@ void FromGWSPageLoadMetricsLogger::OnParseStart(
 
 void FromGWSPageLoadMetricsLogger::OnParseStop(
     const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
   if (ShouldLogForegroundEventAfterCommit(timing.parse_timing->parse_stop,
-                                          extra_info)) {
+                                          delegate)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSParseDuration,
                         timing.parse_timing->parse_stop.value() -
                             timing.parse_timing->parse_start.value());
@@ -642,7 +645,7 @@ void FromGWSPageLoadMetricsLogger::OnParseStop(
 void FromGWSPageLoadMetricsLogger::OnUserInput(
     const blink::WebInputEvent& event,
     const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
   if (first_paint_triggered_ && !first_user_interaction_after_paint_) {
     DCHECK(!navigation_start_.is_null());
     first_user_interaction_after_paint_ =
@@ -652,6 +655,6 @@ void FromGWSPageLoadMetricsLogger::OnUserInput(
 
 void FromGWSPageLoadMetricsLogger::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  LogForegroundDurations(timing, extra_info, base::TimeTicks::Now());
+    const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
+  LogForegroundDurations(timing, delegate, base::TimeTicks::Now());
 }

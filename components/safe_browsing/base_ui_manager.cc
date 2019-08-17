@@ -240,9 +240,12 @@ void BaseUIManager::DisplayBlockingPage(
                        resource.web_contents_getter.Run(),
                        true /* A decision is now pending */,
                        resource.threat_type);
-  if (SafeBrowsingInterstitialsAreCommittedNavigations() &&
-      resource.IsMainPageLoadBlocked()) {
-    AddUnsafeResource(resource.url, resource);
+  if (SafeBrowsingInterstitialsAreCommittedNavigations()) {
+    GURL unsafe_url = (resource.IsMainPageLoadBlocked() ||
+                       !resource.GetNavigationEntryForResource())
+                          ? resource.url
+                          : resource.GetNavigationEntryForResource()->GetURL();
+    AddUnsafeResource(unsafe_url, resource);
     // With committed interstitials we just cancel the load from here, the
     // actual interstitial will be shown from the
     // SafeBrowsingNavigationThrottle.

@@ -8,6 +8,7 @@ import com.google.protobuf.ByteString;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionsResponseProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportsScriptResponseProto;
 
@@ -38,7 +39,7 @@ public class AutofillAssistantTestService
     public long createNativeService() {
         // Ask native to create and return a wrapper around |this|. The wrapper will be injected
         // upon startup, at which point the native controller will take ownership of the wrapper.
-        return nativeJavaServiceCreate(this);
+        return AutofillAssistantTestServiceJni.get().javaServiceCreate(this);
     }
 
     /** @see AutofillAssistantService#getScriptsForUrl(String) */
@@ -93,5 +94,8 @@ public class AutofillAssistantTestService
         return getNextActions(globalPayload, scriptPayload).toByteArray();
     }
 
-    private static native long nativeJavaServiceCreate(AutofillAssistantTestService service);
+    @NativeMethods
+    interface Natives {
+        long javaServiceCreate(AutofillAssistantTestService service);
+    }
 }

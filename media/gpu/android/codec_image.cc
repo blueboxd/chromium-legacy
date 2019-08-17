@@ -19,7 +19,7 @@ namespace {
 
 // Makes |texture_owner|'s context current if it isn't already.
 std::unique_ptr<ui::ScopedMakeCurrent> MakeCurrentIfNeeded(
-    TextureOwner* texture_owner) {
+    gpu::TextureOwner* texture_owner) {
   gl::GLContext* context = texture_owner->GetContext();
   // Note: this works for virtual contexts too, because IsCurrent() returns true
   // if their shared platform context is current, regardless of which virtual

@@ -344,26 +344,5 @@ const Extension* GetInstalledPwaForUrl(
   return nullptr;
 }
 
-const Extension* GetPwaForSecureActiveTab(Browser* browser) {
-  switch (browser->location_bar_model()->GetSecurityLevel()) {
-    case security_state::SECURITY_LEVEL_COUNT:
-      NOTREACHED();
-      FALLTHROUGH;
-    case security_state::NONE:
-    case security_state::HTTP_SHOW_WARNING:
-    case security_state::DANGEROUS:
-      return nullptr;
-    case security_state::EV_SECURE:
-    case security_state::SECURE:
-    case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
-      break;
-  }
-  content::WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-  return GetInstalledPwaForUrl(
-      web_contents->GetBrowserContext(),
-      web_contents->GetMainFrame()->GetLastCommittedURL());
-}
-
 }  // namespace util
 }  // namespace extensions

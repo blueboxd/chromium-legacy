@@ -12,10 +12,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/config/gpu_preferences.h"
+#include "gpu/ipc/common/android/mock_texture_owner.h"
 #include "media/base/limits.h"
+#include "media/gpu/android/codec_buffer_wait_coordinator.h"
 #include "media/gpu/android/maybe_render_early_manager.h"
 #include "media/gpu/android/mock_codec_image.h"
-#include "media/gpu/android/mock_texture_owner.h"
 #include "media/gpu/android/shared_image_video_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,7 +48,7 @@ class MockSharedImageVideoProvider : public SharedImageVideoProvider {
 
   void RequestImage(ImageReadyCB cb,
                     const ImageSpec& spec,
-                    scoped_refptr<TextureOwner> texture_owner) override {
+                    scoped_refptr<gpu::TextureOwner> texture_owner) override {
     cb_ = std::move(cb);
     spec_ = spec;
     texture_owner_ = std::move(texture_owner);
@@ -60,7 +61,7 @@ class MockSharedImageVideoProvider : public SharedImageVideoProvider {
   // Most recent arguments to RequestImage.
   ImageReadyCB cb_;
   ImageSpec spec_;
-  scoped_refptr<TextureOwner> texture_owner_;
+  scoped_refptr<gpu::TextureOwner> texture_owner_;
 };
 
 class VideoFrameFactoryImplTest : public testing::Test {
@@ -79,7 +80,7 @@ class VideoFrameFactoryImplTest : public testing::Test {
     impl_ = std::make_unique<VideoFrameFactoryImpl>(
         task_runner_, gpu_preferences_, std::move(image_provider),
         std::move(mre_manager));
-    auto texture_owner = base::MakeRefCounted<NiceMock<MockTextureOwner>>(
+    auto texture_owner = base::MakeRefCounted<NiceMock<gpu::MockTextureOwner>>(
         0, nullptr, nullptr, true);
     auto codec_buffer_wait_coordinator =
         base::MakeRefCounted<CodecBufferWaitCoordinator>(
@@ -137,7 +138,7 @@ TEST_F(VideoFrameFactoryImplTest, ImageProviderInitFailure) {
       .Times(1)
       .WillOnce(RunOnceCallback<0>(nullptr));
   base::MockCallback<VideoFrameFactory::InitCb> init_cb;
-  EXPECT_CALL(init_cb, Run(scoped_refptr<TextureOwner>(nullptr)));
+  EXPECT_CALL(init_cb, Run(scoped_refptr<gpu::TextureOwner>(nullptr)));
   impl_->Initialize(VideoFrameFactory::OverlayMode::kDontRequestPromotionHints,
                     init_cb.Get());
   base::RunLoop().RunUntilIdle();
@@ -153,8 +154,8 @@ TEST_F(VideoFrameFactoryImplTest,
   // Also provide a non-null TextureOwner to it.
   scoped_refptr<CodecSurfaceBundle> surface_bundle =
       base::MakeRefCounted<CodecSurfaceBundle>(
-          base::MakeRefCounted<NiceMock<MockTextureOwner>>(0, nullptr, nullptr,
-                                                           true));
+          base::MakeRefCounted<NiceMock<gpu::MockTextureOwner>>(0, nullptr,
+                                                                nullptr, true));
   EXPECT_CALL(*mre_manager_raw_, SetSurfaceBundle(surface_bundle));
   impl_->SetSurfaceBundle(surface_bundle);
   base::RunLoop().RunUntilIdle();

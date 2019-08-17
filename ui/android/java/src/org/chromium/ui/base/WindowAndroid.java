@@ -990,7 +990,9 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     @SuppressLint("NewApi")
     @CalledByNative
     private void setPreferredRefreshRate(float preferredRefreshRate) {
-        if (mSupportedRefreshRateModes == null) return;
+        // Using this setting is gated to Q due to bugs on Razer phones which can freeze the device
+        // if the API is used. See crbug.com/990646.
+        if (mSupportedRefreshRateModes == null || !BuildInfo.isAtLeastQ()) return;
 
         int preferredModeId = getPreferredModeId(preferredRefreshRate);
         Window window = getWindow();

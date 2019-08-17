@@ -170,29 +170,30 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
     const std::vector<std::string>& matching_domains,
     bool password_field_exists) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!IsSupportedPasswordTypeForPinging(password_type))
-    return;
-
-  // Collect metrics about typical page-zoom on login pages.
-  double zoom_level =
-      zoom::ZoomController::GetZoomLevelForWebContents(web_contents);
-  UMA_HISTOGRAM_COUNTS_1000(
-      "PasswordProtection.PageZoomFactor",
-      static_cast<int>(100 * content::ZoomLevelToZoomFactor(zoom_level)));
-
   ReusedPasswordAccountType reused_password_account_type =
       GetPasswordProtectionReusedPasswordAccountType(password_type, username);
   RequestOutcome reason;
-  if (CanSendPing(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                  main_frame_url, reused_password_account_type, &reason)) {
-    StartRequest(web_contents, main_frame_url, GURL(), GURL(), username,
-                 password_type, matching_domains,
-                 LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                 password_field_exists);
-  } else {
-    if (reused_password_account_type.is_account_syncing())
-      MaybeLogPasswordReuseLookupEvent(web_contents, reason, password_type,
-                                       nullptr);
+  // Need to populate |reason| to be passed into CanShowInterstitial.
+  bool can_send_ping =
+      CanSendPing(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+                  main_frame_url, reused_password_account_type, &reason);
+  if (IsSupportedPasswordTypeForPinging(password_type)) {
+    // Collect metrics about typical page-zoom on login pages.
+    double zoom_level =
+        zoom::ZoomController::GetZoomLevelForWebContents(web_contents);
+    UMA_HISTOGRAM_COUNTS_1000(
+        "PasswordProtection.PageZoomFactor",
+        static_cast<int>(100 * content::ZoomLevelToZoomFactor(zoom_level)));
+    if (can_send_ping) {
+      StartRequest(web_contents, main_frame_url, GURL(), GURL(), username,
+                   password_type, matching_domains,
+                   LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+                   password_field_exists);
+    } else {
+      if (reused_password_account_type.is_account_syncing())
+        MaybeLogPasswordReuseLookupEvent(web_contents, reason, password_type,
+                                         nullptr);
+    }
   }
   if (CanShowInterstitial(reason, reused_password_account_type,
                           main_frame_url)) {
@@ -243,6 +244,15 @@ void PasswordProtectionService::RequestFinished(
         safe_browsing::kPasswordProtectionForSignedInUsers);
     if (!enable_warning_for_non_sync_users &&
         request->password_type() == PasswordType::OTHER_GAIA_PASSWORD) {
+      return;
+    }
+
+    // If it's password alert mode and a Gsuite/enterprise account, we do not
+    // show a modal warning.
+    if (outcome == RequestOutcome::PASSWORD_ALERT_MODE &&
+        (password_type.account_type() == ReusedPasswordAccountType::GSUITE ||
+         password_type.account_type() ==
+             ReusedPasswordAccountType::NON_GAIA_ENTERPRISE)) {
       return;
     }
 

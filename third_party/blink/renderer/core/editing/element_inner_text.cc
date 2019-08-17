@@ -73,7 +73,8 @@ class ElementInnerTextCollector final {
   // Returns true if used value of "display" is block-level.
   static bool IsDisplayBlockLevel(const Node&);
   static LayoutObject* PreviousLeafOf(const LayoutObject& layout_object);
-  static bool ShouldEmitNewlineForTableRow(const LayoutTableRow& table_row);
+  static bool ShouldEmitNewlineForTableRow(
+      const LayoutNGTableRowInterface& table_row);
 
   const NGOffsetMapping* GetOffsetMapping(const LayoutText& layout_text);
   void ProcessChildren(const Node& node);
@@ -194,23 +195,25 @@ LayoutObject* ElementInnerTextCollector::PreviousLeafOf(
 
 // static
 bool ElementInnerTextCollector::ShouldEmitNewlineForTableRow(
-    const LayoutTableRow& table_row) {
-  const LayoutTable* const table = table_row.Table();
+    const LayoutNGTableRowInterface& table_row) {
+  const LayoutNGTableInterface* const table = table_row.TableInterface();
   if (!table)
     return false;
-  if (table_row.NextRow())
+  if (table_row.NextRowInterface())
     return true;
   // For TABLE contains TBODY, TFOOTER, THEAD.
-  const LayoutTableSection* const table_section = table_row.Section();
+  const LayoutNGTableSectionInterface* table_section =
+      table_row.SectionInterface();
   if (!table_section)
     return false;
   // See |LayoutTable::SectionAbove()| and |SectionBelow()| for traversing
   // |LayoutTableSection|.
-  for (LayoutObject* runner = table_section->NextSibling(); runner;
-       runner = runner->NextSibling()) {
+  for (const LayoutObject* runner =
+           table_section->ToLayoutObject()->NextSibling();
+       runner; runner = runner->NextSibling()) {
     if (!runner->IsTableSection())
       continue;
-    if (ToLayoutTableSection(*runner).NumRows() > 0)
+    if (ToInterface<LayoutNGTableSectionInterface>(runner)->NumRows() > 0)
       return true;
   }
   // No table row after |node|.
@@ -336,7 +339,8 @@ void ElementInnerTextCollector::ProcessNode(const Node& node) {
   if (style->Display() == EDisplay::kTableCell) {
     ProcessChildren(node);
     if (layout_object.IsTableCell() &&
-        ToLayoutTableCell(layout_object).NextCell())
+        ToInterface<LayoutNGTableCellInterface>(layout_object)
+            .NextCellInterface())
       result_.EmitTab();
     return;
   }
@@ -348,7 +352,8 @@ void ElementInnerTextCollector::ProcessNode(const Node& node) {
   if (style->Display() == EDisplay::kTableRow) {
     ProcessChildren(node);
     if (layout_object.IsTableRow() &&
-        ShouldEmitNewlineForTableRow(ToLayoutTableRow(layout_object)))
+        ShouldEmitNewlineForTableRow(
+            ToInterface<LayoutNGTableRowInterface>(layout_object)))
       result_.EmitNewline();
     return;
   }

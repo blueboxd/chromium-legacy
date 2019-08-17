@@ -21,6 +21,7 @@
 #include "content/browser/media/session/media_session_service_impl.h"
 #include "content/browser/picture_in_picture/picture_in_picture_window_controller_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -56,6 +57,33 @@ using media_session::mojom::AudioFocusType;
 
 using MediaSessionSuspendedSource =
     MediaSessionUmaHelper::MediaSessionSuspendedSource;
+
+const char kMediaSessionDataName[] = "MediaSessionDataName";
+
+class MediaSessionData : public base::SupportsUserData::Data {
+ public:
+  MediaSessionData() = default;
+
+  static MediaSessionData* GetOrCreate(BrowserContext* context) {
+    auto* data = static_cast<MediaSessionData*>(
+        context->GetUserData(kMediaSessionDataName));
+
+    if (!data) {
+      auto new_data = std::make_unique<MediaSessionData>();
+      data = new_data.get();
+      context->SetUserData(kMediaSessionDataName, std::move(new_data));
+    }
+
+    return data;
+  }
+
+  const base::UnguessableToken& source_id() const { return source_id_; }
+
+ private:
+  base::UnguessableToken source_id_ = base::UnguessableToken::Create();
+
+  DISALLOW_COPY_AND_ASSIGN(MediaSessionData);
+};
 
 size_t ComputeFrameDepth(RenderFrameHost* rfh,
                          MapRenderFrameHostToDepth* map_rfh_to_depth) {
@@ -1217,6 +1245,11 @@ MediaSessionServiceImpl* MediaSessionImpl::ComputeServiceForRouting() {
 bool MediaSessionImpl::ShouldRouteAction(
     media_session::mojom::MediaSessionAction action) const {
   return routed_service_ && base::Contains(routed_service_->actions(), action);
+}
+
+const base::UnguessableToken& MediaSessionImpl::GetSourceId() const {
+  return MediaSessionData::GetOrCreate(web_contents()->GetBrowserContext())
+      ->source_id();
 }
 
 void MediaSessionImpl::RebuildAndNotifyActionsChanged() {

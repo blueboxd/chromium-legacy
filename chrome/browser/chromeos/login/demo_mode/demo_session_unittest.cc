@@ -138,7 +138,6 @@ class DemoSessionTest : public testing::Test {
                                                                       profile);
 
     user_manager->LoginUser(account_id);
-    profile_manager_->SetLoggedIn(true);
     return profile;
   }
 

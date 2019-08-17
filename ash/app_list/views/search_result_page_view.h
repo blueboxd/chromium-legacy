@@ -63,6 +63,7 @@ class APP_LIST_EXPORT SearchResultPageView
   views::View* GetLastFocusableView() override;
 
   // Overridden from SearchResultContainerView::Delegate :
+  void OnSearchResultContainerResultsChanging() override;
   void OnSearchResultContainerResultsChanged() override;
   void OnSearchResultContainerResultFocused(
       SearchResultBaseView* focused_result_view) override;

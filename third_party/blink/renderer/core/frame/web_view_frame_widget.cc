@@ -190,10 +190,6 @@ void WebViewFrameWidget::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   web_view_->SetRootLayer(layer);
 }
 
-WebLayerTreeView* WebViewFrameWidget::GetLayerTreeView() const {
-  return web_view_->LayerTreeView();
-}
-
 cc::AnimationHost* WebViewFrameWidget::AnimationHost() const {
   return web_view_->AnimationHost();
 }

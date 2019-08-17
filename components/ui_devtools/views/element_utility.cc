@@ -5,6 +5,8 @@
 #include "components/ui_devtools/views/element_utility.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "extensions/common/image_util.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer_owner.h"
 
 namespace ui_devtools {
@@ -48,6 +50,16 @@ void AppendLayerPropertiesMatchedStyle(
                         cc::RenderSurfaceReasonToString(render_surface));
     }
   }
+}
+
+bool ParseColorFromFrontend(const std::string& input, std::string* output) {
+  std::string value;
+  base::TrimWhitespaceASCII(input, base::TRIM_ALL, &value);
+  SkColor color;
+  if (!extensions::image_util::ParseCssColorString(value, &color))
+    return false;
+  *output = base::NumberToString(color);
+  return true;
 }
 
 }  // namespace ui_devtools

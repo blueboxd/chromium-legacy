@@ -874,22 +874,21 @@ suite('EditPrinterDialog', function() {
       printerQueue: 'moreinfohere',
       printerStatus: '',
     };
-    setPpdManufacturerAndPpdModel('manufacture', 'model');
-
-    // Initializing activePrinter will set |needsReconfigured_| to true. Reset
-    // it so that any changes afterwards mimic user input.
-    dialog.needsReconfigured_ = false;
 
     const expectedName = 'editedName';
-    const nameField = dialog.$$('.printer-name-input');
-    assertTrue(!!nameField);
-    nameField.value = expectedName;
+    return cupsPrintersBrowserProxy
+        .whenCalled('getPrinterPpdManufacturerAndModel')
+        .then(function() {
+          setPpdManufacturerAndPpdModel('manufacturer', 'model');
 
-    Polymer.dom.flush();
+          const nameField = dialog.$$('.printer-name-input');
+          assertTrue(!!nameField);
+          nameField.value = expectedName;
 
-    clickSaveButton(dialog);
-
-    return cupsPrintersBrowserProxy.whenCalled('updateCupsPrinter')
+          Polymer.dom.flush();
+          clickSaveButton(dialog);
+          return cupsPrintersBrowserProxy.whenCalled('updateCupsPrinter');
+        })
         .then(function() {
           assertEquals(expectedName, dialog.activePrinter.printerName);
         });
@@ -899,7 +898,7 @@ suite('EditPrinterDialog', function() {
     dialog.pendingPrinter_ = {
       ppdManufacturer: '',
       ppdModel: '',
-      printerAddress: '03f0/e414?serial=CD4234',
+      printerAddress: 'address',
       printerDescription: '',
       printerId: 'id_123',
       printerManufacturer: '',
@@ -916,33 +915,73 @@ suite('EditPrinterDialog', function() {
       printerQueue: 'moreinfohere',
       printerStatus: '',
     };
-    setPpdManufacturerAndPpdModel('manufacture', 'model');
 
-    // Initializing activePrinter will set |needsReconfigured_| to true. Reset
-    // it so that any changes afterwards mimic user input.
-    dialog.needsReconfigured_ = false;
-
-    // Editing more than just the printer name requires reconfiguring the
-    // printer.
     const expectedAddress = '9.9.9.9';
-    const addressField = dialog.$$('#printerAddress');
-    assertTrue(!!addressField);
-    addressField.value = expectedAddress;
-    assertTrue(dialog.needsReconfigured_);
-
-    // Reset |needsReconfigured_| to false to test changes to printerQueue will
-    // set it back to true.
-    dialog.needsReconfigured_ = false;
-
     const expectedQueue = 'editedQueue';
-    const queueField = dialog.$$('#printerQueue');
-    assertTrue(!!queueField);
-    queueField.value = expectedQueue;
-    assertTrue(dialog.needsReconfigured_);
+    return cupsPrintersBrowserProxy
+        .whenCalled('getPrinterPpdManufacturerAndModel')
+        .then(function() {
+          setPpdManufacturerAndPpdModel('manufacturer', 'model');
 
-    clickSaveButton(dialog);
+          // Editing more than just the printer name requires reconfiguring the
+          // printer.
+          const addressField = dialog.$$('#printerAddress');
+          assertTrue(!!addressField);
+          addressField.value = expectedAddress;
 
-    return cupsPrintersBrowserProxy.whenCalled('reconfigureCupsPrinter')
+          const queueField = dialog.$$('#printerQueue');
+          assertTrue(!!queueField);
+          queueField.value = expectedQueue;
+
+          clickSaveButton(dialog);
+          return cupsPrintersBrowserProxy.whenCalled('reconfigureCupsPrinter');
+        })
+        .then(function() {
+          assertEquals(expectedAddress, dialog.activePrinter.printerAddress);
+          assertEquals(expectedQueue, dialog.activePrinter.printerQueue);
+        });
+  });
+
+  test('TestEditAutoConfFieldsAndSave', function() {
+    dialog.pendingPrinter_ = {
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: '03f0/e414?serial=CD4234',
+      printerDescription: '',
+      printerId: 'id_123',
+      printerManufacturer: '',
+      printerModel: '',
+      printerMakeAndModel: '',
+      printerName: 'Test Printer',
+      printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: true,
+      },
+      printerProtocol: 'ipp',
+      printerQueue: 'moreinfohere',
+      printerStatus: '',
+    };
+
+    const expectedAddress = '9.9.9.9';
+    const expectedQueue = 'editedQueue';
+    return cupsPrintersBrowserProxy
+        .whenCalled('getPrinterPpdManufacturerAndModel')
+        .then(function() {
+          // Editing more than just the printer name requires reconfiguring the
+          // printer.
+          const addressField = dialog.$$('#printerAddress');
+          assertTrue(!!addressField);
+          addressField.value = expectedAddress;
+
+          const queueField = dialog.$$('#printerQueue');
+          assertTrue(!!queueField);
+          queueField.value = expectedQueue;
+
+          clickSaveButton(dialog);
+          return cupsPrintersBrowserProxy.whenCalled('reconfigureCupsPrinter');
+        })
         .then(function() {
           assertEquals(expectedAddress, dialog.activePrinter.printerAddress);
           assertEquals(expectedQueue, dialog.activePrinter.printerQueue);
@@ -1210,30 +1249,32 @@ suite('EditPrinterDialog', function() {
       printerQueue: 'moreinfohere',
       printerStatus: '',
     };
-    setPpdManufacturerAndPpdModel('manufacture', 'model');
-
-    // Initializing activePrinter will set |needsReconfigured_| to true. Reset
-    // it so that any changes afterwards mimic user input.
-    dialog.needsReconfigured_ = false;
-
-    // Simulate offline.
-    dialog.isOnline_ = false;
 
     const expectedName = 'editedName';
-    const nameField = dialog.$$('.printer-name-input');
-    assertTrue(!!nameField);
-    nameField.value = expectedName;
-    nameField.fire('input');
+    return cupsPrintersBrowserProxy
+        .whenCalled('getPrinterPpdManufacturerAndModel')
+        .then(function() {
+          setPpdManufacturerAndPpdModel('manufacture', 'model');
 
-    Polymer.dom.flush();
+          // Simulate offline.
+          // TODO(jimmyxgong): Use NetworkConfigFake instead of directly
+          // changing this private variable.
+          dialog.isOnline_ = false;
 
-    const saveButton = dialog.$$('.action-button');
-    assertTrue(!!saveButton);
-    assertFalse(saveButton.disabled);
+          const nameField = dialog.$$('.printer-name-input');
+          assertTrue(!!nameField);
+          nameField.value = expectedName;
+          nameField.fire('input');
 
-    clickSaveButton(dialog);
+          Polymer.dom.flush();
 
-    return cupsPrintersBrowserProxy.whenCalled('updateCupsPrinter')
+          const saveButton = dialog.$$('.action-button');
+          assertTrue(!!saveButton);
+          assertFalse(saveButton.disabled);
+
+          clickSaveButton(dialog);
+          return cupsPrintersBrowserProxy.whenCalled('updateCupsPrinter');
+        })
         .then(function() {
           assertEquals(expectedName, dialog.activePrinter.printerName);
         });

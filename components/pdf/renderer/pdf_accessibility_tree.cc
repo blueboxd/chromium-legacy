@@ -65,6 +65,18 @@ PdfAccessibilityTree::~PdfAccessibilityTree() {
     render_accessibility->SetPluginTreeSource(nullptr);
 }
 
+// static
+bool PdfAccessibilityTree::IsDataFromPluginValid(
+    const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+    const std::vector<PP_PrivateAccessibilityCharInfo>& chars) {
+  base::CheckedNumeric<uint32_t> char_length = 0;
+  for (const PP_PrivateAccessibilityTextRunInfo& text_run : text_runs)
+    char_length += text_run.len;
+  if (!char_length.IsValid() || char_length.ValueOrDie() != chars.size())
+    return false;
+  return true;
+}
+
 void PdfAccessibilityTree::SetAccessibilityViewportInfo(
     const PP_PrivateAccessibilityViewportInfo& viewport_info) {
   zoom_ = viewport_info.zoom;
@@ -112,6 +124,13 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars) {
   content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
   if (!render_accessibility)
+    return;
+
+  // If unsanitized data is found, don't trust the PPAPI process sending it and
+  // stop creation of the accessibility tree.
+  if (!invalid_plugin_message_received_)
+    invalid_plugin_message_received_ = !IsDataFromPluginValid(text_runs, chars);
+  if (invalid_plugin_message_received_)
     return;
 
   uint32_t page_index = page_info.page_index;

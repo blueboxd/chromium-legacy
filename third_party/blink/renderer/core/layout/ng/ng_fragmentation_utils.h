@@ -32,14 +32,6 @@ EBreakBetween JoinFragmentainerBreakValues(EBreakBetween first_value,
 // current fragmentation context.
 bool IsForcedBreakValue(const NGConstraintSpace&, EBreakBetween);
 
-// Return true if we are to ignore the block-start margin of the child. At the
-// start of fragmentainers, in-flow block-start margins are ignored, unless
-// we're right after a forced break.
-// https://drafts.csswg.org/css-break/#break-margins
-bool ShouldIgnoreBlockStartMargin(const NGConstraintSpace&,
-                                  NGLayoutInputNode,
-                                  const NGBreakToken*);
-
 // Return true if we're resuming layout after a previous break.
 inline bool IsResumingLayout(const NGBlockBreakToken* token) {
   return token && !token->IsBreakBefore();

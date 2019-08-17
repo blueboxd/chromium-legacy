@@ -66,7 +66,7 @@ content::WebUIDataSource* CreateSystemInfoUIDataSource() {
   html_source->AddResourcePath("about_sys.js", IDR_ABOUT_SYS_JS);
   html_source->AddResourcePath("about_sys.css", IDR_ABOUT_SYS_CSS);
   html_source->SetDefaultResource(IDR_ABOUT_SYS_HTML);
-  html_source->SetJsonPath("strings.js");
+  html_source->UseStringsJs();
   return html_source;
 }
 

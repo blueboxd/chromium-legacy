@@ -3334,6 +3334,8 @@
           '${gpu_vendor_id}',
           '--expected-device-id',
           '${gpu_device_id}',
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--force_high_performance_gpu',
         ],
       },
       'trace_test': {}
@@ -3587,6 +3589,8 @@
           '${gpu_vendor_id}',
           '--expected-device-id',
           '${gpu_device_id}',
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--force_high_performance_gpu',
         ],
       },
     },

@@ -136,7 +136,7 @@ void ExpectProfileWithName(const std::string& profile_name,
 }  // namespace
 
 class ProfileManagerTest : public testing::Test {
- protected:
+ public:
   class MockObserver {
    public:
     MOCK_METHOD2(OnProfileCreated,
@@ -147,15 +147,16 @@ class ProfileManagerTest : public testing::Test {
       : local_state_(TestingBrowserProcess::GetGlobal()) {
   }
 
+  ~ProfileManagerTest() override = default;
+
   void SetUp() override {
     // Create a new temporary directory, and store the path
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingBrowserProcess::GetGlobal()->SetProfileManager(
-        new UnittestProfileManager(temp_dir_.GetPath()));
+        CreateProfileManagerForTest());
 
 #if defined(OS_CHROMEOS)
-    base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-    cl->AppendSwitch(switches::kTestType);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kTestType);
     wallpaper_controller_client_ =
         std::make_unique<WallpaperControllerClient>();
     wallpaper_controller_client_->InitForTesting(&test_wallpaper_controller_);
@@ -176,6 +177,11 @@ class ProfileManagerTest : public testing::Test {
     session_type_.reset();
     wallpaper_controller_client_.reset();
 #endif
+  }
+
+ protected:
+  virtual ProfileManager* CreateProfileManagerForTest() {
+    return new UnittestProfileManager(temp_dir_.GetPath());
   }
 
   // Helper function to create a profile with |name| for a profile |manager|.
@@ -251,6 +257,7 @@ class ProfileManagerTest : public testing::Test {
   TestWallpaperController test_wallpaper_controller_;
 #endif
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ProfileManagerTest);
 };
 
@@ -310,10 +317,6 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
   user_manager->LoginUser(test_account_id);
   user_manager->SwitchActiveUser(test_account_id);
 
-  profile_manager->Observe(
-      chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-      content::NotificationService::AllSources(),
-      content::Details<const user_manager::User>(active_user));
   base::FilePath expected_logged_in(
       chromeos::ProfileHelper::GetUserProfileDir(active_user->username_hash()));
   EXPECT_EQ(expected_logged_in.value(),
@@ -588,44 +591,38 @@ class UnittestGuestProfileManager : public UnittestProfileManager {
 };
 
 class ProfileManagerGuestTest : public ProfileManagerTest  {
- protected:
-  void SetUp() override {
-    // Create a new temporary directory, and store the path
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    TestingBrowserProcess::GetGlobal()->SetProfileManager(
-        new UnittestGuestProfileManager(temp_dir_.GetPath()));
+ public:
+  ProfileManagerGuestTest() = default;
+  ~ProfileManagerGuestTest() override = default;
 
+  void SetUp() override {
 #if defined(OS_CHROMEOS)
     base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-    // This switch is needed to skip non-test specific behavior in
-    // ProfileManager (accessing DBusThreadManager).
-    cl->AppendSwitch(switches::kTestType);
-
     cl->AppendSwitch(chromeos::switches::kGuestSession);
     cl->AppendSwitch(::switches::kIncognito);
+#endif
 
-    wallpaper_controller_client_ =
-        std::make_unique<WallpaperControllerClient>();
-    wallpaper_controller_client_->InitForTesting(&test_wallpaper_controller_);
+    ProfileManagerTest::SetUp();
 
-    // Have to manually reset the session type in between test runs because
-    // RegisterUser() changes it.
-    ASSERT_EQ(extensions::FeatureSessionType::INITIAL,
-              extensions::GetCurrentFeatureSessionType());
-    session_type_ = extensions::ScopedCurrentFeatureSessionType(
-        extensions::GetCurrentFeatureSessionType());
-
+#if defined(OS_CHROMEOS)
     RegisterUser(GetFakeUserManager()->GetGuestAccountId());
 #endif
   }
 
- private:
+ protected:
+  ProfileManager* CreateProfileManagerForTest() override {
+    return new UnittestGuestProfileManager(temp_dir_.GetPath());
+  }
+
 #if defined(OS_CHROMEOS)
   chromeos::FakeChromeUserManager* GetFakeUserManager() const {
     return static_cast<chromeos::FakeChromeUserManager*>(
         user_manager::UserManager::Get());
   }
 #endif
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ProfileManagerGuestTest);
 };
 
 TEST_F(ProfileManagerGuestTest, GetLastUsedProfileAllowedByPolicy) {

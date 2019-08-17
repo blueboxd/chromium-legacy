@@ -24,8 +24,11 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/download/download_request_limiter.h"
+#include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/webrtc/permission_bubble_media_access_handler.h"
+#include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -35,6 +38,7 @@
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
+#include "chrome/browser/ui/external_protocol_dialog_delegate.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_renderer.mojom.h"
@@ -53,6 +57,8 @@
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/url_formatter/elide_url.h"
+#include "components/vector_icons/vector_icons.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -65,6 +71,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "ui/resources/grit/ui_resources.h"
 
 using base::UserMetricsAction;
@@ -75,6 +82,15 @@ using content_settings::SETTING_SOURCE_USER;
 using content_settings::SETTING_SOURCE_NONE;
 
 namespace {
+
+#if defined(OS_MACOSX)
+static constexpr char kCameraSettingsURI[] =
+    "x-apple.systempreferences:com.apple.preference.security?Privacy_"
+    "Camera";
+static constexpr char kMicSettingsURI[] =
+    "x-apple.systempreferences:com.apple.preference.security?Privacy_"
+    "Microphone";
+#endif  // defined(OS_MACOSX)
 
 // Returns a boolean indicating whether the setting should be managed by the
 // user (i.e. it is not controlled by policy). Also takes a (nullable) out-param
@@ -118,8 +134,9 @@ ContentSettingBubbleModel::ListItem CreateUrlListItem(int32_t id,
   // Format the title to include the unicode single dot bullet code-point
   // \u2022 and two spaces.
   title = l10n_util::GetStringFUTF16(IDS_LIST_BULLET, title);
-  return ContentSettingBubbleModel::ListItem(gfx::Image(), title,
-                                             true /* has_link */, id);
+  return ContentSettingBubbleModel::ListItem(nullptr, title, base::string16(),
+                                             true /* has_link */,
+                                             false /* has_blocked_badge */, id);
 }
 
 struct ContentSettingsTypeIdEntry {
@@ -146,6 +163,22 @@ void SetAllowRunningInsecureContent(content::RenderFrameHost* frame) {
 }  // namespace
 
 // ContentSettingSimpleBubbleModel ---------------------------------------------
+ContentSettingBubbleModel::ListItem::ListItem(const gfx::VectorIcon* image,
+                                              const base::string16& title,
+                                              const base::string16& description,
+                                              bool has_link,
+                                              bool has_blocked_badge,
+                                              int32_t item_id)
+    : image(image),
+      title(title),
+      description(description),
+      has_link(has_link),
+      has_blocked_badge(has_blocked_badge),
+      item_id(item_id) {}
+
+ContentSettingBubbleModel::ListItem::ListItem(const ListItem& other) = default;
+ContentSettingBubbleModel::ListItem& ContentSettingBubbleModel::ListItem::
+operator=(const ListItem& other) = default;
 
 ContentSettingSimpleBubbleModel::ContentSettingSimpleBubbleModel(
     Delegate* delegate,
@@ -1005,6 +1038,15 @@ ContentSettingMediaStreamBubbleModel::ContentSettingMediaStreamBubbleModel(
   state_ = content_settings->GetMicrophoneCameraState();
   DCHECK(CameraAccessed() || MicrophoneAccessed());
 
+  // If the permission is turned off in MacOS system preferences, overwrite
+  // the bubble to enable the user to trigger the system dialog.
+  if (ShouldShowSystemMediaPermissions()) {
+#if defined(OS_MACOSX)
+    InitializeSystemMediaPermissionBubble();
+    return;
+#endif  // defined(OS_MACOSX)
+  }
+
   SetTitle();
   SetMessage();
   SetRadioGroup();
@@ -1022,9 +1064,13 @@ void ContentSettingMediaStreamBubbleModel::CommitChanges() {
       UpdateDefaultDeviceForType(media_menu.first, menu.selected_device.id);
   }
 
-  // Update the media settings if the radio button selection was changed.
-  if (selected_item() != bubble_content().radio_group.default_item)
-    UpdateSettings(radio_item_setting_[selected_item()]);
+  // No need for radio group in the bubble UI shown when permission is blocked
+  // on a system level.
+  if (!ShouldShowSystemMediaPermissions()) {
+    // Update the media settings if the radio button selection was changed.
+    if (selected_item() != bubble_content().radio_group.default_item)
+      UpdateSettings(radio_item_setting_[selected_item()]);
+  }
 }
 
 ContentSettingMediaStreamBubbleModel*
@@ -1033,8 +1079,25 @@ ContentSettingMediaStreamBubbleModel::AsMediaStreamBubbleModel() {
 }
 
 void ContentSettingMediaStreamBubbleModel::OnManageButtonClicked() {
+  DCHECK(CameraAccessed() || MicrophoneAccessed());
   if (!delegate())
     return;
+
+  if (ShouldDoneButtonBehaveAsManageButton()) {
+#if defined(OS_MACOSX)
+    base::RecordAction(UserMetricsAction("Media.OpenPreferencesClicked"));
+    DCHECK(ShouldShowSystemMediaPermissions());
+
+    if (CameraAccessed()) {
+      ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
+          GURL(kCameraSettingsURI), web_contents());
+    } else if (MicrophoneAccessed()) {
+      ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
+          GURL(kMicSettingsURI), web_contents());
+    }
+    return;
+#endif  // defined(OS_MACOSX)
+  }
 
   if (MicrophoneAccessed() && CameraAccessed()) {
     delegate()->ShowMediaSettingsPage();
@@ -1043,6 +1106,11 @@ void ContentSettingMediaStreamBubbleModel::OnManageButtonClicked() {
         CameraAccessed() ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA
                          : CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
   }
+}
+
+bool ContentSettingMediaStreamBubbleModel::
+    ShouldDoneButtonBehaveAsManageButton() {
+  return ShouldShowSystemMediaPermissions();
 }
 
 bool ContentSettingMediaStreamBubbleModel::MicrophoneAccessed() const {
@@ -1194,6 +1262,63 @@ void ContentSettingMediaStreamBubbleModel::UpdateSettings(
         tab_content_settings->media_stream_access_origin(), GURL(),
         CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), setting);
   }
+}
+
+#if defined(OS_MACOSX)
+void ContentSettingMediaStreamBubbleModel::
+    InitializeSystemMediaPermissionBubble() {
+  DCHECK(CameraAccessed() || MicrophoneAccessed());
+  base::RecordAction(
+      base::UserMetricsAction("Media.ShowSystemMediaPermissionBubble"));
+  int title_id = 0;
+  if (MicrophoneAccessed() && CameraAccessed() &&
+      system_media_permissions::CheckSystemVideoCapturePermission() ==
+          system_media_permissions::SystemPermission::kDenied &&
+      system_media_permissions::CheckSystemAudioCapturePermission() ==
+          system_media_permissions::SystemPermission::kDenied) {
+    title_id = IDS_CAMERA_MIC_TURNED_OFF_IN_MACOS;
+    AddListItem(ContentSettingBubbleModel::ListItem(
+        &vector_icons::kVideocamIcon, l10n_util::GetStringUTF16(IDS_CAMERA),
+        l10n_util::GetStringUTF16(IDS_TURNED_OFF), false, true, 0));
+    AddListItem(ContentSettingBubbleModel::ListItem(
+        &vector_icons::kMicIcon, l10n_util::GetStringUTF16(IDS_MIC),
+        l10n_util::GetStringUTF16(IDS_TURNED_OFF), false, true, 1));
+  } else if (CameraAccessed() &&
+             system_media_permissions::CheckSystemVideoCapturePermission() ==
+                 system_media_permissions::SystemPermission::kDenied) {
+    title_id = IDS_CAMERA_TURNED_OFF_IN_MACOS;
+    AddListItem(ContentSettingBubbleModel::ListItem(
+        &vector_icons::kVideocamIcon, l10n_util::GetStringUTF16(IDS_CAMERA),
+        l10n_util::GetStringUTF16(IDS_TURNED_OFF), false, true, 0));
+  } else if (MicrophoneAccessed() &&
+             system_media_permissions::CheckSystemAudioCapturePermission() ==
+                 system_media_permissions::SystemPermission::kDenied) {
+    title_id = IDS_MIC_TURNED_OFF_IN_MACOS;
+    AddListItem(ContentSettingBubbleModel::ListItem(
+        &vector_icons::kMicIcon, l10n_util::GetStringUTF16(IDS_MIC),
+        l10n_util::GetStringUTF16(IDS_TURNED_OFF), false, true, 1));
+  }
+
+  set_title(l10n_util::GetStringUTF16(title_id));
+  set_manage_text_style(ContentSettingBubbleModel::ManageTextStyle::kNone);
+  SetCustomLink();
+  set_done_button_text(l10n_util::GetStringUTF16(IDS_OPEN_PREFERENCES_LINK));
+}
+#endif  // defined(OS_MACOSX)
+
+bool ContentSettingMediaStreamBubbleModel::ShouldShowSystemMediaPermissions() {
+#if defined(OS_MACOSX)
+  return (((system_media_permissions::CheckSystemVideoCapturePermission() ==
+                system_media_permissions::SystemPermission::kDenied &&
+            CameraAccessed() && !CameraBlocked()) ||
+           (system_media_permissions::CheckSystemAudioCapturePermission() ==
+                system_media_permissions::SystemPermission::kDenied &&
+            MicrophoneAccessed() && !MicrophoneBlocked())) &&
+          base::FeatureList::IsEnabled(
+              ::features::kMacSystemMediaPermissionsInfoUi));
+#else
+  return false;
+#endif  // defined(OS_MACOSX)
 }
 
 void ContentSettingMediaStreamBubbleModel::UpdateDefaultDeviceForType(
@@ -1597,6 +1722,10 @@ ContentSettingSimpleBubbleModel*
     ContentSettingBubbleModel::AsSimpleBubbleModel() {
   // In general, bubble models might not inherit from the simple bubble model.
   return nullptr;
+}
+
+bool ContentSettingBubbleModel::ShouldDoneButtonBehaveAsManageButton() {
+  return false;
 }
 
 ContentSettingMediaStreamBubbleModel*

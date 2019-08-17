@@ -89,7 +89,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // Add a break token for a child that doesn't yet have any fragments, because
   // its first fragment is to be produced in the next fragmentainer. This will
   // add a break token for the child, but no fragment.
-  void AddBreakBeforeChild(NGLayoutInputNode child);
+  void AddBreakBeforeChild(NGLayoutInputNode child, bool is_forced_break);
 
   // Prepare for a break token before the specified line.
   void AddBreakBeforeLine(int line_number);

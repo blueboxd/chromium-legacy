@@ -57,6 +57,7 @@ class ClientBase {
     bool allocate_buffers_with_output_mode = false;
     bool use_fullscreen_shell = false;
     bool use_touch = false;
+    bool use_vulkan = false;
   };
 
   struct Globals {

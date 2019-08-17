@@ -356,11 +356,11 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
 
   // Validate the ONC dictionary. We are liberal and ignore unknown field
   // names. User settings are only partial ONC, thus we ignore missing fields.
-  onc::Validator validator(false,   // Ignore unknown fields.
-                           false,   // Ignore invalid recommended field names.
-                           false,   // Ignore missing fields.
-                           false,   // This ONC does not come from policy.
-                           false);  // Don't log warnings.
+  onc::Validator validator(false,  // Ignore unknown fields.
+                           false,  // Ignore invalid recommended field names.
+                           false,  // Ignore missing fields.
+                           false,  // This ONC does not come from policy.
+                           true);  // Log warnings.
 
   onc::Validator::Result validation_result;
   std::unique_ptr<base::DictionaryValue> validated_user_settings =
@@ -372,7 +372,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
     return;
   }
   if (validation_result == onc::Validator::VALID_WITH_WARNINGS)
-    NET_LOG(ERROR) << "Validation of ONC user settings produced warnings.";
+    NET_LOG(USER) << "Validation of ONC user settings produced warnings.";
 
   // Don't allow AutoConnect=true for unmanaged wifi networks if
   // 'AllowOnlyPolicyNetworksToAutoconnect' policy is active.

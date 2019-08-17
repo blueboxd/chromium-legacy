@@ -256,7 +256,7 @@ AccessibilityUI::AccessibilityUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUIAccessibilityHost);
 
   // Add required resources.
-  html_source->SetJsonPath("strings.js");
+  html_source->UseStringsJs();
   html_source->AddResourcePath("accessibility.css", IDR_ACCESSIBILITY_CSS);
   html_source->AddResourcePath("accessibility.js", IDR_ACCESSIBILITY_JS);
   html_source->SetDefaultResource(IDR_ACCESSIBILITY_HTML);

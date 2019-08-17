@@ -134,8 +134,7 @@ class PageLoadMetricsObserverTestHarness
 
   MetricsWebContentsObserver* observer() const;
 
-  // Gets the PageLoadExtraInfo for the committed_load_ in observer_.
-  const PageLoadExtraInfo GetPageLoadExtraInfoForCommittedLoad();
+  const PageLoadMetricsObserverDelegate& GetDelegateForCommittedLoad() const;
 
   const ukm::TestAutoSetUkmRecorder& test_ukm_recorder() const {
     return test_ukm_recorder_;

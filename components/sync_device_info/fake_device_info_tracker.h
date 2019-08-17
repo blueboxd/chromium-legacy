@@ -41,13 +41,9 @@ class FakeDeviceInfoTracker : public DeviceInfoTracker {
   // actual number of devices in |devices_|.
   void OverrideActiveDeviceCount(int count);
 
-  // Marks an existing DeviceInfo entry as being on the local device.
-  void SetLocalCacheGuid(const std::string& cache_guid);
-
  private:
   // DeviceInfo stored here are not owned.
   std::vector<const DeviceInfo*> devices_;
-  std::string local_device_cache_guid_;
   base::Optional<int> active_device_count_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDeviceInfoTracker);

@@ -100,7 +100,8 @@ bool BuildCustomValues(const Document& document,
     // In order to animate properties, we need to track the compositor element
     // id on which they will be animated.
     const bool animatable_property =
-        value->GetType() == CrossThreadStyleValue::StyleValueType::kUnitType;
+        value->GetType() == CrossThreadStyleValue::StyleValueType::kUnitType ||
+        value->GetType() == CrossThreadStyleValue::StyleValueType::kColorType;
     if (animatable_property) {
       CompositorElementId element_id = CompositorElementIdFromUniqueObjectId(
           unique_object_id,

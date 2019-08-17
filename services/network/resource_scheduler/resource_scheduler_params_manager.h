@@ -102,6 +102,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceSchedulerParamsManager {
   bool CanThrottleNetworkTrafficAnnotationHash(
       const int32_t unique_id_hash_code) const;
 
+  // Returns the duration for which heavy browser initiated traffic should be
+  // paused after all P2P connections have finished.
+  base::TimeDelta
+  TimeToPauseHeavyBrowserInitiatedRequestsAfterEndOfP2PConnections();
+
  private:
   // The number of delayable requests in-flight for different ranges of the
   // network quality.

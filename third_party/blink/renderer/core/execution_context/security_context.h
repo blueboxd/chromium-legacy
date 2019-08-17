@@ -154,12 +154,14 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   bool IsFeatureEnabled(
       mojom::FeaturePolicyFeature,
       ReportOptions report_on_failure = ReportOptions::kDoNotReport,
-      const String& message = g_empty_string) const;
+      const String& message = g_empty_string,
+      const String& source_file = g_empty_string) const;
   bool IsFeatureEnabled(
       mojom::FeaturePolicyFeature,
       PolicyValue threshold_value,
       ReportOptions report_on_failure = ReportOptions::kDoNotReport,
-      const String& message = g_empty_string) const;
+      const String& message = g_empty_string,
+      const String& source_file = g_empty_string) const;
   FeatureEnabledState GetFeatureEnabledState(mojom::FeaturePolicyFeature) const;
   FeatureEnabledState GetFeatureEnabledState(mojom::FeaturePolicyFeature,
                                              PolicyValue threshold_value) const;
@@ -168,7 +170,8 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   virtual void ReportFeaturePolicyViolation(
       mojom::FeaturePolicyFeature,
       mojom::FeaturePolicyDisposition,
-      const String& message = g_empty_string) const {}
+      const String& message = g_empty_string,
+      const String& source_file = g_empty_string) const {}
 
  protected:
   SecurityContext();

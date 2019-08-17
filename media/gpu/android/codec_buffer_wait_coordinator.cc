@@ -27,7 +27,7 @@ struct FrameAvailableEvent
 };
 
 CodecBufferWaitCoordinator::CodecBufferWaitCoordinator(
-    scoped_refptr<TextureOwner> texture_owner)
+    scoped_refptr<gpu::TextureOwner> texture_owner)
     : texture_owner_(std::move(texture_owner)),
       frame_available_event_(new FrameAvailableEvent()),
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {

@@ -621,8 +621,7 @@ void ScrollingCoordinator::UpdateClipParentForGraphicsLayer(
   child->SetClipParent(clip_parent_cc_layer);
 }
 
-void ScrollingCoordinator::LayerTreeViewInitialized(
-    WebLayerTreeView& layer_tree_view,
+void ScrollingCoordinator::AnimationHostInitialized(
     cc::AnimationHost& animation_host,
     LocalFrameView* view) {
   if (!Platform::Current()->IsThreadedAnimationEnabled())
@@ -642,9 +641,7 @@ void ScrollingCoordinator::LayerTreeViewInitialized(
   }
 }
 
-void ScrollingCoordinator::WillCloseLayerTreeView(
-    WebLayerTreeView& layer_tree_view,
-    LocalFrameView* view) {
+void ScrollingCoordinator::WillCloseAnimationHost(LocalFrameView* view) {
   if (view && view->GetFrame().LocalFrameRoot() != page_->MainFrame()) {
     if (view->GetCompositorAnimationTimeline()) {
           view->GetCompositorAnimationHost()->RemoveAnimationTimeline(

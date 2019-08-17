@@ -5,6 +5,8 @@
 source_set("perf") {
   testonly = true
   sources = [
+    "perf_result_reporter.cc",
+    "perf_result_reporter.h",
     "perf_test.cc",
     "perf_test.h",
   ]

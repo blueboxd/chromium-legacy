@@ -235,9 +235,9 @@ PaintImage CreateNonDiscardablePaintImage(const gfx::Size& size) {
   bitmap.eraseColor(SK_AlphaTRANSPARENT);
   return PaintImageBuilder::WithDefault()
       .set_id(PaintImage::GetNextId())
-      .set_image(SkImage::MakeFromBitmap(bitmap)->makeTextureImage(
-                     context.get(), nullptr),
-                 PaintImage::GetNextContentId())
+      .set_image(
+          SkImage::MakeFromBitmap(bitmap)->makeTextureImage(context.get()),
+          PaintImage::GetNextContentId())
       .TakePaintImage();
 }
 

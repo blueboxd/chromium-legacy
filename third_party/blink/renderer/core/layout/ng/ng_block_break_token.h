@@ -46,9 +46,11 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   // in the next fragmentainer. In this case we create a break token for a node
   // that hasn't yet produced any fragments.
   static scoped_refptr<NGBlockBreakToken> CreateBreakBefore(
-      NGLayoutInputNode node) {
+      NGLayoutInputNode node,
+      bool is_forced_break) {
     auto* token = new NGBlockBreakToken(node);
     token->is_break_before_ = true;
+    token->is_forced_break_ = is_forced_break;
     return base::AdoptRef(token);
   }
 
@@ -71,6 +73,8 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   // fragment for a node needs to be created in a later fragmentainer than the
   // one it was it was first encountered, due to block space shortage.
   bool IsBreakBefore() const { return is_break_before_; }
+
+  bool IsForcedBreak() const { return is_forced_break_; }
 
   bool HasLastResortBreak() const { return has_last_resort_break_; }
 

@@ -31,6 +31,7 @@ import android.widget.ImageView;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
@@ -378,14 +379,14 @@ class TabListRecyclerView extends RecyclerView {
                 mFadeOutAnimator = null;
                 setVisibility(View.INVISIBLE);
                 mListener.finishedHiding();
+                if (mRecyclerViewFooter != null) {
+                    mRecyclerViewFooter.setVisibility(INVISIBLE);
+                }
             }
         });
         setShadowVisibility(false);
         mFadeOutAnimator.start();
         if (!animate) mFadeOutAnimator.end();
-        if (mRecyclerViewFooter != null) {
-            mRecyclerViewFooter.setVisibility(INVISIBLE);
-        }
     }
 
     void postHiding() {
@@ -482,6 +483,9 @@ class TabListRecyclerView extends RecyclerView {
         if (mRecyclerViewFooter != null) return;
         mRecyclerViewFooter = footer;
         setScrollBarStyle(SCROLLBARS_OUTSIDE_OVERLAY);
+        final int height = (int) getResources().getDimension(R.dimen.tab_grid_iph_card_height);
+        final int padding = (int) getResources().getDimension(R.dimen.tab_grid_iph_card_margin);
+        setPadding(0, 0, 0, height + padding);
         mRecyclerViewFooter.setVisibility(INVISIBLE);
     }
 

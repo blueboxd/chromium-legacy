@@ -63,6 +63,7 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_ui_data.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/storage_partition.h"
@@ -71,6 +72,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/navigation_policy.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -3108,6 +3110,9 @@ void NavigationRequest::OnCommitTimeout() {
     base::debug::ScopedCrashKeyString(
         url, common_params_->url.possibly_invalid_spec());
     base::debug::DumpWithoutCrashing();
+
+    if (IsOutOfProcessNetworkService())
+      GetNetworkService()->DumpWithoutCrashing(base::Time::Now());
   }
 #endif
 

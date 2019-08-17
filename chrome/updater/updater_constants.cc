@@ -8,12 +8,15 @@ namespace updater {
 
 const char kCrashMeSwitch[] = "crash-me";
 const char kCrashHandlerSwitch[] = "crash-handler";
-const char kInstall[] = "install";
-const char kUninstall[] = "uninstall";
+const char kInstallSwitch[] = "install";
+const char kUninstallSwitch[] = "uninstall";
+const char kUpdateAppsSwitch[] = "ua";
 const char kTestSwitch[] = "test";
 const char kInitDoneNotifierSwitch[] = "init-done-notifier";
-
-const char kNoRateLimit[] = "--no-rate-limit";
+const char kNoRateLimitSwitch[] = "no-rate-limit";
+const char kEnableLoggingSwitch[] = "enable-logging";
+const char kLoggingLevelSwitch[] = "v";
+const char kLoggingModuleSwitch[] = "vmodule";
 
 const char kUpdaterJSONDefaultUrl[] =
     "https://update.googleapis.com/service/update2/json";

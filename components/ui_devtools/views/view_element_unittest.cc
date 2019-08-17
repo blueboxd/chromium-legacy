@@ -73,13 +73,18 @@ class NamedTestView : public views::View {
   int GetBoolProperty() const { return bool_property_; }
   void SetBoolProperty(bool bool_property) { bool_property_ = bool_property; }
 
+  SkColor GetColorProperty() const { return color_property_; }
+  void SetColorProperty(SkColor color) { color_property_ = color; }
+
  private:
   bool bool_property_ = false;
+  SkColor color_property_ = SK_ColorGRAY;
 };
 
 BEGIN_METADATA(NamedTestView)
 METADATA_PARENT_CLASS(views::View)
 ADD_PROPERTY_METADATA(NamedTestView, bool, BoolProperty)
+ADD_PROPERTY_METADATA(NamedTestView, SkColor, ColorProperty)
 END_METADATA()
 
 class ViewElementTest : public views::ViewsTestBase {
@@ -245,6 +250,38 @@ TEST_F(ViewElementTest, GetNodeWindowAndScreenBounds) {
   EXPECT_EQ(window_and_bounds.second, view()->GetBoundsInScreen());
 
   view()->parent()->RemoveChildView(view());
+}
+
+TEST_F(ViewElementTest, ColorProperty) {
+  EXPECT_EQ(GetPropertyIndices(element(), "--ColorProperty").first, 0U);
+  DCHECK_EQ(view()->GetColorProperty(), SK_ColorGRAY);
+
+  EXPECT_TRUE(element()->SetPropertiesFromString(
+      "--ColorProperty: rgba(0,0,  255, 1);"));
+  EXPECT_EQ(view()->GetColorProperty(), SK_ColorBLUE);
+
+  EXPECT_TRUE(element()->SetPropertiesFromString("--ColorProperty: #0352fc"));
+  EXPECT_EQ(view()->GetColorProperty(), SkColorSetARGB(255, 3, 82, 252));
+
+  EXPECT_TRUE(element()->SetPropertiesFromString(
+      "--ColorProperty: hsl(240, 84%, 28%);"));
+  EXPECT_EQ(view()->GetColorProperty(), SkColorSetARGB(255, 11, 11, 131));
+}
+
+TEST_F(ViewElementTest, BadColorProperty) {
+  DCHECK_EQ(view()->GetColorProperty(), SK_ColorGRAY);
+
+  EXPECT_FALSE(
+      element()->SetPropertiesFromString("-ColorProperty: rgba(1,2,3,4);"));
+  EXPECT_EQ(view()->GetColorProperty(), SK_ColorGRAY);
+
+  EXPECT_FALSE(
+      element()->SetPropertiesFromString("--ColorProperty: rgba(1,2,3,4;"));
+  EXPECT_EQ(view()->GetColorProperty(), SK_ColorGRAY);
+
+  EXPECT_FALSE(
+      element()->SetPropertiesFromString("--ColorProperty: rgb(1,2,3,4;)"));
+  EXPECT_EQ(view()->GetColorProperty(), SK_ColorGRAY);
 }
 
 TEST_F(ViewElementTest, GetSources) {

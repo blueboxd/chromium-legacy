@@ -361,7 +361,7 @@ PDFViewer.prototype = {
     const pageUpHandler = () => {
       // Go to the previous page if we are fit-to-page or fit-to-height.
       if (this.viewport_.isPagedMode()) {
-        this.viewport_.goToPage(this.viewport_.getMostVisiblePage() - 1);
+        this.viewport_.goToPreviousPage();
         // Since we do the movement of the page.
         e.preventDefault();
       } else if (fromScriptingAPI) {
@@ -372,7 +372,7 @@ PDFViewer.prototype = {
     const pageDownHandler = () => {
       // Go to the next page if we are fit-to-page or fit-to-height.
       if (this.viewport_.isPagedMode()) {
-        this.viewport_.goToPage(this.viewport_.getMostVisiblePage() + 1);
+        this.viewport_.goToNextPage();
         // Since we do the movement of the page.
         e.preventDefault();
       } else if (fromScriptingAPI) {
@@ -410,7 +410,7 @@ PDFViewer.prototype = {
           // no form field is focused.
           if (!(this.viewport_.documentHasScrollbars().horizontal ||
                 this.isFormFieldFocused_)) {
-            this.viewport_.goToPage(this.viewport_.getMostVisiblePage() - 1);
+            this.viewport_.goToPreviousPage();
             // Since we do the movement of the page.
             e.preventDefault();
           } else if (fromScriptingAPI) {
@@ -431,7 +431,7 @@ PDFViewer.prototype = {
           // form field is focused.
           if (!(this.viewport_.documentHasScrollbars().horizontal ||
                 this.isFormFieldFocused_)) {
-            this.viewport_.goToPage(this.viewport_.getMostVisiblePage() + 1);
+            this.viewport_.goToNextPage();
             // Since we do the movement of the page.
             e.preventDefault();
           } else if (fromScriptingAPI) {

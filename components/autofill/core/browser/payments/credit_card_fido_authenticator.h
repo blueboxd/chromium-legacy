@@ -42,6 +42,20 @@ using device::UserVerificationRequirement;
 class CreditCardFIDOAuthenticator
     : public payments::FullCardRequest::ResultDelegate {
  public:
+  // Useful for splitting metrics to correct sub-histograms and knowing which
+  // Payments RPC's to send.
+  enum Flow {
+    // No flow is in progress.
+    NONE_FLOW,
+    // Authentication flow.
+    AUTHENTICATION_FLOW,
+    // Registration flow, including a challenge to sign.
+    OPT_IN_WITH_CHALLENGE_FLOW,
+    // Opt-in attempt flow, no challenge to sign.
+    OPT_IN_WITHOUT_CHALLENGE_FLOW,
+    // Opt-out flow.
+    OPT_OUT_FLOW,
+  };
   class Requester {
    public:
     virtual ~Requester() {}
@@ -74,6 +88,9 @@ class CreditCardFIDOAuthenticator
 
   // Ensures that local user opt-in pref is in-sync with payments server.
   void SyncUserOptIn(AutofillClient::UnmaskDetails& unmask_details);
+
+  // Returns the current flow.
+  Flow current_flow() { return current_flow_; }
 
  private:
   friend class AutofillManagerTest;
@@ -158,6 +175,9 @@ class CreditCardFIDOAuthenticator
 
   // Card being unmasked.
   const CreditCard* card_;
+
+  // The current flow in progress.
+  Flow current_flow_ = NONE_FLOW;
 
   // Meant for histograms recorded in FullCardRequest.
   base::TimeTicks form_parsed_timestamp_;

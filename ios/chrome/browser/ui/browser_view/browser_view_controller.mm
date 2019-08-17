@@ -526,9 +526,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @property(nonatomic, assign, getter=isDismissingModal) BOOL dismissingModal;
 // Whether web usage is enabled for the WebStates in |self.tabModel|.
 @property(nonatomic, assign, getter=isWebUsageEnabled) BOOL webUsageEnabled;
-// Returns YES if the toolbar has not been scrolled out by fullscreen.
-@property(nonatomic, assign, readonly, getter=isToolbarOnScreen)
-    BOOL toolbarOnScreen;
 // Whether a new tab animation is occurring.
 @property(nonatomic, assign, getter=isInNewTabAnimation) BOOL inNewTabAnimation;
 // Whether BVC prefers to hide the status bar. This value is used to determine
@@ -956,8 +953,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           _browserState);
   ChromeBroadcaster* broadcaster = fullscreenController->broadcaster();
   if (_broadcasting) {
-    fullscreenController->SetWebStateList(self.tabModel.webStateList);
-
     _toolbarUIUpdater = [[LegacyToolbarUIUpdater alloc]
         initWithToolbarUI:[[ToolbarUIState alloc] init]
              toolbarOwner:self
@@ -971,6 +966,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         initWithUpdater:_mainContentUIUpdater
            webStateList:self.tabModel.webStateList];
     StartBroadcastingMainContentUI(self, broadcaster);
+
+    fullscreenController->SetWebStateList(self.tabModel.webStateList);
 
     _fullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(self);
     fullscreenController->AddObserver(_fullscreenUIUpdater.get());
@@ -1004,10 +1001,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   WebStateListWebUsageEnablerFactory::GetInstance()
       ->GetForBrowserState(_browserState)
       ->SetWebUsageEnabled(webUsageEnabled);
-}
-
-- (BOOL)isToolbarOnScreen {
-  return [self nonFullscreenToolbarHeight] - [self currentHeaderOffset] > 0;
 }
 
 - (void)setInNewTabAnimation:(BOOL)inNewTabAnimation {
@@ -3748,22 +3741,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 #pragma mark - ToolbarHeightProviderForFullscreen
 
 - (CGFloat)collapsedTopToolbarHeight {
-  if (IsVisibleURLNewTabPage(self.currentWebState) && ![self canShowTabStrip]) {
-    // When the NTP is displayed in a horizontally compact environment, the top
-    // toolbars are hidden.
-    return 0;
-  }
   return self.view.safeAreaInsets.top +
          ToolbarCollapsedHeight(
              self.traitCollection.preferredContentSizeCategory);
 }
 
 - (CGFloat)expandedTopToolbarHeight {
-  if (IsVisibleURLNewTabPage(self.currentWebState) && ![self canShowTabStrip]) {
-    // When the NTP is displayed in a horizontally compact environment, the top
-    // toolbars are hidden.
-    return 0;
-  }
   return [self primaryToolbarHeightWithInset] +
          ([self canShowTabStrip] ? self.tabStripView.frame.size.height : 0.0) +
          self.headerOffset;
@@ -3771,13 +3754,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (CGFloat)bottomToolbarHeight {
   return [self secondaryToolbarHeightWithInset];
-}
-
-#pragma mark - Toolbar height helpers
-
-- (CGFloat)nonFullscreenToolbarHeight {
-  return MAX(
-      0, [self expandedTopToolbarHeight] - [self collapsedTopToolbarHeight]);
 }
 
 #pragma mark - FullscreenUIElement methods
@@ -3831,12 +3807,22 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 #pragma mark - FullscreenUIElement helpers
 
+// Returns the height difference between the fully expanded and fully collapsed
+// primary toolbar.
+- (CGFloat)primaryToolbarHeightDelta {
+  FullscreenController* controller =
+      FullscreenControllerFactory::GetForBrowserState(self.browserState);
+  CGFloat fullyExpandedHeight = controller->GetMaxViewportInsets().top;
+  CGFloat fullyCollapsedHeight = controller->GetMinViewportInsets().top;
+  return std::max(0.0, fullyExpandedHeight - fullyCollapsedHeight);
+}
+
 // Translates the header views up and down according to |progress|, where a
 // progress of 1.0 fully shows the headers and a progress of 0.0 fully hides
 // them.
 - (void)updateHeadersForFullscreenProgress:(CGFloat)progress {
   CGFloat offset =
-      AlignValueToPixel((1.0 - progress) * [self nonFullscreenToolbarHeight]);
+      AlignValueToPixel((1.0 - progress) * [self primaryToolbarHeightDelta]);
   [self setFramesForHeaders:[self headerViews] atOffset:offset];
 }
 
@@ -3887,7 +3873,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // returns the height of the toolbar extending below this view controller's
   // safe area, so the unsafe top height must be added.
   CGFloat top = AlignValueToPixel(
-      self.headerHeight + (progress - 1.0) * [self nonFullscreenToolbarHeight]);
+      self.headerHeight + (progress - 1.0) * [self primaryToolbarHeightDelta]);
   // If the bottom toolbar is locked into place, use 1.0 instead of |progress|.
   CGFloat bottomProgress =
       base::FeatureList::IsEnabled(fullscreen::features::kLockBottomToolbar)

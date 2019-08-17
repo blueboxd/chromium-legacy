@@ -60,9 +60,11 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
 #include "components/account_id/account_id.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #endif
 
@@ -530,6 +532,9 @@ class ActiveTabManagedSessionTest : public ActiveTabTest {
     // Necessary because no ProfileManager instance exists in this test.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         chromeos::switches::kIgnoreUserProfileMappingForTests);
+    // Necessary to skip cryptohome/profile sanity check in
+    // ChromeUserManagerImpl for fake user login.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kTestType);
 
     // Setup, login a public account user.
     const std::string user_id = "public@account.user";

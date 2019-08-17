@@ -51,6 +51,9 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   ToolbarActionView* GetViewForId(const std::string& id);
 
  private:
+  // A struct representing the position and action being dragged.
+  struct DropInfo;
+
   // Creates toolbar actions and icons corresponding to the model. This is only
   // called in the constructor or when the model initializes and should not be
   // called for subsequent changes to the model.
@@ -65,6 +68,9 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
 
   // Clears the |active_bubble_|, and unregisters the container as an observer.
   void ClearActiveBubble(views::Widget* widget);
+
+  // Utility function for going from width to icon counts.
+  size_t WidthToIconCount(int x_offset);
 
   // ExtensionsContainer:
   ToolbarActionViewController* GetActionForId(
@@ -113,6 +119,15 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
                            const gfx::Point& press_pt,
                            const gfx::Point& p) override;
 
+  // views::View:
+  bool GetDropFormats(int* formats,
+                      std::set<ui::ClipboardFormatType>* format_types) override;
+  bool AreDropTypesRequired() override;
+  bool CanDrop(const ui::OSExchangeData& data) override;
+  int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  void OnDragExited() override;
+  int OnPerformDrop(const ui::DropTargetEvent& event) override;
+
   // views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;
   void OnWidgetDestroying(views::Widget* widget) override;
@@ -138,6 +153,10 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
 
   // The extension bubble that is actively showing, if any.
   ToolbarActionsBarBubbleViews* active_bubble_ = nullptr;
+
+  // The DropInfo for the current drag-and-drop operation, or a null pointer if
+  // there is none.
+  std::unique_ptr<DropInfo> drop_info_;
 
   base::WeakPtrFactory<ExtensionsToolbarContainer> weak_ptr_factory_{this};
 

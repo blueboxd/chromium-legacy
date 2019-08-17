@@ -25,7 +25,8 @@ class VideoFrame;
 // safe. Virtual for testing; see VideoFrameFactoryImpl.
 class MEDIA_GPU_EXPORT VideoFrameFactory {
  public:
-  using InitCb = base::RepeatingCallback<void(scoped_refptr<TextureOwner>)>;
+  using InitCb =
+      base::RepeatingCallback<void(scoped_refptr<gpu::TextureOwner>)>;
   using OnceOutputCb = base::OnceCallback<void(scoped_refptr<VideoFrame>)>;
 
   VideoFrameFactory() = default;

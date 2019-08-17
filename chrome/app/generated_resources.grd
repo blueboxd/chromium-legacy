@@ -2468,10 +2468,10 @@ are declared in tools/grit/grit_rule.gni.
         Show notifications for this site?
       </message>
       <message name="IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_DESCRIPTION" desc="Description for the notifications status bubble, which is triggered when a user clicks on the blocked notifications icon in the omnibox.">
-        Notifications are currently blocked for all sites except for sites you individually allow.
+        Notifications are blocked for all sites except the ones you specify.
       </message>
       <message name="IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_ALLOW_BUTTON" desc="Text displayed on a button that enables notifications for a site. This button is part of the notifications status bubble, which is triggered when a user clicks on the blocked notifications icon in the omnibox.">
-        Show for site
+        Show for this site
       </message>
 
       <!-- Win certificate selector dialog strings.  -->
@@ -5143,8 +5143,71 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_CUSTOMIZE_DEFAULT_LABEL" desc="The label for the Default theme in the customization menu on the New Tab Page">
         Default
       </message>
-      <message name="IDS_NTP_CUSTOMIZE_COLOR_LABEL_PREFIX" desc="The label prefix for the color options in the customization menu on the New Tab Page. It is followed by a hex value in #000000 format">
-        Hex color value
+      <message name="IDS_NTP_COLORS_WARM_GREY" desc="A color option in the customization menu on the New Tab Page.">
+        Warm grey
+      </message>
+      <message name="IDS_NTP_COLORS_COOL_GREY" desc="A color option in the customization menu on the New Tab Page.">
+        Cool grey
+      </message>
+      <message name="IDS_NTP_COLORS_MIDNIGHT_BLUE" desc="A color option in the customization menu on the New Tab Page.">
+        Midnight blue
+      </message>
+      <message name="IDS_NTP_COLORS_BLACK" desc="A color option in the customization menu on the New Tab Page.">
+        Black
+      </message>
+      <message name="IDS_NTP_COLORS_BEIGE_AND_WHITE" desc="A color option in the customization menu on the New Tab Page.">
+        Beige and white
+      </message>
+      <message name="IDS_NTP_COLORS_YELLOW_AND_WHITE" desc="A color option in the customization menu on the New Tab Page.">
+        Yellow and white
+      </message>
+      <message name="IDS_NTP_COLORS_GREEN_AND_WHITE" desc="A color option in the customization menu on the New Tab Page.">
+        Green and white
+      </message>
+      <message name="IDS_NTP_COLORS_LIGHT_TEAL_AND_WHITE" desc="A color option in the customization menu on the New Tab Page.">
+        Light teal and white
+      </message>
+      <message name="IDS_NTP_COLORS_LIGHT_PURPLE_AND_WHITE" desc="A color option in the customization menu on the New Tab Page.">
+        Light purple and white
+      </message>
+      <message name="IDS_NTP_COLORS_PINK_AND_WHITE" desc="A color option in the customization menu on the New Tab Page.">
+        Pink and white
+      </message>
+      <message name="IDS_NTP_COLORS_BEIGE" desc="A color option in the customization menu on the New Tab Page.">
+        Beige
+      </message>
+      <message name="IDS_NTP_COLORS_ORANGE" desc="A color option in the customization menu on the New Tab Page.">
+        Orange
+      </message>
+      <message name="IDS_NTP_COLORS_LIGHT_GREEN" desc="A color option in the customization menu on the New Tab Page.">
+        Light green
+      </message>
+      <message name="IDS_NTP_COLORS_LIGHT_TEAL" desc="A color option in the customization menu on the New Tab Page.">
+        Light teal
+      </message>
+      <message name="IDS_NTP_COLORS_LIGHT_BLUE" desc="A color option in the customization menu on the New Tab Page.">
+        Light blue
+      </message>
+      <message name="IDS_NTP_COLORS_PINK" desc="A color option in the customization menu on the New Tab Page.">
+        Pink
+      </message>
+      <message name="IDS_NTP_COLORS_DARK_PINK_AND_RED" desc="A color option in the customization menu on the New Tab Page.">
+        Dark pink and red
+      </message>
+      <message name="IDS_NTP_COLORS_DARK_RED_AND_ORANGE" desc="A color option in the customization menu on the New Tab Page.">
+        Dark red and orange
+      </message>
+      <message name="IDS_NTP_COLORS_DARK_GREEN" desc="A color option in the customization menu on the New Tab Page.">
+        Dark green
+      </message>
+      <message name="IDS_NTP_COLORS_DARK_TEAL" desc="A color option in the customization menu on the New Tab Page.">
+        Dark teal
+      </message>
+      <message name="IDS_NTP_COLORS_DARK_BLUE" desc="A color option in the customization menu on the New Tab Page.">
+        Dark blue
+      </message>
+      <message name="IDS_NTP_COLORS_DARK_PURPLE" desc="A color option in the customization menu on the New Tab Page.">
+        Dark purple
       </message>
 
       <if expr="is_android">
@@ -5472,9 +5535,16 @@ the Bookmarks menu.">
       </message>
 
       <!-- Password Manager -->
-      <message name="IDS_PASSWORD_MANAGER_CANCEL_BUTTON" desc="Label for the 'dismiss' button in the Manage Password bubble/Update Password infobar. These UIs ask the user if they wish to perform some action with saved passwords, e.g. updating or deleting them; the button dismisses the UI without taking the suggested action.">
-        No thanks
-      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_PASSWORD_MANAGER_CANCEL_BUTTON" desc="Label for the 'dismiss' button in the Manage Password bubble/Update Password infobar. These UIs ask the user if they wish to perform some action with saved passwords, e.g. updating or deleting them; the button dismisses the UI without taking the suggested action.">
+          No Thanks
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_PASSWORD_MANAGER_CANCEL_BUTTON" desc="Label for the 'dismiss' button in the Manage Password bubble/Update Password infobar. These UIs ask the user if they wish to perform some action with saved passwords, e.g. updating or deleting them; the button dismisses the UI without taking the suggested action.">
+          No thanks
+        </message>
+      </if>
       <if expr="not is_android">
         <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager">
           Save

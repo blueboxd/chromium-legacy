@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"  // for FALLTHROUGH;
 #include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
@@ -485,7 +486,13 @@ bool RestrictedCookieManager::ValidateAccessToCookiesAt(const GURL& url) {
   base::debug::SetCrashKeyString(url_origin,
                                  url::Origin::Create(url).GetDebugString());
 
-  mojo::ReportBadMessage("Incorrect url origin");
+  if (url.IsAboutBlank() || url.IsAboutSrcdoc()) {
+    // Temporary mitigation for 983090, classification improvement for parts of
+    // 992587.
+    base::debug::DumpWithoutCrashing();
+  } else {
+    mojo::ReportBadMessage("Incorrect url origin");
+  }
   return false;
 }
 

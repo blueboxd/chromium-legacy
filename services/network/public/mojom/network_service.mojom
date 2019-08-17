@@ -9,6 +9,7 @@ import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/memory_pressure_level.mojom";
 import "mojo/public/mojom/base/read_only_buffer.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
@@ -446,4 +447,10 @@ interface NetworkService {
   // This method won't modify variables that aren't present in the
   // |environment| array.
   SetEnvironment(array<EnvironmentVariable> environment);
+
+  // Calls base::debug::DumpWithoutCrashing for the network process.
+  // TODO(http://crbug.com/934317): Remove this once done debugging renderer
+  // hangs.
+  [EnableIf=is_android]
+  DumpWithoutCrashing(mojo_base.mojom.Time dump_request_time);
 };

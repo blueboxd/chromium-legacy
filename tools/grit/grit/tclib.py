@@ -56,7 +56,7 @@ class BaseMessage(object):
         # otherwise "EXAMPLE_FOO" splits "EXAMPLE_FOO_NAME" too.
         tags = sorted(tag_map.keys(),
                       key=functools.cmp_to_key(
-                          lambda x, y: len(x) - len(y) or cmp(x, y)),
+                          lambda x, y: len(x) - len(y) or ((x > y) - (x < y))),
                       reverse=True)
         tag_re = '(' + '|'.join(tags) + ')'
 

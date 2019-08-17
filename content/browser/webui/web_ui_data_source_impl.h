@@ -37,7 +37,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
       const base::DictionaryValue& localized_strings) override;
   void AddBoolean(base::StringPiece name, bool value) override;
   void AddInteger(base::StringPiece name, int32_t value) override;
-  void SetJsonPath(base::StringPiece path) override;
+  void UseStringsJs() override;
   void AddResourcePath(base::StringPiece path, int resource_id) override;
   void SetDefaultResource(int resource_id) override;
   void SetRequestFilter(const WebUIDataSource::ShouldHandleRequestCallback&
@@ -67,7 +67,8 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
 
   // Completes a request by sending our dictionary of localized strings.
   void SendLocalizedStringsAsJSON(
-      const URLDataSource::GotDataCallback& callback);
+      const URLDataSource::GotDataCallback& callback,
+      bool from_js_module);
 
   // Protected for testing.
   virtual const base::DictionaryValue* GetLocalizedStrings() const;
@@ -99,7 +100,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   // specific resources like "favicon/34" getting sent to this source.
   std::string source_name_;
   int default_resource_;
-  std::string json_path_;
+  bool use_strings_js_ = false;
   std::map<std::string, int> path_to_idr_map_;
   // The replacements are initiallized in the main thread and then used in the
   // IO thread. The map is safe to read from multiple threads as long as no

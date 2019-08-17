@@ -42,10 +42,11 @@ std::string GetConstHistogramWithSuffix(const char* suffix) {
 
 // Like RECORD_HISTOGRAMS_FOR_SUFFIX, but only records histograms if the event
 // occurred while the page was in the foreground.
-#define RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(info, data, timing,         \
+#define RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(delegate, data, timing,     \
                                                 histogram_suffix)           \
   do {                                                                      \
-    if (WasStartedInForegroundOptionalEventInForeground(timing, info)) {    \
+    if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground( \
+            timing, delegate)) {                                            \
       RECORD_HISTOGRAMS_FOR_SUFFIX(data, timing.value(), histogram_suffix); \
     }                                                                       \
   } while (false)
@@ -201,7 +202,8 @@ void DataReductionProxyMetricsObserver::OnDomContentLoadedEventStart(
     const page_load_metrics::PageLoadExtraInfo& info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
-      info, data(), timing.document_timing->dom_content_loaded_event_start,
+      GetDelegate(), data(),
+      timing.document_timing->dom_content_loaded_event_start,
       ::internal::kHistogramDOMContentLoadedEventFiredSuffix);
 }
 
@@ -211,7 +213,7 @@ void DataReductionProxyMetricsObserver::OnLoadEventStart(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DataReductionProxyMetricsObserverBase::OnLoadEventStart(timing, info);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
-      info, data(), timing.document_timing->load_event_start,
+      GetDelegate(), data(), timing.document_timing->load_event_start,
       ::internal::kHistogramLoadEventFiredSuffix);
 }
 
@@ -220,7 +222,7 @@ void DataReductionProxyMetricsObserver::OnFirstLayout(
     const page_load_metrics::PageLoadExtraInfo& info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
-      info, data(), timing.document_timing->first_layout,
+      GetDelegate(), data(), timing.document_timing->first_layout,
       ::internal::kHistogramFirstLayoutSuffix);
 }
 
@@ -229,7 +231,7 @@ void DataReductionProxyMetricsObserver::OnFirstPaintInPage(
     const page_load_metrics::PageLoadExtraInfo& info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
-      info, data(), timing.paint_timing->first_paint,
+      GetDelegate(), data(), timing.paint_timing->first_paint,
       ::internal::kHistogramFirstPaintSuffix);
 }
 
@@ -238,7 +240,7 @@ void DataReductionProxyMetricsObserver::OnFirstImagePaintInPage(
     const page_load_metrics::PageLoadExtraInfo& info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
-      info, data(), timing.paint_timing->first_image_paint,
+      GetDelegate(), data(), timing.paint_timing->first_image_paint,
       ::internal::kHistogramFirstImagePaintSuffix);
 }
 
@@ -247,7 +249,7 @@ void DataReductionProxyMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::PageLoadExtraInfo& info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
-      info, data(), timing.paint_timing->first_contentful_paint,
+      GetDelegate(), data(), timing.paint_timing->first_contentful_paint,
       ::internal::kHistogramFirstContentfulPaintSuffix);
 }
 
@@ -257,7 +259,7 @@ void DataReductionProxyMetricsObserver::
         const page_load_metrics::PageLoadExtraInfo& info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
-      info, data(), timing.paint_timing->first_meaningful_paint,
+      GetDelegate(), data(), timing.paint_timing->first_meaningful_paint,
       ::internal::kHistogramFirstMeaningfulPaintSuffix);
 }
 
@@ -266,7 +268,7 @@ void DataReductionProxyMetricsObserver::OnParseStart(
     const page_load_metrics::PageLoadExtraInfo& info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
-      info, data(), timing.parse_timing->parse_start,
+      GetDelegate(), data(), timing.parse_timing->parse_start,
       ::internal::kHistogramParseStartSuffix);
 }
 
@@ -274,8 +276,8 @@ void DataReductionProxyMetricsObserver::OnParseStop(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.parse_timing->parse_stop, info))
+  if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.parse_timing->parse_stop, GetDelegate()))
     return;
 
   base::TimeDelta parse_duration = timing.parse_timing->parse_stop.value() -

@@ -44,6 +44,9 @@ ResultSelectionController::~ResultSelectionController() = default;
 
 ResultSelectionController::MoveResult ResultSelectionController::MoveSelection(
     const ui::KeyEvent& event) {
+  if (block_selection_changes_)
+    return MoveResult::kNone;
+
   ResultLocationDetails next_location;
   if (!selected_location_details_) {
     ResetSelection(&event);
@@ -59,6 +62,9 @@ ResultSelectionController::MoveResult ResultSelectionController::MoveSelection(
 void ResultSelectionController::ResetSelection(const ui::KeyEvent* key_event) {
   // Prevents crash on start up
   if (result_selection_model_->size() == 0)
+    return;
+
+  if (block_selection_changes_)
     return;
 
   selected_location_details_ = std::make_unique<ResultLocationDetails>(

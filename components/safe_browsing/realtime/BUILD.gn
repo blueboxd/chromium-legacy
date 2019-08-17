@@ -14,5 +14,35 @@ static_library("policy_engine") {
     "//components/safe_browsing:features",
     "//components/safe_browsing:realtimeapi_proto",
     "//components/safe_browsing/common:safe_browsing_prefs",
+    "//content/public/common:resource_type_header",
+  ]
+}
+
+static_library("url_lookup_service") {
+  sources = [
+    "url_lookup_service.cc",
+    "url_lookup_service.h",
+  ]
+
+  deps = [
+    ":policy_engine",
+    "//base:base",
+    "//components/safe_browsing:realtimeapi_proto",
+    "//components/safe_browsing/db:v4_protocol_manager_util",
+    "//content/public/browser",
+    "//url:url",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "policy_engine_unittest.cc",
+  ]
+  deps = [
+    ":policy_engine",
+    "//base/test:test_support",
+    "//components/safe_browsing:features",
+    "//testing/gtest",
   ]
 }

@@ -147,7 +147,8 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
     return quota_manager_proxy_.get();
   }
 
-  AppCacheQuotaClient* quota_client() const {
+  // This WeakPtr should only be checked on the IO thread.
+  base::WeakPtr<AppCacheQuotaClient> quota_client() const {
     return quota_client_;
   }
 
@@ -191,7 +192,7 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   base::FilePath cache_directory_;
   scoped_refptr<base::SequencedTaskRunner> db_task_runner_;
   AppCachePolicy* appcache_policy_;
-  AppCacheQuotaClient* quota_client_;
+  base::WeakPtr<AppCacheQuotaClient> quota_client_;
   std::unique_ptr<AppCacheStorage> storage_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;

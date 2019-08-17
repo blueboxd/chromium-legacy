@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "media/base/mime_util.h"
 #include "media/filters/stream_parser_factory.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/mime_util.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/mojom/mime/mime_registry.mojom-blink.h"
@@ -25,11 +26,11 @@ struct MimeRegistryPtrHolder {
  public:
   MimeRegistryPtrHolder() {
     Platform::Current()->GetInterfaceProvider()->GetInterface(
-        mojo::MakeRequest(&mime_registry));
+        mime_registry.BindNewPipeAndPassReceiver());
   }
   ~MimeRegistryPtrHolder() = default;
 
-  mojom::blink::MimeRegistryPtr mime_registry;
+  mojo::Remote<mojom::blink::MimeRegistry> mime_registry;
 };
 
 std::string ToASCIIOrEmpty(const WebString& string) {

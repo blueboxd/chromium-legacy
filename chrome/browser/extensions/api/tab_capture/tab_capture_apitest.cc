@@ -161,8 +161,9 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTests) {
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "api_tests.html")) << message_;
 }
 
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
-// Flaky on ASAN on Mac. See https://crbug.com/674497.
+#if (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)) || defined(OS_LINUX) || \
+    defined(OS_WIN)
+// Flaky on ASAN on Mac, and on Linux and Windows. See https://crbug.com/674497.
 #define MAYBE_MaxOffscreenTabs DISABLED_MaxOffscreenTabs
 #else
 #define MAYBE_MaxOffscreenTabs MaxOffscreenTabs

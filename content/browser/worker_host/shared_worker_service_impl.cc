@@ -35,6 +35,7 @@
 #include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/loader_util.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
@@ -113,7 +114,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     blink::mojom::SharedWorkerInfoPtr info,
     blink::mojom::FetchClientSettingsObjectPtr
         outside_fetch_client_settings_object,
-    blink::mojom::SharedWorkerClientPtr client,
+    mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     const blink::MessagePortChannel& message_port,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
@@ -124,7 +125,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
   if (!render_frame_host) {
     // TODO(crbug.com/31666): Support the case where the requester is a worker
     // (i.e., nested worker).
-    client->OnScriptLoadFailed();
+    ScriptLoadFailed(std::move(client));
     return;
   }
 
@@ -136,7 +137,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
           WebContentsImpl::FromRenderFrameHostID(client_process_id, frame_id)
               ->GetBrowserContext(),
           client_process_id, frame_id)) {
-    client->OnScriptLoadFailed();
+    ScriptLoadFailed(std::move(client));
     return;
   }
 
@@ -150,7 +151,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     // Non-secure contexts cannot connect to secure workers, and secure contexts
     // cannot connect to non-secure workers:
     if (host->instance().creation_context_type() != creation_context_type) {
-      client->OnScriptLoadFailed();
+      ScriptLoadFailed(std::move(client));
       return;
     }
 
@@ -171,7 +172,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
   // Get a storage domain.
   SiteInstance* site_instance = render_frame_host->GetSiteInstance();
   if (!site_instance) {
-    client->OnScriptLoadFailed();
+    ScriptLoadFailed(std::move(client));
     return;
   }
   std::string storage_domain;
@@ -199,7 +200,7 @@ void SharedWorkerServiceImpl::CreateWorker(
     const SharedWorkerInstance& instance,
     blink::mojom::FetchClientSettingsObjectPtr
         outside_fetch_client_settings_object,
-    blink::mojom::SharedWorkerClientPtr client,
+    mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
     int client_process_id,
     int frame_id,
     const std::string& storage_domain,
@@ -258,7 +259,7 @@ void SharedWorkerServiceImpl::CreateWorker(
 void SharedWorkerServiceImpl::DidCreateScriptLoader(
     const SharedWorkerInstance& instance,
     base::WeakPtr<SharedWorkerHost> host,
-    blink::mojom::SharedWorkerClientPtr client,
+    mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
     int process_id,
     int frame_id,
     const blink::MessagePortChannel& message_port,
@@ -274,7 +275,7 @@ void SharedWorkerServiceImpl::DidCreateScriptLoader(
   // If the script fetcher fails to load shared worker's main script, notify the
   // client of the failure and abort shared worker startup.
   if (!success) {
-    client->OnScriptLoadFailed();
+    ScriptLoadFailed(std::move(client));
     return;
   }
 
@@ -290,7 +291,7 @@ void SharedWorkerServiceImpl::DidCreateScriptLoader(
 void SharedWorkerServiceImpl::StartWorker(
     const SharedWorkerInstance& instance,
     base::WeakPtr<SharedWorkerHost> host,
-    blink::mojom::SharedWorkerClientPtr client,
+    mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
     int client_process_id,
     int frame_id,
     const blink::MessagePortChannel& message_port,
@@ -335,6 +336,13 @@ SharedWorkerHost* SharedWorkerServiceImpl::FindAvailableSharedWorkerHost(
       return host.get();
   }
   return nullptr;
+}
+
+void SharedWorkerServiceImpl::ScriptLoadFailed(
+    mojo::PendingRemote<blink::mojom::SharedWorkerClient> client) {
+  mojo::Remote<blink::mojom::SharedWorkerClient> remote_client(
+      std::move(client));
+  remote_client->OnScriptLoadFailed();
 }
 
 }  // namespace content

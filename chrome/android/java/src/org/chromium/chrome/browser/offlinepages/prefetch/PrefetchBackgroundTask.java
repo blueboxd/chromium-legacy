@@ -29,6 +29,7 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
 
     private static boolean sSkipConditionCheckingForTesting;
     private static boolean sAlwaysSupportServiceManagerOnlyForTesting;
+    private static boolean sSkipCachingFlagForTesting;
 
     private long mNativeTask;
     private TaskFinishedCallback mTaskFinishedCallback;
@@ -89,11 +90,22 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
         sAlwaysSupportServiceManagerOnlyForTesting = true;
     }
 
+    @VisibleForTesting
+    static void skipCachingFlagForTesting() {
+        sSkipCachingFlagForTesting = true;
+    }
+
     @Override
     protected void onStartTaskWithNative(
             Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
         assert taskParameters.getTaskId() == TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID;
         if (mNativeTask != 0) return;
+
+        // Caches the flag. If a field trial isn't explicitly checked in the code, it won't be
+        // tagged as active. This might cause many UMA data of "Servicification.Startup2" are shown
+        // in the "not in study" bucket.
+        if (!sSkipCachingFlagForTesting)
+            FeatureUtilities.cacheServiceManagerForBackgroundPrefetch();
 
         // Only Feed is supported in reduced mode.
         // If we launched chrome in reduced mode but it turns out that Feed is not enabled (because

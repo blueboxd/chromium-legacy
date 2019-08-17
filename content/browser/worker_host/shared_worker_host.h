@@ -108,7 +108,7 @@ class CONTENT_EXPORT SharedWorkerHost
   // Terminates the given worker, i.e. based on a UI action.
   void TerminateWorker();
 
-  void AddClient(blink::mojom::SharedWorkerClientPtr client,
+  void AddClient(mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
                  int client_process_id,
                  int frame_id,
                  const blink::MessagePortChannel& port);
@@ -139,12 +139,12 @@ class CONTENT_EXPORT SharedWorkerHost
 
   // Contains information about a client connecting to this shared worker.
   struct ClientInfo {
-    ClientInfo(blink::mojom::SharedWorkerClientPtr client,
+    ClientInfo(mojo::Remote<blink::mojom::SharedWorkerClient> client,
                int connection_request_id,
                int client_process_id,
                int frame_id);
     ~ClientInfo();
-    blink::mojom::SharedWorkerClientPtr client;
+    mojo::Remote<blink::mojom::SharedWorkerClient> client;
     const int connection_request_id;
     const int client_process_id;
     const int frame_id;

@@ -38,6 +38,7 @@
 #include "base/run_loop.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/test_discardable_memory_allocator.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
@@ -68,9 +69,9 @@ class TestingPlatformSupport::TestingInterfaceProvider
       return;
     }
     if (std::string(name) == mojom::blink::MimeRegistry::Name_) {
-      mojo::MakeStrongBinding(
+      mojo::MakeSelfOwnedReceiver(
           std::make_unique<MockMimeRegistry>(),
-          mojom::blink::MimeRegistryRequest(std::move(handle)));
+          mojo::PendingReceiver<mojom::blink::MimeRegistry>(std::move(handle)));
       return;
     }
   }

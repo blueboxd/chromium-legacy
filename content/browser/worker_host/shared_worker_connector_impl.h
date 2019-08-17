@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_WORKER_HOST_SHARED_WORKER_CONNECTOR_IMPL_H_
 
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_connector.mojom.h"
 
 namespace content {
@@ -15,9 +17,18 @@ namespace content {
 class CONTENT_EXPORT SharedWorkerConnectorImpl
     : public blink::mojom::SharedWorkerConnector {
  public:
-  static void Create(int client_process_id,
-                     int frame_id,
-                     blink::mojom::SharedWorkerConnectorRequest request);
+  // TODO(https://crbug.com/955171): Remove this method and use Create once
+  // RendererInterfaceBinders uses service_manager::BinderMap instead of
+  // service_manager::BinderRegistry.
+  static void CreateForRequest(
+      int client_process_id,
+      int frame_id,
+      blink::mojom::SharedWorkerConnectorRequest request);
+
+  static void Create(
+      int client_process_id,
+      int frame_id,
+      mojo::PendingReceiver<blink::mojom::SharedWorkerConnector> receiver);
 
  private:
   SharedWorkerConnectorImpl(int client_process_id, int frame_id);
@@ -27,7 +38,7 @@ class CONTENT_EXPORT SharedWorkerConnectorImpl
       blink::mojom::SharedWorkerInfoPtr info,
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,
-      blink::mojom::SharedWorkerClientPtr client,
+      mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
       blink::mojom::SharedWorkerCreationContextType creation_context_type,
       mojo::ScopedMessagePipeHandle message_port,
       blink::mojom::BlobURLTokenPtr blob_url_token) override;

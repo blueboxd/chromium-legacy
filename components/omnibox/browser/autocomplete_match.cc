@@ -948,7 +948,8 @@ bool AutocompleteMatch::IsVerbatimType() const {
 bool AutocompleteMatch::IsSearchProviderSearchSuggestion() const {
   const bool from_search_provider =
       (provider && provider->type() == AutocompleteProvider::TYPE_SEARCH);
-  return from_search_provider && type == AutocompleteMatchType::SEARCH_SUGGEST;
+  return from_search_provider &&
+         type != AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
 }
 
 bool AutocompleteMatch::IsOnDeviceSearchSuggestion() const {
@@ -956,6 +957,12 @@ bool AutocompleteMatch::IsOnDeviceSearchSuggestion() const {
       (provider &&
        provider->type() == AutocompleteProvider::TYPE_ON_DEVICE_HEAD);
   return from_on_device_provider && subtype_identifier == 271;
+}
+
+bool AutocompleteMatch::IsTrivialAutocompletion() const {
+  return type == AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED ||
+         type == AutocompleteMatchType::URL_WHAT_YOU_TYPED ||
+         type == AutocompleteMatchType::SEARCH_OTHER_ENGINE;
 }
 
 bool AutocompleteMatch::SupportsDeletion() const {

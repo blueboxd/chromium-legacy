@@ -26,8 +26,7 @@
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -41,11 +40,12 @@ namespace content {
 
 namespace {
 
-void ConnectToSharedWorker(blink::mojom::SharedWorkerConnectorPtr connector,
-                           const GURL& url,
-                           const std::string& name,
-                           MockSharedWorkerClient* client,
-                           MessagePortChannel* local_port) {
+void ConnectToSharedWorker(
+    mojo::Remote<blink::mojom::SharedWorkerConnector> connector,
+    const GURL& url,
+    const std::string& name,
+    MockSharedWorkerClient* client,
+    MessagePortChannel* local_port) {
   blink::mojom::SharedWorkerInfoPtr info(blink::mojom::SharedWorkerInfo::New(
       url, name, std::string(),
       blink::mojom::ContentSecurityPolicyType::kReport,
@@ -54,8 +54,8 @@ void ConnectToSharedWorker(blink::mojom::SharedWorkerConnectorPtr connector,
   mojo::MessagePipe message_pipe;
   *local_port = MessagePortChannel(std::move(message_pipe.handle0));
 
-  blink::mojom::SharedWorkerClientPtr client_proxy;
-  client->Bind(mojo::MakeRequest(&client_proxy));
+  mojo::PendingRemote<blink::mojom::SharedWorkerClient> client_proxy;
+  client->Bind(client_proxy.InitWithNewPipeAndPassReceiver());
 
   connector->Connect(std::move(info),
                      blink::mojom::FetchClientSettingsObject::New(),
@@ -80,12 +80,12 @@ void KillProcess(std::unique_ptr<WebContents> web_contents) {
 
 class SharedWorkerServiceImplTest : public RenderViewHostImplTestHarness {
  public:
-  blink::mojom::SharedWorkerConnectorPtr MakeSharedWorkerConnector(
+  mojo::Remote<blink::mojom::SharedWorkerConnector> MakeSharedWorkerConnector(
       RenderProcessHost* process_host,
       int frame_id) {
-    blink::mojom::SharedWorkerConnectorPtr connector;
+    mojo::Remote<blink::mojom::SharedWorkerConnector> connector;
     SharedWorkerConnectorImpl::Create(process_host->GetID(), frame_id,
-                                      mojo::MakeRequest(&connector));
+                                      connector.BindNewPipeAndPassReceiver());
     return connector;
   }
 

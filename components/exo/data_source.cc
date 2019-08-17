@@ -32,8 +32,6 @@ constexpr char kTextHTML[] = "text/html";
 constexpr char kUtfPrefix[] = "UTF";
 constexpr char kEncoding16[] = "16";
 constexpr char kEncodingASCII[] = "ASCII";
-constexpr char kEncodingUTF8Legacy[] = "UTF8_STRING";
-constexpr char kEncodingUTF8Charset[] = "UTF-8";
 
 constexpr char kUTF16Unspecified[] = "UTF-16";
 constexpr char kUTF16LittleEndian[] = "UTF-16LE";
@@ -250,11 +248,7 @@ void DataSource::GetDataForPreferredMimeTypes(
         continue;
 
       std::string charset;
-      // We special case UTF8_STRING to provide minimal handling of X11 apps.
-      if (mime_type == kEncodingUTF8Legacy)
-        charset = kEncodingUTF8Charset;
-      else
-        charset = GetCharset(mime_type);
+      charset = GetCharset(mime_type);
       int new_rank = GetCharsetRank(charset);
       if (new_rank < text_rank) {
         text_mime = mime_type;

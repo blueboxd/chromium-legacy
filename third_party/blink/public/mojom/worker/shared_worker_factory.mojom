@@ -38,7 +38,7 @@ interface SharedWorkerFactory {
       mojo_base.mojom.UnguessableToken devtools_worker_token,
       RendererPreferences renderer_preferences,
       RendererPreferenceWatcher& preference_watcher_request,
-      WorkerContentSettingsProxy content_settings,
+      pending_remote<WorkerContentSettingsProxy> content_settings,
 
       // The info about the service worker provider in the browser process that
       // provides support for this worker to be a service worker client.

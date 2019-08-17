@@ -18,7 +18,9 @@ class MODULES_EXPORT InstallationServiceImpl final
  public:
   explicit InstallationServiceImpl(LocalFrame&);
 
-  static void Create(LocalFrame*, mojom::blink::InstallationServiceRequest);
+  static void Create(
+      LocalFrame*,
+      mojo::PendingReceiver<mojom::blink::InstallationService> receiver);
 
   void OnInstall() override;
 

@@ -27,6 +27,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/installation/installation.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -177,9 +178,9 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url) {
 
 void AppBannerManager::OnInstall(blink::WebDisplayMode display) {
   TrackInstallDisplayMode(display);
-  blink::mojom::InstallationServicePtr installation_service;
+  mojo::Remote<blink::mojom::InstallationService> installation_service;
   web_contents()->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
-      mojo::MakeRequest(&installation_service));
+      installation_service.BindNewPipeAndPassReceiver());
   DCHECK(installation_service);
   installation_service->OnInstall();
 

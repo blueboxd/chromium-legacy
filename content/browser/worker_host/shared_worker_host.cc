@@ -26,6 +26,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/network_isolation_key.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
@@ -169,9 +170,10 @@ void SharedWorkerHost::Start(
       std::move(watcher_ptr));
 
   // Set up content settings interface.
-  blink::mojom::WorkerContentSettingsProxyPtr content_settings;
+  mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
+      content_settings;
   content_settings_ = std::make_unique<SharedWorkerContentSettingsProxyImpl>(
-      instance_.url(), this, mojo::MakeRequest(&content_settings));
+      instance_.url(), this, content_settings.InitWithNewPipeAndPassReceiver());
 
   // Set up host interface.
   blink::mojom::SharedWorkerHostPtr host;
@@ -351,7 +353,7 @@ void SharedWorkerHost::AdvanceTo(Phase phase) {
 }
 
 SharedWorkerHost::ClientInfo::ClientInfo(
-    blink::mojom::SharedWorkerClientPtr client,
+    mojo::Remote<blink::mojom::SharedWorkerClient> client,
     int connection_request_id,
     int client_process_id,
     int frame_id)
@@ -450,20 +452,24 @@ base::WeakPtr<SharedWorkerHost> SharedWorkerHost::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void SharedWorkerHost::AddClient(blink::mojom::SharedWorkerClientPtr client,
-                                 int client_process_id,
-                                 int frame_id,
-                                 const blink::MessagePortChannel& port) {
+void SharedWorkerHost::AddClient(
+    mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
+    int client_process_id,
+    int frame_id,
+    const blink::MessagePortChannel& port) {
+  mojo::Remote<blink::mojom::SharedWorkerClient> remote_client(
+      std::move(client));
+
   // Pass the actual creation context type, so the client can understand if
   // there is a mismatch between security levels.
-  client->OnCreated(instance_.creation_context_type());
+  remote_client->OnCreated(instance_.creation_context_type());
 
-  clients_.emplace_back(std::move(client), next_connection_request_id_++,
+  clients_.emplace_back(std::move(remote_client), next_connection_request_id_++,
                         client_process_id, frame_id);
   ClientInfo& info = clients_.back();
 
   // Observe when the client goes away.
-  info.client.set_connection_error_handler(base::BindOnce(
+  info.client.set_disconnect_handler(base::BindOnce(
       &SharedWorkerHost::OnClientConnectionLost, weak_factory_.GetWeakPtr()));
 
   worker_->Connect(info.connection_request_id, port.ReleaseHandle());
@@ -484,7 +490,7 @@ void SharedWorkerHost::SetServiceWorkerHandle(
 void SharedWorkerHost::OnClientConnectionLost() {
   // We'll get a notification for each dropped connection.
   for (auto it = clients_.begin(); it != clients_.end(); ++it) {
-    if (it->client.encountered_error()) {
+    if (!it->client.is_connected()) {
       clients_.erase(it);
       break;
     }

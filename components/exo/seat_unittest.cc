@@ -144,6 +144,32 @@ TEST_F(SeatTest, SetSelectionTextUTF8) {
   EXPECT_EQ(clipboard, converted_data);
 }
 
+TEST_F(SeatTest, SetSelectionTextUTF8Legacy) {
+  Seat seat;
+
+  // UTF8 encoded data
+  const uint8_t data[] = {
+      0xe2, 0x9d, 0x84,       // SNOWFLAKE
+      0xf0, 0x9f, 0x94, 0xa5  // FIRE
+  };
+  base::string16 converted_data;
+  EXPECT_TRUE(base::UTF8ToUTF16(reinterpret_cast<const char*>(data),
+                                sizeof(data), &converted_data));
+
+  TestDataSourceDelegate delegate;
+  DataSource source(&delegate);
+  source.Offer("UTF8_STRING");
+  delegate.SetData(std::vector<uint8_t>(data, data + sizeof(data)));
+  seat.SetSelection(&source);
+
+  RunReadingTask();
+
+  base::string16 clipboard;
+  ui::Clipboard::GetForCurrentThread()->ReadText(ui::ClipboardType::kCopyPaste,
+                                                 &clipboard);
+  EXPECT_EQ(clipboard, converted_data);
+}
+
 TEST_F(SeatTest, SetSelectionTextUTF16LE) {
   Seat seat;
 

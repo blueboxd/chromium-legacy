@@ -16,6 +16,7 @@
 #include "content/browser/worker_host/shared_worker_host.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -78,7 +79,8 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
       const base::UnguessableToken& devtools_worker_token,
       blink::mojom::RendererPreferencesPtr renderer_preferences,
       blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
-      blink::mojom::WorkerContentSettingsProxyPtr content_settings,
+      mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
+          content_settings,
       blink::mojom::ServiceWorkerProviderInfoForClientPtr
           service_worker_provider_info,
       const base::Optional<base::UnguessableToken>& appcache_host_id,
@@ -97,7 +99,8 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
     ~CreateParams();
     blink::mojom::SharedWorkerInfoPtr info;
     bool pause_on_start;
-    blink::mojom::WorkerContentSettingsProxyPtr content_settings;
+    mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
+        content_settings;
     blink::mojom::SharedWorkerHostPtr host;
     blink::mojom::SharedWorkerRequest request;
     service_manager::mojom::InterfaceProviderPtr interface_provider;
@@ -114,7 +117,7 @@ class MockSharedWorkerClient : public blink::mojom::SharedWorkerClient {
   MockSharedWorkerClient();
   ~MockSharedWorkerClient() override;
 
-  void Bind(blink::mojom::SharedWorkerClientRequest request);
+  void Bind(mojo::PendingReceiver<blink::mojom::SharedWorkerClient> receiver);
   void Close();
   bool CheckReceivedOnCreated();
   bool CheckReceivedOnConnected(
@@ -132,7 +135,7 @@ class MockSharedWorkerClient : public blink::mojom::SharedWorkerClient {
   void OnScriptLoadFailed() override;
   void OnFeatureUsed(blink::mojom::WebFeature feature) override;
 
-  mojo::Binding<blink::mojom::SharedWorkerClient> binding_;
+  mojo::Receiver<blink::mojom::SharedWorkerClient> receiver_{this};
   bool on_created_received_ = false;
   bool on_connected_received_ = false;
   std::set<blink::mojom::WebFeature> on_connected_features_;

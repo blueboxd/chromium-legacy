@@ -35,7 +35,8 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
     const base::UnguessableToken& devtools_worker_token,
     blink::mojom::RendererPreferencesPtr renderer_preferences,
     blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
-    blink::mojom::WorkerContentSettingsProxyPtr content_settings,
+    mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
+        content_settings,
     blink::mojom::ServiceWorkerProviderInfoForClientPtr
         service_worker_provider_info,
     const base::Optional<base::UnguessableToken>& appcache_host_id,

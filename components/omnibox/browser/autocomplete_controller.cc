@@ -192,15 +192,6 @@ void AppendAvailableAutocompletion(size_t type,
     base::StringAppendF(autocompletions, "l%d", count);
 }
 
-// Returns whether the autocompletion is trivial enough that we consider it
-// an autocompletion for which the omnibox autocompletion code did not add
-// any value.
-bool IsTrivialAutocompletion(const AutocompleteMatch& match) {
-  return match.type == AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED ||
-      match.type == AutocompleteMatchType::URL_WHAT_YOU_TYPED ||
-      match.type == AutocompleteMatchType::SEARCH_OTHER_ENGINE;
-}
-
 // Whether this autocomplete match type supports custom descriptions.
 bool AutocompleteMatchHasCustomDescription(const AutocompleteMatch& match) {
   if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_DESKTOP &&
@@ -730,7 +721,7 @@ void AutocompleteController::UpdateAssistedQueryStats(
       continue;
     std::string selected_index;
     // Prevent trivial suggestions from getting credit for being selected.
-    if (!IsTrivialAutocompletion(*match))
+    if (!match->IsTrivialAutocompletion())
       selected_index = base::StringPrintf("%" PRIuS, index);
     match->search_terms_args->assisted_query_stats =
         base::StringPrintf("chrome.%s.%s",

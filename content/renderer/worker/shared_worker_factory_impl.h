@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_factory.mojom.h"
 
@@ -38,7 +39,8 @@ class SharedWorkerFactoryImpl : public blink::mojom::SharedWorkerFactory {
       const base::UnguessableToken& devtools_worker_token,
       blink::mojom::RendererPreferencesPtr renderer_preferences,
       blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
-      blink::mojom::WorkerContentSettingsProxyPtr content_settings,
+      mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
+          content_settings,
       blink::mojom::ServiceWorkerProviderInfoForClientPtr
           service_worker_provider_info,
       const base::Optional<base::UnguessableToken>& appcache_host_id,

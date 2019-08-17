@@ -303,7 +303,13 @@ void AutocompleteResult::DemoteOnDeviceSearchSuggestions() {
   // SearchProvider search suggestion relevance, in preparation to adjust the
   // relevances for OnDeviceProvider search suggestions next.
   for (auto& m : matches_) {
-    if (m.IsSearchProviderSearchSuggestion()) {
+    // The demotion will not be triggered if only trivial suggestions present,
+    // which include type SEARCH_WHAT_YOU_TYPED & SEARCH_OTHER_ENGINE.
+    // Note that we exclude SEARCH_OTHER_ENGINE here, simply because custom
+    // search engine ("keyword search") is not enabled at Android & iOS, where
+    // on device suggestion providers will be enabled. We should revisit this
+    // triggering condition once keyword search is launched at Android & iOS.
+    if (m.IsSearchProviderSearchSuggestion() && !m.IsTrivialAutocompletion()) {
       search_provider_search_suggestion_exists = true;
       if (mode == "decrease-relevances") {
         search_provider_search_suggestion_min_relevance =

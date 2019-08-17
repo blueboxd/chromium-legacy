@@ -1,4 +1,3 @@
-# WebGPU tests are only run with --enable-unsafe-webgpu
-Bug(none) webgpu/canvas_context.html [ Pass ]
-Bug(none) webgpu/buffer_mapping.html [ Pass ]
-Bug(none) webgpu/fence.html [ Pass ]
+# WebGPU tests are only run on GPU bots, so they are skipped by default and run
+# separately from other Web Tests.
+Bug(none) external/wpt/webgpu/ [ Pass ]

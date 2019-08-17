@@ -45,7 +45,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     const base::UnguessableToken& devtools_worker_token,
     const blink::mojom::RendererPreferences& renderer_preferences,
     blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
-    blink::mojom::WorkerContentSettingsProxyPtr content_settings,
+    mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
+        content_settings,
     blink::mojom::ServiceWorkerProviderInfoForClientPtr
         service_worker_provider_info,
     const base::UnguessableToken& appcache_host_id,
@@ -114,7 +115,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       blink::WebString::FromUTF8(user_agent),
       blink::WebString::FromUTF8(info->content_security_policy),
       info->content_security_policy_type, info->creation_address_space,
-      devtools_worker_token, content_settings.PassInterface().PassHandle(),
+      devtools_worker_token, content_settings.PassPipe(),
       interface_provider.PassInterface().PassHandle(),
       browser_interface_broker.PassPipe(), pause_on_start);
 

@@ -32,7 +32,7 @@
 
 #include <memory>
 #include <utility>
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
@@ -87,7 +87,7 @@ std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
       std::make_unique<ServiceWorkerContentSettingsProxy>(
           // Chrome doesn't use interface versioning.
           // TODO(falken): Is that comment about versioning correct?
-          mojom::blink::WorkerContentSettingsProxyPtrInfo(
+          mojo::PendingRemote<mojom::blink::WorkerContentSettingsProxy>(
               std::move(content_settings_handle), 0u)),
       mojom::blink::CacheStoragePtrInfo(std::move(cache_storage),
                                         mojom::blink::CacheStorage::Version_),
@@ -107,7 +107,7 @@ std::unique_ptr<WebEmbeddedWorkerImpl> WebEmbeddedWorkerImpl::CreateForTesting(
   auto worker_impl = std::make_unique<WebEmbeddedWorkerImpl>(
       client, nullptr /* installed_scripts_manager_params */,
       std::make_unique<ServiceWorkerContentSettingsProxy>(
-          nullptr /* host_info */),
+          mojo::NullRemote() /* host_info */),
       nullptr /* cache_storage_info */, nullptr /* interface_provider_info */,
       mojo::NullRemote() /* browser_interface_broker */);
   worker_impl->installed_scripts_manager_ =

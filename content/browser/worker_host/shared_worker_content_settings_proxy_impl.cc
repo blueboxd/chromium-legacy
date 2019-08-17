@@ -15,10 +15,10 @@ namespace content {
 SharedWorkerContentSettingsProxyImpl::SharedWorkerContentSettingsProxyImpl(
     const GURL& script_url,
     SharedWorkerHost* owner,
-    blink::mojom::WorkerContentSettingsProxyRequest request)
+    mojo::PendingReceiver<blink::mojom::WorkerContentSettingsProxy> receiver)
     : origin_(url::Origin::Create(script_url)),
       owner_(owner),
-      binding_(this, std::move(request)) {}
+      receiver_(this, std::move(receiver)) {}
 
 SharedWorkerContentSettingsProxyImpl::~SharedWorkerContentSettingsProxyImpl() =
     default;

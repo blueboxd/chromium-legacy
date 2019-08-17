@@ -31,7 +31,7 @@
 #include "third_party/blink/renderer/core/exported/web_shared_worker_impl.h"
 
 #include <memory>
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink.h"
@@ -230,7 +230,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
       outside_settings_object->GetSecurityOrigin(), starter_secure_context,
       outside_settings_object->GetHttpsState(), CreateWorkerClients(),
       std::make_unique<SharedWorkerContentSettingsProxy>(
-          mojom::blink::WorkerContentSettingsProxyPtrInfo(
+          mojo::PendingRemote<mojom::blink::WorkerContentSettingsProxy>(
               std::move(content_settings_handle), 0u)),
       base::nullopt /* response_address_space */,
       nullptr /* origin_trial_tokens */, devtools_worker_token,

@@ -22,7 +22,7 @@ interface SharedWorkerConnector {
   Connect(SharedWorkerInfo info,
           blink.mojom.FetchClientSettingsObject
               outside_fetch_client_settings_object,
-          SharedWorkerClient client,
+          pending_remote<SharedWorkerClient> client,
           SharedWorkerCreationContextType creation_context_type,
           handle<message_pipe> message_port,
           BlobURLToken? blob_url_token);

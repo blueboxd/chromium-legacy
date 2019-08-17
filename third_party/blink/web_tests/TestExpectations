@@ -11,11 +11,6 @@ Bug(intentional) external/wpt/infrastructure/reftest/reftest_ref_timeout.html [ 
 Bug(intentional) external/wpt/infrastructure/reftest/reftest_timeout.html [ Timeout ]
 Bug(intentional) external/wpt/infrastructure/expected-fail/timeout.html [ Timeout ]
 
-# WebGPU tests are only run with --enable-unsafe-webgpu
-Bug(none) webgpu/canvas_context.html [ Skip ]
-Bug(none) webgpu/buffer_mapping.html [ Skip ]
-Bug(none) webgpu/fence.html [ Skip ]
-
 crbug.com/807686 crbug.com/24182 jquery/manipulation.html [ Timeout Pass ]
 
 # The following tests need to remove the assumption that user activation isfast/text/firstline/capitalize-transform.html

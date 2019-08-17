@@ -11,7 +11,8 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
@@ -19,13 +20,23 @@
 namespace content {
 
 // static
-void SharedWorkerConnectorImpl::Create(
+void SharedWorkerConnectorImpl::CreateForRequest(
     int client_process_id,
     int frame_id,
     blink::mojom::SharedWorkerConnectorRequest request) {
-  mojo::MakeStrongBinding(base::WrapUnique(new SharedWorkerConnectorImpl(
-                              client_process_id, frame_id)),
-                          std::move(request));
+  // Implicit conversion to
+  // mojo::PendingReceiver<blink::mojom::SharedWorkerConnector>.
+  Create(client_process_id, frame_id, std::move(request));
+}
+
+// static
+void SharedWorkerConnectorImpl::Create(
+    int client_process_id,
+    int frame_id,
+    mojo::PendingReceiver<blink::mojom::SharedWorkerConnector> receiver) {
+  mojo::MakeSelfOwnedReceiver(base::WrapUnique(new SharedWorkerConnectorImpl(
+                                  client_process_id, frame_id)),
+                              std::move(receiver));
 }
 
 SharedWorkerConnectorImpl::SharedWorkerConnectorImpl(int client_process_id,
@@ -36,14 +47,16 @@ void SharedWorkerConnectorImpl::Connect(
     blink::mojom::SharedWorkerInfoPtr info,
     blink::mojom::FetchClientSettingsObjectPtr
         outside_fetch_client_settings_object,
-    blink::mojom::SharedWorkerClientPtr client,
+    mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     mojo::ScopedMessagePipeHandle message_port,
     blink::mojom::BlobURLTokenPtr blob_url_token) {
   RenderProcessHost* host = RenderProcessHost::FromID(client_process_id_);
   // The render process was already terminated.
   if (!host) {
-    client->OnScriptLoadFailed();
+    mojo::Remote<blink::mojom::SharedWorkerClient> remote_client(
+        std::move(client));
+    remote_client->OnScriptLoadFailed();
     return;
   }
   scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;

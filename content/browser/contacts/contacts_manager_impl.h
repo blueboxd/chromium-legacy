@@ -16,8 +16,14 @@ class RenderFrameHostImpl;
 class CONTENT_EXPORT ContactsManagerImpl
     : public blink::mojom::ContactsManager {
  public:
-  static void Create(RenderFrameHostImpl* render_frame_host,
-                     blink::mojom::ContactsManagerRequest request);
+  // TODO(https://crbug.com/955171): Remove this method and use Create once
+  // RenderFrameHostImpl uses service_manager::BinderMap instead of
+  // service_manager::BinderRegistry.
+  static void CreateForRequest(RenderFrameHostImpl* render_frame_host,
+                               blink::mojom::ContactsManagerRequest request);
+  static void Create(
+      RenderFrameHostImpl* render_frame_host,
+      mojo::PendingReceiver<blink::mojom::ContactsManager> receiver);
 
   explicit ContactsManagerImpl(RenderFrameHostImpl* render_frame_host);
   ~ContactsManagerImpl() override;

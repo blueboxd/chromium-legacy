@@ -125,7 +125,7 @@
           "--driver-logging",
           "--skipped",
           "ignore",
-          "webgpu",
+          "external/wpt/webgpu/",
           "--no-xvfb"
         ],
         "isolate_name": "blink_web_tests_exparchive",
@@ -271,7 +271,7 @@
           "--driver-logging",
           "--skipped",
           "ignore",
-          "webgpu",
+          "external/wpt/webgpu/",
           "--no-xvfb"
         ],
         "isolate_name": "blink_web_tests_exparchive",
@@ -565,7 +565,7 @@
           "--driver-logging",
           "--skipped",
           "ignore",
-          "webgpu"
+          "external/wpt/webgpu/"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -705,7 +705,7 @@
           "--driver-logging",
           "--skipped",
           "ignore",
-          "webgpu"
+          "external/wpt/webgpu/"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -994,7 +994,7 @@
           "ignore",
           "-t",
           "Release_x64",
-          "webgpu"
+          "external/wpt/webgpu/"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -1140,7 +1140,7 @@
           "ignore",
           "-t",
           "Release_x64",
-          "webgpu"
+          "external/wpt/webgpu/"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -1428,7 +1428,7 @@
           "--driver-logging",
           "--skipped",
           "ignore",
-          "webgpu"
+          "external/wpt/webgpu/"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -1572,7 +1572,7 @@
           "--driver-logging",
           "--skipped",
           "ignore",
-          "webgpu"
+          "external/wpt/webgpu/"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {

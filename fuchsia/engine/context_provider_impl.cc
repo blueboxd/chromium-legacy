@@ -55,31 +55,6 @@ zx::channel ValidateDirectoryAndTakeChannel(
   return zx::channel();
 }
 
-// Verifies that Vulkan loader service is provided by the specified service
-// directory.
-bool CheckVulkanSupport(
-    const fidl::InterfaceHandle<::fuchsia::io::Directory>& directory_handle,
-    bool* vulkan_supported) {
-  zx::channel dir_channel(fdio_service_clone(directory_handle.channel().get()));
-  if (!dir_channel)
-    return false;
-
-  base::ScopedFD dir_fd;
-  zx_status_t status = fdio_fd_create(dir_channel.release(),
-                                      base::ScopedFD::Receiver(dir_fd).get());
-  if (status != ZX_OK) {
-    ZX_DLOG(ERROR, status) << "fdio_fd_create()";
-    return false;
-  }
-
-  struct stat statbuf;
-  int result =
-      fstatat(dir_fd.get(), "fuchsia.vulkan.loader.Loader", &statbuf, 0);
-  *vulkan_supported = result == 0;
-
-  return true;
-}
-
 }  // namespace
 
 ContextProviderImpl::ContextProviderImpl() = default;
@@ -102,13 +77,9 @@ void ContextProviderImpl::Create(
 
   fidl::InterfaceHandle<::fuchsia::io::Directory> service_directory =
       std::move(*params.mutable_service_directory());
-
-  // Enable Vulkan if the Vulkan loader service is present in the service
-  // directory.
-  bool vulkan_supported = false;
-  if (!CheckVulkanSupport(service_directory, &vulkan_supported)) {
-    // TODO(crbug.com/934539): Add type epitaph.
+  if (!service_directory) {
     DLOG(WARNING) << "Invalid |service_directory| in CreateContextParams.";
+    context_request.Close(ZX_ERR_INVALID_ARGS);
     return;
   }
 
@@ -179,16 +150,12 @@ void ContextProviderImpl::Create(
   }
 
 #if defined(WEB_ENGINE_ENABLE_VULKAN)
-  // Enable Vulkan when the Vulkan loader service is included in the service
-  // directory.
-  // TODO(https://crbug.com/962617): Enable Vulkan by default and remove this
-  // hack.
-  if (vulkan_supported) {
-    launch_command.AppendSwitchASCII(
-        "--enable-features", "DefaultEnableOopRasterization,UseSkiaRenderer");
-    launch_command.AppendSwitch("--use-vulkan");
-    launch_command.AppendSwitchASCII("--use-gl", "stub");
-  }
+  // TODO(fbx/35009): Add a flag in CreateContextParams to enable/disable Vulkan
+  // and use it here.
+  launch_command.AppendSwitchASCII(
+      "--enable-features", "DefaultEnableOopRasterization,UseSkiaRenderer");
+  launch_command.AppendSwitch("--use-vulkan");
+  launch_command.AppendSwitchASCII("--use-gl", "stub");
 #endif  // WEB_ENGINE_ENABLE_VULKAN
 
   // Validate embedder-supplied product, and optional version, and pass it to

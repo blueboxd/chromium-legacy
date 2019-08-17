@@ -19108,7 +19108,7 @@ Called by update_net_error_codes.py.-->
   <int value="225" label="EXPERIMENTAL_POWER_RELEASEKEEPAWAKE"/>
   <int value="226" label="APP_CURRENTWINDOWINTERNAL_SETICON"/>
   <int value="227" label="PUSHMESSAGING_GETCHANNELID"/>
-  <int value="228" label="EXPERIMENTAL_INFOBARS_SHOW"/>
+  <int value="228" label="DELETED_EXPERIMENTAL_INFOBARS_SHOW"/>
   <int value="229" label="INPUT_IME_SETCANDIDATEWINDOWPROPERTIES"/>
   <int value="230" label="METRICSPRIVATE_RECORDPERCENTAGE"/>
   <int value="231" label="TYPES_CHROMESETTING_GET"/>
@@ -19404,7 +19404,7 @@ Called by update_net_error_codes.py.-->
       label="DELETED_SYSTEM_STORAGE_REMOVEALLAVAILABLECAPACITYWATCHES"/>
   <int value="519" label="DOWNLOADS_REMOVEFILE"/>
   <int value="520" label="DOWNLOADS_SHOWDEFAULTFOLDER"/>
-  <int value="521" label="INFOBARS_SHOW"/>
+  <int value="521" label="DELETED_INFOBARS_SHOW"/>
   <int value="522" label="DOWNLOADS_SETSHELFENABLED"/>
   <int value="523" label="IMAGEWRITER_WRITEFROMURL"/>
   <int value="524" label="IMAGEWRITER_WRITEFROMFILE"/>

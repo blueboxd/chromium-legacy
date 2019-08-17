@@ -399,6 +399,11 @@ struct AutocompleteMatch {
   // providers.
   bool IsOnDeviceSearchSuggestion() const;
 
+  // Returns whether the autocompletion is trivial enough that we consider it
+  // an autocompletion for which the omnibox autocompletion code did not add
+  // any value.
+  bool IsTrivialAutocompletion() const;
+
   // Returns whether this match or any duplicate of this match can be deleted.
   // This is used to decide whether we should call DeleteMatch().
   bool SupportsDeletion() const;

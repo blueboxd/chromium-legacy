@@ -3978,7 +3978,7 @@
           # These tests are skipped by default. Since we run with
           # --enable-unsafe-webgpu, ignore the Skip expectation.
           '--skipped', 'ignore',
-          'webgpu',
+          'external/wpt/webgpu/',
         ],
         'linux_args': [ '--no-xvfb' ],
         'merge': {
@@ -4002,7 +4002,7 @@
           # --enable-unsafe-webgpu, ignore the Skip expectation.
           '--skipped', 'ignore',
           '-t', 'Release_x64',
-          'webgpu',
+          'external/wpt/webgpu/',
         ],
         'merge': {
           'args': [

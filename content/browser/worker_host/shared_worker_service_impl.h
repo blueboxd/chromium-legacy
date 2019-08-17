@@ -16,6 +16,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/worker_host/shared_worker_host.h"
 #include "content/public/browser/shared_worker_service.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
@@ -66,7 +67,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       blink::mojom::SharedWorkerInfoPtr info,
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,
-      blink::mojom::SharedWorkerClientPtr client,
+      mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
       blink::mojom::SharedWorkerCreationContextType creation_context_type,
       const blink::MessagePortChannel& port,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
@@ -85,7 +86,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       const SharedWorkerInstance& instance,
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,
-      blink::mojom::SharedWorkerClientPtr client,
+      mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
       int client_process_id,
       int frame_id,
       const std::string& storage_domain,
@@ -94,7 +95,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   void DidCreateScriptLoader(
       const SharedWorkerInstance& instance,
       base::WeakPtr<SharedWorkerHost> host,
-      blink::mojom::SharedWorkerClientPtr client,
+      mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
       int client_process_id,
       int frame_id,
       const blink::MessagePortChannel& message_port,
@@ -108,7 +109,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   void StartWorker(
       const SharedWorkerInstance& instance,
       base::WeakPtr<SharedWorkerHost> host,
-      blink::mojom::SharedWorkerClientPtr client,
+      mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
       int client_process_id,
       int frame_id,
       const blink::MessagePortChannel& message_port,
@@ -122,6 +123,9 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   // Returns nullptr if there is no such host.
   SharedWorkerHost* FindAvailableSharedWorkerHost(
       const SharedWorkerInstance& instance);
+
+  void ScriptLoadFailed(
+      mojo::PendingRemote<blink::mojom::SharedWorkerClient> client);
 
   std::set<std::unique_ptr<SharedWorkerHost>, base::UniquePtrComparator>
       worker_hosts_;

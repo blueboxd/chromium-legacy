@@ -13,6 +13,7 @@
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom.h"
@@ -62,7 +63,8 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       const base::UnguessableToken& devtools_worker_token,
       const blink::mojom::RendererPreferences& renderer_preferences,
       blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
-      blink::mojom::WorkerContentSettingsProxyPtr content_settings,
+      mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
+          content_settings,
       blink::mojom::ServiceWorkerProviderInfoForClientPtr
           service_worker_provider_info,
       const base::UnguessableToken& appcache_host_id,

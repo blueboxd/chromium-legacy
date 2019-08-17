@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CONTACTS_PICKER_CONTACTS_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CONTACTS_PICKER_CONTACTS_MANAGER_H_
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/contacts/contacts_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/modules/contacts_picker/contacts_select_options.h"
@@ -31,7 +32,7 @@ class ContactsManager final : public ScriptWrappable {
                        ContactsSelectOptions* options);
 
  private:
-  mojom::blink::ContactsManagerPtr& GetContactsManager(
+  mojo::Remote<mojom::blink::ContactsManager>& GetContactsManager(
       ScriptState* script_state);
 
   void OnContactsSelected(
@@ -39,7 +40,7 @@ class ContactsManager final : public ScriptWrappable {
       base::Optional<Vector<mojom::blink::ContactInfoPtr>> contacts);
 
   // Created lazily.
-  mojom::blink::ContactsManagerPtr contacts_manager_;
+  mojo::Remote<mojom::blink::ContactsManager> contacts_manager_;
   bool contact_picker_in_use_ = false;
 };
 

@@ -9,7 +9,8 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom.h"
 #include "url/origin.h"
 
@@ -29,7 +30,7 @@ class ServiceWorkerContentSettingsProxyImpl final
   ServiceWorkerContentSettingsProxyImpl(
       const GURL& script_url,
       scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
-      blink::mojom::WorkerContentSettingsProxyRequest request);
+      mojo::PendingReceiver<blink::mojom::WorkerContentSettingsProxy> receiver);
 
   ~ServiceWorkerContentSettingsProxyImpl() override;
 
@@ -43,7 +44,7 @@ class ServiceWorkerContentSettingsProxyImpl final
 
   const url::Origin origin_;
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
-  mojo::Binding<blink::mojom::WorkerContentSettingsProxy> binding_;
+  mojo::Receiver<blink::mojom::WorkerContentSettingsProxy> receiver_;
 };
 
 }  // namespace content

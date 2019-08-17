@@ -12,17 +12,16 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/common/content_client.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
 ServiceWorkerContentSettingsProxyImpl::ServiceWorkerContentSettingsProxyImpl(
     const GURL& script_url,
     scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
-    blink::mojom::WorkerContentSettingsProxyRequest request)
+    mojo::PendingReceiver<blink::mojom::WorkerContentSettingsProxy> receiver)
     : origin_(url::Origin::Create(script_url)),
       context_wrapper_(context_wrapper),
-      binding_(this, std::move(request)) {
+      receiver_(this, std::move(receiver)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

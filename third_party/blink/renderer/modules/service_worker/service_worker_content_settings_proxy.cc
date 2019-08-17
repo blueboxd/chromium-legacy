@@ -9,7 +9,7 @@
 namespace blink {
 
 ServiceWorkerContentSettingsProxy::ServiceWorkerContentSettingsProxy(
-    mojom::blink::WorkerContentSettingsProxyPtrInfo host_info)
+    mojo::PendingRemote<mojom::blink::WorkerContentSettingsProxy> host_info)
     : host_info_(std::move(host_info)) {}
 
 ServiceWorkerContentSettingsProxy::~ServiceWorkerContentSettingsProxy() =
@@ -30,10 +30,10 @@ bool ServiceWorkerContentSettingsProxy::AllowIndexedDB(
 // Use ThreadSpecific to ensure that |content_settings_instance_host| is
 // destructed on worker thread.
 // Each worker has a dedicated thread so this is safe.
-mojom::blink::WorkerContentSettingsProxyPtr&
+mojo::Remote<mojom::blink::WorkerContentSettingsProxy>&
 ServiceWorkerContentSettingsProxy::GetService() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      ThreadSpecific<mojom::blink::WorkerContentSettingsProxyPtr>,
+      ThreadSpecific<mojo::Remote<mojom::blink::WorkerContentSettingsProxy>>,
       content_settings_instance_host, ());
   if (!content_settings_instance_host.IsSet()) {
     DCHECK(host_info_.is_valid());

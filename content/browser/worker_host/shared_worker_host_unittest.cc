@@ -117,8 +117,9 @@ class SharedWorkerHostTest : public testing::Test {
                 nullptr /* controller_service_worker_object_host */);
   }
 
-  MessagePortChannel AddClient(SharedWorkerHost* host,
-                               blink::mojom::SharedWorkerClientPtr client) {
+  MessagePortChannel AddClient(
+      SharedWorkerHost* host,
+      mojo::PendingRemote<blink::mojom::SharedWorkerClient> client) {
     mojo::MessagePipe message_pipe;
     MessagePortChannel local_port(std::move(message_pipe.handle0));
     MessagePortChannel remote_port(std::move(message_pipe.handle1));
@@ -151,9 +152,10 @@ TEST_F(SharedWorkerHostTest, Normal) {
 
   // Add the initiating client.
   MockSharedWorkerClient client;
-  blink::mojom::SharedWorkerClientPtr client_ptr;
-  client.Bind(mojo::MakeRequest(&client_ptr));
-  MessagePortChannel local_port = AddClient(host.get(), std::move(client_ptr));
+  mojo::PendingRemote<blink::mojom::SharedWorkerClient> remote_client;
+  client.Bind(remote_client.InitWithNewPipeAndPassReceiver());
+  MessagePortChannel local_port =
+      AddClient(host.get(), std::move(remote_client));
   base::RunLoop().RunUntilIdle();
 
   // The factory should have gotten the CreateSharedWorker message.
@@ -213,9 +215,10 @@ TEST_F(SharedWorkerHostTest, DestructBeforeStarting) {
 
   // Add a client.
   MockSharedWorkerClient client;
-  blink::mojom::SharedWorkerClientPtr client_ptr;
-  client.Bind(mojo::MakeRequest(&client_ptr));
-  MessagePortChannel local_port = AddClient(host.get(), std::move(client_ptr));
+  mojo::PendingRemote<blink::mojom::SharedWorkerClient> remote_client;
+  client.Bind(remote_client.InitWithNewPipeAndPassReceiver());
+  MessagePortChannel local_port =
+      AddClient(host.get(), std::move(remote_client));
   base::RunLoop().RunUntilIdle();
 
   // Destroy the host before starting.
@@ -232,9 +235,10 @@ TEST_F(SharedWorkerHostTest, TerminateBeforeStarting) {
 
   // Add a client.
   MockSharedWorkerClient client;
-  blink::mojom::SharedWorkerClientPtr client_ptr;
-  client.Bind(mojo::MakeRequest(&client_ptr));
-  MessagePortChannel local_port = AddClient(host.get(), std::move(client_ptr));
+  mojo::PendingRemote<blink::mojom::SharedWorkerClient> remote_client;
+  client.Bind(remote_client.InitWithNewPipeAndPassReceiver());
+  MessagePortChannel local_port =
+      AddClient(host.get(), std::move(remote_client));
   base::RunLoop().RunUntilIdle();
 
   // Request to terminate the worker before starting.
@@ -260,9 +264,10 @@ TEST_F(SharedWorkerHostTest, TerminateAfterStarting) {
 
   // Add a client.
   MockSharedWorkerClient client;
-  blink::mojom::SharedWorkerClientPtr client_ptr;
-  client.Bind(mojo::MakeRequest(&client_ptr));
-  MessagePortChannel local_port = AddClient(host.get(), std::move(client_ptr));
+  mojo::PendingRemote<blink::mojom::SharedWorkerClient> remote_client;
+  client.Bind(remote_client.InitWithNewPipeAndPassReceiver());
+  MessagePortChannel local_port =
+      AddClient(host.get(), std::move(remote_client));
   base::RunLoop().RunUntilIdle();
 
   {
@@ -303,9 +308,10 @@ TEST_F(SharedWorkerHostTest, OnContextClosed) {
 
   // Add a client.
   MockSharedWorkerClient client;
-  blink::mojom::SharedWorkerClientPtr client_ptr;
-  client.Bind(mojo::MakeRequest(&client_ptr));
-  MessagePortChannel local_port = AddClient(host.get(), std::move(client_ptr));
+  mojo::PendingRemote<blink::mojom::SharedWorkerClient> remote_client;
+  client.Bind(remote_client.InitWithNewPipeAndPassReceiver());
+  MessagePortChannel local_port =
+      AddClient(host.get(), std::move(remote_client));
   base::RunLoop().RunUntilIdle();
 
   {

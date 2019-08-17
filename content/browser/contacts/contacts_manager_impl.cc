@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/contacts/contacts_provider_android.h"
@@ -35,11 +35,21 @@ std::unique_ptr<ContactsProvider> CreateProvider(
 }  // namespace
 
 // static
-void ContactsManagerImpl::Create(RenderFrameHostImpl* render_frame_host,
-                                 blink::mojom::ContactsManagerRequest request) {
-  mojo::MakeStrongBinding(
+void ContactsManagerImpl::CreateForRequest(
+    RenderFrameHostImpl* render_frame_host,
+    blink::mojom::ContactsManagerRequest request) {
+  // Implicit conversion from ContactsManagerRequest to
+  // mojo::PendingReceiver<blink::mojom::ContactsManager>.
+  Create(render_frame_host, std::move(request));
+}
+
+// static
+void ContactsManagerImpl::Create(
+    RenderFrameHostImpl* render_frame_host,
+    mojo::PendingReceiver<blink::mojom::ContactsManager> receiver) {
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<ContactsManagerImpl>(render_frame_host),
-      std::move(request));
+      std::move(receiver));
 }
 
 ContactsManagerImpl::ContactsManagerImpl(RenderFrameHostImpl* render_frame_host)

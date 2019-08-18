@@ -404,8 +404,10 @@ void ServiceWorkerSingleScriptUpdateChecker::OnWriteHeadersComplete(
   header_writer_state_ =
       ServiceWorkerUpdatedScriptLoader::WriterState::kCompleted;
   if (error != net::OK) {
-    Fail(blink::ServiceWorkerStatusCode::kErrorFailed,
-         ServiceWorkerConsts::kServiceWorkerFetchScriptError,
+    // This error means the cache writer failed to read script header from
+    // storage.
+    Fail(blink::ServiceWorkerStatusCode::kErrorDiskCache,
+         ServiceWorkerConsts::kDatabaseErrorMessage,
          network::URLLoaderCompletionStatus(error));
     return;
   }
@@ -533,7 +535,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnCompareDataComplete(
   if (error != net::OK) {
     // Something went wrong reading from the disk cache.
     Fail(blink::ServiceWorkerStatusCode::kErrorDiskCache,
-         ServiceWorkerConsts::kServiceWorkerFetchScriptError,
+         ServiceWorkerConsts::kDatabaseErrorMessage,
          network::URLLoaderCompletionStatus(error));
     return;
   }

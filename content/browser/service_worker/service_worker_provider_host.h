@@ -508,7 +508,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void OnExecutionReady() override;
 
   // Callback for ServiceWorkerContextCore::RegisterServiceWorker().
-  void RegistrationComplete(RegisterCallback callback,
+  void RegistrationComplete(const GURL& script_url,
+                            const GURL& scope,
+                            RegisterCallback callback,
                             int64_t trace_id,
                             mojo::ReportBadMessageCallback bad_message_callback,
                             blink::ServiceWorkerStatusCode status,

@@ -53,10 +53,10 @@ const char ServiceWorkerConsts::kUserDeniedPermissionMessage[] =
     "The user denied permission to use Service Worker.";
 
 const char ServiceWorkerConsts::kServiceWorkerRegisterErrorPrefix[] =
-    "Failed to register a ServiceWorker: ";
+    "Failed to register a ServiceWorker for scope ('%s') with script ('%s'): ";
 
 const char ServiceWorkerConsts::kServiceWorkerUpdateErrorPrefix[] =
-    "Failed to update a ServiceWorker: ";
+    "Failed to update a ServiceWorker for scope ('%s') with script ('%s'): ";
 
 const char ServiceWorkerConsts::kServiceWorkerUnregisterErrorPrefix[] =
     "Failed to unregister a ServiceWorkerRegistration: ";
@@ -90,6 +90,9 @@ const char ServiceWorkerConsts::kServiceWorkerAllowed[] =
 
 const char ServiceWorkerConsts::kServiceWorkerCopyScriptError[] =
     "An unknown error occurred when copying the script.";
+
+const char ServiceWorkerConsts::kServiceWorkerInvalidVersionError[] =
+    "Service worker went to a bad state unexpectedly.";
 
 const int ServiceWorkerConsts::kInvalidEmbeddedWorkerThreadId = -1;
 

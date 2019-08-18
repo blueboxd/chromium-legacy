@@ -193,7 +193,7 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
   DCHECK_EQ(LoaderState::kLoadingHeader, network_loader_state_);
   if (!version_->context() || version_->is_redundant()) {
     CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_FAILED),
-                    ServiceWorkerConsts::kServiceWorkerFetchScriptError);
+                    ServiceWorkerConsts::kServiceWorkerInvalidVersionError);
     return;
   }
 
@@ -381,7 +381,7 @@ void ServiceWorkerNewScriptLoader::OnWriteHeadersComplete(net::Error error) {
     ServiceWorkerMetrics::CountWriteResponseResult(
         ServiceWorkerMetrics::WRITE_HEADERS_ERROR);
     CommitCompleted(network::URLLoaderCompletionStatus(error),
-                    ServiceWorkerConsts::kServiceWorkerFetchScriptError);
+                    ServiceWorkerConsts::kDatabaseErrorMessage);
     return;
   }
   header_writer_state_ = WriterState::kCompleted;
@@ -503,7 +503,7 @@ void ServiceWorkerNewScriptLoader::OnWriteDataComplete(
     ServiceWorkerMetrics::CountWriteResponseResult(
         ServiceWorkerMetrics::WRITE_DATA_ERROR);
     CommitCompleted(network::URLLoaderCompletionStatus(error),
-                    ServiceWorkerConsts::kServiceWorkerFetchScriptError);
+                    ServiceWorkerConsts::kDatabaseErrorMessage);
     return;
   }
   ServiceWorkerMetrics::CountWriteResponseResult(

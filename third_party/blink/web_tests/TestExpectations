@@ -5059,6 +5059,15 @@ crbug.com/889798 virtual/cache-storage-sequence/external/wpt/service-workers/ser
 crbug.com/889798 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
 crbug.com/889798 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
 
+# Service worker updates will succeed when ServiceWorkerImportedScriptUpdateCheck is enabled.
+crbug.com/648295 external/wpt/service-workers/service-worker/update.https.html [ Failure ]
+crbug.com/648295 virtual/blink-cors/external/wpt/service-workers/service-worker/update.https.html [ Failure ]
+crbug.com/648295 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/update.https.html [ Failure ]
+crbug.com/648295 virtual/cache-storage-parallel/external/wpt/service-workers/service-worker/update.https.html [ Failure ]
+crbug.com/648295 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/update.https.html [ Failure ]
+crbug.com/648295 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/update.https.html [ Failure ]
+crbug.com/648295 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update.https.html [ Failure ]
+
 # Sheriff failures 2017-07-03
 crbug.com/708994 http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
 crbug.com/708994 virtual/blink-cors/http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]

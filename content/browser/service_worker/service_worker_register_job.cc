@@ -687,11 +687,19 @@ void ServiceWorkerRegisterJob::CompleteInternal(
       if (should_uninstall_on_failure_)
         registration()->ClearWhenReady();
       if (new_version()) {
-        if (status == blink::ServiceWorkerStatusCode::kErrorExists)
+        if (status == blink::ServiceWorkerStatusCode::kErrorExists) {
           new_version()->SetStartWorkerStatusCode(
               blink::ServiceWorkerStatusCode::kErrorExists);
-        else
-          new_version()->ReportError(status, status_message);
+        } else {
+          const char* error_prefix =
+              job_type_ == REGISTRATION_JOB
+                  ? ServiceWorkerConsts::kServiceWorkerRegisterErrorPrefix
+                  : ServiceWorkerConsts::kServiceWorkerUpdateErrorPrefix;
+          new_version()->ReportError(
+              status, base::StringPrintf(error_prefix, scope_.spec().c_str(),
+                                         script_url_.spec().c_str()) +
+                          status_message);
+        }
         registration()->UnsetVersion(new_version());
         new_version()->Doom();
       }

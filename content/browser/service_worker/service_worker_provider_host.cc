@@ -886,7 +886,11 @@ void ServiceWorkerProviderHost::Register(
     RegisterCallback callback) {
   if (!CanServeContainerHostMethods(
           &callback, options->scope, script_url,
-          ServiceWorkerConsts::kServiceWorkerRegisterErrorPrefix, nullptr)) {
+          base::StringPrintf(
+              ServiceWorkerConsts::kServiceWorkerRegisterErrorPrefix,
+              options->scope.spec().c_str(), script_url.spec().c_str())
+              .c_str(),
+          nullptr)) {
     return;
   }
   if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
@@ -911,11 +915,14 @@ void ServiceWorkerProviderHost::Register(
   context_->RegisterServiceWorker(
       script_url, *options,
       base::BindOnce(&ServiceWorkerProviderHost::RegistrationComplete,
-                     AsWeakPtr(), std::move(callback), trace_id,
+                     AsWeakPtr(), GURL(script_url), GURL(options->scope),
+                     std::move(callback), trace_id,
                      mojo::GetBadMessageCallback()));
 }
 
 void ServiceWorkerProviderHost::RegistrationComplete(
+    const GURL& script_url,
+    const GURL& scope,
     RegisterCallback callback,
     int64_t trace_id,
     mojo::ReportBadMessageCallback bad_message_callback,
@@ -939,7 +946,9 @@ void ServiceWorkerProviderHost::RegistrationComplete(
   if (!IsContextAlive()) {
     std::move(callback).Run(
         blink::mojom::ServiceWorkerErrorType::kAbort,
-        std::string(ServiceWorkerConsts::kServiceWorkerRegisterErrorPrefix) +
+        base::StringPrintf(
+            ServiceWorkerConsts::kServiceWorkerRegisterErrorPrefix,
+            scope.spec().c_str(), script_url.spec().c_str()) +
             std::string(ServiceWorkerConsts::kShutdownErrorMessage),
         nullptr);
     return;
@@ -952,7 +961,10 @@ void ServiceWorkerProviderHost::RegistrationComplete(
                                              &error_type, &error_message);
     std::move(callback).Run(
         error_type,
-        ServiceWorkerConsts::kServiceWorkerRegisterErrorPrefix + error_message,
+        base::StringPrintf(
+            ServiceWorkerConsts::kServiceWorkerRegisterErrorPrefix,
+            scope.spec().c_str(), script_url.spec().c_str()) +
+            error_message,
         nullptr);
     return;
   }

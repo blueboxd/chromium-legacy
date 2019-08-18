@@ -43,6 +43,7 @@ struct CONTENT_EXPORT ServiceWorkerConsts {
   static const char kServiceWorkerRedirectError[];
   static const char kServiceWorkerAllowed[];
   static const char kServiceWorkerCopyScriptError[];
+  static const char kServiceWorkerInvalidVersionError[];
 
   // Constants for invalid identifiers.
   static const int kInvalidEmbeddedWorkerThreadId;

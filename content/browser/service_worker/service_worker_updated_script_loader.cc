@@ -422,7 +422,7 @@ void ServiceWorkerUpdatedScriptLoader::OnCacheWriterResumed(net::Error error) {
 
   if (error != net::OK) {
     CommitCompleted(network::URLLoaderCompletionStatus(error),
-                    ServiceWorkerConsts::kServiceWorkerFetchScriptError);
+                    ServiceWorkerConsts::kDatabaseErrorMessage);
     return;
   }
   // If the script has no body or all the body has already been read when it
@@ -546,7 +546,7 @@ void ServiceWorkerUpdatedScriptLoader::OnWriteDataComplete(
     ServiceWorkerMetrics::CountWriteResponseResult(
         ServiceWorkerMetrics::WRITE_DATA_ERROR);
     CommitCompleted(network::URLLoaderCompletionStatus(error),
-                    ServiceWorkerConsts::kServiceWorkerFetchScriptError);
+                    ServiceWorkerConsts::kDatabaseErrorMessage);
     return;
   }
   ServiceWorkerMetrics::CountWriteResponseResult(

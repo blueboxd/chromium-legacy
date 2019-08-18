@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL Tests requestSession accepts XRSessionInit dictionary promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'makeXRCompatible' of null"
+FAIL Tests requestSession accepts XRSessionInit dictionary with empty feature lists promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'makeXRCompatible' of null"
+FAIL Tests requestSession ignores unknown optionalFeatures promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'makeXRCompatible' of null"
+Harness: the test ran to completion.
+

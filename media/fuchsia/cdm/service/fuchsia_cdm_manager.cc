@@ -144,13 +144,17 @@ void FuchsiaCdmManager::OriginProvisioner::OnProvisioningRequest(
     OnProvisionFail();
     return;
   }
+  if (!request.default_provisioning_server_url) {
+    DLOG(ERROR) << "Missing default provisioning server URL.";
+    OnProvisionFail();
+    return;
+  }
 
   DCHECK(create_fetcher_cb_);
   provision_fetcher_ = std::move(create_fetcher_cb_).Run();
   DCHECK(provision_fetcher_);
-  DCHECK(request.default_provisioning_server_url);
   provision_fetcher_->Retrieve(
-      request.default_provisioning_server_url.get(), request_str,
+      request.default_provisioning_server_url.value(), request_str,
       base::BindRepeating(&OriginProvisioner::OnProvisioningResponse,
                           base::Unretained(this)));
 }

@@ -384,8 +384,16 @@ void Bluetooth::ScanEvent(mojom::blink::WebBluetoothScanResultPtr result) {
   DispatchEvent(*event);
 }
 
+void Bluetooth::PageVisibilityChanged() {
+  client_bindings_.CloseAllBindings();
+}
+
 void Bluetooth::CancelScan(mojo::BindingId id) {
   client_bindings_.RemoveBinding(id);
+}
+
+bool Bluetooth::IsScanActive(mojo::BindingId id) const {
+  return client_bindings_.HasBinding(id);
 }
 
 const WTF::AtomicString& Bluetooth::InterfaceName() const {
@@ -404,10 +412,12 @@ void Bluetooth::Trace(blink::Visitor* visitor) {
   visitor->Trace(device_instance_map_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
+  PageVisibilityObserver::Trace(visitor);
 }
 
 Bluetooth::Bluetooth(ExecutionContext* context)
-    : ContextLifecycleObserver(context) {}
+    : ContextLifecycleObserver(context),
+      PageVisibilityObserver(To<Document>(context)->GetPage()) {}
 
 Bluetooth::~Bluetooth() {
   DCHECK(client_bindings_.empty());

@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Ensure a WebGL layer's framebuffer can only be drawn to inside a XR frame promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'makeXRCompatible' of null"
+Harness: the test ran to completion.
+

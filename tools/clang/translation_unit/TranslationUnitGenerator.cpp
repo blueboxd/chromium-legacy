@@ -267,11 +267,13 @@ void CompilationIndexerAction::ExecuteAction() {
 
 void CompilationIndexerAction::Preprocess() {
   clang::Preprocessor& preprocessor = getCompilerInstance().getPreprocessor();
+#ifdef LLVM_FORCE_HEAD_REVISION
+  preprocessor.addPPCallbacks(std::make_unique<IncludeFinderPPCallbacks>(
+#else
   preprocessor.addPPCallbacks(llvm::make_unique<IncludeFinderPPCallbacks>(
-      &getCompilerInstance().getSourceManager(),
-      &main_source_file_,
-      &source_file_paths_,
-      &getCompilerInstance().getHeaderSearchOpts()));
+#endif
+      &getCompilerInstance().getSourceManager(), &main_source_file_,
+      &source_file_paths_, &getCompilerInstance().getHeaderSearchOpts()));
   preprocessor.getDiagnostics().setIgnoreAllWarnings(true);
   preprocessor.SetSuppressIncludeNotFoundError(true);
   preprocessor.EnterMainSourceFile();

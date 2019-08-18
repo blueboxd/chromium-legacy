@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL A frame should be submitted if the base layer was written to during requestAnimationFrame promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'makeXRCompatible' of null"
+Harness: the test ran to completion.
+

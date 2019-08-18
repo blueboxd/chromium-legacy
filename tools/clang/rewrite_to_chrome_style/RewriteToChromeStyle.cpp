@@ -1286,7 +1286,11 @@ class GMockMemberRewriter
       : Base(replacements) {}
 
   std::unique_ptr<clang::PPCallbacks> CreatePreprocessorCallbacks() {
+#ifdef LLVM_FORCE_HEAD_REVISION
+    return std::make_unique<GMockMemberRewriter::PPCallbacks>(this);
+#else
     return llvm::make_unique<GMockMemberRewriter::PPCallbacks>(this);
+#endif
   }
 
   clang::SourceLocation GetTargetLoc(

@@ -66,7 +66,10 @@ void FakeCentral::SimulatePreconnectedPeripheral(
 void FakeCentral::SimulateAdvertisementReceived(
     mojom::ScanResultPtr scan_result_ptr,
     SimulateAdvertisementReceivedCallback callback) {
-  DCHECK(NumDiscoverySessions() > 0);
+  if (NumDiscoverySessions() == 0) {
+    std::move(callback).Run();
+    return;
+  }
   auto* fake_peripheral = GetFakePeripheral(scan_result_ptr->device_address);
   const bool is_new_device = fake_peripheral == nullptr;
   if (is_new_device) {

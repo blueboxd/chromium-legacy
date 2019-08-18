@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL XRView projection matrices update near and far depths on the next frame promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'makeXRCompatible' of null"
+Harness: the test ran to completion.
+

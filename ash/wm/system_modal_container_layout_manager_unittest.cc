@@ -405,6 +405,46 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
   }
 }
 
+// Test if a user can still click the status area in lock screen
+// even if the user session has system modal dialog.
+TEST_F(SystemModalContainerLayoutManagerTest,
+       ClickStatusWithModalDialogInLockedState) {
+  // Create a normal window and attempt to receive a click event.
+  EventTestWindow* main_delegate = new EventTestWindow(false);
+  std::unique_ptr<aura::Window> main(
+      main_delegate->OpenTestWindowWithContext(CurrentContext()));
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), main.get());
+
+  // A window in status area container to test if it could receive an event
+  // under each condition.
+  EventTestWindow* status_delegate = new EventTestWindow(false);
+  std::unique_ptr<aura::Window> status(
+      status_delegate->OpenTestWindowWithParent(
+          Shell::GetPrimaryRootWindowController()->GetContainer(
+              ash::kShellWindowId_StatusContainer)));
+  status->SetBounds(main->bounds());
+
+  // Events are blocked on all windows because status window is above the modal
+  // window.
+  EventTestWindow* modal_delegate = new EventTestWindow(true);
+  aura::Window* modal = modal_delegate->OpenTestWindowWithParent(main.get());
+  EXPECT_TRUE(wm::IsActiveWindow(modal));
+  generator.ClickLeftButton();
+
+  EXPECT_EQ(0, main_delegate->mouse_presses());
+  EXPECT_EQ(0, modal_delegate->mouse_presses());
+  EXPECT_EQ(0, status_delegate->mouse_presses());
+
+  BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
+
+  // In lock screen, a window in status area container should be able to receive
+  // the event even with a system modal dialog in the user session.
+  generator.ClickLeftButton();
+  EXPECT_EQ(0, main_delegate->mouse_presses());
+  EXPECT_EQ(0, modal_delegate->mouse_presses());
+  EXPECT_EQ(1, status_delegate->mouse_presses());
+}
+
 TEST_F(SystemModalContainerLayoutManagerTest, ModalTransientChildEvents) {
   // Create a normal window and attempt to receive a click event.
   EventTestWindow* main_delegate = new EventTestWindow(false);

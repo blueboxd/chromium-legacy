@@ -760,7 +760,7 @@ gfx::Insets DisplayManager::GetOverscanInsets(int64_t display_id) const {
 void DisplayManager::OnNativeDisplaysChanged(
     const DisplayInfoList& updated_displays) {
   if (updated_displays.empty()) {
-    DVLOG(1) << __func__
+    VLOG(1) << __func__
              << "(0): # of current displays=" << active_display_list_.size();
     // If the device is booted without display, or chrome is started
     // without --ash-host-window-bounds on linux desktop, use the
@@ -785,9 +785,9 @@ void DisplayManager::OnNativeDisplaysChanged(
     }
     return;
   }
-  DVLOG_IF(1, updated_displays.size() == 1)
+  VLOG_IF(1, updated_displays.size() == 1)
       << __func__ << "(1):" << updated_displays[0].ToString();
-  DVLOG_IF(1, updated_displays.size() > 1)
+  VLOG_IF(1, updated_displays.size() > 1)
       << __func__ << "(" << updated_displays.size()
       << ") [0]=" << updated_displays[0].ToString()
       << ", [1]=" << updated_displays[1].ToString();

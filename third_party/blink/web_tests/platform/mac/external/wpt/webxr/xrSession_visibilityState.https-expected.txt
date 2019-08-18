@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Ensures that the XRSession's visibilityState is correctly reported and that the associated visibilitychange event fires. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'makeXRCompatible' of null"
+Harness: the test ran to completion.
+

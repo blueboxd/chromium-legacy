@@ -3239,6 +3239,18 @@ crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-tim
 crbug.com/994214 external/wpt/html/cross-origin-opener-policy/coop-navigated-popup.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-002.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-002.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-002.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-001.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-001.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-001.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-002.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-002.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-002.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-001.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-001.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-display/display-flow-root-list-item-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-display/display-flow-root-list-item-001.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-display/display-flow-root-list-item-001.html [ Failure ]
@@ -5930,9 +5942,6 @@ crbug.com/924954 http/tests/images/feature-policy-image-policies-with-border-rad
 # Chrome does not implement the feature policy name currently in the spec,
 # which is still in flux.
 crbug.com/924670 external/wpt/webxr/webxr-supported-by-feature-policy.html [ Failure ]
-
-crbug.com/961015 [ Mac ] external/wpt/webxr/xrSession_requestAnimationFrame_callback_calls.https.html [ Timeout ]
-crbug.com/961015 [ Mac ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Timeout ]
 
 # Sheriff 2019-02-01, 2019-02-19
 # These are crashy on Win10, and seem to leave processes lying around, causing the swarming

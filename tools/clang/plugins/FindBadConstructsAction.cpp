@@ -36,7 +36,11 @@ FindBadConstructsAction::FindBadConstructsAction() {
 std::unique_ptr<ASTConsumer> FindBadConstructsAction::CreateASTConsumer(
     CompilerInstance& instance,
     llvm::StringRef ref) {
+#ifdef LLVM_FORCE_HEAD_REVISION
+  return std::make_unique<PluginConsumer>(&instance, options_);
+#else
   return llvm::make_unique<PluginConsumer>(&instance, options_);
+#endif
 }
 
 bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,

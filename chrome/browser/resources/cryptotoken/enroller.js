@@ -111,14 +111,6 @@ async function makeCertAndKey(opt_original) {
   if (opt_original) {
     transport = transportType(opt_original);
   }
-  if (transport !== null) {
-    if (transport.length != 2) {
-      throw Error('bad extension length');
-    }
-    if (transport[0] < 3) {
-      throw Error('too many bits set');  // Only 5 bits are defined.
-    }
-  }
 
   const keyalg = {name: 'ECDSA', namedCurve: 'P-256'};
   const keypair =

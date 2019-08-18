@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Ensures that an XRInputSources primary input being pressed and released in the space of a single frame properly fires off the right events promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'makeXRCompatible' of null"
+Harness: the test ran to completion.
+

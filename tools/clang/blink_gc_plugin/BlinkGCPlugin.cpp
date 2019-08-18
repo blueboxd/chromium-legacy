@@ -25,7 +25,11 @@ class BlinkGCPluginAction : public PluginASTAction {
   // Overridden from PluginASTAction:
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance& instance,
                                                  llvm::StringRef ref) override {
+#ifdef LLVM_FORCE_HEAD_REVISION
+    return std::make_unique<BlinkGCPluginConsumer>(instance, options_);
+#else
     return llvm::make_unique<BlinkGCPluginConsumer>(instance, options_);
+#endif
   }
 
   bool ParseArgs(const CompilerInstance&,

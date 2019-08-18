@@ -54,12 +54,11 @@ bool BluetoothLEScan::acceptAllAdvertisements() const {
 }
 
 bool BluetoothLEScan::active() const {
-  return is_active_;
+  return bluetooth_->IsScanActive(id_);
 }
 
 bool BluetoothLEScan::stop() {
   bluetooth_->CancelScan(id_);
-  is_active_ = false;
   return true;
 }
 

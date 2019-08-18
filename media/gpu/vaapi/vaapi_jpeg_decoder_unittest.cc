@@ -271,10 +271,6 @@ class VaapiJpegDecoderTest
       base::span<const uint8_t> encoded_image,
       VaapiImageDecodeStatus* status = nullptr);
 
-  std::unique_ptr<NativePixmapAndSizeInfo> DecodeToNativePixmapDmaBuf(
-      base::span<const uint8_t> encoded_image,
-      VaapiImageDecodeStatus* status = nullptr);
-
  protected:
   std::string test_data_path_;
   VaapiJpegDecoder decoder_;
@@ -320,29 +316,6 @@ std::unique_ptr<ScopedVAImage> VaapiJpegDecoderTest::Decode(
     base::span<const uint8_t> encoded_image,
     VaapiImageDecodeStatus* status) {
   return Decode(encoded_image, VA_FOURCC_I420, status);
-}
-
-std::unique_ptr<NativePixmapAndSizeInfo>
-VaapiJpegDecoderTest::DecodeToNativePixmapDmaBuf(
-    base::span<const uint8_t> encoded_image,
-    VaapiImageDecodeStatus* status) {
-  const VaapiImageDecodeStatus decode_status = decoder_.Decode(encoded_image);
-  EXPECT_EQ(!!decoder_.GetScopedVASurface(),
-            decode_status == VaapiImageDecodeStatus::kSuccess);
-
-  // Still try to export the surface when decode fails.
-  VaapiImageDecodeStatus export_status;
-  std::unique_ptr<NativePixmapAndSizeInfo> exported_pixmap =
-      decoder_.ExportAsNativePixmapDmaBuf(&export_status);
-  EXPECT_EQ(!!exported_pixmap,
-            export_status == VaapiImageDecodeStatus::kSuccess);
-
-  // Return the first fail status.
-  if (status) {
-    *status = decode_status != VaapiImageDecodeStatus::kSuccess ? decode_status
-                                                                : export_status;
-  }
-  return exported_pixmap;
 }
 
 // The intention of this test is to ensure that the workarounds added in
@@ -525,8 +498,6 @@ class VaapiJpegDecoderWithDmaBufsTest : public VaapiJpegDecoderTest {
  public:
   VaapiJpegDecoderWithDmaBufsTest() = default;
   ~VaapiJpegDecoderWithDmaBufsTest() override = default;
-
-  // TODO(andrescj): move DecodeToNativePixmapDmaBuf() to here.
 };
 
 // TODO(andrescj): test other JPEG formats besides YUV 4:2:0.
@@ -537,12 +508,6 @@ TEST_P(VaapiJpegDecoderWithDmaBufsTest, DecodeSucceeds) {
     // objects, the AMD driver fails this test.
     GTEST_SKIP();
   }
-  if (base::StartsWith(VaapiWrapper::GetVendorStringForTesting(),
-                       "Intel i965 driver", base::CompareCase::SENSITIVE)) {
-    // TODO(b/135705575): until the correct offsets are exported, the Intel i965
-    // driver fails this test.
-    GTEST_SKIP();
-  }
 
   base::FilePath input_file = FindTestDataFilePath(GetParam().filename);
   std::string jpeg_data;
@@ -550,15 +515,40 @@ TEST_P(VaapiJpegDecoderWithDmaBufsTest, DecodeSucceeds) {
       << "failed to read input data from " << input_file.value();
   const auto encoded_image = base::make_span<const uint8_t>(
       reinterpret_cast<const uint8_t*>(jpeg_data.data()), jpeg_data.size());
-  VaapiImageDecodeStatus status;
+
+  // Decode into a VAAPI-allocated surface.
+  const VaapiImageDecodeStatus decode_status = decoder_.Decode(encoded_image);
+  EXPECT_EQ(VaapiImageDecodeStatus::kSuccess, decode_status);
+  ASSERT_TRUE(decoder_.GetScopedVASurface());
+  const gfx::Size va_surface_visible_size =
+      decoder_.GetScopedVASurface()->size();
+
+  // The size stored in the ScopedVASurface should be the visible size of the
+  // JPEG.
+  JpegParseResult parse_result;
+  ASSERT_TRUE(ParseJpegPicture(encoded_image.data(), encoded_image.size(),
+                               &parse_result));
+  EXPECT_EQ(gfx::Size(parse_result.frame_header.visible_width,
+                      parse_result.frame_header.visible_height),
+            va_surface_visible_size);
+
+  // Export the surface.
+  VaapiImageDecodeStatus export_status = VaapiImageDecodeStatus::kInvalidState;
   std::unique_ptr<NativePixmapAndSizeInfo> exported_pixmap =
-      DecodeToNativePixmapDmaBuf(encoded_image, &status);
-  ASSERT_EQ(VaapiImageDecodeStatus::kSuccess, status);
-  EXPECT_FALSE(decoder_.GetScopedVASurface());
+      decoder_.ExportAsNativePixmapDmaBuf(&export_status);
+  EXPECT_EQ(VaapiImageDecodeStatus::kSuccess, export_status);
   ASSERT_TRUE(exported_pixmap);
   ASSERT_TRUE(exported_pixmap->pixmap);
+  EXPECT_FALSE(decoder_.GetScopedVASurface());
+
+  // For JPEG decoding, the size of the surface we request is the coded size of
+  // the JPEG. Make sure the surface contains that coded area.
+  EXPECT_TRUE(gfx::Rect(exported_pixmap->va_surface_resolution)
+                  .Contains(gfx::Rect(parse_result.frame_header.coded_width,
+                                      parse_result.frame_header.coded_height)));
 
   // Make sure the visible area is contained by the surface.
+  EXPECT_EQ(va_surface_visible_size, exported_pixmap->pixmap->GetBufferSize());
   EXPECT_FALSE(exported_pixmap->va_surface_resolution.IsEmpty());
   EXPECT_FALSE(exported_pixmap->pixmap->GetBufferSize().IsEmpty());
   ASSERT_TRUE(
@@ -574,8 +564,9 @@ TEST_P(VaapiJpegDecoderWithDmaBufsTest, DecodeSucceeds) {
   VAImageFormat i420_format{};
   i420_format.fourcc = VA_FOURCC_I420;
   EXPECT_TRUE(VaapiWrapper::IsImageFormatSupported(i420_format));
-  EXPECT_FALSE(decoder_.GetImage(i420_format.fourcc, &status));
-  EXPECT_EQ(VaapiImageDecodeStatus::kInvalidState, status);
+  VaapiImageDecodeStatus image_status = VaapiImageDecodeStatus::kSuccess;
+  EXPECT_FALSE(decoder_.GetImage(i420_format.fourcc, &image_status));
+  EXPECT_EQ(VaapiImageDecodeStatus::kInvalidState, image_status);
 
   // Workaround: in order to import and map the pixmap using minigbm when the
   // format is gfx::BufferFormat::YVU_420, we need to reorder the planes so that

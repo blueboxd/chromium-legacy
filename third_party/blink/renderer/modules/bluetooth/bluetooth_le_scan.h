@@ -36,7 +36,6 @@ class BluetoothLEScan final : public ScriptWrappable {
   Member<Bluetooth> bluetooth_;
   const bool keep_repeated_devices_;
   const bool accept_all_advertisements_;
-  bool is_active_ = true;
 };
 
 }  // namespace blink

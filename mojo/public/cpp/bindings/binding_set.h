@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -118,6 +119,11 @@ class BindingSetBase {
     bindings_.erase(it);
     return true;
   }
+
+  // Predicate to test if a binding exists in the set.
+  //
+  // Returns |true| if the binding is in the set and |false| if not.
+  bool HasBinding(BindingId id) const { return base::Contains(bindings_, id); }
 
   // Swaps the interface implementation with a different one, to allow tests
   // to modify behavior.

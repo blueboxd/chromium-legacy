@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/test/gtest_util.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
@@ -148,29 +147,6 @@ TEST_F(VaapiUtilsTest, ScopedVASurfaceWithVisibleSize) {
   EXPECT_EQ(VA_RT_FORMAT_YUV420,
             base::checked_cast<int>(scoped_va_surface->format()));
   EXPECT_EQ(visible_size, scoped_va_surface->size());
-
-  // Export the surface to query its actual size.
-  if (base::StartsWith(VaapiWrapper::GetVendorStringForTesting(),
-                       "Mesa Gallium driver", base::CompareCase::SENSITIVE)) {
-    // TODO(andrescj): don't skip this once
-    // ExportVASurfaceAsNativePixmapDmaBuf() supports multiple BOs.
-    return;
-  }
-  if (base::StartsWith(VaapiWrapper::GetVendorStringForTesting(),
-                       "Intel i965 driver", base::CompareCase::SENSITIVE)) {
-    // TODO(b/135705575): not sure why the following is failing in this driver.
-    // Probably because the surface is never actually allocated because no
-    // decoding work is being done. Revisit this once the correct offsets are
-    // exported.
-    return;
-  }
-  std::unique_ptr<NativePixmapAndSizeInfo> exported_pixmap =
-      vaapi_wrapper_->ExportVASurfaceAsNativePixmapDmaBuf(*scoped_va_surface);
-  ASSERT_TRUE(exported_pixmap);
-  ASSERT_TRUE(exported_pixmap->pixmap);
-  EXPECT_LE(coded_size.width(), exported_pixmap->va_surface_resolution.width());
-  EXPECT_LE(coded_size.height(),
-            exported_pixmap->va_surface_resolution.height());
 }
 
 // This test exercises the creation of a ScopedVASurface with an invalid

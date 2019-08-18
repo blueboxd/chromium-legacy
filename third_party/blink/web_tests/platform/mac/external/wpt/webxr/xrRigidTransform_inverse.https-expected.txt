@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL XRRigidTransform inverse works promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'makeXRCompatible' of null"
+Harness: the test ran to completion.
+

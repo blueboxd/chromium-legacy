@@ -48,12 +48,7 @@ FileAnalyzer::Results ExtractFileFeatures(
     scoped_refptr<BinaryFeatureExtractor> binary_feature_extractor,
     base::FilePath file_path) {
   FileAnalyzer::Results results;
-  base::TimeTicks start_time = base::TimeTicks::Now();
   binary_feature_extractor->CheckSignature(file_path, &results.signature_info);
-  bool is_signed = (results.signature_info.certificate_chain_size() > 0);
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.SignedBinaryDownload", is_signed);
-  UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractSignatureFeaturesTime",
-                      base::TimeTicks::Now() - start_time);
 
   if (!binary_feature_extractor->ExtractImageFeatures(
           file_path, BinaryFeatureExtractor::kDefaultOptions,

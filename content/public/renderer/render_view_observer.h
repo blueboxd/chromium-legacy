@@ -12,7 +12,6 @@
 #include "ipc/ipc_sender.h"
 
 namespace blink {
-class WebGestureEvent;
 class WebLocalFrame;
 }
 
@@ -35,9 +34,6 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   virtual void DidClearWindowObject(blink::WebLocalFrame* frame) {}
   virtual void DidCommitCompositorFrame() {}
   virtual void DidUpdateMainFrameLayout() {}
-
-  // These match the RenderView methods.
-  virtual void DidHandleGestureEvent(const blink::WebGestureEvent& event) {}
 
   virtual void OnZoomLevelChanged() {}
 

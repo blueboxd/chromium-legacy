@@ -235,32 +235,6 @@ class MockMediaController : public mojom::MediaController {
   mojo::Binding<mojom::MediaController> binding_;
 };
 
-class MockMediaRouteController : public MediaRouteController {
- public:
-  MockMediaRouteController(const MediaRoute::Id& route_id,
-                           content::BrowserContext* context,
-                           MediaRouter* router);
-  MOCK_METHOD0(Play, void());
-  MOCK_METHOD0(Pause, void());
-  MOCK_METHOD1(Seek, void(base::TimeDelta time));
-  MOCK_METHOD1(SetMute, void(bool mute));
-  MOCK_METHOD1(SetVolume, void(float volume));
-
- protected:
-  // The dtor is protected because MockMediaRouteController is ref-counted.
-  ~MockMediaRouteController() override;
-};
-
-class MockMediaRouteControllerObserver : public MediaRouteController::Observer {
- public:
-  MockMediaRouteControllerObserver(
-      scoped_refptr<MediaRouteController> controller);
-  ~MockMediaRouteControllerObserver() override;
-
-  MOCK_METHOD1(OnMediaStatusUpdated, void(const mojom::MediaStatus& status));
-  MOCK_METHOD0(OnControllerInvalidated, void());
-};
-
 // Tests the API call flow between the MediaRouterMojoImpl and the Media Router
 // Mojo service in both directions.
 class MediaRouterMojoTest : public ::testing::Test {
@@ -297,7 +271,6 @@ class MediaRouterMojoTest : public ::testing::Test {
   void TestSendRouteBinaryMessage();
   void TestDetachRoute();
   void TestSearchSinks();
-  void TestCreateMediaRouteController();
 
   const std::string& extension_id() const { return extension_->id(); }
 

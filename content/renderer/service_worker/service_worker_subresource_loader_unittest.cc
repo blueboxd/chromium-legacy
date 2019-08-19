@@ -53,18 +53,22 @@ class FakeBlob final : public blink::mojom::Blob {
   void AsDataPipeGetter(network::mojom::DataPipeGetterRequest) override {
     NOTREACHED();
   }
-  void ReadRange(uint64_t offset,
-                 uint64_t length,
-                 mojo::ScopedDataPipeProducerHandle handle,
-                 blink::mojom::BlobReaderClientPtr client) override {
+  void ReadRange(
+      uint64_t offset,
+      uint64_t length,
+      mojo::ScopedDataPipeProducerHandle handle,
+      mojo::PendingRemote<blink::mojom::BlobReaderClient> client) override {
     NOTREACHED();
   }
-  void ReadAll(mojo::ScopedDataPipeProducerHandle handle,
-               blink::mojom::BlobReaderClientPtr client) override {
+  void ReadAll(
+      mojo::ScopedDataPipeProducerHandle handle,
+      mojo::PendingRemote<blink::mojom::BlobReaderClient> client) override {
+    mojo::Remote<blink::mojom::BlobReaderClient> client_remote(
+        std::move(client));
     EXPECT_TRUE(mojo::BlockingCopyFromString(body_, handle));
-    if (client) {
-      client->OnCalculatedSize(body_.size(), body_.size());
-      client->OnComplete(net::OK, body_.size());
+    if (client_remote) {
+      client_remote->OnCalculatedSize(body_.size(), body_.size());
+      client_remote->OnComplete(net::OK, body_.size());
     }
   }
   void ReadSideData(ReadSideDataCallback callback) override {

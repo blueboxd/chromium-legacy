@@ -807,14 +807,6 @@ void CheckClientDownloadRequest::FinishRequest(
     UMA_HISTOGRAM_ENUMERATION("SBClientDownload.DownloadRequestNetworkStats",
                               reason, REASON_MAX);
   }
-  if (!timeout_start_time_.is_null()) {
-    UMA_HISTOGRAM_ENUMERATION("SBClientDownload.DownloadRequestTimeoutStats",
-                              reason, REASON_MAX);
-    if (reason != REASON_REQUEST_CANCELED) {
-      UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestTimeoutDuration",
-                          base::TimeTicks::Now() - timeout_start_time_);
-    }
-  }
 
   DVLOG(2) << "SafeBrowsing download verdict for: " << item_->DebugString(true)
            << " verdict:" << reason << " result:" << static_cast<int>(result);

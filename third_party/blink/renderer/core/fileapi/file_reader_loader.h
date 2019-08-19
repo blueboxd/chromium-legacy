@@ -34,7 +34,7 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
@@ -178,7 +178,7 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
 
   mojo::ScopedDataPipeConsumerHandle consumer_handle_;
   mojo::SimpleWatcher handle_watcher_;
-  mojo::Binding<mojom::blink::BlobReaderClient> binding_;
+  mojo::Receiver<mojom::blink::BlobReaderClient> receiver_{this};
   bool received_all_data_ = false;
   bool received_on_complete_ = false;
 #if DCHECK_IS_ON()

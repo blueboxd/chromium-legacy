@@ -42,6 +42,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/thread_annotations.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -67,7 +68,6 @@ using BlobPtr = mojo::InterfacePtr<Blob>;
 using BlobPtrInfo = mojo::InterfacePtrInfo<Blob>;
 
 class BlobReaderClient;
-using BlobReaderClientPtr = mojo::InterfacePtr<BlobReaderClient>;
 
 class BlobRegistry;
 
@@ -213,11 +213,11 @@ class PLATFORM_EXPORT BlobDataHandle
   network::mojom::blink::DataPipeGetterPtr AsDataPipeGetter();
 
   void ReadAll(mojo::ScopedDataPipeProducerHandle,
-               mojom::blink::BlobReaderClientPtr);
+               mojo::PendingRemote<mojom::blink::BlobReaderClient>);
   void ReadRange(uint64_t offset,
                  uint64_t length,
                  mojo::ScopedDataPipeProducerHandle,
-                 mojom::blink::BlobReaderClientPtr);
+                 mojo::PendingRemote<mojom::blink::BlobReaderClient>);
 
   static mojom::blink::BlobRegistry* GetBlobRegistry();
   static void SetBlobRegistryForTesting(mojom::blink::BlobRegistry*);

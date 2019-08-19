@@ -265,6 +265,27 @@ class InputReader {
   DISALLOW_COPY_AND_ASSIGN(InputReader);
 };
 
+GURL ParseExchangeURL(base::StringPiece str) {
+  if (!base::IsStringUTF8(str))
+    return GURL();
+
+  GURL url(str);
+  if (!url.is_valid())
+    return GURL();
+
+  // Exchange URL must not have a fragment or credentials.
+  if (url.has_ref() || url.has_username() || url.has_password())
+    return GURL();
+
+  // For now, we allow only http: and https: schemes in bundled exchange URLs.
+  // TODO(crbug.com/966753): Revisit this once
+  // https://github.com/WICG/webpackage/issues/468 is resolved.
+  if (!url.SchemeIsHTTPOrHTTPS())
+    return GURL();
+
+  return url;
+}
+
 }  // namespace
 
 class BundledExchangesParser::SharedBundleDataSource::Observer {
@@ -391,8 +412,10 @@ class BundledExchangesParser::MetadataParser
     // Step 6. "Let fallbackUrl be the result of parsing ([URL]) the UTF-8
     // decoding of fallbackUrlBytes with no base URL. If either the UTF-8
     // decoding or parsing fails, return a "format error"."
-    // Note: ReadString() ensures that |fallback_url_string| is a valid UTF-8.
-    GURL fallback_url(*fallback_url_string);
+    // For now, we enforce the same restriction as exchages' request URL.
+    // TODO(crbug.com/966753): Revisit URL requirements here once
+    // https://github.com/WICG/webpackage/issues/469 is resolved.
+    GURL fallback_url = ParseExchangeURL(*fallback_url_string);
     if (!fallback_url.is_valid()) {
       RunErrorCallbackAndDestroy("Cannot parse fallback URL.");
       return;
@@ -671,20 +694,12 @@ class BundledExchangesParser::MetadataParser
 
       // Step 4.1. "Let parsedUrl be the result of parsing ([URL]) url with no
       // base URL."
-      if (!base::IsStringUTF8(url)) {
-        RunErrorCallbackAndDestroy(
-            "Index section: URL must be a valid UTF-8 string.");
-        return false;
-      }
-      GURL parsed_url(url);
+      GURL parsed_url = ParseExchangeURL(url);
 
       // Step 4.2. "If parsedUrl is a failure, its fragment is not null, or it
       // includes credentials, return an error."
-      if (!parsed_url.is_valid() || parsed_url.has_ref() ||
-          parsed_url.has_username() || parsed_url.has_password()) {
-        RunErrorCallbackAndDestroy(
-            "Index section: exchange URL must be a valid URL without fragment "
-            "or credentials.");
+      if (!parsed_url.is_valid()) {
+        RunErrorCallbackAndDestroy("Index section: exchange URL is not valid.");
         return false;
       }
 
@@ -766,20 +781,18 @@ class BundledExchangesParser::MetadataParser
     // Step 1. "Let urlString be the result of parsing sectionContents as a CBOR
     // item matching the above manifest rule (Section 3.5). If urlString is an
     // error, return that error."
-    if (!section_value.is_string() ||
-        !base::IsStringUTF8(section_value.GetString())) {
-      RunErrorCallbackAndDestroy("Manifest section must be a UTF-8 string.");
+    if (!section_value.is_string()) {
+      RunErrorCallbackAndDestroy("Manifest section must be a string.");
       return false;
     }
     // Step 2. "Let url be the result of parsing ([URL]) urlString with no base
     // URL."
-    GURL parsed_url(section_value.GetString());
+    GURL parsed_url = ParseExchangeURL(section_value.GetString());
+
     // Step 3. "If url is a failure, its fragment is not null, or it includes
     // credentials, return an error."
-    if (!parsed_url.is_valid() || parsed_url.has_ref() ||
-        parsed_url.has_username() || parsed_url.has_password()) {
-      RunErrorCallbackAndDestroy(
-          "Manifest URL must be a valid URL without fragment or credentials.");
+    if (!parsed_url.is_valid()) {
+      RunErrorCallbackAndDestroy("Manifest URL is not a valid exchange URL.");
       return false;
     }
     // Step 4. "Set metadata["manifest"] to url."

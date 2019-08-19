@@ -1,70 +1,134 @@
-/*
- * Copyright (C) 2011 Ericsson AB. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer
- *    in the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name of Ericsson nor the names of its contributors
- *    may be used to endorse or promote products derived from this
- *    software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_CLIENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_CLIENT_H_
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
+#include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
+#include "third_party/blink/public/common/mediastream/media_devices.h"
+#include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
+#include "third_party/blink/public/web/web_apply_constraints_request.h"
+#include "third_party/blink/public/web/web_user_media_request.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_processor.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace blink {
 
-class ApplyConstraintsRequest;
+class ApplyConstraintsProcessor;
 class LocalFrame;
-class MediaStreamComponent;
-class UserMediaRequest;
-class WebUserMediaClient;
 
+// UserMediaClient handles requests coming from the Blink MediaDevices
+// object. This includes getUserMedia and enumerateDevices. It must be created,
+// called and destroyed on the render thread.
 class MODULES_EXPORT UserMediaClient {
-  USING_FAST_MALLOC(UserMediaClient);
-
  public:
-  explicit UserMediaClient(WebUserMediaClient*);
+  // TODO(guidou): Make all constructors private and replace with Create methods
+  // that return a std::unique_ptr. This class is intended for instantiation on
+  // the free store. https://crbug.com/764293
+  // |frame| and its respective RenderFrame must outlive this instance.
+  UserMediaClient(LocalFrame* frame,
+                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  UserMediaClient(LocalFrame* frame,
+                  std::unique_ptr<UserMediaProcessor> user_media_processor,
+                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  virtual ~UserMediaClient();
 
-  void RequestUserMedia(UserMediaRequest*);
-  void CancelUserMediaRequest(UserMediaRequest*);
-  void ApplyConstraints(ApplyConstraintsRequest*);
-  void StopTrack(MediaStreamComponent*);
+  void RequestUserMedia(const blink::WebUserMediaRequest& web_request);
+  void CancelUserMediaRequest(const blink::WebUserMediaRequest& web_request);
+  void ApplyConstraints(const blink::WebApplyConstraintsRequest& web_request);
+  void StopTrack(const blink::WebMediaStreamTrack& web_track);
   void ContextDestroyed();
 
- private:
-  WebUserMediaClient* client_;
-};
+  bool IsCapturing();
 
-MODULES_EXPORT void ProvideUserMediaTo(LocalFrame&,
-                                       std::unique_ptr<UserMediaClient>);
+  void SetMediaDevicesDispatcherForTesting(
+      blink::mojom::blink::MediaDevicesDispatcherHostPtr
+          media_devices_dispatcher);
+
+ private:
+  class Request {
+   public:
+    explicit Request(std::unique_ptr<UserMediaRequestInfo> request);
+    explicit Request(const blink::WebApplyConstraintsRequest& request);
+    explicit Request(const blink::WebMediaStreamTrack& request);
+    Request(Request&& other);
+    Request& operator=(Request&& other);
+    ~Request();
+
+    std::unique_ptr<UserMediaRequestInfo> MoveUserMediaRequest();
+
+    UserMediaRequestInfo* user_media_request() const {
+      return user_media_request_.get();
+    }
+    const blink::WebApplyConstraintsRequest& apply_constraints_request() const {
+      return apply_constraints_request_;
+    }
+    const blink::WebMediaStreamTrack& web_track_to_stop() const {
+      return web_track_to_stop_;
+    }
+
+    bool IsUserMedia() const { return !!user_media_request_; }
+    bool IsApplyConstraints() const {
+      return !apply_constraints_request_.IsNull();
+    }
+    bool IsStopTrack() const { return !web_track_to_stop_.IsNull(); }
+
+   private:
+    std::unique_ptr<UserMediaRequestInfo> user_media_request_;
+    blink::WebApplyConstraintsRequest apply_constraints_request_;
+    blink::WebMediaStreamTrack web_track_to_stop_;
+  };
+
+  void MaybeProcessNextRequestInfo();
+  void CurrentRequestCompleted();
+
+  void DeleteAllUserMediaRequests();
+
+  const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
+  GetMediaDevicesDispatcher();
+
+  // LocalFrame instance associated with the RenderFrameImpl that
+  // own this UserMediaClient.
+  //
+  // TODO(crbug.com/704136): Consider moving UserMediaClient to
+  // Oilpan and use a Member.
+  WeakPersistent<LocalFrame> frame_;
+
+  // |user_media_processor_| is a unique_ptr for testing purposes.
+  std::unique_ptr<UserMediaProcessor> user_media_processor_;
+  // |user_media_processor_| is a unique_ptr in order to avoid compilation
+  // problems in builds that do not include WebRTC.
+  std::unique_ptr<ApplyConstraintsProcessor> apply_constraints_processor_;
+
+  blink::mojom::blink::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;
+
+  // UserMedia requests are processed sequentially. |is_processing_request_|
+  // is a flag that indicates if a request is being processed at a given time,
+  // and |pending_request_infos_| is a list of queued requests.
+  bool is_processing_request_ = false;
+
+  Deque<Request> pending_request_infos_;
+
+  THREAD_CHECKER(thread_checker_);
+
+  // Note: This member must be the last to ensure all outstanding weak pointers
+  // are invalidated first.
+  base::WeakPtrFactory<UserMediaClient> weak_factory_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(UserMediaClient);
+};
 
 }  // namespace blink
 

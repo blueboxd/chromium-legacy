@@ -73,6 +73,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCrosDisksClient
                              const std::string& device_path);
   void NotifyRenameCompleted(RenameError error_code,
                              const std::string& device_path);
+  void NotifyMountEvent(MountEventType mount_event,
+                        const std::string& device_path);
 
   // Add a callback to be executed when a Mount call is made to a URI
   // source_path. The mount point from the first non empty result will be used
@@ -143,6 +145,17 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCrosDisksClient
   // Makes the subsequent Rename() calls fail. Rename() succeeds by default.
   void MakeRenameFail() { rename_success_ = false; }
 
+  // Makes the subsequent GetDeviceProperties return the given |disk_info|. The
+  // |disk_info| object needs to outlive all GetDeviceProperties calls.
+  void set_next_get_device_properties_disk_info(const DiskInfo* disk_info) {
+    next_get_device_properties_disk_info_ = disk_info;
+  }
+
+  // Returns how many times GetDeviceProperties() was called and succeeded.
+  int get_device_properties_success_count() const {
+    return get_device_properties_success_count_;
+  }
+
  private:
   // Continuation of Mount().
   void DidMount(const std::string& source_path,
@@ -152,22 +165,24 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCrosDisksClient
                 MountError mount_error);
 
   base::ObserverList<Observer>::Unchecked observer_list_;
-  int unmount_call_count_;
+  int unmount_call_count_ = 0;
   std::string last_unmount_device_path_;
-  UnmountOptions last_unmount_options_;
-  MountError unmount_error_;
+  UnmountOptions last_unmount_options_ = UNMOUNT_OPTIONS_NONE;
+  MountError unmount_error_ = MOUNT_ERROR_NONE;
   base::RepeatingClosure unmount_listener_;
-  int format_call_count_;
+  int format_call_count_ = 0;
   std::string last_format_device_path_;
   std::string last_format_filesystem_;
   std::string last_format_label_;
-  bool format_success_;
-  int rename_call_count_;
+  bool format_success_ = true;
+  int rename_call_count_ = 0;
   std::string last_rename_device_path_;
   std::string last_rename_volume_name_;
-  bool rename_success_;
+  bool rename_success_ = true;
   std::set<base::FilePath> mounted_paths_;
   std::vector<CustomMountPointCallback> custom_mount_point_callbacks_;
+  const DiskInfo* next_get_device_properties_disk_info_ = nullptr;
+  int get_device_properties_success_count_ = 0;
 
   base::WeakPtrFactory<FakeCrosDisksClient> weak_ptr_factory_;
 

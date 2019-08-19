@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/blob/testing/fake_blob.h"
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
@@ -56,20 +57,22 @@ void FakeBlob::AsDataPipeGetter(
 void FakeBlob::ReadRange(uint64_t offset,
                          uint64_t length,
                          mojo::ScopedDataPipeProducerHandle,
-                         mojom::blink::BlobReaderClientPtr) {
+                         mojo::PendingRemote<mojom::blink::BlobReaderClient>) {
   NOTREACHED();
 }
 
-void FakeBlob::ReadAll(mojo::ScopedDataPipeProducerHandle handle,
-                       mojom::blink::BlobReaderClientPtr client) {
+void FakeBlob::ReadAll(
+    mojo::ScopedDataPipeProducerHandle handle,
+    mojo::PendingRemote<mojom::blink::BlobReaderClient> client) {
+  mojo::Remote<mojom::blink::BlobReaderClient> client_remote(std::move(client));
   if (state_)
     state_->did_initiate_read_operation = true;
-  if (client)
-    client->OnCalculatedSize(body_.length(), body_.length());
+  if (client_remote)
+    client_remote->OnCalculatedSize(body_.length(), body_.length());
   bool result = mojo::BlockingCopyFromString(body_.Utf8(), handle);
   DCHECK(result);
-  if (client)
-    client->OnComplete(0 /* OK */, body_.length());
+  if (client_remote)
+    client_remote->OnComplete(0 /* OK */, body_.length());
 }
 
 void FakeBlob::ReadSideData(ReadSideDataCallback callback) {

@@ -82,8 +82,6 @@ static_library("router") {
       "event_page_request_manager.h",
       "event_page_request_manager_factory.cc",
       "event_page_request_manager_factory.h",
-      "mojo/media_route_controller.cc",
-      "mojo/media_route_controller.h",
       "mojo/media_route_provider_util_win.cc",
       "mojo/media_route_provider_util_win.h",
       "mojo/media_router_desktop.cc",

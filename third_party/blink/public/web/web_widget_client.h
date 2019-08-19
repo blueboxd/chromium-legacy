@@ -122,8 +122,6 @@ class WebWidgetClient {
   // WebMeaningfulLayout for details.)
   virtual void DidMeaningfulLayout(WebMeaningfulLayout) {}
 
-  virtual void DidFirstLayoutAfterFinishedParsing() {}
-
   // Called when the cursor for the widget changes.
   virtual void DidChangeCursor(const WebCursorInfo&) {}
 

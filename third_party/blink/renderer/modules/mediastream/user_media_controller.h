@@ -76,21 +76,24 @@ inline void UserMediaController::RequestUserMedia(UserMediaRequest* request) {
 
 inline void UserMediaController::CancelUserMediaRequest(
     UserMediaRequest* request) {
-  client_->CancelUserMediaRequest(request);
+  client_->CancelUserMediaRequest(WebUserMediaRequest(request));
 }
 
 inline void UserMediaController::ApplyConstraints(
     ApplyConstraintsRequest* request) {
-  client_->ApplyConstraints(request);
+  client_->ApplyConstraints(WebApplyConstraintsRequest(request));
 }
 
 inline void UserMediaController::StopTrack(MediaStreamComponent* track) {
-  client_->StopTrack(track);
+  client_->StopTrack(WebMediaStreamTrack(track));
 }
 
 inline bool UserMediaController::HasRequestedUserMedia() {
   return has_requested_user_media_;
 }
+
+MODULES_EXPORT void ProvideUserMediaTo(LocalFrame&,
+                                       std::unique_ptr<UserMediaClient>);
 
 }  // namespace blink
 

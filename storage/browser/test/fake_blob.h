@@ -21,9 +21,9 @@ class FakeBlob : public blink::mojom::Blob {
   void ReadRange(uint64_t offset,
                  uint64_t size,
                  mojo::ScopedDataPipeProducerHandle,
-                 blink::mojom::BlobReaderClientPtr) override;
+                 mojo::PendingRemote<blink::mojom::BlobReaderClient>) override;
   void ReadAll(mojo::ScopedDataPipeProducerHandle,
-               blink::mojom::BlobReaderClientPtr) override;
+               mojo::PendingRemote<blink::mojom::BlobReaderClient>) override;
   void ReadSideData(ReadSideDataCallback) override;
   void GetInternalUUID(GetInternalUUIDCallback callback) override;
 

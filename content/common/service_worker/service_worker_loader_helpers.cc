@@ -13,7 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_type.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
 #include "services/network/loader_util.h"
@@ -153,10 +153,10 @@ int ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
   if (rv != MOJO_RESULT_OK)
     return net::ERR_FAILED;
 
-  blink::mojom::BlobReaderClientPtr blob_reader_client;
-  mojo::MakeStrongBinding(
+  mojo::PendingRemote<blink::mojom::BlobReaderClient> blob_reader_client;
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<BlobCompleteCaller>(std::move(on_blob_read_complete)),
-      mojo::MakeRequest(&blob_reader_client));
+      blob_reader_client.InitWithNewPipeAndPassReceiver());
 
   (*blob)->ReadAll(std::move(producer_handle), std::move(blob_reader_client));
   return net::OK;

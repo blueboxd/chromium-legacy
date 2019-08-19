@@ -665,8 +665,9 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, JSHeapMemory) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
 }
 
-#if defined(MEMORY_SANITIZER)
+#if defined(MEMORY_SANITIZER) || defined(OS_LINUX)
 // This tests times out when MSan is enabled. See https://crbug.com/890313.
+// Failing on Linux CFI. See https://crbug.com/995132.
 #define MAYBE_SentDataObserved DISABLED_SentDataObserved
 #else
 #define MAYBE_SentDataObserved SentDataObserved
@@ -704,8 +705,9 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_SentDataObserved) {
             model()->GetColumnValue(ColumnSpecifier::TOTAL_NETWORK_USE, 0));
 }
 
-#if defined(MEMORY_SANITIZER)
+#if defined(MEMORY_SANITIZER) || defined(OS_LINUX)
 // This tests times out when MSan is enabled. See https://crbug.com/890313.
+// Failing on Linux CFI. See https://crbug.com/995132.
 #define MAYBE_TotalSentDataObserved DISABLED_TotalSentDataObserved
 #else
 #define MAYBE_TotalSentDataObserved TotalSentDataObserved

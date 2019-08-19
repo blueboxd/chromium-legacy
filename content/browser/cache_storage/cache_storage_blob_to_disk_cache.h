@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/cache_storage/scoped_writable_entry.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
@@ -65,7 +65,7 @@ class CONTENT_EXPORT CacheStorageBlobToDiskCache
   mojo::ScopedDataPipeConsumerHandle consumer_handle_;
   scoped_refptr<network::MojoToNetPendingBuffer> pending_read_;
   mojo::SimpleWatcher handle_watcher_;
-  mojo::Binding<BlobReaderClient> client_binding_;
+  mojo::Receiver<BlobReaderClient> client_receiver_{this};
 
   bool received_on_complete_ = false;
   uint64_t expected_total_size_ = 0;

@@ -4600,6 +4600,10 @@ crbug.com/626703 virtual/omt-worker-fetch/external/wpt/xhr/setrequestheader-head
 crbug.com/626703 [ Win10 ] external/wpt/preload/delaying-onload-link-preload-after-discovery.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
+# Sheriff 2019-09-19:
+crbug.com/626703 external/wpt/html/cross-origin-embedder-policy/none.https.html [ Failure ]
+crbug.com/626703 external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure ]
+crbug.com/626703 external/wpt/html/cross-origin-opener-policy/coop-sandbox.https.html [ Failure ]
 
 # Failure due to on-going off-thread paint worklet project.
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/invalid-image-pending-script.https.html [ Crash ]

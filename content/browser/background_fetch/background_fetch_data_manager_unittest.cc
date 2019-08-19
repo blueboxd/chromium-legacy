@@ -850,7 +850,7 @@ class BackgroundFetchDataManagerTest
 
   std::string CopyBody(blink::mojom::Blob* blob) {
     mojo::DataPipe pipe;
-    blob->ReadAll(std::move(pipe.producer_handle), /* client= */ nullptr);
+    blob->ReadAll(std::move(pipe.producer_handle), mojo::NullRemote());
 
     std::string output;
     DataPipeDrainerClient client(&output);

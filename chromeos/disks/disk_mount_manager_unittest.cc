@@ -20,6 +20,7 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/disks/disk.h"
 #include "chromeos/disks/disk_mount_manager.h"
+#include "dbus/message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPrintf;
@@ -1599,6 +1600,43 @@ TEST_F(DiskMountManagerTest, Mount_MountUnsetsFirstMount) {
       chromeos::MOUNT_TYPE_DEVICE, kDevice1MountPath);
 
   EXPECT_FALSE(device1->is_first_mount());
+}
+
+TEST_F(DiskMountManagerTest, Mount_RemountPreservesFirstMount) {
+  DiskMountManager* manager = DiskMountManager::GetInstance();
+  EXPECT_TRUE(
+      manager->FindDiskBySourcePath(kDevice1SourcePath)->is_first_mount());
+
+  std::unique_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
+  DiskInfo disk_info(kDevice1SourcePath, response.get());
+  fake_cros_disks_client_->set_next_get_device_properties_disk_info(&disk_info);
+  fake_cros_disks_client_->NotifyMountEvent(CROS_DISKS_DISK_ADDED,
+                                            kDevice1SourcePath);
+
+  // NotifyMountEvent indirectly invokes CrosDisksClient::GetDeviceProperties,
+  // which responds asynchronously.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, fake_cros_disks_client_->get_device_properties_success_count());
+  EXPECT_TRUE(
+      manager->FindDiskBySourcePath(kDevice1SourcePath)->is_first_mount());
+
+  fake_cros_disks_client_->NotifyMountCompleted(
+      chromeos::MOUNT_ERROR_NONE, kDevice1SourcePath,
+      chromeos::MOUNT_TYPE_DEVICE, kDevice1MountPath);
+  EXPECT_FALSE(
+      manager->FindDiskBySourcePath(kDevice1SourcePath)->is_first_mount());
+
+  fake_cros_disks_client_->NotifyMountEvent(CROS_DISKS_DISK_ADDED,
+                                            kDevice1SourcePath);
+
+  // NotifyMountEvent indirectly invokes CrosDisksClient::GetDeviceProperties,
+  // which responds asynchronously.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(2, fake_cros_disks_client_->get_device_properties_success_count());
+  EXPECT_FALSE(
+      manager->FindDiskBySourcePath(kDevice1SourcePath)->is_first_mount());
 }
 
 }  // namespace

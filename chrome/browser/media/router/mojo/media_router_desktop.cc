@@ -10,7 +10,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_feature.h"
-#include "chrome/browser/media/router/mojo/media_route_controller.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_metrics.h"
 #include "chrome/browser/media/router/providers/cast/cast_media_route_provider.h"
 #include "chrome/browser/media/router/providers/cast/chrome_cast_message_handler.h"
@@ -160,16 +159,6 @@ void MediaRouterDesktop::RegisterExtensionMediaRouteProvider(
   if (should_enable_mdns_discovery_)
     EnsureMdnsDiscoveryEnabled();
 #endif
-  // Now that we have a Mojo pointer to the extension MRP, we reset the Mojo
-  // pointers to extension-side route controllers and request them to be bound
-  // to new implementations. This must happen before EventPageRequestManager
-  // executes commands to the MRP and its route controllers. Commands to the
-  // route controllers, once executed, will be queued in Mojo pipes until the
-  // Mojo requests are bound to implementations.
-  for (const auto& pair : route_controllers_) {
-    if (GetProviderIdForRoute(pair.first).value_or(UNKNOWN) == EXTENSION)
-      InitMediaRouteController(pair.second);
-  }
   extension_provider_proxy_->RegisterMediaRouteProvider(
       std::move(extension_provider_ptr));
 }

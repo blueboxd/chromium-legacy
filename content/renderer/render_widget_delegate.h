@@ -10,7 +10,6 @@
 namespace blink {
 class WebMouseEvent;
 class WebWidget;
-class WebWidgetClient;
 struct WebDeviceEmulationParams;
 }  // namespace blink
 
@@ -41,11 +40,6 @@ class CONTENT_EXPORT RenderWidgetDelegate {
   // Returns whether multiple windows are allowed for the widget. If true, then
   // Show() may be called more than once.
   virtual bool SupportsMultipleWindowsForWidget() = 0;
-
-  // Called after RenderWidget services WebWidgetClient::DidHandleGestureEvent()
-  // if the event was not cancelled.
-  virtual void DidHandleGestureEventForWidget(
-      const blink::WebGestureEvent& event) = 0;
 
   // TODO(bokan): Temporary to unblock synthetic gesture events running under
   // VR. https://crbug.com/940063

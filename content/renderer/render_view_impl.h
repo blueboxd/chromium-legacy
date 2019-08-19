@@ -59,7 +59,6 @@
 #include "ui/surface/transport_dib.h"
 
 namespace blink {
-class WebGestureEvent;
 class WebMouseEvent;
 class WebURLRequest;
 struct WebPluginAction;
@@ -385,8 +384,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
       const blink::WebMouseEvent& event) override;
   void SetActiveForWidget(bool active) override;
   bool SupportsMultipleWindowsForWidget() override;
-  void DidHandleGestureEventForWidget(
-      const blink::WebGestureEvent& event) override;
   bool ShouldAckSyntheticInputImmediately() override;
   void CancelPagePopupForWidget() override;
   void ApplyNewDisplayModeForWidget(

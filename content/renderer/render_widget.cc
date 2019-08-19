@@ -2777,10 +2777,6 @@ void RenderWidget::DidHandleGestureEvent(const WebGestureEvent& event,
   }
 #endif
 #endif
-
-  // The delegate() gets to respond to handling gestures last.
-  if (delegate())
-    delegate()->DidHandleGestureEventForWidget(event);
 }
 
 void RenderWidget::DidOverscroll(

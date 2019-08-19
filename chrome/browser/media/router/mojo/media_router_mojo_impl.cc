@@ -24,7 +24,6 @@
 #include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
-#include "chrome/browser/media/router/mojo/media_route_controller.h"
 #include "chrome/browser/media/router/mojo/media_route_provider_util_win.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_metrics.h"
 #include "chrome/browser/media/router/mojo/media_sink_service_status.h"
@@ -198,7 +197,6 @@ void MediaRouterMojoImpl::OnRoutesUpdated(
   auto* routes_query = it->second.get();
   routes_query->SetRoutesForProvider(provider_id, routes, joinable_route_ids);
   routes_query->NotifyObservers();
-  RemoveInvalidRouteControllers(routes);
 }
 
 void MediaRouterMojoImpl::RouteResponseReceived(
@@ -438,55 +436,27 @@ void MediaRouterMojoImpl::SearchSinks(
       std::move(sink_callback));
 }
 
-scoped_refptr<MediaRouteController> MediaRouterMojoImpl::GetRouteController(
-    const MediaRoute::Id& route_id) {
+void MediaRouterMojoImpl::GetMediaController(
+    const MediaRoute::Id& route_id,
+    mojo::PendingReceiver<mojom::MediaController> controller,
+    mojom::MediaStatusObserverPtr observer) {
   auto* route = GetRoute(route_id);
   base::Optional<MediaRouteProviderId> provider_id =
       GetProviderIdForRoute(route_id);
   if (!route || !provider_id) {
     DVLOG_WITH_INSTANCE(1) << __func__ << ": route not found: " << route_id;
-    return nullptr;
-  }
-
-  auto it = route_controllers_.find(route_id);
-  if (it != route_controllers_.end())
-    return scoped_refptr<MediaRouteController>(it->second);
-
-  scoped_refptr<MediaRouteController> route_controller;
-  switch (route->controller_type()) {
-    case RouteControllerType::kNone:
-      DVLOG_WITH_INSTANCE(1)
-          << __func__ << ": route does not support controller: " << route_id;
-      return nullptr;
-    case RouteControllerType::kGeneric:
-    case RouteControllerType::kMirroring:
-      route_controller = new MediaRouteController(route_id, context_, this);
-      break;
-  }
-  DCHECK(route_controller);
-
-  InitMediaRouteController(route_controller.get());
-  route_controllers_.emplace(route_id, route_controller.get());
-  return route_controller;
-}
-
-void MediaRouterMojoImpl::InitMediaRouteController(
-    MediaRouteController* route_controller) {
-  DCHECK(route_controller);
-  const MediaRoute::Id& route_id = route_controller->route_id();
-  auto callback = base::BindOnce(&MediaRouterMojoImpl::OnMediaControllerCreated,
-                                 weak_factory_.GetWeakPtr(), route_id);
-  MediaRouteController::InitMojoResult result =
-      route_controller->InitMojoInterfaces();
-  base::Optional<MediaRouteProviderId> provider_id =
-      GetProviderIdForRoute(route_id);
-  if (!provider_id) {
-    DVLOG_WITH_INSTANCE(1) << __func__
-                           << ": provider not found for route: " << route_id;
     return;
   }
+  if (route->controller_type() == RouteControllerType::kNone) {
+    DVLOG_WITH_INSTANCE(1) << __func__
+                           << ": route does not support controller: "
+                           << route_id;
+    return;
+  }
+  auto callback = base::BindOnce(&MediaRouterMojoImpl::OnMediaControllerCreated,
+                                 weak_factory_.GetWeakPtr(), route_id);
   media_route_providers_[*provider_id]->CreateMediaRouteController(
-      route_id, std::move(result.first), std::move(result.second),
+      route_id, std::move(controller), std::move(observer),
       std::move(callback));
 }
 
@@ -824,14 +794,6 @@ void MediaRouterMojoImpl::UnregisterRouteMessageObserver(
   }
 }
 
-void MediaRouterMojoImpl::DetachRouteController(
-    const MediaRoute::Id& route_id,
-    MediaRouteController* controller) {
-  auto it = route_controllers_.find(route_id);
-  if (it != route_controllers_.end() && it->second == controller)
-    route_controllers_.erase(it);
-}
-
 void MediaRouterMojoImpl::OnRouteMessagesReceived(
     const std::string& route_id,
     std::vector<mojom::RouteMessagePtr> messages) {
@@ -933,19 +895,6 @@ void MediaRouterMojoImpl::SyncStateToMediaRouteProvider(
 void MediaRouterMojoImpl::UpdateMediaSinks(const MediaSource::Id& source_id) {
   for (const auto& provider : media_route_providers_)
     provider.second->UpdateMediaSinks(source_id);
-}
-
-void MediaRouterMojoImpl::RemoveInvalidRouteControllers(
-    const std::vector<MediaRoute>& routes) {
-  auto it = route_controllers_.begin();
-  while (it != route_controllers_.end()) {
-    if (GetRoute(it->first)) {
-      ++it;
-    } else {
-      it->second->Invalidate();
-      it = route_controllers_.erase(it);
-    }
-  }
 }
 
 void MediaRouterMojoImpl::OnMediaControllerCreated(

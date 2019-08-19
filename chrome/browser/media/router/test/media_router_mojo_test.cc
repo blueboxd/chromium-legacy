@@ -139,20 +139,6 @@ void MockMediaController::CloseBinding() {
   binding_.Close();
 }
 
-MockMediaRouteController::MockMediaRouteController(
-    const MediaRoute::Id& route_id,
-    content::BrowserContext* context,
-    MediaRouter* router)
-    : MediaRouteController(route_id, context, router) {}
-
-MockMediaRouteController::~MockMediaRouteController() {}
-
-MockMediaRouteControllerObserver::MockMediaRouteControllerObserver(
-    scoped_refptr<MediaRouteController> controller)
-    : MediaRouteController::Observer(controller) {}
-
-MockMediaRouteControllerObserver::~MockMediaRouteControllerObserver() {}
-
 MediaRouterMojoTest::MediaRouterMojoTest() {
   request_manager_ = static_cast<MockEventPageRequestManager*>(
       EventPageRequestManagerFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -402,53 +388,6 @@ void MediaRouterMojoTest::TestSearchSinks() {
 
   router()->SearchSinks(kSinkId, kSource, search_input, domain,
                         std::move(sink_callback));
-  base::RunLoop().RunUntilIdle();
-}
-
-void MediaRouterMojoTest::TestCreateMediaRouteController() {
-  MockMediaController media_controller;
-  mojom::MediaStatusObserverPtr route_controller_as_observer;
-  mojom::MediaStatus media_status;
-  media_status.title = "test title";
-
-  router()->OnRoutesUpdated(MediaRouteProviderId::EXTENSION,
-                            {CreateMediaRoute()}, std::string(),
-                            std::vector<std::string>());
-
-  EXPECT_CALL(mock_extension_provider_,
-              CreateMediaRouteControllerInternal(kRouteId, _, _, _))
-      .WillOnce(Invoke(
-          [&media_controller, &route_controller_as_observer](
-              const std::string& route_id,
-              mojom::MediaControllerRequest& request,
-              mojom::MediaStatusObserverPtr& observer,
-              mojom::MediaRouteProvider::CreateMediaRouteControllerCallback&
-                  cb) {
-            media_controller.Bind(std::move(request));
-            route_controller_as_observer = std::move(observer);
-            std::move(cb).Run(true);
-          }));
-  // GetRouteController() should return a MediaRouteController that is connected
-  // to the MediaController provided by the MediaRouteProvider, and will also be
-  // subscribed to MediaStatus updates.
-  scoped_refptr<MediaRouteController> route_controller =
-      router()->GetRouteController(kRouteId);
-  base::RunLoop().RunUntilIdle();
-
-  // Media commands sent to the MediaRouteController should be forwarded to the
-  // MediaController created by the MediaRouteProvider.
-  EXPECT_CALL(media_controller, Play());
-  route_controller->Play();
-
-  // Add an observer to the MediaRouteController.
-  MockMediaRouteControllerObserver controller_observer(route_controller);
-
-  // The MediaRouteController should be registered with the MediaRouteProvider
-  // as a MediaStatusObserver, and should also notify its own observers.
-  EXPECT_CALL(controller_observer,
-              OnMediaStatusUpdated(Equals(ByRef(media_status))));
-  route_controller_as_observer->OnMediaStatusUpdated(media_status.Clone());
-
   base::RunLoop().RunUntilIdle();
 }
 

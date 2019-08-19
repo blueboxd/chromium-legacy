@@ -876,7 +876,8 @@ void NGBoxFragmentPainter::PaintInlineChildren(
       continue;
 
     if (child_fragment.Type() == NGPhysicalFragment::kFragmentText) {
-      DCHECK(!child_fragment.HasSelfPaintingLayer());
+      DCHECK(!child_fragment.HasSelfPaintingLayer() ||
+             To<NGPhysicalTextFragment>(child_fragment).IsEllipsis());
       PaintTextChild(*child, paint_info, paint_offset);
     } else if (child_fragment.Type() == NGPhysicalFragment::kFragmentBox) {
       if (child_fragment.HasSelfPaintingLayer())

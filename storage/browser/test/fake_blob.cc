@@ -27,12 +27,12 @@ void FakeBlob::AsDataPipeGetter(network::mojom::DataPipeGetterRequest) {
 void FakeBlob::ReadRange(uint64_t offset,
                          uint64_t size,
                          mojo::ScopedDataPipeProducerHandle,
-                         blink::mojom::BlobReaderClientPtr) {
+                         mojo::PendingRemote<blink::mojom::BlobReaderClient>) {
   NOTREACHED();
 }
 
 void FakeBlob::ReadAll(mojo::ScopedDataPipeProducerHandle,
-                       blink::mojom::BlobReaderClientPtr) {
+                       mojo::PendingRemote<blink::mojom::BlobReaderClient>) {
   NOTREACHED();
 }
 

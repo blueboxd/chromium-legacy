@@ -62,8 +62,6 @@ class MODULES_EXPORT UserMediaProcessor {
       const blink::mojom::blink::MediaDevicesDispatcherHostPtr&()>;
   // |web_frame| must outlive this instance.
   UserMediaProcessor(LocalFrame* frame,
-                     std::unique_ptr<blink::WebMediaStreamDeviceObserver>
-                         media_stream_device_observer,
                      MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
                      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual ~UserMediaProcessor();
@@ -93,10 +91,6 @@ class MODULES_EXPORT UserMediaProcessor {
   // currently being tracked, effectively stopping all tracks associated with
   // those sources.
   void StopAllProcessing();
-
-  blink::WebMediaStreamDeviceObserver* media_stream_device_observer() const {
-    return media_stream_device_observer_.get();
-  }
 
   bool HasActiveSources() const;
 
@@ -134,6 +128,9 @@ class MODULES_EXPORT UserMediaProcessor {
   // Intended to be used only for testing.
   const blink::AudioCaptureSettings& AudioCaptureSettingsForTesting() const;
   const blink::VideoCaptureSettings& VideoCaptureSettingsForTesting() const;
+
+  void SetMediaStreamDeviceObserverForTesting(
+      WebMediaStreamDeviceObserver* media_stream_device_observer);
 
  private:
   class RequestInfo;
@@ -277,11 +274,11 @@ class MODULES_EXPORT UserMediaProcessor {
       blink::mojom::StreamSelectionStrategy strategy =
           blink::mojom::StreamSelectionStrategy::SEARCH_BY_DEVICE_ID);
 
-  // UserMediaProcessor owns blink::WebMediaStreamDeviceObserver instead of
-  // RenderFrameImpl (or RenderFrameObserver) to ensure tear-down occurs in the
-  // right order.
-  const std::unique_ptr<blink::WebMediaStreamDeviceObserver>
-      media_stream_device_observer_;
+  WebMediaStreamDeviceObserver* GetMediaStreamDeviceObserver();
+
+  // Owned by the test.
+  WebMediaStreamDeviceObserver* media_stream_device_observer_for_testing_ =
+      nullptr;
 
   LocalStreamSources local_sources_;
   LocalStreamSources pending_local_sources_;
@@ -295,7 +292,7 @@ class MODULES_EXPORT UserMediaProcessor {
   MediaDevicesDispatcherCallback media_devices_dispatcher_cb_;
   base::OnceClosure request_completed_cb_;
 
-  // TODO(crbug.com/704136): Consider moving UserMediaClientImpl to
+  // TODO(crbug.com/704136): Consider moving UserMediaClient to
   // Oilpan and use a Member.
   WeakPersistent<LocalFrame> frame_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

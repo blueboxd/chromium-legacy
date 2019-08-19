@@ -91,8 +91,9 @@ class SlowBlob : public storage::FakeBlob {
   explicit SlowBlob(base::OnceClosure quit_closure)
       : FakeBlob("foo"), quit_closure_(std::move(quit_closure)) {}
 
-  void ReadAll(mojo::ScopedDataPipeProducerHandle producer_handle,
-               blink::mojom::BlobReaderClientPtr client) override {
+  void ReadAll(
+      mojo::ScopedDataPipeProducerHandle producer_handle,
+      mojo::PendingRemote<blink::mojom::BlobReaderClient> client) override {
     // Don't respond, forcing the consumer to wait forever.
     std::move(quit_closure_).Run();
   }
@@ -225,7 +226,7 @@ class DataPipeDrainerClient : public mojo::DataPipeDrainer::Client {
 std::string CopyBody(blink::mojom::Blob* actual_blob) {
   std::string output;
   mojo::DataPipe pipe;
-  actual_blob->ReadAll(std::move(pipe.producer_handle), nullptr);
+  actual_blob->ReadAll(std::move(pipe.producer_handle), mojo::NullRemote());
   DataPipeDrainerClient client(&output);
   mojo::DataPipeDrainer drainer(&client, std::move(pipe.consumer_handle));
   client.Run();

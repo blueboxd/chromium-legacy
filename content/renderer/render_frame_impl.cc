@@ -217,7 +217,6 @@
 #include "third_party/blink/public/web/web_serialized_script_value.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_user_gesture_indicator.h"
-#include "third_party/blink/public/web/web_user_media_client.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "ui/events/base_event_utils.h"
@@ -1923,7 +1922,7 @@ RenderFrameImpl::~RenderFrameImpl() {
   for (auto& observer : observers_)
     observer.OnDestruct();
 
-  web_user_media_client_.reset();
+  web_media_stream_device_observer_.reset();
 
   base::trace_event::TraceLog::GetInstance()->RemoveProcessLabel(routing_id_);
 
@@ -2213,15 +2212,6 @@ void RenderFrameImpl::OnImeFinishComposingText(bool keep_selection) {
   HandlePepperImeCommit(text);
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
-
-blink::WebMediaStreamDeviceObserver*
-RenderFrameImpl::GetMediaStreamDeviceObserver() {
-  if (!web_user_media_client_)
-    InitializeUserMediaClient();
-  return web_user_media_client_
-             ? web_user_media_client_->GetMediaStreamDeviceObserver()
-             : nullptr;
-}
 
 void RenderFrameImpl::ScriptedPrint(bool user_initiated) {
   for (auto& observer : observers_)
@@ -5698,10 +5688,11 @@ void RenderFrameImpl::WillStartUsingPeerConnectionHandler(
   static_cast<RTCPeerConnectionHandler*>(handler)->associateWithFrame(frame_);
 }
 
-blink::WebUserMediaClient* RenderFrameImpl::UserMediaClient() {
-  if (!web_user_media_client_)
-    InitializeUserMediaClient();
-  return web_user_media_client_.get();
+blink::WebMediaStreamDeviceObserver*
+RenderFrameImpl::MediaStreamDeviceObserver() {
+  if (!web_media_stream_device_observer_)
+    InitializeMediaStreamDeviceObserver();
+  return web_media_stream_device_observer_.get();
 }
 
 blink::WebEncryptedMediaClient* RenderFrameImpl::EncryptedMediaClient() {
@@ -7140,16 +7131,14 @@ void RenderFrameImpl::ResetHasScrolledFocusedEditableIntoView() {
   has_scrolled_focused_editable_node_into_rect_ = false;
 }
 
-void RenderFrameImpl::InitializeUserMediaClient() {
+void RenderFrameImpl::InitializeMediaStreamDeviceObserver() {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   if (!render_thread)  // Will be NULL during unit tests.
     return;
 
-  DCHECK(!web_user_media_client_);
-  web_user_media_client_ = blink::CreateWebUserMediaClient(
-      GetWebFrame(),
-      std::make_unique<blink::WebMediaStreamDeviceObserver>(GetWebFrame()),
-      GetTaskRunner(blink::TaskType::kInternalMedia));
+  DCHECK(!web_media_stream_device_observer_);
+  web_media_stream_device_observer_ =
+      std::make_unique<blink::WebMediaStreamDeviceObserver>(GetWebFrame());
 }
 
 void RenderFrameImpl::PrepareRenderViewForNavigation(

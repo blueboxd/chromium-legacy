@@ -12,7 +12,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "url/gurl.h"
@@ -64,7 +64,7 @@ class BlobReader : public blink::mojom::BlobReaderClient,
   };
   base::Optional<Range> read_range_;
 
-  mojo::Binding<blink::mojom::BlobReaderClient> binding_;
+  mojo::Receiver<blink::mojom::BlobReaderClient> receiver_{this};
   std::unique_ptr<mojo::DataPipeDrainer> data_pipe_drainer_;
 
   base::Optional<uint64_t> blob_length_;

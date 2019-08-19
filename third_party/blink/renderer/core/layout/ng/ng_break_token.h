@@ -73,6 +73,7 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
         flags_(0),
         ignore_floats_(false),
         is_break_before_(false),
+        is_forced_break_(false),
         has_last_resort_break_(false),
         has_seen_all_children_(false) {
     DCHECK_EQ(type, static_cast<NGBreakTokenType>(node.Type()));

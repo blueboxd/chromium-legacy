@@ -182,7 +182,8 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   ProvidePushMessagingClientTo(
       frame, MakeGarbageCollected<PushMessagingClient>(frame));
   ProvideUserMediaTo(
-      frame, std::make_unique<UserMediaClient>(client->UserMediaClient()));
+      frame, std::make_unique<UserMediaClient>(
+                 &frame, frame.GetTaskRunner(TaskType::kInternalMedia)));
   ProvideLocalFileSystemTo(frame, std::make_unique<LocalFileSystemClient>());
 
   ScreenOrientationControllerImpl::ProvideTo(frame);

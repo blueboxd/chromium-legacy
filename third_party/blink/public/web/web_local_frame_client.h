@@ -104,6 +104,7 @@ class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMediaPlayerEncryptedMediaClient;
 class WebMediaPlayerSource;
+class WebMediaStreamDeviceObserver;
 class WebNavigationControl;
 class WebServiceWorkerProvider;
 class WebPlugin;
@@ -113,7 +114,6 @@ class WebSocketHandshakeThrottle;
 class WebString;
 class WebURL;
 class WebURLResponse;
-class WebUserMediaClient;
 struct FramePolicy;
 struct WebConsoleMessage;
 struct WebContextMenuData;
@@ -734,7 +734,9 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void WillStartUsingPeerConnectionHandler(
       WebRTCPeerConnectionHandler*) {}
 
-  virtual WebUserMediaClient* UserMediaClient() { return nullptr; }
+  virtual WebMediaStreamDeviceObserver* MediaStreamDeviceObserver() {
+    return nullptr;
+  }
 
   // Encrypted Media -------------------------------------------------
 

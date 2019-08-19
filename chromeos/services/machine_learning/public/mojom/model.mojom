@@ -22,10 +22,16 @@ import "chromeos/services/machine_learning/public/mojom/graph_executor.mojom";
 // ModelIds prefixed with UNSUPPORTED_ are no longer supported. Attempts to load
 // them will produce an error.
 enum ModelId {
+  // Unknown ML model. It is marked as unsupported.
   UNSUPPORTED_UNKNOWN = 0,
+  // Test ML model.
   TEST_MODEL = 1,
+  // The Smart Dim (20181115) ML model.
   SMART_DIM_20181115 = 2,
+  // The Smart Dim (20190221) ML model.
   SMART_DIM_20190221 = 3,
+  // The Top Cat (20190722) ML model.
+  TOP_CAT_20190722 = 4,
 };
 
 // These values are persisted to logs. Entries should not be renumbered and

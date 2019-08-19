@@ -19,7 +19,7 @@ BlobReader::BlobReader(content::BrowserContext* browser_context,
           std::move(callback)) {}
 
 BlobReader::BlobReader(blink::mojom::BlobPtr blob, BlobReadCallback callback)
-    : callback_(std::move(callback)), blob_(std::move(blob)), binding_(this) {
+    : callback_(std::move(callback)), blob_(std::move(blob)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   blob_.set_connection_error_handler(
       base::BindOnce(&BlobReader::Failed, base::Unretained(this)));
@@ -46,13 +46,13 @@ void BlobReader::Start() {
     Failed();
     return;
   }
-  blink::mojom::BlobReaderClientPtr client_ptr;
-  binding_.Bind(MakeRequest(&client_ptr));
   if (read_range_) {
     blob_->ReadRange(read_range_->offset, read_range_->length,
-                     std::move(producer_handle), std::move(client_ptr));
+                     std::move(producer_handle),
+                     receiver_.BindNewPipeAndPassRemote());
   } else {
-    blob_->ReadAll(std::move(producer_handle), std::move(client_ptr));
+    blob_->ReadAll(std::move(producer_handle),
+                   receiver_.BindNewPipeAndPassRemote());
   }
   data_pipe_drainer_ =
       std::make_unique<mojo::DataPipeDrainer>(this, std::move(consumer_handle));

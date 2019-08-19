@@ -35,6 +35,7 @@
 #include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/modules/mediastream/local_media_stream_audio_source.h"
@@ -43,7 +44,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_content.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_capturer_source.h"
-#include "third_party/blink/renderer/modules/mediastream/user_media_client_impl.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/video_capture/local_video_capturer_source.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -488,16 +489,11 @@ void UserMediaProcessor::RequestInfo::OnAudioSourceStarted(
 
 UserMediaProcessor::UserMediaProcessor(
     LocalFrame* frame,
-    std::unique_ptr<blink::WebMediaStreamDeviceObserver>
-        media_stream_device_observer,
     MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : media_stream_device_observer_(std::move(media_stream_device_observer)),
-      media_devices_dispatcher_cb_(std::move(media_devices_dispatcher_cb)),
+    : media_devices_dispatcher_cb_(std::move(media_devices_dispatcher_cb)),
       frame_(frame),
-      task_runner_(std::move(task_runner)) {
-  DCHECK(media_stream_device_observer_.get());
-}
+      task_runner_(std::move(task_runner)) {}
 
 UserMediaProcessor::~UserMediaProcessor() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -802,6 +798,22 @@ void UserMediaProcessor::GenerateStreamForCurrentRequestInfo(
                 current_request_info_->request_id()));
 }
 
+WebMediaStreamDeviceObserver*
+UserMediaProcessor::GetMediaStreamDeviceObserver() {
+  auto* media_stream_device_observer =
+      media_stream_device_observer_for_testing_;
+  if (frame_) {  // Can be null for tests.
+    auto* web_frame = static_cast<WebLocalFrame*>(WebFrame::FromFrame(frame_));
+    DCHECK(web_frame);
+
+    media_stream_device_observer =
+        web_frame->Client()->MediaStreamDeviceObserver();
+    DCHECK(media_stream_device_observer);
+  }
+
+  return media_stream_device_observer;
+}
+
 void UserMediaProcessor::OnStreamGenerated(
     int request_id,
     MediaStreamRequestResult result,
@@ -974,7 +986,7 @@ void UserMediaProcessor::OnStreamGenerationFailed(
 
 void UserMediaProcessor::OnDeviceStopped(const MediaStreamDevice& device) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DVLOG(1) << "UserMediaClientImpl::OnDeviceStopped("
+  DVLOG(1) << "UserMediaProcessor::OnDeviceStopped("
            << "{device_id = " << device.id << "})";
 
   const blink::WebMediaStreamSource* source_ptr = FindLocalSource(device);
@@ -994,7 +1006,7 @@ void UserMediaProcessor::OnDeviceStopped(const MediaStreamDevice& device) {
 void UserMediaProcessor::OnDeviceChanged(const MediaStreamDevice& old_device,
                                          const MediaStreamDevice& new_device) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DVLOG(1) << "UserMediaClientImpl::OnDeviceChange("
+  DVLOG(1) << "UserMediaProcessor::OnDeviceChange("
            << "{old_device_id = " << old_device.id
            << ", session id = " << old_device.session_id()
            << ", type = " << old_device.type << "}"
@@ -1201,7 +1213,8 @@ UserMediaProcessor::CreateVideoSource(
 
 void UserMediaProcessor::StartTracks(const String& label) {
   DCHECK(!current_request_info_->web_request().IsNull());
-  media_stream_device_observer_->AddStream(
+  DCHECK(GetMediaStreamDeviceObserver());
+  GetMediaStreamDeviceObserver()->AddStream(
       blink::WebString(label),
       ToStdVector(current_request_info_->audio_devices()),
       ToStdVector(current_request_info_->video_devices()),
@@ -1316,7 +1329,7 @@ void UserMediaProcessor::GetUserMediaRequestSucceeded(
                          current_request_info_->request_id()));
 
   // Completing the getUserMedia request can lead to that the RenderFrame and
-  // the UserMediaClientImpl/UserMediaProcessor are destroyed if the JavaScript
+  // the UserMediaClient/UserMediaProcessor are destroyed if the JavaScript
   // code request the frame to be destroyed within the scope of the callback.
   // Therefore, post a task to complete the request with a clean stack.
   task_runner_->PostTask(
@@ -1345,7 +1358,7 @@ void UserMediaProcessor::GetUserMediaRequestFailed(
                          current_request_info_->request_id()));
 
   // Completing the getUserMedia request can lead to that the RenderFrame and
-  // the UserMediaClientImpl/UserMediaProcessor are destroyed if the JavaScript
+  // the UserMediaClient/UserMediaProcessor are destroyed if the JavaScript
   // code request the frame to be destroyed within the scope of the callback.
   // Therefore, post a task to complete the request with a clean stack.
   task_runner_->PostTask(
@@ -1580,7 +1593,8 @@ void UserMediaProcessor::OnLocalSourceStopped(
   CHECK(some_source_removed);
 
   blink::WebPlatformMediaStreamSource* source_impl = source.GetPlatformSource();
-  media_stream_device_observer_->RemoveStreamDevice(source_impl->device());
+  DCHECK(GetMediaStreamDeviceObserver());
+  GetMediaStreamDeviceObserver()->RemoveStreamDevice(source_impl->device());
 
   String device_id(source_impl->device().id.data());
   GetMediaStreamDispatcherHost()->StopStreamDevice(
@@ -1595,7 +1609,8 @@ void UserMediaProcessor::StopLocalSource(
            << "{device_id = " << source_impl->device().id << "})";
 
   if (notify_dispatcher) {
-    media_stream_device_observer_->RemoveStreamDevice(source_impl->device());
+    DCHECK(GetMediaStreamDeviceObserver());
+    GetMediaStreamDeviceObserver()->RemoveStreamDevice(source_impl->device());
 
     String device_id(source_impl->device().id.data());
     GetMediaStreamDispatcherHost()->StopStreamDevice(
@@ -1634,6 +1649,13 @@ const blink::VideoCaptureSettings&
 UserMediaProcessor::VideoCaptureSettingsForTesting() const {
   DCHECK(current_request_info_);
   return current_request_info_->video_capture_settings();
+}
+
+void UserMediaProcessor::SetMediaStreamDeviceObserverForTesting(
+    WebMediaStreamDeviceObserver* media_stream_device_observer) {
+  DCHECK(!GetMediaStreamDeviceObserver());
+  DCHECK(media_stream_device_observer);
+  media_stream_device_observer_for_testing_ = media_stream_device_observer;
 }
 
 }  // namespace blink

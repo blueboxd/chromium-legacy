@@ -36,15 +36,9 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_common.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace blink {
 
 class WebApplyConstraintsRequest;
-class WebLocalFrame;
-class WebMediaStreamDeviceObserver;
 class WebMediaStreamTrack;
 class WebUserMediaRequest;
 class WebUserMediaClient;
@@ -58,13 +52,7 @@ class WebUserMediaClient {
   virtual void ApplyConstraints(const WebApplyConstraintsRequest&) = 0;
   virtual void StopTrack(const WebMediaStreamTrack&) = 0;
   virtual void ContextDestroyed() = 0;
-  virtual WebMediaStreamDeviceObserver* GetMediaStreamDeviceObserver() = 0;
 };
-
-BLINK_EXPORT std::unique_ptr<WebUserMediaClient> CreateWebUserMediaClient(
-    WebLocalFrame* web_frame,
-    std::unique_ptr<WebMediaStreamDeviceObserver> media_stream_device_observer,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
 }  // namespace blink
 

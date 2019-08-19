@@ -3892,7 +3892,6 @@ test("unit_tests") {
       "../browser/media/router/discovery/media_sink_discovery_metrics_unittest.cc",
       "../browser/media/router/event_page_request_manager_unittest.cc",
       "../browser/media/router/media_router_feature_unittest.cc",
-      "../browser/media/router/mojo/media_route_controller_unittest.cc",
       "../browser/media/router/mojo/media_router_desktop_unittest.cc",
       "../browser/media/router/mojo/media_router_mojo_impl_unittest.cc",
       "../browser/media/router/mojo/media_router_mojo_metrics_unittest.cc",

@@ -42,6 +42,8 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/disk_cache/disk_cache.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "storage/browser/blob/blob_data_builder.h"
@@ -102,9 +104,10 @@ class DelayedBlob : public storage::FakeBlob {
     MaybeComplete();
   }
 
-  void ReadAll(mojo::ScopedDataPipeProducerHandle producer_handle,
-               blink::mojom::BlobReaderClientPtr client) override {
-    client_ = std::move(client);
+  void ReadAll(
+      mojo::ScopedDataPipeProducerHandle producer_handle,
+      mojo::PendingRemote<blink::mojom::BlobReaderClient> client) override {
+    client_.Bind(std::move(client));
     producer_handle_ = std::move(producer_handle);
 
     client_->OnCalculatedSize(data_.length(), data_.length());
@@ -134,7 +137,7 @@ class DelayedBlob : public storage::FakeBlob {
   mojo::Binding<blink::mojom::Blob> binding_;
   std::string data_;
   base::OnceClosure read_closure_;
-  blink::mojom::BlobReaderClientPtr client_;
+  mojo::Remote<blink::mojom::BlobReaderClient> client_;
   mojo::ScopedDataPipeProducerHandle producer_handle_;
   bool paused_ = true;
 };

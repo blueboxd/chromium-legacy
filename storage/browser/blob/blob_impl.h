@@ -25,12 +25,14 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobImpl
   // blink::mojom::Blob:
   void Clone(blink::mojom::BlobRequest request) override;
   void AsDataPipeGetter(network::mojom::DataPipeGetterRequest request) override;
-  void ReadRange(uint64_t offset,
-                 uint64_t length,
-                 mojo::ScopedDataPipeProducerHandle handle,
-                 blink::mojom::BlobReaderClientPtr client) override;
-  void ReadAll(mojo::ScopedDataPipeProducerHandle handle,
-               blink::mojom::BlobReaderClientPtr client) override;
+  void ReadRange(
+      uint64_t offset,
+      uint64_t length,
+      mojo::ScopedDataPipeProducerHandle handle,
+      mojo::PendingRemote<blink::mojom::BlobReaderClient> client) override;
+  void ReadAll(
+      mojo::ScopedDataPipeProducerHandle handle,
+      mojo::PendingRemote<blink::mojom::BlobReaderClient> client) override;
   void ReadSideData(ReadSideDataCallback callback) override;
   void GetInternalUUID(GetInternalUUIDCallback callback) override;
 

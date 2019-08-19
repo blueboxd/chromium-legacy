@@ -529,8 +529,6 @@ class StubRenderWidgetDelegate : public RenderWidgetDelegate {
   }
   void SetActiveForWidget(bool active) override {}
   bool SupportsMultipleWindowsForWidget() override { return true; }
-  void DidHandleGestureEventForWidget(
-      const blink::WebGestureEvent& event) override {}
   bool ShouldAckSyntheticInputImmediately() override { return true; }
   void CancelPagePopupForWidget() override {}
   void ApplyNewDisplayModeForWidget(

@@ -389,8 +389,9 @@ network::mojom::blink::DataPipeGetterPtr BlobDataHandle::AsDataPipeGetter() {
   return result;
 }
 
-void BlobDataHandle::ReadAll(mojo::ScopedDataPipeProducerHandle pipe,
-                             mojom::blink::BlobReaderClientPtr client) {
+void BlobDataHandle::ReadAll(
+    mojo::ScopedDataPipeProducerHandle pipe,
+    mojo::PendingRemote<mojom::blink::BlobReaderClient> client) {
   MutexLocker locker(blob_info_mutex_);
   BlobPtr blob;
   blob.Bind(std::move(blob_info_));
@@ -398,10 +399,11 @@ void BlobDataHandle::ReadAll(mojo::ScopedDataPipeProducerHandle pipe,
   blob_info_ = blob.PassInterface();
 }
 
-void BlobDataHandle::ReadRange(uint64_t offset,
-                               uint64_t length,
-                               mojo::ScopedDataPipeProducerHandle pipe,
-                               mojom::blink::BlobReaderClientPtr client) {
+void BlobDataHandle::ReadRange(
+    uint64_t offset,
+    uint64_t length,
+    mojo::ScopedDataPipeProducerHandle pipe,
+    mojo::PendingRemote<mojom::blink::BlobReaderClient> client) {
   MutexLocker locker(blob_info_mutex_);
   BlobPtr blob;
   blob.Bind(std::move(blob_info_));

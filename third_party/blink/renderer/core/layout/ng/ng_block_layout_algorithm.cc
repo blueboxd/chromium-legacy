@@ -1096,13 +1096,15 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
     // the first child.
     const NGPhysicalContainerFragment& marker_fragment =
         layout_result->PhysicalFragment();
-    DCHECK(!marker_fragment.Children().empty());
-    const NGPhysicalFragment& marker_child_fragment =
-        *marker_fragment.Children().front();
-    LayoutUnit marker_inline_size =
-        marker_child_fragment.Size()
-            .ConvertToLogical(ConstraintSpace().GetWritingMode())
-            .inline_size;
+    LayoutUnit marker_inline_size = LayoutUnit();
+    if (!marker_fragment.Children().empty()) {
+      const NGPhysicalFragment& marker_child_fragment =
+          *marker_fragment.Children().front();
+      marker_inline_size =
+          marker_child_fragment.Size()
+              .ConvertToLogical(ConstraintSpace().GetWritingMode())
+              .inline_size;
+    }
     auto_margins.inline_start = NGUnpositionedListMarker(To<NGBlockNode>(child))
                                     .InlineOffset(marker_inline_size);
     auto_margins.inline_end = opportunity.rect.InlineSize() -

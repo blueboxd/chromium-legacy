@@ -284,7 +284,7 @@ PepperMediaDeviceManager::GetMediaStreamDeviceObserver() const {
   DCHECK(render_frame());
   blink::WebMediaStreamDeviceObserver* const observer =
       static_cast<RenderFrameImpl*>(render_frame())
-          ->GetMediaStreamDeviceObserver();
+          ->MediaStreamDeviceObserver();
   DCHECK(observer);
   return observer;
 }

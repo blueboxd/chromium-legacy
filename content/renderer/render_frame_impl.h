@@ -123,7 +123,6 @@ class WebMediaStreamDeviceObserver;
 class WebSecurityOrigin;
 class WebString;
 class WebURL;
-class WebUserMediaClient;
 struct FramePolicy;
 struct WebContextMenuData;
 struct WebCursorInfo;
@@ -436,10 +435,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnImeFinishComposingText(bool keep_selection);
 
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
-
-  // May return NULL in some cases, especially if userMediaClient() returns
-  // NULL.
-  blink::WebMediaStreamDeviceObserver* GetMediaStreamDeviceObserver();
 
   void ScriptedPrint(bool user_initiated);
 
@@ -837,7 +832,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidChangeScrollOffset() override;
   void WillStartUsingPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandler* handler) override;
-  blink::WebUserMediaClient* UserMediaClient() override;
+  blink::WebMediaStreamDeviceObserver* MediaStreamDeviceObserver() override;
   blink::WebEncryptedMediaClient* EncryptedMediaClient() override;
   blink::WebString UserAgentOverride() override;
   blink::WebString DoNotTrackValue() override;
@@ -1250,10 +1245,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   base::Value GetJavaScriptExecutionResult(v8::Local<v8::Value> result);
 
-  // Initializes |web_user_media_client_|. If this fails, because it wasn't
-  // possible to create a MediaStreamClient (e.g., WebRTC is disabled), then
-  // |web_user_media_client_| will remain NULL.
-  void InitializeUserMediaClient();
+  void InitializeMediaStreamDeviceObserver();
 
   // Does preparation for the navigation to |url|.
   void PrepareRenderViewForNavigation(
@@ -1612,7 +1604,8 @@ class CONTENT_EXPORT RenderFrameImpl
   bool handling_select_range_;
 
   // Implements getUserMedia() and related functionality.
-  std::unique_ptr<blink::WebUserMediaClient> web_user_media_client_;
+  std::unique_ptr<blink::WebMediaStreamDeviceObserver>
+      web_media_stream_device_observer_;
 
   mojom::RendererAudioInputStreamFactoryPtr audio_input_stream_factory_;
 

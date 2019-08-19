@@ -296,6 +296,17 @@ TEST_F(BundledExchangeParserTest, FallbackURLIsNotUTF8) {
   EXPECT_TRUE(error->fallback_url.is_empty());
 }
 
+TEST_F(BundledExchangeParserTest, FallbackURLHasFragment) {
+  BundleBuilder builder("https://test.example.com/#fragment", kManifestUrl);
+  std::vector<uint8_t> bundle = builder.CreateBundle();
+  TestDataSource data_source(bundle);
+
+  mojom::BundleMetadataParseErrorPtr error = ParseBundle(&data_source).second;
+  ASSERT_TRUE(error);
+  EXPECT_EQ(error->type, mojom::BundleParseErrorType::kFormatError);
+  EXPECT_TRUE(error->fallback_url.is_empty());
+}
+
 TEST_F(BundledExchangeParserTest, SectionLengthsTooLarge) {
   BundleBuilder builder(kFallbackUrl, kManifestUrl);
   std::string too_long_section_name(8192, 'x');
@@ -346,6 +357,16 @@ TEST_F(BundledExchangeParserTest, InvalidRequestURL) {
 TEST_F(BundledExchangeParserTest, RequestURLIsNotUTF8) {
   BundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/\xcc",
+                      {{":status", "200"}, {"content-type", "text/plain"}},
+                      "payload");
+  TestDataSource data_source(builder.CreateBundle());
+
+  ExpectFormatErrorWithFallbackURL(ParseBundle(&data_source));
+}
+
+TEST_F(BundledExchangeParserTest, RequestURLHasBadScheme) {
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  builder.AddExchange("file:///tmp/foo",
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");
   TestDataSource data_source(builder.CreateBundle());

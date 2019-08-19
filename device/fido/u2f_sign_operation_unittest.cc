@@ -50,7 +50,7 @@ class U2fSignOperationTest : public ::testing::Test {
   TestSignCallback& sign_callback_receiver() { return sign_callback_receiver_; }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestSignCallback sign_callback_receiver_;
 };
 

@@ -55,14 +55,14 @@ class ModuleWatcherTest : public testing::Test {
     module_ = nullptr;
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   std::unique_ptr<ModuleWatcher> Create() {
     return ModuleWatcher::Create(
         base::Bind(&ModuleWatcherTest::OnModuleEvent, base::Unretained(this)));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // Holds a handle to a loaded module.
   HMODULE module_;

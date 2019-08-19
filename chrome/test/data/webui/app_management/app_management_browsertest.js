@@ -39,7 +39,7 @@ AppManagementAppTest.prototype = {
   ]),
 };
 
-TEST_F('AppManagementAppTest', 'All', function() {
+TEST_F('AppManagementAppTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -53,7 +53,7 @@ AppManagementDomSwitchTest.prototype = {
   ]),
 };
 
-TEST_F('AppManagementDomSwitchTest', 'All', function() {
+TEST_F('AppManagementDomSwitchTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -67,7 +67,7 @@ AppManagementMainViewTest.prototype = {
   ]),
 };
 
-TEST_F('AppManagementMainViewTest', 'All', function() {
+TEST_F('AppManagementMainViewTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -81,7 +81,7 @@ AppManagementMetadataViewTest.prototype = {
   ]),
 };
 
-TEST_F('AppManagementMetadataViewTest', 'All', function() {
+TEST_F('AppManagementMetadataViewTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -95,7 +95,7 @@ AppManagementReducersTest.prototype = {
   ]),
 };
 
-TEST_F('AppManagementReducersTest', 'All', function() {
+TEST_F('AppManagementReducersTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -109,7 +109,7 @@ AppManagementRouterTest.prototype = {
   ]),
 };
 
-TEST_F('AppManagementRouterTest', 'All', function() {
+TEST_F('AppManagementRouterTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -123,7 +123,7 @@ AppManagementPwaPermissionViewTest.prototype = {
   ]),
 };
 
-TEST_F('AppManagementPwaPermissionViewTest', 'All', function() {
+TEST_F('AppManagementPwaPermissionViewTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -137,7 +137,7 @@ AppManagementArcPermissionViewTest.prototype = {
   ]),
 };
 
-TEST_F('AppManagementArcPermissionViewTest', 'All', function() {
+TEST_F('AppManagementArcPermissionViewTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -151,6 +151,6 @@ AppManagementManagedAppsTest.prototype = {
   ]),
 };
 
-TEST_F('AppManagementManagedAppsTest', 'All', function() {
+TEST_F('AppManagementManagedAppsTest', 'DISABLED_All', function() {
   mocha.run();
 });

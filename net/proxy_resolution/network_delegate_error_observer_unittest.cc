@@ -87,7 +87,7 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
 // Check that the OnPACScriptError method can be called from an arbitrary
 // thread.
 TEST(NetworkDelegateErrorObserverTest, CallOnThread) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   base::Thread thread("test_thread");
   thread.Start();
   TestNetworkDelegate network_delegate;
@@ -104,7 +104,7 @@ TEST(NetworkDelegateErrorObserverTest, CallOnThread) {
 
 // Check that passing a NULL network delegate works.
 TEST(NetworkDelegateErrorObserverTest, NoDelegate) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   base::Thread thread("test_thread");
   thread.Start();
   NetworkDelegateErrorObserver observer(

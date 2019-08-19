@@ -103,7 +103,7 @@ class GpuDataManagerImplPrivateTest : public testing::Test {
   void TestBlockingDomainFrom3DAPIs(gpu::DomainGuilt guilt_level);
   void TestUnblockingDomainFrom3DAPIs(gpu::DomainGuilt guilt_level);
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // We use new method instead of GetInstance() method because we want

@@ -38,7 +38,7 @@ bool HasFontWithName(const base::ListValue& list,
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 // GetFontList is not implemented on Android and Fuchsia.
 TEST(FontList, GetFontList) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   content::GetFontListTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce([] {
@@ -56,7 +56,7 @@ TEST(FontList, GetFontList) {
         EXPECT_TRUE(HasFontWithName(*fonts, "Arial", "Arial"));
 #endif
       }));
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 

@@ -709,7 +709,7 @@ class FtpSocketDataProviderEvilLogin
 
 class FtpNetworkTransactionTest : public PlatformTest,
                                   public ::testing::WithParamInterface<int>,
-                                  public WithScopedTaskEnvironment {
+                                  public WithTaskEnvironment {
  public:
   FtpNetworkTransactionTest() : host_resolver_(new MockHostResolver) {
     SetUpTransaction();

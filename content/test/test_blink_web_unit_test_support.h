@@ -33,11 +33,11 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
     // Create a mock version of scheduling infrastructure, which just forwards
     // all calls to the default task runner.
     // All non-blink users (content_unittests etc) should call this method.
-    // Each test has to create base::test::ScopedTaskEnvironment manually.
+    // Each test has to create base::test::TaskEnvironment manually.
     kMockScheduler,
     // Initialize blink platform with the real scheduler.
     // Should be used only by webkit_unit_tests.
-    // Tests don't have to create base::test::ScopedTaskEnvironment, but should
+    // Tests don't have to create base::test::TaskEnvironment, but should
     // be careful not to leak any tasks to the other tests.
     kRealScheduler,
   };

@@ -64,7 +64,7 @@ class CrosHealthdServiceConnectionTest : public testing::Test {
   MockCrosHealthdService* mock_service() { return &mock_service_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   StrictMock<MockCrosHealthdService> mock_service_;
 
   DISALLOW_COPY_AND_ASSIGN(CrosHealthdServiceConnectionTest);

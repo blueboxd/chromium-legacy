@@ -118,7 +118,7 @@ class PrintServersProviderTest : public testing::Test {
 
  protected:
   // everything must be called on Chrome_UIThread
-  content::TestBrowserThreadBundle scoped_task_environment_;
+  content::TestBrowserThreadBundle task_environment_;
   std::unique_ptr<PrintServersProvider> external_servers_;
 };
 
@@ -132,7 +132,7 @@ TEST_F(PrintServersProviderTest, DestructionIsSafe) {
   }
   // servers is out of scope.  Destructor has run.  Pump the message queue to
   // see if anything strange happens.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Verify that we're initially unset and empty.
@@ -172,7 +172,7 @@ TEST_F(PrintServersProviderTest, SetData) {
   // single call from AddObserver, since SetData(...) is not processed yet
   ASSERT_EQ(obs.GetCalls().size(), 1u);
   // make sure that SetData(...) is processed
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // now the call from SetData(...) is there also
   ASSERT_EQ(obs.GetCalls().size(), 2u);
   EXPECT_EQ(obs.GetCalls().back().complete, true);
@@ -192,7 +192,7 @@ TEST_F(PrintServersProviderTest, SetData2) {
   external_servers_->SetData(std::move(blob2));
   // no changes, because nothing was processed yet
   ASSERT_EQ(obs.GetCalls().size(), 1u);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // both calls from SetData(...) should be reported
   ASSERT_EQ(obs.GetCalls().size(), 3u);
   EXPECT_EQ(obs.GetCalls()[1].complete, false);
@@ -216,7 +216,7 @@ TEST_F(PrintServersProviderTest, SetDataClearData) {
   EXPECT_EQ(obs.GetCalls().back().complete, true);
   EXPECT_TRUE(obs.GetCalls().back().servers.empty());
   // process SetData(...)
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // no changes, effects of SetData(...) were already replaced by ClearData()
   ASSERT_EQ(obs.GetCalls().size(), 2u);
   external_servers_->RemoveObserver(&obs);
@@ -239,7 +239,7 @@ TEST_F(PrintServersProviderTest, ClearDataSetData) {
   EXPECT_EQ(obs.GetCalls().back().complete, false);
   EXPECT_TRUE(obs.GetCalls().back().servers.empty());
   // process SetData(...)
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // next call with results from processed SetData(...)
   ASSERT_EQ(obs.GetCalls().size(), 3u);
   EXPECT_EQ(obs.GetCalls().back().complete, true);
@@ -253,7 +253,7 @@ TEST_F(PrintServersProviderTest, InvalidURLs) {
   TestObserver obs;
   external_servers_->AddObserver(&obs);
   external_servers_->SetData(std::move(blob3));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_EQ(obs.GetCalls().size(), 2u);
   EXPECT_EQ(obs.GetCalls().back().complete, true);
   EXPECT_EQ(obs.GetCalls().back().servers, kPrintServersPolicyData3);

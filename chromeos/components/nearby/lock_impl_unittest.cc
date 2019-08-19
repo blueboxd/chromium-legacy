@@ -49,7 +49,7 @@ class LockImplTest : public testing::Test {
     // Makes sure that outstanding LockAndUnlockFromDifferentThread() tasks in
     // |different_thread_task_runner_| finish running after the test thread
     // relinquishes its ownership of |lock_|.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     base::AutoLock al(lock_->bookkeeping_lock_);
     EXPECT_EQ(0u, lock_->num_acquisitions_);
@@ -81,7 +81,7 @@ class LockImplTest : public testing::Test {
 
   location::nearby::Lock* lock() { return lock_.get(); }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   // Only meant to be posted via PostLockAndUnlockFromDifferentThread() on
@@ -134,7 +134,7 @@ TEST_F(LockImplTest,
 
   // Outstanding lock attempt succeed after unlocking from current thread.
   lock()->unlock();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(HasSuccessfullyLockedWithAttemptId(attempt_id));
 }
 
@@ -158,7 +158,7 @@ TEST_F(
   lock()->unlock();
   lock()->unlock();
   lock()->unlock();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(HasSuccessfullyLockedWithAttemptId(attempt_id));
 }
 
@@ -182,7 +182,7 @@ TEST_F(LockImplTest, InterweavedLocking) {
   lock()->unlock();
   lock()->unlock();
   lock()->unlock();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(HasSuccessfullyLockedWithAttemptId(attempt_id1));
   EXPECT_TRUE(HasSuccessfullyLockedWithAttemptId(attempt_id2));
   EXPECT_TRUE(HasSuccessfullyLockedWithAttemptId(attempt_id3));

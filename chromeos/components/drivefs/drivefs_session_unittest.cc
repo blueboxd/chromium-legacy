@@ -323,7 +323,7 @@ class DriveFsSessionTest : public ::testing::Test,
     holder_.reset();
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   struct PointerHolder {
     MockDiskMounter* mounter = nullptr;

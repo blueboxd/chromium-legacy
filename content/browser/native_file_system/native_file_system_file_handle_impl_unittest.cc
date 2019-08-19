@@ -35,8 +35,7 @@ using storage::FileSystemURL;
 class NativeFileSystemFileHandleImplTest : public testing::Test {
  public:
   NativeFileSystemFileHandleImplTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     scoped_feature_list_.InitAndEnableFeature(
         blink::features::kNativeFileSystemAPI);
   }
@@ -97,7 +96,7 @@ class NativeFileSystemFileHandleImplTest : public testing::Test {
   const url::Origin test_src_origin_ = url::Origin::Create(test_src_url_);
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  TestBrowserThreadBundle scoped_task_environment_;
+  TestBrowserThreadBundle task_environment_;
 
   base::ScopedTempDir dir_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;

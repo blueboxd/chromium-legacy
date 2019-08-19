@@ -67,7 +67,7 @@ PageActionIconType ClickToCallUiController::GetIconType() {
 }
 
 int ClickToCallUiController::GetRequiredDeviceCapabilities() {
-  return static_cast<int>(SharingDeviceCapability::kTelephony);
+  return static_cast<int>(SharingDeviceCapability::kClickToCall);
 }
 
 void ClickToCallUiController::DoUpdateApps(UpdateAppsCallback callback) {

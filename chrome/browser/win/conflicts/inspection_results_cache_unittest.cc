@@ -48,15 +48,14 @@ bool InspectionResultsEqual(const ModuleInspectionResult& lhs,
 class InspectionResultsCacheTest : public testing::Test {
  public:
   InspectionResultsCacheTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     scoped_feature_list_.InitAndEnableFeature(kInspectionResultsCache);
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   base::FilePath GetCacheFilePath() {
     return scoped_temp_dir_.GetPath().Append(L"cache.bin");
@@ -65,7 +64,7 @@ class InspectionResultsCacheTest : public testing::Test {
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   base::ScopedTempDir scoped_temp_dir_;
 

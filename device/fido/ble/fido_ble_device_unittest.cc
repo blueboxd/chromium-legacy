@@ -101,8 +101,8 @@ class FidoBleDeviceTest : public Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
  private:
   scoped_refptr<MockBluetoothAdapter> adapter_ =
@@ -124,7 +124,7 @@ TEST_F(FidoBleDeviceTest, SendPingTest_Failure_WriteFailed) {
 
   EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
       .WillOnce(Invoke([this](const auto& data, auto* cb) {
-        scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+        task_environment_.GetMainThreadTaskRunner()->PostTask(
             FROM_HERE, base::BindOnce(std::move(*cb), false));
       }));
 
@@ -140,7 +140,7 @@ TEST_F(FidoBleDeviceTest, SendPingTest_Failure_NoResponse) {
   ConnectWithLength(kControlPointLength);
   EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
       .WillOnce(Invoke([this](const auto& data, auto* cb) {
-        scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+        task_environment_.GetMainThreadTaskRunner()->PostTask(
             FROM_HERE, base::BindOnce(std::move(*cb), true));
       }));
 
@@ -156,7 +156,7 @@ TEST_F(FidoBleDeviceTest, SendPingTest_Failure_SlowResponse) {
   ConnectWithLength(kControlPointLength);
   EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
       .WillOnce(Invoke([this](const auto& data, auto* cb) {
-        scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+        task_environment_.GetMainThreadTaskRunner()->PostTask(
             FROM_HERE, base::BindOnce(std::move(*cb), true));
       }));
 
@@ -179,10 +179,10 @@ TEST_F(FidoBleDeviceTest, SendPingTest) {
 
   EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
       .WillOnce(Invoke([this](const auto& data, auto* cb) {
-        scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+        task_environment_.GetMainThreadTaskRunner()->PostTask(
             FROM_HERE, base::BindOnce(std::move(*cb), true));
 
-        scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+        task_environment_.GetMainThreadTaskRunner()->PostTask(
             FROM_HERE, base::BindOnce(connection()->read_callback(), data));
       }));
 
@@ -208,7 +208,7 @@ TEST_F(FidoBleDeviceTest, CancelDuringTransmission) {
   EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
       .InSequence(sequence)
       .WillOnce(testing::WithArg<1>(Invoke([this](auto* cb) {
-        scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+        task_environment_.GetMainThreadTaskRunner()->PostTask(
             FROM_HERE, base::BindOnce(std::move(*cb), true));
       })));
   EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
@@ -336,10 +336,10 @@ TEST_F(FidoBleDeviceTest, DeviceMsgErrorTest) {
   EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
       .WillOnce(::testing::WithArg<1>(
           Invoke([this, kBleInvalidCommandError](auto* cb) {
-            scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+            task_environment_.GetMainThreadTaskRunner()->PostTask(
                 FROM_HERE, base::BindOnce(std::move(*cb), true));
 
-            scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+            task_environment_.GetMainThreadTaskRunner()->PostTask(
                 FROM_HERE, base::BindOnce(connection()->read_callback(),
                                           fido_parsing_utils::Materialize(
                                               kBleInvalidCommandError)));
@@ -358,7 +358,7 @@ TEST_F(FidoBleDeviceTest, Timeout) {
   TestDeviceCallbackReceiver callback_receiver;
   device()->SendPing(std::vector<uint8_t>(), callback_receiver.callback());
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(FidoDevice::State::kDeviceError, device()->state_for_testing());
   EXPECT_TRUE(callback_receiver.was_called());
   EXPECT_FALSE(callback_receiver.value());

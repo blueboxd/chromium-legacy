@@ -273,7 +273,7 @@ class ChromePromptChannelProtobufTest : public ::testing::Test {
     return base::win::ScopedHandle(duplicate_handle);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::RunLoop run_loop_;
   ChromePromptChannelPtr channel_ =
       ChromePromptChannelPtr(nullptr, base::OnTaskRunnerDeleter(nullptr));

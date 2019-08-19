@@ -121,7 +121,7 @@ class QuotaReservationTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir work_dir_;
   std::unique_ptr<storage::QuotaReservationManager> reservation_manager_;
 

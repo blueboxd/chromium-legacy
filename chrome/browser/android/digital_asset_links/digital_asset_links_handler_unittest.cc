@@ -111,7 +111,7 @@ class DigitalAssetLinksHandlerTest : public ::testing::Test {
   GURL request_url_;
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
   content::TestBrowserThread io_thread_;
   network::TestURLLoaderFactory test_url_loader_factory_;

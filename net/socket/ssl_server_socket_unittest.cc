@@ -304,7 +304,7 @@ class FakeSocket : public StreamSocket {
 
 // Verify the correctness of the test helper classes first.
 TEST(FakeSocketTest, DataTransfer) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   // Establish channels between two sockets.
   FakeDataChannel channel_1;
@@ -350,8 +350,7 @@ TEST(FakeSocketTest, DataTransfer) {
   EXPECT_EQ(0, memcmp(kTestData, read_buf->data(), read));
 }
 
-class SSLServerSocketTest : public PlatformTest,
-                            public WithScopedTaskEnvironment {
+class SSLServerSocketTest : public PlatformTest, public WithTaskEnvironment {
  public:
   SSLServerSocketTest()
       : ssl_config_service_(new TestSSLConfigService(SSLContextConfig())),

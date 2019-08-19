@@ -153,8 +153,7 @@ class TestNetworkObserver : public NetworkChangeNotifier::NetworkObserver {
 
 }  // namespace
 
-class BaseNetworkChangeNotifierAndroidTest
-    : public TestWithScopedTaskEnvironment {
+class BaseNetworkChangeNotifierAndroidTest : public TestWithTaskEnvironment {
  protected:
   typedef NetworkChangeNotifier::ConnectionType ConnectionType;
   typedef NetworkChangeNotifier::ConnectionSubtype ConnectionSubtype;

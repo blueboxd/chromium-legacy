@@ -195,9 +195,9 @@ int SharingDeviceRegistration::GetDeviceCapabilities() const {
     return device_capabilities_testing_value_.value();
 
   int device_capabilities = static_cast<int>(SharingDeviceCapability::kNone);
-  if (IsTelephonySupported()) {
+  if (IsClickToCallSupported()) {
     device_capabilities |=
-        static_cast<int>(SharingDeviceCapability::kTelephony);
+        static_cast<int>(SharingDeviceCapability::kClickToCall);
   }
   if (IsSharedClipboardSupported()) {
     device_capabilities |=
@@ -206,7 +206,7 @@ int SharingDeviceRegistration::GetDeviceCapabilities() const {
   return device_capabilities;
 }
 
-bool SharingDeviceRegistration::IsTelephonySupported() const {
+bool SharingDeviceRegistration::IsClickToCallSupported() const {
 #if defined(OS_ANDROID)
   if (!base::FeatureList::IsEnabled(kClickToCallReceiver))
     return false;

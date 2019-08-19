@@ -145,12 +145,12 @@ class OptimizationHintsComponentInstallerTest : public PlatformTest {
 
  protected:
   void RunUntilIdle() {
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     base::RunLoop().RunUntilIdle();
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   base::ScopedTempDir component_install_dir_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;

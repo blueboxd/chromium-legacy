@@ -154,7 +154,7 @@ class FidoCableDeviceTest : public Test {
   FakeCableAuthenticator* authenticator() { return &authenticator_; }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   scoped_refptr<MockBluetoothAdapter> adapter_ =

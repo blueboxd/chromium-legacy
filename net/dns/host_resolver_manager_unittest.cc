@@ -468,7 +468,7 @@ void TestIPv6LoopbackOnly(const std::string& host) {
 
 }  // namespace
 
-class HostResolverManagerTest : public TestWithScopedTaskEnvironment {
+class HostResolverManagerTest : public TestWithTaskEnvironment {
  public:
   static const int kDefaultPort = 80;
 

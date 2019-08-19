@@ -17,8 +17,7 @@ namespace net {
 class NetworkChangeNotifierPosixTest : public testing::Test {
  public:
   NetworkChangeNotifierPosixTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         notifier_(new NetworkChangeNotifierPosix(
             NetworkChangeNotifier::CONNECTION_UNKNOWN,
             NetworkChangeNotifier::SUBTYPE_UNKNOWN)) {
@@ -29,14 +28,14 @@ class NetworkChangeNotifierPosixTest : public testing::Test {
   }
 
   void FastForwardUntilIdle() {
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
   }
 
   NetworkChangeNotifierPosix* notifier() { return notifier_.get(); }
   TestDnsConfigService* dns_config_service() { return dns_config_service_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   net::NetworkChangeNotifier::DisableForTest mock_notifier_disabler_;
   std::unique_ptr<NetworkChangeNotifierPosix> notifier_;
   TestDnsConfigService* dns_config_service_;

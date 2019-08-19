@@ -19,7 +19,7 @@ class SystemMonitorTest : public testing::Test {
  protected:
   SystemMonitorTest() { system_monitor_.reset(new SystemMonitor); }
 
-  test::ScopedTaskEnvironment scoped_task_environment_;
+  test::TaskEnvironment task_environment_;
   std::unique_ptr<SystemMonitor> system_monitor_;
 
  private:

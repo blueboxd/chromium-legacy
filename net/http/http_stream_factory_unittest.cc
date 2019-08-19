@@ -479,7 +479,7 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
   ClientSocketPool::GroupId last_group_id_;
 };
 
-using HttpStreamFactoryTest = TestWithScopedTaskEnvironment;
+using HttpStreamFactoryTest = TestWithTaskEnvironment;
 
 // TODO(950069): Add testing for frame_origin in NetworkIsolationKey using
 // kAppendInitiatingFrameOriginToNetworkIsolationKey.
@@ -2217,7 +2217,7 @@ TEST_F(HttpStreamFactoryTest, RequestBidirectionalStreamImpl) {
 }
 
 class HttpStreamFactoryBidirectionalQuicTest
-    : public TestWithScopedTaskEnvironment,
+    : public TestWithTaskEnvironment,
       public ::testing::WithParamInterface<
           std::tuple<quic::ParsedQuicVersion, bool>> {
  protected:

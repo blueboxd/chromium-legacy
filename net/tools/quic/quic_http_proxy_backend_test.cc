@@ -42,7 +42,7 @@ class TestQuicServerStream
 
  private:
   bool did_complete_;
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_ =
       base::ThreadTaskRunnerHandle::Get();
   base::RunLoop run_loop_;

@@ -208,8 +208,8 @@ TEST(ErrorReportTest, CertificateTransparencyError) {
 // Tests that information about network time querying is included in the
 // report.
 TEST(ErrorReportTest, NetworkTimeQueryingFeatureInfo) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   std::unique_ptr<network_time::FieldTrialTest> field_trial_test(
       new network_time::FieldTrialTest());

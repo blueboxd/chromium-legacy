@@ -5026,7 +5026,9 @@ interface NDEFRecord
     getter mediaType
     getter recordType
     method constructor
-    method data
+    method toArrayBuffer
+    method toJSON
+    method toText
 interface NFCErrorEvent : Event
     attribute @@toStringTag
     getter error

@@ -127,7 +127,7 @@ class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
     sent_sequence_numbers_.insert(sequence_number);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const multidevice::RemoteDeviceRef test_device_;
 
   int num_times_send_message_called_ = 0;

@@ -61,7 +61,6 @@ base::string16 GetTitleForButton(ConfirmInfoBarDelegate* delegate,
 @implementation SaveCardInfoBarController
 
 @dynamic infoBarDelegate;
-@synthesize infoBarView = _infoBarView;
 
 - (instancetype)initWithInfoBarDelegate:
     (autofill::AutofillSaveCardInfoBarDelegateMobile*)infoBarDelegate {

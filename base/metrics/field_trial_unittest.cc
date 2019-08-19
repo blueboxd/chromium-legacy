@@ -104,7 +104,7 @@ class FieldTrialTest : public ::testing::Test {
   FieldTrialTest() : trial_list_(nullptr) {}
 
  private:
-  test::ScopedTaskEnvironment scoped_task_environment_;
+  test::TaskEnvironment task_environment_;
   FieldTrialList trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FieldTrialTest);

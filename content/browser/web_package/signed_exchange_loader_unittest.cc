@@ -137,7 +137,7 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::test::ScopedFeatureList feature_list_;
 
   MockValidityPingURLLoaderFactory ping_loader_factory_;

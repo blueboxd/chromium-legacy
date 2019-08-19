@@ -16,8 +16,8 @@ namespace net {
 namespace {
 
 TEST(TrafficStatsAndroidTest, BasicsTest) {
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   EmbeddedTestServer embedded_test_server;
   embedded_test_server.ServeFilesFromDirectory(
@@ -52,8 +52,8 @@ TEST(TrafficStatsAndroidTest, BasicsTest) {
 }
 
 TEST(TrafficStatsAndroidTest, UIDBasicsTest) {
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   EmbeddedTestServer embedded_test_server;
   embedded_test_server.ServeFilesFromDirectory(

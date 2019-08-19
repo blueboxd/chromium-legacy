@@ -121,8 +121,7 @@ class FakeSessionManagerClient : public chromeos::FakeSessionManagerClient {
 class UserCloudPolicyStoreChromeOSTest : public testing::Test {
  protected:
   UserCloudPolicyStoreChromeOSTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
@@ -238,7 +237,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
     return GetUserPolicyKeyFile(user_policy_dir(), cryptohome_id_);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   chromeos::FakeCryptohomeClient cryptohome_client_;
   std::unique_ptr<FakeSessionManagerClient> session_manager_client_;
   UserPolicyBuilder policy_;

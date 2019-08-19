@@ -108,7 +108,7 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
     if (base::Contains(transports, Transport::kNearFieldCommunication))
       nfc_discovery()->WaitForCallToStartAndSimulateSuccess();
 
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
     EXPECT_FALSE(callback().was_called());
 
     if (!base::Contains(transports, Transport::kUsbHumanInterfaceDevice))
@@ -138,8 +138,8 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<test::FakeFidoDiscoveryFactory> fake_discovery_factory_ =
       std::make_unique<test::FakeFidoDiscoveryFactory>();
   test::FakeFidoDiscovery* discovery_;
@@ -210,7 +210,7 @@ TEST_F(FidoMakeCredentialHandlerTest, U2fRegisterWithUserVerificationRequired) {
       test_data::kApduEncodedNoErrorRegisterResponse);
   discovery()->AddDevice(std::move(device));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(FidoReturnCode::kAuthenticatorMissingUserVerification,
             callback().status());
 }
@@ -229,7 +229,7 @@ TEST_F(FidoMakeCredentialHandlerTest, U2fRegisterWithResidentKeyRequirement) {
       test_data::kApduEncodedNoErrorRegisterResponse);
   discovery()->AddDevice(std::move(device));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(FidoReturnCode::kAuthenticatorMissingResidentKeys,
             callback().status());
 }
@@ -250,7 +250,7 @@ TEST_F(FidoMakeCredentialHandlerTest, UserVerificationRequirementNotMet) {
       test_data::kTestMakeCredentialResponse);
   discovery()->AddDevice(std::move(device));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(FidoReturnCode::kAuthenticatorMissingUserVerification,
             callback().status());
 }
@@ -310,7 +310,7 @@ TEST_F(FidoMakeCredentialHandlerTest, ResidentKeyRequirementNotMet) {
 
   discovery()->AddDevice(std::move(device));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(FidoReturnCode::kAuthenticatorMissingResidentKeys,
             callback().status());
 }
@@ -501,7 +501,7 @@ TEST_F(FidoMakeCredentialHandlerTest,
       test_data::kTestGetInfoResponsePlatformDevice);
   discovery()->AddDevice(std::move(device));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(callback().was_called());
 }
 
@@ -526,7 +526,7 @@ TEST_F(FidoMakeCredentialHandlerTest,
               /*require_resident_key=*/true,
               UserVerificationRequirement::kRequired));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(callback().was_called());
 }
 
@@ -562,7 +562,7 @@ TEST_F(FidoMakeCredentialHandlerTest, IncorrectRpIdHash) {
       test_data::kTestMakeCredentialResponseWithIncorrectRpIdHash);
   discovery()->AddDevice(std::move(device));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(callback().was_called());
 }
 
@@ -587,7 +587,7 @@ TEST_F(FidoMakeCredentialHandlerTest,
   discovery()->AddDevice(std::make_unique<VirtualCtap2Device>(
       std::move(state), std::move(config)));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   callback().WaitForCallback();
   EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
 }
@@ -606,7 +606,7 @@ TEST_F(FidoMakeCredentialHandlerTest,
   discovery()->WaitForCallToStartAndSimulateSuccess();
   discovery()->AddDevice(std::move(device));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(FidoReturnCode::kAuthenticatorMissingResidentKeys,
             callback().status());
 }
@@ -631,7 +631,7 @@ TEST_F(FidoMakeCredentialHandlerTest,
               /*require_resident_key=*/false,
               UserVerificationRequirement::kPreferred));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(callback().was_called());
   EXPECT_EQ(FidoReturnCode::kUserConsentDenied, callback().status());
 }
@@ -654,7 +654,7 @@ TEST_F(FidoMakeCredentialHandlerTest,
   discovery()->WaitForCallToStartAndSimulateSuccess();
   discovery()->AddDevice(std::move(device));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(callback().was_called());
   EXPECT_EQ(FidoReturnCode::kUserConsentDenied, callback().status());
 }
@@ -676,7 +676,7 @@ TEST_F(FidoMakeCredentialHandlerTest, TestRequestWithPinAuthInvalid) {
   discovery()->WaitForCallToStartAndSimulateSuccess();
   discovery()->AddDevice(std::move(device));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(callback().was_called());
   EXPECT_EQ(FidoReturnCode::kUserConsentDenied, callback().status());
 }

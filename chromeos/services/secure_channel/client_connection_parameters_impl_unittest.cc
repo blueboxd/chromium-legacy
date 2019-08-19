@@ -86,7 +86,7 @@ class SecureChannelClientConnectionParametersImplTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<FakeConnectionDelegate> fake_connection_delegate_;
   mojom::ConnectionDelegate::Proxy_* fake_connection_delegate_proxy_ = nullptr;

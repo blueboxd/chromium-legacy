@@ -70,10 +70,10 @@ bool ShouldHidePinToShelf(const std::string app_id) {
 AppManagementPageHandler::AppManagementPageHandler(
     app_management::mojom::PageHandlerRequest request,
     app_management::mojom::PagePtr page,
-    content::WebUI* web_ui)
+    Profile* profile)
     : binding_(this, std::move(request)),
       page_(std::move(page)),
-      profile_(Profile::FromWebUI(web_ui))
+      profile_(profile)
 #if defined(OS_CHROMEOS)
       ,
       shelf_delegate_(this)

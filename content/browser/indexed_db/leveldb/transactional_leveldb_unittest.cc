@@ -79,7 +79,7 @@ class TransactionalLevelDBDatabaseTest : public testing::Test {
     return leveldb::Status::OK();
   }
 
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
   std::unique_ptr<DisjointRangeLockManager> lock_manager_;
   std::unique_ptr<TransactionalLevelDBDatabase> leveldb_database_;
 };

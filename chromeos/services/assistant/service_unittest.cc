@@ -260,7 +260,7 @@ class AssistantServiceTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<Service> service_;
   mojo::Remote<mojom::AssistantService> remote_service_;

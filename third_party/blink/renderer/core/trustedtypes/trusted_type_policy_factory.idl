@@ -8,8 +8,8 @@
     Exposed=(Window, Worker),
     RuntimeEnabled=TrustedDOMTypes
 ] interface TrustedTypePolicyFactory {
-    [RaisesException, Unforgeable] TrustedTypePolicy createPolicy(DOMString policyName, TrustedTypePolicyOptions policyOptions, optional boolean exposed = false);
-    [Unforgeable] TrustedTypePolicy getExposedPolicy(DOMString policyName);
+    [RaisesException, Unforgeable] TrustedTypePolicy createPolicy(DOMString policyName, TrustedTypePolicyOptions policyOptions);
+    [Unforgeable] readonly attribute TrustedTypePolicy defaultPolicy;
     // All the policy object names that have been created
     [Affects=Nothing, Unforgeable] sequence<DOMString> getPolicyNames();
     [CallWith=ScriptState, Unforgeable] boolean isHTML(any checkedObject);

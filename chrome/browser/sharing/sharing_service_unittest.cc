@@ -34,7 +34,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::test::ScopedTaskEnvironment;
+using base::test::TaskEnvironment;
 using namespace instance_id;
 using namespace testing;
 
@@ -215,8 +215,8 @@ class SharingServiceTest : public testing::Test {
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  content::TestBrowserThreadBundle scoped_task_environment_{
-      ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  content::TestBrowserThreadBundle task_environment_{
+      TaskEnvironment::TimeSource::MOCK_TIME};
 
   syncer::FakeDeviceInfoTracker device_info_tracker_;
   FakeLocalDeviceInfoProvider fake_local_device_info_provider_;
@@ -287,8 +287,8 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_Expired) {
   sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
 
   // Forward time until device expires.
-  scoped_task_environment_.FastForwardBy(kDeviceExpiration +
-                                         base::TimeDelta::FromMilliseconds(1));
+  task_environment_.FastForwardBy(kDeviceExpiration +
+                                  base::TimeDelta::FromMilliseconds(1));
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
       GetSharingService()->GetDeviceCandidates(kNoCapabilities);
@@ -319,7 +319,7 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_DuplicateDeviceNames) {
   sync_prefs_->SetSyncDevice(id1, CreateFakeSyncDevice());
 
   // Advance time for a bit to create a newer device.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
 
   // Add second device.
   std::string id2 = base::GenerateGUID();
@@ -393,7 +393,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceFCMNotResponding) {
   EXPECT_EQ(kFcmToken, fake_gcm_driver_.fcm_token());
 
   // Advance time so send message will expire.
-  scoped_task_environment_.FastForwardBy(kSendMessageTimeout);
+  task_environment_.FastForwardBy(kSendMessageTimeout);
   EXPECT_TRUE(send_message_success().has_value());
   EXPECT_FALSE(*send_message_success());
 
@@ -429,7 +429,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceExpired) {
   EXPECT_EQ(kFcmToken, fake_gcm_driver_.fcm_token());
 
   // Advance time so send message will expire.
-  scoped_task_environment_.FastForwardBy(kSendMessageTimeout);
+  task_environment_.FastForwardBy(kSendMessageTimeout);
   EXPECT_TRUE(send_message_success().has_value());
   EXPECT_FALSE(*send_message_success());
 
@@ -501,7 +501,7 @@ TEST_F(SharingServiceTest, DeviceRegistrationTransientError) {
   sharing_device_registration_->SetResult(
       SharingDeviceRegistrationResult::kSuccess);
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       base::TimeDelta::FromMilliseconds(kRetryBackoffPolicy.initial_delay_ms));
   EXPECT_EQ(2, sharing_device_registration_->registration_attempts());
   EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());

@@ -32,7 +32,7 @@ class RegistryKeyWatcherTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   registry_util::RegistryOverrideManager registry_override_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistryKeyWatcherTest);

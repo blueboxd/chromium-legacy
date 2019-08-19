@@ -22,7 +22,7 @@ namespace net {
 
 // Make sure that Request passes on its priority updates to its jobs.
 TEST(HttpStreamRequestTest, SetPriority) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   SequencedSocketData data;
   data.set_connect_data(MockConnect(ASYNC, OK));

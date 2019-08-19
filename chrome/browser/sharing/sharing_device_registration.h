@@ -87,8 +87,8 @@ class SharingDeviceRegistration {
   // Computes and returns a bitmask of all capabilities supported by the device.
   int GetDeviceCapabilities() const;
 
-  // Returns if device supports telephony capability.
-  bool IsTelephonySupported() const;
+  // Returns if device can handle receiving phone numbers for calling.
+  bool IsClickToCallSupported() const;
 
   // Returns if device can handle receiving of shared clipboard contents.
   bool IsSharedClipboardSupported() const;

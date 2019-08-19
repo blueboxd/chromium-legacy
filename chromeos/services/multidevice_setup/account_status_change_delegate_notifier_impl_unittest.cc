@@ -187,7 +187,7 @@ class MultiDeviceSetupAccountStatusChangeDelegateNotifierTest
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<FakeAccountStatusChangeDelegate> fake_delegate_;
   std::unique_ptr<FakeHostStatusProvider> fake_host_status_provider_;

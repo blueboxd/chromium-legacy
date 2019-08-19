@@ -407,7 +407,7 @@ class MockTimer : public base::MockOneShotTimer {
 
 }  // namespace
 
-class MDnsTest : public TestWithScopedTaskEnvironment {
+class MDnsTest : public TestWithTaskEnvironment {
  public:
   void SetUp() override;
   void DeleteTransaction();
@@ -1225,7 +1225,7 @@ class MockMDnsConnectionDelegate : public MDnsConnection::Delegate {
   MOCK_METHOD1(OnConnectionError, void(int error));
 };
 
-class MDnsConnectionTest : public TestWithScopedTaskEnvironment {
+class MDnsConnectionTest : public TestWithTaskEnvironment {
  public:
   MDnsConnectionTest() : connection_(&delegate_) {
   }

@@ -58,7 +58,7 @@ class DisabledTestBlameContext : public BlameContext {
 
 class BlameContextTest : public testing::Test {
  protected:
-  test::ScopedTaskEnvironment scoped_task_environment_;
+  test::TaskEnvironment task_environment_;
 };
 
 TEST_F(BlameContextTest, EnterAndLeave) {

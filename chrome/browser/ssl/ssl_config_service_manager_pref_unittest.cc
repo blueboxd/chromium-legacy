@@ -84,7 +84,7 @@ class SSLConfigServiceManagerPrefTest : public testing::Test,
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   TestingPrefServiceSimple local_state_;
 

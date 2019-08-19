@@ -30,8 +30,7 @@ constexpr base::TimeDelta kInactivityTimeout = base::TimeDelta::FromMinutes(5);
 class ProfileActivityMetricsRecorderTest : public testing::Test {
  public:
   ProfileActivityMetricsRecorderTest()
-      : thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : thread_bundle_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {
     base::SetRecordActionTaskRunner(thread_bundle_.GetMainThreadTaskRunner());
   }

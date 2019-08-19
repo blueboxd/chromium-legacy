@@ -33,8 +33,7 @@ namespace net {
 namespace {
 const int kListenBacklog = 5;
 
-class TCPServerSocketTest : public PlatformTest,
-                            public WithScopedTaskEnvironment {
+class TCPServerSocketTest : public PlatformTest, public WithTaskEnvironment {
  protected:
   TCPServerSocketTest() : socket_(nullptr, NetLogSource()) {}
 

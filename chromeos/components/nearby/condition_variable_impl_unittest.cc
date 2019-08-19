@@ -88,7 +88,7 @@ class ConditionVariableImplTest : public testing::Test {
 
   // testing::Test
   void TearDown() override {
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     EXPECT_EQ(fake_lock_->num_locks(), fake_lock_->num_unlocks());
   }
 
@@ -132,7 +132,7 @@ class ConditionVariableImplTest : public testing::Test {
         expected_num_blocked_sequences /* expected_num_unlocks */);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   void WaitOnConditionVariable(bool should_succeed) {
@@ -166,7 +166,7 @@ TEST_F(ConditionVariableImplTest,
 
   // Should unblock after notify().
   condition_variable()->notify();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   VerifyNumLocksAndUnlocks(2 /* expected_num_locks */,
                            2 /* expected_num_unlocks */);
 }
@@ -180,7 +180,7 @@ TEST_F(ConditionVariableImplTest,
 
   // All should unblock after notify().
   condition_variable()->notify();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   VerifyNumLocksAndUnlocks(6 /* expected_num_locks */,
                            6 /* expected_num_unlocks */);
 }

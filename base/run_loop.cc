@@ -109,7 +109,7 @@ void RunLoop::RegisterDelegateForCurrentThread(Delegate* delegate) {
   DCHECK(!GetTlsDelegate().Get())
       << "Error: Multiple RunLoop::Delegates registered on the same thread.\n\n"
          "Hint: You perhaps instantiated a second "
-         "MessageLoop/ScopedTaskEnvironment on a thread that already had one?";
+         "MessageLoop/TaskEnvironment on a thread that already had one?";
   GetTlsDelegate().Set(delegate);
   delegate->bound_ = true;
 }

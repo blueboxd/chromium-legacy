@@ -315,7 +315,7 @@ class FidoCableDiscoveryTest : public ::testing::Test {
     return std::make_unique<FakeFidoCableDiscovery>(std::move(discovery_data));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // Tests regular successful discovery flow for Cable device.
@@ -334,7 +334,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsNewDevice) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Tests successful discovery flow for Apple Cable device.
@@ -353,7 +353,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsNewAppleDevice) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Tests a scenario where upon broadcasting advertisement and scanning, client
@@ -374,7 +374,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsIncorrectDevice) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Windows currently does not support multiple EIDs, so the following tests are
@@ -413,7 +413,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithMultipleEids) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Tests a scenario where only one of the two client EID's are advertised
@@ -446,7 +446,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithPartialAdvertisementSuccess) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Test the scenario when all advertisement for client EID's fails.
@@ -478,7 +478,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithAdvertisementFailures) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(cable_discovery->advertisements_.empty());
 }
 #endif  // !defined(OS_WIN)
@@ -499,7 +499,7 @@ TEST_F(FidoCableDiscoveryTest, TestUnregisterAdvertisementUponDestruction) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_EQ(1u, cable_discovery->advertisements_.size());
   cable_discovery.reset();

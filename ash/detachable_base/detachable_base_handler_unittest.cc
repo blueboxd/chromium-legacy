@@ -134,7 +134,7 @@ class DetachableBaseHandlerTest : public testing::Test {
   UserInfo default_user_;
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   TestingPrefServiceSimple local_state_;
 

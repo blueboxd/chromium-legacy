@@ -73,12 +73,10 @@ void CheckConnectTimesExceptDnsSet(
   EXPECT_EQ(base::TimeTicks::Now(), connect_timing.connect_end);
 }
 
-class SSLConnectJobTest : public WithScopedTaskEnvironment,
-                          public testing::Test {
+class SSLConnectJobTest : public WithTaskEnvironment, public testing::Test {
  public:
   SSLConnectJobTest()
-      : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : WithTaskEnvironment(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         proxy_resolution_service_(ProxyResolutionService::CreateDirect()),
         ssl_config_service_(new SSLConfigServiceDefaults),
         http_auth_handler_factory_(HttpAuthHandlerFactory::CreateDefault()),
@@ -103,8 +101,7 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
                                       /*tunnel=*/true,
                                       TRAFFIC_ANNOTATION_FOR_TESTS,
                                       NetworkIsolationKey())),
-        common_connect_job_params_(session_->CreateCommonConnectJobParams()) {
-  }
+        common_connect_job_params_(session_->CreateCommonConnectJobParams()) {}
 
   ~SSLConnectJobTest() override = default;
 

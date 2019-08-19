@@ -63,8 +63,10 @@ class IOSChromeNetworkDelegate : public net::NetworkDelegateImpl {
   bool OnCanAccessFile(const net::URLRequest& request,
                        const base::FilePath& original_path,
                        const base::FilePath& absolute_path) const override;
-  bool OnForcePrivacyMode(const GURL& url,
-                          const GURL& site_for_cookies) const override;
+  bool OnForcePrivacyMode(
+      const GURL& url,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin) const override;
   bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
       const net::URLRequest& request,
       const GURL& target_url,

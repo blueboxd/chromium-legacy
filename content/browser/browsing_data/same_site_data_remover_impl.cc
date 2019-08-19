@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/same_site_data_remover.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
@@ -113,9 +114,11 @@ void SameSiteDataRemoverImpl::ClearStoragePartitionData(
       nullptr, false, base::Time(), base::Time::Max(), std::move(closure));
 }
 
-void SameSiteDataRemoverImpl::ClearData(base::OnceClosure closure,
-                                        BrowserContext* context,
-                                        bool clear_storage) {
+// Defines the ClearSameSiteNoneData function declared in same_site_remover.h.
+// Clears cookies and associated data available in third-party contexts.
+void ClearSameSiteNoneData(base::OnceClosure closure,
+                           BrowserContext* context,
+                           bool clear_storage) {
   auto same_site_remover = std::make_unique<SameSiteDataRemoverImpl>(context);
   SameSiteDataRemoverImpl* remover = same_site_remover.get();
 

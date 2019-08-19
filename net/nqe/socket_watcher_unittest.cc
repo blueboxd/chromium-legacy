@@ -24,7 +24,7 @@ namespace internal {
 
 namespace {
 
-class NetworkQualitySocketWatcherTest : public TestWithScopedTaskEnvironment {
+class NetworkQualitySocketWatcherTest : public TestWithTaskEnvironment {
  protected:
   NetworkQualitySocketWatcherTest() { ResetExpectedCallbackParams(); }
   ~NetworkQualitySocketWatcherTest() override { ResetExpectedCallbackParams(); }

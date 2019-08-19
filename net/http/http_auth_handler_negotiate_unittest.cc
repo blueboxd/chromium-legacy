@@ -48,7 +48,7 @@ namespace net {
 constexpr char kFakeToken[] = "FakeToken";
 
 class HttpAuthHandlerNegotiateTest : public PlatformTest,
-                                     public WithScopedTaskEnvironment {
+                                     public WithTaskEnvironment {
  public:
   void SetUp() override {
     auth_library_ = new MockAuthLibrary();

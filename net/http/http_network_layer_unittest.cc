@@ -34,8 +34,7 @@ namespace net {
 
 namespace {
 
-class HttpNetworkLayerTest : public PlatformTest,
-                             public WithScopedTaskEnvironment {
+class HttpNetworkLayerTest : public PlatformTest, public WithTaskEnvironment {
  protected:
   HttpNetworkLayerTest()
       : ssl_config_service_(std::make_unique<SSLConfigServiceDefaults>()) {}

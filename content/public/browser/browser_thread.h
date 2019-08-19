@@ -212,9 +212,9 @@ class CONTENT_EXPORT BrowserThread {
 //
 // This is intended to be a temporary helper function for the IO/UI thread
 // simplification effort.
-void RunOrPostTaskOnThread(const base::Location& location,
-                           BrowserThread::ID thread_id,
-                           base::OnceClosure task);
+CONTENT_EXPORT void RunOrPostTaskOnThread(const base::Location& location,
+                                          BrowserThread::ID thread_id,
+                                          base::OnceClosure task);
 
 }  // namespace content
 

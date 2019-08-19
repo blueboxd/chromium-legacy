@@ -39,7 +39,7 @@ namespace net {
 
 namespace {
 
-class ProxyResolverV8TracingTest : public TestWithScopedTaskEnvironment {
+class ProxyResolverV8TracingTest : public TestWithTaskEnvironment {
  public:
   void TearDown() override {
     // Drain any pending messages, which may be left over from cancellation.

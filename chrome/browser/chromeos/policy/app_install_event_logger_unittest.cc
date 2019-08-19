@@ -97,9 +97,8 @@ class AppInstallEventLoggerTest : public testing::Test {
  protected:
   AppInstallEventLoggerTest()
       : browser_thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI,
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
-                QUEUED) {}
+            base::test::TaskEnvironment::MainThreadType::UI,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED) {}
 
   void SetUp() override {
     RegisterLocalState(pref_service_.registry());

@@ -68,7 +68,7 @@ class TestComponentManagerDelegate : public ComponentManagerDelegate {
 }  // namespace
 
 TEST(ComponentManagerTest, Empty) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   TestComponentManagerDelegate::Calls calls;
   TestComponentManagerDelegate delegate(&calls);
@@ -118,7 +118,7 @@ TEST(ComponentManagerTest, Empty) {
 }
 
 TEST(ComponentManagerTest, All) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   TestComponentManagerDelegate::Calls delegate_calls;
   TestComponentManagerDelegate delegate(&delegate_calls);
@@ -173,7 +173,7 @@ TEST(ComponentManagerTest, All) {
 }
 
 TEST(ComponentManagerTest, Interrupt) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   TestComponentManagerDelegate::Calls delegate_calls;
   TestComponentManagerDelegate delegate(&delegate_calls);

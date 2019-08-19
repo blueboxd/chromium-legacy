@@ -58,7 +58,7 @@ TEST_F(URLFetcherStringWriterTest, Basic) {
 }
 
 class URLFetcherFileWriterTest : public PlatformTest,
-                                 public WithScopedTaskEnvironment {
+                                 public WithTaskEnvironment {
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -208,7 +208,7 @@ TEST_F(URLFetcherFileWriterTest, DisownFile) {
 }
 
 class URLFetcherFileWriterTemporaryFileTest : public PlatformTest,
-                                              public WithScopedTaskEnvironment {
+                                              public WithTaskEnvironment {
  protected:
   void SetUp() override {
     writer_.reset(new URLFetcherFileWriter(base::ThreadTaskRunnerHandle::Get(),

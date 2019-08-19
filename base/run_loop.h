@@ -271,7 +271,7 @@ class BASE_EXPORT RunLoop {
   // The currently-active timeout can also be temporarily disabled:
   //   ScopedDisableRunTimeoutForTest disable_timeout;
   //
-  // ScopedTaskEnvironment applies a default Run() timeout after which a
+  // TaskEnvironment applies a default Run() timeout after which a
   // LOG(FATAL) is performed, to dump a crash stack for diagnosis. Tests adding
   // their own Run() timeouts can use e.g. MakeExpectedNotRunClosure().
 

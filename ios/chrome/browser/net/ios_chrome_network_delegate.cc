@@ -124,12 +124,14 @@ bool IOSChromeNetworkDelegate::OnCanAccessFile(
 
 bool IOSChromeNetworkDelegate::OnForcePrivacyMode(
     const GURL& url,
-    const GURL& site_for_cookies) const {
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& top_frame_origin) const {
   // Null during tests, or when we're running in the system context.
   if (!cookie_settings_.get())
     return false;
 
-  return !cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies);
+  return !cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies,
+                                                  top_frame_origin);
 }
 
 bool IOSChromeNetworkDelegate::

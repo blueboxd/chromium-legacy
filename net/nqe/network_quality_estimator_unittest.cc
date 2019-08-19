@@ -203,7 +203,7 @@ class TestThroughputObserver
 }  // namespace
 
 constexpr float kEpsilon = 0.001f;
-using NetworkQualityEstimatorTest = TestWithScopedTaskEnvironment;
+using NetworkQualityEstimatorTest = TestWithTaskEnvironment;
 
 TEST_F(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   base::HistogramTester histogram_tester;

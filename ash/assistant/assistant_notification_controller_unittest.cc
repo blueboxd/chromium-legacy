@@ -61,7 +61,7 @@ MATCHER_P(IdIs, expected_id, "") {
 class AssistantNotificationControllerTest : public AshTestBase {
  protected:
   AssistantNotificationControllerTest()
-      : AshTestBase(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~AssistantNotificationControllerTest() override = default;
 
   void SetUp() override {
@@ -119,7 +119,7 @@ class AssistantNotificationControllerTest : public AshTestBase {
   }
 
   void ForwardTimeInMs(int time_in_ms) {
-    scoped_task_environment_->FastForwardBy(
+    task_environment_->FastForwardBy(
         base::TimeDelta::FromMilliseconds(time_in_ms));
   }
 

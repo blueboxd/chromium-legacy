@@ -52,7 +52,7 @@ class TestHostResolverProc : public HostResolverProc {
   ~TestHostResolverProc() override {}
 };
 
-class HttpWithDnsOverHttpsTest : public TestWithScopedTaskEnvironment {
+class HttpWithDnsOverHttpsTest : public TestWithTaskEnvironment {
  public:
   HttpWithDnsOverHttpsTest()
       : resolver_(HostResolver::CreateStandaloneContextResolver(nullptr)),

@@ -77,7 +77,7 @@ class AiaResponseHandler : public URLRequestInterceptor {
 
 }  // namespace
 
-class NssHttpTest : public TestWithScopedTaskEnvironment {
+class NssHttpTest : public TestWithTaskEnvironment {
  public:
   NssHttpTest()
       : context_(false),

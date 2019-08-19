@@ -87,7 +87,7 @@ class TestingQuicChromiumClientSession : public QuicChromiumClientSession {
 class QuicChromiumClientSessionTest
     : public ::testing::TestWithParam<
           std::tuple<quic::ParsedQuicVersion, bool>>,
-      public WithScopedTaskEnvironment {
+      public WithTaskEnvironment {
  public:
   QuicChromiumClientSessionTest()
       : version_(std::get<0>(GetParam())),

@@ -14,6 +14,7 @@
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_loader_helpers.h"
 #include "content/browser/service_worker/service_worker_storage.h"
@@ -35,19 +36,20 @@ namespace content {
 // We chose this size because the AppCache uses this.
 const uint32_t ServiceWorkerUpdatedScriptLoader::kReadBufferSize = 32768;
 
-ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::LoaderOnUI::
+ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::LoaderOnUI::
     LoaderOnUI() = default;
-ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::LoaderOnUI::
+ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::LoaderOnUI::
     ~LoaderOnUI() = default;
-ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::
-    ThrottlingURLLoaderIOWrapper()
+ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
+    ThrottlingURLLoaderCoreWrapper()
     : loader_on_ui_(new LoaderOnUI()) {}
-ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::
-    ~ThrottlingURLLoaderIOWrapper() = default;
+ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
+    ~ThrottlingURLLoaderCoreWrapper() = default;
 
 // static
-std::unique_ptr<ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper>
-ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::
+std::unique_ptr<
+    ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper>
+ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
     CreateLoaderAndStart(
         std::unique_ptr<network::SharedURLLoaderFactoryInfo>
             loader_factory_info,
@@ -58,12 +60,12 @@ ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::
         const network::ResourceRequest& resource_request,
         network::mojom::URLLoaderClientPtrInfo client,
         const net::NetworkTrafficAnnotationTag& traffic_annotation) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  auto wrapper = base::WrapUnique(new ThrottlingURLLoaderIOWrapper());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  auto wrapper = base::WrapUnique(new ThrottlingURLLoaderCoreWrapper());
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&ThrottlingURLLoaderIOWrapper::StartInternalOnUI,
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
+      base::BindOnce(&ThrottlingURLLoaderCoreWrapper::StartInternalOnUI,
                      std::move(loader_factory_info),
                      std::move(browser_context_getter), routing_id, request_id,
                      options, network::ResourceRequest(resource_request),
@@ -74,7 +76,7 @@ ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::
 }
 
 // static
-void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::
+void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
     StartInternalOnUI(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
                           loader_factory_info,
                       BrowserContextGetter browser_context_getter,
@@ -109,40 +111,40 @@ void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::
   loader_on_ui->client = std::move(client);
 }
 
-void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::
+void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
     SetPriority(net::RequestPriority priority, int32_t intra_priority_value) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(
-                     [](LoaderOnUI* loader_on_ui, net::RequestPriority priority,
-                        int32_t intra_priority_value) {
-                       DCHECK(loader_on_ui->loader);
-                       loader_on_ui->loader->SetPriority(priority,
-                                                         intra_priority_value);
-                     },
-                     base::Unretained(loader_on_ui_.get()), priority,
-                     intra_priority_value));
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
+      base::BindOnce(
+          [](LoaderOnUI* loader_on_ui, net::RequestPriority priority,
+             int32_t intra_priority_value) {
+            DCHECK(loader_on_ui->loader);
+            loader_on_ui->loader->SetPriority(priority, intra_priority_value);
+          },
+          base::Unretained(loader_on_ui_.get()), priority,
+          intra_priority_value));
 }
 
-void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::
+void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
     PauseReadingBodyFromNet() {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(
-                     [](LoaderOnUI* loader_on_ui) {
-                       DCHECK(loader_on_ui->loader);
-                       loader_on_ui->loader->PauseReadingBodyFromNet();
-                     },
-                     base::Unretained(loader_on_ui_.get())));
+  RunOrPostTaskOnThread(FROM_HERE, BrowserThread::UI,
+                        base::BindOnce(
+                            [](LoaderOnUI* loader_on_ui) {
+                              DCHECK(loader_on_ui->loader);
+                              loader_on_ui->loader->PauseReadingBodyFromNet();
+                            },
+                            base::Unretained(loader_on_ui_.get())));
 }
 
-void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper::
+void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
     ResumeReadingBodyFromNet() {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(
-                     [](LoaderOnUI* loader_on_ui) {
-                       DCHECK(loader_on_ui->loader);
-                       loader_on_ui->loader->ResumeReadingBodyFromNet();
-                     },
-                     base::Unretained(loader_on_ui_.get())));
+  RunOrPostTaskOnThread(FROM_HERE, BrowserThread::UI,
+                        base::BindOnce(
+                            [](LoaderOnUI* loader_on_ui) {
+                              DCHECK(loader_on_ui->loader);
+                              loader_on_ui->loader->ResumeReadingBodyFromNet();
+                            },
+                            base::Unretained(loader_on_ui_.get())));
 }
 
 // This is for debugging https://crbug.com/959627.

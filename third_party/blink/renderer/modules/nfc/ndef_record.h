@@ -6,16 +6,19 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NDEF_RECORD_H_
 
 #include "services/device/public/mojom/nfc.mojom-blink-forward.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
+class DOMArrayBuffer;
+class ExceptionState;
 class NDEFRecordInit;
 class ScriptState;
-class StringOrUnrestrictedDoubleOrArrayBufferOrDictionary;
 
 class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -28,29 +31,16 @@ class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
 
   const String& recordType() const;
   const String& mediaType() const;
-  void data(ScriptState*,
-            StringOrUnrestrictedDoubleOrArrayBufferOrDictionary&) const;
+  String toText() const;
+  DOMArrayBuffer* toArrayBuffer() const;
+  ScriptValue toJSON(ScriptState*, ExceptionState& exception_state) const;
 
   void Trace(blink::Visitor*) override;
 
  private:
   String record_type_;
   String media_type_;
-
-  enum class DataType {
-    kNone,
-    kArrayBuffer,
-    kDictionary,
-    kString,
-    kUnrestrictedDouble,
-  };
-  DataType data_type_ = DataType::kNone;
-  // For array buffer data type.
-  scoped_refptr<WTF::ArrayBuffer> array_buffer_;
-  // For dictionary or string data type.
-  String string_;
-  // For double data type.
-  double unrestricted_double_;
+  WTF::Vector<uint8_t> data_;
 };
 
 }  // namespace blink

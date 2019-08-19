@@ -51,7 +51,7 @@ class PreloadCheckGroupTest : public testing::Test {
 
  private:
   // Required for the asynchronous tests.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // Tests multiple succeeding checks.

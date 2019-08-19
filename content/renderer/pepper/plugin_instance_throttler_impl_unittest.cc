@@ -83,7 +83,7 @@ class PluginInstanceThrottlerImplTest
 
   int change_callback_calls_;
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(PluginInstanceThrottlerImplTest, ThrottleAndUnthrottleByClick) {

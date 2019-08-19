@@ -177,7 +177,7 @@ class ExtensionLocalizationPeerTest : public testing::Test {
     return consumer;
   }
 
-  base::test::ScopedTaskEnvironment scoped_environment_;
+  base::test::TaskEnvironment scoped_environment_;
   std::unique_ptr<MockIpcMessageSender> sender_;
   MockRequestPeer* original_peer_;
   std::unique_ptr<ExtensionLocalizationPeer> filter_peer_;

@@ -61,7 +61,7 @@ bool MakeCredential() API_AVAILABLE(macos(10.12.2)) {
 // keychain-access-group entitlement.
 TEST(GetAssertionOperationTest, DISABLED_TestRun)
 API_AVAILABLE(macos(10.12.2)) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   ASSERT_TRUE(MakeCredential());
 
   TestCallbackReceiver<CtapDeviceResponseCode,

@@ -464,8 +464,8 @@ class PrinterJobHandlerTest : public ::testing::Test {
   void BeginTest(int timeout_seconds);
   void MakeJobFetchReturnNoJobs();
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   base::OnceClosure active_run_loop_quit_closure_;
   TestURLFetcherCallback url_callback_;
   MockPrinterJobHandlerDelegate jobhandler_delegate_;
@@ -766,7 +766,7 @@ TEST_F(PrinterJobHandlerTest, DISABLED_ManyFailureTest) {
                            net::HTTP_INTERNAL_SERVER_ERROR,
                            net::URLRequestStatus::FAILED);
 
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
+  task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&net::FakeURLFetcherFactory::SetFakeResponse,
                      base::Unretained(&factory_), TicketURI(1),

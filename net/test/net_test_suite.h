@@ -14,7 +14,7 @@
 
 namespace base {
 namespace test {
-class ScopedTaskEnvironment;
+class TaskEnvironment;
 }
 }
 

@@ -80,14 +80,14 @@ class FakeAudioOutputDelegate : public assistant_client::AudioOutput::Delegate {
 class AudioDeviceOwnerTest : public testing::Test {
  public:
   AudioDeviceOwnerTest()
-      : task_env_(base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-                  base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
-                      QUEUED) {}
+      : task_env_(
+            base::test::TaskEnvironment::MainThreadType::DEFAULT,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED) {}
 
   ~AudioDeviceOwnerTest() override { task_env_.RunUntilIdle(); }
 
  private:
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDeviceOwnerTest);
 };

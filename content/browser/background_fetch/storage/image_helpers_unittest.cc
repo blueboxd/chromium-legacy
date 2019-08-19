@@ -49,7 +49,7 @@ TEST(BackgroundFetchImageHelpers, ShouldPersistIcon) {
 }
 
 TEST(BackgroundFetchImageHelpers, SerializeRoundTrip) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   SkBitmap icon;
   icon.allocN32Pixels(42, 42);

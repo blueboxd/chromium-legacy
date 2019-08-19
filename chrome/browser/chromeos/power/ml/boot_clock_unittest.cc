@@ -28,8 +28,8 @@ TEST(BootClockTest, Basic) {
 }
 
 TEST(BootClockTest, UnderMockTime) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME);
   BootClock boot_clock;
 
   constexpr base::TimeDelta mock_sleep_duration =

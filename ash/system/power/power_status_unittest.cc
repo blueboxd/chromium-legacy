@@ -41,8 +41,7 @@ class TestObserver : public PowerStatus::Observer {
 class PowerStatusTest : public testing::Test {
  public:
   PowerStatusTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         power_status_(NULL) {}
   ~PowerStatusTest() override = default;
 
@@ -62,7 +61,7 @@ class PowerStatusTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   PowerStatus* power_status_;  // Not owned.
   std::unique_ptr<TestObserver> test_observer_;
 

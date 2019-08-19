@@ -95,7 +95,7 @@ class ResponsivenessMetricSourceTest : public testing::Test {
  public:
   ResponsivenessMetricSourceTest()
       : test_browser_thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI,
+            base::test::TaskEnvironment::MainThreadType::UI,
             content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
 
   void SetUp() override { test_browser_thread_bundle_.RunIOThreadUntilIdle(); }

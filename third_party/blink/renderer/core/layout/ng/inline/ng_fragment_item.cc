@@ -11,10 +11,17 @@ namespace blink {
 
 NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
     : layout_object_(text.GetLayoutObject()),
-      text_({text.TextShapeResult()}),
+      text_({text.TextShapeResult(), text.StartOffset(), text.EndOffset()}),
       size_(text.Size()),
       type_(kText),
-      style_variant_(static_cast<unsigned>(text.StyleVariant())) {}
+      style_variant_(static_cast<unsigned>(text.StyleVariant())) {
+#if DCHECK_IS_ON()
+  if (text_.shape_result) {
+    DCHECK_EQ(text_.shape_result->StartIndex(), text_.start_offset);
+    DCHECK_EQ(text_.shape_result->EndIndex(), text_.end_offset);
+  }
+#endif
+}
 
 NGFragmentItem::NGFragmentItem(const NGPhysicalLineBoxFragment& line,
                                wtf_size_t item_count)

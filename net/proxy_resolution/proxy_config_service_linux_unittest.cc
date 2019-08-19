@@ -411,7 +411,7 @@ class SyncConfigGetter : public ProxyConfigService::Observer {
 // but all the test cases with the same prefix ("ProxyConfigServiceLinuxTest")
 // must use the same test fixture class (also "ProxyConfigServiceLinuxTest").
 class ProxyConfigServiceLinuxTest : public PlatformTest,
-                                    public WithScopedTaskEnvironment {
+                                    public WithTaskEnvironment {
  protected:
   void SetUp() override {
     PlatformTest::SetUp();

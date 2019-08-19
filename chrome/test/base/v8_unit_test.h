@@ -75,7 +75,7 @@ class V8UnitTest : public testing::Test {
   // Initializes paths and libraries.
   void InitPathsAndLibraries();
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // Handle scope that is used throughout the life of this class.
   v8::HandleScope handle_scope_;

@@ -19,8 +19,7 @@
 class GoogleSearchDomainMixingMetricsEmitterTest : public testing::Test {
  public:
   GoogleSearchDomainMixingMetricsEmitterTest()
-      : thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : thread_bundle_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     GoogleSearchDomainMixingMetricsEmitter::RegisterProfilePrefs(

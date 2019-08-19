@@ -116,7 +116,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
 /////////////////////////////////////////////////////////////////////////////
 
 AshTestBase::AshTestBase(AshTestBase::SubclassManagesTaskEnvironment /* tag */)
-    : scoped_task_environment_(base::nullopt) {}
+    : task_environment_(base::nullopt) {}
 
 AshTestBase::~AshTestBase() {
   CHECK(setup_called_)
@@ -127,7 +127,7 @@ AshTestBase::~AshTestBase() {
 
 void AshTestBase::SetUp() {
   // At this point, the task APIs should already be provided either by
-  // |scoped_task_environment_| or by the subclass in the
+  // |task_environment_| or by the subclass in the
   // SubclassManagesTaskEnvironment mode.
   CHECK(base::ThreadTaskRunnerHandle::IsSet());
   CHECK(base::ThreadPoolInstance::Get());

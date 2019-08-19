@@ -287,13 +287,6 @@ void SetIndividualRuntimeFeatures(
   if (base::FeatureList::IsEnabled(features::kServiceWorkerPaymentApps))
     WebRuntimeFeatures::EnablePaymentApp(true);
 
-  if (base::FeatureList::IsEnabled(features::kCompositeOpaqueFixedPosition))
-    WebRuntimeFeatures::EnableFeatureFromString("CompositeOpaqueFixedPosition",
-                                                true);
-
-  if (!base::FeatureList::IsEnabled(features::kCompositeOpaqueScrollers))
-    WebRuntimeFeatures::EnableFeatureFromString("CompositeOpaqueScrollers",
-                                                false);
   if (base::FeatureList::IsEnabled(features::kCompositorTouchAction))
     WebRuntimeFeatures::EnableCompositorTouchAction(true);
 

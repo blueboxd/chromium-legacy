@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
+import("//chrome/android/modules/buildflags.gni")
 import("//chrome/common/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//testing/test.gni")
@@ -179,27 +180,23 @@ source_set("ui_module_factory") {
   ]
 }
 
-# Similar to the ui_default_factory but also tries to open a dummy lib for the
-# purpose of exercising the library loading mechanism.
-source_set("ui_module_dummy_factory") {
-  sources = [
-    "ui_module_dummy_factory.cc",
-    "ui_module_dummy_factory.h",
-  ]
-  deps = [
-    ":ui_factory",
-    "//chrome/browser/vr:vr_base",
-    "//chrome/browser/vr:vr_ui",
-  ]
-}
-
-# A dummy lib used to test the library loading mechanism.
-loadable_module("vr_ui_dummy_lib") {
-  sources = [
-    "ui_dummy.cc",
-    "ui_dummy.h",
-  ]
-  no_default_deps = true
+# A top-level module factory target to be included by Chrome's main library
+# target. Ideally, this would be pulled in by vr_android. However, vr_android
+# is a dep of both Chrome and VR unit tests, and unit tests always require the
+# non-module version of the factory. As such, vr_android doesn't know which
+# factory it needs to use. The fact that vr_android has an implicity circular
+# dependency on chrome/browser precludes the use of an intermediate target (eg.
+# vr_android_with_factory).
+group("module_factory") {
+  if (use_native_modules && modularize_vr_native) {
+    deps = [
+      ":ui_module_factory",
+    ]
+  } else {
+    deps = [
+      ":ui_default_factory",
+    ]
+  }
 }
 
 android_library("ar_java") {

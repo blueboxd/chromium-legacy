@@ -116,7 +116,7 @@ class ImmediateAfterActivityPollPolicy
 //
 // The tests which verify the polling code re-enable the polling behavior but
 // are careful to avoid timing problems.
-class ProxyResolutionServiceTest : public TestWithScopedTaskEnvironment {
+class ProxyResolutionServiceTest : public TestWithTaskEnvironment {
  protected:
   void SetUp() override {
     testing::Test::SetUp();

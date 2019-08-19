@@ -120,7 +120,7 @@ class RendererWebAudioDeviceImplTest
   void TearDown() override { webaudio_device_.reset(); }
 
   std::unique_ptr<RendererWebAudioDeviceImpl> webaudio_device_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(RendererWebAudioDeviceImplTest, ChannelLayout) {

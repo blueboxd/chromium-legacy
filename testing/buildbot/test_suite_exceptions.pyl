@@ -1445,7 +1445,6 @@
       'Linux Debug (NVIDIA)',
       'Mac Debug (Intel)',
       'Mac Retina Debug (AMD)',
-      'Win10 Debug (NVIDIA)',
       # chromium.gpu.fyi
       'Win10 FYI x64 Debug (NVIDIA)',
       'Win7 FYI Debug (AMD)',

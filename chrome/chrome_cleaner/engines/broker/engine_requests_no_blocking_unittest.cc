@@ -435,7 +435,7 @@ class TestEngineRequestInvoker {
 };
 
 MULTIPROCESS_TEST_MAIN(EngineRequestsNoBlocking) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   auto child_process = SetupSandboxedChildProcess();
   if (!child_process)
@@ -523,7 +523,7 @@ TEST_P(EngineRequestsNoBlockingTest, TestRequest) {
   if (base::win::GetVersion() == base::win::Version::WIN8)
     return;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   // This event will be shared between the parent and child processes. The
   // parent will wait on the event to simulate a long-running function call.

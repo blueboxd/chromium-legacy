@@ -169,7 +169,7 @@ class GraphTestHarness : public ::testing::Test {
   GraphTestHarness();
   ~GraphTestHarness() override;
 
-  // Optional constructor for directly configuring the ScopedTaskEnvironment.
+  // Optional constructor for directly configuring the TaskEnvironment.
   template <class... ArgTypes>
   explicit GraphTestHarness(ArgTypes... args) : task_env_(args...) {}
 
@@ -188,11 +188,11 @@ class GraphTestHarness : public ::testing::Test {
   void TearDown() override;
 
  protected:
-  base::test::ScopedTaskEnvironment& task_env() { return task_env_; }
+  base::test::TaskEnvironment& task_env() { return task_env_; }
   GraphImpl* graph() { return &graph_; }
 
  private:
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
   GraphImpl graph_;
 };
 

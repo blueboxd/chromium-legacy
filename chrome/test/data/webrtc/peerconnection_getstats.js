@@ -132,6 +132,7 @@ let kRTCInboundRtpStreamStats = new RTCStats(kRTCReceivedRtpStreamStats, {
   pliCount: 'number',
   sliCount: 'number',
   fractionLost: 'number',  // Obsolete, moved to RTCRemoteInboundRtpStreamStats.
+  decoderImplementation: 'string',
 });
 addRTCStatsToWhitelist(
     Presence.MANDATORY, 'inbound-rtp', kRTCInboundRtpStreamStats);
@@ -194,6 +195,7 @@ let kRTCOutboundRtpStreamStats = new RTCStats(kRTCSentRtpStreamStats, {
   firCount: 'number',
   pliCount: 'number',
   sliCount: 'number',
+  encoderImplementation: 'string',
 });
 addRTCStatsToWhitelist(
     Presence.MANDATORY, 'outbound-rtp', kRTCOutboundRtpStreamStats);

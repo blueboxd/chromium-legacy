@@ -152,7 +152,7 @@ struct TestEnvironment {
 
   void RunUntilIdle() { env.RunUntilIdle(); }
 
-  base::test::ScopedTaskEnvironment env;
+  base::test::TaskEnvironment env;
   base::UnguessableToken group;
   MockDeleterCallback deleter;
   StrictMock<MockAudioOutputStreamProviderClient> provider_client;
@@ -164,7 +164,7 @@ struct TestEnvironment {
 }  // namespace
 
 TEST(AudioOutputStreamBrokerTest, StoresProcessAndFrameId) {
-  base::test::ScopedTaskEnvironment env;
+  base::test::TaskEnvironment env;
   MockDeleterCallback deleter;
   StrictMock<MockAudioOutputStreamProviderClient> provider_client;
 

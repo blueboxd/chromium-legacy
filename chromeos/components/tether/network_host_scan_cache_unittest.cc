@@ -114,7 +114,7 @@ class NetworkHostScanCacheTest : public testing::Test {
     }
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  const base::test::TaskEnvironment task_environment_;
   NetworkStateTestHelper helper_{true /* use_default_devices_and_services */};
   const std::unordered_map<std::string, HostScanCacheEntry> test_entries_;
 

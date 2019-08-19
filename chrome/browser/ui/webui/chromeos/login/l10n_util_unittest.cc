@@ -58,7 +58,7 @@ class L10nUtilTest : public testing::Test {
   void SetInputMethods2();
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   system::ScopedFakeStatisticsProvider scoped_fake_statistics_provider_;
   MockInputMethodManagerWithInputMethods* input_manager_;
 

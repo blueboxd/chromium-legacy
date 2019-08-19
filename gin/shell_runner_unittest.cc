@@ -25,7 +25,7 @@ using v8::String;
 namespace gin {
 
 TEST(RunnerTest, Run) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   std::string source = "this.result = 'PASS';\n";
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA

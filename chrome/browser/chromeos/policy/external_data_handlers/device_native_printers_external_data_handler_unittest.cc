@@ -84,7 +84,7 @@ class DeviceNativePrintersExternalDataHandlerTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockPolicyService policy_service_;
   std::unique_ptr<DeviceNativePrintersExternalDataHandler>
       device_native_printers_external_data_handler_;
@@ -100,7 +100,7 @@ TEST_F(DeviceNativePrintersExternalDataHandlerTest, OnDataFetched) {
       key::kDeviceNativePrinters,
       std::make_unique<std::string>(kDeviceNativePrintersContentsJson),
       base::FilePath());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   const auto& printers = external_printers_->GetPrinters();
 
@@ -121,7 +121,7 @@ TEST_F(DeviceNativePrintersExternalDataHandlerTest, OnDataCleared) {
       base::FilePath());
   device_native_printers_external_data_handler_->OnDeviceExternalDataCleared(
       key::kDeviceNativePrinters);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Check that policy was cleared.
   EXPECT_TRUE(external_printers_->GetPrinters().empty());

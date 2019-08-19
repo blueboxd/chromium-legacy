@@ -36,9 +36,8 @@ using MockMetricHelper =
 class MemoryPressureMonitorWinTest : public testing::Test {
  public:
   MemoryPressureMonitorWinTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
-        tick_clock_(scoped_task_environment_.GetMockTickClock()) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+        tick_clock_(task_environment_.GetMockTickClock()) {}
   ~MemoryPressureMonitorWinTest() override = default;
 
   void SetUp() override {
@@ -69,7 +68,7 @@ class MemoryPressureMonitorWinTest : public testing::Test {
                   .disk_idle_time_percent_frequency);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const base::TickClock* tick_clock_;
   std::unique_ptr<performance_monitor::SystemMonitor> system_monitor_;
 
@@ -107,9 +106,9 @@ TEST_F(MemoryPressureMonitorWinTest, MemoryPressureChanges) {
 
     // Fast forward to the next sample notification.
     EXPECT_TRUE(system_monitor_->refresh_timer_for_testing().IsRunning());
-    scoped_task_environment_.FastForwardBy(
+    task_environment_.FastForwardBy(
         system_monitor_->refresh_timer_for_testing().GetCurrentDelay());
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     ::testing::Mock::VerifyAndClear(mock_helper_);
   }
 
@@ -137,9 +136,9 @@ TEST_F(MemoryPressureMonitorWinTest, MemoryPressureChanges) {
               .MemoryIsUnderCriticalLimit()) {
     // Fast forward to the next sample notification.
     EXPECT_TRUE(system_monitor_->refresh_timer_for_testing().IsRunning());
-    scoped_task_environment_.FastForwardBy(
+    task_environment_.FastForwardBy(
         system_monitor_->refresh_timer_for_testing().GetCurrentDelay());
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   // The disk idle time is at 100%, there's no memory pressure.
@@ -157,9 +156,9 @@ TEST_F(MemoryPressureMonitorWinTest, MemoryPressureChanges) {
               .DiskIdleTimeIsLow()) {
     // Fast forward to the next sample notification.
     EXPECT_TRUE(system_monitor_->refresh_timer_for_testing().IsRunning());
-    scoped_task_environment_.FastForwardBy(
+    task_environment_.FastForwardBy(
         system_monitor_->refresh_timer_for_testing().GetCurrentDelay());
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   EXPECT_EQ(base::MemoryPressureListener::MemoryPressureLevel::
@@ -179,9 +178,9 @@ TEST_F(MemoryPressureMonitorWinTest, MemoryPressureChanges) {
              .MemoryIsUnderEarlyLimit()) {
     // Fast forward to the next sample notification.
     EXPECT_TRUE(system_monitor_->refresh_timer_for_testing().IsRunning());
-    scoped_task_environment_.FastForwardBy(
+    task_environment_.FastForwardBy(
         system_monitor_->refresh_timer_for_testing().GetCurrentDelay());
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   CheckMonitorRefreshFrequencies(SamplingFrequency::kDefaultFrequency,

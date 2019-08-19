@@ -44,7 +44,7 @@ CtapMakeCredentialRequest MakeTestRequest() {
 // keychain-access-group entitlement.
 TEST(MakeCredentialOperationTest, DISABLED_TestRun)
 API_AVAILABLE(macosx(10.12.2)) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   TestCallbackReceiver<CtapDeviceResponseCode,
                        base::Optional<AuthenticatorMakeCredentialResponse>>
       callback_receiver;

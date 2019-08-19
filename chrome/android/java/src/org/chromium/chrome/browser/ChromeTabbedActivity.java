@@ -2328,6 +2328,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
     @Override
     protected boolean shouldInitializeBottomSheet() {
         return super.shouldInitializeBottomSheet() || FeatureUtilities.isTabGroupsAndroidEnabled()
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION)
                 || SendTabToSelfAndroidBridge.isSendingEnabled();
     }
 

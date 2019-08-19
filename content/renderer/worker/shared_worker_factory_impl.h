@@ -48,8 +48,8 @@ class SharedWorkerFactoryImpl : public blink::mojom::SharedWorkerFactory {
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
-      blink::mojom::SharedWorkerHostPtr host,
-      blink::mojom::SharedWorkerRequest request,
+      mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
+      mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
       service_manager::mojom::InterfaceProviderPtr interface_provider,
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker) override;

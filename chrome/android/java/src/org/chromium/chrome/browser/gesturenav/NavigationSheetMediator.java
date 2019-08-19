@@ -1,0 +1,139 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.gesturenav;
+
+import static org.chromium.chrome.browser.gesturenav.NavigationSheetCoordinator.NAVIGATION_LIST_ITEM_TYPE_ID;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
+import android.view.View;
+
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.favicon.FaviconHelper;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.content_public.browser.NavigationHistory;
+import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+/**
+ * Mediattor class for navigation sheet.
+ */
+class NavigationSheetMediator {
+    private final Context mContext;
+    private final ClickListener mClickListener;
+    private final FaviconHelper mFaviconHelper;
+    private final int mFaviconSize;
+
+    private NavigationHistory mHistory;
+    private FaviconHelper.DefaultFaviconHelper mDefaultFaviconHelper;
+    private ModelList mModelList;
+
+    /**
+     * Performs an action when a navigation item is clicked.
+     */
+    interface ClickListener {
+        /**
+         * @param index Index from {@link NavigationEntry#getIndex()}.
+         */
+        void click(int index);
+    }
+
+    static class ItemProperties {
+        /** The favicon for the list item. */
+        public static final WritableObjectPropertyKey<Drawable> ICON =
+                new WritableObjectPropertyKey<>();
+
+        /** The text shown next to the favicon. */
+        public static final WritableObjectPropertyKey<String> LABEL =
+                new WritableObjectPropertyKey<>();
+
+        /** {@link View#OnClickListener} to execute when each item is clicked. */
+        public static final WritableObjectPropertyKey<View.OnClickListener> CLICK_LISTENER =
+                new WritableObjectPropertyKey<>();
+
+        public static final PropertyKey[] ALL_KEYS = {ICON, LABEL, CLICK_LISTENER};
+    }
+
+    NavigationSheetMediator(Context context, ModelList modelList, ClickListener listener) {
+        mContext = context;
+        mModelList = modelList;
+        mClickListener = listener;
+        mFaviconHelper = new FaviconHelper();
+        mFaviconSize = context.getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
+    }
+
+    /**
+     * Populate the sheet with the navigation history.
+     * @param history {@link NavigationHistory} object.
+     */
+    void populateEntries(NavigationHistory history) {
+        mHistory = history;
+        Set<String> requestedUrls = new HashSet<String>();
+        for (int i = 0; i < mHistory.getEntryCount(); i++) {
+            PropertyModel model = new PropertyModel(Arrays.asList(ItemProperties.ALL_KEYS));
+            NavigationEntry entry = mHistory.getEntryAtIndex(i);
+            model.set(ItemProperties.LABEL, getEntryText(entry));
+            model.set(ItemProperties.CLICK_LISTENER,
+                    (view) -> { mClickListener.click(entry.getIndex()); });
+            mModelList.add(new ListItem(NAVIGATION_LIST_ITEM_TYPE_ID, model));
+            if (entry.getFavicon() != null) continue;
+            final String pageUrl = entry.getUrl();
+            if (!requestedUrls.contains(pageUrl)) {
+                FaviconHelper.FaviconImageCallback imageCallback =
+                        (bitmap, iconUrl) -> onFaviconAvailable(pageUrl, bitmap);
+                mFaviconHelper.getLocalFaviconImageForURL(
+                        Profile.getLastUsedProfile(), pageUrl, mFaviconSize, imageCallback);
+                requestedUrls.add(pageUrl);
+            }
+        }
+    }
+
+    /**
+     * Remove the property model.
+     */
+    void clear() {
+        mModelList.clear();
+        if (mDefaultFaviconHelper != null) mDefaultFaviconHelper.clearCache();
+    }
+
+    /**
+     * Called when favicon data requested by {@link #initializeFavicons()} is retrieved.
+     * @param pageUrl the page for which the favicon was retrieved.
+     * @param favicon the favicon data.
+     */
+    private void onFaviconAvailable(String pageUrl, Bitmap favicon) {
+        // This callback can come after the sheet is hidden. Do nothing if that happens.
+        if (mModelList == null) return;
+        if (favicon == null) {
+            if (mDefaultFaviconHelper == null) {
+                mDefaultFaviconHelper = new FaviconHelper.DefaultFaviconHelper();
+            }
+            favicon = mDefaultFaviconHelper.getDefaultFaviconBitmap(mContext, pageUrl, true);
+        }
+        for (int i = 0; i < mHistory.getEntryCount(); i++) {
+            if (TextUtils.equals(pageUrl, mHistory.getEntryAtIndex(i).getUrl())) {
+                mModelList.get(i).model.set(ItemProperties.ICON, new BitmapDrawable(favicon));
+            }
+        }
+    }
+
+    private static String getEntryText(NavigationEntry entry) {
+        String entryText = entry.getTitle();
+        if (TextUtils.isEmpty(entryText)) entryText = entry.getVirtualUrl();
+        if (TextUtils.isEmpty(entryText)) entryText = entry.getUrl();
+        return entryText;
+    }
+}

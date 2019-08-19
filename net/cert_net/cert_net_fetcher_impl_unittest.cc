@@ -232,7 +232,7 @@ class CertNetFetcherImplTest : public PlatformTest {
 // Installs URLRequestHangingReadJob handlers and clears them on teardown.
 class CertNetFetcherImplTestWithHangingReadHandler
     : public CertNetFetcherImplTest,
-      public WithScopedTaskEnvironment {
+      public WithTaskEnvironment {
  protected:
   void SetUp() override { URLRequestHangingReadJob::AddUrlHandler(); }
 

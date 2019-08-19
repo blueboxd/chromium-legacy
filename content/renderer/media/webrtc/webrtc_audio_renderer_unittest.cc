@@ -184,8 +184,8 @@ class WebRtcAudioRendererTest : public testing::Test,
       audio_device_factory_platform_;
   const base::Optional<base::UnguessableToken> kAudioProcessingId =
       base::UnguessableToken::Create();
-  base::test::ScopedTaskEnvironment task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   scoped_refptr<media::MockAudioRendererSink> mock_sink_;
   std::unique_ptr<MockAudioRendererSource> source_;
   blink::WebMediaStream stream_;

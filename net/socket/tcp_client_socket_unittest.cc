@@ -68,8 +68,7 @@ class TestPowerMonitorSource : public base::PowerMonitorSource {
 class TCPClientSocketTest : public testing::Test {
  public:
   TCPClientSocketTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     std::unique_ptr<TestPowerMonitorSource> power_monitor_source =
         std::make_unique<TestPowerMonitorSource>();
     power_monitor_source_ = power_monitor_source.get();
@@ -121,7 +120,7 @@ class TCPClientSocketTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   TestPowerMonitorSource* power_monitor_source_;
 };

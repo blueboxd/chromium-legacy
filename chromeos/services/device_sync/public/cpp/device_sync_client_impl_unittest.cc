@@ -426,7 +426,7 @@ class DeviceSyncClientImplTest : public testing::Test {
 
   void SendPendingMojoMessages() { client_->FlushForTesting(); }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  const base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<signin::IdentityTestEnvironment> identity_test_environment_;
   std::unique_ptr<gcm::FakeGCMDriver> fake_gcm_driver_;

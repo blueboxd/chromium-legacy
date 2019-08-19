@@ -238,6 +238,8 @@ void SearchResultRanker::InitializeRankers() {
         chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
   }
 
+  app_launch_event_logger_ = std::make_unique<app_list::AppLaunchEventLogger>();
+
   if (app_list_features::IsAppRankerEnabled() &&
       GetFieldTrialParamByFeatureAsBool(app_list_features::kEnableAppRanker,
                                         "use_recurrence_ranker", true)) {
@@ -339,14 +341,16 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
 
 void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
   if (app_launch_data.launched_from ==
-      ash::AppListLaunchedFrom::kLaunchedFromGrid) {
+          ash::AppListLaunchedFrom::kLaunchedFromGrid &&
+      app_launch_event_logger_) {
     // Log the AppResult from the grid to the UKM system.
-    app_launch_event_logger_.OnGridClicked(app_launch_data.id);
+    app_launch_event_logger_->OnGridClicked(app_launch_data.id);
   } else if (app_launch_data.launch_type ==
-             ash::AppListLaunchType::kAppSearchResult) {
+                 ash::AppListLaunchType::kAppSearchResult &&
+             app_launch_event_logger_) {
     // Log the AppResult (either in the search result page, or in chip form in
     // AppsGridView) to the UKM system.
-    app_launch_event_logger_.OnSuggestionChipOrSearchBoxClicked(
+    app_launch_event_logger_->OnSuggestionChipOrSearchBoxClicked(
         app_launch_data.id, app_launch_data.suggestion_index,
         static_cast<int>(app_launch_data.launched_from));
   }

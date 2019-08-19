@@ -13,6 +13,7 @@ import android.view.ViewGroup.LayoutParams;
 
 import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -44,6 +45,10 @@ public class NavigationHandler {
 
     private final ViewGroup mParentView;
     private final Supplier<NavigationGlow> mGlowEffectSupplier;
+    private final Supplier<BottomSheetController> mBottomSheetController;
+
+    private final ActionDelegate mDelegate;
+    private final NavigationSheet.Delegate mSheetDelegate;
 
     private NavigationGlow mGlowEffect;
 
@@ -51,6 +56,8 @@ public class NavigationHandler {
 
     // Frame layout where the main logic turning the gesture into corresponding UI resides.
     private SideSlideLayout mSideSlideLayout;
+
+    private NavigationSheet mNavigationSheet;
 
     // Async runnable for ending the refresh animation after the page first
     // loads a frame. This is used to provide a reasonable minimum animation time.
@@ -81,12 +88,14 @@ public class NavigationHandler {
          */
         boolean willBackExitApp();
     }
-    private final ActionDelegate mDelegate;
 
-    public NavigationHandler(ViewGroup parentView, ActionDelegate delegate,
-            Supplier<NavigationGlow> glowEffectSupplier) {
+    public NavigationHandler(ViewGroup parentView,
+            Supplier<BottomSheetController> bottomSheetController, ActionDelegate delegate,
+            NavigationSheet.Delegate sheetDelegate, Supplier<NavigationGlow> glowEffectSupplier) {
         mParentView = parentView;
+        mBottomSheetController = bottomSheetController;
         mDelegate = delegate;
+        mSheetDelegate = sheetDelegate;
         mGlowEffectSupplier = glowEffectSupplier;
         mEdgeWidthPx = EDGE_WIDTH_DP * parentView.getResources().getDisplayMetrics().density;
     }
@@ -109,6 +118,10 @@ public class NavigationHandler {
             };
             mSideSlideLayout.post(mDetachLayoutRunnable);
         });
+
+        mNavigationSheet = NavigationSheet.isEnabled() ? new NavigationSheetCoordinator(
+                                   mParentView, mBottomSheetController, mSheetDelegate)
+                                                       : NavigationSheet.DUMMY;
     }
 
     /**
@@ -177,9 +190,11 @@ public class NavigationHandler {
         if (mSideSlideLayout == null) createLayout();
         mSideSlideLayout.setEnabled(true);
         mSideSlideLayout.setDirection(forward);
-        mSideSlideLayout.setEnableCloseIndicator(shouldShowCloseIndicator(forward));
+        boolean showCloseIndicator = shouldShowCloseIndicator(forward);
+        mSideSlideLayout.setEnableCloseIndicator(showCloseIndicator);
         attachLayoutIfNecessary();
         mSideSlideLayout.start();
+        mNavigationSheet.start(forward, showCloseIndicator);
         mState = GestureState.DRAGGED;
     }
 
@@ -209,6 +224,7 @@ public class NavigationHandler {
     public void pull(float delta) {
         if (mState == GestureState.DRAGGED && mSideSlideLayout != null) {
             mSideSlideLayout.pull(delta);
+            mNavigationSheet.onScroll(delta, mSideSlideLayout.getOverscroll());
         } else if (mState == GestureState.GLOW && mGlowEffect != null) {
             mGlowEffect.onScroll(-delta);
         }
@@ -238,7 +254,8 @@ public class NavigationHandler {
     public void release(boolean allowNav) {
         if (mState == GestureState.DRAGGED && mSideSlideLayout != null) {
             cancelStopNavigatingRunnable();
-            mSideSlideLayout.release(allowNav);
+            mSideSlideLayout.release(allowNav && !mNavigationSheet.isExpanded());
+            mNavigationSheet.release();
         } else if (mState == GestureState.GLOW && mGlowEffect != null) {
             mGlowEffect.release();
         }

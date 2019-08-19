@@ -89,8 +89,7 @@ void SaveIdentitiesAndQuitCallback(net::ClientCertIdentityList* out_identities,
 class ClientCertStoreChromeOSTest : public ::testing::Test {
  public:
   ClientCertStoreChromeOSTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
   scoped_refptr<net::X509Certificate> ImportCertToSlot(
       const std::string& cert_filename,
@@ -103,7 +102,7 @@ class ClientCertStoreChromeOSTest : public ::testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // Ensure that cert requests, that are started before the filter is initialized,

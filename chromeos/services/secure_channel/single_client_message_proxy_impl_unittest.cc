@@ -177,7 +177,7 @@ class SecureChannelSingleClientMessageProxyImplTest : public testing::Test {
     last_metadata_from_channel_ = std::move(connection_metadata_ptr);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<FakeSingleClientMessageProxyDelegate> fake_proxy_delegate_;
   FakeClientConnectionParameters* fake_client_connection_parameters_;

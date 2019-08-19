@@ -141,16 +141,17 @@ class ServiceWorkerClientsApiBrowserTest : public ContentBrowserTest {
 
   void DispatchNotificationClickEvent(int64_t version_id) {
     base::RunLoop run_loop;
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&ServiceWorkerClientsApiBrowserTest::
-                                      DispatchNotificationClickEventOnIOThread,
-                                  base::Unretained(this), version_id,
-                                  run_loop.QuitClosure()));
+    RunOrPostTaskOnThread(
+        FROM_HERE, ServiceWorkerContextWrapper::GetCoreThreadId(),
+        base::BindOnce(&ServiceWorkerClientsApiBrowserTest::
+                           DispatchNotificationClickEventOnCoreThread,
+                       base::Unretained(this), version_id,
+                       run_loop.QuitClosure()));
     run_loop.Run();
   }
 
-  void DispatchNotificationClickEventOnIOThread(int64_t version_id,
-                                                base::OnceClosure done) {
+  void DispatchNotificationClickEventOnCoreThread(int64_t version_id,
+                                                  base::OnceClosure done) {
     ServiceWorkerVersion* version =
         wrapper_->context()->GetLiveVersion(version_id);
     ASSERT_TRUE(version);

@@ -122,7 +122,7 @@ class TestConnectionListener
 class EmbeddedTestServerTest
     : public testing::TestWithParam<EmbeddedTestServer::Type>,
       public URLFetcherDelegate,
-      public WithScopedTaskEnvironment {
+      public WithTaskEnvironment {
  public:
   EmbeddedTestServerTest()
       : num_responses_received_(0),
@@ -509,7 +509,7 @@ typedef std::tuple<bool, bool, EmbeddedTestServer::Type> ThreadingTestParams;
 
 class EmbeddedTestServerThreadingTest
     : public testing::TestWithParam<ThreadingTestParams>,
-      public WithScopedTaskEnvironment {};
+      public WithTaskEnvironment {};
 
 class EmbeddedTestServerThreadingTestDelegate
     : public base::PlatformThread::Delegate,

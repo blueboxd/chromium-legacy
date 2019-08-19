@@ -17,6 +17,7 @@
 #include "content/browser/browsing_data/browsing_data_test_utils.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/same_site_data_remover.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/browser/system_connector.h"
@@ -189,8 +190,8 @@ class SameSiteDataRemoverBrowserTest : public ContentBrowserTest {
 
   void ClearData(bool clear_storage) {
     base::RunLoop run_loop;
-    SameSiteDataRemoverImpl::ClearData(run_loop.QuitClosure(),
-                                       GetBrowserContext(), clear_storage);
+    ClearSameSiteNoneData(run_loop.QuitClosure(), GetBrowserContext(),
+                          clear_storage);
     run_loop.Run();
   }
 

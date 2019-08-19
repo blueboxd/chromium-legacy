@@ -96,7 +96,7 @@ class SecureChannelClientChannelImplTest : public testing::Test {
     static_cast<ClientChannelImpl*>(client_channel_.get())->FlushForTesting();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<FakeChannel> fake_channel_;
   mojom::MessageReceiverPtr message_receiver_ptr_;

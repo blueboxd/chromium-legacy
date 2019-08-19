@@ -140,7 +140,7 @@ class LevelDBSiteDataStoreTest : public ::testing::Test {
   const url::Origin kDummyOrigin = url::Origin::Create(GURL("http://foo.com"));
 
   base::FilePath db_path_;
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<LevelDBSiteDataStore> db_;
 };

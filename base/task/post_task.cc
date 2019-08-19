@@ -110,7 +110,7 @@ CreateUpdateableSequencedTaskRunner(const TaskTraits& traits) {
   DCHECK(ThreadPoolInstance::Get())
       << "Ref. Prerequisite section of post_task.h.\n\n"
          "Hint: if this is in a unit test, you're likely merely missing a "
-         "base::test::ScopedTaskEnvironment member in your fixture.\n";
+         "base::test::TaskEnvironment member in your fixture.\n";
   DCHECK(traits.use_thread_pool())
       << "The base::UseThreadPool() trait is mandatory with "
          "CreateUpdateableSequencedTaskRunner().";

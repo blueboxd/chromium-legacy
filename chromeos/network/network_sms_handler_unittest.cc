@@ -52,8 +52,7 @@ class TestObserver : public NetworkSmsHandler::Observer {
 class NetworkSmsHandlerTest : public testing::Test {
  public:
   NetworkSmsHandlerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
   ~NetworkSmsHandlerTest() override = default;
 
   void SetUp() override {
@@ -89,7 +88,7 @@ class NetworkSmsHandlerTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<NetworkSmsHandler> network_sms_handler_;
   std::unique_ptr<TestObserver> test_observer_;
 };

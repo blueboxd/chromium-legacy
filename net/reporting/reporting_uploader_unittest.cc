@@ -24,7 +24,7 @@
 namespace net {
 namespace {
 
-class ReportingUploaderTest : public TestWithScopedTaskEnvironment {
+class ReportingUploaderTest : public TestWithTaskEnvironment {
  protected:
   ReportingUploaderTest()
       : server_(test_server::EmbeddedTestServer::TYPE_HTTPS),

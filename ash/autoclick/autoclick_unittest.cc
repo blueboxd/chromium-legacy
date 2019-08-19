@@ -103,7 +103,7 @@ class MouseEventCapturer : public ui::EventHandler {
 class AutoclickTest : public AshTestBase {
  public:
   AutoclickTest()
-      : AshTestBase(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~AutoclickTest() override = default;
 
   void SetUp() override {
@@ -139,7 +139,7 @@ class AutoclickTest : public AshTestBase {
   }
 
   void FastForwardBy(int milliseconds) {
-    scoped_task_environment_->FastForwardBy(
+    task_environment_->FastForwardBy(
         base::TimeDelta::FromMilliseconds(milliseconds));
   }
 

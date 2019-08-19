@@ -81,7 +81,7 @@ class BrowserWithTestWindowTest : public testing::Test {
 
     // TODO(alexclarke): Make content::TestBrowserThreadBundle::ValidTraits
     // imply this.
-    explicit ValidTraits(base::test::ScopedTaskEnvironment::ValidTrait);
+    explicit ValidTraits(base::test::TaskEnvironment::ValidTrait);
   };
 
   // Creates a BrowserWithTestWindowTest with zero or more traits. By default

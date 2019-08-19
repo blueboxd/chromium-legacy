@@ -61,7 +61,7 @@ class TestOverviewDelegate : public OverviewDelegate {
 class ForceDelayObserverTest : public AshTestBase {
  public:
   ForceDelayObserverTest()
-      : AshTestBase(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~ForceDelayObserverTest() override = default;
 
  private:
@@ -76,12 +76,10 @@ TEST_F(ForceDelayObserverTest, Basic) {
   delegate.AddEnterAnimationObserver(std::move(observer));
   EXPECT_EQ(1u, delegate.num_enter_observers());
 
-  scoped_task_environment_->FastForwardBy(
-      base::TimeDelta::FromMilliseconds(50));
+  task_environment_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, delegate.num_enter_observers());
-  scoped_task_environment_->FastForwardBy(
-      base::TimeDelta::FromMilliseconds(55));
+  task_environment_->FastForwardBy(base::TimeDelta::FromMilliseconds(55));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, delegate.num_enter_observers());
 }

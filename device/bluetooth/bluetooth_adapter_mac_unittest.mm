@@ -134,7 +134,7 @@ class BluetoothAdapterMacTest : public testing::Test {
         temp_dir_.GetPath().AppendASCII(kTestPropertyListFileName);
   }
 
-  void TearDown() override { scoped_task_environment_.RunUntilIdle(); }
+  void TearDown() override { task_environment_.RunUntilIdle(); }
 
   // Helper methods for setup and access to BluetoothAdapterMacTest's members.
   void PollAdapter() { adapter_mac_->PollAdapter(); }
@@ -214,7 +214,7 @@ class BluetoothAdapterMacTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::TestSimpleTaskRunner> ui_task_runner_;
   scoped_refptr<BluetoothAdapter> adapter_;
   BluetoothAdapterMac* adapter_mac_;

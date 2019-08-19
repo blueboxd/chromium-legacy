@@ -218,16 +218,14 @@ IN_PROC_BROWSER_TEST_P(
 // We run these tests with the audio service both in and out of the browser
 // process to have waterfall coverage while the feature rolls out. It should be
 // removed after launch.
-#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-// Platforms launched on.
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+// Platforms where the out of process audio service is supported.
 INSTANTIATE_TEST_SUITE_P(, WebRtcAudioBrowserTest, ::testing::Values(true));
-#elif defined(OS_WIN)
-// Supported platforms but not launched on.
-INSTANTIATE_TEST_SUITE_P(, WebRtcAudioBrowserTest, ::testing::Bool());
 #elif defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 #else
-// Platforms where the out of process audio service isn't supported.
+// Platforms where the out of process audio service is not supported.
 INSTANTIATE_TEST_SUITE_P(, WebRtcAudioBrowserTest, ::testing::Values(false));
 #endif
 

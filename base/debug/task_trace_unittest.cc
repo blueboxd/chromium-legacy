@@ -61,7 +61,7 @@ class ThreeTasksTest {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   base::SingleThreadTaskRunner& task_runner =
       *task_environment.GetMainThreadTaskRunner();
 

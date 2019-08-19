@@ -1446,23 +1446,6 @@ static inline bool IsValidFirstLetterStyleProperty(CSSPropertyID id) {
   }
 }
 
-static bool ShouldIgnoreTextTrackAuthorStyle(const Document& document) {
-  Settings* settings = document.GetSettings();
-  if (!settings)
-    return false;
-  // Ignore author specified settings for text tracks when any of the user
-  // settings are present.
-  if (!settings->GetTextTrackBackgroundColor().IsEmpty() ||
-      !settings->GetTextTrackFontFamily().IsEmpty() ||
-      !settings->GetTextTrackFontStyle().IsEmpty() ||
-      !settings->GetTextTrackFontVariant().IsEmpty() ||
-      !settings->GetTextTrackTextColor().IsEmpty() ||
-      !settings->GetTextTrackTextShadow().IsEmpty() ||
-      !settings->GetTextTrackTextSize().IsEmpty())
-    return true;
-  return false;
-}
-
 static bool PassesPropertyFilter(ValidPropertyFilter valid_property_filter,
                                  CSSPropertyID property,
                                  const Document& document) {
@@ -1472,8 +1455,7 @@ static bool PassesPropertyFilter(ValidPropertyFilter valid_property_filter,
     case ValidPropertyFilter::kFirstLetter:
       return IsValidFirstLetterStyleProperty(property);
     case ValidPropertyFilter::kCue:
-      return IsValidCueStyleProperty(property) &&
-             !ShouldIgnoreTextTrackAuthorStyle(document);
+      return IsValidCueStyleProperty(property);
   }
   NOTREACHED();
   return true;

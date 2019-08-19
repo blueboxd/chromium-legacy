@@ -40,8 +40,8 @@ using QueueType = BrowserTaskQueues::QueueType;
 class BrowserTaskExecutorTest : public testing::Test {
  private:
   TestBrowserThreadBundle thread_bundle_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI,
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+      base::test::TaskEnvironment::MainThreadType::UI,
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 };
 
 using StrictMockTask =
@@ -163,14 +163,14 @@ TEST_F(BrowserTaskTraitsMappingTest,
 
 class BrowserTaskExecutorWithCustomSchedulerTest : public testing::Test {
  private:
-  class ScopedTaskEnvironmentWithCustomScheduler
-      : public base::test::ScopedTaskEnvironment {
+  class TaskEnvironmentWithCustomScheduler
+      : public base::test::TaskEnvironment {
    public:
-    ScopedTaskEnvironmentWithCustomScheduler()
-        : base::test::ScopedTaskEnvironment(
+    TaskEnvironmentWithCustomScheduler()
+        : base::test::TaskEnvironment(
               SubclassCreatesDefaultTaskRunner{},
-              base::test::ScopedTaskEnvironment::MainThreadType::UI,
-              base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {
+              base::test::TaskEnvironment::MainThreadType::UI,
+              base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
       std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler =
           BrowserUIThreadScheduler::CreateForTesting(sequence_manager(),
                                                      GetTimeDomain());
@@ -191,7 +191,7 @@ class BrowserTaskExecutorWithCustomSchedulerTest : public testing::Test {
   }
 
  protected:
-  ScopedTaskEnvironmentWithCustomScheduler scoped_task_environment_;
+  TaskEnvironmentWithCustomScheduler task_environment_;
 };
 
 TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
@@ -213,7 +213,7 @@ TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
   EXPECT_CALL(user_visible, Run);
   EXPECT_CALL(user_blocking, Run);
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
@@ -232,12 +232,11 @@ TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
   base::PostTask(FROM_HERE,
                  {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
                  best_effort.Get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   BrowserTaskExecutor::EnableAllQueues();
   EXPECT_CALL(best_effort, Run).Times(4);
-  scoped_task_environment_.FastForwardBy(
-      base::TimeDelta::FromMilliseconds(100));
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(100));
 }
 
 }  // namespace content

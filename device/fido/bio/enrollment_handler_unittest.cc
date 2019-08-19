@@ -69,7 +69,7 @@ class BioEnrollmentHandlerTest : public ::testing::Test {
 
   uint8_t remaining_samples_;
   bool sampling_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   test::TestCallbackReceiver<> ready_callback_;
   test::ValueCallbackReceiver<FidoReturnCode> error_callback_;
   test::VirtualFidoDeviceFactory virtual_device_factory_;

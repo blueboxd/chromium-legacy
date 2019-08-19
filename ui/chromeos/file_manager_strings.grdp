@@ -830,9 +830,6 @@
   <message name="IDS_FILE_BROWSER_CLOSE_LABEL" desc="Close label.">
     Close
   </message>
-  <message name="IDS_FILE_BROWSER_EXPAND_LABEL" desc="Expand label.">
-    Expand
-  </message>
   <message name="IDS_FILE_BROWSER_OPEN_LABEL" desc="Open label.">
     Open
   </message>
@@ -853,6 +850,12 @@
   </message>
   <message name="IDS_FILE_BROWSER_SEARCH_CLEAR_LABEL" desc="Label to clear search text field">
     Clear
+  </message>
+  <message name="IDS_FILE_BROWSER_FEEDBACK_COLLAPSE_LABEL" desc="Text spoken by Chromevox when collapsing displayed feedback panels.">
+    Collapse files feedback panels
+  </message>
+  <message name="IDS_FILE_BROWSER_FEEDBACK_EXPAND_LABEL" desc="Text spoken by Chromevox when expanding multiple feedback panels.">
+    Expand files feedback panels
   </message>
   <message name="IDS_FILE_BROWSER_SEARCH_A11Y_NO_RESULT" desc="Text spoken by ChromeVox/screen reader when a search has no result">
     There are no results for <ph name="SEARCH_TERM">$1<ex>ABC</ex></ph>.

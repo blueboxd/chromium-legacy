@@ -60,6 +60,11 @@ const CGFloat kInProgressScale = 0.65f;
   return CGSizeMake(kViewSize, kViewSize);
 }
 
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  [self updateUIAnimated:NO];
+}
+
 #pragma mark - Public
 
 - (void)setState:(DownloadManagerState)state {
@@ -86,6 +91,21 @@ const CGFloat kInProgressScale = 0.65f;
 
 // Updates CoreAnimation layers (icon and badge).
 - (void)updateUIAnimated:(BOOL)animated {
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    [self.traitCollection performAsCurrentTraitCollection:^{
+      [self updateUIWithCurrentTraitCollectionAnimated:animated];
+    }];
+    return;
+  }
+#endif
+  [self updateUIWithCurrentTraitCollectionAnimated:animated];
+}
+
+// Updates the CoreAnimation layers assuming currentTraitCollection is set
+// correctly, so any .CGColor property returns the correct color for the current
+// mode (light vs. dark).
+- (void)updateUIWithCurrentTraitCollectionAnimated:(BOOL)animated {
   NSTimeInterval animationDuration =
       animated ? kDownloadManagerAnimationDuration : 0.0;
 

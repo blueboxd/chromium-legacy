@@ -160,7 +160,7 @@ class BrowsingDataDeletionTest : public testing::Test {
         .CountCredentials(base::Time(), base::Time::Max());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TouchIdAuthenticator> authenticator_;
 };
 

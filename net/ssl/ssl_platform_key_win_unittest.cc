@@ -223,7 +223,7 @@ bool PKCS8ToBLOBForCNG(const std::string& pkcs8,
 }  // namespace
 
 class SSLPlatformKeyCNGTest : public testing::TestWithParam<TestKey>,
-                              public WithScopedTaskEnvironment {};
+                              public WithTaskEnvironment {};
 
 TEST_P(SSLPlatformKeyCNGTest, KeyMatches) {
   const TestKey& test_key = GetParam();
@@ -274,7 +274,7 @@ INSTANTIATE_TEST_SUITE_P(,
                          TestKeyToString);
 
 TEST(SSLPlatformKeyCAPITest, KeyMatches) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   // Load test data.
   scoped_refptr<X509Certificate> cert =

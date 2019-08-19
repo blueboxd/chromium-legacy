@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/profiles/incognito_menu_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -24,6 +25,7 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/controls/styled_label.h"
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/profiles/profile_menu_view.h"
@@ -170,14 +172,15 @@ void ProfileMenuViewBase::WindowClosing() {
 
 void ProfileMenuViewBase::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
-  DCHECK(!button_actions_[sender].is_null());
-  button_actions_[sender].Run();
+  DCHECK(!click_actions_[sender].is_null());
+  click_actions_[sender].Run();
 }
 
 void ProfileMenuViewBase::StyledLabelLinkClicked(views::StyledLabel* label,
                                                  const gfx::Range& range,
                                                  int event_flags) {
-  chrome::ShowSettings(browser_);
+  DCHECK(!click_actions_[label].is_null());
+  click_actions_[label].Run();
 }
 
 int ProfileMenuViewBase::GetMaxHeight() const {
@@ -250,7 +253,7 @@ views::Button* ProfileMenuViewBase::CreateAndAddTitleCard(
   if (action.is_null())
     title_card->SetEnabled(false);
   views::Button* button_ptr = title_card.get();
-  RegisterButtonAction(button_ptr, std::move(action));
+  RegisterClickAction(button_ptr, std::move(action));
   AddMenuItemInternal(std::move(title_card), MenuItems::kTitleCard);
   return button_ptr;
 }
@@ -262,7 +265,7 @@ views::Button* ProfileMenuViewBase::CreateAndAddButton(
   std::unique_ptr<HoverButton> button =
       std::make_unique<HoverButton>(this, icon, title);
   views::Button* pointer = button.get();
-  RegisterButtonAction(pointer, std::move(action));
+  RegisterClickAction(pointer, std::move(action));
   AddMenuItemInternal(std::move(button), MenuItems::kButton);
   return pointer;
 }
@@ -275,7 +278,7 @@ views::Button* ProfileMenuViewBase::CreateAndAddBlueButton(
       md_style ? views::MdTextButton::CreateSecondaryUiBlueButton(this, text)
                : views::MdTextButton::Create(this, text);
   views::Button* pointer = button.get();
-  RegisterButtonAction(pointer, std::move(action));
+  RegisterClickAction(pointer, std::move(action));
 
   // Add margins.
   std::unique_ptr<views::View> margined_view = std::make_unique<views::View>();
@@ -298,7 +301,7 @@ DiceSigninButtonView* ProfileMenuViewBase::CreateAndAddDiceSigninButton(
                                                             *account_icon, this)
                    : std::make_unique<DiceSigninButtonView>(this);
   DiceSigninButtonView* pointer = button.get();
-  RegisterButtonAction(pointer->signin_button(), std::move(action));
+  RegisterClickAction(pointer->signin_button(), std::move(action));
 
   // Add margins.
   std::unique_ptr<views::View> margined_view = std::make_unique<views::View>();
@@ -332,6 +335,21 @@ views::Label* ProfileMenuViewBase::CreateAndAddLabel(const base::string16& text,
   return pointer;
 }
 
+views::StyledLabel* ProfileMenuViewBase::CreateAndAddLabelWithLink(
+    const base::string16& text,
+    gfx::Range link_range,
+    base::RepeatingClosure action) {
+  auto label_with_link = std::make_unique<views::StyledLabel>(text, this);
+  label_with_link->SetDefaultTextStyle(STYLE_SECONDARY);
+  label_with_link->AddStyleRange(
+      link_range, views::StyledLabel::RangeStyleInfo::CreateForLink());
+
+  views::StyledLabel* pointer = label_with_link.get();
+  RegisterClickAction(pointer, std::move(action));
+  AddViewItem(std::move(label_with_link));
+  return pointer;
+}
+
 void ProfileMenuViewBase::AddViewItem(std::unique_ptr<views::View> view) {
   // Add margins.
   std::unique_ptr<views::View> margined_view = std::make_unique<views::View>();
@@ -342,10 +360,10 @@ void ProfileMenuViewBase::AddViewItem(std::unique_ptr<views::View> view) {
   AddMenuItemInternal(std::move(margined_view), MenuItems::kGeneral);
 }
 
-void ProfileMenuViewBase::RegisterButtonAction(views::Button* button,
-                                               base::RepeatingClosure action) {
-  DCHECK(button_actions_.count(button) == 0);
-  button_actions_[button] = std::move(action);
+void ProfileMenuViewBase::RegisterClickAction(views::View* clickable_view,
+                                              base::RepeatingClosure action) {
+  DCHECK(click_actions_.count(clickable_view) == 0);
+  click_actions_[clickable_view] = std::move(action);
 }
 
 void ProfileMenuViewBase::RepopulateViewFromMenuItems() {

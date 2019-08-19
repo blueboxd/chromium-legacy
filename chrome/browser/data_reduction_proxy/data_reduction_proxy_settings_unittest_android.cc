@@ -183,8 +183,8 @@ class DataReductionProxySettingsAndroidTest : public ::testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   JNIEnv* env_;
   net::MockClientSocketFactory mock_socket_factory_;
   std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>

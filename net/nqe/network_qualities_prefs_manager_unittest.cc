@@ -75,7 +75,7 @@ class TestPrefDelegate : public NetworkQualitiesPrefsManager::PrefDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestPrefDelegate);
 };
 
-using NetworkQualitiesPrefManager = TestWithScopedTaskEnvironment;
+using NetworkQualitiesPrefManager = TestWithTaskEnvironment;
 
 TEST_F(NetworkQualitiesPrefManager, Write) {
   // Force set the ECT to Slow 2G so that the ECT does not match the default

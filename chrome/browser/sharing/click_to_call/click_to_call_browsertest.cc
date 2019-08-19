@@ -80,7 +80,7 @@ class ClickToCallBrowserTest : public SyncTest {
 
       base::RunLoop run_loop;
       service->RegisterDeviceInTesting(
-          static_cast<int>(SharingDeviceCapability::kTelephony),
+          static_cast<int>(SharingDeviceCapability::kClickToCall),
           base::BindLambdaForTesting([&](SharingDeviceRegistrationResult r) {
             ASSERT_EQ(SharingDeviceRegistrationResult::kSuccess, r);
             run_loop.Quit();
@@ -174,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
   SetUpDevices(/*count=*/1);
 
   auto devices = sharing_service()->GetDeviceCandidates(
-      static_cast<int>(SharingDeviceCapability::kTelephony));
+      static_cast<int>(SharingDeviceCapability::kClickToCall));
 
   ASSERT_EQ(1u, devices.size());
 
@@ -224,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
   SetUpDevices(/*count=*/2);
 
   auto devices = sharing_service()->GetDeviceCandidates(
-      static_cast<int>(SharingDeviceCapability::kTelephony));
+      static_cast<int>(SharingDeviceCapability::kClickToCall));
 
   ASSERT_EQ(2u, devices.size());
 

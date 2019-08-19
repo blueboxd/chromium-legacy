@@ -7,9 +7,10 @@ import("//build/config/ios/asset_catalog.gni")
 imageset("distillation_fail_new") {
   sources = [
     "distillation_fail_new.imageset/Contents.json",
-    "distillation_fail_new.imageset/distillation_fail_new.png",
     "distillation_fail_new.imageset/distillation_fail_new@2x.png",
     "distillation_fail_new.imageset/distillation_fail_new@3x.png",
+    "distillation_fail_new.imageset/distillation_fail_new_dark@2x.png",
+    "distillation_fail_new.imageset/distillation_fail_new_dark@3x.png",
   ]
 }
 

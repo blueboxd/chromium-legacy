@@ -31,7 +31,7 @@ using CommandType = MockPersistentReportingStore::Command::Type;
 // The tests are parametrized on a boolean value which represents whether to use
 // a MockPersistentReportingStore (if false, no store is used).
 class ReportingServiceTest : public ::testing::TestWithParam<bool>,
-                             public WithScopedTaskEnvironment {
+                             public WithTaskEnvironment {
  protected:
   const GURL kUrl_ = GURL("https://origin/path");
   const GURL kUrl2_ = GURL("https://origin2/path");

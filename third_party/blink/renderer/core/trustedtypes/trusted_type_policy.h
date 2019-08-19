@@ -23,9 +23,7 @@ class CORE_EXPORT TrustedTypePolicy final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  TrustedTypePolicy(const String& policy_name,
-                    TrustedTypePolicyOptions*,
-                    bool exposed);
+  TrustedTypePolicy(const String& policy_name, TrustedTypePolicyOptions*);
 
   TrustedHTML* CreateHTML(v8::Isolate*, const String&, ExceptionState&);
   TrustedScript* CreateScript(v8::Isolate*, const String&, ExceptionState&);
@@ -44,8 +42,6 @@ class CORE_EXPORT TrustedTypePolicy final : public ScriptWrappable {
   TrustedURL* createURL(ScriptState*, const String&, ExceptionState&);
 
   String name() const;
-
-  bool exposed() const;
 
   void Trace(blink::Visitor*) override;
 

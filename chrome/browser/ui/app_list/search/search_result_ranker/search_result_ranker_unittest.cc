@@ -87,8 +87,7 @@ MATCHER_P2(HasIdScore, id, score, "") {
 class SearchResultRankerTest : public testing::Test {
  public:
   SearchResultRankerTest()
-      : thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : thread_bundle_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~SearchResultRankerTest() override {}
 
   // testing::Test overrides:

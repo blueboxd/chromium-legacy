@@ -32,7 +32,7 @@ struct Env {
   Env()
       : thread_bundle((base::CommandLine::Init(0, nullptr),
                        TestTimeouts::Initialize(),
-                       base::test::ScopedTaskEnvironment::MainThreadType::IO)) {
+                       base::test::TaskEnvironment::MainThreadType::IO)) {
     logging::SetMinLogLevel(logging::LOG_FATAL);
     mojo::core::Init();
     test_content_client = std::make_unique<TestContentClient>();

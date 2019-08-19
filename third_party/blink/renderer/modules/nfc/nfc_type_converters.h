@@ -75,6 +75,15 @@ struct TypeConverter<device::mojom::blink::NDEFMessagePtr,
       blink::DOMArrayBuffer* buffer);
 };
 
+// TODO(https://crbug.com/520391): Add a creator function like
+//   static NDEFMessage* NDEFMessage::Create(const NDEFMessageSource&);
+// which constructs NDEFMessage with
+//   - validity check of the input NDEFMessageSource, and
+//   - data serialization of each record (duplicated with code of this type
+//   converter),
+// after that we can convert the NDEFMessage easily to a
+// device::mojom::blink::NDEFMessagePtr. This enables us to remove this type
+// converter and a bunch of sub converters it depends on.
 template <>
 struct TypeConverter<device::mojom::blink::NDEFMessagePtr,
                      blink::NDEFMessageSource> {

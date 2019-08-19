@@ -619,7 +619,7 @@ int MockChromeCleanerProcess::Run() {
   if (options_.crash_point() == CrashPoint::kAfterConnection)
     exit(kDeliberateCrashExitCode);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   base::RunLoop run_loop;
   // After the response from the parent process is received, this will post a
   // task to unblock the child process's main thread.

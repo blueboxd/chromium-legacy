@@ -126,11 +126,11 @@ class MockUDPSocketPosix : public UDPSocketPosix {
   }
 };
 
-class UDPSocketPosixTest : public TestWithScopedTaskEnvironment {
+class UDPSocketPosixTest : public TestWithTaskEnvironment {
  public:
   UDPSocketPosixTest()
-      : TestWithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : TestWithTaskEnvironment(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         socket_(DatagramSocket::DEFAULT_BIND, &client_log_, NetLogSource()),
         callback_fired_(false) {
     write_callback_ = base::BindRepeating(&UDPSocketPosixTest::OnWriteComplete,

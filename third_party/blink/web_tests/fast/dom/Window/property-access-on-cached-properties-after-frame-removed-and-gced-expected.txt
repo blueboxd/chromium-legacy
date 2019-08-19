@@ -3,6 +3,7 @@ Tests access of cached DOMWindow properties after the associated frame is remove
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
+PASS window.cached_TrustedTypes.defaultPolicy is null
 PASS window.cached_applicationCache.oncached is null
 PASS window.cached_applicationCache.onchecking is null
 PASS window.cached_applicationCache.ondownloading is null

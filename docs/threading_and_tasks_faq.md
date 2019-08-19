@@ -178,8 +178,8 @@ If the test uses `BrowserThread::UI/IO`, instantiate a
 `TestBrowserThreadBundle::RunUntilIdle()` to wait until all tasks have run.
 
 If the test doesn't use `BrowserThread::UI/IO`, instantiate a
-`base::test::ScopedTaskEnvironment` for the scope of the test. Call
-`base::test::ScopedTaskEnvironment::RunUntilIdle()` to wait until all tasks have
+`base::test::TaskEnvironment` for the scope of the test. Call
+`base::test::TaskEnvironment::RunUntilIdle()` to wait until all tasks have
 run.
 
 In both cases, you can run tasks until a condition is met. A test that waits for

@@ -22,7 +22,7 @@
 namespace net {
 
 TEST(HttpAuthHandlerTest, NetLog) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   GURL origin("http://www.example.com");
   std::string challenge = "Mock asdf";

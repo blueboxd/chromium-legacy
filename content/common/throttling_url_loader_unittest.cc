@@ -372,7 +372,7 @@ class ThrottlingURLLoaderTest : public testing::Test {
   void ResetThrottleRawPointer() { throttle_ = nullptr; }
 
   // Be the first member so it is destroyed last.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<ThrottlingURLLoader> loader_;
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles_;
@@ -1211,7 +1211,7 @@ TEST_F(ThrottlingURLLoaderTest,
   // The throttle should stay alive and destroyed later.
   EXPECT_NE(nullptr, throttle_);
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(nullptr, throttle_);
 }
 
@@ -1263,7 +1263,7 @@ TEST_F(ThrottlingURLLoaderTest,
   // The throttle should stay alive and destroyed later.
   EXPECT_NE(nullptr, throttle_);
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(nullptr, throttle_);
 }
 

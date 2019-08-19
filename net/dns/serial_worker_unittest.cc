@@ -20,7 +20,7 @@ namespace net {
 
 namespace {
 
-class SerialWorkerTest : public TestWithScopedTaskEnvironment {
+class SerialWorkerTest : public TestWithTaskEnvironment {
  public:
   // The class under test
   class TestSerialWorker : public SerialWorker {

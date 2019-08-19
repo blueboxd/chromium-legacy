@@ -721,8 +721,8 @@ class GetCurrentConnectionTypeRunner
 };
 
 TEST_F(AddressTrackerLinuxTest, BroadcastInit) {
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   InitializeAddressTracker(true);
 
   GetCurrentConnectionTypeRunner runner1(tracker_.get(), "waiter_thread_1");

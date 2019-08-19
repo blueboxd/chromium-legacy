@@ -26,8 +26,8 @@ class CastIPCDispatcherTest : public testing::Test {
   }
 
   scoped_refptr<CastIPCDispatcher> dispatcher_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
 };
 
 TEST_F(CastIPCDispatcherTest, RawEvents) {

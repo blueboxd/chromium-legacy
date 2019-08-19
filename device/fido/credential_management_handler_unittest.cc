@@ -55,7 +55,7 @@ class CredentialManagementHandlerTest : public ::testing::Test {
     std::move(provide_pin).Run(kPIN);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   test::TestCallbackReceiver<> ready_callback_;
   test::StatusAndValuesCallbackReceiver<

@@ -271,7 +271,7 @@ class SequenceCheckerOwner {
 TEST(SequenceCheckerTest, CalledOnValidSequenceFromThreadDestruction) {
   ThreadLocalOwnedPointer<SequenceCheckerOwner> thread_local_owner;
   {
-    test::ScopedTaskEnvironment task_environment;
+    test::TaskEnvironment task_environment;
     auto task_runner = CreateSequencedTaskRunner({ThreadPool()});
     task_runner->PostTask(
         FROM_HERE, BindLambdaForTesting([&]() {

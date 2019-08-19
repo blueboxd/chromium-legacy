@@ -622,11 +622,11 @@ void MockClientSocketFactory::SetJobHasEstablishedConnection(size_t job) {
   waiting_jobs_[job]->set_has_established_connection();
 }
 
-class ClientSocketPoolBaseTest : public TestWithScopedTaskEnvironment {
+class ClientSocketPoolBaseTest : public TestWithTaskEnvironment {
  protected:
   ClientSocketPoolBaseTest()
-      : TestWithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : TestWithTaskEnvironment(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         params_(ClientSocketPool::SocketParams::CreateForHttpForTesting()) {
     connect_backup_jobs_enabled_ =
         TransportClientSocketPool::connect_backup_jobs_enabled();

@@ -209,7 +209,7 @@ NetworkChangeNotifierAndroid::NetworkChangeNotifierAndroid(
           // Ensure |blocking_thread_objects_| lives on
           // |blocking_thread_runner_| to prevent races where
           // NetworkChangeNotifierAndroid outlives
-          // ScopedTaskEnvironment. https://crbug.com/938126
+          // TaskEnvironment. https://crbug.com/938126
           base::OnTaskRunnerDeleter(blocking_thread_runner_)),
       force_network_handles_supported_for_testing_(false) {
   CHECK_EQ(NetId::INVALID, NetworkChangeNotifier::kInvalidNetworkHandle)

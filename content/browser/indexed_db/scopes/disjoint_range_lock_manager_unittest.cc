@@ -35,7 +35,7 @@ class DisjointRangeLockManagerTest : public testing::Test {
   ~DisjointRangeLockManagerTest() override = default;
 
  private:
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
 };
 
 TEST_F(DisjointRangeLockManagerTest, BasicAcquisition) {

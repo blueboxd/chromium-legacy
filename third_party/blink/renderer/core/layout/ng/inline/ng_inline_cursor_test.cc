@@ -71,7 +71,7 @@ TEST_P(NGInlineCursorTest, Next) {
 
   LayoutBlockFlow* block_flow =
       To<LayoutBlockFlow>(GetLayoutObjectByElementId("root"));
-  NGInlineCursor cursor(block_flow);
+  NGInlineCursor cursor(*block_flow);
   Vector<String> list = ToDebugStringList(&cursor);
   EXPECT_THAT(list, ElementsAre("#linebox", "text1", "#span1", "text2",
                                 "#span2", "text3", "text4", "text5"));
@@ -97,7 +97,7 @@ TEST_P(NGInlineCursorTest, NextSkippingChildren) {
 
   LayoutBlockFlow* block_flow =
       To<LayoutBlockFlow>(GetLayoutObjectByElementId("root"));
-  NGInlineCursor cursor(block_flow);
+  NGInlineCursor cursor(*block_flow);
   for (unsigned i = 0; i < 4; ++i)
     cursor.MoveToNext();
   EXPECT_EQ("text2", ToDebugString(cursor));
@@ -116,7 +116,7 @@ TEST_P(NGInlineCursorTest, EmptyOutOfFlow) {
 
   LayoutBlockFlow* block_flow =
       To<LayoutBlockFlow>(GetLayoutObjectByElementId("root"));
-  NGInlineCursor cursor(block_flow);
+  NGInlineCursor cursor(*block_flow);
   Vector<String> list = ToDebugStringList(&cursor);
   EXPECT_THAT(list, ElementsAre());
 }

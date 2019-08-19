@@ -37,8 +37,7 @@ const char kDisconnectionsHistogram[] =
 class CellularMetricsLoggerTest : public testing::Test {
  public:
   CellularMetricsLoggerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~CellularMetricsLoggerTest() override = default;
 
   void SetUp() override {
@@ -102,7 +101,7 @@ class CellularMetricsLoggerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   ShillServiceClient::TestInterface* service_client_test() {
     return network_state_test_helper_.service_test();
@@ -133,7 +132,7 @@ TEST_F(CellularMetricsLoggerTest, CellularUsageCountTest) {
   base::RunLoop().RunUntilIdle();
   histogram_tester.ExpectTotalCount(kUsageCountHistogram, 0);
 
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       CellularMetricsLogger::kInitializationTimeout);
   histogram_tester.ExpectBucketCount(
       kUsageCountHistogram, CellularMetricsLogger::CellularUsage::kNotConnected,
@@ -171,7 +170,7 @@ TEST_F(CellularMetricsLoggerTest, CellularUsageCountDongleTest) {
   static const base::Value kTestIdleStateValue(shill::kStateIdle);
 
   // Should not log state if no cellular devices are available.
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       CellularMetricsLogger::kInitializationTimeout);
   histogram_tester.ExpectTotalCount(kUsageCountHistogram, 0);
 
@@ -182,7 +181,7 @@ TEST_F(CellularMetricsLoggerTest, CellularUsageCountDongleTest) {
 
   // Should log state if a new cellular device is plugged in.
   InitCellular();
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       CellularMetricsLogger::kInitializationTimeout);
   histogram_tester.ExpectBucketCount(
       kUsageCountHistogram, CellularMetricsLogger::CellularUsage::kNotConnected,
@@ -225,7 +224,7 @@ TEST_F(CellularMetricsLoggerTest, CellularActivationStateAtLoginTest) {
   // Should wait until initialization timeout before logging status.
   InitCellular();
   histogram_tester.ExpectTotalCount(kActivationStatusAtLoginHistogram, 0);
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       CellularMetricsLogger::kInitializationTimeout);
   histogram_tester.ExpectBucketCount(
       kActivationStatusAtLoginHistogram,
@@ -276,7 +275,7 @@ TEST_F(CellularMetricsLoggerTest, CellularTimeToConnectedTest) {
   service_client_test()->SetServiceProperty(
       kTestCellularServicePath, shill::kStateProperty, kAssocStateValue);
   base::RunLoop().RunUntilIdle();
-  scoped_task_environment_.FastForwardBy(kTestConnectionTime);
+  task_environment_.FastForwardBy(kTestConnectionTime);
   service_client_test()->SetServiceProperty(
       kTestCellularServicePath, shill::kStateProperty, kOnlineStateValue);
   base::RunLoop().RunUntilIdle();
@@ -296,7 +295,7 @@ TEST_F(CellularMetricsLoggerTest, CellularTimeToConnectedTest) {
   base::RunLoop().RunUntilIdle();
 
   // Should log first network's connection time independently.
-  scoped_task_environment_.FastForwardBy(kTestConnectionTime);
+  task_environment_.FastForwardBy(kTestConnectionTime);
   service_client_test()->SetServiceProperty(
       kTestCellularServicePath, shill::kStateProperty, kOnlineStateValue);
   base::RunLoop().RunUntilIdle();
@@ -304,7 +303,7 @@ TEST_F(CellularMetricsLoggerTest, CellularTimeToConnectedTest) {
                                          kTestConnectionTime, 1);
 
   // Should log second network's connection time independently.
-  scoped_task_environment_.FastForwardBy(kTestConnectionTime);
+  task_environment_.FastForwardBy(kTestConnectionTime);
   service_client_test()->SetServiceProperty(
       kTestCellularServicePath2, shill::kStateProperty, kOnlineStateValue);
   base::RunLoop().RunUntilIdle();
@@ -328,7 +327,7 @@ TEST_F(CellularMetricsLoggerTest, CellularDisconnectionsTest) {
 
   // Should not log user initiated disconnections.
   cellular_metrics_logger()->DisconnectRequested(kTestCellularServicePath);
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       CellularMetricsLogger::kDisconnectRequestTimeout / 2);
   service_client_test()->SetServiceProperty(
       kTestCellularServicePath, shill::kStateProperty, kIdleStateValue);
@@ -354,7 +353,7 @@ TEST_F(CellularMetricsLoggerTest, CellularDisconnectionsTest) {
       kTestCellularServicePath, shill::kStateProperty, kOnlineStateValue);
   base::RunLoop().RunUntilIdle();
   cellular_metrics_logger()->DisconnectRequested(kTestCellularServicePath);
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       CellularMetricsLogger::kDisconnectRequestTimeout * 2);
   service_client_test()->SetServiceProperty(
       kTestCellularServicePath, shill::kStateProperty, kIdleStateValue);

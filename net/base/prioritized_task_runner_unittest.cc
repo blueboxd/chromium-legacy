@@ -95,7 +95,7 @@ class PrioritizedTaskRunnerTest : public testing::Test {
   void ReleaseTaskRunner() { waitable_event_.Signal(); }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::vector<std::string> callback_names_;
   base::Lock callback_names_lock_;
@@ -122,8 +122,7 @@ TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyThreadCheck) {
   prioritized_task_runner->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(thread_check, task_runner, base::DoNothing::Once()),
-      base::BindOnce(thread_check,
-                     scoped_task_environment_.GetMainThreadTaskRunner(),
+      base::BindOnce(thread_check, task_environment_.GetMainThreadTaskRunner(),
                      run_loop.QuitClosure()),
       0);
 
@@ -145,7 +144,7 @@ TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyRunsBothTasks) {
       0);
 
   // Run the TaskRunner and both the Task and Reply should run.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ((std::vector<std::string>{"Task", "Reply"}), callback_names_);
 }
 
@@ -183,7 +182,7 @@ TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyTestPriority) {
 
   // Run the TaskRunner and all of the tasks and replies should have run, in
   // priority order.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ((std::vector<std::string>{"Task0", "Task5", "Task7"}), TaskOrder());
   EXPECT_EQ((std::vector<std::string>{"Reply0", "Reply5", "Reply7"}),
             ReplyOrder());
@@ -230,7 +229,7 @@ TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyTestReplyPriority) {
   ProcessTaskRunner(task_runner.get());
 
   // Run the replies.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_EQ((std::vector<std::string>{"Task1", "Task2", "Task0"}), TaskOrder());
   EXPECT_EQ((std::vector<std::string>{"Reply0", "Reply1", "Reply2"}),
@@ -273,7 +272,7 @@ TEST_F(PrioritizedTaskRunnerTest, PriorityOverflow) {
 
   // Run the TaskRunner and all of the tasks and replies should have run, in
   // priority order.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ((std::vector<std::string>{"TaskMaxPlus1", "TaskMinus1", "TaskMax"}),
             TaskOrder());
   EXPECT_EQ(
@@ -296,7 +295,7 @@ TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyWithResultRunsBothTasks) {
       0);
 
   // Run the TaskRunner and both the Task and Reply should run.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ((std::vector<std::string>{"Task", "Reply"}), callback_names_);
 }
 
@@ -333,7 +332,7 @@ TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyWithResultTestPriority) {
   ReleaseTaskRunner();
 
   // Run the TaskRunner and both the Task and Reply should run.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ((std::vector<std::string>{"Task0", "Task3", "Task7"}), TaskOrder());
   EXPECT_EQ((std::vector<std::string>{"Reply0", "Reply3", "Reply7"}),
             ReplyOrder());
@@ -366,7 +365,7 @@ TEST_F(PrioritizedTaskRunnerTest, OrderSamePriorityByPostOrder) {
   // This is the order the tasks should run on the queue.
   std::sort(expected.begin(), expected.end());
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // This is the order that the tasks ran on the queue.
   std::vector<int> results;

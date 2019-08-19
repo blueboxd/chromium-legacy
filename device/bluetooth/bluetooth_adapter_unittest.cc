@@ -319,7 +319,7 @@ class BluetoothAdapterTest : public testing::Test {
 
  protected:
   scoped_refptr<TestBluetoothAdapter> adapter_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(BluetoothAdapterTest, NoDefaultPairingDelegate) {
@@ -1104,14 +1104,14 @@ TEST_F(BluetoothTest, TogglePowerFakeAdapter) {
   // Check if power can be turned off.
   adapter_->SetPowered(false, GetCallback(Call::EXPECTED),
                        GetErrorCallback(Call::NOT_EXPECTED));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(adapter_->IsPowered());
   EXPECT_EQ(1, observer.powered_changed_count());
 
   // Check if power can be turned on again.
   adapter_->SetPowered(true, GetCallback(Call::EXPECTED),
                        GetErrorCallback(Call::NOT_EXPECTED));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(adapter_->IsPowered());
   EXPECT_EQ(2, observer.powered_changed_count());
 }
@@ -1148,7 +1148,7 @@ TEST_F(BluetoothTest, MAYBE_TogglePowerFakeAdapter_Twice) {
                        GetErrorCallback(Call::NOT_EXPECTED));
   adapter_->SetPowered(false, GetCallback(Call::NOT_EXPECTED),
                        GetErrorCallback(Call::EXPECTED));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(adapter_->IsPowered());
   EXPECT_EQ(1, observer.powered_changed_count());
 
@@ -1158,7 +1158,7 @@ TEST_F(BluetoothTest, MAYBE_TogglePowerFakeAdapter_Twice) {
                        GetErrorCallback(Call::NOT_EXPECTED));
   adapter_->SetPowered(true, GetCallback(Call::NOT_EXPECTED),
                        GetErrorCallback(Call::EXPECTED));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(adapter_->IsPowered());
   EXPECT_EQ(2, observer.powered_changed_count());
 }
@@ -1195,7 +1195,7 @@ TEST_F(BluetoothTest, MAYBE_TogglePowerFakeAdapter_WithinCallback_On_Off) {
                              GetErrorCallback(Call::NOT_EXPECTED));
                        }),
                        GetErrorCallback(Call::NOT_EXPECTED));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(adapter_->IsPowered());
   EXPECT_EQ(2, observer.powered_changed_count());
 }
@@ -1228,7 +1228,7 @@ TEST_F(BluetoothTest, MAYBE_TogglePowerFakeAdapter_WithinCallback_Off_On) {
   // Turn power off.
   adapter_->SetPowered(false, GetCallback(Call::EXPECTED),
                        GetErrorCallback(Call::NOT_EXPECTED));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(adapter_->IsPowered());
   EXPECT_EQ(1, observer.powered_changed_count());
 
@@ -1239,7 +1239,7 @@ TEST_F(BluetoothTest, MAYBE_TogglePowerFakeAdapter_WithinCallback_Off_On) {
                              GetErrorCallback(Call::NOT_EXPECTED));
                        }),
                        GetErrorCallback(Call::NOT_EXPECTED));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(adapter_->IsPowered());
   EXPECT_EQ(3, observer.powered_changed_count());
 }
@@ -1292,7 +1292,7 @@ TEST_F(BluetoothTest, MAYBE_TogglePowerFakeAdapter_DestroyWithPending) {
 
   adapter_ = nullptr;
   // Empty the message loop to make sure posted callbacks get run.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(error_callback_called);
 }
 
@@ -1312,7 +1312,7 @@ TEST_F(BluetoothTest, MAYBE_TogglePowerBeforeScan) {
   // Turn off adapter.
   adapter_->SetPowered(false, GetCallback(Call::EXPECTED),
                        GetErrorCallback(Call::NOT_EXPECTED));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_FALSE(adapter_->IsPowered());
   EXPECT_EQ(1, observer.powered_changed_count());
 
@@ -1322,7 +1322,7 @@ TEST_F(BluetoothTest, MAYBE_TogglePowerBeforeScan) {
   // Turn on adapter.
   adapter_->SetPowered(true, GetCallback(Call::EXPECTED),
                        GetErrorCallback(Call::NOT_EXPECTED));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(adapter_->IsPowered());
   EXPECT_EQ(2, observer.powered_changed_count());
 

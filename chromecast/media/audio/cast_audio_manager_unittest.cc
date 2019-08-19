@@ -129,7 +129,7 @@ class CastAudioManagerTest : public testing::Test {
         base::BindRepeating(&CastAudioManagerTest::GetCmaBackendFactory,
                             base::Unretained(this)),
         base::BindRepeating(&DummyGetSessionId),
-        scoped_task_environment_.GetMainThreadTaskRunner(),
+        task_environment_.GetMainThreadTaskRunner(),
         audio_thread_.task_runner(), connector_.get(), use_mixer,
         true /* force_use_cma_backend_for_output*/
         ));
@@ -163,7 +163,7 @@ class CastAudioManagerTest : public testing::Test {
   }
 
   void RunThreadsUntilIdle() {
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     audio_thread_.FlushForTesting();
   }
 
@@ -172,7 +172,7 @@ class CastAudioManagerTest : public testing::Test {
   }
 
   base::Thread audio_thread_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ::media::FakeAudioLogFactory fake_audio_log_factory_;
   std::unique_ptr<MockCmaBackendFactory> mock_backend_factory_;
   ::media::MockAudioSourceCallback mock_source_callback_;
@@ -287,10 +287,10 @@ TEST_F(CastAudioManagerTest, CanMakeCommunicationsStream) {
   EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   EXPECT_CALL(mock_source_callback_, OnError()).Times(0);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   stream->Stop();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   stream->Close();
 }

@@ -84,7 +84,7 @@ namespace test {
 class QuicProxyClientSocketTest
     : public ::testing::TestWithParam<
           std::tuple<quic::ParsedQuicVersion, bool>>,
-      public WithScopedTaskEnvironment {
+      public WithTaskEnvironment {
  protected:
   static const bool kFin = true;
   static const bool kIncludeVersion = true;

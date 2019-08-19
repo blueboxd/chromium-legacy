@@ -27,7 +27,8 @@ class CORE_EXPORT NGInlineCursor {
   STACK_ALLOCATED();
 
  public:
-  NGInlineCursor(LayoutBlockFlow*);
+  NGInlineCursor(const LayoutBlockFlow&);
+  NGInlineCursor(const NGFragmentItems& items) { SetRoot(items); }
 
   //
   // Functions to query the current position.
@@ -58,8 +59,8 @@ class CORE_EXPORT NGInlineCursor {
   // NextSkippingChildren, Previous, etc.
 
  private:
-  void SetRoot(const NGFragmentItems* items);
-  void SetRoot(const NGPaintFragment* root_paint_fragment);
+  void SetRoot(const NGFragmentItems& items);
+  void SetRoot(const NGPaintFragment& root_paint_fragment);
 
   bool MoveToItem(unsigned item_index);
   bool MoveToNextItem();

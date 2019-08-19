@@ -26,7 +26,7 @@ class InternalAuthTest : public ::testing::Test {
 
   void TearDown() override {}
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::string long_string_;
 };
 

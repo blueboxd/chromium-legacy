@@ -60,7 +60,7 @@ class GamepadTestHelper {
 
  private:
   // This must be constructed before the system monitor.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadTestHelper);
 };

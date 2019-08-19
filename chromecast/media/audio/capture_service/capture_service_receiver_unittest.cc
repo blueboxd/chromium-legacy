@@ -44,8 +44,8 @@ class CaptureServiceReceiverTest : public ::testing::Test {
   ~CaptureServiceReceiverTest() override = default;
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   chromecast::MockAudioInputCallback audio_;
   CaptureServiceReceiver receiver_;
 };
@@ -59,13 +59,13 @@ TEST_F(CaptureServiceReceiverTest, StartStop) {
 
   // Sync.
   receiver_.StartWithSocket(&audio_, std::move(socket1));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   receiver_.Stop();
 
   // Async.
   receiver_.StartWithSocket(&audio_, std::move(socket2));
   receiver_.Stop();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(CaptureServiceReceiverTest, ConnectFailed) {
@@ -74,7 +74,7 @@ TEST_F(CaptureServiceReceiverTest, ConnectFailed) {
   EXPECT_CALL(audio_, OnError());
 
   receiver_.StartWithSocket(&audio_, std::move(socket));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(CaptureServiceReceiverTest, ConnectTimeout) {
@@ -83,8 +83,7 @@ TEST_F(CaptureServiceReceiverTest, ConnectTimeout) {
   EXPECT_CALL(audio_, OnError());
 
   receiver_.StartWithSocket(&audio_, std::move(socket));
-  scoped_task_environment_.FastForwardBy(
-      CaptureServiceReceiver::kConnectTimeout);
+  task_environment_.FastForwardBy(CaptureServiceReceiver::kConnectTimeout);
 }
 
 TEST_F(CaptureServiceReceiverTest, ReceiveValidMessage) {
@@ -108,7 +107,7 @@ TEST_F(CaptureServiceReceiverTest, ReceiveValidMessage) {
   EXPECT_CALL(audio_, OnData(_, _, 1.0 /* volume */));
 
   receiver_.StartWithSocket(&audio_, std::move(socket));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(CaptureServiceReceiverTest, ReceiveInvalidMessage) {
@@ -126,7 +125,7 @@ TEST_F(CaptureServiceReceiverTest, ReceiveInvalidMessage) {
   EXPECT_CALL(audio_, OnError());
 
   receiver_.StartWithSocket(&audio_, std::move(socket));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(CaptureServiceReceiverTest, ReceiveError) {
@@ -137,7 +136,7 @@ TEST_F(CaptureServiceReceiverTest, ReceiveError) {
   EXPECT_CALL(audio_, OnError());
 
   receiver_.StartWithSocket(&audio_, std::move(socket));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(CaptureServiceReceiverTest, ReceiveEosMessage) {
@@ -147,7 +146,7 @@ TEST_F(CaptureServiceReceiverTest, ReceiveEosMessage) {
   EXPECT_CALL(audio_, OnError());
 
   receiver_.StartWithSocket(&audio_, std::move(socket));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(CaptureServiceReceiverTest, ReceiveTimeout) {
@@ -157,8 +156,7 @@ TEST_F(CaptureServiceReceiverTest, ReceiveTimeout) {
   EXPECT_CALL(audio_, OnError());
 
   receiver_.StartWithSocket(&audio_, std::move(socket));
-  scoped_task_environment_.FastForwardBy(
-      CaptureServiceReceiver::kInactivityTimeout);
+  task_environment_.FastForwardBy(CaptureServiceReceiver::kInactivityTimeout);
 }
 
 }  // namespace

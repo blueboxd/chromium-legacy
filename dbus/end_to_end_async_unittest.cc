@@ -256,7 +256,7 @@ class EndToEndAsyncTest : public testing::Test {
     run_loop_->Run();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::vector<std::string> response_strings_;
   std::vector<std::string> error_names_;
@@ -443,7 +443,7 @@ TEST_F(EndToEndAsyncTest, CancelPendingCalls) {
 
   // We shouldn't receive any responses. Wait for a while just to make sure.
   run_loop_.reset(new base::RunLoop);
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
+  task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
       FROM_HERE, run_loop_->QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop_->Run();
   EXPECT_TRUE(response_strings_.empty());
@@ -545,7 +545,7 @@ TEST_F(EndToEndAsyncTest, EmptyResponseCallback) {
   object_proxy_->CallMethod(&method_call, timeout_ms, base::DoNothing());
   // Post a delayed task to quit the RunLoop.
   run_loop_.reset(new base::RunLoop);
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
+  task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
       FROM_HERE, run_loop_->QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop_->Run();
   // We cannot tell if the empty callback is called, but at least we can

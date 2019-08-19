@@ -30,7 +30,7 @@ std::string FirstAddress(const AddressList& address_list) {
 }
 
 TEST(MappedHostResolverTest, Inclusion) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   // Create a mock host resolver, with specific hostname to IP mappings.
   std::unique_ptr<MockHostResolver> resolver_impl(new MockHostResolver());
@@ -98,7 +98,7 @@ TEST(MappedHostResolverTest, Inclusion) {
 
 // Tests that exclusions are respected.
 TEST(MappedHostResolverTest, Exclusion) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   // Create a mock host resolver, with specific hostname to IP mappings.
   std::unique_ptr<MockHostResolver> resolver_impl(new MockHostResolver());
@@ -141,7 +141,7 @@ TEST(MappedHostResolverTest, Exclusion) {
 }
 
 TEST(MappedHostResolverTest, SetRulesFromString) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   // Create a mock host resolver, with specific hostname to IP mappings.
   std::unique_ptr<MockHostResolver> resolver_impl(new MockHostResolver());
@@ -182,7 +182,7 @@ TEST(MappedHostResolverTest, SetRulesFromString) {
 
 // Parsing bad rules should silently discard the rule (and never crash).
 TEST(MappedHostResolverTest, ParseInvalidRules) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   std::unique_ptr<MappedHostResolver> resolver(
       new MappedHostResolver(std::unique_ptr<HostResolver>()));
@@ -199,7 +199,7 @@ TEST(MappedHostResolverTest, ParseInvalidRules) {
 
 // Test mapping hostnames to resolving failures.
 TEST(MappedHostResolverTest, MapToError) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   // Outstanding request.
   std::unique_ptr<MockHostResolver> resolver_impl(new MockHostResolver());

@@ -139,8 +139,8 @@ class CloudPrintURLFetcherTest : public testing::Test,
   // we assume that the current thread is the IO thread where the URLFetcher
   // dispatches its requests to.  When we wish to simulate being used from
   // a UI thread, we dispatch a worker thread to do so.
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   int max_retries_;
   Time start_time_;

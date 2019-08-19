@@ -132,7 +132,7 @@ class DemoSetupControllerTest : public testing::Test {
   std::unique_ptr<DemoSetupController> tested_controller_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ScopedTestingLocalState testing_local_state_;
   ScopedStubInstallAttributes test_install_attributes_;
   system::ScopedFakeStatisticsProvider statistics_provider_;

@@ -23049,10 +23049,10 @@ Called by update_net_error_codes.py.-->
   <int value="1790" label="V8MediaSession_PlaybackState_AttributeGetter"/>
   <int value="1791" label="V8MediaSession_PlaybackState_AttributeSetter"/>
   <int value="1792" label="V8MediaSession_SetActionHandler_Method"/>
-  <int value="1793" label="WebNFCPush"/>
-  <int value="1794" label="WebNFCCancelPush"/>
-  <int value="1795" label="WebNFCWatch"/>
-  <int value="1796" label="WebNFCCancelWatch"/>
+  <int value="1793" label="OBSOLETE_WebNFCPush"/>
+  <int value="1794" label="OBSOLETE_WebNFCCancelPush"/>
+  <int value="1795" label="OBSOLETE_WebNFCWatch"/>
+  <int value="1796" label="OBSOLETE_WebNFCCancelWatch"/>
   <int value="1797" label="AudioParamCancelAndHoldAtTime"/>
   <int value="1798" label="CSSValueUserModifyReadOnly"/>
   <int value="1799" label="CSSValueUserModifyReadWrite"/>

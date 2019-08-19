@@ -81,7 +81,7 @@ const int32_t kBufferSize = SpdyHttpStream::kRequestBodyBufferSize;
 
 const char kPushedUrl[] = "https://www.example.org/foo.dat";
 
-class SpdyNetworkTransactionTest : public TestWithScopedTaskEnvironment {
+class SpdyNetworkTransactionTest : public TestWithTaskEnvironment {
  protected:
   SpdyNetworkTransactionTest()
       : default_url_(kDefaultUrl),

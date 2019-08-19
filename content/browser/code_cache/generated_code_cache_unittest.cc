@@ -30,7 +30,7 @@ class GeneratedCodeCacheTest : public testing::Test {
 
   void TearDown() override {
     disk_cache::FlushCacheThreadForTesting();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   // This function initializes the cache and waits till the transaction is
@@ -43,7 +43,7 @@ class GeneratedCodeCacheTest : public testing::Test {
     GURL url(kInitialUrl);
     GURL origin_lock = GURL(kInitialOrigin);
     WriteToCache(url, origin_lock, kInitialData, base::Time::Now());
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   // This function initializes the cache and reopens it. When this function
@@ -91,7 +91,7 @@ class GeneratedCodeCacheTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<GeneratedCodeCache> generated_code_cache_;
   base::ScopedTempDir cache_dir_;
   std::string received_data_;
@@ -114,9 +114,9 @@ TEST_F(GeneratedCodeCacheTest, CheckResponseTime) {
   std::string data = "SerializedCodeForScript";
   base::Time response_time = base::Time::Now();
   WriteToCache(url, origin_lock, data, response_time);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   FetchFromCache(url, origin_lock);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_TRUE(received_);
   EXPECT_EQ(data, received_data_);
@@ -129,7 +129,7 @@ TEST_F(GeneratedCodeCacheTest, FetchEntry) {
 
   InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
   FetchFromCache(url, origin_lock);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_TRUE(received_);
   EXPECT_EQ(kInitialData, received_data_);
@@ -143,9 +143,9 @@ TEST_F(GeneratedCodeCacheTest, WriteEntry) {
   std::string data = "SerializedCodeForScript";
   base::Time response_time = base::Time::Now();
   WriteToCache(new_url, origin_lock, data, response_time);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   FetchFromCache(new_url, origin_lock);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_TRUE(received_);
   EXPECT_EQ(data, received_data_);
@@ -159,7 +159,7 @@ TEST_F(GeneratedCodeCacheTest, DeleteEntry) {
   InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
   DeleteFromCache(url, origin_lock);
   FetchFromCache(url, origin_lock);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_TRUE(received_);
   ASSERT_TRUE(received_null_);
@@ -172,9 +172,9 @@ TEST_F(GeneratedCodeCacheTest, WriteEntryWithEmptyData) {
   InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
   base::Time response_time = base::Time::Now();
   WriteToCache(url, origin_lock, std::string(), response_time);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   FetchFromCache(url, origin_lock);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_TRUE(received_);
   ASSERT_TRUE(received_null_);
@@ -189,9 +189,9 @@ TEST_F(GeneratedCodeCacheTest, WriteEntryFailure) {
   base::Time response_time = base::Time::Now();
   std::string too_big_data(kMaxSizeInBytes * 8, 0);
   WriteToCache(url, origin_lock, too_big_data, response_time);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   FetchFromCache(url, origin_lock);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Fetch should return empty data, with invalid response time.
   ASSERT_TRUE(received_);
@@ -205,7 +205,7 @@ TEST_F(GeneratedCodeCacheTest, FetchEntryPendingOp) {
 
   InitializeCacheAndReOpen(GeneratedCodeCache::CodeCacheType::kJavaScript);
   FetchFromCache(url, origin_lock);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_TRUE(received_);
   EXPECT_EQ(kInitialData, received_data_);
@@ -219,9 +219,9 @@ TEST_F(GeneratedCodeCacheTest, WriteEntryPendingOp) {
   std::string data = "SerializedCodeForScript";
   base::Time response_time = base::Time::Now();
   WriteToCache(new_url, origin_lock, data, response_time);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   FetchFromCache(new_url, origin_lock);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_TRUE(received_);
   EXPECT_EQ(data, received_data_);
@@ -235,7 +235,7 @@ TEST_F(GeneratedCodeCacheTest, DeleteEntryPendingOp) {
   InitializeCacheAndReOpen(GeneratedCodeCache::CodeCacheType::kJavaScript);
   DeleteFromCache(url, origin_lock);
   FetchFromCache(url, origin_lock);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_TRUE(received_);
   ASSERT_TRUE(received_null_);
@@ -249,9 +249,9 @@ TEST_F(GeneratedCodeCacheTest, UpdateDataOfExistingEntry) {
   std::string new_data = "SerializedCodeForScriptOverwrite";
   base::Time response_time = base::Time::Now();
   WriteToCache(url, origin_lock, new_data, response_time);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   FetchFromCache(url, origin_lock);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_TRUE(received_);
   EXPECT_EQ(new_data, received_data_);
@@ -262,7 +262,7 @@ TEST_F(GeneratedCodeCacheTest, FetchFailsForNonexistingOrigin) {
   InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
   GURL new_origin_lock = GURL("http://not-example.com");
   FetchFromCache(GURL(kInitialUrl), new_origin_lock);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_TRUE(received_);
   ASSERT_TRUE(received_null_);
@@ -279,15 +279,15 @@ TEST_F(GeneratedCodeCacheTest, FetchEntriesFromSameOrigin) {
 
   std::string data_second_resource = "SerializedCodeForSecondResource";
   WriteToCache(second_url, origin_lock, data_second_resource, base::Time());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   FetchFromCache(url, origin_lock);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(received_);
   EXPECT_EQ(data_first_resource, received_data_);
 
   FetchFromCache(second_url, origin_lock);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(received_);
   EXPECT_EQ(data_second_resource, received_data_);
 }
@@ -303,15 +303,15 @@ TEST_F(GeneratedCodeCacheTest, FetchSucceedsFromDifferentOrigins) {
 
   std::string data_origin1 = "SerializedCodeForSecondOrigin";
   WriteToCache(url, origin_lock1, data_origin1, base::Time());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   FetchFromCache(url, origin_lock);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(received_);
   EXPECT_EQ(data_origin, received_data_);
 
   FetchFromCache(url, origin_lock1);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(received_);
   EXPECT_EQ(data_origin1, received_data_);
 }
@@ -323,10 +323,10 @@ TEST_F(GeneratedCodeCacheTest, FetchSucceedsEmptyOriginLock) {
   InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
   std::string data = "SerializedCodeForEmptyOrigin";
   WriteToCache(url, origin_lock, data, base::Time());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   FetchFromCache(url, origin_lock);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(received_);
   EXPECT_EQ(data, received_data_);
 }
@@ -339,19 +339,19 @@ TEST_F(GeneratedCodeCacheTest, FetchEmptyOriginVsValidOriginLocks) {
   InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
   std::string empty_origin_data = "SerializedCodeForEmptyOrigin";
   WriteToCache(url, empty_origin_lock, empty_origin_data, base::Time());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   std::string valid_origin_data = "SerializedCodeForValidOrigin";
   WriteToCache(url, origin_lock, valid_origin_data, base::Time());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   FetchFromCache(url, empty_origin_lock);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(received_);
   EXPECT_EQ(empty_origin_data, received_data_);
 
   FetchFromCache(url, origin_lock);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(received_);
   EXPECT_EQ(valid_origin_data, received_data_);
 }
@@ -362,7 +362,7 @@ TEST_F(GeneratedCodeCacheTest, WasmCache) {
 
   InitializeCache(GeneratedCodeCache::CodeCacheType::kWebAssembly);
   FetchFromCache(url, origin_lock);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_TRUE(received_);
   EXPECT_EQ(kInitialData, received_data_);
@@ -376,7 +376,7 @@ TEST_F(GeneratedCodeCacheTest, TestFailedBackendOpening) {
   cache_path_.clear();
   InitializeCacheAndReOpen(GeneratedCodeCache::CodeCacheType::kJavaScript);
   FetchFromCache(url, origin_lock);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // We should still receive a callback.
   ASSERT_TRUE(received_);

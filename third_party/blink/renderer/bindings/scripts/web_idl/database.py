@@ -30,6 +30,7 @@ class DatabaseBody(object):
         DICTIONARY = 'dictionary'
         ENUMERATION = 'enumeration'
         INTERFACE = 'interface'
+        INTERFACE_MIXIN = 'interface mixin'
         NAMESPACE = 'namespace'
         TYPEDEF = 'typedef'
         UNION = 'union'
@@ -40,6 +41,7 @@ class DatabaseBody(object):
             DICTIONARY,
             ENUMERATION,
             INTERFACE,
+            INTERFACE_MIXIN,
             NAMESPACE,
             TYPEDEF,
             UNION,
@@ -109,9 +111,14 @@ class Database(object):
         """
         Returns all interfaces.
 
-        Callback interfaces are not included.
+        Callback interfaces and mixins are not included.
         """
         return self._view_by_kind(Database._Kind.INTERFACE)
+
+    @property
+    def interface_mixins(self):
+        """Returns all interface mixins."""
+        return self._view_by_kind(Database._Kind.INTERFACE_MIXIN)
 
     @property
     def dictionaries(self):

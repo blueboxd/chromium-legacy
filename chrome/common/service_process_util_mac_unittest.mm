@@ -51,14 +51,14 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
     ASSERT_TRUE(MockLaunchd::MakeABundle(GetTempDirPath(), "Test",
                                          &bundle_path_, &executable_path_));
     mock_launchd_.reset(new MockLaunchd(
-        executable_path_, scoped_task_environment_.GetMainThreadTaskRunner(),
+        executable_path_, task_environment_.GetMainThreadTaskRunner(),
         run_loop_.QuitClosure(), true));
     scoped_launchd_instance_.reset(
         new Launchd::ScopedInstance(mock_launchd_.get()));
     ASSERT_TRUE(service_process_state_.Initialize());
     ASSERT_TRUE(service_process_state_.SignalReady(
         io_thread_.task_runner().get(), base::Closure()));
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
+    task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
         FROM_HERE, run_loop_.QuitWhenIdleClosure(),
         TestTimeouts::action_max_timeout());
   }
@@ -77,8 +77,8 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
 
  private:
   base::ScopedTempDir temp_dir_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
   base::RunLoop run_loop_;
   base::Thread io_thread_;
   base::FilePath executable_path_, bundle_path_;

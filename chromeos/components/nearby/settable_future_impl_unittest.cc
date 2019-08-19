@@ -79,7 +79,7 @@ class SettableFutureImplTest : public testing::Test {
     base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   void GetAsyncResult(const base::UnguessableToken& id) {

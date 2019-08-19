@@ -64,7 +64,7 @@ class InitAwareNotificationSchedulerTest : public testing::Test {
   MockNotificationScheduler* scheduler_impl() { return scheduler_impl_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockNotificationScheduler* scheduler_impl_;
   std::unique_ptr<NotificationScheduler> init_aware_scheduler_;
 

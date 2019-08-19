@@ -129,7 +129,7 @@ class WilcoDtcSupportdManagerTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ScopedTestingCrosSettings scoped_testing_cros_settings_;
   std::unique_ptr<TestUpstartClient> upstart_client_;
   FakeChromeUserManager* fake_user_manager_{new FakeChromeUserManager()};

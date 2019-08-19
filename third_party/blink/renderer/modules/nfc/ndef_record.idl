@@ -12,5 +12,7 @@
 ] interface NDEFRecord {
     readonly attribute NDEFRecordType recordType;
     readonly attribute USVString mediaType;
-    [CallWith=ScriptState] NDEFRecordData data();
+    USVString toText();
+    [NewObject] ArrayBuffer toArrayBuffer();
+    [CallWith=ScriptState, RaisesException] object toJSON();
 };

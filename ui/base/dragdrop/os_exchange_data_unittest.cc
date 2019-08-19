@@ -203,6 +203,7 @@ TEST_F(OSExchangeDataTest, TestHTML) {
   OSExchangeData copy(
       std::unique_ptr<OSExchangeData::Provider>(data.provider().Clone()));
   base::string16 read_html;
+  EXPECT_TRUE(copy.HasHtml());
   EXPECT_TRUE(copy.GetHtml(&read_html, &url));
   EXPECT_EQ(html, read_html);
 }

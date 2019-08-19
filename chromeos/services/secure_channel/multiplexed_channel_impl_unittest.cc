@@ -297,7 +297,7 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
     sent_message_counters_.insert(message_counter);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   int next_send_message_counter_ = 0;
   std::unordered_set<int> sent_message_counters_;

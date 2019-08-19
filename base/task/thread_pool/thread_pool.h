@@ -174,7 +174,7 @@ class BASE_EXPORT ThreadPoolInstance {
   // label histograms, it must not be empty. It should identify the component
   // that calls this. Start() is called by this method; it is invalid to call it
   // again afterwards. CHECKs on failure. For tests, prefer
-  // base::test::ScopedTaskEnvironment (ensures isolation).
+  // base::test::TaskEnvironment (ensures isolation).
   static void CreateAndStartWithDefaultParams(StringPiece name);
 
   // Same as CreateAndStartWithDefaultParams() but allows callers to split the
@@ -186,12 +186,12 @@ class BASE_EXPORT ThreadPoolInstance {
   // it must not be empty. It should identify the component that creates the
   // ThreadPoolInstance. The thread pool doesn't create threads until Start() is
   // called. Tasks can be posted at any time but will not run until after
-  // Start() is called. For tests, prefer base::test::ScopedTaskEnvironment
+  // Start() is called. For tests, prefer base::test::TaskEnvironment
   // (ensures isolation).
   static void Create(StringPiece name);
 
   // Registers |thread_pool| to handle tasks posted through the post_task.h
-  // API for this process. For tests, prefer base::test::ScopedTaskEnvironment
+  // API for this process. For tests, prefer base::test::TaskEnvironment
   // (ensures isolation).
   static void Set(std::unique_ptr<ThreadPoolInstance> thread_pool);
 

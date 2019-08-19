@@ -22,7 +22,7 @@ class CommandLinePrefStoreSSLManagerTest : public testing::Test {
   CommandLinePrefStoreSSLManagerTest() {}
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // Test that command-line settings for SSL versions are respected and that they

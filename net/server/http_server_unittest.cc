@@ -170,7 +170,7 @@ class TestHttpClient {
 
 }  // namespace
 
-class HttpServerTest : public TestWithScopedTaskEnvironment,
+class HttpServerTest : public TestWithTaskEnvironment,
                        public HttpServer::Delegate {
  public:
   HttpServerTest()

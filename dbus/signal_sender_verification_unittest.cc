@@ -116,7 +116,7 @@ class SignalSenderVerificationTest : public testing::Test {
   void OnOwnership(bool expected, bool success) {
     ASSERT_EQ(expected, success);
     // PostTask to quit the RunLoop as this is called from D-Bus thread.
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&SignalSenderVerificationTest::OnOwnershipInternal,
                        base::Unretained(this)));
@@ -167,7 +167,7 @@ class SignalSenderVerificationTest : public testing::Test {
     base::ThreadRestrictions::SetIOAllowed(false);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<base::Thread> dbus_thread_;
   scoped_refptr<Bus> bus_;

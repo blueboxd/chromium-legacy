@@ -42,8 +42,7 @@ class NetLog;
 namespace {
 
 // Base class to test SOCKS5ClientSocket
-class SOCKS5ClientSocketTest : public PlatformTest,
-                               public WithScopedTaskEnvironment {
+class SOCKS5ClientSocketTest : public PlatformTest, public WithTaskEnvironment {
  public:
   SOCKS5ClientSocketTest();
   // Create a SOCKSClientSocket on top of a MockSocket.

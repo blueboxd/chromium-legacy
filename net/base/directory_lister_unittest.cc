@@ -131,8 +131,7 @@ class ListerDelegate : public DirectoryLister::DirectoryListerDelegate {
 
 }  // namespace
 
-class DirectoryListerTest : public PlatformTest,
-                            public WithScopedTaskEnvironment {
+class DirectoryListerTest : public PlatformTest, public WithTaskEnvironment {
  public:
   DirectoryListerTest()
       : total_created_file_system_objects_in_temp_root_dir_(0),

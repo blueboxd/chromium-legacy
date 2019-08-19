@@ -102,13 +102,13 @@ class SourceStreamToDataPipeTest
   mojo::DataPipeConsumerHandle consumer_end() { return consumer_end_.get(); }
 
   void CloseConsumerHandle() { consumer_end_.reset(); }
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
   base::Optional<int> CallbackResult() { return callback_result_; }
 
  private:
   void FinishedReading(int result) { callback_result_ = result; }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   net::MockSourceStream* source_;
   std::unique_ptr<SourceStreamToDataPipe> adapter_;
   mojo::ScopedDataPipeConsumerHandle consumer_end_;

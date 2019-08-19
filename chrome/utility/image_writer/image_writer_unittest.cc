@@ -55,7 +55,7 @@ class ImageWriterUtilityTest : public testing::Test {
   base::FilePath device_path_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
 };
 

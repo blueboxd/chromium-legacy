@@ -44,7 +44,7 @@ class ServerBackedStateKeysBrokerTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedMockTimeMessageLoopTaskRunner mocked_main_runner_;
   chromeos::FakeSessionManagerClient fake_session_manager_client_;
   ServerBackedStateKeysBroker broker_;

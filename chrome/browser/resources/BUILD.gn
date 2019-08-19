@@ -54,9 +54,6 @@ if (closure_compile) {
         "webapks:closure_compile",
       ]
     }
-    if (!is_android) {
-      deps += [ "app_management:closure_compile" ]
-    }
     if (is_win || is_mac || is_desktop_linux) {
       deps += [ "browser_switch:closure_compile" ]
     }

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace content {
 
@@ -77,8 +76,9 @@ void ControllerServiceWorkerConnector::OnControllerConnectionClosed() {
 }
 
 void ControllerServiceWorkerConnector::AddBinding(
-    blink::mojom::ControllerServiceWorkerConnectorRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+    mojo::PendingReceiver<blink::mojom::ControllerServiceWorkerConnector>
+        receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void ControllerServiceWorkerConnector::UpdateController(

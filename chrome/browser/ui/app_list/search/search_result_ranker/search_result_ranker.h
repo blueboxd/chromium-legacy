@@ -140,7 +140,7 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
   base::OnceClosure json_config_parsed_for_testing_;
 
   // Logs launch events and stores feature data for aggregated model.
-  app_list::AppLaunchEventLogger app_launch_event_logger_;
+  std::unique_ptr<app_list::AppLaunchEventLogger> app_launch_event_logger_;
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;

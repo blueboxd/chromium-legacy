@@ -12,8 +12,7 @@ namespace enterprise_reporting {
 class RequestTimerTest : public ::testing::Test {
  public:
   RequestTimerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void RunTask() { task_count_ += 1; }
 
@@ -25,7 +24,7 @@ class RequestTimerTest : public ::testing::Test {
                                      base::Unretained(this)));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   int task_count_ = 0;
   RequestTimer timer_;
 };
@@ -46,12 +45,12 @@ TEST_F(RequestTimerTest, RunFirstTask) {
   StartTask(5, 10);
 
   // The first task hasn't been ran yet.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(4));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(4));
   ASSERT_TRUE(timer_.IsFirstTimerRunning());
   ASSERT_EQ(0, task_count_);
 
   // The first task is due.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   ASSERT_FALSE(timer_.IsFirstTimerRunning());
   ASSERT_FALSE(timer_.IsRepeatTimerRunning());
   ASSERT_EQ(1, task_count_);
@@ -61,7 +60,7 @@ TEST_F(RequestTimerTest, RunFirstTaskWithoutDelay) {
   StartTask(0, 10);
 
   // First task is posted and ran immediately.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_FALSE(timer_.IsFirstTimerRunning());
   ASSERT_FALSE(timer_.IsRepeatTimerRunning());
   ASSERT_EQ(1, task_count_);
@@ -71,7 +70,7 @@ TEST_F(RequestTimerTest, RunFirstTaskWithNegativeDelay) {
   StartTask(-1, 10);
 
   // First task is posted and ran immediately.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_FALSE(timer_.IsFirstTimerRunning());
   ASSERT_FALSE(timer_.IsRepeatTimerRunning());
   ASSERT_EQ(1, task_count_);
@@ -81,14 +80,14 @@ TEST_F(RequestTimerTest, RunRepeatingTaskTest) {
   StartTask(1, 10);
 
   // Run the first task.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   // Reset and wait for the second task.
   timer_.Reset();
   ASSERT_FALSE(timer_.IsFirstTimerRunning());
   ASSERT_TRUE(timer_.IsRepeatTimerRunning());
 
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   ASSERT_FALSE(timer_.IsFirstTimerRunning());
   ASSERT_FALSE(timer_.IsRepeatTimerRunning());
   ASSERT_EQ(2, task_count_);
@@ -97,7 +96,7 @@ TEST_F(RequestTimerTest, RunRepeatingTaskTest) {
   timer_.Reset();
   ASSERT_TRUE(timer_.IsRepeatTimerRunning());
 
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   ASSERT_FALSE(timer_.IsFirstTimerRunning());
   ASSERT_FALSE(timer_.IsRepeatTimerRunning());
   ASSERT_EQ(3, task_count_);
@@ -107,17 +106,17 @@ TEST_F(RequestTimerTest, NotRuningRepeatingTaskWithoutResetTest) {
   StartTask(1, 10);
 
   // Run the first task.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(1, task_count_);
 
   // The repeat task is not ran without reset.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(15));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(15));
   ASSERT_FALSE(timer_.IsRepeatTimerRunning());
   ASSERT_EQ(1, task_count_);
 
   // Reset the task, the repeat task is ran only once.
   timer_.Reset();
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(60));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(60));
   ASSERT_FALSE(timer_.IsRepeatTimerRunning());
   ASSERT_EQ(2, task_count_);
 }
@@ -130,7 +129,7 @@ TEST_F(RequestTimerTest, StopFirstTask) {
   // The task is stopped.
   ASSERT_FALSE(timer_.IsFirstTimerRunning());
   ASSERT_FALSE(timer_.IsRepeatTimerRunning());
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   ASSERT_EQ(0, task_count_);
 }
 
@@ -138,18 +137,18 @@ TEST_F(RequestTimerTest, StopRepeatTask) {
   StartTask(1, 10);
 
   // Run the first task.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(1, task_count_);
 
   // Start the repeat task, stop after a while.
   timer_.Reset();
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(3));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(3));
   timer_.Stop();
 
   // The task is stopped.
   ASSERT_FALSE(timer_.IsFirstTimerRunning());
   ASSERT_FALSE(timer_.IsRepeatTimerRunning());
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(60));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(60));
   ASSERT_EQ(1, task_count_);
 }
 

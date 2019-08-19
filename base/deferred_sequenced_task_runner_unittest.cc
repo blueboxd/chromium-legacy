@@ -60,7 +60,7 @@ class DeferredSequencedTaskRunnerTest : public testing::Test {
       : runner_(
             new DeferredSequencedTaskRunner(ThreadTaskRunnerHandle::Get())) {}
 
-  test::ScopedTaskEnvironment scoped_task_environment_;
+  test::TaskEnvironment task_environment_;
   scoped_refptr<DeferredSequencedTaskRunner> runner_;
   mutable Lock lock_;
   std::vector<int> executed_task_ids_;

@@ -61,7 +61,7 @@ class ScreenlockMonitorTest : public testing::Test {
   std::unique_ptr<ScreenlockMonitor> screenlock_monitor_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenlockMonitorTest);
 };

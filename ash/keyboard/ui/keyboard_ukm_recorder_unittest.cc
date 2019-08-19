@@ -12,7 +12,7 @@
 namespace keyboard {
 
 TEST(KeyboardUkmRecorderTest, RecordUkmWithEmptySource) {
-  base::test::ScopedTaskEnvironment env;
+  base::test::TaskEnvironment env;
 
   ukm::TestAutoSetUkmRecorder test_recorder;
   test_recorder.EnableRecording(false /* extensions */);
@@ -25,7 +25,7 @@ TEST(KeyboardUkmRecorderTest, RecordUkmWithEmptySource) {
 }
 
 TEST(KeyboardUkmRecorderTest, RecordUkmWithNavigationId) {
-  base::test::ScopedTaskEnvironment env;
+  base::test::TaskEnvironment env;
 
   ukm::TestAutoSetUkmRecorder test_recorder;
   test_recorder.EnableRecording(false /* extensions */);

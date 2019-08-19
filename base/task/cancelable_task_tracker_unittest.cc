@@ -33,7 +33,7 @@ class CancelableTaskTrackerTest : public testing::Test {
 
  private:
   // Needed by CancelableTaskTracker methods.
-  test::ScopedTaskEnvironment scoped_task_environment_;
+  test::TaskEnvironment task_environment_;
 };
 
 }  // namespace

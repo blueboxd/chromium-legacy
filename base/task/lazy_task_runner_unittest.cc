@@ -99,7 +99,7 @@ class LazyTaskRunnerEnvironmentTest : public testing::Test {
     task_runner->PostTask(FROM_HERE,
                           BindOnce(&InitCheckers, Unretained(&sequence_checker),
                                    Unretained(&thread_checker)));
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     OnceClosure task =
         expect_single_thread
@@ -115,10 +115,10 @@ class LazyTaskRunnerEnvironmentTest : public testing::Test {
                        Unretained(&sequence_checker),
                        Unretained(&thread_checker), expected_priority);
     task_runner->PostTask(FROM_HERE, std::move(task));
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
-  test::ScopedTaskEnvironment scoped_task_environment_;
+  test::TaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LazyTaskRunnerEnvironmentTest);
@@ -160,8 +160,8 @@ TEST_F(LazyTaskRunnerEnvironmentTest, LazyCOMSTATaskRunnerUserBlocking) {
 
 TEST(LazyTaskRunnerTest, LazySequencedTaskRunnerReset) {
   for (int i = 0; i < 2; ++i) {
-    test::ScopedTaskEnvironment scoped_task_environment;
-    // If the TaskRunner isn't released when the test::ScopedTaskEnvironment
+    test::TaskEnvironment task_environment;
+    // If the TaskRunner isn't released when the test::TaskEnvironment
     // goes out of scope, the second invocation of the line below will access a
     // deleted ThreadPoolInstance and crash.
     g_sequenced_task_runner_user_visible.Get()->PostTask(FROM_HERE,
@@ -171,8 +171,8 @@ TEST(LazyTaskRunnerTest, LazySequencedTaskRunnerReset) {
 
 TEST(LazyTaskRunnerTest, LazySingleThreadTaskRunnerReset) {
   for (int i = 0; i < 2; ++i) {
-    test::ScopedTaskEnvironment scoped_task_environment;
-    // If the TaskRunner isn't released when the test::ScopedTaskEnvironment
+    test::TaskEnvironment task_environment;
+    // If the TaskRunner isn't released when the test::TaskEnvironment
     // goes out of scope, the second invocation of the line below will access a
     // deleted ThreadPoolInstance and crash.
     g_single_thread_task_runner_user_visible.Get()->PostTask(FROM_HERE,
@@ -183,8 +183,8 @@ TEST(LazyTaskRunnerTest, LazySingleThreadTaskRunnerReset) {
 #if defined(OS_WIN)
 TEST(LazyTaskRunnerTest, LazyCOMSTATaskRunnerReset) {
   for (int i = 0; i < 2; ++i) {
-    test::ScopedTaskEnvironment scoped_task_environment;
-    // If the TaskRunner isn't released when the test::ScopedTaskEnvironment
+    test::TaskEnvironment task_environment;
+    // If the TaskRunner isn't released when the test::TaskEnvironment
     // goes out of scope, the second invocation of the line below will access a
     // deleted ThreadPoolInstance and crash.
     g_com_sta_task_runner_user_visible.Get()->PostTask(FROM_HERE, DoNothing());

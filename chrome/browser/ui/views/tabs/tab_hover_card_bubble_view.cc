@@ -21,8 +21,10 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/tab_count_metrics/tab_count_metrics.h"
 #include "components/url_formatter/url_formatter.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -529,14 +531,23 @@ void TabHoverCardBubbleView::FadeInToShow() {
 
 void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
   title_label_->SetText(tab->data().title);
-
-  base::string16 domain = url_formatter::FormatUrl(
-      tab->data().last_committed_url,
-      url_formatter::kFormatUrlOmitDefaults |
-          url_formatter::kFormatUrlOmitHTTPS |
-          url_formatter::kFormatUrlOmitTrivialSubdomains |
-          url_formatter::kFormatUrlTrimAfterHost,
-      net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr);
+  const GURL& domain_url = tab->data().last_committed_url;
+  base::string16 domain;
+  if (domain_url.SchemeIsFile()) {
+    title_label_->SetMultiLine(false);
+    title_label_->SetElideBehavior(gfx::ELIDE_MIDDLE);
+    domain = l10n_util::GetStringUTF16(IDS_HOVER_CARD_FILE_URL_SOURCE);
+  } else {
+    title_label_->SetElideBehavior(gfx::ELIDE_TAIL);
+    title_label_->SetMultiLine(true);
+    domain = url_formatter::FormatUrl(
+        domain_url,
+        url_formatter::kFormatUrlOmitDefaults |
+            url_formatter::kFormatUrlOmitHTTPS |
+            url_formatter::kFormatUrlOmitTrivialSubdomains |
+            url_formatter::kFormatUrlTrimAfterHost,
+        net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr);
+  }
   domain_label_->SetText(domain);
 
   // If the preview image feature is not enabled, |preview_image_| will be null.

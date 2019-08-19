@@ -27,8 +27,8 @@ class ObjectProxyTest : public testing::Test {
 
   void TearDown() override { bus_->ShutdownAndBlock(); }
 
-  base::test::ScopedTaskEnvironment task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
 
   scoped_refptr<Bus> bus_;
 };

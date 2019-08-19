@@ -886,7 +886,7 @@ void SetGoogleUpdateFactoryForTesting(
 }
 
 // TODO(calamity): Remove once a MockTimer is implemented in
-// ScopedTaskEnvironment. See https://crbug.com/708584.
+// TaskEnvironment. See https://crbug.com/708584.
 void SetUpdateDriverTaskRunnerForTesting(
     base::SingleThreadTaskRunner* task_runner) {
   g_update_driver_task_runner = task_runner;

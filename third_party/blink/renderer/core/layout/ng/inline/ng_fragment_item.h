@@ -69,7 +69,7 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   }
   const LayoutObject* GetLayoutObject() const { return layout_object_; }
 
-  const PhysicalSize Size() { return size_; }
+  const PhysicalSize& Size() const { return size_; }
   const PhysicalOffset& Offset() const { return offset_; }
   void SetOffset(const PhysicalOffset& offset) { offset_ = offset; }
 
@@ -82,6 +82,13 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
     if (Type() == kLine)
       return line_.children_count;
     return 0;
+  }
+
+  // Returns |NGPhysicalBoxFragment| if one is associated with this item.
+  const NGPhysicalBoxFragment* BoxFragment() const {
+    if (Type() == kBox)
+      return box_.box_fragment.get();
+    return nullptr;
   }
 
   // DisplayItemClient overrides

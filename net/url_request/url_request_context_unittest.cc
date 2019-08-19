@@ -17,7 +17,7 @@ namespace net {
 
 class URLRequestContextMemoryDumpTest
     : public testing::TestWithParam<base::trace_event::MemoryDumpLevelOfDetail>,
-      public WithScopedTaskEnvironment {};
+      public WithTaskEnvironment {};
 
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,

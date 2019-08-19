@@ -136,12 +136,12 @@ class StubPowerMonitorSource : public base::PowerMonitorSource {
 class RelaunchNotificationControllerTest : public ::testing::Test {
  protected:
   RelaunchNotificationControllerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
+      : task_environment_(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         scoped_local_state_(TestingBrowserProcess::GetGlobal()),
-        upgrade_detector_(scoped_task_environment_.GetMockClock(),
-                          scoped_task_environment_.GetMockTickClock()) {
+        upgrade_detector_(task_environment_.GetMockClock(),
+                          task_environment_.GetMockTickClock()) {
     auto mock_power_monitor_source = std::make_unique<StubPowerMonitorSource>();
     mock_power_monitor_source_ = mock_power_monitor_source.get();
     base::PowerMonitor::Initialize(std::move(mock_power_monitor_source));
@@ -161,27 +161,25 @@ class RelaunchNotificationControllerTest : public ::testing::Test {
         prefs::kRelaunchNotification, std::make_unique<base::Value>(value));
   }
 
-  // Returns the ScopedTaskEnvironment's MockClock.
-  const base::Clock* GetMockClock() {
-    return scoped_task_environment_.GetMockClock();
-  }
+  // Returns the TaskEnvironment's MockClock.
+  const base::Clock* GetMockClock() { return task_environment_.GetMockClock(); }
 
-  // Returns the ScopedTaskEnvironment's MockTickClock.
+  // Returns the TaskEnvironment's MockTickClock.
   const base::TickClock* GetMockTickClock() {
-    return scoped_task_environment_.GetMockTickClock();
+    return task_environment_.GetMockTickClock();
   }
 
   // Fast-forwards virtual time by |delta|.
   void FastForwardBy(base::TimeDelta delta) {
-    scoped_task_environment_.FastForwardBy(delta);
+    task_environment_.FastForwardBy(delta);
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
  private:
   // Owned by power_monitor_. Use this to simulate a power suspend and resume.
   StubPowerMonitorSource* mock_power_monitor_source_ = nullptr;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ScopedTestingLocalState scoped_local_state_;
   FakeUpgradeDetector upgrade_detector_;
 

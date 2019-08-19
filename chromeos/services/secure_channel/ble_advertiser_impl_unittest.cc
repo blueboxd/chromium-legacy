@@ -262,7 +262,7 @@ class SecureChannelBleAdvertiserImplTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<FakeBleAdvertiserDelegate> fake_delegate_;
   std::unique_ptr<FakeBleServiceDataHelper> fake_ble_service_data_helper_;

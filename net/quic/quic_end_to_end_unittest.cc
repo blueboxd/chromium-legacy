@@ -82,8 +82,7 @@ class TestTransactionFactory : public HttpTransactionFactory {
 
 }  // namespace
 
-class QuicEndToEndTest : public ::testing::Test,
-                         public WithScopedTaskEnvironment {
+class QuicEndToEndTest : public ::testing::Test, public WithTaskEnvironment {
  protected:
   QuicEndToEndTest()
       : host_resolver_impl_(CreateResolverImpl()),

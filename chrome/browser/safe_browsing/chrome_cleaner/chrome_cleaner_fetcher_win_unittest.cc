@@ -29,8 +29,7 @@ namespace {
 class ChromeCleanerFetcherTest : public ::testing::Test {
  public:
   ChromeCleanerFetcherTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
   void TearDown() override {
     if (!downloaded_path_.empty()) {
@@ -56,7 +55,7 @@ class ChromeCleanerFetcherTest : public ::testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 
   base::RunLoop run_loop_;

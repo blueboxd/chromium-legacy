@@ -184,7 +184,7 @@ class TestReportSenderNetworkDelegate : public NetworkDelegateImpl {
   DISALLOW_COPY_AND_ASSIGN(TestReportSenderNetworkDelegate);
 };
 
-class ReportSenderTest : public TestWithScopedTaskEnvironment {
+class ReportSenderTest : public TestWithTaskEnvironment {
  public:
   ReportSenderTest() : context_(true) {
     context_.set_network_delegate(&network_delegate_);

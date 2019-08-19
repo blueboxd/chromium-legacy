@@ -48,7 +48,7 @@ std::string TestKeyToString(const testing::TestParamInfo<TestKey>& params) {
 class SSLPlatformKeyMacTest : public testing::TestWithParam<TestKey> {};
 
 TEST_P(SSLPlatformKeyMacTest, KeyMatches) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   const TestKey& test_key = GetParam();
 

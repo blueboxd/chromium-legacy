@@ -267,7 +267,7 @@ const MockTransaction kBrotliSlowTransaction = {
 
 }  // namespace
 
-using URLRequestJobTest = TestWithScopedTaskEnvironment;
+using URLRequestJobTest = TestWithTaskEnvironment;
 
 TEST_F(URLRequestJobTest, TransactionNoFilter) {
   MockNetworkLayer network_layer;

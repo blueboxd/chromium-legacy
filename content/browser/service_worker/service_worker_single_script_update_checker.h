@@ -59,7 +59,7 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
     PausedState(
         std::unique_ptr<ServiceWorkerCacheWriter> cache_writer,
         std::unique_ptr<
-            ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper>
+            ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper>
             network_loader,
         network::mojom::URLLoaderClientRequest network_client_request,
         mojo::ScopedDataPipeConsumerHandle network_consumer,
@@ -71,7 +71,7 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
 
     std::unique_ptr<ServiceWorkerCacheWriter> cache_writer;
     std::unique_ptr<
-        ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper>
+        ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper>
         network_loader;
     network::mojom::URLLoaderClientRequest network_client_request;
     mojo::ScopedDataPipeConsumerHandle network_consumer;
@@ -131,6 +131,8 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
 
   bool network_accessed() const { return network_accessed_; }
 
+  static const char* ResultToString(Result result);
+
  private:
   class WrappedIOBuffer;
 
@@ -166,7 +168,7 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   bool network_accessed_ = false;
 
   std::unique_ptr<
-      ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper>
+      ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper>
       network_loader_;
   mojo::Binding<network::mojom::URLLoaderClient> network_client_binding_;
   mojo::ScopedDataPipeConsumerHandle network_consumer_;

@@ -24,9 +24,8 @@ ArTestSuite::~ArTestSuite() = default;
 void ArTestSuite::Initialize() {
   base::TestSuite::Initialize();
 
-  scoped_task_environment_ =
-      std::make_unique<base::test::ScopedTaskEnvironment>(
-          base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  task_environment_ = std::make_unique<base::test::TaskEnvironment>(
+      base::test::TaskEnvironment::MainThreadType::UI);
 
   mojo::core::Init();
 

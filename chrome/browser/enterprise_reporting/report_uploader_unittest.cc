@@ -25,8 +25,7 @@ constexpr const char* kOsUserNames[] = {"name1", "name2"};
 class ReportUploaderTest : public ::testing::Test {
  public:
   ReportUploaderTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
     CreateUploader(0);
   }
   ~ReportUploaderTest() override {}
@@ -60,25 +59,25 @@ class ReportUploaderTest : public ::testing::Test {
 
   // Forwards to send next request and get response.
   void RunNextTask() {
-    scoped_task_environment_.FastForwardBy(
-        scoped_task_environment_.NextMainThreadPendingTaskDelay());
+    task_environment_.FastForwardBy(
+        task_environment_.NextMainThreadPendingTaskDelay());
   }
 
   // Verifies the retried is delayed properly.
   void VerifyRequestDelay(int delay_seconds) {
     if (delay_seconds == 0) {
       EXPECT_EQ(base::TimeDelta(),
-                scoped_task_environment_.NextMainThreadPendingTaskDelay());
+                task_environment_.NextMainThreadPendingTaskDelay());
       return;
     }
     EXPECT_GE(base::TimeDelta::FromSeconds(delay_seconds),
-              scoped_task_environment_.NextMainThreadPendingTaskDelay());
+              task_environment_.NextMainThreadPendingTaskDelay());
     EXPECT_LE(
         base::TimeDelta::FromSeconds(static_cast<int>(delay_seconds * 0.9)),
-        scoped_task_environment_.NextMainThreadPendingTaskDelay());
+        task_environment_.NextMainThreadPendingTaskDelay());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<ReportUploader> uploader_;
   policy::MockCloudPolicyClient client_;
@@ -240,7 +239,7 @@ TEST_P(ReportUploaderTestWithTransientError, WithoutRetry) {
   client_.SetStatus(GetParam());
   UploadReportAndSetExpectation(/*number_of_request=*/2,
                                 ReportUploader::kTransientError);
-  scoped_task_environment_.FastForwardBy(base::TimeDelta());
+  task_environment_.FastForwardBy(base::TimeDelta());
   EXPECT_TRUE(has_responded_);
   ::testing::Mock::VerifyAndClearExpectations(&client_);
 }

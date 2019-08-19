@@ -17,6 +17,7 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -97,10 +98,11 @@ void ServiceWorkerRegisterJob::Start() {
   // may show a message like "offline enabled". For update, give it a lower
   // priority as (soft) update doesn't affect user interactions directly.
   // TODO(bashi): For explicit update() API, we may want to prioritize it too.
-  auto traits = (job_type_ == REGISTRATION_JOB)
-                    ? base::TaskTraits(BrowserThread::IO)
-                    : base::TaskTraits(BrowserThread::IO,
-                                       base::TaskPriority::BEST_EFFORT);
+  auto traits =
+      (job_type_ == REGISTRATION_JOB)
+          ? base::TaskTraits(ServiceWorkerContextWrapper::GetCoreThreadId())
+          : base::TaskTraits(ServiceWorkerContextWrapper::GetCoreThreadId(),
+                             base::TaskPriority::BEST_EFFORT);
   base::PostTask(FROM_HERE, std::move(traits),
                  base::BindOnce(&ServiceWorkerRegisterJob::StartImpl,
                                 weak_factory_.GetWeakPtr()));

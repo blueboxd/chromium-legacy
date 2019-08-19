@@ -256,7 +256,7 @@ class LayerTreeViewWithFrameSinkTrackingTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   cc::TestTaskGraphRunner test_task_graph_runner_;
   blink::scheduler::WebFakeThreadScheduler fake_thread_scheduler_;
   FakeLayerTreeViewDelegate layer_tree_view_delegate_;
@@ -331,7 +331,7 @@ TEST(LayerTreeViewTest, VisibilityTest) {
   // Test that LayerTreeView does not retry FrameSink request while
   // invisible.
 
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
 
   cc::TestTaskGraphRunner test_task_graph_runner;
   blink::scheduler::WebFakeThreadScheduler fake_thread_scheduler;

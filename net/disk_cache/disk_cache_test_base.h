@@ -40,8 +40,7 @@ class SimpleFileTracker;
 // Mac, so this needs to be a PlatformTest.  Even tests that do not require a
 // cache (and that do not need to be a DiskCacheTestWithCache) are susceptible
 // to this problem; all such tests should use TEST_F(DiskCacheTest, ...).
-class DiskCacheTest : public PlatformTest,
-                      public net::WithScopedTaskEnvironment {
+class DiskCacheTest : public PlatformTest, public net::WithTaskEnvironment {
  protected:
   DiskCacheTest();
   ~DiskCacheTest() override;

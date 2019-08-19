@@ -56,11 +56,10 @@ class QuicTestWithParamImpl : public ::testing::TestWithParam<T> {
 class ScopedEnvironmentForThreadsImpl {
  public:
   ScopedEnvironmentForThreadsImpl()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
  public:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 #define QUIC_TEST_DISABLED_IN_CHROME_IMPL(name) DISABLED_##name

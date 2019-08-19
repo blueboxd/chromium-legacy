@@ -21,8 +21,7 @@ using ::testing::Invoke;
 class MultipartUploadRequestTest : public testing::Test {
  public:
   MultipartUploadRequestTest()
-      : thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : thread_bundle_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;

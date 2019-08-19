@@ -88,8 +88,7 @@ class TestAvailabilityProber : public AvailabilityProber {
 class AvailabilityProberTest : public testing::Test {
  public:
   AvailabilityProberTest()
-      : thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : thread_bundle_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)),

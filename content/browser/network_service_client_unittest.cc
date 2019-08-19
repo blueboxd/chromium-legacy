@@ -80,7 +80,7 @@ class NetworkServiceClientTest : public testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle scoped_task_environment_;
+  TestBrowserThreadBundle task_environment_;
   TestBrowserContext browser_context_;
   network::mojom::NetworkServiceClientPtr client_ptr_;
   NetworkServiceClient client_;
@@ -91,7 +91,7 @@ TEST_F(NetworkServiceClientTest, UploadNoFiles) {
   UploadResponse response;
   client_.OnFileUploadRequested(kRendererProcessId, true, {},
                                 std::move(response.callback));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(net::OK, response.error_code);
   EXPECT_EQ(0U, response.opened_files.size());
 }
@@ -104,7 +104,7 @@ TEST_F(NetworkServiceClientTest, UploadOneValidAsyncFile) {
   UploadResponse response;
   client_.OnFileUploadRequested(kRendererProcessId, true, {path},
                                 std::move(response.callback));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(net::OK, response.error_code);
   ASSERT_EQ(1U, response.opened_files.size());
   EXPECT_TRUE(response.opened_files[0].async());
@@ -118,7 +118,7 @@ TEST_F(NetworkServiceClientTest, UploadOneValidFile) {
   UploadResponse response;
   client_.OnFileUploadRequested(kRendererProcessId, false, {path},
                                 std::move(response.callback));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(net::OK, response.error_code);
   ASSERT_EQ(1U, response.opened_files.size());
   EXPECT_FALSE(response.opened_files[0].async());
@@ -142,7 +142,7 @@ TEST_F(NetworkServiceClientTest, UploadOneValidFileWithContentUri) {
   UploadResponse response;
   client_.OnFileUploadRequested(kRendererProcessId, false, {content_path},
                                 std::move(response.callback));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(net::OK, response.error_code);
   ASSERT_EQ(1U, response.opened_files.size());
   EXPECT_FALSE(response.opened_files[0].async());
@@ -163,7 +163,7 @@ TEST_F(NetworkServiceClientTest, UploadTwoValidFiles) {
   UploadResponse response;
   client_.OnFileUploadRequested(kRendererProcessId, false, {path1, path2},
                                 std::move(response.callback));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(net::OK, response.error_code);
   ASSERT_EQ(2U, response.opened_files.size());
   ValidateFileContents(response.opened_files[0], kFileContent1);
@@ -177,7 +177,7 @@ TEST_F(NetworkServiceClientTest, UploadOneUnauthorizedFile) {
   UploadResponse response;
   client_.OnFileUploadRequested(kRendererProcessId, false, {path},
                                 std::move(response.callback));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(net::ERR_ACCESS_DENIED, response.error_code);
   EXPECT_EQ(0U, response.opened_files.size());
 }
@@ -192,7 +192,7 @@ TEST_F(NetworkServiceClientTest, UploadOneValidFileAndOneUnauthorized) {
   UploadResponse response;
   client_.OnFileUploadRequested(kRendererProcessId, false, {path1, path2},
                                 std::move(response.callback));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(net::ERR_ACCESS_DENIED, response.error_code);
   EXPECT_EQ(0U, response.opened_files.size());
 }
@@ -207,7 +207,7 @@ TEST_F(NetworkServiceClientTest, UploadOneValidFileAndOneNotFound) {
   UploadResponse response;
   client_.OnFileUploadRequested(kRendererProcessId, false, {path1, path2},
                                 std::move(response.callback));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, response.error_code);
   EXPECT_EQ(0U, response.opened_files.size());
 }
@@ -220,7 +220,7 @@ TEST_F(NetworkServiceClientTest, UploadFromBrowserProcess) {
   UploadResponse response;
   client_.OnFileUploadRequested(kBrowserProcessId, false, {path},
                                 std::move(response.callback));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(net::OK, response.error_code);
   ASSERT_EQ(1U, response.opened_files.size());
   ValidateFileContents(response.opened_files[0], kFileContent1);

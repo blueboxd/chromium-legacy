@@ -25,7 +25,7 @@
 // tasks to the same sequence/thread from pieces of code that don't have a
 // better way of sharing a TaskRunner. It is important to use this class
 // instead of a self-managed global variable or LazyInstance so that the
-// TaskRunners do not outlive the scope of the ScopedTaskEnvironment in unit
+// TaskRunners do not outlive the scope of the TaskEnvironment in unit
 // tests (otherwise the next test in the same process will die in use-after-
 // frees).
 //

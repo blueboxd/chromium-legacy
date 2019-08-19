@@ -96,7 +96,7 @@ class FileRemoverTest : public ::testing::Test {
   }
 
   FileRemover default_file_remover_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   bool reboot_required_ = false;
 };
 
@@ -444,7 +444,7 @@ class FileRemoverQuarantineTest : public base::MultiProcessTest,
   }
 
   bool use_reboot_removal_ = false;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<FileRemover> file_remover_;
 };

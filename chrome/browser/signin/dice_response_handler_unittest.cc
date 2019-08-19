@@ -94,10 +94,9 @@ class DiceResponseHandlerTest : public testing::Test,
 
  protected:
   DiceResponseHandlerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO,
-            base::test::ScopedTaskEnvironment::TimeSource::
-                MOCK_TIME),  // URLRequestContext requires IO.
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO,
+                          base::test::TaskEnvironment::TimeSource::
+                              MOCK_TIME),  // URLRequestContext requires IO.
         signin_client_(&pref_service_),
         identity_test_env_(/*test_url_loader_factory=*/nullptr,
                            &pref_service_,
@@ -179,7 +178,7 @@ class DiceResponseHandlerTest : public testing::Test,
     return identity_test_env_.identity_manager();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   DiceTestSigninClient signin_client_;
@@ -449,7 +448,7 @@ TEST_F(DiceResponseHandlerTest, Timeout) {
   EXPECT_EQ(
       1u, dice_response_handler_->GetPendingDiceTokenFetchersCountForTesting());
   // Force a timeout.
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       base::TimeDelta::FromSeconds(kDiceTokenFetchTimeoutSeconds + 1));
   EXPECT_EQ(
       0u, dice_response_handler_->GetPendingDiceTokenFetchersCountForTesting());

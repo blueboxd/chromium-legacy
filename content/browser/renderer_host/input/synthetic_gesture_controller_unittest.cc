@@ -810,7 +810,7 @@ class SyntheticGestureControllerTestBase {
 
   base::TimeDelta GetTotalTime() const { return time_ - start_time_; }
 
-  base::test::ScopedTaskEnvironment env_;
+  base::test::TaskEnvironment env_;
   MockSyntheticGestureTarget* target_;
   DummySyntheticGestureControllerDelegate delegate_;
   std::unique_ptr<SyntheticGestureController> controller_;

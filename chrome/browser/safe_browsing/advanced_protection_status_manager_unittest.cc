@@ -41,7 +41,7 @@ class TestWithPrefService : public testing::Test {
   TestWithPrefService() { RegisterProfilePrefs(pref_service_.registry()); }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
 };
 

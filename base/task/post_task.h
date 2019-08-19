@@ -76,7 +76,7 @@ namespace base {
 // valid. This is typically done during the initialization phase in each
 // process. If your code is not running in that phase, you most likely don't
 // have to worry about this. You will encounter DCHECKs or nullptr dereferences
-// if this is violated. For tests, prefer base::test::ScopedTaskEnvironment.
+// if this is violated. For tests, prefer base::test::TaskEnvironment.
 
 // Equivalent to calling PostTask with default TaskTraits.
 BASE_EXPORT bool PostTask(const Location& from_here, OnceClosure task);

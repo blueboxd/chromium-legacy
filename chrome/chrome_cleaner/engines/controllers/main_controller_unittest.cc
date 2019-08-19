@@ -227,8 +227,7 @@ class TestMainController : public MainController {
 class MainControllerTest : public testing::TestWithParam<ExecutionMode> {
  public:
   MainControllerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   TestMainController* test_main_controller() {
     return test_main_controller_.get();
@@ -289,7 +288,7 @@ class MainControllerTest : public testing::TestWithParam<ExecutionMode> {
  private:
   TestEngineFacade test_engine_facade_;
   std::unique_ptr<TestMainController> test_main_controller_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ExecutionMode execution_mode_;
 };
 

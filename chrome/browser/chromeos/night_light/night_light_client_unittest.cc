@@ -124,7 +124,7 @@ class NightLightClientTest : public testing::Test {
     client_.Start();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   FakeNightLightController controller_;
   FakeNightLightClient client_;
@@ -141,7 +141,7 @@ TEST_F(NightLightClientTest, TestClientRunningOnlyWhenSunsetToSunriseSchedule) {
   EXPECT_FALSE(client_.using_geoposition());
   controller_.NotifyScheduleTypeChanged(ScheduleType::kCustom);
   controller_.NotifyScheduleTypeChanged(ScheduleType::kSunsetToSunrise);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(client_.using_geoposition());
 
   // Client should stop retrieving geopositions when schedule type changes to
@@ -161,7 +161,7 @@ TEST_F(NightLightClientTest, TestInvalidPositions) {
   position.timestamp = base::Time::Now();
   client_.set_position_to_send(position);
   controller_.NotifyScheduleTypeChanged(ScheduleType::kSunsetToSunrise);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1, client_.geoposition_requests_num());
   EXPECT_EQ(0, controller_.position_pushes_num());
 }
@@ -180,7 +180,7 @@ TEST_F(NightLightClientTest, TestRepeatedScheduleTypeChanges) {
   position1.timestamp = base::Time::Now();
   client_.set_position_to_send(position1);
   controller_.NotifyScheduleTypeChanged(ScheduleType::kSunsetToSunrise);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1, client_.geoposition_requests_num());
   EXPECT_EQ(1, controller_.position_pushes_num());
   EXPECT_EQ(client_.Now(), client_.last_successful_geo_request_time());
@@ -196,7 +196,7 @@ TEST_F(NightLightClientTest, TestRepeatedScheduleTypeChanges) {
   position2.timestamp = base::Time::Now();
   client_.set_position_to_send(position2);
   controller_.NotifyScheduleTypeChanged(ScheduleType::kSunsetToSunrise);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // No new request has been triggered, however the same old valid position was
   // pushed to the controller.
   EXPECT_EQ(1, client_.geoposition_requests_num());
@@ -225,11 +225,11 @@ TEST_F(NightLightClientTest, TestTimezoneChanges) {
   // When schedule type is not sunset to sunrise, timezone changes do not result
   // in geoposition requests.
   controller_.NotifyScheduleTypeChanged(ScheduleType::kNone);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(client_.using_geoposition());
   auto timezone = CreateTimezone("Africa/Cairo");
   client_.TimezoneChanged(*timezone);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(0, controller_.position_pushes_num());
   EXPECT_EQ(0, client_.geoposition_requests_num());
   EXPECT_EQ(GetTimezoneId(*timezone), client_.current_timezone_id());
@@ -246,14 +246,14 @@ TEST_F(NightLightClientTest, TestTimezoneChanges) {
   // Change the schedule type to sunset to sunrise, and expect the geoposition
   // will be pushed.
   controller_.NotifyScheduleTypeChanged(ScheduleType::kSunsetToSunrise);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1, controller_.position_pushes_num());
   EXPECT_EQ(1, client_.geoposition_requests_num());
 
   // Updates with the same timezone does not result in new requests.
   timezone = CreateTimezone("Africa/Cairo");
   client_.TimezoneChanged(*timezone);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1, controller_.position_pushes_num());
   EXPECT_EQ(1, client_.geoposition_requests_num());
   EXPECT_EQ(GetTimezoneId(*timezone), client_.current_timezone_id());
@@ -261,7 +261,7 @@ TEST_F(NightLightClientTest, TestTimezoneChanges) {
   // Only new timezones results in new geoposition requests.
   timezone = CreateTimezone("Asia/Tokyo");
   client_.TimezoneChanged(*timezone);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(2, controller_.position_pushes_num());
   EXPECT_EQ(2, client_.geoposition_requests_num());
   EXPECT_EQ(GetTimezoneId(*timezone), client_.current_timezone_id());

@@ -177,7 +177,7 @@ class TestReportingContext : public ReportingContext {
 
 // A unit test base class that provides a TestReportingContext and shorthand
 // getters.
-class ReportingTestBase : public TestWithScopedTaskEnvironment {
+class ReportingTestBase : public TestWithTaskEnvironment {
  protected:
   ReportingTestBase();
   ~ReportingTestBase() override;

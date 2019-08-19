@@ -149,7 +149,7 @@ TEST(CommandsTest, GetSessions) {
   Command cmd = base::Bind(&ExecuteStubGetSession, &count);
 
   base::DictionaryValue params;
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   ExecuteGetSessions(cmd, &map, params, std::string(),
                      base::Bind(&OnGetSessions));
@@ -192,7 +192,7 @@ TEST(CommandsTest, QuitAll) {
   int count = 0;
   Command cmd = base::Bind(&ExecuteStubQuit, &count);
   base::DictionaryValue params;
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   ExecuteQuitAll(cmd, &map, params, std::string(), base::Bind(&OnQuitAll));
   ASSERT_EQ(2, count);
 }
@@ -244,7 +244,7 @@ TEST(CommandsTest, ExecuteSessionCommand) {
   SessionCommand cmd = base::Bind(
       &ExecuteSimpleCommand, id, &params, &expected_value);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   base::RunLoop run_loop;
   ExecuteSessionCommand(
       &map, "cmd", cmd, true /*w3c_standard_command*/, false, params, id,
@@ -316,7 +316,7 @@ TEST(CommandsTest, ExecuteSessionCommandOnJustDeletedSession) {
   std::string id("id");
   map[id] = std::move(threadInfo);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   base::RunLoop run_loop;
   ExecuteSessionCommand(&map, "cmd", base::Bind(&ShouldNotBeCalled),
                         true /*w3c_standard_command*/, false,
@@ -720,7 +720,7 @@ TEST(CommandsTest, SuccessNotifyingCommandListeners) {
   // verify the listener was called. The session owns and will destroy |proxy|.
   SessionCommand cmd =
       base::Bind(&ExecuteAddListenerToSessionCommand, base::Passed(&proxy));
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   base::RunLoop run_loop_addlistener;
 
   // |CommandListener|s are notified immediately before commands are run.
@@ -804,7 +804,7 @@ TEST(CommandsTest, ErrorNotifyingCommandListeners) {
   base::DictionaryValue params;
   // The command should never be executed if BeforeCommand fails for a listener.
   SessionCommand cmd = base::Bind(&ShouldNotBeCalled);
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   base::RunLoop run_loop;
 
   ExecuteSessionCommand(

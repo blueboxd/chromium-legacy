@@ -210,7 +210,7 @@ class UwEScannerWrapperTest : public testing::Test {
 
   UwEMatchers matchers_;
   TestPUPData test_pup_data_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<StrictMockEngineClient> mock_engine_client_{
       base::MakeRefCounted<StrictMockEngineClient>()};

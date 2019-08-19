@@ -47,8 +47,7 @@ PUPData::PUP CreateSimpleDetectedPUP() {
 class ReporterLoggingServiceTest : public testing::Test {
  public:
   ReporterLoggingServiceTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   // LoggingServiceAPI::UploadResultCallback implementation.
   void LoggingServiceDone(base::OnceClosure run_loop_quit, bool success) {
@@ -93,7 +92,7 @@ class ReporterLoggingServiceTest : public testing::Test {
   LoggingServiceAPI* reporter_logging_service_;
 
   // Needed for the current task runner to be available.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // |done_callback_called_| is set to true in |LoggingServiceDone| to confirm
   // it was called appropriately.

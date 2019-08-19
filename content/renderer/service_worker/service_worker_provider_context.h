@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
@@ -295,7 +296,8 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // populated when GetSubresourceLoader() creates the subresource loader
   // factory and takes |controller_endpoint_|.
   mojo::PendingRemote<blink::mojom::ControllerServiceWorker> remote_controller_;
-  blink::mojom::ControllerServiceWorkerConnectorPtr controller_connector_;
+  mojo::Remote<blink::mojom::ControllerServiceWorkerConnector>
+      controller_connector_;
 
   bool sent_execution_ready_ = false;
 

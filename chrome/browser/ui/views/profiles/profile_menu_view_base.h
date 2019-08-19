@@ -123,6 +123,9 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   views::Label* CreateAndAddLabel(
       const base::string16& text,
       int text_context = views::style::CONTEXT_LABEL);
+  views::StyledLabel* CreateAndAddLabelWithLink(const base::string16& text,
+                                                gfx::Range link_range,
+                                                base::RepeatingClosure action);
   void AddViewItem(std::unique_ptr<views::View> view);
 
   void RepopulateViewFromMenuItems();
@@ -163,10 +166,10 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // views::StyledLabelListener:
   void StyledLabelLinkClicked(views::StyledLabel* label,
                               const gfx::Range& range,
-                              int event_flags) override;
+                              int event_flags) final;
 
-  void RegisterButtonAction(views::Button* button,
-                            base::RepeatingClosure action);
+  void RegisterClickAction(views::View* clickable_view,
+                           base::RepeatingClosure action);
 
   // Returns the size of different margin types.
   int GetMarginSize(GroupMarginSize margin_size) const;
@@ -182,7 +185,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
 
   views::Button* const anchor_button_;
 
-  std::map<views::Button*, base::RepeatingClosure> button_actions_;
+  std::map<views::View*, base::RepeatingClosure> click_actions_;
 
   CloseBubbleOnTabActivationHelper close_bubble_helper_;
 

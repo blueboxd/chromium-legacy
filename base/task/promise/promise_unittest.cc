@@ -76,7 +76,7 @@ struct Cancelable {
 
 class PromiseTest : public testing::Test {
  public:
-  test::ScopedTaskEnvironment scoped_task_environment_;
+  test::TaskEnvironment task_environment_;
 };
 
 TEST(PromiseMemoryLeakTest, TargetTaskRunnerClearsTasks) {
@@ -1141,7 +1141,7 @@ TEST_F(PromiseTest, CurriedVoidPromiseModified) {
                promise_resolver.reset();
              }));
     run_loop.Run();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 }
 

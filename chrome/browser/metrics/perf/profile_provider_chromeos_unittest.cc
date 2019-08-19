@@ -147,7 +147,7 @@ class ProfileProviderTest : public testing::Test {
  public:
   ProfileProviderTest()
       : test_browser_thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     // ProfileProvider requires chromeos::LoginState and

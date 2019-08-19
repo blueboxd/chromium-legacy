@@ -123,7 +123,7 @@ class RealFetchTester {
 };
 
 TEST(DhcpPacFileFetcherWin, RealFetch) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   // This tests a call to Fetch() with no stubbing out of dependencies.
   //
@@ -141,7 +141,7 @@ TEST(DhcpPacFileFetcherWin, RealFetch) {
 }
 
 TEST(DhcpPacFileFetcherWin, RealFetchWithCancel) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   // Does a Fetch() with an immediate cancel.  As before, just
   // exercises the code without stubbing out dependencies.
@@ -193,7 +193,7 @@ class DelayingDhcpPacFileFetcherWin : public DhcpPacFileFetcherWin {
 };
 
 TEST(DhcpPacFileFetcherWin, RealFetchWithDeferredCancel) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   // Does a Fetch() with a slightly delayed cancel.  As before, just
   // exercises the code without stubbing out dependencies, but
@@ -454,7 +454,7 @@ void TestNormalCaseURLConfiguredOneAdapter(FetcherClient* client) {
 }
 
 TEST(DhcpPacFileFetcherWin, NormalCaseURLConfiguredOneAdapter) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   FetcherClient client;
   TestNormalCaseURLConfiguredOneAdapter(&client);
@@ -477,7 +477,7 @@ void TestNormalCaseURLConfiguredMultipleAdapters(FetcherClient* client) {
 }
 
 TEST(DhcpPacFileFetcherWin, NormalCaseURLConfiguredMultipleAdapters) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   FetcherClient client;
   TestNormalCaseURLConfiguredMultipleAdapters(&client);
@@ -503,7 +503,7 @@ void TestNormalCaseURLConfiguredMultipleAdaptersWithTimeout(
 
 TEST(DhcpPacFileFetcherWin,
      NormalCaseURLConfiguredMultipleAdaptersWithTimeout) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   FetcherClient client;
   TestNormalCaseURLConfiguredMultipleAdaptersWithTimeout(&client);
@@ -534,7 +534,7 @@ void TestFailureCaseURLConfiguredMultipleAdaptersWithTimeout(
 
 TEST(DhcpPacFileFetcherWin,
      FailureCaseURLConfiguredMultipleAdaptersWithTimeout) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   FetcherClient client;
   TestFailureCaseURLConfiguredMultipleAdaptersWithTimeout(&client);
@@ -560,7 +560,7 @@ void TestFailureCaseNoURLConfigured(FetcherClient* client) {
 }
 
 TEST(DhcpPacFileFetcherWin, FailureCaseNoURLConfigured) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   FetcherClient client;
   TestFailureCaseNoURLConfigured(&client);
@@ -575,7 +575,7 @@ void TestFailureCaseNoDhcpAdapters(FetcherClient* client) {
 }
 
 TEST(DhcpPacFileFetcherWin, FailureCaseNoDhcpAdapters) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   FetcherClient client;
   TestFailureCaseNoDhcpAdapters(&client);
@@ -613,7 +613,7 @@ void TestShortCircuitLessPreferredAdapters(FetcherClient* client) {
 }
 
 TEST(DhcpPacFileFetcherWin, ShortCircuitLessPreferredAdapters) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   FetcherClient client;
   TestShortCircuitLessPreferredAdapters(&client);
@@ -634,14 +634,14 @@ void TestImmediateCancel(FetcherClient* client) {
 // Regression test to check that when we cancel immediately, no
 // adapter fetchers get created.
 TEST(DhcpPacFileFetcherWin, ImmediateCancel) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   FetcherClient client;
   TestImmediateCancel(&client);
 }
 
 TEST(DhcpPacFileFetcherWin, ReuseFetcher) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   FetcherClient client;
 
@@ -678,7 +678,7 @@ TEST(DhcpPacFileFetcherWin, ReuseFetcher) {
 }
 
 TEST(DhcpPacFileFetcherWin, OnShutdown) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   FetcherClient client;
   TestURLRequestContext context;

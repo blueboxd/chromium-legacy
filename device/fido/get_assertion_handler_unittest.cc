@@ -121,7 +121,7 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
     if (base::Contains(transports, Transport::kInternal))
       platform_discovery()->WaitForCallToStartAndSimulateSuccess();
 
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
     EXPECT_FALSE(get_assertion_callback().was_called());
 
     if (!base::Contains(transports, Transport::kUsbHumanInterfaceDevice))
@@ -164,8 +164,8 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<test::FakeFidoDiscoveryFactory> fake_discovery_factory_ =
       std::make_unique<test::FakeFidoDiscoveryFactory>();
   test::FakeFidoDiscovery* discovery_;
@@ -220,7 +220,7 @@ TEST_F(FidoGetAssertionHandlerTest, TestU2fSign) {
       test_data::kApduEncodedNoErrorSignResponse);
 
   discovery()->AddDevice(std::move(device));
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
   EXPECT_TRUE(get_assertion_callback().value<0>());
   EXPECT_TRUE(request_handler->is_complete());
@@ -243,7 +243,7 @@ TEST_F(FidoGetAssertionHandlerTest, TestIncompatibleUserVerificationSetting) {
 
   discovery()->AddDevice(std::move(device));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(FidoReturnCode::kUserConsentButCredentialNotRecognized,
             get_assertion_callback().status());
 }
@@ -266,7 +266,7 @@ TEST_F(FidoGetAssertionHandlerTest,
       test_data::kApduEncodedNoErrorRegisterResponse);
   discovery()->AddDevice(std::move(device));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(FidoReturnCode::kUserConsentButCredentialNotRecognized,
             get_assertion_callback().status());
 }
@@ -379,7 +379,7 @@ TEST_F(FidoGetAssertionHandlerTest, TruncatedAndInvalidUTF8) {
       test_data::kTestGetAssertionResponseWithTruncatedAndInvalidUTF8);
   discovery()->AddDevice(std::move(device));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(get_assertion_callback().was_called());
 }
 
@@ -694,7 +694,7 @@ TEST_F(FidoGetAssertionHandlerTest,
   discovery()->WaitForCallToStartAndSimulateSuccess();
   discovery()->AddDevice(std::move(other_device));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(get_assertion_callback().was_called());
   EXPECT_EQ(FidoReturnCode::kUserConsentDenied,
             get_assertion_callback().status());
@@ -713,7 +713,7 @@ TEST_F(FidoGetAssertionHandlerTest,
   discovery()->WaitForCallToStartAndSimulateSuccess();
   discovery()->AddDevice(std::move(device));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(get_assertion_callback().was_called());
   EXPECT_EQ(FidoReturnCode::kUserConsentDenied,
             get_assertion_callback().status());
@@ -731,7 +731,7 @@ TEST_F(FidoGetAssertionHandlerTest, TestRequestWithPinAuthInvalid) {
   discovery()->WaitForCallToStartAndSimulateSuccess();
   discovery()->AddDevice(std::move(device));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(get_assertion_callback().was_called());
   EXPECT_EQ(FidoReturnCode::kUserConsentDenied,
             get_assertion_callback().status());
@@ -783,8 +783,8 @@ TEST_F(FidoGetAssertionHandlerTest, DeviceFailsImmediately) {
 // filtered to only contain items compatible with the transport actually used to
 // talk to the authenticator.
 TEST(GetAssertionRequestHandlerTest, IncorrectTransportType) {
-  base::test::ScopedTaskEnvironment scoped_task_environment{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 #if defined(OS_WIN)
   device::ScopedFakeWinWebAuthnApi win_webauthn_api_ =
       device::ScopedFakeWinWebAuthnApi::MakeUnavailable();
@@ -814,7 +814,7 @@ TEST(GetAssertionRequestHandlerTest, IncorrectTransportType) {
           {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
       std::move(request), cb.callback());
 
-  scoped_task_environment.FastForwardUntilNoTasksRemain();
+  task_environment.FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(cb.was_called());
 }
 
@@ -863,7 +863,7 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
 // FidoDeviceAuthenticator or a WinNativeCrossPlatformAuthenticator, depending
 // on API availability.
 TEST(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   ScopedFakeWinWebAuthnApi scoped_fake_win_webauthn_api;
   for (const bool enable_api : {false, true}) {
     SCOPED_TRACE(::testing::Message() << "enable_api=" << enable_api);
@@ -889,7 +889,7 @@ TEST(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
     observer.set_controls_dispatch(true);
     handler->set_observer(&observer);
 
-    scoped_task_environment.RunUntilIdle();
+    task_environment.RunUntilIdle();
 
     ASSERT_FALSE(cb.was_called());
     EXPECT_EQ(handler->AuthenticatorsForTesting().size(), 1u);

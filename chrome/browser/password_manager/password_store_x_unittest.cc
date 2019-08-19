@@ -106,7 +106,7 @@ class PasswordStoreXTest : public testing::Test {
 
  private:
   TestingPrefServiceSimple fake_pref_service_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreXTest);

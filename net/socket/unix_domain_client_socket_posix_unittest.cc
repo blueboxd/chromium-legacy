@@ -123,7 +123,7 @@ int WriteSynchronously(StreamSocket* socket,
   return write_buf->BytesConsumed();
 }
 
-class UnixDomainClientSocketTest : public TestWithScopedTaskEnvironment {
+class UnixDomainClientSocketTest : public TestWithTaskEnvironment {
  protected:
   UnixDomainClientSocketTest() {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());

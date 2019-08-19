@@ -32,8 +32,7 @@ class TouchEmulatorTest : public testing::Test,
                           public TouchEmulatorClient {
  public:
   TouchEmulatorTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         last_event_time_(base::TimeTicks::Now()),
         event_time_delta_(base::TimeDelta::FromMilliseconds(100)),
         shift_pressed_(false),
@@ -254,7 +253,7 @@ class TouchEmulatorTest : public testing::Test,
   float GetCursorScaleFactor() { return cursor_.info().image_scale_factor; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TouchEmulator> emulator_;
   std::vector<WebInputEvent::Type> forwarded_events_;
   base::TimeTicks last_event_time_;

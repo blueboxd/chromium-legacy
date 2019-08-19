@@ -169,7 +169,7 @@ class ConnectionPreserverImplTest : public testing::Test {
     remote_device_to_client_channel_destruction_count_map_[remote_device]++;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   NetworkStateTestHelper helper_{true /* use_default_devices_and_services */};
 

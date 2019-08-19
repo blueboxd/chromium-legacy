@@ -25,7 +25,7 @@ constexpr char kUUID[] = "DEADBEEFDEADBEEFDEADBEEF";
 
 class PrintersSyncBridgeTest : public testing::Test {
  public:
-  PrintersSyncBridgeTest() : scoped_task_environment_() {
+  PrintersSyncBridgeTest() : task_environment_() {
     bridge_ = std::make_unique<PrintersSyncBridge>(
         syncer::ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest(),
         base::BindRepeating(
@@ -36,7 +36,7 @@ class PrintersSyncBridgeTest : public testing::Test {
   std::unique_ptr<PrintersSyncBridge> bridge_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 std::unique_ptr<PrinterSpecifics> TestPrinter(const std::string& id) {

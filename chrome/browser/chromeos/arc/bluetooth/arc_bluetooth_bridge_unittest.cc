@@ -209,7 +209,7 @@ class ArcBluetoothBridgeTest : public testing::Test {
   std::unique_ptr<FakeBluetoothInstance> fake_bluetooth_instance_;
   std::unique_ptr<ArcBluetoothBridge> arc_bluetooth_bridge_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::RunLoop get_adapter_run_loop_;
 };
 

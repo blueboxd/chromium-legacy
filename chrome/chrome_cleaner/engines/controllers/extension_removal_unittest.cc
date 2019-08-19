@@ -283,7 +283,7 @@ class ExtensionCleanupTest : public base::MultiProcessTest {
   base::ScopedPathOverride program_files_override_{base::DIR_PROGRAM_FILES};
   const std::vector<UwS::TraceLocation> trace_locations_{
       chrome_cleaner::UwS_TraceLocation_FOUND_IN_SHELL};
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<EngineClient> SetupEngineClient() {
     SandboxConnectionErrorCallback connection_error_callback =

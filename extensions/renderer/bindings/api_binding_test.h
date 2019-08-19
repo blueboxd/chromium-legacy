@@ -78,7 +78,7 @@ class APIBindingTest : public testing::Test {
   v8::Isolate* isolate();
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<gin::IsolateHolder> isolate_holder_;
   std::unique_ptr<gin::ContextHolder> main_context_holder_;

@@ -50,7 +50,7 @@ class NetworkThrottlingObserverTest : public ::testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
   std::unique_ptr<TestingPrefServiceSimple> local_state_;
   std::unique_ptr<NetworkThrottlingObserver> observer_;

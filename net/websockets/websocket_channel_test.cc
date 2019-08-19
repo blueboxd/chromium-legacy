@@ -788,7 +788,7 @@ class FakeSSLErrorCallbacks
 };
 
 // Base class for all test fixtures.
-class WebSocketChannelTest : public TestWithScopedTaskEnvironment {
+class WebSocketChannelTest : public TestWithTaskEnvironment {
  protected:
   WebSocketChannelTest() : stream_(std::make_unique<FakeWebSocketStream>()) {}
 

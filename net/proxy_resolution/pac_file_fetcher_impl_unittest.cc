@@ -218,8 +218,7 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
   DISALLOW_COPY_AND_ASSIGN(BasicNetworkDelegate);
 };
 
-class PacFileFetcherImplTest : public PlatformTest,
-                               public WithScopedTaskEnvironment {
+class PacFileFetcherImplTest : public PlatformTest, public WithTaskEnvironment {
  public:
   PacFileFetcherImplTest() {
     test_server_.AddDefaultHandlers(base::FilePath(kDocRoot));

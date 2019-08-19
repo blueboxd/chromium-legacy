@@ -113,9 +113,9 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
   class HashHelper;
 
   void OnFetchComplete(const scoped_refptr<const ContentHash>& content_hash);
-  ContentHash::FetchParams GetFetchParams(
-      const ExtensionId& extension_id,
-      const base::Version& extension_version);
+  ContentHash::FetchKey GetFetchKey(const ExtensionId& extension_id,
+                                    const base::FilePath& extension_root,
+                                    const base::Version& extension_version);
 
   void DidGetContentHash(const CacheKey& cache_key,
                          ContentHashCallback orig_callback,

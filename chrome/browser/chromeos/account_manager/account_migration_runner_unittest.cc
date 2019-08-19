@@ -96,7 +96,7 @@ class AccountMigrationRunnerTest : public testing::Test {
 
   // Check base/test/scoped_task_environment.h. This must be the first member /
   // declared before any member that cares about tasks.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   AccountMigrationRunner migration_runner_;
 

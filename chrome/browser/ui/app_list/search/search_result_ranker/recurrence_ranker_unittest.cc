@@ -52,7 +52,7 @@ class RecurrenceRankerTest : public testing::Test {
     Wait();
   }
 
-  void Wait() { scoped_task_environment_.RunUntilIdle(); }
+  void Wait() { task_environment_.RunUntilIdle(); }
 
   // Returns the config for a ranker with a fake predictor.
   RecurrenceRankerConfigProto MakeSimpleConfig() {
@@ -180,9 +180,9 @@ class RecurrenceRankerTest : public testing::Test {
     }
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-      base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::DEFAULT,
+      base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED};
   base::ScopedTempDir temp_dir_;
   base::test::ScopedFeatureList scoped_feature_list_;
   base::HistogramTester histogram_tester_;

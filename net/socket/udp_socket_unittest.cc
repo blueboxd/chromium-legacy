@@ -67,7 +67,7 @@ bool CreateUDPAddress(const std::string& ip_str,
   return true;
 }
 
-class UDPSocketTest : public PlatformTest, public WithScopedTaskEnvironment {
+class UDPSocketTest : public PlatformTest, public WithTaskEnvironment {
  public:
   UDPSocketTest() : buffer_(base::MakeRefCounted<IOBufferWithSize>(kMaxRead)) {}
 
@@ -1051,7 +1051,7 @@ TEST_F(UDPSocketTest, SendToCallsApisAfterDeferredInit) {
   EXPECT_CALL(api, CloseHandle(kFakeHandle1));
 }
 
-class DscpManagerTest : public TestWithScopedTaskEnvironment {
+class DscpManagerTest : public TestWithTaskEnvironment {
  protected:
   DscpManagerTest() {
     EXPECT_CALL(api_, qwave_supported()).WillRepeatedly(Return(true));

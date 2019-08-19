@@ -231,7 +231,7 @@ class ServiceDiscoveryTest : public ::testing::Test {
   net::MockMDnsSocketFactory socket_factory_;
   net::MDnsClientImpl mdns_client_;
   ServiceDiscoveryClientImpl service_discovery_client_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(ServiceDiscoveryTest, AddRemoveService) {

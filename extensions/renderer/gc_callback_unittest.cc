@@ -112,7 +112,7 @@ class GCCallbackTest : public testing::TestWithParam<CallbackType> {
     RequestGarbageCollection();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   ScopedWebFrame web_frame_;  // (this will construct the v8::Isolate)
   // ExtensionsRendererClient is a dependency of ScriptContextSet.

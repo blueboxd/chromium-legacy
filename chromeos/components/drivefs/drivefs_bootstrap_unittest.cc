@@ -95,7 +95,7 @@ class DriveFsBootstrapTest : public testing::Test,
     run_loop.Run();
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockDriveFs mock_drivefs_;
   MockDriveFsDelegate mock_delegate_;
 

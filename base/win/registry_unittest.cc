@@ -378,7 +378,7 @@ class TestChangeDelegate {
 TEST_F(RegistryTest, ChangeCallback) {
   RegKey key;
   TestChangeDelegate delegate;
-  test::ScopedTaskEnvironment scoped_task_environment;
+  test::TaskEnvironment task_environment;
 
   string16 foo_key(kRootKey);
   foo_key += STRING16_LITERAL("\\Foo");

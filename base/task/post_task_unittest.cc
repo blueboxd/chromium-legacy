@@ -92,7 +92,7 @@ class PostTaskTestWithExecutor : public ::testing::Test {
 
  protected:
   testing::StrictMock<MockTaskExecutor> executor_;
-  test::ScopedTaskEnvironment scoped_task_environment_;
+  test::TaskEnvironment task_environment_;
 };
 
 TEST_F(PostTaskTestWithExecutor, PostTaskToThreadPool) {

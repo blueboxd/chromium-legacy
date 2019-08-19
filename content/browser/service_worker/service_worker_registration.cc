@@ -51,14 +51,14 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
       resources_total_size_bytes_(0),
       context_(context),
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
   DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, registration_id);
   DCHECK(context_);
   context_->AddLiveRegistration(this);
 }
 
 ServiceWorkerRegistration::~ServiceWorkerRegistration() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
   DCHECK(!listeners_.might_have_observers());
   if (context_)
     context_->RemoveLiveRegistration(registration_id_);
@@ -124,7 +124,7 @@ void ServiceWorkerRegistration::NotifyVersionAttributesChanged(
 }
 
 ServiceWorkerRegistrationInfo ServiceWorkerRegistration::GetInfo() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
   return ServiceWorkerRegistrationInfo(
       scope(), update_via_cache(), registration_id_,
       is_deleted() ? ServiceWorkerRegistrationInfo::IS_DELETED
@@ -422,7 +422,7 @@ void ServiceWorkerRegistration::RemoveLameDuckIfNeeded() {
 }
 
 void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
   DCHECK(context_);
   DCHECK(IsReadyToActivate());
   should_activate_when_ready_ = false;

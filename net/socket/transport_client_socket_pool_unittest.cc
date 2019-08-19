@@ -92,13 +92,13 @@ class SOCKS5MockData {
 };
 
 class TransportClientSocketPoolTest : public ::testing::Test,
-                                      public WithScopedTaskEnvironment {
+                                      public WithTaskEnvironment {
  protected:
   // Constructor that allows mocking of the time.
   explicit TransportClientSocketPoolTest(
-      base::test::ScopedTaskEnvironment::TimeSource time_source =
-          base::test::ScopedTaskEnvironment::TimeSource::DEFAULT)
-      : WithScopedTaskEnvironment(time_source),
+      base::test::TaskEnvironment::TimeSource time_source =
+          base::test::TaskEnvironment::TimeSource::DEFAULT)
+      : WithTaskEnvironment(time_source),
         connect_backup_jobs_enabled_(
             TransportClientSocketPool::set_connect_backup_jobs_enabled(true)),
         group_id_(HostPortPair("www.google.com", 80),
@@ -2151,7 +2151,7 @@ class TransportClientSocketPoolMockNowSourceTest
  protected:
   TransportClientSocketPoolMockNowSourceTest()
       : TransportClientSocketPoolTest(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TransportClientSocketPoolMockNowSourceTest);

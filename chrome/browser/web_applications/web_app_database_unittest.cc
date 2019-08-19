@@ -170,7 +170,7 @@ class WebAppDatabaseTest : public testing::Test {
 
  protected:
   // Must be created before TestWebAppDatabaseFactory.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<TestWebAppDatabaseFactory> database_factory_;
   std::unique_ptr<WebAppDatabase> database_;

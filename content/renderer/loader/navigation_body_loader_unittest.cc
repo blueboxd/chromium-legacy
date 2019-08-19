@@ -151,7 +151,7 @@ class NavigationBodyLoaderTest : public ::testing::Test,
     }
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   static const MojoWriteDataFlags kNone = MOJO_WRITE_DATA_FLAG_NONE;
   network::mojom::URLLoaderClientPtr client_ptr_;
   std::unique_ptr<blink::WebNavigationBodyLoader> loader_;

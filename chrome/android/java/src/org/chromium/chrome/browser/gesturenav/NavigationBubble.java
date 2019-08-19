@@ -4,6 +4,7 @@
 package org.chromium.chrome.browser.gesturenav;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.os.Build;
 import android.support.annotation.DrawableRes;
 import android.util.AttributeSet;
@@ -23,6 +24,7 @@ import org.chromium.chrome.R;
  */
 public class NavigationBubble extends LinearLayout {
     private ImageView mIcon;
+    private final ColorStateList mBlueTint;
     private TextView mText;
     private AnimationListener mListener;
 
@@ -42,6 +44,7 @@ public class NavigationBubble extends LinearLayout {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         }
+        mBlueTint = context.getResources().getColorStateList(R.color.blue_mode_tint);
     }
 
     @Override
@@ -104,9 +107,19 @@ public class NavigationBubble extends LinearLayout {
     public void setIcon(@DrawableRes int icon) {
         mIcon.setVisibility(ViewGroup.VISIBLE);
         mIcon.setImageResource(icon);
+        setImageTint(false);
+    }
 
-        // Sets the correct tinting on the icon.
-        ApiCompatibilityUtils.setImageTintList(mIcon, mText.getTextColors());
+    /**
+     * Sets the correct tinting on the arrow icon.
+     */
+    public void setImageTint(boolean navigate) {
+        assert mIcon != null;
+        if (navigate) {
+            ApiCompatibilityUtils.setImageTintList(mIcon, mBlueTint);
+        } else {
+            ApiCompatibilityUtils.setImageTintList(mIcon, mText.getTextColors());
+        }
     }
 
     /**

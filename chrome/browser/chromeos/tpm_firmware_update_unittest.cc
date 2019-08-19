@@ -118,8 +118,8 @@ class TPMFirmwareUpdateTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<base::ScopedPathOverride> path_override_location_;
   std::unique_ptr<base::ScopedPathOverride> path_override_srk_vulnerable_roca_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   chromeos::system::ScopedFakeStatisticsProvider statistics_provider_;
 };
@@ -162,14 +162,14 @@ TEST_F(TPMFirmwareUpdateModesTest, FRERequired) {
 TEST_F(TPMFirmwareUpdateModesTest, Pending) {
   SetUpdateAvailability(Availability::kPending);
   GetAvailableUpdateModes(std::move(callback_), base::TimeDelta());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_received_);
   EXPECT_TRUE(callback_modes_.empty());
 }
 
 TEST_F(TPMFirmwareUpdateModesTest, Available) {
   GetAvailableUpdateModes(std::move(callback_), base::TimeDelta());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_received_);
   EXPECT_EQ(kAllModes, callback_modes_);
 }
@@ -178,12 +178,12 @@ TEST_F(TPMFirmwareUpdateModesTest, AvailableAfterWaiting) {
   SetUpdateAvailability(Availability::kPending);
   GetAvailableUpdateModes(std::move(callback_),
                           base::TimeDelta::FromSeconds(5));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(callback_received_);
 
   // When testing that file appearance triggers the callback, we can't rely on
-  // a single execution of ScopedTaskEnvironment::RunUntilIdle(). This is
-  // because ScopedTaskEnvironment doesn't know about file system events that
+  // a single execution of TaskEnvironment::RunUntilIdle(). This is
+  // because TaskEnvironment doesn't know about file system events that
   // haven't fired and propagated to a task scheduler thread yet so may return
   // early before the file system event is received. An event is expected here
   // though, so keep spinning the loop until the callback is received. This
@@ -191,21 +191,21 @@ TEST_F(TPMFirmwareUpdateModesTest, AvailableAfterWaiting) {
   // with a single invocation of RunUntilIdle().
   SetUpdateAvailability(Availability::kAvailable);
   while (!callback_received_) {
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
   EXPECT_EQ(kAllModes, callback_modes_);
 
   // Trigger timeout and validate there are no further callbacks or crashes.
   callback_received_ = false;
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(5));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(5));
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(callback_received_);
 }
 
 TEST_F(TPMFirmwareUpdateModesTest, NoUpdateVulnerableSRK) {
   SetUpdateAvailability(Availability::kUnavailableROCAVulnerable);
   GetAvailableUpdateModes(std::move(callback_), base::TimeDelta());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_received_);
   EXPECT_EQ(std::set<Mode>{Mode::kCleanup}, callback_modes_);
 }
@@ -213,7 +213,7 @@ TEST_F(TPMFirmwareUpdateModesTest, NoUpdateVulnerableSRK) {
 TEST_F(TPMFirmwareUpdateModesTest, NoUpdateNonVulnerableSRK) {
   SetUpdateAvailability(Availability::kUnavailable);
   GetAvailableUpdateModes(std::move(callback_), base::TimeDelta());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_received_);
   EXPECT_EQ(std::set<Mode>(), callback_modes_);
 }
@@ -222,11 +222,11 @@ TEST_F(TPMFirmwareUpdateModesTest, Timeout) {
   SetUpdateAvailability(Availability::kPending);
   GetAvailableUpdateModes(std::move(callback_),
                           base::TimeDelta::FromSeconds(5));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(callback_received_);
 
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(5));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(5));
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_received_);
   EXPECT_TRUE(callback_modes_.empty());
 }
@@ -255,11 +255,11 @@ TEST_F(TPMFirmwareUpdateModesEnterpriseTest, DeviceSettingPending) {
   cros_settings_test_helper_.SetTrustedStatus(
       CrosSettingsProvider::TEMPORARILY_UNTRUSTED);
   GetAvailableUpdateModes(std::move(callback_), base::TimeDelta());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(callback_received_);
 
   cros_settings_test_helper_.SetTrustedStatus(CrosSettingsProvider::TRUSTED);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_received_);
   EXPECT_EQ(kAllModes, callback_modes_);
 }
@@ -268,14 +268,14 @@ TEST_F(TPMFirmwareUpdateModesEnterpriseTest, DeviceSettingUntrusted) {
   cros_settings_test_helper_.SetTrustedStatus(
       CrosSettingsProvider::PERMANENTLY_UNTRUSTED);
   GetAvailableUpdateModes(std::move(callback_), base::TimeDelta());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_received_);
   EXPECT_TRUE(callback_modes_.empty());
 }
 
 TEST_F(TPMFirmwareUpdateModesEnterpriseTest, DeviceSettingNotSet) {
   GetAvailableUpdateModes(std::move(callback_), base::TimeDelta());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_received_);
   EXPECT_TRUE(callback_modes_.empty());
 }
@@ -283,7 +283,7 @@ TEST_F(TPMFirmwareUpdateModesEnterpriseTest, DeviceSettingNotSet) {
 TEST_F(TPMFirmwareUpdateModesEnterpriseTest, DeviceSettingDisallowed) {
   SetPolicy({});
   GetAvailableUpdateModes(std::move(callback_), base::TimeDelta());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_received_);
   EXPECT_TRUE(callback_modes_.empty());
 }
@@ -291,7 +291,7 @@ TEST_F(TPMFirmwareUpdateModesEnterpriseTest, DeviceSettingDisallowed) {
 TEST_F(TPMFirmwareUpdateModesEnterpriseTest, DeviceSettingPowerwashAllowed) {
   SetPolicy({Mode::kPowerwash});
   GetAvailableUpdateModes(std::move(callback_), base::TimeDelta());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_received_);
   EXPECT_EQ(std::set<Mode>({Mode::kPowerwash}), callback_modes_);
 }
@@ -300,7 +300,7 @@ TEST_F(TPMFirmwareUpdateModesEnterpriseTest,
        DeviceSettingPreserveDeviceStateAllowed) {
   SetPolicy({Mode::kPreserveDeviceState});
   GetAvailableUpdateModes(std::move(callback_), base::TimeDelta());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_received_);
   EXPECT_EQ(std::set<Mode>({Mode::kPreserveDeviceState}), callback_modes_);
 }
@@ -309,7 +309,7 @@ TEST_F(TPMFirmwareUpdateModesEnterpriseTest, VulnerableSRK) {
   SetUpdateAvailability(Availability::kUnavailableROCAVulnerable);
   SetPolicy({Mode::kPreserveDeviceState});
   GetAvailableUpdateModes(std::move(callback_), base::TimeDelta());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_received_);
   EXPECT_EQ(std::set<Mode>({Mode::kCleanup}), callback_modes_);
 }
@@ -333,7 +333,7 @@ class TPMFirmwareAutoUpdateTest : public TPMFirmwareUpdateTest {
 
 TEST_F(TPMFirmwareAutoUpdateTest, AutoUpdateAvaiable) {
   UpdateAvailable(std::move(callback_), base::TimeDelta());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_received_);
   EXPECT_TRUE(update_available_);
 }
@@ -341,7 +341,7 @@ TEST_F(TPMFirmwareAutoUpdateTest, AutoUpdateAvaiable) {
 TEST_F(TPMFirmwareAutoUpdateTest, VulnerableSRKNoStatePreservingUpdate) {
   SetUpdateAvailability(Availability::kUnavailableROCAVulnerable);
   UpdateAvailable(std::move(callback_), base::TimeDelta());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_received_);
   EXPECT_FALSE(update_available_);
 }
@@ -349,7 +349,7 @@ TEST_F(TPMFirmwareAutoUpdateTest, VulnerableSRKNoStatePreservingUpdate) {
 TEST_F(TPMFirmwareAutoUpdateTest, NoUpdate) {
   SetUpdateAvailability(Availability::kUnavailable);
   UpdateAvailable(std::move(callback_), base::TimeDelta());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_received_);
   EXPECT_FALSE(update_available_);
 }

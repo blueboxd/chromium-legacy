@@ -437,7 +437,7 @@ class CrasAudioClientTest : public testing::Test {
   // The interface name.
   const std::string interface_name_;
   // A message loop to emulate asynchronous behavior.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   // The mock bus.
   scoped_refptr<dbus::MockBus> mock_bus_;
   // The mock object proxy.
@@ -476,7 +476,7 @@ class CrasAudioClientTest : public testing::Test {
       dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
     output_mute_changed_handler_ = signal_callback;
     const bool success = true;
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
                                   interface_name, signal_name, success));
   }
@@ -490,7 +490,7 @@ class CrasAudioClientTest : public testing::Test {
       dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
     input_mute_changed_handler_ = signal_callback;
     const bool success = true;
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
                                   interface_name, signal_name, success));
   }
@@ -504,7 +504,7 @@ class CrasAudioClientTest : public testing::Test {
       dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
     nodes_changed_handler_ = signal_callback;
     const bool success = true;
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
                                   interface_name, signal_name, success));
   }
@@ -518,7 +518,7 @@ class CrasAudioClientTest : public testing::Test {
       dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
     active_output_node_changed_handler_ = signal_callback;
     const bool success = true;
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
                                   interface_name, signal_name, success));
   }
@@ -532,7 +532,7 @@ class CrasAudioClientTest : public testing::Test {
       dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
     active_input_node_changed_handler_ = signal_callback;
     const bool success = true;
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
                                   interface_name, signal_name, success));
   }
@@ -546,7 +546,7 @@ class CrasAudioClientTest : public testing::Test {
       dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
     output_node_volume_changed_handler_ = signal_callback;
     const bool success = true;
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
                                   interface_name, signal_name, success));
   }
@@ -560,7 +560,7 @@ class CrasAudioClientTest : public testing::Test {
       dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
     hotword_triggered_handler_ = signal_callback;
     const bool success = true;
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
                                   interface_name, signal_name, success));
   }
@@ -574,7 +574,7 @@ class CrasAudioClientTest : public testing::Test {
       dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
     number_of_active_streams_changed_handler_ = signal_callback;
     const bool success = true;
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
                                   interface_name, signal_name, success));
   }
@@ -588,7 +588,7 @@ class CrasAudioClientTest : public testing::Test {
     EXPECT_EQ(expected_method_name_, method_call->GetMember());
     dbus::MessageReader reader(method_call);
     argument_checker_.Run(&reader);
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(*response), response_));
   }
 

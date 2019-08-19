@@ -19,9 +19,8 @@ namespace content {
 class PepperBrokerTest : public ::testing::Test {
  protected:
   PepperBrokerTest()
-      : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
-  base::test::ScopedTaskEnvironment task_environment_;
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
+  base::test::TaskEnvironment task_environment_;
   // We need a render process for ppapi::proxy::ProxyChannel to work.
   MockRenderProcess mock_process_;
 };

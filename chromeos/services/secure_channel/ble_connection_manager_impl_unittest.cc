@@ -325,9 +325,9 @@ class FakeAuthenticatedChannelFactory
 class SecureChannelBleConnectionManagerImplTest : public testing::Test {
  protected:
   SecureChannelBleConnectionManagerImplTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
+      : task_environment_(
+            base::test::TaskEnvironment::MainThreadType::DEFAULT,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         test_devices_(
             multidevice::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
   ~SecureChannelBleConnectionManagerImplTest() override = default;
@@ -701,7 +701,7 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
         fake_secure_channel);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const multidevice::RemoteDeviceRefList& test_devices() {
     return test_devices_;
   }

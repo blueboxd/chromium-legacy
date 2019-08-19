@@ -31,8 +31,7 @@ using ResponseHeaders = std::multimap<std::string, std::string>;
 class HttpServiceTest : public ::testing::Test {
  public:
   HttpServiceTest()
-      : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         binding_(&http_service_server_) {
     // Initialize the test server.
     test_server_.AddDefaultHandlers(
@@ -41,7 +40,7 @@ class HttpServiceTest : public ::testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   void SetUp() override {
     ASSERT_TRUE(test_server_.Start());

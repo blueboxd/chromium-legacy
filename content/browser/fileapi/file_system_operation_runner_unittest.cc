@@ -87,7 +87,7 @@ class FileSystemOperationRunnerTest : public testing::Test {
 
  private:
   base::ScopedTempDir base_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<FileSystemContext> file_system_context_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationRunnerTest);

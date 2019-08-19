@@ -288,7 +288,7 @@ class FidoCableHandshakeHandlerTest : public Test {
   TestDeviceCallbackReceiver& callback_receiver() { return callback_receiver_; }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   scoped_refptr<MockBluetoothAdapter> adapter_ =

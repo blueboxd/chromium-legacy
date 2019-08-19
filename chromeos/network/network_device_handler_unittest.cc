@@ -34,8 +34,7 @@ const char kDefaultPin[] = "1111";
 class NetworkDeviceHandlerTest : public testing::Test {
  public:
   NetworkDeviceHandlerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
   ~NetworkDeviceHandlerTest() override = default;
 
   void SetUp() override {
@@ -104,7 +103,7 @@ class NetworkDeviceHandlerTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::string result_;
   ShillDeviceClient* fake_device_client_ = nullptr;
   std::unique_ptr<NetworkDeviceHandler> network_device_handler_;

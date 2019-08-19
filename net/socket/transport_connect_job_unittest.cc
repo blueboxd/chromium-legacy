@@ -30,12 +30,11 @@ namespace {
 
 const char kHostName[] = "unresolvable.host.name";
 
-class TransportConnectJobTest : public WithScopedTaskEnvironment,
+class TransportConnectJobTest : public WithTaskEnvironment,
                                 public testing::Test {
  public:
   TransportConnectJobTest()
-      : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : WithTaskEnvironment(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         client_socket_factory_(&net_log_),
         common_connect_job_params_(
             &client_socket_factory_,

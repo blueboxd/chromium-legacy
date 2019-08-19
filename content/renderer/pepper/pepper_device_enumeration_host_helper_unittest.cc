@@ -146,7 +146,7 @@ class PepperDeviceEnumerationHostHelperTest : public testing::Test {
   ppapi::host::PpapiHost ppapi_host_;
   ppapi::host::ResourceHost resource_host_;
   PepperDeviceEnumerationHostHelper device_enumeration_;
-  base::test::ScopedTaskEnvironment
+  base::test::TaskEnvironment
       task_environment_;  // required for async calls to work.
 
  private:

@@ -47,8 +47,7 @@ class PassthroughTouchEventQueueTest : public testing::Test,
                                        public PassthroughTouchEventQueueClient {
  public:
   PassthroughTouchEventQueueTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         acked_event_count_(0),
         last_acked_event_state_(INPUT_EVENT_ACK_STATE_UNKNOWN),
         slop_length_dips_(0) {}
@@ -341,7 +340,7 @@ class PassthroughTouchEventQueueTest : public testing::Test,
     queue_->OnHasTouchEventHandlers(true);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<PassthroughTouchEventQueue> queue_;
   size_t acked_event_count_;
   WebTouchEvent last_acked_event_;

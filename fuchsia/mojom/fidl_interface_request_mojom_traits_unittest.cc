@@ -15,9 +15,9 @@ using base::fuchsia::testfidl::TestInterface;
 using base::fuchsia::testfidl::TestInterfacePtr;
 
 TEST(InterfaceRequestStructTraitsTest, Serialization) {
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      base::test::TaskEnvironment::MainThreadType::IO);
   TestInterfacePtr test_ptr;
   fidl::InterfaceRequest<TestInterface> input_request = test_ptr.NewRequest();
   fidl::InterfaceRequest<TestInterface> output_request;

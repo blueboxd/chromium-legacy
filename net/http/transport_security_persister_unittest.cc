@@ -26,7 +26,7 @@ namespace {
 
 const char kReportUri[] = "http://www.example.test/report";
 
-class TransportSecurityPersisterTest : public TestWithScopedTaskEnvironment {
+class TransportSecurityPersisterTest : public TestWithTaskEnvironment {
  public:
   TransportSecurityPersisterTest() = default;
 

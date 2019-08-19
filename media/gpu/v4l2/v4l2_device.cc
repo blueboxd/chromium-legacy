@@ -502,6 +502,26 @@ size_t V4L2WritableBufferRef::GetPlaneSize(const size_t plane) const {
   return buffer_data_->v4l2_buffer_.m.planes[plane].length;
 }
 
+void V4L2WritableBufferRef::SetPlaneSize(const size_t plane,
+                                         const size_t size) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(IsValid());
+
+  enum v4l2_memory memory = Memory();
+  if (memory == V4L2_MEMORY_MMAP) {
+    DCHECK_EQ(buffer_data_->v4l2_buffer_.m.planes[plane].length, size);
+    return;
+  }
+  DCHECK(memory == V4L2_MEMORY_USERPTR || memory == V4L2_MEMORY_DMABUF);
+
+  if (plane >= PlanesCount()) {
+    VLOGF(1) << "Invalid plane " << plane << " requested.";
+    return;
+  }
+
+  buffer_data_->v4l2_buffer_.m.planes[plane].length = size;
+}
+
 void* V4L2WritableBufferRef::GetPlaneMapping(const size_t plane) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsValid());
@@ -554,6 +574,19 @@ size_t V4L2WritableBufferRef::GetPlaneBytesUsed(const size_t plane) const {
   return buffer_data_->v4l2_buffer_.m.planes[plane].bytesused;
 }
 
+void V4L2WritableBufferRef::SetPlaneDataOffset(const size_t plane,
+                                               const size_t data_offset) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(IsValid());
+
+  if (plane >= PlanesCount()) {
+    VLOGF(1) << "Invalid plane " << plane << " requested.";
+    return;
+  }
+
+  buffer_data_->v4l2_buffer_.m.planes[plane].data_offset = data_offset;
+}
+
 void V4L2WritableBufferRef::PrepareQueueBuffer(
     const V4L2DecodeSurface& surface) {
   surface.PrepareQueueBuffer(&(buffer_data_->v4l2_buffer_));
@@ -593,6 +626,13 @@ bool V4L2ReadableBuffer::IsLast() const {
   return buffer_data_->v4l2_buffer_.flags & V4L2_BUF_FLAG_LAST;
 }
 
+bool V4L2ReadableBuffer::IsKeyframe() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(buffer_data_);
+
+  return buffer_data_->v4l2_buffer_.flags & V4L2_BUF_FLAG_KEYFRAME;
+}
+
 struct timeval V4L2ReadableBuffer::GetTimeStamp() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(buffer_data_);
@@ -607,6 +647,13 @@ size_t V4L2ReadableBuffer::PlanesCount() const {
   return buffer_data_->v4l2_buffer_.length;
 }
 
+const void* V4L2ReadableBuffer::GetPlaneMapping(const size_t plane) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(buffer_data_);
+
+  return buffer_data_->GetPlaneMapping(plane);
+}
+
 size_t V4L2ReadableBuffer::GetPlaneBytesUsed(const size_t plane) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(buffer_data_);
@@ -617,6 +664,18 @@ size_t V4L2ReadableBuffer::GetPlaneBytesUsed(const size_t plane) const {
   }
 
   return buffer_data_->v4l2_planes_[plane].bytesused;
+}
+
+size_t V4L2ReadableBuffer::GetPlaneDataOffset(const size_t plane) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(buffer_data_);
+
+  if (plane >= PlanesCount()) {
+    VLOGF(1) << "Invalid plane " << plane << " requested.";
+    return 0;
+  }
+
+  return buffer_data_->v4l2_planes_[plane].data_offset;
 }
 
 size_t V4L2ReadableBuffer::BufferId() const {

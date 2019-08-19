@@ -60,7 +60,7 @@ class JavaLooperPreparer {
 
 typedef std::map<std::string, std::string> StringMap;
 
-class ProxyConfigServiceAndroidTestBase : public TestWithScopedTaskEnvironment {
+class ProxyConfigServiceAndroidTestBase : public TestWithTaskEnvironment {
  protected:
   // Note that the current thread's message loop is initialized by the test
   // suite (see net/test/net_test_suite.cc).

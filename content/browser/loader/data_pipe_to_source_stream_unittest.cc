@@ -110,7 +110,7 @@ class DataPipeToSourceStreamTest
   void CloseAdapter() { adapter_ = nullptr; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<net::IOBufferWithSize> output_buffer_;
   std::unique_ptr<DataPipeToSourceStream> adapter_;
   mojo::ScopedDataPipeProducerHandle producer_end_;

@@ -155,7 +155,7 @@ class ScheduledNotificationManagerTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MockDelegate> delegate_;
   MockNotificationStore* notification_store_;
   MockIconStore* icon_store_;

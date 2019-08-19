@@ -53,7 +53,7 @@ class ModuleInspectorTest : public testing::Test {
  public:
   ModuleInspectorTest()
       : test_browser_thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   std::unique_ptr<ModuleInspector> CreateModuleInspector() {
     auto module_inspector =
@@ -87,7 +87,7 @@ class ModuleInspectorTest : public testing::Test {
 
   void ClearInspectedModules() { inspected_modules_.clear(); }
 
-  // A TestBrowserThreadBundle is required instead of a ScopedTaskEnvironment
+  // A TestBrowserThreadBundle is required instead of a TaskEnvironment
   // because of AfterStartupTaskUtils (DCHECK for BrowserThread::UI).
   //
   // Must be before the ModuleInspector.

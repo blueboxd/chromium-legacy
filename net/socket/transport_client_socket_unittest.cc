@@ -43,7 +43,7 @@ enum ClientSocketTestTypes { TCP, SCTP };
 
 class TransportClientSocketTest
     : public ::testing::TestWithParam<ClientSocketTestTypes>,
-      public WithScopedTaskEnvironment {
+      public WithTaskEnvironment {
  public:
   TransportClientSocketTest()
       : listen_port_(0),

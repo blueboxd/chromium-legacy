@@ -81,6 +81,7 @@ class DragDropOperation : public DataSourceObserver,
   void OnDragIconCaptured(std::unique_ptr<viz::CopyOutputResult> icon_result);
 
   void OnTextRead(const std::string& mime_type, base::string16 data);
+  void OnHTMLRead(const std::string& mime_type, base::string16 data);
 
   void ScheduleStartDragDropOperation();
 
@@ -107,6 +108,10 @@ class DragDropOperation : public DataSourceObserver,
 
   bool captured_icon_ = false;
 
+  // TODO(crbug.com/994065) This is currently not the actual mime type used by
+  // the recipient, just an arbitrary one we pick out of the offered types so we
+  // can report back whether or not the drop can succeed. This may need to
+  // change in the future.
   std::string mime_type_;
 
   ui::DragDropTypes::DragEventSource event_source_;

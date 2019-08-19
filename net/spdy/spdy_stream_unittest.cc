@@ -62,7 +62,7 @@ base::TimeTicks InstantaneousReads() {
 
 }  // namespace
 
-class SpdyStreamTest : public TestWithScopedTaskEnvironment {
+class SpdyStreamTest : public TestWithTaskEnvironment {
  protected:
   // A function that takes a SpdyStream and the number of bytes which
   // will unstall the next frame completely.

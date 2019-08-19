@@ -30,7 +30,7 @@ class SequenceBoundTest : public ::testing::Test {
 
   void SetUp() override { task_runner_ = base::ThreadTaskRunnerHandle::Get(); }
 
-  void TearDown() override { scoped_task_environment_.RunUntilIdle(); }
+  void TearDown() override { task_environment_.RunUntilIdle(); }
 
   // Do-nothing base class, just so we can test assignment of derived classes.
   // It introduces a virtual destructor, so that casting derived classes to
@@ -66,7 +66,7 @@ class SequenceBoundTest : public ::testing::Test {
 
   struct VirtuallyDerived : public virtual Base {};
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   Value value = kInitialValue;
 };

@@ -50,9 +50,6 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
   for (Child* child_iter = child_begin; child_iter != child_end;) {
     Child& child = *child_iter;
     if (const NGPhysicalTextFragment* text = child.fragment.get()) {
-      DCHECK(text->TextShapeResult());
-      DCHECK_EQ(text->StartOffset(), text->TextShapeResult()->StartIndex());
-      DCHECK_EQ(text->EndOffset(), text->TextShapeResult()->EndIndex());
       items_.push_back(std::make_unique<NGFragmentItem>(*text));
       offsets_.push_back(child.offset);
       ++child_iter;
@@ -60,6 +57,19 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
     }
 
     if (child.layout_result) {
+      // Create an item if this box has no inline children.
+      const NGPhysicalBoxFragment& box =
+          To<NGPhysicalBoxFragment>(child.layout_result->PhysicalFragment());
+      if (child.children_count <= 1) {
+        items_.push_back(std::make_unique<NGFragmentItem>(box, 1));
+        offsets_.push_back(child.offset);
+        ++child_iter;
+        continue;
+      }
+
+      // Children of inline boxes are flattened and added to |items_|, with the
+      // count of descendant items to preserve the tree structure.
+      //
       // Add an empty item so that the start of the box can be set later.
       wtf_size_t box_start_index = items_.size();
       items_.Grow(box_start_index + 1);
@@ -77,8 +87,6 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
       wtf_size_t item_count = items_.size() - box_start_index;
 
       // Create an item for the start of the box.
-      const NGPhysicalBoxFragment& box =
-          To<NGPhysicalBoxFragment>(child.layout_result->PhysicalFragment());
       items_[box_start_index] =
           std::make_unique<NGFragmentItem>(box, item_count);
       continue;

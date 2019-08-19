@@ -82,7 +82,7 @@ class NearOomMonitorTest : public testing::Test {
 
  protected:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MockNearOomMonitor> monitor_;
 };
 

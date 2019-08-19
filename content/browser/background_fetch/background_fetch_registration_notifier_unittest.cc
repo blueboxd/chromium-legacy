@@ -127,12 +127,12 @@ class BackgroundFetchRegistrationNotifierTest : public ::testing::Test {
   void Notify(const std::string& unique_id,
               blink::mojom::BackgroundFetchRegistrationDataPtr registration) {
     notifier_->Notify(unique_id, *registration);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void NotifyRecordsUnavailable(const std::string& unique_id) {
     notifier_->NotifyRecordsUnavailable(unique_id);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void NotifyRequestCompleted(const std::string& unique_id,
@@ -140,16 +140,16 @@ class BackgroundFetchRegistrationNotifierTest : public ::testing::Test {
                               blink::mojom::FetchAPIResponsePtr response) {
     notifier_->NotifyRequestCompleted(unique_id, std::move(request),
                                       std::move(response));
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void AddObservedUrl(const std::string& unique_id, const GURL& url) {
     notifier_->AddObservedUrl(unique_id, url);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<BackgroundFetchRegistrationNotifier> notifier_;
 

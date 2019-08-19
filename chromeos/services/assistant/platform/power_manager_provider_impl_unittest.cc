@@ -47,19 +47,18 @@ class PowerManagerProviderTestClient : public FakeClient {
 class PowerManagerProviderImplTest : public testing::Test {
  public:
   PowerManagerProviderImplTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO,
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO,
+                          base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~PowerManagerProviderImplTest() override = default;
 
   void SetUp() override {
     chromeos::PowerManagerClient::InitializeFake();
     FakePowerManagerClient::Get()->set_tick_clock(
-        scoped_task_environment_.GetMockTickClock());
+        task_environment_.GetMockTickClock());
     power_manager_provider_impl_ = std::make_unique<PowerManagerProviderImpl>(
-        &test_client_, scoped_task_environment_.GetMainThreadTaskRunner());
+        &test_client_, task_environment_.GetMainThreadTaskRunner());
     power_manager_provider_impl_->set_tick_clock_for_testing(
-        scoped_task_environment_.GetMockTickClock());
+        task_environment_.GetMockTickClock());
   }
 
   void TearDown() override {
@@ -117,7 +116,7 @@ class PowerManagerProviderImplTest : public testing::Test {
         power_manager_provider_impl_->AddWakeAlarm(
             relative_time_ms, max_delay_ms,
             std::move(wake_alarm_expiration_cb));
-    scoped_task_environment_.FastForwardBy(
+    task_environment_.FastForwardBy(
         base::TimeDelta::FromMilliseconds(relative_time_ms));
 
     if (id <= 0UL)
@@ -127,7 +126,7 @@ class PowerManagerProviderImplTest : public testing::Test {
 
  private:
   // Needs to be of type |MainThreadType::IO| to use |NativeTimer|.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   device::TestWakeLockProvider wake_lock_provider_;
   PowerManagerProviderTestClient test_client_{&wake_lock_provider_};

@@ -23,7 +23,6 @@ namespace blink {
 TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
     const String& policy_name,
     const TrustedTypePolicyOptions* policy_options,
-    bool exposed,
     ExceptionState& exception_state) {
   if (!GetExecutionContext()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -47,29 +46,18 @@ TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
                                    " already exists.");
     return nullptr;
   }
-  if (policy_name == "default" && !exposed) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "The default policy must be exposed.");
-    return nullptr;
-  }
   if (policy_name == "default") {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kTrustedTypesDefaultPolicyUsed);
   }
   auto* policy = MakeGarbageCollected<TrustedTypePolicy>(
-      policy_name, const_cast<TrustedTypePolicyOptions*>(policy_options),
-      exposed);
+      policy_name, const_cast<TrustedTypePolicyOptions*>(policy_options));
   policy_map_.insert(policy_name, policy);
   return policy;
 }
 
-TrustedTypePolicy* TrustedTypePolicyFactory::getExposedPolicy(
-    const String& policy_name) {
-  TrustedTypePolicy* p = policy_map_.at(policy_name);
-  if (p && p->exposed()) {
-    return p;
-  }
-  return nullptr;
+TrustedTypePolicy* TrustedTypePolicyFactory::defaultPolicy() const {
+  return policy_map_.at("default");
 }
 
 TrustedTypePolicyFactory::TrustedTypePolicyFactory(ExecutionContext* context)

@@ -121,7 +121,7 @@ class ChildProcessTaskPortProviderTest : public testing::Test,
     }
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ChildProcessTaskPortProvider provider_;
   base::WaitableEvent event_;
   std::vector<base::ProcessHandle> received_processes_;

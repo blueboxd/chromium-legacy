@@ -49,8 +49,7 @@ constexpr char kProfileId[] = "Default";
 class NotificationPlatformBridgeWinTest : public testing::Test {
  public:
   NotificationPlatformBridgeWinTest()
-      : thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : thread_bundle_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   ~NotificationPlatformBridgeWinTest() override = default;
 

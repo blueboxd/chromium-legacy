@@ -30,7 +30,7 @@ class V8Test : public testing::Test {
  protected:
   // This is used during SetUp() to initialize instance_.
   virtual std::unique_ptr<IsolateHolder> CreateIsolateHolder() const;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<IsolateHolder> instance_;
   v8::Persistent<v8::Context> context_;
 

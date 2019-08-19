@@ -228,7 +228,7 @@ void MockHttpStream::CompleteRead() {
   std::move(callback_).Run(result);
 }
 
-class HttpResponseBodyDrainerTest : public TestWithScopedTaskEnvironment {
+class HttpResponseBodyDrainerTest : public TestWithTaskEnvironment {
  protected:
   HttpResponseBodyDrainerTest()
       : proxy_resolution_service_(ProxyResolutionService::CreateDirect()),

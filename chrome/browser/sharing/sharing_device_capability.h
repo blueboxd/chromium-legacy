@@ -12,7 +12,7 @@
 // NEXT_FREE_BIT_ID: 2
 enum class SharingDeviceCapability {
   kNone = 0,
-  kTelephony = 1 << 0,
+  kClickToCall = 1 << 0,
   kSharedClipboard = 1 << 1
 };
 

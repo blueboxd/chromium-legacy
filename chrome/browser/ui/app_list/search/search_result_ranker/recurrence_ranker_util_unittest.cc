@@ -53,9 +53,9 @@ class RecurrenceRankerJsonConfigConverterTest : public testing::Test {
     return converted_proto.value();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-      base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::DEFAULT,
+      base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED};
 
   std::unique_ptr<JsonConfigConverter> converter_;
 

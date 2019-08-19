@@ -15,9 +15,5 @@ vr_module_desc = {
   if (use_native_modules && modularize_vr_native) {
     native_deps = [ "//chrome/browser/vr:vr_ui" ]
     native_entrypoints = "//chrome/browser/vr/module_exports.lst"
-  } else {
-    # TODO(tiborg): Remove dummy lib and those attributes.
-    loadable_module_dep = "//chrome/browser/android/vr:vr_ui_dummy_lib"
-    loadable_module = "libvr_ui_dummy_lib.so"
   }
 }

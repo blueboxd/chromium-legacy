@@ -261,7 +261,7 @@ class QuicNetworkTransactionTest
     : public PlatformTest,
       public ::testing::WithParamInterface<
           std::tuple<quic::ParsedQuicVersion, bool>>,
-      public WithScopedTaskEnvironment {
+      public WithTaskEnvironment {
  protected:
   QuicNetworkTransactionTest()
       : version_(std::get<0>(GetParam())),
@@ -6601,7 +6601,7 @@ TEST_P(QuicNetworkTransactionTest, HostNotInAllowlist) {
 class QuicNetworkTransactionWithDestinationTest
     : public PlatformTest,
       public ::testing::WithParamInterface<PoolingTestParams>,
-      public WithScopedTaskEnvironment {
+      public WithTaskEnvironment {
  protected:
   QuicNetworkTransactionWithDestinationTest()
       : version_(GetParam().version),

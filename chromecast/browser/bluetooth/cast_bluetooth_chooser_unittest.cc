@@ -52,7 +52,7 @@ class CastBluetoothChooserTest : public testing::Test {
     provider_binding_.Bind(mojo::MakeRequest(&provider));
     cast_bluetooth_chooser_ = std::make_unique<CastBluetoothChooser>(
         handler_.Get(), std::move(provider));
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   ~CastBluetoothChooserTest() override = default;
@@ -66,7 +66,7 @@ class CastBluetoothChooserTest : public testing::Test {
   content::BluetoothChooser& chooser() { return *cast_bluetooth_chooser_; }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::MockCallback<content::BluetoothChooser::EventHandler> handler_;
 
  private:
@@ -82,7 +82,7 @@ TEST_F(CastBluetoothChooserTest, GrantAccessBeforeDeviceAvailable) {
   // device. |handler| should not run yet.
   EXPECT_TRUE(provider().client());
   provider().client()->GrantAccess("aa:bb:cc:dd:ee:ff");
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Make some unapproved devices available. |handler| should not run yet.
   AddDeviceToChooser("11:22:33:44:55:66");
@@ -93,7 +93,7 @@ TEST_F(CastBluetoothChooserTest, GrantAccessBeforeDeviceAvailable) {
                             "aa:bb:cc:dd:ee:ff"));
   EXPECT_CALL(provider().connection_closed(), Run());
   AddDeviceToChooser("aa:bb:cc:dd:ee:ff");
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(CastBluetoothChooserTest, DiscoverDeviceBeforeAccessGranted) {
@@ -109,21 +109,21 @@ TEST_F(CastBluetoothChooserTest, DiscoverDeviceBeforeAccessGranted) {
                             "00:00:00:11:00:00"));
   EXPECT_CALL(provider().connection_closed(), Run());
   provider().client()->GrantAccess("00:00:00:11:00:00");
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(CastBluetoothChooserTest, GrantAccessToAllDevicesBeforeDiscovery) {
   // Grant access to all devices. |handler| should not run until the first
   // device is made available.
   provider().client()->GrantAccessToAllDevices();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Now make the some device available. |handler| should be called.
   EXPECT_CALL(handler_, Run(content::BluetoothChooser::Event::SELECTED,
                             "aa:bb:cc:dd:ee:ff"));
   EXPECT_CALL(provider().connection_closed(), Run());
   AddDeviceToChooser("aa:bb:cc:dd:ee:ff");
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(CastBluetoothChooserTest, GrantAccessToAllDevicesAfterDiscovery) {
@@ -140,21 +140,21 @@ TEST_F(CastBluetoothChooserTest, GrantAccessToAllDevicesAfterDiscovery) {
                                   "00:00:00:11:00:00")));
   EXPECT_CALL(provider().connection_closed(), Run());
   provider().client()->GrantAccessToAllDevices();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(CastBluetoothChooserTest, TearDownClientAfterAllAccessGranted) {
   // Grant access to all devices. |handler| should not run until the first
   // device is made available.
   provider().client()->GrantAccessToAllDevices();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Tear down the client. Now that it has granted access to the client, it does
   // not need to keep a reference to it. However, the chooser should stay alive
   // and wait for devices to be made available.
   provider().client().reset();
   EXPECT_FALSE(provider().client());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // As soon as a device is available, run the handler.
   EXPECT_CALL(handler_, Run(content::BluetoothChooser::Event::SELECTED,
@@ -173,7 +173,7 @@ TEST_F(CastBluetoothChooserTest, TearDownClientBeforeApprovedDeviceDiscovered) {
   EXPECT_CALL(handler_, Run(content::BluetoothChooser::Event::CANCELLED, ""));
   provider().client().reset();
   EXPECT_FALSE(provider().client());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 }  // namespace chromecast

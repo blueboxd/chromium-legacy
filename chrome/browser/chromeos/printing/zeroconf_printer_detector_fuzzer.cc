@@ -168,7 +168,7 @@ std::vector<CallToDelegate> CreateFuzzCalls(FuzzedDataProvider* fuzz_data) {
 }  // namespace
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   FuzzedDataProvider fuzz_data(data, size);
   // Creating listers in similar way as in "standard" constructor of
   // ZeroconfPrinterDetector.
@@ -189,6 +189,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         ->SetDelegate(detector.get());
   }
   // Fuzzing.
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
   return 0;
 }

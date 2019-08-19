@@ -86,7 +86,7 @@ class DeviceEventRouterTest : public testing::Test {
   std::unique_ptr<DeviceEventRouterImpl> device_event_router;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(DeviceEventRouterTest, AddAndRemoveDevice) {

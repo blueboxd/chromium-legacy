@@ -104,7 +104,7 @@ class StrictStaticSocketDataProvider : public StaticSocketDataProvider {
 };
 
 // A fixture for tests which only perform normal socket operations.
-class WebSocketBasicStreamSocketTest : public TestWithScopedTaskEnvironment {
+class WebSocketBasicStreamSocketTest : public TestWithTaskEnvironment {
  protected:
   WebSocketBasicStreamSocketTest()
       : common_connect_job_params_(

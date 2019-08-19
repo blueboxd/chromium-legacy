@@ -39,13 +39,12 @@ class TestObservationWindow : public internal::ObservationWindow<int> {
 class ObservationWindowTest : public testing::Test {
  public:
   ObservationWindowTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
-        tick_clock_(scoped_task_environment_.GetMockTickClock()) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+        tick_clock_(task_environment_.GetMockTickClock()) {}
   ~ObservationWindowTest() override = default;
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   const base::TickClock* tick_clock_;
 
@@ -80,7 +79,7 @@ TEST_F(ObservationWindowTest, OnSample) {
 
   // Fast forward by the length of the observation window, no sample should be
   // removed as all samples have an age that doesn't exceed the window length.
-  scoped_task_environment_.FastForwardBy(kDefaultWindowLength);
+  task_environment_.FastForwardBy(kDefaultWindowLength);
 
   int t1_sample = 2;
   base::TimeTicks t1_timestamp = tick_clock_->NowTicks();
@@ -98,7 +97,7 @@ TEST_F(ObservationWindowTest, OnSample) {
   // Fast forward by one second, the first sample should be removed the next
   // time a sample gets added as its age exceed the length of the observation
   // window.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   int t2_sample = 3;
   base::TimeTicks t2_timestamp = tick_clock_->NowTicks();
@@ -138,8 +137,8 @@ TEST_F(ObservationWindowTest, FreeMemoryObservationWindow) {
   // Test the detection that the system has reached the early limit.
 
   // Remove all the observations from the window.
-  scoped_task_environment_.FastForwardBy(kDefaultWindowLength +
-                                         base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(kDefaultWindowLength +
+                                  base::TimeDelta::FromSeconds(1));
 
   const size_t min_sample_count_to_be_positive =
       static_cast<size_t>(window_config.sample_ratio_to_be_positive *
@@ -166,8 +165,8 @@ TEST_F(ObservationWindowTest, FreeMemoryObservationWindow) {
   // Test the detection that the system has reached the critical limit.
 
   // Remove all the observations from the window.
-  scoped_task_environment_.FastForwardBy(kDefaultWindowLength +
-                                         base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(kDefaultWindowLength +
+                                  base::TimeDelta::FromSeconds(1));
 
   for (size_t i = 0;
        i < window_config.min_sample_count - min_sample_count_to_be_positive;
@@ -209,8 +208,8 @@ TEST_F(ObservationWindowTest, DiskIdleTimeObservationWindow) {
   EXPECT_TRUE(window.DiskIdleTimeIsLow());
 
   // Remove all the observations from the window.
-  scoped_task_environment_.FastForwardBy(kDefaultWindowLength +
-                                         base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(kDefaultWindowLength +
+                                  base::TimeDelta::FromSeconds(1));
 
   // Add a sample under the threshold, the disk idle should be considered as low
   // as it's under the threshold.

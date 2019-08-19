@@ -75,7 +75,7 @@ std::string TestKeyToString(const testing::TestParamInfo<TestKey>& params) {
 }  // namespace
 
 class SSLPlatformKeyAndroidTest : public testing::TestWithParam<TestKey>,
-                                  public WithScopedTaskEnvironment {};
+                                  public WithTaskEnvironment {};
 
 TEST_P(SSLPlatformKeyAndroidTest, Matches) {
   const TestKey& test_key = GetParam();

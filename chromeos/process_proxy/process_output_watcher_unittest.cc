@@ -125,14 +125,14 @@ class ProcessOutputWatcherTest : public testing::Test {
     failed_ = !expectations_.CheckExpectations(output, type);
     if (failed_ || expectations_.IsDone()) {
       ASSERT_FALSE(test_case_done_callback_.is_null());
-      scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+      task_environment_.GetMainThreadTaskRunner()->PostTask(
           FROM_HERE, test_case_done_callback_);
       test_case_done_callback_.Reset();
     }
 
     ASSERT_FALSE(ack_callback.is_null());
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(FROM_HERE,
-                                                                 ack_callback);
+    task_environment_.GetMainThreadTaskRunner()->PostTask(FROM_HERE,
+                                                          ack_callback);
   }
 
  protected:
@@ -193,7 +193,7 @@ class ProcessOutputWatcherTest : public testing::Test {
 
  private:
   base::Closure test_case_done_callback_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::Thread> output_watch_thread_;
   bool output_watch_thread_started_;
   bool failed_;

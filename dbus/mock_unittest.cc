@@ -83,7 +83,7 @@ class MockTest : public testing::Test {
 
  protected:
   std::string response_string_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
   scoped_refptr<MockBus> mock_bus_;
   scoped_refptr<MockObjectProxy> mock_proxy_;
@@ -123,7 +123,7 @@ class MockTest : public testing::Test {
       ObjectProxy::ResponseCallback* response_callback) {
     std::unique_ptr<Response> response =
         CreateMockProxyResponse(method_call, timeout_ms);
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&MockTest::RunResponseCallback, base::Unretained(this),
                        std::move(*response_callback), std::move(response)));

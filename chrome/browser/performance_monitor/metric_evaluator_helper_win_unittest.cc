@@ -17,7 +17,7 @@ class MetricEvaluatorsHelperWinTest : public testing::Test {
   ~MetricEvaluatorsHelperWinTest() override = default;
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MetricEvaluatorsHelperWin metric_evaluator_helper_;
 
  private:
@@ -30,14 +30,14 @@ TEST_F(MetricEvaluatorsHelperWinTest, GetFreeMemory) {
              EXPECT_TRUE(value);
              EXPECT_GT(value.value(), 0);
            }));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // TODO(https://crbug.com/956638): Investigate why the initialization of WMI
 // might fail in some situations and reenable this test.
 TEST_F(MetricEvaluatorsHelperWinTest, DISABLED_DiskIdleTime) {
   while (!metric_evaluator_helper_.wmi_refresher_initialized_for_testing())
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
   // Measuring the disk idle time will always return base::nullopt for the first
   // sample on Windows.

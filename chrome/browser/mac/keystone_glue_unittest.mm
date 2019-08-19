@@ -182,7 +182,7 @@ namespace {
 
 class KeystoneGlueTest : public PlatformTest {
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // DISABLED because the mocking isn't currently working.

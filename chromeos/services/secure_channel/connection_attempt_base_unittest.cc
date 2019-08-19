@@ -215,7 +215,7 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
     was_operation_canceled_in_tear_down_ = true;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<FakeConnectionAttemptDelegate> fake_delegate_;
 

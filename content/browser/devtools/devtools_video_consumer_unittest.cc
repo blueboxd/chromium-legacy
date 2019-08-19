@@ -233,7 +233,7 @@ class DevToolsVideoConsumerTest : public testing::Test {
             weak_factory_.GetWeakPtr()));
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::WeakPtrFactory<DevToolsVideoConsumerTest> weak_factory_{this};
 };
 

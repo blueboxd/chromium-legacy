@@ -32,7 +32,7 @@ class BufferingControllerTest : public testing::Test {
  public:
   BufferingControllerTest();
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<BufferingController> buffering_controller_;
 
   MockBufferingControllerClient client_;

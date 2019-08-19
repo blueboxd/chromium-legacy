@@ -244,7 +244,7 @@ class AudioVideoPipelineDeviceTest : public testing::Test {
 
   void OnPauseCompleted();
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MediaPipelineDeviceParams::MediaSyncType sync_type_;
   MediaPipelineDeviceParams::AudioStreamType audio_type_;
   std::unique_ptr<TaskRunnerImpl> task_runner_;

@@ -313,7 +313,7 @@ class TetherConnectorImplTest : public testing::Test {
   }
 
   const multidevice::RemoteDeviceRefList test_devices_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   NetworkStateTestHelper helper_{true /* use_default_devices_and_services */};
 
   std::unique_ptr<FakeConnectTetheringOperationFactory> fake_operation_factory_;

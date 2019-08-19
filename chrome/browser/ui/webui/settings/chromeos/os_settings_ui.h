@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/ui/webui/app_management/app_management.mojom-forward.h"
+#include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_page_handler_factory.h"
 #include "chrome/browser/ui/webui/webui_load_timer.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 #include "ui/webui/mojo_web_ui_controller.h"
@@ -30,8 +32,13 @@ class OSSettingsUI : public ui::MojoWebUIController {
       std::unique_ptr<content::WebUIMessageHandler> handler);
   void BindCrosNetworkConfig(
       network_config::mojom::CrosNetworkConfigRequest request);
+  void BindAppManagementPageHandlerFactory(
+      app_management::mojom::PageHandlerFactoryRequest request);
 
   WebuiLoadTimer webui_load_timer_;
+
+  std::unique_ptr<AppManagementPageHandlerFactory>
+      app_management_page_handler_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OSSettingsUI);
 };

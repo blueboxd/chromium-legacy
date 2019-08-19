@@ -217,7 +217,7 @@ class SecureChannelActiveConnectionManagerImplTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<FakeMultiplexedChannelFactory>
       fake_multiplexed_channel_factory_;

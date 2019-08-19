@@ -39,8 +39,7 @@ class FlingControllerTest : public FlingControllerEventSenderClient,
   // testing::Test
   FlingControllerTest()
       : needs_begin_frame_for_fling_progress_(GetParam()),
-        scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+        task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   ~FlingControllerTest() override {}
 
@@ -179,7 +178,7 @@ class FlingControllerTest : public FlingControllerEventSenderClient,
   // behavior in FlingController::ProcessGestureFlingStart. See
   // https://crrev.com/c/1181521.
   bool needs_begin_frame_for_fling_progress_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   DISALLOW_COPY_AND_ASSIGN(FlingControllerTest);
 };
 

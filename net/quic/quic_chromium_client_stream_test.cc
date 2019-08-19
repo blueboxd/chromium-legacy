@@ -157,7 +157,7 @@ MockQuicClientSessionBase::~MockQuicClientSessionBase() {}
 
 class QuicChromiumClientStreamTest
     : public ::testing::TestWithParam<quic::QuicTransportVersion>,
-      public WithScopedTaskEnvironment {
+      public WithTaskEnvironment {
  public:
   QuicChromiumClientStreamTest()
       : crypto_config_(

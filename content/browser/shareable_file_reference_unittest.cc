@@ -17,7 +17,7 @@ using storage::ShareableFileReference;
 namespace content {
 
 TEST(ShareableFileReferenceTest, TestReferences) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       base::ThreadTaskRunnerHandle::Get();
   base::ScopedTempDir temp_dir;

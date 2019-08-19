@@ -49,8 +49,8 @@ class ErrorReporterTest : public ::testing::Test {
   ~ErrorReporterTest() override {}
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   uint8_t server_public_key_[32];
   uint8_t server_private_key_[32];
 

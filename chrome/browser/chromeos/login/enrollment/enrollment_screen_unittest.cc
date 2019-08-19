@@ -75,7 +75,7 @@ class EnrollmentScreenUnitTest : public testing::Test {
     last_screen_result_ = screen_result;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   // Replace main thread's task runner with a mock for duration of test.
   base::ScopedMockTimeMessageLoopTaskRunner runner_;
 

@@ -7,7 +7,6 @@ import("//build/config/ios/asset_catalog.gni")
 imageset("table_view_cell_check_mark") {
   sources = [
     "table_view_cell_check_mark.imageset/Contents.json",
-    "table_view_cell_check_mark.imageset/table_view_cell_check_mark.png",
     "table_view_cell_check_mark.imageset/table_view_cell_check_mark@2x.png",
     "table_view_cell_check_mark.imageset/table_view_cell_check_mark@3x.png",
   ]

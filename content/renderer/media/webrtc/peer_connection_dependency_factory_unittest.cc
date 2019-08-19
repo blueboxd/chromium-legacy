@@ -18,7 +18,7 @@ class PeerConnectionDependencyFactoryTest : public ::testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
 };
 

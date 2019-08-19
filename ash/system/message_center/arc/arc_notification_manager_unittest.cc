@@ -167,7 +167,7 @@ class ArcNotificationManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestArcAppIdProvider app_id_provider_;
   std::unique_ptr<arc::FakeNotificationsInstance> arc_notifications_instance_;
   std::unique_ptr<mojo::Binding<arc::mojom::NotificationsInstance>> binding_;

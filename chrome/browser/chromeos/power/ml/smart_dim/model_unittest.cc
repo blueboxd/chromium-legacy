@@ -119,10 +119,9 @@ class FakeMlServiceClient : public MlServiceClient {
 class SmartDimModelImplTest : public testing::Test {
  public:
   SmartDimModelImplTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO,
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
-                QUEUED) {}
+      : task_environment_(
+            base::test::TaskEnvironment::MainThreadType::IO,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED) {}
 
   ~SmartDimModelImplTest() override = default;
 
@@ -132,7 +131,7 @@ class SmartDimModelImplTest : public testing::Test {
     impl->SetMlServiceClientForTesting(std::make_unique<FakeMlServiceClient>());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SmartDimModelImplTest);
@@ -161,7 +160,7 @@ TEST_F(SmartDimModelImplTest, ShouldNotDim) {
                                *callback_done = true;
                              },
                              &callback_done));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_done);
 }
 
@@ -188,7 +187,7 @@ TEST_F(SmartDimModelImplTest, ShouldDim) {
                                *callback_done = true;
                              },
                              &callback_done));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_done);
 }
 
@@ -220,7 +219,7 @@ TEST_F(SmartDimModelImplTest, CheckCancelableCallback) {
             },
             &callback_done, &num_callbacks_run));
   }
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_done);
   EXPECT_EQ(1, num_callbacks_run);
 }
@@ -243,7 +242,7 @@ TEST_F(SmartDimModelImplTest, CheckCanceledRequest) {
                              },
                              &callback_done));
   smart_dim_model.CancelPreviousRequest();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(callback_done);
 }
 

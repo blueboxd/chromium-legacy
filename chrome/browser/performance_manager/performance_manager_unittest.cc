@@ -48,7 +48,7 @@ class PerformanceManagerTest : public testing::Test {
 
  private:
   std::unique_ptr<PerformanceManager> performance_manager_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceManagerTest);
 };

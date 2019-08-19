@@ -143,8 +143,7 @@ class FilePathWatcherTest : public testing::Test {
  public:
   FilePathWatcherTest()
 #if defined(OS_POSIX)
-      : scoped_task_environment_(
-            test::ScopedTaskEnvironment::MainThreadType::IO)
+      : task_environment_(test::TaskEnvironment::MainThreadType::IO)
 #endif
   {
   }
@@ -205,7 +204,7 @@ class FilePathWatcherTest : public testing::Test {
 
   NotificationCollector* collector() { return collector_.get(); }
 
-  test::ScopedTaskEnvironment scoped_task_environment_;
+  test::TaskEnvironment task_environment_;
 
   ScopedTempDir temp_dir_;
   scoped_refptr<NotificationCollector> collector_;

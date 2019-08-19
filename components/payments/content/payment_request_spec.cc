@@ -8,12 +8,15 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/payments/content/payment_request_converter.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_method_data.h"
 #include "components/payments/core/payment_request_data_util.h"
+#include "components/payments/core/payments_experimental_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -68,6 +71,10 @@ void PopulateValidatedMethodData(
       payment_method_identifiers_set, stringified_method_data);
 }
 
+std::string ToString(bool value) {
+  return value ? "true" : "false";
+}
+
 }  // namespace
 
 const char kBasicCardMethodName[] = "basic-card";
@@ -100,6 +107,18 @@ PaymentRequestSpec::PaymentRequestSpec(
       &supported_card_networks_set_, &supported_card_types_set_,
       &url_payment_method_identifiers_, &payment_method_identifiers_set_,
       &stringified_method_data_);
+
+  query_for_quota_ = stringified_method_data_;
+  if (base::Contains(payment_method_identifiers_set_, "basic-card") &&
+      PaymentsExperimentalFeatures::IsEnabled(
+          features::kStrictHasEnrolledAutofillInstrument)) {
+    query_for_quota_["basic-card-payment-options"] = {
+        base::ReplaceStringPlaceholders(
+            "{payerEmail:$1,payerName:$2,payerPhone:$3,shipping:$4}",
+            {ToString(request_payer_email()), ToString(request_payer_name()),
+             ToString(request_payer_phone()), ToString(request_shipping())},
+            nullptr)};
+  }
 }
 PaymentRequestSpec::~PaymentRequestSpec() {}
 

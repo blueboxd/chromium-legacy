@@ -55,7 +55,7 @@ class LnkParserSandboxSetupTest : public base::MultiProcessTest {
   ParsedLnkFile test_parsed_shortcut_;
   mojom::LnkParsingResult test_result_code_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   base::FilePath not_lnk_file_path_;
   base::ScopedTempDir temp_dir_;

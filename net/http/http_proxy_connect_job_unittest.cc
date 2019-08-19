@@ -53,11 +53,10 @@ const char kHttpsProxyHost[] = "httpsproxy.example.test";
 }  // namespace
 
 class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
-                                public WithScopedTaskEnvironment {
+                                public WithTaskEnvironment {
  protected:
   HttpProxyConnectJobTest()
-      : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : WithTaskEnvironment(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         field_trial_list_(nullptr) {
     // Used a mock HostResolver that does not have a cache.
     session_deps_.host_resolver = std::make_unique<MockHostResolver>();

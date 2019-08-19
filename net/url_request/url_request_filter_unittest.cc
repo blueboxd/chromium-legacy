@@ -47,8 +47,8 @@ class TestURLRequestInterceptor : public URLRequestInterceptor {
 };
 
 TEST(URLRequestFilter, BasicMatching) {
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   TestDelegate delegate;
   TestURLRequestContext request_context;
   URLRequestFilter* filter = URLRequestFilter::GetInstance();

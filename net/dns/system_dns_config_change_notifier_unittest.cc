@@ -30,7 +30,7 @@ const DnsConfig kConfig(kNameservers);
 const DnsConfig kConfig2(kNameservers2);
 }  // namespace
 
-class SystemDnsConfigChangeNotifierTest : public TestWithScopedTaskEnvironment {
+class SystemDnsConfigChangeNotifierTest : public TestWithTaskEnvironment {
  public:
   // Set up a change notifier, owned on a dedicated blockable task runner, with
   // a faked underlying DnsConfigService.

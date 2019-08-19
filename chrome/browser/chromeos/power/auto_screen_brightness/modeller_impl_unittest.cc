@@ -162,8 +162,7 @@ class TestObserver : public Modeller::Observer {
 class ModellerImplTest : public testing::Test {
  public:
   ModellerImplTest()
-      : thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {
+      : thread_bundle_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
     CHECK(temp_dir_.CreateUniqueTempDir());
     TestingProfile::Builder profile_builder;
     profile_builder.SetProfileName("testuser@gmail.com");

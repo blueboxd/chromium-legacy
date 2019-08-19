@@ -214,7 +214,7 @@ class CellularSetupOtaActivatorImplTest : public testing::Test {
     is_finished_ = true;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   NetworkStateTestHelper test_helper_;
 
   std::unique_ptr<FakeActivationDelegate> fake_activation_delegate_;

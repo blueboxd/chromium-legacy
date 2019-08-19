@@ -70,7 +70,7 @@ class OneGoogleBarServiceTest : public testing::Test {
   void SignOut() { identity_env_.SetCookieAccounts({}); }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   signin::IdentityTestEnvironment identity_env_;

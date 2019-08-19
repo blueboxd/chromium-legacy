@@ -21,13 +21,13 @@ constexpr base::TimeDelta kZeroDuration = base::TimeDelta::FromMilliseconds(0);
 class TabAnimationTest : public testing::Test {
  public:
   TabAnimationTest()
-      : env_(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : env_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   float CurrentPinnedness(const TabAnimation& animation) {
     return animation.GetCurrentState().pinnedness();
   }
 
-  base::test::ScopedTaskEnvironment env_;
+  base::test::TaskEnvironment env_;
 };
 
 TEST_F(TabAnimationTest, StaticAnimationDoesNotChange) {

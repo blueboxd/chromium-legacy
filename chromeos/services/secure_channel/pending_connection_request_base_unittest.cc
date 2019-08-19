@@ -116,7 +116,7 @@ class SecureChannelPendingConnectionRequestBaseTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   FakeClientConnectionParameters* fake_client_connection_parameters_;
   std::unique_ptr<FakePendingConnectionRequestDelegate>

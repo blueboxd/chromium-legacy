@@ -34,7 +34,7 @@ class DevToolsFileWatcherTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   base::FilePath base_path_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   bool done_flag_ = false;
 
   std::set<std::string> expected_changed_paths_;

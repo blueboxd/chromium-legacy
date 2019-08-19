@@ -418,7 +418,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
   }
 
   base::FilePath profile_path_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   AccountId account_id_;
   std::unique_ptr<chromeos::disks::MockDiskMountManager> disk_manager_;
   std::unique_ptr<network::TestNetworkConnectionTracker>

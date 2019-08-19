@@ -29,8 +29,8 @@ namespace base {
 
 class ThreadTaskRunnerHandle;
 
-// ATTENTION: Prefer using base::test::ScopedTaskEnvironment with a
-// base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME trait instead. The
+// ATTENTION: Prefer using base::test::TaskEnvironment with a
+// base::test::TaskEnvironment::TimeSource::MOCK_TIME trait instead. The
 // only case where TestMockTimeTaskRunner is necessary is when instantiating
 // multiple TestMockTimeTaskRunners in the same test to deterministically
 // exercise the result of a race between two simulated threads.

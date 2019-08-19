@@ -399,7 +399,7 @@ class MockTimer : public base::MockOneShotTimer {
 
 }  // namespace
 
-class BidirectionalStreamTest : public TestWithScopedTaskEnvironment {
+class BidirectionalStreamTest : public TestWithTaskEnvironment {
  public:
   BidirectionalStreamTest()
       : default_url_(kDefaultUrl),

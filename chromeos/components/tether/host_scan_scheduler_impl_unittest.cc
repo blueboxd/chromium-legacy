@@ -163,7 +163,7 @@ class HostScanSchedulerImplTest : public testing::Test {
     return helper_->network_state_handler();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::string ethernet_service_path_;
 
   std::unique_ptr<NetworkStateTestHelper> helper_;

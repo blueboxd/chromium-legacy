@@ -10,8 +10,10 @@ import android.view.View;
 import android.view.WindowInsets;
 
 import org.chromium.base.BuildInfo;
+import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -32,6 +34,17 @@ public class HistoryNavigationDelegateFactory {
         }
 
         @Override
+        public NavigationSheet.Delegate createSheetDelegate() {
+            return null;
+        }
+
+        @Override
+        public Supplier<BottomSheetController> getBottomSheetController() {
+            assert false : "Should never be called";
+            return null;
+        }
+
+        @Override
         public boolean isNavigationEnabled(View view) {
             return false;
         }
@@ -47,7 +60,7 @@ public class HistoryNavigationDelegateFactory {
      * TODO(jinsukkim): Remove the early returns when q is available for upstream.
      */
     public static HistoryNavigationDelegate create(Tab tab) {
-        if (!isFeatureFlagEnabled()) return DEFAULT;
+        if (!isFeatureFlagEnabled() || tab.getActivity() == null) return DEFAULT;
 
         return new HistoryNavigationDelegate() {
             private Runnable mInsetsChangeRunnable;
@@ -55,6 +68,18 @@ public class HistoryNavigationDelegateFactory {
             @Override
             public NavigationHandler.ActionDelegate createActionDelegate() {
                 return new TabbedActionDelegate(tab);
+            }
+
+            @Override
+            public NavigationSheet.Delegate createSheetDelegate() {
+                return new TabbedSheetDelegate(tab);
+            }
+
+            @Override
+            public Supplier<BottomSheetController> getBottomSheetController() {
+                // TODO(jinsukkim): Consider getting the controller not via Tab. Maybe move this
+                //         create method to TabDelegateFactory to avoid this.
+                return tab.getActivity()::getBottomSheetController;
             }
 
             @TargetApi(Build.VERSION_CODES.O)

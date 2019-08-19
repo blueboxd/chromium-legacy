@@ -240,7 +240,7 @@ class V8ValueConverterImplTest : public testing::Test {
         .As<T>();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   v8::Isolate* isolate_;
 

@@ -48,7 +48,7 @@ class LevelDBSiteDataStore : public SiteDataStore {
 
   // Returns a raw pointer to the database for testing purposes. Note that as
   // the DB operations are made on a separate sequence it's recommended to call
-  // ScopedTaskEnvironment::RunUntilIdle before calling this function to ensure
+  // TaskEnvironment::RunUntilIdle before calling this function to ensure
   // that the database has been fully initialized. The LevelDB implementation is
   // thread safe.
   leveldb::DB* GetDBForTesting();

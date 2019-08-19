@@ -226,7 +226,7 @@ class SystemTPMTokenInfoGetterTest : public testing::Test {
   std::vector<int64_t> delays_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTPMTokenInfoGetterTest);
 };
@@ -252,7 +252,7 @@ class UserTPMTokenInfoGetterTest : public testing::Test {
   std::vector<int64_t> delays_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(UserTPMTokenInfoGetterTest);
 };

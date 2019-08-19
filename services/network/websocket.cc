@@ -688,6 +688,9 @@ void WebSocket::Reset() {
 
   // net::WebSocketChannel requires that we delete it at this point.
   channel_.reset();
+
+  // deletes |this|.
+  factory_->Remove(this);
 }
 
 }  // namespace network

@@ -7,72 +7,13 @@
  */
 
 goog.provide('LogStore');
-goog.provide('BaseLog');
-goog.provide('TextLog');
-goog.provide('TreeLog');
 
 goog.require('TreeDumper');
-
-/** @constructor */
-BaseLog = function(logType) {
-  /**
-   * @type {!LogStore.LogType}
-   */
-  this.logType = logType;
-
-  /**
-   * @type {!Date}
-   */
-  this.date = new Date();
-};
-
-/** @return {string} */
-BaseLog.prototype.toString = function() {
-  return '';
-};
-
-/**
- * @param {string} logStr
- * @param {!LogStore.LogType} logType
- * @constructor
- * @extends {BaseLog}
- */
-TextLog = function(logStr, logType) {
-  BaseLog.call(this, logType);
-
-  /**
-   * @type {string}
-   * @private
-   */
-  this.logStr_ = logStr;
-};
-goog.inherits(TextLog, BaseLog);
-
-/** @override */
-TextLog.prototype.toString = function() {
-  return this.logStr_;
-};
-
-/**
- * @param {!TreeDumper} logTree
- * @constructor
- * @extends {BaseLog}
- */
-TreeLog = function(logTree) {
-  BaseLog.call(this, LogStore.LogType.TREE);
-
-  /**
-   * @type {!TreeDumper}
-   * @private
-   */
-  this.logTree_ = logTree;
-};
-goog.inherits(TreeLog, BaseLog);
-
-/** @override */
-TreeLog.prototype.toString = function() {
-  return this.logTree_.treeToString();
-};
+goog.require('BaseLog');
+goog.require('EventLog');
+goog.require('SpeechLog');
+goog.require('TextLog');
+goog.require('TreeLog');
 
 /** @constructor */
 LogStore = function() {
@@ -152,7 +93,7 @@ LogStore.prototype.getLogs = function() {
 
 /**
  * Write a text log to this.logs_.
- * To add a message to logs, this function shuold be called.
+ * To add a message to logs, this function should be called.
  * @param {string} logContent
  * @param {!LogStore.LogType} LogType
  */
@@ -160,23 +101,30 @@ LogStore.prototype.writeTextLog = function(logContent, LogType) {
   if (this.shouldSkipOutput_())
     return;
 
-  var log = new TextLog(logContent, LogType);
-  this.logs_[this.startIndex_] = log;
-  this.startIndex_ += 1;
-  if (this.startIndex_ == LogStore.LOG_LIMIT)
-    this.startIndex_ = 0;
+  this.writeLog(new TextLog(logContent, LogType));
 };
 
 /**
  * Write a tree log to this.logs_.
- * To add a message to logs, this function shuold be called.
+ * To add a message to logs, this function should be called.
  * @param {!TreeDumper} logContent
  */
 LogStore.prototype.writeTreeLog = function(logContent) {
   if (this.shouldSkipOutput_())
     return;
 
-  var log = new TreeLog(logContent);
+  this.writeLog(new TreeLog(logContent));
+};
+
+/**
+ * Write a log to this.logs_.
+ * To add a message to logs, this function should be called.
+ * @param {!BaseLog} log
+ */
+LogStore.prototype.writeLog = function(log) {
+  if (this.shouldSkipOutput_())
+    return;
+
   this.logs_[this.startIndex_] = log;
   this.startIndex_ += 1;
   if (this.startIndex_ == LogStore.LOG_LIMIT)

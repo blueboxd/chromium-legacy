@@ -173,7 +173,7 @@ class PeerConnectionTrackerTest : public ::testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MockPeerConnectionTrackerHost> mock_host_;
   std::unique_ptr<PeerConnectionTracker> tracker_;
   std::unique_ptr<MockSendTargetThread> target_thread_;

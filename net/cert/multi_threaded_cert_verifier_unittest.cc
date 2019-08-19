@@ -72,7 +72,7 @@ ACTION(SetCertVerifyRevokedResult) {
 
 }  // namespace
 
-class MultiThreadedCertVerifierTest : public TestWithScopedTaskEnvironment {
+class MultiThreadedCertVerifierTest : public TestWithTaskEnvironment {
  public:
   MultiThreadedCertVerifierTest()
       : mock_verify_proc_(base::MakeRefCounted<MockCertVerifyProc>()),

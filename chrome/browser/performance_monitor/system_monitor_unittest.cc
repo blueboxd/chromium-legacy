@@ -63,8 +63,7 @@ class SystemMonitorTest : public testing::Test {
   using MetricMetadata = SystemMonitor::MetricMetadata;
 
   SystemMonitorTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     EXPECT_EQ(nullptr, SystemMonitor::Get());
@@ -105,7 +104,7 @@ class SystemMonitorTest : public testing::Test {
   std::unique_ptr<SystemMonitor> system_monitor_;
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemMonitorTest);
 };
@@ -203,9 +202,9 @@ TEST_F(SystemMonitorTest, ObserverGetsCalled) {
 
   // Fast forward by enough time to get multiple samples and wait for the tasks
   // to complete.
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       2 * system_monitor_->refresh_timer_for_testing().GetCurrentDelay());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ::testing::Mock::VerifyAndClear(&mock_observer_1);
   ::testing::Mock::VerifyAndClear(&mock_observer_2);

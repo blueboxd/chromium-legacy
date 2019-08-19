@@ -116,7 +116,7 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
   // means tests must ensure any MessageLoop they make is created before
   // the RenderViewHostTestEnabler.
   if (!base::MessageLoopCurrent::Get())
-    task_environment_ = std::make_unique<base::test::ScopedTaskEnvironment>();
+    task_environment_ = std::make_unique<base::test::TaskEnvironment>();
 #if !defined(OS_ANDROID)
   ImageTransportFactory::SetFactory(
       std::make_unique<TestImageTransportFactory>());

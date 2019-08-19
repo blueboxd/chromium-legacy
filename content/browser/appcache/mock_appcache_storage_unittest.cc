@@ -85,7 +85,7 @@ class MockAppCacheStorageTest : public testing::Test {
   };
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(MockAppCacheStorageTest, LoadCache_Miss) {

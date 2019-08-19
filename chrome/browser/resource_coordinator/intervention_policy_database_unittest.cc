@@ -64,7 +64,7 @@ class InterventionPolicyDatabaseTest : public ::testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment test_env_;
+  base::test::TaskEnvironment test_env_;
   InterventionPolicyDatabase intervention_policy_database_;
 };
 

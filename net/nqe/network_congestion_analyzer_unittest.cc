@@ -22,7 +22,7 @@ namespace nqe {
 
 namespace internal {
 
-using NetworkCongestionAnalyzerTest = TestWithScopedTaskEnvironment;
+using NetworkCongestionAnalyzerTest = TestWithTaskEnvironment;
 
 namespace {
 

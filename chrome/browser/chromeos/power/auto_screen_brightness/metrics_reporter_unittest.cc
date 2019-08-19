@@ -74,7 +74,7 @@ class MetricsReporterTest : public testing::Test {
     histogram_tester.ExpectUniqueSample(histogram_name, expected_count, 1);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestingPrefServiceSimple pref_service_;
   std::unique_ptr<MetricsReporter> reporter_;
 

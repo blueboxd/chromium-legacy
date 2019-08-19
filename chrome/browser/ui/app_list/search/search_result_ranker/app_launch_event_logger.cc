@@ -89,6 +89,7 @@ AppLaunchEventLogger::AppLaunchEventLogger()
   task_runner_ = base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  EnforceLoggingPolicy();
 }
 
 AppLaunchEventLogger::~AppLaunchEventLogger() {}
@@ -132,16 +133,6 @@ void AppLaunchEventLogger::OnGridClicked(const std::string& id) {
                                         weak_factory_.GetWeakPtr(), event));
 }
 
-void AppLaunchEventLogger::SetAppDataForTesting(
-    extensions::ExtensionRegistry* registry,
-    base::DictionaryValue* arc_apps,
-    base::DictionaryValue* arc_packages) {
-  testing_ = true;
-  registry_ = registry;
-  arc_apps_ = arc_apps;
-  arc_packages_ = arc_packages;
-}
-
 std::string AppLaunchEventLogger::RemoveScheme(const std::string& id) {
   std::string app_id(id);
   if (!app_id.compare(0, strlen(kExtensionSchemeWithDelimiter),
@@ -162,40 +153,8 @@ const GURL& AppLaunchEventLogger::GetLaunchWebURL(
   return extensions::AppLaunchInfo::GetLaunchWebURL(extension);
 }
 
-void AppLaunchEventLogger::OkApp(AppLaunchEvent_AppType app_type,
-                                 const std::string& app_id,
-                                 const std::string& arc_package_name,
-                                 const std::string& pwa_url) {
-  if (app_features_map_.find(app_id) == app_features_map_.end()) {
-    AppLaunchFeatures app_launch_features;
-    app_launch_features.set_app_id(app_id);
-    app_launch_features.set_app_type(app_type);
-    if (app_type == AppLaunchEvent_AppType_PWA) {
-      app_launch_features.set_pwa_url(pwa_url);
-    } else if (app_type == AppLaunchEvent_AppType_PLAY) {
-      app_launch_features.set_arc_package_name(arc_package_name);
-    }
-    app_features_map_[app_id] = app_launch_features;
-  }
-  app_features_map_[app_id].set_is_policy_compliant(true);
-}
-
 void AppLaunchEventLogger::EnforceLoggingPolicy() {
-  // Tests provide installed app information, so don't overwrite that.
-  if (!testing_) {
-    Profile* profile = ProfileManager::GetLastUsedProfile();
-    if (!profile) {
-      LOG(DFATAL) << "No profile";
-      return;
-    }
-    registry_ = extensions::ExtensionRegistry::Get(profile);
-
-    PrefService* pref_service = profile->GetPrefs();
-    if (pref_service) {
-      arc_apps_ = pref_service->GetDictionary(arc::prefs::kArcApps);
-      arc_packages_ = pref_service->GetDictionary(arc::prefs::kArcPackages);
-    }
-  }
+  SetRegistryAndArcInfo();
 
   for (auto& app : app_features_map_) {
     app.second.set_is_policy_compliant(false);
@@ -244,6 +203,39 @@ void AppLaunchEventLogger::EnforceLoggingPolicy() {
                 [](const std::pair<std::string, AppLaunchFeatures>& pair) {
                   return !pair.second.is_policy_compliant();
                 });
+}
+
+void AppLaunchEventLogger::SetRegistryAndArcInfo() {
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  if (!profile) {
+    // Tests will exit the method here.
+    return;
+  }
+  registry_ = extensions::ExtensionRegistry::Get(profile);
+
+  PrefService* pref_service = profile->GetPrefs();
+  if (pref_service) {
+    arc_apps_ = pref_service->GetDictionary(arc::prefs::kArcApps);
+    arc_packages_ = pref_service->GetDictionary(arc::prefs::kArcPackages);
+  }
+}
+
+void AppLaunchEventLogger::OkApp(AppLaunchEvent_AppType app_type,
+                                 const std::string& app_id,
+                                 const std::string& arc_package_name,
+                                 const std::string& pwa_url) {
+  if (app_features_map_.find(app_id) == app_features_map_.end()) {
+    AppLaunchFeatures app_launch_features;
+    app_launch_features.set_app_id(app_id);
+    app_launch_features.set_app_type(app_type);
+    if (app_type == AppLaunchEvent_AppType_PWA) {
+      app_launch_features.set_pwa_url(pwa_url);
+    } else if (app_type == AppLaunchEvent_AppType_PLAY) {
+      app_launch_features.set_arc_package_name(arc_package_name);
+    }
+    app_features_map_[app_id] = app_launch_features;
+  }
+  app_features_map_[app_id].set_is_policy_compliant(true);
 }
 
 void AppLaunchEventLogger::UpdateClickRank() {

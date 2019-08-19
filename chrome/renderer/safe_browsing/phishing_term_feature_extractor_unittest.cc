@@ -131,7 +131,7 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
     active_run_loop_->QuitWhenIdle();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> active_run_loop_;
   MockFeatureExtractorClock clock_;
   std::unique_ptr<PhishingTermFeatureExtractor> extractor_;

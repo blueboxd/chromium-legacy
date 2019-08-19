@@ -96,7 +96,7 @@ class VROrientationDeviceTest : public testing::Test {
     scoped_screen_override_ =
         std::make_unique<ScopedScreenOverride>(fake_screen_.get());
 
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void TearDown() override { shared_buffer_handle_.reset(); }
@@ -118,10 +118,10 @@ class VROrientationDeviceTest : public testing::Test {
 
     // Complete the creation of device_ by letting the GetSensor function go
     // through.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     fake_sensor_provider_->CallCallback(std::move(params));
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     // Ensure that the callback is called.
     loop.Run();
@@ -145,7 +145,7 @@ class VROrientationDeviceTest : public testing::Test {
         },
         loop.QuitClosure(), std::move(callback)));
 
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     // Ensure the pose request callback runs.
     loop.Run();
@@ -225,7 +225,7 @@ class VROrientationDeviceTest : public testing::Test {
   }
 
   // Needed for MakeRequest to work.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<VROrientationDevice> device_;
   std::unique_ptr<FakeSensorProvider> fake_sensor_provider_;
@@ -250,7 +250,7 @@ TEST_F(VROrientationDeviceTest, InitializationTest) {
 
   device_ = std::make_unique<VROrientationDevice>(&sensor_provider_ptr_,
                                                   base::BindOnce([]() {}));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(device_->IsAvailable());
 }

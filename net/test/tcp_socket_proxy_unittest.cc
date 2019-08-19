@@ -21,7 +21,7 @@ using net::test::IsOk;
 
 namespace net {
 
-class TcpSocketProxyTest : public TestWithScopedTaskEnvironment {
+class TcpSocketProxyTest : public TestWithTaskEnvironment {
  public:
   TcpSocketProxyTest() : io_thread_("TcpSocketProxyTest IO Thread") {
     EXPECT_TRUE(io_thread_.StartWithOptions(

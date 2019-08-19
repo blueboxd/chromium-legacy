@@ -239,7 +239,7 @@ class V8VarConverterTest : public testing::Test {
   std::unique_ptr<V8VarConverter> converter_;
 
  private:
-  base::test::ScopedTaskEnvironment
+  base::test::TaskEnvironment
       task_environment_;  // Required to receive callbacks.
 
   TestGlobals globals_;

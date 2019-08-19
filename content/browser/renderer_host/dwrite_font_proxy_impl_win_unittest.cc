@@ -69,7 +69,7 @@ class DWriteFontProxyImplUnitTest : public testing::Test {
     return lookup_mode == blink::mojom::UniqueFontLookupMode::kSingleLookups;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   blink::mojom::DWriteFontProxyPtr dwrite_font_proxy_;
   DWriteFontProxyImpl impl_;
   mojo::Binding<blink::mojom::DWriteFontProxy> binding_;
@@ -307,7 +307,7 @@ TEST_F(DWriteFontProxyTableMatchingTest, TestFindUniqueFont) {
   bool lookup_table_results_were_tested = false;
   dwrite_font_proxy().GetUniqueNameLookupTable(base::BindOnce(
       &TestWhenLookupTableReady, &lookup_table_results_were_tested));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(lookup_table_results_were_tested);
 }
 

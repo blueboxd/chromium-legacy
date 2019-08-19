@@ -274,6 +274,7 @@ class UI_BASE_EXPORT OSExchangeData {
   // text/html and CF_HTML.
   void SetHtml(const base::string16& html, const GURL& base_url);
   bool GetHtml(base::string16* html, GURL* base_url) const;
+  bool HasHtml() const;
 #endif
 
  private:

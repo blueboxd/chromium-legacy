@@ -8,9 +8,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/unsafe_shared_memory_region.h"
+#include "base/numerics/checked_math.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/system/sys_info.h"
 #include "components/arc/video_accelerator/arc_video_accelerator_util.h"
 #include "media/base/video_types.h"
@@ -153,28 +154,46 @@ void GpuArcVideoEncodeAccelerator::EncodeSharedMemory(
     return;
   }
 
-  if (!VerifyVideoFrame(format, coded_size_, fd.get(), planes)) {
+  base::Optional<media::VideoFrameLayout> layout;
+  auto gmb_handle = CreateGpuMemoryBufferHandle(
+      format, coded_size_, base::ScopedFD(HANDLE_EINTR(dup(fd.get()))), planes);
+  if (!gmb_handle) {
+    DLOG(ERROR) << "Failed to create GpuMemoryBufferHandle";
     client_->NotifyError(Error::kInvalidArgumentError);
     return;
   }
 
-  const size_t num_planes = media::VideoFrame::NumPlanes(format);
+  const size_t num_planes = gmb_handle->native_pixmap_handle.planes.size();
   // This is guaranteed because format is I420 here.
   DCHECK_EQ(num_planes, 3u);
   std::vector<media::VideoFrameLayout::Plane> layout_planes(num_planes);
   for (size_t i = 0; i < num_planes; i++) {
-    layout_planes[i].stride = planes[i].stride;
-    layout_planes[i].offset = planes[i].offset;
-    if (i != num_planes - 1) {
-      layout_planes[i].size = planes[i + 1].offset - planes[i].offset;
-    } else {
-      layout_planes[i].size =
-          media::VideoFrame::Rows(i, format, visible_size_.height()) *
-          planes[i].stride;
+    const auto& plane = gmb_handle->native_pixmap_handle.planes[i];
+    if (!base::IsValueInRangeForNumericType<int32_t>(plane.stride)) {
+      DLOG(ERROR) << "Invalid stride";
+      client_->NotifyError(Error::kInvalidArgumentError);
+      return;
     }
+    if (!base::IsValueInRangeForNumericType<size_t>(plane.offset)) {
+      DLOG(ERROR) << "Invalid offset";
+      client_->NotifyError(Error::kInvalidArgumentError);
+      return;
+    }
+    if (!base::IsValueInRangeForNumericType<size_t>(plane.size)) {
+      DLOG(ERROR) << "Invalid size";
+      client_->NotifyError(Error::kInvalidArgumentError);
+      return;
+    }
+
+    // convert uint32_t -> int32_t.
+    layout_planes[i].stride = base::checked_cast<int32_t>(plane.stride);
+    // convert uint64_t -> size_t
+    layout_planes[i].offset = base::checked_cast<size_t>(plane.offset);
+    // convert uint64_t -> size_t
+    layout_planes[i].size = base::checked_cast<size_t>(plane.size);
   }
 
-  auto layout = media::VideoFrameLayout::CreateWithPlanes(
+  layout = media::VideoFrameLayout::CreateWithPlanes(
       format, gfx::Size(layout_planes[0].stride, coded_size_.height()),
       std::move(layout_planes));
   if (!layout) {
@@ -183,9 +202,9 @@ void GpuArcVideoEncodeAccelerator::EncodeSharedMemory(
     return;
   }
 
-  base::CheckedNumeric<size_t> map_size = planes[0].offset;
-  for (size_t i = 0; i < num_planes; i++) {
-    map_size += layout->planes()[i].size;
+  base::CheckedNumeric<size_t> map_size = 0;
+  for (const auto& plane : layout->planes()) {
+    map_size = map_size.Max(plane.offset + plane.size);
   }
   if (!map_size.IsValid()) {
     DLOG(ERROR) << "Invalid map_size";
@@ -214,7 +233,6 @@ void GpuArcVideoEncodeAccelerator::EncodeSharedMemory(
   }
 
   uint8_t* shm_memory = mapping.GetMemoryAsSpan<uint8_t>().data();
-  DCHECK_EQ(layout->planes().size(), num_planes);
   auto frame = media::VideoFrame::WrapExternalYuvDataWithLayout(
       *layout, gfx::Rect(visible_size_), visible_size_,
       shm_memory + layout->planes()[0].offset,

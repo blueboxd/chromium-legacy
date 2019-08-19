@@ -29,18 +29,18 @@ class AppCacheDiskCacheTest : public testing::Test {
         &AppCacheDiskCacheTest::OnComplete, base::Unretained(this));
   }
 
-  void TearDown() override { scoped_task_environment_.RunUntilIdle(); }
+  void TearDown() override { task_environment_.RunUntilIdle(); }
 
   void FlushCacheTasks() {
     disk_cache::FlushCacheThreadForTesting();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void OnComplete(int err) {
     completion_results_.push_back(err);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir directory_;
   net::CompletionRepeatingCallback completion_callback_;
   std::vector<int> completion_results_;

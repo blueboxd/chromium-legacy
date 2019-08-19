@@ -805,7 +805,7 @@ class OCSPErrorTestDelegate : public TestDelegate {
 }  // namespace
 
 // Inherit PlatformTest since we require the autorelease pool on Mac OS X.
-class URLRequestTest : public PlatformTest, public WithScopedTaskEnvironment {
+class URLRequestTest : public PlatformTest, public WithTaskEnvironment {
  public:
   URLRequestTest()
       : default_context_(std::make_unique<TestURLRequestContext>(true)) {
@@ -10269,7 +10269,7 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPSToHTTP) {
   VerifyReferrerAfterRedirect(URLRequest::NO_REFERRER, GURL(), GURL());
 }
 
-class HTTPSRequestTest : public TestWithScopedTaskEnvironment {
+class HTTPSRequestTest : public TestWithTaskEnvironment {
  public:
   HTTPSRequestTest() : default_context_(true) {
     default_context_.set_network_delegate(&default_network_delegate_);
@@ -11214,7 +11214,7 @@ TEST_F(HTTPSRequestTest, NoSessionResumptionBetweenPrivacyModes) {
   }
 }
 
-class HTTPSFallbackTest : public TestWithScopedTaskEnvironment {
+class HTTPSFallbackTest : public TestWithTaskEnvironment {
  public:
   HTTPSFallbackTest() : context_(true) {
     ssl_config_service_ =
@@ -11298,7 +11298,7 @@ TEST_F(HTTPSFallbackTest, TLSv1_2NoFallback) {
   ExpectFailure(ERR_SSL_VERSION_OR_CIPHER_MISMATCH);
 }
 
-class HTTPSSessionTest : public TestWithScopedTaskEnvironment {
+class HTTPSSessionTest : public TestWithTaskEnvironment {
  public:
   HTTPSSessionTest() : default_context_(true) {
     cert_verifier_.set_default_result(OK);
@@ -13324,7 +13324,7 @@ std::unique_ptr<test_server::HttpResponse> HandleZeroRTTRequest(
   return std::make_unique<ZeroRTTResponse>(zero_rtt, false);
 }
 
-class HTTPSEarlyDataTest : public TestWithScopedTaskEnvironment {
+class HTTPSEarlyDataTest : public TestWithTaskEnvironment {
  public:
   HTTPSEarlyDataTest()
       : context_(true), test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {

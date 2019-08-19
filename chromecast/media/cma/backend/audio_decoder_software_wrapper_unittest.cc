@@ -39,7 +39,7 @@ class AudioDecoderSoftwareWrapperTest : public ::testing::Test {
   AudioDecoderSoftwareWrapperTest()
       : audio_decoder_software_wrapper_(&audio_decoder_) {}
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockAudioDecoder audio_decoder_;
   AudioDecoderSoftwareWrapper audio_decoder_software_wrapper_;
 };

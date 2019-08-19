@@ -35,28 +35,34 @@ class AwProxyingRestrictedCookieManager
   // network::mojom::RestrictedCookieManager interface:
   void GetAllForUrl(const GURL& url,
                     const GURL& site_for_cookies,
+                    const url::Origin& top_frame_origin,
                     network::mojom::CookieManagerGetOptionsPtr options,
                     GetAllForUrlCallback callback) override;
   void SetCanonicalCookie(const net::CanonicalCookie& cookie,
                           const GURL& url,
                           const GURL& site_for_cookies,
+                          const url::Origin& top_frame_origin,
                           SetCanonicalCookieCallback callback) override;
   void AddChangeListener(const GURL& url,
                          const GURL& site_for_cookies,
+                         const url::Origin& top_frame_origin,
                          network::mojom::CookieChangeListenerPtr listener,
                          AddChangeListenerCallback callback) override;
 
   void SetCookieFromString(const GURL& url,
                            const GURL& site_for_cookies,
+                           const url::Origin& top_frame_origin,
                            const std::string& cookie,
                            SetCookieFromStringCallback callback) override;
 
   void GetCookiesString(const GURL& url,
                         const GURL& site_for_cookies,
+                        const url::Origin& top_frame_origin,
                         GetCookiesStringCallback callback) override;
 
   void CookiesEnabledFor(const GURL& url,
                          const GURL& site_for_cookies,
+                         const url::Origin& top_frame_origin,
                          CookiesEnabledForCallback callback) override;
 
   // This one is internal.

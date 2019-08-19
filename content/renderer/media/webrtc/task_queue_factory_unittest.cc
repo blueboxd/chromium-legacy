@@ -24,7 +24,7 @@ class TestTaskQueueFactory final : public webrtc::TaskQueueFactory {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<webrtc::TaskQueueFactory> factory_;
 };
 

@@ -159,7 +159,7 @@ struct GurlAndString {
 
 }  // namespace
 
-class URLRequestThrottlerEntryTest : public TestWithScopedTaskEnvironment {
+class URLRequestThrottlerEntryTest : public TestWithTaskEnvironment {
  protected:
   URLRequestThrottlerEntryTest()
       : request_(context_.CreateRequest(GURL(),
@@ -310,7 +310,7 @@ TEST_F(URLRequestThrottlerEntryTest, SlidingWindow) {
   EXPECT_EQ(time_4, entry_->sliding_window_release_time());
 }
 
-class URLRequestThrottlerManagerTest : public TestWithScopedTaskEnvironment {
+class URLRequestThrottlerManagerTest : public TestWithTaskEnvironment {
  protected:
   URLRequestThrottlerManagerTest()
       : request_(context_.CreateRequest(GURL(),

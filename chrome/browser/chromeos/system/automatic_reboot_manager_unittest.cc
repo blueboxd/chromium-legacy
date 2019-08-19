@@ -204,7 +204,7 @@ class AutomaticRebootManagerBasicTest : public testing::Test {
 
   bool reboot_after_update_ = false;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedClosureRunner reset_main_thread_task_runner_;
 
   TestingPrefServiceSimple local_state_;

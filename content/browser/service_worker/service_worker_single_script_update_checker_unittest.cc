@@ -15,6 +15,7 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -428,6 +429,95 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
   EXPECT_EQ(check_result.value().result,
             ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent);
   EXPECT_EQ(check_result.value().url, kScriptURL);
+
+  // The update checker realizes that the script is different before reaching
+  // the end of the script from the disk cache.
+  EXPECT_FALSE(compare_reader_rawptr->AllExpectedReadsDone());
+}
+
+// Regression test for https://crbug.com/995146.
+// It should detect the update appropriately even when OnComplete() arrives
+// after the end of the body.
+TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
+       Different_SingleRead_EndOfTheBodyFirst) {
+  // Response body from the network.
+  const std::string body_from_net = "abc";
+
+  // Stored data for |kScriptURL|.
+  const std::vector<std::string> body_from_storage{"abc", "def"};
+
+  auto compare_reader = std::make_unique<MockServiceWorkerResponseReader>();
+  auto copy_reader = std::make_unique<MockServiceWorkerResponseReader>();
+  auto writer = std::make_unique<MockServiceWorkerResponseWriter>();
+  MockServiceWorkerResponseReader* compare_reader_rawptr = compare_reader.get();
+  compare_reader->ExpectReadOk(body_from_storage, TotalBytes(body_from_storage),
+                               IsAsync());
+
+  auto loader_factory = std::make_unique<network::TestURLLoaderFactory>();
+  base::Optional<CheckResult> check_result;
+  std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
+      CreateSingleScriptUpdateCheckerWithoutHttpCache(
+          kScriptURL, GURL(kScope), std::move(compare_reader),
+          std::move(copy_reader), std::move(writer), loader_factory.get(),
+          &check_result);
+
+  // Wait until the testing loader factory receives the network request.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(1u, loader_factory->pending_requests()->size());
+
+  // |client| simulates sending the data from the network to the update checker.
+  network::mojom::URLLoaderClientPtr client =
+      std::move(loader_factory->GetPendingRequest(0)->client);
+
+  // Simulate sending the response head.
+  network::ResourceResponseHead head;
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(kSuccessHeader));
+  head.headers->GetMimeType(&head.mime_type);
+  client->OnReceiveResponse(head);
+
+  // Simulate sending the response body. The buffer size for the data pipe
+  // should be larger than the body to send the whole body in one chunk.
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = body_from_net.size() * 2;
+  mojo::ScopedDataPipeConsumerHandle body_consumer;
+  mojo::ScopedDataPipeProducerHandle body_producer;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            mojo::CreateDataPipe(&options, &body_producer, &body_consumer));
+  client->OnStartLoadingResponseBody(std::move(body_consumer));
+  mojo::BlockingCopyFromString(body_from_net, body_producer);
+  body_producer.reset();
+
+  if (IsAsync()) {
+    // Blocked on reading the header.
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(check_result.has_value());
+
+    // Unblock the header, and then blocked on reading the body.
+    compare_reader_rawptr->CompletePendingRead();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(check_result.has_value());
+
+    // Unblock the body ("abc"). At this point, data from the network reaches
+    // the end.
+    compare_reader_rawptr->CompletePendingRead();
+  }
+
+  // Comparison should not finish until OnComplete() is called.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
+
+  // Call OnComplete() to complete the comparison. The new script should be
+  // different.
+  client->OnComplete(network::URLLoaderCompletionStatus(net::OK));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(check_result.has_value());
+  EXPECT_EQ(ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent,
+            check_result.value().result);
+  EXPECT_EQ(kScriptURL, check_result.value().url);
 
   // The update checker realizes that the script is different before reaching
   // the end of the script from the disk cache.

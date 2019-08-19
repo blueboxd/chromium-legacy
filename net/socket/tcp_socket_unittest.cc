@@ -99,7 +99,7 @@ class TestSocketPerformanceWatcher : public SocketPerformanceWatcher {
 
 const int kListenBacklog = 5;
 
-class TCPSocketTest : public PlatformTest, public WithScopedTaskEnvironment {
+class TCPSocketTest : public PlatformTest, public WithTaskEnvironment {
  protected:
   TCPSocketTest() : socket_(nullptr, nullptr, NetLogSource()) {}
 

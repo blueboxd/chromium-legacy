@@ -306,7 +306,7 @@ class AbstractPromiseTest : public testing::Test {
     return builder;
   }
 
-  test::ScopedTaskEnvironment scoped_task_environment_;
+  test::TaskEnvironment task_environment_;
 };
 
 TEST_F(AbstractPromiseTest, UnfulfilledPromise) {
@@ -2443,7 +2443,7 @@ TEST_F(AbstractPromiseTest, SingleRejectPrerequisitePolicyALLModified) {
     run_loop.Run();
     EXPECT_TRUE(all_promise->IsRejected());
     EXPECT_TRUE(p5->IsResolved());
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 }
 

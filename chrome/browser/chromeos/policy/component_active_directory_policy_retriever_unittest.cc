@@ -57,7 +57,7 @@ class ComponentActiveDirectoryPolicyRetrieverTest : public testing::Test {
 
   void OnPolicyStored(bool success) { policy_stored_ = success; }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::vector<RetrieveResult> results_;
   bool policy_stored_ = false;
   bool callback_called_ = false;
@@ -70,7 +70,7 @@ TEST_F(ComponentActiveDirectoryPolicyRetrieverTest, RetrieveNoPolicy) {
       login_manager::ACCOUNT_TYPE_DEVICE, kEmptyAccountId, empty_namespaces,
       CreateRetrieveCallback());
   retriever.Start();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(results_.empty());
   EXPECT_TRUE(callback_called_);
 }
@@ -82,7 +82,7 @@ TEST_F(ComponentActiveDirectoryPolicyRetrieverTest, RetrieveEmptyPolicy) {
       login_manager::ACCOUNT_TYPE_DEVICE, kEmptyAccountId, namespaces,
       CreateRetrieveCallback());
   retriever.Start();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_EQ(1UL, results_.size());
   EXPECT_EQ(namespaces[0], results_[0].ns);
   EXPECT_EQ(ResponseType::SUCCESS, results_[0].response);
@@ -103,7 +103,7 @@ TEST_F(ComponentActiveDirectoryPolicyRetrieverTest, RetrievePolicies) {
   descriptor.set_component_id(kExtensionId);
   chromeos::SessionManagerClient::Get()->StorePolicy(descriptor, policy_blob,
                                                      CreateStoredCallback());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(policy_stored_);
 
   // Retrieve the fake extension policy and make sure it matches.
@@ -113,7 +113,7 @@ TEST_F(ComponentActiveDirectoryPolicyRetrieverTest, RetrievePolicies) {
       login_manager::ACCOUNT_TYPE_DEVICE, kEmptyAccountId, namespaces,
       CreateRetrieveCallback());
   retriever.Start();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_EQ(1UL, results_.size());
   EXPECT_EQ(namespaces[0], results_[0].ns);
   EXPECT_EQ(ResponseType::SUCCESS, results_[0].response);
@@ -129,7 +129,7 @@ TEST_F(ComponentActiveDirectoryPolicyRetrieverTest, CancelClean) {
       CreateRetrieveCallback());
   retriever->Start();
   retriever.reset();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_EQ(0UL, results_.size());
 }
 

@@ -124,7 +124,7 @@ class ImportantFileWriterTest : public testing::Test {
  protected:
   WriteCallbacksObserver write_callback_observer_;
   FilePath file_;
-  test::ScopedTaskEnvironment scoped_task_environment_;
+  test::TaskEnvironment task_environment_;
 
  private:
   ScopedTempDir temp_dir_;

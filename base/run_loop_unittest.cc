@@ -195,7 +195,7 @@ class TestBoundDelegate final : public InjectableTestDelegate {
 };
 
 enum class RunLoopTestType {
-  // Runs all RunLoopTests under a ScopedTaskEnvironment to make sure real world
+  // Runs all RunLoopTests under a TaskEnvironment to make sure real world
   // scenarios work.
   kRealEnvironment,
 
@@ -211,7 +211,7 @@ class RunLoopTestEnvironment {
   RunLoopTestEnvironment(RunLoopTestType type) {
     switch (type) {
       case RunLoopTestType::kRealEnvironment: {
-        task_environment_ = std::make_unique<test::ScopedTaskEnvironment>();
+        task_environment_ = std::make_unique<test::TaskEnvironment>();
         break;
       }
       case RunLoopTestType::kTestDelegate: {
@@ -225,7 +225,7 @@ class RunLoopTestEnvironment {
 
  private:
   // Instantiates one or the other based on the RunLoopTestType.
-  std::unique_ptr<test::ScopedTaskEnvironment> task_environment_;
+  std::unique_ptr<test::TaskEnvironment> task_environment_;
   std::unique_ptr<InjectableTestDelegate> test_delegate_;
 };
 
@@ -549,7 +549,7 @@ INSTANTIATE_TEST_SUITE_P(Mock,
                          testing::Values(RunLoopTestType::kTestDelegate));
 
 TEST(ScopedRunTimeoutForTestTest, TimesOut) {
-  test::ScopedTaskEnvironment task_environment;
+  test::TaskEnvironment task_environment;
   RunLoop run_loop;
 
   static constexpr auto kArbitraryTimeout =
@@ -574,7 +574,7 @@ TEST(ScopedRunTimeoutForTestTest, TimesOut) {
 }
 
 TEST(ScopedRunTimeoutForTestTest, RunTasksUntilTimeout) {
-  test::ScopedTaskEnvironment task_environment;
+  test::TaskEnvironment task_environment;
   RunLoop run_loop;
 
   static constexpr auto kArbitraryTimeout =

@@ -689,7 +689,7 @@ bool LogContainsEventType(const BoundTestNetLog& log,
 
 }  // namespace
 
-using HttpCacheTest = TestWithScopedTaskEnvironment;
+using HttpCacheTest = TestWithTaskEnvironment;
 class HttpCacheIOCallbackTest : public HttpCacheTest {
  public:
   HttpCacheIOCallbackTest() {}
@@ -10252,7 +10252,7 @@ using HugeCacheTestConfiguration =
 
 class HttpCacheHugeResourceTest
     : public ::testing::TestWithParam<HugeCacheTestConfiguration>,
-      public WithScopedTaskEnvironment {
+      public WithTaskEnvironment {
  public:
   static std::list<HugeCacheTestConfiguration> GetTestModes();
   static std::list<HugeCacheTestConfiguration> kTestModes;
@@ -10761,7 +10761,7 @@ TEST_F(HttpCacheTest, NetworkBytesRange) {
   RemoveMockTransaction(&kRangeGET_TransactionOK);
 }
 
-class HttpCachePrefetchValidationTest : public TestWithScopedTaskEnvironment {
+class HttpCachePrefetchValidationTest : public TestWithTaskEnvironment {
  protected:
   static const int kNumSecondsPerMinute = 60;
   static const int kMaxAgeSecs = 100;
@@ -11939,7 +11939,7 @@ TEST_F(HttpCacheIOCallbackTest, FailedOpenOrCreateFollowedByOpenOrCreate) {
 
 class HttpCacheMemoryDumpTest
     : public testing::TestWithParam<base::trace_event::MemoryDumpLevelOfDetail>,
-      public WithScopedTaskEnvironment {};
+      public WithTaskEnvironment {};
 
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,

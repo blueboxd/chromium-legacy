@@ -54,7 +54,7 @@ class InProcessNetworkConnectionTrackerTest : public ::testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<net::test::MockNetworkChangeNotifier> notifier_ =
       net::test::MockNetworkChangeNotifier::Create();
 };

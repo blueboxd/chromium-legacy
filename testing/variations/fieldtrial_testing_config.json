@@ -606,21 +606,15 @@
             ]
         }
     ],
-    "AudioProcess": [
+    "AudioProcessSandboxMac": [
         {
             "platforms": [
-                "windows"
+                "mac"
             ],
             "experiments": [
                 {
                     "name": "AudioProcess_APM",
-                    "params": {
-                        "teardown_timeout_s": "900",
-                        "timeout_seconds": "180"
-                    },
                     "enable_features": [
-                        "AudioServiceOutOfProcess",
-                        "AudioServiceOutOfProcessKillAtHang",
                         "AudioServiceSandbox",
                         "WebRtcApmInAudioService"
                     ]
@@ -628,10 +622,10 @@
             ]
         }
     ],
-    "AudioProcessSandboxMac": [
+    "AudioProcessSandboxWindows": [
         {
             "platforms": [
-                "mac"
+                "windows"
             ],
             "experiments": [
                 {
@@ -1852,6 +1846,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DialMediaRouteProvider"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DirectActions": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "DirectActions",
+                    "enable_features": [
+                        "DirectActions"
                     ]
                 }
             ]

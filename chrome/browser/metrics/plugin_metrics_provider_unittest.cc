@@ -119,7 +119,7 @@ TEST_F(PluginMetricsProviderTest, Plugins) {
 
 TEST_F(PluginMetricsProviderTest, RecordCurrentStateWithDelay) {
   content::TestBrowserThreadBundle thread_bundle(
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
   PluginMetricsProvider provider(prefs());
 
@@ -134,7 +134,7 @@ TEST_F(PluginMetricsProviderTest, RecordCurrentStateWithDelay) {
 
 TEST_F(PluginMetricsProviderTest, RecordCurrentStateIfPending) {
   content::TestBrowserThreadBundle thread_bundle(
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
   PluginMetricsProvider provider(prefs());
 

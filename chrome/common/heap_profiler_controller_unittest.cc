@@ -21,8 +21,8 @@
 
 class HeapProfilerControllerTest : public testing::Test {
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 };
 
 TEST_F(HeapProfilerControllerTest, MAYBE_EmptyProfileIsNotEmitted) {
@@ -34,7 +34,7 @@ TEST_F(HeapProfilerControllerTest, MAYBE_EmptyProfileIsNotEmitted) {
           }));
   controller.Start();
 
-  scoped_task_environment.FastForwardBy(base::TimeDelta::FromDays(365));
+  task_environment.FastForwardBy(base::TimeDelta::FromDays(365));
 }
 
 // Sampling profiler is not capable of unwinding stack on Android under tests.
@@ -83,7 +83,7 @@ TEST_F(HeapProfilerControllerTest, ProfileCollectionsScheduler) {
   sampler->RecordAlloc(reinterpret_cast<void*>(0x7331), kAllocationSize,
                        base::PoissonAllocationSampler::kMalloc, nullptr);
 
-  scoped_task_environment.FastForwardUntilNoTasksRemain();
+  task_environment.FastForwardUntilNoTasksRemain();
   EXPECT_LE(kSnapshotsToCollect, profile_count);
 }
 #endif

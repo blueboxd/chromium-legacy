@@ -35,7 +35,7 @@ class MediaRouterStructTraitsTest
     std::move(callback).Run(sink);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   mojo::BindingSet<MediaRouterTraitsTestService> traits_test_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterStructTraitsTest);

@@ -161,7 +161,7 @@ TEST_F(SysInfoTest, HardwareModelNameFormatMacAndiOS) {
 #endif
 
 TEST_F(SysInfoTest, GetHardwareInfo) {
-  test::ScopedTaskEnvironment task_environment;
+  test::TaskEnvironment task_environment;
   base::Optional<SysInfo::HardwareInfo> hardware_info;
 
   auto callback = base::BindOnce(

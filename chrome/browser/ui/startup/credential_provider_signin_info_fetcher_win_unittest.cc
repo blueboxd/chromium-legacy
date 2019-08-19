@@ -66,7 +66,7 @@ class CredentialProviderFetcherTest : public ::testing::Test {
   std::string valid_user_info_response_;
   std::string valid_access_token_fetch_response_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
@@ -226,7 +226,7 @@ TEST_F(CredentialProviderFetcherTest, ProperlyProvidedScopes) {
           EXPECT_THAT(GetUploadData(request),
                       ::testing::HasSubstr(base::JoinString(scopes, "+")));
         }
-        scoped_task_environment_.RunUntilIdle();
+        task_environment_.RunUntilIdle();
       }));
   RunFetcher("a,b");
 }
@@ -244,7 +244,7 @@ TEST_F(CredentialProviderFetcherTest, SpacedOutScopes) {
           EXPECT_THAT(GetUploadData(request),
                       ::testing::HasSubstr(base::JoinString(scopes, "+")));
         }
-        scoped_task_environment_.RunUntilIdle();
+        task_environment_.RunUntilIdle();
       }));
   RunFetcher(" a , b ");
 }
@@ -262,7 +262,7 @@ TEST_F(CredentialProviderFetcherTest, EmptyScopes) {
           EXPECT_THAT(GetUploadData(request),
                       ::testing::HasSubstr(base::JoinString(scopes, "+")));
         }
-        scoped_task_environment_.RunUntilIdle();
+        task_environment_.RunUntilIdle();
       }));
   RunFetcher("a,b,,");
 }
@@ -279,7 +279,7 @@ TEST_F(CredentialProviderFetcherTest, DefaultScopes) {
           EXPECT_THAT(GetUploadData(request),
                       ::testing::HasSubstr(base::JoinString(scopes, "+")));
         }
-        scoped_task_environment_.RunUntilIdle();
+        task_environment_.RunUntilIdle();
       }));
   RunFetcher("");
 }

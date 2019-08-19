@@ -57,7 +57,7 @@ class BlockingWaiter : public FakeWaiter {
   base::RunLoop run_loop_;
 };
 
-class WebSocketEndpointLockManagerTest : public TestWithScopedTaskEnvironment {
+class WebSocketEndpointLockManagerTest : public TestWithTaskEnvironment {
  protected:
   WebSocketEndpointLockManagerTest() {
     websocket_endpoint_lock_manager_.SetUnlockDelayForTesting(

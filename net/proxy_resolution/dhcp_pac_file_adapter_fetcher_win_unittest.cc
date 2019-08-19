@@ -174,7 +174,7 @@ class FetcherClient {
 };
 
 TEST(DhcpPacFileAdapterFetcher, NormalCaseURLNotInDhcp) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   FetcherClient client;
   client.fetcher_->configured_url_ = "";
@@ -186,7 +186,7 @@ TEST(DhcpPacFileAdapterFetcher, NormalCaseURLNotInDhcp) {
 }
 
 TEST(DhcpPacFileAdapterFetcher, NormalCaseURLInDhcp) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   FetcherClient client;
   client.RunTest();
@@ -199,7 +199,7 @@ TEST(DhcpPacFileAdapterFetcher, NormalCaseURLInDhcp) {
 }
 
 TEST(DhcpPacFileAdapterFetcher, TimeoutDuringDhcp) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   // Does a Fetch() with a long enough delay on accessing DHCP that the
   // fetcher should time out.  This is to test a case manual testing found,
@@ -225,7 +225,7 @@ TEST(DhcpPacFileAdapterFetcher, TimeoutDuringDhcp) {
 }
 
 TEST(DhcpPacFileAdapterFetcher, CancelWhileDhcp) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   FetcherClient client;
   client.RunTest();
@@ -240,7 +240,7 @@ TEST(DhcpPacFileAdapterFetcher, CancelWhileDhcp) {
 }
 
 TEST(DhcpPacFileAdapterFetcher, CancelWhileFetcher) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   FetcherClient client;
   // This causes the mock fetcher not to pretend the
@@ -264,7 +264,7 @@ TEST(DhcpPacFileAdapterFetcher, CancelWhileFetcher) {
 }
 
 TEST(DhcpPacFileAdapterFetcher, CancelAtCompletion) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   FetcherClient client;
   client.RunTest();
@@ -299,7 +299,7 @@ class MockDhcpRealFetchPacFileAdapterFetcher
 };
 
 TEST(DhcpPacFileAdapterFetcher, MockDhcpRealFetch) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   EmbeddedTestServer test_server;
   test_server.ServeFilesFromSourceDirectory(
@@ -329,7 +329,7 @@ TEST(DhcpPacFileAdapterFetcher, MockDhcpRealFetch) {
 #define BASE_URL "http://corpserver/proxy.pac"
 
 TEST(DhcpPacFileAdapterFetcher, SanitizeDhcpApiString) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   const size_t kBaseUrlLen = strlen(BASE_URL);
 

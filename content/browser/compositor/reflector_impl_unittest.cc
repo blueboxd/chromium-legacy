@@ -203,7 +203,7 @@ class ReflectorImplTest : public testing::Test {
   std::unique_ptr<ui::TestContextFactories> context_factories_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   std::unique_ptr<viz::SyntheticBeginFrameSource> begin_frame_source_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<ui::Compositor> compositor_;
   std::unique_ptr<ui::Layer> root_layer_;

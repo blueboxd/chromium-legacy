@@ -19,6 +19,75 @@ visual-color-picker {
   height: 59%;
 }
 
+color-well {
+  border-radius: 2px 2px 0px 0px;
+  display: block;
+  height: 77%;
+  position: relative;
+  overflow: hidden;
+}
+
+hue-slider {
+  height: 100%;
+  margin-left: 6%;
+  position: relative;
+  width: 130px;
+}
+
+#visual-color-picker-strip {
+  display: flex;
+  height: 18%;
+  margin-top: 3%;
+  position: relative;
+}
+
+eye-dropper {
+  height: 32px;
+  margin-left: 2%;
+  position: relative;
+  width: 32px;
+}
+
+color-viewer {
+  border: 1px solid rgba(0, 0, 0, 0.19);
+  border-radius: 50%;
+  box-sizing: border-box;
+  height: 32px;
+  margin-left: 2%;
+  width: 32px;
+}
+
+color-well > canvas {
+  height: 100%;
+  width: 100%;
+}
+
+hue-slider > canvas {
+  border-radius: 2px;
+  height: 11px;
+  margin-top: 7%;
+  width: 100%;
+}
+
+color-selection-ring {
+  border: 2px solid #FFFFFF;
+  border-radius: 50%;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.4);
+  box-sizing: border-box;
+  position: absolute;
+}
+
+color-well > color-selection-ring {
+  height: 12px;
+  width: 12px;
+}
+
+hue-slider > color-selection-ring {
+  height: 16px;
+  margin-top: 7%;
+  width: 16px;
+}
+
 manual-color-picker {
   height: 28%;
 }

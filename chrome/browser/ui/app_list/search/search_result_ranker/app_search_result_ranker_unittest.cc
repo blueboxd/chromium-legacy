@@ -39,11 +39,11 @@ class AppSearchResultRankerFlagTest : public testing::Test {
   }
 
   // Waits for all tasks in to finish.
-  void Wait() { scoped_task_environment_.RunUntilIdle(); }
+  void Wait() { task_environment_.RunUntilIdle(); }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-      base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::DEFAULT,
+      base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED};
   base::ScopedTempDir temp_dir_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };

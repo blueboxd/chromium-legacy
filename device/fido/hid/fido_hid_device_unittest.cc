@@ -195,8 +195,8 @@ class FidoHidDeviceTest : public ::testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   device::mojom::HidManagerPtr hid_manager_;
   std::unique_ptr<FakeFidoHidManager> fake_hid_manager_;
 };
@@ -333,7 +333,7 @@ TEST_F(FidoHidDeviceTest, TestKeepAliveMessage) {
       .WillOnce(Invoke([&](device::mojom::HidConnection::ReadCallback* cb) {
         auto almost_time_out =
             kDeviceTimeout - base::TimeDelta::FromMicroseconds(1);
-        scoped_task_environment_.FastForwardBy(almost_time_out);
+        task_environment_.FastForwardBy(almost_time_out);
 
         std::move(*cb).Run(true, 0,
                            CreateMockResponseWithChannelId(
@@ -380,7 +380,7 @@ TEST_F(FidoHidDeviceTest, TestDeviceTimeoutAfterKeepAliveMessage) {
       // Repeated Read() invocation due to keep alive message. The callback
       // is invoked only after 3 seconds, which should cause device to timeout.
       .WillOnce(Invoke([&](device::mojom::HidConnection::ReadCallback* cb) {
-        scoped_task_environment_.FastForwardBy(kDeviceTimeout);
+        task_environment_.FastForwardBy(kDeviceTimeout);
         std::move(*cb).Run(true, 0,
                            CreateMockResponseWithChannelId(
                                mock_connection->connection_channel_id(),
@@ -450,7 +450,7 @@ TEST_F(FidoHidDeviceTest, TestCancel) {
       &FidoHidDevice::Cancel, device->weak_factory_.GetWeakPtr(), token);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, std::move(cancel_callback), delay_before_cancel);
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 }
 
 TEST_F(FidoHidDeviceTest, TestCancelWhileWriting) {
@@ -685,7 +685,7 @@ TEST_F(FidoHidDeviceTest, TestGetInfoFailsOnDeviceError) {
 
   device::test::TestCallbackReceiver<> get_info_callback;
   device->DiscoverSupportedProtocolAndDeviceInfo(get_info_callback.callback());
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(get_info_callback.was_called());
   EXPECT_EQ(FidoDevice::State::kDeviceError, device->state_for_testing());
 }
@@ -729,7 +729,7 @@ TEST_F(FidoHidDeviceTest, TestDeviceMessageError) {
 
   device::test::TestCallbackReceiver<> get_info_callback;
   device->DiscoverSupportedProtocolAndDeviceInfo(get_info_callback.callback());
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(get_info_callback.was_called());
 }
 
@@ -775,7 +775,7 @@ TEST_F(FidoHidDeviceTest, TestWinkNotSupported) {
 
   device::test::TestCallbackReceiver<> callback_receiver;
   device->TryWink(callback_receiver.callback());
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(callback_receiver.was_called());
 }
 
@@ -829,7 +829,7 @@ TEST_F(FidoHidDeviceTest, TestSuccessfulWink) {
 
   device::test::TestCallbackReceiver<> callback_receiver;
   device->TryWink(callback_receiver.callback());
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(callback_receiver.was_called());
 }
 

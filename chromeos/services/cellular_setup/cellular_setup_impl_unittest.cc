@@ -113,7 +113,7 @@ class CellularSetupImplTest : public testing::Test {
     std::move(quit_closure).Run();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   FakeOtaActivatorFactory fake_ota_activator_factory_;
 
   std::unique_ptr<CellularSetupBase> cellular_setup_;

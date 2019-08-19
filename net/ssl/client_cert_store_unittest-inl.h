@@ -58,7 +58,7 @@ const unsigned char kAuthorityRootDN[] = {
 //                        const SSLCertRequestInfo& cert_request_info,
 //                        ClientCertIdentityList* selected_identities);
 template <typename T>
-class ClientCertStoreTest : public TestWithScopedTaskEnvironment {
+class ClientCertStoreTest : public TestWithTaskEnvironment {
  public:
   T delegate_;
 };

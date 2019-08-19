@@ -153,7 +153,7 @@ class MockURLRequestFtpJobFactory : public URLRequestJobFactory {
   DISALLOW_COPY_AND_ASSIGN(MockURLRequestFtpJobFactory);
 };
 
-using UrlRequestFtpJobTest = TestWithScopedTaskEnvironment;
+using UrlRequestFtpJobTest = TestWithTaskEnvironment;
 
 TEST_F(UrlRequestFtpJobTest, HistogramLogSuccessNoAuth) {
   base::HistogramTester histograms;

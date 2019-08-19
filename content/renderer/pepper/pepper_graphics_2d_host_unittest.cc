@@ -82,7 +82,7 @@ class PepperGraphics2DHostTest : public testing::Test {
  private:
   ppapi::ViewData renderer_view_data_;
   std::unique_ptr<PepperGraphics2DHost> host_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockRendererPpapiHost renderer_ppapi_host_;
   ppapi::TestGlobals test_globals_;
 };

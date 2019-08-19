@@ -94,7 +94,7 @@ NetworkChangeNotifierLinux::NetworkChangeNotifierLinux(
           // Ensure |blocking_thread_objects_| lives on
           // |blocking_thread_runner_| to prevent races where
           // NetworkChangeNotifierLinux outlives
-          // ScopedTaskEnvironment. https://crbug.com/938126
+          // TaskEnvironment. https://crbug.com/938126
           base::OnTaskRunnerDeleter(blocking_thread_runner_)) {
   blocking_thread_runner_->PostTask(
       FROM_HERE,

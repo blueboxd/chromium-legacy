@@ -32,11 +32,10 @@ const char kTestUrl[] = "http://www.test.com/";
 class PreviewsLitePageDeciderTest : public testing::Test {
  protected:
   PreviewsLitePageDeciderTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(PreviewsLitePageDeciderTest, TestHostBypassBlacklist) {

@@ -18,7 +18,7 @@ namespace {
 using testing::UnorderedElementsAre;
 using testing::IsEmpty;
 
-class BackendCleanupTrackerTest : public net::TestWithScopedTaskEnvironment {
+class BackendCleanupTrackerTest : public net::TestWithTaskEnvironment {
  protected:
   BackendCleanupTrackerTest() = default;
 

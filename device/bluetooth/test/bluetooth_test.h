@@ -648,9 +648,9 @@ class BluetoothTestBase : public testing::Test {
   // |device_ordinal|.
   LowEnergyDeviceData GetLowEnergyDeviceData(int device_ordinal) const;
 
-  // A ScopedTaskEnvironment is required by some implementations that will
+  // A TaskEnvironment is required by some implementations that will
   // PostTasks and by base::RunLoop().RunUntilIdle() use in this fixture.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<BluetoothAdapter> adapter_;
   std::vector<scoped_refptr<BluetoothAdvertisement>> advertisements_;

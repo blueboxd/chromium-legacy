@@ -2114,8 +2114,6 @@
       'GPU Linux Builder Code Coverage': {},
       'GPU Mac Builder': {},
       'GPU Mac Builder (dbg)': {},
-      'GPU Win Builder': {},
-      'GPU Win Builder (dbg)': {},
       'Linux Debug (NVIDIA)': {
         'browser_config': 'debug',
         'os_type': 'linux',
@@ -2195,30 +2193,6 @@
           'gtest_tests': 'gpu_desktop_gtests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
-      },
-      'Win10 Debug (NVIDIA)': {
-        'browser_config': 'debug',
-        'os_type': 'win',
-        'mixins': [
-          'win10_nvidia_quadro_p400_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_win_gtests',
-          'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
-        },
-      },
-      'Win10 Release (NVIDIA)': {
-        'browser_config': 'release',
-        'os_type': 'win',
-        'mixins': [
-          'win10_nvidia_quadro_p400_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_win_gtests',
-          'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
-        },
-        # We keep this value enabled to provide minimal regression testing.
-        'use_multi_dimension_trigger_script': True,
       },
       'Win10 x64 Debug (NVIDIA)': {
         'browser_config': 'debug_x64',

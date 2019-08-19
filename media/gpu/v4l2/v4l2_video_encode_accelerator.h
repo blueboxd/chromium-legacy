@@ -80,10 +80,8 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   struct OutputRecord {
     OutputRecord();
     ~OutputRecord();
-    bool at_device;
+
     std::unique_ptr<BitstreamBufferRef> buffer_ref;
-    void* address;
-    size_t length;
   };
 
   // Store all the information of input frame passed to Encode().
@@ -315,12 +313,8 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   std::vector<InputRecord> input_buffer_map_;
   v4l2_memory input_memory_type_;
 
-  // Output queue state.
-  bool output_streamon_;
-  // Output buffers enqueued to device.
-  int output_buffer_queued_count_;
-  // Output buffers ready to use; LIFO since we don't care about ordering.
-  std::vector<int> free_output_buffers_;
+  scoped_refptr<V4L2Queue> output_queue_;
+
   // Mapping of int index to output buffer record.
   std::vector<OutputRecord> output_buffer_map_;
 

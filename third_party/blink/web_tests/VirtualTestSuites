@@ -1141,5 +1141,10 @@
     "prefix": "scheduler",
     "base": "wpt_internal/scheduler",
     "args": ["--enable-features=BlinkSchedulerDisableAntiStarvationForPriorities"]
+  },
+  {
+    "prefix": "cross-origin-embedder-policy",
+    "base": "external/wpt/html/cross-origin-embedder-policy",
+    "args": ["--enable-features=CrossOriginEmbedderPolicy"]
   }
 ]

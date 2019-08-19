@@ -331,7 +331,7 @@ TEST(PacFileDeciderTest, AutodetectSuccess) {
   EXPECT_EQ(rule.url, decider.effective_config().value().pac_url());
 }
 
-class PacFileDeciderQuickCheckTest : public TestWithScopedTaskEnvironment {
+class PacFileDeciderQuickCheckTest : public TestWithTaskEnvironment {
  public:
   PacFileDeciderQuickCheckTest()
       : rule_(rules_.AddSuccessRule("http://wpad/wpad.dat")),
@@ -624,7 +624,7 @@ TEST(PacFileDeciderTest, AutodetectFailCustomFails2) {
 // a 1 millisecond delay. This means it will now complete asynchronously.
 // Moreover, we test the NetLog to make sure it logged the pause.
 TEST(PacFileDeciderTest, CustomPacFails1_WithPositiveDelay) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   Rules rules;
   RuleBasedPacFileFetcher fetcher(&rules);
@@ -825,7 +825,7 @@ TEST(PacFileDeciderTest, DhcpCancelledByDestructor) {
   // http://codereview.chromium.org/7044058/
   // Thus, we don't care much about actual results (hence no EXPECT or ASSERT
   // macros below), just that it doesn't crash.
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   Rules rules;
   RuleBasedPacFileFetcher fetcher(&rules);

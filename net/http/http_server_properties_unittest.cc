@@ -65,11 +65,11 @@ class HttpServerPropertiesPeer {
 
 namespace {
 
-class HttpServerPropertiesTest : public TestWithScopedTaskEnvironment {
+class HttpServerPropertiesTest : public TestWithTaskEnvironment {
  protected:
   HttpServerPropertiesTest()
-      : TestWithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : TestWithTaskEnvironment(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         test_tick_clock_(GetMockTickClock()),
         impl_(nullptr /* pref_delegate */,
               nullptr /* net_log */,

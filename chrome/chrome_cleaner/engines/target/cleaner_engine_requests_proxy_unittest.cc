@@ -146,7 +146,7 @@ class CleanerEngineRequestsProxyTestBase : public ::testing::Test {
   scoped_refptr<TestParentProcess> parent_process_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // CleanerEngineRequestsProxyTest is parameterized with:

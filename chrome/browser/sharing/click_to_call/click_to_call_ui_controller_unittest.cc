@@ -126,6 +126,6 @@ TEST_F(ClickToCallUiControllerTest, OnDeviceChosen) {
 // Check the call to sharing service to get all synced devices.
 TEST_F(ClickToCallUiControllerTest, GetSyncedDevices) {
   EXPECT_CALL(*service(), GetDeviceCandidates(Eq(static_cast<int>(
-                              SharingDeviceCapability::kTelephony))));
+                              SharingDeviceCapability::kClickToCall))));
   controller_->UpdateAndShowDialog();
 }

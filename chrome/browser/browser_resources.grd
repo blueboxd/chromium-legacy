@@ -209,62 +209,11 @@
         <include name="IDR_APP_MANAGEMENT_MOJO_LITE_JS" file="${root_gen_dir}\chrome\browser\ui\webui\app_management\app_management.mojom-lite.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_TYPES_MOJO_LITE_JS" file="${root_gen_dir}\chrome\services\app_service\public\mojom\types.mojom-lite.js" use_base_dir="false" type="BINDATA" />
 
-        <include name="IDR_APP_MANAGEMENT_ACTIONS_HTML" file="resources\app_management\actions.html" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_ACTIONS_JS" file="resources\app_management\actions.js" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_API_LISTENER_HTML" file="resources\app_management\api_listener.html" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_API_LISTENER_JS" file="resources\app_management\api_listener.js" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_APP_HTML" file="resources\app_management\app.html" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_APP_ITEM_HTML" file="resources\app_management\app_item.html" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_APP_ITEM_JS" file="resources\app_management\app_item.js" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_APP_JS" file="resources\app_management\app.js" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_ARC_PERMISSION_VIEW_HTML" file="resources\app_management\arc_permission_view.html" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_ARC_PERMISSION_VIEW_JS" file="resources\app_management\arc_permission_view.js" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_BROWSER_PROXY_HTML" file="resources\app_management\browser_proxy.html" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_BROWSER_PROXY_JS" file="resources\app_management\browser_proxy.js" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_CHROME_APP_PERMISSION_VIEW_HTML" file="resources\app_management\chrome_app_permission_view.html" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_CHROME_APP_PERMISSION_VIEW_JS" file="resources\app_management\chrome_app_permission_view.js" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_CONSTANTS_HTML" file="resources\app_management\constants.html" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_CONSTANTS_JS" file="resources\app_management\constants.js" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_DOM_SWITCH_HTML" file="resources\app_management\dom_switch.html" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_DOM_SWITCH_JS" file="resources\app_management\dom_switch.js" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_EXPANDABLE_APP_LIST_HTML" file="resources\app_management\expandable_app_list.html" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_EXPANDABLE_APP_LIST_JS" file="resources\app_management\expandable_app_list.js" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_FAKE_PAGE_HANDLER_JS" file="resources\app_management\fake_page_handler.js" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_ICONS_HTML" file="resources\app_management\icons.html" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_INDEX_HTML" file="resources\app_management\index.html" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_MAIN_VIEW_HTML" file="resources\app_management\main_view.html" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_MAIN_VIEW_JS" file="resources\app_management\main_view.js" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_METADATA_VIEW_HTML" file="resources\app_management\metadata_view.html" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_METADATA_VIEW_JS" file="resources\app_management\metadata_view.js" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_NOTIFICATIONS_VIEW_HTML" file="resources\app_management\notifications_view.html" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_NOTIFICATIONS_VIEW_JS" file="resources\app_management\notifications_view.js" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_PERMISSION_ITEM_HTML" file="resources\app_management\permission_item.html" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_PERMISSION_ITEM_JS" file="resources\app_management\permission_item.js" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_PERMISSION_TOGGLE_HTML" file="resources\app_management\permission_toggle.html" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_PERMISSION_TOGGLE_JS" file="resources\app_management\permission_toggle.js" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_PERMISSION_VIEW_HEADER_HTML" file="resources\app_management\permission_view_header.html" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_PERMISSION_VIEW_HEADER_JS" file="resources\app_management\permission_view_header.js" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_PIN_TO_SHELF_ITEM_HTML" file="resources\app_management\pin_to_shelf_item.html" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_PIN_TO_SHELF_ITEM_JS" file="resources\app_management\pin_to_shelf_item.js" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_PWA_PERMISSION_VIEW_HTML" file="resources\app_management\pwa_permission_view.html" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_PWA_PERMISSION_VIEW_JS" file="resources\app_management\pwa_permission_view.js" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_REDUCERS_HTML" file="resources\app_management\reducers.html" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_REDUCERS_JS" file="resources\app_management\reducers.js" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_ROUTER_HTML" file="resources\app_management\router.html" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_ROUTER_JS" file="resources\app_management\router.js" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_SEARCH_VIEW_HTML" file="resources\app_management\search_view.html" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_SEARCH_VIEW_JS" file="resources\app_management\search_view.js" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_SHARED_STYLE_HTML" file="resources\app_management\shared_style.html" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_SHARED_VARS_HTML" file="resources\app_management\shared_vars.html" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_STORE_CLIENT_HTML" file="resources\app_management\store_client.html" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_STORE_CLIENT_JS" file="resources\app_management\store_client.js" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_STORE_HTML" file="resources\app_management\store.html" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_STORE_JS" file="resources\app_management\store.js" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_TOGGLE_ROW_HTML" file="resources\app_management\toggle_row.html" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_TOGGLE_ROW_JS" file="resources\app_management\toggle_row.js" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_TYPES_JS" file="resources\app_management\types.js" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_UTIL_HTML" file="resources\app_management\util.html" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_UTIL_JS" file="resources\app_management\util.js" type="BINDATA" />
       </if>
 
       <if expr="not is_android">

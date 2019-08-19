@@ -355,8 +355,8 @@ class FidoRequestHandlerTest : public ::testing::Test {
   FakeHandlerCallbackReceiver& callback() { return cb_; }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   test::FakeFidoDiscoveryFactory fake_discovery_factory_;
   scoped_refptr<::testing::NiceMock<MockBluetoothAdapter>> mock_adapter_;
   test::FakeFidoDiscovery* discovery_;
@@ -412,7 +412,7 @@ TEST_F(FidoRequestHandlerTest, TestAuthenticatorHandlerReset) {
 
   discovery()->AddDevice(std::move(device0));
   discovery()->AddDevice(std::move(device1));
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   request_handler.reset();
 }
 
@@ -483,7 +483,7 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleSuccessResponses) {
   discovery()->AddDevice(std::move(device0));
   discovery()->AddDevice(std::move(device1));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   callback().WaitForCallback();
   EXPECT_TRUE(request_handler->is_complete());
   EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
@@ -542,7 +542,7 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleFailureResponses) {
   discovery()->AddDevice(std::move(device1));
   discovery()->AddDevice(std::move(device2));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   callback().WaitForCallback();
   EXPECT_TRUE(request_handler->is_complete());
   EXPECT_EQ(FidoReturnCode::kUserConsentButCredentialNotRecognized,
@@ -582,7 +582,7 @@ TEST_F(FidoRequestHandlerTest,
   discovery()->AddDevice(std::move(device0));
   platform_discovery->AddDevice(std::move(device1));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   callback().WaitForCallback();
   EXPECT_TRUE(request_handler->is_complete());
   EXPECT_EQ(FidoReturnCode::kUserConsentDenied, callback().status());
@@ -608,7 +608,7 @@ TEST_F(FidoRequestHandlerTest,
   discovery()->AddDevice(std::move(device0));
   discovery()->AddDevice(std::move(device1));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   callback().WaitForCallback();
   EXPECT_TRUE(request_handler->is_complete());
   EXPECT_EQ(FidoReturnCode::kUserConsentDenied, callback().status());
@@ -688,7 +688,7 @@ TEST_F(FidoRequestHandlerTest,
 
   TestObserver observer;
   auto request_handler = CreateFakeHandler();
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 
   request_handler->set_observer(&observer);
   observer.WaitForAndExpectAvailableTransportsAre(
@@ -724,7 +724,7 @@ TEST_F(FidoRequestHandlerTest, TransportAvailabilityOfWindowsAuthenticator) {
         {FidoTransportProtocol::kUsbHumanInterfaceDevice},
         &fake_discovery_factory_);
     request_handler.set_observer(&observer);
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
 
     auto transport_availability_info =
         observer.WaitForTransportAvailabilityInfo();

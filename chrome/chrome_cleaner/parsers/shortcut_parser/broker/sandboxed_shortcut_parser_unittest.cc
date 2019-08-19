@@ -97,7 +97,7 @@ class SandboxedShortcutParserTest : public base::MultiProcessTest {
   base::ScopedTempDir temp_dir_without_chrome_lnk_;
   base::FilePath not_lnk_file_path_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 MULTIPROCESS_TEST_MAIN(SandboxedShortcutParserTargetMain) {

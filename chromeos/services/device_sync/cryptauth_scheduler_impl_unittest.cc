@@ -347,7 +347,7 @@ class DeviceSyncCryptAuthSchedulerImplTest : public testing::Test {
             prefs::kCryptAuthSchedulerNextDeviceSyncRequestClientMetadata));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   FakeCryptAuthSchedulerEnrollmentDelegate fake_enrollment_delegate_;
   FakeCryptAuthSchedulerDeviceSyncDelegate fake_device_sync_delegate_;
   TestingPrefServiceSimple pref_service_;

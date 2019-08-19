@@ -120,7 +120,7 @@ void CopyWeakNSObjectAndPost(const WeakNSObject<NSMutableData>& weak_object,
 
 // Tests that the weak object can be copied on a different thread.
 TEST(WeakNSObjectTest, WeakNSObjectCopyOnOtherThread) {
-  test::ScopedTaskEnvironment scoped_task_environment;
+  test::TaskEnvironment task_environment;
   Thread other_thread("WeakNSObjectCopyOnOtherThread");
   other_thread.Start();
 

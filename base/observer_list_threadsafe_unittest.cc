@@ -137,7 +137,7 @@ class AddRemoveThread : public Foo {
 }  // namespace
 
 TEST(ObserverListThreadSafeTest, BasicTest) {
-  test::ScopedTaskEnvironment scoped_task_environment;
+  test::TaskEnvironment task_environment;
 
   scoped_refptr<ObserverListThreadSafe<Foo>> observer_list(
       new ObserverListThreadSafe<Foo>);
@@ -166,7 +166,7 @@ TEST(ObserverListThreadSafeTest, BasicTest) {
 }
 
 TEST(ObserverListThreadSafeTest, RemoveObserver) {
-  test::ScopedTaskEnvironment scoped_task_environment;
+  test::TaskEnvironment task_environment;
 
   scoped_refptr<ObserverListThreadSafe<Foo>> observer_list(
       new ObserverListThreadSafe<Foo>);
@@ -209,7 +209,7 @@ TEST(ObserverListThreadSafeTest, WithoutSequence) {
 
   {
     // Add c when there's a sequence.
-    test::ScopedTaskEnvironment scoped_task_environment;
+    test::TaskEnvironment task_environment;
     observer_list->AddObserver(&c);
 
     observer_list->Notify(FROM_HERE, &Foo::Observe, 10);
@@ -238,7 +238,7 @@ TEST(ObserverListThreadSafeTest, WithoutSequence) {
   observer_list->RemoveObserver(&a);
 
   // Notifying should not fail but should also be a no-op.
-  test::ScopedTaskEnvironment scoped_task_environment;
+  test::TaskEnvironment task_environment;
   observer_list->AddObserver(&b);
   observer_list->Notify(FROM_HERE, &Foo::Observe, 30);
   RunLoop().RunUntilIdle();
@@ -269,7 +269,7 @@ class FooRemover : public Foo {
 };
 
 TEST(ObserverListThreadSafeTest, RemoveMultipleObservers) {
-  test::ScopedTaskEnvironment scoped_task_environment;
+  test::TaskEnvironment task_environment;
   scoped_refptr<ObserverListThreadSafe<Foo>> observer_list(
       new ObserverListThreadSafe<Foo>);
 
@@ -292,7 +292,7 @@ TEST(ObserverListThreadSafeTest, RemoveMultipleObservers) {
 // observer threads will also trigger notifications to all observers.
 static void ThreadSafeObserverHarness(int num_threads,
                                       bool cross_thread_notifies) {
-  test::ScopedTaskEnvironment scoped_task_environment;
+  test::TaskEnvironment task_environment;
 
   scoped_refptr<ObserverListThreadSafe<Foo>> observer_list(
       new ObserverListThreadSafe<Foo>);
@@ -320,7 +320,7 @@ static void ThreadSafeObserverHarness(int num_threads,
     RunLoop().RunUntilIdle();
   }
 
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 }
 
 TEST(ObserverListThreadSafeTest, CrossThreadObserver) {
@@ -335,13 +335,13 @@ TEST(ObserverListThreadSafeTest, CrossThreadNotifications) {
 }
 
 TEST(ObserverListThreadSafeTest, OutlivesTaskEnvironment) {
-  Optional<test::ScopedTaskEnvironment> scoped_task_environment(in_place);
+  Optional<test::TaskEnvironment> task_environment(in_place);
   scoped_refptr<ObserverListThreadSafe<Foo>> observer_list(
       new ObserverListThreadSafe<Foo>);
 
   Adder a(1);
   observer_list->AddObserver(&a);
-  scoped_task_environment.reset();
+  task_environment.reset();
   // Test passes if we don't crash here.
   observer_list->Notify(FROM_HERE, &Foo::Observe, 1);
 }
@@ -372,7 +372,7 @@ class SequenceVerificationObserver : public Foo {
 
 // Verify that observers are notified on the correct sequence.
 TEST(ObserverListThreadSafeTest, NotificationOnValidSequence) {
-  test::ScopedTaskEnvironment scoped_task_environment;
+  test::TaskEnvironment task_environment;
 
   auto task_runner_1 = CreateSequencedTaskRunner(TaskTraits(ThreadPool()));
   auto task_runner_2 = CreateSequencedTaskRunner(TaskTraits(ThreadPool()));
@@ -402,7 +402,7 @@ TEST(ObserverListThreadSafeTest, NotificationOnValidSequence) {
 // Verify that when an observer is added to a NOTIFY_ALL ObserverListThreadSafe
 // from a notification, it is itself notified.
 TEST(ObserverListThreadSafeTest, AddObserverFromNotificationNotifyAll) {
-  test::ScopedTaskEnvironment scoped_task_environment;
+  test::TaskEnvironment task_environment;
   auto observer_list = MakeRefCounted<ObserverListThreadSafe<Foo>>();
 
   Adder observer_added_from_notification(1);
@@ -460,7 +460,7 @@ TEST(ObserverListThreadSafeTest, RemoveWhileNotificationIsRunning) {
 
   // This must be after the declaration of |barrier| so that tasks posted to
   // ThreadPool can safely use |barrier|.
-  test::ScopedTaskEnvironment scoped_task_environment;
+  test::TaskEnvironment task_environment;
 
   CreateSequencedTaskRunner({ThreadPool(), MayBlock()})
       ->PostTask(FROM_HERE,
@@ -477,7 +477,7 @@ TEST(ObserverListThreadSafeTest, RemoveWhileNotificationIsRunning) {
 
 // Same as ObserverListTest.Existing, but for ObserverListThreadSafe
 TEST(ObserverListThreadSafeTest, Existing) {
-  test::ScopedTaskEnvironment scoped_task_environment;
+  test::TaskEnvironment task_environment;
   scoped_refptr<ObserverListThreadSafe<Foo>> observer_list(
       new ObserverListThreadSafe<Foo>(ObserverListPolicy::EXISTING_ONLY));
   Adder a(1);

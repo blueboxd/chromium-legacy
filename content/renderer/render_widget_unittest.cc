@@ -284,7 +284,7 @@ class RenderWidgetUnittest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   MockRenderProcess render_process_;
@@ -512,7 +512,7 @@ class RenderWidgetPopupUnittest : public testing::Test {
   FakeCompositorDependencies compositor_deps_;
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   MockRenderProcess render_process_;

@@ -102,7 +102,7 @@ class MockJSBindings : public ProxyResolverV8::JSBindings {
   bool should_terminate;
 };
 
-class ProxyResolverV8Test : public TestWithScopedTaskEnvironment {
+class ProxyResolverV8Test : public TestWithTaskEnvironment {
  public:
   // Creates a ProxyResolverV8 using the PAC script contained in |filename|. If
   // called more than once, the previous ProxyResolverV8 is deleted.

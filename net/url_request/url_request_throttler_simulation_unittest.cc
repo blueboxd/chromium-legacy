@@ -528,7 +528,7 @@ void SimulateAttack(Server* server,
 }
 
 TEST(URLRequestThrottlerSimulation, HelpsInAttack) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   Server unprotected_server(30, 1.0);
   RequesterResults unprotected_attacker_results;
@@ -615,7 +615,7 @@ double SimulateDowntime(const TimeDelta& duration,
 }
 
 TEST(URLRequestThrottlerSimulation, PerceivedDowntimeRatio) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   struct Stats {
     // Expected interval that we expect the ratio of downtime when anti-DDoS

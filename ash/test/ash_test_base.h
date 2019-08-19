@@ -36,7 +36,7 @@ class WindowDelegate;
 
 namespace base {
 namespace test {
-class ScopedTaskEnvironment;
+class TaskEnvironment;
 }
 }  // namespace base
 
@@ -74,17 +74,16 @@ class WorkAreaInsets;
 class AshTestBase : public testing::Test {
  public:
   // Constructs an AshTestBase with |traits| being forwarded to its
-  // ScopedTaskEnvironment. MainThreadType always defaults to UI and must not be
+  // TaskEnvironment. MainThreadType always defaults to UI and must not be
   // specified.
   template <typename... TaskEnvironmentTraits>
   NOINLINE explicit AshTestBase(TaskEnvironmentTraits... traits)
-      : scoped_task_environment_(
-            base::in_place,
-            base::test::ScopedTaskEnvironment::MainThreadType::UI,
-            traits...) {}
+      : task_environment_(base::in_place,
+                          base::test::TaskEnvironment::MainThreadType::UI,
+                          traits...) {}
 
   // Alternatively a subclass may pass this tag to ask this AshTestBase not to
-  // instantiate a ScopedTaskEnvironment. The subclass is then responsible to
+  // instantiate a TaskEnvironment. The subclass is then responsible to
   // instantiate one before AshTestBase::SetUp().
   struct SubclassManagesTaskEnvironment {};
   explicit AshTestBase(SubclassManagesTaskEnvironment tag);
@@ -282,14 +281,14 @@ class AshTestBase : public testing::Test {
   // protected so it can be accesssed by test subclasses to drive the task
   // environment.
  protected:
-  // |scoped_task_environment_| is initialized-once at construction time but
+  // |task_environment_| is initialized-once at construction time but
   // subclasses may elect to provide their own. Declare it last to ensure its
   // initialization/destruction semantics are identical in the
   // SubclassManagesTaskEnvironment mode.
-  base::Optional<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+  base::Optional<base::test::TaskEnvironment> task_environment_;
 
   // Private again for DISALLOW_COPY_AND_ASSIGN; additional members should be
-  // added in the first private section to be before |scoped_task_environment_|.
+  // added in the first private section to be before |task_environment_|.
  private:
   DISALLOW_COPY_AND_ASSIGN(AshTestBase);
 };

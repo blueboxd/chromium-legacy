@@ -123,7 +123,7 @@ class CancelStreamCallback : public TestCompletionCallbackBase {
 
 }  // namespace
 
-class SpdyHttpStreamTest : public TestWithScopedTaskEnvironment {
+class SpdyHttpStreamTest : public TestWithTaskEnvironment {
  public:
   SpdyHttpStreamTest()
       : url_(kDefaultUrl),

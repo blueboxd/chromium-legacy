@@ -232,8 +232,8 @@ class WilcoDtcSupportdBridgeTest : public testing::Test {
     mojo_wilco_dtc_supportd_service_factory_.CloseBinding();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
  private:
   FakeMojoWilcoDtcSupportdServiceFactory
@@ -276,13 +276,13 @@ TEST_F(WilcoDtcSupportdBridgeTest, SuccessfulBootstrap) {
   wilco_dtc_supportd_dbus_client()->SetBootstrapMojoConnectionResult(true);
   wilco_dtc_supportd_dbus_client()->SetBootstrapMojoConnectionResult(
       base::nullopt);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(is_mojo_factory_get_service_call_in_flight());
 
   // Resolve the pending GetService Mojo call. Verify the bridge exposes the
   // obtained WilcoDtcSupportdService Mojo interface pointer.
   RespondToMojoFactoryGetServiceCall();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(
       wilco_dtc_supportd_bridge()->wilco_dtc_supportd_service_mojo_proxy());
 
@@ -299,7 +299,7 @@ TEST_F(WilcoDtcSupportdBridgeTest, DBusServiceNotBringingUpError) {
                    ->wait_for_service_to_be_available_in_flight_call_count());
 
   // Verify that no extra WaitForServiceToBeAvailable calls are made.
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       WilcoDtcSupportdBridge::connection_attempt_interval_for_testing());
   EXPECT_EQ(1, wilco_dtc_supportd_dbus_client()
                    ->wait_for_service_to_be_available_in_flight_call_count());
@@ -321,7 +321,7 @@ TEST_F(WilcoDtcSupportdBridgeTest, DBusBootstrapMojoConnectionError) {
     wilco_dtc_supportd_dbus_client()->SetBootstrapMojoConnectionResult(false);
     wilco_dtc_supportd_dbus_client()->SetBootstrapMojoConnectionResult(
         base::nullopt);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     // Verify that no new BootstrapMojoConnection call is made immediately after
     // the previous one failed.
@@ -329,7 +329,7 @@ TEST_F(WilcoDtcSupportdBridgeTest, DBusBootstrapMojoConnectionError) {
                      ->bootstrap_mojo_connection_in_flight_call_count());
 
     // Fast forward the clock till the next attempt should occur.
-    scoped_task_environment_.FastForwardBy(
+    task_environment_.FastForwardBy(
         WilcoDtcSupportdBridge::connection_attempt_interval_for_testing());
   }
 
@@ -345,7 +345,7 @@ TEST_F(WilcoDtcSupportdBridgeTest, DBusBootstrapMojoConnectionError) {
 TEST_F(WilcoDtcSupportdBridgeTest, ImmediateMojoDisconnectionError) {
   wilco_dtc_supportd_dbus_client()->SetWaitForServiceToBeAvailableResult(true);
   wilco_dtc_supportd_dbus_client()->SetBootstrapMojoConnectionResult(true);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   for (int attempt_number = 0;
        attempt_number <
@@ -356,11 +356,11 @@ TEST_F(WilcoDtcSupportdBridgeTest, ImmediateMojoDisconnectionError) {
     // responding to the call. Verify that no new call happens immediately.
     EXPECT_TRUE(is_mojo_factory_get_service_call_in_flight());
     AbortMojoConnection();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     EXPECT_FALSE(is_mojo_factory_get_service_call_in_flight());
 
     // Fast forward the clock till the next attempt should occur.
-    scoped_task_environment_.FastForwardBy(
+    task_environment_.FastForwardBy(
         WilcoDtcSupportdBridge::connection_attempt_interval_for_testing());
   }
 
@@ -374,29 +374,29 @@ TEST_F(WilcoDtcSupportdBridgeTest, Reestablishing) {
   // Let the bootstrapping succeed on the first attempt.
   wilco_dtc_supportd_dbus_client()->SetWaitForServiceToBeAvailableResult(true);
   wilco_dtc_supportd_dbus_client()->SetBootstrapMojoConnectionResult(true);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(is_mojo_factory_get_service_call_in_flight());
   RespondToMojoFactoryGetServiceCall();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(
       wilco_dtc_supportd_bridge()->wilco_dtc_supportd_service_mojo_proxy());
 
   // Abort the Mojo binding. Verify that no new connection attempt happens
   // immediately.
   AbortMojoConnection();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(
       wilco_dtc_supportd_bridge()->wilco_dtc_supportd_service_mojo_proxy());
   EXPECT_FALSE(is_mojo_factory_get_service_call_in_flight());
 
   // Fast forward the clock till the next connection attempt.
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       WilcoDtcSupportdBridge::connection_attempt_interval_for_testing());
 
   // Let the bootstrapping succeed again.
   ASSERT_TRUE(is_mojo_factory_get_service_call_in_flight());
   RespondToMojoFactoryGetServiceCall();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(
       wilco_dtc_supportd_bridge()->wilco_dtc_supportd_service_mojo_proxy());
 }
@@ -408,30 +408,30 @@ TEST_F(WilcoDtcSupportdBridgeTest, RetryCounterReset) {
 
   // Fail the first few connection attempts, leaving only one attempt left.
   wilco_dtc_supportd_dbus_client()->SetBootstrapMojoConnectionResult(false);
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       WilcoDtcSupportdBridge::connection_attempt_interval_for_testing() *
       (WilcoDtcSupportdBridge::max_connection_attempt_count_for_testing() - 2));
 
   // Let the bootstrapping succeed on the new attempt (the last allowed one in
   // this serie).
   wilco_dtc_supportd_dbus_client()->SetBootstrapMojoConnectionResult(true);
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       WilcoDtcSupportdBridge::connection_attempt_interval_for_testing());
   ASSERT_TRUE(is_mojo_factory_get_service_call_in_flight());
   RespondToMojoFactoryGetServiceCall();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(
       wilco_dtc_supportd_bridge()->wilco_dtc_supportd_service_mojo_proxy());
 
   // Abort the Mojo binding.
   AbortMojoConnection();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(
       wilco_dtc_supportd_bridge()->wilco_dtc_supportd_service_mojo_proxy());
 
   // Fail again a few attempts as before.
   wilco_dtc_supportd_dbus_client()->SetBootstrapMojoConnectionResult(false);
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       WilcoDtcSupportdBridge::connection_attempt_interval_for_testing() *
       (WilcoDtcSupportdBridge::max_connection_attempt_count_for_testing() - 1));
 
@@ -439,11 +439,11 @@ TEST_F(WilcoDtcSupportdBridgeTest, RetryCounterReset) {
   // the retry attempts made before the previous successful bootstrap were
   // ignored.
   wilco_dtc_supportd_dbus_client()->SetBootstrapMojoConnectionResult(true);
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       WilcoDtcSupportdBridge::connection_attempt_interval_for_testing());
   ASSERT_TRUE(is_mojo_factory_get_service_call_in_flight());
   RespondToMojoFactoryGetServiceCall();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(
       wilco_dtc_supportd_bridge()->wilco_dtc_supportd_service_mojo_proxy());
 }

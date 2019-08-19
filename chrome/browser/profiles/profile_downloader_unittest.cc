@@ -87,7 +87,7 @@ class ProfileDownloaderTest
     on_access_token_request_callback_ = std::move(callback);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   signin::IdentityTestEnvironment identity_test_env_;
   ProfileDownloader profile_downloader_;

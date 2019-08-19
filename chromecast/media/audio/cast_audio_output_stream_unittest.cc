@@ -227,8 +227,7 @@ class CastAudioOutputStreamTest : public ::testing::Test {
  public:
   CastAudioOutputStreamTest()
       : audio_thread_("CastAudioThread"),
-        scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+        task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         format_(::media::AudioParameters::AUDIO_PCM_LINEAR),
         channel_layout_(::media::CHANNEL_LAYOUT_MONO),
         sample_rate_(::media::AudioParameters::kAudioCDSampleRate),
@@ -288,7 +287,7 @@ class CastAudioOutputStreamTest : public ::testing::Test {
         base::BindRepeating(&CastAudioOutputStreamTest::GetCmaBackendFactory,
                             base::Unretained(this)),
         base::BindRepeating(&DummyGetSessionId),
-        scoped_task_environment_.GetMainThreadTaskRunner(),
+        task_environment_.GetMainThreadTaskRunner(),
         audio_thread_.task_runner(), connector_.get(), use_mixer,
         true /* force_use_cma_backend_for_output*/));
     audio_manager_->SetConnectorForTesting(std::move(connector_));
@@ -312,7 +311,7 @@ class CastAudioOutputStreamTest : public ::testing::Test {
   }
 
   void RunThreadsUntilIdle() {
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     audio_thread_.FlushForTesting();
   }
 
@@ -332,7 +331,7 @@ class CastAudioOutputStreamTest : public ::testing::Test {
   }
 
   base::Thread audio_thread_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MockCmaBackendFactory> mock_backend_factory_;
 
   FakeCmaBackend* cma_backend_ = nullptr;
@@ -690,7 +689,7 @@ TEST_F(CastAudioOutputStreamTest, PushFrameAfterStop) {
 
   ASSERT_TRUE(cma_backend_);
   base::TimeDelta duration = GetAudioParams().GetBufferDuration() * 2;
-  scoped_task_environment_.FastForwardBy(duration);
+  task_environment_.FastForwardBy(duration);
   RunThreadsUntilIdle();
 
   stream->Close();
@@ -721,7 +720,7 @@ TEST_F(CastAudioOutputStreamTest, PushFrameAfterClose) {
 
   ASSERT_TRUE(cma_backend_);
   base::TimeDelta duration = GetAudioParams().GetBufferDuration() * 2;
-  scoped_task_environment_.FastForwardBy(duration);
+  task_environment_.FastForwardBy(duration);
   RunThreadsUntilIdle();
 }
 

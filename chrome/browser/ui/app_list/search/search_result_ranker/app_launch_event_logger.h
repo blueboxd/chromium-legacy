@@ -46,7 +46,8 @@ namespace app_list {
 class AppLaunchEventLogger {
  public:
   AppLaunchEventLogger();
-  ~AppLaunchEventLogger();
+  virtual ~AppLaunchEventLogger();
+
   // Processes a click on an app in the suggestion chip or search box and logs
   // the resulting metrics in UKM. This method calls EnforceLoggingPolicy() to
   // ensure the logging policy is complied with.
@@ -57,10 +58,6 @@ class AppLaunchEventLogger {
   // logs the resulting metrics in UKM. This method calls EnforceLoggingPolicy()
   // to ensure the logging policy is complied with.
   void OnGridClicked(const std::string& id);
-  // Provides values to be used when testing.
-  void SetAppDataForTesting(extensions::ExtensionRegistry* registry,
-                            base::DictionaryValue* arc_apps,
-                            base::DictionaryValue* arc_packages);
 
   static const char kPackageName[];
   static const char kShouldSync[];
@@ -68,22 +65,34 @@ class AppLaunchEventLogger {
  protected:
   // Get the url used to launch a PWA or bookmark app.
   virtual const GURL& GetLaunchWebURL(const extensions::Extension* extension);
+  // Enforces logging policy, ensuring that the |app_features_map_| only
+  // contains apps that are allowed to be logged. All apps are rechecked in case
+  // they have been uninstalled since the previous check.
+  void EnforceLoggingPolicy();
+
+  // The arc apps installed on the device.
+  const base::DictionaryValue* arc_apps_ = nullptr;
+  // The arc packages installed on the device.
+  const base::DictionaryValue* arc_packages_ = nullptr;
+  // The Chrome extension registry.
+  extensions::ExtensionRegistry* registry_ = nullptr;
 
  private:
   // Removes any leading "chrome-extension://" or "arc://". Also remove any
   // trailing "/".
   std::string RemoveScheme(const std::string& id);
 
+  // Set registry_ to the ExtensionRegistry of the primary user and load that
+  // user's Arc++ apps and Arc++ packages. Tests will exit this method early,
+  // preventing the changing of these member variables from their preset test
+  // values.
+  void SetRegistryAndArcInfo();
   // Marks app as ok for policy compliance. If the app is not in
   // |app_features_map_| then add it.
   void OkApp(AppLaunchEvent_AppType app_type,
              const std::string& app_id,
              const std::string& arc_package_name,
              const std::string& pwa_url);
-  // Enforces logging policy, ensuring that the |app_features_map_| only
-  // contains apps that are allowed to be logged. All apps are rechecked in case
-  // they have been uninstalled since the previous check.
-  void EnforceLoggingPolicy();
   // Update the click rank (which ranks app by the number of clicks) for the
   // apps that have been clicked.
   void UpdateClickRank();
@@ -108,12 +117,6 @@ class AppLaunchEventLogger {
   // Logs the app click using UKM.
   void Log(AppLaunchEvent app_launch_event);
 
-  // The arc apps installed on the device.
-  const base::DictionaryValue* arc_apps_;
-  // The arc packages installed on the device.
-  const base::DictionaryValue* arc_packages_;
-  // The Chrome extension registry.
-  extensions::ExtensionRegistry* registry_;
   // A map from app id to features. Only contains apps satisfying logging
   // policy.
   base::flat_map<std::string, AppLaunchFeatures> app_features_map_;
@@ -138,9 +141,6 @@ class AppLaunchEventLogger {
   // minutes.
   const std::unique_ptr<chromeos::power::ml::RecentEventsCounter>
       all_clicks_last_24_hours_;
-
-  // Used to prevent overwriting of parameters that are set for tests.
-  bool testing_ = false;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::WeakPtrFactory<AppLaunchEventLogger> weak_factory_;

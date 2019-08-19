@@ -789,8 +789,7 @@ class MockRequireCTDelegate : public TransportSecurityState::RequireCTDelegate {
                                   const HashValueVector& hashes));
 };
 
-class SSLClientSocketTest : public PlatformTest,
-                            public WithScopedTaskEnvironment {
+class SSLClientSocketTest : public PlatformTest, public WithTaskEnvironment {
  public:
   SSLClientSocketTest()
       : socket_factory_(ClientSocketFactory::GetDefaultFactory()),

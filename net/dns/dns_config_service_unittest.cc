@@ -23,7 +23,7 @@ namespace net {
 
 namespace {
 
-class DnsConfigServiceTest : public TestWithScopedTaskEnvironment {
+class DnsConfigServiceTest : public TestWithTaskEnvironment {
  public:
   void OnConfigChanged(const DnsConfig& config) {
     last_config_ = config;

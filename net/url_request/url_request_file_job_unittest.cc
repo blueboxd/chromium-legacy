@@ -180,7 +180,7 @@ struct Range {
 
 // A superclass for tests of the OnReadComplete / OnSeekComplete /
 // OnReadComplete functions of URLRequestFileJob.
-class URLRequestFileJobEventsTest : public TestWithScopedTaskEnvironment {
+class URLRequestFileJobEventsTest : public TestWithTaskEnvironment {
  public:
   URLRequestFileJobEventsTest();
 

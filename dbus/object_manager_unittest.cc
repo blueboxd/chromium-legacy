@@ -206,7 +206,7 @@ class ObjectManagerTest
     WaitForMethodCallback();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<base::Thread> dbus_thread_;
   scoped_refptr<Bus> bus_;
@@ -406,7 +406,7 @@ TEST_F(ObjectManagerTest, PropertiesChangedAsObjectsReceived) {
   // after setting up the match rule for PropertiesChanged. We should process
   // the PropertiesChanged event right after that. If we don't receive it within
   // 2 seconds, then fail the test.
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
+  task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&ObjectManagerTest::PropertiesChangedTestTimeout,
                      base::Unretained(this)),

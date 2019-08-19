@@ -201,7 +201,7 @@ class MultiDeviceSetupServiceTest : public testing::Test {
     std::move(quit_closure).Run();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const multidevice::RemoteDeviceRefList test_devices_;
 
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>

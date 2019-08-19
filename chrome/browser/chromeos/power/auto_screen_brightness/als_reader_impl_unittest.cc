@@ -54,9 +54,8 @@ class TestObserver : public AlsReader::Observer {
 class AlsReaderImplTest : public testing::Test {
  public:
   AlsReaderImplTest()
-      : scoped_task_environment_(
-            std::make_unique<base::test::ScopedTaskEnvironment>(
-                base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME)) {
+      : task_environment_(std::make_unique<base::test::TaskEnvironment>(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME)) {
     CHECK(temp_dir_.CreateUniqueTempDir());
     ambient_light_path_ = temp_dir_.GetPath().Append("test_als");
     als_reader_.SetTaskRunnerForTesting(base::SequencedTaskRunnerHandle::Get());
@@ -80,7 +79,7 @@ class AlsReaderImplTest : public testing::Test {
   base::FilePath ambient_light_path_;
   base::HistogramTester histogram_tester_;
 
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
 
   AlsReaderImpl als_reader_;
   TestObserver test_observer_;
@@ -116,7 +115,7 @@ TEST_F(AlsReaderImplTest, ErrorMetrics) {
 
 TEST_F(AlsReaderImplTest, OneAlsValue) {
   WriteLux(10);
-  scoped_task_environment_->RunUntilIdle();
+  task_environment_->RunUntilIdle();
   EXPECT_EQ(10, test_observer_.ambient_light());
   EXPECT_EQ(1, test_observer_.num_received_ambient_lights());
 }
@@ -126,13 +125,13 @@ TEST_F(AlsReaderImplTest, TwoAlsValues) {
   // Ambient light is read immediately after initialization, and then
   // periodically every |kAlsPollInterval|. Below we move time for half of
   // |kAlsPollInterval| to ensure there is only one reading attempt.
-  scoped_task_environment_->FastForwardBy(AlsReaderImpl::kAlsPollInterval / 2);
+  task_environment_->FastForwardBy(AlsReaderImpl::kAlsPollInterval / 2);
   EXPECT_EQ(10, test_observer_.ambient_light());
   EXPECT_EQ(1, test_observer_.num_received_ambient_lights());
 
   WriteLux(20);
   // Now move time for another |kAlsPollInterval| to trigger another read.
-  scoped_task_environment_->FastForwardBy(AlsReaderImpl::kAlsPollInterval);
+  task_environment_->FastForwardBy(AlsReaderImpl::kAlsPollInterval);
   EXPECT_EQ(20, test_observer_.ambient_light());
   EXPECT_EQ(2, test_observer_.num_received_ambient_lights());
 }

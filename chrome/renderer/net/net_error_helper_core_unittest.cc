@@ -272,9 +272,7 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   base::MockOneShotTimer* timer() { return timer_; }
 
-  base::test::ScopedTaskEnvironment* task_environment() {
-    return &task_environment_;
-  }
+  base::test::TaskEnvironment* task_environment() { return &task_environment_; }
   content::MockRenderThread* render_thread() { return &render_thread_; }
 
   void NavigationCorrectionsLoadSuccess(const NavigationCorrection* corrections,
@@ -494,7 +492,7 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   base::MockOneShotTimer* timer_;
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   content::MockRenderThread render_thread_;
 
   std::unique_ptr<NetErrorHelperCore> core_;

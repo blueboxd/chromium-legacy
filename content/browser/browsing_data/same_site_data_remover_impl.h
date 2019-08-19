@@ -40,12 +40,6 @@ class CONTENT_EXPORT SameSiteDataRemoverImpl {
   // call since it's not needed for the function execution.
   void ClearStoragePartitionData(base::OnceClosure closure);
 
-  // Clears cookies and associated data available in third-party contexts if
-  // clear_storage is set to true.
-  static void ClearData(base::OnceClosure closure,
-                        BrowserContext* context,
-                        bool clear_storage);
-
   // For testing purposes only.
   void OverrideStoragePartitionForTesting(StoragePartition* storage_partition);
 

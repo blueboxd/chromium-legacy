@@ -102,7 +102,7 @@ class OobeConfigurationClientTest : public testing::Test {
   // The client to be tested.
   std::unique_ptr<OobeConfigurationClient> client_;
   // A message loop to emulate asynchronous behavior.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   // The mock bus.
   scoped_refptr<dbus::MockBus> mock_bus_;
   // The mock object proxy.
@@ -125,7 +125,7 @@ class OobeConfigurationClientTest : public testing::Test {
     EXPECT_EQ(expected_method_name_, method_call->GetMember());
     dbus::MessageReader reader(method_call);
     argument_checker_.Run(&reader);
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(*response), response_));
   }
 };

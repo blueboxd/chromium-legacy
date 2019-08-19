@@ -121,7 +121,7 @@ class ModuleSystemTest : public testing::Test {
   void RunResolvedPromises();
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   v8::Isolate* isolate_;
 

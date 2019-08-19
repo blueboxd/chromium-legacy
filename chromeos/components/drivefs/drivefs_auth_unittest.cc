@@ -178,7 +178,7 @@ class DriveFsAuthTest : public ::testing::Test {
     run_loop.Run();
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   service_manager::TestConnectorFactory connector_factory_;
   MockIdentityAccessor mock_identity_accessor_;
   base::SimpleTestClock clock_;

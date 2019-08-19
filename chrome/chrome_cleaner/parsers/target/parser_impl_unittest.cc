@@ -76,7 +76,7 @@ class ParserImplTest : public testing::Test {
   base::FilePath not_lnk_file_path_;
   base::ScopedTempDir temp_dir_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   SandboxedShortcutParser shortcut_parser_;
   ParsedLnkFile test_parsed_shortcut_;

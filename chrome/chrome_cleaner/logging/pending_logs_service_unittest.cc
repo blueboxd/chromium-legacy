@@ -39,8 +39,7 @@ class PendingLogsServiceTest : public testing::Test {
  public:
   PendingLogsServiceTest()
       : logging_service_(nullptr),
-        scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         done_callback_called_(false),
         upload_success_(false),
         cleanup_execution_mode_settings_(ExecutionMode::kCleanup) {}
@@ -135,7 +134,7 @@ class PendingLogsServiceTest : public testing::Test {
   std::unique_ptr<RegistryLogger> registry_logger_;
 
   // Needed for the current task runner to be available.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   // |done_callback_called_| is set to true in |LogsUploadCallback| to confirm
   // it was called appropriately.
   bool done_callback_called_;

@@ -69,13 +69,13 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
 
   using BrowserContextGetter = base::RepeatingCallback<BrowserContext*(void)>;
 
-  // A wrapper to use ThrottlingURLLoader on the IO thread.
-  // TODO(crbug.com/824858): Remove this once this loader is moved to UI thread.
-  class ThrottlingURLLoaderIOWrapper {
+  // A wrapper to use ThrottlingURLLoader on the core thread.
+  // TODO(crbug.com/824858): Remove this once core is moved to UI thread.
+  class ThrottlingURLLoaderCoreWrapper {
    public:
     // Creates a ThrottlingURLLoader and starts the request.
-    // Called on the IO thread.
-    static std::unique_ptr<ThrottlingURLLoaderIOWrapper> CreateLoaderAndStart(
+    // Called on the core thread.
+    static std::unique_ptr<ThrottlingURLLoaderCoreWrapper> CreateLoaderAndStart(
         std::unique_ptr<network::SharedURLLoaderFactoryInfo>
             loader_factory_info,
         BrowserContextGetter browser_context_getter,
@@ -86,18 +86,18 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
         network::mojom::URLLoaderClientPtrInfo client,
         const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
-    // Called on the IO thread.
+    // Called on the core thread.
     void SetPriority(net::RequestPriority priority,
                      int32_t intra_priority_value);
     void PauseReadingBodyFromNet();
     void ResumeReadingBodyFromNet();
 
-    ~ThrottlingURLLoaderIOWrapper();
+    ~ThrottlingURLLoaderCoreWrapper();
 
    private:
-    ThrottlingURLLoaderIOWrapper();
+    ThrottlingURLLoaderCoreWrapper();
 
-    // The real loader to be used in ThrottlingURLLoaderIOWrapper.
+    // The real loader to be used in ThrottlingURLLoaderCoreWrapper.
     // Created and deleted on the UI thread via BrowserThread::DeleteOnUIThread
     // to ensure the order of posted tasks and destruction of this instance.
     struct LoaderOnUI {
@@ -223,7 +223,7 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
 
   // Used for fetching the script from network (or other loaders like extensions
   // sometimes).
-  std::unique_ptr<ThrottlingURLLoaderIOWrapper> network_loader_;
+  std::unique_ptr<ThrottlingURLLoaderCoreWrapper> network_loader_;
 
   mojo::Binding<network::mojom::URLLoaderClient> network_client_binding_;
   mojo::ScopedDataPipeConsumerHandle network_consumer_;

@@ -629,17 +629,17 @@ To test code that uses `base::ThreadTaskRunnerHandle`,
 `base::SequencedTaskRunnerHandle` or a function in
 [`base/task/post_task.h`](https://cs.chromium.org/chromium/src/base/task/post_task.h),
 instantiate a
-[`base::test::ScopedTaskEnvironment`](https://cs.chromium.org/chromium/src/base/test/scoped_task_environment.h)
+[`base::test::TaskEnvironment`](https://cs.chromium.org/chromium/src/base/test/scoped_task_environment.h)
 for the scope of the test. If you need BrowserThreads, use
 `content::TestBrowserThreadBundle` instead of
-`base::test::ScopedTaskEnvironment`.
+`base::test::TaskEnvironment`.
 
-Tests can run the `base::test::ScopedTaskEnvironment`'s message pump using a
+Tests can run the `base::test::TaskEnvironment`'s message pump using a
 `base::RunLoop`, which can be made to run until `Quit()` (explicitly or via
 `RunLoop::QuitClosure()`), or to `RunUntilIdle()` ready-to-run tasks and
 immediately return.
 
-ScopedTaskEnvironment configures RunLoop::Run() to LOG(FATAL) if it hasn't been
+TaskEnvironment configures RunLoop::Run() to LOG(FATAL) if it hasn't been
 explicitly quit after TestTimeouts::action_timeout(). This is preferable to
 having the test hang if the code under test fails to trigger the RunLoop to
 quit. The timeout can be overridden with ScopedRunTimeoutForTest.
@@ -649,7 +649,7 @@ class MyTest : public testing::Test {
  public:
   // ...
  protected:
-   base::test::ScopedTaskEnvironment scoped_task_environment_;
+   base::test::TaskEnvironment task_environment_;
 };
 
 TEST(MyTest, MyTest) {
@@ -691,7 +691,7 @@ TEST(MyTest, MyTest) {
   // This runs the (Thread|Sequenced)TaskRunnerHandle queue until both the
   // (Thread|Sequenced)TaskRunnerHandle queue and the TaskSchedule queue are
   // empty:
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // E, H, I have been executed.
 }
 ```
@@ -742,7 +742,7 @@ used in an eventual leaf. The leaf can and should now obtain its TaskRunner
 directly from
 [`base/task/post_task.h`](https://cs.chromium.org/chromium/src/base/task/post_task.h).
 
-As mentioned above, `base::test::ScopedTaskEnvironment` allows unit tests to
+As mentioned above, `base::test::TaskEnvironment` allows unit tests to
 control tasks posted from underlying TaskRunners. In rare cases where a test
 needs to more precisely control task ordering: dependency injection of
 TaskRunners can be useful. For such cases the preferred approach is the

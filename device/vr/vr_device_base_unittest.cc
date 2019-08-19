@@ -107,7 +107,7 @@ class VRDeviceTest : public testing::Test {
     return display_info;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(VRDeviceTest);
 };

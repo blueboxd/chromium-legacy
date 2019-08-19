@@ -199,6 +199,11 @@ class IdlCompiler(object):
         for ir in interface_irs.itervalues():
             self._db.register(DatabaseBody.Kind.INTERFACE, Interface(ir))
 
+        interface_mixin_irs = self._ir_map.find_by_kind(
+            IdentifierIRMap.IR.Kind.INTERFACE_MIXIN)
+        for ir in interface_mixin_irs.itervalues():
+            self._db.register(DatabaseBody.Kind.INTERFACE_MIXIN, Interface(ir))
+
         dictionary_irs = self._ir_map.find_by_kind(
             IdentifierIRMap.IR.Kind.DICTIONARY)
         for ir in dictionary_irs.itervalues():

@@ -13,7 +13,7 @@ namespace {
 
 #if defined(OS_WIN)
 TEST(DhcpPacFileFetcherFactoryTest, WindowsFetcherOnWindows) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   DhcpPacFileFetcherFactory factory;
   TestURLRequestContext context;
   std::unique_ptr<DhcpPacFileFetcher> fetcher(factory.Create(&context));
@@ -24,7 +24,7 @@ TEST(DhcpPacFileFetcherFactoryTest, WindowsFetcherOnWindows) {
 #else  // !defined(OS_WIN)
 
 TEST(DhcpPacFileFetcherFactoryTest, ReturnNullOnUnsupportedPlatforms) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   DhcpPacFileFetcherFactory factory;
   TestURLRequestContext context;
   std::unique_ptr<DhcpPacFileFetcher> fetcher(factory.Create(&context));

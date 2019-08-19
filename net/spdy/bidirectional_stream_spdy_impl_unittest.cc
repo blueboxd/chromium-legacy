@@ -240,7 +240,7 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
 }  // namespace
 
 class BidirectionalStreamSpdyImplTest : public testing::TestWithParam<bool>,
-                                        public WithScopedTaskEnvironment {
+                                        public WithTaskEnvironment {
  public:
   BidirectionalStreamSpdyImplTest()
       : default_url_(kDefaultUrl),

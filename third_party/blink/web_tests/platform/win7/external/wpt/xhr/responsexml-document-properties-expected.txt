@@ -15,8 +15,8 @@ PASS all
 PASS cookie
 PASS Test document URL properties after redirect
 PASS Test document URL properties of document with <base> after redirect
-FAIL lastModified set to time of response if no HTTP header provided assert_less_than_equal: expected a number less than or equal to 1566168443 but got 1566172043
-FAIL lastModified set to related HTTP header if provided assert_equals: expected 1566146298000 but got 1566142698000
+FAIL lastModified set to time of response if no HTTP header provided assert_less_than_equal: expected a number less than or equal to 1566177285 but got 1566180885
+FAIL lastModified set to related HTTP header if provided assert_equals: expected 1566155231000 but got 1566151631000
 PASS cookie (after setting it)
 PASS styleSheets should be an object
 PASS implementation should be an object

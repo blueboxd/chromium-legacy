@@ -195,7 +195,7 @@ class WebRtcLogUploaderTest : public testing::Test {
     run_loop.Run();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::FilePath test_list_path_;
 };
 

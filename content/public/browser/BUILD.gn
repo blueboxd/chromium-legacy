@@ -273,6 +273,7 @@ jumbo_source_set("browser_sources") {
     "replaced_navigation_entry_data.h",
     "resource_context.h",
     "restore_type.h",
+    "same_site_data_remover.h",
     "sandbox_type.h",
     "save_page_type.h",
     "screen_orientation_delegate.h",

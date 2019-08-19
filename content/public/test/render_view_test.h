@@ -204,7 +204,7 @@ class RenderViewTest : public testing::Test {
   // Install a fake URL loader factory for the RenderFrameImpl.
   void CreateFakeWebURLLoaderFactory();
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<CompositorDependencies> compositor_deps_;
   std::unique_ptr<MockRenderProcess> mock_process_;

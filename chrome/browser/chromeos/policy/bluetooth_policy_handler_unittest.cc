@@ -46,7 +46,7 @@ class BluetoothPolicyHandlerTest : public testing::Test {
         chromeos::kAllowBluetooth, allow_bluetooth);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<TestingBluetoothAdapter> adapter_;
   chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
 };

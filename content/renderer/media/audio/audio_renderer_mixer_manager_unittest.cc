@@ -137,7 +137,7 @@ class AudioRendererMixerManagerTest : public testing::Test {
     return nullptr;
   }
 
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
   std::unique_ptr<AudioRendererMixerManager> manager_;
   scoped_refptr<media::MockAudioRendererSink> mock_sink_;
 

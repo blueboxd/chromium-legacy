@@ -87,7 +87,7 @@ class NotificationStoreTest : public testing::Test {
     loaded_entries_ = std::move(entries);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // Database test objects.
   FakeDB<proto::NotificationEntry, NotificationEntry>* db_;

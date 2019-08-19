@@ -67,7 +67,7 @@ class MockHttpAuthHandlerFactory : public HttpAuthHandlerFactory {
 };
 
 class URLRequestContextBuilderTest : public PlatformTest,
-                                     public WithScopedTaskEnvironment {
+                                     public WithTaskEnvironment {
  protected:
   URLRequestContextBuilderTest() {
     test_server_.AddDefaultHandlers(

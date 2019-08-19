@@ -114,7 +114,7 @@ void ClearTick(base::TimeTicks* time) {
 const int kInvalidTraceId = -1;
 
 int NextTraceId() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
   static int trace_id = 0;
   if (trace_id == std::numeric_limits<int>::max())
     trace_id = 0;
@@ -146,7 +146,7 @@ void OnOpenWindowFinished(
     blink::mojom::ServiceWorkerHost::OpenNewTabCallback callback,
     blink::ServiceWorkerStatusCode status,
     blink::mojom::ServiceWorkerClientInfoPtr client_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
   const bool success = (status == blink::ServiceWorkerStatusCode::kOk);
   base::Optional<std::string> error_msg;
   if (!success) {
@@ -179,7 +179,7 @@ void DidGetClients(
     blink::mojom::ServiceWorkerHost::GetClientsCallback callback,
     std::unique_ptr<service_worker_client_utils::ServiceWorkerClientPtrs>
         clients) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
   std::move(callback).Run(std::move(*clients));
 }
 
@@ -188,7 +188,7 @@ void DidNavigateClient(
     const GURL& url,
     blink::ServiceWorkerStatusCode status,
     blink::mojom::ServiceWorkerClientInfoPtr client) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
   const bool success = (status == blink::ServiceWorkerStatusCode::kOk);
   base::Optional<std::string> error_msg;
   if (!success) {
@@ -369,7 +369,7 @@ void ServiceWorkerVersion::RegisterStatusChangeCallback(
 }
 
 ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
   ServiceWorkerVersionInfo info(
       running_status(), status(), fetch_handler_existence(), script_url(),
       registration_id(), version_id(), embedded_worker()->process_id(),
@@ -419,7 +419,7 @@ void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
       TRACE_EVENT_SCOPE_THREAD, "Script", script_url_.spec(), "Purpose",
       ServiceWorkerMetrics::EventTypeToString(purpose));
 
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
   const bool is_browser_startup_complete =
       GetContentClient()->browser()->IsBrowserStartupComplete();
   if (!context_) {
@@ -706,7 +706,7 @@ void ServiceWorkerVersion::RunAfterStartWorker(
 
 void ServiceWorkerVersion::AddControllee(
     ServiceWorkerProviderHost* provider_host) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
   const std::string& uuid = provider_host->client_uuid();
   CHECK(!provider_host->client_uuid().empty());
   DCHECK(!base::Contains(controllee_map_, uuid));
@@ -736,7 +736,7 @@ void ServiceWorkerVersion::AddControllee(
 }
 
 void ServiceWorkerVersion::RemoveControllee(const std::string& client_uuid) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
   DCHECK(base::Contains(controllee_map_, client_uuid));
   controllee_map_.erase(client_uuid);
 
@@ -2099,7 +2099,7 @@ ServiceWorkerVersion::TakeComparedScriptInfo(const GURL& script_url) {
 
 bool ServiceWorkerVersion::ShouldRequireForegroundPriority(
     int worker_process_id) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
 
   // Currently FetchEvents are the only type of event we need to really process
   // at foreground priority.  If the service worker does not have a FetchEvent

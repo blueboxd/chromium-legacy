@@ -176,7 +176,7 @@ class WrappedSimpleIndexFile : public SimpleIndexFile {
   }
 };
 
-class SimpleIndexFileTest : public net::TestWithScopedTaskEnvironment {
+class SimpleIndexFileTest : public net::TestWithTaskEnvironment {
  public:
   bool CompareTwoEntryMetadata(const EntryMetadata& a, const EntryMetadata& b) {
     return a.last_used_time_seconds_since_epoch_ ==

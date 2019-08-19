@@ -97,7 +97,7 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
 
   void OnShutdownComplete() { was_shutdown_callback_invoked_ = true; }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const multidevice::RemoteDeviceRef test_device_;
 
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;

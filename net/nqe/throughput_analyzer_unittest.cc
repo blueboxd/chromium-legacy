@@ -103,7 +103,7 @@ class TestThroughputAnalyzer : public internal::ThroughputAnalyzer {
   DISALLOW_COPY_AND_ASSIGN(TestThroughputAnalyzer);
 };
 
-using ThroughputAnalyzerTest = TestWithScopedTaskEnvironment;
+using ThroughputAnalyzerTest = TestWithTaskEnvironment;
 
 TEST_F(ThroughputAnalyzerTest, MaximumRequests) {
   const struct {

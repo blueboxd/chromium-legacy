@@ -20,7 +20,7 @@ class WorkerThreadRegistryTest : public testing::Test {
   WorkerThreadRegistry task_runner_;
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 class MockObserver : public WorkerThread::Observer {

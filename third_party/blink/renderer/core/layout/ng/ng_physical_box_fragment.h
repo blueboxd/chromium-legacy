@@ -34,6 +34,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final
       child.fragment->Release();
   }
 
+  // Returns |NGFragmentItems| if this fragment has one.
+  bool HasItems() const { return has_fragment_items_; }
   const NGFragmentItems* Items() const {
     return has_fragment_items_ ? ComputeItemsAddress() : nullptr;
   }

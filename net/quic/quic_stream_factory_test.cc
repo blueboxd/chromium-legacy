@@ -208,7 +208,7 @@ class TestConnectionMigrationSocketFactory : public MockClientSocketFactory {
   DISALLOW_COPY_AND_ASSIGN(TestConnectionMigrationSocketFactory);
 };
 
-class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
+class QuicStreamFactoryTestBase : public WithTaskEnvironment {
  protected:
   QuicStreamFactoryTestBase(quic::ParsedQuicVersion version,
                             bool client_headers_include_h2_stream_dependency)

@@ -39,8 +39,7 @@ class GestureEventQueueTest : public testing::Test,
                               public FlingControllerSchedulerClient {
  public:
   GestureEventQueueTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         acked_gesture_event_count_(0),
         sent_gesture_event_count_(0) {}
 
@@ -221,7 +220,7 @@ class GestureEventQueueTest : public testing::Test,
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<GestureEventQueue> queue_;
   size_t acked_gesture_event_count_;
   size_t sent_gesture_event_count_;

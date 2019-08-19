@@ -98,8 +98,7 @@ std::string ExtensionControlledAndUserSettingOncValue(
 class UIProxyConfigServiceTest : public testing::Test {
  public:
   UIProxyConfigServiceTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
     PrefProxyConfigTrackerImpl::RegisterProfilePrefs(user_prefs_.registry());
     PrefProxyConfigTrackerImpl::RegisterPrefs(local_state_.registry());
     ::onc::RegisterProfilePrefs(user_prefs_.registry());
@@ -145,7 +144,7 @@ class UIProxyConfigServiceTest : public testing::Test {
   TestingPrefServiceSimple local_state_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(UIProxyConfigServiceTest, UnknownNetwork) {

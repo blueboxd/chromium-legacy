@@ -77,7 +77,8 @@ public class SwipeRefreshHandler extends TabWebContentsUserData
     private String mAccessibilityRefreshString;
 
     // Overscroll Navigation delegate providing info/object constructor.
-    private HistoryNavigationDelegate mNavigationDelegate;
+    private HistoryNavigationDelegate mNavigationDelegate =
+            HistoryNavigationDelegateFactory.DEFAULT;
 
     // Handles overscroll history navigation.
     private NavigationHandler mNavigationHandler;
@@ -241,7 +242,9 @@ public class SwipeRefreshHandler extends TabWebContentsUserData
         if (mNavigationDelegate.isNavigationEnabled(mContainerView)) {
             if (mNavigationHandler == null) {
                 mActionDelegate = mNavigationDelegate.createActionDelegate();
-                mNavigationHandler = new NavigationHandler(mContainerView, mActionDelegate,
+                mNavigationHandler = new NavigationHandler(mContainerView,
+                        mNavigationDelegate.getBottomSheetController(), mActionDelegate,
+                        mNavigationDelegate.createSheetDelegate(),
                         NavigationGlowFactory.forRenderedPage(
                                 mContainerView, mTab.getWebContents()));
             }

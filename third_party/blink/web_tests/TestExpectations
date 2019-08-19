@@ -2444,6 +2444,12 @@ crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-sepa
 crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-014.html [ Skip ]
 crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-015.html [ Skip ]
 
+# Sheriff 2019-08-19
+crbug.com/626703 [ Win7 ] external/wpt/xhr/responsexml-document-properties.htm [ Failure ]
+crbug.com/626703 [ Win7 ] external/wpt/html/dom/documents/resource-metadata-management/document-lastModified-01.html [ Failure ]
+crbug.com/626703 [ Win7 ] virtual/blink-cors/external/wpt/xhr/responsexml-document-properties.htm [ Failure ]
+crbug.com/626703 [ Win7 ] virtual/omt-worker-fetch/external/wpt/xhr/responsexml-document-properties.htm [ Failure ]
+
 # The 'overflow-wrap: anywhere' feature is not implemented yet
 crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-001.html [ Skip ]
 crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-002.html [ Skip ]
@@ -3239,6 +3245,9 @@ crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-tim
 crbug.com/994214 external/wpt/html/cross-origin-opener-policy/coop-navigated-popup.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/shadow-dom/directionality-002.tentative.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/shadow-dom/directionality-002.tentative.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/shadow-dom/directionality-002.tentative.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-002.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-002.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-002.html [ Failure ]
@@ -4600,10 +4609,12 @@ crbug.com/626703 virtual/omt-worker-fetch/external/wpt/xhr/setrequestheader-head
 crbug.com/626703 [ Win10 ] external/wpt/preload/delaying-onload-link-preload-after-discovery.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
-# Sheriff 2019-09-19:
+
+# Sheriff 2019-08-19:
 crbug.com/626703 external/wpt/html/cross-origin-embedder-policy/none.https.html [ Failure ]
 crbug.com/626703 external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure ]
 crbug.com/626703 external/wpt/html/cross-origin-opener-policy/coop-sandbox.https.html [ Failure ]
+crbug.com/626703 [ Linux Mac10.10 ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Pass Failure ]
 
 # Failure due to on-going off-thread paint worklet project.
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/invalid-image-pending-script.https.html [ Crash ]
@@ -6482,3 +6493,5 @@ crbug.com/979298 [ Mac ] virtual/audio-service/media/controls/overflow-menu-alwa
 crbug.com/979298 [ Mac ] virtual/audio-service/media/controls/volumechange-muted-attribute.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] virtual/audio-service/media/video-persistence.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] virtual/audio-service/media/video-zoom.html [ Pass Failure ]
+
+crbug.com/986019 virtual/threaded/animations/play-state.html [ Pass Failure ]

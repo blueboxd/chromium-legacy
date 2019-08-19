@@ -98,7 +98,7 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
 
  private:
   ScopedStubInstallAttributes install_attributes_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAuthPolicyClientTest);
 };

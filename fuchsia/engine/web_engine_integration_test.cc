@@ -33,8 +33,7 @@ constexpr char kInvalidUserAgentVersion[] = "dev/12345";
 class WebEngineIntegrationTest : public testing::Test {
  public:
   WebEngineIntegrationTest()
-      : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
   ~WebEngineIntegrationTest() override = default;
 
   void SetUp() override {
@@ -106,7 +105,7 @@ class WebEngineIntegrationTest : public testing::Test {
   }
 
  protected:
-  const base::test::ScopedTaskEnvironment task_environment_;
+  const base::test::TaskEnvironment task_environment_;
 
   fuchsia::web::ContextProviderPtr web_context_provider_;
 

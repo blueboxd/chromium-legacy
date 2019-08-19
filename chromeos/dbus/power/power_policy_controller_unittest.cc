@@ -38,7 +38,7 @@ class PowerPolicyControllerTest : public testing::Test {
   }
 
   PowerPolicyController* policy_controller_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PowerPolicyControllerTest);

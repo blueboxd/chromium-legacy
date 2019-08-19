@@ -50,7 +50,7 @@ class ZipArchiverImplTest : public testing::Test {
   base::FilePath zip_file_path_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 void RunArchiver(base::win::ScopedHandle src_file_handle,

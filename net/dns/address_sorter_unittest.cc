@@ -44,7 +44,7 @@ void OnSortComplete(AddressList* result_buf,
 TEST(AddressSorterTest, Sort) {
   int expected_result = OK;
 #if defined(OS_WIN)
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   EnsureWinsockInit();
   SOCKET sock = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
   if (sock == INVALID_SOCKET) {

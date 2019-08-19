@@ -49,7 +49,7 @@ void SwapCertLists(ScopedCERTCertificateList* destination,
 
 }  // namespace
 
-class NSSCertDatabaseChromeOSTest : public TestWithScopedTaskEnvironment,
+class NSSCertDatabaseChromeOSTest : public TestWithTaskEnvironment,
                                     public CertDatabase::Observer {
  public:
   NSSCertDatabaseChromeOSTest()

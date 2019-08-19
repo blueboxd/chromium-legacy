@@ -3407,6 +3407,15 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_OVERSCROLL_NAVIGATION_CLOSE_CHROME" desc="Message displayed on overscroll navigation UI widget when the back navigation is attempted at the beginning of navigation history stack. The widget only has an arrow icon but expands to display this message next to it.">
         Close <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph>
       </message>
+      <message name="IDS_OVERSCROLL_NAVIGATION_SHEET_DESCRIPTION" desc="The content description of the navigation bottom sheet.">
+        Navigation history
+      </message>
+      <message name="IDS_OVERSCROLL_NAVIGATION_SHEET_OPENED_FULL" desc="Accessibility string read when the navigation bottom sheet is opened at full height. The sheet will occupy up to half the screen.">
+        Navigation history is opened
+      </message>
+      <message name="IDS_OVERSCROLL_NAVIGATION_SHEET_CLOSED" desc="Accessibility string read when the navigation bottom sheet is closed.">
+        Navigation history is closed
+      </message>
 
       <!-- Storage Preference UI strings for clearing storage. -->
       <message name="IDS_STORAGE_MANAGEMENT_ACTIVITY_LABEL" desc="Title for Chrome's Manage Space Activity.">

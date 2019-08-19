@@ -97,7 +97,7 @@ class AntiVirusMetricsProviderTest : public ::testing::TestWithParam<bool> {
 
   bool got_results_;
   bool expect_unhashed_value_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::Optional<UtilWinImpl> util_win_impl_;
   AntiVirusMetricsProvider provider_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -118,6 +118,6 @@ TEST_P(AntiVirusMetricsProviderTest, GetMetricsFullName) {
   provider_.AsyncInit(
       base::Bind(&AntiVirusMetricsProviderTest::GetMetricsCallback,
                  base::Unretained(this)));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(got_results_);
 }

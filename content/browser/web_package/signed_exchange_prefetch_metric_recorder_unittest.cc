@@ -15,8 +15,7 @@ namespace content {
 class SignedExchangePrefetchMetricRecorderTest : public ::testing::Test {
  public:
   SignedExchangePrefetchMetricRecorderTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     metric_recorder_ =
@@ -27,11 +26,11 @@ class SignedExchangePrefetchMetricRecorderTest : public ::testing::Test {
   void FastForwardBy(const base::TimeDelta fast_forward_delta) {
     test_clock_.Advance(fast_forward_delta);
     test_tick_clock_.Advance(fast_forward_delta);
-    scoped_task_environment_.FastForwardBy(fast_forward_delta);
+    task_environment_.FastForwardBy(fast_forward_delta);
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const base::HistogramTester histogram_tester_;
   base::SimpleTestClock test_clock_;
   base::SimpleTestTickClock test_tick_clock_;

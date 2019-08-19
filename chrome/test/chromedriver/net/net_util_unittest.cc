@@ -39,8 +39,7 @@ class FetchUrlTest : public testing::Test,
   FetchUrlTest()
       : io_thread_("io"),
         response_(kSendHello),
-        scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+        task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     base::Thread::Options options(base::MessagePumpType::IO, 0);
     CHECK(io_thread_.StartWithOptions(options));
 
@@ -134,7 +133,7 @@ class FetchUrlTest : public testing::Test,
       url_loader_factory_owner_;
   network::mojom::URLLoaderFactory* url_loader_factory_;
   std::string server_url_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 }  // namespace

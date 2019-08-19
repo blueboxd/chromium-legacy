@@ -256,7 +256,7 @@ void RecordTrialReport(std::vector<TrialReportInfo>* reports,
 
 }  // namespace
 
-class TrialComparisonCertVerifierTest : public TestWithScopedTaskEnvironment {
+class TrialComparisonCertVerifierTest : public TestWithTaskEnvironment {
   void SetUp() override {
     cert_chain_1_ = CreateCertificateChainFromFile(
         GetTestCertsDirectory(), "multi-root-chain1.pem",

@@ -53,7 +53,7 @@ class ProfilePolicyConnectorTest : public testing::Test {
         .WillRepeatedly(Return(true));
 
     cloud_policy_store_.NotifyStoreLoaded();
-    const auto task_runner = scoped_task_environment_.GetMainThreadTaskRunner();
+    const auto task_runner = task_environment_.GetMainThreadTaskRunner();
     cloud_policy_manager_.reset(new CloudPolicyManager(
         std::string(), std::string(), &cloud_policy_store_, task_runner,
         network::TestNetworkConnectionTracker::CreateGetter()));
@@ -73,7 +73,7 @@ class ProfilePolicyConnectorTest : public testing::Test {
   }
 
   // Needs to be the first member.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   SchemaRegistry schema_registry_;
   MockConfigurationPolicyProvider mock_provider_;
   MockCloudPolicyStore cloud_policy_store_;

@@ -64,7 +64,7 @@ class BatchingMediaLogTest : public testing::Test {
   }
   int add_events_count_ = 0;
   std::vector<media::MediaLogEvent> events_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockRenderThread render_thread_;
   base::SimpleTestTickClock tick_clock_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;

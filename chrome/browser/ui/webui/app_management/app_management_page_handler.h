@@ -15,10 +15,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #endif
 
-namespace content {
-class WebUI;
-}  // namespace content
-
 class Profile;
 
 class AppManagementPageHandler : public app_management::mojom::PageHandler,
@@ -31,7 +27,7 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
  public:
   AppManagementPageHandler(app_management::mojom::PageHandlerRequest request,
                            app_management::mojom::PagePtr page,
-                           content::WebUI* web_ui);
+                           Profile* profile);
   ~AppManagementPageHandler() override;
 
 #if defined(OS_CHROMEOS)

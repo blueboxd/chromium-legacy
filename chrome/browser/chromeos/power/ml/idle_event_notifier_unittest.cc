@@ -56,9 +56,8 @@ class IdleEventNotifierTest : public testing::Test {
  public:
   IdleEventNotifierTest()
       : scoped_task_env_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
-                QUEUED) {}
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED) {}
 
   ~IdleEventNotifierTest() override = default;
 
@@ -80,7 +79,7 @@ class IdleEventNotifierTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_env_;
+  base::test::TaskEnvironment scoped_task_env_;
 
   std::unique_ptr<IdleEventNotifier> idle_event_notifier_;
   power_manager::PowerSupplyProperties ac_power_;

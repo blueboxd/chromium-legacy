@@ -19,9 +19,8 @@ namespace chromeos {
 class NativeTimerTest : public testing::Test {
  public:
   NativeTimerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO,
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO,
+                          base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   ~NativeTimerTest() override = default;
 
@@ -29,7 +28,7 @@ class NativeTimerTest : public testing::Test {
   void SetUp() override {
     PowerManagerClient::InitializeFake();
     FakePowerManagerClient::Get()->set_tick_clock(
-        scoped_task_environment_.GetMockTickClock());
+        task_environment_.GetMockTickClock());
   }
 
   void TearDown() override { PowerManagerClient::Shutdown(); }
@@ -42,22 +41,21 @@ class NativeTimerTest : public testing::Test {
     base::RunLoop expiration_loop;
     bool start_timer_result = false;
     bool expiration_result = false;
-    timer->Start(
-        scoped_task_environment_.GetMockTickClock()->NowTicks() + delay,
-        base::BindOnce([](bool* result_out) { *result_out = true; },
-                       &expiration_result),
-        base::BindOnce(
-            [](bool* result_out, bool result) { *result_out = result; },
-            &start_timer_result));
+    timer->Start(task_environment_.GetMockTickClock()->NowTicks() + delay,
+                 base::BindOnce([](bool* result_out) { *result_out = true; },
+                                &expiration_result),
+                 base::BindOnce([](bool* result_out,
+                                   bool result) { *result_out = result; },
+                                &start_timer_result));
 
     // Both starting the timer and timer firing should succeed.
-    scoped_task_environment_.FastForwardBy(delay);
+    task_environment_.FastForwardBy(delay);
     if (!start_timer_result)
       return false;
     return expiration_result;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeTimerTest);

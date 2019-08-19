@@ -251,8 +251,7 @@ class TestTetherSortDelegate : public NetworkStateHandler::TetherSortDelegate {
 class NetworkStateHandlerTest : public testing::Test {
  public:
   NetworkStateHandlerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         device_test_(nullptr),
         manager_test_(nullptr),
         profile_test_(nullptr),
@@ -347,7 +346,7 @@ class NetworkStateHandlerTest : public testing::Test {
         false /* visible_only */, limit, list);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
   std::unique_ptr<TestObserver> test_observer_;
   ShillDeviceClient::TestInterface* device_test_;

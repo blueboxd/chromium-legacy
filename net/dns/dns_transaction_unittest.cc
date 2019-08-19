@@ -755,7 +755,7 @@ class DnsTransactionTestBase : public testing::Test {
 };
 
 class DnsTransactionTest : public DnsTransactionTestBase,
-                           public WithScopedTaskEnvironment {
+                           public WithTaskEnvironment {
  public:
   DnsTransactionTest() = default;
   ~DnsTransactionTest() override = default;
@@ -880,11 +880,11 @@ class DnsTransactionTest : public DnsTransactionTestBase,
 };
 
 class DnsTransactionTestWithMockTime : public DnsTransactionTestBase,
-                                       public WithScopedTaskEnvironment {
+                                       public WithTaskEnvironment {
  protected:
   DnsTransactionTestWithMockTime()
-      : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : WithTaskEnvironment(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~DnsTransactionTestWithMockTime() override = default;
 };
 

@@ -70,8 +70,7 @@ class TestObserver : public BrightnessMonitor::Observer {
 class BrightnessMonitorImplTest : public testing::Test {
  public:
   BrightnessMonitorImplTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   ~BrightnessMonitorImplTest() override {}
 
@@ -105,7 +104,7 @@ class BrightnessMonitorImplTest : public testing::Test {
     monitor_->Init();
     test_observer_ = std::make_unique<TestObserver>();
     monitor_->AddObserver(test_observer_.get());
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
  protected:
@@ -117,10 +116,10 @@ class BrightnessMonitorImplTest : public testing::Test {
     change.set_cause(cause);
     static_cast<FakePowerManagerClient*>(PowerManagerClient::Get())
         ->SendScreenBrightnessChanged(change);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::HistogramTester histogram_tester_;
   std::unique_ptr<BrightnessMonitorImpl> monitor_;
   std::unique_ptr<TestObserver> test_observer_;
@@ -132,7 +131,7 @@ class BrightnessMonitorImplTest : public testing::Test {
 
 TEST_F(BrightnessMonitorImplTest, ReportSuccess) {
   SetUpBrightnessMonitor(10);
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 
   histogram_tester_.ExpectUniqueSample(
       "AutoScreenBrightness.BrightnessMonitorStatus",
@@ -141,7 +140,7 @@ TEST_F(BrightnessMonitorImplTest, ReportSuccess) {
 
 TEST_F(BrightnessMonitorImplTest, ReportDisabled) {
   SetUpBrightnessMonitor(-1);
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 
   histogram_tester_.ExpectUniqueSample(
       "AutoScreenBrightness.BrightnessMonitorStatus",
@@ -158,7 +157,7 @@ TEST_F(BrightnessMonitorImplTest, PowerManagerClientBrightnessUnset) {
   // User request will be ignored.
   ReportBrightnessChangeEvent(
       20, power_manager::BacklightBrightnessChange_Cause_USER_REQUEST);
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       monitor_->GetBrightnessSampleDelayForTesting() * 2);
   EXPECT_EQ(0, test_observer_->num_brightness_changes());
   EXPECT_EQ(0, test_observer_->num_user_brightness_change_requested());
@@ -178,7 +177,7 @@ TEST_F(BrightnessMonitorImplTest, TwoUserAdjustmentsShortGap) {
   EXPECT_EQ(1, test_observer_->num_user_brightness_change_requested());
   EXPECT_EQ(0, test_observer_->num_brightness_changes());
 
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       monitor_->GetBrightnessSampleDelayForTesting() / 2);
   // Second user-requested brightness adjustment.
   ReportBrightnessChangeEvent(
@@ -186,7 +185,7 @@ TEST_F(BrightnessMonitorImplTest, TwoUserAdjustmentsShortGap) {
   EXPECT_EQ(2, test_observer_->num_user_brightness_change_requested());
   EXPECT_EQ(0, test_observer_->num_brightness_changes());
 
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       monitor_->GetBrightnessSampleDelayForTesting() * 2);
 
   EXPECT_EQ(2, test_observer_->num_user_brightness_change_requested());
@@ -210,7 +209,7 @@ TEST_F(BrightnessMonitorImplTest, TwoUserAdjustmentsLongGap) {
   EXPECT_EQ(1, test_observer_->num_user_brightness_change_requested());
   EXPECT_EQ(0, test_observer_->num_brightness_changes());
 
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       monitor_->GetBrightnessSampleDelayForTesting() * 2);
   EXPECT_EQ(1, test_observer_->num_user_brightness_change_requested());
   EXPECT_EQ(1, test_observer_->num_brightness_changes());
@@ -221,7 +220,7 @@ TEST_F(BrightnessMonitorImplTest, TwoUserAdjustmentsLongGap) {
   ReportBrightnessChangeEvent(
       30, power_manager::BacklightBrightnessChange_Cause_USER_REQUEST);
   EXPECT_EQ(2, test_observer_->num_user_brightness_change_requested());
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       monitor_->GetBrightnessSampleDelayForTesting() * 2);
 
   EXPECT_EQ(2, test_observer_->num_user_brightness_change_requested());
@@ -239,7 +238,7 @@ TEST_F(BrightnessMonitorImplTest, NonUserFollowedByUserShortGap) {
   ReportBrightnessChangeEvent(
       20, power_manager::BacklightBrightnessChange_Cause_USER_ACTIVITY);
   EXPECT_EQ(0, test_observer_->num_user_brightness_change_requested());
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       monitor_->GetBrightnessSampleDelayForTesting() / 2);
   EXPECT_EQ(0, test_observer_->num_brightness_changes());
 
@@ -247,7 +246,7 @@ TEST_F(BrightnessMonitorImplTest, NonUserFollowedByUserShortGap) {
   ReportBrightnessChangeEvent(
       30, power_manager::BacklightBrightnessChange_Cause_USER_REQUEST);
   EXPECT_EQ(1, test_observer_->num_user_brightness_change_requested());
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       monitor_->GetBrightnessSampleDelayForTesting() * 2);
 
   EXPECT_EQ(1, test_observer_->num_brightness_changes());
@@ -263,14 +262,14 @@ TEST_F(BrightnessMonitorImplTest, NonUserFollowedByUserLongGap) {
   ReportBrightnessChangeEvent(
       20, power_manager::BacklightBrightnessChange_Cause_USER_ACTIVITY);
   EXPECT_EQ(0, test_observer_->num_user_brightness_change_requested());
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       monitor_->GetBrightnessSampleDelayForTesting() * 2);
   EXPECT_EQ(0, test_observer_->num_brightness_changes());
 
   ReportBrightnessChangeEvent(
       30, power_manager::BacklightBrightnessChange_Cause_USER_REQUEST);
   EXPECT_EQ(1, test_observer_->num_user_brightness_change_requested());
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       monitor_->GetBrightnessSampleDelayForTesting() * 2);
 
   EXPECT_EQ(1, test_observer_->num_brightness_changes());
@@ -291,7 +290,7 @@ TEST_F(BrightnessMonitorImplTest, UserAdjustmentsSeparatedByNonUser) {
   EXPECT_EQ(0, test_observer_->num_brightness_changes());
 
   // Non-user.
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       monitor_->GetBrightnessSampleDelayForTesting() / 2);
   ReportBrightnessChangeEvent(
       30, power_manager::BacklightBrightnessChange_Cause_USER_ACTIVITY);
@@ -307,7 +306,7 @@ TEST_F(BrightnessMonitorImplTest, UserAdjustmentsSeparatedByNonUser) {
   EXPECT_EQ(2, test_observer_->num_user_brightness_change_requested());
   EXPECT_EQ(1, test_observer_->num_brightness_changes());
 
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       monitor_->GetBrightnessSampleDelayForTesting() * 2);
   EXPECT_EQ(2, test_observer_->num_user_brightness_change_requested());
   EXPECT_EQ(2, test_observer_->num_brightness_changes());

@@ -24,7 +24,7 @@ class PartitionAllocMemoryReclaimerTest : public ::testing::Test {
  public:
   PartitionAllocMemoryReclaimerTest()
       : ::testing::Test(),
-        task_environment_(test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+        task_environment_(test::TaskEnvironment::TimeSource::MOCK_TIME),
         allocator_() {}
 
  protected:
@@ -57,7 +57,7 @@ class PartitionAllocMemoryReclaimerTest : public ::testing::Test {
     return 1;
   }
 
-  test::ScopedTaskEnvironment task_environment_;
+  test::TaskEnvironment task_environment_;
   std::unique_ptr<PartitionAllocatorGeneric> allocator_;
 };
 

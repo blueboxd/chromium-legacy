@@ -98,7 +98,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
     return options;
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<ResourceDispatcher> dispatcher_;
   TestRequestPeer::Context request_peer_context_;
   int request_id_ = 0;

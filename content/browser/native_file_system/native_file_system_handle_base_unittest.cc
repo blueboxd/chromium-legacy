@@ -44,8 +44,7 @@ class TestNativeFileSystemHandle : public NativeFileSystemHandleBase {
 class NativeFileSystemHandleBaseTest : public testing::Test {
  public:
   NativeFileSystemHandleBaseTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     scoped_feature_list_.InitAndEnableFeature(
         blink::features::kNativeFileSystemAPI);
   }
@@ -67,7 +66,7 @@ class NativeFileSystemHandleBaseTest : public testing::Test {
   const GURL kTestURL = GURL("https://example.com/test");
   const url::Origin kTestOrigin = url::Origin::Create(kTestURL);
   base::test::ScopedFeatureList scoped_feature_list_;
-  TestBrowserThreadBundle scoped_task_environment_;
+  TestBrowserThreadBundle task_environment_;
 
   base::ScopedTempDir dir_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;

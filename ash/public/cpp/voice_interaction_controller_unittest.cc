@@ -72,8 +72,7 @@ class TestVoiceInteractionObserver : public mojom::VoiceInteractionObserver {
 class VoiceInteractionControllerTest : public testing::Test {
  public:
   VoiceInteractionControllerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
   ~VoiceInteractionControllerTest() override = default;
 
   void SetUp() override {
@@ -90,7 +89,7 @@ class VoiceInteractionControllerTest : public testing::Test {
   TestVoiceInteractionObserver* observer() { return observer_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<VoiceInteractionController> controller_;
   std::unique_ptr<TestVoiceInteractionObserver> observer_;
 

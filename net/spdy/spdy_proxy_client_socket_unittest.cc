@@ -120,7 +120,7 @@ base::WeakPtr<SpdySession> CreateSpdyProxySession(
 }  // namespace
 
 class SpdyProxyClientSocketTest : public PlatformTest,
-                                  public WithScopedTaskEnvironment,
+                                  public WithTaskEnvironment,
                                   public ::testing::WithParamInterface<bool> {
  public:
   SpdyProxyClientSocketTest();

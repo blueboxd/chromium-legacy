@@ -119,7 +119,7 @@ class TestSwapMetricsDriver : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(TestSwapMetricsDriver, ExpectedMetricCounts) {

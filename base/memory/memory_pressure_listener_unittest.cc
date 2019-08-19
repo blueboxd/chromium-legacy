@@ -16,8 +16,7 @@ using MemoryPressureLevel = MemoryPressureListener::MemoryPressureLevel;
 class MemoryPressureListenerTest : public testing::Test {
  public:
   MemoryPressureListenerTest()
-      : scoped_task_environment_(
-            test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(test::TaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     listener_ = std::make_unique<MemoryPressureListener>(BindRepeating(
@@ -49,7 +48,7 @@ class MemoryPressureListenerTest : public testing::Test {
   MOCK_METHOD1(OnMemoryPressure,
                void(MemoryPressureListener::MemoryPressureLevel));
 
-  test::ScopedTaskEnvironment scoped_task_environment_;
+  test::TaskEnvironment task_environment_;
   std::unique_ptr<MemoryPressureListener> listener_;
 };
 

@@ -84,7 +84,7 @@ class NotificationTemplateBuilderTest : public ::testing::Test {
     EXPECT_EQ(xml_template, expected_xml_template);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationTemplateBuilderTest);

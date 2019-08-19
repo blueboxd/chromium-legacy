@@ -38,7 +38,7 @@ class MojoSandboxHooksTest : public base::MultiProcessTest {
   scoped_refptr<MojoTaskRunner> mojo_task_runner_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // |TestMojoSandboxHooksImpl| runs and handles mojo requests in the sandbox
@@ -133,7 +133,7 @@ class TestSandboxTargetHooks : public MojoSandboxTargetHooks {
     (*impl_ptr).reset(new TestMojoSandboxHooksImpl(std::move(request)));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 void RunEchoString(mojom::TestMojoSandboxHooksPtr* test_mojo_ptr,

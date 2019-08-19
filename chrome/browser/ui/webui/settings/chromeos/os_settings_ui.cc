@@ -13,8 +13,11 @@
 
 #include "ash/public/cpp/network_config_service.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
+#include "chrome/browser/ui/webui/app_management/app_management_page_handler.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
@@ -102,6 +105,14 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean(
       "showApps", base::FeatureList::IsEnabled(features::kAppManagement));
 
+#if defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(features::kAppManagement)) {
+    html_source->AddBoolean(
+        "isSupportedArcVersion",
+        AppManagementPageHandler::IsCurrentArcVersionSupported(profile));
+  }
+#endif  // OS_CHROMEOS
+
   AddSettingsPageUIHandler(
       base::WrapUnique(::settings::AboutHandler::Create(html_source, profile)));
   AddSettingsPageUIHandler(base::WrapUnique(
@@ -148,6 +159,12 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
 
   AddHandlerToRegistry(base::BindRepeating(&OSSettingsUI::BindCrosNetworkConfig,
                                            base::Unretained(this)));
+
+  if (base::FeatureList::IsEnabled(features::kAppManagement)) {
+    AddHandlerToRegistry(
+        base::BindRepeating(&OSSettingsUI::BindAppManagementPageHandlerFactory,
+                            base::Unretained(this)));
+  }
 }
 
 OSSettingsUI::~OSSettingsUI() = default;
@@ -161,6 +178,16 @@ void OSSettingsUI::AddSettingsPageUIHandler(
 void OSSettingsUI::BindCrosNetworkConfig(
     network_config::mojom::CrosNetworkConfigRequest request) {
   ash::GetNetworkConfigService(std::move(request));
+}
+
+void OSSettingsUI::BindAppManagementPageHandlerFactory(
+    app_management::mojom::PageHandlerFactoryRequest request) {
+  if (!app_management_page_handler_factory_) {
+    app_management_page_handler_factory_ =
+        std::make_unique<AppManagementPageHandlerFactory>(
+            Profile::FromWebUI(web_ui()));
+  }
+  app_management_page_handler_factory_->Bind(std::move(request));
 }
 
 }  // namespace settings

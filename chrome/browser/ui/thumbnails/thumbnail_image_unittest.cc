@@ -84,7 +84,7 @@ class ThumbnailImageTest : public testing::Test,
   }
 
   bool is_being_observed_ = false;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   DISALLOW_COPY_AND_ASSIGN(ThumbnailImageTest);
 };
 

@@ -402,7 +402,7 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
     std::move(quit_closure).Run();
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  const base::test::TaskEnvironment task_environment_;
 
   FakeMultiDeviceSetup* fake_multidevice_setup_;
   std::unique_ptr<FakeMultiDeviceSetupInitializerFactory>

@@ -125,7 +125,7 @@ class SessionStorageMetadataTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::string test_namespace1_id_;
   std::string test_namespace2_id_;
   std::string test_namespace3_id_;
@@ -388,7 +388,7 @@ class SessionStorageMetadataMigrationTest : public testing::Test {
   leveldb::DB* db() { return old_ss_database_->db(); }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_path_;
   std::string test_namespace1_id_;
   std::string test_namespace2_id_;

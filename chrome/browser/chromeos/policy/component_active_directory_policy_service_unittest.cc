@@ -150,7 +150,7 @@ class ComponentActiveDirectoryPolicyServiceTest : public testing::Test {
     EXPECT_CALL(delegate_, OnComponentActiveDirectoryPolicyUpdated());
     registry_.RegisterComponent(ns, schema);
     registry_.SetAllDomainsReady();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     testing::Mock::VerifyAndClearExpectations(&delegate_);
   }
 
@@ -198,7 +198,7 @@ class ComponentActiveDirectoryPolicyServiceTest : public testing::Test {
   const PolicyNamespace kTestExtensionNS2 =
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtensionId2);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   PolicyMap expected_policy_;
   SchemaRegistry registry_;
   std::unique_ptr<ComponentActiveDirectoryPolicyService> service_;
@@ -222,7 +222,7 @@ class ComponentActiveDirectoryPolicyServiceTest : public testing::Test {
 TEST_F(ComponentActiveDirectoryPolicyServiceTest, PolicyNotSetWithoutRegistry) {
   EXPECT_CALL(delegate_, OnComponentActiveDirectoryPolicyUpdated()).Times(0);
   service_->RetrievePolicies();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(service_->policy());
 }
 
@@ -230,7 +230,7 @@ TEST_F(ComponentActiveDirectoryPolicyServiceTest, PolicyNotSetWithoutRegistry) {
 TEST_F(ComponentActiveDirectoryPolicyServiceTest, RegistryTriggersRetrieval) {
   EXPECT_CALL(delegate_, OnComponentActiveDirectoryPolicyUpdated());
   registry_.SetAllDomainsReady();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   CheckPolicyIsEmpty();
 }
 
@@ -244,14 +244,14 @@ TEST_F(ComponentActiveDirectoryPolicyServiceTest, RetrievePolicies) {
   EXPECT_CALL(delegate_, OnComponentActiveDirectoryPolicyUpdated()).Times(0);
   StorePolicy(kTestUserAccountId, login_manager::POLICY_DOMAIN_EXTENSIONS,
               kTestExtensionId);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(&delegate_);
 
   // Calling RetrievePolicies() should get the policy now.
   EXPECT_CALL(delegate_, OnComponentActiveDirectoryPolicyUpdated());
   service_->RetrievePolicies();
   CheckPolicyIsEmpty();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   CheckPolicyMatches(*ExpectedBundle());
 }
 
@@ -274,7 +274,7 @@ TEST_F(ComponentActiveDirectoryPolicyServiceTest, ClearingSchemaRemovesPolicy) {
   // Unregistering should trigger RetrievePolicies().
   EXPECT_CALL(delegate_, OnComponentActiveDirectoryPolicyUpdated());
   registry_.UnregisterComponent(kTestExtensionNS);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(&delegate_);
   CheckPolicyIsEmpty();
 }
@@ -411,7 +411,7 @@ TEST_F(ComponentActiveDirectoryPolicyServiceTest,
   StorePolicy(kTestUserAccountId, login_manager::POLICY_DOMAIN_EXTENSIONS,
               kTestExtensionId2);
   service_->RetrievePolicies();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // We should have received policy for both namespaces.
   PolicyBundle expected_bundle;

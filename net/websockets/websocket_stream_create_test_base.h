@@ -31,7 +31,7 @@ class WebSocketStreamRequest;
 struct WebSocketHandshakeRequestInfo;
 struct WebSocketHandshakeResponseInfo;
 
-class WebSocketStreamCreateTestBase : public WithScopedTaskEnvironment {
+class WebSocketStreamCreateTestBase : public WithTaskEnvironment {
  public:
   using HeaderKeyValuePair = std::pair<std::string, std::string>;
 

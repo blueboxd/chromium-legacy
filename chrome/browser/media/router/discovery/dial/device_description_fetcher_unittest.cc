@@ -73,7 +73,7 @@ class DeviceDescriptionFetcherTest : public testing::Test {
   MOCK_METHOD1(OnSuccess, void(const DialDeviceDescriptionData&));
   MOCK_METHOD1(OnError, void(const std::string&));
 
-  base::test::ScopedTaskEnvironment environment_;
+  base::test::TaskEnvironment environment_;
   const GURL url_;
   network::TestURLLoaderFactory loader_factory_;
   std::unique_ptr<TestDeviceDescriptionFetcher> description_fetcher_;

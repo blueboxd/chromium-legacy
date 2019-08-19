@@ -94,9 +94,9 @@ class WebEngineDebugIntegrationTest : public testing::Test {
               fuchsia::web::ContextError::REMOTE_DEBUGGING_PORT_NOT_OPENED);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      base::test::TaskEnvironment::MainThreadType::IO};
 
   TestDebugListener dev_tools_listener_;
   fidl::Binding<fuchsia::web::DevToolsListener> dev_tools_listener_binding_;

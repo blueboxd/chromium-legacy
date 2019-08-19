@@ -800,29 +800,20 @@ class VerifyCallsToObserverDelegate : public WorkerThreadDefaultDelegate {
 
 }  // namespace
 
-// Flaky: crbug.com/846121
-#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_WorkerThreadObserver DISABLED_WorkerThreadObserver
-#else
-#define MAYBE_WorkerThreadObserver WorkerThreadObserver
-#endif
-
 // Verify that the WorkerThreadObserver is notified when the worker enters
 // and exits its main function.
-TEST(ThreadPoolWorkerTest, MAYBE_WorkerThreadObserver) {
+TEST(ThreadPoolWorkerTest, WorkerThreadObserver) {
   StrictMock<test::MockWorkerThreadObserver> observer;
-  {
-    TaskTracker task_tracker("Test");
-    auto delegate = std::make_unique<VerifyCallsToObserverDelegate>(&observer);
-    auto worker = MakeRefCounted<WorkerThread>(ThreadPriority::NORMAL,
-                                               std::move(delegate),
-                                               task_tracker.GetTrackedRef());
-
-    EXPECT_CALL(observer, OnWorkerThreadMainEntry());
-    worker->Start(&observer);
-    worker->Cleanup();
-    worker = nullptr;
-  }
+  TaskTracker task_tracker("Test");
+  auto delegate = std::make_unique<VerifyCallsToObserverDelegate>(&observer);
+  auto worker =
+      MakeRefCounted<WorkerThread>(ThreadPriority::NORMAL, std::move(delegate),
+                                   task_tracker.GetTrackedRef());
+  EXPECT_CALL(observer, OnWorkerThreadMainEntry());
+  worker->Start(&observer);
+  worker->Cleanup();
+  // Join the worker to avoid leaks.
+  worker->JoinForTesting();
   Mock::VerifyAndClear(&observer);
 }
 

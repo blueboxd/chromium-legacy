@@ -74,7 +74,7 @@ class GDIFontEmulationTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   std::unique_ptr<FakeFontCollection> fake_collection_;
   mswr::ComPtr<DWriteFontCollectionProxy> collection_;
 

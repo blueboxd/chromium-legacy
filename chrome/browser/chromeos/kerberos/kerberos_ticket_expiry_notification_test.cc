@@ -54,7 +54,7 @@ class KerberosTicketExpiryNotificationTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle test_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+      base::test::TaskEnvironment::MainThreadType::UI};
   TestingProfileManager profile_manager_{TestingBrowserProcess::GetGlobal()};
   TestingProfile* profile_ = nullptr;
   std::unique_ptr<NotificationDisplayServiceTester> display_service_tester_;

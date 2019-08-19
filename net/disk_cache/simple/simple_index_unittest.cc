@@ -105,7 +105,7 @@ class MockSimpleIndexFile : public SimpleIndexFile,
   SimpleIndex::EntrySet disk_write_entry_set_;
 };
 
-class SimpleIndexTest : public net::TestWithScopedTaskEnvironment,
+class SimpleIndexTest : public net::TestWithTaskEnvironment,
                         public SimpleIndexDelegate {
  protected:
   SimpleIndexTest() : hashes_(base::BindRepeating(&HashesInitializer)) {}

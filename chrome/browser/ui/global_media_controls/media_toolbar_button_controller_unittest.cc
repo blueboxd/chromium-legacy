@@ -35,9 +35,8 @@ class MockMediaToolbarButtonControllerDelegate
 class MediaToolbarButtonControllerTest : public testing::Test {
  public:
   MediaToolbarButtonControllerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME,
+                          base::test::TaskEnvironment::MainThreadType::UI) {}
   ~MediaToolbarButtonControllerTest() override = default;
 
   void SetUp() override {
@@ -55,14 +54,14 @@ class MediaToolbarButtonControllerTest : public testing::Test {
   void SimulateMediaStopped() { controller_->MediaSessionInfoChanged(nullptr); }
 
   void AdvanceClockMilliseconds(int milliseconds) {
-    scoped_task_environment_.FastForwardBy(
+    task_environment_.FastForwardBy(
         base::TimeDelta::FromMilliseconds(milliseconds));
   }
 
   MockMediaToolbarButtonControllerDelegate& delegate() { return delegate_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MediaToolbarButtonController> controller_;
   MockMediaToolbarButtonControllerDelegate delegate_;
 

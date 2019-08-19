@@ -233,7 +233,7 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
     sdp_format_ = sdp_format;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::Thread media_thread_;
 
   // Owned by |rtc_video_decoder_adapter_|.

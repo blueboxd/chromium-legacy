@@ -84,10 +84,9 @@ struct InitGlobals {
 
     // Mark this thread as an IO_THREAD with MOCK_TIME, and ensure that Now()
     // is driven from the same mock clock.
-    scoped_task_environment_ =
-        std::make_unique<base::test::ScopedTaskEnvironment>(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO,
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
+    task_environment_ = std::make_unique<base::test::TaskEnvironment>(
+        base::test::TaskEnvironment::MainThreadType::IO,
+        base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
     // Disable noisy logging as per "libFuzzer in Chrome" documentation:
     // testing/libfuzzer/getting_started.md#Disable-noisy-error-message-logging.
@@ -106,7 +105,7 @@ struct InitGlobals {
   }
 
   // This allows us to mock time for all threads.
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
 
   // Used as a pre-filled buffer for all writes.
   scoped_refptr<net::IOBuffer> buffer_;
@@ -439,7 +438,7 @@ void DiskCacheLPMFuzzer::RunCommands(
     // Handle any callbacks that other threads may have posted to us in the
     // meantime, so any successful async OpenEntry's (etc.) add their
     // entry_ptr's to the map.
-    init_globals->scoped_task_environment_->RunUntilIdle();
+    init_globals->task_environment_->RunUntilIdle();
 
     switch (command.fuzz_command_oneof_case()) {
       case disk_cache_fuzzer::FuzzCommand::kSetMaxSize: {
@@ -842,7 +841,7 @@ void DiskCacheLPMFuzzer::RunCommands(
             command.fast_forward_by().capped_num_millis() %
             kMaxNumMillisToWait);
         MAYBE_PRINT << "FastForwardBy(" << to_wait << ")" << std::endl;
-        init_globals->scoped_task_environment_->FastForwardBy(to_wait);
+        init_globals->task_environment_->FastForwardBy(to_wait);
 
         base::Time curr_time = base::Time::Now();
         saved_times_[command.fast_forward_by().time_id()] = curr_time;
@@ -1217,7 +1216,7 @@ DiskCacheLPMFuzzer::~DiskCacheLPMFuzzer() {
     // TODO(mpdenton) should also be documented?
     open_iterators_.clear();
     // Just in case, finish any callbacks.
-    init_globals->scoped_task_environment_->RunUntilIdle();
+    init_globals->task_environment_->RunUntilIdle();
     // Close all entries that haven't been closed yet.
     CloseAllRemainingEntries();
     // Destroy the backend.
@@ -1226,13 +1225,13 @@ DiskCacheLPMFuzzer::~DiskCacheLPMFuzzer() {
     // Here we won't bother with waiting for our OpenEntry* callbacks.
     cache_.reset();
     // Finish any callbacks that came in before backend destruction.
-    init_globals->scoped_task_environment_->RunUntilIdle();
+    init_globals->task_environment_->RunUntilIdle();
     // Close all entries that haven't been closed yet.
     CloseAllRemainingEntries();
   }
 
   // Make sure any tasks triggered by the CloseEntry's have run.
-  init_globals->scoped_task_environment_->RunUntilIdle();
+  init_globals->task_environment_->RunUntilIdle();
   if (simple_cache_impl_)
     CHECK(simple_file_tracker_->IsEmptyForTesting());
   base::RunLoop().RunUntilIdle();

@@ -33,7 +33,7 @@ namespace content {
 namespace {
 
 TEST(IndexedDBIOErrorTest, CleanUpTest) {
-  base::test::ScopedTaskEnvironment task_env;
+  base::test::TaskEnvironment task_env;
   const url::Origin origin = url::Origin::Create(GURL("http://localhost:81"));
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
@@ -57,7 +57,7 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
 }
 
 TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
-  base::test::ScopedTaskEnvironment task_env;
+  base::test::TaskEnvironment task_env;
   const url::Origin origin = url::Origin::Create(GURL("http://localhost:81"));
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());

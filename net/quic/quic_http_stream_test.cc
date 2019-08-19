@@ -176,7 +176,7 @@ class QuicHttpStreamPeer {
 
 class QuicHttpStreamTest : public ::testing::TestWithParam<
                                std::tuple<quic::ParsedQuicVersion, bool>>,
-                           public WithScopedTaskEnvironment {
+                           public WithTaskEnvironment {
  public:
   void CloseStream(QuicHttpStream* stream, int /*rv*/) { stream->Close(false); }
 

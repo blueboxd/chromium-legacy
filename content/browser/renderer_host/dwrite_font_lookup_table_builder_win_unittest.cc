@@ -72,7 +72,7 @@ class DWriteFontLookupTableBuilderTest : public testing::Test {
 
  protected:
   base::test::ScopedFeatureList feature_list_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   DWriteFontLookupTableBuilder* font_lookup_table_builder_;
   base::ScopedTempDir scoped_temp_dir_;
 };
@@ -97,7 +97,7 @@ TEST_F(DWriteFontLookupTableBuilderTest, TestFindUniqueFontDirect) {
             TestMatchFonts();
             test_callback_executed = true;
           }));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(test_callback_executed);
 }
 
@@ -123,7 +123,7 @@ TEST_P(DWriteFontLookupTableBuilderTimeoutTest, TestTimeout) {
           font_lookup_table_builder_->ResumeFromHangForTesting();
         test_callback_executed = true;
       }));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(test_callback_executed);
 }
 
@@ -150,7 +150,7 @@ TEST_F(DWriteFontLookupTableBuilderTest, TestReadyEarly) {
           }));
   ASSERT_FALSE(font_lookup_table_builder_->FontUniqueNameTableReady());
   font_lookup_table_builder_->ResumeFromHangForTesting();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(test_callback_executed);
 }
 
@@ -166,7 +166,7 @@ TEST_F(DWriteFontLookupTableBuilderTest, RepeatedScheduling) {
             [&test_callback_executed](base::ReadOnlySharedMemoryRegion) {
               test_callback_executed = true;
             }));
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     ASSERT_TRUE(test_callback_executed);
   }
 }
@@ -205,7 +205,7 @@ TEST_F(DWriteFontLookupTableBuilderTest, HandleCorruptCacheFile) {
         ASSERT_TRUE(cache_file.SetLength(cache_file.GetLength() * 2));
         test_callback_executed = true;
       }));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(test_callback_executed);
 
   // Reload the cache file.
@@ -221,7 +221,7 @@ TEST_F(DWriteFontLookupTableBuilderTest, HandleCorruptCacheFile) {
             test_callback_executed = true;
           }));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(test_callback_executed);
 
   // Ensure that the table is still valid even though persisting has failed

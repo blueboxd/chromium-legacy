@@ -198,7 +198,7 @@ class SocketManagerTest : public testing::Test {
 
  protected:
   // Must be first member.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   void OnProxyToCups(base::OnceClosure finish_cb,
                      base::Optional<std::vector<uint8_t>>* ret,

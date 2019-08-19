@@ -130,8 +130,7 @@ class TestObserver : public PowerManagerClient::Observer {
 class AdapterTest : public testing::Test {
  public:
   AdapterTest()
-      : thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : thread_bundle_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   ~AdapterTest() override = default;
 

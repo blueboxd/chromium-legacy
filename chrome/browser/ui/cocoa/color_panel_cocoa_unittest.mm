@@ -28,7 +28,7 @@ class ColorPanelCocoaTest : public CocoaTest {
     [[NSColorPanel sharedColorPanel] makeKeyAndOrderFront:nil];
     Init();
   }
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(ColorPanelCocoaTest, ClearTargetOnEnd) {

@@ -9,7 +9,6 @@ dictionary TrustedTypePolicyOptions {
    CreateScriptCallback createScript;
    CreateURLCallback createScriptURL;
    CreateURLCallback createURL;
-   boolean exposed = false;
 };
 
 callback CreateHTMLCallback = DOMString (DOMString input);

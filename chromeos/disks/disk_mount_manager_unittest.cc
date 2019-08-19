@@ -495,8 +495,7 @@ std::ostream& operator<<(std::ostream& stream,
 class DiskMountManagerTest : public testing::Test {
  public:
   DiskMountManagerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
   ~DiskMountManagerTest() override = default;
 
   // Sets up test dbus thread manager and disks mount manager.
@@ -589,7 +588,7 @@ class DiskMountManagerTest : public testing::Test {
   std::unique_ptr<MockDiskMountManagerObserver> observer_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // Tests that the observer gets notified on attempt to format non existent mount

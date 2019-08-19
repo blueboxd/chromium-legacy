@@ -83,10 +83,10 @@ class NotificationEventDispatcherImplTest : public ::testing::Test {
   ~NotificationEventDispatcherImplTest() override { delete dispatcher_; }
 
   // Waits until the task runner managing the Mojo connection has finished.
-  void WaitForMojoTasksToComplete() { scoped_task_environment_.RunUntilIdle(); }
+  void WaitForMojoTasksToComplete() { task_environment_.RunUntilIdle(); }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // Using a raw pointer because NotificationEventDispatcherImpl is a singleton
   // with private constructor and destructor, so unique_ptr is not an option.

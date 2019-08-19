@@ -146,6 +146,7 @@ chromevox_modules = [
   "cvox2/background/live_regions.js",
   "cvox2/background/log.js",
   "cvox2/background/log_store.js",
+  "cvox2/background/log_types.js",
   "cvox2/background/math_handler.js",
   "cvox2/background/media_automation_handler.js",
   "cvox2/background/mouse_handler.js",

@@ -82,7 +82,7 @@ bool ExitMessageLoopAndReturnFalse() {
 
 }  // namespace
 
-class NetworkChangeNotifierWinTest : public TestWithScopedTaskEnvironment {
+class NetworkChangeNotifierWinTest : public TestWithTaskEnvironment {
  public:
   // Calls WatchForAddressChange, and simulates a WatchForAddressChangeInternal
   // success.  Expects that |network_change_notifier_| has just been created, so

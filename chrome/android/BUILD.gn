@@ -1173,13 +1173,8 @@ chrome_common_shared_library("libchrome") {
     ":chrome_jni_registration($default_toolchain)",
   ]
 
-  # Include appropriate factories for native feature modules if necessary.
   if (enable_vr) {
-    if (use_native_modules && modularize_vr_native) {
-      deps += [ "//chrome/browser/android/vr:ui_module_factory" ]
-    } else {
-      deps += [ "//chrome/browser/android/vr:ui_module_dummy_factory" ]
-    }
+    deps += [ "//chrome/browser/android/vr:module_factory" ]
   }
 
   allow_partitions = true
@@ -1441,13 +1436,8 @@ template("libmonochrome_apk_or_bundle_tmpl") {
       "//components/crash/android:crashpad_main",
     ]
 
-    # Include appropriate factories for native feature modules if necessary.
     if (enable_vr) {
-      if (use_native_modules && modularize_vr_native) {
-        deps += [ "//chrome/browser/android/vr:ui_module_factory" ]
-      } else {
-        deps += [ "//chrome/browser/android/vr:ui_module_dummy_factory" ]
-      }
+      deps += [ "//chrome/browser/android/vr:module_factory" ]
     }
 
     is_monochrome = true

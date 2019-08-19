@@ -135,8 +135,8 @@ void AssociateOutputForAec(const base::UnguessableToken& stream_id,
 }  // namespace
 
 TEST(MojoAudioInputIPC, OnStreamCreated_Propagates) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   StrictMock<MockStream> stream;
   StrictMock<MockDelegate> delegate;
   FakeStreamCreator creator(&stream, false);
@@ -156,8 +156,8 @@ TEST(MojoAudioInputIPC, OnStreamCreated_Propagates) {
 }
 
 TEST(MojoAudioInputIPC, FactoryDisconnected_SendsError) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   StrictMock<MockDelegate> delegate;
 
   const std::unique_ptr<media::AudioInputIPC> ipc =
@@ -181,8 +181,8 @@ TEST(MojoAudioInputIPC, FactoryDisconnected_SendsError) {
 }
 
 TEST(MojoAudioInputIPC, OnStreamCreated_PropagatesInitiallyMuted) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   StrictMock<MockStream> stream;
   StrictMock<MockDelegate> delegate;
   FakeStreamCreator creator(&stream, true);
@@ -202,8 +202,8 @@ TEST(MojoAudioInputIPC, OnStreamCreated_PropagatesInitiallyMuted) {
 }
 
 TEST(MojoAudioInputIPC, IsReusable) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   StrictMock<MockStream> stream;
   StrictMock<MockDelegate> delegate;
   FakeStreamCreator creator(&stream, false);
@@ -228,8 +228,8 @@ TEST(MojoAudioInputIPC, IsReusable) {
 }
 
 TEST(MojoAudioInputIPC, IsReusableAfterError) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   StrictMock<MockStream> stream;
   StrictMock<MockDelegate> delegate;
   FakeStreamCreator creator(&stream, false);
@@ -259,8 +259,8 @@ TEST(MojoAudioInputIPC, IsReusableAfterError) {
 }
 
 TEST(MojoAudioInputIPC, Record_Records) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   StrictMock<MockStream> stream;
   StrictMock<MockDelegate> delegate;
   FakeStreamCreator creator(&stream, false);
@@ -283,8 +283,8 @@ TEST(MojoAudioInputIPC, Record_Records) {
 }
 
 TEST(MojoAudioInputIPC, SetVolume_SetsVolume) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   StrictMock<MockStream> stream;
   StrictMock<MockDelegate> delegate;
   FakeStreamCreator creator(&stream, false);
@@ -307,8 +307,8 @@ TEST(MojoAudioInputIPC, SetVolume_SetsVolume) {
 }
 
 TEST(MojoAudioInputIPC, SetOutputDeviceForAec_AssociatesInputAndOutputForAec) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   StrictMock<MockStream> stream;
   StrictMock<MockDelegate> delegate;
   FakeStreamCreator creator(&stream, false);

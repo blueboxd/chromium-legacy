@@ -92,14 +92,14 @@ class MultiThreadedTest {
   ApplicationState state_;
   base::WaitableEvent event_;
   base::Thread thread_;
-  test::ScopedTaskEnvironment scoped_task_environment_;
+  test::TaskEnvironment task_environment_;
   std::unique_ptr<ApplicationStatusListener> listener_;
 };
 
 }  // namespace
 
 TEST(ApplicationStatusListenerTest, SingleThread) {
-  test::ScopedTaskEnvironment scoped_task_environment;
+  test::TaskEnvironment task_environment;
 
   ApplicationState result = kInvalidApplicationState;
 

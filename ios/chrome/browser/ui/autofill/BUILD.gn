@@ -9,10 +9,6 @@ source_set("autofill") {
     "autofill_ui_type_util.mm",
     "chrome_autofill_client_ios.h",
     "chrome_autofill_client_ios.mm",
-    "form_input_accessory_coordinator.h",
-    "form_input_accessory_coordinator.mm",
-    "form_input_accessory_mediator.h",
-    "form_input_accessory_mediator.mm",
   ]
   deps = [
     ":autofill_ui",
@@ -46,6 +42,7 @@ source_set("autofill") {
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/translate:translate",
     "//ios/chrome/browser/ui/autofill/cells",
+    "//ios/chrome/browser/ui/autofill/form_input_accessory",
     "//ios/chrome/browser/ui/autofill/manual_fill:manual_fill",
     "//ios/chrome/browser/ui/autofill/manual_fill:manual_fill_ui",
     "//ios/chrome/browser/ui/collection_view/cells",

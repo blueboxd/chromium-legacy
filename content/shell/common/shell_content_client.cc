@@ -14,7 +14,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/grit/shell_resources.h"
-#include "third_party/blink/public/resources/grit/blink_image_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -49,17 +48,6 @@ base::string16 ShellContentClient::GetLocalizedString(int message_id) {
 base::StringPiece ShellContentClient::GetDataResource(
     int resource_id,
     ui::ScaleFactor scale_factor) {
-  if (switches::IsRunWebTestsSwitchPresent()) {
-    switch (resource_id) {
-      case IDR_BROKENIMAGE:
-#if defined(OS_MACOSX)
-        resource_id = IDR_CONTENT_SHELL_MISSING_IMAGE_PNG;
-#else
-        resource_id = IDR_CONTENT_SHELL_MISSING_IMAGE_GIF;
-#endif
-        break;
-    }
-  }
   return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }

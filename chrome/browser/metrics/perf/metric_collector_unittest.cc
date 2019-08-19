@@ -150,7 +150,7 @@ class MetricCollectorTest : public testing::Test {
  public:
   MetricCollectorTest()
       : test_browser_thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         perf_data_proto_(GetExamplePerfDataProto()),
         perf_stat_proto_(GetExamplePerfStatProto()) {}
 

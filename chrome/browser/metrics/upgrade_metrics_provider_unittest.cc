@@ -29,7 +29,7 @@ class UpgradeMetricsProviderTest : public testing::Test {
 };
 
 TEST_F(UpgradeMetricsProviderTest, HistogramCheck) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   TestHistogramLevel(UpgradeDetector::UPGRADE_ANNOYANCE_NONE);
   TestHistogramLevel(UpgradeDetector::UPGRADE_ANNOYANCE_VERY_LOW);
   TestHistogramLevel(UpgradeDetector::UPGRADE_ANNOYANCE_LOW);

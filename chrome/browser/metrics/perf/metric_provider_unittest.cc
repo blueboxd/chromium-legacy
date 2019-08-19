@@ -88,7 +88,7 @@ class MetricProviderTest : public testing::Test {
  public:
   MetricProviderTest()
       : test_browser_thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     CollectionParams test_params;

@@ -91,7 +91,7 @@ class ByteStreamTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   int producing_seed_key_;

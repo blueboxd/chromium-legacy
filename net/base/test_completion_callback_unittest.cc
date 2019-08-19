@@ -111,7 +111,7 @@ bool ExampleEmployer::DoSomething(CompletionOnceCallback callback) {
 }  // namespace
 
 class TestCompletionCallbackTest : public PlatformTest,
-                                   public WithScopedTaskEnvironment {};
+                                   public WithTaskEnvironment {};
 
 TEST_F(TestCompletionCallbackTest, Simple) {
   ExampleEmployer boss;

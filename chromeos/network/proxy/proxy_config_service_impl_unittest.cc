@@ -59,7 +59,7 @@ class ProxyConfigServiceImplTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment environment_;
+  base::test::TaskEnvironment environment_;
 };
 
 // By default, ProxyConfigServiceImpl should ignore the state of the nested

@@ -30,7 +30,7 @@ class MachBootstrapAcceptorTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 class TestMachBootstrapAcceptorDelegate

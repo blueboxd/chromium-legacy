@@ -56,7 +56,7 @@ class SequencedTaskRunnerTest : public testing::Test {
   Thread foreign_thread_;
 
  private:
-  test::ScopedTaskEnvironment scoped_task_environment_;
+  test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(SequencedTaskRunnerTest);
 };

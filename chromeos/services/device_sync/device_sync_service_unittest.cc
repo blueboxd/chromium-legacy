@@ -1141,7 +1141,7 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
     std::move(quit_closure).Run();
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  const base::test::TaskEnvironment task_environment_;
   const multidevice::RemoteDeviceList test_devices_;
   const std::vector<cryptauth::ExternalDeviceInfo> test_device_infos_;
   const std::vector<cryptauth::IneligibleDevice> test_ineligible_devices_;

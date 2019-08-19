@@ -157,7 +157,7 @@ class SecureChannelBluetoothLowEnergyCharacteristicFinderTest
 
     // Posting to a task to allow the read to be asynchronous, although still
     // running only on one thread. Calls to
-    // |scoped_task_environment_.RunUntilIdle()| in tests will process any
+    // |task_environment_.RunUntilIdle()| in tests will process any
     // pending callbacks.
     ON_CALL(*characteristic.get(), ReadRemoteCharacteristic_(_, _))
         .WillByDefault(
@@ -261,7 +261,7 @@ class SecureChannelBluetoothLowEnergyCharacteristicFinderTest
 
   std::unique_ptr<BluetoothLowEnergyCharacteristicsFinder>
       characteristic_finder_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<device::MockBluetoothAdapter> adapter_;
   BluetoothLowEnergyCharacteristicsFinder::SuccessCallback success_callback_;
   BluetoothLowEnergyCharacteristicsFinder::ErrorCallback error_callback_;
@@ -446,7 +446,7 @@ TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
                       kEidCharID);
 
   CallGattServicesDiscovered();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_EQ(kToPeripheralCharID, found_to_char.id);
   EXPECT_EQ(kFromPeripheralCharID, found_from_char.id);
@@ -475,7 +475,7 @@ TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
                                   /* is_discovery_complete */ false);
 
   CallGattServicesDiscovered();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
@@ -487,7 +487,7 @@ TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
                       kEidCharID, /* correct_eid_value */ false);
 
   CallGattServicesDiscovered();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
@@ -501,7 +501,7 @@ TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
                       /* correct_eid_value */ false);
 
   CallGattServicesDiscovered();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
@@ -518,7 +518,7 @@ TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
                       /* correct_eid_value */ false);
 
   CallGattServicesDiscovered();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_EQ(kToPeripheralCharID, found_to_char.id);
   EXPECT_EQ(kFromPeripheralCharID, found_from_char.id);
@@ -559,7 +559,7 @@ TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
                       /* correct_eid_value */ false);
 
   CallGattServicesDiscovered();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_EQ(kToPeripheralCharID, found_to_char.id);
   EXPECT_EQ(kFromPeripheralCharID, found_from_char.id);

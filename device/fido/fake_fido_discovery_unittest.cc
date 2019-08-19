@@ -30,7 +30,7 @@ class FakeFidoDiscoveryTest : public ::testing::Test {
 
  protected:
   FakeFidoDiscoveryFactory fake_fido_discovery_factory_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeFidoDiscoveryTest);

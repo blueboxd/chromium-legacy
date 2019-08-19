@@ -105,7 +105,7 @@ class DeviceDescriptionServiceTest : public ::testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment environment_;
+  base::test::TaskEnvironment environment_;
   base::MockCallback<
       DeviceDescriptionService::DeviceDescriptionParseSuccessCallback>
       mock_success_cb_;

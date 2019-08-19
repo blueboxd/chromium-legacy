@@ -178,13 +178,12 @@ class ContentVerifier::HashHelper {
   //
   // Must be called on IO thread. The method responds through |callback| on IO
   // thread.
-  void GetContentHash(const ContentHash::ExtensionKey& extension_key,
-                      ContentHash::FetchParams fetch_params,
+  void GetContentHash(ContentHash::FetchKey fetch_key,
                       bool force_missing_computed_hashes_creation,
                       ContentHashCallback callback) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    auto callback_key = std::make_pair(extension_key.extension_id,
-                                       extension_key.extension_version);
+    auto callback_key =
+        std::make_pair(fetch_key.extension_id, fetch_key.extension_version);
     auto iter = callback_infos_.find(callback_key);
     if (iter != callback_infos_.end()) {
       iter->second.callbacks.push_back(std::move(callback));
@@ -203,8 +202,7 @@ class ContentVerifier::HashHelper {
     GetExtensionFileTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(
-            &HashHelper::ReadHashOnFileTaskRunner, extension_key,
-            std::move(fetch_params),
+            &HashHelper::ReadHashOnFileTaskRunner, std::move(fetch_key),
             base::BindRepeating(&IsCancelledChecker::IsCancelled, checker),
             base::BindOnce(&HashHelper::DidReadHash, weak_factory_.GetWeakPtr(),
                            callback_key, checker)));
@@ -286,12 +284,11 @@ class ContentVerifier::HashHelper {
   }
 
   static void ReadHashOnFileTaskRunner(
-      const ContentHash::ExtensionKey& extension_key,
-      ContentHash::FetchParams fetch_params,
+      ContentHash::FetchKey fetch_key,
       const IsCancelledCallback& is_cancelled,
       ContentHash::CreatedCallback created_callback) {
     ContentHash::Create(
-        extension_key, std::move(fetch_params), is_cancelled,
+        std::move(fetch_key), is_cancelled,
         base::BindOnce(&HashHelper::ForwardToIO, std::move(created_callback)));
   }
 
@@ -483,16 +480,12 @@ void ContentVerifier::GetContentHash(
     return;
   }
 
-  ContentHash::ExtensionKey extension_key(extension_id, extension_root,
-                                          extension_version,
-                                          delegate_->GetPublicKey());
-  ContentHash::FetchParams fetch_params =
-      GetFetchParams(extension_id, extension_version);
+  ContentHash::FetchKey fetch_key =
+      GetFetchKey(extension_id, extension_root, extension_version);
   // Since |shutdown_on_io_| = false, GetOrCreateHashHelper() must return
   // non-nullptr instance of HashHelper.
   GetOrCreateHashHelper()->GetContentHash(
-      extension_key, std::move(fetch_params),
-      force_missing_computed_hashes_creation,
+      std::move(fetch_key), force_missing_computed_hashes_creation,
       base::BindOnce(&ContentVerifier::DidGetContentHash, this, cache_key,
                      std::move(callback)));
 }
@@ -604,8 +597,9 @@ void ContentVerifier::OnFetchComplete(
   VerifyFailed(extension_id, ContentVerifyJob::HASH_MISMATCH);
 }
 
-ContentHash::FetchParams ContentVerifier::GetFetchParams(
+ContentHash::FetchKey ContentVerifier::GetFetchKey(
     const ExtensionId& extension_id,
+    const base::FilePath& extension_root,
     const base::Version& extension_version) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
@@ -618,9 +612,11 @@ ContentHash::FetchParams ContentVerifier::GetFetchParams(
                      this, mojo::MakeRequest(&url_loader_factory_ptr)));
   network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_info =
       url_loader_factory_ptr.PassInterface();
-  return ContentHash::FetchParams(
+  return ContentHash::FetchKey(
+      extension_id, extension_root, extension_version,
       std::move(url_loader_factory_info),
-      delegate_->GetSignatureFetchUrl(extension_id, extension_version));
+      delegate_->GetSignatureFetchUrl(extension_id, extension_version),
+      delegate_->GetPublicKey());
 }
 
 void ContentVerifier::DidGetContentHash(

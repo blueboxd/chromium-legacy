@@ -379,6 +379,17 @@ public class PaymentRequestImpl
     private OverviewModeBehavior mOverviewModeBehavior;
     private PaymentHandlerHost mPaymentHandlerHost;
 
+    /**
+     * A mapping of the payment method names to the corresponding payment method specific data. If
+     * STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT is enabled, then the key "basic-card-payment-options"
+     * also maps to the following payment options:
+     *  - requestPayerEmail
+     *  - requestPayerName
+     *  - requestPayerPhone
+     *  - requestShipping
+     */
+    private Map<String, PaymentMethodData> mQueryForQuota;
+
     /** Aborts should only be recorded if the Payment Request was shown to the user. */
     private boolean mShouldRecordAbortReason;
 
@@ -503,6 +514,7 @@ public class PaymentRequestImpl
             Log.d(TAG, ErrorStrings.PROHIBITED_ORIGIN_OR_INVALID_SSL_EXPLANATION);
             // Don't show any UI. Resolve .canMakePayment() with "false". Reject .show() with
             // "NotSupportedError".
+            mQueryForQuota = new HashMap<>();
             onAllPaymentAppsCreated();
             return;
         }
@@ -518,6 +530,7 @@ public class PaymentRequestImpl
             Log.d(TAG, ErrorStrings.PROHIBITED_ORIGIN_OR_INVALID_SSL_EXPLANATION);
             // Don't show any UI. Resolve .canMakePayment() with "false". Reject .show() with
             // "NotSupportedError".
+            mQueryForQuota = new HashMap<>();
             onAllPaymentAppsCreated();
             return;
         }
@@ -527,6 +540,17 @@ public class PaymentRequestImpl
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_METHODS_OR_DATA);
             return;
+        }
+
+        mQueryForQuota = new HashMap<>(mMethodData);
+        if (mQueryForQuota.containsKey("basic-card")
+                && PaymentsExperimentalFeatures.isEnabled(
+                        ChromeFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT)) {
+            PaymentMethodData paymentMethodData = new PaymentMethodData();
+            paymentMethodData.stringifiedData = String.format(
+                    "{payerEmail:%s,payerName:%s,payerPhone:%s,shipping:%s}", mRequestPayerEmail,
+                    mRequestPayerName, mRequestPayerPhone, mRequestShipping);
+            mQueryForQuota.put("basic-card-payment-options", paymentMethodData);
         }
 
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
@@ -1995,7 +2019,7 @@ public class PaymentRequestImpl
         mIsHasEnrolledInstrumentResponsePending = false;
 
         if (CanMakePaymentQuery.canQuery(mWebContents, mTopLevelOrigin, mPaymentRequestOrigin,
-                    mMethodData, mHasEnrolledInstrumentUsesPerMethodQuota)) {
+                    mQueryForQuota, mHasEnrolledInstrumentUsesPerMethodQuota)) {
             mClient.onHasEnrolledInstrument(response
                             ? HasEnrolledInstrumentQueryResult.HAS_ENROLLED_INSTRUMENT
                             : HasEnrolledInstrumentQueryResult.HAS_NO_ENROLLED_INSTRUMENT);

@@ -13,7 +13,7 @@
 // The most simple test possible to ensure that the finder doesn't leak or
 // cause crashes.
 TEST(TaskbarIconFinder, Simple) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   base::RunLoop run_loop;
 
   FindTaskbarIcon(base::Bind([](base::Closure quit_closure,

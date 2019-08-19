@@ -38,7 +38,7 @@ enum ReadIfReadySupport {
 
 class SocketBIOAdapterTest : public testing::TestWithParam<ReadIfReadySupport>,
                              public SocketBIOAdapter::Delegate,
-                             public WithScopedTaskEnvironment {
+                             public WithTaskEnvironment {
  protected:
   void SetUp() override {
     if (GetParam() == READ_IF_READY_SUPPORTED) {

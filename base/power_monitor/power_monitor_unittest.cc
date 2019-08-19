@@ -22,7 +22,7 @@ class PowerMonitorTest : public testing::Test {
   PowerMonitorTestSource* source() { return power_monitor_source_; }
 
  private:
-  test::ScopedTaskEnvironment scoped_task_environment_;
+  test::TaskEnvironment task_environment_;
   PowerMonitorTestSource* power_monitor_source_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMonitorTest);

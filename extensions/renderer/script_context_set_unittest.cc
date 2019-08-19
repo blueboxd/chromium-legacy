@@ -21,7 +21,7 @@
 namespace extensions {
 
 TEST(ScriptContextSetTest, Lifecycle) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   ScopedWebFrame web_frame;
   // Used by ScriptContextSet::Register().
   TestExtensionsRendererClient extensions_renderer_client;

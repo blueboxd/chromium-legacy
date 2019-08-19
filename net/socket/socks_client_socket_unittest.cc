@@ -38,8 +38,7 @@ namespace net {
 
 class NetLog;
 
-class SOCKSClientSocketTest : public PlatformTest,
-                              public WithScopedTaskEnvironment {
+class SOCKSClientSocketTest : public PlatformTest, public WithTaskEnvironment {
  public:
   SOCKSClientSocketTest();
   // Create a SOCKSClientSocket on top of a MockSocket.

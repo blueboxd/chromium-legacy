@@ -339,7 +339,7 @@ class FetcherTestURLRequestContextGetter : public URLRequestContextGetter {
 
 }  // namespace
 
-class URLFetcherTest : public TestWithScopedTaskEnvironment {
+class URLFetcherTest : public TestWithTaskEnvironment {
  public:
   URLFetcherTest() : num_upload_streams_created_(0) {}
 

@@ -507,6 +507,7 @@ if (is_android) {
     sources = [
       "../browser/engagement/important_sites_util_browsertest.cc",
       "../browser/payments/has_enrolled_instrument_browsertest.cc",
+      "../browser/payments/has_enrolled_instrument_query_quota_browsertest.cc",
       "../browser/payments/payment_request_can_make_payment_browsertest.cc",
       "../browser/payments/personal_data_manager_test_util.cc",
       "../browser/payments/personal_data_manager_test_util.h",
@@ -1787,6 +1788,7 @@ if (!is_android) {
     if (toolkit_views) {
       sources += [
         "../browser/payments/has_enrolled_instrument_browsertest.cc",
+        "../browser/payments/has_enrolled_instrument_query_quota_browsertest.cc",
         "../browser/payments/manifest_verifier_browsertest.cc",
         "../browser/payments/payment_manifest_parser_browsertest.cc",
         "../browser/payments/payment_request_can_make_payment_browsertest.cc",

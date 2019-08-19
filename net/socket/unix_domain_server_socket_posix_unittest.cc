@@ -87,8 +87,8 @@ TEST_F(UnixDomainServerSocketTest, ListenAgainAfterFailureWithInvalidPath) {
 }
 
 TEST_F(UnixDomainServerSocketTest, AcceptWithForbiddenUser) {
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   const bool kUseAbstractNamespace = false;
 

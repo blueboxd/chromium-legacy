@@ -37,7 +37,7 @@ namespace {
 const IPEndPoint kEndpoint(IPAddress(1, 2, 3, 4), 100);
 }
 
-class ContextHostResolverTest : public TestWithScopedTaskEnvironment {
+class ContextHostResolverTest : public TestWithTaskEnvironment {
  protected:
   void SetUp() override {
     manager_ = std::make_unique<HostResolverManager>(

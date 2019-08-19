@@ -90,7 +90,7 @@ class ImpressionStoreTest : public testing::Test {
     }
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::map<std::string, proto::ClientState> db_entries_;
   bool load_result_;
   Entries loaded_entries_;

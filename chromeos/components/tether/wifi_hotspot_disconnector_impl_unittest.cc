@@ -197,7 +197,7 @@ class WifiHotspotDisconnectorImplTest : public testing::Test {
     return helper_.GetServiceStringProperty(service_path, key);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   NetworkStateTestHelper helper_{true /* use_default_devices_and_services */};
 
   std::unique_ptr<TestNetworkConnectionHandler>

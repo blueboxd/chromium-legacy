@@ -265,7 +265,7 @@ class TestProxyDelegateWithProxyInfo : public ProxyDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestProxyDelegateWithProxyInfo);
 };
 
-class WebSocketEndToEndTest : public TestWithScopedTaskEnvironment {
+class WebSocketEndToEndTest : public TestWithTaskEnvironment {
  protected:
   WebSocketEndToEndTest()
       : event_interface_(),

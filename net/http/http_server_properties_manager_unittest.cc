@@ -101,11 +101,11 @@ class MockPrefDelegate : public net::HttpServerProperties::PrefDelegate {
 }  // namespace
 
 class HttpServerPropertiesManagerTest : public testing::Test,
-                                        public WithScopedTaskEnvironment {
+                                        public WithTaskEnvironment {
  protected:
   HttpServerPropertiesManagerTest()
-      : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : WithTaskEnvironment(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     one_day_from_now_ = base::Time::Now() + base::TimeDelta::FromDays(1);

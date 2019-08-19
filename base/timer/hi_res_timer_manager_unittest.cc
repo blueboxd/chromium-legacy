@@ -23,8 +23,8 @@ TEST(HiResTimerManagerTest, ToggleOnOff) {
   // The power monitor creates Window to receive power notifications from
   // Windows, which makes this test flaky if you run while the machine
   // goes in or out of AC power.
-  test::ScopedTaskEnvironment scoped_task_environment(
-      test::ScopedTaskEnvironment::MainThreadType::UI);
+  test::TaskEnvironment task_environment(
+      test::TaskEnvironment::MainThreadType::UI);
   base::PowerMonitor::Initialize(
       std::make_unique<base::PowerMonitorDeviceSource>());
 

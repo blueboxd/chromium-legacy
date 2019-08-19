@@ -119,17 +119,32 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // blink::mojom::ServiceWorkerWorkerClient implementation:
   void OnControllerChanged(blink::mojom::ControllerServiceWorkerMode) override;
 
-  // Sets the fetch context status copied from a frame. For dedicated workers,
-  // it's copied from the ancestor frame (directly for non-nested workers, or
-  // indirectly via its parent worker for nested workers). For shared workers,
-  // it's copied from the shadow page.
+  // Sets the controller service worker mode.
+  // - For dedicated workers (non-PlzDedicatedWorker), they depend on the
+  //   controller of the ancestor frame (directly for non-nested workers, or
+  //   indirectly via its parent worker for nested workers), and inherit its
+  //   controller mode.
+  // - For dedicated workers (PlzDedicatedWorker) and shared workers, the
+  //   controller mode is passed from the browser processw when starting the
+  //   worker.
   void set_controller_service_worker_mode(
       blink::mojom::ControllerServiceWorkerMode mode);
+
+  // Sets properties associated with frames.
+  // - For dedicated workers, the property is copied from the ancestor frame
+  //   (directly for non-nested workers, or indirectly via its parent worker for
+  //   nested workers).
+  // - For shared workers, there is no parent frame, so the default value, or a
+  //   value calculated in some way is set.
+  //
+  // TODO(nhiroki): Add more comments about security/privacy implications to
+  // each property, for example, site_for_cookies and top_frame_origin.
   void set_ancestor_frame_id(int id);
   void set_frame_request_blocker(
       scoped_refptr<FrameRequestBlocker> frame_request_blocker);
   void set_site_for_cookies(const blink::WebURL& site_for_cookies);
   void set_top_frame_origin(const blink::WebSecurityOrigin& top_frame_origin);
+
   // Sets whether the worker context is a secure context.
   // https://w3c.github.io/webappsec-secure-contexts/
   void set_origin_url(const GURL& origin_url);

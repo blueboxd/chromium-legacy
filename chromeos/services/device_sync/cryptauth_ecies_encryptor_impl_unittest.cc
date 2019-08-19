@@ -225,7 +225,7 @@ class DeviceSyncCryptAuthEciesEncryptorImplTest : public testing::Test {
     }
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  const base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<CryptAuthEciesEncryptor> encryptor_;
   base::Optional<std::string> encrypted_payload_ = kPayloadNotSet;

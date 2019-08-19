@@ -425,7 +425,7 @@ class SecureChannelBleSynchronizerTest : public testing::Test {
                 device::UMABluetoothDiscoverySessionOutcome::UNKNOWN))));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const scoped_refptr<FakeBluetoothAdvertisement> fake_advertisement_;
 
   scoped_refptr<NiceMock<MockBluetoothAdapterWithAdvertisements>> mock_adapter_;

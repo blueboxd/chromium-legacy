@@ -14,6 +14,8 @@
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
@@ -290,7 +292,7 @@ void NGBoxFragmentPainter::PaintObject(
       !physical_box_fragment.Children().empty() &&
       !paint_info.DescendantPaintingBlocked()) {
     if (physical_box_fragment.ChildrenInline()) {
-      DCHECK(paint_fragment_);
+      DCHECK(paint_fragment_ || PhysicalFragment().HasItems());
       if (paint_phase != PaintPhase::kFloat) {
         if (physical_box_fragment.IsBlockFlow()) {
           PaintBlockFlowContents(paint_info, paint_offset);
@@ -349,7 +351,12 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
   const LayoutObject* layout_object = fragment.GetLayoutObject();
 
   DCHECK(fragment.ChildrenInline());
-  DCHECK(paint_fragment_);
+  DCHECK(paint_fragment_ || fragment.HasItems());
+
+  if (const NGFragmentItems* items = fragment.Items()) {
+    PaintInlineItems(*items, paint_info.ForDescendants(), paint_offset);
+    return;
+  }
 
   // Check if there were contents to be painted and return early if none.
   // The union of |ContentsInkOverflow()| and |LocalRect()| covers the rect to
@@ -760,6 +767,38 @@ void NGBoxFragmentPainter::PaintAllPhasesAtomically(
 
   local_paint_info.phase = PaintPhase::kOutline;
   PaintInternal(local_paint_info);
+}
+
+void NGBoxFragmentPainter::PaintInlineItems(
+    const NGFragmentItems& items,
+    const PaintInfo& paint_info,
+    const PhysicalOffset& paint_offset) {
+  NGInlineCursor cursor(items);
+  for (bool has_next = cursor.MoveToNext(); has_next;) {
+    const NGFragmentItem* item = cursor.CurrentItem();
+    DCHECK(item);
+    switch (item->Type()) {
+      case NGFragmentItem::kText:
+        // TODO(kojii): Implement.
+        break;
+      case NGFragmentItem::kGeneratedText:
+        // TODO(kojii): Implement.
+        break;
+      case NGFragmentItem::kLine:
+        // TODO(kojii): Implement.
+        break;
+      case NGFragmentItem::kBox:
+        if (const NGPhysicalBoxFragment* fragment = item->BoxFragment()) {
+          if (fragment->HasSelfPaintingLayer()) {
+            has_next = cursor.MoveToNextSkippingChildren();
+            continue;
+          }
+          // TODO(kojii): Implement.
+        }
+        break;
+    }
+    has_next = cursor.MoveToNext();
+  }
 }
 
 void NGBoxFragmentPainter::PaintLineBoxChildren(

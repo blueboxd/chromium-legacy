@@ -31,10 +31,9 @@ class CORE_EXPORT TrustedTypePolicyFactory final : public ScriptWrappable,
   // TrustedTypePolicyFactory.idl
   TrustedTypePolicy* createPolicy(const String&,
                                   const TrustedTypePolicyOptions*,
-                                  bool exposed,
                                   ExceptionState&);
 
-  TrustedTypePolicy* getExposedPolicy(const String&);
+  TrustedTypePolicy* defaultPolicy() const;
 
   Vector<String> getPolicyNames() const;
 

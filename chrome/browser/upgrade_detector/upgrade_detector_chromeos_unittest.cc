@@ -67,8 +67,7 @@ class UpgradeDetectorChromeosTest : public ::testing::Test {
  protected:
   UpgradeDetectorChromeosTest()
       : utc_(icu::TimeZone::createTimeZone("Etc/GMT")),
-        scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+        task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         scoped_local_state_(TestingBrowserProcess::GetGlobal()) {
     // Disable the detector's check to see if autoupdates are inabled.
     // Without this, tests put the detector into an invalid state by detecting
@@ -88,15 +87,13 @@ class UpgradeDetectorChromeosTest : public ::testing::Test {
     FastForwardBy(base::TimeDelta::FromHours(2));
   }
 
-  const base::Clock* GetMockClock() {
-    return scoped_task_environment_.GetMockClock();
-  }
+  const base::Clock* GetMockClock() { return task_environment_.GetMockClock(); }
 
   const base::TickClock* GetMockTickClock() {
-    return scoped_task_environment_.GetMockTickClock();
+    return task_environment_.GetMockTickClock();
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   void NotifyUpdateReadyToInstall() {
     chromeos::UpdateEngineClient::Status status;
@@ -136,12 +133,12 @@ class UpgradeDetectorChromeosTest : public ::testing::Test {
 
   // Fast-forwards virtual time by |delta|.
   void FastForwardBy(base::TimeDelta delta) {
-    scoped_task_environment_.FastForwardBy(delta);
+    task_environment_.FastForwardBy(delta);
   }
 
  private:
   std::unique_ptr<icu::TimeZone> utc_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ScopedTestingLocalState scoped_local_state_;
 
   chromeos::FakeUpdateEngineClient* fake_update_engine_client_;  // Not owned.

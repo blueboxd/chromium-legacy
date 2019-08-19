@@ -140,7 +140,7 @@ class TestDirectoryURLRequestDelegate : public TestDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestDirectoryURLRequestDelegate);
 };
 
-class URLRequestFileDirTest : public TestWithScopedTaskEnvironment {
+class URLRequestFileDirTest : public TestWithTaskEnvironment {
  public:
   URLRequestFileDirTest()
       : buffer_(base::MakeRefCounted<IOBuffer>(kBufferSize)) {}

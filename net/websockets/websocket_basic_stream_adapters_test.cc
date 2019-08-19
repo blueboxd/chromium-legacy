@@ -50,8 +50,7 @@ namespace net {
 
 namespace test {
 
-class WebSocketClientSocketHandleAdapterTest
-    : public TestWithScopedTaskEnvironment {
+class WebSocketClientSocketHandleAdapterTest : public TestWithTaskEnvironment {
  protected:
   WebSocketClientSocketHandleAdapterTest()
       : host_port_pair_("www.example.org", 443),
@@ -278,7 +277,7 @@ class MockDelegate : public WebSocketSpdyStreamAdapter::Delegate {
   MOCK_METHOD1(OnClose, void(int));
 };
 
-class WebSocketSpdyStreamAdapterTest : public TestWithScopedTaskEnvironment {
+class WebSocketSpdyStreamAdapterTest : public TestWithTaskEnvironment {
  protected:
   WebSocketSpdyStreamAdapterTest()
       : url_("wss://www.example.org/"),

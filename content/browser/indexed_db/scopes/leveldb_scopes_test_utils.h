@@ -95,7 +95,7 @@ class LevelDBScopesTestBase : public testing::Test {
 
  protected:
   base::ScopedAllowBaseSyncPrimitivesForTesting allow_;
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
   base::ScopedTempDir temp_directory_;
 
   const std::string simple_lock_begin_ = "0000000001";

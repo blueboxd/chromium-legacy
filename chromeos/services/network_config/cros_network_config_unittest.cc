@@ -245,7 +245,7 @@ class CrosNetworkConfigTest : public testing::Test {
   std::string wifi1_path() { return wifi1_path_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   NetworkStateTestHelper helper_{false /* use_default_devices_and_services */};
   std::unique_ptr<NetworkProfileHandler> network_profile_handler_;
   std::unique_ptr<NetworkDeviceHandler> network_device_handler_;

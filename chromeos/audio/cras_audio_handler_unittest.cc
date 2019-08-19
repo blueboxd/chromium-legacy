@@ -308,8 +308,7 @@ class FakeVideoCaptureManager {
 class CrasAudioHandlerTest : public testing::TestWithParam<int> {
  public:
   CrasAudioHandlerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
   ~CrasAudioHandlerTest() override = default;
 
   void SetUp() override {
@@ -484,7 +483,7 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
     return FakeCrasAudioClient::Get();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::SystemMonitor system_monitor_;
   SystemMonitorObserver system_monitor_observer_;
   CrasAudioHandler* cras_audio_handler_ = nullptr;         // Not owned.

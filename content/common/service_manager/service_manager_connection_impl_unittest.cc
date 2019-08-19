@@ -23,7 +23,7 @@ constexpr char kTestServiceName[] = "test service";
 }  // namespace
 
 TEST(ServiceManagerConnectionImplTest, ServiceLaunchThreading) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   base::Thread io_thread("ServiceManagerConnectionImplTest IO Thread");
   io_thread.Start();
   service_manager::mojom::ServicePtr service;

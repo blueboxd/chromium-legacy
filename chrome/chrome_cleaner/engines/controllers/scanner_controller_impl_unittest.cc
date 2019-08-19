@@ -210,7 +210,7 @@ class ScannerControllerImplTest : public ::testing::Test {
   }
 
   // Scoped task environment needs to be created before task runner.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   scoped_refptr<MockEngineClient> mock_engine_client_{

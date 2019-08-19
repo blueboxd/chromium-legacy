@@ -140,8 +140,7 @@ class MockCastAudioManager : public CastAudioManager {
 class CastAudioMixerTest : public ::testing::Test {
  public:
   CastAudioMixerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         connector_(CreateConnector()),
         source_callback_(nullptr) {}
   ~CastAudioMixerTest() override {}
@@ -149,7 +148,7 @@ class CastAudioMixerTest : public ::testing::Test {
  protected:
   void SetUp() override {
     mock_manager_.reset(new StrictMock<MockCastAudioManager>(
-        connector_.get(), scoped_task_environment_.GetMainThreadTaskRunner()));
+        connector_.get(), task_environment_.GetMainThreadTaskRunner()));
     mock_mixer_stream_.reset(new StrictMock<MockMediaAudioOutputStream>());
 
     ON_CALL(*mock_manager_, MakeMixerOutputStream(_))
@@ -172,7 +171,7 @@ class CastAudioMixerTest : public ::testing::Test {
         GetAudioParams(), "", ::media::AudioManager::LogCallback());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<MockCastAudioManager> mock_manager_;
   std::unique_ptr<MockMediaAudioOutputStream> mock_mixer_stream_;

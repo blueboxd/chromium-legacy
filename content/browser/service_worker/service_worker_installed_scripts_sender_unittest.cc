@@ -44,8 +44,8 @@ void ReadDataPipeInternal(mojo::DataPipeConsumerHandle handle,
         std::move(quit_closure).Run();
         return;
       case MOJO_RESULT_SHOULD_WAIT:
-        base::PostTask(FROM_HERE, {BrowserThread::IO},
-                       base::BindOnce(&ReadDataPipeInternal, handle, result,
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindOnce(&ReadDataPipeInternal, handle, result,
                                       std::move(quit_closure)));
         return;
       case MOJO_RESULT_OK:

@@ -134,7 +134,7 @@ class FidoBleAdapterManagerTest : public ::testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<MockBluetoothAdapter> adapter_ =
       base::MakeRefCounted<::testing::NiceMock<MockBluetoothAdapter>>();
   std::unique_ptr<MockObserver> mock_observer_ =
@@ -162,7 +162,7 @@ TEST_F(FidoBleAdapterManagerTest, AdapterNotPresent) {
   EXPECT_CALL(*observer(), OnTransportAvailabilityEnumerated(_))
       .WillOnce(::testing::SaveArg<0>(&data));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(data.is_ble_powered);
   EXPECT_FALSE(data.can_power_on_ble_adapter);
@@ -177,7 +177,7 @@ TEST_F(FidoBleAdapterManagerTest, AdapaterPresentAndPowered) {
   EXPECT_CALL(*observer(), OnTransportAvailabilityEnumerated(_))
       .WillOnce(::testing::SaveArg<0>(&data));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(data.is_ble_powered);
   EXPECT_FALSE(data.can_power_on_ble_adapter);
@@ -192,14 +192,14 @@ TEST_F(FidoBleAdapterManagerTest, AdapaterPresentAndCanBePowered) {
   EXPECT_CALL(*observer(), OnTransportAvailabilityEnumerated(_))
       .WillOnce(::testing::SaveArg<0>(&data));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(data.is_ble_powered);
   EXPECT_TRUE(data.can_power_on_ble_adapter);
 }
 
 TEST_F(FidoBleAdapterManagerTest, SetBluetoothPowerOn) {
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   auto& power_manager =
       fake_request_handler_->get_bluetooth_adapter_manager_for_testing();
   ::testing::InSequence s;
@@ -227,7 +227,7 @@ TEST_F(FidoBleAdapterManagerTest, SuccessfulPairing) {
           }));
   EXPECT_CALL(*mock_bluetooth_device, SetPinCode(kTestPinCode));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   auto& adapter_manager =
       fake_request_handler_->get_bluetooth_adapter_manager_for_testing();
   test::TestCallbackReceiver<> callback_receiver;
@@ -251,7 +251,7 @@ TEST_F(FidoBleAdapterManagerTest, PairingFailsOnUnknownDevice) {
       .WillRepeatedly(::testing::Return(adapter()->GetConstMockDevices()));
   EXPECT_CALL(*mock_bluetooth_device, Pair).Times(0);
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   auto& power_manager =
       fake_request_handler_->get_bluetooth_adapter_manager_for_testing();
   test::TestCallbackReceiver<> callback_receiver;
@@ -278,7 +278,7 @@ TEST_F(FidoBleAdapterManagerTest, PairingCancelledOnDestruction) {
             success_callback.Run();
           }));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   auto& adapter_manager =
       fake_request_handler_->get_bluetooth_adapter_manager_for_testing();
   test::TestCallbackReceiver<> callback_receiver;

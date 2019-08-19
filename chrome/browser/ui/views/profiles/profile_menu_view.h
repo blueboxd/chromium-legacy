@@ -51,7 +51,7 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   views::View* GetInitiallyFocusedView() override;
   base::string16 GetAccessibleWindowTitle() const override;
 
-  // Button actions.
+  // Button/link actions.
   void OnManageGoogleAccountButtonClicked();
   void OnPasswordsButtonClicked();
   void OnCreditCardsButtonClicked();
@@ -66,11 +66,7 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   void OnSigninAccountButtonClicked();
   void OnSignoutButtonClicked();
   void OnOtherProfileButtonClicked(int profile_index);
-
-  // views::StyledLabelListener
-  void StyledLabelLinkClicked(views::StyledLabel* label,
-                              const gfx::Range& range,
-                              int event_flags) override;
+  void OnCookiesClearedOnExitLinkClicked();
 
   // AvatarMenuObserver:
   void OnAvatarMenuChanged(AvatarMenu* avatar_menu) override;

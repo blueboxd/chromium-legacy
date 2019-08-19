@@ -168,7 +168,7 @@ TEST(CancelableCallbackTest, IsNull) {
 // CancelableCallback posted to a task environment with PostTask.
 //  - Posted callbacks can be cancelled.
 TEST(CancelableCallbackTest, PostTask) {
-  test::ScopedTaskEnvironment scoped_task_environment;
+  test::TaskEnvironment task_environment;
 
   int count = 0;
   CancelableRepeatingClosure cancelable(

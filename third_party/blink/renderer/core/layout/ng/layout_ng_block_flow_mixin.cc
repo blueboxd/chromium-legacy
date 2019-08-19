@@ -232,6 +232,9 @@ void LayoutNGBlockFlowMixin<Base>::SetPaintFragment(
     scoped_refptr<const NGPhysicalFragment> fragment) {
   DCHECK(!break_token || break_token->InputNode().GetLayoutBox() == this);
 
+  if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()))
+    return;
+
   scoped_refptr<NGPaintFragment>* current =
       NGPaintFragment::Find(&paint_fragment_, break_token);
   DCHECK(current);
@@ -251,6 +254,15 @@ void LayoutNGBlockFlowMixin<Base>::SetPaintFragment(
 
 template <typename Base>
 void LayoutNGBlockFlowMixin<Base>::Paint(const PaintInfo& paint_info) const {
+  if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())) {
+    if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
+      if (fragment->HasItems()) {
+        NGBoxFragmentPainter(*fragment).Paint(paint_info);
+        return;
+      }
+    }
+  }
+
   if (const NGPaintFragment* paint_fragment = PaintFragment())
     NGBoxFragmentPainter(*paint_fragment).Paint(paint_info);
   else

@@ -59,7 +59,7 @@ std::string TestKeyToString(const testing::TestParamInfo<TestKey>& params) {
 }  // namespace
 
 class SSLPlatformKeyNSSTest : public testing::TestWithParam<TestKey>,
-                              public WithScopedTaskEnvironment {};
+                              public WithTaskEnvironment {};
 
 TEST_P(SSLPlatformKeyNSSTest, KeyMatches) {
   const TestKey& test_key = GetParam();

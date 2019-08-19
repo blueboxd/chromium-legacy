@@ -100,7 +100,7 @@ class SpeechRecognitionEngineTest
   std::string ConsumeChunkedUploadData();
   void CloseMockDownstream(DownstreamError error);
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   network::TestURLLoaderFactory url_loader_factory_;
   mojo::ScopedDataPipeProducerHandle downstream_data_pipe_;

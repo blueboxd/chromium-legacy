@@ -292,7 +292,7 @@ class ServiceWorkerProviderContextTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   FakeURLLoaderFactory fake_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 

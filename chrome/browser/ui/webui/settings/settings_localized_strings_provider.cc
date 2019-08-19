@@ -636,6 +636,40 @@ void AddAppsStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, localized_strings,
                           base::size(localized_strings));
 }
+
+void AddAppManagementStrings(content::WebUIDataSource* html_source) {
+  static constexpr LocalizedString localized_strings[] = {
+      {"appListTitle", IDS_APP_MANAGEMENT_APP_LIST_TITLE},
+      {"appNoPermission", IDS_APPLICATION_INFO_APP_NO_PERMISSIONS_TEXT},
+      {"back", IDS_APP_MANAGEMENT_BACK},
+      {"camera", IDS_APP_MANAGEMENT_CAMERA},
+      {"contacts", IDS_APP_MANAGEMENT_CONTACTS},
+      {"controlledByPolicy", IDS_CONTROLLED_SETTING_POLICY},
+      {"lessApps", IDS_APP_MANAGEMENT_LESS_APPS},
+      {"location", IDS_APP_MANAGEMENT_LOCATION},
+      {"microphone", IDS_APP_MANAGEMENT_MICROPHONE},
+      {"moreApps", IDS_APP_MANAGEMENT_MORE_APPS},
+      {"moreSettings", IDS_APP_MANAGEMENT_MORE_SETTINGS},
+      {"noSearchResults", IDS_APP_MANAGEMENT_NO_RESULTS},
+      {"notifications", IDS_APP_MANAGEMENT_NOTIFICATIONS},
+      {"notificationSublabel", IDS_APP_MANAGEMENT_NOTIFICATIONS_SUBLABEL},
+      {"openAndroidSettings", IDS_APP_MANAGEMENT_ANDROID_SETTINGS},
+      {"openExtensionsSettings", IDS_APP_MANAGEMENT_EXTENSIONS_SETTINGS},
+      {"openSiteSettings", IDS_APP_MANAGEMENT_SITE_SETTING},
+      {"permissions", IDS_APP_MANAGEMENT_PERMISSIONS},
+      {"pinControlledByPolicy", IDS_APP_MANAGEMENT_PIN_ENFORCED_BY_POLICY},
+      {"pinToShelf", IDS_APP_MANAGEMENT_PIN_TO_SHELF},
+      {"searchPrompt", IDS_APP_MANAGEMENT_SEARCH_PROMPT},
+      {"size", IDS_APP_MANAGEMENT_SIZE},
+      {"storage", IDS_APP_MANAGEMENT_STORAGE},
+      {"thisAppCan", IDS_APP_MANAGEMENT_THIS_APP_CAN},
+      {"title", IDS_APP_MANAGEMENT_TITLE},
+      {"uninstall", IDS_APP_MANAGEMENT_UNINSTALL},
+      {"version", IDS_APP_MANAGEMENT_VERSION},
+  };
+  AddLocalizedStringsBulk(html_source, localized_strings,
+                          base::size(localized_strings));
+}
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -3306,12 +3340,12 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddWebContentStrings(html_source);
 
 #if defined(OS_CHROMEOS)
-  AddCrostiniStrings(html_source, profile);
-  AddPluginVmStrings(html_source, profile);
   AddAndroidAppStrings(html_source);
+  AddAppManagementStrings(html_source);
   AddAppsStrings(html_source);
   AddBluetoothStrings(html_source);
   AddChromeOSUserStrings(html_source, profile);
+  AddCrostiniStrings(html_source, profile);
   AddDateTimeStrings(html_source);
   AddDeviceStrings(html_source);
   AddEasyUnlockStrings(html_source);
@@ -3319,6 +3353,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddInternetStrings(html_source);
   AddMultideviceStrings(html_source);
   AddParentalControlStrings(html_source);
+  AddPluginVmStrings(html_source, profile);
   AddUsersStrings(html_source);
 #else
   AddDefaultBrowserStrings(html_source);

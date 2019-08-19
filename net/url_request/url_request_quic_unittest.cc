@@ -45,7 +45,7 @@ const char kHelloPath[] = "/hello.txt";
 const char kHelloBodyValue[] = "Hello from QUIC Server";
 const int kHelloStatus = 200;
 
-class URLRequestQuicTest : public TestWithScopedTaskEnvironment {
+class URLRequestQuicTest : public TestWithTaskEnvironment {
  protected:
   URLRequestQuicTest() : context_(new TestURLRequestContext(true)) {
     StartQuicServer();

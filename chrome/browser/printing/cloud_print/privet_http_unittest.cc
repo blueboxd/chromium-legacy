@@ -353,7 +353,7 @@ class PrivetHTTPTest : public TestWithParam<const char*> {
   const GURL kSubmitDocWithJobIDURL;
   const GURL kCreateJobURL;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       test_shared_url_loader_factory_;

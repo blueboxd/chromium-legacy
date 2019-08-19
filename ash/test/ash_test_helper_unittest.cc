@@ -33,8 +33,8 @@ class AshTestHelperTest : public testing::Test {
   AshTestHelper* ash_test_helper() { return ash_test_helper_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
 
   std::unique_ptr<AshTestHelper> ash_test_helper_;
 

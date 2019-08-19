@@ -98,7 +98,7 @@ class ActiveDirectoryPolicyManagerTest : public testing::Test {
   SchemaRegistry schema_registry_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   chromeos::ScopedStubInstallAttributes install_attributes_;
   DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryPolicyManagerTest);
 };

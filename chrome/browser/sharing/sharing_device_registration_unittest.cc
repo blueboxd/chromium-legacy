@@ -160,8 +160,8 @@ class SharingDeviceRegistrationTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  content::TestBrowserThreadBundle task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   sync_preferences::TestingPrefServiceSyncable prefs_;
   NiceMock<MockInstanceIDDriver> mock_instance_id_driver_;
@@ -258,7 +258,7 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Expired) {
   EXPECT_EQ(SharingDeviceRegistrationResult::kSuccess, result_);
 
   // Advance time so registration is expired.
-  scoped_task_environment_.FastForwardBy(kRegistrationExpiration);
+  task_environment_.FastForwardBy(kRegistrationExpiration);
 
   // Register the device again, Instance.GetToken will be attempted once more,
   // which will return a different FCM token.

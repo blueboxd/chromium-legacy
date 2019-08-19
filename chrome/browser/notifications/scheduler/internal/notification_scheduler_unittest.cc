@@ -135,7 +135,7 @@ class NotificationSchedulerTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   NotificationSchedulerClientRegistrar* registrar_;
   test::MockImpressionHistoryTracker* impression_tracker_;
   test::MockScheduledNotificationManager* notification_manager_;

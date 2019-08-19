@@ -37,8 +37,7 @@ const int kProxyPort = 4321;
 
 constexpr base::TimeDelta kTinyTime = base::TimeDelta::FromMicroseconds(1);
 
-class SOCKSConnectJobTest : public testing::Test,
-                            public WithScopedTaskEnvironment {
+class SOCKSConnectJobTest : public testing::Test, public WithTaskEnvironment {
  public:
   enum class SOCKSVersion {
     V4,
@@ -46,8 +45,7 @@ class SOCKSConnectJobTest : public testing::Test,
   };
 
   SOCKSConnectJobTest()
-      : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : WithTaskEnvironment(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         common_connect_job_params_(
             &client_socket_factory_,
             &host_resolver_,

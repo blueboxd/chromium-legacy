@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "content/browser/service_worker/service_worker_client_utils.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_type_converters.h"
@@ -199,7 +200,7 @@ ServiceWorkerObjectHost::ServiceWorkerObjectHost(
       provider_host_(provider_host),
       provider_origin_(url::Origin::Create(provider_host->url())),
       version_(std::move(version)) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
   DCHECK(context_ && provider_host_ && version_);
   DCHECK(context_->GetLiveRegistration(version_->registration_id()));
   version_->AddObserver(this);
@@ -208,7 +209,7 @@ ServiceWorkerObjectHost::ServiceWorkerObjectHost(
 }
 
 ServiceWorkerObjectHost::~ServiceWorkerObjectHost() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
   version_->RemoveObserver(this);
 }
 

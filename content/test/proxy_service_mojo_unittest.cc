@@ -129,7 +129,7 @@ class ProxyServiceMojoTest : public testing::Test {
             &mock_host_resolver_, &net_log_, &network_delegate_);
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   content::TestMojoProxyResolverFactory test_mojo_proxy_resolver_factory_;
   TestNetworkDelegate network_delegate_;
   net::MockHostResolver mock_host_resolver_;

@@ -95,7 +95,7 @@ bool CookieCryptor::DecryptString(const std::string& ciphertext,
 
 typedef std::vector<std::unique_ptr<CanonicalCookie>> CanonicalCookieVector;
 
-class SQLitePersistentCookieStoreTest : public TestWithScopedTaskEnvironment {
+class SQLitePersistentCookieStoreTest : public TestWithTaskEnvironment {
  public:
   SQLitePersistentCookieStoreTest()
       : loaded_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -133,7 +133,7 @@ class SQLitePersistentCookieStoreTest : public TestWithScopedTaskEnvironment {
   void DestroyStore() {
     store_ = nullptr;
     // Make sure we wait until the destructor has run by running all
-    // ScopedTaskEnvironment tasks.
+    // TaskEnvironment tasks.
     RunUntilIdle();
   }
 
@@ -374,7 +374,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   AddCookie("A", "B", "www.bbb.com", "/", t);
   DestroyStore();
 
-  // base::test::ScopedTaskEnvironment runs |background_task_runner_| and
+  // base::test::TaskEnvironment runs |background_task_runner_| and
   // |client_task_runner_| on the same thread. Therefore, when a
   // |background_task_runner_| task is blocked, |client_task_runner_| tasks
   // can't run. To allow precise control of |background_task_runner_| without

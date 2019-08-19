@@ -109,7 +109,7 @@ class DialActivityManagerTest : public testing::Test {
                     RouteRequestResult::ResultCode));
 
  protected:
-  base::test::ScopedTaskEnvironment environment_;
+  base::test::TaskEnvironment environment_;
   std::string presentation_id_ = "presentationId";
   MediaSinkInternal sink_ = CreateDialSink(1);
   MediaSource::Id source_id_ =

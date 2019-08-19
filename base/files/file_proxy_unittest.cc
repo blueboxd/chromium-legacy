@@ -27,8 +27,7 @@ namespace base {
 class FileProxyTest : public testing::Test {
  public:
   FileProxyTest()
-      : scoped_task_environment_(
-            test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(test::TaskEnvironment::MainThreadType::IO),
         file_thread_("FileProxyTestFileThread"),
         error_(File::FILE_OK),
         bytes_written_(-1) {}
@@ -94,7 +93,7 @@ class FileProxyTest : public testing::Test {
   const FilePath TestPath() const { return dir_.GetPath().AppendASCII("test"); }
 
   ScopedTempDir dir_;
-  test::ScopedTaskEnvironment scoped_task_environment_;
+  test::TaskEnvironment task_environment_;
   Thread file_thread_;
 
   File::Error error_;

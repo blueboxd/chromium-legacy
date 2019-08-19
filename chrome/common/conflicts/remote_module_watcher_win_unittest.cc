@@ -29,8 +29,7 @@ class RemoteModuleWatcherTest : public testing::Test,
                                 public mojom::ModuleEventSink {
  public:
   RemoteModuleWatcherTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         service_binding_(this,
                          test_connector_factory_.RegisterInstance(
                              content::mojom::kSystemServiceName)),
@@ -84,9 +83,9 @@ class RemoteModuleWatcherTest : public testing::Test,
   }
 
   // Runs the task scheduler until no tasks are running.
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
   void FastForwardByIdleDelay() {
-    scoped_task_environment_.FastForwardBy(RemoteModuleWatcher::kIdleDelay);
+    task_environment_.FastForwardBy(RemoteModuleWatcher::kIdleDelay);
   }
 
   HMODULE module_handle() { return module_handle_; }
@@ -99,7 +98,7 @@ class RemoteModuleWatcherTest : public testing::Test,
   }
 
   // Must be first.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   service_manager::TestConnectorFactory test_connector_factory_;
 

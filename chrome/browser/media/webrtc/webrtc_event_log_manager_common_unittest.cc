@@ -323,7 +323,7 @@ class LogFileWriterTest
     }
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::Optional<WebRtcEventLogCompression> compression_;  // Set in Init().
   base::ScopedTempDir temp_dir_;
   base::FilePath path_;

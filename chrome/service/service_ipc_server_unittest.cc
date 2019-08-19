@@ -78,8 +78,8 @@ class ServiceIPCServerTest : public ::testing::Test {
 
  protected:
   FakeServiceIPCServerClient service_process_client_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
   base::Thread io_thread_;
   base::WaitableEvent shutdown_event_;
   std::unique_ptr<ServiceIPCServer> server_;

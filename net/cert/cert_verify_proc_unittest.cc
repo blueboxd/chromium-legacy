@@ -3009,8 +3009,8 @@ class CertVerifyProcInternalWithNetFetchingTest
     : public CertVerifyProcInternalTest {
  protected:
   CertVerifyProcInternalWithNetFetchingTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT) {}
+      : task_environment_(
+            base::test::TaskEnvironment::MainThreadType::DEFAULT) {}
 
   void SetUp() override {
     // Create a network thread to be used for network fetches, and wait for
@@ -3326,7 +3326,7 @@ class CertVerifyProcInternalWithNetFetchingTest
     context->reset();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<base::Thread> network_thread_;
 

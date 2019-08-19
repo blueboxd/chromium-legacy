@@ -146,8 +146,8 @@ TEST(ChromeOSMemoryPressureMonitorTest, CheckMemoryPressure) {
   const std::string kInitialAvailableContents = "1500";
   ASSERT_TRUE(SetFileContents(available_file, kInitialAvailableContents));
 
-  test::ScopedTaskEnvironment scoped_task_environment(
-      test::ScopedTaskEnvironment::MainThreadType::UI);
+  test::TaskEnvironment task_environment(
+      test::TaskEnvironment::MainThreadType::UI);
 
   // We will use a mock listener to keep track of our kernel notifications which
   // cause event to be fired. We can just examine the sequence of pressure

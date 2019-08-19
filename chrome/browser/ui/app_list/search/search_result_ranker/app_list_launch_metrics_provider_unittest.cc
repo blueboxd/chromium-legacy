@@ -203,10 +203,10 @@ class AppListLaunchMetricsProviderTest : public testing::Test {
     histogram_tester_.ExpectTotalCount("Apps.AppListLaunchRecorderError", 0);
   }
 
-  void Wait() { scoped_task_environment_.RunUntilIdle(); }
+  void Wait() { task_environment_.RunUntilIdle(); }
 
   base::HistogramTester histogram_tester_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
 
   std::unique_ptr<AppListLaunchMetricsProvider> provider_;

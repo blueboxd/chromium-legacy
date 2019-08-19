@@ -188,7 +188,7 @@ class QuicHttpProxyBackendStreamTest : public QuicTest {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::string backend_url_;
   std::unique_ptr<QuicHttpProxyBackend> proxy_backend_;
   std::unique_ptr<QuicHttpProxyBackend> proxy_backend_fail_;

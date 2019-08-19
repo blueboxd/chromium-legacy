@@ -162,6 +162,10 @@ void OSExchangeData::SetDownloadFileInfo(const DownloadFileInfo& download) {
 #endif
 
 #if defined(USE_AURA)
+bool OSExchangeData::HasHtml() const {
+  return provider_->HasHtml();
+}
+
 void OSExchangeData::SetHtml(const base::string16& html, const GURL& base_url) {
   provider_->SetHtml(html, base_url);
 }

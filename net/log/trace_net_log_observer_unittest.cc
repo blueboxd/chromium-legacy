@@ -81,7 +81,7 @@ void EnableTraceLogWithoutNetLog() {
   EnableTraceLog(disabled_netlog_category);
 }
 
-class TraceNetLogObserverTest : public TestWithScopedTaskEnvironment {
+class TraceNetLogObserverTest : public TestWithTaskEnvironment {
  public:
   TraceNetLogObserverTest() {
     TraceLog* tracelog = TraceLog::GetInstance();
@@ -427,7 +427,7 @@ TEST_F(TraceNetLogObserverTest, EventsWithAndWithoutParameters) {
 }
 
 TEST(TraceNetLogObserverCategoryTest, DisabledCategory) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   TraceNetLogObserver observer;
   NetLog net_log;
   observer.WatchForTraceStart(&net_log);
@@ -444,7 +444,7 @@ TEST(TraceNetLogObserverCategoryTest, DisabledCategory) {
 }
 
 TEST(TraceNetLogObserverCategoryTest, EnabledCategory) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   TraceNetLogObserver observer;
   NetLog net_log;
   observer.WatchForTraceStart(&net_log);

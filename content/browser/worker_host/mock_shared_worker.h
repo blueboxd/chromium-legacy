@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
@@ -35,7 +36,8 @@ namespace content {
 
 class MockSharedWorker : public blink::mojom::SharedWorker {
  public:
-  explicit MockSharedWorker(blink::mojom::SharedWorkerRequest request);
+  explicit MockSharedWorker(
+      mojo::PendingReceiver<blink::mojom::SharedWorker> receiver);
   ~MockSharedWorker() override;
 
   bool CheckReceivedConnect(int* connection_request_id,
@@ -49,7 +51,7 @@ class MockSharedWorker : public blink::mojom::SharedWorker {
                mojo::ScopedMessagePipeHandle port) override;
   void Terminate() override;
 
-  mojo::Binding<blink::mojom::SharedWorker> binding_;
+  mojo::Receiver<blink::mojom::SharedWorker> receiver_;
   std::queue<std::pair<int, blink::MessagePortChannel>> connect_received_;
   bool terminate_received_ = false;
 
@@ -67,8 +69,8 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
       const std::string& expected_name,
       blink::mojom::ContentSecurityPolicyType
           expected_content_security_policy_type,
-      blink::mojom::SharedWorkerHostPtr* host,
-      blink::mojom::SharedWorkerRequest* request);
+      mojo::Remote<blink::mojom::SharedWorkerHost>* host,
+      mojo::PendingReceiver<blink::mojom::SharedWorker>* receiver);
 
  private:
   // blink::mojom::SharedWorkerFactory methods:
@@ -88,8 +90,8 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
-      blink::mojom::SharedWorkerHostPtr host,
-      blink::mojom::SharedWorkerRequest request,
+      mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
+      mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
       service_manager::mojom::InterfaceProviderPtr interface_provider,
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker) override;
@@ -101,8 +103,8 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
     bool pause_on_start;
     mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
         content_settings;
-    blink::mojom::SharedWorkerHostPtr host;
-    blink::mojom::SharedWorkerRequest request;
+    mojo::PendingRemote<blink::mojom::SharedWorkerHost> host;
+    mojo::PendingReceiver<blink::mojom::SharedWorker> receiver;
     service_manager::mojom::InterfaceProviderPtr interface_provider;
   };
 

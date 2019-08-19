@@ -18,7 +18,7 @@ namespace net {
 namespace android {
 
 TEST(HttpAuthNegotiateAndroidTest, GenerateAuthToken) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   DummySpnegoAuthenticator::EnsureTestAccountExists();
 

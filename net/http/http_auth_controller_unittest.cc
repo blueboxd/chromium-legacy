@@ -103,7 +103,7 @@ void RunSingleRoundAuthTest(
 // permanent error, the HttpAuthController should disable the scheme
 // used and retry the request.
 TEST(HttpAuthControllerTest, PermanentErrors) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   // Run a synchronous handler that returns
   // ERR_UNEXPECTED_SECURITY_LIBRARY_STATUS.  We expect a return value
@@ -134,7 +134,7 @@ TEST(HttpAuthControllerTest, PermanentErrors) {
 
 // Verify that the controller logs appropriate lifetime events.
 TEST(HttpAuthControllerTest, Logging) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   BoundTestNetLog net_log;
 
   RunSingleRoundAuthTest(RUN_HANDLER_SYNC, OK, OK, SCHEME_IS_ENABLED,

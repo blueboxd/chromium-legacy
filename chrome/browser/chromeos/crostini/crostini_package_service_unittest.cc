@@ -167,8 +167,8 @@ class CrostiniPackageServiceTest : public testing::Test {
 
     test_browser_thread_bundle_ =
         std::make_unique<content::TestBrowserThreadBundle>(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI,
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC,
+            base::test::TaskEnvironment::MainThreadType::UI,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::ASYNC,
             content::TestBrowserThreadBundle::REAL_IO_THREAD);
     profile_ = std::make_unique<TestingProfile>(
         base::FilePath("/home/chronos/u-0123456789abcdef"));

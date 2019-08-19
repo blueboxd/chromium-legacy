@@ -33,7 +33,7 @@ class FakeGnubbyClientTest : public testing::Test {
   FakeGnubbyClientTest() = default;
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   FakeGnubbyClient fake_gnubby_client_;
 
  private:

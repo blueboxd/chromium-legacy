@@ -223,7 +223,7 @@ void ExpectDictionaryContainsProperty(const base::DictionaryValue* dict,
 // Used for tests that are common to both bounded and unbounded modes of the
 // the FileNetLogObserver. The param is true if bounded mode is used.
 class FileNetLogObserverTest : public ::testing::TestWithParam<bool>,
-                               public WithScopedTaskEnvironment {
+                               public WithTaskEnvironment {
  public:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -290,7 +290,7 @@ class FileNetLogObserverTest : public ::testing::TestWithParam<bool>,
 
 // Used for tests that are exclusive to the bounded mode of FileNetLogObserver.
 class FileNetLogObserverBoundedTest : public ::testing::Test,
-                                      public WithScopedTaskEnvironment {
+                                      public WithTaskEnvironment {
  public:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

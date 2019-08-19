@@ -184,7 +184,7 @@ class NetworkCertLoaderTest : public testing::Test,
                        &primary_certdb_);
     cert_loader_->SetUserNSSDB(primary_certdb_.get());
 
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     GetAndResetCertificatesLoadedEventsCount();
   }
 
@@ -279,7 +279,7 @@ class NetworkCertLoaderTest : public testing::Test,
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(system_db_.slot())));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   NetworkCertLoader* cert_loader_;
 
@@ -311,7 +311,7 @@ TEST_F(NetworkCertLoaderTest, BasicOnlyUserDB) {
                      &primary_certdb_);
   net::ScopedCERTCertificateList certs;
   ImportCACert("root_ca_cert.pem", primary_certdb_.get(), &certs);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   cert_loader_->SetUserNSSDB(primary_certdb_.get());
 
@@ -322,7 +322,7 @@ TEST_F(NetworkCertLoaderTest, BasicOnlyUserDB) {
   EXPECT_TRUE(cert_loader_->client_certs().empty());
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   EXPECT_TRUE(cert_loader_->initial_load_finished());
@@ -345,7 +345,7 @@ TEST_F(NetworkCertLoaderTest, BasicOnlySystemDB) {
   AddSystemToken(system_certdb_.get());
   net::ScopedCERTCertificateList certs;
   ImportCACert("root_ca_cert.pem", system_certdb_.get(), &certs);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   cert_loader_->SetSystemNSSDB(system_certdb_.get());
 
@@ -355,7 +355,7 @@ TEST_F(NetworkCertLoaderTest, BasicOnlySystemDB) {
   EXPECT_TRUE(cert_loader_->client_certs().empty());
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   EXPECT_TRUE(cert_loader_->initial_load_finished());
@@ -385,7 +385,7 @@ TEST_F(NetworkCertLoaderTest, SystemAndUnaffiliatedUserDB) {
       TEST_CLIENT_CERT_2));
   ASSERT_TRUE(user_token_cert);
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
   EXPECT_FALSE(cert_loader_->initial_load_finished());
@@ -399,7 +399,7 @@ TEST_F(NetworkCertLoaderTest, SystemAndUnaffiliatedUserDB) {
   EXPECT_TRUE(cert_loader_->client_certs().empty());
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   EXPECT_TRUE(cert_loader_->initial_load_finished());
@@ -418,7 +418,7 @@ TEST_F(NetworkCertLoaderTest, SystemAndUnaffiliatedUserDB) {
   EXPECT_TRUE(cert_loader_->initial_load_of_any_database_running());
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   EXPECT_TRUE(cert_loader_->initial_load_finished());
@@ -452,7 +452,7 @@ TEST_F(NetworkCertLoaderTest, SystemAndAffiliatedUserDB) {
   ASSERT_TRUE(user_token_cert);
 
   AddSystemToken(primary_certdb_.get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
   EXPECT_FALSE(cert_loader_->initial_load_finished());
@@ -466,7 +466,7 @@ TEST_F(NetworkCertLoaderTest, SystemAndAffiliatedUserDB) {
   EXPECT_TRUE(cert_loader_->client_certs().empty());
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   EXPECT_TRUE(cert_loader_->initial_load_finished());
@@ -485,7 +485,7 @@ TEST_F(NetworkCertLoaderTest, SystemAndAffiliatedUserDB) {
   EXPECT_TRUE(cert_loader_->initial_load_of_any_database_running());
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   EXPECT_TRUE(cert_loader_->initial_load_finished());
@@ -512,10 +512,10 @@ TEST_F(NetworkCertLoaderTest, DeduplicatesCerts) {
                      single_slot_db /* private_slot_db */, &primary_certdb_);
   net::ScopedCERTCertificateList certs;
   ImportCACert("root_ca_cert.pem", primary_certdb_.get(), &certs);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   cert_loader_->SetUserNSSDB(primary_certdb_.get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   EXPECT_TRUE(cert_loader_->initial_load_finished());
@@ -540,7 +540,7 @@ TEST_F(NetworkCertLoaderTest, UpdateCertListOnNewCert) {
                                        cert_loader_->client_certs()));
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   // The certificate list should be updated now, as the message loop's been run.
@@ -561,7 +561,7 @@ TEST_F(NetworkCertLoaderTest, NoUpdateOnSecondaryDbChanges) {
   net::ScopedCERTCertificateList certs;
   ImportCACert("root_ca_cert.pem", secondary_certdb.get(), &certs);
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(IsCertInCertificateList(certs[0].get(), false /* device_wide */,
                                        cert_loader_->client_certs()));
@@ -577,7 +577,7 @@ TEST_F(NetworkCertLoaderTest, ClientLoaderUpdateOnNewClientCert) {
   ASSERT_TRUE(cert);
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   EXPECT_TRUE(IsCertInCertificateList(cert.get(), false /* device_wide */,
@@ -588,10 +588,10 @@ TEST_F(NetworkCertLoaderTest, ClientLoaderUpdateOnNewClientCertInSystemToken) {
   CreateCertDatabase(&system_db_ /* public_slot_db */,
                      nullptr /* private_slot_db */, &system_certdb_);
   AddSystemToken(system_certdb_.get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   cert_loader_->SetSystemNSSDB(system_certdb_.get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   EXPECT_TRUE(cert_loader_->client_certs().empty());
@@ -600,7 +600,7 @@ TEST_F(NetworkCertLoaderTest, ClientLoaderUpdateOnNewClientCertInSystemToken) {
   ASSERT_TRUE(cert);
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   EXPECT_EQ(1U, cert_loader_->client_certs().size());
@@ -620,7 +620,7 @@ TEST_F(NetworkCertLoaderTest, NoUpdateOnNewClientCertInSecondaryDb) {
       ImportClientCertAndKey(secondary_certdb.get()));
   ASSERT_TRUE(cert);
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(IsCertInCertificateList(cert.get(), false /* device_wide */,
                                        cert_loader_->client_certs()));
@@ -635,7 +635,7 @@ TEST_F(NetworkCertLoaderTest, UpdatedOnCertRemoval) {
       ImportClientCertAndKey(primary_certdb_.get()));
   ASSERT_TRUE(cert);
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
   ASSERT_TRUE(IsCertInCertificateList(cert.get(), false /* device_wide */,
@@ -644,7 +644,7 @@ TEST_F(NetworkCertLoaderTest, UpdatedOnCertRemoval) {
   primary_certdb_->DeleteCertAndKey(cert.get());
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   ASSERT_FALSE(IsCertInCertificateList(cert.get(), false /* device_wide */,
@@ -657,7 +657,7 @@ TEST_F(NetworkCertLoaderTest, UpdatedOnCACertTrustChange) {
   net::ScopedCERTCertificateList certs;
   ImportCACert("root_ca_cert.pem", primary_certdb_.get(), &certs);
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
   ASSERT_TRUE(IsCertInCertificateList(certs[0].get(), false /* device_wide */,
                                       cert_loader_->authority_certs()));
@@ -670,7 +670,7 @@ TEST_F(NetworkCertLoaderTest, UpdatedOnCACertTrustChange) {
 
   // Cert trust change should trigger certificate reload in cert_loader_.
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 }
 

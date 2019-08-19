@@ -320,8 +320,7 @@ class CleanerLoggingServiceTest : public testing::TestWithParam<ExecutionMode> {
 
   CleanerLoggingServiceTest()
       : logging_service_(nullptr),
-        scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         done_callback_called_(false),
         upload_success_(false),
         matched_uws_(&kMatchedUwSSignature),
@@ -335,7 +334,7 @@ class CleanerLoggingServiceTest : public testing::TestWithParam<ExecutionMode> {
   std::unique_ptr<RegistryLogger> registry_logger_;
 
   // Needed for the current task runner to be available.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // |done_callback_called_| is set to true in |LoggingServiceDone| to confirm
   // it was called appropriately.

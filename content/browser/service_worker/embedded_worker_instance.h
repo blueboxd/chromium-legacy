@@ -53,7 +53,7 @@ FORWARD_DECLARE_TEST(ServiceWorkerNewScriptLoaderTest, AccessedNetwork);
 // may be 'in-waiting' or running in one of the child processes added by
 // AddProcessReference().
 //
-// Owned by ServiceWorkerVersion. Lives on the IO thread.
+// Owned by ServiceWorkerVersion. Lives on the core thread.
 class CONTENT_EXPORT EmbeddedWorkerInstance
     : public blink::mojom::EmbeddedWorkerInstanceHost {
  public:
@@ -274,7 +274,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   void SendStartWorker(blink::mojom::EmbeddedWorkerStartParamsPtr params);
 
   // Implements blink::mojom::EmbeddedWorkerInstanceHost.
-  // These functions all run on the IO thread.
+  // These functions all run on the core thread.
   void RequestTermination(RequestTerminationCallback callback) override;
   void CountFeature(blink::mojom::WebFeature feature) override;
   void OnReadyForInspection(
@@ -310,7 +310,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
                      blink::ServiceWorkerStatusCode status);
 
   // Called when a foreground service worker is added/removed in a process.
-  // Called on the IO thread and dispatches task to the UI thread.
+  // Called on the core thread and dispatches task to the UI thread.
   void NotifyForegroundServiceWorkerAdded();
   void NotifyForegroundServiceWorkerRemoved();
 
@@ -336,7 +336,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // using it. The renderer process will disconnect the pipe when appropriate.
   blink::mojom::EmbeddedWorkerInstanceClientPtr client_;
 
-  // Binding for EmbeddedWorkerInstanceHost, runs on IO thread.
+  // Binding for EmbeddedWorkerInstanceHost, runs on core thread.
   mojo::AssociatedBinding<EmbeddedWorkerInstanceHost> instance_host_binding_;
 
   // Whether devtools is attached or not.
@@ -360,6 +360,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   ServiceWorkerMetrics::StartSituation start_situation_ =
       ServiceWorkerMetrics::StartSituation::UNKNOWN;
 
+  // TODO(crbug.com/824858): Remove SequenceBound when the core is the UI
+  // thread.
   base::SequenceBound<ServiceWorkerContentSettingsProxyImpl> content_settings_;
 
   mojo::StrongBindingPtr<network::mojom::URLLoaderFactory>

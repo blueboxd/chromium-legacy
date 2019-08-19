@@ -20,7 +20,7 @@ namespace extensions {
 // Tests that if |MojoDataPump::receive_stream_| is not ready, MojoDataPump will
 // wait and not error out.
 TEST(MojoDataPumpTest, ReceiveStreamNotReady) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   mojo::DataPipe receive_pipe;
   mojo::DataPipe send_pipe;
   auto pump =
@@ -63,7 +63,7 @@ TEST(MojoDataPumpTest, ReceiveStreamNotReady) {
 // Tests that if |MojoDataPump::receive_stream_| is closed, an error is
 // propagated.
 TEST(MojoDataPumpTest, ReceiveStreamClosed) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   mojo::DataPipe receive_pipe;
   mojo::DataPipe send_pipe;
   auto pump =
@@ -88,7 +88,7 @@ TEST(MojoDataPumpTest, ReceiveStreamClosed) {
 
 // Tests that if |MojoDataPump::send_stream_| is closed, Write() will fail.
 TEST(MojoDataPumpTest, SendStreamClosed) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   mojo::DataPipe receive_pipe;
   mojo::DataPipe send_pipe;
   auto pump =

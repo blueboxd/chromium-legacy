@@ -91,7 +91,7 @@ class ImeServiceTest : public testing::Test {
   mojo::Remote<mojom::InputEngineManager> remote_manager_;
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ImeService service_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeServiceTest);

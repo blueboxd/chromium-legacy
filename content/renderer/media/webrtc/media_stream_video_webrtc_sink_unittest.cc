@@ -18,8 +18,7 @@ namespace {
 class MediaStreamVideoWebRtcSinkTest : public ::testing::Test {
  public:
   MediaStreamVideoWebRtcSinkTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   void SetVideoTrack() {
     registry_.Init();
@@ -50,9 +49,9 @@ class MediaStreamVideoWebRtcSinkTest : public ::testing::Test {
  private:
   blink::MockMediaStreamRegistry registry_;
   // A ChildProcess is needed to fool the Tracks and Sources into believing they
-  // are on the right threads. A ScopedTaskEnvironment must be instantiated
+  // are on the right threads. A TaskEnvironment must be instantiated
   // before ChildProcess to prevent it from leaking a ThreadPool.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const ChildProcess child_process_;
 };
 

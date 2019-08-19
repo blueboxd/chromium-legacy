@@ -47,7 +47,7 @@ class DOMStorageContextWrapperTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::TestSimpleTaskRunner> fake_mojo_task_runner_;
   scoped_refptr<MockSpecialStoragePolicy> storage_policy_;
   scoped_refptr<DOMStorageContextWrapper> context_;

@@ -62,7 +62,7 @@ class FidoMakeCredentialTaskTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestMakeCredentialTaskCallback callback_receiver_;
 };
 

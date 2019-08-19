@@ -697,7 +697,7 @@ TEST_F(AXImageAnnotatorTest, OnImageAdded) {
   // Every time we call a method on a Mojo interface, a message is posted to the
   // current task queue. We need to ask the queue to drain itself before we
   // check test expectations.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_THAT(mock_annotator().image_ids_, ElementsAre("test1.jpg"));
   ASSERT_EQ(1u, mock_annotator().image_processors_.size());
@@ -718,7 +718,7 @@ TEST_F(AXImageAnnotatorTest, OnImageAdded) {
   // already visible one.
   render_accessibility().MarkWebAXObjectDirty(root_obj, true /* subtree */);
   render_accessibility().SendPendingAccessibilityEvents();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_THAT(mock_annotator().image_ids_,
               ElementsAre("test1.jpg", "test1.jpg", "test2.jpg"));
@@ -741,7 +741,7 @@ TEST_F(AXImageAnnotatorTest, OnImageUpdated) {
   // Every time we call a method on a Mojo interface, a message is posted to the
   // current task queue. We need to ask the queue to drain itself before we
   // check test expectations.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_THAT(mock_annotator().image_ids_, ElementsAre("test1.jpg"));
   ASSERT_EQ(1u, mock_annotator().image_processors_.size());
@@ -755,7 +755,7 @@ TEST_F(AXImageAnnotatorTest, OnImageUpdated) {
   // This should update the annotations of all images on the page.
   render_accessibility().MarkWebAXObjectDirty(root_obj, true /* subtree */);
   render_accessibility().SendPendingAccessibilityEvents();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_THAT(mock_annotator().image_ids_,
               ElementsAre("test1.jpg", "test1.jpg"));
@@ -772,7 +772,7 @@ TEST_F(AXImageAnnotatorTest, OnImageUpdated) {
   // now updated image src.
   render_accessibility().MarkWebAXObjectDirty(root_obj, true /* subtree */);
   render_accessibility().SendPendingAccessibilityEvents();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_THAT(mock_annotator().image_ids_,
               ElementsAre("test1.jpg", "test1.jpg", "test2.jpg"));

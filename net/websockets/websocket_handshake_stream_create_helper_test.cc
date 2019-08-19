@@ -148,7 +148,7 @@ class MockWebSocketStreamRequestAPI : public WebSocketStreamRequestAPI {
 
 class WebSocketHandshakeStreamCreateHelperTest
     : public TestWithParam<HandshakeStreamType>,
-      public WithScopedTaskEnvironment {
+      public WithTaskEnvironment {
  protected:
   std::unique_ptr<WebSocketStream> CreateAndInitializeStream(
       const std::vector<std::string>& sub_protocols,

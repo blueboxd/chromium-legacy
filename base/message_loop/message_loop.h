@@ -81,7 +81,7 @@ class SequenceManagerImpl;
 // Please be SURE your task is reentrant (nestable) and all global variables
 // are stable and accessible before calling SetNestableTasksAllowed(true).
 //
-// DEPRECATED: Use a SingleThreadTaskExecutor instead or ScopedTaskEnvironment
+// DEPRECATED: Use a SingleThreadTaskExecutor instead or TaskEnvironment
 // for tests. TODO(https://crbug.com/891670/) remove this class.
 class BASE_EXPORT MessageLoop {
  public:

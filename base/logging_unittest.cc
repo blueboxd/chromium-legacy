@@ -93,8 +93,8 @@ class LogStateSaver {
 
 class LoggingTest : public testing::Test {
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   LogStateSaver log_state_saver_;
 };
 

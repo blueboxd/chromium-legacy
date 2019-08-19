@@ -49,7 +49,7 @@ class FontFallbackUnitTest : public testing::Test {
                                       fake_collection_->CreatePtr());
   }
 
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   std::unique_ptr<FakeFontCollection> fake_collection_;
   mswr::ComPtr<IDWriteFactory> factory_;
   mswr::ComPtr<DWriteFontCollectionProxy> collection_;

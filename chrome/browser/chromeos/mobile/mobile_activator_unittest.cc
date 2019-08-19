@@ -140,7 +140,7 @@ class MobileActivatorTest : public testing::Test {
     cellular_network_.connection_state_ = state;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   NetworkState cellular_network_;
   TestMobileActivator mobile_activator_;
 

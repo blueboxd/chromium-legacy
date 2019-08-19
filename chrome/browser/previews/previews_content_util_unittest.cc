@@ -126,7 +126,7 @@ class PreviewsContentUtilTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   PreviewEnabledPreviewsDecider enabled_previews_decider_;

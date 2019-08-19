@@ -86,7 +86,7 @@ class PowerMetricsReporterTest : public testing::Test {
         lid_closed_suspend_count, 1);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestingPrefServiceSimple pref_service_;
   std::unique_ptr<PowerMetricsReporter> reporter_;
 

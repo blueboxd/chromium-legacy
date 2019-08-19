@@ -152,8 +152,8 @@ class WinMemoryPressureMonitorTest : public testing::Test {
               monitor->CalculateCurrentPressureLevel());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
 };
 
 // Tests the fundamental direct calculation of memory pressure with automatic

@@ -160,11 +160,11 @@ class PreSigninPolicyFetcherTestBase : public testing::Test {
     pre_signin_policy_fetcher_->FetchPolicy(
         base::Bind(&PreSigninPolicyFetcherTestBase::OnPolicyRetrieved,
                    base::Unretained(this)));
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_ = {
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_ = {
+      base::test::TaskEnvironment::MainThreadType::UI};
   std::unique_ptr<chromeos::FakeCryptohomeClient> cryptohome_client_;
   chromeos::FakeSessionManagerClient session_manager_client_;
   UserPolicyBuilder cached_policy_;
@@ -378,7 +378,7 @@ TEST_F(PreSigninPolicyFetcherTest, FreshPolicyFetchFailsToValidate) {
                                   std::string() /* settings_entity_id */,
                                   fresh_policy_.policy());
   cloud_policy_client_->NotifyPolicyFetched();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Expect that we still get a PolicyFetchResult::SUCCESS with cached policy.
   EXPECT_TRUE(policy_retrieved_called_);
@@ -414,7 +414,7 @@ TEST_F(PreSigninPolicyFetcherTest, FreshPolicyFetchSuccess) {
                                   std::string() /* settings_entity_id */,
                                   fresh_policy_.policy());
   cloud_policy_client_->NotifyPolicyFetched();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Expect that we get PolicyFetchResult::SUCCESS with fresh policy.
   EXPECT_TRUE(policy_retrieved_called_);

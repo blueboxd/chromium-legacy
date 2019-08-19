@@ -153,7 +153,7 @@ class BrowserThreadTest : public testing::Test {
   std::unique_ptr<BrowserProcessSubThread> ui_thread_;
   std::unique_ptr<BrowserProcessSubThread> io_thread_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   // Must be set before Release() to verify the deletion is intentional. Will be
   // run from the next call to Release(). mutable so it can be consumed from
   // Release().
@@ -298,12 +298,11 @@ TEST_F(BrowserThreadTest, RunsTasksInCurrentSequencedDuringShutdown) {
 
 class BrowserThreadWithCustomSchedulerTest : public testing::Test {
  private:
-  class ScopedTaskEnvironmentWithCustomScheduler
-      : public base::test::ScopedTaskEnvironment {
+  class TaskEnvironmentWithCustomScheduler
+      : public base::test::TaskEnvironment {
    public:
-    ScopedTaskEnvironmentWithCustomScheduler()
-        : base::test::ScopedTaskEnvironment(
-              SubclassCreatesDefaultTaskRunner{}) {
+    TaskEnvironmentWithCustomScheduler()
+        : base::test::TaskEnvironment(SubclassCreatesDefaultTaskRunner{}) {
       std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler =
           BrowserUIThreadScheduler::CreateForTesting(sequence_manager(),
                                                      GetTimeDomain());
@@ -319,7 +318,7 @@ class BrowserThreadWithCustomSchedulerTest : public testing::Test {
       ui_thread_->RegisterAsBrowserThread();
     }
 
-    ~ScopedTaskEnvironmentWithCustomScheduler() override {
+    ~TaskEnvironmentWithCustomScheduler() override {
       ui_thread_.reset();
       BrowserThreadImpl::ResetGlobalsForTesting(BrowserThread::IO);
       BrowserTaskExecutor::ResetForTesting();
@@ -333,7 +332,7 @@ class BrowserThreadWithCustomSchedulerTest : public testing::Test {
   using QueueType = BrowserTaskQueues::QueueType;
 
  protected:
-  ScopedTaskEnvironmentWithCustomScheduler scoped_task_environment_;
+  TaskEnvironmentWithCustomScheduler task_environment_;
 };
 
 TEST_F(BrowserThreadWithCustomSchedulerTest, PostBestEffortTask) {
@@ -348,7 +347,7 @@ TEST_F(BrowserThreadWithCustomSchedulerTest, PostBestEffortTask) {
                                     best_effort_task.Get());
 
   EXPECT_CALL(regular_task, Run);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   testing::Mock::VerifyAndClearExpectations(&regular_task);
 

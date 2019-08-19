@@ -70,7 +70,7 @@ class TestHttpCache : public HttpCache {
   size_t make_readers_size_ = 0u;
 };
 
-class WritersTest : public TestWithScopedTaskEnvironment {
+class WritersTest : public TestWithTaskEnvironment {
  public:
   enum class DeleteTransactionType { NONE, ACTIVE, WAITING, IDLE };
   WritersTest()

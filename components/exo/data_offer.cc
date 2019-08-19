@@ -282,7 +282,21 @@ void DataOffer::SetDropData(FileHelper* file_helper,
     data_.emplace(text_plain_mime_type,
                   EncodeAsRefCountedString(string_content, kUTF16));
     delegate_->OnOffer(text_plain_mime_type);
-    return;
+  }
+
+  base::string16 html_content;
+  GURL url_content;
+  if (data.HasHtml() && data.GetHtml(&html_content, &url_content)) {
+    const std::string utf8_html_mime_type = std::string(kTextHtmlMimeTypeUtf8);
+    data_.emplace(utf8_html_mime_type,
+                  EncodeAsRefCountedString(html_content, kUTF8));
+    delegate_->OnOffer(utf8_html_mime_type);
+
+    const std::string utf16_html_mime_type =
+        std::string(kTextHtmlMimeTypeUtf16);
+    data_.emplace(utf16_html_mime_type,
+                  EncodeAsRefCountedString(html_content, kUTF16));
+    delegate_->OnOffer(utf16_html_mime_type);
   }
 }
 

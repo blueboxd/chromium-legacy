@@ -185,7 +185,7 @@ class DeviceSyncCryptAuthApiCallFlowTest : public testing::Test {
         GURL(kRequestUrl), completion_status, response_head, content,
         network::TestURLLoaderFactory::ResponseMatchFlags::kUrlMatchPrefix));
 
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     EXPECT_TRUE(result_ || network_error_);
   }
 
@@ -209,7 +209,7 @@ class DeviceSyncCryptAuthApiCallFlowTest : public testing::Test {
         GURL(kRequestUrl), completion_status, response_head, content,
         network::TestURLLoaderFactory::ResponseMatchFlags::kUrlMatchPrefix));
 
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     EXPECT_TRUE(result_ || network_error_);
   }
 
@@ -217,7 +217,7 @@ class DeviceSyncCryptAuthApiCallFlowTest : public testing::Test {
   std::unique_ptr<NetworkRequestError> network_error_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
 

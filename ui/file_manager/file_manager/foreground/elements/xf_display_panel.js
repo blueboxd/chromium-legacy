@@ -188,13 +188,10 @@ class DisplayPanel extends HTMLElement {
     const summaryPanel = panel.summary_.querySelector('xf-panel-item');
     const expandButton =
         summaryPanel.shadowRoot.querySelector('#primary-action');
-    // TODO(crbug.com/989322) i18n for this string.
-    const fbWindow = ' Files feedback panels';
     if (panel.collapsed_) {
       panel.collapsed_ = false;
       expandButton.setAttribute('data-category', 'collapse');
-      // TODO(crbug.com/989322) create a i18n{COLLAPSE_LABEL} to replace this..
-      expandButton.setAttribute('aria-label', '$i18n{CLOSE_LABEL}' + fbWindow);
+      expandButton.setAttribute('aria-label', '$i18n{FEEDBACK_COLLAPSE_LABEL}');
       expandButton.setAttribute('aria-expanded', 'true');
       panel.panels_.hidden = false;
       panel.separator_.hidden = false;
@@ -204,7 +201,7 @@ class DisplayPanel extends HTMLElement {
     } else {
       panel.collapsed_ = true;
       expandButton.setAttribute('data-category', 'expand');
-      expandButton.setAttribute('aria-label', '$i18n{EXPAND_LABEL}' + fbWindow);
+      expandButton.setAttribute('aria-label', '$i18n{FEEDBACK_EXPAND_LABEL}');
       expandButton.setAttribute('aria-expanded', 'false');
       panel.separator_.hidden = true;
       panel.panels_.listener_ = panel.panelCollapseFinished;

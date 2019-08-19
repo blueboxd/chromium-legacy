@@ -201,7 +201,7 @@ class SignedExchangeCertFetcherTest : public testing::Test {
     return ImportTestCert()->CalculateChainFingerprint256();
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   std::unique_ptr<SignedExchangeCertFetcher> CreateFetcherAndStart(
       const GURL& url,
@@ -245,7 +245,7 @@ class SignedExchangeCertFetcherTest : public testing::Test {
   URLLoaderFactoryForMockLoader mock_loader_factory_;
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeCertFetcherTest);

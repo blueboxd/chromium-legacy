@@ -146,7 +146,7 @@ class BundledExchangesURLLoaderFactoryTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MockBundledExchangesReaderFactory> mock_factory_;
   std::unique_ptr<BundledExchangesURLLoaderFactory> loader_factory_;
   BundledExchangesReader* reader_;

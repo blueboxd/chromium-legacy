@@ -85,7 +85,7 @@ class UsbPrinterDetectorTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<UsbPrinterDetector> detector_;
   FakePrinterDetectorClient detector_client_;
   device::FakeUsbDeviceManager usb_manager_;

@@ -112,8 +112,7 @@ class MockUpgradeObserver : public UpgradeObserver {
 class UpgradeDetectorImplTest : public ::testing::Test {
  protected:
   UpgradeDetectorImplTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         scoped_local_state_(TestingBrowserProcess::GetGlobal()) {
     // Disable the detector's check to see if autoupdates are inabled.
     // Without this, tests put the detector into an invalid state by detecting
@@ -122,12 +121,10 @@ class UpgradeDetectorImplTest : public ::testing::Test {
                                            std::make_unique<base::Value>(true));
   }
 
-  const base::Clock* GetMockClock() {
-    return scoped_task_environment_.GetMockClock();
-  }
+  const base::Clock* GetMockClock() { return task_environment_.GetMockClock(); }
 
   const base::TickClock* GetMockTickClock() {
-    return scoped_task_environment_.GetMockTickClock();
+    return task_environment_.GetMockTickClock();
   }
 
   // Sets the browser.relaunch_notification_period preference in Local State to
@@ -144,15 +141,15 @@ class UpgradeDetectorImplTest : public ::testing::Test {
     }
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   // Fast-forwards virtual time by |delta|.
   void FastForwardBy(base::TimeDelta delta) {
-    scoped_task_environment_.FastForwardBy(delta);
+    task_environment_.FastForwardBy(delta);
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ScopedTestingLocalState scoped_local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(UpgradeDetectorImplTest);

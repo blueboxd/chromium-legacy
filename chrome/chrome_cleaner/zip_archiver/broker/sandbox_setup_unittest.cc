@@ -78,7 +78,7 @@ class ZipArchiverSandboxSetupTest : public base::MultiProcessTest {
 
   scoped_refptr<MojoTaskRunner> mojo_task_runner_;
   UniqueZipArchiverPtr zip_archiver_ptr_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 void OnArchiveDone(ZipArchiverResultCode* test_result_code,

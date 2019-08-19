@@ -204,8 +204,8 @@ class MockDelegate : public media::AudioOutputIPCDelegate {
 }  // namespace
 
 TEST(MojoAudioOutputIPC, AuthorizeWithoutFactory_CallsAuthorizedWithError) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   const base::UnguessableToken session_id = base::UnguessableToken::Create();
   StrictMock<MockDelegate> delegate;
 
@@ -227,8 +227,8 @@ TEST(MojoAudioOutputIPC, AuthorizeWithoutFactory_CallsAuthorizedWithError) {
 
 TEST(MojoAudioOutputIPC,
      CreateWithoutAuthorizationWithoutFactory_CallsAuthorizedWithError) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   StrictMock<MockDelegate> delegate;
 
   std::unique_ptr<media::AudioOutputIPC> ipc =
@@ -245,8 +245,8 @@ TEST(MojoAudioOutputIPC,
 }
 
 TEST(MojoAudioOutputIPC, DeviceAuthorized_Propagates) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   const base::UnguessableToken session_id = base::UnguessableToken::Create();
   TestRemoteFactory stream_factory;
   StrictMock<MockDelegate> delegate;
@@ -270,8 +270,8 @@ TEST(MojoAudioOutputIPC, DeviceAuthorized_Propagates) {
 }
 
 TEST(MojoAudioOutputIPC, OnDeviceCreated_Propagates) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   const base::UnguessableToken session_id = base::UnguessableToken::Create();
   TestRemoteFactory stream_factory;
   StrictMock<MockStream> stream;
@@ -299,8 +299,8 @@ TEST(MojoAudioOutputIPC, OnDeviceCreated_Propagates) {
 
 TEST(MojoAudioOutputIPC,
      CreateWithoutAuthorization_RequestsAuthorizationFirst) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   TestRemoteFactory stream_factory;
   StrictMock<MockStream> stream;
   StrictMock<MockDelegate> delegate;
@@ -328,8 +328,8 @@ TEST(MojoAudioOutputIPC,
 }
 
 TEST(MojoAudioOutputIPC, IsReusable) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   const base::UnguessableToken session_id = base::UnguessableToken::Create();
   TestRemoteFactory stream_factory;
   StrictMock<MockStream> stream;
@@ -361,8 +361,8 @@ TEST(MojoAudioOutputIPC, IsReusable) {
 }
 
 TEST(MojoAudioOutputIPC, IsReusableAfterError) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   const base::UnguessableToken session_id = base::UnguessableToken::Create();
   TestRemoteFactory stream_factory;
   StrictMock<MockStream> stream;
@@ -416,8 +416,8 @@ TEST(MojoAudioOutputIPC, IsReusableAfterError) {
 }
 
 TEST(MojoAudioOutputIPC, DeviceNotAuthorized_Propagates) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   const base::UnguessableToken session_id = base::UnguessableToken::Create();
   TestRemoteFactory stream_factory;
   StrictMock<MockDelegate> delegate;
@@ -449,8 +449,8 @@ TEST(MojoAudioOutputIPC,
   // The authorization IPC message might be aborted by the remote end
   // disconnecting. In this case, the MojoAudioOutputIPC object must still
   // send a notification to unblock the AudioOutputIPCDelegate.
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   const base::UnguessableToken session_id = base::UnguessableToken::Create();
   TestRemoteFactory stream_factory;
   StrictMock<MockDelegate> delegate;
@@ -481,8 +481,8 @@ TEST(MojoAudioOutputIPC,
   // This test makes sure that the MojoAudioOutputIPC doesn't callback for
   // authorization when the factory disconnects if it already got a callback
   // for authorization.
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   const base::UnguessableToken session_id = base::UnguessableToken::Create();
   TestRemoteFactory stream_factory;
   stream_factory.PrepareProviderForAuthorization(
@@ -509,8 +509,8 @@ TEST(MojoAudioOutputIPC,
 }
 
 TEST(MojoAudioOutputIPC, AuthorizeNoClose_DCHECKs) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   TestRemoteFactory stream_factory;
   const base::UnguessableToken session_id = base::UnguessableToken::Create();
   StrictMock<MockDelegate> delegate;
@@ -531,8 +531,8 @@ TEST(MojoAudioOutputIPC, AuthorizeNoClose_DCHECKs) {
 }
 
 TEST(MojoAudioOutputIPC, CreateNoClose_DCHECKs) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   TestRemoteFactory stream_factory;
   StrictMock<MockDelegate> delegate;
   StrictMock<MockStream> stream;
@@ -555,8 +555,8 @@ TEST(MojoAudioOutputIPC, CreateNoClose_DCHECKs) {
 }
 
 TEST(MojoAudioOutputIPC, Play_Plays) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   TestRemoteFactory stream_factory;
   const base::UnguessableToken session_id = base::UnguessableToken::Create();
   StrictMock<MockStream> stream;
@@ -585,8 +585,8 @@ TEST(MojoAudioOutputIPC, Play_Plays) {
 }
 
 TEST(MojoAudioOutputIPC, Pause_Pauses) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   TestRemoteFactory stream_factory;
   const base::UnguessableToken session_id = base::UnguessableToken::Create();
   StrictMock<MockStream> stream;
@@ -615,8 +615,8 @@ TEST(MojoAudioOutputIPC, Pause_Pauses) {
 }
 
 TEST(MojoAudioOutputIPC, SetVolume_SetsVolume) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   TestRemoteFactory stream_factory;
   const base::UnguessableToken session_id = base::UnguessableToken::Create();
   StrictMock<MockStream> stream;

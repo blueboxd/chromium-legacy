@@ -12,7 +12,7 @@
 
 namespace base {
 
-// ATTENTION: Prefer ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED and
+// ATTENTION: Prefer TaskEnvironment::ThreadPoolExecutionMode::QUEUED and
 // a task runner obtained from base/task/post_task.h over this class. A
 // NullTaskRunner might seem appealing, but not running tasks is under-testing
 // the side-effects of the code under tests. ThreadPoolExecutionMode::QUEUED

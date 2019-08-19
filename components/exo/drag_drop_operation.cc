@@ -110,7 +110,9 @@ DragDropOperation::DragDropOperation(
   source->GetDataForPreferredMimeTypes(
       base::BindOnce(&DragDropOperation::OnTextRead,
                      weak_ptr_factory_.GetWeakPtr()),
-      DataSource::ReadDataCallback(), DataSource::ReadTextDataCallback(),
+      DataSource::ReadDataCallback(),
+      base::BindOnce(&DragDropOperation::OnHTMLRead,
+                     weak_ptr_factory_.GetWeakPtr()),
       DataSource::ReadDataCallback(), counter_);
 
   if (icon) {
@@ -138,6 +140,17 @@ void DragDropOperation::OnTextRead(const std::string& mime_type,
                                    base::string16 data) {
   DCHECK(os_exchange_data_);
   os_exchange_data_->SetString(std::move(data));
+
+  // Prefer to use the HTML MIME type if possible
+  if (mime_type_.empty())
+    mime_type_ = mime_type;
+  counter_.Run();
+}
+
+void DragDropOperation::OnHTMLRead(const std::string& mime_type,
+                                   base::string16 data) {
+  DCHECK(os_exchange_data_);
+  os_exchange_data_->SetHtml(std::move(data), GURL());
   mime_type_ = mime_type;
   counter_.Run();
 }
@@ -217,7 +230,13 @@ void DragDropOperation::StartDragDropOperation() {
 
   if (op) {
     // Success
+
+    // TODO(crbug.com/994065) This is currently not the actual mime type used by
+    // the recipient, just an arbitrary one we pick out of the offered types so
+    // we can report back whether or not the drop can succeed. This may need to
+    // change in the future.
     source_->get()->Target(mime_type_);
+
     source_->get()->Action(DragOperationToDndAction(op));
     source_->get()->DndDropPerformed();
     source_->get()->DndFinished();

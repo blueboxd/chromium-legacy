@@ -273,7 +273,7 @@ class BluetoothBlueZTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   bluez::FakeBluetoothAdapterClient* fake_bluetooth_adapter_client_;
   bluez::FakeBluetoothDeviceClient* fake_bluetooth_device_client_;
   scoped_refptr<BluetoothAdapter> adapter_;

@@ -175,7 +175,7 @@ class NetworkConnectTest : public testing::Test {
 
   std::unique_ptr<MockDelegate> mock_delegate_;
   std::unique_ptr<FakeTetherDelegate> fake_tether_delegate_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ShillDeviceClient::TestInterface* device_test_;
   ShillServiceClient::TestInterface* service_test_;
 

@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -42,7 +43,7 @@ void ExecuteUpdate(base::WeakPtr<ServiceWorkerContextCore> context,
                    bool skip_script_comparison,
                    ServiceWorkerContextCore::UpdateCallback callback,
                    blink::ServiceWorkerStatusCode status) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
 
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     // The delay was already very long and update() is rejected immediately.
@@ -235,7 +236,8 @@ void ServiceWorkerRegistrationObjectHost::DelayUpdate(
     return;
   }
 
-  base::PostDelayedTask(FROM_HERE, {BrowserThread::IO},
+  base::PostDelayedTask(FROM_HERE,
+                        {ServiceWorkerContextWrapper::GetCoreThreadId()},
                         base::BindOnce(std::move(update_function),
                                        blink::ServiceWorkerStatusCode::kOk),
                         delay);

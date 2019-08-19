@@ -14,7 +14,7 @@ namespace tracing {
 using TraceSystemStatsMonitorTest = testing::Test;
 
 TEST_F(TraceSystemStatsMonitorTest, TraceEventSystemStatsMonitor) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   auto system_monitor = performance_monitor::SystemMonitor::Create();
   TraceEventSystemStatsMonitor system_stats_monitor;

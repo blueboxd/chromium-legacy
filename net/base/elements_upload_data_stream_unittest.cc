@@ -144,7 +144,7 @@ class MockUploadElementReader : public UploadElementReader {
 }  // namespace
 
 class ElementsUploadDataStreamTest : public PlatformTest,
-                                     public WithScopedTaskEnvironment {
+                                     public WithTaskEnvironment {
  public:
   void SetUp() override {
     PlatformTest::SetUp();

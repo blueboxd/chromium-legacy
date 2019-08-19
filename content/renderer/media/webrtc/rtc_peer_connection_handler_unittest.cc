@@ -593,9 +593,9 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   }
 
  public:
-  // The ScopedTaskEnvironment prevents the ChildProcess from leaking a
+  // The TaskEnvironment prevents the ChildProcess from leaking a
   // ThreadPool.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ChildProcess child_process_;
   std::unique_ptr<WebRtcAudioDeviceTestingPlatformSupport>
       webrtc_audio_device_platform_support_;

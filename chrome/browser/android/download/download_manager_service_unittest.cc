@@ -69,7 +69,7 @@ class DownloadManagerServiceTest : public testing::Test {
     return download_.get();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   DownloadManagerService* service_;
   download::SimpleDownloadManagerCoordinator coordinator_;
   std::unique_ptr<download::MockDownloadItem> download_;

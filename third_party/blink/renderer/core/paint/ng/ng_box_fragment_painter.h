@@ -21,6 +21,7 @@ class FillLayer;
 class HitTestLocation;
 class HitTestRequest;
 class HitTestResult;
+class NGFragmentItems;
 class NGPhysicalFragment;
 class ScopedPaintState;
 struct PaintInfo;
@@ -81,6 +82,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void PaintInternal(const PaintInfo&);
   void PaintAllPhasesAtomically(const PaintInfo&);
   void PaintBlockChildren(const PaintInfo&);
+  void PaintInlineItems(const NGFragmentItems&,
+                        const PaintInfo&,
+                        const PhysicalOffset& paint_offset);
   void PaintLineBoxChildren(NGPaintFragment::ChildList,
                             const PaintInfo&,
                             const PhysicalOffset& paint_offset);
@@ -187,12 +191,17 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
       paint_fragment_(paint_fragment) {
   DCHECK(box.IsBox() || box.IsRenderedLegend());
 #if DCHECK_IS_ON()
-  if ((box.ChildrenInline() && !box.Children().empty()) || box.IsInlineBox()) {
+  if (box.IsInlineBox()) {
     DCHECK(paint_fragment);
     DCHECK_EQ(&paint_fragment->PhysicalFragment(), &box);
-  } else if (box.ChildrenInline() && box.Children().empty()) {
+  } else if (box.ChildrenInline()) {
     // If no children, there maybe or may not be NGPaintFragment.
     // TODO(kojii): To be investigated if this correct or should be fixed.
+    if (!box.Children().empty()) {
+      DCHECK(paint_fragment || box.HasItems());
+      if (paint_fragment)
+        DCHECK_EQ(&paint_fragment->PhysicalFragment(), &box);
+    }
   } else if (box.GetLayoutObject()->SlowFirstChild() &&
              box.GetLayoutObject()->SlowFirstChild()->IsLayoutFlowThread()) {
     // TODO(kojii): NGPaintFragment for multicol has non-inline children

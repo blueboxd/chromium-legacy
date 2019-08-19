@@ -117,7 +117,7 @@ class AppShimHostTest : public testing::Test,
     DCHECK(!host_);
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
     return task_runner_;
   }
@@ -188,7 +188,7 @@ class AppShimHostTest : public testing::Test,
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<TestingAppShim> shim_;
 

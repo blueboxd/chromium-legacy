@@ -9,7 +9,7 @@
 goog.provide('ConsoleTts');
 
 goog.require('LogStore');
-goog.require('TextLog');
+goog.require('SpeechLog');
 goog.require('cvox.AbstractTts');
 goog.require('cvox.TtsInterface');
 
@@ -32,20 +32,10 @@ goog.addSingletonGetter(ConsoleTts);
 ConsoleTts.prototype = {
   speak: function(textString, queueMode, properties) {
     if (this.enabled_ && window['console']) {
-      var logStr = 'Speak';
-      if (queueMode == cvox.QueueMode.FLUSH) {
-        logStr += ' (I)';
-      } else if (queueMode == cvox.QueueMode.CATEGORY_FLUSH) {
-        logStr += ' (C)';
-      } else {
-        logStr += ' (Q)';
-      }
-      if (properties && properties.category) {
-        logStr += ' category=' + properties.category;
-      }
-      logStr += ' "' + textString + '"';
-      LogStore.getInstance().writeTextLog(logStr, LogStore.LogType.SPEECH);
-      console.log(logStr);
+      const speechLog = new SpeechLog(
+          textString, queueMode, properties ? properties.category : null);
+      LogStore.getInstance().writeLog(speechLog);
+      console.log(speechLog.toString());
     }
     return this;
   },

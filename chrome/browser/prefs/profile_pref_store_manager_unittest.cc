@@ -326,7 +326,7 @@ class ProfilePrefStoreManagerTest : public testing::Test,
       ADD_FAILURE() << "No validation observed for preference: " << pref_path;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::vector<prefs::mojom::TrackedPreferenceMetadataPtr> configuration_;
   base::ScopedTempDir profile_dir_;
   scoped_refptr<user_prefs::PrefRegistrySyncable> profile_pref_registry_;

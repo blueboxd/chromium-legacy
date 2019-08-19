@@ -134,8 +134,7 @@ class FakeTetherDelegate : public NetworkConnectionHandler::TetherDelegate {
 class NetworkConnectionHandlerImplTest : public testing::Test {
  public:
   NetworkConnectionHandlerImplTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   ~NetworkConnectionHandlerImplTest() override = default;
 
@@ -174,7 +173,7 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
     network_connection_handler_->AddObserver(
         network_connection_observer_.get());
 
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     fake_tether_delegate_.reset(new FakeTetherDelegate());
   }
@@ -209,7 +208,7 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
         base::Bind(&NetworkConnectionHandlerImplTest::ErrorCallback,
                    base::Unretained(this)),
         true /* check_error_state */, ConnectCallbackMode::ON_COMPLETED);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void Disconnect(const std::string& service_path) {
@@ -219,7 +218,7 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
                    base::Unretained(this)),
         base::Bind(&NetworkConnectionHandlerImplTest::ErrorCallback,
                    base::Unretained(this)));
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void SuccessCallback() { result_ = kSuccessResult; }
@@ -237,13 +236,13 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
 
   void StartNetworkCertLoader() {
     NetworkCertLoader::Get()->SetUserNSSDB(test_nsscertdb_.get());
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void LoginToRegularUser() {
     LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_ACTIVE,
                                         LoginState::LOGGED_IN_USER_REGULAR);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   scoped_refptr<net::X509Certificate> ImportTestClientCert() {
@@ -293,7 +292,7 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
                                          std::string(),  // no username hash
                                          *network_configs, global_config);
     }
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   std::string ConfigureService(const std::string& shill_json_string) {
@@ -319,7 +318,7 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   NetworkStateTestHelper helper_{false /* use_default_devices_and_services */};
   std::unique_ptr<NetworkConfigurationHandler> network_config_handler_;
   std::unique_ptr<NetworkConnectionHandler> network_connection_handler_;

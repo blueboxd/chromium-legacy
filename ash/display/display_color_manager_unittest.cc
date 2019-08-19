@@ -144,7 +144,7 @@ class DisplayColorManagerTest : public testing::Test {
   ~DisplayColorManagerTest() override = default;
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::ScopedPathOverride> path_override_;
   base::FilePath color_path_;
   std::unique_ptr<display::test::ActionLogger> log_;

@@ -396,7 +396,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
              request_mode == network::mojom::RequestMode::kNavigate);
       // Some callers, notablly flash, with |grant_universal_access| want to
       // have an origin matching with referrer.
-      KURL referrer(request.HttpHeaderField(http_names::kReferer));
+      KURL referrer(request.ToResourceRequest().ReferrerString());
       scoped_refptr<SecurityOrigin> origin = SecurityOrigin::Create(referrer);
       origin->GrantUniversalAccess();
       new_request.ToMutableResourceRequest().SetRequestorOrigin(origin);

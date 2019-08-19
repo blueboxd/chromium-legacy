@@ -85,7 +85,7 @@ const std::vector<TestCase> kCoalescingTestcasesForUpdateDetails = {
 }  // namespace
 
 class SQLitePersistentReportingAndNelStoreTest
-    : public TestWithScopedTaskEnvironment {
+    : public TestWithTaskEnvironment {
  public:
   SQLitePersistentReportingAndNelStoreTest() {}
 
@@ -98,7 +98,7 @@ class SQLitePersistentReportingAndNelStoreTest
   void DestroyStore() {
     store_.reset();
     // Make sure we wait until the destructor has run by running all
-    // ScopedTaskEnvironment tasks.
+    // TaskEnvironment tasks.
     RunUntilIdle();
   }
 

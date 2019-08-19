@@ -122,7 +122,7 @@ class AudioInputStreamHandleTest : public Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   StrictMock<MockRendererAudioInputStreamFactoryClient> client_;
   mojom::RendererAudioInputStreamFactoryClientPtr client_ptr_;
   mojo::Binding<mojom::RendererAudioInputStreamFactoryClient> client_binding_;

@@ -34,10 +34,10 @@ class EnumerateShellExtensionsTest : public testing::Test {
         registry_override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE));
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   registry_util::RegistryOverrideManager registry_override_manager_;
 

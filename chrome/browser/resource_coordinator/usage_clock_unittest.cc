@@ -14,7 +14,7 @@ namespace resource_coordinator {
 
 TEST(ResourceCoordinatorUsageClock, UsageClock) {
   // Required to use DesktopSessionDurationTracker.
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   {
     base::SimpleTestTickClock clock;

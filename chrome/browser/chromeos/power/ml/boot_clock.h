@@ -15,7 +15,7 @@ namespace ml {
 // even when system is suspended (unlike TimeTicks -- for now and unless
 // crbug.com/166153 resolves in favor of absolute ticks everywhere).
 // BootClock supports
-// base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME. When time is
+// base::test::TaskEnvironment::TimeSource::MOCK_TIME. When time is
 // mocked, it will use the mocked TimeTicks::Now() to compute its delta.
 class BootClock {
  public:

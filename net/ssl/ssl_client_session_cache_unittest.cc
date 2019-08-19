@@ -365,7 +365,7 @@ TEST_F(SSLClientSessionCacheTest, LookupExpirationCheck) {
 
 // Test that SSL cache is flushed on low memory notifications
 TEST_F(SSLClientSessionCacheTest, TestFlushOnMemoryNotifications) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   // kExpirationCheckCount is set to a suitably large number so the automated
   // pruning never triggers.

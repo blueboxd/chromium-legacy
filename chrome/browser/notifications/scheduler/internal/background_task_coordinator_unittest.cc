@@ -129,7 +129,7 @@ class BackgroundTaskCoordinatorTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   test::FakeClock clock_;
   SchedulerConfig config_;
   std::unique_ptr<BackgroundTaskCoordinator> coordinator_;

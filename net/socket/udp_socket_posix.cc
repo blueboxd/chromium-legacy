@@ -1323,7 +1323,7 @@ void UDPSocketPosix::FlushPending() {
 
 // TODO(ckrasic) Sad face.  Do this lazily because many tests exploded
 // otherwise.  |threading_and_tasks.md| advises to instantiate a
-// |base::test::ScopedTaskEnvironment| in the test, implementing that
+// |base::test::TaskEnvironment| in the test, implementing that
 // for all tests that might exercise QUIC is too daunting.  Also, in
 // some tests it seemed like following the advice just broke in other
 // ways.

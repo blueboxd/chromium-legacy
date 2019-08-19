@@ -96,8 +96,8 @@ class AuthenticatorRequestDialogModelTest : public ::testing::Test {
   ~AuthenticatorRequestDialogModelTest() override {}
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   base::ListValue test_paired_device_list_;
 
  private:

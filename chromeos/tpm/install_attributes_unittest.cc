@@ -43,8 +43,7 @@ static const char kTestUserDeprecated[] = "test@example.com";
 class InstallAttributesTest : public testing::Test {
  protected:
   InstallAttributesTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -72,7 +71,7 @@ class InstallAttributesTest : public testing::Test {
     attribute->set_value(value);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<InstallAttributes> install_attributes_;
 

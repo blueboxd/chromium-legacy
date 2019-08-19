@@ -78,7 +78,7 @@ class IconStoreTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<IconStore> store_;
   std::map<std::string, proto::Icon> db_entries_;
   std::unique_ptr<std::vector<IconEntry>> loaded_entries_;

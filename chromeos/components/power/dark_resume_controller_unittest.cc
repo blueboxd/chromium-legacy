@@ -29,8 +29,7 @@ using device::mojom::WakeLockType;
 class DarkResumeControllerTest : public testing::Test {
  public:
   DarkResumeControllerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         wake_lock_provider_(
             connector_factory_.RegisterInstance(device::mojom::kServiceName)) {}
 
@@ -75,7 +74,7 @@ class DarkResumeControllerTest : public testing::Test {
     return FakePowerManagerClient::Get();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   service_manager::TestConnectorFactory connector_factory_;
   device::mojom::WakeLockPtr wake_lock_;
   std::unique_ptr<DarkResumeController> dark_resume_controller_;
@@ -90,7 +89,7 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeNoWakeLocksHeld) {
   // Trigger a dark resume event, move time forward to trigger a wake lock check
   // and check if a re-suspend happened if no wake locks were acquired.
   fake_power_manager_client()->SendDarkSuspendImminent();
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       DarkResumeController::kDarkResumeWakeLockCheckTimeout);
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
@@ -105,7 +104,7 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeNoWakeLocksHeld) {
   fake_power_manager_client()->SendDarkSuspendImminent();
   wake_lock_->RequestWakeLock();
   wake_lock_->CancelWakeLock();
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       DarkResumeController::kDarkResumeWakeLockCheckTimeout);
   base::RunLoop run_loop2;
   run_loop2.RunUntilIdle();
@@ -122,7 +121,7 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeWakeLocksHeld) {
   // observers.
   fake_power_manager_client()->SendDarkSuspendImminent();
   wake_lock_->RequestWakeLock();
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       DarkResumeController::kDarkResumeWakeLockCheckTimeout);
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
@@ -130,9 +129,8 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeWakeLocksHeld) {
 
   // Move time forward by < |kDarkResumeHardTimeout| and release the
   // partial wake lock. This should instantaneously re-suspend the device.
-  scoped_task_environment_.FastForwardBy(
-      DarkResumeController::kDarkResumeHardTimeout -
-      base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(DarkResumeController::kDarkResumeHardTimeout -
+                                  base::TimeDelta::FromSeconds(1));
   wake_lock_->CancelWakeLock();
   base::RunLoop run_loop2;
   run_loop2.RunUntilIdle();
@@ -149,7 +147,7 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeHardTimeout) {
   // observers.
   fake_power_manager_client()->SendDarkSuspendImminent();
   wake_lock_->RequestWakeLock();
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       DarkResumeController::kDarkResumeWakeLockCheckTimeout);
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
@@ -157,8 +155,7 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeHardTimeout) {
 
   // Move time forward by |kDarkResumeHardTimeout|. At this point the
   // device should re-suspend even though the wake lock is acquired.
-  scoped_task_environment_.FastForwardBy(
-      DarkResumeController::kDarkResumeHardTimeout);
+  task_environment_.FastForwardBy(DarkResumeController::kDarkResumeHardTimeout);
   EXPECT_EQ(1, GetActiveWakeLocks(WakeLockType::kPreventAppSuspension));
   base::RunLoop run_loop2;
   run_loop2.RunUntilIdle();
@@ -175,7 +172,7 @@ TEST_F(DarkResumeControllerTest, CheckStateResetAfterSuspendDone) {
   // observers.
   fake_power_manager_client()->SendDarkSuspendImminent();
   wake_lock_->RequestWakeLock();
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       DarkResumeController::kDarkResumeWakeLockCheckTimeout);
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();

@@ -713,11 +713,10 @@ void PaymentRequest::CanMakePaymentCallback(bool can_make_payment) {
 void PaymentRequest::HasEnrolledInstrumentCallback(
     bool per_method_quota,
     bool has_enrolled_instrument) {
-  if (!spec_ ||
-      CanMakePaymentQueryFactory::GetInstance()
-          ->GetForContext(web_contents_->GetBrowserContext())
-          ->CanQuery(top_level_origin_, frame_origin_,
-                     spec_->stringified_method_data(), per_method_quota)) {
+  if (!spec_ || CanMakePaymentQueryFactory::GetInstance()
+                    ->GetForContext(web_contents_->GetBrowserContext())
+                    ->CanQuery(top_level_origin_, frame_origin_,
+                               spec_->query_for_quota(), per_method_quota)) {
     RespondToHasEnrolledInstrumentQuery(has_enrolled_instrument,
                                         /*warn_local_development=*/false);
   } else if (UrlUtil::IsLocalDevelopmentUrl(frame_origin_)) {

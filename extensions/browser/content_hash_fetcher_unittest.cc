@@ -51,12 +51,10 @@ class ContentHashWaiter {
       : reply_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
   std::unique_ptr<ContentHashFetcherResult> CreateAndWaitForCallback(
-      const ContentHash::ExtensionKey& key,
-      ContentHash::FetchParams fetch_params) {
+      ContentHash::FetchKey key) {
     GetExtensionFileTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&ContentHashWaiter::CreateContentHash,
-                       base::Unretained(this), key, std::move(fetch_params)));
+        FROM_HERE, base::BindOnce(&ContentHashWaiter::CreateContentHash,
+                                  base::Unretained(this), std::move(key)));
     run_loop_.Run();
     DCHECK(result_);
     return std::move(result_);
@@ -82,10 +80,8 @@ class ContentHashWaiter {
     run_loop_.QuitWhenIdle();
   }
 
-  void CreateContentHash(const ContentHash::ExtensionKey& key,
-                         ContentHash::FetchParams fetch_params) {
-    ContentHash::Create(key, std::move(fetch_params),
-                        ContentHash::IsCancelledCallback(),
+  void CreateContentHash(ContentHash::FetchKey key) {
+    ContentHash::Create(std::move(key), ContentHash::IsCancelledCallback(),
                         base::BindOnce(&ContentHashWaiter::CreatedCallback,
                                        base::Unretained(this)));
   }
@@ -143,12 +139,10 @@ class ContentHashFetcherTest : public ExtensionsTest {
         url_loader_factory_ptr.PassInterface();
 
     std::unique_ptr<ContentHashFetcherResult> result =
-        ContentHashWaiter().CreateAndWaitForCallback(
-            ContentHash::ExtensionKey(extension_->id(), extension_->path(),
-                                      extension_->version(),
-                                      delegate_->GetPublicKey()),
-            ContentHash::FetchParams(std::move(url_loader_factory_ptr_info),
-                                     fetch_url_));
+        ContentHashWaiter().CreateAndWaitForCallback(ContentHash::FetchKey(
+            extension_->id(), extension_->path(), extension_->version(),
+            std::move(url_loader_factory_ptr_info), fetch_url_,
+            delegate_->GetPublicKey()));
 
     delegate_.reset();
 

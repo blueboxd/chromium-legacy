@@ -61,15 +61,14 @@ class FakeBatteryMonitor : device::mojom::BatteryMonitor {
 class SystemProviderImplTest : public testing::Test {
  public:
   SystemProviderImplTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
     battery_monitor_.SetStatus(device::mojom::BatteryStatus::New(
         false /* charging */, 0 /* charging_time */, 0 /* discharging_time */,
         0 /* level */));
 
     system_provider_impl_ = std::make_unique<SystemProviderImpl>(
         std::make_unique<PowerManagerProviderImpl>(
-            &fake_client_, scoped_task_environment_.GetMainThreadTaskRunner()),
+            &fake_client_, task_environment_.GetMainThreadTaskRunner()),
         battery_monitor_.CreateInterfacePtrAndBind());
     FlushForTesting();
   }
@@ -81,7 +80,7 @@ class SystemProviderImplTest : public testing::Test {
   void FlushForTesting() { system_provider_impl_->FlushForTesting(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   FakeBatteryMonitor battery_monitor_;
   FakeClient fake_client_;
   std::unique_ptr<SystemProviderImpl> system_provider_impl_;

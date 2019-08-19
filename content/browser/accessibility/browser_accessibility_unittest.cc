@@ -42,7 +42,7 @@ class BrowserAccessibilityTest : public testing::Test {
  private:
   void SetUp() override;
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityTest);
 };
 

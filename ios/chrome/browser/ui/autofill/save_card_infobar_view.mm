@@ -93,11 +93,6 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
 }  // namespace
 
 @implementation MessageWithLinks
-
-@synthesize messageText = _messageText;
-@synthesize linkRanges = _linkRanges;
-@synthesize linkURLs = _linkURLs;
-
 @end
 
 @interface SaveCardInfoBarView ()
@@ -115,61 +110,13 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
 // animation).
 @property(nonatomic, assign) CGFloat visibleHeight;
 
-// Creates and adds subviews.
-- (void)setupSubviews;
-
-// Returns the view containing the infobar title. No padding is required on the
-// view. If |googlePayIcon| is present, returns a view containing the GooglePay
-// icon followed by the title laid out horizontally.
-- (UIView*)titleView;
-
-// Returns the view containing the infobar content. No padding is required on
-// the view.
-- (UIView*)contentView;
-
-// Creates and returns an instance of LabelLinkController for |label| and
-// |action| which is invoked when links managed by it are tapped.
-- (LabelLinkController*)labelLinkControllerWithLabel:(UILabel*)label
-                                              action:(ProceduralBlockWithURL)
-                                                         action;
-
-// Creates and returns an infobar action button initialized with the given
-// title, colors, and action.
-- (UIButton*)actionButtonWithTitle:(NSString*)title
-                           palette:(MDCPalette*)palette
-                        titleColor:(UIColor*)titleColor
-                            target:(id)target
-                            action:(SEL)action;
-
-// Handles tapping the close button.
-- (void)didTapClose;
-
-// Handles tapping the cancel button.
-- (void)didTapCancel;
-
-// Handles tapping the confirm button.
-- (void)didTapConfirm;
-
 @end
 
 @implementation SaveCardInfoBarView
 
-@synthesize visibleHeight = _visibleHeight;
-@synthesize delegate = _delegate;
-@synthesize icon = _icon;
-@synthesize googlePayIcon = _googlePayIcon;
-@synthesize message = _message;
-@synthesize closeButtonImage = _closeButtonImage;
+// Synthesize description because the existing NSObject description property
+// is readonly.
 @synthesize description = _description;
-@synthesize cardIssuerIcon = _cardIssuerIcon;
-@synthesize cardLabel = _cardLabel;
-@synthesize cardSublabel = _cardSublabel;
-@synthesize legalMessages = _legalMessages;
-@synthesize cancelButtonTitle = _cancelButtonTitle;
-@synthesize confirmButtonTitle = _confirmButtonTitle;
-@synthesize messageLinkController = _messageLinkController;
-@synthesize legalMessageLinkController = _legalMessageLinkController;
-@synthesize bottomAnchorConstraint = _bottomAnchorConstraint;
 
 #pragma mark - UIView
 
@@ -223,6 +170,7 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
 
 #pragma mark - Helper methods
 
+// Creates and adds subviews.
 - (void)setupSubviews {
   [self setAccessibilityViewIsModal:YES];
   self.backgroundColor = UIColorFromRGB(kInfobarBackgroundColor);
@@ -414,6 +362,9 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
   }
 }
 
+// Returns the view containing the infobar title. No padding is required on the
+// view. If |googlePayIcon| is present, returns a view containing the GooglePay
+// icon followed by the title laid out horizontally.
 - (UIView*)titleView {
   UIView* titleView = [[UIView alloc] initWithFrame:CGRectZero];
   titleView.accessibilityIdentifier = kTitleViewAccessibilityIdentifier;
@@ -510,6 +461,8 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
   return titleView;
 }
 
+// Returns the view containing the infobar content. No padding is required on
+// the view.
 - (UIView*)contentView {
   UIStackView* contentView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
   contentView.accessibilityIdentifier = kContentViewAccessibilityIdentifier;
@@ -632,6 +585,8 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
   return contentView;
 }
 
+// Creates and returns an instance of LabelLinkController for |label| and
+// |action| which is invoked when links managed by it are tapped.
 - (LabelLinkController*)labelLinkControllerWithLabel:(UILabel*)label
                                               action:(ProceduralBlockWithURL)
                                                          action {
@@ -641,6 +596,8 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
   return labelLinkController;
 }
 
+// Creates and returns an infobar action button initialized with the given
+// title, colors, and action.
 - (UIButton*)actionButtonWithTitle:(NSString*)title
                            palette:(MDCPalette*)palette
                         titleColor:(UIColor*)titleColor
@@ -675,14 +632,17 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
   return button;
 }
 
+// Handles tapping the close button.
 - (void)didTapClose {
   [self.delegate saveCardInfoBarViewDidTapClose:self];
 }
 
+// Handles tapping the cancel button.
 - (void)didTapCancel {
   [self.delegate saveCardInfoBarViewDidTapCancel:self];
 }
 
+// Handles tapping the confirm button.
 - (void)didTapConfirm {
   [self.delegate saveCardInfoBarViewDidTapConfirm:self];
 }

@@ -101,8 +101,8 @@ class TabSwitchTimeRecorderTest : public testing::Test {
     histogram_tester_.ExpectBucketCount(histogram_name, value, count);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   TabSwitchTimeRecorder tab_switch_time_recorder_;
   base::HistogramTester histogram_tester_;
 };
@@ -281,7 +281,7 @@ TEST_F(TabSwitchTimeRecorderTest, HideBeforePresentFrameWithSavedFrames) {
        /* destination_is_frozen */ false},
       start1);
 
-  scoped_task_environment_.FastForwardBy(kDuration);
+  task_environment_.FastForwardBy(kDuration);
   tab_switch_time_recorder_.TabWasHidden();
 
   ExpectHistogramsEmptyExcept({kResultWithSavedFramesHistogram,
@@ -337,7 +337,7 @@ TEST_F(TabSwitchTimeRecorderTest, HideBeforePresentFrameNoSavedFrames) {
        /* destination_is_frozen */ false},
       start1);
 
-  scoped_task_environment_.FastForwardBy(kDuration);
+  task_environment_.FastForwardBy(kDuration);
   tab_switch_time_recorder_.TabWasHidden();
 
   ExpectHistogramsEmptyExcept(

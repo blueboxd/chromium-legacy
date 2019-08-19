@@ -9,15 +9,97 @@
 
 #include "base/files/platform_file.h"
 #include "base/numerics/checked_math.h"
+#include "base/numerics/safe_conversions.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/macros.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace arc {
 
+namespace {
+
+bool VerifyGpuMemoryBufferHandle(media::VideoPixelFormat pixel_format,
+                                 const gfx::Size& coded_size,
+                                 const gfx::GpuMemoryBufferHandle& gmb_handle) {
+  if (gmb_handle.type != gfx::NATIVE_PIXMAP) {
+    VLOGF(1) << "Unexpected GpuMemoryBufferType: " << gmb_handle.type;
+    return false;
+  }
+
+  const size_t num_planes = media::VideoFrame::NumPlanes(pixel_format);
+  if (num_planes != gmb_handle.native_pixmap_handle.planes.size() ||
+      num_planes == 0) {
+    VLOGF(1) << "Invalid number of dmabuf planes passed: "
+             << gmb_handle.native_pixmap_handle.planes.size()
+             << ", expected: " << num_planes;
+    return false;
+  }
+
+  // Offsets monotonically increase and strides monotonically decrease.
+  // Note: this offset assumption might not be correct if planes are stored in
+  // multiple buffers.
+  // TODO(b/127230761): Remove this offset check once one fd is given per one
+  // plane.
+  for (size_t i = 1; i < num_planes; i++) {
+    if (gmb_handle.native_pixmap_handle.planes[i].offset <
+        gmb_handle.native_pixmap_handle.planes[i - 1].offset) {
+      return false;
+    }
+    if (gmb_handle.native_pixmap_handle.planes[i - 1].stride <
+        gmb_handle.native_pixmap_handle.planes[i].stride) {
+      return false;
+    }
+  }
+
+  size_t prev_buffer_end = 0;
+  for (size_t i = 0; i < num_planes; i++) {
+    const auto& plane = gmb_handle.native_pixmap_handle.planes[i];
+    DVLOGF(4) << "Plane " << i << ", offset: " << plane.offset
+              << ", stride: " << plane.stride;
+
+    size_t file_size_in_bytes;
+    if (!plane.fd.is_valid() ||
+        !GetFileSize(plane.fd.get(), &file_size_in_bytes))
+      return false;
+
+    size_t plane_height =
+        media::VideoFrame::Rows(i, pixel_format, coded_size.height());
+    base::CheckedNumeric<size_t> min_plane_size =
+        base::CheckMul(plane.stride, plane_height);
+    if (!min_plane_size.IsValid() || min_plane_size.ValueOrDie() > plane.size) {
+      VLOGF(1) << "Invalid strides/sizes";
+      return false;
+    }
+
+    // Check |offset| + (the size of a plane) on each plane is not larger than
+    // |file_size_in_bytes|. This ensures we don't access out of a buffer
+    // referred by |fd|.
+    base::CheckedNumeric<size_t> min_buffer_size =
+        base::CheckAdd(plane.offset, plane.size);
+    if (!min_buffer_size.IsValid() ||
+        min_buffer_size.ValueOrDie() > file_size_in_bytes) {
+      VLOGF(1) << "Invalid strides/offsets";
+      return false;
+    }
+
+    // The end of the previous plane must not be bigger than the offset of the
+    // current plane.
+    // TODO(b/127230761): Remove this check once one fd is given per one plane.
+    if (prev_buffer_end > base::checked_cast<size_t>(plane.offset)) {
+      VLOGF(1) << "Invalid offset";
+      return false;
+    }
+    prev_buffer_end = min_buffer_size.ValueOrDie();
+  }
+
+  return true;
+}
+
+}  // namespace
+
 base::ScopedFD UnwrapFdFromMojoHandle(mojo::ScopedHandle handle) {
   if (!handle.is_valid()) {
-    VLOGF(1) << "Handle is invalid.";
+    VLOGF(1) << "Handle is invalid";
     return base::ScopedFD();
   }
 
@@ -33,10 +115,15 @@ base::ScopedFD UnwrapFdFromMojoHandle(mojo::ScopedHandle handle) {
 }
 
 bool GetFileSize(const int fd, size_t* size) {
+  if (fd < 0) {
+    VLOGF(1) << "Invalid file descriptor";
+    return false;
+  }
+
   off_t fd_size = lseek(fd, 0, SEEK_END);
   lseek(fd, 0, SEEK_SET);
   if (fd_size < 0u) {
-    VPLOGF(1) << "Fail to find the size of fd.";
+    VPLOGF(1) << "Fail to find the size of fd";
     return false;
   }
 
@@ -52,49 +139,60 @@ bool GetFileSize(const int fd, size_t* size) {
   return true;
 }
 
-bool VerifyVideoFrame(media::VideoPixelFormat pixel_format,
-                      const gfx::Size& coded_size,
-                      int fd,
-                      const std::vector<VideoFramePlane>& planes) {
+base::Optional<gfx::GpuMemoryBufferHandle> CreateGpuMemoryBufferHandle(
+    media::VideoPixelFormat pixel_format,
+    const gfx::Size& coded_size,
+    base::ScopedFD fd,
+    const std::vector<VideoFramePlane>& planes) {
   const size_t num_planes = media::VideoFrame::NumPlanes(pixel_format);
-  if (planes.size() != num_planes || num_planes == 0) {
+  if (planes.size() != num_planes || planes.size() == 0) {
     VLOGF(1) << "Invalid number of dmabuf planes passed: " << planes.size()
              << ", expected: " << num_planes;
-    return false;
+    return base::nullopt;
   }
 
-  // We expect offset monotonically increase.
-  for (size_t i = 1; i < num_planes; i++) {
-    if (planes[i].offset < planes[i - 1].offset)
-      return false;
-  }
-
-  size_t file_size_in_bytes;
-  if (!GetFileSize(fd, &file_size_in_bytes))
-    return false;
-
-  for (size_t i = 0; i < planes.size(); ++i) {
-    const auto& plane = planes[i];
-
-    DVLOGF(4) << "Plane " << i << ", offset: " << plane.offset
-              << ", stride: " << plane.stride;
-
-    // Check |offset| + (the size of a plane) on each plane is not larger than
-    // |file_size_in_bytes|. This ensures we don't access out of a buffer
-    // referred by |fd|.
-    size_t plane_height =
-        media::VideoFrame::Rows(i, pixel_format, coded_size.height());
-    base::CheckedNumeric<size_t> current_size(plane.offset);
-    current_size += base::CheckMul(plane.stride, plane_height);
-
-    if (!current_size.IsValid() ||
-        current_size.ValueOrDie() > file_size_in_bytes) {
-      VLOGF(1) << "Invalid strides/offsets.";
-      return false;
+  std::array<base::ScopedFD, media::VideoFrame::kMaxPlanes> scoped_fds;
+  DCHECK_LE(num_planes, media::VideoFrame::kMaxPlanes);
+  scoped_fds[0] = std::move(fd);
+  for (size_t i = 1; i < num_planes; ++i) {
+    scoped_fds[i].reset(HANDLE_EINTR(dup(scoped_fds[0].get())));
+    if (!scoped_fds[i].is_valid()) {
+      VLOGF(1) << "Failed to duplicate fd";
+      return base::nullopt;
     }
   }
 
-  return true;
+  gfx::GpuMemoryBufferHandle gmb_handle;
+  gmb_handle.type = gfx::NATIVE_PIXMAP;
+  for (size_t i = 0; i < num_planes; ++i) {
+    // NOTE: planes[i].stride and planes[i].offset both are int32_t. stride and
+    // offset in NativePixmapPlane are uint32_t and uint64_t, respectively.
+    if (!base::IsValueInRangeForNumericType<uint32_t>(planes[i].stride)) {
+      VLOGF(1) << "Invalid stride";
+      return base::nullopt;
+    }
+    if (!base::IsValueInRangeForNumericType<uint64_t>(planes[i].offset)) {
+      VLOGF(1) << "Invalid offset";
+      return base::nullopt;
+    }
+    uint32_t stride = base::checked_cast<uint32_t>(planes[i].stride);
+    uint64_t offset = base::checked_cast<uint64_t>(planes[i].offset);
+
+    size_t plane_height =
+        media::VideoFrame::Rows(i, pixel_format, coded_size.height());
+    base::CheckedNumeric<uint64_t> current_size =
+        base::CheckMul(stride, plane_height);
+    if (!current_size.IsValid()) {
+      VLOGF(1) << "Invalid stride/height";
+      return base::nullopt;
+    }
+    gmb_handle.native_pixmap_handle.planes.emplace_back(
+        stride, offset, current_size.ValueOrDie(), std::move(scoped_fds[i]));
+  }
+
+  if (!VerifyGpuMemoryBufferHandle(pixel_format, coded_size, gmb_handle))
+    return base::nullopt;
+  return gmb_handle;
 }
 
 }  // namespace arc

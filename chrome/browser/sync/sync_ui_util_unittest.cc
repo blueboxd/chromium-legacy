@@ -154,7 +154,7 @@ SetUpDistinctCase(syncer::TestSyncService* service,
 // This test ensures that each distinctive SyncService status will return a
 // unique combination of status and link messages from GetStatusLabels().
 TEST(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
 
   std::set<base::string16> messages;
   for (int index = 0; index != NUMBER_OF_STATUS_CASES; index++) {
@@ -198,7 +198,7 @@ TEST(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
 }
 
 TEST(SyncUIUtilTest, UnrecoverableErrorWithActionableError) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   syncer::TestSyncService service;
   signin::IdentityTestEnvironment environment;
 
@@ -236,7 +236,7 @@ TEST(SyncUIUtilTest, UnrecoverableErrorWithActionableError) {
 }
 
 TEST(SyncUIUtilTest, ActionableErrorWithPassiveMessage) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   syncer::TestSyncService service;
   signin::IdentityTestEnvironment environment;
 
@@ -262,7 +262,7 @@ TEST(SyncUIUtilTest, ActionableErrorWithPassiveMessage) {
 }
 
 TEST(SyncUIUtilTest, SyncSettingsConfirmationNeededTest) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   syncer::TestSyncService service;
   signin::IdentityTestEnvironment environment;
 
@@ -283,7 +283,7 @@ TEST(SyncUIUtilTest, SyncSettingsConfirmationNeededTest) {
 
 // Errors in non-sync accounts should be ignored.
 TEST(SyncUIUtilTest, IgnoreSyncErrorForNonSyncAccount) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   syncer::TestSyncService service;
   signin::IdentityTestEnvironment environment;
 

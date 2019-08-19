@@ -310,9 +310,8 @@ class DeviceScheduledUpdateCheckerForTest
 class DeviceScheduledUpdateCheckerTest : public testing::Test {
  public:
   DeviceScheduledUpdateCheckerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO,
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO,
+                          base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         wake_lock_provider_(
             connector_factory_.RegisterInstance(device::mojom::kServiceName)) {
     auto fake_update_engine_client =
@@ -323,7 +322,7 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
 
     chromeos::PowerManagerClient::InitializeFake();
     chromeos::FakePowerManagerClient::Get()->set_tick_clock(
-        scoped_task_environment_.GetMockTickClock());
+        task_environment_.GetMockTickClock());
 
     network_state_test_helper_ =
         std::make_unique<chromeos::NetworkStateTestHelper>(
@@ -334,8 +333,8 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
             chromeos::CrosSettings::Get(),
             network_state_test_helper_->network_state_handler(),
             connector_factory_.GetDefaultConnector(),
-            scoped_task_environment_.GetMockClock(),
-            scoped_task_environment_.GetMockTickClock());
+            task_environment_.GetMockClock(),
+            task_environment_.GetMockTickClock());
   }
 
   ~DeviceScheduledUpdateCheckerTest() override {
@@ -354,7 +353,7 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
     chromeos::UpdateEngineClient::Status status = {};
     status.status = update_status_operation;
     fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   // Returns true only iff all stats match in
@@ -417,7 +416,7 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
         fake_update_engine_client_->request_update_check_call_count();
     int expected_update_check_completions =
         device_scheduled_update_checker_->GetUpdateCheckCompletions();
-    scoped_task_environment_.FastForwardBy(delay_from_now - small_delay);
+    task_environment_.FastForwardBy(delay_from_now - small_delay);
     if (!CheckStats(expected_update_checks, expected_update_check_requests,
                     expected_update_check_completions)) {
       return false;
@@ -428,7 +427,7 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
     expected_update_checks += 1;
     expected_update_check_requests += 1;
     expected_update_check_completions += 1;
-    scoped_task_environment_.FastForwardBy(small_delay);
+    task_environment_.FastForwardBy(small_delay);
 
     // Simulate update check succeeding.
     NotifyUpdateCheckStatus(
@@ -445,7 +444,7 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
       expected_update_checks += 1;
       expected_update_check_requests += 1;
       expected_update_check_completions += 1;
-      scoped_task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
+      task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
 
       // Simulate update check succeeding.
       NotifyUpdateCheckStatus(
@@ -563,8 +562,8 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
     // Fast forward right before the new time zone's expected timer expiration
     // time and check if no new events happened.
     const base::TimeDelta small_delay = base::TimeDelta::FromMilliseconds(1);
-    scoped_task_environment_.FastForwardBy(new_tz_timer_expiration_delay -
-                                           small_delay);
+    task_environment_.FastForwardBy(new_tz_timer_expiration_delay -
+                                    small_delay);
     if (!CheckStats(expected_update_checks, expected_update_check_requests,
                     expected_update_check_completions)) {
       ADD_FAILURE()
@@ -577,7 +576,7 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
     expected_update_checks += 1;
     expected_update_check_requests += 1;
     expected_update_check_completions += 1;
-    scoped_task_environment_.FastForwardBy(small_delay);
+    task_environment_.FastForwardBy(small_delay);
     // Simulate update check succeeding.
     NotifyUpdateCheckStatus(
         chromeos::UpdateEngineClient::UpdateStatusOperation::
@@ -592,7 +591,7 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
     return true;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<DeviceScheduledUpdateCheckerForTest>
       device_scheduled_update_checker_;
   chromeos::ScopedTestingCrosSettings cros_settings_;
@@ -632,7 +631,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckIfWeeklyUpdateCheckIsScheduled) {
   cros_settings_.device_settings()->Set(
       chromeos::kDeviceScheduledUpdateCheck,
       std::move(policy_and_next_update_check_time.first));
-  scoped_task_environment_.FastForwardBy(delay_from_now - small_delay);
+  task_environment_.FastForwardBy(delay_from_now - small_delay);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
 
@@ -641,7 +640,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckIfWeeklyUpdateCheckIsScheduled) {
   expected_update_checks += 1;
   expected_update_check_requests += 1;
   expected_update_check_completions += 1;
-  scoped_task_environment_.FastForwardBy(small_delay);
+  task_environment_.FastForwardBy(small_delay);
   // Simulate update check succeeding.
   NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
                               UPDATE_STATUS_UPDATED_NEED_REBOOT);
@@ -652,7 +651,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckIfWeeklyUpdateCheckIsScheduled) {
   expected_update_checks += 1;
   expected_update_check_requests += 1;
   expected_update_check_completions += 1;
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromDays(7));
+  task_environment_.FastForwardBy(base::TimeDelta::FromDays(7));
   // Simulate update check succeeding.
   NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
                               UPDATE_STATUS_UPDATED_NEED_REBOOT);
@@ -683,7 +682,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckIfMonthlyUpdateCheckIsScheduled) {
   cros_settings_.device_settings()->Set(
       chromeos::kDeviceScheduledUpdateCheck,
       std::move(policy_and_next_update_check_time.first));
-  scoped_task_environment_.FastForwardBy(delay_from_now - small_delay);
+  task_environment_.FastForwardBy(delay_from_now - small_delay);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
 
@@ -692,7 +691,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckIfMonthlyUpdateCheckIsScheduled) {
   expected_update_checks += 1;
   expected_update_check_requests += 1;
   expected_update_check_completions += 1;
-  scoped_task_environment_.FastForwardBy(small_delay);
+  task_environment_.FastForwardBy(small_delay);
   // Simulate update check succeeding.
   NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
                               UPDATE_STATUS_UPDATED_NEED_REBOOT);
@@ -712,7 +711,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckIfMonthlyUpdateCheckIsScheduled) {
       second_update_check_time -
       device_scheduled_update_checker_->GetCurrentTime();
   EXPECT_GT(second_update_check_delay, update_checker_internal::kInvalidDelay);
-  scoped_task_environment_.FastForwardBy(second_update_check_delay);
+  task_environment_.FastForwardBy(second_update_check_delay);
   // Simulate update check succeeding.
   NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
                               UPDATE_STATUS_UPDATED_NEED_REBOOT);
@@ -723,7 +722,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckIfMonthlyUpdateCheckIsScheduled) {
 TEST_F(DeviceScheduledUpdateCheckerTest, CheckMonthlyRolloverLogic) {
   // The default time at the beginning is 31st December, 1969, 19:00:00.000
   // America/New_York. Move it to 31st January, 1970 to test the rollover logic.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromDays(
+  task_environment_.FastForwardBy(base::TimeDelta::FromDays(
       GetDaysInMonthInEpochYear(static_cast<UCalendarMonths>(UCAL_JANUARY))));
 
   // Set the first update check time to be at 31st January, 1970, 20:00:00.000
@@ -747,7 +746,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckMonthlyRolloverLogic) {
   cros_settings_.device_settings()->Set(
       chromeos::kDeviceScheduledUpdateCheck,
       std::move(policy_and_next_update_check_time.first));
-  scoped_task_environment_.FastForwardBy(delay_from_now);
+  task_environment_.FastForwardBy(delay_from_now);
   // Simulate update check succeeding.
   NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
                               UPDATE_STATUS_UPDATED_NEED_REBOOT);
@@ -768,8 +767,8 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckMonthlyRolloverLogic) {
     EXPECT_GT(expected_next_update_check_delay,
               update_checker_internal::kInvalidDelay);
     const base::TimeDelta small_delay = base::TimeDelta::FromMilliseconds(1);
-    scoped_task_environment_.FastForwardBy(expected_next_update_check_delay -
-                                           small_delay);
+    task_environment_.FastForwardBy(expected_next_update_check_delay -
+                                    small_delay);
     EXPECT_TRUE(CheckStats(expected_update_checks,
                            expected_update_check_requests,
                            expected_update_check_completions));
@@ -777,7 +776,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckMonthlyRolloverLogic) {
     expected_update_checks += 1;
     expected_update_check_requests += 1;
     expected_update_check_completions += 1;
-    scoped_task_environment_.FastForwardBy(small_delay);
+    task_environment_.FastForwardBy(small_delay);
     // Simulate update check succeeding.
     NotifyUpdateCheckStatus(
         chromeos::UpdateEngineClient::UpdateStatusOperation::
@@ -813,7 +812,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckRetryLogicEventualSuccess) {
   const base::TimeDelta failure_delay =
       (update_checker_internal::kMaxStartUpdateCheckTimerRetryIterations - 2) *
       update_checker_internal::kStartUpdateCheckTimerRetryTime;
-  scoped_task_environment_.FastForwardBy(failure_delay);
+  task_environment_.FastForwardBy(failure_delay);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
 
@@ -822,7 +821,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckRetryLogicEventualSuccess) {
   // happen yet but a check has just been scheduled.
   device_scheduled_update_checker_->SimulateCalculateNextUpdateCheckFailure(
       false);
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       update_checker_internal::kStartUpdateCheckTimerRetryTime);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
@@ -836,8 +835,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckRetryLogicEventualSuccess) {
     // Fast forward to right before the next update check and ensure that no
     // update checks happened.
     base::TimeDelta small_delay = base::TimeDelta::FromMilliseconds(1);
-    scoped_task_environment_.FastForwardBy(delay_till_next_update_check -
-                                           small_delay);
+    task_environment_.FastForwardBy(delay_till_next_update_check - small_delay);
     EXPECT_TRUE(CheckStats(expected_update_checks,
                            expected_update_check_requests,
                            expected_update_check_completions));
@@ -845,7 +843,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckRetryLogicEventualSuccess) {
     expected_update_checks += 1;
     expected_update_check_requests += 1;
     expected_update_check_completions += 1;
-    scoped_task_environment_.FastForwardBy(small_delay);
+    task_environment_.FastForwardBy(small_delay);
     // Simulate update check succeeding.
     NotifyUpdateCheckStatus(
         chromeos::UpdateEngineClient::UpdateStatusOperation::
@@ -869,7 +867,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest,
 
   // Fast forward by max retries * retry period and check that no update has
   // happened since failure mode is still set.
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       update_checker_internal::kMaxStartUpdateCheckTimerRetryIterations *
       update_checker_internal::kStartUpdateCheckTimerRetryTime);
   EXPECT_EQ(device_scheduled_update_checker_->GetUpdateCheckTimerExpirations(),
@@ -895,7 +893,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest,
 
   // Fast forward by max retries * retry period and check that no update has
   // happened since failure mode is still set.
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       update_checker_internal::kMaxStartUpdateCheckTimerRetryIterations *
       update_checker_internal::kStartUpdateCheckTimerRetryTime);
   EXPECT_EQ(device_scheduled_update_checker_->GetUpdateCheckTimerExpirations(),
@@ -925,7 +923,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckRetryLogicUpdateCheckFailure) {
   int expected_update_checks = 1;
   int expected_update_check_requests = 1;
   int expected_update_check_completions = 0;
-  scoped_task_environment_.FastForwardBy(delay_from_now);
+  task_environment_.FastForwardBy(delay_from_now);
   NotifyUpdateCheckStatus(
       chromeos::UpdateEngineClient::UpdateStatusOperation::UPDATE_STATUS_ERROR);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
@@ -938,7 +936,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckRetryLogicUpdateCheckFailure) {
        update_checker_internal::kMaxOsAndPoliciesUpdateCheckerRetryIterations;
        i++) {
     expected_update_check_requests += 1;
-    scoped_task_environment_.FastForwardBy(
+    task_environment_.FastForwardBy(
         update_checker_internal::kOsAndPoliciesUpdateCheckerRetryTime);
     // Simulate update check failing.
     NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::
@@ -955,8 +953,8 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckRetryLogicUpdateCheckFailure) {
       (update_checker_internal::kMaxOsAndPoliciesUpdateCheckerRetryIterations *
        update_checker_internal::kOsAndPoliciesUpdateCheckerRetryTime);
   const base::TimeDelta small_delay = base::TimeDelta::FromMilliseconds(1);
-  scoped_task_environment_.FastForwardBy(delay_till_next_update_check_timer -
-                                         small_delay);
+  task_environment_.FastForwardBy(delay_till_next_update_check_timer -
+                                  small_delay);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
 
@@ -964,7 +962,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckRetryLogicUpdateCheckFailure) {
   // initiated.
   expected_update_checks += 1;
   expected_update_check_requests += 1;
-  scoped_task_environment_.FastForwardBy(small_delay);
+  task_environment_.FastForwardBy(small_delay);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
 }
@@ -987,7 +985,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest,
   int expected_update_checks = 1;
   int expected_update_check_requests = 1;
   int expected_update_check_completions = 0;
-  scoped_task_environment_.FastForwardBy(delay_from_now);
+  task_environment_.FastForwardBy(delay_from_now);
   // Simulate update check succeeding.
   NotifyUpdateCheckStatus(
       chromeos::UpdateEngineClient::UpdateStatusOperation::UPDATE_STATUS_ERROR);
@@ -1002,7 +1000,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest,
         1);
        i++) {
     expected_update_check_requests += 1;
-    scoped_task_environment_.FastForwardBy(
+    task_environment_.FastForwardBy(
         update_checker_internal::kOsAndPoliciesUpdateCheckerRetryTime);
     NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::
                                 UpdateStatusOperation::UPDATE_STATUS_ERROR);
@@ -1015,7 +1013,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest,
   // should complete.
   expected_update_check_requests += 1;
   expected_update_check_completions += 1;
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       update_checker_internal::kOsAndPoliciesUpdateCheckerRetryTime);
   NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
                               UPDATE_STATUS_UPDATED_NEED_REBOOT);
@@ -1040,7 +1038,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckNewPolicyWithPendingUpdateCheck) {
   int expected_update_checks = 1;
   int expected_update_check_requests = 1;
   int expected_update_check_completions = 0;
-  scoped_task_environment_.FastForwardBy(delay_from_now);
+  task_environment_.FastForwardBy(delay_from_now);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
 
@@ -1065,7 +1063,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckNewPolicyWithPendingUpdateCheck) {
   expected_update_checks += 1;
   expected_update_check_requests += 1;
   expected_update_check_completions += 1;
-  scoped_task_environment_.FastForwardBy(delay_from_now);
+  task_environment_.FastForwardBy(delay_from_now);
   // Simulate update check succeeding.
   NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
                               UPDATE_STATUS_UPDATED_NEED_REBOOT);
@@ -1109,7 +1107,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckNoNetworkTimeoutScenario) {
   int expected_update_check_requests = 0;
   int expected_update_check_completions = 0;
   device_scheduled_update_checker_->GetUpdateCheckCompletions();
-  scoped_task_environment_.FastForwardBy(delay_from_now - small_delay);
+  task_environment_.FastForwardBy(delay_from_now - small_delay);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
 
@@ -1117,7 +1115,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckNoNetworkTimeoutScenario) {
   // to no network being connected but no update check requests or completions
   // should happens.
   expected_update_checks += 1;
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       small_delay + update_checker_internal::kWaitForNetworkTimeout);
 
   // Go online again. This time the next scheduled update check should complete.
@@ -1126,7 +1124,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckNoNetworkTimeoutScenario) {
   expected_update_checks += 1;
   expected_update_check_requests += 1;
   expected_update_check_completions += 1;
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       base::TimeDelta::FromDays(1) -
       update_checker_internal::kWaitForNetworkTimeout);
   // Simulate update check succeeding.
@@ -1157,7 +1155,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckNoNetworkDelayScenario) {
   int expected_update_check_requests = 0;
   int expected_update_check_completions = 0;
   device_scheduled_update_checker_->GetUpdateCheckCompletions();
-  scoped_task_environment_.FastForwardBy(delay_from_now - small_delay);
+  task_environment_.FastForwardBy(delay_from_now - small_delay);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
 
@@ -1167,8 +1165,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckNoNetworkDelayScenario) {
   const base::TimeDelta network_not_present_delay =
       update_checker_internal::kWaitForNetworkTimeout - small_delay;
   expected_update_checks += 1;
-  scoped_task_environment_.FastForwardBy(small_delay +
-                                         network_not_present_delay);
+  task_environment_.FastForwardBy(small_delay + network_not_present_delay);
 
   // Go online again. The existing update check should complete.
   network_state_test_helper_->ConfigureService(

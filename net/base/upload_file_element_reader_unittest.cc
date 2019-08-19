@@ -34,7 +34,7 @@ namespace net {
 // FilePath and needs to open the file itself. When it's true, it's passed an
 // already open base::File.
 class UploadFileElementReaderTest : public testing::TestWithParam<bool>,
-                                    public WithScopedTaskEnvironment {
+                                    public WithTaskEnvironment {
  protected:
   void SetUp() override {
     // Some tests (*.ReadPartially) rely on bytes_.size() being even.

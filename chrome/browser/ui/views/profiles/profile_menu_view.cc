@@ -359,15 +359,12 @@ void ProfileMenuView::OnOtherProfileButtonClicked(int profile_index) {
   Hide();
 }
 
-void ProfileMenuView::StyledLabelLinkClicked(views::StyledLabel* label,
-                                                const gfx::Range& range,
-                                                int event_flags) {
-  DCHECK_EQ(cookies_cleared_on_exit_label_, label);
+void ProfileMenuView::OnCookiesClearedOnExitLinkClicked() {
+  base::RecordAction(
+      base::UserMetricsAction("ProfileChooser_CookieSettingsClicked"));
   chrome::ShowSettingsSubPage(browser(), chrome::kContentSettingsSubPage +
                                              std::string("/") +
                                              chrome::kCookieSettingsSubPage);
-  base::RecordAction(
-      base::UserMetricsAction("ProfileChooser_CookieSettingsClicked"));
 }
 
 void ProfileMenuView::AddProfileMenuView(AvatarMenu* avatar_menu) {
@@ -508,35 +505,16 @@ void ProfileMenuView::AddDiceSyncErrorView(
 }
 
 void ProfileMenuView::AddSyncPausedReasonCookiesClearedOnExit() {
-  size_t offset = 0;
-  std::unique_ptr<views::StyledLabel> sync_paused_reason =
-      std::make_unique<views::StyledLabel>(base::string16(), this);
-
   base::string16 link_text = l10n_util::GetStringUTF16(
       IDS_SYNC_PAUSED_REASON_CLEAR_COOKIES_ON_EXIT_LINK_TEXT);
+  size_t link_begin = 0;
+  base::string16 text = l10n_util::GetStringFUTF16(
+      IDS_SYNC_PAUSED_REASON_CLEAR_COOKIES_ON_EXIT, link_text, &link_begin);
 
-  base::string16 message = l10n_util::GetStringFUTF16(
-      IDS_SYNC_PAUSED_REASON_CLEAR_COOKIES_ON_EXIT, link_text, &offset);
-
-  sync_paused_reason->SetText(message);
-  // Mark the link text as link.
-  sync_paused_reason->AddStyleRange(
-      gfx::Range(offset, offset + link_text.length()),
-      views::StyledLabel::RangeStyleInfo::CreateForLink());
-
-  // Mark the rest of the text as secondary text.
-  views::StyledLabel::RangeStyleInfo message_style;
-  message_style.text_style = STYLE_SECONDARY;
-  gfx::Range before_link_range(0, offset);
-  if (!before_link_range.is_empty())
-    sync_paused_reason->AddStyleRange(before_link_range, message_style);
-
-  gfx::Range after_link_range(offset + link_text.length(), message.length());
-  if (!after_link_range.is_empty())
-    sync_paused_reason->AddStyleRange(after_link_range, message_style);
-
-  cookies_cleared_on_exit_label_ = sync_paused_reason.get();
-  AddViewItem(std::move(sync_paused_reason));
+  cookies_cleared_on_exit_label_ = CreateAndAddLabelWithLink(
+      text, gfx::Range(link_begin, link_begin + link_text.length()),
+      base::BindRepeating(&ProfileMenuView::OnCookiesClearedOnExitLinkClicked,
+                          base::Unretained(this)));
 }
 
 void ProfileMenuView::AddCurrentProfileView(

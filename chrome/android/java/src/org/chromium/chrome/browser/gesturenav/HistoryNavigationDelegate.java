@@ -6,6 +6,9 @@ package org.chromium.chrome.browser.gesturenav;
 
 import android.view.View;
 
+import org.chromium.base.Supplier;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+
 /**
  * Provides navigation-related configuration.
  */
@@ -16,10 +19,20 @@ public interface HistoryNavigationDelegate {
     NavigationHandler.ActionDelegate createActionDelegate();
 
     /**
+     * @return {@link NavigationSheet#Delegate} object.
+     */
+    NavigationSheet.Delegate createSheetDelegate();
+
+    /**
      * @param view {@link View} object to obtain the navigation setting from.
      * @return {@code true} if overscroll navigation is allowed to run on this page.
      */
     boolean isNavigationEnabled(View view);
+
+    /**
+     * @return {@link BottomSheetController} object.
+     */
+    Supplier<BottomSheetController> getBottomSheetController();
 
     /**
      * Observe window insets change to update navigation configutation dynamically.

@@ -64,7 +64,7 @@ class LameCaptureOverlayChromeOSTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment env_;
+  base::test::TaskEnvironment env_;
 };
 
 TEST_F(LameCaptureOverlayChromeOSTest, UnsetImageNotRenderedOnFrame) {

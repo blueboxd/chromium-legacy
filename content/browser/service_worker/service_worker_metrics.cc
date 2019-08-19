@@ -15,6 +15,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -515,13 +516,15 @@ void ServiceWorkerMetrics::RecordProcessCreated(bool is_new_process) {
 
 void ServiceWorkerMetrics::RecordStartWorkerTiming(const StartTimes& times,
                                                    StartSituation situation) {
-  // This is in-process timing, so process consistency doesn't matter.
-  constexpr base::TimeDelta kMinTime = base::TimeDelta::FromMicroseconds(1);
-  constexpr base::TimeDelta kMaxTime = base::TimeDelta::FromMilliseconds(100);
-  constexpr int kBuckets = 50;
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "ServiceWorker.StartTiming.BrowserThreadHopTime", times.thread_hop_time,
-      kMinTime, kMaxTime, kBuckets);
+  if (!ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+    // This is in-process timing, so process consistency doesn't matter.
+    constexpr base::TimeDelta kMinTime = base::TimeDelta::FromMicroseconds(1);
+    constexpr base::TimeDelta kMaxTime = base::TimeDelta::FromMilliseconds(100);
+    constexpr int kBuckets = 50;
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "ServiceWorker.StartTiming.BrowserThreadHopTime", times.thread_hop_time,
+        kMinTime, kMaxTime, kBuckets);
+  }
 
   // Bail if the timings across processes weren't consistent.
   if (!base::TimeTicks::IsHighResolution() ||

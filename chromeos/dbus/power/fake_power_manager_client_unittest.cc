@@ -102,8 +102,8 @@ TEST(FakePowerManagerClientTest, NotifyObserversTest) {
   // RequestStatusUpdate posts to the current message loop. This is
   // necessary because we want to make sure that NotifyObservers() is
   // called as a result of RequestStatusUpdate().
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::UI);
   test_observer.ClearProps();
   client.RequestStatusUpdate();
   base::RunLoop().RunUntilIdle();

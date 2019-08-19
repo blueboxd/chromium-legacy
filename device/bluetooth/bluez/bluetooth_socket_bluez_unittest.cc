@@ -165,7 +165,7 @@ class BluetoothSocketBlueZTest : public testing::Test {
   void ImmediateSuccessCallback() { ++success_callback_count_; }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<BluetoothAdapter> adapter_;
 

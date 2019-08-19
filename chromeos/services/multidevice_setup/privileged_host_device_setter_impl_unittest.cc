@@ -48,7 +48,7 @@ class MultiDeviceSetupPrivilegedHostDeviceSetterImplTest
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   void OnSetHostDeviceResult(bool success) {
     EXPECT_FALSE(last_set_host_success_);

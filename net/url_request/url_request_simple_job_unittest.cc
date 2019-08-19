@@ -108,7 +108,7 @@ class SimpleJobProtocolHandler :
   DISALLOW_COPY_AND_ASSIGN(SimpleJobProtocolHandler);
 };
 
-class URLRequestSimpleJobTest : public TestWithScopedTaskEnvironment {
+class URLRequestSimpleJobTest : public TestWithTaskEnvironment {
  public:
   URLRequestSimpleJobTest() : context_(true) {
     job_factory_.SetProtocolHandler(

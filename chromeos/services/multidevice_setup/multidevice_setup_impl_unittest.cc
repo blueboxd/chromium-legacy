@@ -859,7 +859,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
     std::move(quit_closure).Run();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   multidevice::RemoteDeviceRefList test_devices_;
 

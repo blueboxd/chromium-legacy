@@ -56,7 +56,7 @@ scoped_refptr<IOBufferWithSize> CreateTestDataBuffer() {
 
 }  // namespace
 
-class FileStreamTest : public PlatformTest, public WithScopedTaskEnvironment {
+class FileStreamTest : public PlatformTest, public WithTaskEnvironment {
  public:
   void SetUp() override {
     PlatformTest::SetUp();

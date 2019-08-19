@@ -177,7 +177,7 @@ class MixerTest : public testing::Test {
     return result;
   }
 
-  void Wait() { scoped_task_environment_.RunUntilIdle(); }
+  void Wait() { task_environment_.RunUntilIdle(); }
 
   Mixer* mixer() { return mixer_.get(); }
   TestSearchProvider* app_provider() { return providers_[0].get(); }
@@ -185,7 +185,7 @@ class MixerTest : public testing::Test {
   TestSearchProvider* playstore_provider() { return providers_[2].get(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::test::ScopedFeatureList scoped_feature_list_;
   base::ScopedTempDir temp_dir_;
 

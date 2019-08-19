@@ -102,7 +102,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
     store_ = nullptr;
 
     // Flush ThreadPool tasks, causing pending commits to run.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     store_ = new SQLitePersistentCookieStore(
         temp_dir_.GetPath().Append(cookie_filename), client_task_runner_,
@@ -141,7 +141,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
  protected:
   int seed_multiple_;
   base::Time test_start_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
       base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   const scoped_refptr<base::SequencedTaskRunner> client_task_runner_ =

@@ -123,7 +123,7 @@ TEST(ExtensionsMetricsProvider, HashExtension) {
 // TestExtensionsMetricsProvider is encoded properly.
 TEST(ExtensionsMetricsProvider, SystemProtoEncoding) {
   metrics::SystemProfileProto system_profile;
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   TestingProfileManager testing_profile_manager(
       TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(testing_profile_manager.SetUp());

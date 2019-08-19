@@ -64,10 +64,6 @@ void ReadData(scoped_refptr<network::ResourceResponse> headers,
     return;
   }
 
-  network::mojom::URLLoaderClientPtr client;
-  client.Bind(std::move(client_info));
-  client->OnReceiveResponse(headers->head);
-
   if (replacements) {
     // We won't know the the final output size ahead of time, so we have to
     // use an intermediate string.
@@ -97,6 +93,16 @@ void ReadData(scoped_refptr<network::ResourceResponse> headers,
   memcpy(buffer, bytes->front(), output_size);
   result = data_pipe.producer_handle->EndWriteData(output_size);
   CHECK_EQ(result, MOJO_RESULT_OK);
+
+  // For media content, |content_length| must be known upfront for data that is
+  // assumed to be fully buffered (as opposed to streamed from the network),
+  // otherwise the media player will get confused and refuse to play.
+  // Content delivered via chrome:// URLs is assumed fully buffered.
+  headers->head.content_length = output_size;
+
+  network::mojom::URLLoaderClientPtr client;
+  client.Bind(std::move(client_info));
+  client->OnReceiveResponse(headers->head);
 
   client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
   network::URLLoaderCompletionStatus status(net::OK);

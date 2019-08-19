@@ -60,7 +60,7 @@ std::string GetSubjectCN(CERTCertificate* cert) {
 
 }  // namespace
 
-class CertDatabaseNSSTest : public TestWithScopedTaskEnvironment {
+class CertDatabaseNSSTest : public TestWithTaskEnvironment {
  public:
   void SetUp() override {
     ASSERT_TRUE(test_nssdb_.is_open());

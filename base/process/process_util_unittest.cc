@@ -751,7 +751,7 @@ TEST_F(ProcessUtilTest, GetTerminationStatusSigTerm) {
 #endif  // defined(OS_POSIX)
 
 TEST_F(ProcessUtilTest, EnsureTerminationUndying) {
-  test::ScopedTaskEnvironment task_environment;
+  test::TaskEnvironment task_environment;
 
   Process child_process = SpawnChild("process_util_test_never_die");
   ASSERT_TRUE(child_process.IsValid());
@@ -784,7 +784,7 @@ MULTIPROCESS_TEST_MAIN(process_util_test_never_die) {
 }
 
 TEST_F(ProcessUtilTest, EnsureTerminationGracefulExit) {
-  test::ScopedTaskEnvironment task_environment;
+  test::TaskEnvironment task_environment;
 
   Process child_process = SpawnChild("process_util_test_die_immediately");
   ASSERT_TRUE(child_process.IsValid());

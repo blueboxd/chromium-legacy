@@ -195,7 +195,7 @@ class DeviceSyncCryptAuthClientTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   signin::IdentityTestEnvironment identity_test_environment_;
   // Owned by |client_|.
   StrictMock<MockCryptAuthApiCallFlow>* api_call_flow_;

@@ -54,7 +54,7 @@ class MAYBE_OneShotAccessibilityTreeSearchTest : public testing::Test {
  protected:
   void SetUp() override;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<BrowserAccessibilityManager> tree_;
 

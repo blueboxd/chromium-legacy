@@ -49,7 +49,7 @@ class SchedulerUtilsTest : public testing::Test {
   base::Time& beginning_of_today() { return beginning_of_today_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   test::FakeClock clock_;
   SchedulerConfig config_;
   base::Time beginning_of_today_;

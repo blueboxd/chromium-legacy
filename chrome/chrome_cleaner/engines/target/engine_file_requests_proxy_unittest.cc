@@ -372,7 +372,7 @@ class EngineFileRequestsProxyTest
 };
 
 TEST_P(EngineFileRequestsProxyTest, TestRequest) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   // Create resources that tests running in the sandbox will not have access to
   // create for themselves, even before calling LowerToken.

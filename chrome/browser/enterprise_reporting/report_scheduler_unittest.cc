@@ -103,8 +103,7 @@ class MockReportUploader : public ReportUploader {
 class ReportSchedulerTest : public ::testing::Test {
  public:
   ReportSchedulerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         local_state_(TestingBrowserProcess::GetGlobal()) {}
   ~ReportSchedulerTest() override = default;
   void SetUp() override {
@@ -170,7 +169,7 @@ class ReportSchedulerTest : public ::testing::Test {
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ScopedTestingLocalState local_state_;
 
   std::unique_ptr<ReportScheduler> scheduler_;
@@ -223,7 +222,7 @@ TEST_F(ReportSchedulerTest, UploadReportSucceeded) {
   EXPECT_FALSE(timer_->is_running());
 
   // Run pending task.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta());
+  task_environment_.FastForwardBy(base::TimeDelta());
 
   // Next report is scheduled.
   EXPECT_TRUE(timer_->is_running());
@@ -249,7 +248,7 @@ TEST_F(ReportSchedulerTest, UploadReportTransientError) {
   EXPECT_FALSE(timer_->is_running());
 
   // Run pending task.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta());
+  task_environment_.FastForwardBy(base::TimeDelta());
 
   // Next report is scheduled.
   EXPECT_TRUE(timer_->is_running());
@@ -277,7 +276,7 @@ TEST_F(ReportSchedulerTest, UploadReportPersistentError) {
   EXPECT_FALSE(timer_->is_running());
 
   // Run pending task.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta());
+  task_environment_.FastForwardBy(base::TimeDelta());
 
   // Next report is not scheduled.
   EXPECT_FALSE(timer_->is_running());
@@ -309,7 +308,7 @@ TEST_F(ReportSchedulerTest, NoReportGenerate) {
   EXPECT_FALSE(timer_->is_running());
 
   // Run pending task.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta());
+  task_environment_.FastForwardBy(base::TimeDelta());
 
   // Next report is not scheduled.
   EXPECT_FALSE(timer_->is_running());
@@ -387,7 +386,7 @@ TEST_F(ReportSchedulerTest, ReportingIsDisabledWhileNewReportIsPosted) {
   EXPECT_FALSE(timer_->is_running());
 
   // Run pending task.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta());
+  task_environment_.FastForwardBy(base::TimeDelta());
 
   ExpectLastUploadTimestampUpdated(true);
   // Next report is not scheduled.

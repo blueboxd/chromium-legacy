@@ -45,7 +45,7 @@ class DialURLFetcherTest : public testing::Test {
   MOCK_METHOD1(OnSuccess, void(const std::string&));
   MOCK_METHOD2(OnError, void(int, const std::string&));
 
-  base::test::ScopedTaskEnvironment environment_;
+  base::test::TaskEnvironment environment_;
   network::TestURLLoaderFactory loader_factory_;
   const GURL url_;
   std::unique_ptr<TestDialURLFetcher> fetcher_;

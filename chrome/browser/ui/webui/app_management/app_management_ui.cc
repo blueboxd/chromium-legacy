@@ -77,93 +77,12 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   source->AddResourcePath("image_info.mojom-lite.js",
                           IDR_APP_MANAGEMENT_IMAGE_INFO_MOJO_LITE_JS);
 
-  source->AddResourcePath("actions.html", IDR_APP_MANAGEMENT_ACTIONS_HTML);
-  source->AddResourcePath("actions.js", IDR_APP_MANAGEMENT_ACTIONS_JS);
-  source->AddResourcePath("api_listener.html",
-                          IDR_APP_MANAGEMENT_API_LISTENER_HTML);
-  source->AddResourcePath("api_listener.js",
-                          IDR_APP_MANAGEMENT_API_LISTENER_JS);
-  source->AddResourcePath("app_item.html", IDR_APP_MANAGEMENT_APP_ITEM_HTML);
-  source->AddResourcePath("app_item.js", IDR_APP_MANAGEMENT_APP_ITEM_JS);
   source->AddResourcePath("app.html", IDR_APP_MANAGEMENT_APP_HTML);
   source->AddResourcePath("app.js", IDR_APP_MANAGEMENT_APP_JS);
-  source->AddResourcePath("arc_permission_view.html",
-                          IDR_APP_MANAGEMENT_ARC_PERMISSION_VIEW_HTML);
-  source->AddResourcePath("arc_permission_view.js",
-                          IDR_APP_MANAGEMENT_ARC_PERMISSION_VIEW_JS);
-  source->AddResourcePath("browser_proxy.html",
-                          IDR_APP_MANAGEMENT_BROWSER_PROXY_HTML);
-  source->AddResourcePath("browser_proxy.js",
-                          IDR_APP_MANAGEMENT_BROWSER_PROXY_JS);
-  source->AddResourcePath("chrome_app_permission_view.html",
-                          IDR_APP_MANAGEMENT_CHROME_APP_PERMISSION_VIEW_HTML);
-  source->AddResourcePath("chrome_app_permission_view.js",
-                          IDR_APP_MANAGEMENT_CHROME_APP_PERMISSION_VIEW_JS);
-  source->AddResourcePath("constants.html", IDR_APP_MANAGEMENT_CONSTANTS_HTML);
-  source->AddResourcePath("constants.js", IDR_APP_MANAGEMENT_CONSTANTS_JS);
-  source->AddResourcePath("dom_switch.html",
-                          IDR_APP_MANAGEMENT_DOM_SWITCH_HTML);
-  source->AddResourcePath("dom_switch.js", IDR_APP_MANAGEMENT_DOM_SWITCH_JS);
   source->AddResourcePath("expandable_app_list.html",
                           IDR_APP_MANAGEMENT_EXPANDABLE_APP_LIST_HTML);
   source->AddResourcePath("expandable_app_list.js",
                           IDR_APP_MANAGEMENT_EXPANDABLE_APP_LIST_JS);
-  source->AddResourcePath("fake_page_handler.js",
-                          IDR_APP_MANAGEMENT_FAKE_PAGE_HANDLER_JS);
-  source->AddResourcePath("icons.html", IDR_APP_MANAGEMENT_ICONS_HTML);
-  source->AddResourcePath("main_view.html", IDR_APP_MANAGEMENT_MAIN_VIEW_HTML);
-  source->AddResourcePath("main_view.js", IDR_APP_MANAGEMENT_MAIN_VIEW_JS);
-  source->AddResourcePath("metadata_view.html",
-                          IDR_APP_MANAGEMENT_METADATA_VIEW_HTML);
-  source->AddResourcePath("metadata_view.js",
-                          IDR_APP_MANAGEMENT_METADATA_VIEW_JS);
-  source->AddResourcePath("notifications_view.html",
-                          IDR_APP_MANAGEMENT_NOTIFICATIONS_VIEW_HTML);
-  source->AddResourcePath("notifications_view.js",
-                          IDR_APP_MANAGEMENT_NOTIFICATIONS_VIEW_JS);
-  source->AddResourcePath("permission_item.html",
-                          IDR_APP_MANAGEMENT_PERMISSION_ITEM_HTML);
-  source->AddResourcePath("permission_item.js",
-                          IDR_APP_MANAGEMENT_PERMISSION_ITEM_JS);
-  source->AddResourcePath("permission_toggle.html",
-                          IDR_APP_MANAGEMENT_PERMISSION_TOGGLE_HTML);
-  source->AddResourcePath("permission_toggle.js",
-                          IDR_APP_MANAGEMENT_PERMISSION_TOGGLE_JS);
-  source->AddResourcePath("permission_view_header.html",
-                          IDR_APP_MANAGEMENT_PERMISSION_VIEW_HEADER_HTML);
-  source->AddResourcePath("permission_view_header.js",
-                          IDR_APP_MANAGEMENT_PERMISSION_VIEW_HEADER_JS);
-  source->AddResourcePath("pin_to_shelf_item.html",
-                          IDR_APP_MANAGEMENT_PIN_TO_SHELF_ITEM_HTML);
-  source->AddResourcePath("pin_to_shelf_item.js",
-                          IDR_APP_MANAGEMENT_PIN_TO_SHELF_ITEM_JS);
-  source->AddResourcePath("pwa_permission_view.html",
-                          IDR_APP_MANAGEMENT_PWA_PERMISSION_VIEW_HTML);
-  source->AddResourcePath("pwa_permission_view.js",
-                          IDR_APP_MANAGEMENT_PWA_PERMISSION_VIEW_JS);
-  source->AddResourcePath("reducers.html", IDR_APP_MANAGEMENT_REDUCERS_HTML);
-  source->AddResourcePath("reducers.js", IDR_APP_MANAGEMENT_REDUCERS_JS);
-  source->AddResourcePath("router.html", IDR_APP_MANAGEMENT_ROUTER_HTML);
-  source->AddResourcePath("router.js", IDR_APP_MANAGEMENT_ROUTER_JS);
-  source->AddResourcePath("search_view.html",
-                          IDR_APP_MANAGEMENT_SEARCH_VIEW_HTML);
-  source->AddResourcePath("search_view.js", IDR_APP_MANAGEMENT_SEARCH_VIEW_JS);
-  source->AddResourcePath("shared_style.html",
-                          IDR_APP_MANAGEMENT_SHARED_STYLE_HTML);
-  source->AddResourcePath("shared_vars.html",
-                          IDR_APP_MANAGEMENT_SHARED_VARS_HTML);
-  source->AddResourcePath("store_client.html",
-                          IDR_APP_MANAGEMENT_STORE_CLIENT_HTML);
-  source->AddResourcePath("store_client.js",
-                          IDR_APP_MANAGEMENT_STORE_CLIENT_JS);
-  source->AddResourcePath("store.html", IDR_APP_MANAGEMENT_STORE_HTML);
-  source->AddResourcePath("store.js", IDR_APP_MANAGEMENT_STORE_JS);
-  source->AddResourcePath("toggle_row.html",
-                          IDR_APP_MANAGEMENT_TOGGLE_ROW_HTML);
-  source->AddResourcePath("toggle_row.js", IDR_APP_MANAGEMENT_TOGGLE_ROW_JS);
-  source->AddResourcePath("types.js", IDR_APP_MANAGEMENT_TYPES_JS);
-  source->AddResourcePath("util.html", IDR_APP_MANAGEMENT_UTIL_HTML);
-  source->AddResourcePath("util.js", IDR_APP_MANAGEMENT_UTIL_JS);
 
   source->SetDefaultResource(IDR_APP_MANAGEMENT_INDEX_HTML);
   source->UseStringsJs();
@@ -217,5 +136,5 @@ void AppManagementUI::CreatePageHandler(
   DCHECK(page);
 
   page_handler_ = std::make_unique<AppManagementPageHandler>(
-      std::move(request), std::move(page), web_ui());
+      std::move(request), std::move(page), Profile::FromWebUI(web_ui()));
 }

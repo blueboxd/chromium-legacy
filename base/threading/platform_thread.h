@@ -149,7 +149,7 @@ class BASE_EXPORT PlatformThread {
   // Note: The sleep duration may be in base::Time or base::TimeTicks, depending
   // on platform. If you're looking to use this in unit tests testing delayed
   // tasks, this will be unreliable - instead, use
-  // base::test::ScopedTaskEnvironment with MOCK_TIME mode.
+  // base::test::TaskEnvironment with MOCK_TIME mode.
   static void Sleep(base::TimeDelta duration);
 
   // Sets the thread name visible to debuggers/tools. This will try to

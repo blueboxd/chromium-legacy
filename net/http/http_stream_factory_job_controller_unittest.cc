@@ -185,12 +185,11 @@ class JobControllerPeer {
   }
 };
 
-class HttpStreamFactoryJobControllerTest
-    : public TestWithScopedTaskEnvironment {
+class HttpStreamFactoryJobControllerTest : public TestWithTaskEnvironment {
  public:
   HttpStreamFactoryJobControllerTest()
-      : TestWithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {
+      : TestWithTaskEnvironment(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
     session_deps_.enable_quic = true;
     session_deps_.host_resolver->set_synchronous_mode(true);
   }

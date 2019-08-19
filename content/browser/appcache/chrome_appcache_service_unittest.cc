@@ -43,7 +43,7 @@ const char kSessionOnlyManifest[] = "http://www.sessiononly.com/cache.manifest";
 class ChromeAppCacheServiceTest : public testing::Test {
  public:
   ChromeAppCacheServiceTest()
-      : thread_bundle_(base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : thread_bundle_(base::test::TaskEnvironment::MainThreadType::IO),
         kProtectedManifestURL(kProtectedManifest),
         kNormalManifestURL(kNormalManifest),
         kSessionOnlyManifestURL(kSessionOnlyManifest) {}

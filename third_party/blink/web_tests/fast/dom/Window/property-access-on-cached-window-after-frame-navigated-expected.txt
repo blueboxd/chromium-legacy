@@ -3,6 +3,7 @@ Tests property access on a cached DOMWindow after the associated frame is naviga
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
+PASS oldChildWindow.TrustedTypes.defaultPolicy is newChildWindow.TrustedTypes.defaultPolicy
 PASS oldChildWindow.applicationCache.oncached is newChildWindow.applicationCache.oncached
 PASS oldChildWindow.applicationCache.onchecking is newChildWindow.applicationCache.onchecking
 PASS oldChildWindow.applicationCache.ondownloading is newChildWindow.applicationCache.ondownloading

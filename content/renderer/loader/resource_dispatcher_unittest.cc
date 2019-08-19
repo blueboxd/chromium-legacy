@@ -158,7 +158,7 @@ class ResourceDispatcherTest : public testing::Test,
   std::vector<std::pair<network::mojom::URLLoaderRequest,
                         network::mojom::URLLoaderClientPtr>>
       loader_and_clients_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<ResourceDispatcher> dispatcher_;
 };
 

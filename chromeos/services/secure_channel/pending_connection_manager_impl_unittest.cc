@@ -586,7 +586,7 @@ class SecureChannelPendingConnectionManagerImplTest : public testing::Test {
         std::move(fake_client_connection_parameters), connection_priority);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<FakePendingConnectionManagerDelegate> fake_delegate_;
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;

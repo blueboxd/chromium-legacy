@@ -63,7 +63,7 @@ class SupervisedUserURLFilterTest : public ::testing::Test,
                           supervised_user_error_page::MANUAL);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::RunLoop run_loop_;
   SupervisedUserURLFilter filter_;
   SupervisedUserURLFilter::FilteringBehavior behavior_;

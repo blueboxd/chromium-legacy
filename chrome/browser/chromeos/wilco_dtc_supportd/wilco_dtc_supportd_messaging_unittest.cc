@@ -105,7 +105,7 @@ class MockMojoWilcoDtcSupportdService
 // Test that the message channel gets closed if the WilcoDtcSupportdBridge
 // instance isn't created.
 TEST(WilcoDtcSupportdMessagingOpenedByExtensionNoBridgeTest, Test) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   // Create the message host.
   std::unique_ptr<extensions::NativeMessageHost> message_host =
@@ -151,10 +151,10 @@ class WilcoDtcSupportdMessagingOpenedByExtensionTest : public testing::Test {
     return testing_wilco_dtc_supportd_bridge_wrapper_.get();
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   StrictMock<MockMojoWilcoDtcSupportdService> mojo_wilco_dtc_supportd_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<TestingWilcoDtcSupportdBridgeWrapper>

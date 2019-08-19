@@ -157,7 +157,7 @@ class RemoteCommandsInvalidatorTest : public testing::TestWithParam<bool> {
 
   const bool is_fcm_enabled_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   base::test::ScopedFeatureList feature_list_;
 

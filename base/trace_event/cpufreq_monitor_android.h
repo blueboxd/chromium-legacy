@@ -44,7 +44,7 @@ class BASE_EXPORT CPUFreqMonitorDelegate {
   virtual std::string GetRelatedCPUsPathString(unsigned int cpu_id) const;
 
   // Allows us to delay creating a task runner, necessary because many tests
-  // don't like us creating one outside of a ScopedTaskEnvironment.
+  // don't like us creating one outside of a TaskEnvironment.
   virtual scoped_refptr<SingleThreadTaskRunner> CreateTaskRunner();
 
  private:

@@ -148,7 +148,7 @@ class ReentrantHelper {
   DISALLOW_COPY_AND_ASSIGN(ReentrantHelper);
 };
 
-class SequencedSocketDataTest : public TestWithScopedTaskEnvironment {
+class SequencedSocketDataTest : public TestWithTaskEnvironment {
  public:
   SequencedSocketDataTest();
   ~SequencedSocketDataTest() override;

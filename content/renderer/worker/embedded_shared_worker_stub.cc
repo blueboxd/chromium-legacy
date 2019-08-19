@@ -54,12 +54,12 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factory_bundle_info,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
-    blink::mojom::SharedWorkerHostPtr host,
-    blink::mojom::SharedWorkerRequest request,
+    mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
+    mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
     service_manager::mojom::InterfaceProviderPtr interface_provider,
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker)
-    : binding_(this, std::move(request)),
+    : receiver_(this, std::move(receiver)),
       host_(std::move(host)),
       url_(info->url),
       renderer_preferences_(renderer_preferences),
@@ -120,7 +120,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       browser_interface_broker.PassPipe(), pause_on_start);
 
   // If the host drops its connection, then self-destruct.
-  binding_.set_connection_error_handler(base::BindOnce(
+  receiver_.set_disconnect_handler(base::BindOnce(
       &EmbeddedSharedWorkerStub::Terminate, base::Unretained(this)));
 }
 

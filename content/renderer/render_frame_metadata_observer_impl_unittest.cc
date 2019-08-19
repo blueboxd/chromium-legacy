@@ -75,11 +75,11 @@ class RenderFrameMetadataObserverImplTest : public testing::Test {
   void TearDown() override {
     observer_impl_.reset();
     client_.reset();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<testing::NiceMock<MockRenderFrameMetadataObserverClient>>
       client_;
   std::unique_ptr<RenderFrameMetadataObserverImpl> observer_impl_;

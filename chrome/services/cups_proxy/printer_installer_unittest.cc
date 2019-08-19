@@ -103,7 +103,7 @@ class PrinterInstallerTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   void OnRunInstallPrinter(base::OnceClosure finish_cb,
                            InstallPrinterResult* ret,

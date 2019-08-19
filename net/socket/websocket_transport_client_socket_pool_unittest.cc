@@ -60,8 +60,7 @@ void RunLoopForTimePeriod(base::TimeDelta period) {
   run_loop.Run();
 }
 
-class WebSocketTransportClientSocketPoolTest
-    : public TestWithScopedTaskEnvironment {
+class WebSocketTransportClientSocketPoolTest : public TestWithTaskEnvironment {
  protected:
   WebSocketTransportClientSocketPoolTest()
       : group_id_(HostPortPair("www.google.com", 80),

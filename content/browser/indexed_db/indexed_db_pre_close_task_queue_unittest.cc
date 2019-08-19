@@ -77,7 +77,7 @@ class IndexedDBPreCloseTaskQueueTest : public testing::Test {
 
  protected:
   std::vector<IndexedDBDatabaseMetadata> metadata_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(IndexedDBPreCloseTaskQueueTest, NoTasks) {
@@ -121,7 +121,7 @@ TEST_F(IndexedDBPreCloseTaskQueueTest, TaskOneRound) {
   // Expect calls are posted as tasks.
   EXPECT_CALL(*task, RunRound()).WillOnce(testing::Return(true));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(metadata_called);
   EXPECT_TRUE(done_called);
@@ -164,7 +164,7 @@ TEST_F(IndexedDBPreCloseTaskQueueTest, TaskTwoRounds) {
   EXPECT_FALSE(queue.done());
 
   EXPECT_CALL(*task, RunRound()).WillOnce(testing::Return(true));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(metadata_called);
   EXPECT_TRUE(done_called);
@@ -247,7 +247,7 @@ TEST_F(IndexedDBPreCloseTaskQueueTest, StopForNewConnectionBeforeStart) {
 
   queue.StopForNewConnection();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(metadata_called);
   EXPECT_TRUE(done_called);
@@ -287,7 +287,7 @@ TEST_F(IndexedDBPreCloseTaskQueueTest, StopForNewConnectionAfterRound) {
 
   queue.StopForNewConnection();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(metadata_called);
   EXPECT_TRUE(done_called);
@@ -331,7 +331,7 @@ TEST_F(IndexedDBPreCloseTaskQueueTest, StopForNewConnectionAfterTaskCompletes) {
 
   queue.StopForNewConnection();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(metadata_called);
   EXPECT_TRUE(done_called);
@@ -376,7 +376,7 @@ TEST_F(IndexedDBPreCloseTaskQueueTest, StopForTimout) {
 
   fake_timer->Fire();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(metadata_called);
   EXPECT_TRUE(done_called);
@@ -405,7 +405,7 @@ TEST_F(IndexedDBPreCloseTaskQueueTest, MetadataError) {
   queue.Start(base::BindOnce(&MetadataFetcher, &metadata_called,
                              leveldb::Status::IOError(""), &metadata_));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(metadata_called);
   EXPECT_TRUE(done_called);

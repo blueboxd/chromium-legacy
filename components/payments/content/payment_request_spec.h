@@ -125,6 +125,19 @@ class PaymentRequestSpec : public PaymentOptionsProvider,
   bool request_payer_email() const override;
   PaymentShippingType shipping_type() const override;
 
+  // Returns the query to be used for the quota on hasEnrolledInstrument()
+  // calls. Generally this returns the payment method identifiers and their
+  // corresponding data. However, in the case of basic-card with
+  // kStrictHasEnrolledAutofillInstrument feature enabled, this method also
+  // returns the following payment options:
+  // - requestPayerEmail
+  // - requestPayerName
+  // - requestPayerPhone
+  // - requestShipping
+  const std::map<std::string, std::set<std::string>>& query_for_quota() const {
+    return query_for_quota_;
+  }
+
   bool supports_basic_card() const { return !supported_card_networks_.empty(); }
 
   const std::vector<std::string>& supported_card_networks() const {
@@ -259,6 +272,16 @@ class PaymentRequestSpec : public PaymentOptionsProvider,
   // A mapping of the payment method names to the corresponding JSON-stringified
   // payment method specific data.
   std::map<std::string, std::set<std::string>> stringified_method_data_;
+
+  // A mapping of the payment method names to the corresponding JSON-stringified
+  // payment method specific data. If kStrictHasEnrolledAutofillInstrument is
+  // enabled, then the key "basic-card-payment-options" also maps to the
+  // following payment options:
+  // - requestPayerEmail
+  // - requestPayerName
+  // - requestPayerPhone
+  // - requestShipping
+  std::map<std::string, std::set<std::string>> query_for_quota_;
 
   // The reason why this payment request is waiting for updateWith.
   UpdateReason current_update_reason_;

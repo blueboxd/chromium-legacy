@@ -72,7 +72,7 @@ class ConnectorSettingsTest : public testing::Test {
   }
 
   base::ScopedTempDir temp_dir_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 

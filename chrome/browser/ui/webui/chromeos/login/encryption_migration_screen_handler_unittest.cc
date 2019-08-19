@@ -167,7 +167,7 @@ class EncryptionMigrationScreenHandlerTest : public testing::Test {
 
  protected:
   // Must be the first member.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_enabler_;
   FakeCryptohomeClient* fake_cryptohome_client_ = nullptr;  // unowned
@@ -218,7 +218,7 @@ TEST_F(EncryptionMigrationScreenHandlerTest, MinimalMigration) {
       EncryptionMigrationMode::START_MINIMAL_MIGRATION);
   encryption_migration_screen_handler_->SetupInitialView();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(
       encryption_migration_screen_handler_->fake_wake_lock()->HasWakeLock());
@@ -247,7 +247,7 @@ TEST_F(EncryptionMigrationScreenHandlerTest, ResumeMinimalMigration) {
       EncryptionMigrationMode::RESUME_MINIMAL_MIGRATION);
   encryption_migration_screen_handler_->SetupInitialView();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   fake_cryptohome_client_->NotifyDircryptoMigrationProgress(
       cryptohome::DircryptoMigrationStatus::DIRCRYPTO_MIGRATION_SUCCESS,
@@ -272,7 +272,7 @@ TEST_F(EncryptionMigrationScreenHandlerTest, MinimalMigrationSlow) {
       EncryptionMigrationMode::START_MINIMAL_MIGRATION);
   encryption_migration_screen_handler_->SetupInitialView();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   encryption_migration_screen_handler_->testing_tick_clock()->Advance(
       base::TimeDelta::FromMinutes(1));
@@ -297,7 +297,7 @@ TEST_F(EncryptionMigrationScreenHandlerTest, MinimalMigrationFails) {
       EncryptionMigrationMode::START_MINIMAL_MIGRATION);
   encryption_migration_screen_handler_->SetupInitialView();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   encryption_migration_screen_handler_->testing_tick_clock()->Advance(
       base::TimeDelta::FromMinutes(1));

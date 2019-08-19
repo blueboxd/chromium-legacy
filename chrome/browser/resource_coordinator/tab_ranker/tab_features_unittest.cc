@@ -99,7 +99,7 @@ TEST(TabFeaturesTest, PopulateTabFeaturesToRankerExample) {
 // correctly.
 TEST(TabFeaturesTest, PopulateTabFeaturesToUkmEntry) {
   // Sets up the task scheduling/task-runner environment for each test.
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   // Sets itself as the global UkmRecorder on construction.
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 

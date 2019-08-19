@@ -166,7 +166,7 @@ class PerfCollectorTest : public testing::Test {
  public:
   PerfCollectorTest()
       : test_browser_thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SaveProfile(std::unique_ptr<SampledProfile> sampled_profile) {
     cached_profile_data_.resize(cached_profile_data_.size() + 1);

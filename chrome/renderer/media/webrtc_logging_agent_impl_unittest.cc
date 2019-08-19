@@ -49,7 +49,7 @@ class WebRtcLoggingClientRecorder : public mojom::WebRtcLoggingClient {
 TEST(WebRtcLoggingAgentImplTest, Basic) {
   constexpr char kTestString[] = "abcdefghijklmnopqrstuvwxyz";
 
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
 
   mojo::UniqueReceiverSet<mojom::WebRtcLoggingClient> client_set;
 

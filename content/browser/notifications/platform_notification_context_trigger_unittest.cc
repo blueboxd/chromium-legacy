@@ -52,9 +52,8 @@ class NotificationBrowserClient : public TestContentBrowserClient {
 class PlatformNotificationContextTriggerTest : public ::testing::Test {
  public:
   PlatformNotificationContextTriggerTest()
-      : thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI,
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : thread_bundle_(base::test::TaskEnvironment::MainThreadType::UI,
+                       base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         notification_browser_client_(&browser_context_),
         success_(false) {
     SetBrowserClientForTesting(&notification_browser_client_);

@@ -11,31 +11,33 @@
 
 namespace blink {
 
-NGInlineCursor::NGInlineCursor(LayoutBlockFlow* block_flow) {
-  DCHECK(block_flow);
+NGInlineCursor::NGInlineCursor(const LayoutBlockFlow& block_flow) {
+  DCHECK(&block_flow);
 
-  if (const NGPhysicalBoxFragment* fragment = block_flow->CurrentFragment()) {
+  if (const NGPhysicalBoxFragment* fragment = block_flow.CurrentFragment()) {
     if (const NGFragmentItems* items = fragment->Items()) {
-      SetRoot(items);
+      SetRoot(*items);
       return;
     }
   }
 
-  if (const NGPaintFragment* paint_fragment = block_flow->PaintFragment()) {
-    SetRoot(paint_fragment);
+  if (const NGPaintFragment* paint_fragment = block_flow.PaintFragment()) {
+    SetRoot(*paint_fragment);
     return;
   }
 
   NOTREACHED();
 }
 
-void NGInlineCursor::SetRoot(const NGFragmentItems* items) {
-  items_ = items;
+void NGInlineCursor::SetRoot(const NGFragmentItems& items) {
+  DCHECK(&items);
+  items_ = &items;
 }
 
-void NGInlineCursor::SetRoot(const NGPaintFragment* root_paint_fragment) {
-  root_paint_fragment_ = root_paint_fragment;
-  current_paint_fragment_ = root_paint_fragment;
+void NGInlineCursor::SetRoot(const NGPaintFragment& root_paint_fragment) {
+  DCHECK(&root_paint_fragment);
+  root_paint_fragment_ = &root_paint_fragment;
+  current_paint_fragment_ = &root_paint_fragment;
 }
 
 bool NGInlineCursor::IsLineBox() const {

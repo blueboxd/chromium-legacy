@@ -112,8 +112,7 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
 class AutoConnectHandlerTest : public testing::Test {
  public:
   AutoConnectHandlerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     ASSERT_TRUE(test_nssdb_.is_open());
@@ -159,7 +158,7 @@ class AutoConnectHandlerTest : public testing::Test {
     test_observer_.reset(new TestAutoConnectHandlerObserver());
     auto_connect_handler_->AddObserver(test_observer_.get());
 
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void TearDown() override {
@@ -187,13 +186,13 @@ class AutoConnectHandlerTest : public testing::Test {
 
   void StartNetworkCertLoader() {
     NetworkCertLoader::Get()->SetUserNSSDB(test_nsscertdb_.get());
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void LoginToRegularUser() {
     LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_ACTIVE,
                                         LoginState::LOGGED_IN_USER_REGULAR);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   scoped_refptr<net::X509Certificate> ImportTestClientCert() {
@@ -247,7 +246,7 @@ class AutoConnectHandlerTest : public testing::Test {
                                          std::string(),  // no username hash
                                          *network_configs, global_config);
     }
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   std::string ConfigureService(const std::string& shill_json_string) {
@@ -256,7 +255,7 @@ class AutoConnectHandlerTest : public testing::Test {
 
   NetworkStateTestHelper& helper() { return helper_; }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   NetworkStateTestHelper helper_{false /* use_default_devices_and_services */};
   std::unique_ptr<AutoConnectHandler> auto_connect_handler_;
   std::unique_ptr<ClientCertResolver> client_cert_resolver_;
@@ -388,7 +387,7 @@ TEST_F(AutoConnectHandlerTest, ReconnectOnCertPatternResolved) {
   scoped_refptr<net::X509Certificate> cert = ImportTestClientCert();
   ASSERT_TRUE(cert.get());
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(observer.DidNetworkPropertiesChange());
 
   EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi0_service_path));
@@ -428,7 +427,7 @@ TEST_F(AutoConnectHandlerTest, NoReconnectIfNoCertResolved) {
   scoped_refptr<net::X509Certificate> cert = ImportTestClientCert();
   ASSERT_TRUE(cert.get());
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(observer.DidNetworkPropertiesChange());
 
   EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi0_service_path));

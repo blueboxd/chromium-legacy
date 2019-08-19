@@ -45,7 +45,7 @@ using testing::ByRef;
 
 namespace net {
 
-class SpdySessionPoolTest : public TestWithScopedTaskEnvironment {
+class SpdySessionPoolTest : public TestWithTaskEnvironment {
  protected:
   // Used by RunIPPoolingTest().
   enum SpdyPoolCloseSessionsType {
